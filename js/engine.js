@@ -209,7 +209,8 @@
       if (!n) return;
       S.inv[id] = (S.inv[id] || 0) + n;
       if (S.inv[id] < 1e-9) S.inv[id] = 0;
-      if (n > 0 && !S.seen[id]) { S.seen[id] = true; E.emit("struct"); }
+      // l’ordre de découverte, pour trier les matières (les anciennes parties ont « true »)
+      if (n > 0 && !S.seen[id]) { S.seen[id] = (S.seenSeq = (S.seenSeq || 0) + 1); E.emit("struct"); }
     }
     E.add = add;
 

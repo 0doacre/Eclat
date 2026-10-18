@@ -893,18 +893,33 @@
     if (sugg.length) {
       h += '<h3 class="sub">Tu sais déjà faire avec ces matières</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
     }
-    h += '<h3 class="sub">Tes matières</h3><div class="filters">' +
-      [["tout", "Tout"], ["res", "Récoltées"], ["comp", "Fabriquées"], ["new", "Inutilisées"]].map(([k, n]) => '<button data-if="' + k + '" class="' + (U.invFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+    const o = invOpts();
+    h += '<h3 class="sub">Tes matières</h3>' +
+      '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false"></div>' +
+      '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
+      '<div class="filters">' + INV_FILTERS.map(([k, n]) => '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     const inv = invItems();
-    h += '<div class="inv-grid">' + inv.map((id) => {
-      const sel = U.slots.includes(id);
-      return '<button class="inv' + (sel ? " sel" : "") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + icon(id) +
+    const tile = (id) => {
+      const sel = U.slots.includes(id), fav = favs()[id];
+      return '<button class="inv' + (sel ? " sel" : "") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + (fav ? '<i class="fav">♥</i>' : "") + icon(id) +
         '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span><span class="n">' + esc(I[id].n) + "</span></button>";
-    }).join("") + "</div>";
-    if (!inv.length) h += '<p class="small muted center">Rien ici. Va récolter dans les Terres.</p>';
-    else h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : à quoi elle sert.</p>';
+    };
+    if (o.sort === "age" && !U.iq) {
+      // rangées par âge, les favorites en tête
+      const groups = {};
+      inv.forEach((id) => { const k = favs()[id] ? -1 : I[id].a; (groups[k] = groups[k] || []).push(id); });
+      Object.keys(groups).map(Number).sort((a, b) => a - b).forEach((k) => {
+        h += '<div class="inv-age">' + (k < 0 ? "♥ Favorites" : esc(D.AGES[k].n)) + '</div><div class="inv-grid">' + groups[k].map(tile).join("") + "</div>";
+      });
+    } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
+    if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans les Terres.") + "</p>";
+    else h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : sa fiche, et ♥ pour la garder en tête de liste.</p>';
     return h;
   }
+  const INV_SORTS = [["age", "Par âge"], ["name", "Par nom"], ["qty", "Les plus nombreuses"], ["new", "Dernières trouvées"]];
+  const INV_FILTERS = [["tout", "Tout"], ["fav", "♥ Favorites"], ["geste", "Pour ce geste"], ["res", "Récoltées"], ["comp", "Fabriquées"], ["new", "Inutilisées"]];
+  const invOpts = () => Object.assign({ sort: "age", filter: U.invFilter || "tout" }, S().settings.inv, { filter: U.invFilter || (S().settings.inv && S().settings.inv.filter) || "tout" });
+  const favs = () => S().settings.favs || (S().settings.favs = {});
   function quickRow(id) {
     const st = S(), it = I[id];
     const uniq = E.isUnique(it), owned = uniq && st.made[id] > 0;
@@ -917,18 +932,32 @@
     return '<h3 class="sub" style="margin-top:4px">★ Épinglées</h3><div class="pins">' + ids.map(quickRow).join("") + "</div>";
   }
   function invItems() {
-    const st = S();
-    const used = {};
-    if (U.invFilter === "new") for (const id in st.known) if (I[id] && I[id].r) for (const i in I[id].r[1]) used[i] = true;
+    const st = S(), o = invOpts(), q = norm(U.iq || ""), fv = favs();
+    const used = {}, forG = {};
+    for (const id in st.known) {
+      const r = I[id] && I[id].r;
+      if (!r) continue;
+      for (const i in r[1]) { used[i] = true; if (r[0] === U.geste) forG[i] = true; }
+    }
+    const byAge = (a, b) => I[a].a - I[b].a || (I[a].t === "res" ? -1 : 0) - (I[b].t === "res" ? -1 : 0) || I[a].n.localeCompare(I[b].n);
+    const sorts = {
+      age: byAge,
+      name: (a, b) => I[a].n.localeCompare(I[b].n),
+      qty: (a, b) => (st.inv[b] || 0) - (st.inv[a] || 0) || byAge(a, b),
+      new: (a, b) => (+st.seen[b] || 0) - (+st.seen[a] || 0) || byAge(b, a)
+    };
     return Object.keys(st.inv).filter((id) => {
       const it = I[id];
       if (!it || !(st.inv[id] >= 1)) return false;
       if (E.isUnique(it) || E.isScaled(it)) return false;
-      if (U.invFilter === "res") return it.t === "res";
-      if (U.invFilter === "comp") return it.t !== "res";
-      if (U.invFilter === "new") return !used[id];
+      if (q && !norm(it.n).includes(q)) return false;
+      if (o.filter === "fav") return !!fv[id];
+      if (o.filter === "geste") return !!forG[id];
+      if (o.filter === "res") return it.t === "res";
+      if (o.filter === "comp") return it.t !== "res";
+      if (o.filter === "new") return !used[id];
       return true;
-    }).sort((a, b) => I[a].a - I[b].a || (I[a].t === "res" ? -1 : 0) - (I[b].t === "res" ? -1 : 0) || I[a].n.localeCompare(I[b].n));
+    }).sort((a, b) => (o.sort !== "age" ? (fv[b] ? 1 : 0) - (fv[a] ? 1 : 0) : 0) || (sorts[o.sort] || byAge)(a, b));
   }
   const WHY = {
     froid: "Rien à tirer de ce mélange pour l’instant.",
@@ -1508,7 +1537,8 @@
     let h = '<div class="rwin"><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
       '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + esc(it.n) + "</h2>" +
       (E.stars(id) ? '<div class="stars">' + "★".repeat(E.stars(id)) + "</div>" : "") + "</div>" +
-      (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
+      (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Matière favorite" title="Matière favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
+      (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
     if (!visible) {
       h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Tu en sauras plus en avançant.</p>';
     } else {
@@ -1572,6 +1602,7 @@
         tree: () => { setTimeout(() => openTree(id, 1), 60); },
         track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (voir les Terres)"); redraw(); return true; },
         pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
+        fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier") render(true); return true; },
         hint: () => { if (E.revealHint(id)) { A.discover(); if (S().known[id]) toast("Recette révélée : <b>" + esc(it.n) + "</b>"); } redraw(); return true; },
         usine: () => { setTimeout(() => buildInUsine(id), 60); },
         carnet: () => { setTimeout(() => showInCarnet(id), 60); }
@@ -1910,7 +1941,7 @@
       if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une matière ci-dessous pour la poser ici."); return; }
       if (t.closest("#forge")) { forge(); return; }
       if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
-      if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; render(true); return; }
+      if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
       if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
       if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
       if ((b = t.closest("[data-hint]"))) {
@@ -1936,8 +1967,10 @@
     });
     views.addEventListener("change", (ev) => {
       const t = ev.target;
+      if (t.id === "isort") { S().settings.inv = Object.assign({}, S().settings.inv, { sort: t.value }); render(true); }
     });
     views.addEventListener("input", (ev) => {
+      if (ev.target.id === "iq") { U.iq = ev.target.value; render(true); return; }
       if (ev.target.id === "cq") {
         U.q = ev.target.value;
         const l = $("#clist");

@@ -597,3 +597,13 @@ body.in-usine #toasts { bottom: auto; top: calc(var(--top) + var(--safe-t) + 54p
 .rwin .ing.link { border: 1px solid var(--line2); background: var(--bg2); border-radius: 999px; padding: 3px 9px 3px 4px; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; margin: 2px 4px 2px 0; }
 .rbtns { margin-top: 10px; gap: 6px; }
 .rwin .acts .btn { flex: 1 1 auto; }
+
+/* ---------------------------------------------------------------- matières : tri et filtres */
+.inv-tools { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.inv-tools .search { flex: 1 1 auto; margin: 0; }
+.inv-tools select { flex: 0 0 auto; max-width: 46%; min-height: 40px; border-radius: 12px; border: 1px solid var(--line2); background: var(--panel2); color: var(--text); padding: 0 8px; font-size: 13px; }
+.inv-age { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin: 10px 4px 6px; }
+.inv { position: relative; }
+.inv .fav { position: absolute; top: 3px; right: 6px; font-style: normal; font-size: 11px; color: #ff8a9a; }
+.pinb.fav.on { color: #ff8a9a; border-color: #ff8a9a; }
+.rwin .row > .pinb + .pinb { margin-left: 4px; }
