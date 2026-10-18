@@ -864,6 +864,11 @@
    * Durée d’une pièce (s) : (base + age × âge de l’objet) × (1 − star × étoiles de maîtrise),
    * multipliée pour les objets uniques (outils, stations…) et pour ceux dont le prix
    * monte à chaque exemplaire (extracteurs, machines). max : fabrications dans la file. */
+  /* Les tapis : ce qu’un tapis porte au plus (objets par seconde), à chaque âge.
+   * Les améliorations qui accélèrent l’usine les accélèrent aussi. La Réserve ne
+   * laisse sortir que out × ce débit, toutes sorties confondues. */
+  D.BELT = { cap: [3, 4, 6, 10, 14, 18, 30, 50, 70, 140, 300, 500, 1500], out: 0.5 };
+
   D.HAND = { base: 0.5, age: 0.2, star: 0.1, unique: 3, scaled: 2, max: 8 };
 
   D.GUIDE = {

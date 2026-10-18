@@ -278,6 +278,7 @@ test("usine : règles de construction", () => {
 });
 test("usine : une machine produit, s’arrête au stock visé, réclame ce qui manque", () => {
   const E = mk();
+  E.state.age = 3; // des sorties assez rapides pour ne pas la freiner
   E.add("automate_bois", 2); E.state.known.manche = true;
   E.add("bois", 30);
   const m = miniUsine(E, "manche");
@@ -622,6 +623,78 @@ test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
   assert.strictEqual(E.state.intu, before - E.studyCost("manche"));
   assert.ok(!E.study("manche"), "une seule fois");
   assert.ok(!E.study("os"), "pas une matière jamais vue");
+});
+
+test("tapis : un tapis ne porte pas plus que son débit", () => {
+  const E = mk();
+  E.add("cabane", 20);
+  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 10).ok);
+  assert.ok(E.fabLink(-3, -7).ok);
+  const x = E.fabCell(-3, -7), cap = E.beltCap();
+  assert.ok(E.extOut(x) > cap, "dix cabanes récoltent plus qu’un tapis de l’âge du Bois ne porte");
+  const b0 = E.count("bois");
+  run(E, 20);
+  const got = E.count("bois") - b0;
+  assert.ok(got <= cap * 20 + 1e-6 && got > cap * 18, "au débit du tapis : " + got);
+  assert.strictEqual(E.machInfo(x.id).s, "sat");
+  assert.ok(Math.abs(E.rate("bois") - cap) < 1e-9, "la production affichée est celle qui arrive");
+  E.state.age = 7;
+  run(E, 5);
+  assert.strictEqual(E.machInfo(x.id).s, "ok", "à l’âge 7, les tapis suivent");
+});
+test("tapis : chaque entrée dans la Réserve a son débit, le tracé automatique en ouvre une nouvelle", () => {
+  const E = mk();
+  E.state.age = 3;
+  E.add("cabane", 20);
+  E.fabPlaceExt(-3, -7, "cabane", 7); E.fabLink(-3, -7);
+  E.fabPlaceExt(-1, -7, "cabane", 7); E.fabLink(-1, -7);
+  const g = E.fabGraph(), X = E.fabCell(-3, -7), Y = E.fabCell(-1, -7);
+  assert.notStrictEqual(g.prods[X.id].t.ents[0].k, g.prods[Y.id].t.ents[0].k, "deux entrées distinctes");
+  const cap = E.beltCap();
+  assert.ok(E.extOut(X) < cap && E.extOut(X) * 2 > cap, "chacune passe seule, pas les deux ensemble");
+  run(E, 5);
+  assert.deepStrictEqual(E.fabSat(), {});
+});
+test("tapis : deux gisements sur le même tapis, l’entrée commune déborde", () => {
+  const E = mk();
+  E.state.age = 3;
+  E.add("cabane", 20);
+  E.fabPlaceExt(-3, -7, "cabane", 7); E.fabCell(-3, -7).d = 1;
+  E.fabPlaceExt(-1, -7, "cabane", 7); E.fabCell(-1, -7).d = 1;
+  // le bois descend sur un tapis qui passe sous la fibre, puis file vers la Réserve
+  E.fabDraw([{ x: -3, y: -6, d: 0 }, { x: -2, y: -6, d: 0 }, { x: -1, y: -6, d: 0 }, { x: 0, y: -6, d: 1 },
+    { x: 0, y: -5, d: 1 }, { x: 0, y: -4, d: 1 }, { x: 0, y: -3, d: 1 }, { x: 0, y: -2, d: 1 }]);
+  const g = E.fabGraph(), X = E.fabCell(-3, -7), Y = E.fabCell(-1, -7);
+  assert.strictEqual(g.prods[X.id].t.ents[0].k, "0,-2");
+  assert.strictEqual(g.prods[Y.id].t.ents[0].k, "0,-2", "la même entrée");
+  const cap = E.beltCap(), b0 = E.count("bois"), f0 = E.count("fibre");
+  run(E, 20);
+  const got = E.count("bois") - b0 + E.count("fibre") - f0;
+  assert.ok(got <= cap * 20 + 1e-6 && got > cap * 18, "un seul tapis de débit : " + got);
+  assert.ok(Math.abs(E.count("bois") - b0 - (E.count("fibre") - f0)) < cap, "partagé à parts égales");
+  assert.deepStrictEqual(E.fabSat(), { "0,-2": 1 });
+  assert.strictEqual(E.machInfo(X.id).s, "jam");
+  // un répartiteur ouvre une deuxième entrée : tout passe
+  E.fabRemove(0, -4);
+  assert.ok(E.fabPlace("split", 0, -4).ok);
+  E.fabDraw([{ x: 1, y: -4, d: 1 }, { x: 1, y: -3, d: 1 }, { x: 1, y: -2, d: 1 }]);
+  E.fabRemove(-1, -4);
+  assert.strictEqual(E.fabGraph().prods[X.id].t.ents.length, 2);
+  const b1 = E.count("bois"), f1 = E.count("fibre");
+  run(E, 20);
+  const got2 = E.count("bois") - b1 + E.count("fibre") - f1;
+  assert.ok(got2 > (E.extOut(X) + E.extOut(Y)) * 19, "deux entrées : toute la récolte passe (" + got2 + ")");
+});
+test("la Réserve ne laisse sortir qu’un certain débit, toutes sorties confondues", () => {
+  const E = mk();
+  E.add("automate_bois", 2); E.state.known.manche = true;
+  E.add("bois", 1000);
+  const m = miniUsine(E, "manche");
+  run(E, 60);
+  const out = E.resOutCap();
+  assert.ok(1000 - E.count("bois") <= out * 60 + 1e-6, "pas plus que la porte de la Réserve");
+  assert.ok(E.count("manche") > 0);
+  void m;
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

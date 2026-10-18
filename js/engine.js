@@ -309,7 +309,11 @@
       const c = E.cache();
       for (const k in S.fab.c) {
         const e = S.fab.c[k];
-        if (e.k === "ext" && e.res === res && machStat[e.id] && machStat[e.id].s === "ok") r += extOut(e, c);
+        const st = e.k === "ext" && e.res === res && machStat[e.id];
+        if (!st) continue;
+        if (st.s === "ok") r += extOut(e, c);
+        else if (st.s === "sat") r += E.beltCap();
+        else if (st.s === "jam") r += st.avg;
       }
       return r;
     };
@@ -1148,6 +1152,9 @@
       return out;
     };
     E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) || Object.keys(S.fab.c).length > 0;
+    /* ce qu’un tapis porte au plus, par seconde ; et ce que la Réserve laisse sortir, en tout */
+    E.beltCap = () => D.BELT.cap[Math.min(S.age, D.BELT.cap.length - 1)] * E.cache().aspd;
+    E.resOutCap = () => E.beltCap() * D.BELT.out;
     E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd : 0);
     const buf = (id) => S.fab.ms[id] || (S.fab.ms[id] = { p: 0, b: {}, o: 0 });
     E.machBuf = buf;
@@ -1155,13 +1162,19 @@
 
     /* Suit le chemin de ce qui sort d’une case (x, y) vers la direction d. */
     function trace(x, y, d, self) {
-      const nodes = [], cons = {}, out = { nodes, cons, res: null };
+      const nodes = [], cons = {}, out = { nodes, cons, res: null, ents: [] };
       const seen = {};
       const q = [{ x: x + DX[d], y: y + DY[d], d, p: -1 }];
       const reach = (id, at) => { if (id !== self && !(id in cons)) cons[id] = at; };
       while (q.length) {
         const s = q.shift();
-        if (isRes(s.x, s.y)) { if (!out.res) out.res = { at: s.p }; continue; }
+        if (isRes(s.x, s.y)) {
+          // la case d’où l’on entre dans la Réserve : chacune porte au plus un tapis de débit
+          const k = s.p < 0 ? ck(x, y) : ck(nodes[s.p].x, nodes[s.p].y);
+          if (!out.res) out.res = { at: s.p };
+          if (!out.ents.some((en) => en.k === k)) out.ents.push({ at: s.p, k });
+          continue;
+        }
         const e = inGrid(s.x, s.y) ? cellAt(s.x, s.y) : null;
         if (!e || e.k === "port" || e.k === "ext") continue;
         if (e.k === "mach") { reach(e.id, s.p); continue; }
@@ -1238,8 +1251,8 @@
       for (const pid of srcs) {
         const P = g.prods[pid];
         if (P.e.k !== "port" || !supplies(P, i)) continue;
-        const q = Math.min(need, S.inv[i] || 0);
-        if (q > 0) { add(i, -q); take(pid, q); }
+        const q = Math.min(need, S.inv[i] || 0, portLeft);
+        if (q > 0) { add(i, -q); portLeft -= q; take(pid, q); }
         if (need <= 1e-9) return;
       }
     }
@@ -1266,7 +1279,7 @@
       if (!(e.n > 0) || !M) return done("idle");
       const b = blocker(e.r);
       if (b) { st.b = b; return done("blocked"); }
-      const outQ = it.r[2], rate = (e.n * M.spd / 60) * c.aspd;
+      const lane = E.beltCap(), outQ = it.r[2], rate = Math.min((e.n * M.spd / 60) * c.aspd, lane / outQ);
       const P = g.prods[e.id], ing = it.r[1], srcs = g.sup[e.id] || [];
       const ncons = Object.keys(P.t.cons).length;
       if (!P.t.res && !ncons) return done("noout");
@@ -1279,7 +1292,8 @@
         B.p = Math.min(B.p, 1);
         return done("starved");
       }
-      if (!P.t.res && B.o >= outQ * Math.max(4, 2 * Math.ceil(rate * dt))) return done("jam");
+      // ce qu’elle a posé ne part pas (tapis plein, ou machines suivantes qui ne prennent pas tout)
+      if (B.o >= Math.max(outQ * 4, lane * (dt + 2))) return done("jam");
       B.p += rate * dt;
       let want = Math.floor(B.p + 1e-9);
       if (e.cap > 0) {
@@ -1306,7 +1320,7 @@
         st.miss = {};
         for (const i in ing) {
           if ((B.b[i] || 0) >= ing[i]) continue;
-          st.miss[i] = "stock";
+          st.miss[i] = portLeft <= 1e-9 && (S.inv[i] || 0) >= 1 ? "slow" : "stock";
         }
         return done("starved");
       }
@@ -1323,31 +1337,48 @@
       if (!(rate > 0)) return done("idle");
       const P = g.prods[e.id];
       if (!P.t.res && !Object.keys(P.t.cons).length) return done("noout");
-      if (!P.t.res && B.o >= Math.max(4, 2 * rate * dt)) return done("jam");
-      made = rate * dt;
+      // un tapis ne porte pas plus que son débit ; et rien ne s’entasse si ça ne part pas
+      const lane = E.beltCap(), want = Math.min(rate, lane) * dt;
+      made = Math.max(0, Math.min(want, Math.max(4, lane * (dt + 2)) - B.o));
       B.o += made;
-      return done("ok");
+      return done(made < want * 0.98 ? "jam" : rate > lane * 1.001 ? "sat" : "ok");
     }
+    let portLeft = 0; // ce que la Réserve peut encore laisser sortir pendant ce pas
+    let satEnts = {}; // cases d’entrée dans la Réserve qui débordent
     function runFab(dt) {
       const g = graph();
-      if (!g.order.length && !g.exts.length) return;
+      if (!g.order.length && !g.exts.length) { satEnts = {}; return; }
       const c = E.cache();
+      portLeft = E.resOutCap() * dt;
       for (const id of g.exts) runExt(g.prods[id].e, g, dt, c);
       for (const id of g.order) runMachine(g.prods[id].e, g, dt, c);
-      // ce qui arrive à la Réserve rejoint le stock
-      for (const id of g.exts.concat(g.order)) {
-        const P = g.prods[id];
-        if (!P.t.res) continue;
-        const B = buf(id), r = outOf(P.e);
-        if (B.o > 0) {
-          const q = B.o;
-          B.o = 0;
-          add(r, q);
-          logFlow(id, "res", r, q);
+      // ce qui arrive à la Réserve rejoint le stock, dans la limite de ce que porte
+      // chaque tapis qui y entre : d’abord une part égale à chacun, puis le reste
+      const cap = E.beltCap() * dt, room = {}, users = {};
+      const outs = g.exts.concat(g.order).filter((id) => g.prods[id].t.ents.length && buf(id).o > 1e-9);
+      outs.forEach((id) => g.prods[id].t.ents.forEach((en) => { room[en.k] = cap; users[en.k] = (users[en.k] || 0) + 1; }));
+      for (let pass = 0; pass < 2; pass++) {
+        for (const id of outs) {
+          const P = g.prods[id], B = buf(id), r = outOf(P.e);
+          for (const en of P.t.ents) {
+            if (!(B.o > 1e-9)) break;
+            const q = Math.min(B.o, pass ? room[en.k] : Math.min(room[en.k], cap / users[en.k]));
+            if (!(q > 0)) continue;
+            B.o -= q;
+            room[en.k] -= q;
+            add(r, q);
+            logFlow(id, "res", r, q);
+          }
           if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; E.emit("struct"); }
         }
       }
+      if (!fabQuiet) {
+        satEnts = {};
+        outs.forEach((id) => { if (buf(id).o > 1e-6) g.prods[id].t.ents.forEach((en) => { if (room[en.k] <= cap * 0.02) satEnts[en.k] = 1; }); });
+      }
     }
+    /* les cases d’où un tapis plein entre dans la Réserve */
+    E.fabSat = () => satEnts;
     /* Débits des machines (par seconde, moyenne glissante). */
     E.flows = function () {
       const prod = {}, cons = {};
@@ -1517,20 +1548,24 @@
       const src = cellAt(x, y);
       if (!src || src.d === undefined || src.k === "belt") return { ok: false, why: "kind" };
       if (src.id) { const P = graph().prods[src.id]; if (P && P.t.res) return { ok: true, n: 0 }; }
+      // combien de producteurs entrent déjà dans la Réserve par chaque case
+      const g = graph(), users = {};
+      for (const id in g.prods) g.prods[id].t.ents.forEach((en) => (users[en.k] = (users[en.k] || 0) + 1));
       const memo = {};
-      const home = (cx, cy, din) => {
+      const entryOf = (cx, cy, din) => {
         const k = cx + "," + cy + "," + din;
-        if (!(k in memo)) memo[k] = !!trace(cx - DX[din], cy - DY[din], din, src.id || null).res;
+        if (!(k in memo)) { const t = trace(cx - DX[din], cy - DY[din], din, src.id || null); memo[k] = t.ents.length ? t.ents[0].k : null; }
         return memo[k];
       };
-      const joins = (cx, cy, d) => {
-        if (isRes(cx, cy)) return true;
+      /* entrer dans la Réserve ne coûte rien ; rejoindre un tapis qui y mène coûte
+       * d’autant plus qu’il est chargé (un tapis ne porte qu’un certain débit) ; -1 : impossible */
+      const joinCost = (cx, cy, d) => {
+        if (isRes(cx, cy)) return 0;
         const e = cellAt(cx, cy);
-        return !!(e && e.k === "belt" && e.d !== (d + 2) % 4 && home(cx, cy, d));
+        if (!e || e.k !== "belt" || e.d === (d + 2) % 4) return -1;
+        const k = entryOf(cx, cy, d);
+        return k === null ? -1 : 2 + 6 * (users[k] || 0);
       };
-      for (let d = 0; d < 4; d++) {
-        if (joins(x + DX[d], y + DY[d], d)) { src.d = d; fabChanged(); return { ok: true, n: 0 }; }
-      }
       // plus court chemin sur les cases libres (Dijkstra, petit tas binaire)
       const R = fabR(), dist = {}, prev = {}, heap = [];
       const pushH = (n) => {
@@ -1556,24 +1591,28 @@
       // les gisements restent libres, et le tour de la Réserve aussi (place des sorties)
       const cost = (cx, cy) => (DEPOSITS[ck(cx, cy)] ? 8 : touchesRes(cx, cy) ? 4 : 1);
       for (let d = 0; d < 4; d++) {
-        const nx = x + DX[d], ny = y + DY[d];
+        const nx = x + DX[d], ny = y + DY[d], jc = joinCost(nx, ny, d);
+        if (jc >= 0) pushH({ c: jc, end: { d0: d, direct: true } });
         if (!free(nx, ny)) continue;
         const k = ck(nx, ny), c0 = cost(nx, ny);
         if (dist[k] === undefined || c0 < dist[k]) { dist[k] = c0; prev[k] = { d0: d }; pushH({ x: nx, y: ny, c: c0 }); }
       }
       let end = null;
-      while (heap.length && !end) {
-        const u = popH(), uk = ck(u.x, u.y);
+      while (heap.length) {
+        const u = popH();
+        if (u.end) { end = u.end; break; }
+        const uk = ck(u.x, u.y);
         if (u.c > dist[uk]) continue;
         for (let d = 0; d < 4; d++) {
-          const vx = u.x + DX[d], vy = u.y + DY[d];
-          if (joins(vx, vy, d)) { end = { x: u.x, y: u.y, d }; break; }
+          const vx = u.x + DX[d], vy = u.y + DY[d], jc = joinCost(vx, vy, d);
+          if (jc >= 0) pushH({ c: u.c + jc, end: { x: u.x, y: u.y, d } });
           if (!free(vx, vy)) continue;
           const vk = ck(vx, vy), c = u.c + cost(vx, vy);
           if (dist[vk] === undefined || c < dist[vk]) { dist[vk] = c; prev[vk] = { x: u.x, y: u.y, d }; pushH({ x: vx, y: vy, c }); }
         }
       }
       if (!end) return { ok: false, why: "nopath" };
+      if (end.direct) { src.d = end.d0; fabChanged(); return { ok: true, n: 0 }; }
       const path = [{ x: end.x, y: end.y, d: end.d }];
       let k = ck(end.x, end.y);
       while (prev[k] && prev[k].x !== undefined) { const p = prev[k]; path.unshift({ x: p.x, y: p.y, d: p.d }); k = ck(p.x, p.y); }

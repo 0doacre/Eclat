@@ -435,6 +435,7 @@
       if ((b = t.closest("[data-mt]"))) { V.mtype = b.dataset.mt; setTool("mach"); A.click(); refresh(); return; }
       if ((b = t.closest("[data-et]"))) { V.etype = b.dataset.et; setTool("ext"); A.click(); refresh(); return; }
       if (!(b = t.closest("[data-u]"))) return;
+      if (b.dataset.u === "tip") { S().flags[b.dataset.f] = true; A.click(); refresh(); return; }
       const u = b.dataset.u, sel = V.sel, e = sel && E.fabCell(sel.x, sel.y);
       if (u === "zin") zoom(1.25);
       else if (u === "zout") zoom(0.8);
@@ -562,9 +563,13 @@
     }
     const STATUS = {
       ok: "En marche", wait: "Démarrage…", off: "En pause", norec: "Aucune recette choisie", idle: "Aucune machine",
-      starved: "Il lui manque des matières", noout: "Sa production ne va nulle part", jam: "Encombrée", cap: "Stock visé atteint", blocked: "Il manque une station"
+      starved: "Il lui manque des matières", noout: "Sa production ne va nulle part", jam: "Ralentie : ce qu’elle pose ne part pas assez vite", cap: "Stock visé atteint", blocked: "Il manque une station"
     };
-    const LEVEL = { ok: "good", wait: "good", off: "dim", norec: "warn", idle: "warn", starved: "warn", cap: "dim", noout: "bad", jam: "bad", blocked: "bad" };
+    const LEVEL = { ok: "good", wait: "good", off: "dim", norec: "warn", idle: "warn", starved: "warn", cap: "dim", noout: "bad", jam: "warn", blocked: "bad" };
+    /* ce qui bouche la sortie d’une machine ou d’un extracteur */
+    const toRes = (e) => { const P = E.fabGraph().prods[e.id]; return !!(P && P.t.res); };
+    const JAM_RES = () => "Le tapis qui entre dans la Réserve est plein : un tapis porte au plus " + fmtNum(E.beltCap()) + " objets/s à cet âge. Fais entrer un autre tapis dans la Réserve (un 🔀 répartiteur sur le chemin, par exemple), ou relie autrement ce qui partage ce tapis.";
+    const JAM_MACH = "Les machines de son tapis ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve.";
     function machStatus(e) {
       const info = E.machInfo(e.id);
       const it = I[e.r];
@@ -572,10 +577,11 @@
       if ((info.s === "ok" || info.s === "wait") && it) s += " · " + fmtNum(E.machRate(e) * 60 * it.r[2]) + " " + esc(it.n.toLowerCase()) + "/min";
       if (info.s === "starved" && info.miss) {
         more = Object.keys(info.miss).map((k) => '<span class="link-txt" data-u="goto" data-id="' + k + '">' + esc(I[k].n) + "</span> " +
-          (info.miss[k] === "link" ? "(aucun tapis n’en apporte)" : "(le stock est vide)")).join(", ");
+          (info.miss[k] === "link" ? "(aucun tapis n’en apporte)" : info.miss[k] === "slow" ? "(la Réserve ne le laisse pas sortir assez vite)" : "(le stock est vide)")).join(", ");
+        if (Object.values(info.miss).includes("slow")) more += ". La Réserve ne laisse sortir que " + fmtNum(E.resOutCap()) + " objets/s en tout, toutes sorties confondues. Pour aller plus vite, amène ses matières par tapis, depuis les gisements ou d’autres machines.";
       }
       if (info.s === "noout") more = "La flèche montre où elle pose ce qu’elle fabrique. Mets là un tapis qui rejoint la Réserve, ou une autre machine.";
-      if (info.s === "jam") more = "Les machines suivantes ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve.";
+      if (info.s === "jam") more = toRes(e) ? JAM_RES() : JAM_MACH;
       if (info.s === "cap") s += " (" + fmt(e.cap) + ")";
       if (info.s === "blocked" && info.b) s = info.b.why === "heat" ? "Il faut " + fmtHeat(info.b.heat) + " pour cette recette" : "Il te manque la station pour ce geste";
       return { s, more, lvl: LEVEL[info.s] || "dim" };
@@ -588,7 +594,9 @@
         off: ["En pause", "dim", ""],
         idle: ["Aucun extracteur posé ici", "warn", "Ajoute un extracteur avec + ci-dessous."],
         noout: ["Ce qu’il récolte ne va nulle part", "bad", "La flèche montre où il pose sa récolte. Relie-le à la Réserve, ou trace un tapis vers une machine."],
-        jam: ["Encombré", "bad", "Les machines de son tapis ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve."]
+        sat: ["Récolte " + fmtNum(E.beltCap()) + " " + esc(I[e.res].n.toLowerCase()) + "/s sur " + fmtNum(rate) + " : le tapis ne suit pas", "warn",
+          "Un tapis porte au plus " + fmtNum(E.beltCap()) + " objets/s à cet âge. Les extracteurs en trop ici ne servent à rien pour l’instant : ils travailleraient mieux sur un autre gisement. Les tapis vont plus vite aux âges suivants."],
+        jam: ["Ralenti : sa récolte ne part pas assez vite", "warn", toRes(e) ? JAM_RES() : JAM_MACH]
       }[info.s] || ["", "dim", ""];
       return { s: T[0], lvl: T[1], more: T[2], code: info.s };
     }
@@ -649,11 +657,12 @@
         const n = P ? Object.keys(P.t.cons).length : 0;
         h += '<div class="u-head"><span class="ic">📤</span><div class="grow"><b>Sortie</b><div class="u-st ' + (n ? "good" : "warn") + '">' +
           (n ? "Alimente " + n + " machine" + (n > 1 ? "s" : "") : "Son tapis ne touche aucune machine") + "</div></div></div>" +
+          '<p class="tiny muted">La Réserve laisse sortir ' + fmtNum(E.resOutCap()) + " objets/s au plus, toutes sorties confondues. Ce qui vient directement des gisements et des machines n’a pas cette limite.</p>" +
           '<button class="u-recipe" data-u="filter">' + (e.f && I[e.f] ? icon(e.f) + '<span class="grow">N’envoie que : ' + esc(I[e.f].n) + "</span>" : '<span class="grow">Envoie tout ce qu’on lui demande</span>') + "<span>▾</span></button>" +
           '<div class="u-row acts"><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       } else {
         const name = { belt: "Tapis", split: "Répartiteur", cross: "Croisement" }[e.k];
-        const txt = { belt: "Fait avancer ce qu’on pose dessus. Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
+        const txt = { belt: "Fait avancer ce qu’on pose dessus, " + fmtNum(E.beltCap()) + " objets/s au plus à cet âge. Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
         h += "<b>" + name + '</b><p class="small muted">' + txt + '</p><div class="u-row acts">' + (e.d !== undefined ? '<button class="btn small" data-u="rot">🔄 Tourner</button>' : "") + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       }
       box.innerHTML = h;
@@ -769,6 +778,10 @@
       }
       if (machs.some((e) => E.machInfo(e.id).s === "noout")) return "Ta machine pose sa production devant elle (la petite flèche). Trace un tapis de là jusqu’à la Réserve.";
       if (!st.flags.lineDone) return "Ça tourne. La première pièce ne va pas tarder.";
+      if (!st.flags.tip_sat && Object.keys(E.fabSat()).length) {
+        return "⚠️ Un tapis qui entre dans la Réserve est plein : ce qu’il porte n’arrive pas en entier. Fais entrer un deuxième tapis dans la Réserve (un 🔀 répartiteur sur le chemin, par exemple). " +
+          '<button class="btn small ghost" data-u="tip" data-f="tip_sat">Compris</button>';
+      }
       return null;
     }
     function refresh() {
@@ -781,7 +794,8 @@
         const html = owned.length || freeE.length ? '<span class="tiny muted">Libres</span>' +
           freeE.map((t) => '<button class="u-chip ext' + (V.tool === "ext" && V.etype === t ? " on" : "") + '" data-et="' + t + '" title="' + esc(I[t].n) + '">' + icon(t, "sm") + "<b>" + (us[t].own - us[t].used) + "</b></button>").join("") +
           owned.map((m) => '<button class="u-chip' + (V.tool === "mach" && V.mtype === m ? " on" : "") + '" data-mt="' + m + '" title="' + esc(I[m].n) + '">' + icon(m, "sm") + "<b>" + (ms[m].own - ms[m].used) + "</b></button>").join("") +
-          (E.cache().aspd > 1 ? '<span class="tiny muted">vitesse ×' + String(Math.round(E.cache().aspd * 100) / 100).replace(".", ",") + "</span>" : "")
+          (E.cache().aspd > 1 ? '<span class="tiny muted">vitesse ×' + String(Math.round(E.cache().aspd * 100) / 100).replace(".", ",") + "</span>" : "") +
+          (E.deposits().length && Object.keys(S().fab.c).length ? '<span class="tiny muted u-belt">🛤️ ' + fmtNum(E.beltCap()) + "/s</span>" : "")
           : '<span class="tiny muted">Rien à poser pour l’instant</span>';
         if (free.dataset.h !== html) { free.innerHTML = html; free.dataset.h = html; }
       }
@@ -961,6 +975,7 @@
       }
       // tapis d’abord, puis le reste par-dessus
       for (const [x, y, e] of vis) if (e.k === "belt" || e.k === "cross") drawBelt(x, y, e);
+      drawSat();
       drawReserve();
       for (const [x, y, e] of vis) {
         if (e.k === "split") drawSplit(x, y);
@@ -1158,7 +1173,7 @@
       if (main) drawIcon(main, X - z * 0.04, Y - z * 0.05 + bob, z * 0.5, false);
       drawIcon(e.res, X + z * 0.26, Y + z * 0.26, z * 0.26, true);
       arrow(X + DX[e.d] * z * 0.47, Y + DY[e.d] * z * 0.47, e.d, z * 0.13, "#ffe2ae");
-      const lv = { ok: "#7fd18b", wait: "#7fd18b", idle: "#ffbf4a", off: "#6f6556", noout: "#ff6a55", jam: "#ff6a55" }[info.s] || "#6f6556";
+      const lv = { ok: "#7fd18b", wait: "#7fd18b", idle: "#ffbf4a", sat: "#ffbf4a", off: "#6f6556", noout: "#ff6a55", jam: "#ff9a3c" }[info.s] || "#6f6556";
       c.fillStyle = lv;
       c.beginPath(); c.arc(X + z * 0.28, Y - z * 0.28, z * 0.07, 0, 6.3); c.fill();
       if (lv === "#ff6a55" || lv === "#ffbf4a") {
@@ -1240,6 +1255,19 @@
       c.beginPath(); c.arc(X, Y, z * 0.26, 0, 6.3); c.fill();
       for (const s of ins) chevrons(X + DX[s] * h, Y + DY[s] * h, X, Y, z, off);
       chevrons(X, Y, ox, oy, z, off);
+    }
+    /* une entrée de la Réserve qui déborde : la case clignote en orange */
+    function drawSat() {
+      const sat = E.fabSat(), c = V.ctx, z = V.cam.z;
+      for (const k in sat) {
+        const i = k.indexOf(","), x = +k.slice(0, i), y = +k.slice(i + 1);
+        const a = 0.35 + 0.3 * Math.sin(V.t * 5);
+        c.strokeStyle = "rgba(255,150,60," + a + ")";
+        c.lineWidth = Math.max(2, z * 0.08);
+        roundRect(c, sx(x) - z * 0.46, sy(y) - z * 0.46, z * 0.92, z * 0.92, z * 0.14);
+        c.stroke();
+        if (z >= 26) { c.font = Math.round(z * 0.3) + "px system-ui"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("⚠️", sx(x) + z * 0.32, sy(y) - z * 0.32); }
+      }
     }
     function drawReserve() {
       const c = V.ctx, z = V.cam.z, x = sx(-1.5), y = sy(-1.5), w = 3 * z;
@@ -1332,7 +1360,7 @@
       // flèche de sortie
       arrow(X + DX[e.d] * z * 0.47, Y + DY[e.d] * z * 0.47, e.d, z * 0.13, "#ffe2ae");
       // voyant
-      const lv = { ok: "#7fd18b", wait: "#7fd18b", starved: "#ffbf4a", norec: "#ffbf4a", idle: "#ffbf4a", cap: "#8fb3ff", off: "#6f6556", noout: "#ff6a55", jam: "#ff6a55", blocked: "#ff6a55" }[info.s] || "#6f6556";
+      const lv = { ok: "#7fd18b", wait: "#7fd18b", starved: "#ffbf4a", norec: "#ffbf4a", idle: "#ffbf4a", cap: "#8fb3ff", off: "#6f6556", noout: "#ff6a55", jam: "#ff9a3c", blocked: "#ff6a55" }[info.s] || "#6f6556";
       c.fillStyle = lv;
       c.beginPath(); c.arc(X + s * 0.3, Y - s * 0.3, z * 0.07, 0, 6.3); c.fill();
       if (lv === "#ff6a55" || lv === "#ffbf4a") {
