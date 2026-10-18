@@ -1071,7 +1071,7 @@
       const lvl = st.hints[id] || 0;
       const ing = Object.keys(it.r[1]);
       const big = mainIngredient(id);
-      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
+      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
         (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
         '<div class="rl tiny muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Matière : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " matière" + (ing.length > 1 ? "s" : "") + "</div>" +
         '<div class="acts"><button class="btn small" data-hint="' + id + '"' + (st.intu < E.hintCost(id) ? " disabled" : "") + ">💡 Indice · ✨" + E.hintCost(id) + "</button></div></div>";
@@ -1079,7 +1079,7 @@
     const uniq = E.isUnique(it);
     const owned = uniq && (st.made[id] || 0) > 0;
     const stars = E.stars(id);
-    let h = '<div class="rec' + (owned ? " owned" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + "</span></div>" +
+    let h = '<div class="rec' + (owned ? " owned" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + "</span></div>" +
       (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div><div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
       '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
     if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
@@ -1485,37 +1485,108 @@
   }
 
   /* Aller à la recette d’un objet dans le Carnet (ou à sa zone s’il se récolte). */
+  /* ------------------------------------------------------------ fenêtres de recettes
+   * Toucher un objet ouvre sa fiche ; ses ingrédients, ce qu’il sert à fabriquer
+   * et sa station sont cliquables. ← revient à la fiche précédente. */
   function goto(id) {
-    const it = I[id];
-    if (!it) return;
-    const zid = E.RES_ZONE[id];
-    if (zid && E.zoneOpen(zid) && it.t === "res") {
-      setTab("terres");
-      setTimeout(() => { const el = $('.zone[data-z="' + zid + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); flash(el); } }, 60);
-      return;
+    if (!I[id]) return;
+    U.rstack = [id];
+    swapModal(recipeModal());
+  }
+  function recipeNav(id) {
+    if (!I[id]) return;
+    U.rstack = (U.rstack || []).concat(id).slice(-30);
+    A.page();
+    swapModal(recipeModal());
+  }
+  const recHere = () => (U.rstack && U.rstack.length ? U.rstack[U.rstack.length - 1] : null);
+  function recipeModal() {
+    const id = recHere(), it = I[id], st = S();
+    const known = !!st.known[id], visible = known || visibleRecipes().includes(id) || !it.r;
+    const uniq = E.isUnique(it), owned = uniq && (st.made[id] || 0) > 0;
+    const nav = (k, extra) => '<button class="ing link" data-m="nav" data-id="' + k + '">' + (st.seen[k] || st.known[k] ? icon(k, "sm") : '<span class="ic sm unk">?</span>') + esc(I[k].n) + (extra || "") + "</button>";
+    let h = '<div class="rwin"><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
+      '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + esc(it.n) + "</h2>" +
+      (E.stars(id) ? '<div class="stars">' + "★".repeat(E.stars(id)) + "</div>" : "") + "</div>" +
+      (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
+    if (!visible) {
+      h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Tu en sauras plus en avançant.</p>';
+    } else {
+      if (known || !it.r) h += '<p class="serif rdesc">' + esc(it.d || "") + "</p>";
+      if (fxText(id)) h += '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>";
+      h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En stock : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
+      const zid = E.RES_ZONE[id];
+      if (zid) h += '<div class="row wrap small">Se récolte : <button class="ing link" data-m="zone" data-z="' + zid + '">' + E.ZONES[zid].ic + " " + esc(zoneName(zid)) + "</button>" +
+        (E.zoneOpen(zid) ? "" : ' <span class="tiny muted">(terre pas encore atteinte)</span>') + "</div>";
+      if (it.r) {
+        h += '<h3 class="sub">Recette</h3>';
+        if (known) {
+          const cost = E.costFor(id);
+          h += '<div class="rrow">' + gesteChip(id) + '<span class="muted">×' + fmt(it.r[2]) + "</span></div>" +
+            '<div class="rings">' + Object.keys(cost).map((k) => {
+              const have = st.inv[k] || 0, lack = have + 1e-9 < cost[k];
+              return '<button class="ring' + (lack ? " lack" : "") + '" data-m="nav" data-id="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(have) + " / " + fmt(cost[k]) + "</span><span class=\"go\">›</span></button>";
+            }).join("") + "</div>";
+          const b = E.blocker(id), opt = it.r[3] || {};
+          const station = b && b.why === "heat" ? E.stationFor("chauffer", b.heat, 0) : b && b.why === "lvl" ? E.stationFor(it.r[0], 0, b.lvl) : b && b.why === "geste" && it.r[0] !== "accorder" ? E.stationFor(it.r[0], 0, 0) : null;
+          if (b && b.why !== "owned") h += '<p class="why">' + (b.why === "heat" ? "Il faut " + fmtHeat(b.heat) : b.why === "lvl" ? "Il faut une station plus solide" : "Geste inconnu : " + esc(D.GESTES[it.r[0]].n)) + (station ? " · " + nav(station) : "") + "</p>";
+          else if (opt.heat || opt.lvl) {
+            const sta = opt.heat ? E.stationFor("chauffer", opt.heat, 0) : E.stationFor(it.r[0], 0, opt.lvl);
+            if (sta) h += '<p class="tiny muted">Station : ' + nav(sta) + "</p>";
+          }
+          if (!owned && !b) {
+            h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') + '<button class="btn small" data-m="chain">⚡ En chaîne</button>' +
+              '<button class="btn small ghost" data-m="tree">🌳</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯</button>') +
+              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Une machine pour ça dans la Fabrique">🏭</button>' : "") + "</div>";
+          }
+        } else {
+          const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
+          if (it.h) h += '<div class="riddle small">« ' + esc(it.h) + " »</div>";
+          h += '<p class="small muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · " + n + " matière" + (n > 1 ? "s" : "") + (lvl >= 2 ? " dont " + nav(big) : "") + "</p>";
+          const m = E.memory();
+          if (m && m.id === id) h += memoryHTML(m);
+          h += '<div class="row wrap"><button class="btn small" data-m="hint"' + (st.intu < E.hintCost(id) ? " disabled" : "") + ">💡 Indice · ✨" + E.hintCost(id) + "</button></div>";
+        }
+      }
+      const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] !== undefined);
+      const ku = uses.filter((k) => st.known[k]), unk = uses.length - ku.length;
+      if (uses.length) {
+        h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + ku.map((k) => nav(k)).join("") +
+          (unk ? '<span class="tiny muted">' + (ku.length ? "et " : "") + unk + " recette" + (unk > 1 ? "s" : "") + " encore inconnue" + (unk > 1 ? "s" : "") + "</span>" : "") + "</div>";
+      }
     }
-    if (!it.r) { openItemInfo(id); return; }
-    const visible = visibleRecipes().includes(id) || (it.sec && S().known[id]);
-    if (!visible) { toast("Cette recette appartient à un âge que tu n’as pas encore atteint."); return; }
+    const back = U.rstack.length > 1;
+    h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : "") +
+      (it.r && known ? '<button class="btn ghost" data-m="carnet">📖 Carnet</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
+    const redraw = () => { if (U.mcur && U.mcur.rec) swapModal(recipeModal()); };
+    return {
+      rec: true,
+      html: h,
+      onClose: () => { U.rstack = []; },
+      on: {
+        nav: (b) => { recipeNav(b.dataset.id); return true; },
+        back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
+        zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => setTab("terres"), 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
+        cr: (b) => { craftFrom(b); redraw(); return true; },
+        chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
+        tree: () => { setTimeout(() => openTree(id, 1), 60); },
+        track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (voir les Terres)"); redraw(); return true; },
+        pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
+        hint: () => { if (E.revealHint(id)) { A.discover(); if (S().known[id]) toast("Recette révélée : <b>" + esc(it.n) + "</b>"); } redraw(); return true; },
+        usine: () => { setTimeout(() => buildInUsine(id), 60); },
+        carnet: () => { setTimeout(() => showInCarnet(id), 60); }
+      }
+    };
+  }
+  function showInCarnet(id) {
+    const it = I[id];
     U.q = ""; U.carnetFilter = "tout"; U.openAges[it.a] = true;
     if (E.isUnique(it) && S().made[id] > 0) U.showOwned = true;
     setTab("carnet");
     setTimeout(() => { const el = $('[data-rec="' + id + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); flash(el); } }, 60);
   }
   function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
-
-  function openItemInfo(id) {
-    const it = I[id], st = S();
-    const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] && st.known[k]);
-    const zid = E.RES_ZONE[id];
-    let h = '<div class="row">' + icon(id, "lg") + '<div class="grow"><div class="kicker">' + TYPE[it.t] + "</div><h2 style=\"margin:0\">" + esc(it.n) + "</h2></div></div>" +
-      '<p class="serif" style="font-size:16px">' + esc(it.d || "") + "</p>" + (fxText(id) ? '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>" : "") +
-      '<p class="small muted">En stock : ' + fmt(st.inv[id] || 0) + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "") + (zid ? " · se récolte : " + esc(zoneName(zid)) : "") + "</p>";
-    if (uses.length) h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + uses.map((k) => '<span class="ing link" data-m="go" data-id="' + k + '">' + icon(k, "sm") + esc(I[k].n) + "</span>").join("") + "</div>";
-    else h += '<p class="small muted">Tu ne connais encore aucune recette qui l’utilise.</p>';
-    openModal({ html: h + '<div class="acts">' + (it.r && st.known[id] ? '<button class="btn" data-m="go" data-id="' + id + '">📖 Recette</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div>',
-      on: { go: (b) => { setTimeout(() => goto(b.dataset.id), 80); } } });
-  }
+  const openItemInfo = (id) => goto(id);
 
   function giveProject(pid) {
     const r = E.contribute(pid);

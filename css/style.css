@@ -582,3 +582,18 @@ body.in-usine #toasts { bottom: auto; top: calc(var(--top) + var(--safe-t) + 54p
 .memory .bar { height: 6px; }
 .memory .bar > i { background: linear-gradient(90deg, #8a7bd8, #c9b8ff); }
 .memory .gain { color: #c9b8ff; }
+
+/* ---------------------------------------------------------------- fiches de recettes */
+.rwin .rdesc { font-size: 15.5px; margin: 10px 0 6px; }
+.rwin .ic.lg.unk { font-size: 26px; }
+.rwin .pinb { align-self: flex-start; }
+.rrow { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.rings { display: flex; flex-direction: column; gap: 5px; }
+.ring { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); text-align: left; font-size: 14px; }
+.ring .go { color: var(--dim); font-size: 18px; line-height: 1; }
+.ring.lack { border-color: color-mix(in srgb, var(--bad) 55%, transparent); }
+.ring.lack .tiny { color: var(--bad); }
+.ring:active { transform: scale(.98); }
+.rwin .ing.link { border: 1px solid var(--line2); background: var(--bg2); border-radius: 999px; padding: 3px 9px 3px 4px; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; margin: 2px 4px 2px 0; }
+.rbtns { margin-top: 10px; gap: 6px; }
+.rwin .acts .btn { flex: 1 1 auto; }
