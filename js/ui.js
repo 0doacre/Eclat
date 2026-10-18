@@ -790,7 +790,7 @@
       const lvl = st.hints[id] || 0;
       if (lvl >= 1) h += '<div class="memo">💭 Le geste : ' + gesteChip(id) + "</div>";
       if (lvl >= 2) { const m = mainIngredient(id); h += '<div class="memo">💭 Une des matières : ' + icon(m, "sm") + " " + esc(I[m].n) + "</div>"; }
-      if (lvl === 0) h += '<div class="tiny dim" style="margin-top:4px">Essaie des combinaisons à l’Atelier. Si tu bloques trop longtemps, tes mains finiront par se souvenir.</div>';
+      h += memoryHTML(E.memory());
     } else {
       const b = E.blocker(id);
       h += '<div class="rl small">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
@@ -800,6 +800,15 @@
     return h + "</div>";
   }
 
+  /* la jauge des souvenirs : elle avance avec chaque combinaison nouvelle essayée */
+  function memoryHTML(m, gain) {
+    if (!m) return "";
+    const f = Math.max(0, Math.min(1, (m.p - m.prev) / (m.next - m.prev)));
+    const what = ["le geste", "une des matières", "la recette entière"][m.lvl] || "";
+    return '<div class="memory"><div class="row between tiny"><span>💭 Souvenirs' + (gain ? ' <b class="gain">' + gain + "</b>" : "") + "</span><span class=\"muted\">prochain : " + what + "</span></div>" +
+      '<div class="bar"><i style="width:' + (f * 100).toFixed(0) + '%"></i></div>' +
+      (gain ? "" : '<div class="tiny dim">Chaque combinaison nouvelle essayée à l’Atelier en réveille, surtout si elle s’approche de ce que tu cherches.</div>') + "</div>";
+  }
   function trackerHTML() {
     const t = S().track;
     if (!t || !I[t.id]) return "";
@@ -966,7 +975,11 @@
         (r.fresh ? '<div class="tiny muted">Recette notée dans le Carnet.</div>' : "") + "</div></div>";
     }
     if (r.kind === "owned") return '<p class="small">Tu possèdes déjà <b>' + esc(I[r.id].n) + "</b>.</p>";
-    if (r.kind === "fail") return thermo(r.temp) + '<p class="small" style="margin-top:8px">' + esc(r.msg) + '</p><p class="tiny muted">' + WHY[r.why] + "</p>";
+    if (r.kind === "fail") {
+      const m = E.memory();
+      return thermo(r.temp) + '<p class="small" style="margin-top:8px">' + esc(r.msg) + '</p><p class="tiny muted">' + WHY[r.why] + "</p>" +
+        (r.mem ? memoryHTML(m, "+" + r.mem) : m && !r.mem ? '<p class="tiny dim">Tu avais déjà essayé ça : rien ne te revient.</p>' : "");
+    }
     return "";
   }
   function craftBtns(id) {
@@ -1613,7 +1626,7 @@
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
       "<p><b>🌲 Terres.</b> Touche une ressource pour la ramasser, garde le doigt dessus pour continuer. Les <b>extracteurs</b> récoltent seuls, même quand le jeu est fermé (jusqu’à 12 h). Les <b>explorations</b> racontent l’histoire du monde. L’<b>objectif</b> en haut dit quoi faire ensuite.</p>" +
-      "<p><b>🔨 Atelier.</b> C’est là que tout se passe. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette. Si tu bloques longtemps, des <b>réminiscences</b> te soufflent la réponse.</p>" +
+      "<p><b>🔨 Atelier.</b> C’est là que tout se passe. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse.</p>" +
       "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme, et l’<b>Intuition ✨</b> paie les indices.</p>" +
       "<p><b>🏭 Fabrique.</b> Ton usine. Pose des machines, une sortie contre la Réserve, et trace des tapis entre les deux. Le bouton ? de l’usine explique le reste.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +

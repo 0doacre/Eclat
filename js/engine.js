@@ -80,7 +80,7 @@
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: {}, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
-      fab: freshFab(), pins: {}, track: null, gt: { id: null, t: 0 },
+      fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {},
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
@@ -497,7 +497,8 @@
       const names = ids.map((i) => item(i).n.toLowerCase());
       const x = names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names[names.length - 1] : names[0];
       const flav = pool[Math.floor(rand() * pool.length)].replace(/\{x\}/g, x);
-      return { kind: "fail", temp: t.temp, why: t.why, msg: flav.charAt(0).toUpperCase() + flav.slice(1) };
+      const mem = remember(g, ids);
+      return { kind: "fail", temp: t.temp, why: t.why, msg: flav.charAt(0).toUpperCase() + flav.slice(1), mem };
     };
 
     /* Thermomètre d’intuition : à quel point la tentative est-elle proche
@@ -707,27 +708,42 @@
       const s = nextStep(ob.id);
       return { ob, step: s.id, why: s.why };
     };
-    /* Réminiscences : indices gratuits et progressifs quand on bloque sur une étape. */
-    let gAcc = 0;
-    function guideTick(dt) {
-      gAcc += dt;
-      if (gAcc < 1) return;
-      const d = gAcc;
-      gAcc = 0;
-      const g = E.guide();
-      if (!g || !g.step || S.known[g.step]) return;
-      if (S.gt.id !== g.step) S.gt = { id: g.step, t: 0 };
-      S.gt.t += d;
-      const lvl = S.hints[g.step] || 0;
+    /* Réminiscences : des indices gratuits et progressifs, gagnés en cherchant.
+     * Chaque combinaison nouvelle essayée à l’Atelier (et qui ne donne rien) fait
+     * remonter des souvenirs sur l’étape en cours ; d’autant plus qu’elle s’en
+     * approche (même geste, ingrédients en commun). Attendre ne donne rien, refaire
+     * le même essai non plus. */
+    function remember(g, ids) {
+      const k = keyOf(g, ids);
+      if (S.tried[k]) return 0;
+      S.tried[k] = 1;
+      const gd = E.guide();
+      if (!gd || !gd.step || S.known[gd.step]) return 0;
+      const it = item(gd.step);
+      let pts = 1;
+      if (it.r[0] === g) pts++;
+      ids.forEach((i) => { if (it.r[1][i] !== undefined) pts++; });
+      if (S.gt.id !== gd.step) S.gt = { id: gd.step, p: 0 };
+      S.gt.p += pts;
+      const lvl = S.hints[gd.step] || 0;
       let target = 0;
-      D.GUIDE.delays.forEach((t, i) => { if (S.gt.t >= t) target = i + 1; });
+      D.GUIDE.tries.forEach((n, i) => { if (S.gt.p >= n) target = i + 1; });
       if (target > lvl) {
-        S.hints[g.step] = target;
-        if (target >= 3) learn(g.step, true);
-        E.emit("guidehint", { id: g.step, lvl: target });
+        S.hints[gd.step] = target;
+        if (target >= 3) learn(gd.step, true);
+        E.emit("guidehint", { id: gd.step, lvl: target });
         E.emit("struct");
       }
+      return pts;
     }
+    /* où en sont les souvenirs de l’étape en cours : { p, next } (points, seuil suivant) */
+    E.memory = function () {
+      const gd = E.guide();
+      if (!gd || !gd.step || S.known[gd.step]) return null;
+      const lvl = S.hints[gd.step] || 0, p = S.gt.id === gd.step ? S.gt.p || 0 : 0;
+      const next = D.GUIDE.tries[lvl];
+      return next === undefined ? null : { id: gd.step, p, prev: lvl ? D.GUIDE.tries[lvl - 1] : 0, next, lvl };
+    };
 
     /* ------------------------------------------------------ explorations */
     E.nextExp = function (zid) {
@@ -1554,7 +1570,6 @@
         S.intuAcc += (c.intu / 60) * dt;
         if (S.intuAcc >= 1) { const k = Math.floor(S.intuAcc); S.intu += k; S.intuAcc -= k; }
       }
-      if (!offline) guideTick(dt);
       S.stats.play += dt;
     }
     E.step = step;
@@ -1643,7 +1658,8 @@
       o.settings = Object.assign({ sound: true, vibe: true }, o.settings);
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
-      o.gt = Object.assign({ id: null, t: 0 }, o.gt);
+      o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
+      if (!o.tried || typeof o.tried !== "object") o.tried = {};
       checkFab(o);
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {

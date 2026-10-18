@@ -858,10 +858,10 @@
     ["forge_stellaire", "Le cœur d’une étoile."]
   ];
 
-  /* Réminiscences de guidage : quand le joueur bloque sur une étape, les mains
-   * des Semeurs précédents guident les siennes (indices gratuits, progressifs). */
+  /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
+   * l’Atelier), les mains des Semeurs précédents guident les siennes. */
   D.GUIDE = {
-    delays: [90, 210, 360],
+    tries: [6, 14, 26], // souvenirs à réunir pour le geste, une matière, puis la recette
     lines: [
       "Tes mains frémissent, comme si elles se souvenaient d’un autre corps. Le geste qu’il te faut : {g}.",
       "Une image te traverse : d’autres mains, avant les tiennes, qui tiennent {i}.",

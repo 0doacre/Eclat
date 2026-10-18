@@ -416,11 +416,26 @@ test("objectifs : un joueur avancé ne retombe pas sur le tutoriel", () => {
   const ob = E.objective();
   assert.ok(ob && ob.i > D.OBJECTIVES.findIndex((o) => Array.isArray(o) && o[0] === "moteur_vapeur"), JSON.stringify(ob));
 });
-test("réminiscences : indices gratuits quand on bloque", () => {
+test("réminiscences : on les gagne en cherchant, pas en attendant", () => {
   const E = mk();
   let hints = [];
   E.on("guidehint", (h) => hints.push(h.lvl));
   for (let i = 0; i < 4000; i++) { T += 100; E.update(); }
+  assert.deepStrictEqual(hints, [], "rester inactif ne débloque rien");
+  // l’étape : un manche (tailler + bois). Chaque essai nouveau rapporte, d’autant plus qu’il s’en approche
+  assert.strictEqual(E.attempt("assembler", ["bois"]).mem, 2, "un ingrédient en commun");
+  assert.strictEqual(E.attempt("assembler", ["bois"]).mem, 0, "le même essai ne rapporte plus");
+  assert.strictEqual(E.attempt("tailler", ["fibre"]).mem, 2, "le bon geste");
+  assert.strictEqual(E.attempt("tresser", ["caillou"]).mem, 1, "un essai sans rapport");
+  E.attempt("assembler", ["bois", "fibre"]);
+  assert.deepStrictEqual(hints, [1], "le geste revient : " + JSON.stringify(E.memory()));
+  assert.deepStrictEqual(E.memory().next, 14);
+  // on continue de chercher : toutes les combinaisons de trois gestes et de quatre matières
+  const mats = ["bois", "fibre", "caillou", "os"], tries = [];
+  for (const g of ["assembler", "tresser", "tailler"]) for (let m = 1; m < 16; m++) tries.push([g, mats.filter((x, i) => m & (1 << i))]);
+  let n = 0;
+  for (const [g, ids] of tries) { if (E.state.known.manche) break; if (E.attempt(g, ids).mem) n++; }
+  assert.ok(n >= 6, "il faut chercher un moment : " + n + " essais");
   assert.deepStrictEqual(hints, [1, 2, 3]);
   assert.ok(E.state.known.manche, "la recette finit par être révélée");
 });
