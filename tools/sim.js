@@ -1,0 +1,257 @@
+#!/usr/bin/env node
+/* Bot de simulation : joue une partie complète avec le vrai moteur et une
+ * horloge virtuelle, pour mesurer le rythme de progression.
+ *   node tools/sim.js [tapsParSeconde=4] [projet=dyson] [graine=1]
+ */
+"use strict";
+const D = require("../js/data.js");
+const { createEngine } = require("../js/engine.js");
+
+const TAPS = Number(process.argv[2] || 4);
+const PROJECT = process.argv[3] || "dyson";
+let seed = Number(process.argv[4] || 1);
+const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+
+let T = 0;
+const E = createEngine({ now: () => T, rand: rnd });
+const S = () => E.state;
+const I = D.ITEMS;
+const MAX_T = 12 * 3600;
+const log = [];
+const ageAt = {};
+E.on("age", (a) => { ageAt[a] = T / 1000; if (process.env.STOP_AGE && a >= Number(process.env.STOP_AGE)) stopNow = true; });
+let stopNow = false;
+const objAt = [];
+const OBJ = new Set(D.OBJECTIVES.map((o) => o[0]));
+E.on("discover", (id) => { if (OBJ.has(id)) objAt.push([id, T / 1000]); });
+const fmtT = (s) => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return (h ? h + "h" : "") + String(m).padStart(h ? 2 : 1, "0") + "m" + String(s % 60).padStart(2, "0") + "s"; };
+
+/* station la moins avancée qui satisfait un besoin de geste/chaleur/niveau */
+function stationFor(g, heat, lvl) {
+  let best = null;
+  for (const id in I) {
+    const it = I[id];
+    if (!it.e || !it.e.st || it.sec) continue;
+    for (const s of it.e.st) {
+      if (s.g !== g) continue;
+      if (heat && (s.heat || 0) < heat) continue;
+      if (lvl && (s.lvl || 1) < lvl) continue;
+      if (!best || it.a < I[best].a) best = id;
+    }
+  }
+  return best;
+}
+
+/* Planifie les besoins pour un ensemble de cibles : déficits de matières
+ * premières et objets bloquants (stations, zones). */
+function plan(targets, fromEmpty) {
+  const avail = fromEmpty ? {} : Object.assign({}, S().inv);
+  const raw = {};
+  const blockers = [];
+  function need(id, qty, depth) {
+    if (depth > 30) return;
+    const have = avail[id] || 0;
+    if (have >= qty - 1e-9) { avail[id] = have - qty; return; }
+    avail[id] = 0;
+    const d = qty - have;
+    const it = I[id];
+    const zid = E.RES_ZONE[id];
+    if (zid && E.zoneOpen(zid)) { raw[id] = (raw[id] || 0) + d; return; }
+    if (it.r) {
+      const [g, ing, out, o = {}] = it.r;
+      if (!E.gesteOK(g) || (o.heat && E.heat() < o.heat) || (o.lvl && E.level(g) < o.lvl)) {
+        const st = g === "accorder" ? null : stationFor(g, o.heat, o.lvl);
+        if (st) blockers.push(st);
+        return;
+      }
+      if (E.isUnique(it) && S().made[id] > 0) return;
+      const crafts = it.t === "ext" || it.t === "auto" ? 1 : Math.ceil(d / out);
+      const cost = it.t === "ext" || it.t === "auto" ? E.costFor(id) : null;
+      for (const i in ing) need(i, cost ? cost[i] : ing[i] * crafts, depth + 1);
+      return;
+    }
+    if (zid) { blockers.push(E.ZONES[zid].req); return; }
+    blockers.push(id);
+  }
+  for (const id in targets) need(id, targets[id], 0);
+  return { raw, blockers };
+}
+
+/* Fabrique récursivement ce qui est possible pour approcher la cible. */
+function produce(id, qty, depth) {
+  depth = depth || 0;
+  if (depth > 30) return;
+  const it = I[id];
+  if ((S().inv[id] || 0) >= qty - 1e-9) return;
+  if (!it.r) return;
+  const zid = E.RES_ZONE[id];
+  if (zid && E.zoneOpen(zid) && it.t === "res") return;
+  if (E.blocker(id)) return;
+  const unit = it.t === "ext" || it.t === "auto";
+  const crafts = unit ? 1 : Math.ceil((qty - (S().inv[id] || 0)) / it.r[2]);
+  const cost = unit ? E.costFor(id) : null;
+  for (const i in it.r[1]) produce(i, cost ? cost[i] : it.r[1][i] * crafts, depth + 1);
+  const n = Math.min(crafts, E.maxCraftable(id, crafts));
+  if (n > 0) E.craft(id, n, true);
+}
+
+function tapsCost(raw) {
+  let t = 0;
+  for (const r in raw) t += raw[r] / E.tapYield(r, E.RES_ZONE[r]);
+  return t;
+}
+
+/* Valeur (en « tapes économisées par seconde ») d’un investissement. */
+function benefit(id, deficit) {
+  const it = I[id], c = E.cache();
+  let b = 0;
+  const e = it.e || {};
+  if (it.t === "ext") {
+    const m = (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
+    for (const r in it.p) {
+      const w = deficit[r] ? 1 : 0.25;
+      b += (it.p[r] * m / E.tapYield(r, E.RES_ZONE[r])) * w;
+    }
+  }
+  if (e.auto) {
+    for (const r in c.rates) {
+      const z = E.RES_ZONE[r];
+      const mult = (e.auto[z] || 1) * (e.auto["*"] || 1);
+      if (mult > 1) b += (c.rates[r] * (mult - 1)) / E.tapYield(r, z) * (deficit[r] ? 1 : 0.5);
+    }
+  }
+  if (e.tap) {
+    let share = 0, tot = 0;
+    for (const r in deficit) {
+      const z = E.RES_ZONE[r];
+      const mult = (e.tap[r] || 1) * (e.tap[z] || 1) * (e.tap["*"] || 1);
+      tot += deficit[r];
+      if (mult > 1) share += deficit[r] * (mult - 1);
+    }
+    if (tot > 0) b += TAPS * share / tot;
+  }
+  return b;
+}
+
+let interim = null;
+let interimBase = 0;
+let lastEval = -1e9;
+let projDone = false;
+let endT = null;
+
+function currentTargets() {
+  if (interim) return { [interim]: E.isUnique(I[interim]) ? 1 : (S().inv[interim] || 0) + 1 };
+  const ob = E.objective();
+  if (ob) return { [ob.id]: 1 };
+  const ps = E.projState(PROJECT);
+  const st = D.PROJECTS[PROJECT].steps[ps.step];
+  if (!st) return null;
+  if (st.fire) { E.fire(PROJECT); return null; }
+  if (st.melody) { st.melody && D.MELODIES[st.melody].notes.forEach((n) => E.playNote(n)); return null; }
+  const t = {};
+  for (const i in st.cost) {
+    const left = st.cost[i] - (ps.paid[i] || 0);
+    if (left > 0) t[i] = Math.min(left, I[i].t === "res" ? 1e9 : 50);
+  }
+  return t;
+}
+
+E.on("ending", (r) => { projDone = true; endT = T / 1000; log.push(fmtT(T / 1000) + "  ★ FIN : " + D.ENDINGS[r.id].n); });
+
+function considerInvest(deficit, goalTaps) {
+  // un joueur humain construit toujours au moins deux exemplaires de chaque extracteur disponible
+  for (const id in I) {
+    const it = I[id];
+    if (it.t !== "ext" || it.a > S().age || !E.zoneOpen(it.z) || (S().inv[id] || 0) >= 2) continue;
+    const p = plan({ [id]: (S().inv[id] || 0) + 1 });
+    if (p.blockers.length) continue;
+    interim = id; interimBase = S().inv[id] || 0; return;
+  }
+  if (goalTaps < 40) return;
+  let best = null;
+  for (const id in I) {
+    const it = I[id];
+    if (!it.r || it.sec || it.path) continue;
+    if (!(it.t === "ext" || it.t === "upg" || (it.t === "tool" && it.e && it.e.tap))) continue;
+    if (E.isUnique(it) && S().made[id] > 0) continue;
+    if (it.t === "ext" && !E.zoneOpen(it.z)) continue;
+    if (it.a > S().age) continue;
+    const p = plan({ [id]: 1 });
+    if (p.blockers.length) continue;
+    const full = plan({ [id]: 1 }, true);
+    if (full.blockers.length) continue;
+    const cost = tapsCost(full.raw);
+    const b = benefit(id, deficit);
+    if (b <= 0) continue;
+    const payback = cost / b;
+    if (payback < 400 && (!best || payback < best.pb)) best = { id, pb: payback };
+  }
+  if (best) { interim = best.id; interimBase = S().inv[best.id] || 0; }
+}
+
+for (T = 0; T < MAX_T * 1000 && !projDone && !stopNow; T += 1000) {
+  E.update();
+  // explorations
+  if (!S().exp.active) for (const z of E.openZones()) {
+    const n = E.nextExp(z.id);
+    if (n && !n.locked) {
+      if (n.x.cost) for (const i in n.x.cost) produce(i, n.x.cost[i]);
+      if (E.startExp(z.id).ok) break;
+    }
+  }
+  if (interim && ((E.isUnique(I[interim]) && S().made[interim] > 0) || (!E.isUnique(I[interim]) && interimBase < (S().inv[interim] || 0)))) interim = null;
+  let targets = currentTargets();
+  if (!targets) continue;
+  // contribuer au projet
+  if (!E.objective() && !interim) E.contribute(PROJECT);
+  let p = plan(targets);
+  let guard = 0;
+  while (p.blockers.length && guard++ < 10) {
+    const b = p.blockers[0];
+    if (!b || (S().made[b] > 0 && E.isUnique(I[b]))) break;
+    targets = { [b]: 1 };
+    p = plan(targets);
+  }
+  for (const id in targets) produce(id, targets[id]);
+  p = plan(targets);
+  if (T - lastEval > 10000) {
+    lastEval = T;
+    if (!interim) considerInvest(p.raw, tapsCost(p.raw));
+  }
+  // tapes
+  const raws = Object.keys(p.raw);
+  for (let k = 0; k < TAPS && raws.length; k++) {
+    let best = null, bs = -1;
+    for (const r of raws) {
+      const left = p.raw[r] - E.rate(r) * 20;
+      const sc = left / E.tapYield(r, E.RES_ZONE[r]);
+      if (sc > bs) { bs = sc; best = r; }
+    }
+    if (best && bs > 0) { const g = E.tap(best); p.raw[best] -= g; }
+  }
+  for (const id in targets) produce(id, targets[id]);
+}
+
+if (process.env.DUMP) {
+  S().introSeen = true;
+  S().t = Date.now();
+  require("fs").writeFileSync(process.env.DUMP, E.serialize());
+}
+console.log("Simulation : " + TAPS + " tapes/s, projet " + PROJECT);
+for (let a = 1; a < D.AGES.length; a++) {
+  const prev = a === 1 ? 0 : ageAt[a - 1] || 0;
+  if (ageAt[a] !== undefined) console.log("  " + D.AGES[a].n.padEnd(24) + fmtT(ageAt[a]).padStart(10) + "   (+" + fmtT(ageAt[a] - prev) + ")");
+}
+if (process.env.OBJ) { let prev = 0; objAt.forEach(([id, t]) => { console.log("    · " + id.padEnd(18) + fmtT(t).padStart(10) + "  (+" + fmtT(t - prev) + ")"); prev = t; }); }
+log.forEach((l) => console.log("  " + l));
+if (!projDone) {
+  console.log("  ✗ pas de fin après " + fmtT(T / 1000) + ". Objectif : " + JSON.stringify(E.objective()) + " intérim : " + interim);
+  const ps = E.projState(PROJECT);
+  console.log("  étape projet : " + ps.step + " payé " + JSON.stringify(ps.paid));
+  const tg = currentTargets();
+  console.log("  cibles : " + JSON.stringify(tg) + " plan : " + JSON.stringify(plan(tg || {})));
+}
+const exts = Object.keys(I).filter((id) => I[id].t === "ext" && S().inv[id] > 0).map((id) => id + "×" + S().inv[id]);
+console.log("  extracteurs : " + exts.join(", "));
+console.log("  production/s : " + Object.entries(E.cache().rates).map(([r, v]) => r + " " + v.toFixed(1)).join(", "));
+console.log("  fabrications : " + S().stats.crafts + " · tapes : " + S().stats.taps + " · fragments : " + Object.keys(S().frags).length);

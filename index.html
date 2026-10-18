@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0f0c0a">
+  <meta name="description" content="Éclat — un jeu de craft du silex aux étoiles. Découvre les recettes par le geste, traverse les âges, perce le secret de l’étoile rouge.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Éclat">
+  <title>Éclat — du silex aux étoiles</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="top">
+      <div class="age"><span id="ageName">Âge du Bois</span><small id="ageNum">Âge 1/13</small></div>
+      <div class="top-right">
+        <button id="expMini" class="exp-mini hidden" aria-label="Exploration en cours"></button>
+        <button id="intuBtn" class="chip intu" aria-label="Intuition">✨ <b id="intu">0</b></button>
+        <button id="menuBtn" class="icon-btn" aria-label="Menu">☰</button>
+      </div>
+    </header>
+    <main id="views">
+      <section id="v-terres" class="view"></section>
+      <section id="v-atelier" class="view"></section>
+      <section id="v-carnet" class="view"></section>
+      <section id="v-journal" class="view"></section>
+      <section id="v-cosmos" class="view"></section>
+    </main>
+    <nav id="tabs">
+      <button data-tab="terres">🌲<span>Terres</span></button>
+      <button data-tab="atelier">🔨<span>Atelier</span></button>
+      <button data-tab="carnet">📖<span>Carnet</span></button>
+      <button data-tab="journal">📜<span>Journal</span></button>
+      <button data-tab="cosmos" class="hidden">🔭<span>Cosmos</span></button>
+    </nav>
+  </div>
+  <div id="modal" class="modal hidden"><div class="modal-box" role="dialog" aria-modal="true"></div></div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="fx"></div>
+  <noscript><p style="padding:20px">Éclat a besoin de JavaScript pour fonctionner.</p></noscript>
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/sky.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
