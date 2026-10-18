@@ -22,6 +22,7 @@ function force(E, id, n) {
   const r = E.craft(id, n || 1);
   assert.ok(r.ok, "fabrication de " + id + " : " + JSON.stringify(r));
 }
+const run = (E, s) => { for (let i = 0; i < s * 10; i++) { T += 100; E.update(); } };
 function stations(E, list) { list.forEach((s) => { E.add(s, 1); E.state.made[s] = 1; }); E.recalc(); }
 
 console.log("Moteur");
@@ -68,14 +69,83 @@ test("objets uniques et zones", () => {
   assert.ok(E.zoneOpen("plaine"));
   assert.strictEqual(E.craft("epieu").why, "owned");
 });
-test("extracteurs : coût croissant et production", () => {
+/* pose une cabane sur le gisement de bois de la Lisière et la relie à la Réserve */
+function cabane(E) {
+  const d = E.deposits().find((x) => x.res === "bois");
+  assert.ok(E.fabPlaceExt(d.x, d.y, "cabane").ok);
+  assert.ok(E.fabLink(d.x, d.y).ok);
+  return E.fabCell(d.x, d.y);
+}
+test("extracteurs : coût croissant, posés sur un gisement, reliés à la Réserve", () => {
   const E = mk();
   const c0 = E.costFor("cabane").fibre;
   force(E, "cabane");
   assert.ok(E.costFor("cabane").fibre > c0);
   const b = E.count("bois");
   T += 4000; E.update();
-  assert.ok(E.count("bois") > b + 1.5, "la cabane produit");
+  assert.strictEqual(E.count("bois"), b, "rangée dans le stock, une cabane ne récolte rien");
+  const d = E.deposits().find((x) => x.res === "bois");
+  E.fabPlaceExt(d.x, d.y, "cabane");
+  const e = E.fabCell(d.x, d.y);
+  T += 1000; E.update();
+  assert.strictEqual(E.machInfo(e.id).s, "noout", "rien ne sort sans tapis");
+  assert.ok(E.fabLink(d.x, d.y).ok);
+  T += 100; E.update();
+  const b1 = E.count("bois");
+  T += 4000; E.update();
+  assert.ok(Math.abs(E.count("bois") - b1 - 4 * 1.2) < 0.01, "une cabane sur le bois : 0,4 × 3 matières = 1,2/s");
+  assert.ok(E.state.flags.extDone);
+  assert.ok(Math.abs(E.rate("bois") - 1.2) < 1e-9);
+});
+test("gisements : récolte à la main, règles de pose", () => {
+  const E = mk();
+  const ds = E.deposits();
+  assert.deepStrictEqual(ds.map((d) => d.res).sort(), ["bois", "caillou", "charbon", "fibre"], "la Lisière seule au départ");
+  const bois = ds.find((d) => d.res === "bois"), charbon = ds.find((d) => d.res === "charbon");
+  assert.strictEqual(E.tapDeposit(bois.x, bois.y), 1);
+  assert.strictEqual(E.count("bois"), 1);
+  assert.strictEqual(E.tapDeposit(charbon.x, charbon.y), 0, "le charbon ne se ramasse pas à la main");
+  assert.strictEqual(E.fabExtWhy(bois.x, bois.y, "cabane"), "noext");
+  E.add("cabane", 2); E.add("charbonniere", 1);
+  assert.strictEqual(E.fabExtWhy(bois.x, bois.y, "charbonniere"), "wrongext");
+  assert.strictEqual(E.fabExtWhy(0, 4, "cabane"), "nodep");
+  assert.ok(E.fabPlaceExt(charbon.x, charbon.y, "charbonniere").ok);
+  const e = E.fabPlaceExt(bois.x, bois.y, "cabane").e;
+  E.fabSetExt(e.id, "cabane", 5);
+  assert.strictEqual(e.u.cabane, 2, "pas plus que les cabanes possédées");
+  assert.strictEqual(E.extUnits().cabane.used, 2);
+  E.state.zones.plaine = true;
+  assert.ok(E.deposits().some((d) => d.res === "os"), "chaque terre ouverte apporte sa parcelle");
+  assert.ok(E.fabR() >= 12, "la carte s’agrandit");
+});
+test("le tracé automatique évite les gisements et rejoint un tapis existant", () => {
+  const E = mk();
+  E.add("cabane", 2);
+  const ds = E.deposits(), bois = ds.find((d) => d.res === "bois"), fibre = ds.find((d) => d.res === "fibre");
+  E.fabPlaceExt(bois.x, bois.y, "cabane");
+  const r1 = E.fabLink(bois.x, bois.y);
+  assert.ok(r1.ok && r1.n > 0);
+  for (const k in E.state.fab.c) { const [x, y] = k.split(",").map(Number); if (E.state.fab.c[k].k === "belt") assert.ok(!E.deposit(x, y), "pas de tapis sur un gisement"); }
+  E.fabPlaceExt(fibre.x, fibre.y, "cabane");
+  const before = Object.keys(E.state.fab.c).length;
+  assert.ok(E.fabLink(fibre.x, fibre.y).ok);
+  const g = E.fabGraph();
+  assert.ok(g.prods[E.fabCell(fibre.x, fibre.y).id].t.res, "la fibre arrive à la Réserve");
+  assert.ok(Object.keys(E.state.fab.c).length - before <= r1.n, "le second tracé profite du premier");
+});
+test("un extracteur nourrit directement une machine", () => {
+  const E = mk();
+  E.add("cabane", 1); E.add("automate_bois", 1); E.state.known.manche = true;
+  const bois = E.deposits().find((d) => d.res === "bois");
+  E.fabPlaceExt(bois.x, bois.y, "cabane");
+  E.fabSetExt(E.fabCell(bois.x, bois.y).id, "cabane", 1);
+  // le tapis descend de la case du bois et passe contre l’automate avant la Réserve
+  E.fabDraw([{ x: bois.x, y: bois.y + 1, d: 1 }, { x: bois.x, y: bois.y + 2, d: 1 }, { x: bois.x, y: bois.y + 3, d: 1 }, { x: bois.x, y: bois.y + 4, d: 0 }, { x: bois.x + 1, y: bois.y + 4, d: 0 }, { x: bois.x + 2, y: bois.y + 4, d: 1 }, { x: bois.x + 2, y: bois.y + 5, d: 1 }]);
+  E.fabSet(E.fabCell(bois.x, bois.y).id, { d: 1 });
+  const m = E.fabPlace("mach", bois.x + 1, bois.y + 2, { m: "automate_bois", r: "manche", d: 2 }).e;
+  run(E, 60);
+  assert.ok(E.state.made.manche >= 5, "des manches, sans passer par le stock : " + E.state.made.manche);
+  assert.ok(E.fabDrain().some((f) => f.to === m.id && f.i === "bois" && f.from[0] === "X"));
 });
 test("maîtrise : chefs-d’œuvre", () => {
   const E = createEngine({ now: () => T, rand: () => 0 });
@@ -96,12 +166,14 @@ test("explorations : coût, durée, fragment", () => {
 test("hors-ligne : rattrapage plafonné à 12 h", () => {
   const E = mk();
   force(E, "cabane");
+  cabane(E);
+  T += 100; E.update();
   const b = E.count("bois");
   let off = null;
   E.on("offline", (o) => (off = o));
   T += 48 * 3600 * 1000; E.update();
   assert.ok(off && off.dt === 12 * 3600);
-  assert.ok(Math.abs(E.count("bois") - b - 0.4 * 12 * 3600) < 5);
+  assert.ok(Math.abs(E.count("bois") - b - 1.2 * 12 * 3600) < 15, "12 h à 1,2 bois/s : " + (E.count("bois") - b));
 });
 test("sauvegarde : aller-retour et export base64", () => {
   const E = mk();
@@ -115,8 +187,8 @@ test("sauvegarde : aller-retour et export base64", () => {
 
 
 console.log("Sauvegardes (compatibilité)");
-test("les sauvegardes v1 et v2 se chargent sans rien perdre", () => {
-  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[12]/.test(x))) {
+test("les sauvegardes v1, v2 et v3 se chargent sans rien perdre", () => {
+  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[123]/.test(x))) {
     const raw = fixture(f);
     const old = JSON.parse(raw);
     const E = mk();
@@ -128,7 +200,7 @@ test("les sauvegardes v1 et v2 se chargent sans rien perdre", () => {
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
     assert.strictEqual(S.age, old.age); assert.strictEqual(S.intu, old.intu);
     assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
-    assert.strictEqual(S.flags.news, "3", "annonce des nouveautés");
+    assert.strictEqual(S.flags.news, "4", "annonce des nouveautés");
     assert.strictEqual(raw, fixture(f), "la chaîne d’origine n’est pas modifiée");
     T += 5000; E.update(); // le jeu tourne
   }
@@ -162,6 +234,25 @@ test("les lignes v2 deviennent des machines le long d’un tapis", () => {
   assert.ok(E.count("fil_cuivre") > b.fil && E.count("clous") > b.clous && E.count("manche") > b.manche, "tout produit");
   assert.strictEqual(E.machInfo(machs(E).find((e) => e.r === "corde").id).s, "off");
 });
+test("v4 : les extracteurs d’avant sont posés, reliés, et produisent autant", () => {
+  for (const f of ["save-v1-age7.json", "save-v1-age10-chaines.json", "save-v2-age7-fabrique.json", "save-v3-age7-usine.json"]) {
+    const raw = fixture(f), old = JSON.parse(raw);
+    const E = mk();
+    E.load(raw);
+    const S = E.state, info = S.flags.fab4;
+    const owned = E.EXTS.reduce((a, t) => a + Math.floor(old.inv[t] || 0), 0);
+    assert.strictEqual(info.placed, owned, f + " : tous posés");
+    assert.strictEqual(info.linked, info.sites, f + " : tous reliés");
+    // production totale : celle d’avant (extracteurs « tout seuls »), à 10 % près
+    let before = 0;
+    E.EXTS.forEach((t) => { const it = D.ITEMS[t]; for (const r in it.p) before += it.p[r] * Math.floor(old.inv[t] || 0); });
+    let after = 0;
+    for (const k in S.fab.c) { const e = S.fab.c[k]; if (e.k === "ext") for (const t in e.u) after += e.u[t] * E.extRate(t, e.res); }
+    assert.ok(Math.abs(after - before) / before < 0.1, f + " : " + before.toFixed(1) + " → " + after.toFixed(1));
+    run(E, 2);
+    for (const k in S.fab.c) if (S.fab.c[k].k === "ext") assert.strictEqual(E.machInfo(S.fab.c[k].id).s, "ok", f + " : " + k);
+  }
+});
 /* une petite usine : sortie → machine → tapis → Réserve */
 function miniUsine(E, r, m) {
   assert.ok(E.fabPlace("port", 2, 0).ok);
@@ -170,7 +261,6 @@ function miniUsine(E, r, m) {
   E.fabDraw([{ x: 3, y: -1, d: 2 }, { x: 2, y: -1, d: 2 }]);
   return p.e;
 }
-const run = (E, s) => { for (let i = 0; i < s * 10; i++) { T += 100; E.update(); } };
 test("usine : règles de construction", () => {
   const E = mk();
   assert.strictEqual(E.fabPlace("port", 4, 4).why, "port", "une sortie touche la Réserve");
@@ -364,10 +454,11 @@ test("la Lune, sept fois", () => {
 test("flûte : l’Appel des Lucioles augmente la production", () => {
   const E = mk();
   force(E, "cabane");
-  const r0 = E.rate("bois");
+  const e = cabane(E);
+  const r0 = E.extOut(e);
   [2, 2, 3, 1, 5, 2, 4].forEach((n) => E.playNote(n));
   assert.ok(E.state.flags.lucioles);
-  assert.ok(Math.abs(E.rate("bois") - r0 * 1.25) < 1e-9);
+  assert.ok(Math.abs(E.extOut(e) - r0 * 1.25) < 1e-9);
 });
 
 console.log("Chemin caché — Le Chant");

@@ -574,3 +574,7 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
 .vs .card { margin: 0; padding: 10px; }
 .warnc { border-color: var(--intu); }
+.warnline { margin-top: 8px; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--intu) 14%, var(--panel)); border: 1px solid color-mix(in srgb, var(--intu) 45%, transparent); cursor: pointer; }
+.u-exts .u-row { margin-top: 6px; flex-wrap: nowrap; }
+.u-exts .u-row .grow { min-width: 0; }
+body.in-usine #toasts { bottom: auto; top: calc(var(--top) + var(--safe-t) + 54px); }

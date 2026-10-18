@@ -807,13 +807,15 @@
 
   /* ----------------------------------------------------------- OBJECTIFS */
   /* Un objectif est soit [objet, texte] (le fabriquer), soit une action :
-   * { k: "exp", z: zone, x: exploration } ou { k: "line" } (faire tourner une machine de l’Usine). */
+   * { k: "exp", z: zone, x: exploration }, { k: "ext" } (poser et relier un extracteur)
+   * ou { k: "line" } (faire tourner une machine). */
   D.OBJECTIVES = [
     ["manche", "Tes mains cherchent un outil. Récolte du bois, puis taille-le à l’Atelier."],
     ["corde", "Il te faudrait de quoi lier les choses entre elles."],
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Ce chêne immense t’attire. Lance une exploration depuis la Lisière : elle avance toute seule pendant que tu fais autre chose." },
     ["feu", "La nuit tombe vite. Fais du feu."],
     ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi, même quand le jeu est fermé."],
+    { k: "ext", n: "Installer ta cabane", txt: "Dans la Fabrique, pose ta cabane sur une case de la Lisière, puis trace un tapis jusqu’à la Réserve. Elle récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],

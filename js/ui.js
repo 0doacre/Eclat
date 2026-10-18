@@ -215,7 +215,7 @@
       '<div class="acts"><button class="btn pri" data-m="close">' + (btn || "Continuer") + "</button></div>" });
   }
   const Scenes = window.EclatScenes;
-  const Usine = window.EclatUsine.create({ E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat });
+  const Usine = window.EclatUsine.create({ E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater });
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
   /* ============================================================ SAUVEGARDES
@@ -366,12 +366,14 @@
     openModal({
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
+        (st.flags.fab4 && st.flags.fab4.placed ? '<p class="small">⛏️ Tes extracteurs travaillent maintenant sur les gisements de la Fabrique. Les ' + st.flags.fab4.placed + " que tu avais y ont été posés" +
+          (st.flags.fab4.linked === st.flags.fab4.sites ? ", et reliés à la Réserve par des tapis. Ta production continue." : ". Certains n’ont pas pu être reliés à la Réserve : ouvre la Fabrique pour tracer leurs tapis.") + "</p>" : "") +
         (st.flags.fab3 && st.flags.fab3.placed ? '<p class="small">🏭 Tes ' + (st.flags.fab3.placed > 1 ? st.flags.fab3.placed + " lignes de production sont devenues autant de machines, posées" : "ligne de production est devenue une machine, posée") +
           " autour de la Réserve le long d’un tapis. Tout tourne comme avant." + (st.flags.fab3.left ? " " + st.flags.fab3.left + " n’ont pas trouvé de place : leurs machines t’attendent dans l’usine." : "") + "</p>" : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
       on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
-      onClose: () => { st.flags.news = null; delete st.flags.fab3; save(); }
+      onClose: () => { st.flags.news = null; delete st.flags.fab3; delete st.flags.fab4; save(); }
     });
   }
 
@@ -606,6 +608,7 @@
     if (U.tab === "fabrique" && t !== "fabrique") { Usine.unmount(); $("#v-fabrique").innerHTML = ""; }
     U.tab = t;
     $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + t));
+    document.body.classList.toggle("in-usine", t === "fabrique");
     $$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === t));
     if (U.badges[t]) { U.badges[t] = false; updateBadges(); }
     if (t === "journal" || t === "carnet") A.page();
@@ -696,11 +699,11 @@
     const st = S(), spots = Scenes.spots(z.res.length);
     const night = !Scenes.isNightless(z.id) && Scenes.daypart(new Date().getHours()) === "night";
     let h = '<div class="scene z-' + z.id + (night ? " night" : "") + '">' + Scenes.backdrop(z.id);
-    // les extracteurs, sur l’horizon
-    const exts = Object.keys(I).filter((id) => I[id].t === "ext" && I[id].z === z.id && (st.inv[id] || 0) > 0);
+    // les extracteurs posés dans cette terre, sur l’horizon
+    const placed = placedIn(z.id), exts = Object.keys(placed);
     exts.forEach((id, i) => {
       const x = exts.length === 1 ? 14 : 8 + (i * 84) / Math.max(1, exts.length - 1);
-      h += '<button class="ext-spr" data-goto="' + id + '" style="left:' + x.toFixed(1) + "%;animation-delay:" + (-i * 0.7).toFixed(1) + 's" title="' + esc(I[id].n) + '">' + icon(id) + "<b>×" + st.inv[id] + "</b></button>";
+      h += '<button class="ext-spr" data-gotab="fabrique" style="left:' + x.toFixed(1) + "%;animation-delay:" + (-i * 0.7).toFixed(1) + 's" title="' + esc(I[id].n) + '">' + icon(id) + "<b>×" + placed[id] + "</b></button>";
     });
     // les ressources
     z.res.forEach((r, i) => {
@@ -720,12 +723,25 @@
     }
     return h + '<div class="zname">' + esc(z.n) + "</div></div>";
   }
+  /* extracteurs posés sur les gisements d’une terre : type → nombre */
+  function placedIn(zid) {
+    const out = {}, c = S().fab.c;
+    for (const k in c) {
+      const e = c[k];
+      if (e.k !== "ext") continue;
+      const i = k.indexOf(","), d = E.deposit(+k.slice(0, i), +k.slice(i + 1));
+      if (d && d.z === zid) for (const t in e.u) out[t] = (out[t] || 0) + e.u[t];
+    }
+    return out;
+  }
   function zoneInfo(z) {
     const st = S();
     let h = '<div class="card zone-info"><div class="zd">' + esc(z.d) + "</div>";
-    const exts = Object.keys(I).filter((id) => I[id].t === "ext" && I[id].z === z.id && (st.inv[id] || 0) > 0);
-    if (exts.length) h += '<div class="ext-line">' + exts.map((id) => '<span class="x" data-goto="' + id + '">' + icon(id, "sm") + esc(I[id].n) + " ×" + st.inv[id] + "</span>").join("") + "</div>";
-    else if (z.id === "lisiere" && !st.known.cabane) h += '<div class="tiny dim" style="margin-top:6px">Rien ne récolte encore à ta place ici.</div>';
+    const placed = placedIn(z.id), exts = Object.keys(placed), us = E.extUnits();
+    const waiting = Object.keys(us).filter((t) => I[t].z === z.id && us[t].own > us[t].used);
+    if (exts.length) h += '<div class="ext-line">' + exts.map((id) => '<span class="x" data-goto="' + id + '">' + icon(id, "sm") + esc(I[id].n) + " ×" + placed[id] + "</span>").join("") + "</div>";
+    else if (!waiting.length) h += '<div class="tiny dim" style="margin-top:6px">Rien ne récolte encore à ta place ici.</div>';
+    if (waiting.length) h += '<div class="small warnline" data-gotab="fabrique">⛏️ ' + waiting.map((t) => (us[t].own - us[t].used) + " " + esc(I[t].n)).join(", ") + " à poser sur les gisements de la Fabrique.</div>";
     h += expBlock(z);
     return h + "</div>";
   }
@@ -738,10 +754,10 @@
     }
     const ob = g.ob;
     const open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
-    const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : esc(I[ob.id].n);
+    const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : ob.k === "ext" ? "⛏️ " + esc(ob.n) : esc(I[ob.id].n);
     let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>";
     if (!open) {
-      if (ob.k !== "exp" && ob.k !== "line" && g.step !== ob.id) {
+      if (ob.k === "craft" && g.step !== ob.id) {
         const sit = I[g.step];
         h += '<div class="gstep small"><span class="muted">' + (WHY_STEP[g.why] || "Prochaine étape :").replace(" :", "") + "</span> " + (st.known[g.step] ? icon(g.step, "sm") : '<span class="ic sm unk">?</span>') +
           ' <b class="link-txt" data-goto="' + g.step + '">' + esc(sit.n) + "</b></div>";
@@ -753,8 +769,8 @@
       h += '<div class="name">🧭 ' + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>";
       if (n && !n.locked && !st.exp.active) h += '<button class="btn small pri" style="margin-top:8px" data-exp="' + ob.z + '">Explorer</button>';
       else if (st.exp.active) h += '<div class="tiny muted" style="margin-top:6px">Une exploration est déjà en cours.</div>';
-    } else if (ob.k === "line") {
-      h += '<div class="name">🏭 ' + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
+    } else if (ob.k === "line" || ob.k === "ext") {
+      h += '<div class="name">' + (ob.k === "ext" ? "⛏️ " : "🏭 ") + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
         '<button class="btn small pri" style="margin-top:8px" data-gotab="fabrique">Ouvrir la Fabrique</button>';
     } else {
       const it = I[ob.id];
@@ -1716,6 +1732,10 @@
     });
     E.on("crafted", (id) => {
       if (E.cache().pip && (id === "pip" || Math.random() < 0.3)) setTimeout(() => A.pip(), 250);
+      if (I[id] && I[id].t === "ext") {
+        badge("fabrique");
+        setTimeout(() => toast("⛏️ <b>" + esc(I[id].n) + "</b> : pose-la sur un gisement de la Fabrique pour qu’elle récolte."), 900);
+      }
     });
     E.on("decoded", () => {
       setTimeout(() => {

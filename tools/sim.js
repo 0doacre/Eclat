@@ -92,7 +92,11 @@ function produce(id, qty, depth) {
   const cost = unit ? E.costFor(id) : null;
   for (const i in it.r[1]) produce(i, cost ? cost[i] : it.r[1][i] * crafts, depth + 1);
   const n = Math.min(crafts, E.maxCraftable(id, crafts));
-  if (n > 0) E.craft(id, n, true);
+  if (n > 0) {
+    E.craft(id, n, true);
+    // un extracteur ne travaille que posé sur un gisement et relié à la Réserve
+    if (it.t === "ext") for (let k = 0; k < n; k++) E.fabAutoExt(id);
+  }
 }
 
 function tapsCost(raw) {
@@ -114,10 +118,12 @@ function benefit(id, deficit) {
     }
   }
   if (e.auto) {
-    for (const r in c.rates) {
+    const rates = {};
+    for (const r in E.RES_ZONE) if (E.rate(r) > 0) rates[r] = E.rate(r);
+    for (const r in rates) {
       const z = E.RES_ZONE[r];
       const mult = (e.auto[z] || 1) * (e.auto["*"] || 1);
-      if (mult > 1) b += (c.rates[r] * (mult - 1)) / E.tapYield(r, z) * (deficit[r] ? 1 : 0.5);
+      if (mult > 1) b += (rates[r] * (mult - 1)) / E.tapYield(r, z) * (deficit[r] ? 1 : 0.5);
     }
   }
   if (e.tap) {
@@ -143,12 +149,17 @@ function currentTargets() {
   if (interim) return { [interim]: E.isUnique(I[interim]) ? 1 : (S().inv[interim] || 0) + 1 };
   const ob = E.objective();
   if (ob && ob.k === "exp") return null; // les explorations sont lancées à chaque tour
+  if (ob && ob.k === "ext") { if (S().inv.cabane >= 1 && !Object.values(S().fab.c).some((e) => e.k === "ext")) E.fabAutoExt("cabane"); return { bois: (S().inv.bois || 0) + 1 }; }
   if (ob && ob.k === "line") {
     // une petite usine : sortie → automate → tapis → Réserve
-    if (!E.fabCell(3, 0)) {
-      E.fabPlace("port", 2, 0);
-      E.fabPlace("mach", 3, 0, { m: "automate_bois", r: "manche", d: 3 });
-      E.fabDraw([{ x: 3, y: -1, d: 2 }, { x: 2, y: -1, d: 2 }]);
+    if (!Object.values(S().fab.c).some((e) => e.k === "mach")) {
+      for (const [x, y, d] of [[2, 0, 0], [-2, 0, 2], [0, 2, 1], [0, -2, 3], [2, 1, 0], [-2, 1, 2], [1, 2, 1], [-1, -2, 3]]) {
+        if (E.fabCell(x, y) || E.fabCell(x + E.DX[d], y + E.DY[d])) continue;
+        E.fabPlace("port", x, y, { d });
+        E.fabPlace("mach", x + E.DX[d], y + E.DY[d], { m: "automate_bois", r: "manche", d });
+        E.fabLink(x + E.DX[d], y + E.DY[d]);
+        break;
+      }
     }
     return { bois: (S().inv.bois || 0) + 3 };
   }
@@ -263,5 +274,5 @@ if (!projDone) {
 }
 const exts = Object.keys(I).filter((id) => I[id].t === "ext" && S().inv[id] > 0).map((id) => id + "×" + S().inv[id]);
 console.log("  extracteurs : " + exts.join(", "));
-console.log("  production/s : " + Object.entries(E.cache().rates).map(([r, v]) => r + " " + v.toFixed(1)).join(", "));
+console.log("  production/s : " + Object.keys(E.RES_ZONE).concat(["charbon"]).filter((r, i, a) => a.indexOf(r) === i && E.rate(r) > 0).map((r) => r + " " + E.rate(r).toFixed(1)).join(", "));
 console.log("  fabrications : " + S().stats.crafts + " · tapes : " + S().stats.taps + " · fragments : " + Object.keys(S().frags).length);
