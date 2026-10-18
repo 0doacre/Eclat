@@ -633,12 +633,17 @@
      * machines ne peuvent plus les prendre) et rendues si on annule. Les sous-composants
      * d’une fabrication en chaîne restent sur l’établi jusqu’à l’étape qui s’en sert. */
     const H = D.HAND;
+    /* une pièce seule ; les gestes d’un âge passé vont plus vite */
     function handTime(id) {
       const it = item(id);
       const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
-      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k;
+      const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old;
     }
     E.handTime = handTime;
+    /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
+    const stepTime = (id, n) => handTime(id) * Math.pow(n, H.batch);
+    E.batchTime = stepTime;
     /* pièces de `id` encore à faire dans la file */
     function queued(id) {
       let n = 0;
@@ -646,9 +651,10 @@
       return n;
     }
     E.queued = queued;
+    /* temps restant ; pour la première de la file, S.hand.p est le temps déjà passé sur l’étape en cours */
     function jobTime(j, first) {
       let t = 0;
-      j.s.forEach((s, i) => { if (i >= j.i) t += (s[1] - (i === j.i ? j.k : 0)) * handTime(s[0]); });
+      j.s.forEach((s, i) => { if (i >= j.i) t += stepTime(s[0], s[1]); });
       return Math.max(0, t - (first ? S.hand.p : 0));
     }
     /* prend `cost` sur l’établi d’abord, puis dans le stock ; rien s’il manque quelque chose */
@@ -708,7 +714,7 @@
       const jobs = S.hand.q.map((j, n) => {
         const s = j.s[Math.min(j.i, j.s.length - 1)], left = jobTime(j, n === 0);
         t += left;
-        const tot = j.s.reduce((a, x) => a + x[1] * handTime(x[0]), 0);
+        const tot = j.s.reduce((a, x) => a + stepTime(x[0], x[1]), 0);
         return { id: j.id, n: j.s[j.s.length - 1][1], step: s[0], k: j.k, of: s[1], i: j.i, steps: j.s.length, left, at: t, wait: !!j.w, tot };
       });
       return { jobs, left: t, full: S.hand.q.length >= H.max };
@@ -724,21 +730,24 @@
       while (left > 1e-9 && S.hand.q.length && guard++ < 5000) {
         const j = S.hand.q[0];
         if (j.i >= j.s.length) { finishJob(j, offline); continue; }
-        const x = j.s[j.i][0], n = j.s[j.i][1], it = item(x), t = handTime(x);
-        let m = Math.floor((S.hand.p + left) / t + 1e-9);
-        if (m < 1) { S.hand.p += left; return; }
+        const x = j.s[j.i][0], n = j.s[j.i][1], it = item(x), t = handTime(x), total = t * Math.pow(n, H.batch);
+        // la q-ième pièce de l’étape est finie au bout de t × q^batch secondes
+        const p = Math.min(S.hand.p + left, total);
+        const due = (p >= total - 1e-9 ? n : Math.min(n, Math.floor(Math.pow(p / t, 1 / H.batch) + 1e-9))) - j.k;
+        if (due < 1) { left -= p - S.hand.p; S.hand.p = p; continue; }
         // plusieurs pièces d’un coup, sauf pour les objets dont le prix monte à chaque exemplaire
-        m = Math.min(m, n - j.k, isScaled(it) || isUnique(it) ? 1 : Infinity);
+        const m = isScaled(it) || isUnique(it) ? 1 : due;
         const cost = isScaled(it) ? costFor(x, count(x)) : totalCost(x, m);
-        if (blocker(x) && blocker(x).why !== "owned" || !take(cost, j.b)) { j.w = 1; S.hand.p = t; return; }
+        if (blocker(x) && blocker(x).why !== "owned" || !take(cost, j.b)) { j.w = 1; return; }
         j.w = 0;
-        left -= m * t - S.hand.p;
-        S.hand.p = 0;
+        const tm = Math.min(total, t * Math.pow(j.k + m, H.batch));
+        left -= Math.max(0, tm - S.hand.p);
+        S.hand.p = Math.max(S.hand.p, tm);
         const last = j.i === j.s.length - 1;
         const r = makeIt(x, m, offline || !last, last ? null : j.b);
         j.k += m;
         if (!offline) E.emit("handdone", { id: x, n: r.n, bonus: r.bonus, first: r.first, last });
-        if (j.k >= n) { j.i++; j.k = 0; }
+        if (j.k >= n) { j.i++; j.k = 0; S.hand.p = 0; }
         if (j.i >= j.s.length) finishJob(j, offline);
       }
     }

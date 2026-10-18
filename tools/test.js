@@ -550,13 +550,16 @@ test("mains : une pièce après l’autre, matières mises de côté", () => {
   const r = E.queue("manche", 3);
   assert.ok(r.ok);
   assert.strictEqual(E.count("bois"), 11, "le bois est pris dès la mise en file");
-  assert.ok(Math.abs(r.time - 3 * t) < 1e-9);
+  assert.ok(Math.abs(r.time - E.batchTime("manche", 3)) < 1e-9);
+  assert.ok(r.time < 3 * t, "répéter le geste va plus vite");
   E.step(t * 1.5);
   assert.strictEqual(E.count("manche"), 1, "une pièce finie");
   assert.ok(E.cancelJob(0));
   assert.strictEqual(E.count("bois"), 17, "les deux pièces pas faites rendent leur bois");
   assert.strictEqual(E.state.hand.q.length, 0);
   assert.strictEqual(E.queue("manche", 10).why, "qty");
+  E.state.age = 5;
+  assert.ok(Math.abs(E.handTime("manche") - t * Math.pow(D.HAND.old, 5)) < 1e-9, "les gestes anciens vont plus vite");
 });
 test("mains : en chaîne, les sous-composants restent sur l’établi", () => {
   const E = mk();
