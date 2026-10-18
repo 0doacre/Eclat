@@ -23,7 +23,18 @@ Une recette n’est pas une grille : c’est un **geste** appliqué à des **mat
 
 ### La récolte incrémentale
 
-Touche une ressource pour la récolter, maintiens le doigt pour récolter en continu. Les outils multiplient tes récoltes, les **extracteurs** (cabanes, puits, scieries, derricks, stations orbitales, réplicateurs…) produisent tout seuls, et les **améliorations** (moulin, chemin de fer, réseau électrique, robots, fusion…) multiplient la production. La production continue jeu fermé, jusqu’à 12 h. À partir de l’âge du Silicium, les **chaînes d’assemblage** automatisent les recettes.
+Touche une ressource pour la récolter, maintiens le doigt pour récolter en continu. Les outils multiplient tes récoltes, les **extracteurs** (cabanes, puits, scieries, derricks, stations orbitales, réplicateurs…) produisent tout seuls, et les **améliorations** (moulin, brouettes, palan, chemin de fer, réseau électrique, robots, fusion…) multiplient la production. La production continue jeu fermé, jusqu’à 12 h.
+
+### La Fabrique (automatisation des productions)
+
+Dès l’âge de la Pierre, un **Automate de bois** permet de confier une recette à une **ligne de production** : elle la fabrique en continu, même jeu fermé, tant que les matières sont là. Chaque ligne affiche ses entrées, sa machine et sa sortie sur un convoyeur animé ; elle passe au vert quand elle tourne, au rouge quand une matière manque (et dit laquelle). On règle le nombre de machines, le type de machine et un **stock maximal** pour qu’une ligne n’avale pas tout. Les machines s’améliorent d’âge en âge : automate de bois, automate de bronze, presse à vapeur, chaîne d’assemblage, assembleur moléculaire. Courroies, convoyeurs et intelligence artificielle accélèrent toute la Fabrique.
+
+### Confort de jeu
+
+- **⚡ Fabrication en chaîne** : un bouton fabrique un objet *et tous ses sous-composants* (réseau électrique → moteurs → bobines → fils de cuivre), à partir du stock. Le détail 🌳 montre les étapes, ce qui est pris dans le stock et ce qui manque.
+- **🎯 Suivi** : on suit une recette ; les Terres affichent ce qui manque, avec un temps estimé, et mettent en évidence les ressources à récolter.
+- **📖 Carnet** : recherche (par nom ou par ingrédient), épingles ☆ (raccourcis en haut de l’Atelier), objets déjà possédés masqués, chaque ingrédient est cliquable et mène à sa recette.
+- **Objectif guidé** : il indique la *prochaine étape* concrète (la sous-recette inconnue, la station ou la zone qui manque). Si l’on bloque plusieurs minutes, des **réminiscences** soufflent le geste, puis une matière, puis la recette entière.
 
 ### Les treize âges
 
@@ -40,6 +51,14 @@ Chaque terre cache des **explorations** qui rapportent des fragments d’histoir
 Trois fins. Deux sont proposées ouvertement par la voix qui te guide : **la Sphère de Dyson** et **le Brise-Monde**. La troisième ne se trouve qu’en suivant les secrets. Après une fin, tu peux commencer un **nouveau cycle** : tu gardes ton Carnet, tes fragments et tes secrets, et chaque fin accumulée accélère la partie suivante.
 
 > Les solutions complètes (secrets, codes, chemin de la fin cachée) sont dans [`docs/SOLUTIONS.md`](docs/SOLUTIONS.md). **Spoilers.**
+
+## Sauvegardes et mises à jour
+
+- La partie s’enregistre toute seule dans le navigateur. Le menu ☰ → **Sauvegardes** permet de la **télécharger en fichier** (`.json`) et de la recharger, ainsi que d’utiliser l’ancien code texte.
+- Des **copies de sécurité** sont faites automatiquement avant chaque migration, import, restauration, nouveau cycle ou remise à zéro (les 5 dernières sont gardées et téléchargeables).
+- Une sauvegarde illisible n’est **jamais écrasée** : le jeu propose de la télécharger.
+- Les sauvegardes des versions précédentes sont migrées sans perte (testé sur des parties réelles de la version 1, voir `tools/fixtures`).
+- Quand une nouvelle version est publiée, elle s’installe en arrière-plan puis **attend l’accord du joueur** : un bandeau propose de télécharger sa sauvegarde, puis de mettre à jour.
 
 ## Publier avec GitHub Pages
 
@@ -63,14 +82,19 @@ sw.js                 service worker (hors ligne)
 tools/validate.js     vérifie le contenu : références, recettes en double, atteignabilité de chaque objet
 tools/test.js         tests du moteur, dont le chemin secret complet jusqu’à la fin cachée
 tools/sim.js          bot qui joue une partie entière pour mesurer le rythme
+tools/build.js        empreinte de version du service worker (sans elle, les joueurs ne reçoivent pas la mise à jour)
+tools/fixtures/       sauvegardes de la version 1, pour tester la compatibilité
 ```
 
 ```sh
-npm test                       # validation du contenu + tests du moteur
+npm test                       # validation du contenu + tests du moteur + empreinte du service worker
+npm run build                  # recalcule l’empreinte du service worker (à lancer avant chaque publication)
 npm run sim                    # partie simulée, temps d’arrivée à chaque âge
 node tools/sim.js 1 brisemonde # 1 tape/seconde, vise le Brise-Monde
 OBJ=1 node tools/sim.js        # détail des objectifs
 ```
+
+Avant de publier une nouvelle version : `npm run build` puis `npm test`. Si le format de sauvegarde change, augmente `SAVE_VERSION` dans `js/engine.js` et ajoute une étape à `migrate()` ; le test de compatibilité recharge les sauvegardes de `tools/fixtures`.
 
 Pour ajouter une recette, ajoute une entrée dans `js/data.js` (`r: [geste, {ingrédient: quantité}, quantité produite, {heat, lvl}]`), puis lance `npm test` : le validateur signale les recettes en double, les ingrédients inconnus et les objets inatteignables.
 

@@ -8,10 +8,13 @@
 
   const BASE_GESTES = ["assembler", "tresser", "tailler"];
   const UNIQUE = { tool: 1, stat: 1, upg: 1, curio: 1 };
+  const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
   const HINT_COST = [1, 1, 2];
-  const SAVE_VERSION = 1;
+  const SAVE_VERSION = 2;
+  /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
+  const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins"];
 
   const keyOf = (g, ids) => g + "|" + ids.slice().sort().join(",");
 
@@ -28,9 +31,10 @@
   }
   const ZONES = {};
   D.ZONES.forEach((z) => (ZONES[z.id] = z));
-  /* zone(s) d’origine de chaque ressource */
+  /* zone d’origine de chaque ressource */
   const RES_ZONE = {};
   D.ZONES.forEach((z) => z.res.forEach((r) => (RES_ZONE[r] = RES_ZONE[r] || z.id)));
+  const MACHINES = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "mach").sort((a, b) => D.ITEMS[a].spd - D.ITEMS[b].spd);
 
   function freshState(now) {
     return {
@@ -38,7 +42,8 @@
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: {}, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
-      auto: [], autoAcc: {}, proj: {}, endings: {},
+      lines: [], lineSeq: 0, pins: {}, track: null, gt: { id: null, t: 0 },
+      proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false },
@@ -47,14 +52,42 @@
     };
   }
 
+  /* Migration d’une sauvegarde vers la version courante. Ne supprime jamais
+   * de donnée du joueur : ce qui n’a plus d’usage est rangé dans `orphans`. */
+  function migrate(o) {
+    const from = o.v || 1;
+    if (from > SAVE_VERSION) throw new Error("Sauvegarde d’une version plus récente du jeu (v" + from + ")");
+    if (from < 2) {
+      // v1 : les « chaînes d’assemblage » automatisaient des recettes via `auto`.
+      // v2 : elles deviennent des machines de la Fabrique, chacune affectée à une ligne.
+      o.flags = o.flags || {};
+      o.lines = [];
+      o.lineSeq = 0;
+      const slots = Math.floor((o.inv && o.inv.chaine) || 0);
+      (o.auto || []).slice(0, slots).forEach((r) => {
+        if (D.ITEMS[r]) o.lines.push({ id: "L" + ++o.lineSeq, r, m: "chaine", n: 1, on: true, cap: 0, acc: 0 });
+      });
+      if (o.lines.length) o.flags.lineDone = true;
+      delete o.auto;
+      delete o.autoAcc;
+      o.pins = {};
+      o.track = null;
+      o.gt = { id: null, t: 0 };
+      o.flags.news = "2";
+      o.v = 2;
+    }
+    return o;
+  }
+
   function createEngine(opts) {
     opts = opts || {};
     const now = opts.now || (() => Date.now());
     const rand = opts.rand || Math.random;
     const listeners = {};
-    const E = { D, RECIPES, ZONES, RES_ZONE, keyOf };
+    const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION };
     let S = freshState(now());
     let C = null; // caches dérivés de l’état
+    const lineStat = {}; // état des lignes (non sauvegardé)
 
     /* ------------------------------------------------------- événements */
     E.on = (evt, fn) => { (listeners[evt] = listeners[evt] || []).push(fn); };
@@ -66,7 +99,8 @@
     const has = (id) => (S.inv[id] || 0) > 0;
     const count = (id) => S.inv[id] || 0;
     const isUnique = (it) => !!UNIQUE[it.t] || (it.t === "relic" && !!it.r);
-    E.item = item; E.has = has; E.count = count; E.isUnique = isUnique;
+    const isScaled = (it) => !!SCALED[it.t];
+    E.item = item; E.has = has; E.count = count; E.isUnique = isUnique; E.isScaled = isScaled;
 
     function add(id, n) {
       if (!n) return;
@@ -78,13 +112,13 @@
 
     /* -------------------------------------------------- effets dérivés */
     function recalc() {
-      const c = { st: {}, heat: 0, tap: {}, auto: {}, intu: 0, exp: 1, pip: 0, slots: 0, aspd: 1, rates: {}, sky: false, arche: false, term: false, signal: false };
+      const c = { st: {}, heat: 0, tap: {}, auto: {}, intu: 0, exp: 1, pip: 0, aspd: 1, rates: {}, sky: false, arche: false, term: false, signal: false };
       const mulInto = (dst, src) => { for (const k in src) dst[k] = (dst[k] || 1) * src[k]; };
       for (const id in S.inv) {
         if (!(S.inv[id] > 0)) continue;
         const it = item(id); if (!it) continue;
         const e = it.e;
-        if (e && (isUnique(it) || it.t === "auto")) {
+        if (e && isUnique(it)) {
           if (e.st) e.st.forEach((s) => {
             const cur = c.st[s.g] || (c.st[s.g] = { lvl: 0 });
             if (s.heat) cur.heat = Math.max(cur.heat || 0, s.heat);
@@ -96,7 +130,6 @@
           if (e.exp) c.exp *= e.exp;
           if (e.pip) c.pip += e.pip;
           if (e.aspd) c.aspd *= e.aspd;
-          if (e.slots) c.slots += e.slots * S.inv[id];
           if (e.sky) c.sky = true;
           if (e.arche) c.arche = true;
           if (e.term) c.term = true;
@@ -130,6 +163,21 @@
     E.heat = () => E.cache().heat;
     E.level = (g) => (E.cache().st[g] ? E.cache().st[g].lvl : 0);
 
+    /* station (non secrète) la moins avancée qui satisfait un geste, une chaleur, un niveau */
+    function stationFor(g, heat, lvl) {
+      let best = null;
+      for (const id in D.ITEMS) {
+        const it = D.ITEMS[id];
+        if (!it.e || !it.e.st || it.sec) continue;
+        for (const s of it.e.st) {
+          if (s.g !== g || (heat && (s.heat || 0) < heat) || (lvl && (s.lvl || 1) < lvl)) continue;
+          if (!best || it.a < D.ITEMS[best].a) best = id;
+        }
+      }
+      return best;
+    }
+    E.stationFor = stationFor;
+
     /* ------------------------------------------------------ zones */
     function zoneOpen(zid) { return !!S.zones[zid]; }
     E.zoneOpen = zoneOpen;
@@ -160,7 +208,7 @@
     /* ------------------------------------------------------ coûts */
     function costFor(id, k) {
       const it = item(id), base = it.r[1];
-      if (it.t !== "ext" && it.t !== "auto") return base;
+      if (!isScaled(it)) return base;
       const f = Math.pow(it.s || 1.15, k);
       const out = {};
       for (const i in base) out[i] = Math.ceil(base[i] * f);
@@ -169,7 +217,7 @@
     /* coût total de `times` fabrications à partir de l’état courant */
     function totalCost(id, times) {
       const it = item(id), tot = {};
-      if (it.t === "ext" || it.t === "auto") {
+      if (isScaled(it)) {
         const owned = count(id);
         for (let k = 0; k < times; k++) {
           const c = costFor(id, owned + k);
@@ -208,7 +256,7 @@
       const it = item(id);
       if (!it || !it.r || blocker(id)) return 0;
       if (isUnique(it)) return missingFor(id, 1) ? 0 : 1;
-      if (it.t === "ext" || it.t === "auto") {
+      if (isScaled(it)) {
         let n = 0;
         const left = Object.assign({}, S.inv);
         while (n < Math.min(cap, 500)) {
@@ -240,6 +288,7 @@
       E.emit("struct");
       return true;
     }
+    E.learn = learn;
 
     function craft(id, times, quiet) {
       times = Math.max(1, Math.floor(times || 1));
@@ -268,7 +317,8 @@
       add(id, out);
       if (!S.known[id]) learn(id, true);
       if (first) onFirstCraft(id);
-      if (isUnique(it) || it.t === "ext" || it.t === "auto") { recalc(); E.emit("struct"); }
+      if (isUnique(it) || isScaled(it)) { recalc(); E.emit("struct"); }
+      if (S.track && S.track.id === id) { S.track = null; E.emit("tracked", id); E.emit("struct"); }
       if (!quiet) E.emit("crafted", id, { n: out, bonus: bonus * it.r[2], first });
       return { ok: true, n: out, bonus: bonus * it.r[2], first };
     }
@@ -316,7 +366,6 @@
       S.stats.tries++;
       const id = RECIPES[keyOf(g, ids)];
       if (id) {
-        const it = item(id);
         const b = blocker(id);
         if (b && b.why === "owned") return { kind: "owned", id };
         if (b) {
@@ -373,6 +422,80 @@
     }
     E.temperature = temperature;
 
+    /* Recettes connues qui utilisent toutes les matières données (raccourcis de l’Atelier). */
+    E.knownWith = function (ids) {
+      ids = ids.filter(Boolean);
+      if (!ids.length) return [];
+      return Object.keys(S.known).filter((id) => {
+        const it = item(id);
+        return it && it.r && ids.every((i) => it.r[1][i] !== undefined);
+      });
+    };
+    E.usesOf = (id) => Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].r && D.ITEMS[k].r[1][id] !== undefined);
+
+    /* ------------------------------------------------------ planification récursive
+     * Que faut-il fabriquer (sous-composants compris) pour obtenir `times` fois `id` ?
+     * Retourne les étapes dans l’ordre (les plus profondes d’abord), les matières
+     * manquantes, les recettes inconnues et les recettes bloquées. */
+    E.plan = function (id, times) {
+      times = Math.max(1, Math.floor(times || 1));
+      const avail = Object.assign({}, S.inv);
+      const crafts = {}, depth = {}, missing = {}, blocked = {}, locked = {}, used = {};
+      let guard = 0;
+      function need(x, qty, d, root) {
+        if (++guard > 5000 || d > 40) return;
+        const it = item(x);
+        if (!root) {
+          const have = avail[x] || 0;
+          const use = Math.min(have, qty);
+          if (use > 0) used[x] = (used[x] || 0) + use;
+          avail[x] = have - use;
+          qty -= use;
+          if (qty <= 1e-9) return;
+        }
+        const zid = RES_ZONE[x];
+        const gather = it.t === "res" && zid && zoneOpen(zid);
+        if (!it.r || gather) { missing[x] = (missing[x] || 0) + qty; return; }
+        if (!S.known[x]) { locked[x] = true; missing[x] = (missing[x] || 0) + qty; return; }
+        const b = blocker(x);
+        if (b) { blocked[x] = b; if (b.why !== "owned") missing[x] = (missing[x] || 0) + qty; return; }
+        const n = root ? qty : Math.ceil(qty / it.r[2]);
+        crafts[x] = (crafts[x] || 0) + n;
+        depth[x] = Math.max(depth[x] || 0, d);
+        const cost = isScaled(it) ? totalCost(x, n) : (() => { const c = {}; for (const i in it.r[1]) c[i] = it.r[1][i] * n; return c; })();
+        for (const i in cost) need(i, cost[i], d + 1, false);
+        if (!root) { const surplus = n * it.r[2] - qty; if (surplus > 0) avail[x] = (avail[x] || 0) + surplus; }
+      }
+      need(id, isUnique(item(id)) ? 1 : times, 0, true);
+      for (const k in missing) missing[k] = Math.ceil(missing[k] - 1e-9);
+      const steps = Object.keys(crafts).sort((a, b) => depth[b] - depth[a]).map((x) => [x, crafts[x]]);
+      return { ok: !Object.keys(missing).length && !Object.keys(blocked).length, id, times, steps, missing, blocked, locked: Object.keys(locked), used };
+    };
+    /* Exécute un plan complet ; ne fait rien s’il manque quoi que ce soit. */
+    E.craftPlan = function (id, times) {
+      const p = E.plan(id, times);
+      if (!p.ok) return Object.assign({ done: false }, p);
+      let made = 0;
+      for (const [x, n] of p.steps) {
+        const r = craft(x, n, x !== id);
+        if (!r.ok) return Object.assign({ done: false, failed: x }, p);
+        made += n;
+      }
+      return Object.assign({ done: true, made }, p);
+    };
+    /* Nombre maximal de fabrications possibles en chaîne avec le stock actuel. */
+    E.maxPlan = function (id, cap) {
+      const it = item(id);
+      if (!it || !it.r || !E.plan(id, 1).ok) return 0;
+      if (isUnique(it)) return 1;
+      let lo = 1, hi = Math.min(cap || 100000, isScaled(it) ? 200 : 100000);
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2);
+        if (E.plan(id, mid).ok) lo = mid; else hi = mid - 1;
+      }
+      return lo;
+    };
+
     /* ------------------------------------------------------ indices */
     E.hintCost = (id) => HINT_COST[S.hints[id] || 0] || 0;
     E.revealHint = function (id) {
@@ -403,11 +526,98 @@
       return out;
     };
     E.pathRecipes = () => Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].path);
+    E.togglePin = function (id) {
+      if (S.pins[id]) delete S.pins[id]; else S.pins[id] = true;
+      E.emit("struct");
+      return !!S.pins[id];
+    };
+    E.setTrack = function (id) {
+      S.track = id && (!S.track || S.track.id !== id) ? { id } : null;
+      E.emit("struct");
+      return S.track;
+    };
 
+    /* ------------------------------------------------------ objectifs et guidage */
+    function normObj(o, i) {
+      if (Array.isArray(o)) return { i, k: "craft", id: o[0], txt: o[1] };
+      return Object.assign({ i }, o);
+    }
+    function objDone(o) {
+      if (Array.isArray(o)) return (S.made[o[0]] || 0) > 0;
+      if (o.k === "exp") return (S.exp.done[o.z] || 0) > ZONES[o.z].exps.findIndex((x) => x.id === o.x);
+      if (o.k === "line") return !!S.flags.lineDone;
+      return true;
+    }
+    /* Le premier objectif non atteint après le plus avancé déjà atteint :
+     * un joueur avancé ne revient jamais sur une étape d’apprentissage qu’il a sautée. */
     E.objective = function () {
-      for (const [id, txt] of D.OBJECTIVES) if (!(S.made[id] > 0)) return { id, txt };
+      let last = -1;
+      D.OBJECTIVES.forEach((o, i) => { if (objDone(o)) last = i; });
+      for (let i = last + 1; i < D.OBJECTIVES.length; i++) if (!objDone(D.OBJECTIVES[i])) return normObj(D.OBJECTIVES[i], i);
       return null;
     };
+    /* Prochaine étape concrète vers un objet : une sous-recette inconnue, une station
+     * qui manque, ou la clé d’une zone fermée. */
+    function nextStep(target) {
+      const seen = {};
+      function walk(id, d) {
+        if (d > 14 || seen[id]) return null;
+        seen[id] = true;
+        const it = item(id);
+        if (!it) return null;
+        const zid = RES_ZONE[id];
+        if (zid && zoneOpen(zid)) return null; // se récolte
+        if (!it.r) {
+          // matière première d’une zone fermée : il faut la clé de la zone
+          const req = zid && ZONES[zid].req;
+          if (req && req[0] !== "@") return walk(req, d + 1) || { id: req, why: "zone", z: zid };
+          return null;
+        }
+        // sinon (y compris le charbon avant les Profondeurs) : on la fabrique
+        if (isUnique(it) && (S.made[id] || 0) > 0) return null;
+        const g = it.r[0], o = it.r[3] || {};
+        if (g !== "accorder" && (!gesteOK(g) || (o.heat && E.heat() < o.heat) || (o.lvl && E.level(g) < o.lvl))) {
+          const st = stationFor(g, o.heat, o.lvl);
+          if (st && st !== id) return walk(st, d + 1) || { id: st, why: "station" };
+        }
+        for (const i of Object.keys(it.r[1])) {
+          const w = walk(i, d + 1);
+          if (w) return w;
+        }
+        if (!S.known[id]) return { id, why: "unknown" };
+        return null;
+      }
+      return walk(target, 0) || { id: target, why: S.known[target] ? "known" : "unknown" };
+    }
+    E.nextStep = nextStep;
+    E.guide = function () {
+      const ob = E.objective();
+      if (!ob) return null;
+      if (ob.k !== "craft") return { ob, step: null };
+      const s = nextStep(ob.id);
+      return { ob, step: s.id, why: s.why };
+    };
+    /* Réminiscences : indices gratuits et progressifs quand on bloque sur une étape. */
+    let gAcc = 0;
+    function guideTick(dt) {
+      gAcc += dt;
+      if (gAcc < 1) return;
+      const d = gAcc;
+      gAcc = 0;
+      const g = E.guide();
+      if (!g || !g.step || S.known[g.step]) return;
+      if (S.gt.id !== g.step) S.gt = { id: g.step, t: 0 };
+      S.gt.t += d;
+      const lvl = S.hints[g.step] || 0;
+      let target = 0;
+      D.GUIDE.delays.forEach((t, i) => { if (S.gt.t >= t) target = i + 1; });
+      if (target > lvl) {
+        S.hints[g.step] = target;
+        if (target >= 3) learn(g.step, true);
+        E.emit("guidehint", { id: g.step, lvl: target });
+        E.emit("struct");
+      }
+    }
 
     /* ------------------------------------------------------ explorations */
     E.nextExp = function (zid) {
@@ -571,17 +781,102 @@
       return lines;
     };
 
-    /* ------------------------------------------------------ automatisation */
-    E.slots = () => E.cache().slots;
-    E.toggleAuto = function (id) {
-      const i = S.auto.indexOf(id);
-      if (i >= 0) { S.auto.splice(i, 1); E.emit("struct"); return false; }
+    /* ------------------------------------------------------ la Fabrique
+     * Des machines (répétables) affectées à des lignes de production. Chaque ligne
+     * fabrique une recette connue en continu, à la vitesse de ses machines. */
+    E.automatable = (id) => {
       const it = item(id);
-      if (!it || !it.r || isUnique(it) || it.t === "auto" || !S.known[id]) return false;
-      if (S.auto.length >= E.slots()) return false;
-      S.auto.push(id);
+      return !!(it && it.r && S.known[id] && !isUnique(it) && !isScaled(it));
+    };
+    E.machines = function () {
+      const out = {};
+      MACHINES.forEach((m) => (out[m] = { own: Math.floor(count(m)), used: 0, spd: item(m).spd }));
+      S.lines.forEach((L) => { if (out[L.m]) out[L.m].used += L.n; });
+      return out;
+    };
+    E.hasFactory = () => MACHINES.some((m) => count(m) > 0) || S.lines.length > 0;
+    const lineById = (lid) => S.lines.find((L) => L.id === lid);
+    E.lineRate = (L) => (L.n > 0 && item(L.m) ? (L.n * item(L.m).spd) / 60 * E.cache().aspd : 0);
+    E.addLine = function (r) {
+      if (!E.automatable(r)) return null;
+      const ms = E.machines();
+      let m = MACHINES.slice().reverse().find((k) => ms[k].own - ms[k].used > 0) ||
+        MACHINES.slice().reverse().find((k) => ms[k].own > 0) || MACHINES[0];
+      const free = ms[m].own - ms[m].used;
+      const L = { id: "L" + ++S.lineSeq, r, m, n: free > 0 ? 1 : 0, on: true, cap: 0, acc: 0 };
+      S.lines.push(L);
+      if (L.n > 0) S.flags.lineDone = true;
       E.emit("struct");
-      return true;
+      return L;
+    };
+    E.setLine = function (lid, patch) {
+      const L = lineById(lid);
+      if (!L) return null;
+      if (patch.m && patch.m !== L.m && item(patch.m) && item(patch.m).t === "mach") {
+        L.m = patch.m;
+        const ms = E.machines();
+        L.n = Math.max(0, Math.min(L.n, ms[L.m].own - (ms[L.m].used - L.n)));
+      }
+      if (patch.n !== undefined) {
+        const ms = E.machines();
+        const max = ms[L.m].own - (ms[L.m].used - L.n);
+        L.n = Math.max(0, Math.min(Math.floor(patch.n), max));
+        if (L.n > 0) S.flags.lineDone = true;
+      }
+      if (patch.on !== undefined) L.on = !!patch.on;
+      if (patch.cap !== undefined) L.cap = Math.max(0, Math.floor(patch.cap) || 0);
+      if (patch.r && E.automatable(patch.r)) { L.r = patch.r; L.acc = 0; }
+      E.emit("struct");
+      return L;
+    };
+    E.delLine = function (lid) {
+      const i = S.lines.findIndex((L) => L.id === lid);
+      if (i >= 0) { S.lines.splice(i, 1); delete lineStat[lid]; E.emit("struct"); }
+    };
+    E.moveLine = function (lid, dir) {
+      const i = S.lines.findIndex((L) => L.id === lid), j = i + dir;
+      if (i < 0 || j < 0 || j >= S.lines.length) return;
+      const t = S.lines[i]; S.lines[i] = S.lines[j]; S.lines[j] = t;
+      E.emit("struct");
+    };
+    E.lineInfo = (lid) => lineStat[lid] || { s: "wait" };
+    function runLines(dt) {
+      const c = E.cache();
+      for (const L of S.lines) {
+        const st = lineStat[L.id] || (lineStat[L.id] = { s: "wait" });
+        if (!L.on) { st.s = "off"; continue; }
+        if (!(L.n > 0)) { st.s = "idle"; continue; }
+        const it = item(L.r), M = item(L.m);
+        if (!it || !M || !it.r) { st.s = "blocked"; continue; }
+        const b = blocker(L.r);
+        if (b) { st.s = "blocked"; st.b = b; continue; }
+        L.acc = (L.acc || 0) + (L.n * M.spd / 60) * c.aspd * dt;
+        let want = Math.floor(L.acc);
+        if (want <= 0) { if (st.s !== "starved" && st.s !== "full") st.s = "ok"; continue; }
+        if (L.cap > 0) {
+          const room = L.cap - count(L.r);
+          if (room <= 0) { st.s = "full"; L.acc = Math.min(L.acc, 1); continue; }
+          want = Math.min(want, Math.ceil(room / it.r[2]));
+        }
+        const k = maxCraftable(L.r, want);
+        if (k > 0) { craft(L.r, k, true); L.acc -= k; st.made = (st.made || 0) + k; }
+        if (k < want) { st.s = "starved"; st.miss = missingFor(L.r, 1); L.acc = Math.min(L.acc, 1); }
+        else { st.s = "ok"; st.miss = null; }
+      }
+    }
+    /* Débits estimés des lignes qui tournent (par seconde). */
+    E.flows = function () {
+      const prod = {}, cons = {};
+      for (const L of S.lines) {
+        const st = lineStat[L.id];
+        if (!L.on || !(L.n > 0) || !st || st.s !== "ok") continue;
+        const it = item(L.r);
+        if (!it || !it.r) continue;
+        const r = E.lineRate(L);
+        prod[L.r] = (prod[L.r] || 0) + r * it.r[2];
+        for (const i in it.r[1]) cons[i] = (cons[i] || 0) + r * it.r[1][i];
+      }
+      return { prod, cons };
     };
 
     /* ------------------------------------------------------ grands œuvres */
@@ -639,7 +934,7 @@
       const old = S;
       const n = freshState(now());
       n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets;
-      n.seen = old.seen; n.meta = old.meta; n.settings = old.settings;
+      n.seen = old.seen; n.meta = old.meta; n.settings = old.settings; n.pins = old.pins || {};
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = 3 + Math.floor(old.intu / 2);
@@ -659,16 +954,7 @@
     function step(dt, offline) {
       const c = E.cache();
       for (const r in c.rates) add(r, c.rates[r] * dt);
-      if (S.auto.length) {
-        for (const id of S.auto.slice()) {
-          S.autoAcc[id] = (S.autoAcc[id] || 0) + c.aspd * dt;
-          const want = Math.floor(S.autoAcc[id]);
-          if (want <= 0) continue;
-          S.autoAcc[id] -= want;
-          const n = Math.min(want, maxCraftable(id, want));
-          if (n > 0) craft(id, n, true);
-        }
-      }
+      if (S.lines.length) runLines(dt);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];
@@ -683,13 +969,15 @@
         S.intuAcc += (c.intu / 60) * dt;
         if (S.intuAcc >= 1) { const k = Math.floor(S.intuAcc); S.intu += k; S.intuAcc -= k; }
       }
+      if (!offline) guideTick(dt);
       S.stats.play += dt;
     }
+    E.step = step;
 
     /* Avance le temps jusqu’à maintenant. Gère aussi le hors-ligne. */
     E.update = function () {
       const t = now();
-      let dt = (t - S.t) / 1000;
+      const dt = (t - S.t) / 1000;
       S.t = t;
       if (!(dt > 0)) return 0;
       if (dt > 5) return E.catchUp(dt);
@@ -717,14 +1005,40 @@
 
     /* ------------------------------------------------------ sauvegarde */
     E.serialize = () => JSON.stringify(S);
-    E.load = function (str) {
-      const o = typeof str === "string" ? JSON.parse(str) : str;
-      if (!o || typeof o !== "object" || !o.inv) throw new Error("Sauvegarde invalide");
+    /* Lit une sauvegarde (chaîne JSON ou objet), la migre et la valide.
+     * Ne modifie l’état courant que si tout s’est bien passé. */
+    function parseSave(src) {
+      const o = typeof src === "string" ? JSON.parse(src) : JSON.parse(JSON.stringify(src));
+      if (!o || typeof o !== "object" || !o.inv || typeof o.inv !== "object") throw new Error("Ce n’est pas une sauvegarde d’Éclat.");
+      migrate(o);
       const base = freshState(now());
-      for (const k in base) if (o[k] === undefined) o[k] = base[k];
+      for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
       o.meta = Object.assign({ endings: {}, capsule: false }, o.meta);
       o.settings = Object.assign({ sound: true, vibe: true }, o.settings);
+      o.exp = Object.assign({ active: null, done: {} }, o.exp);
+      o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
+      o.gt = Object.assign({ id: null, t: 0 }, o.gt);
+      if (!Array.isArray(o.lines)) o.lines = [];
+      o.lines = o.lines.filter((L) => L && D.ITEMS[L.r] && D.ITEMS[L.m]);
+      // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
+      ITEM_MAPS.forEach((k) => {
+        if (!o[k] || typeof o[k] !== "object") return;
+        for (const id in o[k]) if (!D.ITEMS[id]) {
+          o.orphans = o.orphans || {};
+          (o.orphans[k] = o.orphans[k] || {})[id] = o[k][id];
+          delete o[k][id];
+        }
+      });
+      if (o.track && !D.ITEMS[o.track.id]) o.track = null;
+      if (o.exp.active && !(ZONES[o.exp.active.z] && ZONES[o.exp.active.z].exps[o.exp.active.i])) o.exp.active = null;
+      if (typeof o.age !== "number" || o.age < 0 || o.age >= D.AGES.length) o.age = 0;
+      return o;
+    }
+    E.parseSave = parseSave;
+    E.load = function (src) {
+      const o = parseSave(src);
       S = o;
+      for (const k in lineStat) delete lineStat[k];
       recalc();
       E.emit("struct");
       return true;
@@ -734,16 +1048,19 @@
       const s = E.serialize();
       return typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(s))) : Buffer.from(s, "utf8").toString("base64");
     };
-    E.importSave = (b64) => {
-      const s = typeof atob !== "undefined" ? decodeURIComponent(escape(atob(b64.trim()))) : Buffer.from(b64.trim(), "base64").toString("utf8");
-      return E.load(s);
+    /* Accepte un fichier JSON comme un ancien code base64. */
+    E.decodeSave = (txt) => {
+      const t = String(txt || "").trim();
+      if (t[0] === "{") return t;
+      return typeof atob !== "undefined" ? decodeURIComponent(escape(atob(t))) : Buffer.from(t, "base64").toString("utf8");
     };
+    E.importSave = (txt) => E.load(E.decodeSave(txt));
 
     recalc();
     return E;
   }
 
-  const API = { createEngine, freshState };
+  const API = { createEngine, freshState, migrate, SAVE_VERSION };
   root.EclatEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof window !== "undefined" ? window : globalThis);

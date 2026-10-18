@@ -22,7 +22,7 @@ const ageAt = {};
 E.on("age", (a) => { ageAt[a] = T / 1000; if (process.env.STOP_AGE && a >= Number(process.env.STOP_AGE)) stopNow = true; });
 let stopNow = false;
 const objAt = [];
-const OBJ = new Set(D.OBJECTIVES.map((o) => o[0]));
+const OBJ = new Set(D.OBJECTIVES.filter(Array.isArray).map((o) => o[0]));
 E.on("discover", (id) => { if (OBJ.has(id)) objAt.push([id, T / 1000]); });
 const fmtT = (s) => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return (h ? h + "h" : "") + String(m).padStart(h ? 2 : 1, "0") + "m" + String(s % 60).padStart(2, "0") + "s"; };
 
@@ -65,8 +65,8 @@ function plan(targets, fromEmpty) {
         return;
       }
       if (E.isUnique(it) && S().made[id] > 0) return;
-      const crafts = it.t === "ext" || it.t === "auto" ? 1 : Math.ceil(d / out);
-      const cost = it.t === "ext" || it.t === "auto" ? E.costFor(id) : null;
+      const crafts = E.isScaled(it) ? 1 : Math.ceil(d / out);
+      const cost = E.isScaled(it) ? E.costFor(id) : null;
       for (const i in ing) need(i, cost ? cost[i] : ing[i] * crafts, depth + 1);
       return;
     }
@@ -87,7 +87,7 @@ function produce(id, qty, depth) {
   const zid = E.RES_ZONE[id];
   if (zid && E.zoneOpen(zid) && it.t === "res") return;
   if (E.blocker(id)) return;
-  const unit = it.t === "ext" || it.t === "auto";
+  const unit = E.isScaled(it);
   const crafts = unit ? 1 : Math.ceil((qty - (S().inv[id] || 0)) / it.r[2]);
   const cost = unit ? E.costFor(id) : null;
   for (const i in it.r[1]) produce(i, cost ? cost[i] : it.r[1][i] * crafts, depth + 1);
@@ -142,6 +142,8 @@ let endT = null;
 function currentTargets() {
   if (interim) return { [interim]: E.isUnique(I[interim]) ? 1 : (S().inv[interim] || 0) + 1 };
   const ob = E.objective();
+  if (ob && ob.k === "exp") return null; // les explorations sont lancées à chaque tour
+  if (ob && ob.k === "line") { E.addLine("manche"); return null; }
   if (ob) return { [ob.id]: 1 };
   const ps = E.projState(PROJECT);
   const st = D.PROJECTS[PROJECT].steps[ps.step];

@@ -3,7 +3,10 @@
 "use strict";
 const assert = require("assert");
 const D = require("../js/data.js");
-const { createEngine } = require("../js/engine.js");
+const fs = require("fs");
+const path = require("path");
+const { createEngine, migrate, SAVE_VERSION } = require("../js/engine.js");
+const fixture = (f) => fs.readFileSync(path.join(__dirname, "fixtures", f), "utf8");
 
 let T = 1e12;
 const mk = () => createEngine({ now: () => T, rand: () => 0.99 });
@@ -108,6 +111,139 @@ test("sauvegarde : aller-retour et export base64", () => {
   E2.importSave(s);
   assert.strictEqual(E2.count("bois"), 1); assert.strictEqual(E2.state.flags.x, 1);
   assert.throws(() => E2.load("{}"));
+});
+
+
+console.log("Sauvegardes (compatibilité)");
+test("une sauvegarde v1 se charge sans rien perdre", () => {
+  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => x.startsWith("save-v1"))) {
+    const raw = fixture(f);
+    const old = JSON.parse(raw);
+    const E = mk();
+    E.load(raw);
+    const S = E.state;
+    assert.strictEqual(S.v, SAVE_VERSION, f);
+    for (const k in old.inv) assert.strictEqual(S.inv[k], old.inv[k], f + " : stock de " + k);
+    for (const k in old.known) assert.ok(S.known[k], f + " : recette " + k);
+    for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
+    assert.strictEqual(S.age, old.age); assert.strictEqual(S.intu, old.intu);
+    assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
+    assert.strictEqual(S.flags.news, "2", "annonce des nouveautés");
+    assert.strictEqual(raw, fixture(f), "la chaîne d’origine n’est pas modifiée");
+    T += 5000; E.update(); // le jeu tourne
+  }
+});
+test("les chaînes d’assemblage v1 deviennent des lignes de la Fabrique", () => {
+  const E = mk();
+  E.load(fixture("save-v1-age10-chaines.json"));
+  const L = E.state.lines;
+  assert.strictEqual(L.length, 2);
+  assert.deepStrictEqual(L.map((l) => [l.r, l.m, l.n]), [["plaque_fer", "chaine", 1], ["bobine", "chaine", 1]]);
+  assert.ok(E.state.auto === undefined);
+  const before = E.count("plaque_fer");
+  for (let i = 0; i < 20; i++) { T += 100; E.update(); }
+  assert.ok(E.count("plaque_fer") > before, "la ligne produit");
+});
+test("sauvegarde illisible ou d’une version future : erreur, rien n’est touché", () => {
+  const E = mk();
+  E.tap("bois");
+  assert.throws(() => E.load("pas du json"));
+  assert.throws(() => E.load('{"v":99,"inv":{}}'), /plus récente/);
+  assert.throws(() => E.load('{"foo":1}'));
+  assert.strictEqual(E.count("bois"), 1, "l’état courant est intact");
+});
+test("objets inconnus mis de côté, pas perdus", () => {
+  const E = mk();
+  E.load(JSON.stringify({ v: 2, inv: { bois: 5, objet_futur: 3 }, known: { objet_futur: true } }));
+  assert.strictEqual(E.count("bois"), 5);
+  assert.strictEqual(E.state.orphans.inv.objet_futur, 3);
+  assert.ok(!E.state.known.objet_futur);
+});
+test("import : fichier JSON ou ancien code base64", () => {
+  const E = mk(); E.tap("bois");
+  const json = E.serialize(), b64 = E.exportSave();
+  const A = mk(); A.importSave(json); assert.strictEqual(A.count("bois"), 1);
+  const B = mk(); B.importSave(b64); assert.strictEqual(B.count("bois"), 1);
+});
+
+console.log("Fabrication en chaîne, Fabrique, guidage");
+test("plan récursif : feu de camp depuis les matières premières", () => {
+  const E = mk();
+  E.add("bois", 100); E.add("fibre", 100); E.add("caillou", 100);
+  ["manche", "corde", "archet", "feu"].forEach((k) => (E.state.known[k] = true));
+  const p = E.plan("feu");
+  assert.ok(p.ok, JSON.stringify(p));
+  assert.deepStrictEqual(p.steps.map((s) => s[0]), ["manche", "corde", "archet", "feu"].filter((x) => p.steps.find((s) => s[0] === x)).sort((a, b) => p.steps.findIndex((s) => s[0] === a) - p.steps.findIndex((s) => s[0] === b)));
+  assert.strictEqual(p.steps[p.steps.length - 1][0], "feu");
+  const r = E.craftPlan("feu");
+  assert.ok(r.done); assert.ok(E.has("feu"));
+});
+test("plan : matières manquantes et recettes inconnues", () => {
+  const E = mk();
+  E.state.known.archet = true; E.state.known.manche = true;
+  const p = E.plan("archet", 2);
+  assert.ok(!p.ok);
+  assert.deepStrictEqual(p.locked, ["corde"]);
+  assert.strictEqual(p.missing.bois, 6);
+  assert.strictEqual(E.craftPlan("archet").done, false);
+});
+test("maxPlan : nombre de fabrications en chaîne possibles", () => {
+  const E = mk();
+  E.add("bois", 30); E.add("fibre", 30);
+  E.state.known.manche = E.state.known.corde = E.state.known.archet = true;
+  assert.strictEqual(E.maxPlan("archet"), 5); // 3 bois + 6 fibres par archet : les fibres limitent
+});
+test("Fabrique : ligne, vitesse, stock maximal, manque", () => {
+  const E = mk();
+  E.add("automate_bois", 2); E.state.known.manche = true;
+  E.add("bois", 30);
+  const L = E.addLine("manche");
+  assert.strictEqual(L.m, "automate_bois"); assert.strictEqual(L.n, 1);
+  assert.ok(E.state.flags.lineDone);
+  E.setLine(L.id, { n: 5 });
+  assert.strictEqual(L.n, 2, "pas plus que les machines possédées");
+  for (let i = 0; i < 300; i++) { T += 100; E.update(); } // 30 s à 12/min
+  assert.strictEqual(E.count("manche"), 6);
+  E.setLine(L.id, { cap: 7 });
+  for (let i = 0; i < 300; i++) { T += 100; E.update(); }
+  assert.strictEqual(E.count("manche"), 7); assert.strictEqual(E.lineInfo(L.id).s, "full");
+  E.setLine(L.id, { cap: 0 });
+  for (let i = 0; i < 300; i++) { T += 100; E.update(); }
+  assert.strictEqual(E.count("bois"), 0); assert.strictEqual(E.lineInfo(L.id).s, "starved");
+  assert.deepStrictEqual(E.lineInfo(L.id).miss, { bois: 3 });
+  assert.ok(!E.automatable("feu") && !E.automatable("cabane"), "pas d’objets uniques ni d’extracteurs");
+});
+test("guidage : la prochaine étape d’un objectif", () => {
+  const E = mk();
+  ["manche", "corde"].forEach((k) => { E.state.known[k] = true; E.state.made[k] = 1; });
+  E.state.exp.done.lisiere = 1;
+  assert.deepStrictEqual([E.guide().ob.id, E.guide().step], ["feu", "archet"]);
+  // lingot de cuivre → il faut un four → des briques → un feu → un archet (inconnu)
+  assert.strictEqual(E.nextStep("lingot_cuivre").id, "archet");
+  stations(E, ["feu"]);
+  E.state.known.four = true;
+  // briques → argile (rivière fermée) → outre → peau (plaine fermée) → épieu
+  assert.strictEqual(E.nextStep("lingot_cuivre").id, "epieu");
+});
+test("objectifs : un joueur avancé ne retombe pas sur le tutoriel", () => {
+  const E = mk();
+  E.load(fixture("save-v1-age7.json"));
+  const ob = E.objective();
+  assert.ok(ob && ob.i > D.OBJECTIVES.findIndex((o) => Array.isArray(o) && o[0] === "moteur_vapeur"), JSON.stringify(ob));
+});
+test("réminiscences : indices gratuits quand on bloque", () => {
+  const E = mk();
+  let hints = [];
+  E.on("guidehint", (h) => hints.push(h.lvl));
+  for (let i = 0; i < 4000; i++) { T += 100; E.update(); }
+  assert.deepStrictEqual(hints, [1, 2, 3]);
+  assert.ok(E.state.known.manche, "la recette finit par être révélée");
+});
+test("suivi : se termine quand l’objet est fabriqué", () => {
+  const E = mk();
+  E.setTrack("manche"); assert.strictEqual(E.state.track.id, "manche");
+  E.add("bois", 3); E.craft("manche");
+  assert.strictEqual(E.state.track, null);
 });
 
 console.log("Secrets");

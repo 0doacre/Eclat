@@ -33,12 +33,13 @@ for (const id in I) {
       else {
         used[i] = (used[i] || 0) + 1;
         if (UNIQUE.has(I[i].t)) err(id + " : utilise un objet unique comme ingrédient (" + i + ")");
-        if (I[i].t === "ext" || I[i].t === "auto") err(id + " : utilise un extracteur comme ingrédient (" + i + ")");
+        if (I[i].t === "ext" || I[i].t === "auto" || I[i].t === "mach") err(id + " : utilise un extracteur ou une machine comme ingrédient (" + i + ")");
       }
       if (!(ing[i] > 0)) err(id + " : quantité invalide pour " + i);
     }
     if (!it.sec && !it.path && !it.h) warn(id + " : pas d’indice (h)");
   }
+  if (it.t === "mach" && !(it.spd > 0)) err(id + " : machine sans vitesse (spd)");
   if (it.t === "ext") {
     if (!Z[it.z]) err(id + " : zone d’extracteur inconnue " + it.z);
     for (const r in it.p) if (!I[r]) err(id + " : produit une ressource inconnue " + r);
@@ -76,7 +77,12 @@ for (const pid in D.PROJECTS) {
   if (!D.ENDINGS[p.end]) err("œuvre " + pid + " : fin inconnue");
   p.steps.forEach((s) => { if (s.cost) for (const i in s.cost) if (!I[i]) err("œuvre " + pid + " : coût inconnu " + i); });
 }
-D.OBJECTIVES.forEach(([id]) => { if (!I[id]) err("objectif inconnu " + id); });
+D.OBJECTIVES.forEach((o) => {
+  if (Array.isArray(o)) { if (!I[o[0]]) err("objectif inconnu " + o[0]); return; }
+  if (o.k === "exp") { if (!Z[o.z] || !Z[o.z].exps.find((x) => x.id === o.x)) err("objectif d’exploration inconnu " + o.z + "/" + o.x); }
+  else if (o.k !== "line") err("type d’objectif inconnu " + o.k);
+  if (!o.txt || !o.n) err("objectif " + o.k + " sans texte");
+});
 D.SECRETS.forEach((s) => {
   if (s.k === "recette" && !(I[s.id] && I[s.id].sec)) err("secret " + s.id + " : pas une recette secrète");
   if (s.k === "mélodie" && !D.MELODIES[s.id]) err("secret " + s.id + " : mélodie inconnue");

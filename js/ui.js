@@ -2,23 +2,30 @@
 (function () {
   "use strict";
   const D = window.ECLAT_DATA;
-  const E = window.EclatEngine.createEngine();
+  const ENGINE = window.EclatEngine;
+  const E = ENGINE.createEngine();
   const A = window.EclatAudio;
   const Sky = window.EclatSky;
+  /* Clé historique conservée : c’est là que vivent les parties en cours. */
   const SAVE_KEY = "eclat.save.v1";
+  const BACKUP_KEY = "eclat.backups";
+  const MAX_BACKUPS = 5;
   const S = () => E.state;
   const I = D.ITEMS;
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 
   /* ------------------------------------------------------------ état UI */
   const U = {
     tab: "terres", geste: "tailler", slots: [null, null, null], last: null,
     invFilter: "tout", carnetFilter: "tout", journalTab: "fragments", cosmosTab: "ciel",
+    q: "", showOwned: false,
     openAges: {}, dirty: true, lastRender: 0, mq: [], mcur: null,
-    badges: { carnet: false, journal: false, cosmos: false }, pointer: { x: 0, y: 0 }, holding: null
+    badges: { carnet: false, journal: false, cosmos: false, fabrique: false, terres: false },
+    pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false
   };
 
   /* ------------------------------------------------------------ formats */
@@ -32,11 +39,16 @@
     const s = v < 10 ? (Math.floor(v * 100) / 100).toFixed(2) : v < 100 ? (Math.floor(v * 10) / 10).toFixed(1) : Math.floor(v).toFixed(0);
     return s.replace(".", ",") + " " + UNITS[u];
   }
-  function fmtRate(r) {
-    if (!(r > 0)) return "";
-    if (r < 0.095) return "+" + r.toFixed(2).replace(".", ",") + "/s";
-    if (r < 10) return "+" + r.toFixed(1).replace(".", ",") + "/s";
-    return "+" + fmt(r) + "/s";
+  function fmtNum(r) {
+    const a = Math.abs(r);
+    if (a < 0.095) return a.toFixed(2).replace(".", ",");
+    if (a < 10) return a.toFixed(1).replace(".", ",");
+    return fmt(a);
+  }
+  function fmtRate(r) { return r > 0 ? "+" + fmtNum(r) + "/s" : ""; }
+  function fmtNet(r) {
+    if (Math.abs(r) < 1e-6) return "";
+    return (r > 0 ? "+" : "−") + fmtNum(r) + "/s";
   }
   function fmtTime(s) {
     s = Math.max(0, Math.round(s));
@@ -46,7 +58,11 @@
     return m + " min" + (r ? " " + String(r).padStart(2, "0") : "");
   }
   const fmtHeat = (h) => h.toLocaleString("fr-FR") + " °C";
-  const fmtMul = (v) => "×" + String(v).replace(".", ",");
+  const fmtMul = (v) => "×" + String(Math.round(v * 100) / 100).replace(".", ",");
+  function fmtDate(t) {
+    const d = new Date(t);
+    return d.toLocaleDateString("fr-FR") + " " + String(d.getHours()).padStart(2, "0") + "h" + String(d.getMinutes()).padStart(2, "0");
+  }
 
   function ink(hex) {
     const h = hex.replace("#", "");
@@ -60,9 +76,10 @@
     if (it.sym) return '<span class="ic sym ' + (cls || "") + '" style="--c:' + it.col + ";--ink:" + ink(it.col) + '">' + esc(it.sym) + "</span>";
     return '<span class="ic ' + (cls || "") + '">' + it.ic + "</span>";
   }
-  const TYPE = { res: "Matière", comp: "Composant", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", auto: "Automatisation", curio: "Curiosité", relic: "Relique" };
+  const TYPE = { res: "Matière", comp: "Composant", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", mach: "Machine", auto: "Machine", curio: "Curiosité", relic: "Relique" };
   const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
   const targetName = (k) => (k === "*" ? "toutes les zones" : E.ZONES[k] ? E.ZONES[k].n : I[k] ? I[k].n : k);
+  const isRawGather = (id) => I[id] && I[id].t === "res" && E.RES_ZONE[id];
 
   function fxList(id) {
     const it = I[id], e = it.e || {}, out = [];
@@ -79,14 +96,14 @@
       const c = E.cache(), m = (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
       out.push("Chacun : " + Object.keys(it.p).map((r) => fmtRate(it.p[r] * m) + " " + I[r].n).join(", "));
     }
+    if (it.t === "mach") out.push("Machine : " + fmtNum(it.spd * E.cache().aspd) + " fabrications/min");
     if (e.intu) out.push("+" + e.intu + " ✨/min");
     if (e.exp) out.push("Explorations " + fmtMul(e.exp));
     if (e.sky) out.push("Ouvre le Cosmos");
     if (e.arche) out.push("Capte les ondes radio");
     if (e.term) out.push("Terminal");
     if (e.signal) out.push("Écouter le ciel");
-    if (e.slots) out.push("+1 chaîne d’automatisation");
-    if (e.aspd) out.push("Automatisation " + fmtMul(e.aspd));
+    if (e.aspd) out.push("Fabrique " + fmtMul(e.aspd));
     if (e.pip) out.push("Récolte automatique " + e.pip + "/s");
     if (e.flute) out.push("Débloque la flûte");
     if (e.decode) out.push("Décode le signal de Kher");
@@ -94,12 +111,14 @@
   }
   const fxText = (id) => fxList(id).join(" · ");
 
+  /* Liste d’ingrédients ; chaque ingrédient renvoie vers sa recette (ou sa zone). */
   function ingHTML(ing, opts) {
     opts = opts || {};
     return Object.keys(ing).map((i) => {
       const q = ing[i];
       const lack = (S().inv[i] || 0) + 1e-9 < q;
-      return '<span class="ing' + (lack && opts.check ? " lack" : "") + '"' + (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + ">" +
+      return '<span class="ing' + (lack && opts.check ? " lack" : "") + (opts.link ? " link" : "") + '"' +
+        (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + (opts.link ? ' data-goto="' + i + '"' : "") + ">" +
         icon(i, "sm") + '<span class="q">' + fmt(q) + "</span> " + esc(I[i].n) + "</span>";
     }).join("");
   }
@@ -109,6 +128,10 @@
     if (o.heat) extra = " · " + fmtHeat(o.heat);
     if (o.lvl && o.lvl > 1) extra = " · niv. " + o.lvl;
     return '<span class="g">' + g.ic + " " + g.n + extra + "</span>";
+  }
+  function mainIngredient(id) {
+    const ing = I[id].r[1];
+    return Object.keys(ing).sort((a, b) => ing[b] - ing[a])[0];
   }
 
   /* ------------------------------------------------------------ effets visuels */
@@ -193,16 +216,159 @@
   }
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
-  /* ------------------------------------------------------------ sauvegarde */
+  /* ============================================================ SAUVEGARDES
+   * Règles : on ne réécrit jamais une sauvegarde qu’on n’a pas su lire ; avant
+   * toute migration, import ou restauration, une copie brute est mise de côté. */
+  const verOf = (raw) => { try { return JSON.parse(raw).v || 1; } catch (e) { return 0; } };
+  function backups() {
+    try { const l = JSON.parse(localStorage.getItem(BACKUP_KEY) || "[]"); return Array.isArray(l) ? l : []; } catch (e) { return []; }
+  }
+  function pushBackup(raw, why) {
+    if (!raw) return;
+    const list = backups();
+    if (list[0] && list[0].data === raw) return;
+    list.unshift({ t: Date.now(), why, v: verOf(raw), data: raw });
+    while (list.length > MAX_BACKUPS) list.pop();
+    for (;;) {
+      try { localStorage.setItem(BACKUP_KEY, JSON.stringify(list)); return; } catch (e) {
+        if (list.length <= 1) return;
+        list.pop();
+      }
+    }
+  }
   function save() {
+    if (U.saveLocked) return;
     try { localStorage.setItem(SAVE_KEY, E.serialize()); } catch (e) { /* stockage indisponible */ }
   }
   function loadSave() {
+    let raw = null;
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { return "none"; }
+    if (!raw) return "none";
+    const v = verOf(raw);
+    if (v > 0 && v < ENGINE.SAVE_VERSION) pushBackup(raw, "Avant la mise à jour " + D.VERSION);
     try {
-      const s = localStorage.getItem(SAVE_KEY);
-      if (s) { E.load(s); return true; }
-    } catch (e) { console.warn("Sauvegarde illisible", e); }
-    return false;
+      E.load(raw);
+      return v < ENGINE.SAVE_VERSION ? "migrated" : "ok";
+    } catch (e) {
+      U.saveLocked = true;
+      U.badSave = { raw, err: e.message };
+      return "error";
+    }
+  }
+  function stamp() {
+    const d = new Date(), p = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "_" + p(d.getHours()) + "h" + p(d.getMinutes());
+  }
+  function download(name, text) {
+    const blob = new Blob([text], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+  }
+  function downloadSave() {
+    save();
+    download("eclat-sauvegarde-" + stamp() + ".json", E.serialize());
+    toast("💾 Sauvegarde téléchargée.");
+  }
+  /* Remplace la partie actuelle par une autre (fichier, code, copie de sécurité). */
+  function replaceWith(raw, why) {
+    let txt;
+    try { txt = E.decodeSave(raw); E.parseSave(txt); } catch (e) { toast("Fichier illisible : " + esc(e.message)); return false; }
+    if (!U.saveLocked) pushBackup(E.serialize(), why);
+    E.load(txt);
+    U.saveLocked = false; U.badSave = null;
+    save();
+    U.slots = [null, null, null]; U.last = null;
+    setTab("terres");
+    toast("Partie chargée.");
+    return true;
+  }
+  function pickFile(cb) {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = ".json,application/json,text/plain";
+    inp.onchange = () => {
+      const f = inp.files && inp.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => cb(String(r.result || ""));
+      r.readAsText(f);
+    };
+    inp.click();
+  }
+  function openSaves() {
+    const list = backups();
+    openModal({
+      html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Ta partie s’enregistre toute seule sur cet appareil. Pour la mettre à l’abri ou la transférer, télécharge-la en fichier.</p>" +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="dl">⬇️ Télécharger ma sauvegarde</button><button class="btn" data-m="up">⬆️ Charger un fichier de sauvegarde</button>' +
+        '<button class="btn ghost" data-m="code">📋 Code texte (ancien format)</button></div>' +
+        (list.length ? '<h3 class="sub">Copies de sécurité automatiques</h3>' + list.map((b, i) =>
+          '<div class="bk"><div class="grow"><b>' + esc(b.why) + '</b><div class="tiny muted">' + fmtDate(b.t) + " · format v" + b.v + '</div></div><button class="btn small" data-m="bdl" data-i="' + i + '">⬇️</button><button class="btn small" data-m="brs" data-i="' + i + '">Restaurer</button></div>').join("") : "") +
+        '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>',
+      on: {
+        dl: () => { downloadSave(); return true; },
+        up: () => { pickFile((txt) => confirmReplace(txt, "Avant le chargement d’un fichier")); return true; },
+        code: () => setTimeout(openCode, 80),
+        bdl: (b) => { const k = backups()[Number(b.dataset.i)]; if (k) download("eclat-copie-" + stamp() + ".json", k.data); return true; },
+        brs: (b) => { const k = backups()[Number(b.dataset.i)]; if (k) setTimeout(() => confirmReplace(k.data, "Avant la restauration d’une copie"), 80); }
+      }
+    });
+  }
+  function confirmReplace(txt, why) {
+    let o;
+    try { o = E.parseSave(E.decodeSave(txt)); } catch (e) { toast("Fichier illisible : " + esc(e.message)); return; }
+    openModal({
+      html: "<h2>Charger cette partie ?</h2><p>Âge : <b>" + esc(D.AGES[o.age].n) + "</b> · " + Object.keys(o.known).length + " recettes connues · cycle " + (o.cycle || 1) + ".</p>" +
+        '<p class="small muted">Ta partie actuelle sera remplacée. Une copie de sécurité en est faite avant.</p><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">Charger</button></div>',
+      on: { go: () => { replaceWith(txt, why); } }
+    });
+  }
+  function openCode() {
+    save();
+    const code = E.exportSave();
+    openModal({
+      html: "<h2>Code de sauvegarde</h2><p class=\"small muted\">Copie ce code pour le garder, ou colle un code existant puis charge-le.</p><textarea class=\"save\" id=\"codeTxt\">" + code + "</textarea>" +
+        '<div class="acts"><button class="btn" data-m="copy">Copier</button><button class="btn" data-m="load">Charger le code collé</button><button class="btn pri" data-m="close">Fermer</button></div>',
+      onOpen: (box) => { const t = $("textarea", box); t.focus(); t.select(); },
+      on: {
+        copy: () => { try { navigator.clipboard.writeText($("#codeTxt").value); toast("Copié !"); } catch (e) { /* ignoré */ } return true; },
+        load: () => { const v = $("#codeTxt").value; if (v.trim() === code) { toast("C’est déjà ta partie actuelle."); return true; } setTimeout(() => confirmReplace(v, "Avant le chargement d’un code"), 80); }
+      }
+    });
+  }
+  function showBadSave() {
+    const b = U.badSave;
+    openModal({
+      persistent: true,
+      html: '<div class="kicker">Sauvegarde</div><h2>Ta partie n’a pas pu être lue</h2><p>Elle n’a <b>pas</b> été modifiée et reste sur cet appareil. Télécharge-la pour la garder en lieu sûr.</p>' +
+        '<p class="tiny muted">Détail : ' + esc(b.err) + "</p>" +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="dl">⬇️ Télécharger la sauvegarde illisible</button><button class="btn" data-m="up">⬆️ Charger un autre fichier</button>' +
+        '<button class="btn ghost" data-m="fresh">Commencer une nouvelle partie (l’ancienne est mise à l’abri)</button></div>',
+      on: {
+        dl: () => { download("eclat-sauvegarde-illisible-" + stamp() + ".json", b.raw); return true; },
+        up: () => { pickFile((txt) => { if (replaceWith(txt, "Avant le chargement d’un fichier")) closeModal(); }); return true; },
+        fresh: () => {
+          pushBackup(b.raw, "Sauvegarde illisible mise à l’abri");
+          U.saveLocked = false; U.badSave = null;
+          E.reset(); save(); setTab("terres"); setTimeout(intro, 100);
+        }
+      }
+    });
+  }
+  function showNews() {
+    const st = S();
+    const hasBackup = backups().some((b) => b.v < ENGINE.SAVE_VERSION);
+    openModal({
+      html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
+        '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
+        (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
+        '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
+      on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
+      onClose: () => { st.flags.news = null; save(); }
+    });
   }
 
   /* ------------------------------------------------------------ thème */
@@ -212,13 +378,16 @@
     document.documentElement.style.setProperty("--acc-ink", ink(ag.c));
     $("#ageName").textContent = ag.n;
     $("#ageNum").textContent = "Âge " + (S().age + 1) + "/" + D.AGES.length + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
-    const meta = $('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", "#0f0c0a");
   }
 
   /* ============================================================ VUES */
+  function tabAvailable(t) {
+    if (t === "cosmos") return E.cache().sky;
+    if (t === "fabrique") return E.hasFactory() || !!S().known.automate_bois;
+    return true;
+  }
   function setTab(t) {
-    if (t === "cosmos" && !E.cache().sky) t = "terres";
+    if (!tabAvailable(t)) t = "terres";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
     U.tab = t;
     $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + t));
@@ -234,7 +403,8 @@
       if (on && !d) { d = document.createElement("i"); d.className = "dot"; b.appendChild(d); }
       if (!on && d) d.remove();
     });
-    $('#tabs [data-tab="cosmos"]').classList.toggle("hidden", !E.cache().sky);
+    $('#tabs [data-tab="cosmos"]').classList.toggle("hidden", !tabAvailable("cosmos"));
+    $('#tabs [data-tab="fabrique"]').classList.toggle("hidden", !tabAvailable("fabrique"));
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); } }
 
@@ -247,12 +417,17 @@
     updateBadges();
     const el = $("#v-" + U.tab);
     const sc = $("#views").scrollTop;
+    // garder le focus d’un champ de saisie pendant le rendu
+    const ae = document.activeElement;
+    const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
     if (U.tab === "terres") el.innerHTML = viewTerres();
     else if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
+    else if (U.tab === "fabrique") el.innerHTML = viewFabrique();
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
     $("#views").scrollTop = sc;
+    if (focus) { const f = document.getElementById(focus.id); if (f) { f.focus(); try { f.setSelectionRange(focus.s, focus.e); } catch (e) { /* champ sans sélection */ } } }
     refresh();
     ambient();
   }
@@ -261,28 +436,88 @@
   function viewTerres() {
     const st = S();
     let h = "";
-    const ob = E.objective();
     if (!st.flags.tip_tap) h += '<div class="tip">👆 <b>Touche</b> une ressource pour la récolter. <b>Maintiens</b> le doigt pour récolter en continu.</div>';
-    if (ob) {
-      const it = I[ob.id];
-      h += '<div class="card acc goal" data-goto="' + ob.id + '">' + (st.known[ob.id] ? icon(ob.id) : '<span class="ic unk">?</span>') +
-        '<div class="grow"><div class="lbl">Objectif</div><div class="name">' + esc(it.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
-        (it.h ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "") + "</div></div>";
-    } else if (st.flags.arche) {
-      h += '<div class="card acc goal"><span class="ic">🌌</span><div class="grow"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Rends-toi dans le Cosmos.</div></div></div>';
-    }
+    h += '<div id="trackBox">' + trackerHTML() + "</div>";
+    h += goalCard();
     for (const z of D.ZONES) if (E.zoneOpen(z.id)) h += zoneCard(z);
     let teasers = 0;
     for (const z of D.ZONES) {
       if (E.zoneOpen(z.id) || z.secret || teasers >= 2) continue;
       teasers++;
       const req = I[z.req];
-      const known = req && (teasers === 1 || st.known[z.req]);
-      h += '<div class="card zone locked-zone"><div class="zh"><span class="zi">🌫️</span><div class="grow"><div class="zn">' +
-        (teasers === 1 ? esc(z.n) : "Terres inconnues") + '</div><div class="small dim">Il te faudrait : ' + (known ? esc(req.n) : "???") + "</div></div></div></div>";
+      const named = req && (teasers === 1 || st.known[z.req]);
+      h += '<div class="card zone locked-zone"' + (named ? ' data-goto="' + z.req + '"' : "") + '><div class="zh"><span class="zi">🌫️</span><div class="grow"><div class="zn">' +
+        (teasers === 1 ? esc(z.n) : "Terres inconnues") + '</div><div class="small dim">Il te faudrait : ' + (named ? '<span class="link-txt">' + esc(req.n) + "</span> (" + esc(D.AGES[req.a].n) + ")" : "???") + "</div></div></div></div>";
     }
     return h;
   }
+
+  function goalCard() {
+    const st = S();
+    const g = E.guide();
+    if (!g) {
+      return st.flags.arche ? '<div class="card acc goal"><span class="ic">🌌</span><div class="grow"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Rends-toi dans le Cosmos.</div></div></div>' : "";
+    }
+    const ob = g.ob;
+    let h = '<div class="card acc goal-card"><div class="lbl">Objectif</div>';
+    if (ob.k === "exp") {
+      const n = E.nextExp(ob.z);
+      h += '<div class="name">🧭 ' + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>";
+      if (n && !n.locked && !st.exp.active) h += '<button class="btn small pri" style="margin-top:8px" data-exp="' + ob.z + '">Explorer</button>';
+      else if (st.exp.active) h += '<div class="tiny muted" style="margin-top:6px">Une exploration est déjà en cours.</div>';
+    } else if (ob.k === "line") {
+      h += '<div class="name">🏭 ' + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
+        '<button class="btn small pri" style="margin-top:8px" data-gotab="fabrique">Ouvrir la Fabrique</button>';
+    } else {
+      const it = I[ob.id];
+      h += '<div class="goal">' + (st.known[ob.id] ? icon(ob.id) : '<span class="ic unk">?</span>') + '<div class="grow"><div class="name">' + esc(it.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
+        (it.h && !st.known[ob.id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "") + "</div></div>";
+      h += stepBox(g.step, g.why, g.step === ob.id);
+    }
+    return h + "</div>";
+  }
+  const WHY_STEP = { station: "Il te faut d’abord une station :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", unknown: "Prochaine étape :" };
+  function stepBox(id, why, isTarget) {
+    const st = S(), it = I[id];
+    let h = '<div class="stepbox">';
+    if (!isTarget) h += '<div class="tiny muted">' + (WHY_STEP[why] || "Prochaine étape :") + "</div><div class=\"row\" style=\"margin:4px 0\">" + (st.known[id] ? icon(id, "sm") : '<span class="ic sm unk">?</span>') +
+      ' <b class="link-txt" data-goto="' + id + '">' + esc(it.n) + "</b></div>" + (it.h && !st.known[id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "");
+    if (!st.known[id]) {
+      const lvl = st.hints[id] || 0;
+      if (lvl >= 1) h += '<div class="memo">💭 Le geste : ' + gesteChip(id) + "</div>";
+      if (lvl >= 2) { const m = mainIngredient(id); h += '<div class="memo">💭 Une des matières : ' + icon(m, "sm") + " " + esc(I[m].n) + "</div>"; }
+      if (lvl === 0) h += '<div class="tiny dim" style="margin-top:4px">Expérimente à l’Atelier. Si tu bloques, tes mains finiront par se souvenir…</div>';
+    } else {
+      const b = E.blocker(id);
+      h += '<div class="rl small">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
+      if (!b) h += '<div class="row wrap" style="margin-top:6px"><button class="btn small pri" data-chain="' + id + '">⚡ Fabriquer</button><button class="btn small" data-tree="' + id + '">🌳 Détail</button>' +
+        (st.track && st.track.id === id ? "" : '<button class="btn small" data-track="' + id + '">🎯 Suivre</button>') + "</div>";
+    }
+    return h + "</div>";
+  }
+
+  function trackerHTML() {
+    const t = S().track;
+    if (!t || !I[t.id]) return "";
+    const id = t.id, p = E.plan(id, 1);
+    let h = '<div class="card track"><div class="row between"><div class="lbl">🎯 Suivi</div><button class="btn small ghost" data-untrack>✕</button></div>' +
+      '<div class="row" style="margin:4px 0 6px">' + icon(id, "sm") + ' <b class="link-txt" data-goto="' + id + '">' + esc(I[id].n) + "</b></div>";
+    if (p.ok) return h + '<div class="small" style="color:var(--good)">Tout est prêt.</div><button class="btn small pri" style="margin-top:6px" data-chain="' + id + '">⚡ Fabriquer</button></div>';
+    const f = E.flows();
+    Object.keys(p.missing).forEach((k) => {
+      if (p.locked.includes(k) || p.blocked[k]) return;
+      const need = p.missing[k];
+      const have = Math.floor(S().inv[k] || 0);
+      const net = E.rate(k) + (f.prod[k] || 0) - (f.cons[k] || 0);
+      const eta = net > 0 ? "≈ " + fmtTime(need / net) : isRawGather(k) ? "à récolter" : "";
+      h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">il manque ' + fmt(need) + '</span><span class="tiny muted eta">' + eta + "</span></div>";
+      void have;
+    });
+    p.locked.forEach((k) => { h += '<div class="why" data-goto="' + k + '">Recette inconnue : ' + esc(I[k].n) + "</div>"; });
+    Object.keys(p.blocked).forEach((k) => { const b = p.blocked[k]; h += '<div class="why">' + esc(I[k].n) + " : " + (b.why === "heat" ? "il faut " + fmtHeat(b.heat) : b.why === "lvl" ? "station de niveau " + b.lvl : "geste inconnu") + "</div>"; });
+    return h + "</div>";
+  }
+
   function zoneCard(z) {
     const st = S();
     const col = !!(st.settings.collapsed && st.settings.collapsed[z.id]);
@@ -292,11 +527,11 @@
     for (const r of z.res) {
       h += '<button class="res" data-res="' + r + '" data-z="' + z.id + '">' + icon(r) +
         '<span class="rc" data-c="' + r + '">' + fmt(st.inv[r] || 0) + '</span><span class="rn">' + esc(I[r].n) + "</span>" +
-        '<span class="rr" data-r="' + r + '"></span><span class="ry" data-y="' + r + '|' + z.id + '"></span></button>';
+        '<span class="rr" data-r="' + r + '"></span><span class="ry" data-y="' + r + "|" + z.id + '"></span></button>';
     }
     h += "</div>";
     const exts = Object.keys(I).filter((id) => I[id].t === "ext" && I[id].z === z.id && (st.inv[id] || 0) > 0);
-    if (exts.length && !col) h += '<div class="ext-line">' + exts.map((id) => '<span class="x">' + icon(id, "sm") + esc(I[id].n) + " ×" + st.inv[id] + "</span>").join("") + "</div>";
+    if (exts.length && !col) h += '<div class="ext-line">' + exts.map((id) => '<span class="x work">' + icon(id, "sm") + esc(I[id].n) + " ×" + st.inv[id] + "</span>").join("") + "</div>";
     if (!col || (st.exp.active && st.exp.active.z === z.id)) h += expBlock(z);
     return h + "</div>";
   }
@@ -331,6 +566,7 @@
     let h = "";
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
     if (!(st.stats.crafts > 0)) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. <b>Œuvre</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
+    h += pinsHTML();
     h += '<div class="gestes">';
     let locks = 0;
     for (const g of D.GESTE_ORDER) {
@@ -356,24 +592,41 @@
     });
     h += '</div><button class="forge-btn" id="forge">' + G.ic + " " + G.n.toUpperCase() + "</button></div>";
     h += '<div class="card result" id="result">' + resultHTML() + "</div>";
+    const sugg = E.knownWith(U.slots).filter((id) => !(U.last && U.last.id === id)).slice(0, 6);
+    if (sugg.length) {
+      h += '<h3 class="sub">Tu sais déjà faire avec ces matières</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
+    }
     h += '<h3 class="sub">Tes matières</h3><div class="filters">' +
       [["tout", "Tout"], ["res", "Récoltées"], ["comp", "Fabriquées"], ["new", "Inutilisées"]].map(([k, n]) => '<button data-if="' + k + '" class="' + (U.invFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
-    h += '<div class="inv-grid">' + invItems().map((id) => {
+    const inv = invItems();
+    h += '<div class="inv-grid">' + inv.map((id) => {
       const sel = U.slots.includes(id);
       return '<button class="inv' + (sel ? " sel" : "") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + icon(id) +
         '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span><span class="n">' + esc(I[id].n) + "</span></button>";
     }).join("") + "</div>";
-    if (!invItems().length) h += '<p class="small muted center">Rien ici. Va récolter dans les Terres.</p>';
+    if (!inv.length) h += '<p class="small muted center">Rien ici. Va récolter dans les Terres.</p>';
+    else h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : à quoi elle sert.</p>';
     return h;
+  }
+  function quickRow(id) {
+    const st = S(), it = I[id];
+    const uniq = E.isUnique(it), owned = uniq && st.made[id] > 0;
+    return '<div class="pin">' + icon(id, "sm") + '<span class="grow pn link-txt" data-goto="' + id + '">' + esc(it.n) + (uniq ? "" : ' <span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span>") + "</span>" +
+      (owned ? '<span class="tiny muted">✓ possédé</span>' : '<button class="btn small" data-cr="' + id + '" data-n="1">' + (uniq ? "Fabriquer" : "×1") + '</button><button class="btn small" data-chain="' + id + '" title="Avec les sous-composants">⚡</button>') + "</div>";
+  }
+  function pinsHTML() {
+    const ids = Object.keys(S().pins).filter((id) => I[id] && I[id].r && S().known[id]);
+    if (!ids.length) return "";
+    return '<h3 class="sub" style="margin-top:4px">★ Épinglées</h3><div class="pins">' + ids.map(quickRow).join("") + "</div>";
   }
   function invItems() {
     const st = S();
     const used = {};
-    if (U.invFilter === "new") for (const id in st.known) if (I[id].r) for (const i in I[id].r[1]) used[i] = true;
+    if (U.invFilter === "new") for (const id in st.known) if (I[id] && I[id].r) for (const i in I[id].r[1]) used[i] = true;
     return Object.keys(st.inv).filter((id) => {
       const it = I[id];
       if (!it || !(st.inv[id] >= 1)) return false;
-      if (E.isUnique(it) || it.t === "ext" || it.t === "auto") return false;
+      if (E.isUnique(it) || E.isScaled(it)) return false;
       if (U.invFilter === "res") return it.t === "res";
       if (U.invFilter === "comp") return it.t !== "res";
       if (U.invFilter === "new") return !used[id];
@@ -403,22 +656,25 @@
         '<div class="rname">' + esc(it.n) + (E.isUnique(it) ? "" : " <span class='muted'>+" + fmt(r.n) + "</span>") + (r.bonus ? ' <span class="small" style="color:var(--intu)">★ chef-d’œuvre +' + fmt(r.bonus) + "</span>" : "") + "</div>" +
         '<div class="small muted">' + esc(it.d || "") + "</div>" + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") + "</div></div>";
       if (!E.isUnique(it)) {
-        h += '<div class="row wrap" style="margin-top:10px"><span class="small muted">' + gesteChip(r.id) + "</span>" + ingHTML(E.costFor(r.id), { check: true }) + "</div>";
-        h += '<div class="row" style="margin-top:8px">' + craftBtns(r.id) + "</div>";
+        h += '<div class="row wrap" style="margin-top:10px"><span class="small muted">' + gesteChip(r.id) + "</span>" + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>";
+        h += '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + '<button class="btn small" data-chain="' + r.id + '">⚡ En chaîne</button></div>';
       }
       return h;
     }
     if (r.kind === "learn") {
       return '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette comprise</span>' : "") +
         '<div class="rname">' + esc(I[r.id].n) + '</div><div class="small">Tu sais comment faire, mais il te manque :</div><div class="row wrap small">' +
-        Object.keys(r.missing).map((i) => '<span class="ing lack">' + icon(i, "sm") + fmt(r.missing[i]) + " " + esc(I[i].n) + "</span>").join("") + "</div></div></div>";
+        Object.keys(r.missing).map((i) => '<span class="ing lack link" data-goto="' + i + '">' + icon(i, "sm") + fmt(r.missing[i]) + " " + esc(I[i].n) + "</span>").join("") + "</div>" +
+        '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-chain="' + r.id + '">⚡ Fabriquer en chaîne</button><button class="btn small" data-tree="' + r.id + '">🌳 Détail</button><button class="btn small" data-track="' + r.id + '">🎯 Suivre</button></div></div></div>';
     }
     if (r.kind === "blocked") {
       const b = r.info;
       let msg = "Il te manque un outil.";
       if (b.why === "heat") msg = "Ça rougeoie, mais ça ne prend pas. Il faudrait au moins " + fmtHeat(b.heat) + " (tu atteins " + fmtHeat(E.heat()) + ").";
       if (b.why === "lvl") msg = U.geste === "marteler" ? "Ton enclume n’est pas assez dure pour ce métal." : "Il faudrait bien plus de puissance.";
+      const st = b.why === "heat" ? E.stationFor("chauffer", b.heat) : b.why === "lvl" ? E.stationFor(I[r.id].r[0], 0, b.lvl) : null;
       return thermo(4) + '<div class="row" style="margin-top:6px">' + icon(r.id) + '<div class="grow"><b>' + esc(I[r.id].n) + '</b><div class="small">' + esc(msg) + "</div>" +
+        (st ? '<div class="small">Il te faudrait : <span class="link-txt" data-goto="' + st + '">' + esc(I[st].n) + "</span></div>" : "") +
         (r.fresh ? '<div class="tiny muted">Recette notée dans le Carnet.</div>' : "") + "</div></div>";
     }
     if (r.kind === "owned") return '<p class="small">Tu possèdes déjà <b>' + esc(I[r.id].n) + "</b>.</p>";
@@ -428,7 +684,7 @@
   function craftBtns(id) {
     const it = I[id];
     if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Fabriquer</button>';
-    if (it.t === "ext" || it.t === "auto") return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Construire</button>';
+    if (E.isScaled(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Construire</button><button class="btn small" data-cr="' + id + '" data-n="5">×5</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>';
     return '<button class="btn small pri" data-cr="' + id + '" data-n="1">×1</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>';
   }
 
@@ -439,41 +695,73 @@
     let known = 0, total = 0;
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = '<h2 class="title">Carnet</h2>';
-    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. Les recettes inconnues ont une <b>énigme</b> ; dépense de l’<b>Intuition ✨</b> pour obtenir un indice. Fabriquer souvent une recette apporte la <b>maîtrise ★</b> : des chefs-d’œuvre gratuits. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
-    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + " · ✨ " + Math.floor(st.intu) + " Intuition" +
-      (E.slots() ? " · Chaînes : " + st.auto.length + "/" + E.slots() : "") + "</p>";
-    h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Production"]].map(([k, n]) =>
+    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. ⚡ <b>En chaîne</b> fabrique aussi tous les sous-composants. 🎯 <b>Suivre</b> affiche ce qui manque dans les Terres. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
+    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
+    h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une matière…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
+    h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Production"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+    return h + '<div id="clist">' + carnetList() + "</div>";
+  }
+  function visibleRecipes() {
+    const st = S();
+    const ids = [];
+    E.carnet().forEach((s) => s.ids.forEach((id) => ids.push(id)));
+    if (E.gesteOK("accorder")) E.pathRecipes().forEach((id) => ids.push(id));
+    return ids;
+  }
+  function hiddenOwned(id) {
+    const it = I[id];
+    return !U.showOwned && E.isUnique(it) && S().made[id] > 0 && U.carnetFilter !== "pin";
+  }
+  function carnetList() {
+    const st = S();
+    const q = norm(U.q);
+    let nHidden = 0;
+    const keep = (id) => { if (!passFilter(id)) return false; if (hiddenOwned(id)) { nHidden++; return false; } return true; };
+    let h = "";
+    if (q) {
+      const ids = visibleRecipes().filter((id) => {
+        const it = I[id];
+        if (norm(it.n).includes(q)) return true;
+        if (!st.known[id]) return false;
+        return Object.keys(it.r[1]).some((i) => norm(I[i].n).includes(q));
+      }).filter(passFilter);
+      h += ids.length ? '<div class="list flat">' + ids.map(recCard).join("") + "</div>" : '<p class="small muted center">Aucune recette ne correspond.</p>';
+      return h;
+    }
     if (E.gesteOK("accorder")) {
-      const ids = E.pathRecipes().filter(passFilter);
+      const ids = E.pathRecipes().filter(keep);
       if (ids.length) h += '<details class="card age-sec" open><summary><span class="ic" style="border-color:#b36bff">🎵</span><span class="an">La Résonance</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
     }
-    const secrets = Object.keys(I).filter((id) => I[id].sec && st.known[id] && I[id].r).filter(passFilter);
+    const book = E.carnet();
     const order = book.map((b, i) => i).sort((a, b) => {
-      const ra = book[a].age === st.age ? 0 : book[a].age === st.age + 1 ? 1 : 2 + (st.age - book[a].age);
-      const rb = book[b].age === st.age ? 0 : book[b].age === st.age + 1 ? 1 : 2 + (st.age - book[b].age);
-      return ra - rb;
+      const rank = (x) => (book[x].age === st.age ? 0 : book[x].age === st.age + 1 ? 1 : 2 + (st.age - book[x].age));
+      return rank(a) - rank(b);
     });
     for (const k of order) {
       const sec = book[k];
-      const ids = sec.ids.filter((id) => !I[id].sec).filter(passFilter);
+      const ids = sec.ids.filter((id) => !I[id].sec).filter(keep);
       if (!ids.length) continue;
       const ag = D.AGES[sec.age];
       const kn = sec.ids.filter((id) => st.known[id] && !I[id].sec).length;
       const all = sec.ids.filter((id) => !I[id].sec).length;
-      const open = U.openAges[sec.age] !== undefined ? U.openAges[sec.age] : sec.age >= st.age;
-      h += '<details class="card age-sec" data-age="' + sec.age + '"' + (open ? " open" : "") + '><summary><span class="ic" style="background:' + ag.c + '22;border-color:' + ag.c + '66">' + (sec.age + 1) +
+      const open = U.carnetFilter !== "tout" || (U.openAges[sec.age] !== undefined ? U.openAges[sec.age] : sec.age >= st.age);
+      h += '<details class="card age-sec" data-age="' + sec.age + '"' + (open ? " open" : "") + '><summary><span class="ic" style="background:' + ag.c + "22;border-color:" + ag.c + '66">' + (sec.age + 1) +
         '</span><span class="an">' + ag.n + '</span><span class="cnt">' + kn + "/" + all + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
     }
-    if (secrets.length) h += '<details class="card age-sec"><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recCard).join("") + "</div></details>";
+    const secrets = Object.keys(I).filter((id) => I[id].sec && st.known[id] && I[id].r).filter(keep);
+    if (secrets.length) h += '<details class="card age-sec"' + (U.carnetFilter !== "tout" ? " open" : "") + '><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recCard).join("") + "</div></details>";
+    if (!h) h = '<p class="small muted center">Rien ici pour l’instant.</p>';
+    if (nHidden || U.showOwned) h += '<p class="center"><button class="btn small ghost" data-owned>' + (U.showOwned ? "Masquer les objets déjà possédés" : "Afficher les " + nHidden + " objets déjà possédés") + "</button></p>";
     return h;
   }
   function passFilter(id) {
     const st = S(), it = I[id];
     if (U.carnetFilter === "tout") return true;
     if (U.carnetFilter === "unk") return !st.known[id];
-    if (U.carnetFilter === "craft") return st.known[id] && E.maxCraftable(id, 1) > 0;
-    if (U.carnetFilter === "prod") return st.known[id] && (it.t === "ext" || it.t === "upg" || it.t === "auto" || it.t === "tool" || it.t === "stat");
+    if (U.carnetFilter === "craft") return st.known[id] && (E.maxCraftable(id, 1) > 0 || E.plan(id, 1).ok);
+    if (U.carnetFilter === "prod") return st.known[id] && ["ext", "upg", "mach", "tool", "stat"].includes(it.t);
+    if (U.carnetFilter === "pin") return !!st.pins[id];
     return true;
   }
   function recCard(id) {
@@ -481,8 +769,8 @@
     if (!st.known[id]) {
       const lvl = st.hints[id] || 0;
       const ing = Object.keys(it.r[1]);
-      const big = ing.slice().sort((a, b) => it.r[1][b] - it.r[1][a])[0];
-      return '<div class="rec unknown"><div class="rh"><span class="ic unk">?</span><div class="grow"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
+      const big = mainIngredient(id);
+      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
         (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
         '<div class="rl tiny muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Matière : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " matière" + (ing.length > 1 ? "s" : "") + "</div>" +
         '<div class="acts"><button class="btn small" data-hint="' + id + '"' + (st.intu < E.hintCost(id) ? " disabled" : "") + ">💡 Indice · ✨" + E.hintCost(id) + "</button></div></div>";
@@ -490,27 +778,113 @@
     const uniq = E.isUnique(it);
     const owned = uniq && (st.made[id] || 0) > 0;
     const stars = E.stars(id);
-    let h = '<div class="rec' + (owned ? " owned" : "") + '"><div class="rh">' + icon(id) + '<div class="grow"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + "</span></div>" +
-      (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div><div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div></div>";
-    if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true }) + "</div>";
+    let h = '<div class="rec' + (owned ? " owned" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + "</span></div>" +
+      (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div><div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
+      '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
+    if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
     const fx = fxText(id);
     if (fx) h += '<div class="fx">' + esc(fx) + "</div>";
-    if (it.t === "ext" || it.t === "auto") h += '<div class="tiny muted" style="margin-top:4px">Possédés : ' + (st.inv[id] || 0) + "</div>";
+    if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:4px">Possédés : ' + Math.floor(st.inv[id] || 0) + "</div>";
     if (!owned) {
       const b = E.blocker(id);
-      if (b && b.why === "heat") h += '<div class="why">Nécessite ' + fmtHeat(b.heat) + "</div>";
-      else if (b && b.why === "lvl") h += '<div class="why">Nécessite ' + D.GESTES[it.r[0]].n + " niveau " + b.lvl + "</div>";
-      else if (b && b.why === "geste") h += '<div class="why">Geste inconnu : ' + D.GESTES[it.r[0]].n + "</div>";
+      if (b && b.why === "heat") h += '<div class="why">Nécessite ' + fmtHeat(b.heat) + " — " + stationLink("chauffer", b.heat, 0) + "</div>";
+      else if (b && b.why === "lvl") h += '<div class="why">Nécessite ' + D.GESTES[it.r[0]].n + " niveau " + b.lvl + " — " + stationLink(it.r[0], 0, b.lvl) + "</div>";
+      else if (b && b.why === "geste") h += '<div class="why">Geste inconnu : ' + D.GESTES[it.r[0]].n + (it.r[0] !== "accorder" ? " — " + stationLink(it.r[0], 0, 0) : "") + "</div>";
       else {
-        h += '<div class="acts">' + craftBtns(id);
-        if (E.slots() && !uniq && it.t !== "ext" && it.t !== "auto") {
-          const on = st.auto.includes(id);
-          h += '<button class="btn small' + (on ? " auto-on" : "") + '" data-auto="' + id + '">⚙ Auto' + (on ? " ✓" : "") + "</button>";
-        }
-        h += "</div>";
+        h += '<div class="acts">' + craftBtns(id) + '<button class="btn small" data-chain="' + id + '" title="Fabriquer aussi les sous-composants">⚡ En chaîne</button>' +
+          '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳</button>' +
+          (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯</button>') +
+          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Confier à la Fabrique">🏭</button>' : "") + "</div>";
       }
     }
     return h + "</div>";
+  }
+  function stationLink(g, heat, lvl) {
+    const s = E.stationFor(g, heat, lvl);
+    return s ? '<span class="link-txt" data-goto="' + s + '">' + esc(I[s].n) + "</span>" : "?";
+  }
+
+  /* ------------------------------------------------------------ FABRIQUE */
+  const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
+  const STATUS = { ok: "En marche", starved: "En attente de matières", full: "Stock plein", idle: "Aucune machine", off: "En pause", blocked: "Station manquante", wait: "Démarrage…" };
+  function viewFabrique() {
+    const st = S(), ms = E.machines(), aspd = E.cache().aspd;
+    let h = '<h2 class="title">La Fabrique</h2>';
+    if (!st.flags.tip_fab) h += '<div class="tip">Chaque <b>ligne</b> fabrique une recette en continu, même jeu fermé, tant qu’elle a ses matières. Règle un <b>stock maximal</b> pour qu’une ligne n’avale pas tout. Les lignes du haut se servent en premier. <button class="btn small ghost" data-tip="tip_fab">OK</button></div>';
+    const owned = E.MACHINES.filter((m) => ms[m].own > 0);
+    h += '<div class="card"><div class="row between"><b>Machines</b>' + (aspd > 1 ? '<span class="small muted">Vitesse de la Fabrique ' + fmtMul(aspd) + "</span>" : "") + "</div>";
+    if (owned.length) h += '<div class="msum">' + owned.map((m) => '<div class="mchip">' + icon(m, "sm") + '<div class="grow"><b>' + esc(I[m].n) + '</b><div class="tiny muted">' + fmtNum(I[m].spd * aspd) + "/min chacune</div></div><span class=\"small\">" + (ms[m].own - ms[m].used) + " libre" + (ms[m].own - ms[m].used > 1 ? "s" : "") + " / " + ms[m].own + "</span></div>").join("") + "</div>";
+    else h += '<p class="small muted">Tu n’as encore aucune machine. Fabrique un <span class="link-txt" data-goto="automate_bois">Automate de bois</span> (Carnet, Âge de la Pierre).</p>';
+    const next = E.MACHINES.find((m) => ms[m].own === 0);
+    if (owned.length && next) h += '<p class="tiny muted" style="margin-top:6px">Machine suivante : <span class="link-txt" data-goto="' + next + '">' + esc(I[next].n) + "</span> (" + esc(D.AGES[I[next].a].n) + ")</p>";
+    h += floorHTML() + "</div>";
+    h += '<button class="btn pri wide" data-newline style="margin-bottom:12px">+ Nouvelle ligne de production</button>';
+    if (!st.lines.length) h += '<p class="small muted center">Aucune ligne pour l’instant. Crée-en une, ou utilise le bouton 🏭 d’une recette du Carnet.</p>';
+    st.lines.forEach((L, i) => { h += lineCard(L, i); });
+    return h;
+  }
+  function floorHTML() {
+    const st = S(), ms = E.machines();
+    let tiles = "";
+    let n = 0;
+    st.lines.forEach((L) => {
+      for (let k = 0; k < L.n && n < 80; k++, n++) tiles += '<span class="tile" data-ft="' + L.id + '" title="' + esc(I[L.r].n) + '">' + (I[L.m].ic || "⚙") + "</span>";
+    });
+    E.MACHINES.forEach((m) => { for (let k = 0; k < ms[m].own - ms[m].used && n < 80; k++, n++) tiles += '<span class="tile free" title="Machine libre">' + I[m].ic + "</span>"; });
+    return tiles ? '<div class="floor">' + tiles + "</div>" : "";
+  }
+  function lineCard(L, i) {
+    const st = S(), it = I[L.r], ms = E.machines();
+    const info = E.lineInfo(L.id);
+    const ing = it.r[1];
+    const ins = Object.keys(ing).map((k) => '<span class="bi" data-goto="' + k + '">' + icon(k, "sm") + "<i>" + fmt(ing[k]) + "</i></span>").join("");
+    const types = E.MACHINES.filter((m) => ms[m].own > 0 || m === L.m);
+    return '<div class="line s-' + info.s + '" data-line="' + L.id + '">' +
+      '<div class="lh"><button class="lt" data-lon="' + L.id + '" aria-label="Marche/arrêt">' + (L.on ? "⏸" : "▶") + '</button><div class="grow"><b class="link-txt" data-goto="' + L.r + '">' + esc(it.n) + '</b><div class="tiny" data-lst="' + L.id + '">' + esc(lineStatus(L, info)) + "</div></div>" +
+      '<button class="mini" data-lmv="' + L.id + '|-1"' + (i === 0 ? " disabled" : "") + ' aria-label="Monter">↑</button><button class="mini" data-lmv="' + L.id + '|1"' + (i === st.lines.length - 1 ? " disabled" : "") + ' aria-label="Descendre">↓</button><button class="mini" data-ldel="' + L.id + '" aria-label="Supprimer">✕</button></div>' +
+      '<div class="belt-row" style="--spd:' + beltSpeed(L) + 's"><div class="ins">' + ins + '</div><div class="belt"><b></b></div><div class="mach">' + icon(L.m) + '<span class="gear">⚙</span><span class="mx">×' + L.n + '</span></div><div class="belt"><b></b></div>' +
+      '<div class="outp">' + icon(L.r) + '<span class="small" data-c="' + L.r + '">' + fmt(st.inv[L.r] || 0) + "</span></div></div>" +
+      '<div class="lctl"><span class="tiny muted">Machines</span><button class="mini" data-ln="' + L.id + '|-1">−</button><b>' + L.n + '</b><button class="mini" data-ln="' + L.id + '|1">+</button>' +
+      '<select data-lm="' + L.id + '" aria-label="Type de machine">' + types.map((m) => '<option value="' + m + '"' + (m === L.m ? " selected" : "") + ">" + esc(I[m].n) + " (" + (ms[m].own - ms[m].used + (m === L.m ? L.n : 0)) + ")</option>").join("") + "</select>" +
+      '<span class="tiny muted">Stock max</span><select data-lcap="' + L.id + '" aria-label="Stock maximal">' + CAPS.map((c) => '<option value="' + c + '"' + (c === L.cap ? " selected" : "") + ">" + (c ? fmt(c) : "∞") + "</option>").join("") +
+      (CAPS.includes(L.cap) ? "" : '<option value="' + L.cap + '" selected>' + fmt(L.cap) + "</option>") + "</select></div></div>";
+  }
+  function lineStatus(L, info) {
+    const perMin = E.lineRate(L) * 60;
+    let s = STATUS[info.s] || "";
+    if (info.s === "ok" || info.s === "wait") s += " · " + fmtNum(perMin) + " fabrications/min";
+    if (info.s === "starved" && info.miss) s = "Il manque : " + Object.keys(info.miss).map((k) => fmt(info.miss[k]) + " " + I[k].n).join(", ");
+    if (info.s === "full") s += " (" + fmt(L.cap) + ")";
+    if (info.s === "blocked") { const b = info.b; s = b && b.why === "heat" ? "Il faut " + fmtHeat(b.heat) : "Station manquante"; }
+    return s;
+  }
+  function beltSpeed(L) {
+    const perMin = Math.max(0.1, E.lineRate(L) * 60);
+    return Math.max(0.35, Math.min(5, 6 / Math.sqrt(perMin))).toFixed(2);
+  }
+  function openLinePicker(preset) {
+    const st = S();
+    const ids = Object.keys(st.known).filter(E.automatable).sort((a, b) => I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
+    openModal({
+      html: "<h2>Nouvelle ligne</h2><p class=\"small muted\">Quelle recette confier à la Fabrique ?</p><div class=\"search\"><input id=\"lpq\" type=\"search\" placeholder=\"Chercher…\" autocomplete=\"off\" value=\"" + esc(preset || "") + "\"></div>" +
+        '<div class="picklist">' + ids.map((id) => '<button class="pick" data-m="pick" data-id="' + id + '" data-n="' + esc(norm(I[id].n)) + '">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) +
+          '</span><span class="tiny muted">' + esc(D.AGES[I[id].a].n.replace("Âge ", "")) + "</span></button>").join("") + "</div>" +
+        '<div class="acts"><button class="btn" data-m="close">Annuler</button></div>',
+      onOpen: (box) => {
+        const inp = $("#lpq", box);
+        const filter = () => { const q = norm(inp.value); $$(".pick", box).forEach((b) => b.classList.toggle("hidden", !!q && !b.dataset.n.includes(q))); };
+        inp.addEventListener("input", filter);
+        filter();
+      },
+      on: { pick: (b) => { createLine(b.dataset.id); } }
+    });
+  }
+  function createLine(id) {
+    const L = E.addLine(id);
+    if (!L) return;
+    A.init(); A.craft("usiner");
+    toast("🏭 Ligne créée : <b>" + esc(I[id].n) + "</b>" + (L.n ? "" : " — aucune machine libre pour l’instant"));
+    if (U.tab === "fabrique") render(true); else badge("fabrique");
   }
 
   /* ------------------------------------------------------------ JOURNAL */
@@ -613,7 +987,7 @@
         if (s.cost) {
           for (const k in s.cost) {
             const paid = ps.paid[k] || 0;
-            h += '<div class="cost-row">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(paid) + "/" + fmt(s.cost[k]) + '</span><div class="bar"><i style="width:' + (100 * paid / s.cost[k]).toFixed(1) + '%"></i></div></div>';
+            h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(paid) + "/" + fmt(s.cost[k]) + '</span><div class="bar"><i style="width:' + (100 * paid / s.cost[k]).toFixed(1) + '%"></i></div></div>';
           }
           if (s.need && !st.frags[s.need]) h += '<div class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[s.need].n) + ".</div>";
           else h += '<div class="row" style="margin-top:8px"><button class="btn small pri" data-give="' + pid + '">Contribuer</button><span class="tiny muted">Donne tout ce que tu peux.</span></div>';
@@ -648,11 +1022,22 @@
     const view = $("#v-" + U.tab);
     $$("[data-c]", view).forEach((el) => {
       const id = el.dataset.c, it = I[id];
-      if (it && E.isUnique(it)) return;
+      if (!it || E.isUnique(it)) return;
       el.textContent = fmt(st.inv[id] || 0);
     });
-    $$("[data-r]", view).forEach((el) => (el.textContent = fmtRate(E.rate(el.dataset.r))));
-    $$("[data-y]", view).forEach((el) => { const [r, z] = el.dataset.y.split("|"); el.textContent = "+" + fmt(E.tapYield(r, z)); });
+    if (U.tab === "terres") {
+      const f = E.flows();
+      $$("[data-r]", view).forEach((el) => {
+        const r = el.dataset.r, net = E.rate(r) + (f.prod[r] || 0) - (f.cons[r] || 0);
+        el.textContent = fmtNet(net);
+        el.classList.toggle("neg", net < -1e-6);
+      });
+      $$("[data-y]", view).forEach((el) => { const [r, z] = el.dataset.y.split("|"); el.textContent = "+" + fmt(E.tapYield(r, z)); });
+      const tb = $("#trackBox", view);
+      if (tb) tb.innerHTML = trackerHTML();
+      const need = st.track ? E.plan(st.track.id, 1).missing : {};
+      $$(".res", view).forEach((el) => el.classList.toggle("need", !!need[el.dataset.res]));
+    }
     $$("[data-need]", view).forEach((el) => el.classList.toggle("lack", (st.inv[el.dataset.need] || 0) + 1e-9 < Number(el.dataset.q)));
     $$("[data-cr]", view).forEach((b) => {
       const id = b.dataset.cr, n = b.dataset.n;
@@ -661,6 +1046,7 @@
       b.disabled = !ok;
       if (n === "max") b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
     });
+    $$("[data-chain]", view).forEach((b) => { b.disabled = !E.plan(b.dataset.chain, 1).ok; });
     $$("[data-exp]", view).forEach((b) => {
       const n = E.nextExp(b.dataset.exp);
       let ok = !st.exp.active && n && !n.locked;
@@ -674,6 +1060,17 @@
       if (s && s.cost) for (const k in s.cost) if ((ps.paid[k] || 0) < s.cost[k] && (st.inv[k] || 0) >= 1) ok = true;
       b.disabled = !ok;
     });
+    if (U.tab === "fabrique") {
+      $$("[data-line]", view).forEach((el) => {
+        const L = st.lines.find((l) => l.id === el.dataset.line);
+        if (!L) return;
+        const info = E.lineInfo(L.id);
+        el.className = "line s-" + info.s;
+        const t = $("[data-lst]", el);
+        if (t) t.textContent = lineStatus(L, info);
+      });
+      $$("[data-ft]", view).forEach((el) => { el.className = "tile s-" + E.lineInfo(el.dataset.ft).s; });
+    }
     if (U.tab === "atelier") {
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
@@ -770,32 +1167,96 @@
     render(true);
   }
 
+  function celebrate(btn, id, n, bonus) {
+    const p = elCenter(btn);
+    A.craft(I[id].r[0]);
+    floater("+" + fmt(n) + " " + I[id].n, p.x, p.y - 16, "var(--good)");
+    if (bonus) setTimeout(() => floater("★ +" + fmt(bonus), p.x, p.y - 30, "var(--intu)"), 200);
+    sparks(p.x, p.y, 8);
+    vibe(10);
+  }
   function craftFrom(btn) {
     A.init();
     const id = btn.dataset.cr;
     const n = btn.dataset.n === "max" ? E.maxCraftable(id) : Number(btn.dataset.n);
     if (!(n > 0)) return;
-    const p = elCenter(btn);
     const r = E.craft(id, n);
     if (!r.ok) { A.fail(0); return; }
-    A.craft(I[id].r[0]);
-    floater("+" + fmt(r.n) + " " + I[id].n, p.x, p.y - 16, "var(--good)");
-    if (r.bonus) setTimeout(() => floater("★ +" + fmt(r.bonus), p.x, p.y - 30, "var(--intu)"), 200);
-    sparks(p.x, p.y, 8);
-    vibe(10);
+    celebrate(btn, id, r.n, r.bonus);
     if (U.last && U.last.id === id) U.last = Object.assign({}, U.last, { n: r.n, bonus: r.bonus, fresh: false });
     render(true);
   }
+  function chainCraft(btn, id, times) {
+    A.init();
+    const r = E.craftPlan(id, times || 1);
+    if (!r.done) { openTree(id, times || 1); return; }
+    const sub = r.steps.length - 1;
+    celebrate(btn, id, I[id].r[2] * (times || 1), 0);
+    if (sub > 0) toast("⚡ " + esc(I[id].n) + " — avec " + sub + " sous-composant" + (sub > 1 ? "s" : "") + " fabriqué" + (sub > 1 ? "s" : ""));
+    render(true);
+  }
+  /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
+  function treeHTML(id, n) {
+    const p = E.plan(id, n), st = S();
+    let h = '<div class="kicker">Fabrication en chaîne</div><div class="row">' + icon(id, "lg") + '<div class="grow"><h2 style="margin:0">' + esc(I[id].n) + "</h2>";
+    if (!E.isUnique(I[id])) h += '<div class="row" style="margin-top:6px"><button class="mini" data-m="tn" data-d="-1">−</button><b style="min-width:40px;text-align:center">×' + fmt(n) + '</b><button class="mini" data-m="tn" data-d="1">+</button><button class="btn small ghost" data-m="tmax">Max</button></div>';
+    h += "</div></div>";
+    h += '<h3 class="sub">Étapes</h3><div class="tsteps">' + p.steps.map(([x, k]) => '<div class="tstep">' + D.GESTES[I[x].r[0]].ic + ' <span class="tiny muted">' + D.GESTES[I[x].r[0]].n + "</span> " + icon(x, "sm") + " <b>" + esc(I[x].n) + '</b> <span class="muted">× ' + fmt(k) + "</span></div>").join("") + "</div>";
+    const used = Object.keys(p.used);
+    if (used.length) h += '<h3 class="sub">Pris dans ton stock</h3><div class="row wrap small">' + used.map((k) => '<span class="ing">' + icon(k, "sm") + fmt(p.used[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
+    const miss = Object.keys(p.missing).filter((k) => !p.locked.includes(k) && !p.blocked[k]);
+    if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">Il manque</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
+    if (p.locked.length) h += '<p class="why">Recettes encore inconnues : ' + p.locked.map((k) => esc(I[k].n)).join(", ") + "</p>";
+    const bl = Object.keys(p.blocked);
+    if (bl.length) h += '<p class="why">' + bl.map((k) => esc(I[k].n) + (p.blocked[k].why === "owned" ? " : déjà possédé" : p.blocked[k].why === "heat" ? " : il faut " + fmtHeat(p.blocked[k].heat) : " : station manquante")).join(" · ") + "</p>";
+    h += '<div class="acts"><button class="btn" data-m="close">Fermer</button>' + (st.track && st.track.id === id ? "" : '<button class="btn" data-m="track">🎯 Suivre</button>') +
+      '<button class="btn pri" data-m="go"' + (p.ok ? "" : " disabled") + ">⚡ Tout fabriquer</button></div>";
+    return h;
+  }
+  function openTree(id, n) {
+    let times = Math.max(1, n || 1);
+    openModal({
+      html: treeHTML(id, times),
+      on: {
+        tn: (b) => { times = Math.max(1, times + Number(b.dataset.d) * (times >= 100 ? 10 : 1)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
+        tmax: () => { times = Math.max(1, E.maxPlan(id)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
+        track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id].n) + "</b> (voir les Terres)"); },
+        go: (b) => { chainCraft(b, id, times); }
+      }
+    });
+  }
+
+  /* Aller à la recette d’un objet dans le Carnet (ou à sa zone s’il se récolte). */
+  function goto(id) {
+    const it = I[id];
+    if (!it) return;
+    const zid = E.RES_ZONE[id];
+    if (zid && E.zoneOpen(zid) && it.t === "res") {
+      setTab("terres");
+      setTimeout(() => { const el = $('.zone[data-z="' + zid + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); flash(el); } }, 60);
+      return;
+    }
+    if (!it.r) { openItemInfo(id); return; }
+    const visible = visibleRecipes().includes(id) || (it.sec && S().known[id]);
+    if (!visible) { toast("Cette recette appartient à un âge que tu n’as pas encore atteint."); return; }
+    U.q = ""; U.carnetFilter = "tout"; U.openAges[it.a] = true;
+    if (E.isUnique(it) && S().made[id] > 0) U.showOwned = true;
+    setTab("carnet");
+    setTimeout(() => { const el = $('[data-rec="' + id + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); flash(el); } }, 60);
+  }
+  function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
 
   function openItemInfo(id) {
     const it = I[id], st = S();
     const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] && st.known[k]);
+    const zid = E.RES_ZONE[id];
     let h = '<div class="row">' + icon(id, "lg") + '<div class="grow"><div class="kicker">' + TYPE[it.t] + "</div><h2 style=\"margin:0\">" + esc(it.n) + "</h2></div></div>" +
       '<p class="serif" style="font-size:16px">' + esc(it.d || "") + "</p>" + (fxText(id) ? '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>" : "") +
-      '<p class="small muted">En stock : ' + fmt(st.inv[id] || 0) + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "") + "</p>";
-    if (uses.length) h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + uses.map((k) => '<span class="ing">' + icon(k, "sm") + esc(I[k].n) + "</span>").join("") + "</div>";
+      '<p class="small muted">En stock : ' + fmt(st.inv[id] || 0) + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "") + (zid ? " · se récolte : " + esc(zoneName(zid)) : "") + "</p>";
+    if (uses.length) h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + uses.map((k) => '<span class="ing link" data-m="go" data-id="' + k + '">' + icon(k, "sm") + esc(I[k].n) + "</span>").join("") + "</div>";
     else h += '<p class="small muted">Tu ne connais encore aucune recette qui l’utilise.</p>';
-    openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
+    openModal({ html: h + '<div class="acts">' + (it.r && st.known[id] ? '<button class="btn" data-m="go" data-id="' + id + '">📖 Recette</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div>',
+      on: { go: (b) => { setTimeout(() => goto(b.dataset.id), 80); } } });
   }
 
   function giveProject(pid) {
@@ -828,7 +1289,7 @@
     if (r.fresh) toast("Tu as enregistré le <b>Signal de Kher</b>.");
   }
   function skyTap(ev) {
-    const cv = ev.currentTarget, rc = cv.getBoundingClientRect();
+    const cv = ev.target, rc = cv.getBoundingClientRect();
     const hit = Sky.hit(ev.clientX - rc.left, ev.clientY - rc.top);
     const info = $("#skyInfo");
     if (!hit || !info) return;
@@ -865,37 +1326,28 @@
     A.init(); A.click();
     E.terminal(txt);
     render(true);
-    const inp = $("#termIn"); if (inp) inp.focus();
+    const inp = $("#termIn"); if (inp) { inp.value = ""; inp.focus(); }
   }
 
   /* ------------------------------------------------------------ menus */
   function openMenu() {
     const st = S();
     openModal({
-      html: '<h2>Menu</h2>' +
+      html: "<h2>Menu</h2>" +
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
-        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="export">💾 Exporter la sauvegarde</button>' +
-        '<button class="btn" data-m="import">📥 Importer une sauvegarde</button><button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button>' +
-        '<button class="btn pri" data-m="close">Fermer</button></div><p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · sauvegarde automatique sur cet appareil</p>',
+        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
+        '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
+        '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
       on: {
         sound: (b) => { st.settings.sound = !st.settings.sound; A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
+        saves: () => setTimeout(openSaves, 80),
         help: () => setTimeout(openHelp, 80),
-        export: () => setTimeout(() => {
-          save();
-          const code = E.exportSave();
-          openModal({ html: "<h2>Exporter</h2><p class=\"small muted\">Copie ce code et garde-le précieusement.</p><textarea class=\"save\" readonly>" + code + '</textarea><div class="acts"><button class="btn" data-m="copy">Copier</button><button class="btn pri" data-m="close">Fermer</button></div>',
-            onOpen: (box) => { const t = $("textarea", box); t.focus(); t.select(); },
-            on: { copy: () => { try { navigator.clipboard.writeText(code); toast("Copié !"); } catch (e) { /* ignoré */ } return true; } } });
-        }, 80),
-        import: () => setTimeout(() => {
-          openModal({ html: '<h2>Importer</h2><p class="small muted">Colle ici un code de sauvegarde. La partie actuelle sera remplacée.</p><textarea class="save" id="impTxt"></textarea><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">Importer</button></div>',
-            on: { go: () => { try { E.importSave($("#impTxt").value); save(); toast("Sauvegarde importée."); setTab("terres"); } catch (e) { toast("Code invalide."); return true; } } } });
-        }, 80),
+        news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
         reset: () => setTimeout(() => {
-          openModal({ html: '<h2>Tout recommencer ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. C’est définitif.</p><div class="acts"><button class="btn" data-m="close">Non</button><button class="btn pri" style="background:var(--bad)" data-m="go">Effacer</button></div>',
-            on: { go: () => { E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("terres"); intro(); } } });
+          openModal({ html: '<h2>Tout recommencer ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans ☰ → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Non</button><button class="btn pri" style="background:var(--bad)" data-m="go">Effacer</button></div>',
+            on: { go: () => { pushBackup(E.serialize(), "Avant de tout recommencer"); E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("terres"); intro(); } } });
         }, 80)
       }
     });
@@ -903,12 +1355,13 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🌲 Terres</b> — Touche les ressources pour les récolter (maintiens pour récolter en continu). Les <b>extracteurs</b> que tu construis produisent tout seuls, même quand le jeu est fermé (jusqu’à 12 h). Lance des <b>explorations</b> pour découvrir l’histoire du monde.</p>" +
-      "<p><b>🔨 Atelier</b> — Le cœur du jeu. Choisis un <b>geste</b> (Tailler, Tresser, Chauffer…), pose jusqu’à trois <b>matières</b>, et œuvre. Les quantités sont automatiques. Si rien ne se passe, le <b>thermomètre</b> te dit si tu t’approches d’une recette : Froid, Frais, Tiède, Chaud, Brûlant.</p>" +
-      "<p><b>📖 Carnet</b> — Les recettes connues se refabriquent d’un geste (×1, ×10, Max). Les inconnues ont une énigme ; l’<b>Intuition ✨</b> achète des indices. Fabriquer souvent donne la <b>maîtrise ★</b> et des chefs-d’œuvre (production bonus).</p>" +
-      "<p><b>Stations</b> — Un nouveau feu, four ou outil débloque de nouveaux gestes ou une chaleur plus forte : de nouvelles recettes deviennent possibles avec des matières que tu connais déjà.</p>" +
+      "<p><b>🌲 Terres</b> — Touche les ressources pour les récolter (maintiens pour récolter en continu). Les <b>extracteurs</b> produisent tout seuls, même jeu fermé (jusqu’à 12 h). Lance des <b>explorations</b> pour découvrir l’histoire du monde. L’<b>objectif</b> t’indique la prochaine étape.</p>" +
+      "<p><b>🔨 Atelier</b> — Le cœur du jeu. Choisis un <b>geste</b>, pose jusqu’à trois <b>matières</b>, et œuvre. Si rien ne se passe, le <b>thermomètre</b> te dit si tu t’approches d’une recette. Si tu bloques longtemps, des <b>réminiscences</b> te soufflent la solution.</p>" +
+      "<p><b>📖 Carnet</b> — Tes recettes. <b>⚡ En chaîne</b> fabrique aussi tous les sous-composants, <b>🎯 Suivre</b> affiche ce qui manque, <b>☆</b> épingle une recette dans l’Atelier, et chaque ingrédient est cliquable. Les inconnues ont une énigme ; l’<b>Intuition ✨</b> achète des indices.</p>" +
+      "<p><b>🏭 Fabrique</b> — Avec des automates et des machines, confie une recette à une ligne de production : elle tourne en continu, même jeu fermé.</p>" +
       "<p><b>📜 Journal</b> — Fragments d’histoire, secrets, mélodies. Lis attentivement : certains textes cachent des recettes, des codes ou des airs.</p>" +
-      "<p><b>🔭 Cosmos</b> — Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins du jeu. Il y a plus d’une fin.</p></div>", "Compris");
+      "<p><b>🔭 Cosmos</b> — Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins du jeu. Il y a plus d’une fin.</p>" +
+      "<p><b>💾 Sauvegardes</b> — Dans le menu ☰ : télécharge ta partie en fichier pour la garder ou la transférer.</p></div>", "Compris");
   }
 
   function intro() {
@@ -921,7 +1374,7 @@
       html: '<div class="lore" style="padding:10px 0">' + lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + esc(l) + "</p>").join("") +
         '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>',
       onClose: () => {
-        st.introSeen = true; save(); A.init();
+        st.introSeen = true; st.flags.news = null; save(); A.init();
         if (st.flags.capsuleMsg) {
           st.flags.capsuleMsg = false;
           simpleModal("Capsule temporelle", "Un message de toi-même",
@@ -954,7 +1407,7 @@
       html: '<div class="kicker">Nouveau cycle</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières et tes machines seront remis à zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b> et tes <b>secrets</b>.</p>" +
         "<p>Échos accumulés : <b>" + ech + "</b> — récolte et production <b>+" + ech * 50 + " %</b>.</p>" +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Recommencer</button></div>',
-      on: { go: () => { E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; setTab("terres"); setTimeout(intro, 200); } }
+      on: { go: () => { pushBackup(E.serialize(), "Avant le cycle " + (st.cycle + 1)); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; setTab("terres"); setTimeout(intro, 200); } }
     });
   }
 
@@ -975,14 +1428,24 @@
     E.on("zone", (z) => { toast("Nouvelle zone : <b>" + esc(zoneName(z)) + "</b>"); badge("terres"); });
     E.on("discover", (id) => {
       const it = I[id];
-      if (!U.forging) {
-        if (!it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " — " + esc(fxText(id)) : ""));
-      }
-      if (it.e && it.e.sky) { badge("cosmos"); updateBadges(); }
+      if (!U.forging && !it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " — " + esc(fxText(id)) : ""));
+      if (it.e && it.e.sky) badge("cosmos");
+      if (it.t === "mach") badge("fabrique");
+      updateBadges();
     });
     E.on("event", (ev) => {
       setTimeout(() => simpleModal("Réminiscence", esc(I[ev.id].n), loreHTML(ev.txt)), 500);
     });
+    E.on("guidehint", (h) => {
+      const it = I[h.id];
+      const line = D.GUIDE.lines[h.lvl - 1]
+        .replace("{g}", D.GESTES[it.r[0]].n.toLowerCase())
+        .replace("{i}", I[mainIngredient(h.id)].n.toLowerCase());
+      A.secret();
+      toast("💭 <b>" + esc(it.n) + "</b> — " + esc(line));
+      badge("terres");
+    });
+    E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé."); });
     E.on("secret", (id) => {
       badge("journal");
       const it = I[id];
@@ -1040,6 +1503,12 @@
       '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Dépense-la dans le Carnet pour obtenir des indices sur les recettes inconnues.</p>' +
       (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
     $("#expMini").addEventListener("click", () => setTab("terres"));
+    $("#updBar").addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-u]");
+      if (!b) return;
+      if (b.dataset.u === "save") downloadSave();
+      if (b.dataset.u === "go") applyUpdate();
+    });
 
     const views = $("#views");
     views.addEventListener("pointerdown", (ev) => {
@@ -1064,6 +1533,13 @@
         if (U.lp) { cancelLp(); U.lp = null; putInSlot(b.dataset.inv); }
         return;
       }
+      if ((b = t.closest("[data-pin]"))) { const on = E.togglePin(b.dataset.pin); A.click(); toast(on ? "★ Épinglée : visible en haut de l’Atelier." : "Recette désépinglée."); render(true); return; }
+      if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
+      if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
+      if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (voir les Terres)"); render(true); return; }
+      if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
+      if ((b = t.closest("[data-autoline]"))) { createLine(b.dataset.autoline); return; }
+      if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
       if ((b = t.closest("[data-zc]"))) {
         const st = S(), z = b.dataset.zc;
         st.settings.collapsed = st.settings.collapsed || {};
@@ -1077,17 +1553,11 @@
       if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
       if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; render(true); return; }
       if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
+      if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
       if ((b = t.closest("[data-hint]"))) {
         const id = b.dataset.hint;
         if (E.revealHint(id)) { A.discover(); if (S().known[id]) toast("Recette révélée : <b>" + esc(I[id].n) + "</b>"); render(true); }
         return;
-      }
-      if ((b = t.closest("[data-auto]"))) {
-        const id = b.dataset.auto;
-        const was = S().auto.includes(id);
-        const ok = E.toggleAuto(id);
-        if (!was && !ok) toast("Toutes tes chaînes d’assemblage sont occupées.");
-        render(true); return;
       }
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
       if ((b = t.closest("[data-exp]"))) {
@@ -1095,13 +1565,12 @@
         if (r.ok) { A.init(); A.click(); toast("Exploration en cours…"); } else if (r.why === "busy") toast("Tu explores déjà ailleurs.");
         render(true); return;
       }
-      if ((b = t.closest("[data-goto]"))) {
-        const id = b.dataset.goto;
-        U.carnetFilter = "tout"; U.openAges[I[id].a] = true;
-        setTab("carnet");
-        setTimeout(() => { const el = $$(".rec").find((e) => e.innerHTML.includes(esc(I[id].n))); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 50);
-        return;
-      }
+      if ((b = t.closest("[data-newline]"))) { openLinePicker(); return; }
+      if ((b = t.closest("[data-lon]"))) { const L = S().lines.find((l) => l.id === b.dataset.lon); if (L) { E.setLine(L.id, { on: !L.on }); A.click(); render(true); } return; }
+      if ((b = t.closest("[data-ln]"))) { const [lid, d] = b.dataset.ln.split("|"); const L = S().lines.find((l) => l.id === lid); if (L) { E.setLine(lid, { n: L.n + Number(d) }); if (L.n === 0 && Number(d) > 0) toast("Aucune machine libre de ce type."); A.click(); render(true); } return; }
+      if ((b = t.closest("[data-lmv]"))) { const [lid, d] = b.dataset.lmv.split("|"); E.moveLine(lid, Number(d)); render(true); return; }
+      if ((b = t.closest("[data-ldel]"))) { E.delLine(b.dataset.ldel); A.click(); render(true); return; }
+      if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
       if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; render(true); return; }
       if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n), loreHTML(F.t), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
@@ -1110,6 +1579,18 @@
       if (t.closest("#listen")) { listen(); return; }
       if ((b = t.closest("[data-give]"))) { giveProject(b.dataset.give); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }
+    });
+    views.addEventListener("change", (ev) => {
+      const t = ev.target;
+      if (t.dataset.lm) { E.setLine(t.dataset.lm, { m: t.value }); render(true); }
+      if (t.dataset.lcap) { E.setLine(t.dataset.lcap, { cap: Number(t.value) }); render(true); }
+    });
+    views.addEventListener("input", (ev) => {
+      if (ev.target.id === "cq") {
+        U.q = ev.target.value;
+        const l = $("#clist");
+        if (l) { l.innerHTML = carnetList(); refresh(); }
+      }
     });
     views.addEventListener("toggle", (ev) => {
       const d = ev.target;
@@ -1139,30 +1620,67 @@
       (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : ""));
   }
 
+  /* ============================================================ MISES À JOUR
+   * Une nouvelle version s’installe en arrière-plan puis attend ton accord :
+   * tu peux télécharger ta sauvegarde avant de l’appliquer. */
+  function showUpdate(reg) {
+    U.updReg = reg;
+    const bar = $("#updBar");
+    bar.innerHTML = '<span class="grow">✨ Une nouvelle version d’Éclat est prête.</span><button class="btn small" data-u="save">💾 Ma sauvegarde</button><button class="btn small pri" data-u="go">Mettre à jour</button>';
+    bar.classList.remove("hidden");
+  }
+  function applyUpdate() {
+    const reg = U.updReg;
+    save();
+    pushBackup(E.serialize(), "Avant la mise à jour suivante");
+    if (!reg || !reg.waiting) { location.reload(); return; }
+    U.wantReload = true;
+    reg.waiting.postMessage({ type: "SKIP_WAITING" });
+    setTimeout(() => location.reload(), 3000);
+  }
+  function setupSW() {
+    if (!("serviceWorker" in navigator) || !location.protocol.startsWith("http")) return;
+    navigator.serviceWorker.register("sw.js").then((reg) => {
+      if (reg.waiting && navigator.serviceWorker.controller) showUpdate(reg);
+      reg.addEventListener("updatefound", () => {
+        const w = reg.installing;
+        if (!w) return;
+        w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller && reg.waiting) showUpdate(reg); });
+      });
+      setInterval(() => reg.update().catch(() => { /* hors ligne */ }), 30 * 60 * 1000);
+    }).catch(() => { /* hors ligne indisponible */ });
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (U.wantReload && !reloading) { reloading = true; location.reload(); }
+    });
+  }
+
   /* ============================================================ BOUCLE */
   function loop() {
     E.update();
-    if (U.offline) showOffline();
+    if (U.offline && !U.mcur) showOffline();
     if (U.dirty && !U.holding) render();
   }
 
   function boot() {
     setupModal();
     bindEngine();
-    const had = loadSave();
+    const status = loadSave();
     A.setEnabled(S().settings.sound);
-    if (had) E.update();
+    if (status === "ok" || status === "migrated") E.update();
     bindDom();
     setTab("terres");
-    if (!S().introSeen) intro();
-    else showOffline();
+    if (status === "error") showBadSave();
+    else if (!S().introSeen) intro();
+    else {
+      if (S().flags.news) showNews();
+      showOffline();
+    }
     setInterval(loop, 100);
     setInterval(refresh, 250);
     setInterval(save, 10000);
-    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-      navigator.serviceWorker.register("sw.js").catch(() => { /* hors ligne indisponible */ });
-    }
-    window.__eclat = { E, U, render };
+    setupSW();
+    window.__eclat = { E, U, render, save, backups };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
