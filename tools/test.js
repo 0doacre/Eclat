@@ -542,4 +542,86 @@ test("nouveau cycle : on garde le savoir, on gagne des échos", () => {
   assert.strictEqual(E.tapYield("bois", "lisiere"), 1.5);
 });
 
+test("mains : une pièce après l’autre, matières mises de côté", () => {
+  const E = mk();
+  E.add("bois", 20); E.learn("manche");
+  const t = E.handTime("manche");
+  const r = E.queue("manche", 3);
+  assert.ok(r.ok);
+  assert.strictEqual(E.count("bois"), 11, "le bois est pris dès la mise en file");
+  assert.ok(Math.abs(r.time - 3 * t) < 1e-9);
+  E.step(t * 1.5);
+  assert.strictEqual(E.count("manche"), 1, "une pièce finie");
+  assert.ok(E.cancelJob(0));
+  assert.strictEqual(E.count("bois"), 17, "les deux pièces pas faites rendent leur bois");
+  assert.strictEqual(E.state.hand.q.length, 0);
+  assert.strictEqual(E.queue("manche", 10).why, "qty");
+});
+test("mains : en chaîne, les sous-composants restent sur l’établi", () => {
+  const E = mk();
+  E.add("bois", 10); E.add("fibre", 12); E.add("manche", 4);
+  ["manche", "corde", "archet"].forEach((i) => E.learn(i));
+  const r = E.queue("archet", 2, true);
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.strictEqual(E.count("manche"), 2, "deux manches du stock réservés");
+  assert.strictEqual(E.count("fibre"), 0, "de quoi tresser quatre cordes");
+  E.step(r.time + 0.01);
+  assert.strictEqual(E.count("archet"), 2);
+  assert.strictEqual(E.count("corde"), 0, "les cordes ont servi aux archets");
+  assert.strictEqual(E.count("manche"), 2);
+  assert.strictEqual(E.state.hand.q.length, 0);
+});
+test("mains : découverte immédiate, recette connue dans la file, outil unique une seule fois", () => {
+  const E = mk();
+  E.add("bois", 30);
+  assert.strictEqual(E.attempt("tailler", ["bois"]).kind, "craft", "première fois : tout de suite");
+  const q = E.attempt("tailler", ["bois"]);
+  assert.strictEqual(q.kind, "queued");
+  assert.strictEqual(E.count("manche"), 1);
+  E.step(q.time);
+  assert.strictEqual(E.count("manche"), 2);
+  E.add("fibre", 100); E.learn("panier");
+  assert.ok(E.queue("panier", 1).ok);
+  assert.strictEqual(E.queue("panier", 1).why, "queued");
+  for (let i = 0; i < 7; i++) E.queue("manche", 1);
+  E.learn("corde");
+  assert.strictEqual(E.queue("corde", 1).why, "full");
+});
+test("mains : la file survit à la sauvegarde et avance pendant l’absence", () => {
+  const E = mk();
+  E.add("bois", 30); E.learn("manche");
+  E.queue("manche", 8);
+  const txt = E.serialize();
+  const F = mk();
+  F.load(txt);
+  assert.strictEqual(F.count("bois"), 6);
+  T += 60000;
+  F.update();
+  assert.strictEqual(F.count("manche"), 8);
+  assert.strictEqual(F.state.hand.q.length, 0);
+});
+test("sauvegarde : une fabrication illisible rend ses matières", () => {
+  const E = mk();
+  const o = JSON.parse(E.serialize());
+  o.inv.bois = 1;
+  o.hand = { q: [{ id: "objet_disparu", s: [["objet_disparu", 2]], i: 0, k: 0, b: { bois: 5, truc_inconnu: 2 } }, { id: "manche", s: [["manche", 1]], i: 0, k: 0, b: { bois: 3 } }], p: 0.2 };
+  E.load(o);
+  assert.strictEqual(E.count("bois"), 6, "le bois mis de côté revient");
+  assert.strictEqual(E.state.orphans.inv.truc_inconnu, 2, "l’inconnu est mis de côté, pas jeté");
+  assert.strictEqual(E.state.hand.q.length, 1);
+});
+test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
+  const E = mk();
+  ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));
+  assert.deepStrictEqual(E.reactions("bois"), { tailler: 1 }, "le manche");
+  E.learn("manche");
+  E.add("manche", 1);
+  assert.ok(E.reactions("manche").tresser >= 1, "le panier");
+  const before = E.state.intu;
+  assert.ok(E.study("manche"));
+  assert.strictEqual(E.state.intu, before - E.studyCost("manche"));
+  assert.ok(!E.study("manche"), "une seule fois");
+  assert.ok(!E.study("os"), "pas une matière jamais vue");
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

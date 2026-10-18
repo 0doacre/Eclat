@@ -11,10 +11,9 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const HINT_COST = [1, 1, 2];
   const SAVE_VERSION = 4;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
-  const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins"];
+  const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
   const keyOf = (g, ids) => g + "|" + ids.slice().sort().join(",");
 
@@ -81,6 +80,7 @@
       intu: 3, zones: { lisiere: true }, flags: {}, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
       fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {},
+      hand: { q: [], p: 0 }, studied: {},
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
@@ -209,8 +209,11 @@
       if (!n) return;
       S.inv[id] = (S.inv[id] || 0) + n;
       if (S.inv[id] < 1e-9) S.inv[id] = 0;
-      // l’ordre de découverte, pour trier les matières (les anciennes parties ont « true »)
-      if (n > 0 && !S.seen[id]) { S.seen[id] = (S.seenSeq = (S.seenSeq || 0) + 1); E.emit("struct"); }
+      if (n > 0) markSeen(id);
+    }
+    /* l’ordre de découverte, pour trier les matières (les anciennes parties ont « true ») */
+    function markSeen(id) {
+      if (!S.seen[id]) { S.seen[id] = (S.seenSeq = (S.seenSeq || 0) + 1); E.emit("struct"); }
     }
     E.add = add;
 
@@ -320,11 +323,11 @@
       for (const i in base) out[i] = Math.ceil(base[i] * f);
       return out;
     }
-    /* coût total de `times` fabrications à partir de l’état courant */
-    function totalCost(id, times) {
+    /* coût total de `times` fabrications, la première étant la n° `from` (par défaut : ce qu’on possède) */
+    function totalCost(id, times, from) {
       const it = item(id), tot = {};
       if (isScaled(it)) {
-        const owned = count(id);
+        const owned = from === undefined ? count(id) : from;
         for (let k = 0; k < times; k++) {
           const c = costFor(id, owned + k);
           for (const i in c) tot[i] = (tot[i] || 0) + c[i];
@@ -419,12 +422,22 @@
       if (miss) return { ok: false, why: "qty", missing: miss };
       const tot = totalCost(id, times);
       for (const i in tot) add(i, -tot[i]);
+      return makeIt(id, times, quiet);
+    }
+    E.craft = craft;
+    /* les matières sont déjà prises : on fabrique. Avec `bench`, le résultat reste sur
+     * l’établi (sous-composant d’une fabrication en chaîne) au lieu d’aller au stock. */
+    function makeIt(id, times, quiet, bench) {
+      const it = item(id);
       const bonus = bonusFor(it, times);
       const out = it.r[2] * (times + bonus);
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
       S.stats.crafts += times;
-      add(id, out);
+      if (bench && !isUnique(it) && !isScaled(it)) {
+        bench[id] = (bench[id] || 0) + out;
+        markSeen(id);
+      } else add(id, out);
       if (!S.known[id]) learn(id, true);
       if (first) onFirstCraft(id);
       if (isUnique(it) || isScaled(it)) { recalc(); E.emit("struct"); }
@@ -432,7 +445,6 @@
       if (!quiet) E.emit("crafted", id, { n: out, bonus: bonus * it.r[2], first });
       return { ok: true, n: out, bonus: bonus * it.r[2], first };
     }
-    E.craft = craft;
 
     function onFirstCraft(id) {
       const it = item(id);
@@ -487,11 +499,15 @@
           const fresh = learn(id);
           return { kind: "learn", id, missing: miss, fresh, temp: 4 };
         }
-        const wasKnown = !!S.known[id];
-        if (!wasKnown) learn(id);
+        // une découverte se fabrique sur-le-champ ; une recette connue part dans la file des mains
+        if (S.known[id]) {
+          const q = E.queue(id, 1);
+          return q.ok ? { kind: "queued", id, time: q.time } : { kind: "busy", id, why: q.why };
+        }
+        learn(id);
         const res = craft(id, 1, true);
         E.emit("crafted", id, res);
-        return Object.assign({ kind: "craft", id, fresh: !wasKnown }, res);
+        return Object.assign({ kind: "craft", id, fresh: true }, res);
       }
       const t = temperature(g, ids);
       const pool = D.FAIL[g] || D.FAIL.assembler;
@@ -607,18 +623,147 @@
       return lo;
     };
 
-    /* ------------------------------------------------------ indices */
-    E.hintCost = (id) => HINT_COST[S.hints[id] || 0] || 0;
-    E.revealHint = function (id) {
-      const lvl = S.hints[id] || 0;
-      if (S.known[id] || lvl >= 3) return false;
-      const cost = HINT_COST[lvl];
-      if (S.intu < cost) return false;
-      S.intu -= cost;
-      S.hints[id] = lvl + 1;
-      if (lvl + 1 >= 3) learn(id, true);
+    /* ------------------------------------------------------ les mains
+     * Fabriquer à la main prend du temps : une pièce après l’autre, dans l’ordre de
+     * la file. Les matières sont mises de côté sur l’établi dès la mise en file (les
+     * machines ne peuvent plus les prendre) et rendues si on annule. Les sous-composants
+     * d’une fabrication en chaîne restent sur l’établi jusqu’à l’étape qui s’en sert. */
+    const H = D.HAND;
+    function handTime(id) {
+      const it = item(id);
+      const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k;
+    }
+    E.handTime = handTime;
+    /* pièces de `id` encore à faire dans la file */
+    function queued(id) {
+      let n = 0;
+      S.hand.q.forEach((j) => j.s.forEach((s, i) => { if (s[0] === id && i >= j.i) n += s[1] - (i === j.i ? j.k : 0); }));
+      return n;
+    }
+    E.queued = queued;
+    function jobTime(j, first) {
+      let t = 0;
+      j.s.forEach((s, i) => { if (i >= j.i) t += (s[1] - (i === j.i ? j.k : 0)) * handTime(s[0]); });
+      return Math.max(0, t - (first ? S.hand.p : 0));
+    }
+    /* prend `cost` sur l’établi d’abord, puis dans le stock ; rien s’il manque quelque chose */
+    function take(cost, bench) {
+      for (const i in cost) if ((bench[i] || 0) + (S.inv[i] || 0) + 1e-9 < cost[i]) return false;
+      for (const i in cost) {
+        const b = Math.min(bench[i] || 0, cost[i]);
+        if (b > 0) { bench[i] -= b; if (bench[i] < 1e-9) delete bench[i]; }
+        if (cost[i] - b > 1e-9) add(i, -(cost[i] - b));
+      }
+      return true;
+    }
+    /* met une fabrication dans la file ; avec `chain`, ses sous-composants aussi */
+    E.queue = function (id, times, chain) {
+      times = Math.max(1, Math.floor(times || 1));
+      const it = item(id);
+      if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
+      if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
+      if (isUnique(it)) {
+        times = 1;
+        if (queued(id) > 0) return { ok: false, why: "queued" };
+      }
+      let steps, bench = {};
+      if (chain) {
+        const p = E.plan(id, times);
+        if (!p.ok) return { ok: false, why: "plan", plan: p };
+        steps = p.steps;
+        for (const i in p.used) bench[i] = p.used[i];
+      } else {
+        const b = blocker(id);
+        if (b) return { ok: false, why: b.why, info: b };
+        bench = totalCost(id, times, count(id) + queued(id));
+        const miss = {};
+        let any = false;
+        for (const i in bench) if ((S.inv[i] || 0) + 1e-9 < bench[i]) { miss[i] = Math.ceil(bench[i] - (S.inv[i] || 0)); any = true; }
+        if (any) return { ok: false, why: "qty", missing: miss };
+        steps = [[id, times]];
+      }
+      for (const i in bench) add(i, -bench[i]);
+      const j = { id, s: steps, i: 0, k: 0, b: bench };
+      S.hand.q.push(j);
+      E.emit("hand", { kind: "add", job: j });
+      return { ok: true, job: j, time: jobTime(j, S.hand.q.length === 1) };
+    };
+    E.cancelJob = function (idx) {
+      const j = S.hand.q[idx];
+      if (!j) return false;
+      for (const i in j.b) add(i, j.b[i]);
+      S.hand.q.splice(idx, 1);
+      if (idx === 0) S.hand.p = 0;
+      E.emit("hand", { kind: "cancel", job: j });
+      return true;
+    };
+    /* la file, pour l’affichage : pour chaque fabrication, l’étape en cours et le temps restant */
+    E.handInfo = function () {
+      let t = 0;
+      const jobs = S.hand.q.map((j, n) => {
+        const s = j.s[Math.min(j.i, j.s.length - 1)], left = jobTime(j, n === 0);
+        t += left;
+        const tot = j.s.reduce((a, x) => a + x[1] * handTime(x[0]), 0);
+        return { id: j.id, n: j.s[j.s.length - 1][1], step: s[0], k: j.k, of: s[1], i: j.i, steps: j.s.length, left, at: t, wait: !!j.w, tot };
+      });
+      return { jobs, left: t, full: S.hand.q.length >= H.max };
+    };
+    function finishJob(j, offline) {
+      for (const i in j.b) add(i, j.b[i]);
+      S.hand.q.shift();
+      S.hand.p = 0;
+      if (!offline) E.emit("hand", { kind: "done", job: j });
+    }
+    function handStep(dt, offline) {
+      let left = dt, guard = 0;
+      while (left > 1e-9 && S.hand.q.length && guard++ < 5000) {
+        const j = S.hand.q[0];
+        if (j.i >= j.s.length) { finishJob(j, offline); continue; }
+        const x = j.s[j.i][0], n = j.s[j.i][1], it = item(x), t = handTime(x);
+        let m = Math.floor((S.hand.p + left) / t + 1e-9);
+        if (m < 1) { S.hand.p += left; return; }
+        // plusieurs pièces d’un coup, sauf pour les objets dont le prix monte à chaque exemplaire
+        m = Math.min(m, n - j.k, isScaled(it) || isUnique(it) ? 1 : Infinity);
+        const cost = isScaled(it) ? costFor(x, count(x)) : totalCost(x, m);
+        if (blocker(x) && blocker(x).why !== "owned" || !take(cost, j.b)) { j.w = 1; S.hand.p = t; return; }
+        j.w = 0;
+        left -= m * t - S.hand.p;
+        S.hand.p = 0;
+        const last = j.i === j.s.length - 1;
+        const r = makeIt(x, m, offline || !last, last ? null : j.b);
+        j.k += m;
+        if (!offline) E.emit("handdone", { id: x, n: r.n, bonus: r.bonus, first: r.first, last });
+        if (j.k >= n) { j.i++; j.k = 0; }
+        if (j.i >= j.s.length) finishJob(j, offline);
+      }
+    }
+
+    /* ------------------------------------------------------ étude des matières
+     * Contre un peu d’Intuition, on étudie une matière : on sait alors, pour chaque
+     * geste connu, combien de recettes encore inconnues s’en servent (parmi celles
+     * qu’on peut tenter avec des matières déjà vues). À l’Atelier, les matières
+     * étudiées qui réagissent avec le geste choisi sont marquées. */
+    E.studyCost = (id) => 1 + Math.floor((item(id).a || 0) / 4);
+    E.study = function (id) {
+      if (!item(id) || S.studied[id] || !S.seen[id]) return false;
+      const c = E.studyCost(id);
+      if (S.intu < c) return false;
+      S.intu -= c;
+      S.studied[id] = 1;
       E.emit("struct");
       return true;
+    };
+    E.reactions = function (id) {
+      const out = {};
+      for (const k in RECIPES) {
+        const rid = RECIPES[k], it = item(rid);
+        if (S.known[rid] || it.r[1][id] === undefined) continue;
+        if (it.path && !gesteOK("accorder")) continue;
+        if (!gesteOK(it.r[0]) || !Object.keys(it.r[1]).every((i) => S.seen[i])) continue;
+        out[it.r[0]] = (out[it.r[0]] || 0) + 1;
+      }
+      return out;
     };
 
     /* ------------------------------------------------------ carnet */
@@ -1538,7 +1683,7 @@
     E.newCycle = function () {
       const old = S;
       const n = freshState(now());
-      n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets;
+      n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets; n.studied = old.studied || {};
       n.seen = old.seen; n.meta = old.meta; n.settings = old.settings; n.pins = old.pins || {};
       n.fab.r = old.fab ? old.fab.r : FAB_R0;
       n.cycle = (old.cycle || 1) + 1;
@@ -1562,6 +1707,7 @@
       const c = E.cache();
       for (const r in c.rates) add(r, c.rates[r] * dt);
       runFab(dt);
+      handStep(dt, offline);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];
@@ -1654,6 +1800,34 @@
       }
       o.fab = f;
     }
+    /* File des mains d’une sauvegarde : une fabrication illisible est annulée et
+     * ses matières rendues au stock (ou mises de côté si l’objet n’existe plus). */
+    function checkHand(o) {
+      const h = o.hand && typeof o.hand === "object" ? o.hand : {};
+      const q = Array.isArray(h.q) ? h.q : [];
+      const keep = [];
+      const refund = (b) => {
+        if (!b || typeof b !== "object") return;
+        for (const i in b) {
+          const v = Number(b[i]);
+          if (!(v > 0)) continue;
+          if (D.ITEMS[i]) o.inv[i] = (o.inv[i] || 0) + v;
+          else { o.orphans = o.orphans || {}; (o.orphans.inv = o.orphans.inv || {})[i] = (o.orphans.inv[i] || 0) + v; }
+        }
+      };
+      q.forEach((j) => {
+        const ok = j && typeof j === "object" && D.ITEMS[j.id] && Array.isArray(j.s) && j.s.length &&
+          j.s.every((s) => Array.isArray(s) && D.ITEMS[s[0]] && D.ITEMS[s[0]].r && s[1] >= 1) && j.b && typeof j.b === "object";
+        if (!ok || keep.length >= D.HAND.max) { refund(j && j.b); return; }
+        for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
+        j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
+        j.i = Math.max(0, Math.min(j.s.length, Math.floor(j.i) || 0));
+        j.k = Math.max(0, Math.floor(j.k) || 0);
+        keep.push(j);
+      });
+      o.hand = { q: keep, p: keep.length ? Math.max(0, Number(h.p) || 0) : 0 };
+      if (!o.studied || typeof o.studied !== "object") o.studied = {};
+    }
     function parseSave(src) {
       const o = typeof src === "string" ? JSON.parse(src) : JSON.parse(JSON.stringify(src));
       if (!o || typeof o !== "object" || !o.inv || typeof o.inv !== "object") throw new Error("Ce n’est pas une sauvegarde d’Éclat.");
@@ -1666,6 +1840,7 @@
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
       if (!o.tried || typeof o.tried !== "object") o.tried = {};
+      checkHand(o);
       checkFab(o);
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {

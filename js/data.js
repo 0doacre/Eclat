@@ -860,6 +860,12 @@
 
   /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
    * l’Atelier), les mains des Semeurs précédents guident les siennes. */
+  /* Les mains : fabriquer à la main prend du temps, une pièce après l’autre.
+   * Durée d’une pièce (s) : (base + age × âge de l’objet) × (1 − star × étoiles de maîtrise),
+   * multipliée pour les objets uniques (outils, stations…) et pour ceux dont le prix
+   * monte à chaque exemplaire (extracteurs, machines). max : fabrications dans la file. */
+  D.HAND = { base: 0.5, age: 0.2, star: 0.1, unique: 3, scaled: 2, max: 8 };
+
   D.GUIDE = {
     tries: [6, 14, 26], // souvenirs à réunir pour le geste, une matière, puis la recette
     lines: [
