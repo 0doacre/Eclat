@@ -3,5 +3,5 @@
  * server/README.md), par exemple "https://eclat-comptes.mon-pseudo.workers.dev".
  * Laissé vide, le jeu fonctionne sans comptes en ligne. */
 window.ECLAT_CONFIG = {
-  cloud: ""
+  cloud: "https://eclat-comptes.golder-sylvain.workers.dev"
 };
