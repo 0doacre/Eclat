@@ -870,8 +870,15 @@
   };
 
   D.CHANGES = [
-    "🏭 La Fabrique devient une usine à construire : tu poses tes machines, tu traces les tapis, et tu vois passer ce qu’elles fabriquent.",
-    "✍️ Tous les textes du jeu ont été repris, pour qu’ils se lisent mieux."
+    "⛏️ La Fabrique est une carte : chaque terre y a ses gisements, une case par ressource. Récolte à la main, ou pose tes extracteurs dessus et relie-les à la Réserve par des tapis.",
+    "🏭 Tes machines se servent sur les tapis qui passent devant elles : une ligne peut aller du gisement au produit fini sans passer par le stock.",
+    "🌲 Les Terres sont des paysages : touche les arbres, les herbes, les pierres.",
+    "📖 Toucher un objet ouvre sa fiche, et on passe de recette en recette.",
+    "🧺 À l’Atelier, les matières se cherchent, se trient, se filtrent, et les favorites restent en tête.",
+    "💭 Les souvenirs ne viennent plus en attendant : chaque combinaison nouvelle essayée à l’Atelier en réveille.",
+    "🎵 De la musique qui suit les âges, des ambiances, des bruitages, et des volumes réglables.",
+    "☁️ Comptes en ligne (pseudo et mot de passe), si la personne qui publie le jeu les a ouverts.",
+    "✍️ Les textes du jeu ont été repris."
   ];
 
   /* ---------------------------------------------------- ÉCHECS (saveur)
