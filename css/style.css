@@ -561,3 +561,17 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 .rec .acts .btn.ghost { padding: 5px 8px; min-width: 36px; }
 
 .toggle.vol input { flex: 0 1 55%; accent-color: var(--acc); }
+
+/* ---------------------------------------------------------------- compte */
+.icon-btn.cloud { font-size: 17px; }
+.icon-btn.cloud.warn { box-shadow: 0 0 0 2px var(--intu); animation: pulse 1.6s infinite; }
+.fld { display: flex; flex-direction: column; gap: 4px; margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+.fld input { min-height: 44px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); color: var(--text); padding: 0 12px; font-size: 16px; user-select: text; -webkit-user-select: text; }
+.fld input:focus { outline: 2px solid color-mix(in srgb, var(--acc) 60%, transparent); border-color: transparent; }
+.seg { display: flex; gap: 4px; padding: 3px; border-radius: 12px; background: var(--bg2); border: 1px solid var(--line); margin-top: 8px; }
+.seg button { flex: 1 1 0; border: 0; border-radius: 9px; padding: 8px 4px; background: none; color: var(--muted); font-size: 13.5px; }
+.seg button.on { background: var(--panel2); color: var(--text); box-shadow: 0 1px 0 rgba(255,255,255,.06) inset; }
+.err { color: var(--bad); min-height: 1em; }
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+.vs .card { margin: 0; padding: 10px; }
+.warnc { border-color: var(--intu); }

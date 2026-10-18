@@ -1,0 +1,14 @@
+# ÉCLAT — configuration pour déployer le serveur avec Wrangler (facultatif :
+# tout peut aussi se faire depuis le tableau de bord Cloudflare, voir README.md).
+name = "eclat-comptes"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+# l’adresse où le jeu est publié (plusieurs adresses : séparées par des virgules)
+ALLOWED_ORIGIN = "https://VOTRE-PSEUDO.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "eclat-comptes"
+database_id = "À-REMPLACER-par-l-identifiant-de-la-base"

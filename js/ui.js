@@ -375,6 +375,216 @@
     });
   }
 
+  /* ------------------------------------------------------------ compte en ligne */
+  const safeStore = {
+    getItem: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    setItem: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* stockage bloqué */ } },
+    removeItem: (k) => { try { localStorage.removeItem(k); } catch (e) { /* stockage bloqué */ } }
+  };
+  const Cloud = window.EclatCloud.create({ storage: safeStore, server: () => safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
+  U.sync = { busy: false, conflict: null, err: null };
+  /* remplace le contenu de la fenêtre ouverte (ou en ouvre une) */
+  function swapModal(o) {
+    if (!U.mcur) { openModal(o); return; }
+    const box = $("#modal .modal-box");
+    U.mcur = o;
+    $("#modal").className = "modal " + (o.cls || "");
+    box.innerHTML = o.html;
+    if (o.onOpen) o.onOpen(box);
+  }
+  const summary = (o) => esc(D.AGES[o.age] ? D.AGES[o.age].n : "?") + " · " + fmtTime((o.stats && o.stats.play) || 0) + " de jeu · " + Object.keys(o.known || {}).length + " recettes";
+  const busy = (b, txt) => { if (b) { b.disabled = true; b.dataset.t = b.textContent; b.textContent = txt || "Un instant…"; } };
+  const unbusy = (b) => { if (b && b.isConnected) { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; } };
+  function openAccount(msg) {
+    if (!Cloud.configured()) {
+      simpleModal("Compte", "Pas encore de comptes", "<p>Les comptes en ligne ne sont pas encore ouverts sur ce jeu. En attendant, ta partie se garde sur cet appareil, et tu peux la télécharger dans ☰ → Sauvegardes.</p>" +
+        '<p class="tiny dim">Pour la personne qui publie le jeu : la marche à suivre est dans server/README.md.</p>');
+      return;
+    }
+    const a = Cloud.account();
+    swapModal(a && a.token ? accountModal(msg) : loginModal(msg, a && a.pseudo));
+  }
+  function loginModal(msg, pseudo) {
+    const up = U.acMode === "up";
+    return {
+      html: '<div class="kicker">Compte</div><h2>' + (up ? "Créer un compte" : "Se connecter") + "</h2>" +
+        '<p class="small muted">Avec un compte, ta partie est aussi gardée en ligne, et tu la retrouves sur un autre appareil.</p>' +
+        '<div class="seg"><button data-m="tin" class="' + (up ? "" : "on") + '">J’ai un compte</button><button data-m="tup" class="' + (up ? "on" : "") + '">Nouveau compte</button></div>' +
+        '<label class="fld"><span>Pseudo</span><input id="acP" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="24" value="' + esc(pseudo || "") + '"></label>' +
+        '<label class="fld"><span>Mot de passe</span><input id="acW" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '"></label>' +
+        (up ? '<label class="fld"><span>Encore une fois</span><input id="acW2" type="password" autocomplete="new-password"></label>' : "") +
+        '<p class="small err" id="acErr">' + esc(msg || "") + "</p>" +
+        '<p class="tiny dim">Ta partie est chiffrée sur ton appareil avant d’être envoyée : sans ton mot de passe, personne ne peut la lire, pas même le serveur. Le revers : si tu l’oublies, la copie en ligne est perdue. Celle de l’appareil reste.</p>' +
+        '<div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">' + (up ? "Créer le compte" : "Se connecter") + "</button></div>",
+      onOpen: (box) => { const f = $(pseudo ? "#acW" : "#acP", box); if (f) f.focus(); },
+      on: {
+        tin: () => { U.acMode = "in"; swapModal(loginModal("", $("#acP").value)); return true; },
+        tup: () => { U.acMode = "up"; swapModal(loginModal("", $("#acP").value)); return true; },
+        go: (b) => { doLogin(b, up); return true; }
+      }
+    };
+  }
+  async function doLogin(b, up) {
+    const p = $("#acP").value.trim(), w = $("#acW").value, err = $("#acErr");
+    const say = (t) => { if (err) err.textContent = t; };
+    if (!/^[\p{L}\p{N}_.-]{3,24}$/u.test(p)) return say("Le pseudo fait 3 à 24 caractères : lettres, chiffres, tiret, point ou souligné.");
+    if (up && w.length < 8) return say("Il faut au moins 8 caractères au mot de passe.");
+    if (up && w !== $("#acW2").value) return say("Les deux mots de passe ne sont pas identiques.");
+    if (!w) return say("Il manque le mot de passe.");
+    busy(b, up ? "Création…" : "Connexion…");
+    say("");
+    try {
+      if (up) await Cloud.register(p, w); else await Cloud.login(p, w);
+      A.discover();
+      await afterLogin(up);
+    } catch (e) { unbusy(b); say(e.message); }
+  }
+  async function afterLogin(isNew) {
+    let cloud = null;
+    try { if (!isNew) cloud = await Cloud.pull(); } catch (e) { swapModal(accountModal(e.message)); return; }
+    if (!cloud) {
+      await cloudPush({ force: true, quiet: true });
+      swapModal(accountModal("C’est fait. Ta partie est maintenant gardée en ligne aussi."));
+      updateCloudBtn();
+      return;
+    }
+    chooseVersion(cloud, "Il y a déjà une partie sur ce compte.");
+  }
+  /* deux versions de la partie : le joueur choisit, l’autre part dans les copies */
+  function chooseVersion(cloud, intro) {
+    let o;
+    try { o = E.parseSave(cloud.text); } catch (e) { swapModal(accountModal("La partie en ligne est illisible : " + e.message)); return; }
+    swapModal({
+      persistent: true,
+      html: '<div class="kicker">Compte</div><h2>Quelle partie garder ?</h2><p class="small">' + esc(intro) + "</p>" +
+        '<div class="vs"><div class="card"><b>📱 Cet appareil</b><div class="small muted">' + summary(S()) + '</div></div><div class="card"><b>☁️ En ligne</b><div class="small muted">' + summary(o) +
+        "<br>Envoyée le " + esc(fmtDate(cloud.updated)) + "</div></div></div>" +
+        '<p class="tiny dim">Celle que tu ne gardes pas n’est pas perdue : elle va dans les copies de sécurité (☰ → Sauvegardes).</p>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="cloud">Prendre celle en ligne</button><button class="btn" data-m="local">Garder celle de cet appareil</button></div>',
+      on: {
+        cloud: () => { if (replaceWith(cloud.text, "Avant de charger la partie du compte")) { Cloud.adopt(cloud.rev, cloud.updated); U.sync.conflict = null; updateCloudBtn(); } },
+        local: () => { pushBackup(cloud.text, "Partie du compte, remplacée par celle de l’appareil"); U.sync.conflict = null; cloudPush({ force: true, manual: true }); }
+      }
+    });
+  }
+  function accountModal(msg) {
+    const a = Cloud.account() || {};
+    const c = U.sync.conflict;
+    return {
+      html: '<div class="kicker">Compte</div><h2>☁️ ' + esc(a.pseudo || "") + "</h2>" +
+        (msg ? '<p class="small">' + esc(msg) + "</p>" : "") +
+        (c ? '<div class="card warnc"><b>Une autre version de ta partie est en ligne.</b><div class="small muted">Envoyée le ' + esc(fmtDate(c.updated)) + ', sans doute depuis un autre appareil.</div><button class="btn small pri" data-m="solve" style="margin-top:8px">Choisir la partie à garder</button></div>' : "") +
+        '<p class="small muted">' + (a.last ? "Dernier envoi : " + esc(fmtDate(a.last)) : "Rien n’a encore été envoyé.") + (U.sync.err ? '<br><span class="err">' + esc(U.sync.err) + "</span>" : "") + "</p>" +
+        '<div class="toggle"><span>Envoi automatique<br><span class="tiny dim">toutes les quelques minutes, et quand tu quittes le jeu</span></span><button class="btn small" data-m="auto">' + (a.auto ? "Activé" : "Coupé") + "</button></div>" +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="push">⬆️ Envoyer maintenant</button><button class="btn" data-m="pull">⬇️ Récupérer la partie en ligne</button>' +
+        '<button class="btn ghost" data-m="pw">🔑 Changer de mot de passe</button><button class="btn ghost" data-m="out">🚪 Se déconnecter</button><button class="btn ghost" data-m="del" style="color:var(--bad)">🗑️ Supprimer le compte</button>' +
+        '<button class="btn" data-m="close">Fermer</button></div>',
+      on: {
+        auto: (b) => { Cloud.setAuto(!a.auto); b.textContent = Cloud.account().auto ? "Activé" : "Coupé"; a.auto = Cloud.account().auto; return true; },
+        push: (b) => { busy(b, "Envoi…"); cloudPush({ manual: true }).then(() => swapModal(accountModal(U.sync.conflict ? "" : U.sync.err ? "" : "Partie envoyée."))); return true; },
+        pull: (b) => {
+          busy(b, "Téléchargement…");
+          Cloud.pull().then((cl) => {
+            if (!cl) swapModal(accountModal("Il n’y a pas encore de partie en ligne."));
+            else chooseVersion(cl, "Voici ce qu’il y a en ligne.");
+          }).catch((e) => swapModal(accountModal(e.message)));
+          return true;
+        },
+        solve: (b) => { busy(b); Cloud.pull().then((cl) => cl && chooseVersion(cl, "Ta partie a avancé ailleurs.")).catch((e) => swapModal(accountModal(e.message))); return true; },
+        pw: () => { swapModal(passwordModal()); return true; },
+        out: () => { Cloud.logout().then(updateCloudBtn); toast("Déconnecté. Ta partie reste sur cet appareil."); },
+        del: () => { swapModal(deleteModal()); return true; }
+      }
+    };
+  }
+  function passwordModal() {
+    return {
+      html: '<div class="kicker">Compte</div><h2>Changer de mot de passe</h2>' +
+        '<label class="fld"><span>Mot de passe actuel</span><input id="pw0" type="password" autocomplete="current-password"></label>' +
+        '<label class="fld"><span>Nouveau mot de passe</span><input id="pw1" type="password" autocomplete="new-password"></label>' +
+        '<label class="fld"><span>Encore une fois</span><input id="pw2" type="password" autocomplete="new-password"></label>' +
+        '<p class="small err" id="pwErr"></p><p class="tiny dim">Ta partie en ligne est rechiffrée avec le nouveau mot de passe. Tes autres appareils devront se reconnecter.</p>' +
+        '<div class="acts"><button class="btn" data-m="back">Retour</button><button class="btn pri" data-m="go">Changer</button></div>',
+      on: {
+        back: () => { swapModal(accountModal()); return true; },
+        go: (b) => {
+          const o = $("#pw0").value, n = $("#pw1").value, err = $("#pwErr");
+          if (n.length < 8) { err.textContent = "Il faut au moins 8 caractères."; return true; }
+          if (n !== $("#pw2").value) { err.textContent = "Les deux nouveaux mots de passe ne sont pas identiques."; return true; }
+          busy(b, "Chiffrement…");
+          save();
+          Cloud.changePassword(o, n, E.serialize()).then(() => swapModal(accountModal("Mot de passe changé."))).catch((e) => { unbusy(b); err.textContent = e.message; });
+          return true;
+        }
+      }
+    };
+  }
+  function deleteModal() {
+    return {
+      html: '<div class="kicker">Compte</div><h2>Supprimer le compte ?</h2><p class="small">Le compte et la partie en ligne seront effacés du serveur. Ta partie reste sur cet appareil.</p>' +
+        '<label class="fld"><span>Mot de passe</span><input id="dl0" type="password" autocomplete="current-password"></label><p class="small err" id="dlErr"></p>' +
+        '<div class="acts"><button class="btn" data-m="back">Retour</button><button class="btn pri" style="background:var(--bad)" data-m="go">Supprimer</button></div>',
+      on: {
+        back: () => { swapModal(accountModal()); return true; },
+        go: (b) => {
+          busy(b, "Suppression…");
+          Cloud.deleteAccount($("#dl0").value).then(() => { closeModal(); updateCloudBtn(); toast("Compte supprimé. Ta partie reste sur cet appareil."); })
+            .catch((e) => { unbusy(b); $("#dlErr").textContent = e.message; });
+          return true;
+        }
+      }
+    };
+  }
+  async function cloudPush(o) {
+    o = o || {};
+    const a = Cloud.account();
+    if (!a || !a.token || U.sync.busy || U.saveLocked) return null;
+    U.sync.busy = true;
+    try {
+      save();
+      const r = await Cloud.push(E.serialize(), o);
+      if (r.conflict) { U.sync.conflict = r; if (!o.quiet) toast("☁️ Une autre version de ta partie est en ligne. Ouvre ☁️ pour choisir laquelle garder."); }
+      else { U.sync.conflict = null; U.sync.err = null; if (o.manual && !U.mcur) toast("☁️ Partie envoyée."); }
+      return r;
+    } catch (e) {
+      U.sync.err = e.message;
+      if (o.manual || e.status === 401) toast("☁️ " + esc(e.message));
+      return null;
+    } finally {
+      U.sync.busy = false;
+      updateCloudBtn();
+    }
+  }
+  function updateCloudBtn() {
+    const b = $("#cloudBtn"), a = Cloud.account();
+    if (!b) return;
+    b.classList.toggle("hidden", !a);
+    b.classList.toggle("warn", !!(a && (!a.token || U.sync.conflict)));
+    b.title = !a ? "" : !a.token ? "Reconnecte-toi" : U.sync.conflict ? "Deux versions de ta partie" : "Compte : " + a.pseudo;
+  }
+  /* au démarrage : la partie a-t-elle avancé sur un autre appareil ? */
+  async function cloudCheck() {
+    const a = Cloud.account();
+    updateCloudBtn();
+    if (!a || !a.token || U.saveLocked) return;
+    try {
+      const cl = await Cloud.pull();
+      if (!cl || cl.rev === a.rev) return;
+      const ask = () => { if (U.mcur) { setTimeout(ask, 1000); return; } chooseVersion(cl, "Ta partie en ligne a changé depuis ton dernier passage ici. Un autre appareil, sans doute."); };
+      ask();
+    } catch (e) { U.sync.err = e.message; updateCloudBtn(); }
+  }
+  function cloudTimers() {
+    setInterval(() => {
+      const a = Cloud.account();
+      if (a && a.token && a.auto && !U.sync.conflict && Date.now() - (a.last || 0) > 4 * 60000) cloudPush({ quiet: true });
+    }, 60000);
+    document.addEventListener("visibilitychange", () => {
+      const a = Cloud.account();
+      if (document.hidden && a && a.token && a.auto && !U.sync.conflict && Date.now() - (a.last || 0) > 30000) cloudPush({ quiet: true, keepalive: true });
+    });
+  }
+
   /* ------------------------------------------------------------ thème */
   function applyAge() {
     const ag = D.AGES[S().age];
@@ -1356,7 +1566,7 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
-        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
         '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
       onOpen: (box) => {
@@ -1373,6 +1583,7 @@
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
         saves: () => setTimeout(openSaves, 80),
+        account: () => { openAccount(); return true; },
         help: () => setTimeout(openHelp, 80),
         news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
         reset: () => setTimeout(() => {
@@ -1529,6 +1740,7 @@
     document.addEventListener("pointerdown", (ev) => { U.pointer = { x: ev.clientX, y: ev.clientY }; }, true);
     $("#tabs").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-tab]"); if (b) { A.init(); A.click(); setTab(b.dataset.tab); } });
     $("#menuBtn").addEventListener("click", () => { A.init(); openMenu(); });
+    $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
     $("#intuBtn").addEventListener("click", () => simpleModal("Intuition", "✨ " + Math.floor(S().intu),
       '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Dépense-la dans le Carnet pour obtenir des indices sur les recettes inconnues.</p>' +
       (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
@@ -1708,7 +1920,9 @@
     setInterval(refresh, 250);
     setInterval(save, 10000);
     setupSW();
-    window.__eclat = { E, U, render, save, backups };
+    cloudTimers();
+    setTimeout(cloudCheck, 1500);
+    window.__eclat = { E, U, render, save, backups, Cloud };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

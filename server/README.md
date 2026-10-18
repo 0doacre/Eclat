@@ -1,0 +1,88 @@
+# Comptes joueurs : installer le serveur
+
+Les comptes permettent à un joueur de retrouver sa partie sur un autre appareil, avec un pseudo et un mot de passe. Pas besoin de compte GitHub pour les joueurs.
+
+Le jeu lui-même reste un simple site (GitHub Pages). Les comptes ont besoin d’un petit serveur à côté : ce dossier contient tout ce qu’il faut pour l’installer gratuitement chez **Cloudflare** (offre gratuite, sans carte bancaire). Compte une vingtaine de minutes, tout se fait dans le navigateur.
+
+Tant que le serveur n’est pas installé, le jeu marche comme avant : le menu « Compte en ligne » explique simplement que les comptes ne sont pas encore ouverts.
+
+## Ce que le serveur sait (et ne sait pas)
+
+- Le mot de passe ne quitte jamais l’appareil du joueur. Le jeu en tire deux clés : une pour se connecter (le serveur n’en garde qu’une empreinte), une pour chiffrer la sauvegarde.
+- La sauvegarde est chiffrée sur l’appareil avant l’envoi. Le serveur ne stocke que du texte illisible, il ne peut pas la lire.
+- Revers de la médaille : **un mot de passe oublié ne se récupère pas**. La copie en ligne est alors perdue, mais celle de l’appareil reste intacte. Le jeu le dit au moment de créer le compte.
+- Les tentatives de connexion ratées sont limitées (blocage d’un quart d’heure après 8 échecs), comme la création de comptes en rafale.
+- Si deux appareils envoient chacun leur version, rien n’est écrasé en silence : le jeu demande laquelle garder, et l’autre part dans les copies de sécurité.
+
+## Installation, pas à pas
+
+### 1. Créer un compte Cloudflare
+
+Sur [dash.cloudflare.com](https://dash.cloudflare.com), inscris-toi (gratuit). À la première visite de la partie « Workers », Cloudflare te demande de choisir un sous-domaine en `workers.dev` : prends ce que tu veux, par exemple ton pseudo.
+
+### 2. Créer la base de données
+
+1. Dans le menu de gauche : **Stockage et bases de données** (*Storage & Databases*) → **D1 SQL Database** → **Créer** (*Create*).
+2. Nom : `eclat-comptes`. Valide.
+3. Ouvre la base, onglet **Console**. Copie tout le contenu du fichier [`schema.sql`](schema.sql), colle-le, puis **Exécuter** (*Execute*). Quatre tables apparaissent : `users`, `sessions`, `saves`, `attempts`.
+
+### 3. Créer le serveur (le « Worker »)
+
+1. Menu de gauche : **Compute (Workers)** → **Workers & Pages** → **Créer** (*Create*) → **Worker** → modèle « Hello World ».
+2. Nom : `eclat-comptes`. **Déployer** (*Deploy*).
+3. Clique sur **Modifier le code** (*Edit code*). Efface tout ce qu’il y a dans l’éditeur, colle le contenu du fichier [`worker.js`](worker.js), puis **Déployer**.
+
+### 4. Relier le serveur à la base
+
+Dans la page du Worker, onglet **Paramètres** (*Settings*) :
+
+1. **Liaisons** (*Bindings*) → **Ajouter** → **Base de données D1**. Nom de la variable : `DB` (en majuscules, exactement). Base : `eclat-comptes`. Enregistre.
+2. **Variables et secrets** → **Ajouter** : type *Texte*, nom `ALLOWED_ORIGIN`, valeur : l’adresse de ton jeu **sans** le chemin, par exemple `https://mon-pseudo.github.io`. Enregistre et redéploie si on te le propose.
+
+Pour vérifier : ouvre `https://eclat-comptes.TON-SOUS-DOMAINE.workers.dev/api/health` dans le navigateur. Tu dois voir `{"ok":true,"version":1}`. Si tu vois une erreur qui parle de « liaison DB », reprends l’étape 4.
+
+### 5. Brancher le jeu sur le serveur
+
+Dans le dépôt du jeu, ouvre `js/config.js` et mets l’adresse du Worker :
+
+```js
+window.ECLAT_CONFIG = {
+  cloud: "https://eclat-comptes.TON-SOUS-DOMAINE.workers.dev"
+};
+```
+
+Puis, comme pour toute nouvelle version : `npm run build`, `npm test`, et publie (commit + push sur la branche servie par GitHub Pages). Les joueurs verront le bandeau de mise à jour, et le menu ☰ aura un bouton « Compte en ligne » qui fonctionne.
+
+Tu peux aussi modifier `js/config.js` directement sur github.com (bouton crayon), mais il faut alors recalculer l’empreinte du service worker (`npm run build`), sinon les joueurs ne recevront pas la mise à jour.
+
+## En ligne de commande (facultatif)
+
+Si tu préfères Wrangler, l’outil de Cloudflare :
+
+```sh
+cd server
+npx wrangler login
+npx wrangler d1 create eclat-comptes          # note l’identifiant affiché
+# colle-le dans wrangler.toml (database_id) et règle ALLOWED_ORIGIN
+npx wrangler d1 execute eclat-comptes --remote --file=schema.sql
+npx wrangler deploy
+```
+
+## Essayer sur sa machine
+
+Sans rien installer chez Cloudflare (il faut Node 22) :
+
+```sh
+node --no-warnings server/dev.js        # serveur de comptes sur http://localhost:8787
+npm start                                # le jeu sur http://localhost:8080
+```
+
+Puis, dans la console du navigateur ouverte sur le jeu : `localStorage.setItem("eclat.cloud", "http://localhost:8787")` et recharge la page. Les tests du serveur tournent avec `npm test`.
+
+## Limites de l’offre gratuite
+
+100 000 requêtes par jour et 5 Go de base. Un joueur connecté envoie sa partie toutes les quatre minutes environ quand il joue : de quoi tenir des centaines de joueurs quotidiens.
+
+## Effacer les données
+
+Un joueur peut supprimer son compte depuis le jeu (☰ → Compte en ligne → Supprimer le compte). Pour tout effacer d’un coup, supprime la base `eclat-comptes` dans Cloudflare.

@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Serveur des comptes joueurs d’Éclat (Cloudflare Worker + D1)",
+  "scripts": {
+    "dev": "node --no-warnings dev.js",
+    "test": "node --no-warnings test.js"
+  }
+}
