@@ -148,7 +148,8 @@
       kind: "Impossible ici.",
       nodep: "Un extracteur se pose sur une case de gisement : les cases colorées, regroupées par terre.",
       wrongext: "Cet extracteur ne sait pas récolter ça.",
-      noext: "Plus d’extracteur libre de ce type."
+      noext: "Plus d’extracteur libre de ce type.",
+      siteone: "Ce Grand Œuvre a déjà son chantier. Retire-le d’abord pour le poser ailleurs."
     };
     const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
     /* récolte à la main sur une case de gisement, avec un petit chiffre qui monte */
@@ -232,6 +233,17 @@
       }
       if (V.tool === "del") { demolish(c); return; }
       if (V.tool === "tapis") return; // géré par le tracé
+      if (V.tool === "site") {
+        const why = E.fabWhy("site", c.x, c.y, { p: V.spid });
+        if (why) { toast(WHY[why] || WHY.kind); return; }
+        remember();
+        E.fabPlace("site", c.x, c.y, { p: V.spid });
+        A.place ? A.place() : A.click();
+        vibe(15);
+        setTool("voir");
+        select(c);
+        return;
+      }
       if (e) { if (e.k !== "res") { setTool("voir"); select(c); } return; }
       if (V.tool === "port" || V.tool === "split" || V.tool === "cross") {
         const why = E.fabWhy(V.tool, c.x, c.y);
@@ -660,6 +672,24 @@
           '<p class="tiny muted">La Réserve laisse sortir ' + fmtNum(E.resOutCap()) + " objets/s au plus, toutes sorties confondues. Ce qui vient directement des gisements et des machines n’a pas cette limite.</p>" +
           '<button class="u-recipe" data-u="filter">' + (e.f && I[e.f] ? icon(e.f) + '<span class="grow">N’envoie que : ' + esc(I[e.f].n) + "</span>" : '<span class="grow">Envoie tout ce qu’on lui demande</span>') + "<span>▾</span></button>" +
           '<div class="u-row acts"><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+      } else if (e.k === "site") {
+        const P = D.PROJECTS[e.p], ps = E.projState(e.p), step = P.steps[ps.step], info = E.machInfo(e.id);
+        const ST = { ok: ["Les matières arrivent", "good"], starved: ["Ses tapis n’apportent rien pour l’instant", "warn"], nolink: ["Aucun tapis ne l’atteint", "bad"],
+          need: ["En attente : il faut d’abord atteindre " + (step && step.need && D.FRAGS[step.need] ? esc(D.FRAGS[step.need].n) : "un autre lieu"), "warn"],
+          act: ["Cette étape se joue dans le Cosmos", "good"], done: ["Œuvre accomplie", "good"], wait: ["Démarrage…", "good"] }[info.s] || ["", "dim"];
+        box.dataset.site = e.p + ":" + ps.step + ":" + info.s;
+        h += '<div class="u-head"><span class="ic">' + P.ic + '</span><div class="grow"><b>Chantier : ' + esc(P.n) + "</b>" +
+          (step ? '<div class="tiny muted">Étape ' + (ps.step + 1) + "/" + P.steps.length + " · " + esc(step.n) + "</div>" : "") +
+          '<div class="u-st ' + ST[1] + '">' + ST[0] + "</div></div></div>";
+        if (step && step.cost) {
+          h += '<div class="u-ins">' + Object.keys(step.cost).map((k) => {
+            const paid = ps.paid[k] || 0, miss = info.miss && info.miss[k];
+            return '<span class="u-in' + (miss ? " no" : "") + '" data-u="goto" data-id="' + k + '">' + icon(k, "sm") + '<i data-sp="' + k + '">' + fmt(paid) + " / " + fmt(step.cost[k]) + (miss ? " · aucun tapis" : "") + "</i></span>";
+          }).join("") + "</div>" +
+            '<p class="tiny muted">Il se sert sur les tapis qui le touchent : une 📤 sortie de la Réserve, ou directement tes machines. Au plus ' + fmtNum(E.beltCap()) + " objets/s par matière.</p>";
+        } else if (step && step.fire) h += '<p class="small">Tout est prêt. La décision se prend dans le Cosmos.</p>';
+        else if (step && step.melody) h += '<p class="small">🎶 Il ne reste qu’à jouer <b>' + esc(D.MELODIES[step.melody].n) + "</b> sur la flûte (Journal).</p>";
+        h += '<div class="u-row acts"><button class="btn small ghost" data-u="rm">🗑️ Retirer</button><span class="tiny muted">Ce qui est déjà livré reste acquis.</span></div>';
       } else {
         const name = { belt: "Tapis", split: "Répartiteur", cross: "Croisement" }[e.k];
         const txt = { belt: "Fait avancer ce qu’on pose dessus, " + fmtNum(E.beltCap()) + " objets/s au plus à cet âge. Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
@@ -778,6 +808,11 @@
       }
       if (machs.some((e) => E.machInfo(e.id).s === "noout")) return "Ta machine pose sa production devant elle (la petite flèche). Trace un tapis de là jusqu’à la Réserve.";
       if (!st.flags.lineDone) return "Ça tourne. La première pièce ne va pas tarder.";
+      const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOf(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
+      if (lone && !st.flags.tip_site) {
+        return "🏗️ Ton Grand Œuvre attend son chantier : pose-le sur la Carte depuis le Cosmos, puis amène-lui ses matières par tapis. " +
+          '<button class="btn small ghost" data-u="tip" data-f="tip_site">Compris</button>';
+      }
       if (!st.flags.tip_sat && Object.keys(E.fabSat()).length) {
         return "⚠️ Un tapis qui entre dans la Réserve est plein : ce qu’il porte n’arrive pas en entier. Fais entrer un deuxième tapis dans la Réserve (un 🔀 répartiteur sur le chemin, par exemple). " +
           '<button class="btn small ghost" data-u="tip" data-f="tip_sat">Compris</button>';
@@ -810,6 +845,12 @@
     function sheetLive() {
       const box = V.el && V.el.querySelector("#uSheet");
       const e = V.sel && E.fabCell(V.sel.x, V.sel.y);
+      if (box && e && e.k === "site") {
+        const ps = E.projState(e.p), step = D.PROJECTS[e.p].steps[ps.step];
+        if (box.dataset.site !== e.p + ":" + ps.step + ":" + E.machInfo(e.id).s) { sheet(); return; }
+        if (step && step.cost) box.querySelectorAll("[data-sp]").forEach((el) => { const k = el.dataset.sp; el.textContent = fmt(ps.paid[k] || 0) + " / " + fmt(step.cost[k]); });
+        return;
+      }
       if (!box || !e || (e.k !== "mach" && e.k !== "ext")) return;
       if ((needsLink(e) ? "1" : "") !== (box.dataset.loose || "")) { sheet(); return; }
       const st = e.k === "ext" ? extStatus(e) : machStatus(e), el = box.querySelector(".u-st");
@@ -983,7 +1024,7 @@
       }
       if (V.draw) drawPreview();
       for (const p of V.packets) drawPacket(p);
-      for (const [x, y, e] of vis) { if (e.k === "mach") drawMach(x, y, e); else if (e.k === "ext") drawExt(x, y, e); }
+      for (const [x, y, e] of vis) { if (e.k === "mach") drawMach(x, y, e); else if (e.k === "ext") drawExt(x, y, e); else if (e.k === "site") drawSite(x, y, e); }
       drawMarks();
       drawWalker();
       // la nuit tombe sur la carte, à l’heure de l’appareil
@@ -1386,6 +1427,45 @@
       if (f > 0) { r += (255 - r) * f; g += (255 - g) * f; b += (255 - b) * f; } else { r *= 1 + f; g *= 1 + f; b *= 1 + f; }
       return "rgb(" + (r | 0) + "," + (g | 0) + "," + (b | 0) + ")";
     }
+    /* le chantier d’un Grand Œuvre : un échafaudage, et l’avancement de l’étape en cours */
+    function siteProgress(pid) {
+      const ps = E.projState(pid), step = D.PROJECTS[pid].steps[ps.step];
+      if (!step) return 1;
+      if (!step.cost) return 1;
+      let a = 0, b = 0;
+      for (const k in step.cost) { a += Math.min(ps.paid[k] || 0, step.cost[k]); b += step.cost[k]; }
+      return b ? a / b : 0;
+    }
+    function drawSite(x, y, e) {
+      const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y), P = D.PROJECTS[e.p];
+      if (!P) return;
+      const info = E.machInfo(e.id), s = z * 0.92;
+      c.fillStyle = "rgba(0,0,0,0.35)";
+      roundRect(c, X - s / 2 + z * 0.05, Y - s / 2 + z * 0.07, s, s, z * 0.16); c.fill();
+      c.fillStyle = "#23283a";
+      roundRect(c, X - s / 2, Y - s / 2, s, s, z * 0.16); c.fill();
+      // échafaudage
+      c.save();
+      c.beginPath(); roundRect(c, X - s / 2, Y - s / 2, s, s, z * 0.16); c.clip();
+      c.strokeStyle = "rgba(201,162,74,0.35)"; c.lineWidth = Math.max(1, z * 0.035);
+      for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(X + k * z * 0.22 - s / 2, Y + s / 2); c.lineTo(X + k * z * 0.22 + s / 2, Y - s / 2); c.stroke(); }
+      c.restore();
+      c.strokeStyle = "#c9a24a"; c.lineWidth = 1.5;
+      roundRect(c, X - s / 2, Y - s / 2, s, s, z * 0.16); c.stroke();
+      // avancement
+      const f = siteProgress(e.p), r = z * 0.34;
+      c.lineWidth = Math.max(2, z * 0.07);
+      c.strokeStyle = "rgba(255,255,255,0.12)";
+      c.beginPath(); c.arc(X, Y, r, 0, 6.283); c.stroke();
+      c.strokeStyle = info.s === "ok" ? "#ffd36b" : "#c9a24a";
+      c.beginPath(); c.arc(X, Y, r, -Math.PI / 2, -Math.PI / 2 + 6.283 * f); c.stroke();
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.font = Math.round(z * 0.4) + "px serif";
+      c.fillText(P.ic, X, Y + z * 0.03);
+      const lv = { ok: "#7fd18b", starved: "#ffbf4a", nolink: "#ff6a55", need: "#8fb3ff", act: "#ffd36b", done: "#7fd18b" }[info.s] || "#6f6556";
+      c.fillStyle = lv;
+      c.beginPath(); c.arc(X + s * 0.36, Y - s * 0.36, z * 0.07, 0, 6.3); c.fill();
+    }
     function drawIcon(id, X, Y, size, disc) {
       const c = V.ctx, it = I[id];
       if (!it) return;
@@ -1436,6 +1516,14 @@
     E.on("fab", () => { V.paths = {}; if (V.sel && !E.fabCell(V.sel.x, V.sel.y)) V.sel = null; if (V.el) refresh(); });
 
     /* depuis le Carnet : poser une machine qui fabriquera `id` */
+    /* poser le chantier d’un Grand Œuvre : la prochaine case vide touchée */
+    function placeSite(pid) {
+      const at = E.siteOf(pid);
+      if (at) { lookAt(at.x, at.y); select({ x: at.x, y: at.y }); return; }
+      V.spid = pid;
+      setTool("site");
+      toast("Touche une case vide pour poser le chantier : <b>" + esc(D.PROJECTS[pid].n) + "</b>. Ensuite, amène-lui ses matières par tapis.");
+    }
     function prepare(id) {
       V.preset = id;
       if (!freeTypes().length) { toast("Aucune machine libre. Retire-en une de la Carte, ou fabriques-en une autre."); setTool("voir"); return; }
@@ -1443,7 +1531,7 @@
       toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
     }
 
-    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
   }
 
   window.EclatUsine = { create };

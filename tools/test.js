@@ -697,4 +697,49 @@ test("la Réserve ne laisse sortir qu’un certain débit, toutes sorties confon
   void m;
 });
 
+test("chantier d’un Grand Œuvre : posé sur la carte, nourri par tapis", () => {
+  const E = mk();
+  assert.strictEqual(E.fabPlace("site", 4, 0, { p: "dyson" }).why, "kind", "pas avant d’avoir le projet");
+  E.state.flags.arche = true;
+  E.state.age = 12;
+  E.recalc();
+  assert.ok(E.fabPlace("site", 4, 0, { p: "dyson" }).ok);
+  assert.strictEqual(E.fabPlace("site", 5, 3, { p: "dyson" }).why, "siteone", "un seul chantier par Grand Œuvre");
+  E.add("supra", 400); E.add("metal_mercure", 60000); E.add("regolithe", 20000);
+  run(E, 2);
+  assert.strictEqual(E.machInfo("S:dyson").s, "nolink", "aucun tapis ne l’atteint");
+  assert.ok(E.fabPlace("port", 2, 0).ok);
+  E.fabDraw([{ x: 3, y: 0, d: 0 }]);
+  run(E, 10);
+  const ps = E.projState("dyson");
+  const paid = Object.values(ps.paid).reduce((a, b) => a + b, 0);
+  assert.ok(paid > 0 && paid <= E.resOutCap() * 10 + 1e-6, "au débit des sorties de la Réserve : " + paid);
+  assert.strictEqual(E.machInfo("S:dyson").s, "ok");
+  ps.paid = { supra: 380, metal_mercure: 49990, regolithe: 12500 };
+  let step = null;
+  E.on("projstep", (x) => (step = x));
+  run(E, 1);
+  assert.deepStrictEqual(step, { pid: "dyson", step: 0 });
+  assert.strictEqual(ps.step, 1, "étape suivante");
+  // sauvegarde : le chantier reste, un chantier inconnu est mis de côté
+  const o = JSON.parse(E.serialize());
+  o.fab.c["6,6"] = { k: "site", id: "S:inconnu", p: "inconnu" };
+  const F = mk();
+  F.load(o);
+  assert.ok(F.siteOf("dyson"));
+  assert.ok(F.state.orphans.fab["6,6"]);
+  assert.strictEqual(F.fabRemove(4, 0).k, "site");
+});
+test("jalons : les objectifs rangés par âge", () => {
+  const E = mk();
+  const m = E.milestones();
+  assert.ok(m[0].length >= 4, "l’âge du Bois a ses jalons");
+  assert.ok(m[0].some((x) => x.ob.k === "ext"), "installer la cabane fait partie de l’âge du Bois");
+  assert.ok(!m[0][0].done);
+  E.add("bois", 3); E.attempt("tailler", ["bois"]);
+  assert.ok(E.milestones()[0][0].done);
+  const all = m.reduce((a, l) => a + (l ? l.length : 0), 0);
+  assert.strictEqual(all, D.OBJECTIVES.length);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

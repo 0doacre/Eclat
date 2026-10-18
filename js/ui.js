@@ -679,7 +679,9 @@
     const ob = g.ob;
     const open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
     const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : ob.k === "ext" ? "⛏️ " + esc(ob.n) : esc(I[ob.id].n);
-    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>";
+    const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
+    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
+      (ml.length ? '<button class="gmiles" data-miles title="Les jalons de cet âge">🏁 ' + md + "/" + ml.length + "</button>" : "") + "</div>";
     if (!open) {
       if (ob.k === "craft" && g.step !== ob.id) {
         const sit = I[g.step];
@@ -702,6 +704,25 @@
       h += stepBox(g.step, g.why, g.step === ob.id);
     }
     return h + "</div>";
+  }
+  /* les jalons : ce qu’il y a à faire à chaque âge, et le premier pas vers le suivant */
+  function mileName(ob) {
+    if (ob.k === "craft") return (S().known[ob.id] ? icon(ob.id, "sm") : '<span class="ic sm unk">?</span>') + ' <span class="link-txt" data-goto="' + ob.id + '">' + esc(I[ob.id].n) + "</span>";
+    return (ob.k === "exp" ? "🧭 " : ob.k === "ext" ? "⛏️ " : "🏭 ") + esc(ob.n);
+  }
+  function openMilestones() {
+    const st = S(), ms = E.milestones(), cur = E.objective();
+    let h = '<div class="kicker">Jalons</div><h2>' + esc(D.AGES[st.age].n) + '</h2><p class="small muted">Ce qu’il y a à faire à chaque âge. Les découvertes hors des jalons comptent aussi : elles ouvrent d’autres chemins.</p>';
+    ms.forEach((list, a) => {
+      if (!list || a > st.age + 1) return;
+      const done = list.filter((x) => x.done).length, next = a === st.age + 1;
+      const shown = next ? list.filter((x) => !x.done).slice(0, 1) : list;
+      if (!shown.length) return;
+      const open = a >= st.age || (cur && list.some((x) => x.i === cur.i));
+      h += '<details class="miles"' + (open ? " open" : "") + "><summary><b>" + (next ? "Vers l’âge suivant" : esc(D.AGES[a].n)) + '</b> <span class="tiny muted">' + (next ? esc(D.AGES[a].n) : done + "/" + list.length) + "</span></summary>" +
+        shown.map((x) => '<div class="mile' + (x.done ? " done" : cur && cur.i === x.i ? " cur" : "") + '"><span class="mk">' + (x.done ? "✓" : cur && cur.i === x.i ? "➜" : "○") + "</span>" + mileName(x.ob) + "</div>").join("") + "</details>";
+    });
+    openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
   const WHY_STEP = { station: "Il te faut d’abord une station :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", unknown: "Prochaine étape :" };
   function stepBox(id, why, isTarget) {
@@ -1048,6 +1069,7 @@
     if (Usine.mounted()) { Usine.refresh(); return; }
     Usine.mount(el);
     if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; }
+    if (U.sitePlace) { const p = U.sitePlace; U.sitePlace = null; setTimeout(() => Usine.placeSite(p), 80); }
   }
   function buildInUsine(id) {
     setTab("carte");
@@ -1139,7 +1161,7 @@
       if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
       else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ARCHE.</p>';
     } else {
-      h += '<p class="small muted">Les Grands Œuvres consomment des quantités colossales de matières. Contribue au fur et à mesure.</p>';
+      h += '<p class="small muted">Un Grand Œuvre se construit sur la Carte : pose son chantier, puis amène-lui ses matières par tapis, depuis une sortie de la Réserve ou directement depuis tes machines. Il en faut des quantités colossales.</p>';
       for (const pid in D.PROJECTS) if (E.projVisible(pid)) h += projCard(pid);
     }
     return h;
@@ -1157,7 +1179,9 @@
             h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(paid) + "/" + fmt(s.cost[k]) + '</span><div class="bar"><i style="width:' + (100 * paid / s.cost[k]).toFixed(1) + '%"></i></div></div>';
           }
           if (s.need && !st.frags[s.need]) h += '<div class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[s.need].n) + ".</div>";
-          else h += '<div class="row" style="margin-top:8px"><button class="btn small pri" data-give="' + pid + '">Contribuer</button><span class="tiny muted">Donne tout ce que tu peux.</span></div>';
+          h += '<div class="row wrap" style="margin-top:8px">' + (E.siteOf(pid)
+            ? '<button class="btn small" data-site="' + pid + '">🏗️ Voir le chantier</button><span class="tiny muted">Il se sert sur les tapis qui le touchent.</span>'
+            : '<button class="btn small pri" data-site="' + pid + '">📍 Poser le chantier sur la Carte</button><span class="tiny muted">Ses matières lui arriveront par tapis.</span>') + "</div>";
         } else if (s.fire) h += '<button class="btn wide pri" style="margin-top:8px;background:#ff5a3c" data-fire="' + pid + '">💥 Mise à feu</button>';
         else if (s.melody) h += '<p class="small" style="margin-top:6px">🎶 Prends ta flûte (Journal) et joue <b>' + esc(D.MELODIES[s.melody].n) + "</b>.</p>";
       }
@@ -1219,12 +1243,6 @@
       const n = E.nextExp(b.dataset.exp);
       let ok = !st.exp.active && n && !n.locked;
       if (ok && n.x.cost) for (const i in n.x.cost) if ((st.inv[i] || 0) < n.x.cost[i]) ok = false;
-      b.disabled = !ok;
-    });
-    $$("[data-give]", view).forEach((b) => {
-      const ps = E.projState(b.dataset.give), s = D.PROJECTS[b.dataset.give].steps[ps.step];
-      let ok = false;
-      if (s && s.cost) for (const k in s.cost) if ((ps.paid[k] || 0) < s.cost[k] && (st.inv[k] || 0) >= 1) ok = true;
       b.disabled = !ok;
     });
     if (U.tab === "carte") soundScene();
@@ -1516,12 +1534,6 @@
   function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
   const openItemInfo = (id) => goto(id);
 
-  function giveProject(pid) {
-    const r = E.contribute(pid);
-    if (r.ok) { A.craft("stratifier"); toast("Contribution : <b>" + fmt(r.gave) + "</b> matières" + (r.done ? ". Étape terminée." : "")); }
-    if (r.done && !r.ending) A.discover();
-    render(true);
-  }
   function confirmFire(pid) {
     const st = S();
     let warn = "";
@@ -1624,11 +1636,11 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h) et relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite.</p>" +
+      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h) et relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les jalons de chaque âge.</p>" +
       "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une découverte sort tout de suite ; ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
       "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
-      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins. Il y en a plus d’une.</p>" +
+      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se construit sur la Carte : son chantier se nourrit par tapis.</p>" +
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p></div>", "Compris");
   }
 
@@ -1760,6 +1772,12 @@
       if (U.tab !== "atelier") toast("✋ Fini : <b>" + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(n)));
       else render(true);
     });
+    E.on("projstep", (x) => {
+      const P = D.PROJECTS[x.pid], s = P.steps[x.step];
+      A.discover();
+      toast("🏗️ " + esc(P.n) + " : étape « " + esc(s.n) + " » terminée.");
+      if (U.tab === "cosmos") render(true);
+    });
     E.on("crafted", (id) => {
       if (E.cache().pip && (id === "pip" || Math.random() < 0.3)) setTimeout(() => A.pip(), 250);
       if (I[id] && I[id].t === "ext") {
@@ -1839,6 +1857,7 @@
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
       if ((b = t.closest("[data-autoline]"))) { buildInUsine(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
+      if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if ((b = t.closest("[data-goalt]"))) {
         const st = S(), open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
         st.settings.goalOpen = !open; A.click(); render(true); return;
@@ -1869,7 +1888,7 @@
       if ((b = t.closest("[data-play]"))) { A.init(); A.melody(D.MELODIES[b.dataset.play].notes); return; }
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
       if (t.closest("#listen")) { listen(); return; }
-      if ((b = t.closest("[data-give]"))) { giveProject(b.dataset.give); return; }
+      if ((b = t.closest("[data-site]"))) { A.click(); U.sitePlace = b.dataset.site; setTab("carte"); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }
     });
     views.addEventListener("change", (ev) => {

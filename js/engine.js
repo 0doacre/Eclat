@@ -43,7 +43,7 @@
   const ck = (x, y) => x + "," + y;
   const isRes = (x, y) => Math.abs(x) <= RES && Math.abs(y) <= RES;
   const touchesRes = (x, y) => (Math.abs(x) === RES + 1 && Math.abs(y) <= RES) || (Math.abs(y) === RES + 1 && Math.abs(x) <= RES);
-  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1, ext: 1 };
+  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1, ext: 1, site: 1 };
   const freshFab = () => ({ r: FAB_R0, c: {}, seq: 0, ms: {} });
 
   /* Les gisements : chaque terre a sa parcelle sur la carte de la Fabrique, avec
@@ -817,6 +817,17 @@
       for (let i = last + 1; i < D.OBJECTIVES.length; i++) if (!objDone(D.OBJECTIVES[i])) return normObj(D.OBJECTIVES[i], i);
       return null;
     };
+    /* Les jalons : les objectifs rangés par âge (une action prend l’âge de l’objet qui la précède). */
+    E.milestones = function () {
+      const out = [];
+      let a = 0;
+      D.OBJECTIVES.forEach((o, i) => {
+        const n = normObj(o, i);
+        if (n.k === "craft") a = item(n.id).a;
+        (out[a] = out[a] || []).push({ i, ob: n, done: objDone(o) });
+      });
+      return out;
+    };
     /* Prochaine étape concrète vers un objet : une sous-recette inconnue, une station
      * qui manque, ou la clé d’une zone fermée. */
     function nextStep(target) {
@@ -1177,7 +1188,7 @@
         }
         const e = inGrid(s.x, s.y) ? cellAt(s.x, s.y) : null;
         if (!e || e.k === "port" || e.k === "ext") continue;
-        if (e.k === "mach") { reach(e.id, s.p); continue; }
+        if (e.k === "mach" || e.k === "site") { reach(e.id, s.p); continue; }
         if (e.k === "belt" && e.d === (s.d + 2) % 4) continue; // tapis à contresens
         const key = e.k === "cross" ? ck(s.x, s.y) + ":" + (s.d % 2) : ck(s.x, s.y);
         if (seen[key]) continue;
@@ -1186,7 +1197,7 @@
         if (e.k === "belt") {
           for (let k = 0; k < 4; k++) {
             const n = cellAt(s.x + DX[k], s.y + DY[k]);
-            if (n && n.k === "mach") reach(n.id, i);
+            if (n && (n.k === "mach" || n.k === "site")) reach(n.id, i);
           }
           q.push({ x: s.x + DX[e.d], y: s.y + DY[e.d], d: e.d, p: i });
         } else if (e.k === "cross") q.push({ x: s.x + DX[s.d], y: s.y + DY[s.d], d: s.d, p: i });
@@ -1223,7 +1234,15 @@
       }
       ms.forEach((id) => { if (!order.includes(id)) order.push(id); }); // boucles
       const exts = Object.keys(prods).filter((id) => prods[id].e.k === "ext");
-      G = { prods, sup, pos, order, exts };
+      const sites = [];
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k];
+        if (e.k !== "site") continue;
+        const [x, y] = k.split(",").map(Number);
+        pos[e.id] = { x, y };
+        sites.push(e.id);
+      }
+      G = { prods, sup, pos, order, exts, sites };
       return G;
     }
     E.fabGraph = graph;
@@ -1347,11 +1366,12 @@
     let satEnts = {}; // cases d’entrée dans la Réserve qui débordent
     function runFab(dt) {
       const g = graph();
-      if (!g.order.length && !g.exts.length) { satEnts = {}; return; }
+      if (!g.order.length && !g.exts.length && !g.sites.length) { satEnts = {}; return; }
       const c = E.cache();
       portLeft = E.resOutCap() * dt;
       for (const id of g.exts) runExt(g.prods[id].e, g, dt, c);
       for (const id of g.order) runMachine(g.prods[id].e, g, dt, c);
+      for (const id of g.sites) runSite(machById(id), g, dt);
       // ce qui arrive à la Réserve rejoint le stock, dans la limite de ce que porte
       // chaque tapis qui y entre : d’abord une part égale à chacun, puis le reste
       const cap = E.beltCap() * dt, room = {}, users = {};
@@ -1377,6 +1397,44 @@
         outs.forEach((id) => { if (buf(id).o > 1e-6) g.prods[id].t.ents.forEach((en) => { if (room[en.k] <= cap * 0.02) satEnts[en.k] = 1; }); });
       }
     }
+    /* Un chantier de Grand Œuvre se sert sur les tapis qui le touchent, comme une
+     * machine : de quoi avancer l’étape en cours, un tapis de débit par matière. */
+    function runSite(e, g, dt) {
+      if (!e) return;
+      const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0 });
+      const P = D.PROJECTS[e.p];
+      if (!P || !projVisible(e.p)) { st.s = "idle"; return; }
+      const ps = projState(e.p), step = P.steps[ps.step];
+      if (!step) { st.s = "done"; return; }
+      if (!step.cost) { st.s = "act"; return; } // mise à feu, mélodie : ça se décide ailleurs
+      if (step.need && !S.frags[step.need]) { st.s = "need"; return; }
+      const B = buf(e.id), lane = E.beltCap() * dt, srcs = g.sup[e.id] || [];
+      let got = 0, done = true;
+      st.miss = null;
+      for (const i in step.cost) {
+        const left = step.cost[i] - (ps.paid[i] || 0);
+        if (left <= 1e-9) continue;
+        if (!srcs.some((p) => supplies(g.prods[p], i))) (st.miss = st.miss || {})[i] = "link";
+        else pull(e.id, i, Math.min(left, lane) - (B.b[i] || 0), g);
+        const q = Math.min(B.b[i] || 0, left);
+        if (q > 0) { B.b[i] -= q; if (B.b[i] < 1e-9) delete B.b[i]; ps.paid[i] = (ps.paid[i] || 0) + q; got += q; }
+        if ((ps.paid[i] || 0) < step.cost[i] - 1e-6) done = false;
+      }
+      st.avg += (1 - Math.exp(-dt / 5)) * (got / dt - st.avg);
+      if (done) {
+        ps.step++; ps.paid = {};
+        E.emit("projstep", { pid: e.p, step: ps.step - 1 });
+        E.emit("struct");
+        if (ps.step >= P.steps.length) endGame(P.end);
+        st.s = "ok";
+        return;
+      }
+      st.s = got > 0 ? "ok" : st.miss && Object.keys(st.miss).length === Object.keys(step.cost).filter((i) => (ps.paid[i] || 0) < step.cost[i]).length ? "nolink" : "starved";
+    }
+    E.siteOf = (pid) => {
+      for (const k in S.fab.c) if (S.fab.c[k].k === "site" && S.fab.c[k].p === pid) { const i = k.indexOf(","); return { x: +k.slice(0, i), y: +k.slice(i + 1), e: S.fab.c[k] }; }
+      return null;
+    };
     /* les cases d’où un tapis plein entre dans la Réserve */
     E.fabSat = () => satEnts;
     /* Débits des machines (par seconde, moyenne glissante). */
@@ -1401,6 +1459,8 @@
       if (isRes(x, y)) return "res";
       if (cellAt(x, y)) return "taken";
       if (k === "port" && !touchesRes(x, y)) return "port";
+      if (k === "site" && (!D.PROJECTS[o.p] || !projVisible(o.p))) return "kind";
+      if (k === "site" && E.siteOf(o.p)) return "siteone";
       if (k === "mach") {
         const ms = E.machines();
         if (!ms[o.m]) return "kind";
@@ -1418,6 +1478,7 @@
       else if (k === "port") e = { k, d: o.d !== undefined && !intoRes(x, y, o.d) ? o.d : portDir(x, y), f: E.automatable(o.f) || (item(o.f) && S.seen[o.f]) ? o.f : null };
       else if (k === "split" || k === "cross") e = { k };
       else if (k === "mach") e = { k, id: "M" + ++S.fab.seq, m: o.m, r: E.automatable(o.r) ? o.r : null, d: (o.d | 0) % 4, n: 1, on: true, cap: 0 };
+      else if (k === "site") e = { k, id: "S:" + o.p, p: o.p };
       else return { ok: false, why: "kind" };
       S.fab.c[ck(x, y)] = e;
       fabChanged();
@@ -1457,6 +1518,7 @@
       const e = cellAt(x, y);
       if (!e) return null;
       if (e.k === "mach" || e.k === "ext") refund(e.id);
+      if (e.k === "site") { const B = S.fab.ms[e.id]; if (B) for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]); delete S.fab.ms[e.id]; }
       delete S.fab.c[ck(x, y)];
       fabChanged();
       return e;
@@ -1807,6 +1869,7 @@
       if (typeof f.ms !== "object" || !f.ms) f.ms = {};
       f.r = Math.max(FAB_R0, Math.min(40, Math.floor(f.r) || FAB_R0));
       f.seq = Math.floor(f.seq) || 0;
+      const sitesSeen = {};
       for (const k in f.c) {
         const e = f.c[k], m = /^(-?\d+),(-?\d+)$/.exec(k);
         let ok = m && e && FAB_KINDS[e.k] && !isRes(+m[1], +m[2]);
@@ -1830,6 +1893,10 @@
           }
         }
         if (ok && (e.k === "belt" || e.k === "port")) e.d = (e.d | 0) & 3;
+        if (ok && e.k === "site") {
+          ok = !!D.PROJECTS[e.p] && !sitesSeen[e.p];
+          if (ok) { sitesSeen[e.p] = true; e.id = "S:" + e.p; }
+        }
         if (ok && e.k === "port" && e.f && !D.ITEMS[e.f]) e.f = null;
         if (!ok) {
           o.orphans = o.orphans || {};
