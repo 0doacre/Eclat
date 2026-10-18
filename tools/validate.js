@@ -80,7 +80,7 @@ for (const pid in D.PROJECTS) {
 D.OBJECTIVES.forEach((o) => {
   if (Array.isArray(o)) { if (!I[o[0]]) err("objectif inconnu " + o[0]); return; }
   if (o.k === "exp") { if (!Z[o.z] || !Z[o.z].exps.find((x) => x.id === o.x)) err("objectif d’exploration inconnu " + o.z + "/" + o.x); }
-  else if (o.k !== "line") err("type d’objectif inconnu " + o.k);
+  else if (o.k !== "line" && o.k !== "ext") err("type d’objectif inconnu " + o.k);
   if (!o.txt || !o.n) err("objectif " + o.k + " sans texte");
 });
 D.SECRETS.forEach((s) => {

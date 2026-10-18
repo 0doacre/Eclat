@@ -574,3 +574,36 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
 .vs .card { margin: 0; padding: 10px; }
 .warnc { border-color: var(--intu); }
+.warnline { margin-top: 8px; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--intu) 14%, var(--panel)); border: 1px solid color-mix(in srgb, var(--intu) 45%, transparent); cursor: pointer; }
+.u-exts .u-row { margin-top: 6px; flex-wrap: nowrap; }
+.u-exts .u-row .grow { min-width: 0; }
+body.in-usine #toasts { bottom: auto; top: calc(var(--top) + var(--safe-t) + 54px); }
+.memory { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.memory .bar { height: 6px; }
+.memory .bar > i { background: linear-gradient(90deg, #8a7bd8, #c9b8ff); }
+.memory .gain { color: #c9b8ff; }
+
+/* ---------------------------------------------------------------- fiches de recettes */
+.rwin .rdesc { font-size: 15.5px; margin: 10px 0 6px; }
+.rwin .ic.lg.unk { font-size: 26px; }
+.rwin .pinb { align-self: flex-start; }
+.rrow { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.rings { display: flex; flex-direction: column; gap: 5px; }
+.ring { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); text-align: left; font-size: 14px; }
+.ring .go { color: var(--dim); font-size: 18px; line-height: 1; }
+.ring.lack { border-color: color-mix(in srgb, var(--bad) 55%, transparent); }
+.ring.lack .tiny { color: var(--bad); }
+.ring:active { transform: scale(.98); }
+.rwin .ing.link { border: 1px solid var(--line2); background: var(--bg2); border-radius: 999px; padding: 3px 9px 3px 4px; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; margin: 2px 4px 2px 0; }
+.rbtns { margin-top: 10px; gap: 6px; }
+.rwin .acts .btn { flex: 1 1 auto; }
+
+/* ---------------------------------------------------------------- matières : tri et filtres */
+.inv-tools { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.inv-tools .search { flex: 1 1 auto; margin: 0; }
+.inv-tools select { flex: 0 0 auto; max-width: 46%; min-height: 40px; border-radius: 12px; border: 1px solid var(--line2); background: var(--panel2); color: var(--text); padding: 0 8px; font-size: 13px; }
+.inv-age { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin: 10px 4px 6px; }
+.inv { position: relative; }
+.inv .fav { position: absolute; top: 3px; right: 6px; font-style: normal; font-size: 11px; color: #ff8a9a; }
+.pinb.fav.on { color: #ff8a9a; border-color: #ff8a9a; }
+.rwin .row > .pinb + .pinb { margin-left: 4px; }

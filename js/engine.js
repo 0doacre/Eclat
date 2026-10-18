@@ -12,7 +12,7 @@
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
   const HINT_COST = [1, 1, 2];
-  const SAVE_VERSION = 3;
+  const SAVE_VERSION = 4;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins"];
 
@@ -44,8 +44,35 @@
   const ck = (x, y) => x + "," + y;
   const isRes = (x, y) => Math.abs(x) <= RES && Math.abs(y) <= RES;
   const touchesRes = (x, y) => (Math.abs(x) === RES + 1 && Math.abs(y) <= RES) || (Math.abs(y) === RES + 1 && Math.abs(x) <= RES);
-  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1 };
+  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1, ext: 1 };
   const freshFab = () => ({ r: FAB_R0, c: {}, seq: 0, ms: {} });
+
+  /* Les gisements : chaque terre a sa parcelle sur la carte de la Fabrique, avec
+   * une case par ressource (celles qu’on y récolte, et celles que produisent ses
+   * extracteurs). Positions fixes : la carte est la même d’une partie à l’autre,
+   * et elle s’étend à chaque nouvelle terre. */
+  const PATCH = {
+    lisiere: [0, -7], plaine: [8, 0], riviere: [0, 8], collines: [-9, 0], mine: [9, -9], desert: [-10, 9],
+    gisement: [10, 10], montagnes: [-11, -10], orbite: [0, -16], lune: [17, 0], mercure: [0, 17], caveau: [-17, 0]
+  };
+  const EXTS = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
+  const DEPOSITS = {}; // "x,y" → { res, z, hand }
+  const DEP_AT = {}; // zone → ressource → "x,y"
+  D.ZONES.forEach((z, i) => {
+    const list = z.res.slice();
+    EXTS.forEach((id) => { if (D.ITEMS[id].z === z.id) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
+    const far = 20 + i * 3;
+    const [cx, cy] = PATCH[z.id] || [Math.round(Math.cos(i * 2.4) * far), Math.round(Math.sin(i * 2.4) * far)];
+    DEP_AT[z.id] = {};
+    list.forEach((r, j) => {
+      const k = ck(cx - (list.length - 1) + 2 * j, cy);
+      if (DEPOSITS[k]) throw new Error("Deux gisements au même endroit : " + k);
+      DEPOSITS[k] = { res: r, z: z.id, hand: z.res.includes(r) };
+      DEP_AT[z.id][r] = k;
+    });
+  });
+  /* un extracteur posé met tout son effort sur la matière de sa case */
+  const extRate = (id, r) => { const p = D.ITEMS[id] && D.ITEMS[id].p; return p && p[r] ? p[r] * Object.keys(p).length : 0; };
 
   function freshState(now) {
     return {
@@ -53,7 +80,7 @@
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: {}, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
-      fab: freshFab(), pins: {}, track: null, gt: { id: null, t: 0 },
+      fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {},
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
@@ -98,6 +125,15 @@
       delete o.lineSeq;
       o.flags.news = "3";
       o.v = 3;
+    }
+    if (from < 4) {
+      // v4 : les extracteurs ne récoltent plus « tout seuls » : ils travaillent posés
+      // sur les gisements de la Fabrique. Ceux du joueur y sont posés et reliés à la
+      // Réserve au chargement (voir E.load), pour que rien ne s’arrête.
+      o.flags = o.flags || {};
+      if (EXTS.some((t) => o.inv && o.inv[t] >= 1)) o.flags.fab4 = "todo";
+      o.flags.news = "4";
+      o.v = 4;
     }
     return o;
   }
@@ -152,7 +188,7 @@
     const now = opts.now || (() => Date.now());
     const rand = opts.rand || Math.random;
     const listeners = {};
-    const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION };
+    const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION, DX, DY };
     let S = freshState(now());
     let C = null; // caches dérivés de l’état
 
@@ -173,7 +209,8 @@
       if (!n) return;
       S.inv[id] = (S.inv[id] || 0) + n;
       if (S.inv[id] < 1e-9) S.inv[id] = 0;
-      if (n > 0 && !S.seen[id]) { S.seen[id] = true; E.emit("struct"); }
+      // l’ordre de découverte, pour trier les matières (les anciennes parties ont « true »)
+      if (n > 0 && !S.seen[id]) { S.seen[id] = (S.seenSeq = (S.seenSeq || 0) + 1); E.emit("struct"); }
     }
     E.add = add;
 
@@ -206,13 +243,6 @@
       c.heat = c.st.chauffer ? c.st.chauffer.heat || 0 : 0;
       if (S.flags.lucioles) c.auto["*"] = (c.auto["*"] || 1) * 1.25;
       c.echo = 1 + 0.5 * (S.echoes || 0);
-      // production des extracteurs
-      for (const id in S.inv) {
-        const it = item(id);
-        if (!it || it.t !== "ext" || !(S.inv[id] > 0)) continue;
-        const m = (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
-        for (const r in it.p) c.rates[r] = (c.rates[r] || 0) + it.p[r] * S.inv[id] * m;
-      }
       C = c;
       return c;
     }
@@ -270,7 +300,16 @@
       S.stats.taps++;
       return n;
     };
-    E.rate = (res) => E.cache().rates[res] || 0;
+    /* production des extracteurs posés pour une matière (par seconde) */
+    E.rate = (res) => {
+      let r = 0;
+      const c = E.cache();
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k];
+        if (e.k === "ext" && e.res === res && machStat[e.id] && machStat[e.id].s === "ok") r += extOut(e, c);
+      }
+      return r;
+    };
 
     /* ------------------------------------------------------ coûts */
     function costFor(id, k) {
@@ -459,7 +498,8 @@
       const names = ids.map((i) => item(i).n.toLowerCase());
       const x = names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names[names.length - 1] : names[0];
       const flav = pool[Math.floor(rand() * pool.length)].replace(/\{x\}/g, x);
-      return { kind: "fail", temp: t.temp, why: t.why, msg: flav.charAt(0).toUpperCase() + flav.slice(1) };
+      const mem = remember(g, ids);
+      return { kind: "fail", temp: t.temp, why: t.why, msg: flav.charAt(0).toUpperCase() + flav.slice(1), mem };
     };
 
     /* Thermomètre d’intuition : à quel point la tentative est-elle proche
@@ -617,6 +657,7 @@
       if (Array.isArray(o)) return (S.made[o[0]] || 0) > 0;
       if (o.k === "exp") return (S.exp.done[o.z] || 0) > ZONES[o.z].exps.findIndex((x) => x.id === o.x);
       if (o.k === "line") return !!S.flags.lineDone;
+      if (o.k === "ext") return !!S.flags.extDone;
       return true;
     }
     /* Le premier objectif non atteint après le plus avancé déjà atteint :
@@ -668,27 +709,42 @@
       const s = nextStep(ob.id);
       return { ob, step: s.id, why: s.why };
     };
-    /* Réminiscences : indices gratuits et progressifs quand on bloque sur une étape. */
-    let gAcc = 0;
-    function guideTick(dt) {
-      gAcc += dt;
-      if (gAcc < 1) return;
-      const d = gAcc;
-      gAcc = 0;
-      const g = E.guide();
-      if (!g || !g.step || S.known[g.step]) return;
-      if (S.gt.id !== g.step) S.gt = { id: g.step, t: 0 };
-      S.gt.t += d;
-      const lvl = S.hints[g.step] || 0;
+    /* Réminiscences : des indices gratuits et progressifs, gagnés en cherchant.
+     * Chaque combinaison nouvelle essayée à l’Atelier (et qui ne donne rien) fait
+     * remonter des souvenirs sur l’étape en cours ; d’autant plus qu’elle s’en
+     * approche (même geste, ingrédients en commun). Attendre ne donne rien, refaire
+     * le même essai non plus. */
+    function remember(g, ids) {
+      const k = keyOf(g, ids);
+      if (S.tried[k]) return 0;
+      S.tried[k] = 1;
+      const gd = E.guide();
+      if (!gd || !gd.step || S.known[gd.step]) return 0;
+      const it = item(gd.step);
+      let pts = 1;
+      if (it.r[0] === g) pts++;
+      ids.forEach((i) => { if (it.r[1][i] !== undefined) pts++; });
+      if (S.gt.id !== gd.step) S.gt = { id: gd.step, p: 0 };
+      S.gt.p += pts;
+      const lvl = S.hints[gd.step] || 0;
       let target = 0;
-      D.GUIDE.delays.forEach((t, i) => { if (S.gt.t >= t) target = i + 1; });
+      D.GUIDE.tries.forEach((n, i) => { if (S.gt.p >= n) target = i + 1; });
       if (target > lvl) {
-        S.hints[g.step] = target;
-        if (target >= 3) learn(g.step, true);
-        E.emit("guidehint", { id: g.step, lvl: target });
+        S.hints[gd.step] = target;
+        if (target >= 3) learn(gd.step, true);
+        E.emit("guidehint", { id: gd.step, lvl: target });
         E.emit("struct");
       }
+      return pts;
     }
+    /* où en sont les souvenirs de l’étape en cours : { p, next } (points, seuil suivant) */
+    E.memory = function () {
+      const gd = E.guide();
+      if (!gd || !gd.step || S.known[gd.step]) return null;
+      const lvl = S.hints[gd.step] || 0, p = S.gt.id === gd.step ? S.gt.p || 0 : 0;
+      const next = D.GUIDE.tries[lvl];
+      return next === undefined ? null : { id: gd.step, p, prev: lvl ? D.GUIDE.tries[lvl - 1] : 0, next, lvl };
+    };
 
     /* ------------------------------------------------------ explorations */
     E.nextExp = function (zid) {
@@ -870,7 +926,21 @@
       const it = item(id);
       return !!(it && it.r && S.known[id] && !isUnique(it) && !isScaled(it));
     };
-    const fabR = () => Math.max(S.fab.r || FAB_R0, Math.min(FAB_RMAX, 5 + S.age));
+    /* la carte s’étend jusqu’aux parcelles des terres ouvertes */
+    let patchMemo = { key: "", r: 0 };
+    function patchR() {
+      const key = Object.keys(S.zones).join();
+      if (patchMemo.key === key) return patchMemo.r;
+      let r = 0;
+      for (const k in DEPOSITS) {
+        if (!S.zones[DEPOSITS[k].z]) continue;
+        const i = k.indexOf(",");
+        r = Math.max(r, Math.abs(+k.slice(0, i)), Math.abs(+k.slice(i + 1)));
+      }
+      patchMemo = { key, r: r ? r + 3 : 0 };
+      return patchMemo.r;
+    }
+    const fabR = () => Math.max(S.fab.r || FAB_R0, Math.min(FAB_RMAX, 5 + S.age), patchR());
     const inGrid = (x, y) => { const R = fabR(); return Math.abs(x) <= R && Math.abs(y) <= R; };
     const cellAt = (x, y) => S.fab.c[ck(x, y)];
     E.fabR = fabR;
@@ -878,6 +948,37 @@
     E.isRes = isRes;
     E.touchesRes = touchesRes;
     E.fabCell = (x, y) => (isRes(x, y) ? { k: "res" } : cellAt(x, y) || null);
+    /* --- gisements et extracteurs */
+    const depAt = (x, y) => { const d = DEPOSITS[ck(x, y)]; return d && S.zones[d.z] ? d : null; };
+    E.deposit = depAt;
+    E.deposits = () => Object.keys(DEPOSITS).filter((k) => S.zones[DEPOSITS[k].z]).map((k) => {
+      const i = k.indexOf(",");
+      return Object.assign({ x: +k.slice(0, i), y: +k.slice(i + 1) }, DEPOSITS[k]);
+    });
+    E.EXTS = EXTS;
+    E.extRate = extRate;
+    E.extFor = (r) => EXTS.filter((t) => extRate(t, r) > 0);
+    E.extUnits = function () {
+      const out = {};
+      EXTS.forEach((t) => (out[t] = { own: Math.floor(count(t)), used: 0 }));
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k];
+        if (e.k === "ext") for (const t in e.u) if (out[t]) out[t].used += e.u[t];
+      }
+      return out;
+    };
+    /* production d’une exploitation, par seconde */
+    function extOut(e, c) {
+      let r = 0;
+      for (const t in e.u) {
+        const it = item(t);
+        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
+      }
+      return r;
+    }
+    E.extOut = (e) => extOut(e, E.cache());
+    /* récolter à la main sur la case d’un gisement */
+    E.tapDeposit = (x, y) => { const d = depAt(x, y); return d && d.hand ? E.tap(d.res, d.z) : 0; };
     function fabChanged() { G = null; E.emit("fab"); }
     function forgetFab() {
       for (const k in machStat) delete machStat[k];
@@ -896,7 +997,7 @@
       for (const k in S.fab.c) { const e = S.fab.c[k]; if (e.k === "mach" && out[e.m]) out[e.m].used += e.n; }
       return out;
     };
-    E.hasFactory = () => MACHINES.some((m) => count(m) > 0) || Object.keys(S.fab.c).length > 0;
+    E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) || Object.keys(S.fab.c).length > 0;
     E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd : 0);
     const buf = (id) => S.fab.ms[id] || (S.fab.ms[id] = { p: 0, b: {}, o: 0 });
     E.machBuf = buf;
@@ -912,7 +1013,7 @@
         const s = q.shift();
         if (isRes(s.x, s.y)) { if (!out.res) out.res = { at: s.p }; continue; }
         const e = inGrid(s.x, s.y) ? cellAt(s.x, s.y) : null;
-        if (!e || e.k === "port") continue;
+        if (!e || e.k === "port" || e.k === "ext") continue;
         if (e.k === "mach") { reach(e.id, s.p); continue; }
         if (e.k === "belt" && e.d === (s.d + 2) % 4) continue; // tapis à contresens
         const key = e.k === "cross" ? ck(s.x, s.y) + ":" + (s.d % 2) : ck(s.x, s.y);
@@ -938,12 +1039,12 @@
       const prods = {}, sup = {}, pos = {};
       for (const k in S.fab.c) {
         const e = S.fab.c[k];
-        if (e.k !== "mach" && e.k !== "port") continue;
+        if (e.k !== "mach" && e.k !== "port" && e.k !== "ext") continue;
         const [x, y] = k.split(",").map(Number);
         if (e.k === "port" && !touchesRes(x, y)) continue;
-        const id = e.k === "mach" ? e.id : "P" + k;
+        const id = e.k === "port" ? "P" + k : e.id;
         pos[id] = { x, y };
-        const t = trace(x, y, e.d, e.k === "mach" ? e.id : null);
+        const t = trace(x, y, e.d, e.k === "port" ? null : e.id);
         prods[id] = { id, e, x, y, t };
         for (const c in t.cons) (sup[c] = sup[c] || []).push(id);
       }
@@ -958,11 +1059,13 @@
         for (const c in prods[id].t.cons) if (indeg[c] !== undefined && --indeg[c] === 0) ready.push(c);
       }
       ms.forEach((id) => { if (!order.includes(id)) order.push(id); }); // boucles
-      G = { prods, sup, pos, order };
+      const exts = Object.keys(prods).filter((id) => prods[id].e.k === "ext");
+      G = { prods, sup, pos, order, exts };
       return G;
     }
     E.fabGraph = graph;
-    const supplies = (P, i) => (P.e.k === "port" ? !P.e.f || P.e.f === i : P.e.r === i);
+    const supplies = (P, i) => (P.e.k === "port" ? !P.e.f || P.e.f === i : P.e.k === "ext" ? P.e.res === i : P.e.r === i);
+    const outOf = (e) => (e.k === "ext" ? e.res : e.r);
 
     function logFlow(from, to, i, q) {
       if (fabQuiet || !(q > 0)) return;
@@ -974,10 +1077,10 @@
     function pull(cid, i, need, g) {
       const B = buf(cid), srcs = g.sup[cid] || [];
       const take = (pid, q) => { B.b[i] = (B.b[i] || 0) + q; need -= q; logFlow(pid, cid, i, q); };
-      // d’abord ce que posent les machines voisines, ensuite le stock
+      // d’abord ce que posent les machines et les extracteurs voisins, ensuite le stock
       for (const pid of srcs) {
         const P = g.prods[pid];
-        if (P.e.k !== "mach" || P.e.r !== i) continue;
+        if (P.e.k === "port" || outOf(P.e) !== i) continue;
         const PB = buf(pid), q = Math.min(need, PB.o);
         if (q > 0) { PB.o -= q; take(pid, q); }
         if (need <= 1e-9) return;
@@ -1034,13 +1137,14 @@
         if (room <= 0) { B.p = Math.min(B.p, 1); return done("cap"); }
         want = Math.min(want, Math.ceil(room / outQ));
       }
+      // la machine se sert au passage : de quoi faire ce qu’elle doit, et deux d’avance
+      for (const i in ing) {
+        const need = (Math.max(0, want) + 2) * ing[i] - (B.b[i] || 0);
+        if (need > 1e-9) pull(e.id, i, need, g);
+      }
       if (want <= 0) return done(st.s === "starved" || st.s === "ok" ? st.s : "ok");
       let k = want;
-      for (const i in ing) {
-        const need = want * ing[i] - (B.b[i] || 0);
-        if (need > 1e-9) pull(e.id, i, need, g);
-        k = Math.min(k, Math.floor((B.b[i] || 0) / ing[i] + 1e-9));
-      }
+      for (const i in ing) k = Math.min(k, Math.floor((B.b[i] || 0) / ing[i] + 1e-9));
       if (k > 0) {
         for (const i in ing) { B.b[i] -= k * ing[i]; if (B.b[i] < 1e-9) delete B.b[i]; }
         B.p -= k;
@@ -1059,17 +1163,39 @@
       st.miss = null;
       return done("ok");
     }
+    function runExt(e, g, dt, c) {
+      const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0 });
+      const B = buf(e.id);
+      let made = 0;
+      const done = (s) => { st.s = s; st.avg += (1 - Math.exp(-dt / 5)) * (made / dt - st.avg); };
+      if (!e.on) return done("off");
+      const rate = extOut(e, c);
+      if (!(rate > 0)) return done("idle");
+      const P = g.prods[e.id];
+      if (!P.t.res && !Object.keys(P.t.cons).length) return done("noout");
+      if (!P.t.res && B.o >= Math.max(4, 2 * rate * dt)) return done("jam");
+      made = rate * dt;
+      B.o += made;
+      return done("ok");
+    }
     function runFab(dt) {
       const g = graph();
-      if (!g.order.length) return;
+      if (!g.order.length && !g.exts.length) return;
       const c = E.cache();
+      for (const id of g.exts) runExt(g.prods[id].e, g, dt, c);
       for (const id of g.order) runMachine(g.prods[id].e, g, dt, c);
       // ce qui arrive à la Réserve rejoint le stock
-      for (const id of g.order) {
+      for (const id of g.exts.concat(g.order)) {
         const P = g.prods[id];
         if (!P.t.res) continue;
-        const B = buf(id);
-        if (B.o > 0) { const q = B.o; B.o = 0; add(P.e.r, q); logFlow(id, "res", P.e.r, q); }
+        const B = buf(id), r = outOf(P.e);
+        if (B.o > 0) {
+          const q = B.o;
+          B.o = 0;
+          add(r, q);
+          logFlow(id, "res", r, q);
+          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; E.emit("struct"); }
+        }
       }
     }
     /* Débits des machines (par seconde, moyenne glissante). */
@@ -1133,7 +1259,7 @@
       if (B) {
         for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]);
         const e = machById(id);
-        if (e && B.o > 0 && item(e.r)) add(e.r, B.o);
+        if (e && B.o > 0 && item(outOf(e))) add(outOf(e), B.o);
       }
       delete S.fab.ms[id];
       delete machStat[id];
@@ -1149,7 +1275,7 @@
     E.fabRemove = function (x, y) {
       const e = cellAt(x, y);
       if (!e) return null;
-      if (e.k === "mach") refund(e.id);
+      if (e.k === "mach" || e.k === "ext") refund(e.id);
       delete S.fab.c[ck(x, y)];
       fabChanged();
       return e;
@@ -1188,20 +1314,163 @@
       try { c = JSON.parse(snap); } catch (e) { return false; }
       if (!c || typeof c !== "object") return false;
       const was = {};
-      for (const k in c) if (c[k].k === "mach") was[c[k].id] = c[k].r;
+      for (const k in c) if (c[k].id) was[c[k].id] = outOf(c[k]);
       for (const k in S.fab.c) {
         const e = S.fab.c[k];
-        if (e.k === "mach" && (!(e.id in was) || was[e.id] !== e.r)) refund(e.id);
+        if (e.id && (!(e.id in was) || was[e.id] !== outOf(e))) refund(e.id);
       }
       S.fab.c = c;
-      const ms = E.machines();
+      const ms = E.machines(), us = E.extUnits();
       for (const k in c) {
         const e = c[k];
         if (e.k === "mach" && ms[e.m] && ms[e.m].used > ms[e.m].own) { ms[e.m].used -= e.n; delete c[k]; }
+        if (e.k === "ext") for (const t in e.u) if (us[t] && us[t].used > us[t].own) { const x = Math.min(e.u[t], us[t].used - us[t].own); e.u[t] -= x; us[t].used -= x; if (!e.u[t]) delete e.u[t]; }
       }
       fabChanged();
       return true;
     };
+    /* --- extracteurs sur les gisements */
+    E.fabExtWhy = function (x, y, t) {
+      const dep = depAt(x, y);
+      if (!dep) return "nodep";
+      if (!extRate(t, dep.res)) return "wrongext";
+      const e = cellAt(x, y);
+      if (e && e.k !== "ext") return "taken";
+      const u = E.extUnits()[t];
+      if (!u || u.own - u.used < 1) return "noext";
+      return null;
+    };
+    /* pose n extracteurs du type t sur le gisement (x, y) ; crée l’exploitation au besoin */
+    E.fabPlaceExt = function (x, y, t, n) {
+      const why = E.fabExtWhy(x, y, t);
+      if (why) return { ok: false, why };
+      const dep = depAt(x, y), u = E.extUnits()[t];
+      let e = cellAt(x, y), fresh = false;
+      if (!e) { e = { k: "ext", id: "X" + ++S.fab.seq, res: dep.res, u: {}, d: 0, on: true }; S.fab.c[ck(x, y)] = e; fresh = true; }
+      e.u[t] = (e.u[t] || 0) + Math.max(1, Math.min(u.own - u.used, Math.floor(n || 1)));
+      fabChanged();
+      return { ok: true, e, fresh };
+    };
+    /* nombre d’extracteurs d’un type dans une exploitation */
+    E.fabSetExt = function (id, t, n) {
+      const e = machById(id);
+      if (!e || e.k !== "ext" || !extRate(t, e.res)) return null;
+      const u = E.extUnits()[t], cur = e.u[t] || 0;
+      const v = Math.max(0, Math.min(Math.floor(n), u ? u.own - u.used + cur : cur));
+      if (v) e.u[t] = v; else delete e.u[t];
+      fabChanged();
+      return e;
+    };
+    /* Trace un tapis depuis ce qui est posé en (x, y) jusqu’à la Réserve, ou jusqu’à
+     * un tapis qui y mène, et tourne la sortie vers lui. Évite les gisements. */
+    E.fabLink = function (x, y) {
+      const src = cellAt(x, y);
+      if (!src || src.d === undefined || src.k === "belt") return { ok: false, why: "kind" };
+      if (src.id) { const P = graph().prods[src.id]; if (P && P.t.res) return { ok: true, n: 0 }; }
+      const memo = {};
+      const home = (cx, cy, din) => {
+        const k = cx + "," + cy + "," + din;
+        if (!(k in memo)) memo[k] = !!trace(cx - DX[din], cy - DY[din], din, src.id || null).res;
+        return memo[k];
+      };
+      const joins = (cx, cy, d) => {
+        if (isRes(cx, cy)) return true;
+        const e = cellAt(cx, cy);
+        return !!(e && e.k === "belt" && e.d !== (d + 2) % 4 && home(cx, cy, d));
+      };
+      for (let d = 0; d < 4; d++) {
+        if (joins(x + DX[d], y + DY[d], d)) { src.d = d; fabChanged(); return { ok: true, n: 0 }; }
+      }
+      // plus court chemin sur les cases libres (Dijkstra, petit tas binaire)
+      const R = fabR(), dist = {}, prev = {}, heap = [];
+      const pushH = (n) => {
+        heap.push(n);
+        for (let i = heap.length - 1; i > 0;) { const j = (i - 1) >> 1; if (heap[j].c <= heap[i].c) break; [heap[i], heap[j]] = [heap[j], heap[i]]; i = j; }
+      };
+      const popH = () => {
+        const top = heap[0], last = heap.pop();
+        if (heap.length) {
+          heap[0] = last;
+          for (let i = 0; ;) {
+            const l = 2 * i + 1, r = l + 1;
+            let m = i;
+            if (l < heap.length && heap[l].c < heap[m].c) m = l;
+            if (r < heap.length && heap[r].c < heap[m].c) m = r;
+            if (m === i) break;
+            [heap[i], heap[m]] = [heap[m], heap[i]]; i = m;
+          }
+        }
+        return top;
+      };
+      const free = (cx, cy) => Math.abs(cx) <= R && Math.abs(cy) <= R && !isRes(cx, cy) && !cellAt(cx, cy);
+      // les gisements restent libres, et le tour de la Réserve aussi (place des sorties)
+      const cost = (cx, cy) => (DEPOSITS[ck(cx, cy)] ? 8 : touchesRes(cx, cy) ? 4 : 1);
+      for (let d = 0; d < 4; d++) {
+        const nx = x + DX[d], ny = y + DY[d];
+        if (!free(nx, ny)) continue;
+        const k = ck(nx, ny), c0 = cost(nx, ny);
+        if (dist[k] === undefined || c0 < dist[k]) { dist[k] = c0; prev[k] = { d0: d }; pushH({ x: nx, y: ny, c: c0 }); }
+      }
+      let end = null;
+      while (heap.length && !end) {
+        const u = popH(), uk = ck(u.x, u.y);
+        if (u.c > dist[uk]) continue;
+        for (let d = 0; d < 4; d++) {
+          const vx = u.x + DX[d], vy = u.y + DY[d];
+          if (joins(vx, vy, d)) { end = { x: u.x, y: u.y, d }; break; }
+          if (!free(vx, vy)) continue;
+          const vk = ck(vx, vy), c = u.c + cost(vx, vy);
+          if (dist[vk] === undefined || c < dist[vk]) { dist[vk] = c; prev[vk] = { x: u.x, y: u.y, d }; pushH({ x: vx, y: vy, c }); }
+        }
+      }
+      if (!end) return { ok: false, why: "nopath" };
+      const path = [{ x: end.x, y: end.y, d: end.d }];
+      let k = ck(end.x, end.y);
+      while (prev[k] && prev[k].x !== undefined) { const p = prev[k]; path.unshift({ x: p.x, y: p.y, d: p.d }); k = ck(p.x, p.y); }
+      src.d = prev[k].d0;
+      E.fabDraw(path);
+      fabChanged();
+      return { ok: true, n: path.length };
+    };
+    /* Pose un extracteur là où il manque le plus (et relie sa case si elle est
+     * nouvelle). Sert au bot de simulation et à la mise à jour des anciennes parties. */
+    E.fabAutoExt = function (t, noLink) {
+      const it = item(t);
+      if (!it || it.t !== "ext") return null;
+      const spots = Object.keys(it.p).map((r) => {
+        const k = DEP_AT[it.z] && DEP_AT[it.z][r];
+        if (!k) return null;
+        const i = k.indexOf(","), x = +k.slice(0, i), y = +k.slice(i + 1);
+        if (E.fabExtWhy(x, y, t)) return null;
+        const e = cellAt(x, y);
+        return { x, y, r, have: e ? e.u[t] || 0 : 0, p: it.p[r] };
+      }).filter(Boolean);
+      if (!spots.length) return null;
+      // viser ce que donneraient tous les extracteurs s’ils travaillaient partout,
+      // en couvrant d’abord les matières qui ne sont pas encore extraites
+      const target = {}, cur = {};
+      EXTS.forEach((u) => { const n = Math.floor(count(u)); for (const r in item(u).p) target[r] = (target[r] || 0) + n * item(u).p[r]; });
+      for (const k in S.fab.c) { const e = S.fab.c[k]; if (e.k === "ext") for (const u in e.u) cur[e.res] = (cur[e.res] || 0) + e.u[u] * extRate(u, e.res); }
+      spots.forEach((sp) => {
+        const d = (target[sp.r] || 0) - (cur[sp.r] || 0);
+        sp.score = (cur[sp.r] ? 0 : 1000) + Math.abs(d) - Math.abs(d - extRate(t, sp.r));
+      });
+      spots.sort((a, b) => b.score - a.score);
+      const sp = spots[0], res = E.fabPlaceExt(sp.x, sp.y, t, 1);
+      if (res.ok && res.fresh && !noLink) E.fabLink(sp.x, sp.y);
+      return res;
+    };
+    /* mise à jour d’une partie d’avant la v4 : tous les extracteurs sont posés puis reliés */
+    function placeOldExtractors() {
+      let placed = 0;
+      const power = (t) => Object.values(item(t).p).reduce((a, b) => a + b, 0);
+      EXTS.slice().sort((a, b) => power(b) - power(a)).forEach((t) => { const n = Math.floor(count(t)); for (let i = 0; i < n; i++) if (E.fabAutoExt(t, true)) placed++; });
+      const list = Object.keys(S.fab.c).filter((k) => S.fab.c[k].k === "ext").map((k) => k.split(",").map(Number))
+        .sort((a, b) => Math.abs(a[0]) + Math.abs(a[1]) - Math.abs(b[0]) - Math.abs(b[1]));
+      let linked = 0;
+      list.forEach(([x, y]) => { if (E.fabLink(x, y).ok) linked++; });
+      S.flags.fab4 = { placed, sites: list.length, linked };
+    }
     E.fabSetPort = function (x, y, f) {
       const e = cellAt(x, y);
       if (!e || e.k !== "port") return null;
@@ -1302,7 +1571,6 @@
         S.intuAcc += (c.intu / 60) * dt;
         if (S.intuAcc >= 1) { const k = Math.floor(S.intuAcc); S.intu += k; S.intuAcc -= k; }
       }
-      if (!offline) guideTick(dt);
       S.stats.play += dt;
     }
     E.step = step;
@@ -1359,6 +1627,18 @@
           const n = ok && +e.id.slice(1);
           if (n > f.seq) f.seq = n;
         }
+        if (ok && e.k === "ext") {
+          ok = typeof e.id === "string" && !!D.ITEMS[e.res] && !!e.u && typeof e.u === "object";
+          if (ok) {
+            for (const t in e.u) {
+              const n = Math.max(0, Math.floor(e.u[t]) || 0);
+              if (!D.ITEMS[t] || D.ITEMS[t].t !== "ext" || !extRate(t, e.res) || !n) delete e.u[t]; else e.u[t] = n;
+            }
+            e.d = (e.d | 0) & 3; e.on = e.on !== false;
+            const n = +e.id.slice(1);
+            if (n > f.seq) f.seq = n;
+          }
+        }
         if (ok && (e.k === "belt" || e.k === "port")) e.d = (e.d | 0) & 3;
         if (ok && e.k === "port" && e.f && !D.ITEMS[e.f]) e.f = null;
         if (!ok) {
@@ -1379,7 +1659,8 @@
       o.settings = Object.assign({ sound: true, vibe: true }, o.settings);
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
-      o.gt = Object.assign({ id: null, t: 0 }, o.gt);
+      o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
+      if (!o.tried || typeof o.tried !== "object") o.tried = {};
       checkFab(o);
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {
@@ -1401,6 +1682,7 @@
       S = o;
       forgetFab();
       recalc();
+      if (S.flags.fab4 === "todo") placeOldExtractors();
       E.emit("struct");
       return true;
     };

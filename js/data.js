@@ -807,13 +807,15 @@
 
   /* ----------------------------------------------------------- OBJECTIFS */
   /* Un objectif est soit [objet, texte] (le fabriquer), soit une action :
-   * { k: "exp", z: zone, x: exploration } ou { k: "line" } (faire tourner une machine de l’Usine). */
+   * { k: "exp", z: zone, x: exploration }, { k: "ext" } (poser et relier un extracteur)
+   * ou { k: "line" } (faire tourner une machine). */
   D.OBJECTIVES = [
     ["manche", "Tes mains cherchent un outil. Récolte du bois, puis taille-le à l’Atelier."],
     ["corde", "Il te faudrait de quoi lier les choses entre elles."],
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Ce chêne immense t’attire. Lance une exploration depuis la Lisière : elle avance toute seule pendant que tu fais autre chose." },
     ["feu", "La nuit tombe vite. Fais du feu."],
     ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi, même quand le jeu est fermé."],
+    { k: "ext", n: "Installer ta cabane", txt: "Dans la Fabrique, pose ta cabane sur une case de la Lisière, puis trace un tapis jusqu’à la Réserve. Elle récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
@@ -856,10 +858,10 @@
     ["forge_stellaire", "Le cœur d’une étoile."]
   ];
 
-  /* Réminiscences de guidage : quand le joueur bloque sur une étape, les mains
-   * des Semeurs précédents guident les siennes (indices gratuits, progressifs). */
+  /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
+   * l’Atelier), les mains des Semeurs précédents guident les siennes. */
   D.GUIDE = {
-    delays: [90, 210, 360],
+    tries: [6, 14, 26], // souvenirs à réunir pour le geste, une matière, puis la recette
     lines: [
       "Tes mains frémissent, comme si elles se souvenaient d’un autre corps. Le geste qu’il te faut : {g}.",
       "Une image te traverse : d’autres mains, avant les tiennes, qui tiennent {i}.",
@@ -868,8 +870,15 @@
   };
 
   D.CHANGES = [
-    "🏭 La Fabrique devient une usine à construire : tu poses tes machines, tu traces les tapis, et tu vois passer ce qu’elles fabriquent.",
-    "✍️ Tous les textes du jeu ont été repris, pour qu’ils se lisent mieux."
+    "⛏️ La Fabrique est une carte : chaque terre y a ses gisements, une case par ressource. Récolte à la main, ou pose tes extracteurs dessus et relie-les à la Réserve par des tapis.",
+    "🏭 Tes machines se servent sur les tapis qui passent devant elles : une ligne peut aller du gisement au produit fini sans passer par le stock.",
+    "🌲 Les Terres sont des paysages : touche les arbres, les herbes, les pierres.",
+    "📖 Toucher un objet ouvre sa fiche, et on passe de recette en recette.",
+    "🧺 À l’Atelier, les matières se cherchent, se trient, se filtrent, et les favorites restent en tête.",
+    "💭 Les souvenirs ne viennent plus en attendant : chaque combinaison nouvelle essayée à l’Atelier en réveille.",
+    "🎵 De la musique qui suit les âges, des ambiances, des bruitages, et des volumes réglables.",
+    "☁️ Comptes en ligne (pseudo et mot de passe), si la personne qui publie le jeu les a ouverts.",
+    "✍️ Les textes du jeu ont été repris."
   ];
 
   /* ---------------------------------------------------- ÉCHECS (saveur)

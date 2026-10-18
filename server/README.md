@@ -22,24 +22,31 @@ Sur [dash.cloudflare.com](https://dash.cloudflare.com), inscris-toi (gratuit). �
 
 ### 2. Créer la base de données
 
-1. Dans le menu de gauche : **Stockage et bases de données** (*Storage & Databases*) → **D1 SQL Database** → **Créer** (*Create*).
-2. Nom : `eclat-comptes`. Valide.
-3. Ouvre la base, onglet **Console**. Copie tout le contenu du fichier [`schema.sql`](schema.sql), colle-le, puis **Exécuter** (*Execute*). Quatre tables apparaissent : `users`, `sessions`, `saves`, `attempts`.
+1. Ouvre la page **D1 SQL database** (menu de gauche, rubrique *Storage & Databases*), puis **Create Database**.
+2. Nom : `eclat-comptes`. Laisse le reste par défaut et valide avec **Create**.
+3. Ouvre la base, onglet **Console**. Copie tout le contenu du fichier [`schema.sql`](schema.sql), colle-le, puis **Execute**. Dans l’onglet **Tables**, quatre tables apparaissent : `users`, `sessions`, `saves`, `attempts`.
 
 ### 3. Créer le serveur (le « Worker »)
 
-1. Menu de gauche : **Compute (Workers)** → **Workers & Pages** → **Créer** (*Create*) → **Worker** → modèle « Hello World ».
-2. Nom : `eclat-comptes`. **Déployer** (*Deploy*).
-3. Clique sur **Modifier le code** (*Edit code*). Efface tout ce qu’il y a dans l’éditeur, colle le contenu du fichier [`worker.js`](worker.js), puis **Déployer**.
+1. Ouvre la page **Workers & Pages**, puis **Create application**.
+2. Choisis **Start with Hello World!**, puis **Get started**.
+3. Nom : `eclat-comptes`. Valide avec **Deploy**.
+4. Ouvre le Worker et clique sur l’icône **Edit code** (`</>`). Efface tout le contenu de `worker.js`, colle à la place le contenu du fichier [`worker.js`](worker.js) de ce dossier, puis **Save** (ou **Deploy**, selon ce que propose l’éditeur).
 
-### 4. Relier le serveur à la base
+### 4. Relier le serveur à la base, et lui dire où est le jeu
 
-Dans la page du Worker, onglet **Paramètres** (*Settings*) :
+Toujours dans la page du Worker :
 
-1. **Liaisons** (*Bindings*) → **Ajouter** → **Base de données D1**. Nom de la variable : `DB` (en majuscules, exactement). Base : `eclat-comptes`. Enregistre.
-2. **Variables et secrets** → **Ajouter** : type *Texte*, nom `ALLOWED_ORIGIN`, valeur : l’adresse de ton jeu **sans** le chemin, par exemple `https://mon-pseudo.github.io`. Enregistre et redéploie si on te le propose.
+1. Onglet **Bindings** → **Add binding** → **D1 database** → **Add binding**.
+   - **Variable name** : `DB` (en majuscules, exactement : c’est le nom que lit le code).
+   - **D1 database** : `eclat-comptes`.
+   - Valide avec **Add binding**.
+2. Onglet **Settings** → **Variables and Secrets** → **Add** : type *Text*, nom `ALLOWED_ORIGIN`, valeur : l’adresse de ton jeu **sans** le chemin, par exemple `https://mon-pseudo.github.io`. Enregistre (**Deploy**).
+3. Si le Worker ne prend pas les changements, onglet **Deployments** → dans **Version History**, **Deploy version** sur la dernière version → **Deploy**.
 
-Pour vérifier : ouvre `https://eclat-comptes.TON-SOUS-DOMAINE.workers.dev/api/health` dans le navigateur. Tu dois voir `{"ok":true,"version":1}`. Si tu vois une erreur qui parle de « liaison DB », reprends l’étape 4.
+Pour vérifier : ouvre `https://eclat-comptes.TON-SOUS-DOMAINE.workers.dev/api/health` dans le navigateur. Tu dois voir `{"ok":true,"version":1}`. Si tu vois une erreur qui parle de « liaison DB », reprends l’étape 4.1. L’adresse exacte du Worker est affichée en haut de sa page (elle finit par `.workers.dev`).
+
+Les intitulés de Cloudflare changent de temps en temps ; s’ils ne correspondent plus, la documentation officielle de D1 (« Get started », version tableau de bord) suit le même chemin : [developers.cloudflare.com/d1/get-started](https://developers.cloudflare.com/d1/get-started/).
 
 ### 5. Brancher le jeu sur le serveur
 

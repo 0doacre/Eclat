@@ -7,6 +7,7 @@
   const MCOL = { automate_bois: "#8a5a32", automate_bronze: "#b0793a", presse_vapeur: "#6d7882", chaine: "#46698f", assembleur: "#7a4fb0" };
   const TOOLS = [
     ["voir", "👆", "Voir"],
+    ["ext", "⛏️", "Extracteur"],
     ["tapis", "➜", "Tapis"],
     ["mach", "⚙️", "Machine"],
     ["port", "📤", "Sortie"],
@@ -18,7 +19,7 @@
   const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
 
   function create(api) {
-    const { E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat } = api;
+    const { E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater } = api;
     const I = D.ITEMS;
     const { DX, DY } = window.EclatEngine;
     const S = () => E.state;
@@ -78,7 +79,7 @@
       V.w = r.width; V.h = r.height;
       V.cv.width = Math.round(r.width * V.dpr);
       V.cv.height = Math.round(r.height * V.dpr);
-      if (!V.camSet && V.w > 0) { V.cam.z = clampZ(V.w / 9); V.camSet = true; }
+      if (!V.camSet && V.w > 0) { V.cam.z = clampZ(V.w / 10); V.cam.y = -2.5; V.camSet = true; }
     }
     const clampZ = (z) => Math.max(18, Math.min(90, z));
 
@@ -113,13 +114,68 @@
     }
 
     const WHY = {
-      out: "C’est hors du terrain. Il s’agrandit avec les âges.",
+      out: "C’est hors du terrain. Il s’agrandit avec chaque nouvelle terre.",
       res: "C’est la Réserve.",
       taken: "La case est déjà prise.",
       port: "Une sortie se pose contre la Réserve (cases en pointillés).",
       nomach: "Plus de machine libre de ce type. Fabriques-en une autre au Carnet.",
-      kind: "Impossible ici."
+      kind: "Impossible ici.",
+      nodep: "Un extracteur se pose sur une case de gisement : les cases colorées, regroupées par terre.",
+      wrongext: "Cet extracteur ne sait pas récolter ça.",
+      noext: "Plus d’extracteur libre de ce type."
     };
+    const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
+    /* récolte à la main sur une case de gisement, avec un petit chiffre qui monte */
+    function harvest(c) {
+      const d = E.deposit(c.x, c.y);
+      if (!d) return false;
+      if (!d.hand) { toast(esc(I[d.res].n) + " : ça ne se ramasse pas à la main. Il faut un extracteur (outil ⛏️)."); return true; }
+      const n = E.tapDeposit(c.x, c.y);
+      if (!n) return true;
+      const r = V.cv.getBoundingClientRect();
+      if (floater) floater("+" + fmt(n), r.left + sx(c.x) + (Math.random() - 0.5) * 16, r.top + sy(c.y) - V.cam.z * 0.4);
+      V.pulse["d" + c.x + "," + c.y] = V.t;
+      A.tap(d.res);
+      vibe(5);
+      return true;
+    }
+    function freeExt(res) {
+      const us = E.extUnits();
+      return E.extFor(res).filter((t) => us[t].own - us[t].used > 0);
+    }
+    function placeExt(c) {
+      const d = E.deposit(c.x, c.y);
+      if (!d) { toast(WHY.nodep); return; }
+      const e = E.fabCell(c.x, c.y);
+      if (e && e.k !== "ext") { toast(WHY.taken); return; }
+      const types = freeExt(d.res);
+      if (!types.length) {
+        const can = E.extFor(d.res).filter((t) => S().known[t] || E.count(t) > 0);
+        toast(can.length ? "Plus d’extracteur libre pour « " + esc(I[d.res].n) + " ». Fabriques-en un autre : " + can.map((t) => "<b>" + esc(I[t].n) + "</b>").join(", ") + "."
+          : "Aucun de tes extracteurs ne récolte « " + esc(I[d.res].n) + " » pour l’instant.");
+        return;
+      }
+      const put = (t) => {
+        remember();
+        const r = E.fabPlaceExt(c.x, c.y, t, 1);
+        if (!r.ok) { V.undo.pop(); updUndo(); toast(WHY[r.why] || WHY.kind); return; }
+        if (r.fresh) E.fabSet(r.e.id, { d: guessDir(c.x, c.y) });
+        A.place ? A.place() : A.click();
+        vibe(12);
+        setTool("voir");
+        select(c);
+      };
+      const t = V.etype && types.includes(V.etype) ? V.etype : types.length === 1 ? types[0] : null;
+      if (t) put(t);
+      else openModal({
+        html: "<h2>Quel extracteur ?</h2><p class=\"small muted\">Sur la case « " + esc(I[d.res].n) + " ».</p>" + '<div class="picklist">' + types.map((x) => {
+          const us = E.extUnits()[x];
+          return '<button class="pick" data-m="pick" data-id="' + x + '">' + icon(x, "sm") + '<span class="grow">' + esc(I[x].n) + '</span><span class="tiny muted">' +
+            fmtNum(E.extRate(x, d.res)) + "/s · " + (us.own - us.used) + " libre" + (us.own - us.used > 1 ? "s" : "") + "</span></button>";
+        }).join("") + '</div><div class="acts"><button class="btn" data-m="close">Annuler</button></div>',
+        on: { pick: (b) => { V.etype = b.dataset.id; put(b.dataset.id); } }
+      });
+    }
     function freeTypes() {
       const ms = E.machines();
       return E.MACHINES.filter((m) => ms[m].own - ms[m].used > 0);
@@ -135,7 +191,12 @@
     }
     function act(c) {
       const e = E.fabCell(c.x, c.y);
-      if (V.tool === "voir") { select(e && e.k !== undefined ? c : null); return; }
+      if (V.tool === "voir") {
+        if (!e && harvest(c)) return;
+        select(e && e.k !== undefined ? c : null);
+        return;
+      }
+      if (V.tool === "ext") { placeExt(c); return; }
       if (V.tool === "turn") {
         if (e && e.d !== undefined) { remember(); E.fabRotate(c.x, c.y); A.click(); vibe(8); }
         return;
@@ -200,6 +261,12 @@
       V.gest = { id: ev.pointerId, p0: p, t0: performance.now(), moved: false, cam0: { x: V.cam.x, y: V.cam.y }, c0: c, done: {} };
       if (V.tool === "tapis") V.draw = { path: [{ x: c.x, y: c.y, d: null }] };
       if (V.tool === "del") { if (demolish(c)) V.gest.done[c.x + "," + c.y] = 1; }
+      // garder le doigt sur un gisement : on continue de récolter
+      const dep = V.tool === "voir" && !E.fabCell(c.x, c.y) && E.deposit(c.x, c.y);
+      if (dep && dep.hand) {
+        const g = V.gest;
+        g.hold = setTimeout(function rep() { if (V.gest !== g || g.moved) return; g.held = true; harvest(c); g.hold = setTimeout(rep, 140); }, 400);
+      }
     }
     function onMove(ev) {
       if (!V.ptrs.has(ev.pointerId)) return;
@@ -244,12 +311,15 @@
       if (g.pinch) { if (!V.ptrs.size) V.gest = null; return; }
       if (ev.pointerId !== g.id) return;
       V.gest = null;
+      clearTimeout(g.hold);
+      if (g.held) return;
       if (V.tool === "tapis" && V.draw) { commitDraw(); return; }
       if (V.tool === "del") return;
       if (!g.moved && performance.now() - g.t0 < 600) act(cellAt(p.x, p.y));
     }
     function onCancel(ev) {
       V.ptrs.delete(ev.pointerId);
+      if (V.gest) clearTimeout(V.gest.hold);
       if (!V.ptrs.size) { V.gest = null; V.draw = null; }
     }
     function onWheel(ev) {
@@ -334,11 +404,24 @@
         return;
       }
       if ((b = t.closest("[data-mt]"))) { V.mtype = b.dataset.mt; setTool("mach"); A.click(); refresh(); return; }
+      if ((b = t.closest("[data-et]"))) { V.etype = b.dataset.et; setTool("ext"); A.click(); refresh(); return; }
       if (!(b = t.closest("[data-u]"))) return;
       const u = b.dataset.u, sel = V.sel, e = sel && E.fabCell(sel.x, sel.y);
       if (u === "zin") zoom(1.25);
       else if (u === "zout") zoom(0.8);
       else if (u === "center") { V.cam.x = 0; V.cam.y = 0; }
+      else if (u === "link" && e) {
+        remember();
+        const r = E.fabLink(sel.x, sel.y);
+        if (r.ok) { A.place ? A.place() : A.click(); toast(r.n ? "🛤️ " + r.n + " tapis posé" + (r.n > 1 ? "s" : "") + " jusqu’à la Réserve." : "🛤️ C’est relié."); }
+        else { V.undo.pop(); updUndo(); toast("Pas de chemin libre jusqu’à la Réserve. Trace le tapis toi-même, ou fais de la place."); }
+      } else if (u === "eu" && e) {
+        const t2 = b.dataset.t, before = e.u[t2] || 0;
+        remember();
+        E.fabSetExt(e.id, t2, before + Number(b.dataset.v));
+        if ((e.u[t2] || 0) === before && Number(b.dataset.v) > 0) toast("Plus de « " + esc(I[t2].n) + " » libre. Fabriques-en un autre au Carnet.");
+        A.click();
+      }
       else if (u === "undo") undo();
       else if (u === "help") help();
       else if (u === "close") select(null);
@@ -413,11 +496,11 @@
       openModal({
         html: '<div class="kicker">L’Usine</div><h2>Comment ça marche</h2><div class="lore usine-help">' +
           "<p>Au centre, la <b>Réserve</b> : c’est ton stock.</p>" +
-          "<p>Une <b>sortie</b> se pose contre la Réserve. Elle envoie sur le tapis ce que les machines lui réclament, rien de plus.</p>" +
-          "<p>Une <b>machine</b> se sert sur les tapis qui la touchent, ou qui entrent dedans. Elle pose ce qu’elle fabrique sur la case que montre sa flèche.</p>" +
-          "<p>Ce qui arrive au bout d’un tapis qui entre dans la Réserve rejoint le stock. Une machine peut aussi poser sa production sur le tapis d’une autre, qui s’en servira au passage.</p>" +
-          "<p>Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>" +
-          "<p>Pour tracer un tapis, garde le doigt appuyé et glisse. Deux doigts pour te déplacer et zoomer, quel que soit l’outil. ↶ annule la dernière modification.</p>" +
+          "<p>Autour, chaque terre que tu as atteinte a ses <b>gisements</b> : une case par ressource. Touche une case pour récolter à la main, garde le doigt appuyé pour continuer.</p>" +
+          "<p>Avec l’outil ⛏️, pose un <b>extracteur</b> sur la case qui lui convient (une cabane sur le bois, un derrick sur le pétrole…). Il récolte seul, puis pose sa récolte sur la case que montre sa flèche. Trace un tapis de là jusqu’à la Réserve, ou touche-le et choisis 🛤️ <b>Relier à la Réserve</b>.</p>" +
+          "<p>Une <b>machine</b> se sert sur les tapis qui la touchent, et pose ce qu’elle fabrique devant sa flèche. Fais passer le tapis d’un extracteur devant une machine : elle prend ce qu’il lui faut, le reste continue jusqu’à la Réserve.</p>" +
+          "<p>Une <b>sortie</b>, posée contre la Réserve, envoie aux machines ce qu’elles réclament dans le stock. Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>" +
+          "<p>Pour tracer un tapis, garde le doigt appuyé et glisse. Deux doigts pour te déplacer et zoomer. ↶ annule la dernière modification.</p>" +
           "<p>Tout tourne aussi quand le jeu est fermé.</p></div>" +
           '<div class="acts"><button class="btn pri" data-m="close">Compris</button></div>'
       });
@@ -455,12 +538,32 @@
       if (info.s === "blocked" && info.b) s = info.b.why === "heat" ? "Il faut " + fmtHeat(info.b.heat) + " pour cette recette" : "Il te manque la station pour ce geste";
       return { s, more, lvl: LEVEL[info.s] || "dim" };
     }
+    function extStatus(e) {
+      const info = E.machInfo(e.id), rate = E.extOut(e);
+      const T = {
+        ok: ["Récolte " + fmtNum(rate) + " " + esc(I[e.res].n.toLowerCase()) + "/s", "good", ""],
+        wait: ["Démarrage…", "good", ""],
+        off: ["En pause", "dim", ""],
+        idle: ["Aucun extracteur posé ici", "warn", "Ajoute un extracteur avec + ci-dessous."],
+        noout: ["Ce qu’il récolte ne va nulle part", "bad", "La flèche montre où il pose sa récolte. Relie-le à la Réserve, ou trace un tapis vers une machine."],
+        jam: ["Encombré", "bad", "Les machines de son tapis ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve."]
+      }[info.s] || ["", "dim", ""];
+      return { s: T[0], lvl: T[1], more: T[2], code: info.s };
+    }
+    /* ce qui sort de là ne va ni à la Réserve ni à une machine */
+    function needsLink(e) {
+      if (!e || !e.id || (e.k !== "ext" && e.k !== "mach")) return false;
+      const P = E.fabGraph().prods[e.id];
+      return !!P && !P.t.res && !Object.keys(P.t.cons).length;
+    }
     function sheet() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (!box) return;
       const c = V.sel, e = c && E.fabCell(c.x, c.y);
       if (!e) { box.classList.add("hidden"); box.innerHTML = ""; V.sel = null; return; }
       box.classList.remove("hidden");
+      const loose = needsLink(e);
+      box.dataset.loose = loose ? "1" : "";
       let h = '<button class="u-x" data-u="close" aria-label="Fermer">✕</button>';
       if (e.k === "res") {
         const f = E.flows();
@@ -477,7 +580,7 @@
         if (it) {
           const ing = it.r[1], g = E.fabGraph(), sup = g.sup[e.id] || [];
           h += '<div class="u-ins">' + Object.keys(ing).map((k) => {
-            const ok = sup.some((p) => { const P = g.prods[p]; return P.e.k === "port" ? !P.e.f || P.e.f === k : P.e.r === k; });
+            const ok = sup.some((p) => { const P = g.prods[p]; return P.e.k === "port" ? !P.e.f || P.e.f === k : P.e.k === "ext" ? P.e.res === k : P.e.r === k; });
             return '<span class="u-in ' + (ok ? "" : "no") + '" data-u="goto" data-id="' + k + '">' + icon(k, "sm") + "<i>" + fmt(ing[k]) + "</i></span>";
           }).join("") + '<span class="u-arrow">→</span><span class="u-in">' + icon(e.r, "sm") + "<i>" + fmt(it.r[2]) + "</i></span></div>";
         }
@@ -485,7 +588,19 @@
           (types.length > 1 ? '<select data-u="type" aria-label="Type de machine">' + types.map((m) => '<option value="' + m + '"' + (m === e.m ? " selected" : "") + ">" + esc(I[m].n) + " (" + (ms[m].own - ms[m].used + (m === e.m ? e.n : 0)) + ")</option>").join("") + "</select>" : "") +
           '<span class="tiny muted">Stock visé</span><select data-u="cap" aria-label="Stock visé">' + CAPS.map((v) => '<option value="' + v + '"' + (v === e.cap ? " selected" : "") + ">" + (v ? fmt(v) : "∞") + "</option>").join("") +
           (CAPS.includes(e.cap) ? "" : '<option value="' + e.cap + '" selected>' + fmt(e.cap) + "</option>") + "</select></div>" +
-          '<div class="u-row acts"><button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + '</button><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+          '<div class="u-row acts">' + (loose ? '<button class="btn small pri" data-u="link">🛤️ Relier à la Réserve</button>' : "") +
+          '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + '</button><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+      } else if (e.k === "ext") {
+        const st = extStatus(e), d = E.deposit(c.x, c.y), us = E.extUnits();
+        const types = E.extFor(e.res).filter((t) => us[t].own > 0 || e.u[t]);
+        h += '<div class="u-head">' + icon(e.res) + '<div class="grow"><b>' + esc(I[e.res].n) + '</b> <span class="tiny muted">' + (d ? esc(zoneName(d.z)) : "") + "</span>" +
+          '<div class="u-st ' + st.lvl + '">' + st.s + "</div></div></div>" + (st.more ? '<p class="small u-more">' + st.more + "</p>" : "") +
+          (types.length ? '<div class="u-exts">' + types.map((t) => '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + ' <span class="tiny muted">' + fmtNum(E.extRate(t, e.res)) + "/s chacun · " +
+            (us[t].own - us[t].used) + " libre" + (us[t].own - us[t].used > 1 ? "s" : "") + '</span></span><button class="mini" data-u="eu" data-t="' + t + '" data-v="-1">−</button><b>' + (e.u[t] || 0) +
+            '</b><button class="mini" data-u="eu" data-t="' + t + '" data-v="1">+</button></div>').join("") + "</div>"
+            : '<p class="small muted">Aucun de tes extracteurs ne sait récolter ça. Regarde au Carnet ce qui pourrait.</p>') +
+          '<div class="u-row acts">' + (loose ? '<button class="btn small pri" data-u="link">🛤️ Relier à la Réserve</button>' : "") +
+          '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + '</button><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       } else if (e.k === "port") {
         const g = E.fabGraph(), P = g.prods["P" + c.x + "," + c.y];
         const n = P ? Object.keys(P.t.cons).length : 0;
@@ -503,10 +618,18 @@
 
     /* ------------------------------------------------------------ bandeau et conseils */
     function hint() {
-      const st = S(), ents = Object.values(st.fab.c), ms = E.machines();
+      const st = S(), ents = Object.values(st.fab.c), ms = E.machines(), us = E.extUnits();
       const own = E.MACHINES.reduce((a, m) => a + ms[m].own, 0);
-      const machs = ents.filter((e) => e.k === "mach");
-      if (!own && !machs.length) return 'Il te faut une machine. Fabrique un <span class="link-txt" data-u="goto" data-id="automate_bois">Automate de bois</span>.';
+      const machs = ents.filter((e) => e.k === "mach"), exts = ents.filter((e) => e.k === "ext");
+      const freeE = E.EXTS.reduce((a, t) => a + us[t].own - us[t].used, 0);
+      if (!exts.length && !freeE && !own) {
+        return st.stats.taps < 20 || st.known.cabane ? "Touche une case colorée de la Lisière pour récolter à la main. Garde le doigt appuyé pour continuer." : null;
+      }
+      if (!exts.length && freeE) return "Prends l’outil ⛏️ <b>Extracteur</b> et touche une case de gisement (le bois de la Lisière, par exemple) pour y poser ton extracteur.";
+      if (exts.some((e) => E.machInfo(e.id).s === "noout")) return "Un extracteur n’a nulle part où poser sa récolte. Touche-le puis 🛤️ <b>Relier à la Réserve</b>, ou trace un tapis avec l’outil ➜.";
+      if (!st.flags.extDone) return "Ça arrive. Regarde la récolte rouler jusqu’à la Réserve.";
+      if (freeE && !st.flags.tip_freeExt) return "Tu as " + freeE + " extracteur" + (freeE > 1 ? "s" : "") + " qui attend" + (freeE > 1 ? "ent" : "") + " d’être posé" + (freeE > 1 ? "s" : "") + " (outil ⛏️).";
+      if (!own && !machs.length) return null;
       if (!machs.length) return "Prends l’outil ⚙️ <b>Machine</b> et touche une case pour poser ton automate.";
       if (machs.some((e) => !e.r)) return "Touche ta machine et choisis ce qu’elle doit fabriquer.";
       if (!ents.some((e) => e.k === "port")) return "Pose une 📤 <b>sortie</b> contre la Réserve. Elle enverra aux machines ce qu’elles réclament.";
@@ -522,10 +645,13 @@
       const ms = E.machines();
       const free = V.el.querySelector("#uFree");
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
+      const us = E.extUnits(), freeE = E.EXTS.filter((t) => us[t].own - us[t].used > 0);
       if (free) {
-        const html = owned.length ? '<span class="tiny muted">Libres</span>' + owned.map((m) => '<button class="u-chip' + (V.tool === "mach" && V.mtype === m ? " on" : "") + '" data-mt="' + m + '" title="' + esc(I[m].n) + '">' + icon(m, "sm") + "<b>" + (ms[m].own - ms[m].used) + "</b></button>").join("") +
+        const html = owned.length || freeE.length ? '<span class="tiny muted">Libres</span>' +
+          freeE.map((t) => '<button class="u-chip ext' + (V.tool === "ext" && V.etype === t ? " on" : "") + '" data-et="' + t + '" title="' + esc(I[t].n) + '">' + icon(t, "sm") + "<b>" + (us[t].own - us[t].used) + "</b></button>").join("") +
+          owned.map((m) => '<button class="u-chip' + (V.tool === "mach" && V.mtype === m ? " on" : "") + '" data-mt="' + m + '" title="' + esc(I[m].n) + '">' + icon(m, "sm") + "<b>" + (ms[m].own - ms[m].used) + "</b></button>").join("") +
           (E.cache().aspd > 1 ? '<span class="tiny muted">vitesse ×' + String(Math.round(E.cache().aspd * 100) / 100).replace(".", ",") + "</span>" : "")
-          : '<span class="tiny muted">Aucune machine pour l’instant</span>';
+          : '<span class="tiny muted">Rien à poser pour l’instant</span>';
         if (free.dataset.h !== html) { free.innerHTML = html; free.dataset.h = html; }
       }
       const hb = V.el.querySelector("#uHint");
@@ -537,8 +663,9 @@
     function sheetLive() {
       const box = V.el && V.el.querySelector("#uSheet");
       const e = V.sel && E.fabCell(V.sel.x, V.sel.y);
-      if (!box || !e || e.k !== "mach") return;
-      const st = machStatus(e), el = box.querySelector(".u-st");
+      if (!box || !e || (e.k !== "mach" && e.k !== "ext")) return;
+      if ((needsLink(e) ? "1" : "") !== (box.dataset.loose || "")) { sheet(); return; }
+      const st = e.k === "ext" ? extStatus(e) : machStatus(e), el = box.querySelector(".u-st");
       if (!el) return;
       if (el.innerHTML !== st.s) { el.innerHTML = st.s; el.className = "u-st " + st.lvl; }
       let more = box.querySelector(".u-more");
@@ -566,7 +693,7 @@
               if (E.isRes(nx, ny)) { pts.push({ x: last.x + DX[d] * 0.75, y: last.y + DY[d] * 0.75 }); break; }
             }
           } else if (g.pos[to]) pts.push({ x: g.pos[to].x, y: g.pos[to].y, end: to });
-          if (P.e.k === "mach") pts[0] = { x: P.x + DX[P.e.d] * 0.4, y: P.y + DY[P.e.d] * 0.4 };
+          if (P.e.k !== "port") pts[0] = { x: P.x + DX[P.e.d] * 0.4, y: P.y + DY[P.e.d] * 0.4 };
           else pts[0] = { x: P.x + DX[P.e.d] * 0.3, y: P.y + DY[P.e.d] * 0.3 };
         }
       }
@@ -655,6 +782,26 @@
       c.setLineDash([6, 6]);
       c.strokeRect(gx, gy, gw, gw);
       c.setLineDash([]);
+      // les gisements, regroupés par terre
+      const labels = {};
+      for (const d of E.deposits()) {
+        const L = labels[d.z] || (labels[d.z] = { x0: d.x, x1: d.x, y: d.y });
+        L.x0 = Math.min(L.x0, d.x); L.x1 = Math.max(L.x1, d.x);
+        if (d.x < x0 - 1 || d.x > x1 + 1 || d.y < y0 - 1 || d.y > y1 + 1) continue;
+        drawDeposit(d);
+      }
+      if (z > 20) {
+        c.font = "600 " + Math.max(10, Math.round(z * 0.27)) + "px " + getComputedStyle(document.body).fontFamily;
+        c.textAlign = "center"; c.textBaseline = "alphabetic";
+        for (const zid in labels) {
+          const L = labels[zid], X = sx((L.x0 + L.x1) / 2), Y = sy(L.y - 0.68);
+          if (X < -200 || X > V.w + 200 || Y < -40 || Y > V.h + 40) continue;
+          c.fillStyle = "rgba(0,0,0,0.55)";
+          c.fillText(zoneName(zid), X + 1, Y + 1);
+          c.fillStyle = "rgba(255,238,210,0.9)";
+          c.fillText(zoneName(zid), X, Y);
+        }
+      }
 
       // emplacements possibles pour une sortie
       if (V.tool === "port") {
@@ -680,7 +827,7 @@
       }
       if (V.draw) drawPreview();
       for (const p of V.packets) drawPacket(p);
-      for (const [x, y, e] of vis) if (e.k === "mach") drawMach(x, y, e);
+      for (const [x, y, e] of vis) { if (e.k === "mach") drawMach(x, y, e); else if (e.k === "ext") drawExt(x, y, e); }
       if (V.sel) {
         const a = 0.5 + 0.5 * Math.sin(V.t * 5);
         c.strokeStyle = "rgba(255,225,150," + (0.55 + 0.4 * a) + ")";
@@ -689,6 +836,59 @@
         if (big) roundRect(c, sx(-1.5) - 3, sy(-1.5) - 3, 3 * z + 6, 3 * z + 6, z * 0.2);
         else roundRect(c, sx(V.sel.x) - z / 2 + 1, sy(V.sel.y) - z / 2 + 1, z - 2, z - 2, z * 0.16);
         c.stroke();
+      }
+    }
+    const DEPCOL = { bois: "#5f7d36", fibre: "#79a24c", caillou: "#8a8f96", os: "#d8ccb0", cuir: "#9a6a44", argile: "#a8663e", silex: "#44474e", sable: "#d9b77a",
+      charbon: "#2e2e33", petrole: "#151218", quartz: "#bfe4f0", helium3: "#bcd7ff", regolithe: "#9a9aa0", debris: "#7b808a", resonite: "#5ac8ff" };
+    const depColor = (r) => DEPCOL[r] || (I[r] && I[r].col) || "#6d6d6d";
+    function drawDeposit(d) {
+      const c = V.ctx, z = V.cam.z, X = sx(d.x), Y = sy(d.y), col = depColor(d.res);
+      const pulse = Math.max(0, 1 - (V.t - (V.pulse["d" + d.x + "," + d.y] || -9)) * 5);
+      c.globalAlpha = 0.6;
+      c.fillStyle = col;
+      roundRect(c, X - z * 0.48, Y - z * 0.48, z * 0.96, z * 0.96, z * 0.24);
+      c.fill();
+      c.globalAlpha = 1;
+      c.strokeStyle = shade(col, 0.4);
+      c.lineWidth = 1.5 + pulse * 2.5;
+      c.stroke();
+      for (let i = 0; i < 6; i++) {
+        const hh = hash(d.x * 7 + i, d.y * 13 - i);
+        c.fillStyle = shade(col, hh % 2 ? 0.35 : -0.35);
+        c.beginPath();
+        c.arc(X + ((hh >> 2) % 17 - 8) * z / 22, Y + ((hh >> 6) % 17 - 8) * z / 22, z * (0.04 + (hh % 3) * 0.02), 0, 6.3);
+        c.fill();
+      }
+      if (!E.fabCell(d.x, d.y)) drawIcon(d.res, X, Y - pulse * z * 0.06, z * (0.5 + pulse * 0.1), false);
+    }
+    function drawExt(x, y, e) {
+      const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y), col = depColor(e.res);
+      const info = E.machInfo(e.id), work = info.s === "ok";
+      const n = Object.values(e.u).reduce((a, b) => a + b, 0);
+      const main = Object.keys(e.u).sort((a, b) => e.u[b] - e.u[a])[0];
+      const bob = work ? Math.sin(V.t * 6 + x * 1.7) * z * 0.035 : 0;
+      c.fillStyle = "rgba(0,0,0,0.35)";
+      roundRect(c, X - z * 0.42 + z * 0.05, Y - z * 0.42 + z * 0.07, z * 0.84, z * 0.84, z * 0.18); c.fill();
+      const gr = c.createLinearGradient(X, Y - z * 0.42, X, Y + z * 0.42);
+      gr.addColorStop(0, shade(col, 0.3)); gr.addColorStop(1, shade(col, -0.45));
+      c.fillStyle = gr;
+      roundRect(c, X - z * 0.42, Y - z * 0.42, z * 0.84, z * 0.84, z * 0.18); c.fill();
+      c.strokeStyle = "#f0d6a4"; c.lineWidth = 1.5; c.stroke();
+      if (main) drawIcon(main, X - z * 0.04, Y - z * 0.05 + bob, z * 0.5, false);
+      drawIcon(e.res, X + z * 0.26, Y + z * 0.26, z * 0.26, true);
+      arrow(X + DX[e.d] * z * 0.47, Y + DY[e.d] * z * 0.47, e.d, z * 0.13, "#ffe2ae");
+      const lv = { ok: "#7fd18b", wait: "#7fd18b", idle: "#ffbf4a", off: "#6f6556", noout: "#ff6a55", jam: "#ff6a55" }[info.s] || "#6f6556";
+      c.fillStyle = lv;
+      c.beginPath(); c.arc(X + z * 0.28, Y - z * 0.28, z * 0.07, 0, 6.3); c.fill();
+      if (lv === "#ff6a55" || lv === "#ffbf4a") {
+        c.strokeStyle = lv; c.globalAlpha = 0.4 + 0.4 * Math.sin(V.t * 6); c.lineWidth = 2;
+        c.beginPath(); c.arc(X + z * 0.28, Y - z * 0.28, z * 0.12, 0, 6.3); c.stroke(); c.globalAlpha = 1;
+      }
+      if (n > 1 && z > 24) {
+        c.font = "700 " + Math.round(z * 0.2) + "px system-ui";
+        c.textAlign = "left"; c.textBaseline = "alphabetic";
+        c.fillStyle = "#fff4e0";
+        c.fillText("×" + n, X - z * 0.4, Y + z * 0.38);
       }
     }
     function hash(x, y) { let h = (x * 374761393 + y * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return (h ^ (h >>> 16)) >>> 0; }
