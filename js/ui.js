@@ -214,6 +214,7 @@
     openModal({ html: (kicker ? '<div class="kicker">' + kicker + "</div>" : "") + "<h2>" + title + "</h2>" + body +
       '<div class="acts"><button class="btn pri" data-m="close">' + (btn || "Continuer") + "</button></div>" });
   }
+  const Scenes = window.EclatScenes;
   const Usine = window.EclatUsine.create({ E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat });
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
@@ -439,21 +440,69 @@
   /* ------------------------------------------------------------ TERRES */
   function viewTerres() {
     const st = S();
-    let h = "";
-    if (!st.flags.tip_tap) h += '<div class="tip">👆 <b>Touche</b> une ressource pour la récolter. <b>Maintiens</b> le doigt pour récolter en continu.</div>';
-    h += '<div id="trackBox">' + trackerHTML() + "</div>";
+    const open = D.ZONES.filter((z) => E.zoneOpen(z.id));
+    if (!U.zone || !E.zoneOpen(U.zone)) U.zone = open[0].id;
+    const z = E.ZONES[U.zone];
+    let h = '<div id="trackBox">' + trackerHTML() + "</div>";
     h += goalCard();
-    for (const z of D.ZONES) if (E.zoneOpen(z.id)) h += zoneCard(z);
-    let teasers = 0;
-    for (const z of D.ZONES) {
-      if (E.zoneOpen(z.id) || z.secret || teasers >= 2) continue;
-      teasers++;
-      const req = I[z.req];
-      const named = req && (teasers === 1 || st.known[z.req]);
-      h += '<div class="card zone locked-zone"' + (named ? ' data-goto="' + z.req + '"' : "") + '><div class="zh"><span class="zi">🌫️</span><div class="grow"><div class="zn">' +
-        (teasers === 1 ? esc(z.n) : "Terres inconnues") + '</div><div class="small dim">Il te faudrait : ' + (named ? '<span class="link-txt">' + esc(req.n) + "</span> (" + esc(D.AGES[req.a].n) + ")" : "???") + "</div></div></div></div>";
-    }
+    h += zoneTabs(open);
+    h += sceneHTML(z);
+    if (!st.flags.tip_tap) h += '<div class="tip">👆 <b>Touche</b> ce qui t’entoure pour le ramasser. Garde le doigt appuyé pour continuer.</div>';
+    h += zoneInfo(z);
     return h;
+  }
+  function zoneTabs(open) {
+    const st = S(), need = st.track ? E.plan(st.track.id, 1).missing : {};
+    let h = '<div class="ztabs" role="tablist">';
+    for (const z of open) {
+      const want = z.res.some((r) => need[r]);
+      const n = E.nextExp(z.id), xp = n && !n.locked && !st.exp.active;
+      const here = st.exp.active && st.exp.active.z === z.id;
+      h += '<button class="ztab' + (z.id === U.zone ? " on" : "") + '" data-zone="' + z.id + '" role="tab"><span>' + z.ic + "</span><i>" + esc(shortZone(z.n)) + "</i>" +
+        (want ? '<b class="zb">🎯</b>' : here ? '<b class="zb">🧭</b>' : xp ? '<b class="zb dot"></b>' : "") + "</button>";
+    }
+    // la prochaine terre, encore dans la brume
+    const next = D.ZONES.find((z) => !E.zoneOpen(z.id) && !z.secret);
+    if (next) h += '<button class="ztab fog" data-zfog="' + next.id + '"><span>🌫️</span><i>???</i></button>';
+    return h + "</div>";
+  }
+  const shortZone = (n) => n.replace(/^(La |Le |Les |L’)/, "").replace(/ des Hautes Herbes| Lente| Vertes| de Verre| Fracturés| Basse| des Semeurs/, "");
+  function sceneHTML(z) {
+    const st = S(), spots = Scenes.spots(z.res.length);
+    const night = !Scenes.isNightless(z.id) && Scenes.daypart(new Date().getHours()) === "night";
+    let h = '<div class="scene z-' + z.id + (night ? " night" : "") + '">' + Scenes.backdrop(z.id);
+    // les extracteurs, sur l’horizon
+    const exts = Object.keys(I).filter((id) => I[id].t === "ext" && I[id].z === z.id && (st.inv[id] || 0) > 0);
+    exts.forEach((id, i) => {
+      const x = exts.length === 1 ? 14 : 8 + (i * 84) / Math.max(1, exts.length - 1);
+      h += '<button class="ext-spr" data-goto="' + id + '" style="left:' + x.toFixed(1) + "%;animation-delay:" + (-i * 0.7).toFixed(1) + 's" title="' + esc(I[id].n) + '">' + icon(id) + "<b>×" + st.inv[id] + "</b></button>";
+    });
+    // les ressources
+    z.res.forEach((r, i) => {
+      const [x, y] = spots[i];
+      h += '<button class="res spr-btn" data-res="' + r + '" data-z="' + z.id + '" style="left:' + x + "%;top:" + y + '%" aria-label="Récolter : ' + esc(I[r].n) + '">' +
+        '<span class="spr' + (I[r].sym ? " sym" : "") + '" style="animation-delay:' + (-i * 1.3) + "s" + (I[r].sym ? ";--c:" + I[r].col + ";--ink:" + ink(I[r].col) : "") + '">' + (I[r].sym ? esc(I[r].sym) : I[r].ic) + "</span>" +
+        '<span class="ry" data-y="' + r + "|" + z.id + '"></span></button>';
+    });
+    // le compteur, en haut de la scène
+    h += '<div class="hud">' + z.res.map((r) => '<span class="hr" data-hres="' + r + '">' + icon(r, "sm") + '<b data-c="' + r + '">' + fmt(st.inv[r] || 0) + '</b><i data-r="' + r + '"></i></span>').join("") + "</div>";
+    // l’exploration
+    const act = st.exp.active;
+    if (act && act.z === z.id) h += '<span class="walker" data-xw style="left:' + (8 + 80 * (E.expProgress() ? E.expProgress().p : 0)).toFixed(1) + '%">🚶</span>';
+    else {
+      const n = E.nextExp(z.id);
+      if (n && !n.locked && !act) h += '<button class="signpost" data-exp="' + z.id + '" title="Explorer : ' + esc(n.x.n) + '">🧭<i>' + esc(n.x.n) + "</i></button>";
+    }
+    return h + '<div class="zname">' + esc(z.n) + "</div></div>";
+  }
+  function zoneInfo(z) {
+    const st = S();
+    let h = '<div class="card zone-info"><div class="zd">' + esc(z.d) + "</div>";
+    const exts = Object.keys(I).filter((id) => I[id].t === "ext" && I[id].z === z.id && (st.inv[id] || 0) > 0);
+    if (exts.length) h += '<div class="ext-line">' + exts.map((id) => '<span class="x" data-goto="' + id + '">' + icon(id, "sm") + esc(I[id].n) + " ×" + st.inv[id] + "</span>").join("") + "</div>";
+    else if (z.id === "lisiere" && !st.known.cabane) h += '<div class="tiny dim" style="margin-top:6px">Rien ne récolte encore à ta place ici.</div>';
+    h += expBlock(z);
+    return h + "</div>";
   }
 
   function goalCard() {
@@ -463,7 +512,17 @@
       return st.flags.arche ? '<div class="card acc goal"><span class="ic">🌌</span><div class="grow"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Rends-toi dans le Cosmos.</div></div></div>' : "";
     }
     const ob = g.ob;
-    let h = '<div class="card acc goal-card"><div class="lbl">Objectif</div>';
+    const open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
+    const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : esc(I[ob.id].n);
+    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>";
+    if (!open) {
+      if (ob.k !== "exp" && ob.k !== "line" && g.step !== ob.id) {
+        const sit = I[g.step];
+        h += '<div class="gstep small"><span class="muted">' + (WHY_STEP[g.why] || "Prochaine étape :").replace(" :", "") + "</span> " + (st.known[g.step] ? icon(g.step, "sm") : '<span class="ic sm unk">?</span>') +
+          ' <b class="link-txt" data-goto="' + g.step + '">' + esc(sit.n) + "</b></div>";
+      }
+      return h + "</div>";
+    }
     if (ob.k === "exp") {
       const n = E.nextExp(ob.z);
       h += '<div class="name">🧭 ' + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>";
@@ -522,23 +581,6 @@
     return h + "</div>";
   }
 
-  function zoneCard(z) {
-    const st = S();
-    const col = !!(st.settings.collapsed && st.settings.collapsed[z.id]);
-    let h = '<div class="card zone' + (col ? " col" : "") + '" data-z="' + z.id + '"><button class="zh" data-zc="' + z.id + '"><span class="zi">' + z.ic + '</span><div class="grow"><div class="zn">' + esc(z.n) + '</div></div><span class="zt">' + (col ? "▸" : "▾") + "</span></button>";
-    if (!col) h += '<div class="zd">' + esc(z.d) + "</div>";
-    h += '<div class="res-grid">';
-    for (const r of z.res) {
-      h += '<button class="res" data-res="' + r + '" data-z="' + z.id + '">' + icon(r) +
-        '<span class="rc" data-c="' + r + '">' + fmt(st.inv[r] || 0) + '</span><span class="rn">' + esc(I[r].n) + "</span>" +
-        '<span class="rr" data-r="' + r + '"></span><span class="ry" data-y="' + r + "|" + z.id + '"></span></button>';
-    }
-    h += "</div>";
-    const exts = Object.keys(I).filter((id) => I[id].t === "ext" && I[id].z === z.id && (st.inv[id] || 0) > 0);
-    if (exts.length && !col) h += '<div class="ext-line">' + exts.map((id) => '<span class="x work">' + icon(id, "sm") + esc(I[id].n) + " ×" + st.inv[id] + "</span>").join("") + "</div>";
-    if (!col || (st.exp.active && st.exp.active.z === z.id)) h += expBlock(z);
-    return h + "</div>";
-  }
   function expBlock(z) {
     const st = S();
     const total = z.exps.length;
@@ -588,7 +630,8 @@
     let heat = G.d;
     if (U.geste === "chauffer" || U.geste === "allier") heat = "🌡️ Ta meilleure chaleur : " + fmtHeat(E.heat());
     else if ((U.geste === "marteler" || U.geste === "electriser") && E.level(U.geste) > 1) heat = G.d + " (niveau " + E.level(U.geste) + ")";
-    h += '<div class="card bench" id="bench"><div class="heat small">' + esc(heat) + '</div><div class="slots">';
+    const mat = st.age >= 9 ? " m-labo" : st.age >= 6 ? " m-metal" : st.age >= 3 ? " m-pierre" : "";
+    h += '<div class="card bench' + mat + '" id="bench"><div class="heat small">' + esc(heat) + '</div><div class="slots">';
     U.slots.forEach((id, i) => {
       if (i) h += '<span class="plus-sep">+</span>';
       if (id) h += '<button class="slot full" data-slot="' + i + '">' + icon(id) + '<span class="sn">' + esc(I[id].n) + '</span><span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
@@ -950,6 +993,7 @@
       mini.classList.remove("hidden");
       mini.textContent = "🧭 " + fmtTime(xp.left);
       $$("[data-xp]").forEach((b) => (b.style.width = (xp.p * 100).toFixed(1) + "%"));
+      $$("[data-xw]").forEach((b) => (b.style.left = (8 + 80 * xp.p).toFixed(1) + "%"));
       $$("[data-xl]").forEach((b) => (b.textContent = fmtTime(xp.left)));
     } else mini.classList.add("hidden");
     const view = $("#v-" + U.tab);
@@ -1032,9 +1076,28 @@
     floater("+" + fmt(n), p.x + (Math.random() - 0.5) * 24, p.y - 10);
     A.tap(Object.keys(I).indexOf(r));
     vibe(5);
-    const c = $('[data-c="' + r + '"]', el);
-    if (c) c.textContent = fmt(S().inv[r] || 0);
+    el.classList.remove("hit"); void el.offsetWidth; el.classList.add("hit");
+    const hud = $('[data-hres="' + r + '"]');
+    if (hud) flyTo(r, elCenter(el), elCenter(hud), () => { hud.classList.remove("pop"); void hud.offsetWidth; hud.classList.add("pop"); });
+    $$('[data-c="' + r + '"]').forEach((c) => (c.textContent = fmt(S().inv[r] || 0)));
     if (!S().flags.tip_tap && S().stats.taps >= 6) { S().flags.tip_tap = true; U.dirty = true; }
+  }
+  /* une petite icône vole de la ressource jusqu’au compteur */
+  function flyTo(id, a, b, done) {
+    const fx = $("#fx");
+    if (!fx || fx.childElementCount > 40 || !a || !b) return;
+    const el = document.createElement("div");
+    el.className = "fly";
+    el.innerHTML = icon(id, "sm");
+    el.style.left = a.x + "px"; el.style.top = a.y + "px";
+    fx.appendChild(el);
+    const dx = b.x - a.x, dy = b.y - a.y, up = -40 - Math.random() * 30;
+    const anim = el.animate([
+      { transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
+      { transform: "translate(calc(-50% + " + dx * 0.4 + "px), calc(-50% + " + (dy * 0.2 + up) + "px)) scale(1.1)", opacity: 1, offset: 0.4 },
+      { transform: "translate(calc(-50% + " + dx + "px), calc(-50% + " + dy + "px)) scale(.6)", opacity: 0.6 }
+    ], { duration: 520, easing: "cubic-bezier(.4,0,.7,1)" });
+    anim.onfinish = () => { el.remove(); if (done) done(); };
   }
   function startHold(el) {
     endHold();
@@ -1073,6 +1136,7 @@
     U.last = r;
     const bench = $("#bench");
     const p = elCenter($("#forge"));
+    strike(g, bench, r.kind === "craft");
     if (r.kind === "craft") {
       A.craft(g);
       if (r.fresh) setTimeout(() => A.discover(), 180);
@@ -1089,6 +1153,23 @@
     render(true);
   }
 
+  /* l’outil du geste s’abat sur l’établi */
+  function strike(g, bench, ok) {
+    const fx = $("#fx");
+    if (!fx || !bench || !bench.animate) return;
+    const r = bench.getBoundingClientRect();
+    const el = document.createElement("div");
+    el.className = "strike";
+    el.textContent = D.GESTES[g].ic;
+    el.style.left = r.left + r.width / 2 - 27 + "px";
+    el.style.top = r.top + 38 + "px";
+    fx.appendChild(el);
+    const swing = ["chauffer", "electriser", "graver", "synthetiser", "transmuter", "accorder"].includes(g)
+      ? [{ transform: "scale(.4)", opacity: 0 }, { transform: "scale(1.25)", opacity: 1, offset: 0.45 }, { transform: "scale(1)", opacity: 0 }]
+      : [{ transform: "translate(40px,-50px) rotate(55deg)", opacity: 0 }, { transform: "translate(18px,-30px) rotate(40deg)", opacity: 1, offset: 0.3 },
+        { transform: "translate(0,6px) rotate(-18deg)", opacity: 1, offset: 0.55 }, { transform: "translate(6px,-6px) rotate(-6deg)", opacity: 0 }];
+    el.animate(swing, { duration: ok ? 560 : 420, easing: "ease-in" }).onfinish = () => el.remove();
+  }
   function celebrate(btn, id, n, bonus) {
     const p = elCenter(btn);
     A.craft(I[id].r[0]);
@@ -1347,7 +1428,7 @@
       setTimeout(() => b.remove(), 3500);
     });
     E.on("learn", () => badge("carnet"));
-    E.on("zone", (z) => { toast("Nouvelle zone : <b>" + esc(zoneName(z)) + "</b>"); badge("terres"); });
+    E.on("zone", (z) => { U.zone = z; toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>"); badge("terres"); });
     E.on("discover", (id) => {
       const it = I[id];
       if (!U.forging && !it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " · " + esc(fxText(id)) : ""));
@@ -1462,11 +1543,15 @@
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
       if ((b = t.closest("[data-autoline]"))) { buildInUsine(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
-      if ((b = t.closest("[data-zc]"))) {
-        const st = S(), z = b.dataset.zc;
-        st.settings.collapsed = st.settings.collapsed || {};
-        st.settings.collapsed[z] = !st.settings.collapsed[z];
-        A.click(); render(true); return;
+      if ((b = t.closest("[data-goalt]"))) {
+        const st = S(), open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
+        st.settings.goalOpen = !open; A.click(); render(true); return;
+      }
+      if ((b = t.closest("[data-zone]"))) { U.zone = b.dataset.zone; A.click(); render(true); return; }
+      if ((b = t.closest("[data-zfog]"))) {
+        const z = E.ZONES[b.dataset.zfog], req = I[z.req];
+        toast("🌫️ Une terre encore dans la brume. " + (S().known[z.req] || req.a <= S().age + 1 ? "Il te faudrait : <b>" + esc(req.n) + "</b>." : "Tu n’as pas encore de quoi l’atteindre."));
+        return;
       }
       if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
       if ((b = t.closest("[data-lock]"))) { toast("Un geste que tu ne maîtrises pas encore. Il te faut une nouvelle station."); return; }
