@@ -1738,6 +1738,15 @@
   /* ============================================================ ÉCOUTEURS DOM */
   function bindDom() {
     document.addEventListener("pointerdown", (ev) => { U.pointer = { x: ev.clientX, y: ev.clientY }; }, true);
+    document.addEventListener("wheel", (ev) => {
+      const el = ev.target.closest(".ztabs, .filters, .u-tools, .u-free");
+      if (el && !ev.shiftKey && Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
+        if (el.scrollWidth > el.clientWidth) {
+          el.scrollLeft += ev.deltaY;
+          ev.preventDefault();
+        }
+      }
+    }, { passive: false });
     $("#tabs").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-tab]"); if (b) { A.init(); A.click(); setTab(b.dataset.tab); } });
     $("#menuBtn").addEventListener("click", () => { A.init(); openMenu(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
