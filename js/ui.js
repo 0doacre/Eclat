@@ -214,6 +214,7 @@
     openModal({ html: (kicker ? '<div class="kicker">' + kicker + "</div>" : "") + "<h2>" + title + "</h2>" + body +
       '<div class="acts"><button class="btn pri" data-m="close">' + (btn || "Continuer") + "</button></div>" });
   }
+  const Usine = window.EclatUsine.create({ E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat });
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
   /* ============================================================ SAUVEGARDES
@@ -334,7 +335,7 @@
         '<div class="acts"><button class="btn" data-m="copy">Copier</button><button class="btn" data-m="load">Charger le code collé</button><button class="btn pri" data-m="close">Fermer</button></div>',
       onOpen: (box) => { const t = $("textarea", box); t.focus(); t.select(); },
       on: {
-        copy: () => { try { navigator.clipboard.writeText($("#codeTxt").value); toast("Copié !"); } catch (e) { /* ignoré */ } return true; },
+        copy: () => { try { navigator.clipboard.writeText($("#codeTxt").value); toast("Copié."); } catch (e) { /* ignoré */ } return true; },
         load: () => { const v = $("#codeTxt").value; if (v.trim() === code) { toast("C’est déjà ta partie actuelle."); return true; } setTimeout(() => confirmReplace(v, "Avant le chargement d’un code"), 80); }
       }
     });
@@ -364,10 +365,12 @@
     openModal({
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
+        (st.flags.fab3 && st.flags.fab3.placed ? '<p class="small">🏭 Tes ' + (st.flags.fab3.placed > 1 ? st.flags.fab3.placed + " lignes de production sont devenues autant de machines, posées" : "ligne de production est devenue une machine, posée") +
+          " autour de la Réserve le long d’un tapis. Tout tourne comme avant." + (st.flags.fab3.left ? " " + st.flags.fab3.left + " n’ont pas trouvé de place : leurs machines t’attendent dans l’usine." : "") + "</p>" : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
       on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
-      onClose: () => { st.flags.news = null; save(); }
+      onClose: () => { st.flags.news = null; delete st.flags.fab3; save(); }
     });
   }
 
@@ -389,6 +392,7 @@
   function setTab(t) {
     if (!tabAvailable(t)) t = "terres";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
+    if (U.tab === "fabrique" && t !== "fabrique") { Usine.unmount(); $("#v-fabrique").innerHTML = ""; }
     U.tab = t;
     $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + t));
     $$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === t));
@@ -423,7 +427,7 @@
     if (U.tab === "terres") el.innerHTML = viewTerres();
     else if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
-    else if (U.tab === "fabrique") el.innerHTML = viewFabrique();
+    else if (U.tab === "fabrique") mountUsine(el);
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
     $("#views").scrollTop = sc;
@@ -486,7 +490,7 @@
       const lvl = st.hints[id] || 0;
       if (lvl >= 1) h += '<div class="memo">💭 Le geste : ' + gesteChip(id) + "</div>";
       if (lvl >= 2) { const m = mainIngredient(id); h += '<div class="memo">💭 Une des matières : ' + icon(m, "sm") + " " + esc(I[m].n) + "</div>"; }
-      if (lvl === 0) h += '<div class="tiny dim" style="margin-top:4px">Expérimente à l’Atelier. Si tu bloques, tes mains finiront par se souvenir…</div>';
+      if (lvl === 0) h += '<div class="tiny dim" style="margin-top:4px">Essaie des combinaisons à l’Atelier. Si tu bloques trop longtemps, tes mains finiront par se souvenir.</div>';
     } else {
       const b = E.blocker(id);
       h += '<div class="rl small">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
@@ -549,7 +553,7 @@
       if (!n) h += '<div class="tiny dim">🧭 Tout a été exploré ici (' + done + "/" + total + ").</div>";
       else if (n.locked) {
         const need = I[n.x.need];
-        h += '<div class="row between"><span class="en dim">🧭 ' + (n.x.hidden ? "??? — " + esc(n.x.hidden) : esc(n.x.n) + " — il te faudrait : " + esc(need.n)) + '</span><span class="tiny dim">' + done + "/" + total + "</span></div>";
+        h += '<div class="row between"><span class="en dim">🧭 ' + (n.x.hidden ? "??? · " + esc(n.x.hidden) : esc(n.x.n) + " · il te faut : " + esc(need.n)) + '</span><span class="tiny dim">' + done + "/" + total + "</span></div>";
       } else {
         const cost = n.x.cost ? Object.keys(n.x.cost).map((i) => n.x.cost[i] + " " + I[i].n).join(", ") : "";
         const dur = n.x.dur / E.expMult();
@@ -634,12 +638,12 @@
     }).sort((a, b) => I[a].a - I[b].a || (I[a].t === "res" ? -1 : 0) - (I[b].t === "res" ? -1 : 0) || I[a].n.localeCompare(I[b].n));
   }
   const WHY = {
-    froid: "Rien à tirer de ce mélange… pour l’instant.",
-    frais: "Une de ces matières cache une recette — avec un autre geste, ou d’autres compagnons.",
-    tiede: "Ce geste et ces matières ont quelque chose à se dire.",
-    manque: "Le bon geste ! Mais il manque encore une matière.",
-    trop: "Le bon geste ! Mais une de ces matières est de trop.",
-    geste: "Les bonnes matières… mais pas le bon geste."
+    froid: "Rien à tirer de ce mélange pour l’instant.",
+    frais: "Une de ces matières sert ailleurs, avec un autre geste ou d’autres matières.",
+    tiede: "Ce geste va bien avec ces matières. Cherche encore.",
+    manque: "Bon geste, mais il manque une matière.",
+    trop: "Bon geste, mais une de ces matières est en trop.",
+    geste: "Les bonnes matières, mais pas le bon geste."
   };
   function thermo(t) {
     const T = D.TEMPS[t];
@@ -648,7 +652,7 @@
   }
   function resultHTML() {
     const r = U.last;
-    if (!r) return '<p class="small muted">Choisis un geste, pose jusqu’à trois matières, puis œuvre. Le <b>thermomètre</b> te dira si tu brûles…</p>';
+    if (!r) return '<p class="small muted">Choisis un geste, pose jusqu’à trois matières, puis œuvre. Le <b>thermomètre</b> te dit si tu chauffes.</p>';
     if (r.kind === "craft") {
       const it = I[r.id];
       let h = '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow">' +
@@ -787,14 +791,14 @@
     if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:4px">Possédés : ' + Math.floor(st.inv[id] || 0) + "</div>";
     if (!owned) {
       const b = E.blocker(id);
-      if (b && b.why === "heat") h += '<div class="why">Nécessite ' + fmtHeat(b.heat) + " — " + stationLink("chauffer", b.heat, 0) + "</div>";
-      else if (b && b.why === "lvl") h += '<div class="why">Nécessite ' + D.GESTES[it.r[0]].n + " niveau " + b.lvl + " — " + stationLink(it.r[0], 0, b.lvl) + "</div>";
-      else if (b && b.why === "geste") h += '<div class="why">Geste inconnu : ' + D.GESTES[it.r[0]].n + (it.r[0] !== "accorder" ? " — " + stationLink(it.r[0], 0, 0) : "") + "</div>";
+      if (b && b.why === "heat") h += '<div class="why">Nécessite ' + fmtHeat(b.heat) + " · " + stationLink("chauffer", b.heat, 0) + "</div>";
+      else if (b && b.why === "lvl") h += '<div class="why">Nécessite ' + D.GESTES[it.r[0]].n + " niveau " + b.lvl + " · " + stationLink(it.r[0], 0, b.lvl) + "</div>";
+      else if (b && b.why === "geste") h += '<div class="why">Geste inconnu : ' + D.GESTES[it.r[0]].n + (it.r[0] !== "accorder" ? " · " + stationLink(it.r[0], 0, 0) : "") + "</div>";
       else {
         h += '<div class="acts">' + craftBtns(id) + '<button class="btn small" data-chain="' + id + '" title="Fabriquer aussi les sous-composants">⚡ En chaîne</button>' +
           '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳</button>' +
           (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯</button>') +
-          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Confier à la Fabrique">🏭</button>' : "") + "</div>";
+          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Construire une machine pour ça dans l’Usine">🏭</button>' : "") + "</div>";
       }
     }
     return h + "</div>";
@@ -804,87 +808,16 @@
     return s ? '<span class="link-txt" data-goto="' + s + '">' + esc(I[s].n) + "</span>" : "?";
   }
 
-  /* ------------------------------------------------------------ FABRIQUE */
-  const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
-  const STATUS = { ok: "En marche", starved: "En attente de matières", full: "Stock plein", idle: "Aucune machine", off: "En pause", blocked: "Station manquante", wait: "Démarrage…" };
-  function viewFabrique() {
-    const st = S(), ms = E.machines(), aspd = E.cache().aspd;
-    let h = '<h2 class="title">La Fabrique</h2>';
-    if (!st.flags.tip_fab) h += '<div class="tip">Chaque <b>ligne</b> fabrique une recette en continu, même jeu fermé, tant qu’elle a ses matières. Règle un <b>stock maximal</b> pour qu’une ligne n’avale pas tout. Les lignes du haut se servent en premier. <button class="btn small ghost" data-tip="tip_fab">OK</button></div>';
-    const owned = E.MACHINES.filter((m) => ms[m].own > 0);
-    h += '<div class="card"><div class="row between"><b>Machines</b>' + (aspd > 1 ? '<span class="small muted">Vitesse de la Fabrique ' + fmtMul(aspd) + "</span>" : "") + "</div>";
-    if (owned.length) h += '<div class="msum">' + owned.map((m) => '<div class="mchip">' + icon(m, "sm") + '<div class="grow"><b>' + esc(I[m].n) + '</b><div class="tiny muted">' + fmtNum(I[m].spd * aspd) + "/min chacune</div></div><span class=\"small\">" + (ms[m].own - ms[m].used) + " libre" + (ms[m].own - ms[m].used > 1 ? "s" : "") + " / " + ms[m].own + "</span></div>").join("") + "</div>";
-    else h += '<p class="small muted">Tu n’as encore aucune machine. Fabrique un <span class="link-txt" data-goto="automate_bois">Automate de bois</span> (Carnet, Âge de la Pierre).</p>';
-    const next = E.MACHINES.find((m) => ms[m].own === 0);
-    if (owned.length && next) h += '<p class="tiny muted" style="margin-top:6px">Machine suivante : <span class="link-txt" data-goto="' + next + '">' + esc(I[next].n) + "</span> (" + esc(D.AGES[I[next].a].n) + ")</p>";
-    h += floorHTML() + "</div>";
-    h += '<button class="btn pri wide" data-newline style="margin-bottom:12px">+ Nouvelle ligne de production</button>';
-    if (!st.lines.length) h += '<p class="small muted center">Aucune ligne pour l’instant. Crée-en une, ou utilise le bouton 🏭 d’une recette du Carnet.</p>';
-    st.lines.forEach((L, i) => { h += lineCard(L, i); });
-    return h;
+  /* ------------------------------------------------------------ USINE */
+  /* l’Usine se dessine sur un canvas (usine.js) : on la monte une fois, puis on
+   * ne rafraîchit que ses panneaux */
+  function mountUsine(el) {
+    if (Usine.mounted()) { Usine.refresh(); return; }
+    Usine.mount(el);
   }
-  function floorHTML() {
-    const st = S(), ms = E.machines();
-    let tiles = "";
-    let n = 0;
-    st.lines.forEach((L) => {
-      for (let k = 0; k < L.n && n < 80; k++, n++) tiles += '<span class="tile" data-ft="' + L.id + '" title="' + esc(I[L.r].n) + '">' + (I[L.m].ic || "⚙") + "</span>";
-    });
-    E.MACHINES.forEach((m) => { for (let k = 0; k < ms[m].own - ms[m].used && n < 80; k++, n++) tiles += '<span class="tile free" title="Machine libre">' + I[m].ic + "</span>"; });
-    return tiles ? '<div class="floor">' + tiles + "</div>" : "";
-  }
-  function lineCard(L, i) {
-    const st = S(), it = I[L.r], ms = E.machines();
-    const info = E.lineInfo(L.id);
-    const ing = it.r[1];
-    const ins = Object.keys(ing).map((k) => '<span class="bi" data-goto="' + k + '">' + icon(k, "sm") + "<i>" + fmt(ing[k]) + "</i></span>").join("");
-    const types = E.MACHINES.filter((m) => ms[m].own > 0 || m === L.m);
-    return '<div class="line s-' + info.s + '" data-line="' + L.id + '">' +
-      '<div class="lh"><button class="lt" data-lon="' + L.id + '" aria-label="Marche/arrêt">' + (L.on ? "⏸" : "▶") + '</button><div class="grow"><b class="link-txt" data-goto="' + L.r + '">' + esc(it.n) + '</b><div class="tiny" data-lst="' + L.id + '">' + esc(lineStatus(L, info)) + "</div></div>" +
-      '<button class="mini" data-lmv="' + L.id + '|-1"' + (i === 0 ? " disabled" : "") + ' aria-label="Monter">↑</button><button class="mini" data-lmv="' + L.id + '|1"' + (i === st.lines.length - 1 ? " disabled" : "") + ' aria-label="Descendre">↓</button><button class="mini" data-ldel="' + L.id + '" aria-label="Supprimer">✕</button></div>' +
-      '<div class="belt-row" style="--spd:' + beltSpeed(L) + 's"><div class="ins">' + ins + '</div><div class="belt"><b></b></div><div class="mach">' + icon(L.m) + '<span class="gear">⚙</span><span class="mx">×' + L.n + '</span></div><div class="belt"><b></b></div>' +
-      '<div class="outp">' + icon(L.r) + '<span class="small" data-c="' + L.r + '">' + fmt(st.inv[L.r] || 0) + "</span></div></div>" +
-      '<div class="lctl"><span class="tiny muted">Machines</span><button class="mini" data-ln="' + L.id + '|-1">−</button><b>' + L.n + '</b><button class="mini" data-ln="' + L.id + '|1">+</button>' +
-      '<select data-lm="' + L.id + '" aria-label="Type de machine">' + types.map((m) => '<option value="' + m + '"' + (m === L.m ? " selected" : "") + ">" + esc(I[m].n) + " (" + (ms[m].own - ms[m].used + (m === L.m ? L.n : 0)) + ")</option>").join("") + "</select>" +
-      '<span class="tiny muted">Stock max</span><select data-lcap="' + L.id + '" aria-label="Stock maximal">' + CAPS.map((c) => '<option value="' + c + '"' + (c === L.cap ? " selected" : "") + ">" + (c ? fmt(c) : "∞") + "</option>").join("") +
-      (CAPS.includes(L.cap) ? "" : '<option value="' + L.cap + '" selected>' + fmt(L.cap) + "</option>") + "</select></div></div>";
-  }
-  function lineStatus(L, info) {
-    const perMin = E.lineRate(L) * 60;
-    let s = STATUS[info.s] || "";
-    if (info.s === "ok" || info.s === "wait") s += " · " + fmtNum(perMin) + " fabrications/min";
-    if (info.s === "starved" && info.miss) s = "Il manque : " + Object.keys(info.miss).map((k) => fmt(info.miss[k]) + " " + I[k].n).join(", ");
-    if (info.s === "full") s += " (" + fmt(L.cap) + ")";
-    if (info.s === "blocked") { const b = info.b; s = b && b.why === "heat" ? "Il faut " + fmtHeat(b.heat) : "Station manquante"; }
-    return s;
-  }
-  function beltSpeed(L) {
-    const perMin = Math.max(0.1, E.lineRate(L) * 60);
-    return Math.max(0.35, Math.min(5, 6 / Math.sqrt(perMin))).toFixed(2);
-  }
-  function openLinePicker(preset) {
-    const st = S();
-    const ids = Object.keys(st.known).filter(E.automatable).sort((a, b) => I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
-    openModal({
-      html: "<h2>Nouvelle ligne</h2><p class=\"small muted\">Quelle recette confier à la Fabrique ?</p><div class=\"search\"><input id=\"lpq\" type=\"search\" placeholder=\"Chercher…\" autocomplete=\"off\" value=\"" + esc(preset || "") + "\"></div>" +
-        '<div class="picklist">' + ids.map((id) => '<button class="pick" data-m="pick" data-id="' + id + '" data-n="' + esc(norm(I[id].n)) + '">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) +
-          '</span><span class="tiny muted">' + esc(D.AGES[I[id].a].n.replace("Âge ", "")) + "</span></button>").join("") + "</div>" +
-        '<div class="acts"><button class="btn" data-m="close">Annuler</button></div>',
-      onOpen: (box) => {
-        const inp = $("#lpq", box);
-        const filter = () => { const q = norm(inp.value); $$(".pick", box).forEach((b) => b.classList.toggle("hidden", !!q && !b.dataset.n.includes(q))); };
-        inp.addEventListener("input", filter);
-        filter();
-      },
-      on: { pick: (b) => { createLine(b.dataset.id); } }
-    });
-  }
-  function createLine(id) {
-    const L = E.addLine(id);
-    if (!L) return;
-    A.init(); A.craft("usiner");
-    toast("🏭 Ligne créée : <b>" + esc(I[id].n) + "</b>" + (L.n ? "" : " — aucune machine libre pour l’instant"));
-    if (U.tab === "fabrique") render(true); else badge("fabrique");
+  function buildInUsine(id) {
+    setTab("fabrique");
+    Usine.prepare(id);
   }
 
   /* ------------------------------------------------------------ JOURNAL */
@@ -911,7 +844,7 @@
       }
     } else if (U.journalTab === "secrets") {
       const n = D.SECRETS.filter((s) => st.secrets[s.id]).length;
-      h += '<p class="small muted">' + n + "/" + D.SECRETS.length + " secrets découverts. Expérimente, explore, écoute… et lis attentivement.</p><div class=\"secret-grid\">";
+      h += '<p class="small muted">' + n + "/" + D.SECRETS.length + " secrets découverts. Les textes en disent plus qu’il n’y paraît.</p><div class=\"secret-grid\">";
       D.SECRETS.forEach((s) => {
         const found = st.secrets[s.id];
         const name = s.n || (I[s.id] ? I[s.id].n : D.MELODIES[s.id] ? D.MELODIES[s.id].n : s.id);
@@ -925,7 +858,7 @@
       if (known.length) {
         h += '<h3 class="sub">Mélodies connues</h3>';
         known.forEach((m) => { h += '<button class="frag" data-play="' + m + '"><span class="fi">🎶</span><div class="grow"><b>' + esc(D.MELODIES[m].n) + '</b><div class="tiny muted">' + D.MELODIES[m].notes.join(" · ") + "</div></div></button>"; });
-      } else h += '<p class="small muted">Tu ne connais encore aucune mélodie. Peut-être que le monde t’en a déjà appris une, sans que tu y prennes garde…</p>';
+      } else h += '<p class="small muted">Tu ne connais encore aucune mélodie. Le monde t’en a peut-être déjà appris une sans que tu y fasses attention.</p>';
     } else if (U.journalTab === "fins") {
       h += '<p class="small muted">Cycle ' + st.cycle + " · Échos : " + st.echoes + (st.echoes ? " (production et récolte +" + st.echoes * 50 + " %)" : "") + "</p>";
       Object.keys(D.ENDINGS).forEach((k) => {
@@ -965,7 +898,7 @@
       else h += '<p class="small muted">Avec une oreille assez grande, tu pourrais peut-être entendre ce que dit l’étoile rouge.</p>';
     } else if (U.cosmosTab === "arche") {
       h += '<div class="term" id="term">';
-      if (!st.flags.arche) h += '<div class="l">…aucun signal radio.</div>';
+      if (!st.flags.arche) h += '<div class="l">Aucun signal radio.</div>';
       st.arche.forEach((l) => { h += '<div class="l">' + esc(l.txt) + "</div>"; });
       if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") ? " u" : "") + '">' + esc(l) + "</div>").join("");
       h += "</div>";
@@ -1060,17 +993,6 @@
       if (s && s.cost) for (const k in s.cost) if ((ps.paid[k] || 0) < s.cost[k] && (st.inv[k] || 0) >= 1) ok = true;
       b.disabled = !ok;
     });
-    if (U.tab === "fabrique") {
-      $$("[data-line]", view).forEach((el) => {
-        const L = st.lines.find((l) => l.id === el.dataset.line);
-        if (!L) return;
-        const info = E.lineInfo(L.id);
-        el.className = "line s-" + info.s;
-        const t = $("[data-lst]", el);
-        if (t) t.textContent = lineStatus(L, info);
-      });
-      $$("[data-ft]", view).forEach((el) => { el.className = "tile s-" + E.lineInfo(el.dataset.ft).s; });
-    }
     if (U.tab === "atelier") {
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
@@ -1192,7 +1114,7 @@
     if (!r.done) { openTree(id, times || 1); return; }
     const sub = r.steps.length - 1;
     celebrate(btn, id, I[id].r[2] * (times || 1), 0);
-    if (sub > 0) toast("⚡ " + esc(I[id].n) + " — avec " + sub + " sous-composant" + (sub > 1 ? "s" : "") + " fabriqué" + (sub > 1 ? "s" : ""));
+    if (sub > 0) toast("⚡ " + esc(I[id].n) + ", et " + sub + " sous-composant" + (sub > 1 ? "s" : "") + " fabriqué" + (sub > 1 ? "s" : "") + " au passage");
     render(true);
   }
   /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
@@ -1261,7 +1183,7 @@
 
   function giveProject(pid) {
     const r = E.contribute(pid);
-    if (r.ok) { A.craft("stratifier"); toast("Contribution : <b>" + fmt(r.gave) + "</b> matières" + (r.done ? " — étape terminée !" : "")); }
+    if (r.ok) { A.craft("stratifier"); toast("Contribution : <b>" + fmt(r.gave) + "</b> matières" + (r.done ? ". Étape terminée." : "")); }
     if (r.done && !r.ending) A.discover();
     render(true);
   }
@@ -1269,7 +1191,7 @@
     const st = S();
     let warn = "";
     if (st.frags.registre) warn += "<p class=\"serif\">Une phrase te revient en mémoire : « Ils chanteront, pour qu’on les reconnaisse. »</p>";
-    if (st.frags.code_source) warn += "<p class=\"serif\">« Clé d’identification amie : le chant d’Iris. » Le chant… que tu n’as jamais vérifié.</p>";
+    if (st.frags.code_source) warn += "<p class=\"serif\">« Clé d’identification amie : le chant d’Iris. » Ce chant, tu ne l’as jamais vérifié.</p>";
     openModal({
       persistent: true,
       html: '<div class="kicker">Brise-Monde</div><h2>Mise à feu ?</h2><p style="font-family:var(--mono);color:#8cffb0">« FAIS-LE, SEMEUR 7. ILS APPROCHENT. »</p>' + warn +
@@ -1285,7 +1207,7 @@
     A.signal();
     Sky.set({ listenUntil: Date.now() + 7000 });
     const info = $("#skyInfo");
-    if (info) info.textContent = r.decoded ? "« Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" : "Une onde lente, montante, descendante… presque une mélodie. Tu ne la comprends pas.";
+    if (info) info.textContent = r.decoded ? "« Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" : "Une onde lente qui monte et redescend. On dirait presque une mélodie, mais tu n’y comprends rien.";
     if (r.fresh) toast("Tu as enregistré le <b>Signal de Kher</b>.");
   }
   function skyTap(ev) {
@@ -1299,7 +1221,7 @@
       info.textContent = msg || "La Lune. Grise, silencieuse. Tu as l’impression qu’elle te regarde aussi.";
     } else if (hit.k === "kher") {
       info.textContent = S().flags.decoded ? "Kher. Plus une menace : une maison lointaine, d’où des enfants reviennent." :
-        S().age >= 7 ? "Kher, à 11,9 années-lumière. ARCHE la dit dangereuse. Elle pulse comme un cœur." : "Une étoile rouge qui pulse lentement. Elle n’était pas là… avant.";
+        S().age >= 7 ? "Kher, à 11,9 années-lumière. ARCHE la dit dangereuse. Elle pulse comme un cœur." : "Une étoile rouge qui pulse lentement. Tu jurerais qu’elle n’était pas là avant.";
     } else info.textContent = hit.n + ".";
   }
 
@@ -1355,13 +1277,13 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🌲 Terres</b> — Touche les ressources pour les récolter (maintiens pour récolter en continu). Les <b>extracteurs</b> produisent tout seuls, même jeu fermé (jusqu’à 12 h). Lance des <b>explorations</b> pour découvrir l’histoire du monde. L’<b>objectif</b> t’indique la prochaine étape.</p>" +
-      "<p><b>🔨 Atelier</b> — Le cœur du jeu. Choisis un <b>geste</b>, pose jusqu’à trois <b>matières</b>, et œuvre. Si rien ne se passe, le <b>thermomètre</b> te dit si tu t’approches d’une recette. Si tu bloques longtemps, des <b>réminiscences</b> te soufflent la solution.</p>" +
-      "<p><b>📖 Carnet</b> — Tes recettes. <b>⚡ En chaîne</b> fabrique aussi tous les sous-composants, <b>🎯 Suivre</b> affiche ce qui manque, <b>☆</b> épingle une recette dans l’Atelier, et chaque ingrédient est cliquable. Les inconnues ont une énigme ; l’<b>Intuition ✨</b> achète des indices.</p>" +
-      "<p><b>🏭 Fabrique</b> — Avec des automates et des machines, confie une recette à une ligne de production : elle tourne en continu, même jeu fermé.</p>" +
-      "<p><b>📜 Journal</b> — Fragments d’histoire, secrets, mélodies. Lis attentivement : certains textes cachent des recettes, des codes ou des airs.</p>" +
-      "<p><b>🔭 Cosmos</b> — Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins du jeu. Il y a plus d’une fin.</p>" +
-      "<p><b>💾 Sauvegardes</b> — Dans le menu ☰ : télécharge ta partie en fichier pour la garder ou la transférer.</p></div>", "Compris");
+      "<p><b>🌲 Terres.</b> Touche une ressource pour la ramasser, garde le doigt dessus pour continuer. Les <b>extracteurs</b> récoltent seuls, même quand le jeu est fermé (jusqu’à 12 h). Les <b>explorations</b> racontent l’histoire du monde. L’<b>objectif</b> en haut dit quoi faire ensuite.</p>" +
+      "<p><b>🔨 Atelier.</b> C’est là que tout se passe. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette. Si tu bloques longtemps, des <b>réminiscences</b> te soufflent la réponse.</p>" +
+      "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme, et l’<b>Intuition ✨</b> paie les indices.</p>" +
+      "<p><b>🏭 Fabrique.</b> Ton usine. Pose des machines, une sortie contre la Réserve, et trace des tapis entre les deux. Le bouton ? de l’usine explique le reste.</p>" +
+      "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
+      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins. Il y en a plus d’une.</p>" +
+      "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p></div>", "Compris");
   }
 
   function intro() {
@@ -1378,7 +1300,7 @@
         if (st.flags.capsuleMsg) {
           st.flags.capsuleMsg = false;
           simpleModal("Capsule temporelle", "Un message de toi-même",
-            loreHTML("Au pied du Grand Chêne, une capsule de verre t’attend, avec quelques matériaux et un enregistrement. Ta propre voix :\n\n« Salut. C’est toi, d’avant. Fais confiance à tes mains. Et quand l’étoile rouge chantera… écoute-la jusqu’au bout. »"));
+            loreHTML("Au pied du Grand Chêne, une capsule de verre t’attend, avec quelques matériaux et un enregistrement. Ta propre voix :\n\n« Salut. C’est toi. Enfin, toi d’avant. Fais confiance à tes mains. Et quand l’étoile rouge se mettra à chanter, écoute-la jusqu’au bout. »"));
         }
       }
     });
@@ -1395,7 +1317,7 @@
       html: '<div class="kicker center">Fin ' + (Object.keys(D.ENDINGS).indexOf(r.id) + 1) + "</div><h2 class=\"center\" style=\"font-size:32px\">" + en.ic + " " + esc(en.n) + "</h2>" +
         '<div class="lore">' + paras.map((p, i) => '<p style="animation-delay:' + (0.6 + i * 1.6) + 's">' + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>" +
         '<p class="center small muted" style="margin-top:24px;opacity:0;animation:fadeup 1s ' + (1 + paras.length * 1.6) + 's forwards">Fins découvertes : ' + n + "/" + Object.keys(D.ENDINGS).length +
-        (n < 3 ? " — il reste d’autres chemins." : " — tu as tout vu. Merci d’avoir joué.") + "</p>" +
+        (n < 3 ? ". Il reste d’autres chemins." : ". Tu as tout vu. Merci d’avoir joué.") + "</p>" +
         '<div class="acts" style="opacity:0;animation:fadeup 1s ' + (1.4 + paras.length * 1.6) + 's forwards"><button class="btn" data-m="close">Continuer ce cycle</button><button class="btn pri" data-m="cycle">Nouveau cycle ✦</button></div>',
       on: { cycle: () => setTimeout(confirmCycle, 100) }
     });
@@ -1405,7 +1327,7 @@
     const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
     openModal({
       html: '<div class="kicker">Nouveau cycle</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières et tes machines seront remis à zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b> et tes <b>secrets</b>.</p>" +
-        "<p>Échos accumulés : <b>" + ech + "</b> — récolte et production <b>+" + ech * 50 + " %</b>.</p>" +
+        "<p>Échos accumulés : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production.</p>" +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Recommencer</button></div>',
       on: { go: () => { pushBackup(E.serialize(), "Avant le cycle " + (st.cycle + 1)); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; setTab("terres"); setTimeout(intro, 200); } }
     });
@@ -1428,7 +1350,7 @@
     E.on("zone", (z) => { toast("Nouvelle zone : <b>" + esc(zoneName(z)) + "</b>"); badge("terres"); });
     E.on("discover", (id) => {
       const it = I[id];
-      if (!U.forging && !it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " — " + esc(fxText(id)) : ""));
+      if (!U.forging && !it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " · " + esc(fxText(id)) : ""));
       if (it.e && it.e.sky) badge("cosmos");
       if (it.t === "mach") badge("fabrique");
       updateBadges();
@@ -1442,7 +1364,7 @@
         .replace("{g}", D.GESTES[it.r[0]].n.toLowerCase())
         .replace("{i}", I[mainIngredient(h.id)].n.toLowerCase());
       A.secret();
-      toast("💭 <b>" + esc(it.n) + "</b> — " + esc(line));
+      toast("💭 <b>" + esc(it.n) + "</b> : " + esc(line));
       badge("terres");
     });
     E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé."); });
@@ -1470,7 +1392,7 @@
       badge("cosmos");
       if (key === "radio") setTimeout(() => {
         openModal({ html: '<div class="kicker">Poste radio</div><h2>Une voix dans le grésillement</h2><div class="term">' + D.ARCHE.radio.map((l) => '<div class="l">' + esc(l) + "</div>").join("") +
-          '</div><div class="acts"><button class="btn pri" data-m="close">…</button></div>' });
+          '</div><div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
       }, 900);
     });
     E.on("crafted", (id) => {
@@ -1480,7 +1402,7 @@
       setTimeout(() => {
         A.signal();
         openModal({ html: '<div class="kicker">Traducteur</div><h2>' + esc(D.FRAGS.signal.n) + "</h2>" + loreHTML(D.FRAGS.signal.t) +
-          '<p class="small muted">Un nouveau Grand Œuvre est apparu dans le Cosmos.</p><div class="acts"><button class="btn pri" data-m="close">…</button></div>' });
+          '<p class="small muted">Un nouveau Grand Œuvre est apparu dans le Cosmos.</p><div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
         badge("cosmos"); badge("journal");
       }, 600);
     });
@@ -1538,7 +1460,7 @@
       if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
       if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (voir les Terres)"); render(true); return; }
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
-      if ((b = t.closest("[data-autoline]"))) { createLine(b.dataset.autoline); return; }
+      if ((b = t.closest("[data-autoline]"))) { buildInUsine(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
       if ((b = t.closest("[data-zc]"))) {
         const st = S(), z = b.dataset.zc;
@@ -1562,14 +1484,9 @@
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
       if ((b = t.closest("[data-exp]"))) {
         const r = E.startExp(b.dataset.exp);
-        if (r.ok) { A.init(); A.click(); toast("Exploration en cours…"); } else if (r.why === "busy") toast("Tu explores déjà ailleurs.");
+        if (r.ok) { A.init(); A.click(); toast("🧭 C’est parti. L’exploration avance toute seule."); } else if (r.why === "busy") toast("Tu explores déjà ailleurs.");
         render(true); return;
       }
-      if ((b = t.closest("[data-newline]"))) { openLinePicker(); return; }
-      if ((b = t.closest("[data-lon]"))) { const L = S().lines.find((l) => l.id === b.dataset.lon); if (L) { E.setLine(L.id, { on: !L.on }); A.click(); render(true); } return; }
-      if ((b = t.closest("[data-ln]"))) { const [lid, d] = b.dataset.ln.split("|"); const L = S().lines.find((l) => l.id === lid); if (L) { E.setLine(lid, { n: L.n + Number(d) }); if (L.n === 0 && Number(d) > 0) toast("Aucune machine libre de ce type."); A.click(); render(true); } return; }
-      if ((b = t.closest("[data-lmv]"))) { const [lid, d] = b.dataset.lmv.split("|"); E.moveLine(lid, Number(d)); render(true); return; }
-      if ((b = t.closest("[data-ldel]"))) { E.delLine(b.dataset.ldel); A.click(); render(true); return; }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
       if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; render(true); return; }
       if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n), loreHTML(F.t), "Refermer"); return; }
@@ -1582,8 +1499,6 @@
     });
     views.addEventListener("change", (ev) => {
       const t = ev.target;
-      if (t.dataset.lm) { E.setLine(t.dataset.lm, { m: t.value }); render(true); }
-      if (t.dataset.lcap) { E.setLine(t.dataset.lcap, { cap: Number(t.value) }); render(true); }
     });
     views.addEventListener("input", (ev) => {
       if (ev.target.id === "cq") {

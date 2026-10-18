@@ -12,7 +12,7 @@
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
   const HINT_COST = [1, 1, 2];
-  const SAVE_VERSION = 2;
+  const SAVE_VERSION = 3;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins"];
 
@@ -36,13 +36,24 @@
   D.ZONES.forEach((z) => z.res.forEach((r) => (RES_ZONE[r] = RES_ZONE[r] || z.id)));
   const MACHINES = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "mach").sort((a, b) => D.ITEMS[a].spd - D.ITEMS[b].spd);
 
+  /* Géométrie de l’Usine : directions 0 → droite, 1 → bas, 2 → gauche, 3 → haut.
+   * La Réserve occupe les cases de -RES à RES autour de l’origine. */
+  const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
+  const RES = 1;
+  const FAB_R0 = 7, FAB_RMAX = 13;
+  const ck = (x, y) => x + "," + y;
+  const isRes = (x, y) => Math.abs(x) <= RES && Math.abs(y) <= RES;
+  const touchesRes = (x, y) => (Math.abs(x) === RES + 1 && Math.abs(y) <= RES) || (Math.abs(y) === RES + 1 && Math.abs(x) <= RES);
+  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1 };
+  const freshFab = () => ({ r: FAB_R0, c: {}, seq: 0, ms: {} });
+
   function freshState(now) {
     return {
       v: SAVE_VERSION, t: now, start: now,
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: {}, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
-      lines: [], lineSeq: 0, pins: {}, track: null, gt: { id: null, t: 0 },
+      fab: freshFab(), pins: {}, track: null, gt: { id: null, t: 0 },
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
@@ -76,7 +87,64 @@
       o.flags.news = "2";
       o.v = 2;
     }
+    if (from < 3) {
+      // v3 : la Fabrique devient une usine sur grille. Chaque ligne de production
+      // devient une machine posée le long d’un tapis qui fait le tour de la Réserve.
+      o.flags = o.flags || {};
+      const r = fabFromLines(o.lines || []);
+      o.fab = r.fab;
+      if (r.placed || r.left) o.flags.fab3 = { placed: r.placed, left: r.left };
+      delete o.lines;
+      delete o.lineSeq;
+      o.flags.news = "3";
+      o.v = 3;
+    }
     return o;
+  }
+
+  /* Disposition des anciennes lignes : une sortie, un tapis qui fait le tour de la
+   * Réserve puis y rentre, et les machines posées tout autour, tournées vers lui.
+   * Elles se servent sur le tapis et y déposent ce qu’elles fabriquent. */
+  function fabFromLines(lines) {
+    const fab = freshFab();
+    const live = lines.filter((L) => L && D.ITEMS[L.r] && D.ITEMS[L.m] && D.ITEMS[L.m].t === "mach" && L.n > 0);
+    if (!live.length) return { fab, placed: 0, left: 0 };
+    // une ligne qui fabrique l’ingrédient d’une autre passe avant elle sur le tapis
+    const order = [], done = {};
+    const visit = (L, depth) => {
+      if (done[L.r] === 2 || depth > 50) return;
+      done[L.r] = 1;
+      const ing = D.ITEMS[L.r].r ? D.ITEMS[L.r].r[1] : {};
+      live.forEach((M) => { if (M !== L && ing[M.r] !== undefined && done[M.r] !== 1) visit(M, depth + 1); });
+      if (done[L.r] !== 2) { done[L.r] = 2; live.filter((M) => M.r === L.r).forEach((M) => order.includes(M) || order.push(M)); }
+    };
+    live.forEach((L) => visit(L, 0));
+    const put = (x, y, e) => (fab.c[ck(x, y)] = e);
+    put(RES + 1, 0, { k: "port", d: 0, f: null });
+    const ring = [];
+    for (let y = 0; y <= 2; y++) ring.push([3, y, 1]);
+    ring.push([3, 3, 2]);
+    for (let x = 2; x >= -2; x--) ring.push([x, 3, 2]);
+    ring.push([-3, 3, 3]);
+    for (let y = 2; y >= -2; y--) ring.push([-3, y, 3]);
+    ring.push([-3, -3, 0]);
+    for (let x = -2; x <= 2; x++) ring.push([x, -3, 0]);
+    ring.push([3, -3, 1], [3, -2, 1], [3, -1, 2], [2, -1, 2]);
+    ring.forEach(([x, y, d]) => put(x, y, { k: "belt", d }));
+    const slots = [];
+    for (let y = 0; y <= 3; y++) slots.push([4, y, 2]);
+    for (let x = 3; x >= -3; x--) slots.push([x, 4, 3]);
+    for (let y = 3; y >= -3; y--) slots.push([-4, y, 0]);
+    for (let x = -3; x <= 3; x++) slots.push([x, -4, 1]);
+    for (let y = -3; y <= -1; y++) slots.push([4, y, 2]);
+    let placed = 0;
+    order.forEach((L, i) => {
+      const sl = slots[i];
+      if (!sl) return;
+      put(sl[0], sl[1], { k: "mach", id: "M" + ++fab.seq, m: L.m, r: L.r, d: sl[2], n: Math.max(1, Math.floor(L.n)), on: L.on !== false, cap: Math.max(0, Math.floor(L.cap) || 0) });
+      placed++;
+    });
+    return { fab, placed, left: order.length - placed };
   }
 
   function createEngine(opts) {
@@ -87,7 +155,6 @@
     const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION };
     let S = freshState(now());
     let C = null; // caches dérivés de l’état
-    const lineStat = {}; // état des lignes (non sauvegardé)
 
     /* ------------------------------------------------------- événements */
     E.on = (evt, fn) => { (listeners[evt] = listeners[evt] || []).push(fn); };
@@ -290,6 +357,18 @@
     }
     E.learn = learn;
 
+    /* chefs-d’œuvre : chance de lot bonus selon la maîtrise */
+    function bonusFor(it, times) {
+      let bonus = 0;
+      if (it.t !== "comp" && it.t !== "res") return 0;
+      const ch = 0.04 * E.stars(it.id);
+      if (ch > 0) {
+        if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
+        else bonus = Math.floor(times * ch + rand());
+      }
+      return bonus;
+    }
+
     function craft(id, times, quiet) {
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
@@ -301,15 +380,7 @@
       if (miss) return { ok: false, why: "qty", missing: miss };
       const tot = totalCost(id, times);
       for (const i in tot) add(i, -tot[i]);
-      // chefs-d’œuvre : chance de lot bonus selon la maîtrise
-      let bonus = 0;
-      if (it.t === "comp" || it.t === "res") {
-        const ch = 0.04 * E.stars(id);
-        if (ch > 0) {
-          if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
-          else bonus = Math.floor(times * ch + rand());
-        }
-      }
+      const bonus = bonusFor(it, times);
       const out = it.r[2] * (times + bonus);
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
@@ -781,102 +852,362 @@
       return lines;
     };
 
-    /* ------------------------------------------------------ la Fabrique
-     * Des machines (répétables) affectées à des lignes de production. Chaque ligne
-     * fabrique une recette connue en continu, à la vitesse de ses machines. */
+    /* ------------------------------------------------------ l’Usine
+     * Une grille avec, au centre, la Réserve (le stock du joueur). Les sorties
+     * posées contre la Réserve envoient sur les tapis ce que les machines
+     * réclament. Une machine se sert sur les tapis qui la touchent ou qui entrent
+     * dedans, et pose sa production sur la case devant elle. Ce qui arrive au bout
+     * d’un tapis qui entre dans la Réserve rejoint le stock.
+     * Le calcul se fait de machine à machine, pas objet par objet : il donne le
+     * même résultat jeu ouvert ou fermé. Les objets qui roulent sur les tapis ne
+     * sont que l’image de ces échanges (voir E.fabDrain). */
+    const machStat = {}; // état des machines (non sauvegardé)
+    let G = null; // graphe de l’usine, recalculé à chaque modification
+    let fabLog = []; // échanges récents, pour l’animation
+    let fabQuiet = false;
+
     E.automatable = (id) => {
       const it = item(id);
       return !!(it && it.r && S.known[id] && !isUnique(it) && !isScaled(it));
     };
+    const fabR = () => Math.max(S.fab.r || FAB_R0, Math.min(FAB_RMAX, 5 + S.age));
+    const inGrid = (x, y) => { const R = fabR(); return Math.abs(x) <= R && Math.abs(y) <= R; };
+    const cellAt = (x, y) => S.fab.c[ck(x, y)];
+    E.fabR = fabR;
+    E.inGrid = inGrid;
+    E.isRes = isRes;
+    E.touchesRes = touchesRes;
+    E.fabCell = (x, y) => (isRes(x, y) ? { k: "res" } : cellAt(x, y) || null);
+    function fabChanged() { G = null; E.emit("fab"); }
+    function forgetFab() {
+      for (const k in machStat) delete machStat[k];
+      G = null;
+      fabLog = [];
+      E.emit("fab");
+    }
+    function machById(id) {
+      for (const k in S.fab.c) if (S.fab.c[k].id === id) return S.fab.c[k];
+      return null;
+    }
+    E.machById = machById;
     E.machines = function () {
       const out = {};
       MACHINES.forEach((m) => (out[m] = { own: Math.floor(count(m)), used: 0, spd: item(m).spd }));
-      S.lines.forEach((L) => { if (out[L.m]) out[L.m].used += L.n; });
+      for (const k in S.fab.c) { const e = S.fab.c[k]; if (e.k === "mach" && out[e.m]) out[e.m].used += e.n; }
       return out;
     };
-    E.hasFactory = () => MACHINES.some((m) => count(m) > 0) || S.lines.length > 0;
-    const lineById = (lid) => S.lines.find((L) => L.id === lid);
-    E.lineRate = (L) => (L.n > 0 && item(L.m) ? (L.n * item(L.m).spd) / 60 * E.cache().aspd : 0);
-    E.addLine = function (r) {
-      if (!E.automatable(r)) return null;
-      const ms = E.machines();
-      let m = MACHINES.slice().reverse().find((k) => ms[k].own - ms[k].used > 0) ||
-        MACHINES.slice().reverse().find((k) => ms[k].own > 0) || MACHINES[0];
-      const free = ms[m].own - ms[m].used;
-      const L = { id: "L" + ++S.lineSeq, r, m, n: free > 0 ? 1 : 0, on: true, cap: 0, acc: 0 };
-      S.lines.push(L);
-      if (L.n > 0) S.flags.lineDone = true;
-      E.emit("struct");
-      return L;
+    E.hasFactory = () => MACHINES.some((m) => count(m) > 0) || Object.keys(S.fab.c).length > 0;
+    E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd : 0);
+    const buf = (id) => S.fab.ms[id] || (S.fab.ms[id] = { p: 0, b: {}, o: 0 });
+    E.machBuf = buf;
+    E.machInfo = (id) => machStat[id] || { s: "wait", avg: 0 };
+
+    /* Suit le chemin de ce qui sort d’une case (x, y) vers la direction d. */
+    function trace(x, y, d, self) {
+      const nodes = [], cons = {}, out = { nodes, cons, res: null };
+      const seen = {};
+      const q = [{ x: x + DX[d], y: y + DY[d], d, p: -1 }];
+      const reach = (id, at) => { if (id !== self && !(id in cons)) cons[id] = at; };
+      while (q.length) {
+        const s = q.shift();
+        if (isRes(s.x, s.y)) { if (!out.res) out.res = { at: s.p }; continue; }
+        const e = inGrid(s.x, s.y) ? cellAt(s.x, s.y) : null;
+        if (!e || e.k === "port") continue;
+        if (e.k === "mach") { reach(e.id, s.p); continue; }
+        if (e.k === "belt" && e.d === (s.d + 2) % 4) continue; // tapis à contresens
+        const key = e.k === "cross" ? ck(s.x, s.y) + ":" + (s.d % 2) : ck(s.x, s.y);
+        if (seen[key]) continue;
+        seen[key] = true;
+        const i = nodes.push({ x: s.x, y: s.y, p: s.p }) - 1;
+        if (e.k === "belt") {
+          for (let k = 0; k < 4; k++) {
+            const n = cellAt(s.x + DX[k], s.y + DY[k]);
+            if (n && n.k === "mach") reach(n.id, i);
+          }
+          q.push({ x: s.x + DX[e.d], y: s.y + DY[e.d], d: e.d, p: i });
+        } else if (e.k === "cross") q.push({ x: s.x + DX[s.d], y: s.y + DY[s.d], d: s.d, p: i });
+        else if (e.k === "split") {
+          for (let k = 0; k < 4; k++) if (k !== (s.d + 2) % 4) q.push({ x: s.x + DX[k], y: s.y + DY[k], d: k, p: i });
+        }
+      }
+      return out;
+    }
+    /* Qui alimente qui, et dans quel ordre calculer les machines. */
+    function graph() {
+      if (G) return G;
+      const prods = {}, sup = {}, pos = {};
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k];
+        if (e.k !== "mach" && e.k !== "port") continue;
+        const [x, y] = k.split(",").map(Number);
+        if (e.k === "port" && !touchesRes(x, y)) continue;
+        const id = e.k === "mach" ? e.id : "P" + k;
+        pos[id] = { x, y };
+        const t = trace(x, y, e.d, e.k === "mach" ? e.id : null);
+        prods[id] = { id, e, x, y, t };
+        for (const c in t.cons) (sup[c] = sup[c] || []).push(id);
+      }
+      // les machines qui en alimentent d’autres passent d’abord
+      const ms = Object.keys(prods).filter((id) => prods[id].e.k === "mach");
+      const indeg = {};
+      ms.forEach((id) => (indeg[id] = (sup[id] || []).filter((p) => prods[p].e.k === "mach").length));
+      const order = [], ready = ms.filter((id) => !indeg[id]);
+      while (ready.length) {
+        const id = ready.shift();
+        order.push(id);
+        for (const c in prods[id].t.cons) if (indeg[c] !== undefined && --indeg[c] === 0) ready.push(c);
+      }
+      ms.forEach((id) => { if (!order.includes(id)) order.push(id); }); // boucles
+      G = { prods, sup, pos, order };
+      return G;
+    }
+    E.fabGraph = graph;
+    const supplies = (P, i) => (P.e.k === "port" ? !P.e.f || P.e.f === i : P.e.r === i);
+
+    function logFlow(from, to, i, q) {
+      if (fabQuiet || !(q > 0)) return;
+      fabLog.push({ from, to, i, q });
+      if (fabLog.length > 600) fabLog.splice(0, fabLog.length - 600);
+    }
+    E.fabDrain = () => { const l = fabLog; fabLog = []; return l; };
+
+    function pull(cid, i, need, g) {
+      const B = buf(cid), srcs = g.sup[cid] || [];
+      const take = (pid, q) => { B.b[i] = (B.b[i] || 0) + q; need -= q; logFlow(pid, cid, i, q); };
+      // d’abord ce que posent les machines voisines, ensuite le stock
+      for (const pid of srcs) {
+        const P = g.prods[pid];
+        if (P.e.k !== "mach" || P.e.r !== i) continue;
+        const PB = buf(pid), q = Math.min(need, PB.o);
+        if (q > 0) { PB.o -= q; take(pid, q); }
+        if (need <= 1e-9) return;
+      }
+      for (const pid of srcs) {
+        const P = g.prods[pid];
+        if (P.e.k !== "port" || !supplies(P, i)) continue;
+        const q = Math.min(need, S.inv[i] || 0);
+        if (q > 0) { add(i, -q); take(pid, q); }
+        if (need <= 1e-9) return;
+      }
+    }
+    function produce(id, k) {
+      const it = item(id);
+      const bonus = bonusFor(it, k);
+      const first = !(S.made[id] > 0);
+      S.made[id] = (S.made[id] || 0) + k;
+      S.stats.crafts += k;
+      if (!S.known[id]) learn(id, true);
+      if (first) onFirstCraft(id);
+      if (S.track && S.track.id === id) { S.track = null; E.emit("tracked", id); E.emit("struct"); }
+      if (!S.flags.lineDone) { S.flags.lineDone = true; E.emit("struct"); }
+      return it.r[2] * (k + bonus);
+    }
+    function runMachine(e, g, dt, c) {
+      const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0, miss: null });
+      const B = buf(e.id);
+      let made = 0;
+      const done = (s) => { st.s = s; st.avg += (1 - Math.exp(-dt / 5)) * (made / dt - st.avg); };
+      if (!e.on) return done("off");
+      const it = item(e.r), M = item(e.m);
+      if (!it || !it.r) return done("norec");
+      if (!(e.n > 0) || !M) return done("idle");
+      const b = blocker(e.r);
+      if (b) { st.b = b; return done("blocked"); }
+      const outQ = it.r[2], rate = (e.n * M.spd / 60) * c.aspd;
+      const P = g.prods[e.id], ing = it.r[1], srcs = g.sup[e.id] || [];
+      const ncons = Object.keys(P.t.cons).length;
+      if (!P.t.res && !ncons) return done("noout");
+      // un ingrédient qu’aucun tapis n’apporte : inutile d’attendre
+      let link = null;
+      for (const i in ing) if (!srcs.some((p) => supplies(g.prods[p], i))) (link = link || {})[i] = "link";
+      if (link) {
+        st.miss = link;
+        for (const i in ing) if (!link[i] && (B.b[i] || 0) < ing[i]) st.miss[i] = "stock";
+        B.p = Math.min(B.p, 1);
+        return done("starved");
+      }
+      if (!P.t.res && B.o >= outQ * Math.max(4, 2 * Math.ceil(rate * dt))) return done("jam");
+      B.p += rate * dt;
+      let want = Math.floor(B.p + 1e-9);
+      if (e.cap > 0) {
+        const room = e.cap - count(e.r) - B.o;
+        if (room <= 0) { B.p = Math.min(B.p, 1); return done("cap"); }
+        want = Math.min(want, Math.ceil(room / outQ));
+      }
+      if (want <= 0) return done(st.s === "starved" || st.s === "ok" ? st.s : "ok");
+      let k = want;
+      for (const i in ing) {
+        const need = want * ing[i] - (B.b[i] || 0);
+        if (need > 1e-9) pull(e.id, i, need, g);
+        k = Math.min(k, Math.floor((B.b[i] || 0) / ing[i] + 1e-9));
+      }
+      if (k > 0) {
+        for (const i in ing) { B.b[i] -= k * ing[i]; if (B.b[i] < 1e-9) delete B.b[i]; }
+        B.p -= k;
+        made = k;
+        B.o += produce(e.r, k);
+      }
+      if (k < want) {
+        B.p = Math.min(B.p, 1);
+        st.miss = {};
+        for (const i in ing) {
+          if ((B.b[i] || 0) >= ing[i]) continue;
+          st.miss[i] = "stock";
+        }
+        return done("starved");
+      }
+      st.miss = null;
+      return done("ok");
+    }
+    function runFab(dt) {
+      const g = graph();
+      if (!g.order.length) return;
+      const c = E.cache();
+      for (const id of g.order) runMachine(g.prods[id].e, g, dt, c);
+      // ce qui arrive à la Réserve rejoint le stock
+      for (const id of g.order) {
+        const P = g.prods[id];
+        if (!P.t.res) continue;
+        const B = buf(id);
+        if (B.o > 0) { const q = B.o; B.o = 0; add(P.e.r, q); logFlow(id, "res", P.e.r, q); }
+      }
+    }
+    /* Débits des machines (par seconde, moyenne glissante). */
+    E.flows = function () {
+      const prod = {}, cons = {};
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k];
+        const st = e.k === "mach" && machStat[e.id];
+        const it = st && st.avg > 1e-6 && item(e.r);
+        if (!it || !it.r) continue;
+        prod[e.r] = (prod[e.r] || 0) + st.avg * it.r[2];
+        for (const i in it.r[1]) cons[i] = (cons[i] || 0) + st.avg * it.r[1][i];
+      }
+      return { prod, cons };
     };
-    E.setLine = function (lid, patch) {
-      const L = lineById(lid);
-      if (!L) return null;
-      if (patch.m && patch.m !== L.m && item(patch.m) && item(patch.m).t === "mach") {
-        L.m = patch.m;
+
+    /* --- construction */
+    const portDir = (x, y) => (x === RES + 1 ? 0 : x === -RES - 1 ? 2 : y === RES + 1 ? 1 : 3);
+    const intoRes = (x, y, d) => isRes(x + DX[d], y + DY[d]);
+    function placeWhy(k, x, y, o) {
+      if (!inGrid(x, y)) return "out";
+      if (isRes(x, y)) return "res";
+      if (cellAt(x, y)) return "taken";
+      if (k === "port" && !touchesRes(x, y)) return "port";
+      if (k === "mach") {
         const ms = E.machines();
-        L.n = Math.max(0, Math.min(L.n, ms[L.m].own - (ms[L.m].used - L.n)));
+        if (!ms[o.m]) return "kind";
+        if (ms[o.m].own - ms[o.m].used < 1) return "nomach";
+      }
+      return null;
+    }
+    E.fabWhy = (k, x, y, o) => placeWhy(k, x, y, o || {});
+    E.fabPlace = function (k, x, y, o) {
+      o = o || {};
+      const why = placeWhy(k, x, y, o);
+      if (why) return { ok: false, why };
+      let e;
+      if (k === "belt") e = { k, d: (o.d | 0) % 4 };
+      else if (k === "port") e = { k, d: o.d !== undefined && !intoRes(x, y, o.d) ? o.d : portDir(x, y), f: E.automatable(o.f) || (item(o.f) && S.seen[o.f]) ? o.f : null };
+      else if (k === "split" || k === "cross") e = { k };
+      else if (k === "mach") e = { k, id: "M" + ++S.fab.seq, m: o.m, r: E.automatable(o.r) ? o.r : null, d: (o.d | 0) % 4, n: 1, on: true, cap: 0 };
+      else return { ok: false, why: "kind" };
+      S.fab.c[ck(x, y)] = e;
+      fabChanged();
+      return { ok: true, e };
+    };
+    /* Pose ou réoriente des tapis le long d’un tracé [{x, y, d}]. */
+    E.fabDraw = function (path) {
+      let n = 0;
+      for (const p of path) {
+        if (!inGrid(p.x, p.y) || isRes(p.x, p.y)) continue;
+        const e = cellAt(p.x, p.y);
+        if (!e) { S.fab.c[ck(p.x, p.y)] = { k: "belt", d: p.d }; n++; }
+        else if (e.k === "belt" && e.d !== p.d) { e.d = p.d; n++; }
+      }
+      if (n) fabChanged();
+      return n;
+    };
+    function refund(id) {
+      const B = S.fab.ms[id];
+      if (B) {
+        for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]);
+        const e = machById(id);
+        if (e && B.o > 0 && item(e.r)) add(e.r, B.o);
+      }
+      delete S.fab.ms[id];
+      delete machStat[id];
+    }
+    E.fabRotate = function (x, y) {
+      const e = cellAt(x, y);
+      if (!e || e.d === undefined) return null;
+      e.d = (e.d + 1) % 4;
+      if (e.k === "port" && intoRes(x, y, e.d)) e.d = (e.d + 1) % 4;
+      fabChanged();
+      return e;
+    };
+    E.fabRemove = function (x, y) {
+      const e = cellAt(x, y);
+      if (!e) return null;
+      if (e.k === "mach") refund(e.id);
+      delete S.fab.c[ck(x, y)];
+      fabChanged();
+      return e;
+    };
+    /* Réglages d’une machine : recette, nombre, type, marche, stock visé. */
+    E.fabSet = function (id, patch) {
+      const e = machById(id);
+      if (!e) return null;
+      if (patch.r !== undefined && patch.r !== e.r && (patch.r === null || E.automatable(patch.r))) {
+        refund(id);
+        e.r = patch.r;
+      }
+      if (patch.m && patch.m !== e.m && item(patch.m) && item(patch.m).t === "mach") {
+        const ms = E.machines();
+        const free = ms[patch.m].own - ms[patch.m].used;
+        if (free < 1) return e;
+        e.m = patch.m;
+        e.n = Math.min(e.n, free);
       }
       if (patch.n !== undefined) {
         const ms = E.machines();
-        const max = ms[L.m].own - (ms[L.m].used - L.n);
-        L.n = Math.max(0, Math.min(Math.floor(patch.n), max));
-        if (L.n > 0) S.flags.lineDone = true;
+        const max = ms[e.m].own - (ms[e.m].used - e.n);
+        e.n = Math.max(1, Math.min(Math.floor(patch.n), max));
       }
-      if (patch.on !== undefined) L.on = !!patch.on;
-      if (patch.cap !== undefined) L.cap = Math.max(0, Math.floor(patch.cap) || 0);
-      if (patch.r && E.automatable(patch.r)) { L.r = patch.r; L.acc = 0; }
-      E.emit("struct");
-      return L;
+      if (patch.on !== undefined) e.on = !!patch.on;
+      if (patch.cap !== undefined) e.cap = Math.max(0, Math.floor(patch.cap) || 0);
+      if (patch.d !== undefined) e.d = patch.d % 4;
+      fabChanged();
+      return e;
     };
-    E.delLine = function (lid) {
-      const i = S.lines.findIndex((L) => L.id === lid);
-      if (i >= 0) { S.lines.splice(i, 1); delete lineStat[lid]; E.emit("struct"); }
-    };
-    E.moveLine = function (lid, dir) {
-      const i = S.lines.findIndex((L) => L.id === lid), j = i + dir;
-      if (i < 0 || j < 0 || j >= S.lines.length) return;
-      const t = S.lines[i]; S.lines[i] = S.lines[j]; S.lines[j] = t;
-      E.emit("struct");
-    };
-    E.lineInfo = (lid) => lineStat[lid] || { s: "wait" };
-    function runLines(dt) {
-      const c = E.cache();
-      for (const L of S.lines) {
-        const st = lineStat[L.id] || (lineStat[L.id] = { s: "wait" });
-        if (!L.on) { st.s = "off"; continue; }
-        if (!(L.n > 0)) { st.s = "idle"; continue; }
-        const it = item(L.r), M = item(L.m);
-        if (!it || !M || !it.r) { st.s = "blocked"; continue; }
-        const b = blocker(L.r);
-        if (b) { st.s = "blocked"; st.b = b; continue; }
-        L.acc = (L.acc || 0) + (L.n * M.spd / 60) * c.aspd * dt;
-        let want = Math.floor(L.acc);
-        if (want <= 0) { if (st.s !== "starved" && st.s !== "full") st.s = "ok"; continue; }
-        if (L.cap > 0) {
-          const room = L.cap - count(L.r);
-          if (room <= 0) { st.s = "full"; L.acc = Math.min(L.acc, 1); continue; }
-          want = Math.min(want, Math.ceil(room / it.r[2]));
-        }
-        const k = maxCraftable(L.r, want);
-        if (k > 0) { craft(L.r, k, true); L.acc -= k; st.made = (st.made || 0) + k; }
-        if (k < want) { st.s = "starved"; st.miss = missingFor(L.r, 1); L.acc = Math.min(L.acc, 1); }
-        else { st.s = "ok"; st.miss = null; }
+    /* Annuler : l’usine revient à une copie antérieure. Les machines qui
+     * disparaissent ou changent de recette rendent leur contenu au stock. */
+    E.fabSnapshot = () => JSON.stringify(S.fab.c);
+    E.fabRestore = function (snap) {
+      let c;
+      try { c = JSON.parse(snap); } catch (e) { return false; }
+      if (!c || typeof c !== "object") return false;
+      const was = {};
+      for (const k in c) if (c[k].k === "mach") was[c[k].id] = c[k].r;
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k];
+        if (e.k === "mach" && (!(e.id in was) || was[e.id] !== e.r)) refund(e.id);
       }
-    }
-    /* Débits estimés des lignes qui tournent (par seconde). */
-    E.flows = function () {
-      const prod = {}, cons = {};
-      for (const L of S.lines) {
-        const st = lineStat[L.id];
-        if (!L.on || !(L.n > 0) || !st || st.s !== "ok") continue;
-        const it = item(L.r);
-        if (!it || !it.r) continue;
-        const r = E.lineRate(L);
-        prod[L.r] = (prod[L.r] || 0) + r * it.r[2];
-        for (const i in it.r[1]) cons[i] = (cons[i] || 0) + r * it.r[1][i];
+      S.fab.c = c;
+      const ms = E.machines();
+      for (const k in c) {
+        const e = c[k];
+        if (e.k === "mach" && ms[e.m] && ms[e.m].used > ms[e.m].own) { ms[e.m].used -= e.n; delete c[k]; }
       }
-      return { prod, cons };
+      fabChanged();
+      return true;
+    };
+    E.fabSetPort = function (x, y, f) {
+      const e = cellAt(x, y);
+      if (!e || e.k !== "port") return null;
+      e.f = f && item(f) ? f : null;
+      fabChanged();
+      return e;
     };
 
     /* ------------------------------------------------------ grands œuvres */
@@ -935,6 +1266,7 @@
       const n = freshState(now());
       n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets;
       n.seen = old.seen; n.meta = old.meta; n.settings = old.settings; n.pins = old.pins || {};
+      n.fab.r = old.fab ? old.fab.r : FAB_R0;
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = 3 + Math.floor(old.intu / 2);
@@ -945,6 +1277,7 @@
         Object.assign(n.inv, { bois: 60, fibre: 60, caillou: 40, manche: 10, corde: 10 });
       }
       S = n;
+      forgetFab();
       recalc();
       E.emit("cycle", n.cycle);
       E.emit("struct");
@@ -954,7 +1287,7 @@
     function step(dt, offline) {
       const c = E.cache();
       for (const r in c.rates) add(r, c.rates[r] * dt);
-      if (S.lines.length) runLines(dt);
+      runFab(dt);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];
@@ -991,7 +1324,9 @@
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
       let left = dt;
+      fabQuiet = true;
       while (left > 0) { const d = Math.min(chunk, left); step(d, true); left -= d; }
+      fabQuiet = false;
       let exp = null;
       if (S.exp.active && now() >= S.exp.active.t0 + S.exp.active.dur) { exp = S.exp.active; finishExp(true); }
       const gains = {};
@@ -1007,6 +1342,33 @@
     E.serialize = () => JSON.stringify(S);
     /* Lit une sauvegarde (chaîne JSON ou objet), la migre et la valide.
      * Ne modifie l’état courant que si tout s’est bien passé. */
+    /* Usine d’une sauvegarde : ce qui est illisible est mis de côté, pas jeté. */
+    function checkFab(o) {
+      const f = o.fab && typeof o.fab === "object" ? o.fab : freshFab();
+      if (typeof f.c !== "object" || !f.c) f.c = {};
+      if (typeof f.ms !== "object" || !f.ms) f.ms = {};
+      f.r = Math.max(FAB_R0, Math.min(40, Math.floor(f.r) || FAB_R0));
+      f.seq = Math.floor(f.seq) || 0;
+      for (const k in f.c) {
+        const e = f.c[k], m = /^(-?\d+),(-?\d+)$/.exec(k);
+        let ok = m && e && FAB_KINDS[e.k] && !isRes(+m[1], +m[2]);
+        if (ok && e.k === "mach") {
+          ok = !!(D.ITEMS[e.m] && D.ITEMS[e.m].t === "mach" && typeof e.id === "string");
+          if (ok && e.r && !D.ITEMS[e.r]) e.r = null;
+          if (ok) { e.n = Math.max(1, Math.floor(e.n) || 1); e.d = (e.d | 0) & 3; e.cap = Math.max(0, Math.floor(e.cap) || 0); e.on = e.on !== false; }
+          const n = ok && +e.id.slice(1);
+          if (n > f.seq) f.seq = n;
+        }
+        if (ok && (e.k === "belt" || e.k === "port")) e.d = (e.d | 0) & 3;
+        if (ok && e.k === "port" && e.f && !D.ITEMS[e.f]) e.f = null;
+        if (!ok) {
+          o.orphans = o.orphans || {};
+          (o.orphans.fab = o.orphans.fab || {})[k] = e;
+          delete f.c[k];
+        } else if (m) f.r = Math.max(f.r, Math.abs(+m[1]), Math.abs(+m[2]));
+      }
+      o.fab = f;
+    }
     function parseSave(src) {
       const o = typeof src === "string" ? JSON.parse(src) : JSON.parse(JSON.stringify(src));
       if (!o || typeof o !== "object" || !o.inv || typeof o.inv !== "object") throw new Error("Ce n’est pas une sauvegarde d’Éclat.");
@@ -1018,8 +1380,7 @@
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
       o.gt = Object.assign({ id: null, t: 0 }, o.gt);
-      if (!Array.isArray(o.lines)) o.lines = [];
-      o.lines = o.lines.filter((L) => L && D.ITEMS[L.r] && D.ITEMS[L.m]);
+      checkFab(o);
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {
         if (!o[k] || typeof o[k] !== "object") return;
@@ -1038,12 +1399,12 @@
     E.load = function (src) {
       const o = parseSave(src);
       S = o;
-      for (const k in lineStat) delete lineStat[k];
+      forgetFab();
       recalc();
       E.emit("struct");
       return true;
     };
-    E.reset = function () { S = freshState(now()); recalc(); E.emit("struct"); };
+    E.reset = function () { S = freshState(now()); forgetFab(); recalc(); E.emit("struct"); };
     E.exportSave = () => {
       const s = E.serialize();
       return typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(s))) : Buffer.from(s, "utf8").toString("base64");
@@ -1060,7 +1421,7 @@
     return E;
   }
 
-  const API = { createEngine, freshState, migrate, SAVE_VERSION };
+  const API = { createEngine, freshState, migrate, SAVE_VERSION, DX, DY, RES };
   root.EclatEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof window !== "undefined" ? window : globalThis);

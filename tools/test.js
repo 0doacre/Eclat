@@ -115,8 +115,8 @@ test("sauvegarde : aller-retour et export base64", () => {
 
 
 console.log("Sauvegardes (compatibilité)");
-test("une sauvegarde v1 se charge sans rien perdre", () => {
-  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => x.startsWith("save-v1"))) {
+test("les sauvegardes v1 et v2 se chargent sans rien perdre", () => {
+  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[12]/.test(x))) {
     const raw = fixture(f);
     const old = JSON.parse(raw);
     const E = mk();
@@ -128,21 +128,136 @@ test("une sauvegarde v1 se charge sans rien perdre", () => {
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
     assert.strictEqual(S.age, old.age); assert.strictEqual(S.intu, old.intu);
     assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
-    assert.strictEqual(S.flags.news, "2", "annonce des nouveautés");
+    assert.strictEqual(S.flags.news, "3", "annonce des nouveautés");
     assert.strictEqual(raw, fixture(f), "la chaîne d’origine n’est pas modifiée");
     T += 5000; E.update(); // le jeu tourne
   }
 });
-test("les chaînes d’assemblage v1 deviennent des lignes de la Fabrique", () => {
+const machs = (E) => Object.values(E.state.fab.c).filter((e) => e.k === "mach");
+test("les chaînes d’assemblage v1 deviennent des machines de l’usine", () => {
   const E = mk();
   E.load(fixture("save-v1-age10-chaines.json"));
-  const L = E.state.lines;
-  assert.strictEqual(L.length, 2);
-  assert.deepStrictEqual(L.map((l) => [l.r, l.m, l.n]), [["plaque_fer", "chaine", 1], ["bobine", "chaine", 1]]);
-  assert.ok(E.state.auto === undefined);
+  assert.deepStrictEqual(machs(E).map((e) => [e.r, e.m, e.n]).sort(), [["bobine", "chaine", 1], ["plaque_fer", "chaine", 1]]);
+  assert.ok(E.state.auto === undefined && E.state.lines === undefined);
   const before = E.count("plaque_fer");
   for (let i = 0; i < 20; i++) { T += 100; E.update(); }
-  assert.ok(E.count("plaque_fer") > before, "la ligne produit");
+  assert.ok(E.count("plaque_fer") > before, "la machine produit");
+});
+test("les lignes v2 deviennent des machines le long d’un tapis", () => {
+  const raw = fixture("save-v2-age7-fabrique.json");
+  const old = JSON.parse(raw);
+  const E = mk();
+  E.load(raw);
+  const got = machs(E).map((e) => [e.r, e.m, e.n, e.on, e.cap]).sort();
+  const want = old.lines.map((L) => [L.r, L.m, L.n, L.on, L.cap]).sort();
+  assert.deepStrictEqual(got, want, "réglages conservés");
+  assert.deepStrictEqual(E.state.flags.fab3, { placed: 5, left: 0 });
+  const g = E.fabGraph();
+  machs(E).forEach((e) => assert.ok((g.sup[e.id] || []).some((p) => p[0] === "P"), e.r + " est alimentée par la sortie"));
+  machs(E).forEach((e) => assert.ok(g.prods[e.id].t.res, e.r + " renvoie vers la Réserve"));
+  // le fil de cuivre passe avant… rien ne le consomme ici, mais l’ordre suit le tapis
+  E.add("bois", 100); E.add("plaque_cuivre", 50); E.add("lingot_fer", 50);
+  const b = { fil: E.count("fil_cuivre"), clous: E.count("clous"), manche: E.count("manche") };
+  for (let i = 0; i < 300; i++) { T += 100; E.update(); }
+  assert.ok(E.count("fil_cuivre") > b.fil && E.count("clous") > b.clous && E.count("manche") > b.manche, "tout produit");
+  assert.strictEqual(E.machInfo(machs(E).find((e) => e.r === "corde").id).s, "off");
+});
+/* une petite usine : sortie → machine → tapis → Réserve */
+function miniUsine(E, r, m) {
+  assert.ok(E.fabPlace("port", 2, 0).ok);
+  const p = E.fabPlace("mach", 3, 0, { m: m || "automate_bois", r, d: 3 });
+  assert.ok(p.ok, JSON.stringify(p));
+  E.fabDraw([{ x: 3, y: -1, d: 2 }, { x: 2, y: -1, d: 2 }]);
+  return p.e;
+}
+const run = (E, s) => { for (let i = 0; i < s * 10; i++) { T += 100; E.update(); } };
+test("usine : règles de construction", () => {
+  const E = mk();
+  assert.strictEqual(E.fabPlace("port", 4, 4).why, "port", "une sortie touche la Réserve");
+  assert.strictEqual(E.fabPlace("belt", 0, 0, { d: 0 }).why, "res");
+  assert.strictEqual(E.fabPlace("mach", 3, 3, { m: "automate_bois" }).why, "nomach", "il faut posséder la machine");
+  assert.strictEqual(E.fabPlace("belt", 99, 0, { d: 0 }).why, "out");
+  E.add("automate_bois", 1);
+  assert.ok(E.fabPlace("mach", 3, 3, { m: "automate_bois" }).ok);
+  assert.strictEqual(E.fabPlace("mach", 4, 4, { m: "automate_bois" }).why, "nomach", "une seule machine possédée");
+  assert.strictEqual(E.fabPlace("belt", 3, 3, { d: 0 }).why, "taken");
+  const p = E.fabPlace("port", -2, 1).e;
+  assert.strictEqual(p.d, 2, "la sortie regarde loin de la Réserve");
+  E.fabRotate(-2, 1); assert.strictEqual(p.d, 3);
+  E.fabRotate(-2, 1); assert.strictEqual(p.d, 1, "jamais vers la Réserve");
+});
+test("usine : une machine produit, s’arrête au stock visé, réclame ce qui manque", () => {
+  const E = mk();
+  E.add("automate_bois", 2); E.state.known.manche = true;
+  E.add("bois", 30);
+  const m = miniUsine(E, "manche");
+  E.fabSet(m.id, { n: 5 });
+  assert.strictEqual(m.n, 2, "pas plus que les machines possédées");
+  run(E, 30); // 30 s à 12/min
+  assert.strictEqual(E.count("manche"), 6);
+  assert.ok(E.state.flags.lineDone);
+  E.fabSet(m.id, { cap: 7 });
+  run(E, 30);
+  assert.strictEqual(E.count("manche"), 7); assert.strictEqual(E.machInfo(m.id).s, "cap");
+  E.fabSet(m.id, { cap: 0 });
+  run(E, 60);
+  assert.ok(E.count("bois") < 3); assert.strictEqual(E.machInfo(m.id).s, "starved");
+  assert.deepStrictEqual(E.machInfo(m.id).miss, { bois: "stock" });
+  E.fabRemove(2, 0);
+  run(E, 1);
+  assert.deepStrictEqual(E.machInfo(m.id).miss, { bois: "link" }, "plus rien ne l’alimente");
+  const bois = E.count("bois");
+  E.fabRemove(3, 0);
+  assert.ok(E.count("bois") >= bois, "ce qui restait dans la machine revient au stock");
+  assert.ok(!E.automatable("feu") && !E.automatable("cabane"), "pas d’objets uniques ni d’extracteurs");
+});
+test("usine : une machine en alimente une autre par un tapis", () => {
+  const E = mk();
+  E.add("automate_bois", 2);
+  stations(E, ["etabli"]);
+  ["manche", "corde", "archet"].forEach((k) => (E.state.known[k] = true));
+  E.add("bois", 100); E.add("corde", 100);
+  // la sortie envoie bois et cordes sur un tapis qui fait un crochet puis rentre dans la Réserve ;
+  // A (manches) se sert dessus et pose ses manches sur la partie retour, qui passe devant B (archets)
+  E.fabPlace("port", 2, 0); // → (3,0)
+  E.fabDraw([{ x: 3, y: 0, d: 0 }, { x: 4, y: 0, d: 0 }, { x: 5, y: 0, d: 1 }, { x: 5, y: 1, d: 1 }, { x: 5, y: 2, d: 2 },
+    { x: 4, y: 2, d: 2 }, { x: 3, y: 2, d: 2 }, { x: 2, y: 2, d: 3 }, { x: 2, y: 1, d: 2 }]);
+  const A = E.fabPlace("mach", 4, 1, { m: "automate_bois", r: "manche", d: 1 }).e; // pose en (4,2)
+  const B = E.fabPlace("mach", 3, 1, { m: "automate_bois", r: "archet", d: 2 }).e; // pose en (2,1)
+  const g = E.fabGraph();
+  assert.ok(g.sup[B.id].includes(A.id), "B se sert sur le tapis de A");
+  assert.ok(g.sup[B.id].includes("P2,0"), "B touche aussi le tapis de la sortie");
+  assert.ok(g.order.indexOf(A.id) < g.order.indexOf(B.id));
+  const manches = E.count("manche");
+  run(E, 120);
+  assert.ok(E.count("archet") > 0, "des archets arrivent");
+  assert.ok(E.state.made.manche > 0 && E.count("manche") >= manches);
+  const fl = E.fabDrain();
+  assert.ok(fl.some((f) => f.from === A.id && f.to === B.id && f.i === "manche"), "les manches passent de A à B");
+});
+test("usine : sortie bouchée, la machine s’arrête", () => {
+  const E = mk();
+  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 300);
+  E.fabPlace("port", 2, 0);
+  const m = E.fabPlace("mach", 3, 0, { m: "automate_bois", r: "manche", d: 0 }).e; // rien devant
+  run(E, 120);
+  assert.strictEqual(E.machInfo(m.id).s, "noout");
+  assert.ok(E.machBuf(m.id).o <= 4, "elle n’accumule pas sans fin");
+  assert.ok(E.count("bois") > 250);
+});
+test("usine : production hors ligne et sauvegarde", () => {
+  const E = mk();
+  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 2000);
+  miniUsine(E, "manche");
+  T += 3600 * 1000; E.update(); // une heure à 6/min
+  assert.ok(Math.abs(E.count("manche") - 360) <= 2, "≈ 360 manches : " + E.count("manche"));
+  assert.strictEqual(E.fabDrain().length, 0, "pas d’animation pour le temps passé dehors");
+  const E2 = mk();
+  E2.load(E.serialize());
+  assert.deepStrictEqual(E2.state.fab.c, E.state.fab.c);
+  E2.load(JSON.stringify(Object.assign(JSON.parse(E.serialize()), { fab: { r: 7, c: { "5,5": { k: "laser" }, "0,0": { k: "belt", d: 0 }, "4,4": { k: "belt", d: 1 } } } })));
+  assert.deepStrictEqual(Object.keys(E2.state.fab.c), ["4,4"]);
+  assert.deepStrictEqual(Object.keys(E2.state.orphans.fab).sort(), ["0,0", "5,5"], "cases illisibles mises de côté");
 });
 test("sauvegarde illisible ou d’une version future : erreur, rien n’est touché", () => {
   const E = mk();
@@ -192,26 +307,6 @@ test("maxPlan : nombre de fabrications en chaîne possibles", () => {
   E.add("bois", 30); E.add("fibre", 30);
   E.state.known.manche = E.state.known.corde = E.state.known.archet = true;
   assert.strictEqual(E.maxPlan("archet"), 5); // 3 bois + 6 fibres par archet : les fibres limitent
-});
-test("Fabrique : ligne, vitesse, stock maximal, manque", () => {
-  const E = mk();
-  E.add("automate_bois", 2); E.state.known.manche = true;
-  E.add("bois", 30);
-  const L = E.addLine("manche");
-  assert.strictEqual(L.m, "automate_bois"); assert.strictEqual(L.n, 1);
-  assert.ok(E.state.flags.lineDone);
-  E.setLine(L.id, { n: 5 });
-  assert.strictEqual(L.n, 2, "pas plus que les machines possédées");
-  for (let i = 0; i < 300; i++) { T += 100; E.update(); } // 30 s à 12/min
-  assert.strictEqual(E.count("manche"), 6);
-  E.setLine(L.id, { cap: 7 });
-  for (let i = 0; i < 300; i++) { T += 100; E.update(); }
-  assert.strictEqual(E.count("manche"), 7); assert.strictEqual(E.lineInfo(L.id).s, "full");
-  E.setLine(L.id, { cap: 0 });
-  for (let i = 0; i < 300; i++) { T += 100; E.update(); }
-  assert.strictEqual(E.count("bois"), 0); assert.strictEqual(E.lineInfo(L.id).s, "starved");
-  assert.deepStrictEqual(E.lineInfo(L.id).miss, { bois: 3 });
-  assert.ok(!E.automatable("feu") && !E.automatable("cabane"), "pas d’objets uniques ni d’extracteurs");
 });
 test("guidage : la prochaine étape d’un objectif", () => {
   const E = mk();

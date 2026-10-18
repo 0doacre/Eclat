@@ -1,0 +1,941 @@
+/* ÉCLAT — l’Usine : la grille dessinée sur un canvas, et les commandes tactiles.
+ * Le moteur (engine.js) calcule la production ; ici on ne fait que montrer les
+ * échanges entre machines sous forme d’objets qui roulent sur les tapis. */
+(function () {
+  "use strict";
+
+  const MCOL = { automate_bois: "#8a5a32", automate_bronze: "#b0793a", presse_vapeur: "#6d7882", chaine: "#46698f", assembleur: "#7a4fb0" };
+  const TOOLS = [
+    ["voir", "👆", "Voir"],
+    ["tapis", "➜", "Tapis"],
+    ["mach", "⚙️", "Machine"],
+    ["port", "📤", "Sortie"],
+    ["split", "🔀", "Répartir"],
+    ["cross", "✚", "Croiser"],
+    ["turn", "🔄", "Tourner"],
+    ["del", "🗑️", "Démolir"]
+  ];
+  const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
+
+  function create(api) {
+    const { E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat } = api;
+    const I = D.ITEMS;
+    const { DX, DY } = window.EclatEngine;
+    const S = () => E.state;
+    const V = {
+      el: null, cv: null, ctx: null, w: 0, h: 0, dpr: 1, ro: null,
+      cam: { x: 0, y: 0, z: 44 }, camSet: false,
+      tool: "voir", mtype: null, sel: null, raf: 0, t: 0, last: 0,
+      packets: [], credit: {}, lastSpawn: {}, paths: {}, pulse: {},
+      ptrs: new Map(), gest: null, draw: null, undo: [], emoji: {}
+    };
+
+    /* ------------------------------------------------------------ montage */
+    function mount(el) {
+      V.el = el;
+      el.innerHTML =
+        '<div class="usine">' +
+          '<div class="u-bar"><div class="u-free" id="uFree"></div><button class="u-help" data-u="help" aria-label="Comment ça marche">?</button></div>' +
+          '<div class="u-hint hidden" id="uHint"></div>' +
+          '<canvas id="uCan"></canvas>' +
+          '<div class="u-zoom"><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button></div>' +
+          '<div class="u-sheet hidden" id="uSheet"></div>' +
+          '<div class="u-tools" id="uTools">' + TOOLS.map((t) => '<button data-tool="' + t[0] + '"><span>' + t[1] + "</span><i>" + t[2] + "</i></button>").join("") + "</div>" +
+        "</div>";
+      V.cv = el.querySelector("#uCan");
+      V.ctx = V.cv.getContext("2d");
+      V.cv.addEventListener("pointerdown", onDown);
+      V.cv.addEventListener("pointermove", onMove);
+      V.cv.addEventListener("pointerup", onUp);
+      V.cv.addEventListener("pointercancel", onCancel);
+      V.cv.addEventListener("wheel", onWheel, { passive: false });
+      el.querySelector(".usine").addEventListener("click", onClick);
+      el.querySelector(".usine").addEventListener("change", onChange);
+      V.ro = new ResizeObserver(resize);
+      V.ro.observe(V.cv);
+      resize();
+      setTool(V.tool);
+      refresh();
+      V.last = performance.now();
+      V.raf = requestAnimationFrame(frame);
+    }
+    function unmount() {
+      cancelAnimationFrame(V.raf);
+      V.raf = 0;
+      if (V.ro) V.ro.disconnect();
+      V.ro = null;
+      V.el = V.cv = V.ctx = null;
+      V.packets = [];
+      V.ptrs.clear();
+      V.gest = V.draw = null;
+    }
+    const mounted = () => !!V.cv;
+
+    function resize() {
+      if (!V.cv) return;
+      const r = V.cv.getBoundingClientRect();
+      V.dpr = Math.min(2.5, window.devicePixelRatio || 1);
+      V.w = r.width; V.h = r.height;
+      V.cv.width = Math.round(r.width * V.dpr);
+      V.cv.height = Math.round(r.height * V.dpr);
+      if (!V.camSet && V.w > 0) { V.cam.z = clampZ(V.w / 9); V.camSet = true; }
+    }
+    const clampZ = (z) => Math.max(18, Math.min(90, z));
+
+    /* ------------------------------------------------------------ coordonnées */
+    const sx = (x) => V.w / 2 + (x - V.cam.x) * V.cam.z;
+    const sy = (y) => V.h / 2 + (y - V.cam.y) * V.cam.z;
+    function cellAt(px, py) {
+      return { x: Math.round((px - V.w / 2) / V.cam.z + V.cam.x), y: Math.round((py - V.h / 2) / V.cam.z + V.cam.y) };
+    }
+    function local(ev) {
+      const r = V.cv.getBoundingClientRect();
+      return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    }
+
+    /* ------------------------------------------------------------ outils */
+    function setTool(t) {
+      V.tool = t;
+      if (t !== "voir") select(null);
+      if (!V.el) return;
+      V.el.querySelectorAll("[data-tool]").forEach((b) => b.classList.toggle("on", b.dataset.tool === t));
+    }
+    function remember() {
+      V.undo.push(E.fabSnapshot());
+      if (V.undo.length > 30) V.undo.shift();
+      updUndo();
+    }
+    function updUndo() { const b = V.el && V.el.querySelector("#uUndo"); if (b) b.disabled = !V.undo.length; }
+    function undo() {
+      const s = V.undo.pop();
+      if (s) { E.fabRestore(s); A.click(); select(null); }
+      updUndo();
+    }
+
+    const WHY = {
+      out: "C’est hors du terrain. Il s’agrandit avec les âges.",
+      res: "C’est la Réserve.",
+      taken: "La case est déjà prise.",
+      port: "Une sortie se pose contre la Réserve (cases en pointillés).",
+      nomach: "Plus de machine libre de ce type. Fabriques-en une autre au Carnet.",
+      kind: "Impossible ici."
+    };
+    function freeTypes() {
+      const ms = E.machines();
+      return E.MACHINES.filter((m) => ms[m].own - ms[m].used > 0);
+    }
+    /* direction par défaut d’une machine : vers un tapis voisin qui ne vient pas vers elle */
+    function guessDir(x, y) {
+      for (let d = 0; d < 4; d++) {
+        const n = E.fabCell(x + DX[d], y + DY[d]);
+        if (n && n.k === "belt" && n.d !== (d + 2) % 4) return d;
+      }
+      for (let d = 0; d < 4; d++) if (E.fabCell(x + DX[d], y + DY[d]) && E.fabCell(x + DX[d], y + DY[d]).k === "res") return d;
+      return 0;
+    }
+    function act(c) {
+      const e = E.fabCell(c.x, c.y);
+      if (V.tool === "voir") { select(e && e.k !== undefined ? c : null); return; }
+      if (V.tool === "turn") {
+        if (e && e.d !== undefined) { remember(); E.fabRotate(c.x, c.y); A.click(); vibe(8); }
+        return;
+      }
+      if (V.tool === "del") { demolish(c); return; }
+      if (V.tool === "tapis") return; // géré par le tracé
+      if (e) { if (e.k !== "res") { setTool("voir"); select(c); } return; }
+      if (V.tool === "port" || V.tool === "split" || V.tool === "cross") {
+        const why = E.fabWhy(V.tool, c.x, c.y);
+        if (why) { toast(WHY[why] || WHY.kind); A.err && A.err(); return; }
+        remember();
+        E.fabPlace(V.tool, c.x, c.y);
+        A.place ? A.place() : A.click();
+        vibe(10);
+        return;
+      }
+      if (V.tool === "mach") {
+        const types = freeTypes();
+        if (!types.length) { toast(E.MACHINES.some((m) => E.count(m) > 0) ? WHY.nomach : "Il te faut d’abord une machine : un Automate de bois, par exemple."); return; }
+        const put = (m) => {
+          const why = E.fabWhy("mach", c.x, c.y, { m });
+          if (why) { toast(WHY[why] || WHY.kind); return; }
+          remember();
+          const r = E.fabPlace("mach", c.x, c.y, { m, d: guessDir(c.x, c.y) });
+          A.place ? A.place() : A.craft("usiner");
+          vibe(15);
+          setTool("voir");
+          select(c);
+          if (V.preset && E.automatable(V.preset)) { E.fabSet(r.e.id, { r: V.preset }); sheet(); } else pickRecipe(r.e.id);
+          V.preset = null;
+        };
+        const m = V.mtype && types.includes(V.mtype) ? V.mtype : types.length === 1 ? types[0] : null;
+        if (m) put(m);
+        else pickType(types, put);
+      }
+    }
+    function demolish(c) {
+      const e = E.fabCell(c.x, c.y);
+      if (!e || e.k === "res") return false;
+      remember();
+      E.fabRemove(c.x, c.y);
+      if (V.sel && V.sel.x === c.x && V.sel.y === c.y) select(null);
+      A.remove ? A.remove() : A.click();
+      vibe(8);
+      return true;
+    }
+
+    /* ------------------------------------------------------------ gestes tactiles */
+    function onDown(ev) {
+      ev.preventDefault();
+      V.cv.setPointerCapture(ev.pointerId);
+      const p = local(ev);
+      V.ptrs.set(ev.pointerId, p);
+      if (V.ptrs.size === 2) {
+        V.draw = null;
+        const [a, b] = [...V.ptrs.values()];
+        V.gest = { pinch: true, d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: V.cam.z, m0: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, cam0: { x: V.cam.x, y: V.cam.y } };
+        return;
+      }
+      if (V.ptrs.size > 2) return;
+      const c = cellAt(p.x, p.y);
+      V.gest = { id: ev.pointerId, p0: p, t0: performance.now(), moved: false, cam0: { x: V.cam.x, y: V.cam.y }, c0: c, done: {} };
+      if (V.tool === "tapis") V.draw = { path: [{ x: c.x, y: c.y, d: null }] };
+      if (V.tool === "del") { if (demolish(c)) V.gest.done[c.x + "," + c.y] = 1; }
+    }
+    function onMove(ev) {
+      if (!V.ptrs.has(ev.pointerId)) return;
+      const p = local(ev);
+      V.ptrs.set(ev.pointerId, p);
+      const g = V.gest;
+      if (!g) return;
+      if (g.pinch) {
+        if (V.ptrs.size < 2) return;
+        const [a, b] = [...V.ptrs.values()];
+        const d = Math.hypot(a.x - b.x, a.y - b.y) || 1, m = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        const z = clampZ(g.z0 * d / g.d0);
+        // le point sous les doigts reste sous les doigts
+        const wx = (g.m0.x - V.w / 2) / g.z0 + g.cam0.x, wy = (g.m0.y - V.h / 2) / g.z0 + g.cam0.y;
+        V.cam.z = z;
+        V.cam.x = wx - (m.x - V.w / 2) / z;
+        V.cam.y = wy - (m.y - V.h / 2) / z;
+        clampCam();
+        return;
+      }
+      if (ev.pointerId !== g.id) return;
+      const dist = Math.hypot(p.x - g.p0.x, p.y - g.p0.y);
+      if (dist > 8) g.moved = true;
+      if (V.tool === "tapis" && V.draw) { extendDraw(cellAt(p.x, p.y)); return; }
+      if (V.tool === "del") {
+        const c = cellAt(p.x, p.y), k = c.x + "," + c.y;
+        if (!g.done[k] && demolish(c)) g.done[k] = 1;
+        return;
+      }
+      if (g.moved) {
+        V.cam.x = g.cam0.x - (p.x - g.p0.x) / V.cam.z;
+        V.cam.y = g.cam0.y - (p.y - g.p0.y) / V.cam.z;
+        clampCam();
+      }
+    }
+    function onUp(ev) {
+      if (!V.ptrs.has(ev.pointerId)) return;
+      const p = local(ev);
+      V.ptrs.delete(ev.pointerId);
+      const g = V.gest;
+      if (!g) return;
+      if (g.pinch) { if (!V.ptrs.size) V.gest = null; return; }
+      if (ev.pointerId !== g.id) return;
+      V.gest = null;
+      if (V.tool === "tapis" && V.draw) { commitDraw(); return; }
+      if (V.tool === "del") return;
+      if (!g.moved && performance.now() - g.t0 < 600) act(cellAt(p.x, p.y));
+    }
+    function onCancel(ev) {
+      V.ptrs.delete(ev.pointerId);
+      if (!V.ptrs.size) { V.gest = null; V.draw = null; }
+    }
+    function onWheel(ev) {
+      ev.preventDefault();
+      const p = local(ev);
+      const wx = (p.x - V.w / 2) / V.cam.z + V.cam.x, wy = (p.y - V.h / 2) / V.cam.z + V.cam.y;
+      V.cam.z = clampZ(V.cam.z * (ev.deltaY < 0 ? 1.12 : 1 / 1.12));
+      V.cam.x = wx - (p.x - V.w / 2) / V.cam.z;
+      V.cam.y = wy - (p.y - V.h / 2) / V.cam.z;
+      clampCam();
+    }
+    function clampCam() {
+      const R = E.fabR() + 2;
+      V.cam.x = Math.max(-R, Math.min(R, V.cam.x));
+      V.cam.y = Math.max(-R, Math.min(R, V.cam.y));
+    }
+    function zoom(f) { V.cam.z = clampZ(V.cam.z * f); }
+
+    /* tracé d’un tapis : chaque case prend la direction du pas suivant */
+    function extendDraw(c) {
+      const path = V.draw.path;
+      let last = path[path.length - 1];
+      if (c.x === last.x && c.y === last.y) return;
+      // retour en arrière : on efface la fin du tracé
+      const back = path.findIndex((q) => q.x === c.x && q.y === c.y);
+      if (back >= 0) { path.length = back + 1; path[back].d = null; return; }
+      let guard = 0;
+      while ((last.x !== c.x || last.y !== c.y) && guard++ < 60) {
+        const dx = c.x - last.x, dy = c.y - last.y;
+        const d = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3);
+        last.d = d;
+        const n = { x: last.x + DX[d], y: last.y + DY[d], d: null };
+        if (path.some((q) => q.x === n.x && q.y === n.y)) break;
+        path.push(n);
+        last = n;
+        if (A.tick) A.tick();
+      }
+    }
+    function commitDraw() {
+      const path = V.draw.path;
+      V.draw = null;
+      if (path.length === 1) {
+        const c = path[0], e = E.fabCell(c.x, c.y);
+        if (e && e.k === "belt") { remember(); E.fabRotate(c.x, c.y); A.click(); return; }
+        if (e) { if (e.k !== "res") { setTool("voir"); select(c); } return; }
+        const why = E.fabWhy("belt", c.x, c.y);
+        if (why) { toast(WHY[why] || WHY.kind); return; }
+        remember();
+        E.fabDraw([{ x: c.x, y: c.y, d: 0 }]);
+        A.click();
+        return;
+      }
+      const lastD = path[path.length - 2].d;
+      path[path.length - 1].d = lastD;
+      const cells = path.filter((q) => { const e = E.fabCell(q.x, q.y); return !e || e.k === "belt"; });
+      if (!cells.length) return;
+      remember();
+      const n = E.fabDraw(cells);
+      if (n) { A.place ? A.place() : A.click(); vibe(10); faceBelts(cells); } else { V.undo.pop(); updUndo(); }
+    }
+
+    /* une machine dont la sortie ne mène nulle part se tourne vers le tapis qu’on
+     * vient de tracer contre elle */
+    function faceBelts(cells) {
+      for (const q of cells) for (let d = 0; d < 4; d++) {
+        const mx = q.x - DX[d], my = q.y - DY[d], m = E.fabCell(mx, my);
+        if (!m || m.k !== "mach" || m.d === d || q.d === (d + 2) % 4) continue;
+        if (E.fabCell(mx + DX[m.d], my + DY[m.d])) continue;
+        E.fabSet(m.id, { d });
+      }
+    }
+
+    /* ------------------------------------------------------------ boutons */
+    function onClick(ev) {
+      const t = ev.target;
+      let b;
+      if ((b = t.closest("[data-tool]"))) {
+        const tool = b.dataset.tool;
+        if (tool === "mach") { const ty = freeTypes(); if (ty.length > 1 && !V.mtype) V.mtype = null; }
+        setTool(V.tool === tool && tool !== "voir" ? "voir" : tool);
+        A.click();
+        return;
+      }
+      if ((b = t.closest("[data-mt]"))) { V.mtype = b.dataset.mt; setTool("mach"); A.click(); refresh(); return; }
+      if (!(b = t.closest("[data-u]"))) return;
+      const u = b.dataset.u, sel = V.sel, e = sel && E.fabCell(sel.x, sel.y);
+      if (u === "zin") zoom(1.25);
+      else if (u === "zout") zoom(0.8);
+      else if (u === "center") { V.cam.x = 0; V.cam.y = 0; }
+      else if (u === "undo") undo();
+      else if (u === "help") help();
+      else if (u === "close") select(null);
+      else if (u === "rot" && e) { remember(); E.fabRotate(sel.x, sel.y); A.click(); }
+      else if (u === "rm" && e) { demolish(sel); }
+      else if (u === "on" && e) { E.fabSet(e.id, { on: !e.on }); A.click(); }
+      else if (u === "n" && e) {
+        const before = e.n;
+        E.fabSet(e.id, { n: e.n + Number(b.dataset.v) });
+        if (e.n === before && Number(b.dataset.v) > 0) toast("Plus de machine libre de ce type.");
+        A.click();
+      } else if (u === "recipe" && e) pickRecipe(e.id);
+      else if (u === "filter" && e) pickFilter(sel);
+      else if (u === "goto") goto(b.dataset.id);
+      sheet();
+    }
+    function onChange(ev) {
+      const t = ev.target, sel = V.sel, e = sel && E.fabCell(sel.x, sel.y);
+      if (!e || e.k !== "mach") return;
+      if (t.dataset.u === "type") E.fabSet(e.id, { m: t.value });
+      if (t.dataset.u === "cap") E.fabSet(e.id, { cap: Number(t.value) });
+      A.click();
+      sheet();
+    }
+
+    /* ------------------------------------------------------------ fenêtres */
+    function pickType(types, cb) {
+      openModal({
+        html: "<h2>Quelle machine ?</h2>" + '<div class="picklist">' + types.map((m) => '<button class="pick" data-m="pick" data-id="' + m + '">' + icon(m, "sm") +
+          '<span class="grow">' + esc(I[m].n) + '</span><span class="tiny muted">' + I[m].spd + "/min</span></button>").join("") + "</div>" +
+          '<div class="acts"><button class="btn" data-m="close">Annuler</button></div>',
+        on: { pick: (b) => { V.mtype = b.dataset.id; cb(b.dataset.id); } }
+      });
+    }
+    function listPicker(title, sub, ids, extra, cb) {
+      openModal({
+        html: "<h2>" + esc(title) + "</h2>" + (sub ? '<p class="small muted">' + sub + "</p>" : "") +
+          '<div class="search"><input id="upq" type="search" placeholder="Chercher…" autocomplete="off"></div>' +
+          '<div class="picklist">' + (extra || "") + ids.map((id) => '<button class="pick" data-m="pick" data-id="' + id + '" data-n="' + esc(norm(I[id].n)) + '">' + icon(id, "sm") +
+            '<span class="grow">' + esc(I[id].n) + '</span><span class="tiny muted">' + esc(D.AGES[I[id].a].n.replace("Âge ", "")) + "</span></button>").join("") + "</div>" +
+          '<div class="acts"><button class="btn" data-m="close">Annuler</button></div>',
+        onOpen: (box) => {
+          const inp = box.querySelector("#upq");
+          inp.addEventListener("input", () => {
+            const q = norm(inp.value);
+            box.querySelectorAll(".pick[data-n]").forEach((b) => b.classList.toggle("hidden", !!q && !b.dataset.n.includes(q)));
+          });
+        },
+        on: { pick: (b) => cb(b.dataset.id || null) }
+      });
+    }
+    function pickRecipe(mid) {
+      const ids = Object.keys(S().known).filter(E.automatable).sort((a, b) => I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
+      listPicker("Que doit-elle fabriquer ?", "Les recettes que tu connais et qui se répètent.", ids, "", (id) => {
+        remember();
+        E.fabSet(mid, { r: id });
+        A.craft ? A.craft("usiner") : A.click();
+        sheet();
+      });
+    }
+    function pickFilter(c) {
+      const ids = Object.keys(S().seen).filter((id) => I[id] && !E.isUnique(I[id]) && !E.isScaled(I[id])).sort((a, b) => I[a].a - I[b].a || I[a].n.localeCompare(I[b].n));
+      listPicker("Que doit-elle envoyer ?", "Par défaut, une sortie envoie tout ce que les machines lui réclament.", ids,
+        '<button class="pick" data-m="pick" data-id=""><span class="ic sm">✳️</span><span class="grow">Tout ce qu’on lui demande</span></button>', (id) => {
+          remember();
+          E.fabSetPort(c.x, c.y, id);
+          A.click();
+          sheet();
+        });
+    }
+    function help() {
+      openModal({
+        html: '<div class="kicker">L’Usine</div><h2>Comment ça marche</h2><div class="lore usine-help">' +
+          "<p>Au centre, la <b>Réserve</b> : c’est ton stock.</p>" +
+          "<p>Une <b>sortie</b> se pose contre la Réserve. Elle envoie sur le tapis ce que les machines lui réclament, rien de plus.</p>" +
+          "<p>Une <b>machine</b> se sert sur les tapis qui la touchent, ou qui entrent dedans. Elle pose ce qu’elle fabrique sur la case que montre sa flèche.</p>" +
+          "<p>Ce qui arrive au bout d’un tapis qui entre dans la Réserve rejoint le stock. Une machine peut aussi poser sa production sur le tapis d’une autre, qui s’en servira au passage.</p>" +
+          "<p>Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>" +
+          "<p>Pour tracer un tapis, garde le doigt appuyé et glisse. Deux doigts pour te déplacer et zoomer, quel que soit l’outil. ↶ annule la dernière modification.</p>" +
+          "<p>Tout tourne aussi quand le jeu est fermé.</p></div>" +
+          '<div class="acts"><button class="btn pri" data-m="close">Compris</button></div>'
+      });
+    }
+
+    /* ------------------------------------------------------------ panneau d’une case */
+    function select(c) {
+      V.sel = c;
+      sheet();
+      // garder la case visible au-dessus du panneau
+      const box = c && V.el && V.el.querySelector("#uSheet");
+      if (box && !box.classList.contains("hidden")) {
+        const limit = V.h - box.offsetHeight - 12 - V.cam.z * 0.6;
+        const y = E.isRes(c.x, c.y) ? 0 : c.y;
+        if (sy(y) > limit) V.cam.y += (sy(y) - limit) / V.cam.z;
+      }
+    }
+    const STATUS = {
+      ok: "En marche", wait: "Démarrage…", off: "En pause", norec: "Aucune recette choisie", idle: "Aucune machine",
+      starved: "Il lui manque des matières", noout: "Sa production ne va nulle part", jam: "Encombrée", cap: "Stock visé atteint", blocked: "Il manque une station"
+    };
+    const LEVEL = { ok: "good", wait: "good", off: "dim", norec: "warn", idle: "warn", starved: "warn", cap: "dim", noout: "bad", jam: "bad", blocked: "bad" };
+    function machStatus(e) {
+      const info = E.machInfo(e.id);
+      const it = I[e.r];
+      let s = STATUS[info.s] || "", more = "";
+      if ((info.s === "ok" || info.s === "wait") && it) s += " · " + fmtNum(E.machRate(e) * 60 * it.r[2]) + " " + esc(it.n.toLowerCase()) + "/min";
+      if (info.s === "starved" && info.miss) {
+        more = Object.keys(info.miss).map((k) => '<span class="link-txt" data-u="goto" data-id="' + k + '">' + esc(I[k].n) + "</span> " +
+          (info.miss[k] === "link" ? "(aucun tapis n’en apporte)" : "(le stock est vide)")).join(", ");
+      }
+      if (info.s === "noout") more = "La flèche montre où elle pose ce qu’elle fabrique. Mets là un tapis qui rejoint la Réserve, ou une autre machine.";
+      if (info.s === "jam") more = "Les machines suivantes ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve.";
+      if (info.s === "cap") s += " (" + fmt(e.cap) + ")";
+      if (info.s === "blocked" && info.b) s = info.b.why === "heat" ? "Il faut " + fmtHeat(info.b.heat) + " pour cette recette" : "Il te manque la station pour ce geste";
+      return { s, more, lvl: LEVEL[info.s] || "dim" };
+    }
+    function sheet() {
+      const box = V.el && V.el.querySelector("#uSheet");
+      if (!box) return;
+      const c = V.sel, e = c && E.fabCell(c.x, c.y);
+      if (!e) { box.classList.add("hidden"); box.innerHTML = ""; V.sel = null; return; }
+      box.classList.remove("hidden");
+      let h = '<button class="u-x" data-u="close" aria-label="Fermer">✕</button>';
+      if (e.k === "res") {
+        const f = E.flows();
+        const ins = Object.keys(f.prod).filter((k) => f.prod[k] - (f.cons[k] || 0) > 1e-4).sort((a, b) => f.prod[b] - f.prod[a]).slice(0, 8);
+        h += "<b>La Réserve</b><p class=\"small muted\">Ton stock. Les sorties posées contre elle l’envoient aux machines, et les tapis qui y entrent le remplissent.</p>" +
+          (ins.length ? '<div class="u-ins">' + ins.map((k) => '<span class="u-in">' + icon(k, "sm") + "<i>+" + fmtNum((f.prod[k] - (f.cons[k] || 0)) * 60) + "/min</i></span>").join("") + "</div>" : "");
+      } else if (e.k === "mach") {
+        const it = I[e.r], ms = E.machines(), st = machStatus(e);
+        const types = E.MACHINES.filter((m) => ms[m].own > 0 || m === e.m);
+        h += '<div class="u-head">' + icon(e.m) + '<div class="grow"><b>' + esc(I[e.m].n) + "</b>" + (e.n > 1 ? " ×" + e.n : "") +
+          '<div class="u-st ' + st.lvl + '">' + st.s + "</div></div></div>" +
+          (st.more ? '<p class="small u-more">' + st.more + "</p>" : "") +
+          '<button class="u-recipe" data-u="recipe">' + (it ? icon(e.r) + '<span class="grow">' + esc(it.n) + "</span>" : '<span class="grow">Choisir une recette</span>') + "<span>▾</span></button>";
+        if (it) {
+          const ing = it.r[1], g = E.fabGraph(), sup = g.sup[e.id] || [];
+          h += '<div class="u-ins">' + Object.keys(ing).map((k) => {
+            const ok = sup.some((p) => { const P = g.prods[p]; return P.e.k === "port" ? !P.e.f || P.e.f === k : P.e.r === k; });
+            return '<span class="u-in ' + (ok ? "" : "no") + '" data-u="goto" data-id="' + k + '">' + icon(k, "sm") + "<i>" + fmt(ing[k]) + "</i></span>";
+          }).join("") + '<span class="u-arrow">→</span><span class="u-in">' + icon(e.r, "sm") + "<i>" + fmt(it.r[2]) + "</i></span></div>";
+        }
+        h += '<div class="u-row"><span class="tiny muted">Machines</span><button class="mini" data-u="n" data-v="-1">−</button><b>' + e.n + '</b><button class="mini" data-u="n" data-v="1">+</button>' +
+          (types.length > 1 ? '<select data-u="type" aria-label="Type de machine">' + types.map((m) => '<option value="' + m + '"' + (m === e.m ? " selected" : "") + ">" + esc(I[m].n) + " (" + (ms[m].own - ms[m].used + (m === e.m ? e.n : 0)) + ")</option>").join("") + "</select>" : "") +
+          '<span class="tiny muted">Stock visé</span><select data-u="cap" aria-label="Stock visé">' + CAPS.map((v) => '<option value="' + v + '"' + (v === e.cap ? " selected" : "") + ">" + (v ? fmt(v) : "∞") + "</option>").join("") +
+          (CAPS.includes(e.cap) ? "" : '<option value="' + e.cap + '" selected>' + fmt(e.cap) + "</option>") + "</select></div>" +
+          '<div class="u-row acts"><button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + '</button><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+      } else if (e.k === "port") {
+        const g = E.fabGraph(), P = g.prods["P" + c.x + "," + c.y];
+        const n = P ? Object.keys(P.t.cons).length : 0;
+        h += '<div class="u-head"><span class="ic">📤</span><div class="grow"><b>Sortie</b><div class="u-st ' + (n ? "good" : "warn") + '">' +
+          (n ? "Alimente " + n + " machine" + (n > 1 ? "s" : "") : "Son tapis ne touche aucune machine") + "</div></div></div>" +
+          '<button class="u-recipe" data-u="filter">' + (e.f && I[e.f] ? icon(e.f) + '<span class="grow">N’envoie que : ' + esc(I[e.f].n) + "</span>" : '<span class="grow">Envoie tout ce qu’on lui demande</span>') + "<span>▾</span></button>" +
+          '<div class="u-row acts"><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+      } else {
+        const name = { belt: "Tapis", split: "Répartiteur", cross: "Croisement" }[e.k];
+        const txt = { belt: "Fait avancer ce qu’on pose dessus. Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
+        h += "<b>" + name + '</b><p class="small muted">' + txt + '</p><div class="u-row acts">' + (e.d !== undefined ? '<button class="btn small" data-u="rot">🔄 Tourner</button>' : "") + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+      }
+      box.innerHTML = h;
+    }
+
+    /* ------------------------------------------------------------ bandeau et conseils */
+    function hint() {
+      const st = S(), ents = Object.values(st.fab.c), ms = E.machines();
+      const own = E.MACHINES.reduce((a, m) => a + ms[m].own, 0);
+      const machs = ents.filter((e) => e.k === "mach");
+      if (!own && !machs.length) return 'Il te faut une machine. Fabrique un <span class="link-txt" data-u="goto" data-id="automate_bois">Automate de bois</span>.';
+      if (!machs.length) return "Prends l’outil ⚙️ <b>Machine</b> et touche une case pour poser ton automate.";
+      if (machs.some((e) => !e.r)) return "Touche ta machine et choisis ce qu’elle doit fabriquer.";
+      if (!ents.some((e) => e.k === "port")) return "Pose une 📤 <b>sortie</b> contre la Réserve. Elle enverra aux machines ce qu’elles réclament.";
+      if (machs.some((e) => { const i = E.machInfo(e.id); return i.s === "starved" && i.miss && Object.values(i.miss).includes("link"); })) {
+        return "Avec l’outil ➜ <b>Tapis</b>, glisse le doigt depuis la sortie jusqu’à ta machine. Elle se servira au passage.";
+      }
+      if (machs.some((e) => E.machInfo(e.id).s === "noout")) return "Ta machine pose sa production devant elle (la petite flèche). Trace un tapis de là jusqu’à la Réserve.";
+      if (!st.flags.lineDone) return "Ça tourne. La première pièce ne va pas tarder.";
+      return null;
+    }
+    function refresh() {
+      if (!V.el) return;
+      const ms = E.machines();
+      const free = V.el.querySelector("#uFree");
+      const owned = E.MACHINES.filter((m) => ms[m].own > 0);
+      if (free) {
+        const html = owned.length ? '<span class="tiny muted">Libres</span>' + owned.map((m) => '<button class="u-chip' + (V.tool === "mach" && V.mtype === m ? " on" : "") + '" data-mt="' + m + '" title="' + esc(I[m].n) + '">' + icon(m, "sm") + "<b>" + (ms[m].own - ms[m].used) + "</b></button>").join("") +
+          (E.cache().aspd > 1 ? '<span class="tiny muted">vitesse ×' + String(Math.round(E.cache().aspd * 100) / 100).replace(".", ",") + "</span>" : "")
+          : '<span class="tiny muted">Aucune machine pour l’instant</span>';
+        if (free.dataset.h !== html) { free.innerHTML = html; free.dataset.h = html; }
+      }
+      const hb = V.el.querySelector("#uHint");
+      const h = hint();
+      if (hb) { hb.classList.toggle("hidden", !h); if (h && hb.dataset.h !== h) { hb.innerHTML = "💡 " + h; hb.dataset.h = h; } }
+      sheetLive();
+    }
+    /* met à jour l’état de la machine choisie sans reconstruire le panneau */
+    function sheetLive() {
+      const box = V.el && V.el.querySelector("#uSheet");
+      const e = V.sel && E.fabCell(V.sel.x, V.sel.y);
+      if (!box || !e || e.k !== "mach") return;
+      const st = machStatus(e), el = box.querySelector(".u-st");
+      if (!el) return;
+      if (el.innerHTML !== st.s) { el.innerHTML = st.s; el.className = "u-st " + st.lvl; }
+      let more = box.querySelector(".u-more");
+      if (st.more && !more) { more = document.createElement("p"); more.className = "small u-more"; box.querySelector(".u-head").after(more); }
+      if (more) { if (!st.more) more.remove(); else if (more.innerHTML !== st.more) more.innerHTML = st.more; }
+    }
+
+    /* ------------------------------------------------------------ animation */
+    function pathFor(key) {
+      if (V.paths[key] !== undefined) return V.paths[key];
+      const [from, to] = key.split(">");
+      const g = E.fabGraph(), P = g.prods[from];
+      let pts = null;
+      if (P) {
+        const at = to === "res" ? (P.t.res ? P.t.res.at : null) : P.t.cons[to];
+        if (at !== null && at !== undefined) {
+          pts = [{ x: P.x, y: P.y }];
+          const chain = [];
+          for (let i = at; i >= 0; i = P.t.nodes[i].p) chain.push(P.t.nodes[i]);
+          chain.reverse().forEach((n) => pts.push({ x: n.x, y: n.y }));
+          const last = pts[pts.length - 1];
+          if (to === "res") {
+            for (let d = 0; d < 4; d++) {
+              const nx = last.x + DX[d], ny = last.y + DY[d];
+              if (E.isRes(nx, ny)) { pts.push({ x: last.x + DX[d] * 0.75, y: last.y + DY[d] * 0.75 }); break; }
+            }
+          } else if (g.pos[to]) pts.push({ x: g.pos[to].x, y: g.pos[to].y, end: to });
+          if (P.e.k === "mach") pts[0] = { x: P.x + DX[P.e.d] * 0.4, y: P.y + DY[P.e.d] * 0.4 };
+          else pts[0] = { x: P.x + DX[P.e.d] * 0.3, y: P.y + DY[P.e.d] * 0.3 };
+        }
+      }
+      V.paths[key] = pts;
+      return pts;
+    }
+    function feed() {
+      const fl = E.fabDrain();
+      for (const f of fl) {
+        const key = f.from + ">" + f.to + ">" + f.i;
+        let unit = 1;
+        if (f.to === "res") { const it = I[f.i]; unit = it && it.r ? it.r[2] : 1; }
+        else { const m = E.machById(f.to), it = m && I[m.r]; unit = it && it.r[1][f.i] ? it.r[1][f.i] : 1; }
+        V.credit[key] = Math.min(4, (V.credit[key] || 0) + f.q / unit);
+        if (f.to === "res") V.pulse.res = V.t;
+      }
+    }
+    function spawn(speed) {
+      for (const key in V.credit) {
+        if (V.credit[key] < 1) continue;
+        if (V.t - (V.lastSpawn[key] || -9) < 0.3) continue;
+        const pts = pathFor(key);
+        if (!pts || pts.length < 2) { delete V.credit[key]; continue; }
+        V.credit[key] -= 1;
+        V.lastSpawn[key] = V.t;
+        let len = 0;
+        const seg = [];
+        for (let i = 1; i < pts.length; i++) { const l = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); seg.push(l); len += l; }
+        if (V.packets.length < 400) V.packets.push({ pts, seg, len, s: 0, i: key.split(">")[2], v: speed });
+      }
+    }
+    function frame(now) {
+      if (!V.cv) return;
+      V.raf = requestAnimationFrame(frame);
+      const dt = Math.min(0.1, (now - V.last) / 1000);
+      V.last = now;
+      if (document.hidden) return;
+      V.t += dt;
+      if (V.t - (V.lastRef || 0) > 0.5) { V.lastRef = V.t; refresh(); }
+      const speed = 1.6 * Math.min(4, Math.sqrt(E.cache().aspd || 1));
+      feed();
+      spawn(speed);
+      for (const p of V.packets) p.s += p.v * dt;
+      V.packets = V.packets.filter((p) => {
+        if (p.s < p.len) return true;
+        const end = p.pts[p.pts.length - 1].end;
+        if (end) V.pulse[end] = V.t;
+        return false;
+      });
+      draw();
+    }
+
+    /* ------------------------------------------------------------ dessin */
+    function draw() {
+      const c = V.ctx, z = V.cam.z;
+      c.setTransform(V.dpr, 0, 0, V.dpr, 0, 0);
+      c.clearRect(0, 0, V.w, V.h);
+      const R = E.fabR();
+      const x0 = Math.max(-R, Math.floor(V.cam.x - V.w / 2 / z) - 1), x1 = Math.min(R, Math.ceil(V.cam.x + V.w / 2 / z) + 1);
+      const y0 = Math.max(-R, Math.floor(V.cam.y - V.h / 2 / z) - 1), y1 = Math.min(R, Math.ceil(V.cam.y + V.h / 2 / z) + 1);
+      // le sol
+      c.fillStyle = "#0b0907";
+      c.fillRect(0, 0, V.w, V.h);
+      const gx = sx(-R - 0.5), gy = sy(-R - 0.5), gw = (2 * R + 1) * z;
+      const grd = c.createRadialGradient(sx(0), sy(0), z, sx(0), sy(0), gw * 0.75);
+      grd.addColorStop(0, "#2a221a");
+      grd.addColorStop(1, "#18130f");
+      c.fillStyle = grd;
+      c.fillRect(gx, gy, gw, gw);
+      c.strokeStyle = "rgba(255,235,205,0.045)";
+      c.lineWidth = 1;
+      c.beginPath();
+      for (let x = x0; x <= x1 + 1; x++) { const X = Math.round(sx(x - 0.5)) + 0.5; c.moveTo(X, sy(y0 - 0.5)); c.lineTo(X, sy(y1 + 0.5)); }
+      for (let y = y0; y <= y1 + 1; y++) { const Y = Math.round(sy(y - 0.5)) + 0.5; c.moveTo(sx(x0 - 0.5), Y); c.lineTo(sx(x1 + 0.5), Y); }
+      c.stroke();
+      // petits cailloux et touffes, toujours au même endroit
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        const h = hash(x, y);
+        if (h % 7 !== 0 || E.fabCell(x, y)) continue;
+        c.fillStyle = h % 2 ? "rgba(120,100,70,0.22)" : "rgba(90,120,70,0.18)";
+        c.beginPath();
+        c.arc(sx(x) + ((h >> 3) % 9 - 4) * z / 22, sy(y) + ((h >> 7) % 9 - 4) * z / 22, z * (0.04 + (h % 3) * 0.015), 0, 6.3);
+        c.fill();
+      }
+      c.strokeStyle = "rgba(255,220,170,0.18)";
+      c.setLineDash([6, 6]);
+      c.strokeRect(gx, gy, gw, gw);
+      c.setLineDash([]);
+
+      // emplacements possibles pour une sortie
+      if (V.tool === "port") {
+        c.strokeStyle = "rgba(255,210,120,0.75)";
+        c.setLineDash([4, 4]);
+        for (let i = -1; i <= 1; i++) for (const [x, y] of [[2, i], [-2, i], [i, 2], [i, -2]]) if (!E.fabCell(x, y)) c.strokeRect(sx(x) - z * 0.42, sy(y) - z * 0.42, z * 0.84, z * 0.84);
+        c.setLineDash([]);
+      }
+
+      const cells = S().fab.c;
+      const vis = [];
+      for (const k in cells) {
+        const i = k.indexOf(","), x = +k.slice(0, i), y = +k.slice(i + 1);
+        if (x < x0 || x > x1 || y < y0 || y > y1) continue;
+        vis.push([x, y, cells[k]]);
+      }
+      // tapis d’abord, puis le reste par-dessus
+      for (const [x, y, e] of vis) if (e.k === "belt" || e.k === "cross") drawBelt(x, y, e);
+      drawReserve();
+      for (const [x, y, e] of vis) {
+        if (e.k === "split") drawSplit(x, y);
+        else if (e.k === "port") drawPort(x, y, e);
+      }
+      if (V.draw) drawPreview();
+      for (const p of V.packets) drawPacket(p);
+      for (const [x, y, e] of vis) if (e.k === "mach") drawMach(x, y, e);
+      if (V.sel) {
+        const a = 0.5 + 0.5 * Math.sin(V.t * 5);
+        c.strokeStyle = "rgba(255,225,150," + (0.55 + 0.4 * a) + ")";
+        c.lineWidth = 2.5;
+        const big = E.isRes(V.sel.x, V.sel.y);
+        if (big) roundRect(c, sx(-1.5) - 3, sy(-1.5) - 3, 3 * z + 6, 3 * z + 6, z * 0.2);
+        else roundRect(c, sx(V.sel.x) - z / 2 + 1, sy(V.sel.y) - z / 2 + 1, z - 2, z - 2, z * 0.16);
+        c.stroke();
+      }
+    }
+    function hash(x, y) { let h = (x * 374761393 + y * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return (h ^ (h >>> 16)) >>> 0; }
+    function roundRect(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r);
+      c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r);
+      c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y);
+      c.closePath();
+    }
+    /* d’où arrive-t-on dans une case ? (côtés d’entrée, pour dessiner les virages) */
+    function inputs(x, y) {
+      const out = [];
+      for (let s = 0; s < 4; s++) {
+        const n = E.fabCell(x + DX[s], y + DY[s]);
+        if (!n) continue;
+        const back = (s + 2) % 4;
+        if ((n.k === "belt" || n.k === "port" || n.k === "mach") && n.d === back) out.push(s);
+        else if (n.k === "split" || n.k === "cross") out.push(s);
+      }
+      return out;
+    }
+    function band(x1, y1, x2, y2, z) {
+      const c = V.ctx;
+      c.strokeStyle = "#7a6650";
+      c.lineWidth = z * 0.66;
+      c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+      c.strokeStyle = "#433a31";
+      c.lineWidth = z * 0.52;
+      c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+    }
+    function chevrons(x1, y1, x2, y2, z, off) {
+      const c = V.ctx, L = Math.hypot(x2 - x1, y2 - y1);
+      if (L < 1) return;
+      const ux = (x2 - x1) / L, uy = (y2 - y1) / L, step = z * 0.25, w = z * 0.13;
+      c.strokeStyle = "rgba(255,210,140,0.5)";
+      c.lineWidth = Math.max(1, z * 0.05);
+      c.beginPath();
+      for (let s = (off * step) % step; s < L; s += step) {
+        const px = x1 + ux * s, py = y1 + uy * s;
+        c.moveTo(px - ux * w - uy * w, py - uy * w + ux * w);
+        c.lineTo(px, py);
+        c.lineTo(px - ux * w + uy * w, py - uy * w - ux * w);
+      }
+      c.stroke();
+    }
+    function drawBelt(x, y, e) {
+      const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y), h = z / 2;
+      c.lineCap = "butt";
+      const off = (V.t * 1.6 * Math.min(4, Math.sqrt(E.cache().aspd || 1))) / 0.25;
+      if (e.k === "cross") {
+        band(X - h, Y, X + h, Y, z);
+        c.fillStyle = "rgba(0,0,0,0.35)";
+        c.fillRect(X - z * 0.36, Y - h, z * 0.72, z);
+        band(X, Y - h, X, Y + h, z);
+        c.strokeStyle = "#7a6650";
+        c.lineWidth = 1.5;
+        c.strokeRect(X - z * 0.33, Y - h + 1, z * 0.66, z - 2);
+        return;
+      }
+      const ins = inputs(x, y).filter((s) => s !== e.d);
+      const ox = X + DX[e.d] * h, oy = Y + DY[e.d] * h;
+      if (!ins.length) ins.push((e.d + 2) % 4);
+      for (const s of ins) band(X + DX[s] * h, Y + DY[s] * h, X, Y, z);
+      band(X, Y, ox, oy, z);
+      c.fillStyle = "#433a31";
+      c.beginPath(); c.arc(X, Y, z * 0.26, 0, 6.3); c.fill();
+      for (const s of ins) chevrons(X + DX[s] * h, Y + DY[s] * h, X, Y, z, off);
+      chevrons(X, Y, ox, oy, z, off);
+    }
+    function drawReserve() {
+      const c = V.ctx, z = V.cam.z, x = sx(-1.5), y = sy(-1.5), w = 3 * z;
+      const pulse = Math.max(0, 1 - (V.t - (V.pulse.res || -9)) * 3);
+      c.fillStyle = "#3a2c1f";
+      roundRect(c, x + 2, y + 2, w - 4, w - 4, z * 0.18); c.fill();
+      c.lineWidth = 2 + pulse * 3;
+      c.strokeStyle = "rgba(230,175,105," + (0.6 + 0.4 * pulse) + ")";
+      c.stroke();
+      // caisses
+      for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+        if (i === 1 && j === 1) continue;
+        const bx = x + (i + 0.18) * z, by = y + (j + 0.18) * z, bw = z * 0.64;
+        c.fillStyle = ["#6b4a2c", "#7a5533", "#5e4127"][(i + j * 2) % 3];
+        c.fillRect(bx, by, bw, bw);
+        c.strokeStyle = "rgba(0,0,0,0.35)";
+        c.lineWidth = 1;
+        c.beginPath(); c.moveTo(bx, by); c.lineTo(bx + bw, by + bw); c.moveTo(bx + bw, by); c.lineTo(bx, by + bw); c.stroke();
+        c.strokeRect(bx + 0.5, by + 0.5, bw - 1, bw - 1);
+      }
+      c.font = Math.round(z * 0.62) + "px serif";
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.fillText("🏛️", sx(0), sy(0) + z * 0.04);
+      if (z > 26) {
+        c.font = "600 " + Math.max(9, Math.round(z * 0.22)) + "px system-ui, sans-serif";
+        c.fillStyle = "#f3dcb8";
+        c.fillText("RÉSERVE", sx(0), sy(0) + z * 0.48);
+      }
+    }
+    function arrow(X, Y, d, size, color) {
+      const c = V.ctx, ux = DX[d], uy = DY[d];
+      c.fillStyle = color;
+      c.beginPath();
+      c.moveTo(X + ux * size, Y + uy * size);
+      c.lineTo(X - ux * size * 0.6 - uy * size * 0.8, Y - uy * size * 0.6 + ux * size * 0.8);
+      c.lineTo(X - ux * size * 0.6 + uy * size * 0.8, Y - uy * size * 0.6 - ux * size * 0.8);
+      c.closePath();
+      c.fill();
+    }
+    function drawPort(x, y, e) {
+      const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y);
+      c.fillStyle = "#4b3522";
+      roundRect(c, X - z * 0.42, Y - z * 0.42, z * 0.84, z * 0.84, z * 0.14); c.fill();
+      c.strokeStyle = "#e0a65a"; c.lineWidth = 2; c.stroke();
+      c.fillStyle = "#1c140d";
+      c.fillRect(X - z * 0.26, Y - z * 0.26, z * 0.52, z * 0.52);
+      arrow(X + DX[e.d] * z * 0.12, Y + DY[e.d] * z * 0.12, e.d, z * 0.2, "#ffc77a");
+      if (e.f && I[e.f]) drawIcon(e.f, X + z * 0.28, Y - z * 0.28, z * 0.32, true);
+    }
+    function drawSplit(x, y) {
+      const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y);
+      for (let d = 0; d < 4; d++) band(X, Y, X + DX[d] * z / 2, Y + DY[d] * z / 2, z * 0.8);
+      c.fillStyle = "#3d3326";
+      c.beginPath(); c.arc(X, Y, z * 0.34, 0, 6.3); c.fill();
+      c.strokeStyle = "#d9a35c"; c.lineWidth = 2; c.stroke();
+      const r = V.t * 2;
+      for (let d = 0; d < 4; d++) arrow(X + Math.cos(r + d * Math.PI / 2) * z * 0.17, Y + Math.sin(r + d * Math.PI / 2) * z * 0.17, d, z * 0.07, "#ffd18a");
+    }
+    function drawMach(x, y, e) {
+      const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y);
+      const info = E.machInfo(e.id), col = MCOL[e.m] || "#777";
+      const work = info.s === "ok" && info.avg > 1e-4;
+      const pulse = Math.max(0, 1 - (V.t - (V.pulse[e.id] || -9)) * 4);
+      const s = z * (0.88 + pulse * 0.05);
+      // ombre
+      c.fillStyle = "rgba(0,0,0,0.35)";
+      roundRect(c, X - s / 2 + z * 0.05, Y - s / 2 + z * 0.07, s, s, z * 0.16); c.fill();
+      const gr = c.createLinearGradient(X, Y - s / 2, X, Y + s / 2);
+      gr.addColorStop(0, shade(col, 0.25));
+      gr.addColorStop(1, shade(col, -0.25));
+      c.fillStyle = gr;
+      roundRect(c, X - s / 2, Y - s / 2, s, s, z * 0.16); c.fill();
+      c.strokeStyle = shade(col, 0.45); c.lineWidth = 1.5; c.stroke();
+      // engrenage
+      const gx = X - s * 0.3, gy = Y - s * 0.3, gr2 = z * 0.12, rot = work ? V.t * 3 : 0;
+      c.fillStyle = shade(col, 0.55);
+      c.beginPath();
+      for (let k = 0; k < 16; k++) {
+        const a = rot + k * Math.PI / 8, r = k % 2 ? gr2 : gr2 * 1.35;
+        c.lineTo(gx + Math.cos(a) * r, gy + Math.sin(a) * r);
+      }
+      c.closePath(); c.fill();
+      c.fillStyle = shade(col, -0.3);
+      c.beginPath(); c.arc(gx, gy, gr2 * 0.45, 0, 6.3); c.fill();
+      // fenêtre et produit
+      c.fillStyle = "rgba(10,8,6,0.55)";
+      roundRect(c, X - z * 0.27, Y - z * 0.2, z * 0.54, z * 0.5, z * 0.08); c.fill();
+      if (e.r && I[e.r]) drawIcon(e.r, X, Y + z * 0.05, z * 0.4, false);
+      else { c.fillStyle = "#ffd36b"; c.font = "700 " + Math.round(z * 0.32) + "px system-ui"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("?", X, Y + z * 0.06); }
+      // flèche de sortie
+      arrow(X + DX[e.d] * z * 0.47, Y + DY[e.d] * z * 0.47, e.d, z * 0.13, "#ffe2ae");
+      // voyant
+      const lv = { ok: "#7fd18b", wait: "#7fd18b", starved: "#ffbf4a", norec: "#ffbf4a", idle: "#ffbf4a", cap: "#8fb3ff", off: "#6f6556", noout: "#ff6a55", jam: "#ff6a55", blocked: "#ff6a55" }[info.s] || "#6f6556";
+      c.fillStyle = lv;
+      c.beginPath(); c.arc(X + s * 0.3, Y - s * 0.3, z * 0.07, 0, 6.3); c.fill();
+      if (lv === "#ff6a55" || lv === "#ffbf4a") {
+        c.strokeStyle = lv; c.globalAlpha = 0.4 + 0.4 * Math.sin(V.t * 6); c.lineWidth = 2;
+        c.beginPath(); c.arc(X + s * 0.3, Y - s * 0.3, z * 0.12, 0, 6.3); c.stroke(); c.globalAlpha = 1;
+      }
+      if (e.n > 1 && z > 24) {
+        c.font = "700 " + Math.round(z * 0.2) + "px system-ui";
+        c.textAlign = "right"; c.textBaseline = "alphabetic";
+        c.fillStyle = "#fff4e0";
+        c.fillText("×" + e.n, X + s * 0.46, Y + s * 0.44);
+      }
+      // progression (machines lentes)
+      const B = S().fab.ms[e.id];
+      if (B && work && E.machRate(e) < 1) {
+        c.fillStyle = "rgba(255,230,180,0.75)";
+        c.fillRect(X - s * 0.4, Y + s * 0.4, s * 0.8 * Math.min(1, B.p % 1), Math.max(2, z * 0.04));
+      }
+    }
+    function shade(hex, f) {
+      const n = parseInt(hex.slice(1), 16);
+      let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      if (f > 0) { r += (255 - r) * f; g += (255 - g) * f; b += (255 - b) * f; } else { r *= 1 + f; g *= 1 + f; b *= 1 + f; }
+      return "rgb(" + (r | 0) + "," + (g | 0) + "," + (b | 0) + ")";
+    }
+    function drawIcon(id, X, Y, size, disc) {
+      const c = V.ctx, it = I[id];
+      if (!it) return;
+      if (disc || it.sym) {
+        c.fillStyle = it.sym ? it.col : "rgba(20,15,10,0.85)";
+        c.beginPath(); c.arc(X, Y, size * 0.55, 0, 6.3); c.fill();
+        c.strokeStyle = "rgba(255,235,200,0.5)"; c.lineWidth = 1; c.stroke();
+      }
+      c.textAlign = "center"; c.textBaseline = "middle";
+      if (it.sym) {
+        c.fillStyle = inkOf(it.col);
+        c.font = "700 " + Math.round(size * (it.sym.length > 1 ? 0.5 : 0.62)) + "px system-ui, sans-serif";
+        c.fillText(it.sym, X, Y + size * 0.03);
+      } else {
+        c.font = Math.round(size * (disc ? 0.72 : 1)) + "px serif";
+        c.fillText(it.ic, X, Y + size * 0.05);
+      }
+    }
+    function inkOf(hex) {
+      const n = parseInt(hex.slice(1), 16);
+      return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255 > 0.6 ? "#1a1208" : "#ffffff";
+    }
+    function drawPacket(p) {
+      let s = p.s, i = 0;
+      while (i < p.seg.length - 1 && s > p.seg[i]) { s -= p.seg[i]; i++; }
+      const a = p.pts[i], b = p.pts[i + 1], f = p.seg[i] ? Math.min(1, s / p.seg[i]) : 1;
+      const x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f;
+      const z = V.cam.z;
+      const fade = b.end && i === p.seg.length - 1 ? 1 - Math.max(0, (f - 0.6) / 0.4) : 1;
+      V.ctx.globalAlpha = fade;
+      drawIcon(p.i, sx(x), sy(y), z * 0.36, true);
+      V.ctx.globalAlpha = 1;
+    }
+    function drawPreview() {
+      const c = V.ctx, z = V.cam.z, path = V.draw.path;
+      c.globalAlpha = 0.75;
+      path.forEach((q, k) => {
+        const e = E.fabCell(q.x, q.y);
+        const d = q.d !== null ? q.d : k > 0 ? path[k - 1].d : null;
+        const blocked = e && e.k !== "belt";
+        c.fillStyle = blocked ? "rgba(255,120,90,0.18)" : "rgba(255,210,140,0.22)";
+        c.fillRect(sx(q.x) - z / 2 + 2, sy(q.y) - z / 2 + 2, z - 4, z - 4);
+        if (d !== null && !blocked) arrow(sx(q.x), sy(q.y), d, z * 0.2, "#ffd18a");
+      });
+      c.globalAlpha = 1;
+    }
+
+    E.on("fab", () => { V.paths = {}; if (V.sel && !E.fabCell(V.sel.x, V.sel.y)) V.sel = null; if (V.el) refresh(); });
+
+    /* depuis le Carnet : poser une machine qui fabriquera `id` */
+    function prepare(id) {
+      V.preset = id;
+      if (!freeTypes().length) { toast("Aucune machine libre. Retire-en une de l’Usine, ou fabriques-en une autre."); setTool("voir"); return; }
+      setTool("mach");
+      toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
+    }
+
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare };
+  }
+
+  window.EclatUsine = { create };
+})();

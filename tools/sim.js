@@ -143,7 +143,15 @@ function currentTargets() {
   if (interim) return { [interim]: E.isUnique(I[interim]) ? 1 : (S().inv[interim] || 0) + 1 };
   const ob = E.objective();
   if (ob && ob.k === "exp") return null; // les explorations sont lancées à chaque tour
-  if (ob && ob.k === "line") { E.addLine("manche"); return null; }
+  if (ob && ob.k === "line") {
+    // une petite usine : sortie → automate → tapis → Réserve
+    if (!E.fabCell(3, 0)) {
+      E.fabPlace("port", 2, 0);
+      E.fabPlace("mach", 3, 0, { m: "automate_bois", r: "manche", d: 3 });
+      E.fabDraw([{ x: 3, y: -1, d: 2 }, { x: 2, y: -1, d: 2 }]);
+    }
+    return { bois: (S().inv.bois || 0) + 3 };
+  }
   if (ob) return { [ob.id]: 1 };
   const ps = E.projState(PROJECT);
   const st = D.PROJECTS[PROJECT].steps[ps.step];
