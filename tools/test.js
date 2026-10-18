@@ -187,8 +187,8 @@ test("sauvegarde : aller-retour et export base64", () => {
 
 
 console.log("Sauvegardes (compatibilité)");
-test("les sauvegardes v1, v2 et v3 se chargent sans rien perdre", () => {
-  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[123]/.test(x))) {
+test("les sauvegardes v1, v2, v3 et v4 se chargent sans rien perdre", () => {
+  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[1234]/.test(x))) {
     const raw = fixture(f);
     const old = JSON.parse(raw);
     const E = mk();
@@ -200,7 +200,7 @@ test("les sauvegardes v1, v2 et v3 se chargent sans rien perdre", () => {
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
     assert.strictEqual(S.age, old.age); assert.strictEqual(S.intu, old.intu);
     assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
-    assert.strictEqual(S.flags.news, "4", "annonce des nouveautés");
+    assert.strictEqual(S.flags.news, "5", "annonce des nouveautés");
     assert.strictEqual(raw, fixture(f), "la chaîne d’origine n’est pas modifiée");
     T += 5000; E.update(); // le jeu tourne
   }
@@ -743,6 +743,24 @@ test("jalons : les objectifs rangés par âge", () => {
   assert.ok(E.milestones()[0][0].done);
   const all = m.reduce((a, l) => a + (l ? l.length : 0), 0);
   assert.strictEqual(all, D.OBJECTIVES.length);
+});
+
+test("v4 → v5 : l’usine, les souvenirs et les Grands Œuvres restent tels quels", () => {
+  const raw = fixture("save-v4-age8-carte.json"), old = JSON.parse(raw);
+  const E = mk();
+  E.load(raw);
+  const S = E.state;
+  assert.deepStrictEqual(S.fab.c, old.fab.c, "chaque case de l’usine");
+  assert.deepStrictEqual(S.hints, old.hints, "les indices déjà obtenus");
+  assert.deepStrictEqual(S.hand, { q: [], p: 0 });
+  assert.deepStrictEqual(S.studied, {});
+  assert.ok(!S.flags.v5proj, "pas de Grand Œuvre commencé");
+  const o = JSON.parse(raw);
+  o.flags.arche = true; o.proj = { dyson: { step: 1, paid: { panneau_dyson: 120 } } };
+  const F = mk();
+  F.load(o);
+  assert.ok(F.state.flags.v5proj, "on prévient le joueur");
+  assert.deepStrictEqual(F.projState("dyson"), { step: 1, paid: { panneau_dyson: 120 } }, "ce qui a été versé reste acquis");
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

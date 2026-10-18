@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "3.0.0";
+  D.VERSION = "4.0.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -882,15 +882,12 @@
   };
 
   D.CHANGES = [
-    "⛏️ La Fabrique est une carte : chaque terre y a ses gisements, une case par ressource. Récolte à la main, ou pose tes extracteurs dessus et relie-les à la Réserve par des tapis.",
-    "🏭 Tes machines se servent sur les tapis qui passent devant elles : une ligne peut aller du gisement au produit fini sans passer par le stock.",
-    "🌲 Les Terres sont des paysages : touche les arbres, les herbes, les pierres.",
-    "📖 Toucher un objet ouvre sa fiche, et on passe de recette en recette.",
-    "🧺 À l’Atelier, les matières se cherchent, se trient, se filtrent, et les favorites restent en tête.",
-    "💭 Les souvenirs ne viennent plus en attendant : chaque combinaison nouvelle essayée à l’Atelier en réveille.",
-    "🎵 De la musique qui suit les âges, des ambiances, des bruitages, et des volumes réglables.",
-    "☁️ Comptes en ligne (pseudo et mot de passe), si la personne qui publie le jeu les a ouverts.",
-    "✍️ Les textes du jeu ont été repris."
+    "🗺️ Une seule carte : les Terres et la Fabrique ne font plus qu’un. Chaque terre y est une région, avec ses gisements et ses lieux à explorer (🧭). Touche son nom pour voir son paysage.",
+    "✋ À l’Atelier, une découverte sort tout de suite. Ensuite, fabriquer à la main prend un peu de temps et passe par la file « Tes mains », qui avance même jeu fermé. Répéter un geste va de plus en plus vite, et les gestes des âges passés aussi. Pour produire en grand, il y a les machines.",
+    "🔍 Plus d’indices à acheter : l’Intuition sert maintenant à étudier les matières, pour savoir avec quels gestes elles cachent encore des recettes.",
+    "🛤️ Les tapis ont un débit, qui augmente avec les âges. Une entrée de la Réserve qui déborde clignote ⚠️ : fais-en entrer une deuxième. La Réserve ne laisse sortir vers les machines qu’un petit débit, alors amène-leur leurs matières directement.",
+    "🏗️ Les Grands Œuvres se construisent sur la Carte : pose leur chantier, puis nourris-le par tapis.",
+    "🏁 Les jalons de chaque âge, d’un coup d’œil, depuis la carte d’objectif."
   ];
 
   /* ---------------------------------------------------- ÉCHECS (saveur)

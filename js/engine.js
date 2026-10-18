@@ -11,7 +11,7 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 4;
+  const SAVE_VERSION = 5;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -134,6 +134,16 @@
       if (EXTS.some((t) => o.inv && o.inv[t] >= 1)) o.flags.fab4 = "todo";
       o.flags.news = "4";
       o.v = 4;
+    }
+    if (from < 5) {
+      // v5 : la file des mains et l’étude des matières (ajoutées vides au chargement).
+      // Un Grand Œuvre commencé garde ce qui a été versé ; il se poursuit désormais
+      // par un chantier posé sur la carte, ce que la fenêtre des nouveautés explique.
+      o.flags = o.flags || {};
+      const proj = o.proj && typeof o.proj === "object" ? o.proj : {};
+      if (Object.keys(proj).some((p) => proj[p] && (proj[p].step > 0 || Object.keys(proj[p].paid || {}).length))) o.flags.v5proj = true;
+      o.flags.news = "5";
+      o.v = 5;
     }
     return o;
   }
