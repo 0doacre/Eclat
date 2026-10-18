@@ -559,3 +559,5 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 .pick { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg2); text-align: left; font-size: 14px; }
 .modal-box .btn { white-space: normal; text-align: center; line-height: 1.25; }
 .rec .acts .btn.ghost { padding: 5px 8px; min-width: 36px; }
+
+.toggle.vol input { flex: 0 1 55%; accent-color: var(--acc); }

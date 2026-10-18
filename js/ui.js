@@ -398,6 +398,7 @@
     $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + t));
     $$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === t));
     if (U.badges[t]) { U.badges[t] = false; updateBadges(); }
+    if (t === "journal" || t === "carnet") A.page();
     $("#views").scrollTop = 0;
     render(true);
   }
@@ -435,7 +436,21 @@
     if (focus) { const f = document.getElementById(focus.id); if (f) { f.focus(); try { f.setSelectionRange(focus.s, focus.e); } catch (e) { /* champ sans sélection */ } } }
     refresh();
     ambient();
+    soundScene();
   }
+  /* la musique suit l’âge, l’ambiance suit l’endroit */
+  function soundScene() {
+    const z = U.zone || "lisiere";
+    A.setScene({ age: S().age, tab: U.tab, zone: z, night: !Scenes.isNightless(z) && Scenes.daypart(new Date().getHours()) === "night", machines: workingMachines() });
+  }
+  function workingMachines() {
+    let n = 0;
+    const c = S().fab.c;
+    for (const k in c) if (c[k].k === "mach" && E.machInfo(c[k].id).s === "ok") n += c[k].n;
+    return n;
+  }
+  const VOL0 = { music: 0.5, amb: 0.6, sfx: 0.8 };
+  const volumes = () => Object.assign({}, VOL0, S().settings.vol);
 
   /* ------------------------------------------------------------ TERRES */
   function viewTerres() {
@@ -1037,6 +1052,7 @@
       if (s && s.cost) for (const k in s.cost) if ((ps.paid[k] || 0) < s.cost[k] && (st.inv[k] || 0) >= 1) ok = true;
       b.disabled = !ok;
     });
+    if (U.tab === "fabrique") soundScene();
     if (U.tab === "atelier") {
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
@@ -1074,7 +1090,7 @@
     if (!n) return;
     const p = U.holding ? elCenter(el) : U.pointer;
     floater("+" + fmt(n), p.x + (Math.random() - 0.5) * 24, p.y - 10);
-    A.tap(Object.keys(I).indexOf(r));
+    A.tap(r);
     vibe(5);
     el.classList.remove("hit"); void el.offsetWidth; el.classList.add("hit");
     const hud = $('[data-hres="' + r + '"]');
@@ -1338,12 +1354,23 @@
     openModal({
       html: "<h2>Menu</h2>" +
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
+        [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
         '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
+      onOpen: (box) => {
+        $$("[data-vol]", box).forEach((r) => {
+          r.addEventListener("input", () => {
+            st.settings.vol = Object.assign(volumes(), { [r.dataset.vol]: Number(r.value) / 100 });
+            A.init(); A.setVolumes(st.settings.vol);
+            if (r.dataset.vol === "sfx") A.click();
+          });
+          r.addEventListener("change", save);
+        });
+      },
       on: {
-        sound: (b) => { st.settings.sound = !st.settings.sound; A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
+        sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
         saves: () => setTimeout(openSaves, 80),
         help: () => setTimeout(openHelp, 80),
@@ -1457,7 +1484,7 @@
     });
     E.on("frag", () => badge("journal"));
     E.on("expdone", (r) => {
-      A.discover();
+      A.found();
       if (r.frag) badge("journal");
       if (r.silent) return;
       const F = r.frag && D.FRAGS[r.frag];
@@ -1569,7 +1596,7 @@
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
       if ((b = t.closest("[data-exp]"))) {
         const r = E.startExp(b.dataset.exp);
-        if (r.ok) { A.init(); A.click(); toast("🧭 C’est parti. L’exploration avance toute seule."); } else if (r.why === "busy") toast("Tu explores déjà ailleurs.");
+        if (r.ok) { A.init(); A.explore(); toast("🧭 C’est parti. L’exploration avance toute seule."); } else if (r.why === "busy") toast("Tu explores déjà ailleurs.");
         render(true); return;
       }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
@@ -1667,6 +1694,7 @@
     bindEngine();
     const status = loadSave();
     A.setEnabled(S().settings.sound);
+    A.setVolumes(volumes());
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
     setTab("terres");
