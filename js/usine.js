@@ -19,7 +19,7 @@
   const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
 
   function create(api) {
-    const { E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater } = api;
+    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes } = api;
     const I = D.ITEMS;
     const { DX, DY } = window.EclatEngine;
     const S = () => E.state;
@@ -37,10 +37,11 @@
       el.innerHTML =
         '<div class="usine">' +
           '<div class="u-bar"><div class="u-free" id="uFree"></div><button class="u-help" data-u="help" aria-label="Comment ça marche">?</button></div>' +
-          '<div class="u-hint hidden" id="uHint"></div>' +
+          '<div class="u-top"><div id="uOver"></div></div>' +
           '<canvas id="uCan"></canvas>' +
           '<div class="u-zoom"><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button></div>' +
           '<div class="u-sheet hidden" id="uSheet"></div>' +
+          '<div class="u-hint hidden" id="uHint"></div>' +
           '<div class="u-tools" id="uTools">' + TOOLS.map((t) => '<button data-tool="' + t[0] + '"><span>' + t[1] + "</span><i>" + t[2] + "</i></button>").join("") + "</div>" +
         "</div>";
       V.cv = el.querySelector("#uCan");
@@ -57,6 +58,8 @@
       resize();
       setTool(V.tool);
       refresh();
+      V.ready = true;
+      if (!V.camSet && V.w > 0) initCam();
       V.last = performance.now();
       V.raf = requestAnimationFrame(frame);
     }
@@ -79,9 +82,32 @@
       V.w = r.width; V.h = r.height;
       V.cv.width = Math.round(r.width * V.dpr);
       V.cv.height = Math.round(r.height * V.dpr);
-      if (!V.camSet && V.w > 0) { V.cam.z = clampZ(V.w / 10); V.cam.y = -2.5; V.camSet = true; }
+      if (!V.camSet && V.w > 0 && V.ready) initCam();
     }
     const clampZ = (z) => Math.max(18, Math.min(90, z));
+    /* la bande de carte que rien ne recouvre : l’objectif en haut, le conseil en bas */
+    function freeBand() {
+      const r = V.cv.getBoundingClientRect();
+      const t = V.el.querySelector(".u-top"), h = V.el.querySelector("#uHint");
+      return {
+        top: t ? Math.max(0, t.getBoundingClientRect().bottom - r.top) : 0,
+        bot: h && !h.classList.contains("hidden") ? Math.max(0, r.bottom - h.getBoundingClientRect().top) : 0
+      };
+    }
+    /* centre la vue sur (x, y) dans cette bande ; avec un cadre { w, h }, zoome pour qu’il tienne */
+    function lookAt(x, y, box) {
+      const f = freeBand();
+      if (box) V.cam.z = clampZ(Math.min(V.w / box.w, (V.h - f.top - f.bot) / box.h));
+      V.cam.x = x;
+      V.cam.y = y - (f.top - f.bot) / 2 / V.cam.z;
+    }
+    /* au tout début, on montre la Lisière, où tout commence ; ensuite, la Réserve */
+    function initCam() {
+      V.camSet = true;
+      const g = zonesOnMap().find((z) => z.id === "lisiere");
+      if (g && !Object.values(S().fab.c).some((e) => e.k === "ext")) lookAt((g.x0 + g.x1) / 2, (g.box.y0 + g.box.y1) / 2, { w: 10, h: g.box.y1 - g.box.y0 + 2 });
+      else { V.cam.z = clampZ(V.w / 10); lookAt(0, -1); }
+    }
 
     /* ------------------------------------------------------------ coordonnées */
     const sx = (x) => V.w / 2 + (x - V.cam.x) * V.cam.z;
@@ -192,7 +218,10 @@
     function act(c) {
       const e = E.fabCell(c.x, c.y);
       if (V.tool === "voir") {
+        const m = markAt(c.x, c.y);
+        if (m) { selectZone({ z: m.z, i: m.i }); return; }
         if (!e && harvest(c)) return;
+        if (!e) { const g = labelAt(c.x, c.y); if (g) { selectZone({ z: g.id }); return; } }
         select(e && e.k !== undefined ? c : null);
         return;
       }
@@ -409,7 +438,7 @@
       const u = b.dataset.u, sel = V.sel, e = sel && E.fabCell(sel.x, sel.y);
       if (u === "zin") zoom(1.25);
       else if (u === "zout") zoom(0.8);
-      else if (u === "center") { V.cam.x = 0; V.cam.y = 0; }
+      else if (u === "center") lookAt(0, 0);
       else if (u === "link" && e) {
         remember();
         const r = E.fabLink(sel.x, sel.y);
@@ -424,7 +453,13 @@
       }
       else if (u === "undo") undo();
       else if (u === "help") help();
-      else if (u === "close") select(null);
+      else if (u === "close") { V.zsel = null; select(null); }
+      else if (u === "exp") {
+        const r = E.startExp(b.dataset.z);
+        if (r.ok) { A.explore ? A.explore() : A.click(); toast("🧭 C’est parti. L’exploration avance toute seule."); }
+        else if (r.why === "busy") toast("Une exploration est déjà en cours.");
+        else if (r.why === "cost") toast("Il te manque de quoi partir.");
+      } else if (u === "zone") selectZone({ z: b.dataset.z });
       else if (u === "rot" && e) { remember(); E.fabRotate(sel.x, sel.y); A.click(); }
       else if (u === "rm" && e) { demolish(sel); }
       else if (u === "on" && e) { E.fabSet(e.id, { on: !e.on }); A.click(); }
@@ -507,8 +542,15 @@
     }
 
     /* ------------------------------------------------------------ panneau d’une case */
+    function selectZone(zs) {
+      V.sel = null;
+      V.zsel = zs;
+      A.click();
+      sheet();
+    }
     function select(c) {
       V.sel = c;
+      if (c) V.zsel = null;
       sheet();
       // garder la case visible au-dessus du panneau
       const box = c && V.el && V.el.querySelector("#uSheet");
@@ -559,6 +601,7 @@
     function sheet() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (!box) return;
+      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); return; }
       const c = V.sel, e = c && E.fabCell(c.x, c.y);
       if (!e) { box.classList.add("hidden"); box.innerHTML = ""; V.sel = null; return; }
       box.classList.remove("hidden");
@@ -616,6 +659,94 @@
       box.innerHTML = h;
     }
 
+    /* ------------------------------------------------------------ les terres sur la carte
+     * Chaque terre ouverte est une région : ses gisements en ligne, et au-dessus ses
+     * lieux à explorer, dans l’ordre. Positions calculées à partir des gisements. */
+    let zoneMemo = { key: "", z: [] };
+    function zonesOnMap() {
+      const deps = E.deposits(), key = deps.length + "";
+      if (zoneMemo.key === key) return zoneMemo.z;
+      const by = {};
+      deps.forEach((d) => {
+        const g = by[d.z] || (by[d.z] = { id: d.z, x0: d.x, x1: d.x, y: d.y });
+        g.x0 = Math.min(g.x0, d.x); g.x1 = Math.max(g.x1, d.x);
+      });
+      const list = Object.values(by).map((g) => {
+        const exps = E.ZONES[g.id].exps || [], n = exps.length, cx = (g.x0 + g.x1) / 2;
+        g.marks = exps.map((x, i) => ({ x: Math.round(cx - (n - 1) + 2 * i), y: g.y - 2, i, z: g.id }));
+        const xs = [g.x0, g.x1].concat(g.marks.map((m) => m.x));
+        g.box = { x0: Math.min.apply(null, xs) - 1.6, x1: Math.max.apply(null, xs) + 1.6, y0: g.y - (n ? 3.1 : 1.9), y1: g.y + 1.7 };
+        return g;
+      });
+      zoneMemo = { key, z: list };
+      return list;
+    }
+    function markAt(x, y) {
+      for (const g of zonesOnMap()) for (const m of g.marks) if (m.x === x && m.y === y) return m;
+      return null;
+    }
+    function labelAt(x, y) {
+      for (const g of zonesOnMap()) if (y === g.y - 1 && x >= g.x0 - 1 && x <= g.x1 + 1) return g;
+      return null;
+    }
+    /* état d’un lieu : fait, en cours, possible, bloqué ou à venir */
+    function markState(z, i) {
+      const st = S(), done = st.exp.done[z] || 0, act = st.exp.active;
+      if (i < done) return "done";
+      if (act && act.z === z && act.i === i) return "active";
+      if (i > done) return "later";
+      const n = E.nextExp(z);
+      if (!n) return "later";
+      if (n.locked) return "locked";
+      return "next";
+    }
+    function zoneSheet(zs) {
+      const st = S(), z = E.ZONES[zs.z];
+      let h = '<button class="u-x" data-u="close" aria-label="Fermer">✕</button>';
+      if (zs.i !== undefined) {
+        const x = z.exps[zs.i], state = markState(zs.z, zs.i);
+        const hidden = x.hidden && state !== "done" && state !== "active";
+        h += '<div class="u-head"><span class="ic">' + ({ done: "✓", active: "⏳", next: "🧭", locked: "🔒", later: "❔" }[state]) + '</span><div class="grow"><b>' + (hidden || state === "later" ? "???" : esc(x.n)) +
+          '</b> <span class="tiny muted">' + esc(z.n) + "</span>";
+        if (state === "done") {
+          const f = x.rw && x.rw.frag && D.FRAGS[x.rw.frag];
+          h += '<div class="u-st good">Exploré' + (f ? " : « " + esc(f.n) + " »" : "") + "</div></div></div>";
+        } else if (state === "active") {
+          const p = E.expProgress();
+          h += '<div class="u-st good">En route… ' + (p ? fmtTime(p.left) : "") + '</div></div></div><div class="bar" style="margin-top:8px"><i data-xp style="width:' + (p ? (p.p * 100).toFixed(1) : 0) + '%"></i></div>';
+        } else if (state === "later") {
+          h += '<div class="u-st dim">Un autre lieu à explorer d’abord.</div></div></div>';
+        } else {
+          const n = E.nextExp(zs.z);
+          const cost = x.cost ? Object.keys(x.cost).map((i) => x.cost[i] + " " + esc(I[i].n.toLowerCase())).join(", ") : "";
+          const busy = !!st.exp.active;
+          h += '<div class="u-st ' + (state === "next" ? "good" : "warn") + '">' + (state === "locked" ? (x.hidden ? esc(x.hidden) : "Il te faut : " + esc(I[n.x.need].n)) :
+            fmtTime(x.dur / E.expMult()) + (cost ? " · il faut " + cost : "")) + "</div></div></div>" +
+            (state === "next" ? '<div class="u-row acts"><button class="btn small pri" data-u="exp" data-z="' + zs.z + '"' + (busy ? " disabled" : "") + ">🧭 Explorer</button>" +
+              (busy ? '<span class="tiny muted">Une exploration est déjà en cours.</span>' : "") + "</div>" : "");
+        }
+        return h;
+      }
+      // la fiche de la terre : son paysage, ses ressources, ses lieux
+      h += '<div class="u-zone">' + (Scenes ? '<div class="u-scene">' + Scenes.backdrop(zs.z) + '<b class="zname">' + esc(z.n) + "</b></div>" : "<b>" + esc(z.n) + "</b>") +
+        '<p class="small muted">' + esc(z.d) + "</p>";
+      const deps = E.deposits().filter((d) => d.z === zs.z);
+      h += '<div class="u-ins">' + deps.map((d) => { const r = E.rate(d.res); return '<span class="u-in" data-u="goto" data-id="' + d.res + '">' + icon(d.res, "sm") + "<i>" + fmt(st.inv[d.res] || 0) + (r ? " · +" + fmtNum(r) + "/s" : "") + "</i></span>"; }).join("") + "</div>";
+      const done = st.exp.done[zs.z] || 0;
+      if (z.exps && z.exps.length) {
+        h += '<div class="tiny muted" style="margin-top:6px">Lieux explorés : ' + done + " / " + z.exps.length + "</div>";
+        const n = E.nextExp(zs.z);
+        if (n && !n.locked && !st.exp.active) h += '<div class="u-row acts"><button class="btn small pri" data-u="exp" data-z="' + zs.z + '">🧭 Explorer : ' + esc(n.x.hidden ? "???" : n.x.n) + "</button></div>";
+      }
+      return h + "</div>";
+    }
+    /* centrer la carte sur une terre (nouvelle terre, exploration en cours…) */
+    function focusZone(zid) {
+      const g = zonesOnMap().find((x) => x.id === zid);
+      if (!g) return;
+      lookAt((g.x0 + g.x1) / 2, (g.box.y0 + g.box.y1) / 2);
+    }
+
     /* ------------------------------------------------------------ bandeau et conseils */
     function hint() {
       const st = S(), ents = Object.values(st.fab.c), ms = E.machines(), us = E.extUnits();
@@ -654,6 +785,8 @@
           : '<span class="tiny muted">Rien à poser pour l’instant</span>';
         if (free.dataset.h !== html) { free.innerHTML = html; free.dataset.h = html; }
       }
+      const ov = V.el.querySelector("#uOver");
+      if (ov && overlay) { const o = overlay(); if (ov.dataset.h !== o) { ov.innerHTML = o; ov.dataset.h = o; } }
       const hb = V.el.querySelector("#uHint");
       const h = hint();
       if (hb) { hb.classList.toggle("hidden", !h); if (h && hb.dataset.h !== h) { hb.innerHTML = "💡 " + h; hb.dataset.h = h; } }
@@ -727,6 +860,12 @@
     }
     function frame(now) {
       if (!V.cv) return;
+      if (onZone && V.t - (V.lastZone || 0) > 1) {
+        V.lastZone = V.t;
+        let best = null, bd = 1e9;
+        for (const g of zonesOnMap()) { const d = Math.hypot((g.x0 + g.x1) / 2 - V.cam.x, g.y - V.cam.y); if (d < bd) { bd = d; best = g.id; } }
+        if (best && best !== V.zone) { V.zone = best; onZone(best); }
+      }
       V.raf = requestAnimationFrame(frame);
       const dt = Math.min(0.1, (now - V.last) / 1000);
       V.last = now;
@@ -782,6 +921,8 @@
       c.setLineDash([6, 6]);
       c.strokeRect(gx, gy, gw, gw);
       c.setLineDash([]);
+      // les régions des terres, la brume de la suivante
+      drawRegions(x0, x1, y0, y1);
       // les gisements, regroupés par terre
       const labels = {};
       for (const d of E.deposits()) {
@@ -828,6 +969,11 @@
       if (V.draw) drawPreview();
       for (const p of V.packets) drawPacket(p);
       for (const [x, y, e] of vis) { if (e.k === "mach") drawMach(x, y, e); else if (e.k === "ext") drawExt(x, y, e); }
+      drawMarks();
+      drawWalker();
+      // la nuit tombe sur la carte, à l’heure de l’appareil
+      const hr = new Date().getHours(), night = hr < 6 || hr >= 21 ? 0.28 : hr < 7 || hr >= 20 ? 0.14 : 0;
+      if (night) { c.fillStyle = "rgba(10,16,48," + night + ")"; c.fillRect(0, 0, V.w, V.h); }
       if (V.sel) {
         const a = 0.5 + 0.5 * Math.sin(V.t * 5);
         c.strokeStyle = "rgba(255,225,150," + (0.55 + 0.4 * a) + ")";
@@ -860,6 +1006,141 @@
         c.fill();
       }
       if (!E.fabCell(d.x, d.y)) drawIcon(d.res, X, Y - pulse * z * 0.06, z * (0.5 + pulse * 0.1), false);
+      // le stock de la matière, juste dessous
+      if (z > 26) {
+        c.font = "600 " + Math.round(z * 0.21) + "px system-ui, sans-serif";
+        c.textAlign = "center"; c.textBaseline = "top";
+        const t = fmt(S().inv[d.res] || 0);
+        c.fillStyle = "rgba(0,0,0,0.6)"; c.fillText(t, X + 1, Y + z * 0.52 + 1);
+        c.fillStyle = "#f3e6cf"; c.fillText(t, X, Y + z * 0.52);
+      }
+    }
+    /* --- décor des régions */
+    const BIOME = {
+      lisiere: ["#2c4a22", "tree"], plaine: ["#5c5a2a", "grass"], riviere: ["#344a3c", "water"], collines: ["#3a5a30", "hill"],
+      mine: ["#2b221c", "cave"], desert: ["#8a6a3c", "dune"], gisement: ["#2c2729", "oil"], montagnes: ["#4a4f58", "peak"],
+      orbite: ["#0b0e1f", "star"], lune: ["#56575d", "crater"], mercure: ["#4c2316", "lava"], caveau: ["#0f2537", "crystal"]
+    };
+    function drawRegions(x0, x1, y0, y1) {
+      const c = V.ctx, z = V.cam.z;
+      for (const g of zonesOnMap()) {
+        const b = g.box;
+        if (b.x1 < x0 - 1 || b.x0 > x1 + 1 || b.y1 < y0 - 1 || b.y0 > y1 + 1) continue;
+        const [col, deco] = BIOME[g.id] || ["#3a3a3a", "grass"];
+        const X = sx(b.x0), Y = sy(b.y0), W = (b.x1 - b.x0) * z, H = (b.y1 - b.y0) * z;
+        c.fillStyle = col; c.globalAlpha = 0.7;
+        roundRect(c, X, Y, W, H, z * 0.9); c.fill();
+        c.globalAlpha = 1;
+        c.strokeStyle = shade(col, 0.25); c.lineWidth = 2; c.stroke();
+        decorate(g, deco, col);
+      }
+      // la prochaine terre, encore dans la brume
+      const next = D.ZONES.find((zz) => !E.zoneOpen(zz.id) && !zz.secret);
+      if (next) {
+        const cells = E.zonePatch(next.id);
+        if (cells.length) {
+          const xs = cells.map((q) => q.x), cy = cells[0].y;
+          const X = sx(Math.min.apply(null, xs) - 1.6), Y = sy(cy - 2.2), W = (Math.max.apply(null, xs) - Math.min.apply(null, xs) + 3.2) * z, H = 3.8 * z;
+          c.fillStyle = "rgba(160,160,170,0.12)";
+          roundRect(c, X, Y, W, H, z * 0.9); c.fill();
+          c.setLineDash([5, 6]); c.strokeStyle = "rgba(220,220,230,0.3)"; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]);
+          if (z > 16) {
+            const req = I[next.req], known = req && (S().known[next.req] || req.a <= S().age + 1);
+            c.font = "600 " + Math.max(10, Math.round(z * 0.26)) + "px system-ui, sans-serif";
+            c.textAlign = "center"; c.textBaseline = "middle";
+            c.fillStyle = "rgba(235,235,245,0.75)";
+            c.fillText("🌫️ " + (known ? next.n : "Terre inconnue"), X + W / 2, Y + H * 0.4);
+            if (known) { c.font = Math.max(9, Math.round(z * 0.21)) + "px system-ui, sans-serif"; c.fillText("il te faut : " + req.n, X + W / 2, Y + H * 0.66); }
+          }
+        }
+      }
+    }
+    function decorate(g, deco, col) {
+      const c = V.ctx, z = V.cam.z, b = g.box;
+      for (let y = Math.ceil(b.y0); y <= Math.floor(b.y1); y++) for (let x = Math.ceil(b.x0); x <= Math.floor(b.x1); x++) {
+        const h = hash(x * 3 + 11, y * 5 - 7);
+        if (h % 3 || E.deposit(x, y) || markAt(x, y) || E.fabCell(x, y) || y === g.y - 1) continue;
+        const X = sx(x) + ((h >> 4) % 9 - 4) * z / 26, Y = sy(y) + ((h >> 8) % 9 - 4) * z / 26, r = z * (0.12 + (h % 5) * 0.03);
+        if (deco === "tree") {
+          c.fillStyle = "#4a3120"; c.fillRect(X - r * 0.15, Y, r * 0.3, r * 0.9);
+          c.fillStyle = h % 2 ? "#3f6b2c" : "#355e26";
+          c.beginPath(); c.arc(X, Y - r * 0.1, r, 0, 6.3); c.arc(X - r * 0.6, Y + r * 0.2, r * 0.7, 0, 6.3); c.arc(X + r * 0.6, Y + r * 0.2, r * 0.7, 0, 6.3); c.fill();
+        } else if (deco === "grass") {
+          c.strokeStyle = h % 2 ? "#c9b46a" : "#a89048"; c.lineWidth = Math.max(1, z * 0.03);
+          c.beginPath(); for (let k = -1; k <= 1; k++) { c.moveTo(X + k * r * 0.5, Y + r); c.lineTo(X + k * r * 0.8, Y - r * 0.6); } c.stroke();
+        } else if (deco === "water") {
+          c.strokeStyle = "rgba(150,200,230,0.55)"; c.lineWidth = Math.max(1, z * 0.035);
+          const o = Math.sin(V.t * 1.5 + x) * r * 0.3;
+          c.beginPath(); c.moveTo(X - r + o, Y); c.quadraticCurveTo(X + o, Y - r * 0.5, X + r + o, Y); c.stroke();
+        } else if (deco === "hill") {
+          c.fillStyle = h % 2 ? "rgba(120,170,100,0.35)" : "rgba(40,120,80,0.35)";
+          c.beginPath(); c.ellipse(X, Y, r * 1.4, r * 0.8, 0, Math.PI, 0); c.fill();
+        } else if (deco === "cave") {
+          c.fillStyle = "rgba(0,0,0,0.45)"; c.beginPath(); c.arc(X, Y, r, 0, 6.3); c.fill();
+          if (h % 4 === 0) { c.fillStyle = "rgba(255,150,70," + (0.4 + 0.3 * Math.sin(V.t * 2 + x)) + ")"; c.fillRect(X + r * 0.5, Y - r * 0.4, r * 0.3, r * 0.3); }
+        } else if (deco === "dune") {
+          c.strokeStyle = "rgba(240,210,150,0.5)"; c.lineWidth = Math.max(1, z * 0.04);
+          c.beginPath(); c.arc(X, Y + r, r * 1.3, Math.PI * 1.15, Math.PI * 1.85); c.stroke();
+          if (h % 5 === 0) { c.fillStyle = "rgba(200,240,255," + (0.5 + 0.5 * Math.sin(V.t * 3 + y)) + ")"; c.fillRect(X, Y - r, 2, 2); }
+        } else if (deco === "oil") {
+          c.fillStyle = "#0b0909"; c.beginPath(); c.ellipse(X, Y, r * 1.3, r * 0.6, 0, 0, 6.3); c.fill();
+          c.strokeStyle = "rgba(140,110,200,0.35)"; c.lineWidth = 1; c.stroke();
+        } else if (deco === "peak") {
+          c.fillStyle = "#6a707b"; c.beginPath(); c.moveTo(X, Y - r * 1.2); c.lineTo(X - r, Y + r * 0.6); c.lineTo(X + r, Y + r * 0.6); c.fill();
+          c.fillStyle = "#e9eef5"; c.beginPath(); c.moveTo(X, Y - r * 1.2); c.lineTo(X - r * 0.35, Y - r * 0.55); c.lineTo(X + r * 0.35, Y - r * 0.55); c.fill();
+        } else if (deco === "star") {
+          c.fillStyle = "rgba(255,255,255," + (0.4 + 0.4 * Math.sin(V.t * 2 + h)) + ")"; c.fillRect(X, Y, Math.max(1.5, z * 0.04), Math.max(1.5, z * 0.04));
+        } else if (deco === "crater") {
+          c.strokeStyle = "rgba(30,30,35,0.45)"; c.lineWidth = Math.max(1, z * 0.04);
+          c.beginPath(); c.ellipse(X, Y, r, r * 0.55, 0, 0, 6.3); c.stroke();
+        } else if (deco === "lava") {
+          c.strokeStyle = "rgba(255,120,40," + (0.5 + 0.3 * Math.sin(V.t * 2 + x + y)) + ")"; c.lineWidth = Math.max(1, z * 0.035);
+          c.beginPath(); c.moveTo(X - r, Y); c.lineTo(X - r * 0.2, Y + r * 0.3); c.lineTo(X + r, Y - r * 0.2); c.stroke();
+        } else if (deco === "crystal") {
+          c.fillStyle = "rgba(90,200,255," + (0.35 + 0.3 * Math.sin(V.t * 2 + h)) + ")";
+          c.beginPath(); c.moveTo(X, Y - r); c.lineTo(X + r * 0.5, Y); c.lineTo(X, Y + r); c.lineTo(X - r * 0.5, Y); c.fill();
+        }
+      }
+    }
+    /* --- les lieux à explorer */
+    function drawMarks() {
+      const c = V.ctx, z = V.cam.z;
+      for (const g of zonesOnMap()) for (const m of g.marks) {
+        const X = sx(m.x), Y = sy(m.y);
+        if (X < -z || X > V.w + z || Y < -z || Y > V.h + z) continue;
+        const state = markState(m.z, m.i);
+        const ring = { done: "#7fd18b", active: "#ffd36b", next: "#ffd36b", locked: "#a89a87", later: "#5f574c" }[state];
+        const glow = state === "next" ? 0.5 + 0.5 * Math.sin(V.t * 4) : 0;
+        c.fillStyle = "rgba(15,12,10,0.8)";
+        c.beginPath(); c.arc(X, Y, z * 0.36, 0, 6.3); c.fill();
+        c.strokeStyle = ring; c.lineWidth = 2 + glow * 2.5; c.stroke();
+        if (state === "active") {
+          const p = E.expProgress();
+          if (p) { c.strokeStyle = "#ffd36b"; c.lineWidth = 3.5; c.beginPath(); c.arc(X, Y, z * 0.42, -Math.PI / 2, -Math.PI / 2 + p.p * Math.PI * 2); c.stroke(); }
+        }
+        c.font = Math.round(z * 0.36) + "px serif";
+        c.textAlign = "center"; c.textBaseline = "middle";
+        c.fillStyle = state === "done" ? "#7fd18b" : "#f3e6cf";
+        c.globalAlpha = state === "later" ? 0.5 : 1;
+        c.fillText({ done: "✓", active: "⏳", next: "🧭", locked: "🔒", later: "?" }[state], X, Y + z * 0.02);
+        c.globalAlpha = 1;
+      }
+    }
+    /* --- l’explorateur en route */
+    function drawWalker() {
+      const act = S().exp.active, p = E.expProgress();
+      if (!act || !p) return;
+      const g = zonesOnMap().find((x) => x.id === act.z);
+      const m = g && g.marks[act.i];
+      if (!m) return;
+      const c = V.ctx, z = V.cam.z;
+      const k = p.p < 0.25 ? p.p / 0.25 : p.p > 0.85 ? 1 - (p.p - 0.85) / 0.15 : 1;
+      const wx = m.x * k, wy = (m.y + 0.6) * k;
+      c.setLineDash([3, 5]); c.strokeStyle = "rgba(255,220,160,0.35)"; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(sx(0), sy(0)); c.lineTo(sx(m.x), sy(m.y + 0.6)); c.stroke(); c.setLineDash([]);
+      c.font = Math.round(z * 0.45) + "px serif";
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.fillText(k >= 1 ? "🔦" : "🚶", sx(wx), sy(wy) - Math.abs(Math.sin(V.t * 8)) * z * 0.06);
     }
     function drawExt(x, y, e) {
       const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y), col = depColor(e.res);
@@ -1129,12 +1410,12 @@
     /* depuis le Carnet : poser une machine qui fabriquera `id` */
     function prepare(id) {
       V.preset = id;
-      if (!freeTypes().length) { toast("Aucune machine libre. Retire-en une de l’Usine, ou fabriques-en une autre."); setTool("voir"); return; }
+      if (!freeTypes().length) { toast("Aucune machine libre. Retire-en une de la Carte, ou fabriques-en une autre."); setTool("voir"); return; }
       setTool("mach");
       toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
     }
 
-    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare };
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
   }
 
   window.EclatUsine = { create };

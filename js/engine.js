@@ -955,6 +955,11 @@
       const i = k.indexOf(",");
       return Object.assign({ x: +k.slice(0, i), y: +k.slice(i + 1) }, DEPOSITS[k]);
     });
+    /* la parcelle d’une terre, ouverte ou non (pour dessiner la brume des terres à venir) */
+    E.zonePatch = (zid) => Object.keys(DEP_AT[zid] || {}).map((r) => {
+      const k = DEP_AT[zid][r], i = k.indexOf(",");
+      return { x: +k.slice(0, i), y: +k.slice(i + 1), res: r };
+    });
     E.EXTS = EXTS;
     E.extRate = extRate;
     E.extFor = (r) => EXTS.filter((t) => extRate(t, r) > 0);
