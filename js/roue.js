@@ -288,7 +288,7 @@
       if (sig() !== W.sig) render();
       else live();
     }
-    return { open, close, refresh, isOpen: () => W.open };
+    return { open, close, refresh, isOpen: () => W.open, touched: () => W.open && !!(W.cat || W.sel || W.q || W.only) };
   }
 
   window.EclatRoue = { create };

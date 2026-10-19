@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.0.0";
+  D.VERSION = "4.1.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -882,6 +882,7 @@
   };
 
   D.CHANGES = [
+    "💭 Un tutoriel : des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible (premiers gestes, cabane, roue, automate, étude des matières, tapis qui débordent…). Il se coupe ou se revoit dans le menu ☰.",
     "🗺️ Une seule carte : les Terres et la Fabrique ne font plus qu’un. Chaque terre y est une région, avec ses gisements et ses lieux à explorer (🧭). Touche son nom pour voir son paysage.",
     "✋ À l’Atelier, une découverte sort tout de suite. Ensuite, fabriquer à la main prend un peu de temps et passe par la file « Tes mains », qui avance même jeu fermé. Répéter un geste va de plus en plus vite, et les gestes des âges passés aussi. Pour produire en grand, il y a les machines.",
     "🔍 Plus d’indices à acheter : l’Intuition sert maintenant à étudier les matières, pour savoir avec quels gestes elles cachent encore des recettes.",

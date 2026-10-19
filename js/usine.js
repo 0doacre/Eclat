@@ -19,7 +19,7 @@
   const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
 
   function create(api) {
-    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel } = api;
+    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel, quiet } = api;
     const I = D.ITEMS;
     const { DX, DY } = window.EclatEngine;
     const S = () => E.state;
@@ -794,6 +794,7 @@
 
     /* ------------------------------------------------------------ bandeau et conseils */
     function hint() {
+      if (quiet && quiet()) return null; // le tutoriel parle déjà
       const st = S(), ents = Object.values(st.fab.c), ms = E.machines(), us = E.extUnits();
       const own = E.MACHINES.reduce((a, m) => a + ms[m].own, 0);
       const machs = ents.filter((e) => e.k === "mach"), exts = ents.filter((e) => e.k === "ext");
@@ -1532,6 +1533,18 @@
       setTool("site");
       toast("Touche une case vide pour poser le chantier : <b>" + esc(D.PROJECTS[pid].n) + "</b>. Ensuite, amène-lui ses matières par tapis.");
     }
+    /* pour le tutoriel : où est une case à l’écran, la montrer, quel outil est en main */
+    function cellRect(x, y) {
+      if (!V.cv) return null;
+      const r = V.cv.getBoundingClientRect(), z = V.cam.z, X = r.left + sx(x), Y = r.top + sy(y);
+      if (X < r.left || X > r.right || Y < r.top || Y > r.bottom) return null;
+      return { left: X - z / 2, top: Y - z / 2, width: z, height: z };
+    }
+    function reveal(x, y) {
+      if (!V.cv) return;
+      const f = freeBand(), z = V.cam.z, X = sx(x), Y = sy(y);
+      if (X < z || X > V.w - z || Y < f.top + z || Y > V.h - f.bot - z) lookAt(x, y);
+    }
     /* depuis la roue : poser une machine, ou un extracteur, de ce type */
     function useMach(m) {
       V.mtype = m;
@@ -1553,7 +1566,7 @@
       toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
     }
 
-    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, useMach, useExt, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, useMach, useExt, cellRect, reveal, tool: () => V.tool, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
   }
 
   window.EclatUsine = { create };

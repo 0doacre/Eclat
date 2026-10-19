@@ -222,7 +222,8 @@
     E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, Scenes,
     overlay: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     onZone: (z) => { U.zone = z; soundScene(); },
-    openWheel: (o) => Roue.open(o)
+    openWheel: (o) => Roue.open(o),
+    quiet: () => Tuto.active()
   });
   /* la Roue : fabriquer depuis n’importe où, et poser aussitôt ce qui se pose */
   const Roue = window.EclatRoue.create({
@@ -233,6 +234,8 @@
       if (U.tab !== "carte") { setTab("carte"); setTimeout(go, 80); } else go();
     }
   });
+  /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
+  const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Usine, Roue, save: () => save() });
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
   /* ============================================================ SAUVEGARDES
@@ -645,10 +648,12 @@
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); } }
 
+  /* un doigt reste appuyé sur une matière (sa fiche va s’ouvrir) : on ne redessine pas dessous */
+  const pressing = () => !!(U.lp && !U.lp.up);
   function render(force) {
     const now = performance.now();
     if (!force && now - U.lastRender < 120) { U.dirty = true; return; }
-    if (U.holding && !force) { U.dirty = true; return; }
+    if ((U.holding || pressing()) && !force) { U.dirty = true; return; }
     U.dirty = false; U.lastRender = now;
     applyAge();
     updateBadges();
@@ -726,6 +731,7 @@
   }
   function openMilestones() {
     const st = S(), ms = E.milestones(), cur = E.objective();
+    st.flags.milesSeen = true;
     let h = '<div class="kicker">Jalons</div><h2>' + esc(D.AGES[st.age].n) + '</h2><p class="small muted">Ce qu’il y a à faire à chaque âge. Les découvertes hors des jalons comptent aussi : elles ouvrent d’autres chemins.</p>';
     ms.forEach((list, a) => {
       if (!list || a > st.age + 1) return;
@@ -793,7 +799,7 @@
     const st = S();
     let h = "";
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
-    if (!(st.stats.crafts > 0)) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. <b>Œuvre</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
+    if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. <b>Œuvre</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
     h += '<div id="hands">' + handsHTML() + "</div>";
     h += pinsHTML();
     h += '<div class="gestes">';
@@ -1226,6 +1232,7 @@
       $$("[data-xl]").forEach((b) => (b.textContent = fmtTime(xp.left)));
     } else mini.classList.add("hidden");
     Roue.refresh();
+    Tuto.tick();
     const hi = E.handInfo(), hm = $("#handMini");
     hm.classList.toggle("hidden", !hi.jobs.length || U.tab === "atelier");
     if (hi.jobs.length) hm.textContent = "✋ " + fmtTime(hi.left);
@@ -1621,6 +1628,7 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
+        '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
         '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
@@ -1637,6 +1645,8 @@
       on: {
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
+        tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
+        tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre reviendra au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
         account: () => { openAccount(); return true; },
         help: () => setTimeout(openHelp, 80),
@@ -1656,7 +1666,8 @@
       "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
       "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se construit sur la Carte : son chantier se nourrit par tapis.</p>" +
-      "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p></div>", "Compris");
+      "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p>" +
+      "<p><b>💭 Tutoriel.</b> Des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible. Menu ☰ : le couper, ou le revoir depuis le début.</p></div>", "Compris");
   }
 
   function intro() {
@@ -1785,7 +1796,7 @@
       if (e.kind !== "done") return;
       const it = I[e.job.id], n = e.job.s[e.job.s.length - 1][1];
       if (U.tab !== "atelier") toast("✋ Fini : <b>" + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(n)));
-      else render(true);
+      else render(); // pas pendant un appui long sur une matière
     });
     E.on("projstep", (x) => {
       const P = D.PROJECTS[x.pid], s = P.steps[x.step];
@@ -1853,7 +1864,7 @@
         U.lp = { id, t: setTimeout(() => { U.lp = null; vibe(15); openItemInfo(id); }, 480) };
       }
     });
-    const cancelLp = () => { if (U.lp) { clearTimeout(U.lp.t); } };
+    const cancelLp = () => { if (U.lp) { clearTimeout(U.lp.t); U.lp.up = true; } };
     ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
     views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } }, { passive: true });
     views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".inv, .slot")) ev.preventDefault(); });
@@ -1985,7 +1996,7 @@
   function loop() {
     E.update();
     if (U.offline && !U.mcur) showOffline();
-    if (U.dirty && !U.holding) render();
+    if (U.dirty && !U.holding && !pressing()) render();
   }
 
   function boot() {

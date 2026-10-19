@@ -629,3 +629,27 @@ body.in-usine #toasts { bottom: auto; top: calc(var(--top) + var(--safe-t) + 54p
 .rw-ing.lack i { color: var(--bad); }
 .rw-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .rw-t { margin: 6px 0 0; }
+
+/* ---------------------------------------------------------------- le tutoriel (souvenirs qui guident) */
+.tuto { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.tuto.hidden { display: none; }
+.tu-spot { position: fixed; border-radius: 14px; pointer-events: none; z-index: 1;
+  box-shadow: 0 0 0 3px var(--acc), 0 0 22px 4px color-mix(in srgb, var(--acc) 55%, transparent), 0 0 0 200vmax rgba(4,3,2,.46);
+  transition: left .25s ease, top .25s ease, width .25s ease, height .25s ease; animation: tupulse 1.6s ease-in-out infinite; }
+.tu-spot.nodim { box-shadow: 0 0 0 3px var(--acc), 0 0 22px 4px color-mix(in srgb, var(--acc) 55%, transparent); }
+@keyframes tupulse { 50% { outline: 6px solid color-mix(in srgb, var(--acc) 25%, transparent); outline-offset: 4px; } }
+.tu-bub { position: fixed; z-index: 2; pointer-events: auto; padding: 10px 14px 10px; border-radius: 16px;
+  background: color-mix(in srgb, var(--panel) 96%, transparent); border: 1px solid color-mix(in srgb, var(--acc) 60%, transparent);
+  box-shadow: 0 12px 34px rgba(0,0,0,.55); }
+.tu-bub.pop { animation: fadeup .3s; }
+.tu-bub::before { content: ""; position: absolute; top: -7px; left: calc(var(--ax, -100px) - 7px); width: 12px; height: 12px; transform: rotate(45deg);
+  background: inherit; border-left: 1px solid color-mix(in srgb, var(--acc) 60%, transparent); border-top: 1px solid color-mix(in srgb, var(--acc) 60%, transparent); }
+.tu-bub.up::before { top: auto; bottom: -7px; transform: rotate(225deg); }
+.tu-k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--acc); font-weight: 700; }
+.tu-t { margin: 4px 0 0; font-size: 14.5px; line-height: 1.4; }
+.tu-acts { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+.tu-acts:empty { display: none; }
+.tu-b { border: 1px solid var(--line2); background: var(--bg2); color: var(--muted); border-radius: 99px; padding: 5px 12px; font-size: 13px; }
+.tu-b.pri { background: var(--acc); color: #1a1208; border-color: var(--acc); font-weight: 700; }
+.tu-bub.mini { padding: 6px 12px; cursor: pointer; }
+.tu-bub.mini .tu-t { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; }
