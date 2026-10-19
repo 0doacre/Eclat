@@ -90,7 +90,7 @@
           { tab: "carte", text: "Les tapis portent la récolte jusqu’à la Réserve. Tu peux aussi en tracer au doigt avec l’outil ➜.", next: true }
         ] },
       { id: "mains", n: "Tes mains",
-        when: () => !!S().flags.handSeen && (U.tab === "atelier" || U.tab === "carte"),
+        when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "carte"),
         steps: [
           { at: () => (document.querySelector("#hands .hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
             text: "Ce que tu fabriques à la main passe par ta file ✋ : une pièce après l’autre, même jeu fermé. Répéter un geste va de plus en plus vite, et ✕ annule en rendant les matières.", next: true }
@@ -107,11 +107,12 @@
         still: () => !S().flags.lineDone,
         steps: [
           { tab: "carte", at: '.u-tools [data-tool="mach"]', text: "Ton automate refait un geste à ta place. Prends l’outil Machine.", done: () => Usine.tool() === "mach" || any("mach") },
-          { tab: "carte", text: "Touche une case vide près de la Réserve pour la poser, puis choisis ce qu’elle fabrique.", free: true,
+          { tab: "carte", at: () => ({ cell: [0, 0], span: 5 }), text: "Touche une case vide près de la Réserve pour la poser, puis choisis ce qu’elle fabrique.", free: true,
             done: () => cells().some((e) => e.k === "mach" && e.r) },
           { tab: "carte", at: '.u-tools [data-tool="port"]', text: "Il lui faut des matières. Prends l’outil Sortie et pose-la contre la Réserve.", done: () => any("port") },
-          { tab: "carte", at: '.u-tools [data-tool="tapis"]', text: "Avec l’outil Tapis, glisse le doigt de la sortie jusqu’à ta machine. Elle se servira au passage.", done: fed },
-          { tab: "carte", text: "Ce qu’elle fabrique part devant elle (la petite flèche) : fais-le rouler jusqu’à la Réserve. Et pour aller plus vite, amène-lui ses matières directement depuis les gisements : la Réserve n’en laisse sortir qu’un petit débit.", next: true }
+          { tab: "carte", at: '.u-tools [data-tool="tapis"]', text: "Avec l’outil Tapis, pars de la flèche de la sortie et glisse le doigt jusqu’à longer ta machine : elle se servira au passage.", done: fed },
+          { tab: "carte", text: "Ce qu’elle fabrique sort par sa petite flèche. Tournée vers la Réserve, ça y rentre tout seul ; sinon, trace un tapis jusqu’à elle.", next: true },
+          { tab: "carte", text: "Astuce : la Réserve ne laisse sortir qu’un petit débit. Pour aller plus vite, amène à tes machines leurs matières directement depuis les gisements.", next: true }
         ] },
       { id: "etude", n: "Étudier une matière",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
@@ -157,7 +158,7 @@
       return f.tuto;
     }
     const enabled = () => S().settings.tuto !== false;
-    let lastEnd = 0, shownKey = "", stepAt = 0, revealed = "", raf = 0, mini = false;
+    let lastEnd = 0, lastQueue = 0, shownKey = "", stepAt = 0, revealed = "", revealAt = 0, raf = 0, mini = false;
     const chapter = () => CH.find((c) => c.id === state().c) || null;
     const active = () => enabled() && !!chapter();
 
@@ -182,16 +183,19 @@
     }
 
     /* ------------------------------------------------------------ la bulle */
-    let el = null;
+    let el = null, chip = null;
     function mount() {
       if (el) return;
       el = document.createElement("div");
       el.className = "tuto hidden";
       el.innerHTML = '<div class="tu-spot"></div><div class="tu-bub" role="status"><div class="tu-k"></div><p class="tu-t"></p><div class="tu-acts"></div></div>';
       document.body.appendChild(el);
+      // réduite, la bulle devient une pastille 💭 dans la barre du haut : elle ne recouvre plus rien
+      chip = document.getElementById("tutoMini");
+      if (chip) chip.addEventListener("click", () => { mini = false; stepAt = Date.now(); shownKey = ""; A.click(); });
       el.addEventListener("click", (ev) => {
         const b = ev.target.closest("[data-t]");
-        if (!b) { if (ev.target.closest(".tu-bub") && mini) { mini = false; stepAt = Date.now(); shownKey = ""; } return; }
+        if (!b) return;
         if (b.dataset.t === "next") advance();
         else if (b.dataset.t === "skip") { const ch = chapter(); if (ch) finish(ch); }
         else if (b.dataset.t === "min") { mini = true; shownKey = ""; }
@@ -199,36 +203,57 @@
     }
     function hide() {
       if (el) el.classList.add("hidden");
+      if (chip) chip.classList.add("hidden");
       cancelAnimationFrame(raf); raf = 0;
       shownKey = "";
     }
+    /* la bande d’écran libre : sous la barre du haut, au-dessus des onglets, des outils de la carte et d’une fiche ouverte */
+    function band() {
+      const top = document.getElementById("top"), tabs = document.getElementById("tabs");
+      let lo = top ? top.getBoundingClientRect().bottom : 0, hi = tabs ? tabs.getBoundingClientRect().top : window.innerHeight;
+      document.querySelectorAll(".u-tools, .u-sheet:not(.hidden)").forEach((n) => { const r = n.getBoundingClientRect(); if (r.height && r.top < hi) hi = r.top; });
+      return { lo, hi };
+    }
+    /* une cible dans une page qui défile (Atelier, Carnet…) n’est montrée que si elle est vraiment à l’écran */
+    const scrolls = (t) => !!(t && t.el && t.el.closest("#views") && !t.el.closest("#v-carte"));
+    function inBand(r) { const b = band(); return r.top >= b.lo - 1 && r.bottom <= b.hi + 1; }
     function resolve(at) {
       let t = typeof at === "function" ? at() : at;
       if (!t) return null;
       if (typeof t === "string") t = document.querySelector(t);
       if (!t) return null;
-      if (t.cell) return { cell: t.cell };
+      if (t.cell) return { cell: t.cell, span: t.span };
       const r = t.getBoundingClientRect();
       if (!r.width || !r.height) return null;
       return { el: t, r };
     }
     function rectOf(target) {
       if (!target) return null;
-      if (target.cell) return Usine.cellRect(target.cell[0], target.cell[1]);
+      if (target.cell) {
+        const r = Usine.cellRect(target.cell[0], target.cell[1]), k = target.span || 1;
+        if (!r) return null;
+        // une case, ou plusieurs autour d’elle (la Réserve et ses abords)
+        const w = r.width * k, h = r.height * k, left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
+        return { left, top, width: w, height: h, right: left + w, bottom: top + h };
+      }
       return target.el.getBoundingClientRect();
     }
     /* place le projecteur et la bulle ; relancé à chaque image tant qu’une étape est affichée */
     function place(view) {
       const spot = el.querySelector(".tu-spot"), bub = el.querySelector(".tu-bub");
-      const r = rectOf(view.target);
+      let r = rectOf(view.target);
+      if (r && scrolls(view.target) && !inBand(r)) r = null; // pas encore à l’écran : on attend qu’elle y soit
       const W = window.innerWidth, H = window.innerHeight;
       bub.style.width = Math.min(340, W - 24) + "px";
       const bw = bub.offsetWidth, bh = bub.offsetHeight;
-      if (!r || mini) {
+      if (!r) {
+        // sans cible, la bulle se pose en bas de la bande libre : l’objectif, en haut, reste lisible
+        const b = band();
         spot.style.display = "none";
         bub.style.left = Math.round((W - bw) / 2) + "px";
-        bub.style.top = mini ? "auto" : Math.round(H * 0.16) + "px";
-        bub.style.bottom = mini ? "calc(var(--nav) + var(--safe-b) + 70px)" : "auto";
+        bub.style.bottom = "auto";
+        bub.style.top = Math.max(b.lo + 8, b.hi - bh - 10) + "px";
+        bub.classList.remove("up");
         bub.style.setProperty("--ax", "-100px");
         return;
       }
@@ -243,21 +268,32 @@
       const left = Math.max(12, Math.min(W - bw - 12, cx - bw / 2));
       bub.style.left = left + "px";
       bub.style.bottom = "auto";
-      bub.style.top = (below ? Math.min(H - bh - 8, r.bottom + pad + 12) : Math.max(8, r.top - pad - 12 - bh)) + "px";
+      // une cible dans une fiche ou une fenêtre : la bulle passe au-dessus du panneau entier, pour en laisser le texte lisible
+      const box = view.target.el && view.target.el.closest(".u-sheet, .modal-box");
+      const over = box ? box.getBoundingClientRect().top : r.top - pad;
+      const room = box && over - 12 - bh >= band().lo + 4 ? over : r.top - pad;
+      bub.style.top = (below ? Math.min(H - bh - 8, r.bottom + pad + 12) : Math.max(8, room - 12 - bh)) + "px";
       bub.classList.toggle("up", !below);
       bub.style.setProperty("--ax", Math.max(16, Math.min(bw - 16, cx - left)) + "px");
     }
     function show(view, key) {
       mount();
       const bub = el.querySelector(".tu-bub");
+      if (mini) {
+        el.classList.add("hidden");
+        cancelAnimationFrame(raf); raf = 0;
+        if (chip && chip.classList.contains("hidden")) { chip.classList.remove("hidden"); chip.title = view.text; }
+        shownKey = key;
+        return;
+      }
+      if (chip) chip.classList.add("hidden");
       if (shownKey !== key) {
         shownKey = key;
         const ch = chapter(), T = state();
         el.querySelector(".tu-k").textContent = "💭 " + ch.n + (ch.steps.length > 1 ? " · " + (T.i + 1) + "/" + ch.steps.length : "");
         el.querySelector(".tu-t").innerHTML = esc(view.text);
-        el.querySelector(".tu-acts").innerHTML = (mini ? "" : '<button class="tu-b" data-t="skip">Passer</button>') +
-          (view.free && !mini ? '<button class="tu-b" data-t="min">Réduire</button>' : "") + (view.next && !mini ? '<button class="tu-b pri" data-t="next">Suivant</button>' : "");
-        bub.classList.toggle("mini", mini);
+        el.querySelector(".tu-acts").innerHTML = '<button class="tu-b" data-t="skip">Passer</button>' +
+          (view.free ? '<button class="tu-b" data-t="min">Réduire</button>' : "") + (view.next ? '<button class="tu-b pri" data-t="next">Suivant</button>' : "");
         el.classList.remove("hidden");
         bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop");
       }
@@ -269,7 +305,7 @@
     /* ------------------------------------------------------------ le pas de temps (4 fois par seconde) */
     function tick() {
       // ce que le joueur a déjà fait seul n’a plus besoin d’être montré
-      if (S().hand.q.length) S().flags.handSeen = true;
+      if (S().hand.q.length) lastQueue = Date.now();
       if (Roue.isOpen()) S().flags.roueSeen = true;
       if (!enabled() || !S().introSeen) { hide(); return; }
       const T = state();
@@ -293,6 +329,8 @@
       if ((modalOpen() && !s.modal) || (Roue.isOpen() && !s.roue)) { hide(); return; }
       // une explication qu’on a laissée en changeant d’onglet : tant pis, on n’y ramène pas
       if (s.next && !s.go && s.tab && U.tab !== s.tab) { advance(); return; }
+      // un chapitre pas encore entamé ne rappelle pas vers un autre onglet : il attend qu’on y revienne
+      if (T.i === 0 && !s.go && s.tab && U.tab !== s.tab) { hide(); return; }
       let view;
       if (s.tab && U.tab !== s.tab && !s.modal) {
         view = { target: resolve('#tabs [data-tab="' + s.tab + '"]'), text: s.go || "Ouvre " + TABS[s.tab] + "." };
@@ -300,15 +338,15 @@
         const target = resolve(s.at);
         const text = typeof s.text === "function" ? s.text() : s.text;
         view = { target, text: !target && s.alt ? s.alt : text, next: s.next, free: s.free, dim: s.free ? false : s.dim };
-        // la première fois, on amène la cible à l’écran
+        // on amène la cible à l’écran : une fois en douceur, puis on insiste un court moment
+        // (la page peut s’être redessinée entre-temps) tant qu’elle n’y est pas
         const key = ch.id + ":" + T.i;
         if (target && revealed !== key) {
-          revealed = key;
+          revealed = key; revealAt = Date.now();
           if (target.cell) Usine.reveal(target.cell[0], target.cell[1]);
-          else {
-            const r = target.r;
-            if (r.top < 60 || r.bottom > window.innerHeight - 80) target.el.scrollIntoView({ block: "center", behavior: "smooth" });
-          }
+          else if (scrolls(target) && !inBand(target.r)) target.el.scrollIntoView({ block: "center", behavior: "smooth" });
+        } else if (target && scrolls(target) && !inBand(target.r) && Date.now() - revealAt > 800 && Date.now() - revealAt < 3000) {
+          target.el.scrollIntoView({ block: "center" });
         }
       }
       if (!stepAt) stepAt = Date.now();

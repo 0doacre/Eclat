@@ -95,6 +95,16 @@
         bot: h && !h.classList.contains("hidden") ? Math.max(0, r.bottom - h.getBoundingClientRect().top) : 0
       };
     }
+    /* quand l’objectif ou le Suivi grandissent ou rétrécissent, la carte suit : le milieu de la
+     * bande libre reste sur le même endroit (pas de grand vide noir quand on replie l’objectif) */
+    function keepBand() {
+      const f = freeBand();
+      if (V.band && !V.ptrs.size) {
+        const d = (f.top - V.band.top) - (f.bot - V.band.bot);
+        if (Math.abs(d) > 2) { V.cam.y -= d / 2 / V.cam.z; clampCam(); }
+      }
+      V.band = f;
+    }
     /* centre la vue sur (x, y) dans cette bande ; avec un cadre { w, h }, zoome pour qu’il tienne */
     function lookAt(x, y, box) {
       const f = freeBand();
@@ -161,7 +171,7 @@
       const n = E.tapDeposit(c.x, c.y);
       if (!n) return true;
       const r = V.cv.getBoundingClientRect();
-      if (floater) floater("+" + fmt(n), r.left + sx(c.x) + (Math.random() - 0.5) * 16, r.top + sy(c.y) - V.cam.z * 0.4);
+      if (floater) floater("+" + fmt(n) + " " + I[d.res].n, r.left + sx(c.x) + (Math.random() - 0.5) * 16, r.top + sy(c.y) - V.cam.z * 0.4);
       V.pulse["d" + c.x + "," + c.y] = V.t;
       A.tap(d.res);
       vibe(5);
@@ -551,7 +561,7 @@
         html: '<div class="kicker">L’Usine</div><h2>Comment ça marche</h2><div class="lore usine-help">' +
           "<p>Au centre, la <b>Réserve</b> : c’est ton stock.</p>" +
           "<p>Autour, chaque terre que tu as atteinte a ses <b>gisements</b> : une case par ressource. Touche une case pour récolter à la main, garde le doigt appuyé pour continuer.</p>" +
-          "<p>Avec l’outil ⛏️, pose un <b>extracteur</b> sur la case qui lui convient (une cabane sur le bois, un derrick sur le pétrole…). Il récolte seul, puis pose sa récolte sur la case que montre sa flèche. Trace un tapis de là jusqu’à la Réserve, ou touche-le et choisis 🛤️ <b>Relier à la Réserve</b>.</p>" +
+          "<p>Avec l’outil ⛏️, pose un <b>extracteur</b> sur la case qui lui convient (une cabane sur le bois, plus tard des mines et des pompes…). Il récolte seul, puis pose sa récolte sur la case que montre sa flèche. Trace un tapis de là jusqu’à la Réserve, ou touche-le et choisis 🛤️ <b>Relier à la Réserve</b>.</p>" +
           "<p>Une <b>machine</b> se sert sur les tapis qui la touchent, et pose ce qu’elle fabrique devant sa flèche. Fais passer le tapis d’un extracteur devant une machine : elle prend ce qu’il lui faut, le reste continue jusqu’à la Réserve.</p>" +
           "<p>Une <b>sortie</b>, posée contre la Réserve, envoie aux machines ce qu’elles réclament dans le stock. Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>" +
           "<p>Pour tracer un tapis, garde le doigt appuyé et glisse. Deux doigts pour te déplacer et zoomer. ↶ annule la dernière modification.</p>" +
@@ -939,6 +949,7 @@
       const speed = 1.6 * Math.min(4, Math.sqrt(E.cache().aspd || 1));
       feed();
       spawn(speed);
+      keepBand();
       for (const p of V.packets) p.s += p.v * dt;
       V.packets = V.packets.filter((p) => {
         if (p.s < p.len) return true;
