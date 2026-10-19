@@ -189,6 +189,7 @@
     const o = U.mq.shift();
     if (!o) { U.mcur = null; m.classList.add("hidden"); return; }
     U.mcur = o;
+    U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
     box.innerHTML = o.html;
     box.scrollTop = 0;
@@ -201,17 +202,19 @@
     if (o && o.onClose) o.onClose();
     setTimeout(nextModal, 60);
   }
+  /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
+  const fresh = () => Date.now() - (U.mAt || 0) < 450;
   function setupModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     box.addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-m]");
-      if (!b || !U.mcur) return;
+      if (!b || !U.mcur || fresh()) return;
       const k = b.dataset.m;
       const h = U.mcur.on && U.mcur.on[k];
       if (h && h(b, ev) === true) return;
       closeModal();
     });
-    m.addEventListener("click", (ev) => { if (ev.target === m && U.mcur && !U.mcur.persistent) closeModal(); });
+    m.addEventListener("click", (ev) => { if (ev.target === m && U.mcur && !U.mcur.persistent && !fresh()) closeModal(); });
   }
   function simpleModal(kicker, title, body, btn) {
     openModal({ html: (kicker ? '<div class="kicker">' + kicker + "</div>" : "") + "<h2>" + title + "</h2>" + body +
@@ -929,9 +932,15 @@
       return h;
     }
     if (r.kind === "learn") {
-      return '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette comprise</span>' : "") +
-        '<div class="rname">' + esc(I[r.id].n) + '</div><div class="small">Tu sais comment faire, mais il te manque :</div><div class="row wrap small">' +
-        Object.keys(r.missing).map((i) => '<span class="ing lack link" data-goto="' + i + '">' + icon(i, "sm") + fmt(r.missing[i]) + " " + esc(I[i].n) + "</span>").join("") + "</div>" +
+      // la carte suit ce qui se passe ensuite : en route dans tes mains, fabriqué, ou ce qui manque encore
+      const made = (S().made[r.id] || 0) - (r.made0 || 0), q = E.queued(r.id);
+      if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultHTML(); }
+      const miss = q ? null : E.missingFor(r.id, 1);
+      const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette comprise</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
+      if (q) return head + '<div class="small">✋ Tes mains s’y mettent : la recette et ses pièces sont dans ta file.</div></div></div>';
+      if (!miss) return head + '<div class="small">Tout est là.</div><div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
+      return head + '<div class="small">Tu sais comment faire, mais il te manque :</div><div class="row wrap small">' +
+        Object.keys(miss).map((i) => '<span class="ing lack link" data-goto="' + i + '">' + icon(i, "sm") + fmt(miss[i]) + " " + esc(I[i].n) + "</span>").join("") + "</div>" +
         '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-chain="' + r.id + '">⚡ Fabriquer en chaîne</button><button class="btn small" data-tree="' + r.id + '">🌳 Détail</button><button class="btn small" data-track="' + r.id + '">🎯 Suivre</button></div></div></div>';
     }
     if (r.kind === "blocked") {
@@ -947,7 +956,9 @@
     if (r.kind === "owned") return '<p class="small">Tu possèdes déjà <b>' + esc(I[r.id].n) + "</b>.</p>";
     if (r.kind === "queued" || r.kind === "busy") {
       const it = I[r.id];
-      const msg = r.kind === "queued" ? "✋ Tes mains s’y mettent. Prêt dans " + fmtTime(r.time) + "."
+      const done = r.kind === "queued" && !E.queued(r.id);
+      const msg = done ? "✓ C’est fait : la pièce est rangée avec tes matières."
+        : r.kind === "queued" ? "✋ Tes mains s’y mettent. Prêt dans " + fmtTime(r.time) + "."
         : r.why === "full" ? "Tes mains sont déjà bien occupées. Attends qu’une fabrication se termine."
         : r.why === "queued" ? "C’est déjà en route." : "Impossible pour l’instant.";
       return '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + '</div><div class="small">' + msg + "</div>" +
@@ -1319,6 +1330,7 @@
     const r = E.attempt(g, ids);
     U.forging = false;
     U.last = r;
+    if (r.kind === "learn") r.made0 = S().made[r.id] || 0;
     const bench = $("#bench");
     const p = elCenter($("#forge"));
     strike(g, bench, r.kind === "craft" || r.kind === "queued");
@@ -1720,15 +1732,17 @@
   /* ============================================================ ÉVÉNEMENTS DU MOTEUR */
   function bindEngine() {
     E.on("struct", () => { U.dirty = true; });
+    /* un nouvel âge : un vrai moment, dans la file des fenêtres, après la réminiscence qui l’a amené */
     E.on("age", (a) => {
-      const ag = D.AGES[a];
+      const ag = D.AGES[a], miles = (E.milestones()[a] || []).length;
       applyAge();
-      A.age();
-      const b = document.createElement("div");
-      b.className = "age-banner";
-      b.innerHTML = '<div class="k">Tu entres dans</div><div class="n">' + esc(ag.n) + '</div><div class="q">' + esc(ag.q) + "</div>";
-      document.body.appendChild(b);
-      setTimeout(() => b.remove(), 3500);
+      setTimeout(() => openModal({
+        cls: "agecard", persistent: true,
+        html: '<div class="kicker center">Tu entres dans</div><h2 class="center">' + esc(ag.n) + '</h2><p class="center q">« ' + esc(ag.q) + " »</p>" +
+          '<p class="center small muted">Âge ' + (a + 1) + " sur " + D.AGES.length + (miles ? " · " + miles + " jalon" + (miles > 1 ? "s" : "") + " t’attend" + (miles > 1 ? "ent" : "") + " 🏁" : "") + "</p>" +
+          '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>',
+        onOpen: () => { A.age(); sparks(innerWidth / 2, innerHeight * 0.4, 30, ag.c); }
+      }), 700);
     });
     E.on("learn", () => badge("carnet"));
     E.on("zone", (z) => {
