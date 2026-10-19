@@ -97,7 +97,8 @@
     if (e.auto) for (const k in e.auto) out.push("Production " + (k === "*" ? "partout" : targetName(k)) + " " + fmtMul(e.auto[k]));
     if (it.p) {
       const c = E.cache(), m = (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
-      out.push("Chacun : " + Object.keys(it.p).map((r) => fmtRate(it.p[r] * m) + " " + I[r].n).join(", "));
+      if (it.t === "ext") out.push("Posé sur un gisement de " + zoneName(it.z) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
+      else out.push("Chacun : " + Object.keys(it.p).map((r) => fmtRate(it.p[r] * m) + " " + I[r].n).join(", "));
     }
     if (it.t === "mach") out.push("Machine : " + fmtNum(it.spd * E.cache().aspd) + " fabrications/min");
     if (e.intu) out.push("+" + e.intu + " ✨/min");
@@ -662,6 +663,7 @@
     updateBadges();
     const el = $("#v-" + U.tab);
     const sc = $("#views").scrollTop;
+    const anc = U.anchor && el.querySelector(U.anchor), ay = anc ? anc.getBoundingClientRect().top : 0;
     // garder le focus d’un champ de saisie pendant le rendu
     const ae = document.activeElement;
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
@@ -671,6 +673,9 @@
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
     $("#views").scrollTop = sc;
+    // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
+    if (anc) { const a2 = el.querySelector(U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
+    U.anchor = null;
     if (focus) { const f = document.getElementById(focus.id); if (f) { f.focus(); try { f.setSelectionRange(focus.s, focus.e); } catch (e) { /* champ sans sélection */ } } }
     refresh();
     ambient();
@@ -699,9 +704,10 @@
       return st.flags.arche ? '<div class="card acc goal"><span class="ic">🌌</span><div class="grow"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Rends-toi dans le Cosmos.</div></div></div>' : "";
     }
     const ob = g.ob;
-    const open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
+    const open = goalOpen();
     const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : ob.k === "ext" ? "⛏️ " + esc(ob.n) : esc(I[ob.id].n);
-    const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
+    const cur = E.objective(), all = E.milestones();
+    const ml = (cur && all.find((l) => l && l.some((x) => x.i === cur.i))) || all[st.age] || [], md = ml.filter((x) => x.done).length;
     let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
       (ml.length ? '<button class="gmiles" data-miles title="Les jalons de cet âge">🏁 ' + md + "/" + ml.length + "</button>" : "") + "</div>";
     if (!open) {
@@ -726,6 +732,12 @@
       h += stepBox(g.step, g.why, g.step === ob.id);
     }
     return h + "</div>";
+  }
+  /* l’objectif déplié ou non : pendant un Suivi, il reste replié (on peut le rouvrir un moment) pour laisser voir la carte */
+  function goalOpen() {
+    const st = S();
+    if (st.track && I[st.track.id]) return !!U.goalPeek;
+    return st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
   }
   /* les jalons : ce qu’il y a à faire à chaque âge, et le premier pas vers le suivant */
   function mileName(ob) {
@@ -770,7 +782,7 @@
   function memoryHTML(m, gain) {
     if (!m) return "";
     const f = Math.max(0, Math.min(1, (m.p - m.prev) / (m.next - m.prev)));
-    const what = ["le geste", "une des matières", "la recette entière"][m.lvl] || "";
+    const what = (["le geste", "une des matières", "la recette entière"][m.lvl] || "") + (I[m.id] ? " de « " + I[m.id].n + " »" : "");
     return '<div class="memory"><div class="row between tiny"><span>💭 Souvenirs' + (gain ? ' <b class="gain">' + gain + "</b>" : "") + "</span><span class=\"muted\">prochain : " + what + "</span></div>" +
       '<div class="bar"><i style="width:' + (f * 100).toFixed(0) + '%"></i></div>' +
       (gain ? "" : '<div class="tiny dim">Chaque combinaison nouvelle essayée à l’Atelier en réveille, surtout si elle s’approche de ce que tu cherches.</div>') + "</div>";
@@ -781,6 +793,7 @@
     const id = t.id, p = E.plan(id, 1);
     let h = '<div class="card track"><div class="row between"><div class="lbl">🎯 Suivi</div><button class="btn small ghost" data-untrack>✕</button></div>' +
       '<div class="row" style="margin:4px 0 6px">' + icon(id, "sm") + ' <b class="link-txt" data-goto="' + id + '">' + esc(I[id].n) + "</b></div>";
+    if (E.queued(id) > 0) return h + '<div class="small">✋ Tes mains s’y mettent : c’est en route.</div></div>';
     if (p.ok) return h + '<div class="small" style="color:var(--good)">Tout est prêt.</div><button class="btn small pri" style="margin-top:6px" data-chain="' + id + '">⚡ Fabriquer</button></div>';
     const f = E.flows();
     Object.keys(p.missing).forEach((k) => {
@@ -823,7 +836,8 @@
     if (U.geste === "chauffer" || U.geste === "allier") heat = "🌡️ Ta meilleure chaleur : " + fmtHeat(E.heat());
     else if ((U.geste === "marteler" || U.geste === "electriser") && E.level(U.geste) > 1) heat = G.d + " (niveau " + E.level(U.geste) + ")";
     const mat = st.age >= 9 ? " m-labo" : st.age >= 6 ? " m-metal" : st.age >= 3 ? " m-pierre" : "";
-    h += '<div class="card bench' + mat + '" id="bench"><div class="heat small">' + esc(heat) + '</div><div class="slots">';
+    h += '<div class="card bench' + mat + '" id="bench">' + (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") +
+      '<div class="heat small">' + esc(heat) + '</div><div class="slots">';
     U.slots.forEach((id, i) => {
       if (i) h += '<span class="plus-sep">+</span>';
       if (id) h += '<button class="slot full" data-slot="' + i + '">' + icon(id) + '<span class="sn">' + esc(I[id].n) + '</span><span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
@@ -836,7 +850,7 @@
       h += '<h3 class="sub">Tu sais déjà faire avec ces matières</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
     }
     const o = invOpts();
-    h += '<h3 class="sub">Tes matières</h3>' +
+    h += '<div class="sub-row"><h3 class="sub">Tes matières</h3><button class="btn small ghost" data-roue>🛠️ Fabriquer une pièce</button></div>' +
       '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false"></div>' +
       '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
       '<div class="filters">' + INV_FILTERS.map(([k, n]) => '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
@@ -844,7 +858,7 @@
     const tile = (id) => {
       const sel = U.slots.includes(id), fav = favs()[id];
       const rx = st.studied[id] && E.reactions(id)[U.geste];
-      return '<button class="inv' + (sel ? " sel" : "") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + (fav ? '<i class="fav">♥</i>' : "") +
+      return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + (fav ? '<i class="fav">♥</i>' : "") +
         (rx ? '<i class="rx" title="Réagit avec ce geste">✦' + (rx > 1 ? rx : "") + "</i>" : "") + icon(id) +
         '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span><span class="n">' + esc(I[id].n) + "</span></button>";
     };
@@ -890,9 +904,11 @@
       qty: (a, b) => (st.inv[b] || 0) - (st.inv[a] || 0) || byAge(a, b),
       new: (a, b) => (+st.seen[b] || 0) - (+st.seen[a] || 0) || byAge(b, a)
     };
-    return Object.keys(st.inv).filter((id) => {
+    // une matière déjà eue reste dans la liste à 0 : sa place ne bouge pas, et on peut encore la poser sur l’établi
+    // (une recette comprise propose alors de fabriquer ce qui manque)
+    return Array.from(new Set(Object.keys(st.inv).concat(Object.keys(st.seen)))).filter((id) => {
       const it = I[id];
-      if (!it || !(st.inv[id] >= 1)) return false;
+      if (!it || !(st.inv[id] >= 1 || st.seen[id])) return false;
       if (E.isUnique(it) || E.isScaled(it)) return false;
       if (q && !norm(it.n).includes(q)) return false;
       if (o.filter === "fav") return !!fv[id];
@@ -1263,6 +1279,7 @@
       if (!it || E.isUnique(it)) return;
       el.textContent = fmt(st.inv[id] || 0);
     });
+    $$(".inv[data-inv]", view).forEach((el) => el.classList.toggle("zero", !(st.inv[el.dataset.inv] >= 1)));
     $$("[data-need]", view).forEach((el) => el.classList.toggle("lack", (st.inv[el.dataset.need] || 0) + 1e-9 < Number(el.dataset.q)));
     $$("[data-cr]", view).forEach((b) => {
       const id = b.dataset.cr, n = b.dataset.n;
@@ -1318,6 +1335,7 @@
       U.slots[free] = id;
     }
     A.click();
+    U.anchor = '[data-inv="' + id + '"]';
     render(true);
   }
 
@@ -1529,8 +1547,11 @@
       const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] !== undefined);
       const ku = uses.filter((k) => st.known[k]), unk = uses.length - ku.length;
       if (uses.length) {
+        // à ta portée : le geste maîtrisé et toutes les matières déjà vues ; les autres viendront plus tard
+        const now = Object.values(E.reactions(id)).reduce((a, b) => a + b, 0), later = unk - now;
+        const unkTxt = (now ? now + " à trouver dès maintenant" : "") + (now && later ? ", " : "") + (later ? later + " plus tard" : "");
         h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + ku.map((k) => nav(k)).join("") +
-          (unk ? '<span class="tiny muted">' + (ku.length ? "et " : "") + unk + " recette" + (unk > 1 ? "s" : "") + " encore inconnue" + (unk > 1 ? "s" : "") + "</span>" : "") + "</div>";
+          (unk ? '<span class="tiny muted">' + (ku.length ? "et encore : " : "Recettes inconnues : ") + unkTxt + "</span>" : "") + "</div>";
         if (unk && st.seen[id]) h += studyHTML(id);
       }
     }
@@ -1899,12 +1920,15 @@
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if ((b = t.closest("[data-goalt]"))) {
-        const st = S(), open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
-        st.settings.goalOpen = !open; A.click(); render(true); return;
+        const st = S(), open = goalOpen();
+        if (st.track && I[st.track.id]) U.goalPeek = !open; else st.settings.goalOpen = !open;
+        A.click(); render(true); return;
       }
       if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
       if ((b = t.closest("[data-lock]"))) { toast("Un geste que tu ne maîtrises pas encore. Il te faut une nouvelle station."); return; }
       if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une matière ci-dessous pour la poser ici."); return; }
+      if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
+      if (t.closest("[data-roue]")) { A.init(); Roue.open(); return; }
       if (t.closest("#forge")) { forge(); return; }
       if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
       if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }

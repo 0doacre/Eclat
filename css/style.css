@@ -81,6 +81,13 @@ b, strong { font-weight: 650; }
 
 h2.title { font-family: var(--serif); font-weight: 500; font-size: 22px; margin: 6px 4px 10px; }
 h3.sub { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 18px 4px 8px; font-weight: 600; }
+.sub-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 18px 4px 8px; }
+.sub-row h3.sub { margin: 0; }
+.bench-clear { position: absolute; top: 8px; right: 8px; z-index: 2; font-size: 12px; padding: 3px 9px; border-radius: 99px; color: #f3dcb8;
+  background: rgba(0,0,0,.35); border: 1px solid rgba(255,240,220,.18); }
+.inv.zero { opacity: .45; }
+.inv.zero.sel { opacity: .8; }
+.inv.zero .c { color: var(--bad); }
 .muted { color: var(--muted); }
 .dim { color: var(--dim); }
 .small { font-size: 13px; }
@@ -146,6 +153,7 @@ p { margin: 0.4em 0; }
 .btn.ghost { background: transparent; }
 .btn.small { min-height: 34px; padding: 5px 10px; font-size: 13px; border-radius: 10px; }
 .btn:disabled, .btn.off { opacity: .38; pointer-events: none; }
+.btn.pri:disabled { background: var(--panel2); color: var(--muted); border-color: var(--line2); }
 .btn.wide { width: 100%; }
 .row { display: flex; align-items: center; gap: 8px; }
 .row.wrap { flex-wrap: wrap; }
@@ -626,9 +634,11 @@ body.in-usine #toasts { bottom: auto; top: calc(var(--top) + var(--safe-t) + 54p
 .rw-cost { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .rw-cost .g { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--line2); font-size: 12px; }
 .rw-ing { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px 2px 3px; border-radius: 999px; background: var(--bg2); border: 1px solid var(--line); font-size: 12px; cursor: pointer; }
-.rw-ing i { font-style: normal; color: var(--muted); }
+.rw-ing i { font-style: normal; color: var(--text); font-weight: 600; }
+.rw-ing small { font-weight: 400; color: var(--muted); font-size: 11px; }
 .rw-ing.lack { border-color: var(--bad); }
-.rw-ing.lack i { color: var(--bad); }
+.rw-ing.lack i, .rw-ing.lack small { color: var(--bad); }
+.rw-miss { color: var(--muted); }
 .rw-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .rw-t { margin: 6px 0 0; }
 

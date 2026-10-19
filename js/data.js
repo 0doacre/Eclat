@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.1.0";
+  D.VERSION = "4.2.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -74,7 +74,7 @@
   I.feu = { n: "Feu de camp", ic: "🔥", a: 0, t: "stat", r: ["assembler", { archet: 1, bois: 25, caillou: 15 }, 1],
     e: { st: [{ g: "chauffer", heat: 600 }] }, d: "Le premier feu que tu allumes toi-même.",
     h: "L’outil qui fait naître la braise, de quoi la nourrir, et des pierres pour la contenir." };
-  I.charbon = { n: "Charbon", sym: "C", col: "#2b2b2b", a: 0, t: "res", r: ["chauffer", { bois: 4 }, 1, { heat: 600 }],
+  I.charbon = { n: "Charbon", sym: "⬢", col: "#2b2b2b", a: 0, t: "res", r: ["chauffer", { bois: 4 }, 1, { heat: 600 }],
     d: "Du bois cuit sans flamme. Brûle bien plus chaud que le bois.",
     h: "Le bois, chauffé longtemps, devient noir et léger." };
   I.epieu = { n: "Épieu durci", ic: "🗡️", a: 0, t: "tool", r: ["chauffer", { manche: 2 }, 1, { heat: 600 }],
@@ -882,6 +882,7 @@
   };
 
   D.CHANGES = [
+    "🧭 Plus fluide pour qui découvre : la bulle du tutoriel ne se pose plus sur les boutons (réduite, elle devient 💭 en haut), une fenêtre ne se ferme plus sous le doigt, un nouvel âge s’annonce vraiment, la carte « Recette comprise » suit la fabrication, les matières épuisées gardent leur place à l’Atelier (et se posent encore sur l’établi), la roue garde ses recettes à la même place.",
     "💭 Un tutoriel : des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible (premiers gestes, cabane, roue, automate, étude des matières, tapis qui débordent…). Il se coupe ou se revoit dans le menu ☰.",
     "🗺️ Une seule carte : les Terres et la Fabrique ne font plus qu’un. Chaque terre y est une région, avec ses gisements et ses lieux à explorer (🧭). Touche son nom pour voir son paysage.",
     "✋ À l’Atelier, une découverte sort tout de suite. Ensuite, fabriquer à la main prend un peu de temps et passe par la file « Tes mains », qui avance même jeu fermé. Répéter un geste va de plus en plus vite, et les gestes des âges passés aussi. Pour produire en grand, il y a les machines.",

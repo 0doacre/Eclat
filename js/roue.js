@@ -21,7 +21,7 @@
       { k: "curio", ic: "🗝️", n: "Curiosités", t: { curio: 1, relic: 1 } },
       { k: "hand", ic: "✋", n: "Tes mains" }
     ];
-    const W = { el: null, open: false, cat: null, page: 0, sel: null, job: null, q: "", only: null, title: "", list: [], sig: "" };
+    const W = { el: null, open: false, cat: null, page: 0, sel: null, job: null, q: "", only: null, title: "", list: [], sig: "", order: null };
 
     /* ------------------------------------------------------------ les recettes */
     const owned = (id) => E.isUnique(I[id]) && S().made[id] > 0;
@@ -42,9 +42,15 @@
       else if (W.only) ids = W.only.filter((id) => S().known[id] && !owned(id));
       else if (W.cat === "fav") return favIds();
       else { const c = CATS.find((x) => x.k === W.cat); ids = c && c.t ? known().filter((id) => c.t[I[id].t]) : []; }
-      const r = {};
-      ids.forEach((id) => (r[id] = rank(id)));
-      return ids.sort((a, b) => r[a] - r[b] || I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
+      // l’ordre est fixé à l’arrivée dans la famille : une recette ne change pas de place
+      // parce qu’on vient d’en fabriquer (les nouvelles s’ajoutent à la fin)
+      const key = (W.q ? "q:" + W.q : W.only ? "only:" + W.only.join() : "cat:" + W.cat);
+      if (!W.order || W.order.key !== key) {
+        const r = {};
+        ids.forEach((id) => (r[id] = rank(id)));
+        W.order = { key, ids: ids.slice().sort((a, b) => r[a] - r[b] || I[b].a - I[a].a || I[a].n.localeCompare(I[b].n)) };
+      } else ids.forEach((id) => { if (!W.order.ids.includes(id)) W.order.ids.push(id); });
+      return W.order.ids.filter((id) => ids.includes(id));
     }
     function catCount(c) {
       if (c.k === "hand") return S().hand.q.length;
@@ -102,7 +108,7 @@
       const cost = E.costFor(id);
       return Object.keys(cost).map((k) => {
         const have = S().inv[k] || 0;
-        return '<span class="rw-ing' + (have + 1e-9 < cost[k] ? " lack" : "") + '" data-r="info" data-id="' + k + '">' + icon(k, "sm") + '<i data-rn="' + k + '" data-q="' + cost[k] + '">' + fmt(have) + "/" + fmt(cost[k]) + "</i></span>";
+        return '<span class="rw-ing' + (have + 1e-9 < cost[k] ? " lack" : "") + '" data-r="info" data-id="' + k + '">' + icon(k, "sm") + "<i>" + fmt(cost[k]) + ' <small data-rn="' + k + '" data-q="' + cost[k] + '">(' + fmt(have) + ")</small></i></span>";
       }).join("");
     }
     function detailHTML() {
@@ -135,7 +141,7 @@
       else h += '<button class="btn small pri" data-r="q" data-n="1">×1</button><button class="btn small" data-r="q" data-n="10">×10</button><button class="btn small" data-r="q" data-n="max">Max</button>';
       h += '<button class="btn small" data-r="chain" title="Avec ses pièces">⚡</button>';
       if (it.t === "mach" || it.t === "ext") h += '<button class="btn small" data-r="place">📍 Poser <span data-rf></span></button>';
-      h += "</div>" + '<p class="tiny muted rw-t">✋ ' + fmtTime(t) + " la pièce" + (E.isUnique(it) || E.isScaled(it) ? "" : ", plus vite en série") + "</p>";
+      h += "</div>" + '<p class="tiny muted rw-t">✋ ' + fmtTime(t) + " la pièce" + (E.isUnique(it) || E.isScaled(it) ? "" : ", plus vite en série") + '<span class="rw-miss" data-rmiss></span></p>';
       return h;
     }
     const jobLine = (j) => (j.wait ? "Il manque des matières : elles sont parties ailleurs." : j.steps > 1 ? "Étape " + (j.i + 1) + "/" + j.steps + " : " + esc(I[j.step].n) + " " + fmt(j.k) + "/" + fmt(j.of) : fmt(j.k) + "/" + fmt(j.of)) +
@@ -165,8 +171,8 @@
       W.el.querySelectorAll('.rw-it[data-r="it"]').forEach((el) => el.classList.toggle("ok", E.maxCraftable(el.dataset.id, 1) > 0));
       W.el.querySelectorAll("[data-rn]").forEach((el) => {
         const have = st.inv[el.dataset.rn] || 0, q = Number(el.dataset.q);
-        el.textContent = fmt(have) + "/" + fmt(q);
-        el.parentNode.classList.toggle("lack", have + 1e-9 < q);
+        el.textContent = "(" + fmt(have) + ")";
+        el.closest(".rw-ing").classList.toggle("lack", have + 1e-9 < q);
       });
       const rh = W.el.querySelector("[data-rh]");
       if (rh) rh.textContent = hi.jobs.length ? hi.jobs.length + " en cours · " + fmtTime(hi.left) : "Tes mains sont libres";
@@ -181,7 +187,11 @@
           if (n === "max") b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
         });
         const ch = W.el.querySelector('[data-r="chain"]');
-        if (ch) ch.disabled = hi.full || !E.plan(id, 1).ok;
+        const chainOK = E.plan(id, 1).ok;
+        if (ch) ch.disabled = hi.full || !chainOK;
+        // un bouton grisé dit pourquoi
+        const ms = W.el.querySelector("[data-rmiss]");
+        if (ms) ms.textContent = hi.full ? " · tes mains sont pleines" : max >= 1 ? "" : chainOK ? " · ⚡ fabrique aussi ce qui manque" : " · il manque ce qui est en rouge";
         const pl = W.el.querySelector('[data-r="place"]');
         if (pl) {
           const free = freeOf(id);
@@ -272,7 +282,7 @@
     function open(o) {
       o = o || {};
       mount();
-      Object.assign(W, { open: true, cat: o.cat || null, only: o.only || null, title: o.title || "", sel: o.sel || null, job: null, page: 0, q: "" });
+      Object.assign(W, { open: true, cat: o.cat || null, only: o.only || null, title: o.title || "", sel: o.sel || null, job: null, page: 0, q: "", order: null });
       W.el.querySelector("#rwq").value = "";
       W.el.classList.remove("hidden");
       A.page ? A.page() : A.click();

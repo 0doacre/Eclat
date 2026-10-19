@@ -107,11 +107,12 @@
         still: () => !S().flags.lineDone,
         steps: [
           { tab: "carte", at: '.u-tools [data-tool="mach"]', text: "Ton automate refait un geste à ta place. Prends l’outil Machine.", done: () => Usine.tool() === "mach" || any("mach") },
-          { tab: "carte", text: "Touche une case vide près de la Réserve pour la poser, puis choisis ce qu’elle fabrique.", free: true,
+          { tab: "carte", at: () => ({ cell: [0, 0], span: 5 }), text: "Touche une case vide près de la Réserve pour la poser, puis choisis ce qu’elle fabrique.", free: true,
             done: () => cells().some((e) => e.k === "mach" && e.r) },
           { tab: "carte", at: '.u-tools [data-tool="port"]', text: "Il lui faut des matières. Prends l’outil Sortie et pose-la contre la Réserve.", done: () => any("port") },
-          { tab: "carte", at: '.u-tools [data-tool="tapis"]', text: "Avec l’outil Tapis, glisse le doigt de la sortie jusqu’à ta machine. Elle se servira au passage.", done: fed },
-          { tab: "carte", text: "Ce qu’elle fabrique part devant elle (la petite flèche) : fais-le rouler jusqu’à la Réserve. Et pour aller plus vite, amène-lui ses matières directement depuis les gisements : la Réserve n’en laisse sortir qu’un petit débit.", next: true }
+          { tab: "carte", at: '.u-tools [data-tool="tapis"]', text: "Avec l’outil Tapis, pars de la flèche de la sortie et glisse le doigt jusqu’à longer ta machine : elle se servira au passage.", done: fed },
+          { tab: "carte", text: "Ce qu’elle fabrique sort par sa petite flèche. Tournée vers la Réserve, ça y rentre tout seul ; sinon, trace un tapis jusqu’à elle.", next: true },
+          { tab: "carte", text: "Astuce : la Réserve ne laisse sortir qu’un petit débit. Pour aller plus vite, amène à tes machines leurs matières directement depuis les gisements.", next: true }
         ] },
       { id: "etude", n: "Étudier une matière",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
@@ -221,14 +222,20 @@
       if (!t) return null;
       if (typeof t === "string") t = document.querySelector(t);
       if (!t) return null;
-      if (t.cell) return { cell: t.cell };
+      if (t.cell) return { cell: t.cell, span: t.span };
       const r = t.getBoundingClientRect();
       if (!r.width || !r.height) return null;
       return { el: t, r };
     }
     function rectOf(target) {
       if (!target) return null;
-      if (target.cell) return Usine.cellRect(target.cell[0], target.cell[1]);
+      if (target.cell) {
+        const r = Usine.cellRect(target.cell[0], target.cell[1]), k = target.span || 1;
+        if (!r) return null;
+        // une case, ou plusieurs autour d’elle (la Réserve et ses abords)
+        const w = r.width * k, h = r.height * k, left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
+        return { left, top, width: w, height: h, right: left + w, bottom: top + h };
+      }
       return target.el.getBoundingClientRect();
     }
     /* place le projecteur et la bulle ; relancé à chaque image tant qu’une étape est affichée */
