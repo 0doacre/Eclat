@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.2.0";
+  D.VERSION = "4.3.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -882,6 +882,8 @@
   };
 
   D.CHANGES = [
+    "🏭 L’usine simple, par défaut : une machine posée n’importe où se sert dans la Réserve et y range ce qu’elle fabrique, un extracteur se relie tout seul, et plus de débit à surveiller. Les amateurs de casse-têtes retrouvent sorties, débits et répartiteurs dans ☰ → Usine : Avancée.",
+    "🌱 Un début plus léger : au départ, la forêt et l’objectif, rien d’autre. Les outils, la roue, l’Intuition, le Carnet et le Journal apparaissent quand ils servent.",
     "🧭 Plus fluide pour qui découvre : la bulle du tutoriel ne se pose plus sur les boutons (réduite, elle devient 💭 en haut), une fenêtre ne se ferme plus sous le doigt, un nouvel âge s’annonce vraiment, la carte « Recette comprise » suit la fabrication, les matières épuisées gardent leur place à l’Atelier (et se posent encore sur l’établi), la roue garde ses recettes à la même place.",
     "💭 Un tutoriel : des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible (premiers gestes, cabane, roue, automate, étude des matières, tapis qui débordent…). Il se coupe ou se revoit dans le menu ☰.",
     "🗺️ Une seule carte : les Terres et la Fabrique ne font plus qu’un. Chaque terre y est une région, avec ses gisements et ses lieux à explorer (🧭). Touche son nom pour voir son paysage.",

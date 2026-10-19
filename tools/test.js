@@ -9,7 +9,8 @@ const { createEngine, migrate, SAVE_VERSION } = require("../js/engine.js");
 const fixture = (f) => fs.readFileSync(path.join(__dirname, "fixtures", f), "utf8");
 
 let T = 1e12;
-const mk = () => createEngine({ now: () => T, rand: () => 0.99 });
+/* une partie neuve ; usine « avance » pour les tests du débit, des sorties et des tapis */
+const mk = (usine) => { const E = createEngine({ now: () => T, rand: () => 0.99 }); if (usine) E.state.settings.usine = usine; return E; };
 let passed = 0;
 function test(name, fn) {
   try { fn(); passed++; console.log("  ✓ " + name); }
@@ -77,7 +78,7 @@ function cabane(E) {
   return E.fabCell(d.x, d.y);
 }
 test("extracteurs : coût croissant, posés sur un gisement, reliés à la Réserve", () => {
-  const E = mk();
+  const E = mk("avance");
   const c0 = E.costFor("cabane").fibre;
   force(E, "cabane");
   assert.ok(E.costFor("cabane").fibre > c0);
@@ -277,7 +278,7 @@ test("usine : règles de construction", () => {
   E.fabRotate(-2, 1); assert.strictEqual(p.d, 1, "jamais vers la Réserve");
 });
 test("usine : une machine produit, s’arrête au stock visé, réclame ce qui manque", () => {
-  const E = mk();
+  const E = mk("avance");
   E.state.age = 3; // des sorties assez rapides pour ne pas la freiner
   E.add("automate_bois", 2); E.state.known.manche = true;
   E.add("bois", 30);
@@ -327,7 +328,7 @@ test("usine : une machine en alimente une autre par un tapis", () => {
   assert.ok(fl.some((f) => f.from === A.id && f.to === B.id && f.i === "manche"), "les manches passent de A à B");
 });
 test("usine : sortie bouchée, la machine s’arrête", () => {
-  const E = mk();
+  const E = mk("avance");
   E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 300);
   E.fabPlace("port", 2, 0);
   const m = E.fabPlace("mach", 3, 0, { m: "automate_bois", r: "manche", d: 0 }).e; // rien devant
@@ -629,7 +630,7 @@ test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
 });
 
 test("tapis : un tapis ne porte pas plus que son débit", () => {
-  const E = mk();
+  const E = mk("avance");
   E.add("cabane", 20);
   assert.ok(E.fabPlaceExt(-3, -7, "cabane", 10).ok);
   assert.ok(E.fabLink(-3, -7).ok);
@@ -646,7 +647,7 @@ test("tapis : un tapis ne porte pas plus que son débit", () => {
   assert.strictEqual(E.machInfo(x.id).s, "ok", "à l’âge 7, les tapis suivent");
 });
 test("tapis : chaque entrée dans la Réserve a son débit, le tracé automatique en ouvre une nouvelle", () => {
-  const E = mk();
+  const E = mk("avance");
   E.state.age = 3;
   E.add("cabane", 20);
   E.fabPlaceExt(-3, -7, "cabane", 7); E.fabLink(-3, -7);
@@ -659,7 +660,7 @@ test("tapis : chaque entrée dans la Réserve a son débit, le tracé automatiqu
   assert.deepStrictEqual(E.fabSat(), {});
 });
 test("tapis : deux gisements sur le même tapis, l’entrée commune déborde", () => {
-  const E = mk();
+  const E = mk("avance");
   E.state.age = 3;
   E.add("cabane", 20);
   E.fabPlaceExt(-3, -7, "cabane", 7); E.fabCell(-3, -7).d = 1;
@@ -689,7 +690,7 @@ test("tapis : deux gisements sur le même tapis, l’entrée commune déborde", 
   assert.ok(got2 > (E.extOut(X) + E.extOut(Y)) * 19, "deux entrées : toute la récolte passe (" + got2 + ")");
 });
 test("la Réserve ne laisse sortir qu’un certain débit, toutes sorties confondues", () => {
-  const E = mk();
+  const E = mk("avance");
   E.add("automate_bois", 2); E.state.known.manche = true;
   E.add("bois", 1000);
   const m = miniUsine(E, "manche");
@@ -701,7 +702,7 @@ test("la Réserve ne laisse sortir qu’un certain débit, toutes sorties confon
 });
 
 test("chantier d’un Grand Œuvre : posé sur la carte, nourri par tapis", () => {
-  const E = mk();
+  const E = mk("avance");
   assert.strictEqual(E.fabPlace("site", 4, 0, { p: "dyson" }).why, "kind", "pas avant d’avoir le projet");
   E.state.flags.arche = true;
   E.state.age = 12;
@@ -732,6 +733,63 @@ test("chantier d’un Grand Œuvre : posé sur la carte, nourri par tapis", () =
   assert.ok(F.siteOf("dyson"));
   assert.ok(F.state.orphans.fab["6,6"]);
   assert.strictEqual(F.fabRemove(4, 0).k, "site");
+});
+test("usine simple : une machine posée n’importe où prend au stock et y range ce qu’elle fait", () => {
+  const E = mk();
+  assert.ok(E.easy(), "l’usine simple par défaut");
+  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 30);
+  const r = E.fabPlace("mach", 6, 6, { m: "automate_bois", r: "manche" });
+  assert.ok(r.ok);
+  run(E, 30); // 30 s à 6/min, sans sortie ni tapis
+  assert.strictEqual(E.count("manche"), 3);
+  assert.strictEqual(E.count("bois"), 30 - 3 * 3 - 6, "trois manches faits, deux d’avance dans la machine");
+  assert.strictEqual(E.machInfo(r.e.id).s, "ok");
+  run(E, 90);
+  assert.strictEqual(E.count("manche"), 10, "tout le bois y est passé");
+  assert.strictEqual(E.machInfo(r.e.id).s, "starved");
+  assert.deepStrictEqual(E.machInfo(r.e.id).miss, { bois: "stock" }, "jamais « aucun tapis n’en apporte »");
+});
+test("usine simple : un extracteur sans tapis remplit le stock, sans plafond de débit", () => {
+  const E = mk();
+  E.add("cabane", 20);
+  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 10).ok);
+  const x = E.fabCell(-3, -7), out = E.extOut(x);
+  assert.ok(out > E.beltCap(), "plus qu’un tapis de l’âge du Bois ne porte");
+  const b0 = E.count("bois");
+  run(E, 10);
+  assert.ok(Math.abs(E.count("bois") - b0 - out * 10) < 1e-6, "tout arrive : " + (E.count("bois") - b0));
+  assert.strictEqual(E.machInfo(x.id).s, "ok");
+  assert.deepStrictEqual(E.fabSat(), {});
+  // une machine que touche son tapis se sert au passage, le reste va au stock
+  E.add("automate_bois", 1); E.state.known.manche = true;
+  assert.ok(E.fabLink(-3, -7).ok);
+  E.state.settings.usine = "avance";
+  run(E, 1);
+  assert.notStrictEqual(E.machInfo(x.id).s, "noout", "relié, il reste utile en usine avancée");
+});
+test("usine simple : un chantier posé n’importe où se sert dans la Réserve", () => {
+  const E = mk();
+  E.state.flags.arche = true; E.state.age = 12; E.recalc();
+  assert.ok(E.fabPlace("site", 9, 9, { p: "dyson" }).ok);
+  E.add("supra", 400); E.add("metal_mercure", 60000); E.add("regolithe", 20000);
+  run(E, 5);
+  const paid = Object.values(E.projState("dyson").paid).reduce((a, b) => a + b, 0);
+  assert.ok(paid > 0, "les matières arrivent sans tapis : " + paid);
+  assert.strictEqual(E.machInfo("S:dyson").s, "ok");
+});
+test("usine : une partie existante garde l’usine avancée si elle a des répartiteurs", () => {
+  const E = mk();
+  E.add("cabane", 1); E.fabPlaceExt(-3, -7, "cabane", 1); E.fabLink(-3, -7);
+  const save = JSON.parse(E.serialize());
+  delete save.settings.usine;
+  E.load(JSON.stringify(save));
+  assert.ok(E.easy(), "sans répartiteur ni croisement : usine simple");
+  save.fab.c["5,5"] = { k: "split" };
+  E.load(JSON.stringify(save));
+  assert.ok(!E.easy(), "avec un répartiteur : usine avancée");
+  E.state.settings.usine = "simple";
+  E.load(E.serialize());
+  assert.ok(E.easy(), "le choix du joueur est gardé");
 });
 test("jalons : les objectifs rangés par âge", () => {
   const E = mk();

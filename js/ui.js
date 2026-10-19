@@ -622,9 +622,13 @@
   }
 
   /* ============================================================ VUES */
+  /* les onglets arrivent quand ils ont quelque chose à montrer : le Carnet à la première
+   * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
   function tabAvailable(t) {
+    const st = S();
     if (t === "cosmos") return E.cache().sky;
-    if (t === "carte") return true;
+    if (t === "carnet") return Object.keys(st.known).length > 0;
+    if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0;
     return true;
   }
   function setTab(t) {
@@ -647,8 +651,14 @@
       if (on && !d) { d = document.createElement("i"); d.className = "dot"; b.appendChild(d); }
       if (!on && d) d.remove();
     });
-    $('#tabs [data-tab="cosmos"]').classList.toggle("hidden", !tabAvailable("cosmos"));
-
+    ["carnet", "journal", "cosmos"].forEach((t) => {
+      const b = $('#tabs [data-tab="' + t + '"]'), on = tabAvailable(t);
+      if (on && b.classList.contains("hidden") && U.tabsSeen) b.classList.add("born"); // il vient d’apparaître
+      b.classList.toggle("hidden", !on);
+    });
+    U.tabsSeen = true;
+    // l’Intuition se montre quand elle commence à servir
+    $("#intuBtn").classList.toggle("hidden", Object.keys(S().known).length < 3 && !Object.keys(S().studied).length);
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); } }
 
@@ -850,10 +860,12 @@
       h += '<h3 class="sub">Tu sais déjà faire avec ces matières</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
     }
     const o = invOpts();
-    h += '<div class="sub-row"><h3 class="sub">Tes matières</h3><button class="btn small ghost" data-roue>🛠️ Fabriquer une pièce</button></div>' +
-      '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false"></div>' +
+    // recherche, tri et filtres quand il y a de quoi chercher ; la roue quand il y a des recettes à refaire
+    const many = Object.keys(st.seen).length >= 10 || !!U.iq || o.filter !== "tout";
+    h += '<div class="sub-row"><h3 class="sub">Tes matières</h3>' + (Object.keys(st.known).length >= 3 ? '<button class="btn small ghost" data-roue>🛠️ Fabriquer une pièce</button>' : "") + "</div>" +
+      (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false"></div>' +
       '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
-      '<div class="filters">' + INV_FILTERS.map(([k, n]) => '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      '<div class="filters">' + INV_FILTERS.map(([k, n]) => '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>" : "");
     const inv = invItems();
     const tile = (id) => {
       const sel = U.slots.includes(id), fav = favs()[id];
@@ -862,7 +874,8 @@
         (rx ? '<i class="rx" title="Réagit avec ce geste">✦' + (rx > 1 ? rx : "") + "</i>" : "") + icon(id) +
         '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span><span class="n">' + esc(I[id].n) + "</span></button>";
     };
-    if (o.sort === "age" && !U.iq) {
+    if (!many) h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
+    else if (o.sort === "age" && !U.iq) {
       // rangées par âge, les favorites en tête
       const groups = {};
       inv.forEach((id) => { const k = favs()[id] ? -1 : I[id].a; (groups[k] = groups[k] || []).push(id); });
@@ -871,7 +884,7 @@
       });
     } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
     if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter sur la Carte.") + "</p>";
-    else h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : sa fiche, ♥ pour la garder en tête de liste, 🔍 pour l’étudier. Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi.</p>';
+    else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : sa fiche, ♥ pour la garder en tête de liste, 🔍 pour l’étudier. Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi.</p>';
     return h;
   }
   const INV_SORTS = [["age", "Par âge"], ["name", "Par nom"], ["qty", "Les plus nombreuses"], ["new", "Dernières trouvées"]];
@@ -1661,6 +1674,8 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
+        '<div class="toggle"><span>Usine <span class="tiny muted" data-usinetxt>' + (E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits et répartiteurs") +
+          '</span></span><button class="btn small" data-m="usine">' + (E.easy() ? "Simple" : "Avancée") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
@@ -1679,6 +1694,15 @@
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
         tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
+        usine: (b) => {
+          E.setUsine(E.easy() ? "avance" : "simple");
+          b.textContent = E.easy() ? "Simple" : "Avancée";
+          const t = b.closest(".modal-box").querySelector("[data-usinetxt]");
+          if (t) t.textContent = E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits et répartiteurs";
+          toast(E.easy() ? "🏭 Usine simple : tes machines se servent dans la Réserve et y rangent ce qu’elles font. Les tapis restent possibles."
+            : "🏭 Usine avancée : les machines se servent sur les tapis (sorties de la Réserve, gisements), et chaque tapis a son débit.");
+          save(); return true;
+        },
         tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre reviendra au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
         account: () => { openAccount(); return true; },
@@ -1694,11 +1718,14 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h) et relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les jalons de chaque âge. Le bouton <b>🛠️</b> ouvre la roue : toutes tes recettes connues, par famille, à fabriquer sans quitter la carte, et les machines ou extracteurs prêts à poser d’un geste.</p>" +
+      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h). " +
+      (E.easy() ? "Une <b>machine</b> posée sur la carte se sert dans la Réserve et y range ce qu’elle fabrique : choisis sa recette, c’est tout. Les tapis restent possibles (une machine se sert d’abord sur ceux qui la touchent). Menu ☰ → Usine avancée pour gérer sorties, débits et répartiteurs. "
+        : "Relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. ") +
+      "Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les jalons de chaque âge. Le bouton <b>🛠️</b> ouvre la roue : toutes tes recettes connues, par famille, à fabriquer sans quitter la carte, et les machines ou extracteurs prêts à poser d’un geste.</p>" +
       "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une découverte sort tout de suite ; ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
       "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
-      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se construit sur la Carte : son chantier se nourrit par tapis.</p>" +
+      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se construit sur la Carte : " + (E.easy() ? "son chantier se sert dans la Réserve." : "son chantier se nourrit par tapis.") + "</p>" +
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p>" +
       "<p><b>💭 Tutoriel.</b> Des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible. Menu ☰ : le couper, ou le revoir depuis le début.</p></div>", "Compris");
   }
@@ -2050,6 +2077,12 @@
     else if (!S().introSeen) intro();
     else {
       if (S().flags.news) showNews();
+      if (S().flags.usineNote) {
+        delete S().flags.usineNote;
+        simpleModal("Nouveau", "🏭 L’usine simple",
+          "<p>Tes machines se servent maintenant directement dans la Réserve et y rangent ce qu’elles fabriquent : plus besoin de sortie ni de tapis pour les nourrir, et plus de débit à surveiller. Tout ce que tu as construit continue de tourner, en mieux.</p>" +
+          '<p class="small muted">Tu préfères gérer sorties, débits et répartiteurs ? Menu ☰ → Usine : Avancée.</p>');
+      }
       showOffline();
     }
     setInterval(loop, 100);

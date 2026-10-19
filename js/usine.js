@@ -40,7 +40,7 @@
           '<div class="u-top"><div id="uOver"></div></div>' +
           '<canvas id="uCan"></canvas>' +
           '<button class="u-fab" data-u="roue" aria-label="Fabriquer">🛠️<i id="uFabN"></i></button>' +
-          '<div class="u-zoom"><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button></div>' +
+          '<div class="u-zoom"><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button><button data-u="help" class="u-help2" aria-label="Comment ça marche">?</button></div>' +
           '<div class="u-sheet hidden" id="uSheet"></div>' +
           '<div class="u-hint hidden" id="uHint"></div>' +
           '<div class="u-tools" id="uTools">' + TOOLS.map((t) => '<button data-tool="' + t[0] + '"><span>' + t[1] + "</span><i>" + t[2] + "</i></button>").join("") + "</div>" +
@@ -198,6 +198,8 @@
         const r = E.fabPlaceExt(c.x, c.y, t, 1);
         if (!r.ok) { V.undo.pop(); updUndo(); toast(WHY[r.why] || WHY.kind); return; }
         if (r.fresh) E.fabSet(r.e.id, { d: guessDir(c.x, c.y) });
+        // usine simple : le tapis jusqu’à la Réserve se pose tout seul
+        if (r.fresh && E.easy() && E.fabLink(c.x, c.y).n) toast("🛤️ Relié à la Réserve : la récolte part toute seule.");
         A.place ? A.place() : A.click();
         vibe(12);
         setTool("voir");
@@ -561,9 +563,13 @@
         html: '<div class="kicker">L’Usine</div><h2>Comment ça marche</h2><div class="lore usine-help">' +
           "<p>Au centre, la <b>Réserve</b> : c’est ton stock.</p>" +
           "<p>Autour, chaque terre que tu as atteinte a ses <b>gisements</b> : une case par ressource. Touche une case pour récolter à la main, garde le doigt appuyé pour continuer.</p>" +
-          "<p>Avec l’outil ⛏️, pose un <b>extracteur</b> sur la case qui lui convient (une cabane sur le bois, plus tard des mines et des pompes…). Il récolte seul, puis pose sa récolte sur la case que montre sa flèche. Trace un tapis de là jusqu’à la Réserve, ou touche-le et choisis 🛤️ <b>Relier à la Réserve</b>.</p>" +
-          "<p>Une <b>machine</b> se sert sur les tapis qui la touchent, et pose ce qu’elle fabrique devant sa flèche. Fais passer le tapis d’un extracteur devant une machine : elle prend ce qu’il lui faut, le reste continue jusqu’à la Réserve.</p>" +
-          "<p>Une <b>sortie</b>, posée contre la Réserve, envoie aux machines ce qu’elles réclament dans le stock. Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>" +
+          (E.easy()
+            ? "<p>Avec l’outil ⛏️, pose un <b>extracteur</b> sur la case qui lui convient (une cabane sur le bois, plus tard des mines et des pompes…). Il récolte seul, et un tapis se pose tout seul jusqu’à la Réserve.</p>" +
+              "<p>Avec l’outil ⚙️, pose une <b>machine</b> n’importe où et choisis sa recette : elle se sert dans la Réserve et y range ce qu’elle fabrique (le pointillé). Si un tapis la touche, elle se sert d’abord dessus.</p>" +
+              "<p>Tu aimes les casse-têtes ? Menu ☰ → <b>Usine avancée</b> : sorties de la Réserve, débit des tapis, répartiteurs et croisements.</p>"
+            : "<p>Avec l’outil ⛏️, pose un <b>extracteur</b> sur la case qui lui convient (une cabane sur le bois, plus tard des mines et des pompes…). Il récolte seul, puis pose sa récolte sur la case que montre sa flèche. Trace un tapis de là jusqu’à la Réserve, ou touche-le et choisis 🛤️ <b>Relier à la Réserve</b>.</p>" +
+              "<p>Une <b>machine</b> se sert sur les tapis qui la touchent, et pose ce qu’elle fabrique devant sa flèche. Fais passer le tapis d’un extracteur devant une machine : elle prend ce qu’il lui faut, le reste continue jusqu’à la Réserve.</p>" +
+              "<p>Une <b>sortie</b>, posée contre la Réserve, envoie aux machines ce qu’elles réclament dans le stock. Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>") +
           "<p>Pour tracer un tapis, garde le doigt appuyé et glisse. Deux doigts pour te déplacer et zoomer. ↶ annule la dernière modification.</p>" +
           "<p>Tout tourne aussi quand le jeu est fermé.</p></div>" +
           '<div class="acts"><button class="btn pri" data-m="close">Compris</button></div>'
@@ -630,7 +636,7 @@
     }
     /* ce qui sort de là ne va ni à la Réserve ni à une machine */
     function needsLink(e) {
-      if (!e || !e.id || (e.k !== "ext" && e.k !== "mach")) return false;
+      if (!e || !e.id || (e.k !== "ext" && e.k !== "mach") || E.easy()) return false;
       const P = E.fabGraph().prods[e.id];
       return !!P && !P.t.res && !Object.keys(P.t.cons).length;
     }
@@ -647,7 +653,8 @@
       if (e.k === "res") {
         const f = E.flows();
         const ins = Object.keys(f.prod).filter((k) => f.prod[k] - (f.cons[k] || 0) > 1e-4).sort((a, b) => f.prod[b] - f.prod[a]).slice(0, 8);
-        h += "<b>La Réserve</b><p class=\"small muted\">Ton stock. Les sorties posées contre elle l’envoient aux machines, et les tapis qui y entrent le remplissent.</p>" +
+        h += "<b>La Réserve</b><p class=\"small muted\">" + (E.easy() ? "Ton stock. Tes machines y prennent ce qu’il leur faut et y rangent ce qu’elles font ; tes extracteurs la remplissent."
+          : "Ton stock. Les sorties posées contre elle l’envoient aux machines, et les tapis qui y entrent le remplissent.") + "</p>" +
           (ins.length ? '<div class="u-ins">' + ins.map((k) => '<span class="u-in">' + icon(k, "sm") + "<i>+" + fmtNum((f.prod[k] - (f.cons[k] || 0)) * 60) + "/min</i></span>").join("") + "</div>" : "");
       } else if (e.k === "mach") {
         const it = I[e.r], ms = E.machines(), st = machStatus(e);
@@ -659,7 +666,7 @@
         if (it) {
           const ing = it.r[1], g = E.fabGraph(), sup = g.sup[e.id] || [];
           h += '<div class="u-ins">' + Object.keys(ing).map((k) => {
-            const ok = sup.some((p) => { const P = g.prods[p]; return P.e.k === "port" ? !P.e.f || P.e.f === k : P.e.k === "ext" ? P.e.res === k : P.e.r === k; });
+            const ok = E.easy() || sup.some((p) => { const P = g.prods[p]; return P.e.k === "port" ? !P.e.f || P.e.f === k : P.e.k === "ext" ? P.e.res === k : P.e.r === k; });
             return '<span class="u-in ' + (ok ? "" : "no") + '" data-u="goto" data-id="' + k + '">' + icon(k, "sm") + "<i>" + fmt(ing[k]) + "</i></span>";
           }).join("") + '<span class="u-arrow">→</span><span class="u-in">' + icon(e.r, "sm") + "<i>" + fmt(it.r[2]) + "</i></span></div>";
         }
@@ -668,7 +675,8 @@
           '<span class="tiny muted">Stock visé</span><select data-u="cap" aria-label="Stock visé">' + CAPS.map((v) => '<option value="' + v + '"' + (v === e.cap ? " selected" : "") + ">" + (v ? fmt(v) : "∞") + "</option>").join("") +
           (CAPS.includes(e.cap) ? "" : '<option value="' + e.cap + '" selected>' + fmt(e.cap) + "</option>") + "</select></div>" +
           '<div class="u-row acts">' + (loose ? '<button class="btn small pri" data-u="link">🛤️ Relier à la Réserve</button>' : "") +
-          '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + '</button><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+          '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + "</button>" + (E.easy() ? "" : '<button class="btn small" data-u="rot">🔄 Tourner</button>') + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>' +
+          (E.easy() ? '<p class="tiny muted">Elle prend ses matières dans la Réserve (ou sur les tapis qui la touchent) et y range ce qu’elle fait.</p>' : "");
       } else if (e.k === "ext") {
         const st = extStatus(e), d = E.deposit(c.x, c.y), us = E.extUnits();
         const types = E.extFor(e.res).filter((t) => us[t].own > 0 || e.u[t]);
@@ -708,7 +716,7 @@
         h += '<div class="u-row acts"><button class="btn small ghost" data-u="rm">🗑️ Retirer</button><span class="tiny muted">Ce qui est déjà livré reste acquis.</span></div>';
       } else {
         const name = { belt: "Tapis", split: "Répartiteur", cross: "Croisement" }[e.k];
-        const txt = { belt: "Fait avancer ce qu’on pose dessus, " + fmtNum(E.beltCap()) + " objets/s au plus à cet âge. Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
+        const txt = { belt: "Fait avancer ce qu’on pose dessus" + (E.easy() ? "" : ", " + fmtNum(E.beltCap()) + " objets/s au plus à cet âge") + ". Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
         h += "<b>" + name + '</b><p class="small muted">' + txt + '</p><div class="u-row acts">' + (e.d !== undefined ? '<button class="btn small" data-u="rot">🔄 Tourner</button>' : "") + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       }
       box.innerHTML = h;
@@ -819,7 +827,7 @@
       if (!own && !machs.length) return null;
       if (!machs.length) return "Prends l’outil ⚙️ <b>Machine</b> et touche une case pour poser ton automate.";
       if (machs.some((e) => !e.r)) return "Touche ta machine et choisis ce qu’elle doit fabriquer.";
-      if (!ents.some((e) => e.k === "port")) return "Pose une 📤 <b>sortie</b> contre la Réserve. Elle enverra aux machines ce qu’elles réclament.";
+      if (!E.easy() && !ents.some((e) => e.k === "port")) return "Pose une 📤 <b>sortie</b> contre la Réserve. Elle enverra aux machines ce qu’elles réclament.";
       if (machs.some((e) => { const i = E.machInfo(e.id); return i.s === "starved" && i.miss && Object.values(i.miss).includes("link"); })) {
         return "Avec l’outil ➜ <b>Tapis</b>, glisse le doigt depuis la sortie jusqu’à ta machine. Elle se servira au passage.";
       }
@@ -827,7 +835,7 @@
       if (!st.flags.lineDone) return "Ça tourne. La première pièce ne va pas tarder.";
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOf(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
       if (lone && !st.flags.tip_site) {
-        return "🏗️ Ton Grand Œuvre attend son chantier : pose-le sur la Carte depuis le Cosmos, puis amène-lui ses matières par tapis. " +
+        return "🏗️ Ton Grand Œuvre attend son chantier : pose-le sur la Carte depuis le Cosmos" + (E.easy() ? ". Il se servira dans la Réserve. " : ", puis amène-lui ses matières par tapis. ") +
           '<button class="btn small ghost" data-u="tip" data-f="tip_site">Compris</button>';
       }
       if (!st.flags.tip_sat && Object.keys(E.fabSat()).length) {
@@ -847,10 +855,11 @@
           freeE.map((t) => '<button class="u-chip ext' + (V.tool === "ext" && V.etype === t ? " on" : "") + '" data-et="' + t + '" title="' + esc(I[t].n) + '">' + icon(t, "sm") + "<b>" + (us[t].own - us[t].used) + "</b></button>").join("") +
           owned.map((m) => '<button class="u-chip' + (V.tool === "mach" && V.mtype === m ? " on" : "") + '" data-mt="' + m + '" title="' + esc(I[m].n) + '">' + icon(m, "sm") + "<b>" + (ms[m].own - ms[m].used) + "</b></button>").join("") +
           (E.cache().aspd > 1 ? '<span class="tiny muted">vitesse ×' + String(Math.round(E.cache().aspd * 100) / 100).replace(".", ",") + "</span>" : "") +
-          (E.deposits().length && Object.keys(S().fab.c).length ? '<span class="tiny muted u-belt">🛤️ ' + fmtNum(E.beltCap()) + "/s</span>" : "")
-          : '<span class="tiny muted">Rien à poser pour l’instant</span>';
+          (!E.easy() && E.deposits().length && Object.keys(S().fab.c).length ? '<span class="tiny muted u-belt">🛤️ ' + fmtNum(E.beltCap()) + "/s</span>" : "")
+          : "";
         if (free.dataset.h !== html) { free.innerHTML = html; free.dataset.h = html; }
       }
+      showTools(!!(free && free.dataset.h));
       const fn = V.el.querySelector("#uFabN"), nq = S().hand.q.length;
       if (fn && fn.textContent !== (nq ? String(nq) : "")) fn.textContent = nq ? String(nq) : "";
       const ov = V.el.querySelector("#uOver");
@@ -859,6 +868,31 @@
       const h = hint();
       if (hb) { hb.classList.toggle("hidden", !h); if (h && hb.dataset.h !== h) { hb.innerHTML = "💡 " + h; hb.dataset.h = h; } }
       sheetLive();
+    }
+    /* Un écran qui se remplit au fil du jeu : au début, la carte et l’objectif seulement.
+     * Chaque outil apparaît quand il sert ; sortie, répartiteur et croisement sont
+     * ceux de l’usine avancée. */
+    function toolsOn() {
+      const cells = Object.values(S().fab.c), us = E.extUnits(), ms = E.machines(), ez = E.easy();
+      const has = (k) => cells.some((e) => e.k === k);
+      const ext = E.EXTS.some((t) => us[t].own > 0) || has("ext");
+      const mach = E.MACHINES.some((m) => ms[m].own > 0) || has("mach");
+      const any = cells.length > 0, adv = !ez && (ext || mach || any);
+      return { voir: ext || mach || any, ext, mach, tapis: adv || has("belt"), port: adv || has("port"), split: adv || has("split"), cross: adv || has("cross"), turn: any, del: any };
+    }
+    function showTools(bar) {
+      const u = V.el && V.el.querySelector(".usine");
+      if (!u) return;
+      const on = toolsOn();
+      let n = 0;
+      u.querySelectorAll("[data-tool]").forEach((b) => { const v = !!on[b.dataset.tool]; b.classList.toggle("hidden", !v); if (v) n++; });
+      if (!on[V.tool]) setTool("voir");
+      u.classList.toggle("notools", n <= 1);
+      u.classList.toggle("nobar", !bar);
+      const any = Object.keys(S().fab.c).length > 0;
+      u.querySelectorAll('[data-u="center"], [data-u="undo"]').forEach((b) => b.classList.toggle("hidden", !any));
+      const fab = u.querySelector(".u-fab");
+      if (fab) fab.classList.toggle("hidden", Object.keys(S().known).length < 3);
     }
     /* met à jour l’état de la machine choisie sans reconstruire le panneau */
     function sheetLive() {
@@ -904,8 +938,39 @@
           else pts[0] = { x: P.x + DX[P.e.d] * 0.3, y: P.y + DY[P.e.d] * 0.3 };
         }
       }
+      // usine simple : sans tapis, les objets suivent le pointillé entre la Réserve et la machine
+      if (!pts && E.easy()) {
+        const at = from === "res" ? g.pos[to] : P && to === "res" ? P : null;
+        if (at) {
+          const r = resEdge(at.x, at.y);
+          pts = from === "res" ? [{ x: r.x, y: r.y }, { x: at.x, y: at.y, end: to }] : [{ x: at.x, y: at.y }, { x: r.x, y: r.y }];
+        }
+      }
       V.paths[key] = pts;
       return pts;
+    }
+    /* le bord de la Réserve le plus proche d’une case */
+    const resEdge = (x, y) => ({ x: Math.max(-1.45, Math.min(1.45, x)), y: Math.max(-1.45, Math.min(1.45, y)) });
+    /* usine simple : un pointillé qui avance relie à la Réserve ce qui s’y sert ou y range sans tapis */
+    function drawLinks() {
+      if (!E.easy()) return;
+      const c = V.ctx, z = V.cam.z, g = E.fabGraph(), cells = S().fab.c;
+      c.save();
+      c.setLineDash([z * 0.12, z * 0.2]);
+      c.lineDashOffset = -V.t * z * 0.5;
+      c.lineWidth = Math.max(1, z * 0.045);
+      c.strokeStyle = "rgba(255,220,160,0.3)";
+      c.beginPath();
+      for (const k in cells) {
+        const e = cells[k];
+        if (e.k !== "mach" && e.k !== "site" && e.k !== "ext") continue;
+        if (e.k === "ext" && g.prods[e.id] && g.prods[e.id].t.res) continue; // déjà relié par un tapis
+        const i = k.indexOf(","), x = +k.slice(0, i), y = +k.slice(i + 1), r = resEdge(x, y);
+        c.moveTo(sx(r.x), sy(r.y));
+        c.lineTo(sx(x), sy(y));
+      }
+      c.stroke();
+      c.restore();
     }
     function feed() {
       const fl = E.fabDrain();
@@ -1037,6 +1102,7 @@
       // tapis d’abord, puis le reste par-dessus
       for (const [x, y, e] of vis) if (e.k === "belt" || e.k === "cross") drawBelt(x, y, e);
       drawSat();
+      drawLinks();
       drawReserve();
       for (const [x, y, e] of vis) {
         if (e.k === "split") drawSplit(x, y);

@@ -116,6 +116,8 @@ p { margin: 0.4em 0; }
 }
 #tabs button span { font-size: 11px; letter-spacing: 0.03em; }
 #tabs button.on { color: var(--text); }
+#tabs button.born { animation: born 1.6s ease-out; }
+@keyframes born { 0% { transform: scale(.4); opacity: 0; } 30% { transform: scale(1.25); opacity: 1; color: var(--acc); } 100% { transform: none; } }
 #tabs button.on::before { content: ""; position: absolute; top: 0; left: 25%; right: 25%; height: 2px; background: var(--acc); border-radius: 2px; }
 #tabs button .dot { position: absolute; top: 9px; right: calc(50% - 18px); width: 8px; height: 8px; border-radius: 50%; background: var(--bad); box-shadow: 0 0 0 2px var(--bg2); }
 
@@ -463,6 +465,14 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 #v-carte.on { position: absolute; inset: 0; padding: 0; }
 .usine { position: absolute; inset: 0 0 calc(var(--nav) + var(--safe-b)) 0; display: flex; flex-direction: column; background: #0b0907; overflow: hidden; }
 .usine canvas { flex: 1 1 auto; width: 100%; min-height: 0; display: block; touch-action: none; }
+/* l’écran se remplit au fil du jeu : sans bande du haut ni outils, les panneaux descendent */
+.usine.nobar .u-bar, .usine.notools .u-tools { display: none; }
+.usine.nobar .u-top { top: 8px; }
+.usine:not(.nobar) .u-help2 { display: none; }
+.usine.notools .u-sheet { bottom: 8px; }
+.usine.notools .u-hint { bottom: 12px; }
+.usine.notools .u-zoom { bottom: 14px; }
+.usine.notools .u-fab { bottom: 198px; }
 .u-bar { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--bg2); }
 .u-free { flex: 1 1 auto; display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; }
 .u-free::-webkit-scrollbar { display: none; }
@@ -480,9 +490,9 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 .u-zoom { position: absolute; right: 10px; bottom: 76px; z-index: 3; display: flex; flex-direction: column; gap: 6px; }
 .u-zoom button { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line2); background: color-mix(in srgb, var(--bg2) 88%, transparent); font-size: 18px; }
 .u-zoom button:disabled { opacity: .35; }
-.u-tools { flex: 0 0 auto; display: flex; gap: 4px; padding: 6px 8px; overflow-x: auto; scrollbar-width: none; background: var(--bg2); border-top: 1px solid var(--line); }
+.u-tools { flex: 0 0 auto; display: flex; justify-content: safe center; gap: 4px; padding: 6px 8px; overflow-x: auto; scrollbar-width: none; background: var(--bg2); border-top: 1px solid var(--line); }
 .u-tools::-webkit-scrollbar { display: none; }
-.u-tools button { flex: 1 0 52px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 2px; border-radius: 12px; border: 1px solid transparent; background: none; color: var(--muted); }
+.u-tools button { flex: 1 0 52px; max-width: 92px; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 5px 2px; border-radius: 12px; border: 1px solid transparent; background: none; color: var(--muted); }
 .u-tools button span { font-size: 19px; line-height: 1.1; }
 .u-tools button i { font-style: normal; font-size: 10.5px; }
 .u-tools button.on { color: var(--text); background: color-mix(in srgb, var(--acc) 22%, transparent); border-color: color-mix(in srgb, var(--acc) 60%, transparent); }

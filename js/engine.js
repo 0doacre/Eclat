@@ -85,7 +85,7 @@
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false },
-      settings: { sound: true, vibe: true },
+      settings: { sound: true, vibe: true, usine: "simple" },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
   }
@@ -1096,6 +1096,14 @@
      * Le calcul se fait de machine à machine, pas objet par objet : il donne le
      * même résultat jeu ouvert ou fermé. Les objets qui roulent sur les tapis ne
      * sont que l’image de ces échanges (voir E.fabDrain). */
+    /* L’usine simple (par défaut) : la Réserve sert toutes les machines et reçoit
+     * tout ce qui est fabriqué ou récolté, avec ou sans tapis, et rien n’est
+     * limité par le débit des tapis. Les tapis gardent leur rôle (une machine se
+     * sert d’abord sur ceux qui la touchent) ; seule l’usine avancée en fait un
+     * casse-tête de débit, de sorties et de répartiteurs. */
+    const easy = () => !S.settings || S.settings.usine !== "avance";
+    E.easy = easy;
+    E.setUsine = (m) => { S.settings.usine = m === "avance" ? "avance" : "simple"; fabChanged(); };
     const machStat = {}; // état des machines (non sauvegardé)
     let G = null; // graphe de l’usine, recalculé à chaque modification
     let fabLog = []; // échanges récents, pour l’animation
@@ -1293,6 +1301,7 @@
         if (q > 0) { add(i, -q); portLeft -= q; take(pid, q); }
         if (need <= 1e-9) return;
       }
+      if (easy()) { const q = Math.min(need, S.inv[i] || 0); if (q > 0) { add(i, -q); take("res", q); } }
     }
     function produce(id, k) {
       const it = item(id);
@@ -1317,13 +1326,13 @@
       if (!(e.n > 0) || !M) return done("idle");
       const b = blocker(e.r);
       if (b) { st.b = b; return done("blocked"); }
-      const lane = E.beltCap(), outQ = it.r[2], rate = Math.min((e.n * M.spd / 60) * c.aspd, lane / outQ);
+      const ez = easy(), lane = ez ? Infinity : E.beltCap(), outQ = it.r[2], rate = Math.min((e.n * M.spd / 60) * c.aspd, lane / outQ);
       const P = g.prods[e.id], ing = it.r[1], srcs = g.sup[e.id] || [];
       const ncons = Object.keys(P.t.cons).length;
-      if (!P.t.res && !ncons) return done("noout");
-      // un ingrédient qu’aucun tapis n’apporte : inutile d’attendre
+      if (!ez && !P.t.res && !ncons) return done("noout");
+      // un ingrédient qu’aucun tapis n’apporte : inutile d’attendre (l’usine simple, elle, le prend au stock)
       let link = null;
-      for (const i in ing) if (!srcs.some((p) => supplies(g.prods[p], i))) (link = link || {})[i] = "link";
+      if (!ez) for (const i in ing) if (!srcs.some((p) => supplies(g.prods[p], i))) (link = link || {})[i] = "link";
       if (link) {
         st.miss = link;
         for (const i in ing) if (!link[i] && (B.b[i] || 0) < ing[i]) st.miss[i] = "stock";
@@ -1373,10 +1382,10 @@
       if (!e.on) return done("off");
       const rate = extOut(e, c);
       if (!(rate > 0)) return done("idle");
-      const P = g.prods[e.id];
-      if (!P.t.res && !Object.keys(P.t.cons).length) return done("noout");
+      const P = g.prods[e.id], ez = easy();
+      if (!ez && !P.t.res && !Object.keys(P.t.cons).length) return done("noout");
       // un tapis ne porte pas plus que son débit ; et rien ne s’entasse si ça ne part pas
-      const lane = E.beltCap(), want = Math.min(rate, lane) * dt;
+      const lane = ez ? Infinity : E.beltCap(), want = Math.min(rate, lane) * dt;
       made = Math.max(0, Math.min(want, Math.max(4, lane * (dt + 2)) - B.o));
       B.o += made;
       return done(made < want * 0.98 ? "jam" : rate > lane * 1.001 ? "sat" : "ok");
@@ -1386,14 +1395,14 @@
     function runFab(dt) {
       const g = graph();
       if (!g.order.length && !g.exts.length && !g.sites.length) { satEnts = {}; return; }
-      const c = E.cache();
-      portLeft = E.resOutCap() * dt;
+      const c = E.cache(), ez = easy();
+      portLeft = ez ? Infinity : E.resOutCap() * dt;
       for (const id of g.exts) runExt(g.prods[id].e, g, dt, c);
       for (const id of g.order) runMachine(g.prods[id].e, g, dt, c);
       for (const id of g.sites) runSite(machById(id), g, dt);
       // ce qui arrive à la Réserve rejoint le stock, dans la limite de ce que porte
       // chaque tapis qui y entre : d’abord une part égale à chacun, puis le reste
-      const cap = E.beltCap() * dt, room = {}, users = {};
+      const cap = ez ? Infinity : E.beltCap() * dt, room = {}, users = {};
       const outs = g.exts.concat(g.order).filter((id) => g.prods[id].t.ents.length && buf(id).o > 1e-9);
       outs.forEach((id) => g.prods[id].t.ents.forEach((en) => { room[en.k] = cap; users[en.k] = (users[en.k] || 0) + 1; }));
       for (let pass = 0; pass < 2; pass++) {
@@ -1408,6 +1417,18 @@
             add(r, q);
             logFlow(id, "res", r, q);
           }
+          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; E.emit("struct"); }
+        }
+      }
+      // usine simple : ce qui n’a pas trouvé preneur rejoint le stock, tapis ou pas
+      if (ez) {
+        for (const id of g.exts.concat(g.order)) {
+          const P = g.prods[id], B = buf(id);
+          if (!(B.o > 1e-9)) continue;
+          const r = outOf(P.e);
+          add(r, B.o);
+          logFlow(id, "res", r, B.o);
+          B.o = 0;
           if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; E.emit("struct"); }
         }
       }
@@ -1433,7 +1454,7 @@
       for (const i in step.cost) {
         const left = step.cost[i] - (ps.paid[i] || 0);
         if (left <= 1e-9) continue;
-        if (!srcs.some((p) => supplies(g.prods[p], i))) (st.miss = st.miss || {})[i] = "link";
+        if (!easy() && !srcs.some((p) => supplies(g.prods[p], i))) (st.miss = st.miss || {})[i] = "link";
         else pull(e.id, i, Math.min(left, lane) - (B.b[i] || 0), g);
         const q = Math.min(B.b[i] || 0, left);
         if (q > 0) { B.b[i] -= q; if (B.b[i] < 1e-9) delete B.b[i]; ps.paid[i] = (ps.paid[i] || 0) + q; got += q; }
@@ -1645,7 +1666,7 @@
         const e = cellAt(cx, cy);
         if (!e || e.k !== "belt" || e.d === (d + 2) % 4) return -1;
         const k = entryOf(cx, cy, d);
-        return k === null ? -1 : 2 + 6 * (users[k] || 0);
+        return k === null ? -1 : 2 + (easy() ? 0 : 6 * (users[k] || 0)); // en usine simple, on rejoint volontiers un tapis existant
       };
       // plus court chemin sur les cases libres (Dijkstra, petit tas binaire)
       const R = fabR(), dist = {}, prev = {}, heap = [];
@@ -1961,6 +1982,13 @@
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
       o.meta = Object.assign({ endings: {}, capsule: false }, o.meta);
       o.settings = Object.assign({ sound: true, vibe: true }, o.settings);
+      // l’usine simple par défaut ; une partie qui a déjà des répartiteurs ou des croisements garde l’usine avancée
+      if (o.settings.usine !== "simple" && o.settings.usine !== "avance") {
+        const cells = Object.values((o.fab && o.fab.c) || {});
+        o.settings.usine = cells.some((e) => e && (e.k === "split" || e.k === "cross")) ? "avance" : "simple";
+        // une usine déjà construite passe en simple : on le dira une fois au joueur
+        if (o.settings.usine === "simple" && cells.some((e) => e && (e.k === "mach" || e.k === "port"))) { o.flags = o.flags || {}; o.flags.usineNote = true; }
+      }
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
