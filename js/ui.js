@@ -51,7 +51,10 @@
     return (r > 0 ? "+" : "−") + fmtNum(r) + "/s";
   }
   function fmtTime(s) {
-    s = Math.max(0, Math.round(s));
+    s = Math.max(0, s);
+    // sous dix secondes, au dixième (une pièce faite à la main, par exemple)
+    if (s < 9.95 && Math.abs(s - Math.round(s)) > 0.05) return String(Math.round(s * 10) / 10).replace(".", ",") + " s";
+    s = Math.round(s);
     if (s < 60) return s + " s";
     const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
     if (h) return h + " h " + String(m).padStart(2, "0");
@@ -218,7 +221,17 @@
   const Usine = window.EclatUsine.create({
     E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, Scenes,
     overlay: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
-    onZone: (z) => { U.zone = z; soundScene(); }
+    onZone: (z) => { U.zone = z; soundScene(); },
+    openWheel: (o) => Roue.open(o)
+  });
+  /* la Roue : fabriquer depuis n’importe où, et poser aussitôt ce qui se pose */
+  const Roue = window.EclatRoue.create({
+    E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, goto, floater, vibe, elCenter, norm, gesteChip, fxText,
+    openTree: (id, n) => openTree(id, n),
+    onPlace: (k, id) => {
+      const go = () => (k === "mach" ? Usine.useMach(id) : Usine.useExt(id));
+      if (U.tab !== "carte") { setTab("carte"); setTimeout(go, 80); } else go();
+    }
   });
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
@@ -1212,6 +1225,7 @@
       $$("[data-xw]").forEach((b) => (b.style.left = (8 + 80 * xp.p).toFixed(1) + "%"));
       $$("[data-xl]").forEach((b) => (b.textContent = fmtTime(xp.left)));
     } else mini.classList.add("hidden");
+    Roue.refresh();
     const hi = E.handInfo(), hm = $("#handMini");
     hm.classList.toggle("hidden", !hi.jobs.length || U.tab === "atelier");
     if (hi.jobs.length) hm.textContent = "✋ " + fmtTime(hi.left);
@@ -1637,7 +1651,7 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h) et relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les jalons de chaque âge.</p>" +
+      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h) et relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les jalons de chaque âge. Le bouton <b>🛠️</b> ouvre la roue : toutes tes recettes connues, par famille, à fabriquer sans quitter la carte, et les machines ou extracteurs prêts à poser d’un geste.</p>" +
       "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une découverte sort tout de suite ; ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
       "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
@@ -1823,7 +1837,7 @@
       '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les matières : touche une matière, puis 🔍 Étudier, pour savoir avec quels gestes elle cache encore des recettes.</p>' +
       (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
     $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.focusZone = a && a.z; setTab("carte"); });
-    $("#handMini").addEventListener("click", () => setTab("atelier"));
+    $("#handMini").addEventListener("click", () => { A.init(); Roue.open({ cat: "hand" }); });
     $("#updBar").addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-u]");
       if (!b) return;

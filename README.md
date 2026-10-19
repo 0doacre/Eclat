@@ -40,6 +40,7 @@ Tout se passe sur une seule carte vue de dessus. Au centre, la **Réserve** (le 
 - **⚡ Fabrication en chaîne** : un bouton fabrique un objet *et tous ses sous-composants* (réseau électrique → moteurs → bobines → fils de cuivre), à partir du stock. Le détail 🌳 montre les étapes, ce qui est pris dans le stock et ce qui manque.
 - **🎯 Suivi** : on suit une recette ; la carte affiche ce qui manque, avec un temps estimé.
 - **🏁 Jalons** : ce qu’il y a à faire à chaque âge, depuis la carte d’objectif.
+- **🛠️ La roue** : sur la carte, un menu circulaire avec toutes les recettes connues, par famille (machines, extracteurs, stations, outils, pièces, curiosités, raccourcis) et une recherche. Les recettes faisables tout de suite viennent d’abord. On met en file (×1, ×10, Max, ⚡ en chaîne), puis 📍 on pose la machine ou l’extracteur. Au centre, la file des mains. La roue s’ouvre d’elle-même quand l’outil Machine ou Extracteur n’a plus rien de libre.
 - **📖 Carnet** : recherche (par nom ou par ingrédient), épingles ☆ (raccourcis en haut de l’Atelier), objets déjà possédés masqués, chaque ingrédient est cliquable et mène à sa recette.
 - **Objectif guidé** : il indique la *prochaine étape* concrète (la sous-recette inconnue, la station ou la zone qui manque). Chaque combinaison nouvelle essayée à l’Atelier réveille des **souvenirs** : à force, ils soufflent le geste, puis une matière, puis la recette entière. Attendre ne donne rien.
 - **Fiches** : toucher un objet ouvre sa fiche (recette, stock, station, ce qu’il sert à fabriquer) ; tout y est cliquable pour passer de recette en recette, avec un retour arrière.
@@ -91,6 +92,7 @@ js/data.js            tout le contenu : âges, gestes, recettes, zones, explorat
 js/engine.js          moteur de jeu, sans DOM (tourne aussi sous Node)
 js/ui.js              interface
 js/usine.js           la Carte : terres, gisements, tapis, machines, chantiers (canvas, commandes tactiles)
+js/roue.js            la roue : fabriquer depuis la carte (menu circulaire des recettes connues)
 js/scenes.js          les paysages des terres (SVG, dans leur fiche)
 js/cloud.js           compte joueur : clés, chiffrement, échanges avec le serveur
 js/config.js          adresse du serveur des comptes (vide = pas de comptes)

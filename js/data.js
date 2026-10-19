@@ -887,7 +887,8 @@
     "🔍 Plus d’indices à acheter : l’Intuition sert maintenant à étudier les matières, pour savoir avec quels gestes elles cachent encore des recettes.",
     "🛤️ Les tapis ont un débit, qui augmente avec les âges. Une entrée de la Réserve qui déborde clignote ⚠️ : fais-en entrer une deuxième. La Réserve ne laisse sortir vers les machines qu’un petit débit, alors amène-leur leurs matières directement.",
     "🏗️ Les Grands Œuvres se construisent sur la Carte : pose leur chantier, puis nourris-le par tapis.",
-    "🏁 Les jalons de chaque âge, d’un coup d’œil, depuis la carte d’objectif."
+    "🏁 Les jalons de chaque âge, d’un coup d’œil, depuis la carte d’objectif.",
+    "🛠️ La roue : depuis la carte, toutes tes recettes connues en cercle, par famille (machines, extracteurs, stations, outils, pièces…), avec la recherche. On fabrique sans changer d’onglet, puis on pose la machine ou l’extracteur d’un geste. Elle s’ouvre aussi toute seule quand l’outil Machine ou Extracteur n’a plus rien de libre."
   ];
 
   /* ---------------------------------------------------- ÉCHECS (saveur)

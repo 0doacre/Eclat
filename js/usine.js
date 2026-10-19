@@ -19,7 +19,7 @@
   const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
 
   function create(api) {
-    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes } = api;
+    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel } = api;
     const I = D.ITEMS;
     const { DX, DY } = window.EclatEngine;
     const S = () => E.state;
@@ -39,6 +39,7 @@
           '<div class="u-bar"><div class="u-free" id="uFree"></div><button class="u-help" data-u="help" aria-label="Comment ça marche">?</button></div>' +
           '<div class="u-top"><div id="uOver"></div></div>' +
           '<canvas id="uCan"></canvas>' +
+          '<button class="u-fab" data-u="roue" aria-label="Fabriquer">🛠️<i id="uFabN"></i></button>' +
           '<div class="u-zoom"><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button></div>' +
           '<div class="u-sheet hidden" id="uSheet"></div>' +
           '<div class="u-hint hidden" id="uHint"></div>' +
@@ -177,9 +178,9 @@
       if (e && e.k !== "ext") { toast(WHY.taken); return; }
       const types = freeExt(d.res);
       if (!types.length) {
-        const can = E.extFor(d.res).filter((t) => S().known[t] || E.count(t) > 0);
-        toast(can.length ? "Plus d’extracteur libre pour « " + esc(I[d.res].n) + " ». Fabriques-en un autre : " + can.map((t) => "<b>" + esc(I[t].n) + "</b>").join(", ") + "."
-          : "Aucun de tes extracteurs ne récolte « " + esc(I[d.res].n) + " » pour l’instant.");
+        const can = E.extFor(d.res).filter((t) => S().known[t]);
+        if (can.length) { V.extAt = c; openWheel({ only: can, title: "Pour récolter : " + I[d.res].n }); }
+        else toast("Aucun de tes extracteurs ne récolte « " + esc(I[d.res].n) + " » pour l’instant.");
         return;
       }
       const put = (t) => {
@@ -256,7 +257,11 @@
       }
       if (V.tool === "mach") {
         const types = freeTypes();
-        if (!types.length) { toast(E.MACHINES.some((m) => E.count(m) > 0) ? WHY.nomach : "Il te faut d’abord une machine : un Automate de bois, par exemple."); return; }
+        if (!types.length) {
+          if (E.MACHINES.some((m) => S().known[m])) openWheel({ cat: "mach", title: "Fabriquer une machine" });
+          else toast("Il te faut d’abord une machine : un Automate de bois, par exemple.");
+          return;
+        }
         const put = (m) => {
           const why = E.fabWhy("mach", c.x, c.y, { m });
           if (why) { toast(WHY[why] || WHY.kind); return; }
@@ -448,6 +453,7 @@
       if ((b = t.closest("[data-et]"))) { V.etype = b.dataset.et; setTool("ext"); A.click(); refresh(); return; }
       if (!(b = t.closest("[data-u]"))) return;
       if (b.dataset.u === "tip") { S().flags[b.dataset.f] = true; A.click(); refresh(); return; }
+      if (b.dataset.u === "roue") { openWheel({}); return; }
       const u = b.dataset.u, sel = V.sel, e = sel && E.fabCell(sel.x, sel.y);
       if (u === "zin") zoom(1.25);
       else if (u === "zout") zoom(0.8);
@@ -834,6 +840,8 @@
           : '<span class="tiny muted">Rien à poser pour l’instant</span>';
         if (free.dataset.h !== html) { free.innerHTML = html; free.dataset.h = html; }
       }
+      const fn = V.el.querySelector("#uFabN"), nq = S().hand.q.length;
+      if (fn && fn.textContent !== (nq ? String(nq) : "")) fn.textContent = nq ? String(nq) : "";
       const ov = V.el.querySelector("#uOver");
       if (ov && overlay) { const o = overlay(); if (ov.dataset.h !== o) { ov.innerHTML = o; ov.dataset.h = o; } }
       const hb = V.el.querySelector("#uHint");
@@ -1524,6 +1532,20 @@
       setTool("site");
       toast("Touche une case vide pour poser le chantier : <b>" + esc(D.PROJECTS[pid].n) + "</b>. Ensuite, amène-lui ses matières par tapis.");
     }
+    /* depuis la roue : poser une machine, ou un extracteur, de ce type */
+    function useMach(m) {
+      V.mtype = m;
+      setTool("mach");
+      toast("Touche une case vide pour poser : <b>" + esc(I[m].n) + "</b>");
+    }
+    function useExt(t) {
+      V.etype = t;
+      setTool("ext");
+      const c = V.extAt;
+      V.extAt = null;
+      if (c && E.deposit(c.x, c.y) && E.extFor(E.deposit(c.x, c.y).res).includes(t)) { placeExt(c); return; }
+      toast("Touche une case de gisement pour poser : <b>" + esc(I[t].n) + "</b>");
+    }
     function prepare(id) {
       V.preset = id;
       if (!freeTypes().length) { toast("Aucune machine libre. Retire-en une de la Carte, ou fabriques-en une autre."); setTool("voir"); return; }
@@ -1531,7 +1553,7 @@
       toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
     }
 
-    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, useMach, useExt, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
   }
 
   window.EclatUsine = { create };
