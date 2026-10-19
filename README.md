@@ -17,29 +17,31 @@ Une recette n’est pas une grille : c’est un **geste** appliqué à des **mat
 
 - **Les stations ouvrent des gestes.** Un feu de camp débloque *Chauffer* à 600 °C ; un four monte à 1 100 °C, un haut-fourneau à 1 700 °C, un four à arc à 3 500 °C. Chaque nouvelle station rend possibles de nouvelles recettes avec des matières que tu possèdes déjà. Construire la station suivante, c’est agrandir le champ des possibles.
 - **Le thermomètre d’intuition.** Quand rien ne se passe, le jeu te dit si tu t’approches d’une recette encore inconnue : *Froid*, *Frais* (une de ces matières cache une recette), *Tiède* (bon geste, bonne piste), *Chaud* (mauvais geste, ou une matière en trop ou en moins), *Brûlant* (la bonne combinaison, mais il te manque de la chaleur ou des quantités). Chaque échec a sa petite phrase.
-- **Énigmes et Intuition.** Le Carnet montre les prochains objets à découvrir, avec leur effet et une énigme. Les découvertes rapportent de l’**Intuition ✨**, qui achète des indices.
+- **Énigmes et Intuition.** Le Carnet montre les prochains objets à découvrir, avec leur effet et une énigme. Les découvertes rapportent de l’**Intuition ✨**, qui sert à **étudier une matière** : on sait alors avec quels gestes elle cache encore des recettes, et sa tuile porte un ✦ quand elle réagit avec le geste choisi.
+- **Tes mains.** Une découverte sort tout de suite. Ensuite, fabriquer à la main prend un peu de temps et passe par une file (8 fabrications au plus), qui avance même jeu fermé. Les matières sont mises de côté dès la mise en file et rendues si on annule. Répéter un geste va de plus en plus vite (n pièces : durée d’une pièce × n^0,6), et les gestes des âges passés aussi. Pour produire en grand, il y a les machines.
 - **Maîtrise.** Refabriquer une recette fait monter sa maîtrise (★) et donne des chefs-d’œuvre : des lots bonus gratuits.
 - **Rappels d’un âge à l’autre.** Tu tresseras à nouveau, mais de la fibre de carbone. Le charbon du premier feu deviendra du graphène. L’argile de tes premières briques finira en bouclier thermique.
 
-### La récolte
+### La Carte : terres, gisements, extracteurs, tapis et machines
 
-Dans les **Terres**, chaque terre est un paysage : on touche les arbres, les herbes, les pierres pour récolter, on garde le doigt dessus pour continuer. Les outils multiplient ce qu’on ramasse.
+Tout se passe sur une seule carte vue de dessus. Au centre, la **Réserve** (le stock). Autour, chaque terre atteinte est une région, avec ses **gisements** (une case par ressource : bois, pierre, cuivre, pétrole…) et ses **lieux à explorer** 🧭. Toucher le nom d’une terre ouvre sa fiche et son paysage. La carte s’agrandit à chaque nouvelle terre.
 
-### La Fabrique : gisements, extracteurs, tapis et machines
-
-La Fabrique est une carte vue de dessus. Au centre, la **Réserve** (le stock). Autour, chaque terre atteinte a sa parcelle de **gisements** : une case par ressource (bois, pierre, cuivre, pétrole…). La carte s’agrandit à chaque nouvelle terre.
-
-- On touche une case pour récolter à la main.
+- On touche une case de gisement pour récolter à la main, on garde le doigt dessus pour continuer. Les outils multiplient ce qu’on ramasse.
 - On y pose un **extracteur** adapté (cabane, puits, scierie, derrick, réplicateur…). Il récolte tout seul, même jeu fermé, et pose sa récolte devant lui. Un extracteur met tout son effort sur la matière de sa case.
 - On trace des **tapis** au doigt jusqu’à la Réserve, ou on laisse le jeu tracer le chemin (« Relier à la Réserve »).
 - Les **machines** (automate de bois, automate de bronze, presse à vapeur, chaîne d’assemblage, assembleur moléculaire) fabriquent une recette et se servent sur les tapis qui passent devant elles. Le tapis d’un extracteur peut donc longer des machines avant d’arriver à la Réserve : une ligne complète, du gisement au produit fini.
-- Une **sortie** posée contre la Réserve envoie aux machines ce qu’elles réclament dans le stock. **Répartiteurs** et **croisements** aident à organiser les tapis.
+- Une **sortie** posée contre la Réserve envoie aux machines ce qu’elles réclament dans le stock, mais la Réserve ne laisse sortir qu’un petit débit, toutes sorties confondues : mieux vaut amener aux machines leurs matières directement. **Répartiteurs** et **croisements** aident à organiser les tapis.
+- Un **tapis** porte un nombre limité d’objets par seconde, de plus en plus aux âges suivants. Chaque case par laquelle un tapis entre dans la Réserve a ce débit : quand plusieurs gisements la partagent, elle déborde et clignote ⚠️. Un répartiteur qui ouvre une deuxième entrée règle le problème.
+- Les **Grands Œuvres** se construisent sur la carte : on pose leur **chantier** où l’on veut, et on le nourrit par tapis.
 - Les objets qui roulent sur les tapis montrent ce qui circule ; les voyants des machines disent ce qui manque. Courroies, convoyeurs et intelligence artificielle accélèrent les machines ; brouettes, chemin de fer et compagnie, les extracteurs.
 
 ### Confort de jeu
 
 - **⚡ Fabrication en chaîne** : un bouton fabrique un objet *et tous ses sous-composants* (réseau électrique → moteurs → bobines → fils de cuivre), à partir du stock. Le détail 🌳 montre les étapes, ce qui est pris dans le stock et ce qui manque.
-- **🎯 Suivi** : on suit une recette ; les Terres affichent ce qui manque, avec un temps estimé, et mettent en évidence les ressources à récolter.
+- **🎯 Suivi** : on suit une recette ; la carte affiche ce qui manque, avec un temps estimé.
+- **🏁 Jalons** : ce qu’il y a à faire à chaque âge, depuis la carte d’objectif.
+- **💭 Tutoriel** : des souvenirs guident la main, chapitre par chapitre. Chacun se lance quand une chose devient possible et n’a pas encore été faite (premiers gestes, lieux à explorer, première cabane, file des mains, roue, automate, étude des matières, jalons, tapis qui déborde, chantier d’un Grand Œuvre) : une bulle éclaire l’endroit à toucher et attend que ce soit fait. Rien n’est bloqué ; on peut passer un chapitre, couper le tutoriel ou le revoir (menu ☰). Une partie avancée ne revoit pas les débuts, seulement ce qu’elle n’a pas encore fait.
+- **🛠️ La roue** : sur la carte, un menu circulaire avec toutes les recettes connues, par famille (machines, extracteurs, stations, outils, pièces, curiosités, raccourcis) et une recherche. Les recettes faisables tout de suite viennent d’abord. On met en file (×1, ×10, Max, ⚡ en chaîne), puis 📍 on pose la machine ou l’extracteur. Au centre, la file des mains. La roue s’ouvre d’elle-même quand l’outil Machine ou Extracteur n’a plus rien de libre.
 - **📖 Carnet** : recherche (par nom ou par ingrédient), épingles ☆ (raccourcis en haut de l’Atelier), objets déjà possédés masqués, chaque ingrédient est cliquable et mène à sa recette.
 - **Objectif guidé** : il indique la *prochaine étape* concrète (la sous-recette inconnue, la station ou la zone qui manque). Chaque combinaison nouvelle essayée à l’Atelier réveille des **souvenirs** : à force, ils soufflent le geste, puis une matière, puis la recette entière. Attendre ne donne rien.
 - **Fiches** : toucher un objet ouvre sa fiche (recette, stock, station, ce qu’il sert à fabriquer) ; tout y est cliquable pour passer de recette en recette, avec un retour arrière.
@@ -63,7 +65,7 @@ Trois fins. Deux sont proposées ouvertement par la voix qui te guide : **la Sph
 
 ## Son
 
-Tout est synthétisé dans le navigateur, sans fichier audio : une musique générée qui change avec les âges et se tait par moments, une ambiance par lieu (vent, rivière, oiseaux le jour, grillons la nuit, gouttes dans les profondeurs, machines de la Fabrique), des bruitages pour chaque geste et chaque matière. Menu ☰ : son, musique, ambiance et bruitages se règlent séparément.
+Tout est synthétisé dans le navigateur, sans fichier audio : une musique générée qui change avec les âges et se tait par moments, une ambiance par lieu (vent, rivière, oiseaux le jour, grillons la nuit, gouttes dans les profondeurs, machines qui tournent sur la carte), des bruitages pour chaque geste et chaque matière. Menu ☰ : son, musique, ambiance et bruitages se règlent séparément.
 
 ## Sauvegardes et mises à jour
 
@@ -90,8 +92,10 @@ css/style.css         styles (mobile d’abord, thème par âge)
 js/data.js            tout le contenu : âges, gestes, recettes, zones, explorations, lore, fins
 js/engine.js          moteur de jeu, sans DOM (tourne aussi sous Node)
 js/ui.js              interface
-js/usine.js           la Fabrique : carte, tapis, machines (canvas, commandes tactiles)
-js/scenes.js          les paysages des Terres (SVG)
+js/usine.js           la Carte : terres, gisements, tapis, machines, chantiers (canvas, commandes tactiles)
+js/roue.js            la roue : fabriquer depuis la carte (menu circulaire des recettes connues)
+js/tuto.js            le tutoriel : chapitres déclenchés au fil du jeu, bulles qui pointent
+js/scenes.js          les paysages des terres (SVG, dans leur fiche)
 js/cloud.js           compte joueur : clés, chiffrement, échanges avec le serveur
 js/config.js          adresse du serveur des comptes (vide = pas de comptes)
 server/               serveur des comptes (Cloudflare Worker + D1), tests et guide
@@ -112,6 +116,7 @@ npm run build                  # recalcule l’empreinte du service worker (à l
 npm run sim                    # partie simulée, temps d’arrivée à chaque âge
 node tools/sim.js 1 brisemonde # 1 tape/seconde, vise le Brise-Monde
 OBJ=1 node tools/sim.js        # détail des objectifs
+MAINS=1 node tools/sim.js      # avec la file des mains (les machines possédées aident)
 ```
 
 Avant de publier une nouvelle version : `npm run build` puis `npm test`. Si le format de sauvegarde change, augmente `SAVE_VERSION` dans `js/engine.js` et ajoute une étape à `migrate()` ; le test de compatibilité recharge les sauvegardes de `tools/fixtures`.

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "3.0.0";
+  D.VERSION = "4.1.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -135,7 +135,7 @@
   I.engrenage_bois = { n: "Rouage de bois", sym: "⚙", col: "#9a6b3c", a: 2, t: "comp", r: ["tailler", { manche: 2, eclat: 1 }, 2],
     d: "Une petite roue dentée, taillée dans un bâton.", h: "Un bâton, taillé en roue dentée par une lame de pierre." };
   I.automate_bois = { n: "Automate de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
-    d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Ouvre la Fabrique, où tu bâtis ton usine.",
+    d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Pose-la sur la Carte, près de la Réserve.",
     h: "Des rouages de bois, des cordes, et un lourd contrepoids." };
   I.hache_pierre = { n: "Hache de pierre", ic: "🪓", a: 2, t: "tool", r: ["assembler", { manche: 2, eclat: 4, laniere: 4 }, 1],
     e: { tap: { bois: 3, fibre: 2 } }, d: "Les petits arbres tombent en quelques coups.",
@@ -709,7 +709,7 @@
     alunisseur: "La poussière grise se soulève sans bruit. Au-dessus de toi, la Terre tient derrière ton pouce.",
     vaisseau: "Cap sur le Soleil. La Terre devient un point bleu, puis rien.",
     automate_bois: "La marionnette se met en marche, clac, clac. Elle refait ton geste, puis le refait encore. Ce travail-là se fera sans toi.",
-    presse_vapeur: "La presse siffle et cogne en cadence. Dans la Fabrique, tout s’accélère.",
+    presse_vapeur: "La presse siffle et cogne en cadence. Sur la Carte, toutes les machines s’accélèrent.",
     forge_stellaire: "Tu tiens un morceau d’étoile dans une cage d’aimants. À cette chaleur, même le carbone le plus fin deviendrait éternel. ARCHE ne dit rien pendant un moment, puis : « ESTIMATION : TU ES PRÊT. »",
     dynamite: "La mèche crépite. Un souvenir qui n’est pas à toi : du cuivre jeté dans les flammes, et le feu qui vire au vert.",
     moteur_elec: "Le moteur ronronne dans ta main comme un petit animal. Avec un cerveau et une laisse, il te suivrait partout.",
@@ -815,14 +815,14 @@
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Ce chêne immense t’attire. Lance une exploration depuis la Lisière : elle avance toute seule pendant que tu fais autre chose." },
     ["feu", "La nuit tombe vite. Fais du feu."],
     ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi, même quand le jeu est fermé."],
-    { k: "ext", n: "Installer ta cabane", txt: "Dans la Fabrique, pose ta cabane sur une case de la Lisière, puis trace un tapis jusqu’à la Réserve. Elle récoltera pour toi, même quand le jeu est fermé." },
+    { k: "ext", n: "Installer ta cabane", txt: "Sur la Carte, pose ta cabane sur une case de la Lisière, puis trace un tapis jusqu’à la Réserve. Elle récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
     ["hache_pierre", "Avec un tranchant de pierre, tu abattrais bien plus de bois. Les outils multiplient tes récoltes."],
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer."],
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Il faudrait quelque chose pour les refaire à ta place."],
-    { k: "line", n: "Faire tourner ton automate", txt: "Dans la Fabrique, pose ton automate, une sortie contre la Réserve, et relie-les par un tapis. Il fabriquera tant qu’on lui apportera ses matières." },
+    { k: "line", n: "Faire tourner ton automate", txt: "Sur la Carte, pose ton automate, une sortie contre la Réserve, et relie-les par un tapis. Il fabriquera tant qu’on lui apportera ses matières." },
     ["four", "Le feu de camp ne chauffe plus assez."],
     ["lingot_cuivre", "La pierre verte des collines cache un métal."],
     ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur."],
@@ -839,7 +839,7 @@
     ["lingot_acier", "Fer et carbone, à très haute température."],
     ["tour", "La précision des machines."],
     ["moteur_vapeur", "Fais travailler la vapeur."],
-    ["presse_vapeur", "Une machine-outil à vapeur ferait tourner ta Fabrique bien plus vite."],
+    ["presse_vapeur", "Une machine-outil à vapeur ferait tourner tes machines bien plus vite."],
     ["dynamo", "Capture l’étincelle."],
     ["radio", "Quelqu’un émet peut-être encore, quelque part."],
     ["four_arc", "Un éclair permanent, pour faire fondre l’infusible."],
@@ -858,6 +858,18 @@
     ["forge_stellaire", "Le cœur d’une étoile."]
   ];
 
+  /* Les tapis : ce qu’un tapis porte au plus (objets par seconde), à chaque âge.
+   * Les améliorations qui accélèrent l’usine les accélèrent aussi. La Réserve ne
+   * laisse sortir que out × ce débit, toutes sorties confondues. */
+  D.BELT = { cap: [3, 4, 6, 10, 14, 18, 30, 50, 70, 140, 300, 500, 1500], out: 0.5 };
+
+  /* Les mains : fabriquer à la main prend du temps, une pièce après l’autre.
+   * Durée d’une pièce (s) : (base + age × âge de l’objet) × (1 − star × étoiles de maîtrise)
+   * × old^(âges d’écart avec l’objet), multipliée pour les objets uniques (outils,
+   * stations…) et pour ceux dont le prix monte à chaque exemplaire (extracteurs, machines).
+   * n pièces d’affilée : durée d’une pièce × n^batch. max : fabrications dans la file. */
+  D.HAND = { base: 0.5, age: 0.2, star: 0.1, old: 0.75, batch: 0.6, unique: 3, scaled: 2, max: 8 };
+
   /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
    * l’Atelier), les mains des Semeurs précédents guident les siennes. */
   D.GUIDE = {
@@ -870,15 +882,14 @@
   };
 
   D.CHANGES = [
-    "⛏️ La Fabrique est une carte : chaque terre y a ses gisements, une case par ressource. Récolte à la main, ou pose tes extracteurs dessus et relie-les à la Réserve par des tapis.",
-    "🏭 Tes machines se servent sur les tapis qui passent devant elles : une ligne peut aller du gisement au produit fini sans passer par le stock.",
-    "🌲 Les Terres sont des paysages : touche les arbres, les herbes, les pierres.",
-    "📖 Toucher un objet ouvre sa fiche, et on passe de recette en recette.",
-    "🧺 À l’Atelier, les matières se cherchent, se trient, se filtrent, et les favorites restent en tête.",
-    "💭 Les souvenirs ne viennent plus en attendant : chaque combinaison nouvelle essayée à l’Atelier en réveille.",
-    "🎵 De la musique qui suit les âges, des ambiances, des bruitages, et des volumes réglables.",
-    "☁️ Comptes en ligne (pseudo et mot de passe), si la personne qui publie le jeu les a ouverts.",
-    "✍️ Les textes du jeu ont été repris."
+    "💭 Un tutoriel : des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible (premiers gestes, cabane, roue, automate, étude des matières, tapis qui débordent…). Il se coupe ou se revoit dans le menu ☰.",
+    "🗺️ Une seule carte : les Terres et la Fabrique ne font plus qu’un. Chaque terre y est une région, avec ses gisements et ses lieux à explorer (🧭). Touche son nom pour voir son paysage.",
+    "✋ À l’Atelier, une découverte sort tout de suite. Ensuite, fabriquer à la main prend un peu de temps et passe par la file « Tes mains », qui avance même jeu fermé. Répéter un geste va de plus en plus vite, et les gestes des âges passés aussi. Pour produire en grand, il y a les machines.",
+    "🔍 Plus d’indices à acheter : l’Intuition sert maintenant à étudier les matières, pour savoir avec quels gestes elles cachent encore des recettes.",
+    "🛤️ Les tapis ont un débit, qui augmente avec les âges. Une entrée de la Réserve qui déborde clignote ⚠️ : fais-en entrer une deuxième. La Réserve ne laisse sortir vers les machines qu’un petit débit, alors amène-leur leurs matières directement.",
+    "🏗️ Les Grands Œuvres se construisent sur la Carte : pose leur chantier, puis nourris-le par tapis.",
+    "🏁 Les jalons de chaque âge, d’un coup d’œil, depuis la carte d’objectif.",
+    "🛠️ La roue : depuis la carte, toutes tes recettes connues en cercle, par famille (machines, extracteurs, stations, outils, pièces…), avec la recherche. On fabrique sans changer d’onglet, puis on pose la machine ou l’extracteur d’un geste. Elle s’ouvre aussi toute seule quand l’outil Machine ou Extracteur n’a plus rien de libre."
   ];
 
   /* ---------------------------------------------------- ÉCHECS (saveur)

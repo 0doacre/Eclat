@@ -20,11 +20,11 @@
 
   /* ------------------------------------------------------------ état UI */
   const U = {
-    tab: "terres", geste: "tailler", slots: [null, null, null], last: null,
+    tab: "carte", geste: "tailler", slots: [null, null, null], last: null,
     invFilter: "tout", carnetFilter: "tout", journalTab: "fragments", cosmosTab: "ciel",
     q: "", showOwned: false,
     openAges: {}, dirty: true, lastRender: 0, mq: [], mcur: null,
-    badges: { carnet: false, journal: false, cosmos: false, fabrique: false, terres: false },
+    badges: { carnet: false, journal: false, cosmos: false, carte: false },
     pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false
   };
 
@@ -51,7 +51,10 @@
     return (r > 0 ? "+" : "−") + fmtNum(r) + "/s";
   }
   function fmtTime(s) {
-    s = Math.max(0, Math.round(s));
+    s = Math.max(0, s);
+    // sous dix secondes, au dixième (une pièce faite à la main, par exemple)
+    if (s < 9.95 && Math.abs(s - Math.round(s)) > 0.05) return String(Math.round(s * 10) / 10).replace(".", ",") + " s";
+    s = Math.round(s);
     if (s < 60) return s + " s";
     const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
     if (h) return h + " h " + String(m).padStart(2, "0");
@@ -215,7 +218,24 @@
       '<div class="acts"><button class="btn pri" data-m="close">' + (btn || "Continuer") + "</button></div>" });
   }
   const Scenes = window.EclatScenes;
-  const Usine = window.EclatUsine.create({ E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater });
+  const Usine = window.EclatUsine.create({
+    E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, Scenes,
+    overlay: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
+    onZone: (z) => { U.zone = z; soundScene(); },
+    openWheel: (o) => Roue.open(o),
+    quiet: () => Tuto.active()
+  });
+  /* la Roue : fabriquer depuis n’importe où, et poser aussitôt ce qui se pose */
+  const Roue = window.EclatRoue.create({
+    E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, goto, floater, vibe, elCenter, norm, gesteChip, fxText,
+    openTree: (id, n) => openTree(id, n),
+    onPlace: (k, id) => {
+      const go = () => (k === "mach" ? Usine.useMach(id) : Usine.useExt(id));
+      if (U.tab !== "carte") { setTab("carte"); setTimeout(go, 80); } else go();
+    }
+  });
+  /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
+  const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Usine, Roue, save: () => save() });
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
   /* ============================================================ SAUVEGARDES
@@ -284,7 +304,7 @@
     U.saveLocked = false; U.badSave = null;
     save();
     U.slots = [null, null, null]; U.last = null;
-    setTab("terres");
+    setTab("carte");
     toast("Partie chargée.");
     return true;
   }
@@ -355,7 +375,7 @@
         fresh: () => {
           pushBackup(b.raw, "Sauvegarde illisible mise à l’abri");
           U.saveLocked = false; U.badSave = null;
-          E.reset(); save(); setTab("terres"); setTimeout(intro, 100);
+          E.reset(); save(); setTab("carte"); setTimeout(intro, 100);
         }
       }
     });
@@ -366,14 +386,15 @@
     openModal({
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
-        (st.flags.fab4 && st.flags.fab4.placed ? '<p class="small">⛏️ Tes extracteurs travaillent maintenant sur les gisements de la Fabrique. Les ' + st.flags.fab4.placed + " que tu avais y ont été posés" +
-          (st.flags.fab4.linked === st.flags.fab4.sites ? ", et reliés à la Réserve par des tapis. Ta production continue." : ". Certains n’ont pas pu être reliés à la Réserve : ouvre la Fabrique pour tracer leurs tapis.") + "</p>" : "") +
+        (st.flags.fab4 && st.flags.fab4.placed ? '<p class="small">⛏️ Tes extracteurs travaillent maintenant sur les gisements de la Carte. Les ' + st.flags.fab4.placed + " que tu avais y ont été posés" +
+          (st.flags.fab4.linked === st.flags.fab4.sites ? ", et reliés à la Réserve par des tapis. Ta production continue." : ". Certains n’ont pas pu être reliés à la Réserve : ouvre la Carte pour tracer leurs tapis.") + "</p>" : "") +
         (st.flags.fab3 && st.flags.fab3.placed ? '<p class="small">🏭 Tes ' + (st.flags.fab3.placed > 1 ? st.flags.fab3.placed + " lignes de production sont devenues autant de machines, posées" : "ligne de production est devenue une machine, posée") +
           " autour de la Réserve le long d’un tapis. Tout tourne comme avant." + (st.flags.fab3.left ? " " + st.flags.fab3.left + " n’ont pas trouvé de place : leurs machines t’attendent dans l’usine." : "") + "</p>" : "") +
+        (st.flags.v5proj ? '<p class="small">🏗️ Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Pour la suite, pose son chantier sur la Carte (depuis le Cosmos) et relie-le par un tapis à une sortie de la Réserve.</p>' : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
       on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
-      onClose: () => { st.flags.news = null; delete st.flags.fab3; delete st.flags.fab4; save(); }
+      onClose: () => { st.flags.news = null; delete st.flags.fab3; delete st.flags.fab4; delete st.flags.v5proj; save(); }
     });
   }
 
@@ -599,16 +620,16 @@
   /* ============================================================ VUES */
   function tabAvailable(t) {
     if (t === "cosmos") return E.cache().sky;
-    if (t === "fabrique") return E.hasFactory() || !!S().known.automate_bois;
+    if (t === "carte") return true;
     return true;
   }
   function setTab(t) {
-    if (!tabAvailable(t)) t = "terres";
+    if (!tabAvailable(t)) t = "carte";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
-    if (U.tab === "fabrique" && t !== "fabrique") { Usine.unmount(); $("#v-fabrique").innerHTML = ""; }
+    if (U.tab === "carte" && t !== "carte") { Usine.unmount(); $("#v-carte").innerHTML = ""; }
     U.tab = t;
     $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + t));
-    document.body.classList.toggle("in-usine", t === "fabrique");
+    document.body.classList.toggle("in-usine", t === "carte");
     $$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === t));
     if (U.badges[t]) { U.badges[t] = false; updateBadges(); }
     if (t === "journal" || t === "carnet") A.page();
@@ -623,14 +644,16 @@
       if (!on && d) d.remove();
     });
     $('#tabs [data-tab="cosmos"]').classList.toggle("hidden", !tabAvailable("cosmos"));
-    $('#tabs [data-tab="fabrique"]').classList.toggle("hidden", !tabAvailable("fabrique"));
+
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); } }
 
+  /* un doigt reste appuyé sur une matière (sa fiche va s’ouvrir) : on ne redessine pas dessous */
+  const pressing = () => !!(U.lp && !U.lp.up);
   function render(force) {
     const now = performance.now();
     if (!force && now - U.lastRender < 120) { U.dirty = true; return; }
-    if (U.holding && !force) { U.dirty = true; return; }
+    if ((U.holding || pressing()) && !force) { U.dirty = true; return; }
     U.dirty = false; U.lastRender = now;
     applyAge();
     updateBadges();
@@ -639,10 +662,9 @@
     // garder le focus d’un champ de saisie pendant le rendu
     const ae = document.activeElement;
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
-    if (U.tab === "terres") el.innerHTML = viewTerres();
-    else if (U.tab === "atelier") el.innerHTML = viewAtelier();
+    if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
-    else if (U.tab === "fabrique") mountUsine(el);
+    else if (U.tab === "carte") mountUsine(el);
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
     $("#views").scrollTop = sc;
@@ -665,87 +687,8 @@
   const VOL0 = { music: 0.5, amb: 0.6, sfx: 0.8 };
   const volumes = () => Object.assign({}, VOL0, S().settings.vol);
 
-  /* ------------------------------------------------------------ TERRES */
-  function viewTerres() {
-    const st = S();
-    const open = D.ZONES.filter((z) => E.zoneOpen(z.id));
-    if (!U.zone || !E.zoneOpen(U.zone)) U.zone = open[0].id;
-    const z = E.ZONES[U.zone];
-    let h = '<div id="trackBox">' + trackerHTML() + "</div>";
-    h += goalCard();
-    h += zoneTabs(open);
-    h += sceneHTML(z);
-    if (!st.flags.tip_tap) h += '<div class="tip">👆 <b>Touche</b> ce qui t’entoure pour le ramasser. Garde le doigt appuyé pour continuer.</div>';
-    h += zoneInfo(z);
-    return h;
-  }
-  function zoneTabs(open) {
-    const st = S(), need = st.track ? E.plan(st.track.id, 1).missing : {};
-    let h = '<div class="ztabs" role="tablist">';
-    for (const z of open) {
-      const want = z.res.some((r) => need[r]);
-      const n = E.nextExp(z.id), xp = n && !n.locked && !st.exp.active;
-      const here = st.exp.active && st.exp.active.z === z.id;
-      h += '<button class="ztab' + (z.id === U.zone ? " on" : "") + '" data-zone="' + z.id + '" role="tab"><span>' + z.ic + "</span><i>" + esc(shortZone(z.n)) + "</i>" +
-        (want ? '<b class="zb">🎯</b>' : here ? '<b class="zb">🧭</b>' : xp ? '<b class="zb dot"></b>' : "") + "</button>";
-    }
-    // la prochaine terre, encore dans la brume
-    const next = D.ZONES.find((z) => !E.zoneOpen(z.id) && !z.secret);
-    if (next) h += '<button class="ztab fog" data-zfog="' + next.id + '"><span>🌫️</span><i>???</i></button>';
-    return h + "</div>";
-  }
-  const shortZone = (n) => n.replace(/^(La |Le |Les |L’)/, "").replace(/ des Hautes Herbes| Lente| Vertes| de Verre| Fracturés| Basse| des Semeurs/, "");
-  function sceneHTML(z) {
-    const st = S(), spots = Scenes.spots(z.res.length);
-    const night = !Scenes.isNightless(z.id) && Scenes.daypart(new Date().getHours()) === "night";
-    let h = '<div class="scene z-' + z.id + (night ? " night" : "") + '">' + Scenes.backdrop(z.id);
-    // les extracteurs posés dans cette terre, sur l’horizon
-    const placed = placedIn(z.id), exts = Object.keys(placed);
-    exts.forEach((id, i) => {
-      const x = exts.length === 1 ? 14 : 8 + (i * 84) / Math.max(1, exts.length - 1);
-      h += '<button class="ext-spr" data-gotab="fabrique" style="left:' + x.toFixed(1) + "%;animation-delay:" + (-i * 0.7).toFixed(1) + 's" title="' + esc(I[id].n) + '">' + icon(id) + "<b>×" + placed[id] + "</b></button>";
-    });
-    // les ressources
-    z.res.forEach((r, i) => {
-      const [x, y] = spots[i];
-      h += '<button class="res spr-btn" data-res="' + r + '" data-z="' + z.id + '" style="left:' + x + "%;top:" + y + '%" aria-label="Récolter : ' + esc(I[r].n) + '">' +
-        '<span class="spr' + (I[r].sym ? " sym" : "") + '" style="animation-delay:' + (-i * 1.3) + "s" + (I[r].sym ? ";--c:" + I[r].col + ";--ink:" + ink(I[r].col) : "") + '">' + (I[r].sym ? esc(I[r].sym) : I[r].ic) + "</span>" +
-        '<span class="ry" data-y="' + r + "|" + z.id + '"></span></button>';
-    });
-    // le compteur, en haut de la scène
-    h += '<div class="hud">' + z.res.map((r) => '<span class="hr" data-hres="' + r + '">' + icon(r, "sm") + '<b data-c="' + r + '">' + fmt(st.inv[r] || 0) + '</b><i data-r="' + r + '"></i></span>').join("") + "</div>";
-    // l’exploration
-    const act = st.exp.active;
-    if (act && act.z === z.id) h += '<span class="walker" data-xw style="left:' + (8 + 80 * (E.expProgress() ? E.expProgress().p : 0)).toFixed(1) + '%">🚶</span>';
-    else {
-      const n = E.nextExp(z.id);
-      if (n && !n.locked && !act) h += '<button class="signpost" data-exp="' + z.id + '" title="Explorer : ' + esc(n.x.n) + '">🧭<i>' + esc(n.x.n) + "</i></button>";
-    }
-    return h + '<div class="zname">' + esc(z.n) + "</div></div>";
-  }
-  /* extracteurs posés sur les gisements d’une terre : type → nombre */
-  function placedIn(zid) {
-    const out = {}, c = S().fab.c;
-    for (const k in c) {
-      const e = c[k];
-      if (e.k !== "ext") continue;
-      const i = k.indexOf(","), d = E.deposit(+k.slice(0, i), +k.slice(i + 1));
-      if (d && d.z === zid) for (const t in e.u) out[t] = (out[t] || 0) + e.u[t];
-    }
-    return out;
-  }
-  function zoneInfo(z) {
-    const st = S();
-    let h = '<div class="card zone-info"><div class="zd">' + esc(z.d) + "</div>";
-    const placed = placedIn(z.id), exts = Object.keys(placed), us = E.extUnits();
-    const waiting = Object.keys(us).filter((t) => I[t].z === z.id && us[t].own > us[t].used);
-    if (exts.length) h += '<div class="ext-line">' + exts.map((id) => '<span class="x" data-goto="' + id + '">' + icon(id, "sm") + esc(I[id].n) + " ×" + placed[id] + "</span>").join("") + "</div>";
-    else if (!waiting.length) h += '<div class="tiny dim" style="margin-top:6px">Rien ne récolte encore à ta place ici.</div>';
-    if (waiting.length) h += '<div class="small warnline" data-gotab="fabrique">⛏️ ' + waiting.map((t) => (us[t].own - us[t].used) + " " + esc(I[t].n)).join(", ") + " à poser sur les gisements de la Fabrique.</div>";
-    h += expBlock(z);
-    return h + "</div>";
-  }
-
+  /* ------------------------------------------------------------ OBJECTIF ET SUIVI
+   * affichés par-dessus la carte */
   function goalCard() {
     const st = S();
     const g = E.guide();
@@ -755,7 +698,9 @@
     const ob = g.ob;
     const open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
     const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : ob.k === "ext" ? "⛏️ " + esc(ob.n) : esc(I[ob.id].n);
-    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>";
+    const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
+    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
+      (ml.length ? '<button class="gmiles" data-miles title="Les jalons de cet âge">🏁 ' + md + "/" + ml.length + "</button>" : "") + "</div>";
     if (!open) {
       if (ob.k === "craft" && g.step !== ob.id) {
         const sit = I[g.step];
@@ -770,8 +715,7 @@
       if (n && !n.locked && !st.exp.active) h += '<button class="btn small pri" style="margin-top:8px" data-exp="' + ob.z + '">Explorer</button>';
       else if (st.exp.active) h += '<div class="tiny muted" style="margin-top:6px">Une exploration est déjà en cours.</div>';
     } else if (ob.k === "line" || ob.k === "ext") {
-      h += '<div class="name">' + (ob.k === "ext" ? "⛏️ " : "🏭 ") + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
-        '<button class="btn small pri" style="margin-top:8px" data-gotab="fabrique">Ouvrir la Fabrique</button>';
+      h += '<div class="name">' + (ob.k === "ext" ? "⛏️ " : "🏭 ") + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>";
     } else {
       const it = I[ob.id];
       h += '<div class="goal">' + (st.known[ob.id] ? icon(ob.id) : '<span class="ic unk">?</span>') + '<div class="grow"><div class="name">' + esc(it.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
@@ -779,6 +723,26 @@
       h += stepBox(g.step, g.why, g.step === ob.id);
     }
     return h + "</div>";
+  }
+  /* les jalons : ce qu’il y a à faire à chaque âge, et le premier pas vers le suivant */
+  function mileName(ob) {
+    if (ob.k === "craft") return (S().known[ob.id] ? icon(ob.id, "sm") : '<span class="ic sm unk">?</span>') + ' <span class="link-txt" data-goto="' + ob.id + '">' + esc(I[ob.id].n) + "</span>";
+    return (ob.k === "exp" ? "🧭 " : ob.k === "ext" ? "⛏️ " : "🏭 ") + esc(ob.n);
+  }
+  function openMilestones() {
+    const st = S(), ms = E.milestones(), cur = E.objective();
+    st.flags.milesSeen = true;
+    let h = '<div class="kicker">Jalons</div><h2>' + esc(D.AGES[st.age].n) + '</h2><p class="small muted">Ce qu’il y a à faire à chaque âge. Les découvertes hors des jalons comptent aussi : elles ouvrent d’autres chemins.</p>';
+    ms.forEach((list, a) => {
+      if (!list || a > st.age + 1) return;
+      const done = list.filter((x) => x.done).length, next = a === st.age + 1;
+      const shown = next ? list.filter((x) => !x.done).slice(0, 1) : list;
+      if (!shown.length) return;
+      const open = a >= st.age || (cur && list.some((x) => x.i === cur.i));
+      h += '<details class="miles"' + (open ? " open" : "") + "><summary><b>" + (next ? "Vers l’âge suivant" : esc(D.AGES[a].n)) + '</b> <span class="tiny muted">' + (next ? esc(D.AGES[a].n) : done + "/" + list.length) + "</span></summary>" +
+        shown.map((x) => '<div class="mile' + (x.done ? " done" : cur && cur.i === x.i ? " cur" : "") + '"><span class="mk">' + (x.done ? "✓" : cur && cur.i === x.i ? "➜" : "○") + "</span>" + mileName(x.ob) + "</div>").join("") + "</details>";
+    });
+    openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
   const WHY_STEP = { station: "Il te faut d’abord une station :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", unknown: "Prochaine étape :" };
   function stepBox(id, why, isTarget) {
@@ -790,14 +754,13 @@
       const lvl = st.hints[id] || 0;
       if (lvl >= 1) h += '<div class="memo">💭 Le geste : ' + gesteChip(id) + "</div>";
       if (lvl >= 2) { const m = mainIngredient(id); h += '<div class="memo">💭 Une des matières : ' + icon(m, "sm") + " " + esc(I[m].n) + "</div>"; }
-      h += memoryHTML(E.memory());
     } else {
       const b = E.blocker(id);
       h += '<div class="rl small">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
       if (!b) h += '<div class="row wrap" style="margin-top:6px"><button class="btn small pri" data-chain="' + id + '">⚡ Fabriquer</button><button class="btn small" data-tree="' + id + '">🌳 Détail</button>' +
         (st.track && st.track.id === id ? "" : '<button class="btn small" data-track="' + id + '">🎯 Suivre</button>') + "</div>";
     }
-    return h + "</div>";
+    return h === '<div class="stepbox">' ? "" : h + "</div>";
   }
 
   /* la jauge des souvenirs : elle avance avec chaque combinaison nouvelle essayée */
@@ -831,37 +794,13 @@
     return h + "</div>";
   }
 
-  function expBlock(z) {
-    const st = S();
-    const total = z.exps.length;
-    const done = st.exp.done[z.id] || 0;
-    const act = st.exp.active;
-    let h = '<div class="exp">';
-    if (act && act.z === z.id) {
-      const x = z.exps[act.i];
-      h += '<div class="row between"><span class="en">🧭 <b>' + esc(x.n) + '</b></span><span class="tiny muted" data-xl>…</span></div><div class="bar" style="margin-top:6px"><i data-xp></i></div>';
-    } else {
-      const n = E.nextExp(z.id);
-      if (!n) h += '<div class="tiny dim">🧭 Tout a été exploré ici (' + done + "/" + total + ").</div>";
-      else if (n.locked) {
-        const need = I[n.x.need];
-        h += '<div class="row between"><span class="en dim">🧭 ' + (n.x.hidden ? "??? · " + esc(n.x.hidden) : esc(n.x.n) + " · il te faut : " + esc(need.n)) + '</span><span class="tiny dim">' + done + "/" + total + "</span></div>";
-      } else {
-        const cost = n.x.cost ? Object.keys(n.x.cost).map((i) => n.x.cost[i] + " " + I[i].n).join(", ") : "";
-        const dur = n.x.dur / E.expMult();
-        h += '<div class="row between"><div class="grow"><div class="en">🧭 ' + esc(n.x.n) + '</div><div class="tiny muted">' + fmtTime(dur) +
-          (cost ? " · coût : " + esc(cost) : "") + " · " + done + "/" + total + '</div></div><button class="btn small" data-exp="' + z.id + '">Explorer</button></div>';
-      }
-    }
-    return h + "</div>";
-  }
-
   /* ------------------------------------------------------------ ATELIER */
   function viewAtelier() {
     const st = S();
     let h = "";
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
-    if (!(st.stats.crafts > 0)) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. <b>Œuvre</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
+    if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. <b>Œuvre</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
+    h += '<div id="hands">' + handsHTML() + "</div>";
     h += pinsHTML();
     h += '<div class="gestes">';
     let locks = 0;
@@ -901,7 +840,9 @@
     const inv = invItems();
     const tile = (id) => {
       const sel = U.slots.includes(id), fav = favs()[id];
-      return '<button class="inv' + (sel ? " sel" : "") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + (fav ? '<i class="fav">♥</i>' : "") + icon(id) +
+      const rx = st.studied[id] && E.reactions(id)[U.geste];
+      return '<button class="inv' + (sel ? " sel" : "") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + (fav ? '<i class="fav">♥</i>' : "") +
+        (rx ? '<i class="rx" title="Réagit avec ce geste">✦' + (rx > 1 ? rx : "") + "</i>" : "") + icon(id) +
         '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span><span class="n">' + esc(I[id].n) + "</span></button>";
     };
     if (o.sort === "age" && !U.iq) {
@@ -912,8 +853,8 @@
         h += '<div class="inv-age">' + (k < 0 ? "♥ Favorites" : esc(D.AGES[k].n)) + '</div><div class="inv-grid">' + groups[k].map(tile).join("") + "</div>";
       });
     } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
-    if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans les Terres.") + "</p>";
-    else h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : sa fiche, et ♥ pour la garder en tête de liste.</p>';
+    if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter sur la Carte.") + "</p>";
+    else h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : sa fiche, ♥ pour la garder en tête de liste, 🔍 pour l’étudier. Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi.</p>';
     return h;
   }
   const INV_SORTS = [["age", "Par âge"], ["name", "Par nom"], ["qty", "Les plus nombreuses"], ["new", "Dernières trouvées"]];
@@ -1004,6 +945,14 @@
         (r.fresh ? '<div class="tiny muted">Recette notée dans le Carnet.</div>' : "") + "</div></div>";
     }
     if (r.kind === "owned") return '<p class="small">Tu possèdes déjà <b>' + esc(I[r.id].n) + "</b>.</p>";
+    if (r.kind === "queued" || r.kind === "busy") {
+      const it = I[r.id];
+      const msg = r.kind === "queued" ? "✋ Tes mains s’y mettent. Prêt dans " + fmtTime(r.time) + "."
+        : r.why === "full" ? "Tes mains sont déjà bien occupées. Attends qu’une fabrication se termine."
+        : r.why === "queued" ? "C’est déjà en route." : "Impossible pour l’instant.";
+      return '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + '</div><div class="small">' + msg + "</div>" +
+        (E.isUnique(it) ? "" : '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + '<button class="btn small" data-chain="' + r.id + '">⚡ En chaîne</button></div>') + "</div></div>";
+    }
     if (r.kind === "fail") {
       const m = E.memory();
       return thermo(r.temp) + '<p class="small" style="margin-top:8px">' + esc(r.msg) + '</p><p class="tiny muted">' + WHY[r.why] + "</p>" +
@@ -1025,7 +974,7 @@
     let known = 0, total = 0;
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = '<h2 class="title">Carnet</h2>';
-    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. ⚡ <b>En chaîne</b> fabrique aussi tous les sous-composants. 🎯 <b>Suivre</b> affiche ce qui manque dans les Terres. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
+    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. ⚡ <b>En chaîne</b> fabrique aussi tous les sous-composants. 🎯 <b>Suivre</b> affiche ce qui manque sur la carte. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
     h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une matière…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
     h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Production"], ["pin", "★ Épinglées"]].map(([k, n]) =>
@@ -1102,8 +1051,7 @@
       const big = mainIngredient(id);
       return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
         (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
-        '<div class="rl tiny muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Matière : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " matière" + (ing.length > 1 ? "s" : "") + "</div>" +
-        '<div class="acts"><button class="btn small" data-hint="' + id + '"' + (st.intu < E.hintCost(id) ? " disabled" : "") + ">💡 Indice · ✨" + E.hintCost(id) + "</button></div></div>";
+        '<div class="rl tiny muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Matière : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " matière" + (ing.length > 1 ? "s" : "") + "</div></div>";
     }
     const uniq = E.isUnique(it);
     const owned = uniq && (st.made[id] || 0) > 0;
@@ -1124,7 +1072,7 @@
         h += '<div class="acts">' + craftBtns(id) + '<button class="btn small" data-chain="' + id + '" title="Fabriquer aussi les sous-composants">⚡ En chaîne</button>' +
           '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳</button>' +
           (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯</button>') +
-          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Construire une machine pour ça dans l’Usine">🏭</button>' : "") + "</div>";
+          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Construire une machine pour ça sur la Carte">🏭</button>' : "") + "</div>";
       }
     }
     return h + "</div>";
@@ -1140,9 +1088,11 @@
   function mountUsine(el) {
     if (Usine.mounted()) { Usine.refresh(); return; }
     Usine.mount(el);
+    if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; }
+    if (U.sitePlace) { const p = U.sitePlace; U.sitePlace = null; setTimeout(() => Usine.placeSite(p), 80); }
   }
   function buildInUsine(id) {
-    setTab("fabrique");
+    setTab("carte");
     Usine.prepare(id);
   }
 
@@ -1231,7 +1181,7 @@
       if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
       else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ARCHE.</p>';
     } else {
-      h += '<p class="small muted">Les Grands Œuvres consomment des quantités colossales de matières. Contribue au fur et à mesure.</p>';
+      h += '<p class="small muted">Un Grand Œuvre se construit sur la Carte : pose son chantier, puis amène-lui ses matières par tapis, depuis une sortie de la Réserve ou directement depuis tes machines. Il en faut des quantités colossales.</p>';
       for (const pid in D.PROJECTS) if (E.projVisible(pid)) h += projCard(pid);
     }
     return h;
@@ -1249,7 +1199,9 @@
             h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(paid) + "/" + fmt(s.cost[k]) + '</span><div class="bar"><i style="width:' + (100 * paid / s.cost[k]).toFixed(1) + '%"></i></div></div>';
           }
           if (s.need && !st.frags[s.need]) h += '<div class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[s.need].n) + ".</div>";
-          else h += '<div class="row" style="margin-top:8px"><button class="btn small pri" data-give="' + pid + '">Contribuer</button><span class="tiny muted">Donne tout ce que tu peux.</span></div>';
+          h += '<div class="row wrap" style="margin-top:8px">' + (E.siteOf(pid)
+            ? '<button class="btn small" data-site="' + pid + '">🏗️ Voir le chantier</button><span class="tiny muted">Il se sert sur les tapis qui le touchent.</span>'
+            : '<button class="btn small pri" data-site="' + pid + '">📍 Poser le chantier sur la Carte</button><span class="tiny muted">Ses matières lui arriveront par tapis.</span>') + "</div>";
         } else if (s.fire) h += '<button class="btn wide pri" style="margin-top:8px;background:#ff5a3c" data-fire="' + pid + '">💥 Mise à feu</button>';
         else if (s.melody) h += '<p class="small" style="margin-top:6px">🎶 Prends ta flûte (Journal) et joue <b>' + esc(D.MELODIES[s.melody].n) + "</b>.</p>";
       }
@@ -1279,25 +1231,27 @@
       $$("[data-xw]").forEach((b) => (b.style.left = (8 + 80 * xp.p).toFixed(1) + "%"));
       $$("[data-xl]").forEach((b) => (b.textContent = fmtTime(xp.left)));
     } else mini.classList.add("hidden");
+    Roue.refresh();
+    Tuto.tick();
+    const hi = E.handInfo(), hm = $("#handMini");
+    hm.classList.toggle("hidden", !hi.jobs.length || U.tab === "atelier");
+    if (hi.jobs.length) hm.textContent = "✋ " + fmtTime(hi.left);
+    const hb = U.tab === "atelier" && $("#hands");
+    if (hb) {
+      const sig = handSig();
+      if (hb.dataset.sig !== sig) { hb.innerHTML = handsHTML(); hb.dataset.sig = sig; }
+      else hi.jobs.forEach((j, i) => {
+        const l = hb.querySelector('[data-hl="' + i + '"]');
+        if (l) l.textContent = fmtTime(i ? j.at : j.left);
+        if (!i) { const b = hb.querySelector("[data-hp]"); if (b) b.style.width = (100 * (1 - j.left / j.tot)).toFixed(1) + "%"; }
+      });
+    }
     const view = $("#v-" + U.tab);
     $$("[data-c]", view).forEach((el) => {
       const id = el.dataset.c, it = I[id];
       if (!it || E.isUnique(it)) return;
       el.textContent = fmt(st.inv[id] || 0);
     });
-    if (U.tab === "terres") {
-      const f = E.flows();
-      $$("[data-r]", view).forEach((el) => {
-        const r = el.dataset.r, net = E.rate(r) + (f.prod[r] || 0) - (f.cons[r] || 0);
-        el.textContent = fmtNet(net);
-        el.classList.toggle("neg", net < -1e-6);
-      });
-      $$("[data-y]", view).forEach((el) => { const [r, z] = el.dataset.y.split("|"); el.textContent = "+" + fmt(E.tapYield(r, z)); });
-      const tb = $("#trackBox", view);
-      if (tb) tb.innerHTML = trackerHTML();
-      const need = st.track ? E.plan(st.track.id, 1).missing : {};
-      $$(".res", view).forEach((el) => el.classList.toggle("need", !!need[el.dataset.res]));
-    }
     $$("[data-need]", view).forEach((el) => el.classList.toggle("lack", (st.inv[el.dataset.need] || 0) + 1e-9 < Number(el.dataset.q)));
     $$("[data-cr]", view).forEach((b) => {
       const id = b.dataset.cr, n = b.dataset.n;
@@ -1313,14 +1267,7 @@
       if (ok && n.x.cost) for (const i in n.x.cost) if ((st.inv[i] || 0) < n.x.cost[i]) ok = false;
       b.disabled = !ok;
     });
-    $$("[data-hint]", view).forEach((b) => (b.disabled = st.intu < E.hintCost(b.dataset.hint)));
-    $$("[data-give]", view).forEach((b) => {
-      const ps = E.projState(b.dataset.give), s = D.PROJECTS[b.dataset.give].steps[ps.step];
-      let ok = false;
-      if (s && s.cost) for (const k in s.cost) if ((ps.paid[k] || 0) < s.cost[k] && (st.inv[k] || 0) >= 1) ok = true;
-      b.disabled = !ok;
-    });
-    if (U.tab === "fabrique") soundScene();
+    if (U.tab === "carte") soundScene();
     if (U.tab === "atelier") {
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
@@ -1345,58 +1292,12 @@
       }
     } else if (!S().flags.lucioles && ff.length) ff.forEach((f) => f.remove());
     let pip = $(".pip");
-    const showPip = E.cache().pip > 0 && U.tab === "terres";
+    const showPip = E.cache().pip > 0 && U.tab === "carte";
     if (showPip && !pip) { pip = document.createElement("div"); pip.className = "pip"; pip.textContent = "🐞"; app.appendChild(pip); }
     if (!showPip && pip) pip.remove();
   }
 
   /* ============================================================ ACTIONS */
-  function doTap(el) {
-    A.init();
-    const r = el.dataset.res, z = el.dataset.z;
-    const n = E.tap(r, z);
-    if (!n) return;
-    const p = U.holding ? elCenter(el) : U.pointer;
-    floater("+" + fmt(n), p.x + (Math.random() - 0.5) * 24, p.y - 10);
-    A.tap(r);
-    vibe(5);
-    el.classList.remove("hit"); void el.offsetWidth; el.classList.add("hit");
-    const hud = $('[data-hres="' + r + '"]');
-    if (hud) flyTo(r, elCenter(el), elCenter(hud), () => { hud.classList.remove("pop"); void hud.offsetWidth; hud.classList.add("pop"); });
-    $$('[data-c="' + r + '"]').forEach((c) => (c.textContent = fmt(S().inv[r] || 0)));
-    if (!S().flags.tip_tap && S().stats.taps >= 6) { S().flags.tip_tap = true; U.dirty = true; }
-  }
-  /* une petite icône vole de la ressource jusqu’au compteur */
-  function flyTo(id, a, b, done) {
-    const fx = $("#fx");
-    if (!fx || fx.childElementCount > 40 || !a || !b) return;
-    const el = document.createElement("div");
-    el.className = "fly";
-    el.innerHTML = icon(id, "sm");
-    el.style.left = a.x + "px"; el.style.top = a.y + "px";
-    fx.appendChild(el);
-    const dx = b.x - a.x, dy = b.y - a.y, up = -40 - Math.random() * 30;
-    const anim = el.animate([
-      { transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
-      { transform: "translate(calc(-50% + " + dx * 0.4 + "px), calc(-50% + " + (dy * 0.2 + up) + "px)) scale(1.1)", opacity: 1, offset: 0.4 },
-      { transform: "translate(calc(-50% + " + dx + "px), calc(-50% + " + dy + "px)) scale(.6)", opacity: 0.6 }
-    ], { duration: 520, easing: "cubic-bezier(.4,0,.7,1)" });
-    anim.onfinish = () => { el.remove(); if (done) done(); };
-  }
-  function startHold(el) {
-    endHold();
-    el.classList.add("press");
-    doTap(el);
-    U.holding = { el, t: setTimeout(function rep() { if (!U.holding) return; doTap(U.holding.el); U.holding.t = setTimeout(rep, 140); }, 400) };
-  }
-  function endHold() {
-    if (!U.holding) return;
-    clearTimeout(U.holding.t);
-    U.holding.el.classList.remove("press");
-    U.holding = null;
-    if (U.dirty) render();
-  }
-
   function putInSlot(id) {
     const i = U.slots.indexOf(id);
     if (i >= 0) { U.slots[i] = null; }
@@ -1420,8 +1321,13 @@
     U.last = r;
     const bench = $("#bench");
     const p = elCenter($("#forge"));
-    strike(g, bench, r.kind === "craft");
-    if (r.kind === "craft") {
+    strike(g, bench, r.kind === "craft" || r.kind === "queued");
+    if (r.kind === "queued") {
+      A.click();
+      if (bench) { bench.classList.remove("glow"); void bench.offsetWidth; bench.classList.add("glow"); }
+    } else if (r.kind === "busy") {
+      A.fail(0);
+    } else if (r.kind === "craft") {
       A.craft(g);
       if (r.fresh) setTimeout(() => A.discover(), 180);
       sparks(p.x, p.y - 40, r.fresh ? 26 : 12);
@@ -1463,24 +1369,54 @@
     vibe(10);
   }
   function craftFrom(btn) {
-    A.init();
     const id = btn.dataset.cr;
     const n = btn.dataset.n === "max" ? E.maxCraftable(id) : Number(btn.dataset.n);
-    if (!(n > 0)) return;
-    const r = E.craft(id, n);
-    if (!r.ok) { A.fail(0); return; }
-    celebrate(btn, id, r.n, r.bonus);
-    if (U.last && U.last.id === id) U.last = Object.assign({}, U.last, { n: r.n, bonus: r.bonus, fresh: false });
-    render(true);
+    if (n > 0) handQueue(btn, id, n, false);
   }
-  function chainCraft(btn, id, times) {
+  function chainCraft(btn, id, times) { handQueue(btn, id, times || 1, true); }
+  /* tout ce qu’on fabrique à la main part dans la file de « Tes mains » */
+  function handQueue(btn, id, n, chain) {
     A.init();
-    const r = E.craftPlan(id, times || 1);
-    if (!r.done) { openTree(id, times || 1); return; }
-    const sub = r.steps.length - 1;
-    celebrate(btn, id, I[id].r[2] * (times || 1), 0);
-    if (sub > 0) toast("⚡ " + esc(I[id].n) + ", et " + sub + " sous-composant" + (sub > 1 ? "s" : "") + " fabriqué" + (sub > 1 ? "s" : "") + " au passage");
+    const r = E.queue(id, n, chain);
+    if (!r.ok) {
+      if (r.why === "plan") { openTree(id, n); return false; }
+      A.fail(0);
+      toast(r.why === "full" ? "Tes mains sont occupées : " + D.HAND.max + " fabrications en attente, c’est le maximum." : r.why === "queued" ? esc(I[id].n) + " : c’est déjà en route." : "Impossible pour l’instant.");
+      return false;
+    }
+    A.click();
+    const p = elCenter(btn);
+    floater("✋ " + fmtTime(r.time), p.x, p.y - 16, "var(--muted)");
+    const sub = chain ? r.job.s.length - 1 : 0;
+    if (sub > 0) toast("⚡ " + esc(I[id].n) + ", avec " + sub + " sous-composant" + (sub > 1 ? "s" : "") + " : prêt dans " + fmtTime(r.time) + ".");
     render(true);
+    return true;
+  }
+  /* la file de « Tes mains » : ce qui est en cours, ce qui attend */
+  function handsHTML() {
+    const h = E.handInfo();
+    if (!h.jobs.length) return "";
+    let out = '<div class="card hands"><div class="row between"><div class="lbl">✋ Tes mains</div><span class="tiny muted">' + h.jobs.length + "/" + D.HAND.max + " · " + fmtTime(h.left) + "</span></div>";
+    h.jobs.forEach((j, i) => {
+      const it = I[j.id];
+      const what = j.wait ? '<span style="color:var(--bad)">Il manque des matières : elles ont dû partir ailleurs.</span>'
+        : j.steps > 1 ? "Étape " + (j.i + 1) + "/" + j.steps + " · " + esc(I[j.step].n) + " " + fmt(j.k) + "/" + fmt(j.of) : E.isUnique(it) ? "" : fmt(j.k) + "/" + fmt(j.of);
+      out += '<div class="hjob' + (i ? "" : " cur") + '">' + icon(j.id, "sm") + '<div class="grow"><div class="small"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) + "</div>" +
+        '<div class="tiny muted">' + what + "</div>" + (i ? "" : '<div class="bar"><i data-hp style="width:' + (100 * (1 - j.left / j.tot)).toFixed(1) + '%"></i></div>') + "</div>" +
+        '<span class="tiny muted" data-hl="' + i + '">' + fmtTime(i ? j.at : j.left) + '</span><button class="hx" data-hcancel="' + i + '" aria-label="Annuler">✕</button></div>';
+    });
+    return out + "</div>";
+  }
+  const handSig = () => S().hand.q.map((j) => j.id + ":" + j.i + ":" + j.k + ":" + (j.w ? 1 : 0)).join("|");
+  function studyHTML(id) {
+    const st = S();
+    if (!st.studied[id]) {
+      const c = E.studyCost(id);
+      return '<div class="study"><button class="btn small" data-m="study"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button><span class="tiny muted">Pour savoir avec quels gestes la tenter.</span></div>';
+    }
+    const r = E.reactions(id), gs = D.GESTE_ORDER.filter((g) => r[g]);
+    return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + D.GESTES[g].ic + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
+      : '<span class="tiny muted">Rien de plus à tenter avec tes gestes et tes matières, pour l’instant.</span>') + "</div>";
   }
   /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
   function treeHTML(id, n) {
@@ -1507,7 +1443,7 @@
       on: {
         tn: (b) => { times = Math.max(1, times + Number(b.dataset.d) * (times >= 100 ? 10 : 1)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
         tmax: () => { times = Math.max(1, E.maxPlan(id)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
-        track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id].n) + "</b> (voir les Terres)"); },
+        track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id].n) + "</b> (voir la carte)"); },
         go: (b) => { chainCraft(b, id, times); }
       }
     });
@@ -1567,7 +1503,7 @@
           if (!owned && !b) {
             h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') + '<button class="btn small" data-m="chain">⚡ En chaîne</button>' +
               '<button class="btn small ghost" data-m="tree">🌳</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯</button>') +
-              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Une machine pour ça dans la Fabrique">🏭</button>' : "") + "</div>";
+              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Une machine pour ça sur la Carte">🏭</button>' : "") + "</div>";
           }
         } else {
           const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
@@ -1575,7 +1511,7 @@
           h += '<p class="small muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · " + n + " matière" + (n > 1 ? "s" : "") + (lvl >= 2 ? " dont " + nav(big) : "") + "</p>";
           const m = E.memory();
           if (m && m.id === id) h += memoryHTML(m);
-          h += '<div class="row wrap"><button class="btn small" data-m="hint"' + (st.intu < E.hintCost(id) ? " disabled" : "") + ">💡 Indice · ✨" + E.hintCost(id) + "</button></div>";
+          else h += '<p class="tiny muted">À toi de la trouver à l’Atelier. Étudier les matières aide à savoir quoi tenter.</p>';
         }
       }
       const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] !== undefined);
@@ -1583,6 +1519,7 @@
       if (uses.length) {
         h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + ku.map((k) => nav(k)).join("") +
           (unk ? '<span class="tiny muted">' + (ku.length ? "et " : "") + unk + " recette" + (unk > 1 ? "s" : "") + " encore inconnue" + (unk > 1 ? "s" : "") + "</span>" : "") + "</div>";
+        if (unk && st.seen[id]) h += studyHTML(id);
       }
     }
     const back = U.rstack.length > 1;
@@ -1596,14 +1533,14 @@
       on: {
         nav: (b) => { recipeNav(b.dataset.id); return true; },
         back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
-        zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => setTab("terres"), 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
+        zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; U.focusZone = z; setTimeout(() => setTab("carte"), 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
         cr: (b) => { craftFrom(b); redraw(); return true; },
         chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
         tree: () => { setTimeout(() => openTree(id, 1), 60); },
-        track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (voir les Terres)"); redraw(); return true; },
+        track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (voir la carte)"); redraw(); return true; },
         pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
         fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier") render(true); return true; },
-        hint: () => { if (E.revealHint(id)) { A.discover(); if (S().known[id]) toast("Recette révélée : <b>" + esc(it.n) + "</b>"); } redraw(); return true; },
+        study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier") render(true); } redraw(); return true; },
         usine: () => { setTimeout(() => buildInUsine(id), 60); },
         carnet: () => { setTimeout(() => showInCarnet(id), 60); }
       }
@@ -1619,12 +1556,6 @@
   function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
   const openItemInfo = (id) => goto(id);
 
-  function giveProject(pid) {
-    const r = E.contribute(pid);
-    if (r.ok) { A.craft("stratifier"); toast("Contribution : <b>" + fmt(r.gave) + "</b> matières" + (r.done ? ". Étape terminée." : "")); }
-    if (r.done && !r.ending) A.discover();
-    render(true);
-  }
   function confirmFire(pid) {
     const st = S();
     let warn = "";
@@ -1697,6 +1628,7 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
+        '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
         '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
@@ -1713,13 +1645,15 @@
       on: {
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
+        tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
+        tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre reviendra au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
         account: () => { openAccount(); return true; },
         help: () => setTimeout(openHelp, 80),
         news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
         reset: () => setTimeout(() => {
           openModal({ html: '<h2>Tout recommencer ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans ☰ → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Non</button><button class="btn pri" style="background:var(--bad)" data-m="go">Effacer</button></div>',
-            on: { go: () => { pushBackup(E.serialize(), "Avant de tout recommencer"); E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("terres"); intro(); } } });
+            on: { go: () => { pushBackup(E.serialize(), "Avant de tout recommencer"); E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("carte"); intro(); } } });
         }, 80)
       }
     });
@@ -1727,13 +1661,13 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🌲 Terres.</b> Touche une ressource pour la ramasser, garde le doigt dessus pour continuer. Les <b>extracteurs</b> récoltent seuls, même quand le jeu est fermé (jusqu’à 12 h). Les <b>explorations</b> racontent l’histoire du monde. L’<b>objectif</b> en haut dit quoi faire ensuite.</p>" +
-      "<p><b>🔨 Atelier.</b> C’est là que tout se passe. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse.</p>" +
-      "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme, et l’<b>Intuition ✨</b> paie les indices.</p>" +
-      "<p><b>🏭 Fabrique.</b> La carte de tes terres. Chaque terre y a ses gisements : récolte à la main, ou poses-y un extracteur et relie-le à la Réserve par un tapis. Les machines se servent sur les tapis qui passent devant elles. Le bouton ? de la Fabrique explique le reste.</p>" +
+      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h) et relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les jalons de chaque âge. Le bouton <b>🛠️</b> ouvre la roue : toutes tes recettes connues, par famille, à fabriquer sans quitter la carte, et les machines ou extracteurs prêts à poser d’un geste.</p>" +
+      "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une découverte sort tout de suite ; ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
+      "<p><b>📖 Carnet.</b> Tes recettes. <b>⚡ En chaîne</b> fabrique aussi les sous-composants, <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
-      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins. Il y en a plus d’une.</p>" +
-      "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p></div>", "Compris");
+      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se construit sur la Carte : son chantier se nourrit par tapis.</p>" +
+      "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p>" +
+      "<p><b>💭 Tutoriel.</b> Des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible. Menu ☰ : le couper, ou le revoir depuis le début.</p></div>", "Compris");
   }
 
   function intro() {
@@ -1779,7 +1713,7 @@
       html: '<div class="kicker">Nouveau cycle</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières et tes machines seront remis à zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b> et tes <b>secrets</b>.</p>" +
         "<p>Échos accumulés : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production.</p>" +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Recommencer</button></div>',
-      on: { go: () => { pushBackup(E.serialize(), "Avant le cycle " + (st.cycle + 1)); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; setTab("terres"); setTimeout(intro, 200); } }
+      on: { go: () => { pushBackup(E.serialize(), "Avant le cycle " + (st.cycle + 1)); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; setTab("carte"); setTimeout(intro, 200); } }
     });
   }
 
@@ -1797,12 +1731,17 @@
       setTimeout(() => b.remove(), 3500);
     });
     E.on("learn", () => badge("carnet"));
-    E.on("zone", (z) => { U.zone = z; toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>"); badge("terres"); });
+    E.on("zone", (z) => {
+      U.zone = z;
+      toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Elle apparaît sur la carte.");
+      badge("carte");
+      setTimeout(() => { if (Usine.mounted()) Usine.focusZone(z); else U.focusZone = z; }, 50);
+    });
     E.on("discover", (id) => {
       const it = I[id];
       if (!U.forging && !it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " · " + esc(fxText(id)) : ""));
       if (it.e && it.e.sky) badge("cosmos");
-      if (it.t === "mach") badge("fabrique");
+      if (it.t === "mach") badge("carte");
       updateBadges();
     });
     E.on("event", (ev) => {
@@ -1815,7 +1754,7 @@
         .replace("{i}", I[mainIngredient(h.id)].n.toLowerCase());
       A.secret();
       toast("💭 <b>" + esc(it.n) + "</b> : " + esc(line));
-      badge("terres");
+      badge("carte");
     });
     E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé."); });
     E.on("secret", (id) => {
@@ -1845,11 +1784,31 @@
           '</div><div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
       }, 900);
     });
+    /* une pièce sort des mains : un petit bruit (pas trop souvent), et le compte qui monte */
+    let lastHand = 0;
+    E.on("handdone", (d) => {
+      const now = Date.now();
+      if (now - lastHand > 350) { lastHand = now; A.craft(I[d.id].r[0]); }
+      const el = U.tab === "atelier" ? $("#hands .hjob.cur") : null;
+      if (el && d.last) { const p = elCenter(el); floater("+" + fmt(d.n) + " " + I[d.id].n, p.x, p.y - 10, "var(--good)"); if (d.bonus) setTimeout(() => floater("★ +" + fmt(d.bonus), p.x, p.y - 26, "var(--intu)"), 200); }
+    });
+    E.on("hand", (e) => {
+      if (e.kind !== "done") return;
+      const it = I[e.job.id], n = e.job.s[e.job.s.length - 1][1];
+      if (U.tab !== "atelier") toast("✋ Fini : <b>" + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(n)));
+      else render(); // pas pendant un appui long sur une matière
+    });
+    E.on("projstep", (x) => {
+      const P = D.PROJECTS[x.pid], s = P.steps[x.step];
+      A.discover();
+      toast("🏗️ " + esc(P.n) + " : étape « " + esc(s.n) + " » terminée.");
+      if (U.tab === "cosmos") render(true);
+    });
     E.on("crafted", (id) => {
       if (E.cache().pip && (id === "pip" || Math.random() < 0.3)) setTimeout(() => A.pip(), 250);
       if (I[id] && I[id].t === "ext") {
-        badge("fabrique");
-        setTimeout(() => toast("⛏️ <b>" + esc(I[id].n) + "</b> : pose-la sur un gisement de la Fabrique pour qu’elle récolte."), 900);
+        badge("carte");
+        setTimeout(() => toast("⛏️ <b>" + esc(I[id].n) + "</b> : pose-la sur un gisement de la Carte pour qu’elle récolte."), 900);
       }
     });
     E.on("decoded", () => {
@@ -1886,9 +1845,10 @@
     $("#menuBtn").addEventListener("click", () => { A.init(); openMenu(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
     $("#intuBtn").addEventListener("click", () => simpleModal("Intuition", "✨ " + Math.floor(S().intu),
-      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Dépense-la dans le Carnet pour obtenir des indices sur les recettes inconnues.</p>' +
+      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les matières : touche une matière, puis 🔍 Étudier, pour savoir avec quels gestes elle cache encore des recettes.</p>' +
       (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
-    $("#expMini").addEventListener("click", () => setTab("terres"));
+    $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.focusZone = a && a.z; setTab("carte"); });
+    $("#handMini").addEventListener("click", () => { A.init(); Roue.open({ cat: "hand" }); });
     $("#updBar").addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-u]");
       if (!b) return;
@@ -1898,19 +1858,16 @@
 
     const views = $("#views");
     views.addEventListener("pointerdown", (ev) => {
-      const r = ev.target.closest(".res");
-      if (r) { ev.preventDefault(); startHold(r); return; }
       const inv = ev.target.closest(".inv");
       if (inv) {
         const id = inv.dataset.inv;
         U.lp = { id, t: setTimeout(() => { U.lp = null; vibe(15); openItemInfo(id); }, 480) };
       }
     });
-    const cancelLp = () => { if (U.lp) { clearTimeout(U.lp.t); } };
-    ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, () => { endHold(); }));
-    views.addEventListener("pointerleave", endHold);
+    const cancelLp = () => { if (U.lp) { clearTimeout(U.lp.t); U.lp.up = true; } };
+    ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
     views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } }, { passive: true });
-    views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".res, .inv, .slot")) ev.preventDefault(); });
+    views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".inv, .slot")) ev.preventDefault(); });
 
     views.addEventListener("click", (ev) => {
       const t = ev.target;
@@ -1922,19 +1879,14 @@
       if ((b = t.closest("[data-pin]"))) { const on = E.togglePin(b.dataset.pin); A.click(); toast(on ? "★ Épinglée : visible en haut de l’Atelier." : "Recette désépinglée."); render(true); return; }
       if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
       if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
-      if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (voir les Terres)"); render(true); return; }
+      if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (voir la carte)"); render(true); return; }
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
       if ((b = t.closest("[data-autoline]"))) { buildInUsine(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
+      if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if ((b = t.closest("[data-goalt]"))) {
         const st = S(), open = st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
         st.settings.goalOpen = !open; A.click(); render(true); return;
-      }
-      if ((b = t.closest("[data-zone]"))) { U.zone = b.dataset.zone; A.click(); render(true); return; }
-      if ((b = t.closest("[data-zfog]"))) {
-        const z = E.ZONES[b.dataset.zfog], req = I[z.req];
-        toast("🌫️ Une terre encore dans la brume. " + (S().known[z.req] || req.a <= S().age + 1 ? "Il te faudrait : <b>" + esc(req.n) + "</b>." : "Tu n’as pas encore de quoi l’atteindre."));
-        return;
       }
       if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
       if ((b = t.closest("[data-lock]"))) { toast("Un geste que tu ne maîtrises pas encore. Il te faut une nouvelle station."); return; }
@@ -1944,9 +1896,9 @@
       if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
       if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
       if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
-      if ((b = t.closest("[data-hint]"))) {
-        const id = b.dataset.hint;
-        if (E.revealHint(id)) { A.discover(); if (S().known[id]) toast("Recette révélée : <b>" + esc(I[id].n) + "</b>"); render(true); }
+      if ((b = t.closest("[data-hcancel]"))) {
+        const j = S().hand.q[Number(b.dataset.hcancel)];
+        if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Les matières sont revenues dans ta Réserve."); render(true); }
         return;
       }
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
@@ -1962,7 +1914,7 @@
       if ((b = t.closest("[data-play]"))) { A.init(); A.melody(D.MELODIES[b.dataset.play].notes); return; }
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
       if (t.closest("#listen")) { listen(); return; }
-      if ((b = t.closest("[data-give]"))) { giveProject(b.dataset.give); return; }
+      if ((b = t.closest("[data-site]"))) { A.click(); U.sitePlace = b.dataset.site; setTab("carte"); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }
     });
     views.addEventListener("change", (ev) => {
@@ -2044,7 +1996,7 @@
   function loop() {
     E.update();
     if (U.offline && !U.mcur) showOffline();
-    if (U.dirty && !U.holding) render();
+    if (U.dirty && !U.holding && !pressing()) render();
   }
 
   function boot() {
@@ -2055,7 +2007,7 @@
     A.setVolumes(volumes());
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
-    setTab("terres");
+    setTab("carte");
     if (status === "error") showBadSave();
     else if (!S().introSeen) intro();
     else {
@@ -2068,7 +2020,7 @@
     setupSW();
     cloudTimers();
     setTimeout(cloudCheck, 1500);
-    window.__eclat = { E, U, render, save, backups, Cloud };
+    window.__eclat = { E, U, render, save, backups, Cloud, Usine };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

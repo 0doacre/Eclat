@@ -2,6 +2,9 @@
 /* Bot de simulation : joue une partie complète avec le vrai moteur et une
  * horloge virtuelle, pour mesurer le rythme de progression.
  *   node tools/sim.js [tapsParSeconde=4] [projet=dyson] [graine=1]
+ * MAINS=1 : fabriquer à la main prend du temps (comme la file « Tes mains ») ;
+ * les machines possédées aident pour ce qui s’automatise, de façon idéale
+ * (sans tapis à poser). Sans MAINS, tout se fabrique instantanément : une borne basse.
  */
 "use strict";
 const D = require("../js/data.js");
@@ -19,6 +22,10 @@ const I = D.ITEMS;
 const MAX_T = 12 * 3600;
 const log = [];
 const ageAt = {};
+const MAINS = !!process.env.MAINS;
+let busyUntil = 0, busyTotal = 0, handTotal = 0, lastMach = -1e9;
+/* crafts par seconde des machines possédées, si on pouvait les mettre toutes à l’ouvrage */
+const machRate = () => E.MACHINES.reduce((a, m) => a + Math.floor(S().inv[m] || 0) * I[m].spd / 60, 0) * E.cache().aspd;
 E.on("age", (a) => { ageAt[a] = T / 1000; if (process.env.STOP_AGE && a >= Number(process.env.STOP_AGE)) stopNow = true; });
 let stopNow = false;
 const objAt = [];
@@ -81,6 +88,7 @@ function plan(targets, fromEmpty) {
 function produce(id, qty, depth) {
   depth = depth || 0;
   if (depth > 30) return;
+  if (MAINS && busyUntil > T) return; // les mains sont prises : on récolte en attendant
   const it = I[id];
   if ((S().inv[id] || 0) >= qty - 1e-9) return;
   if (!it.r) return;
@@ -93,6 +101,12 @@ function produce(id, qty, depth) {
   for (const i in it.r[1]) produce(i, cost ? cost[i] : it.r[1][i] * crafts, depth + 1);
   const n = Math.min(crafts, E.maxCraftable(id, crafts));
   if (n > 0) {
+    if (MAINS) {
+      const h = E.batchTime(id, n), auto = E.automatable(id) ? machRate() : 0;
+      const d = n / (n / h + auto);
+      busyUntil = Math.max(busyUntil, T) + d * 1000;
+      busyTotal += d; handTotal += h;
+    }
     E.craft(id, n, true);
     // un extracteur ne travaille que posé sur un gisement et relié à la Réserve
     if (it.t === "ext") for (let k = 0; k < n; k++) E.fabAutoExt(id);
@@ -188,6 +202,11 @@ function considerInvest(deficit, goalTaps) {
     if (p.blockers.length) continue;
     interim = id; interimBase = S().inv[id] || 0; return;
   }
+  if (MAINS && busyUntil - T > 120000 && T - lastMach > 180000) {
+    // les mains sont débordées : une machine de plus, la meilleure qu’on sache faire
+    const m = E.MACHINES.filter((x) => S().known[x] || I[x].a <= S().age).sort((a, b) => I[b].spd - I[a].spd).find((x) => !plan({ [x]: (S().inv[x] || 0) + 1 }).blockers.length);
+    if (m) { interim = m; interimBase = S().inv[m] || 0; lastMach = T; return; }
+  }
   if (goalTaps < 40) return;
   let best = null;
   for (const id in I) {
@@ -275,4 +294,5 @@ if (!projDone) {
 const exts = Object.keys(I).filter((id) => I[id].t === "ext" && S().inv[id] > 0).map((id) => id + "×" + S().inv[id]);
 console.log("  extracteurs : " + exts.join(", "));
 console.log("  production/s : " + Object.keys(E.RES_ZONE).concat(["charbon"]).filter((r, i, a) => a.indexOf(r) === i && E.rate(r) > 0).map((r) => r + " " + E.rate(r).toFixed(1)).join(", "));
+if (MAINS) console.log("  mains occupées : " + fmtT(busyTotal) + " (" + fmtT(handTotal) + " sans les machines) · machines : " + E.MACHINES.map((m) => m + "×" + Math.floor(S().inv[m] || 0)).join(", "));
 console.log("  fabrications : " + S().stats.crafts + " · tapes : " + S().stats.taps + " · fragments : " + Object.keys(S().frags).length);

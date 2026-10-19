@@ -7,7 +7,7 @@
   let ctx = null, master = null, sfxBus = null, musicBus = null, ambBus = null, verb = null, noiseBuf = null;
   let enabled = true;
   const vol = { music: 0.5, amb: 0.6, sfx: 0.8 };
-  const scene = { age: 0, zone: "lisiere", tab: "terres", night: false, machines: 0 };
+  const scene = { age: 0, zone: "lisiere", tab: "carte", night: false, machines: 0 };
   const PENTA = [523.25, 587.33, 659.25, 783.99, 880.0]; // do ré mi sol la (la flûte)
 
   /* ------------------------------------------------------------ mise en route */
@@ -348,7 +348,6 @@
   /* ------------------------------------------------------------ ambiance */
   let amb = null, ambTimer = null;
   function ambKey() {
-    if (scene.tab === "fabrique") return "usine";
     if (scene.tab === "cosmos") return "cosmos";
     return scene.zone + (scene.night ? ":n" : "");
   }
@@ -408,14 +407,20 @@
       lune: { hum: [42, 0.02], ev: [["beep", 14]] },
       mercure: { beds: [{ f: 160, v: 0.12, rate: 0.2 }], hum: [36, 0.03], ev: [["wave", 4]] },
       caveau: { hum: [65.4, 0.03], beds: [{ f: 300, v: 0.02 }], ev: [["drip", 3], ["tinkle", 6]] },
-      usine: { hum: [50, 0.02 + Math.min(0.04, scene.machines * 0.004)], beds: [{ f: 350, v: 0.025 }], ev: scene.machines ? [["clank", Math.max(0.6, 4 / scene.machines)], ["piston", Math.max(1.2, 6 / scene.machines)]] : [] },
       cosmos: { hum: [41, 0.02], ev: [] }
     };
-    return D[z] || D.lisiere;
+    const d = D[z] || D.lisiere;
+    /* sur la carte, les machines qui tournent s’ajoutent au paysage */
+    const m = scene.tab === "carte" ? Math.min(10, scene.machines || 0) : 0;
+    if (!m || z === "cosmos") return d;
+    return {
+      beds: d.beds, hum: d.hum || [50, 0.008 + m * 0.002],
+      ev: (d.ev || []).concat([["clank", Math.max(1.2, 8 / m)], ["piston", Math.max(2.5, 12 / m)]])
+    };
   }
   function ambience() {
     if (!ready() || vol.amb <= 0) { stopAmb(); return; }
-    const k = ambKey() + (scene.tab === "fabrique" ? ":" + Math.min(10, scene.machines) : "");
+    const k = ambKey() + (scene.tab === "carte" ? ":" + Math.min(10, scene.machines || 0) : "");
     if (amb && amb.k === k) return;
     stopAmb();
     const def = ambDef(ambKey());

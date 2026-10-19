@@ -187,8 +187,8 @@ test("sauvegarde : aller-retour et export base64", () => {
 
 
 console.log("Sauvegardes (compatibilité)");
-test("les sauvegardes v1, v2 et v3 se chargent sans rien perdre", () => {
-  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[123]/.test(x))) {
+test("les sauvegardes v1, v2, v3 et v4 se chargent sans rien perdre", () => {
+  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[1234]/.test(x))) {
     const raw = fixture(f);
     const old = JSON.parse(raw);
     const E = mk();
@@ -200,7 +200,7 @@ test("les sauvegardes v1, v2 et v3 se chargent sans rien perdre", () => {
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
     assert.strictEqual(S.age, old.age); assert.strictEqual(S.intu, old.intu);
     assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
-    assert.strictEqual(S.flags.news, "4", "annonce des nouveautés");
+    assert.strictEqual(S.flags.news, "5", "annonce des nouveautés");
     assert.strictEqual(raw, fixture(f), "la chaîne d’origine n’est pas modifiée");
     T += 5000; E.update(); // le jeu tourne
   }
@@ -278,6 +278,7 @@ test("usine : règles de construction", () => {
 });
 test("usine : une machine produit, s’arrête au stock visé, réclame ce qui manque", () => {
   const E = mk();
+  E.state.age = 3; // des sorties assez rapides pour ne pas la freiner
   E.add("automate_bois", 2); E.state.known.manche = true;
   E.add("bois", 30);
   const m = miniUsine(E, "manche");
@@ -540,6 +541,226 @@ test("nouveau cycle : on garde le savoir, on gagne des échos", () => {
   assert.ok(S.known.manche && S.frags.chene); assert.ok(!S.endings.aube); assert.ok(S.meta.endings.aube);
   assert.ok(S.count === undefined && E.count("manche") === 10, "capsule temporelle");
   assert.strictEqual(E.tapYield("bois", "lisiere"), 1.5);
+});
+
+test("mains : une pièce après l’autre, matières mises de côté", () => {
+  const E = mk();
+  E.add("bois", 20); E.learn("manche");
+  const t = E.handTime("manche");
+  const r = E.queue("manche", 3);
+  assert.ok(r.ok);
+  assert.strictEqual(E.count("bois"), 11, "le bois est pris dès la mise en file");
+  assert.ok(Math.abs(r.time - E.batchTime("manche", 3)) < 1e-9);
+  assert.ok(r.time < 3 * t, "répéter le geste va plus vite");
+  E.step(t * 1.5);
+  assert.strictEqual(E.count("manche"), 1, "une pièce finie");
+  assert.ok(E.cancelJob(0));
+  assert.strictEqual(E.count("bois"), 17, "les deux pièces pas faites rendent leur bois");
+  assert.strictEqual(E.state.hand.q.length, 0);
+  assert.strictEqual(E.queue("manche", 10).why, "qty");
+  E.state.age = 5;
+  assert.ok(Math.abs(E.handTime("manche") - t * Math.pow(D.HAND.old, 5)) < 1e-9, "les gestes anciens vont plus vite");
+});
+test("mains : en chaîne, les sous-composants restent sur l’établi", () => {
+  const E = mk();
+  E.add("bois", 10); E.add("fibre", 12); E.add("manche", 4);
+  ["manche", "corde", "archet"].forEach((i) => E.learn(i));
+  const r = E.queue("archet", 2, true);
+  assert.ok(r.ok, JSON.stringify(r));
+  assert.strictEqual(E.count("manche"), 2, "deux manches du stock réservés");
+  assert.strictEqual(E.count("fibre"), 0, "de quoi tresser quatre cordes");
+  E.step(r.time + 0.01);
+  assert.strictEqual(E.count("archet"), 2);
+  assert.strictEqual(E.count("corde"), 0, "les cordes ont servi aux archets");
+  assert.strictEqual(E.count("manche"), 2);
+  assert.strictEqual(E.state.hand.q.length, 0);
+});
+test("mains : découverte immédiate, recette connue dans la file, outil unique une seule fois", () => {
+  const E = mk();
+  E.add("bois", 30);
+  assert.strictEqual(E.attempt("tailler", ["bois"]).kind, "craft", "première fois : tout de suite");
+  const q = E.attempt("tailler", ["bois"]);
+  assert.strictEqual(q.kind, "queued");
+  assert.strictEqual(E.count("manche"), 1);
+  E.step(q.time);
+  assert.strictEqual(E.count("manche"), 2);
+  E.add("fibre", 100); E.learn("panier");
+  assert.ok(E.queue("panier", 1).ok);
+  assert.strictEqual(E.queue("panier", 1).why, "queued");
+  for (let i = 0; i < 7; i++) E.queue("manche", 1);
+  E.learn("corde");
+  assert.strictEqual(E.queue("corde", 1).why, "full");
+});
+test("mains : la file survit à la sauvegarde et avance pendant l’absence", () => {
+  const E = mk();
+  E.add("bois", 30); E.learn("manche");
+  E.queue("manche", 8);
+  const txt = E.serialize();
+  const F = mk();
+  F.load(txt);
+  assert.strictEqual(F.count("bois"), 6);
+  T += 60000;
+  F.update();
+  assert.strictEqual(F.count("manche"), 8);
+  assert.strictEqual(F.state.hand.q.length, 0);
+});
+test("sauvegarde : une fabrication illisible rend ses matières", () => {
+  const E = mk();
+  const o = JSON.parse(E.serialize());
+  o.inv.bois = 1;
+  o.hand = { q: [{ id: "objet_disparu", s: [["objet_disparu", 2]], i: 0, k: 0, b: { bois: 5, truc_inconnu: 2 } }, { id: "manche", s: [["manche", 1]], i: 0, k: 0, b: { bois: 3 } }], p: 0.2 };
+  E.load(o);
+  assert.strictEqual(E.count("bois"), 6, "le bois mis de côté revient");
+  assert.strictEqual(E.state.orphans.inv.truc_inconnu, 2, "l’inconnu est mis de côté, pas jeté");
+  assert.strictEqual(E.state.hand.q.length, 1);
+});
+test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
+  const E = mk();
+  ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));
+  assert.deepStrictEqual(E.reactions("bois"), { tailler: 1 }, "le manche");
+  E.learn("manche");
+  E.add("manche", 1);
+  assert.ok(E.reactions("manche").tresser >= 1, "le panier");
+  const before = E.state.intu;
+  assert.ok(E.study("manche"));
+  assert.strictEqual(E.state.intu, before - E.studyCost("manche"));
+  assert.ok(!E.study("manche"), "une seule fois");
+  assert.ok(!E.study("os"), "pas une matière jamais vue");
+});
+
+test("tapis : un tapis ne porte pas plus que son débit", () => {
+  const E = mk();
+  E.add("cabane", 20);
+  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 10).ok);
+  assert.ok(E.fabLink(-3, -7).ok);
+  const x = E.fabCell(-3, -7), cap = E.beltCap();
+  assert.ok(E.extOut(x) > cap, "dix cabanes récoltent plus qu’un tapis de l’âge du Bois ne porte");
+  const b0 = E.count("bois");
+  run(E, 20);
+  const got = E.count("bois") - b0;
+  assert.ok(got <= cap * 20 + 1e-6 && got > cap * 18, "au débit du tapis : " + got);
+  assert.strictEqual(E.machInfo(x.id).s, "sat");
+  assert.ok(Math.abs(E.rate("bois") - cap) < 1e-9, "la production affichée est celle qui arrive");
+  E.state.age = 7;
+  run(E, 5);
+  assert.strictEqual(E.machInfo(x.id).s, "ok", "à l’âge 7, les tapis suivent");
+});
+test("tapis : chaque entrée dans la Réserve a son débit, le tracé automatique en ouvre une nouvelle", () => {
+  const E = mk();
+  E.state.age = 3;
+  E.add("cabane", 20);
+  E.fabPlaceExt(-3, -7, "cabane", 7); E.fabLink(-3, -7);
+  E.fabPlaceExt(-1, -7, "cabane", 7); E.fabLink(-1, -7);
+  const g = E.fabGraph(), X = E.fabCell(-3, -7), Y = E.fabCell(-1, -7);
+  assert.notStrictEqual(g.prods[X.id].t.ents[0].k, g.prods[Y.id].t.ents[0].k, "deux entrées distinctes");
+  const cap = E.beltCap();
+  assert.ok(E.extOut(X) < cap && E.extOut(X) * 2 > cap, "chacune passe seule, pas les deux ensemble");
+  run(E, 5);
+  assert.deepStrictEqual(E.fabSat(), {});
+});
+test("tapis : deux gisements sur le même tapis, l’entrée commune déborde", () => {
+  const E = mk();
+  E.state.age = 3;
+  E.add("cabane", 20);
+  E.fabPlaceExt(-3, -7, "cabane", 7); E.fabCell(-3, -7).d = 1;
+  E.fabPlaceExt(-1, -7, "cabane", 7); E.fabCell(-1, -7).d = 1;
+  // le bois descend sur un tapis qui passe sous la fibre, puis file vers la Réserve
+  E.fabDraw([{ x: -3, y: -6, d: 0 }, { x: -2, y: -6, d: 0 }, { x: -1, y: -6, d: 0 }, { x: 0, y: -6, d: 1 },
+    { x: 0, y: -5, d: 1 }, { x: 0, y: -4, d: 1 }, { x: 0, y: -3, d: 1 }, { x: 0, y: -2, d: 1 }]);
+  const g = E.fabGraph(), X = E.fabCell(-3, -7), Y = E.fabCell(-1, -7);
+  assert.strictEqual(g.prods[X.id].t.ents[0].k, "0,-2");
+  assert.strictEqual(g.prods[Y.id].t.ents[0].k, "0,-2", "la même entrée");
+  const cap = E.beltCap(), b0 = E.count("bois"), f0 = E.count("fibre");
+  run(E, 20);
+  const got = E.count("bois") - b0 + E.count("fibre") - f0;
+  assert.ok(got <= cap * 20 + 1e-6 && got > cap * 18, "un seul tapis de débit : " + got);
+  assert.ok(Math.abs(E.count("bois") - b0 - (E.count("fibre") - f0)) < cap, "partagé à parts égales");
+  assert.deepStrictEqual(E.fabSat(), { "0,-2": 1 });
+  assert.strictEqual(E.machInfo(X.id).s, "jam");
+  // un répartiteur ouvre une deuxième entrée : tout passe
+  E.fabRemove(0, -4);
+  assert.ok(E.fabPlace("split", 0, -4).ok);
+  E.fabDraw([{ x: 1, y: -4, d: 1 }, { x: 1, y: -3, d: 1 }, { x: 1, y: -2, d: 1 }]);
+  E.fabRemove(-1, -4);
+  assert.strictEqual(E.fabGraph().prods[X.id].t.ents.length, 2);
+  const b1 = E.count("bois"), f1 = E.count("fibre");
+  run(E, 20);
+  const got2 = E.count("bois") - b1 + E.count("fibre") - f1;
+  assert.ok(got2 > (E.extOut(X) + E.extOut(Y)) * 19, "deux entrées : toute la récolte passe (" + got2 + ")");
+});
+test("la Réserve ne laisse sortir qu’un certain débit, toutes sorties confondues", () => {
+  const E = mk();
+  E.add("automate_bois", 2); E.state.known.manche = true;
+  E.add("bois", 1000);
+  const m = miniUsine(E, "manche");
+  run(E, 60);
+  const out = E.resOutCap();
+  assert.ok(1000 - E.count("bois") <= out * 60 + 1e-6, "pas plus que la porte de la Réserve");
+  assert.ok(E.count("manche") > 0);
+  void m;
+});
+
+test("chantier d’un Grand Œuvre : posé sur la carte, nourri par tapis", () => {
+  const E = mk();
+  assert.strictEqual(E.fabPlace("site", 4, 0, { p: "dyson" }).why, "kind", "pas avant d’avoir le projet");
+  E.state.flags.arche = true;
+  E.state.age = 12;
+  E.recalc();
+  assert.ok(E.fabPlace("site", 4, 0, { p: "dyson" }).ok);
+  assert.strictEqual(E.fabPlace("site", 5, 3, { p: "dyson" }).why, "siteone", "un seul chantier par Grand Œuvre");
+  E.add("supra", 400); E.add("metal_mercure", 60000); E.add("regolithe", 20000);
+  run(E, 2);
+  assert.strictEqual(E.machInfo("S:dyson").s, "nolink", "aucun tapis ne l’atteint");
+  assert.ok(E.fabPlace("port", 2, 0).ok);
+  E.fabDraw([{ x: 3, y: 0, d: 0 }]);
+  run(E, 10);
+  const ps = E.projState("dyson");
+  const paid = Object.values(ps.paid).reduce((a, b) => a + b, 0);
+  assert.ok(paid > 0 && paid <= E.resOutCap() * 10 + 1e-6, "au débit des sorties de la Réserve : " + paid);
+  assert.strictEqual(E.machInfo("S:dyson").s, "ok");
+  ps.paid = { supra: 380, metal_mercure: 49990, regolithe: 12500 };
+  let step = null;
+  E.on("projstep", (x) => (step = x));
+  run(E, 1);
+  assert.deepStrictEqual(step, { pid: "dyson", step: 0 });
+  assert.strictEqual(ps.step, 1, "étape suivante");
+  // sauvegarde : le chantier reste, un chantier inconnu est mis de côté
+  const o = JSON.parse(E.serialize());
+  o.fab.c["6,6"] = { k: "site", id: "S:inconnu", p: "inconnu" };
+  const F = mk();
+  F.load(o);
+  assert.ok(F.siteOf("dyson"));
+  assert.ok(F.state.orphans.fab["6,6"]);
+  assert.strictEqual(F.fabRemove(4, 0).k, "site");
+});
+test("jalons : les objectifs rangés par âge", () => {
+  const E = mk();
+  const m = E.milestones();
+  assert.ok(m[0].length >= 4, "l’âge du Bois a ses jalons");
+  assert.ok(m[0].some((x) => x.ob.k === "ext"), "installer la cabane fait partie de l’âge du Bois");
+  assert.ok(!m[0][0].done);
+  E.add("bois", 3); E.attempt("tailler", ["bois"]);
+  assert.ok(E.milestones()[0][0].done);
+  const all = m.reduce((a, l) => a + (l ? l.length : 0), 0);
+  assert.strictEqual(all, D.OBJECTIVES.length);
+});
+
+test("v4 → v5 : l’usine, les souvenirs et les Grands Œuvres restent tels quels", () => {
+  const raw = fixture("save-v4-age8-carte.json"), old = JSON.parse(raw);
+  const E = mk();
+  E.load(raw);
+  const S = E.state;
+  assert.deepStrictEqual(S.fab.c, old.fab.c, "chaque case de l’usine");
+  assert.deepStrictEqual(S.hints, old.hints, "les indices déjà obtenus");
+  assert.deepStrictEqual(S.hand, { q: [], p: 0 });
+  assert.deepStrictEqual(S.studied, {});
+  assert.ok(!S.flags.v5proj, "pas de Grand Œuvre commencé");
+  const o = JSON.parse(raw);
+  o.flags.arche = true; o.proj = { dyson: { step: 1, paid: { panneau_dyson: 120 } } };
+  const F = mk();
+  F.load(o);
+  assert.ok(F.state.flags.v5proj, "on prévient le joueur");
+  assert.deepStrictEqual(F.projState("dyson"), { step: 1, paid: { panneau_dyson: 120 } }, "ce qui a été versé reste acquis");
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

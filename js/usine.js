@@ -19,7 +19,7 @@
   const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
 
   function create(api) {
-    const { E, A, D, esc, fmt, fmtNum, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater } = api;
+    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel, quiet } = api;
     const I = D.ITEMS;
     const { DX, DY } = window.EclatEngine;
     const S = () => E.state;
@@ -37,10 +37,12 @@
       el.innerHTML =
         '<div class="usine">' +
           '<div class="u-bar"><div class="u-free" id="uFree"></div><button class="u-help" data-u="help" aria-label="Comment ça marche">?</button></div>' +
-          '<div class="u-hint hidden" id="uHint"></div>' +
+          '<div class="u-top"><div id="uOver"></div></div>' +
           '<canvas id="uCan"></canvas>' +
+          '<button class="u-fab" data-u="roue" aria-label="Fabriquer">🛠️<i id="uFabN"></i></button>' +
           '<div class="u-zoom"><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button></div>' +
           '<div class="u-sheet hidden" id="uSheet"></div>' +
+          '<div class="u-hint hidden" id="uHint"></div>' +
           '<div class="u-tools" id="uTools">' + TOOLS.map((t) => '<button data-tool="' + t[0] + '"><span>' + t[1] + "</span><i>" + t[2] + "</i></button>").join("") + "</div>" +
         "</div>";
       V.cv = el.querySelector("#uCan");
@@ -57,6 +59,8 @@
       resize();
       setTool(V.tool);
       refresh();
+      V.ready = true;
+      if (!V.camSet && V.w > 0) initCam();
       V.last = performance.now();
       V.raf = requestAnimationFrame(frame);
     }
@@ -79,9 +83,32 @@
       V.w = r.width; V.h = r.height;
       V.cv.width = Math.round(r.width * V.dpr);
       V.cv.height = Math.round(r.height * V.dpr);
-      if (!V.camSet && V.w > 0) { V.cam.z = clampZ(V.w / 10); V.cam.y = -2.5; V.camSet = true; }
+      if (!V.camSet && V.w > 0 && V.ready) initCam();
     }
     const clampZ = (z) => Math.max(18, Math.min(90, z));
+    /* la bande de carte que rien ne recouvre : l’objectif en haut, le conseil en bas */
+    function freeBand() {
+      const r = V.cv.getBoundingClientRect();
+      const t = V.el.querySelector(".u-top"), h = V.el.querySelector("#uHint");
+      return {
+        top: t ? Math.max(0, t.getBoundingClientRect().bottom - r.top) : 0,
+        bot: h && !h.classList.contains("hidden") ? Math.max(0, r.bottom - h.getBoundingClientRect().top) : 0
+      };
+    }
+    /* centre la vue sur (x, y) dans cette bande ; avec un cadre { w, h }, zoome pour qu’il tienne */
+    function lookAt(x, y, box) {
+      const f = freeBand();
+      if (box) V.cam.z = clampZ(Math.min(V.w / box.w, (V.h - f.top - f.bot) / box.h));
+      V.cam.x = x;
+      V.cam.y = y - (f.top - f.bot) / 2 / V.cam.z;
+    }
+    /* au tout début, on montre la Lisière, où tout commence ; ensuite, la Réserve */
+    function initCam() {
+      V.camSet = true;
+      const g = zonesOnMap().find((z) => z.id === "lisiere");
+      if (g && !Object.values(S().fab.c).some((e) => e.k === "ext")) lookAt((g.x0 + g.x1) / 2, (g.box.y0 + g.box.y1) / 2, { w: 10, h: g.box.y1 - g.box.y0 + 2 });
+      else { V.cam.z = clampZ(V.w / 10); lookAt(0, -1); }
+    }
 
     /* ------------------------------------------------------------ coordonnées */
     const sx = (x) => V.w / 2 + (x - V.cam.x) * V.cam.z;
@@ -122,7 +149,8 @@
       kind: "Impossible ici.",
       nodep: "Un extracteur se pose sur une case de gisement : les cases colorées, regroupées par terre.",
       wrongext: "Cet extracteur ne sait pas récolter ça.",
-      noext: "Plus d’extracteur libre de ce type."
+      noext: "Plus d’extracteur libre de ce type.",
+      siteone: "Ce Grand Œuvre a déjà son chantier. Retire-le d’abord pour le poser ailleurs."
     };
     const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
     /* récolte à la main sur une case de gisement, avec un petit chiffre qui monte */
@@ -150,9 +178,9 @@
       if (e && e.k !== "ext") { toast(WHY.taken); return; }
       const types = freeExt(d.res);
       if (!types.length) {
-        const can = E.extFor(d.res).filter((t) => S().known[t] || E.count(t) > 0);
-        toast(can.length ? "Plus d’extracteur libre pour « " + esc(I[d.res].n) + " ». Fabriques-en un autre : " + can.map((t) => "<b>" + esc(I[t].n) + "</b>").join(", ") + "."
-          : "Aucun de tes extracteurs ne récolte « " + esc(I[d.res].n) + " » pour l’instant.");
+        const can = E.extFor(d.res).filter((t) => S().known[t]);
+        if (can.length) { V.extAt = c; openWheel({ only: can, title: "Pour récolter : " + I[d.res].n }); }
+        else toast("Aucun de tes extracteurs ne récolte « " + esc(I[d.res].n) + " » pour l’instant.");
         return;
       }
       const put = (t) => {
@@ -192,7 +220,10 @@
     function act(c) {
       const e = E.fabCell(c.x, c.y);
       if (V.tool === "voir") {
+        const m = markAt(c.x, c.y);
+        if (m) { selectZone({ z: m.z, i: m.i }); return; }
         if (!e && harvest(c)) return;
+        if (!e) { const g = labelAt(c.x, c.y); if (g) { selectZone({ z: g.id }); return; } }
         select(e && e.k !== undefined ? c : null);
         return;
       }
@@ -203,6 +234,17 @@
       }
       if (V.tool === "del") { demolish(c); return; }
       if (V.tool === "tapis") return; // géré par le tracé
+      if (V.tool === "site") {
+        const why = E.fabWhy("site", c.x, c.y, { p: V.spid });
+        if (why) { toast(WHY[why] || WHY.kind); return; }
+        remember();
+        E.fabPlace("site", c.x, c.y, { p: V.spid });
+        A.place ? A.place() : A.click();
+        vibe(15);
+        setTool("voir");
+        select(c);
+        return;
+      }
       if (e) { if (e.k !== "res") { setTool("voir"); select(c); } return; }
       if (V.tool === "port" || V.tool === "split" || V.tool === "cross") {
         const why = E.fabWhy(V.tool, c.x, c.y);
@@ -215,7 +257,11 @@
       }
       if (V.tool === "mach") {
         const types = freeTypes();
-        if (!types.length) { toast(E.MACHINES.some((m) => E.count(m) > 0) ? WHY.nomach : "Il te faut d’abord une machine : un Automate de bois, par exemple."); return; }
+        if (!types.length) {
+          if (E.MACHINES.some((m) => S().known[m])) openWheel({ cat: "mach", title: "Fabriquer une machine" });
+          else toast("Il te faut d’abord une machine : un Automate de bois, par exemple.");
+          return;
+        }
         const put = (m) => {
           const why = E.fabWhy("mach", c.x, c.y, { m });
           if (why) { toast(WHY[why] || WHY.kind); return; }
@@ -406,10 +452,12 @@
       if ((b = t.closest("[data-mt]"))) { V.mtype = b.dataset.mt; setTool("mach"); A.click(); refresh(); return; }
       if ((b = t.closest("[data-et]"))) { V.etype = b.dataset.et; setTool("ext"); A.click(); refresh(); return; }
       if (!(b = t.closest("[data-u]"))) return;
+      if (b.dataset.u === "tip") { S().flags[b.dataset.f] = true; A.click(); refresh(); return; }
+      if (b.dataset.u === "roue") { openWheel({}); return; }
       const u = b.dataset.u, sel = V.sel, e = sel && E.fabCell(sel.x, sel.y);
       if (u === "zin") zoom(1.25);
       else if (u === "zout") zoom(0.8);
-      else if (u === "center") { V.cam.x = 0; V.cam.y = 0; }
+      else if (u === "center") lookAt(0, 0);
       else if (u === "link" && e) {
         remember();
         const r = E.fabLink(sel.x, sel.y);
@@ -424,7 +472,13 @@
       }
       else if (u === "undo") undo();
       else if (u === "help") help();
-      else if (u === "close") select(null);
+      else if (u === "close") { V.zsel = null; select(null); }
+      else if (u === "exp") {
+        const r = E.startExp(b.dataset.z);
+        if (r.ok) { A.explore ? A.explore() : A.click(); toast("🧭 C’est parti. L’exploration avance toute seule."); }
+        else if (r.why === "busy") toast("Une exploration est déjà en cours.");
+        else if (r.why === "cost") toast("Il te manque de quoi partir.");
+      } else if (u === "zone") selectZone({ z: b.dataset.z });
       else if (u === "rot" && e) { remember(); E.fabRotate(sel.x, sel.y); A.click(); }
       else if (u === "rm" && e) { demolish(sel); }
       else if (u === "on" && e) { E.fabSet(e.id, { on: !e.on }); A.click(); }
@@ -507,8 +561,15 @@
     }
 
     /* ------------------------------------------------------------ panneau d’une case */
+    function selectZone(zs) {
+      V.sel = null;
+      V.zsel = zs;
+      A.click();
+      sheet();
+    }
     function select(c) {
       V.sel = c;
+      if (c) V.zsel = null;
       sheet();
       // garder la case visible au-dessus du panneau
       const box = c && V.el && V.el.querySelector("#uSheet");
@@ -520,9 +581,13 @@
     }
     const STATUS = {
       ok: "En marche", wait: "Démarrage…", off: "En pause", norec: "Aucune recette choisie", idle: "Aucune machine",
-      starved: "Il lui manque des matières", noout: "Sa production ne va nulle part", jam: "Encombrée", cap: "Stock visé atteint", blocked: "Il manque une station"
+      starved: "Il lui manque des matières", noout: "Sa production ne va nulle part", jam: "Ralentie : ce qu’elle pose ne part pas assez vite", cap: "Stock visé atteint", blocked: "Il manque une station"
     };
-    const LEVEL = { ok: "good", wait: "good", off: "dim", norec: "warn", idle: "warn", starved: "warn", cap: "dim", noout: "bad", jam: "bad", blocked: "bad" };
+    const LEVEL = { ok: "good", wait: "good", off: "dim", norec: "warn", idle: "warn", starved: "warn", cap: "dim", noout: "bad", jam: "warn", blocked: "bad" };
+    /* ce qui bouche la sortie d’une machine ou d’un extracteur */
+    const toRes = (e) => { const P = E.fabGraph().prods[e.id]; return !!(P && P.t.res); };
+    const JAM_RES = () => "Le tapis qui entre dans la Réserve est plein : un tapis porte au plus " + fmtNum(E.beltCap()) + " objets/s à cet âge. Fais entrer un autre tapis dans la Réserve (un 🔀 répartiteur sur le chemin, par exemple), ou relie autrement ce qui partage ce tapis.";
+    const JAM_MACH = "Les machines de son tapis ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve.";
     function machStatus(e) {
       const info = E.machInfo(e.id);
       const it = I[e.r];
@@ -530,10 +595,11 @@
       if ((info.s === "ok" || info.s === "wait") && it) s += " · " + fmtNum(E.machRate(e) * 60 * it.r[2]) + " " + esc(it.n.toLowerCase()) + "/min";
       if (info.s === "starved" && info.miss) {
         more = Object.keys(info.miss).map((k) => '<span class="link-txt" data-u="goto" data-id="' + k + '">' + esc(I[k].n) + "</span> " +
-          (info.miss[k] === "link" ? "(aucun tapis n’en apporte)" : "(le stock est vide)")).join(", ");
+          (info.miss[k] === "link" ? "(aucun tapis n’en apporte)" : info.miss[k] === "slow" ? "(la Réserve ne le laisse pas sortir assez vite)" : "(le stock est vide)")).join(", ");
+        if (Object.values(info.miss).includes("slow")) more += ". La Réserve ne laisse sortir que " + fmtNum(E.resOutCap()) + " objets/s en tout, toutes sorties confondues. Pour aller plus vite, amène ses matières par tapis, depuis les gisements ou d’autres machines.";
       }
       if (info.s === "noout") more = "La flèche montre où elle pose ce qu’elle fabrique. Mets là un tapis qui rejoint la Réserve, ou une autre machine.";
-      if (info.s === "jam") more = "Les machines suivantes ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve.";
+      if (info.s === "jam") more = toRes(e) ? JAM_RES() : JAM_MACH;
       if (info.s === "cap") s += " (" + fmt(e.cap) + ")";
       if (info.s === "blocked" && info.b) s = info.b.why === "heat" ? "Il faut " + fmtHeat(info.b.heat) + " pour cette recette" : "Il te manque la station pour ce geste";
       return { s, more, lvl: LEVEL[info.s] || "dim" };
@@ -546,7 +612,9 @@
         off: ["En pause", "dim", ""],
         idle: ["Aucun extracteur posé ici", "warn", "Ajoute un extracteur avec + ci-dessous."],
         noout: ["Ce qu’il récolte ne va nulle part", "bad", "La flèche montre où il pose sa récolte. Relie-le à la Réserve, ou trace un tapis vers une machine."],
-        jam: ["Encombré", "bad", "Les machines de son tapis ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve."]
+        sat: ["Récolte " + fmtNum(E.beltCap()) + " " + esc(I[e.res].n.toLowerCase()) + "/s sur " + fmtNum(rate) + " : le tapis ne suit pas", "warn",
+          "Un tapis porte au plus " + fmtNum(E.beltCap()) + " objets/s à cet âge. Les extracteurs en trop ici ne servent à rien pour l’instant : ils travailleraient mieux sur un autre gisement. Les tapis vont plus vite aux âges suivants."],
+        jam: ["Ralenti : sa récolte ne part pas assez vite", "warn", toRes(e) ? JAM_RES() : JAM_MACH]
       }[info.s] || ["", "dim", ""];
       return { s: T[0], lvl: T[1], more: T[2], code: info.s };
     }
@@ -559,6 +627,7 @@
     function sheet() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (!box) return;
+      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); return; }
       const c = V.sel, e = c && E.fabCell(c.x, c.y);
       if (!e) { box.classList.add("hidden"); box.innerHTML = ""; V.sel = null; return; }
       box.classList.remove("hidden");
@@ -606,18 +675,126 @@
         const n = P ? Object.keys(P.t.cons).length : 0;
         h += '<div class="u-head"><span class="ic">📤</span><div class="grow"><b>Sortie</b><div class="u-st ' + (n ? "good" : "warn") + '">' +
           (n ? "Alimente " + n + " machine" + (n > 1 ? "s" : "") : "Son tapis ne touche aucune machine") + "</div></div></div>" +
+          '<p class="tiny muted">La Réserve laisse sortir ' + fmtNum(E.resOutCap()) + " objets/s au plus, toutes sorties confondues. Ce qui vient directement des gisements et des machines n’a pas cette limite.</p>" +
           '<button class="u-recipe" data-u="filter">' + (e.f && I[e.f] ? icon(e.f) + '<span class="grow">N’envoie que : ' + esc(I[e.f].n) + "</span>" : '<span class="grow">Envoie tout ce qu’on lui demande</span>') + "<span>▾</span></button>" +
           '<div class="u-row acts"><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+      } else if (e.k === "site") {
+        const P = D.PROJECTS[e.p], ps = E.projState(e.p), step = P.steps[ps.step], info = E.machInfo(e.id);
+        const ST = { ok: ["Les matières arrivent", "good"], starved: ["Ses tapis n’apportent rien pour l’instant", "warn"], nolink: ["Aucun tapis ne l’atteint", "bad"],
+          need: ["En attente : il faut d’abord atteindre " + (step && step.need && D.FRAGS[step.need] ? esc(D.FRAGS[step.need].n) : "un autre lieu"), "warn"],
+          act: ["Cette étape se joue dans le Cosmos", "good"], done: ["Œuvre accomplie", "good"], wait: ["Démarrage…", "good"] }[info.s] || ["", "dim"];
+        box.dataset.site = e.p + ":" + ps.step + ":" + info.s;
+        h += '<div class="u-head"><span class="ic">' + P.ic + '</span><div class="grow"><b>Chantier : ' + esc(P.n) + "</b>" +
+          (step ? '<div class="tiny muted">Étape ' + (ps.step + 1) + "/" + P.steps.length + " · " + esc(step.n) + "</div>" : "") +
+          '<div class="u-st ' + ST[1] + '">' + ST[0] + "</div></div></div>";
+        if (step && step.cost) {
+          h += '<div class="u-ins">' + Object.keys(step.cost).map((k) => {
+            const paid = ps.paid[k] || 0, miss = info.miss && info.miss[k];
+            return '<span class="u-in' + (miss ? " no" : "") + '" data-u="goto" data-id="' + k + '">' + icon(k, "sm") + '<i data-sp="' + k + '">' + fmt(paid) + " / " + fmt(step.cost[k]) + (miss ? " · aucun tapis" : "") + "</i></span>";
+          }).join("") + "</div>" +
+            '<p class="tiny muted">Il se sert sur les tapis qui le touchent : une 📤 sortie de la Réserve, ou directement tes machines. Au plus ' + fmtNum(E.beltCap()) + " objets/s par matière.</p>";
+        } else if (step && step.fire) h += '<p class="small">Tout est prêt. La décision se prend dans le Cosmos.</p>';
+        else if (step && step.melody) h += '<p class="small">🎶 Il ne reste qu’à jouer <b>' + esc(D.MELODIES[step.melody].n) + "</b> sur la flûte (Journal).</p>";
+        h += '<div class="u-row acts"><button class="btn small ghost" data-u="rm">🗑️ Retirer</button><span class="tiny muted">Ce qui est déjà livré reste acquis.</span></div>';
       } else {
         const name = { belt: "Tapis", split: "Répartiteur", cross: "Croisement" }[e.k];
-        const txt = { belt: "Fait avancer ce qu’on pose dessus. Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
+        const txt = { belt: "Fait avancer ce qu’on pose dessus, " + fmtNum(E.beltCap()) + " objets/s au plus à cet âge. Les machines qu’il touche se servent au passage.", split: "Renvoie ce qu’il reçoit de tous les côtés à la fois.", cross: "Deux tapis se croisent ici sans se mélanger." }[e.k];
         h += "<b>" + name + '</b><p class="small muted">' + txt + '</p><div class="u-row acts">' + (e.d !== undefined ? '<button class="btn small" data-u="rot">🔄 Tourner</button>' : "") + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       }
       box.innerHTML = h;
     }
 
+    /* ------------------------------------------------------------ les terres sur la carte
+     * Chaque terre ouverte est une région : ses gisements en ligne, et au-dessus ses
+     * lieux à explorer, dans l’ordre. Positions calculées à partir des gisements. */
+    let zoneMemo = { key: "", z: [] };
+    function zonesOnMap() {
+      const deps = E.deposits(), key = deps.length + "";
+      if (zoneMemo.key === key) return zoneMemo.z;
+      const by = {};
+      deps.forEach((d) => {
+        const g = by[d.z] || (by[d.z] = { id: d.z, x0: d.x, x1: d.x, y: d.y });
+        g.x0 = Math.min(g.x0, d.x); g.x1 = Math.max(g.x1, d.x);
+      });
+      const list = Object.values(by).map((g) => {
+        const exps = E.ZONES[g.id].exps || [], n = exps.length, cx = (g.x0 + g.x1) / 2;
+        g.marks = exps.map((x, i) => ({ x: Math.round(cx - (n - 1) + 2 * i), y: g.y - 2, i, z: g.id }));
+        const xs = [g.x0, g.x1].concat(g.marks.map((m) => m.x));
+        g.box = { x0: Math.min.apply(null, xs) - 1.6, x1: Math.max.apply(null, xs) + 1.6, y0: g.y - (n ? 3.1 : 1.9), y1: g.y + 1.7 };
+        return g;
+      });
+      zoneMemo = { key, z: list };
+      return list;
+    }
+    function markAt(x, y) {
+      for (const g of zonesOnMap()) for (const m of g.marks) if (m.x === x && m.y === y) return m;
+      return null;
+    }
+    function labelAt(x, y) {
+      for (const g of zonesOnMap()) if (y === g.y - 1 && x >= g.x0 - 1 && x <= g.x1 + 1) return g;
+      return null;
+    }
+    /* état d’un lieu : fait, en cours, possible, bloqué ou à venir */
+    function markState(z, i) {
+      const st = S(), done = st.exp.done[z] || 0, act = st.exp.active;
+      if (i < done) return "done";
+      if (act && act.z === z && act.i === i) return "active";
+      if (i > done) return "later";
+      const n = E.nextExp(z);
+      if (!n) return "later";
+      if (n.locked) return "locked";
+      return "next";
+    }
+    function zoneSheet(zs) {
+      const st = S(), z = E.ZONES[zs.z];
+      let h = '<button class="u-x" data-u="close" aria-label="Fermer">✕</button>';
+      if (zs.i !== undefined) {
+        const x = z.exps[zs.i], state = markState(zs.z, zs.i);
+        const hidden = x.hidden && state !== "done" && state !== "active";
+        h += '<div class="u-head"><span class="ic">' + ({ done: "✓", active: "⏳", next: "🧭", locked: "🔒", later: "❔" }[state]) + '</span><div class="grow"><b>' + (hidden || state === "later" ? "???" : esc(x.n)) +
+          '</b> <span class="tiny muted">' + esc(z.n) + "</span>";
+        if (state === "done") {
+          const f = x.rw && x.rw.frag && D.FRAGS[x.rw.frag];
+          h += '<div class="u-st good">Exploré' + (f ? " : « " + esc(f.n) + " »" : "") + "</div></div></div>";
+        } else if (state === "active") {
+          const p = E.expProgress();
+          h += '<div class="u-st good">En route… ' + (p ? fmtTime(p.left) : "") + '</div></div></div><div class="bar" style="margin-top:8px"><i data-xp style="width:' + (p ? (p.p * 100).toFixed(1) : 0) + '%"></i></div>';
+        } else if (state === "later") {
+          h += '<div class="u-st dim">Un autre lieu à explorer d’abord.</div></div></div>';
+        } else {
+          const n = E.nextExp(zs.z);
+          const cost = x.cost ? Object.keys(x.cost).map((i) => x.cost[i] + " " + esc(I[i].n.toLowerCase())).join(", ") : "";
+          const busy = !!st.exp.active;
+          h += '<div class="u-st ' + (state === "next" ? "good" : "warn") + '">' + (state === "locked" ? (x.hidden ? esc(x.hidden) : "Il te faut : " + esc(I[n.x.need].n)) :
+            fmtTime(x.dur / E.expMult()) + (cost ? " · il faut " + cost : "")) + "</div></div></div>" +
+            (state === "next" ? '<div class="u-row acts"><button class="btn small pri" data-u="exp" data-z="' + zs.z + '"' + (busy ? " disabled" : "") + ">🧭 Explorer</button>" +
+              (busy ? '<span class="tiny muted">Une exploration est déjà en cours.</span>' : "") + "</div>" : "");
+        }
+        return h;
+      }
+      // la fiche de la terre : son paysage, ses ressources, ses lieux
+      h += '<div class="u-zone">' + (Scenes ? '<div class="u-scene">' + Scenes.backdrop(zs.z) + '<b class="zname">' + esc(z.n) + "</b></div>" : "<b>" + esc(z.n) + "</b>") +
+        '<p class="small muted">' + esc(z.d) + "</p>";
+      const deps = E.deposits().filter((d) => d.z === zs.z);
+      h += '<div class="u-ins">' + deps.map((d) => { const r = E.rate(d.res); return '<span class="u-in" data-u="goto" data-id="' + d.res + '">' + icon(d.res, "sm") + "<i>" + fmt(st.inv[d.res] || 0) + (r ? " · +" + fmtNum(r) + "/s" : "") + "</i></span>"; }).join("") + "</div>";
+      const done = st.exp.done[zs.z] || 0;
+      if (z.exps && z.exps.length) {
+        h += '<div class="tiny muted" style="margin-top:6px">Lieux explorés : ' + done + " / " + z.exps.length + "</div>";
+        const n = E.nextExp(zs.z);
+        if (n && !n.locked && !st.exp.active) h += '<div class="u-row acts"><button class="btn small pri" data-u="exp" data-z="' + zs.z + '">🧭 Explorer : ' + esc(n.x.hidden ? "???" : n.x.n) + "</button></div>";
+      }
+      return h + "</div>";
+    }
+    /* centrer la carte sur une terre (nouvelle terre, exploration en cours…) */
+    function focusZone(zid) {
+      const g = zonesOnMap().find((x) => x.id === zid);
+      if (!g) return;
+      lookAt((g.x0 + g.x1) / 2, (g.box.y0 + g.box.y1) / 2);
+    }
+
     /* ------------------------------------------------------------ bandeau et conseils */
     function hint() {
+      if (quiet && quiet()) return null; // le tutoriel parle déjà
       const st = S(), ents = Object.values(st.fab.c), ms = E.machines(), us = E.extUnits();
       const own = E.MACHINES.reduce((a, m) => a + ms[m].own, 0);
       const machs = ents.filter((e) => e.k === "mach"), exts = ents.filter((e) => e.k === "ext");
@@ -638,6 +815,15 @@
       }
       if (machs.some((e) => E.machInfo(e.id).s === "noout")) return "Ta machine pose sa production devant elle (la petite flèche). Trace un tapis de là jusqu’à la Réserve.";
       if (!st.flags.lineDone) return "Ça tourne. La première pièce ne va pas tarder.";
+      const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOf(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
+      if (lone && !st.flags.tip_site) {
+        return "🏗️ Ton Grand Œuvre attend son chantier : pose-le sur la Carte depuis le Cosmos, puis amène-lui ses matières par tapis. " +
+          '<button class="btn small ghost" data-u="tip" data-f="tip_site">Compris</button>';
+      }
+      if (!st.flags.tip_sat && Object.keys(E.fabSat()).length) {
+        return "⚠️ Un tapis qui entre dans la Réserve est plein : ce qu’il porte n’arrive pas en entier. Fais entrer un deuxième tapis dans la Réserve (un 🔀 répartiteur sur le chemin, par exemple). " +
+          '<button class="btn small ghost" data-u="tip" data-f="tip_sat">Compris</button>';
+      }
       return null;
     }
     function refresh() {
@@ -650,10 +836,15 @@
         const html = owned.length || freeE.length ? '<span class="tiny muted">Libres</span>' +
           freeE.map((t) => '<button class="u-chip ext' + (V.tool === "ext" && V.etype === t ? " on" : "") + '" data-et="' + t + '" title="' + esc(I[t].n) + '">' + icon(t, "sm") + "<b>" + (us[t].own - us[t].used) + "</b></button>").join("") +
           owned.map((m) => '<button class="u-chip' + (V.tool === "mach" && V.mtype === m ? " on" : "") + '" data-mt="' + m + '" title="' + esc(I[m].n) + '">' + icon(m, "sm") + "<b>" + (ms[m].own - ms[m].used) + "</b></button>").join("") +
-          (E.cache().aspd > 1 ? '<span class="tiny muted">vitesse ×' + String(Math.round(E.cache().aspd * 100) / 100).replace(".", ",") + "</span>" : "")
+          (E.cache().aspd > 1 ? '<span class="tiny muted">vitesse ×' + String(Math.round(E.cache().aspd * 100) / 100).replace(".", ",") + "</span>" : "") +
+          (E.deposits().length && Object.keys(S().fab.c).length ? '<span class="tiny muted u-belt">🛤️ ' + fmtNum(E.beltCap()) + "/s</span>" : "")
           : '<span class="tiny muted">Rien à poser pour l’instant</span>';
         if (free.dataset.h !== html) { free.innerHTML = html; free.dataset.h = html; }
       }
+      const fn = V.el.querySelector("#uFabN"), nq = S().hand.q.length;
+      if (fn && fn.textContent !== (nq ? String(nq) : "")) fn.textContent = nq ? String(nq) : "";
+      const ov = V.el.querySelector("#uOver");
+      if (ov && overlay) { const o = overlay(); if (ov.dataset.h !== o) { ov.innerHTML = o; ov.dataset.h = o; } }
       const hb = V.el.querySelector("#uHint");
       const h = hint();
       if (hb) { hb.classList.toggle("hidden", !h); if (h && hb.dataset.h !== h) { hb.innerHTML = "💡 " + h; hb.dataset.h = h; } }
@@ -663,6 +854,12 @@
     function sheetLive() {
       const box = V.el && V.el.querySelector("#uSheet");
       const e = V.sel && E.fabCell(V.sel.x, V.sel.y);
+      if (box && e && e.k === "site") {
+        const ps = E.projState(e.p), step = D.PROJECTS[e.p].steps[ps.step];
+        if (box.dataset.site !== e.p + ":" + ps.step + ":" + E.machInfo(e.id).s) { sheet(); return; }
+        if (step && step.cost) box.querySelectorAll("[data-sp]").forEach((el) => { const k = el.dataset.sp; el.textContent = fmt(ps.paid[k] || 0) + " / " + fmt(step.cost[k]); });
+        return;
+      }
       if (!box || !e || (e.k !== "mach" && e.k !== "ext")) return;
       if ((needsLink(e) ? "1" : "") !== (box.dataset.loose || "")) { sheet(); return; }
       const st = e.k === "ext" ? extStatus(e) : machStatus(e), el = box.querySelector(".u-st");
@@ -727,6 +924,12 @@
     }
     function frame(now) {
       if (!V.cv) return;
+      if (onZone && V.t - (V.lastZone || 0) > 1) {
+        V.lastZone = V.t;
+        let best = null, bd = 1e9;
+        for (const g of zonesOnMap()) { const d = Math.hypot((g.x0 + g.x1) / 2 - V.cam.x, g.y - V.cam.y); if (d < bd) { bd = d; best = g.id; } }
+        if (best && best !== V.zone) { V.zone = best; onZone(best); }
+      }
       V.raf = requestAnimationFrame(frame);
       const dt = Math.min(0.1, (now - V.last) / 1000);
       V.last = now;
@@ -782,6 +985,8 @@
       c.setLineDash([6, 6]);
       c.strokeRect(gx, gy, gw, gw);
       c.setLineDash([]);
+      // les régions des terres, la brume de la suivante
+      drawRegions(x0, x1, y0, y1);
       // les gisements, regroupés par terre
       const labels = {};
       for (const d of E.deposits()) {
@@ -820,6 +1025,7 @@
       }
       // tapis d’abord, puis le reste par-dessus
       for (const [x, y, e] of vis) if (e.k === "belt" || e.k === "cross") drawBelt(x, y, e);
+      drawSat();
       drawReserve();
       for (const [x, y, e] of vis) {
         if (e.k === "split") drawSplit(x, y);
@@ -827,7 +1033,12 @@
       }
       if (V.draw) drawPreview();
       for (const p of V.packets) drawPacket(p);
-      for (const [x, y, e] of vis) { if (e.k === "mach") drawMach(x, y, e); else if (e.k === "ext") drawExt(x, y, e); }
+      for (const [x, y, e] of vis) { if (e.k === "mach") drawMach(x, y, e); else if (e.k === "ext") drawExt(x, y, e); else if (e.k === "site") drawSite(x, y, e); }
+      drawMarks();
+      drawWalker();
+      // la nuit tombe sur la carte, à l’heure de l’appareil
+      const hr = new Date().getHours(), night = hr < 6 || hr >= 21 ? 0.28 : hr < 7 || hr >= 20 ? 0.14 : 0;
+      if (night) { c.fillStyle = "rgba(10,16,48," + night + ")"; c.fillRect(0, 0, V.w, V.h); }
       if (V.sel) {
         const a = 0.5 + 0.5 * Math.sin(V.t * 5);
         c.strokeStyle = "rgba(255,225,150," + (0.55 + 0.4 * a) + ")";
@@ -860,6 +1071,141 @@
         c.fill();
       }
       if (!E.fabCell(d.x, d.y)) drawIcon(d.res, X, Y - pulse * z * 0.06, z * (0.5 + pulse * 0.1), false);
+      // le stock de la matière, juste dessous
+      if (z > 26) {
+        c.font = "600 " + Math.round(z * 0.21) + "px system-ui, sans-serif";
+        c.textAlign = "center"; c.textBaseline = "top";
+        const t = fmt(S().inv[d.res] || 0);
+        c.fillStyle = "rgba(0,0,0,0.6)"; c.fillText(t, X + 1, Y + z * 0.52 + 1);
+        c.fillStyle = "#f3e6cf"; c.fillText(t, X, Y + z * 0.52);
+      }
+    }
+    /* --- décor des régions */
+    const BIOME = {
+      lisiere: ["#2c4a22", "tree"], plaine: ["#5c5a2a", "grass"], riviere: ["#344a3c", "water"], collines: ["#3a5a30", "hill"],
+      mine: ["#2b221c", "cave"], desert: ["#8a6a3c", "dune"], gisement: ["#2c2729", "oil"], montagnes: ["#4a4f58", "peak"],
+      orbite: ["#0b0e1f", "star"], lune: ["#56575d", "crater"], mercure: ["#4c2316", "lava"], caveau: ["#0f2537", "crystal"]
+    };
+    function drawRegions(x0, x1, y0, y1) {
+      const c = V.ctx, z = V.cam.z;
+      for (const g of zonesOnMap()) {
+        const b = g.box;
+        if (b.x1 < x0 - 1 || b.x0 > x1 + 1 || b.y1 < y0 - 1 || b.y0 > y1 + 1) continue;
+        const [col, deco] = BIOME[g.id] || ["#3a3a3a", "grass"];
+        const X = sx(b.x0), Y = sy(b.y0), W = (b.x1 - b.x0) * z, H = (b.y1 - b.y0) * z;
+        c.fillStyle = col; c.globalAlpha = 0.7;
+        roundRect(c, X, Y, W, H, z * 0.9); c.fill();
+        c.globalAlpha = 1;
+        c.strokeStyle = shade(col, 0.25); c.lineWidth = 2; c.stroke();
+        decorate(g, deco, col);
+      }
+      // la prochaine terre, encore dans la brume
+      const next = D.ZONES.find((zz) => !E.zoneOpen(zz.id) && !zz.secret);
+      if (next) {
+        const cells = E.zonePatch(next.id);
+        if (cells.length) {
+          const xs = cells.map((q) => q.x), cy = cells[0].y;
+          const X = sx(Math.min.apply(null, xs) - 1.6), Y = sy(cy - 2.2), W = (Math.max.apply(null, xs) - Math.min.apply(null, xs) + 3.2) * z, H = 3.8 * z;
+          c.fillStyle = "rgba(160,160,170,0.12)";
+          roundRect(c, X, Y, W, H, z * 0.9); c.fill();
+          c.setLineDash([5, 6]); c.strokeStyle = "rgba(220,220,230,0.3)"; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]);
+          if (z > 16) {
+            const req = I[next.req], known = req && (S().known[next.req] || req.a <= S().age + 1);
+            c.font = "600 " + Math.max(10, Math.round(z * 0.26)) + "px system-ui, sans-serif";
+            c.textAlign = "center"; c.textBaseline = "middle";
+            c.fillStyle = "rgba(235,235,245,0.75)";
+            c.fillText("🌫️ " + (known ? next.n : "Terre inconnue"), X + W / 2, Y + H * 0.4);
+            if (known) { c.font = Math.max(9, Math.round(z * 0.21)) + "px system-ui, sans-serif"; c.fillText("il te faut : " + req.n, X + W / 2, Y + H * 0.66); }
+          }
+        }
+      }
+    }
+    function decorate(g, deco, col) {
+      const c = V.ctx, z = V.cam.z, b = g.box;
+      for (let y = Math.ceil(b.y0); y <= Math.floor(b.y1); y++) for (let x = Math.ceil(b.x0); x <= Math.floor(b.x1); x++) {
+        const h = hash(x * 3 + 11, y * 5 - 7);
+        if (h % 3 || E.deposit(x, y) || markAt(x, y) || E.fabCell(x, y) || y === g.y - 1) continue;
+        const X = sx(x) + ((h >> 4) % 9 - 4) * z / 26, Y = sy(y) + ((h >> 8) % 9 - 4) * z / 26, r = z * (0.12 + (h % 5) * 0.03);
+        if (deco === "tree") {
+          c.fillStyle = "#4a3120"; c.fillRect(X - r * 0.15, Y, r * 0.3, r * 0.9);
+          c.fillStyle = h % 2 ? "#3f6b2c" : "#355e26";
+          c.beginPath(); c.arc(X, Y - r * 0.1, r, 0, 6.3); c.arc(X - r * 0.6, Y + r * 0.2, r * 0.7, 0, 6.3); c.arc(X + r * 0.6, Y + r * 0.2, r * 0.7, 0, 6.3); c.fill();
+        } else if (deco === "grass") {
+          c.strokeStyle = h % 2 ? "#c9b46a" : "#a89048"; c.lineWidth = Math.max(1, z * 0.03);
+          c.beginPath(); for (let k = -1; k <= 1; k++) { c.moveTo(X + k * r * 0.5, Y + r); c.lineTo(X + k * r * 0.8, Y - r * 0.6); } c.stroke();
+        } else if (deco === "water") {
+          c.strokeStyle = "rgba(150,200,230,0.55)"; c.lineWidth = Math.max(1, z * 0.035);
+          const o = Math.sin(V.t * 1.5 + x) * r * 0.3;
+          c.beginPath(); c.moveTo(X - r + o, Y); c.quadraticCurveTo(X + o, Y - r * 0.5, X + r + o, Y); c.stroke();
+        } else if (deco === "hill") {
+          c.fillStyle = h % 2 ? "rgba(120,170,100,0.35)" : "rgba(40,120,80,0.35)";
+          c.beginPath(); c.ellipse(X, Y, r * 1.4, r * 0.8, 0, Math.PI, 0); c.fill();
+        } else if (deco === "cave") {
+          c.fillStyle = "rgba(0,0,0,0.45)"; c.beginPath(); c.arc(X, Y, r, 0, 6.3); c.fill();
+          if (h % 4 === 0) { c.fillStyle = "rgba(255,150,70," + (0.4 + 0.3 * Math.sin(V.t * 2 + x)) + ")"; c.fillRect(X + r * 0.5, Y - r * 0.4, r * 0.3, r * 0.3); }
+        } else if (deco === "dune") {
+          c.strokeStyle = "rgba(240,210,150,0.5)"; c.lineWidth = Math.max(1, z * 0.04);
+          c.beginPath(); c.arc(X, Y + r, r * 1.3, Math.PI * 1.15, Math.PI * 1.85); c.stroke();
+          if (h % 5 === 0) { c.fillStyle = "rgba(200,240,255," + (0.5 + 0.5 * Math.sin(V.t * 3 + y)) + ")"; c.fillRect(X, Y - r, 2, 2); }
+        } else if (deco === "oil") {
+          c.fillStyle = "#0b0909"; c.beginPath(); c.ellipse(X, Y, r * 1.3, r * 0.6, 0, 0, 6.3); c.fill();
+          c.strokeStyle = "rgba(140,110,200,0.35)"; c.lineWidth = 1; c.stroke();
+        } else if (deco === "peak") {
+          c.fillStyle = "#6a707b"; c.beginPath(); c.moveTo(X, Y - r * 1.2); c.lineTo(X - r, Y + r * 0.6); c.lineTo(X + r, Y + r * 0.6); c.fill();
+          c.fillStyle = "#e9eef5"; c.beginPath(); c.moveTo(X, Y - r * 1.2); c.lineTo(X - r * 0.35, Y - r * 0.55); c.lineTo(X + r * 0.35, Y - r * 0.55); c.fill();
+        } else if (deco === "star") {
+          c.fillStyle = "rgba(255,255,255," + (0.4 + 0.4 * Math.sin(V.t * 2 + h)) + ")"; c.fillRect(X, Y, Math.max(1.5, z * 0.04), Math.max(1.5, z * 0.04));
+        } else if (deco === "crater") {
+          c.strokeStyle = "rgba(30,30,35,0.45)"; c.lineWidth = Math.max(1, z * 0.04);
+          c.beginPath(); c.ellipse(X, Y, r, r * 0.55, 0, 0, 6.3); c.stroke();
+        } else if (deco === "lava") {
+          c.strokeStyle = "rgba(255,120,40," + (0.5 + 0.3 * Math.sin(V.t * 2 + x + y)) + ")"; c.lineWidth = Math.max(1, z * 0.035);
+          c.beginPath(); c.moveTo(X - r, Y); c.lineTo(X - r * 0.2, Y + r * 0.3); c.lineTo(X + r, Y - r * 0.2); c.stroke();
+        } else if (deco === "crystal") {
+          c.fillStyle = "rgba(90,200,255," + (0.35 + 0.3 * Math.sin(V.t * 2 + h)) + ")";
+          c.beginPath(); c.moveTo(X, Y - r); c.lineTo(X + r * 0.5, Y); c.lineTo(X, Y + r); c.lineTo(X - r * 0.5, Y); c.fill();
+        }
+      }
+    }
+    /* --- les lieux à explorer */
+    function drawMarks() {
+      const c = V.ctx, z = V.cam.z;
+      for (const g of zonesOnMap()) for (const m of g.marks) {
+        const X = sx(m.x), Y = sy(m.y);
+        if (X < -z || X > V.w + z || Y < -z || Y > V.h + z) continue;
+        const state = markState(m.z, m.i);
+        const ring = { done: "#7fd18b", active: "#ffd36b", next: "#ffd36b", locked: "#a89a87", later: "#5f574c" }[state];
+        const glow = state === "next" ? 0.5 + 0.5 * Math.sin(V.t * 4) : 0;
+        c.fillStyle = "rgba(15,12,10,0.8)";
+        c.beginPath(); c.arc(X, Y, z * 0.36, 0, 6.3); c.fill();
+        c.strokeStyle = ring; c.lineWidth = 2 + glow * 2.5; c.stroke();
+        if (state === "active") {
+          const p = E.expProgress();
+          if (p) { c.strokeStyle = "#ffd36b"; c.lineWidth = 3.5; c.beginPath(); c.arc(X, Y, z * 0.42, -Math.PI / 2, -Math.PI / 2 + p.p * Math.PI * 2); c.stroke(); }
+        }
+        c.font = Math.round(z * 0.36) + "px serif";
+        c.textAlign = "center"; c.textBaseline = "middle";
+        c.fillStyle = state === "done" ? "#7fd18b" : "#f3e6cf";
+        c.globalAlpha = state === "later" ? 0.5 : 1;
+        c.fillText({ done: "✓", active: "⏳", next: "🧭", locked: "🔒", later: "?" }[state], X, Y + z * 0.02);
+        c.globalAlpha = 1;
+      }
+    }
+    /* --- l’explorateur en route */
+    function drawWalker() {
+      const act = S().exp.active, p = E.expProgress();
+      if (!act || !p) return;
+      const g = zonesOnMap().find((x) => x.id === act.z);
+      const m = g && g.marks[act.i];
+      if (!m) return;
+      const c = V.ctx, z = V.cam.z;
+      const k = p.p < 0.25 ? p.p / 0.25 : p.p > 0.85 ? 1 - (p.p - 0.85) / 0.15 : 1;
+      const wx = m.x * k, wy = (m.y + 0.6) * k;
+      c.setLineDash([3, 5]); c.strokeStyle = "rgba(255,220,160,0.35)"; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(sx(0), sy(0)); c.lineTo(sx(m.x), sy(m.y + 0.6)); c.stroke(); c.setLineDash([]);
+      c.font = Math.round(z * 0.45) + "px serif";
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.fillText(k >= 1 ? "🔦" : "🚶", sx(wx), sy(wy) - Math.abs(Math.sin(V.t * 8)) * z * 0.06);
     }
     function drawExt(x, y, e) {
       const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y), col = depColor(e.res);
@@ -877,7 +1223,7 @@
       if (main) drawIcon(main, X - z * 0.04, Y - z * 0.05 + bob, z * 0.5, false);
       drawIcon(e.res, X + z * 0.26, Y + z * 0.26, z * 0.26, true);
       arrow(X + DX[e.d] * z * 0.47, Y + DY[e.d] * z * 0.47, e.d, z * 0.13, "#ffe2ae");
-      const lv = { ok: "#7fd18b", wait: "#7fd18b", idle: "#ffbf4a", off: "#6f6556", noout: "#ff6a55", jam: "#ff6a55" }[info.s] || "#6f6556";
+      const lv = { ok: "#7fd18b", wait: "#7fd18b", idle: "#ffbf4a", sat: "#ffbf4a", off: "#6f6556", noout: "#ff6a55", jam: "#ff9a3c" }[info.s] || "#6f6556";
       c.fillStyle = lv;
       c.beginPath(); c.arc(X + z * 0.28, Y - z * 0.28, z * 0.07, 0, 6.3); c.fill();
       if (lv === "#ff6a55" || lv === "#ffbf4a") {
@@ -959,6 +1305,19 @@
       c.beginPath(); c.arc(X, Y, z * 0.26, 0, 6.3); c.fill();
       for (const s of ins) chevrons(X + DX[s] * h, Y + DY[s] * h, X, Y, z, off);
       chevrons(X, Y, ox, oy, z, off);
+    }
+    /* une entrée de la Réserve qui déborde : la case clignote en orange */
+    function drawSat() {
+      const sat = E.fabSat(), c = V.ctx, z = V.cam.z;
+      for (const k in sat) {
+        const i = k.indexOf(","), x = +k.slice(0, i), y = +k.slice(i + 1);
+        const a = 0.35 + 0.3 * Math.sin(V.t * 5);
+        c.strokeStyle = "rgba(255,150,60," + a + ")";
+        c.lineWidth = Math.max(2, z * 0.08);
+        roundRect(c, sx(x) - z * 0.46, sy(y) - z * 0.46, z * 0.92, z * 0.92, z * 0.14);
+        c.stroke();
+        if (z >= 26) { c.font = Math.round(z * 0.3) + "px system-ui"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("⚠️", sx(x) + z * 0.32, sy(y) - z * 0.32); }
+      }
     }
     function drawReserve() {
       const c = V.ctx, z = V.cam.z, x = sx(-1.5), y = sy(-1.5), w = 3 * z;
@@ -1051,7 +1410,7 @@
       // flèche de sortie
       arrow(X + DX[e.d] * z * 0.47, Y + DY[e.d] * z * 0.47, e.d, z * 0.13, "#ffe2ae");
       // voyant
-      const lv = { ok: "#7fd18b", wait: "#7fd18b", starved: "#ffbf4a", norec: "#ffbf4a", idle: "#ffbf4a", cap: "#8fb3ff", off: "#6f6556", noout: "#ff6a55", jam: "#ff6a55", blocked: "#ff6a55" }[info.s] || "#6f6556";
+      const lv = { ok: "#7fd18b", wait: "#7fd18b", starved: "#ffbf4a", norec: "#ffbf4a", idle: "#ffbf4a", cap: "#8fb3ff", off: "#6f6556", noout: "#ff6a55", jam: "#ff9a3c", blocked: "#ff6a55" }[info.s] || "#6f6556";
       c.fillStyle = lv;
       c.beginPath(); c.arc(X + s * 0.3, Y - s * 0.3, z * 0.07, 0, 6.3); c.fill();
       if (lv === "#ff6a55" || lv === "#ffbf4a") {
@@ -1076,6 +1435,45 @@
       let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
       if (f > 0) { r += (255 - r) * f; g += (255 - g) * f; b += (255 - b) * f; } else { r *= 1 + f; g *= 1 + f; b *= 1 + f; }
       return "rgb(" + (r | 0) + "," + (g | 0) + "," + (b | 0) + ")";
+    }
+    /* le chantier d’un Grand Œuvre : un échafaudage, et l’avancement de l’étape en cours */
+    function siteProgress(pid) {
+      const ps = E.projState(pid), step = D.PROJECTS[pid].steps[ps.step];
+      if (!step) return 1;
+      if (!step.cost) return 1;
+      let a = 0, b = 0;
+      for (const k in step.cost) { a += Math.min(ps.paid[k] || 0, step.cost[k]); b += step.cost[k]; }
+      return b ? a / b : 0;
+    }
+    function drawSite(x, y, e) {
+      const c = V.ctx, z = V.cam.z, X = sx(x), Y = sy(y), P = D.PROJECTS[e.p];
+      if (!P) return;
+      const info = E.machInfo(e.id), s = z * 0.92;
+      c.fillStyle = "rgba(0,0,0,0.35)";
+      roundRect(c, X - s / 2 + z * 0.05, Y - s / 2 + z * 0.07, s, s, z * 0.16); c.fill();
+      c.fillStyle = "#23283a";
+      roundRect(c, X - s / 2, Y - s / 2, s, s, z * 0.16); c.fill();
+      // échafaudage
+      c.save();
+      c.beginPath(); roundRect(c, X - s / 2, Y - s / 2, s, s, z * 0.16); c.clip();
+      c.strokeStyle = "rgba(201,162,74,0.35)"; c.lineWidth = Math.max(1, z * 0.035);
+      for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(X + k * z * 0.22 - s / 2, Y + s / 2); c.lineTo(X + k * z * 0.22 + s / 2, Y - s / 2); c.stroke(); }
+      c.restore();
+      c.strokeStyle = "#c9a24a"; c.lineWidth = 1.5;
+      roundRect(c, X - s / 2, Y - s / 2, s, s, z * 0.16); c.stroke();
+      // avancement
+      const f = siteProgress(e.p), r = z * 0.34;
+      c.lineWidth = Math.max(2, z * 0.07);
+      c.strokeStyle = "rgba(255,255,255,0.12)";
+      c.beginPath(); c.arc(X, Y, r, 0, 6.283); c.stroke();
+      c.strokeStyle = info.s === "ok" ? "#ffd36b" : "#c9a24a";
+      c.beginPath(); c.arc(X, Y, r, -Math.PI / 2, -Math.PI / 2 + 6.283 * f); c.stroke();
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.font = Math.round(z * 0.4) + "px serif";
+      c.fillText(P.ic, X, Y + z * 0.03);
+      const lv = { ok: "#7fd18b", starved: "#ffbf4a", nolink: "#ff6a55", need: "#8fb3ff", act: "#ffd36b", done: "#7fd18b" }[info.s] || "#6f6556";
+      c.fillStyle = lv;
+      c.beginPath(); c.arc(X + s * 0.36, Y - s * 0.36, z * 0.07, 0, 6.3); c.fill();
     }
     function drawIcon(id, X, Y, size, disc) {
       const c = V.ctx, it = I[id];
@@ -1127,14 +1525,48 @@
     E.on("fab", () => { V.paths = {}; if (V.sel && !E.fabCell(V.sel.x, V.sel.y)) V.sel = null; if (V.el) refresh(); });
 
     /* depuis le Carnet : poser une machine qui fabriquera `id` */
+    /* poser le chantier d’un Grand Œuvre : la prochaine case vide touchée */
+    function placeSite(pid) {
+      const at = E.siteOf(pid);
+      if (at) { lookAt(at.x, at.y); select({ x: at.x, y: at.y }); return; }
+      V.spid = pid;
+      setTool("site");
+      toast("Touche une case vide pour poser le chantier : <b>" + esc(D.PROJECTS[pid].n) + "</b>. Ensuite, amène-lui ses matières par tapis.");
+    }
+    /* pour le tutoriel : où est une case à l’écran, la montrer, quel outil est en main */
+    function cellRect(x, y) {
+      if (!V.cv) return null;
+      const r = V.cv.getBoundingClientRect(), z = V.cam.z, X = r.left + sx(x), Y = r.top + sy(y);
+      if (X < r.left || X > r.right || Y < r.top || Y > r.bottom) return null;
+      return { left: X - z / 2, top: Y - z / 2, width: z, height: z };
+    }
+    function reveal(x, y) {
+      if (!V.cv) return;
+      const f = freeBand(), z = V.cam.z, X = sx(x), Y = sy(y);
+      if (X < z || X > V.w - z || Y < f.top + z || Y > V.h - f.bot - z) lookAt(x, y);
+    }
+    /* depuis la roue : poser une machine, ou un extracteur, de ce type */
+    function useMach(m) {
+      V.mtype = m;
+      setTool("mach");
+      toast("Touche une case vide pour poser : <b>" + esc(I[m].n) + "</b>");
+    }
+    function useExt(t) {
+      V.etype = t;
+      setTool("ext");
+      const c = V.extAt;
+      V.extAt = null;
+      if (c && E.deposit(c.x, c.y) && E.extFor(E.deposit(c.x, c.y).res).includes(t)) { placeExt(c); return; }
+      toast("Touche une case de gisement pour poser : <b>" + esc(I[t].n) + "</b>");
+    }
     function prepare(id) {
       V.preset = id;
-      if (!freeTypes().length) { toast("Aucune machine libre. Retire-en une de l’Usine, ou fabriques-en une autre."); setTool("voir"); return; }
+      if (!freeTypes().length) { toast("Aucune machine libre. Retire-en une de la Carte, ou fabriques-en une autre."); setTool("voir"); return; }
       setTool("mach");
       toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
     }
 
-    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare };
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, useMach, useExt, cellRect, reveal, tool: () => V.tool, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
   }
 
   window.EclatUsine = { create };

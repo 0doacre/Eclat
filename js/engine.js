@@ -11,10 +11,9 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const HINT_COST = [1, 1, 2];
-  const SAVE_VERSION = 4;
+  const SAVE_VERSION = 5;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
-  const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins"];
+  const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
   const keyOf = (g, ids) => g + "|" + ids.slice().sort().join(",");
 
@@ -44,7 +43,7 @@
   const ck = (x, y) => x + "," + y;
   const isRes = (x, y) => Math.abs(x) <= RES && Math.abs(y) <= RES;
   const touchesRes = (x, y) => (Math.abs(x) === RES + 1 && Math.abs(y) <= RES) || (Math.abs(y) === RES + 1 && Math.abs(x) <= RES);
-  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1, ext: 1 };
+  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1, ext: 1, site: 1 };
   const freshFab = () => ({ r: FAB_R0, c: {}, seq: 0, ms: {} });
 
   /* Les gisements : chaque terre a sa parcelle sur la carte de la Fabrique, avec
@@ -81,6 +80,7 @@
       intu: 3, zones: { lisiere: true }, flags: {}, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
       fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {},
+      hand: { q: [], p: 0 }, studied: {},
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
@@ -134,6 +134,16 @@
       if (EXTS.some((t) => o.inv && o.inv[t] >= 1)) o.flags.fab4 = "todo";
       o.flags.news = "4";
       o.v = 4;
+    }
+    if (from < 5) {
+      // v5 : la file des mains et l’étude des matières (ajoutées vides au chargement).
+      // Un Grand Œuvre commencé garde ce qui a été versé ; il se poursuit désormais
+      // par un chantier posé sur la carte, ce que la fenêtre des nouveautés explique.
+      o.flags = o.flags || {};
+      const proj = o.proj && typeof o.proj === "object" ? o.proj : {};
+      if (Object.keys(proj).some((p) => proj[p] && (proj[p].step > 0 || Object.keys(proj[p].paid || {}).length))) o.flags.v5proj = true;
+      o.flags.news = "5";
+      o.v = 5;
     }
     return o;
   }
@@ -209,8 +219,11 @@
       if (!n) return;
       S.inv[id] = (S.inv[id] || 0) + n;
       if (S.inv[id] < 1e-9) S.inv[id] = 0;
-      // l’ordre de découverte, pour trier les matières (les anciennes parties ont « true »)
-      if (n > 0 && !S.seen[id]) { S.seen[id] = (S.seenSeq = (S.seenSeq || 0) + 1); E.emit("struct"); }
+      if (n > 0) markSeen(id);
+    }
+    /* l’ordre de découverte, pour trier les matières (les anciennes parties ont « true ») */
+    function markSeen(id) {
+      if (!S.seen[id]) { S.seen[id] = (S.seenSeq = (S.seenSeq || 0) + 1); E.emit("struct"); }
     }
     E.add = add;
 
@@ -306,7 +319,11 @@
       const c = E.cache();
       for (const k in S.fab.c) {
         const e = S.fab.c[k];
-        if (e.k === "ext" && e.res === res && machStat[e.id] && machStat[e.id].s === "ok") r += extOut(e, c);
+        const st = e.k === "ext" && e.res === res && machStat[e.id];
+        if (!st) continue;
+        if (st.s === "ok") r += extOut(e, c);
+        else if (st.s === "sat") r += E.beltCap();
+        else if (st.s === "jam") r += st.avg;
       }
       return r;
     };
@@ -320,11 +337,11 @@
       for (const i in base) out[i] = Math.ceil(base[i] * f);
       return out;
     }
-    /* coût total de `times` fabrications à partir de l’état courant */
-    function totalCost(id, times) {
+    /* coût total de `times` fabrications, la première étant la n° `from` (par défaut : ce qu’on possède) */
+    function totalCost(id, times, from) {
       const it = item(id), tot = {};
       if (isScaled(it)) {
-        const owned = count(id);
+        const owned = from === undefined ? count(id) : from;
         for (let k = 0; k < times; k++) {
           const c = costFor(id, owned + k);
           for (const i in c) tot[i] = (tot[i] || 0) + c[i];
@@ -419,12 +436,22 @@
       if (miss) return { ok: false, why: "qty", missing: miss };
       const tot = totalCost(id, times);
       for (const i in tot) add(i, -tot[i]);
+      return makeIt(id, times, quiet);
+    }
+    E.craft = craft;
+    /* les matières sont déjà prises : on fabrique. Avec `bench`, le résultat reste sur
+     * l’établi (sous-composant d’une fabrication en chaîne) au lieu d’aller au stock. */
+    function makeIt(id, times, quiet, bench) {
+      const it = item(id);
       const bonus = bonusFor(it, times);
       const out = it.r[2] * (times + bonus);
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
       S.stats.crafts += times;
-      add(id, out);
+      if (bench && !isUnique(it) && !isScaled(it)) {
+        bench[id] = (bench[id] || 0) + out;
+        markSeen(id);
+      } else add(id, out);
       if (!S.known[id]) learn(id, true);
       if (first) onFirstCraft(id);
       if (isUnique(it) || isScaled(it)) { recalc(); E.emit("struct"); }
@@ -432,7 +459,6 @@
       if (!quiet) E.emit("crafted", id, { n: out, bonus: bonus * it.r[2], first });
       return { ok: true, n: out, bonus: bonus * it.r[2], first };
     }
-    E.craft = craft;
 
     function onFirstCraft(id) {
       const it = item(id);
@@ -487,11 +513,15 @@
           const fresh = learn(id);
           return { kind: "learn", id, missing: miss, fresh, temp: 4 };
         }
-        const wasKnown = !!S.known[id];
-        if (!wasKnown) learn(id);
+        // une découverte se fabrique sur-le-champ ; une recette connue part dans la file des mains
+        if (S.known[id]) {
+          const q = E.queue(id, 1);
+          return q.ok ? { kind: "queued", id, time: q.time } : { kind: "busy", id, why: q.why };
+        }
+        learn(id);
         const res = craft(id, 1, true);
         E.emit("crafted", id, res);
-        return Object.assign({ kind: "craft", id, fresh: !wasKnown }, res);
+        return Object.assign({ kind: "craft", id, fresh: true }, res);
       }
       const t = temperature(g, ids);
       const pool = D.FAIL[g] || D.FAIL.assembler;
@@ -607,18 +637,156 @@
       return lo;
     };
 
-    /* ------------------------------------------------------ indices */
-    E.hintCost = (id) => HINT_COST[S.hints[id] || 0] || 0;
-    E.revealHint = function (id) {
-      const lvl = S.hints[id] || 0;
-      if (S.known[id] || lvl >= 3) return false;
-      const cost = HINT_COST[lvl];
-      if (S.intu < cost) return false;
-      S.intu -= cost;
-      S.hints[id] = lvl + 1;
-      if (lvl + 1 >= 3) learn(id, true);
+    /* ------------------------------------------------------ les mains
+     * Fabriquer à la main prend du temps : une pièce après l’autre, dans l’ordre de
+     * la file. Les matières sont mises de côté sur l’établi dès la mise en file (les
+     * machines ne peuvent plus les prendre) et rendues si on annule. Les sous-composants
+     * d’une fabrication en chaîne restent sur l’établi jusqu’à l’étape qui s’en sert. */
+    const H = D.HAND;
+    /* une pièce seule ; les gestes d’un âge passé vont plus vite */
+    function handTime(id) {
+      const it = item(id);
+      const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
+      const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old;
+    }
+    E.handTime = handTime;
+    /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
+    const stepTime = (id, n) => handTime(id) * Math.pow(n, H.batch);
+    E.batchTime = stepTime;
+    /* pièces de `id` encore à faire dans la file */
+    function queued(id) {
+      let n = 0;
+      S.hand.q.forEach((j) => j.s.forEach((s, i) => { if (s[0] === id && i >= j.i) n += s[1] - (i === j.i ? j.k : 0); }));
+      return n;
+    }
+    E.queued = queued;
+    /* temps restant ; pour la première de la file, S.hand.p est le temps déjà passé sur l’étape en cours */
+    function jobTime(j, first) {
+      let t = 0;
+      j.s.forEach((s, i) => { if (i >= j.i) t += stepTime(s[0], s[1]); });
+      return Math.max(0, t - (first ? S.hand.p : 0));
+    }
+    /* prend `cost` sur l’établi d’abord, puis dans le stock ; rien s’il manque quelque chose */
+    function take(cost, bench) {
+      for (const i in cost) if ((bench[i] || 0) + (S.inv[i] || 0) + 1e-9 < cost[i]) return false;
+      for (const i in cost) {
+        const b = Math.min(bench[i] || 0, cost[i]);
+        if (b > 0) { bench[i] -= b; if (bench[i] < 1e-9) delete bench[i]; }
+        if (cost[i] - b > 1e-9) add(i, -(cost[i] - b));
+      }
+      return true;
+    }
+    /* met une fabrication dans la file ; avec `chain`, ses sous-composants aussi */
+    E.queue = function (id, times, chain) {
+      times = Math.max(1, Math.floor(times || 1));
+      const it = item(id);
+      if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
+      if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
+      if (isUnique(it)) {
+        times = 1;
+        if (queued(id) > 0) return { ok: false, why: "queued" };
+      }
+      let steps, bench = {};
+      if (chain) {
+        const p = E.plan(id, times);
+        if (!p.ok) return { ok: false, why: "plan", plan: p };
+        steps = p.steps;
+        for (const i in p.used) bench[i] = p.used[i];
+      } else {
+        const b = blocker(id);
+        if (b) return { ok: false, why: b.why, info: b };
+        bench = totalCost(id, times, count(id) + queued(id));
+        const miss = {};
+        let any = false;
+        for (const i in bench) if ((S.inv[i] || 0) + 1e-9 < bench[i]) { miss[i] = Math.ceil(bench[i] - (S.inv[i] || 0)); any = true; }
+        if (any) return { ok: false, why: "qty", missing: miss };
+        steps = [[id, times]];
+      }
+      for (const i in bench) add(i, -bench[i]);
+      const j = { id, s: steps, i: 0, k: 0, b: bench };
+      S.hand.q.push(j);
+      E.emit("hand", { kind: "add", job: j });
+      return { ok: true, job: j, time: jobTime(j, S.hand.q.length === 1) };
+    };
+    E.cancelJob = function (idx) {
+      const j = S.hand.q[idx];
+      if (!j) return false;
+      for (const i in j.b) add(i, j.b[i]);
+      S.hand.q.splice(idx, 1);
+      if (idx === 0) S.hand.p = 0;
+      E.emit("hand", { kind: "cancel", job: j });
+      return true;
+    };
+    /* la file, pour l’affichage : pour chaque fabrication, l’étape en cours et le temps restant */
+    E.handInfo = function () {
+      let t = 0;
+      const jobs = S.hand.q.map((j, n) => {
+        const s = j.s[Math.min(j.i, j.s.length - 1)], left = jobTime(j, n === 0);
+        t += left;
+        const tot = j.s.reduce((a, x) => a + stepTime(x[0], x[1]), 0);
+        return { id: j.id, n: j.s[j.s.length - 1][1], step: s[0], k: j.k, of: s[1], i: j.i, steps: j.s.length, left, at: t, wait: !!j.w, tot };
+      });
+      return { jobs, left: t, full: S.hand.q.length >= H.max };
+    };
+    function finishJob(j, offline) {
+      for (const i in j.b) add(i, j.b[i]);
+      S.hand.q.shift();
+      S.hand.p = 0;
+      if (!offline) E.emit("hand", { kind: "done", job: j });
+    }
+    function handStep(dt, offline) {
+      let left = dt, guard = 0;
+      while (left > 1e-9 && S.hand.q.length && guard++ < 5000) {
+        const j = S.hand.q[0];
+        if (j.i >= j.s.length) { finishJob(j, offline); continue; }
+        const x = j.s[j.i][0], n = j.s[j.i][1], it = item(x), t = handTime(x), total = t * Math.pow(n, H.batch);
+        // la q-ième pièce de l’étape est finie au bout de t × q^batch secondes
+        const p = Math.min(S.hand.p + left, total);
+        const due = (p >= total - 1e-9 ? n : Math.min(n, Math.floor(Math.pow(p / t, 1 / H.batch) + 1e-9))) - j.k;
+        if (due < 1) { left -= p - S.hand.p; S.hand.p = p; continue; }
+        // plusieurs pièces d’un coup, sauf pour les objets dont le prix monte à chaque exemplaire
+        const m = isScaled(it) || isUnique(it) ? 1 : due;
+        const cost = isScaled(it) ? costFor(x, count(x)) : totalCost(x, m);
+        if (blocker(x) && blocker(x).why !== "owned" || !take(cost, j.b)) { j.w = 1; return; }
+        j.w = 0;
+        const tm = Math.min(total, t * Math.pow(j.k + m, H.batch));
+        left -= Math.max(0, tm - S.hand.p);
+        S.hand.p = Math.max(S.hand.p, tm);
+        const last = j.i === j.s.length - 1;
+        const r = makeIt(x, m, offline || !last, last ? null : j.b);
+        j.k += m;
+        if (!offline) E.emit("handdone", { id: x, n: r.n, bonus: r.bonus, first: r.first, last });
+        if (j.k >= n) { j.i++; j.k = 0; S.hand.p = 0; }
+        if (j.i >= j.s.length) finishJob(j, offline);
+      }
+    }
+
+    /* ------------------------------------------------------ étude des matières
+     * Contre un peu d’Intuition, on étudie une matière : on sait alors, pour chaque
+     * geste connu, combien de recettes encore inconnues s’en servent (parmi celles
+     * qu’on peut tenter avec des matières déjà vues). À l’Atelier, les matières
+     * étudiées qui réagissent avec le geste choisi sont marquées. */
+    E.studyCost = (id) => 1 + Math.floor((item(id).a || 0) / 4);
+    E.study = function (id) {
+      if (!item(id) || S.studied[id] || !S.seen[id]) return false;
+      const c = E.studyCost(id);
+      if (S.intu < c) return false;
+      S.intu -= c;
+      S.studied[id] = 1;
       E.emit("struct");
       return true;
+    };
+    E.reactions = function (id) {
+      const out = {};
+      for (const k in RECIPES) {
+        const rid = RECIPES[k], it = item(rid);
+        if (S.known[rid] || it.r[1][id] === undefined) continue;
+        if (it.path && !gesteOK("accorder")) continue;
+        if (!gesteOK(it.r[0]) || !Object.keys(it.r[1]).every((i) => S.seen[i])) continue;
+        out[it.r[0]] = (out[it.r[0]] || 0) + 1;
+      }
+      return out;
     };
 
     /* ------------------------------------------------------ carnet */
@@ -667,6 +835,17 @@
       D.OBJECTIVES.forEach((o, i) => { if (objDone(o)) last = i; });
       for (let i = last + 1; i < D.OBJECTIVES.length; i++) if (!objDone(D.OBJECTIVES[i])) return normObj(D.OBJECTIVES[i], i);
       return null;
+    };
+    /* Les jalons : les objectifs rangés par âge (une action prend l’âge de l’objet qui la précède). */
+    E.milestones = function () {
+      const out = [];
+      let a = 0;
+      D.OBJECTIVES.forEach((o, i) => {
+        const n = normObj(o, i);
+        if (n.k === "craft") a = item(n.id).a;
+        (out[a] = out[a] || []).push({ i, ob: n, done: objDone(o) });
+      });
+      return out;
     };
     /* Prochaine étape concrète vers un objet : une sous-recette inconnue, une station
      * qui manque, ou la clé d’une zone fermée. */
@@ -955,6 +1134,11 @@
       const i = k.indexOf(",");
       return Object.assign({ x: +k.slice(0, i), y: +k.slice(i + 1) }, DEPOSITS[k]);
     });
+    /* la parcelle d’une terre, ouverte ou non (pour dessiner la brume des terres à venir) */
+    E.zonePatch = (zid) => Object.keys(DEP_AT[zid] || {}).map((r) => {
+      const k = DEP_AT[zid][r], i = k.indexOf(",");
+      return { x: +k.slice(0, i), y: +k.slice(i + 1), res: r };
+    });
     E.EXTS = EXTS;
     E.extRate = extRate;
     E.extFor = (r) => EXTS.filter((t) => extRate(t, r) > 0);
@@ -998,6 +1182,9 @@
       return out;
     };
     E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) || Object.keys(S.fab.c).length > 0;
+    /* ce qu’un tapis porte au plus, par seconde ; et ce que la Réserve laisse sortir, en tout */
+    E.beltCap = () => D.BELT.cap[Math.min(S.age, D.BELT.cap.length - 1)] * E.cache().aspd;
+    E.resOutCap = () => E.beltCap() * D.BELT.out;
     E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd : 0);
     const buf = (id) => S.fab.ms[id] || (S.fab.ms[id] = { p: 0, b: {}, o: 0 });
     E.machBuf = buf;
@@ -1005,16 +1192,22 @@
 
     /* Suit le chemin de ce qui sort d’une case (x, y) vers la direction d. */
     function trace(x, y, d, self) {
-      const nodes = [], cons = {}, out = { nodes, cons, res: null };
+      const nodes = [], cons = {}, out = { nodes, cons, res: null, ents: [] };
       const seen = {};
       const q = [{ x: x + DX[d], y: y + DY[d], d, p: -1 }];
       const reach = (id, at) => { if (id !== self && !(id in cons)) cons[id] = at; };
       while (q.length) {
         const s = q.shift();
-        if (isRes(s.x, s.y)) { if (!out.res) out.res = { at: s.p }; continue; }
+        if (isRes(s.x, s.y)) {
+          // la case d’où l’on entre dans la Réserve : chacune porte au plus un tapis de débit
+          const k = s.p < 0 ? ck(x, y) : ck(nodes[s.p].x, nodes[s.p].y);
+          if (!out.res) out.res = { at: s.p };
+          if (!out.ents.some((en) => en.k === k)) out.ents.push({ at: s.p, k });
+          continue;
+        }
         const e = inGrid(s.x, s.y) ? cellAt(s.x, s.y) : null;
         if (!e || e.k === "port" || e.k === "ext") continue;
-        if (e.k === "mach") { reach(e.id, s.p); continue; }
+        if (e.k === "mach" || e.k === "site") { reach(e.id, s.p); continue; }
         if (e.k === "belt" && e.d === (s.d + 2) % 4) continue; // tapis à contresens
         const key = e.k === "cross" ? ck(s.x, s.y) + ":" + (s.d % 2) : ck(s.x, s.y);
         if (seen[key]) continue;
@@ -1023,7 +1216,7 @@
         if (e.k === "belt") {
           for (let k = 0; k < 4; k++) {
             const n = cellAt(s.x + DX[k], s.y + DY[k]);
-            if (n && n.k === "mach") reach(n.id, i);
+            if (n && (n.k === "mach" || n.k === "site")) reach(n.id, i);
           }
           q.push({ x: s.x + DX[e.d], y: s.y + DY[e.d], d: e.d, p: i });
         } else if (e.k === "cross") q.push({ x: s.x + DX[s.d], y: s.y + DY[s.d], d: s.d, p: i });
@@ -1060,7 +1253,15 @@
       }
       ms.forEach((id) => { if (!order.includes(id)) order.push(id); }); // boucles
       const exts = Object.keys(prods).filter((id) => prods[id].e.k === "ext");
-      G = { prods, sup, pos, order, exts };
+      const sites = [];
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k];
+        if (e.k !== "site") continue;
+        const [x, y] = k.split(",").map(Number);
+        pos[e.id] = { x, y };
+        sites.push(e.id);
+      }
+      G = { prods, sup, pos, order, exts, sites };
       return G;
     }
     E.fabGraph = graph;
@@ -1088,8 +1289,8 @@
       for (const pid of srcs) {
         const P = g.prods[pid];
         if (P.e.k !== "port" || !supplies(P, i)) continue;
-        const q = Math.min(need, S.inv[i] || 0);
-        if (q > 0) { add(i, -q); take(pid, q); }
+        const q = Math.min(need, S.inv[i] || 0, portLeft);
+        if (q > 0) { add(i, -q); portLeft -= q; take(pid, q); }
         if (need <= 1e-9) return;
       }
     }
@@ -1116,7 +1317,7 @@
       if (!(e.n > 0) || !M) return done("idle");
       const b = blocker(e.r);
       if (b) { st.b = b; return done("blocked"); }
-      const outQ = it.r[2], rate = (e.n * M.spd / 60) * c.aspd;
+      const lane = E.beltCap(), outQ = it.r[2], rate = Math.min((e.n * M.spd / 60) * c.aspd, lane / outQ);
       const P = g.prods[e.id], ing = it.r[1], srcs = g.sup[e.id] || [];
       const ncons = Object.keys(P.t.cons).length;
       if (!P.t.res && !ncons) return done("noout");
@@ -1129,7 +1330,8 @@
         B.p = Math.min(B.p, 1);
         return done("starved");
       }
-      if (!P.t.res && B.o >= outQ * Math.max(4, 2 * Math.ceil(rate * dt))) return done("jam");
+      // ce qu’elle a posé ne part pas (tapis plein, ou machines suivantes qui ne prennent pas tout)
+      if (B.o >= Math.max(outQ * 4, lane * (dt + 2))) return done("jam");
       B.p += rate * dt;
       let want = Math.floor(B.p + 1e-9);
       if (e.cap > 0) {
@@ -1156,7 +1358,7 @@
         st.miss = {};
         for (const i in ing) {
           if ((B.b[i] || 0) >= ing[i]) continue;
-          st.miss[i] = "stock";
+          st.miss[i] = portLeft <= 1e-9 && (S.inv[i] || 0) >= 1 ? "slow" : "stock";
         }
         return done("starved");
       }
@@ -1173,31 +1375,87 @@
       if (!(rate > 0)) return done("idle");
       const P = g.prods[e.id];
       if (!P.t.res && !Object.keys(P.t.cons).length) return done("noout");
-      if (!P.t.res && B.o >= Math.max(4, 2 * rate * dt)) return done("jam");
-      made = rate * dt;
+      // un tapis ne porte pas plus que son débit ; et rien ne s’entasse si ça ne part pas
+      const lane = E.beltCap(), want = Math.min(rate, lane) * dt;
+      made = Math.max(0, Math.min(want, Math.max(4, lane * (dt + 2)) - B.o));
       B.o += made;
-      return done("ok");
+      return done(made < want * 0.98 ? "jam" : rate > lane * 1.001 ? "sat" : "ok");
     }
+    let portLeft = 0; // ce que la Réserve peut encore laisser sortir pendant ce pas
+    let satEnts = {}; // cases d’entrée dans la Réserve qui débordent
     function runFab(dt) {
       const g = graph();
-      if (!g.order.length && !g.exts.length) return;
+      if (!g.order.length && !g.exts.length && !g.sites.length) { satEnts = {}; return; }
       const c = E.cache();
+      portLeft = E.resOutCap() * dt;
       for (const id of g.exts) runExt(g.prods[id].e, g, dt, c);
       for (const id of g.order) runMachine(g.prods[id].e, g, dt, c);
-      // ce qui arrive à la Réserve rejoint le stock
-      for (const id of g.exts.concat(g.order)) {
-        const P = g.prods[id];
-        if (!P.t.res) continue;
-        const B = buf(id), r = outOf(P.e);
-        if (B.o > 0) {
-          const q = B.o;
-          B.o = 0;
-          add(r, q);
-          logFlow(id, "res", r, q);
+      for (const id of g.sites) runSite(machById(id), g, dt);
+      // ce qui arrive à la Réserve rejoint le stock, dans la limite de ce que porte
+      // chaque tapis qui y entre : d’abord une part égale à chacun, puis le reste
+      const cap = E.beltCap() * dt, room = {}, users = {};
+      const outs = g.exts.concat(g.order).filter((id) => g.prods[id].t.ents.length && buf(id).o > 1e-9);
+      outs.forEach((id) => g.prods[id].t.ents.forEach((en) => { room[en.k] = cap; users[en.k] = (users[en.k] || 0) + 1; }));
+      for (let pass = 0; pass < 2; pass++) {
+        for (const id of outs) {
+          const P = g.prods[id], B = buf(id), r = outOf(P.e);
+          for (const en of P.t.ents) {
+            if (!(B.o > 1e-9)) break;
+            const q = Math.min(B.o, pass ? room[en.k] : Math.min(room[en.k], cap / users[en.k]));
+            if (!(q > 0)) continue;
+            B.o -= q;
+            room[en.k] -= q;
+            add(r, q);
+            logFlow(id, "res", r, q);
+          }
           if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; E.emit("struct"); }
         }
       }
+      if (!fabQuiet) {
+        satEnts = {};
+        outs.forEach((id) => { if (buf(id).o > 1e-6) g.prods[id].t.ents.forEach((en) => { if (room[en.k] <= cap * 0.02) satEnts[en.k] = 1; }); });
+      }
     }
+    /* Un chantier de Grand Œuvre se sert sur les tapis qui le touchent, comme une
+     * machine : de quoi avancer l’étape en cours, un tapis de débit par matière. */
+    function runSite(e, g, dt) {
+      if (!e) return;
+      const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0 });
+      const P = D.PROJECTS[e.p];
+      if (!P || !projVisible(e.p)) { st.s = "idle"; return; }
+      const ps = projState(e.p), step = P.steps[ps.step];
+      if (!step) { st.s = "done"; return; }
+      if (!step.cost) { st.s = "act"; return; } // mise à feu, mélodie : ça se décide ailleurs
+      if (step.need && !S.frags[step.need]) { st.s = "need"; return; }
+      const B = buf(e.id), lane = E.beltCap() * dt, srcs = g.sup[e.id] || [];
+      let got = 0, done = true;
+      st.miss = null;
+      for (const i in step.cost) {
+        const left = step.cost[i] - (ps.paid[i] || 0);
+        if (left <= 1e-9) continue;
+        if (!srcs.some((p) => supplies(g.prods[p], i))) (st.miss = st.miss || {})[i] = "link";
+        else pull(e.id, i, Math.min(left, lane) - (B.b[i] || 0), g);
+        const q = Math.min(B.b[i] || 0, left);
+        if (q > 0) { B.b[i] -= q; if (B.b[i] < 1e-9) delete B.b[i]; ps.paid[i] = (ps.paid[i] || 0) + q; got += q; }
+        if ((ps.paid[i] || 0) < step.cost[i] - 1e-6) done = false;
+      }
+      st.avg += (1 - Math.exp(-dt / 5)) * (got / dt - st.avg);
+      if (done) {
+        ps.step++; ps.paid = {};
+        E.emit("projstep", { pid: e.p, step: ps.step - 1 });
+        E.emit("struct");
+        if (ps.step >= P.steps.length) endGame(P.end);
+        st.s = "ok";
+        return;
+      }
+      st.s = got > 0 ? "ok" : st.miss && Object.keys(st.miss).length === Object.keys(step.cost).filter((i) => (ps.paid[i] || 0) < step.cost[i]).length ? "nolink" : "starved";
+    }
+    E.siteOf = (pid) => {
+      for (const k in S.fab.c) if (S.fab.c[k].k === "site" && S.fab.c[k].p === pid) { const i = k.indexOf(","); return { x: +k.slice(0, i), y: +k.slice(i + 1), e: S.fab.c[k] }; }
+      return null;
+    };
+    /* les cases d’où un tapis plein entre dans la Réserve */
+    E.fabSat = () => satEnts;
     /* Débits des machines (par seconde, moyenne glissante). */
     E.flows = function () {
       const prod = {}, cons = {};
@@ -1220,6 +1478,8 @@
       if (isRes(x, y)) return "res";
       if (cellAt(x, y)) return "taken";
       if (k === "port" && !touchesRes(x, y)) return "port";
+      if (k === "site" && (!D.PROJECTS[o.p] || !projVisible(o.p))) return "kind";
+      if (k === "site" && E.siteOf(o.p)) return "siteone";
       if (k === "mach") {
         const ms = E.machines();
         if (!ms[o.m]) return "kind";
@@ -1237,6 +1497,7 @@
       else if (k === "port") e = { k, d: o.d !== undefined && !intoRes(x, y, o.d) ? o.d : portDir(x, y), f: E.automatable(o.f) || (item(o.f) && S.seen[o.f]) ? o.f : null };
       else if (k === "split" || k === "cross") e = { k };
       else if (k === "mach") e = { k, id: "M" + ++S.fab.seq, m: o.m, r: E.automatable(o.r) ? o.r : null, d: (o.d | 0) % 4, n: 1, on: true, cap: 0 };
+      else if (k === "site") e = { k, id: "S:" + o.p, p: o.p };
       else return { ok: false, why: "kind" };
       S.fab.c[ck(x, y)] = e;
       fabChanged();
@@ -1276,6 +1537,7 @@
       const e = cellAt(x, y);
       if (!e) return null;
       if (e.k === "mach" || e.k === "ext") refund(e.id);
+      if (e.k === "site") { const B = S.fab.ms[e.id]; if (B) for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]); delete S.fab.ms[e.id]; }
       delete S.fab.c[ck(x, y)];
       fabChanged();
       return e;
@@ -1367,20 +1629,24 @@
       const src = cellAt(x, y);
       if (!src || src.d === undefined || src.k === "belt") return { ok: false, why: "kind" };
       if (src.id) { const P = graph().prods[src.id]; if (P && P.t.res) return { ok: true, n: 0 }; }
+      // combien de producteurs entrent déjà dans la Réserve par chaque case
+      const g = graph(), users = {};
+      for (const id in g.prods) g.prods[id].t.ents.forEach((en) => (users[en.k] = (users[en.k] || 0) + 1));
       const memo = {};
-      const home = (cx, cy, din) => {
+      const entryOf = (cx, cy, din) => {
         const k = cx + "," + cy + "," + din;
-        if (!(k in memo)) memo[k] = !!trace(cx - DX[din], cy - DY[din], din, src.id || null).res;
+        if (!(k in memo)) { const t = trace(cx - DX[din], cy - DY[din], din, src.id || null); memo[k] = t.ents.length ? t.ents[0].k : null; }
         return memo[k];
       };
-      const joins = (cx, cy, d) => {
-        if (isRes(cx, cy)) return true;
+      /* entrer dans la Réserve ne coûte rien ; rejoindre un tapis qui y mène coûte
+       * d’autant plus qu’il est chargé (un tapis ne porte qu’un certain débit) ; -1 : impossible */
+      const joinCost = (cx, cy, d) => {
+        if (isRes(cx, cy)) return 0;
         const e = cellAt(cx, cy);
-        return !!(e && e.k === "belt" && e.d !== (d + 2) % 4 && home(cx, cy, d));
+        if (!e || e.k !== "belt" || e.d === (d + 2) % 4) return -1;
+        const k = entryOf(cx, cy, d);
+        return k === null ? -1 : 2 + 6 * (users[k] || 0);
       };
-      for (let d = 0; d < 4; d++) {
-        if (joins(x + DX[d], y + DY[d], d)) { src.d = d; fabChanged(); return { ok: true, n: 0 }; }
-      }
       // plus court chemin sur les cases libres (Dijkstra, petit tas binaire)
       const R = fabR(), dist = {}, prev = {}, heap = [];
       const pushH = (n) => {
@@ -1406,24 +1672,28 @@
       // les gisements restent libres, et le tour de la Réserve aussi (place des sorties)
       const cost = (cx, cy) => (DEPOSITS[ck(cx, cy)] ? 8 : touchesRes(cx, cy) ? 4 : 1);
       for (let d = 0; d < 4; d++) {
-        const nx = x + DX[d], ny = y + DY[d];
+        const nx = x + DX[d], ny = y + DY[d], jc = joinCost(nx, ny, d);
+        if (jc >= 0) pushH({ c: jc, end: { d0: d, direct: true } });
         if (!free(nx, ny)) continue;
         const k = ck(nx, ny), c0 = cost(nx, ny);
         if (dist[k] === undefined || c0 < dist[k]) { dist[k] = c0; prev[k] = { d0: d }; pushH({ x: nx, y: ny, c: c0 }); }
       }
       let end = null;
-      while (heap.length && !end) {
-        const u = popH(), uk = ck(u.x, u.y);
+      while (heap.length) {
+        const u = popH();
+        if (u.end) { end = u.end; break; }
+        const uk = ck(u.x, u.y);
         if (u.c > dist[uk]) continue;
         for (let d = 0; d < 4; d++) {
-          const vx = u.x + DX[d], vy = u.y + DY[d];
-          if (joins(vx, vy, d)) { end = { x: u.x, y: u.y, d }; break; }
+          const vx = u.x + DX[d], vy = u.y + DY[d], jc = joinCost(vx, vy, d);
+          if (jc >= 0) pushH({ c: u.c + jc, end: { x: u.x, y: u.y, d } });
           if (!free(vx, vy)) continue;
           const vk = ck(vx, vy), c = u.c + cost(vx, vy);
           if (dist[vk] === undefined || c < dist[vk]) { dist[vk] = c; prev[vk] = { x: u.x, y: u.y, d }; pushH({ x: vx, y: vy, c }); }
         }
       }
       if (!end) return { ok: false, why: "nopath" };
+      if (end.direct) { src.d = end.d0; fabChanged(); return { ok: true, n: 0 }; }
       const path = [{ x: end.x, y: end.y, d: end.d }];
       let k = ck(end.x, end.y);
       while (prev[k] && prev[k].x !== undefined) { const p = prev[k]; path.unshift({ x: p.x, y: p.y, d: p.d }); k = ck(p.x, p.y); }
@@ -1533,7 +1803,7 @@
     E.newCycle = function () {
       const old = S;
       const n = freshState(now());
-      n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets;
+      n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets; n.studied = old.studied || {};
       n.seen = old.seen; n.meta = old.meta; n.settings = old.settings; n.pins = old.pins || {};
       n.fab.r = old.fab ? old.fab.r : FAB_R0;
       n.cycle = (old.cycle || 1) + 1;
@@ -1557,6 +1827,7 @@
       const c = E.cache();
       for (const r in c.rates) add(r, c.rates[r] * dt);
       runFab(dt);
+      handStep(dt, offline);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];
@@ -1617,6 +1888,7 @@
       if (typeof f.ms !== "object" || !f.ms) f.ms = {};
       f.r = Math.max(FAB_R0, Math.min(40, Math.floor(f.r) || FAB_R0));
       f.seq = Math.floor(f.seq) || 0;
+      const sitesSeen = {};
       for (const k in f.c) {
         const e = f.c[k], m = /^(-?\d+),(-?\d+)$/.exec(k);
         let ok = m && e && FAB_KINDS[e.k] && !isRes(+m[1], +m[2]);
@@ -1640,6 +1912,10 @@
           }
         }
         if (ok && (e.k === "belt" || e.k === "port")) e.d = (e.d | 0) & 3;
+        if (ok && e.k === "site") {
+          ok = !!D.PROJECTS[e.p] && !sitesSeen[e.p];
+          if (ok) { sitesSeen[e.p] = true; e.id = "S:" + e.p; }
+        }
         if (ok && e.k === "port" && e.f && !D.ITEMS[e.f]) e.f = null;
         if (!ok) {
           o.orphans = o.orphans || {};
@@ -1648,6 +1924,34 @@
         } else if (m) f.r = Math.max(f.r, Math.abs(+m[1]), Math.abs(+m[2]));
       }
       o.fab = f;
+    }
+    /* File des mains d’une sauvegarde : une fabrication illisible est annulée et
+     * ses matières rendues au stock (ou mises de côté si l’objet n’existe plus). */
+    function checkHand(o) {
+      const h = o.hand && typeof o.hand === "object" ? o.hand : {};
+      const q = Array.isArray(h.q) ? h.q : [];
+      const keep = [];
+      const refund = (b) => {
+        if (!b || typeof b !== "object") return;
+        for (const i in b) {
+          const v = Number(b[i]);
+          if (!(v > 0)) continue;
+          if (D.ITEMS[i]) o.inv[i] = (o.inv[i] || 0) + v;
+          else { o.orphans = o.orphans || {}; (o.orphans.inv = o.orphans.inv || {})[i] = (o.orphans.inv[i] || 0) + v; }
+        }
+      };
+      q.forEach((j) => {
+        const ok = j && typeof j === "object" && D.ITEMS[j.id] && Array.isArray(j.s) && j.s.length &&
+          j.s.every((s) => Array.isArray(s) && D.ITEMS[s[0]] && D.ITEMS[s[0]].r && s[1] >= 1) && j.b && typeof j.b === "object";
+        if (!ok || keep.length >= D.HAND.max) { refund(j && j.b); return; }
+        for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
+        j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
+        j.i = Math.max(0, Math.min(j.s.length, Math.floor(j.i) || 0));
+        j.k = Math.max(0, Math.floor(j.k) || 0);
+        keep.push(j);
+      });
+      o.hand = { q: keep, p: keep.length ? Math.max(0, Number(h.p) || 0) : 0 };
+      if (!o.studied || typeof o.studied !== "object") o.studied = {};
     }
     function parseSave(src) {
       const o = typeof src === "string" ? JSON.parse(src) : JSON.parse(JSON.stringify(src));
@@ -1661,6 +1965,7 @@
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
       if (!o.tried || typeof o.tried !== "object") o.tried = {};
+      checkHand(o);
       checkFab(o);
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {
