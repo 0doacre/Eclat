@@ -76,6 +76,35 @@
   /* les icônes : un sprite (assets/icons.svg, game-icons.net) glissé dans la page au démarrage */
   const GI = window.ECLAT_ICONS || { items: {} };
   const gi = (name, cls) => '<svg class="gi' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#gi-' + name + '"/></svg>';
+  /* les pictogrammes des textes deviennent des icônes du sprite : dans le texte
+   * seulement, jamais dans un attribut ni dans le terminal */
+  const GLYPH = GI.glyphs || {};
+  const glyphAlt = Object.keys(GLYPH).sort((a, b) => b.length - a.length).map((k) => k.replace(/\uFE0F/g, "")).join("|");
+  const GLYPH_RE = new RegExp("(" + glyphAlt + ")\uFE0F?", "g"), GLYPH_T = new RegExp("(" + glyphAlt + ")");
+  const glyphOf = (k) => GLYPH[k] || GLYPH[k + "\uFE0F"];
+  function iconize(root) {
+    if (!root || !glyphAlt) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (GLYPH_T.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+    const list = [];
+    while (w.nextNode()) list.push(w.currentNode);
+    list.forEach((n) => {
+      const p = n.parentNode;
+      if (!p || (p.closest && p.closest("svg, textarea, .term, option"))) return;
+      const frag = document.createDocumentFragment(), s = n.nodeValue;
+      let last = 0;
+      s.replace(GLYPH_RE, (m, k, i) => {
+        if (i > last) frag.appendChild(document.createTextNode(s.slice(last, i)));
+        const t = document.createElement("template");
+        t.innerHTML = gi(glyphOf(k), "gl");
+        frag.appendChild(t.content);
+        last = i + m.length;
+        return m;
+      });
+      if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+      p.replaceChild(frag, n);
+    });
+  }
+  const gIc = (g) => (GI.gestes && GI.gestes[g] ? gi(GI.gestes[g]) : esc(D.GESTES[g].ic));
   function loadSprite() {
     fetch("assets/icons.svg").then((r) => (r.ok ? r.text() : "")).then((t) => {
       if (!t) return;
@@ -144,7 +173,7 @@
     let extra = "";
     if (o.heat) extra = " · " + fmtHeat(o.heat);
     if (o.lvl && o.lvl > 1) extra = " · niv. " + o.lvl;
-    return '<span class="g">' + g.ic + " " + g.n + extra + "</span>";
+    return '<span class="g">' + gIc(r[0]) + " " + g.n + extra + "</span>";
   }
   function mainIngredient(id) {
     const ing = I[id].r[1];
@@ -224,6 +253,7 @@
     }
     t.dataset.p = p;
     t.innerHTML = html;
+    iconize(t);
     t._tm = setTimeout(() => t.remove(), 3100);
   }
   function vibe(ms) { if (S().settings.vibe && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* ignoré */ } }
@@ -243,6 +273,7 @@
     U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
     box.innerHTML = o.html;
+    iconize(box);
     box.scrollTop = 0;
     if (o.onOpen) o.onOpen(box);
   }
@@ -670,12 +701,24 @@
   }
 
   /* ------------------------------------------------------------ thème */
+  /* le carnet change d’habit avec l’époque (css/theme.css) ; la page tourne quand elle change */
+  const EPOCH = ["pigments", "pigments", "pigments", "papyrus", "papyrus", "enluminure", "registre", "registre", "quadrille", "quadrille", "quadrille", "bord", "bord"];
+  const ROMAN = (n) => [["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1]].reduce((o, [r, v]) => { while (n >= v) { o += r; n -= v; } return o; }, "");
   function applyAge() {
-    const ag = D.AGES[S().age];
-    document.documentElement.style.setProperty("--acc", ag.c);
-    document.documentElement.style.setProperty("--acc-ink", ink(ag.c));
+    const a = S().age, ag = D.AGES[a], ep = EPOCH[a] || "pigments", body = document.body;
+    document.documentElement.style.setProperty("--age", ag.c);
+    const ok = ep + (a === 12 ? ":stellaire" : "");
+    if (body.dataset.orn !== ok) {
+      const first = !body.dataset.ep;
+      body.dataset.ep = ep;
+      body.dataset.orn = ok;
+      const o = GI.ornaments || {}, name = o[a === 12 ? "stellaire" : ep];
+      $("#orn").innerHTML = name ? gi(name, "o1") + (ep === "pigments" ? gi(name, "o2") : "") + (ep === "bord" ? "<i></i>" : "") : "";
+      if (!first) { const v = $("#views"); v.classList.remove("turn"); void v.offsetWidth; v.classList.add("turn"); }
+    }
     $("#ageName").textContent = ag.n;
-    $("#ageNum").textContent = "Âge " + (S().age + 1) + "/" + D.AGES.length + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
+    const old = ep === "papyrus" || ep === "enluminure";
+    $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
   }
 
   /* ============================================================ VUES */
@@ -747,6 +790,7 @@
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
+    iconize(el);
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
@@ -968,7 +1012,7 @@
         h += '<button class="geste lock" data-lock="' + g + '"><span class="gi">?</span><span class="gn">???</span></button>';
         continue;
       }
-      h += '<button class="geste' + (U.geste === g ? " on" : "") + (G.secret ? " secret" : "") + '" data-g="' + g + '"><span class="gi">' + G.ic + '</span><span class="gn">' + G.n + "</span></button>";
+      h += '<button class="geste' + (U.geste === g ? " on" : "") + (G.secret ? " secret" : "") + '" data-g="' + g + '"><span class="gi">' + gIc(g) + '</span><span class="gn">' + G.n + "</span></button>";
     }
     h += "</div>";
     const G = D.GESTES[U.geste];
@@ -983,10 +1027,10 @@
       if (id) h += '<button class="slot full" data-slot="' + i + '">' + icon(id) + '<span class="sn">' + esc(I[id].n) + '</span><span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
       else h += '<button class="slot" data-slot="' + i + '"><span class="plus">+</span></button>';
     });
-    h += '</div><button class="forge-btn" id="forge">' + G.ic + " " + G.n.toUpperCase() + "</button></div>";
-    h += '<div id="mbench" class="mbench hidden"><span class="mg">' + G.ic + "</span>" +
+    h += '</div><button class="forge-btn" id="forge">' + gIc(U.geste) + " " + G.n.toUpperCase() + "</button></div>";
+    h += '<div id="mbench" class="mbench hidden"><span class="mg">' + gIc(U.geste) + "</span>" +
       U.slots.map((id, i) => '<button class="mslot" data-slot="' + i + '">' + (id ? icon(id, "sm") : "+") + "</button>").join("") +
-      '<button class="mforge" data-forge>' + G.ic + " " + esc(G.n) + "</button></div>";
+      '<button class="mforge" data-forge>' + gIc(U.geste) + " " + esc(G.n) + "</button></div>";
     h += '<div class="card result" id="result">' + resultHTML() + "</div>";
     const sugg = E.knownWith(U.slots).filter((id) => !(U.last && U.last.id === id)).slice(0, 6);
     if (sugg.length) {
@@ -1418,6 +1462,9 @@
   }
   function refresh() {
     const st = S();
+    iconize($("#top"));
+    iconize(document.querySelector(".roue"));
+    iconize(document.querySelector(".tu-bub"));
     stepWatch();
     $("#intu").textContent = Math.floor(st.intu);
     memChip();
@@ -1592,7 +1639,7 @@
     const r = bench.getBoundingClientRect();
     const el = document.createElement("div");
     el.className = "strike";
-    el.textContent = D.GESTES[g].ic;
+    el.innerHTML = gIc(g);
     el.style.left = r.left + r.width / 2 - 27 + "px";
     el.style.top = r.top + 38 + "px";
     fx.appendChild(el);
@@ -1655,7 +1702,7 @@
       return '<div class="study"><button class="btn small" data-m="study"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button><span class="tiny muted">Pour savoir avec quels gestes la tenter.</span></div>';
     }
     const r = E.reactions(id), gs = D.GESTE_ORDER.filter((g) => r[g]);
-    return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + D.GESTES[g].ic + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
+    return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + gIc(g) + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
       : '<span class="tiny muted">Rien de plus à tenter avec tes gestes et tes matières, pour l’instant.</span>') + "</div>";
   }
   /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
@@ -1722,7 +1769,7 @@
       if (fxText(id)) h += '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>";
       h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En stock : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
       const zid = E.RES_ZONE[id];
-      if (zid) h += '<div class="row wrap small">Se récolte : <button class="ing link" data-m="zone" data-z="' + zid + '">' + E.ZONES[zid].ic + " " + esc(zoneName(zid)) + "</button>" +
+      if (zid) h += '<div class="row wrap small">Se récolte : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
         (E.zoneOpen(zid) ? "" : ' <span class="tiny muted">(terre pas encore atteinte)</span>') + "</div>";
       if (it.r) {
         h += '<h3 class="sub">Recette</h3>';

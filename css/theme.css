@@ -1,0 +1,175 @@
+/* ÉCLAT — le carnet du Semeur, au fil des âges.
+ * Même mise en page à tous les âges ; le papier, l’encre, la police des titres et
+ * un ornement changent avec l’époque (body[data-ep], posé par ui.js). La couleur
+ * de l’âge (--age) teinte un peu l’accent de l’époque. */
+
+:root, body[data-ep="pigments"] {
+  --bg: #f2eada; --bg2: #e9dfcb; --panel: #f7f1e4; --panel2: #ece2cf;
+  --text: #2a2118; --muted: #6b5b47; --dim: #9a8b75;
+  --line: rgba(42, 33, 24, 0.14); --line2: rgba(42, 33, 24, 0.32);
+  --acc-base: #a8361c; --good: #3f6f2e; --bad: #b0341c; --intu: #9a6a10;
+  --serif: "IM Fell English", Georgia, serif;
+  --title-size: 1.12;
+  --paper: radial-gradient(rgba(42, 33, 24, 0.07) 1px, transparent 1px) 0 0 / 14px 14px;
+  color-scheme: light;
+}
+body[data-ep="papyrus"] {
+  --bg: #eee0bf; --bg2: #e6d5ae; --panel: #f3e8cc; --panel2: #e9dab7;
+  --text: #3b2a17; --muted: #7a6243; --dim: #a08a66;
+  --line: rgba(59, 42, 23, 0.15); --line2: rgba(59, 42, 23, 0.34);
+  --acc-base: #2f6f62; --good: #4a6f1f; --bad: #a33a1c; --intu: #94620e;
+  --serif: "Cinzel", Georgia, serif;
+  --title-size: 0.92;
+  --paper: repeating-linear-gradient(90deg, rgba(120, 88, 36, 0.05) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(90deg, rgba(120, 88, 36, 0.04) 0 3px, transparent 3px 17px),
+    repeating-linear-gradient(0deg, rgba(120, 88, 36, 0.03) 0 2px, transparent 2px 23px);
+}
+body[data-ep="enluminure"] {
+  --bg: #f5eedb; --bg2: #ece3cb; --panel: #f9f4e6; --panel2: #ede4cf;
+  --text: #231a14; --muted: #6e5a48; --dim: #9c8a76;
+  --line: rgba(35, 26, 20, 0.14); --line2: rgba(35, 26, 20, 0.32);
+  --acc-base: #9b1c1c; --good: #27467e; --bad: #9b1c1c; --intu: #8c6a14;
+  --serif: "IM Fell English", Georgia, serif;
+  --title-size: 1.12;
+  --paper: linear-gradient(90deg, transparent 7px, rgba(155, 28, 28, 0.28) 7px 8px, transparent 8px 11px, rgba(155, 28, 28, 0.28) 11px 12px, transparent 12px),
+    repeating-linear-gradient(0deg, rgba(90, 60, 30, 0.04) 0 1px, transparent 1px 22px);
+}
+body[data-ep="registre"] {
+  --bg: #f3efe4; --bg2: #e9e4d6; --panel: #fbf8f0; --panel2: #ece7da;
+  --text: #1e2a3d; --muted: #5d6573; --dim: #8d93a0;
+  --line: rgba(30, 42, 61, 0.14); --line2: rgba(30, 42, 61, 0.32);
+  --acc-base: #b23a2a; --good: #2b5b8a; --bad: #b23a2a; --intu: #8a6a1f;
+  --serif: "Playfair Display", Georgia, serif;
+  --label: "Special Elite", ui-monospace, monospace;
+  --title-size: 1;
+  --paper: linear-gradient(90deg, transparent 8px, rgba(178, 58, 42, 0.42) 8px 9px, transparent 9px 12px, rgba(178, 58, 42, 0.42) 12px 13px, transparent 13px),
+    repeating-linear-gradient(180deg, transparent 0 23px, rgba(60, 100, 160, 0.18) 23px 24px);
+}
+body[data-ep="quadrille"] {
+  --bg: #fbfbf7; --bg2: #f0f2ee; --panel: #ffffff; --panel2: #eef1f4;
+  --text: #22348a; --muted: #5b6b7d; --dim: #8d9aaa;
+  --line: rgba(34, 52, 138, 0.12); --line2: rgba(34, 52, 138, 0.3);
+  --acc-base: #1f7a4a; --good: #1f7a4a; --bad: #c0392b; --intu: #a07a10;
+  --serif: "Caveat", "Comic Sans MS", cursive;
+  --title-size: 1.3;
+  --paper: linear-gradient(rgba(70, 130, 180, 0.14) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, rgba(70, 130, 180, 0.14) 1px, transparent 1px) 0 0 / 16px 16px;
+}
+body[data-ep="bord"] {
+  --bg: #eef1f3; --bg2: #e3e8ec; --panel: #f8fafb; --panel2: #e6ebef;
+  --text: #15191f; --muted: #5a6470; --dim: #8a939d;
+  --line: rgba(21, 25, 31, 0.13); --line2: rgba(21, 25, 31, 0.3);
+  --acc-base: #e5531a; --good: #3d55c9; --bad: #c0392b; --intu: #b7791f;
+  --serif: "Space Grotesk", system-ui, sans-serif;
+  --label: "IBM Plex Mono", ui-monospace, monospace;
+  --title-size: 1;
+  --paper: radial-gradient(rgba(21, 25, 31, 0.18) 1px, transparent 1.3px) 0 0 / 12px 12px;
+}
+:root, body {
+  --sans: "Alegreya Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --acc: color-mix(in srgb, var(--acc-base) 78%, var(--age, var(--acc-base)));
+  --acc-ink: var(--bg);
+}
+
+/* ---------------------------------------------------------------- le papier */
+html, body, #app { background: var(--bg); color: var(--text); }
+#views { background: var(--paper), var(--bg); background-attachment: local; }
+#top, #tabs { background: var(--bg); }
+#top { border-bottom: 1.5px solid var(--text); position: relative; }
+#tabs { border-top: 1.5px solid var(--text); }
+#tabs button { color: var(--muted); }
+#tabs button.on { color: var(--text); font-weight: 700; }
+#tabs button.on::before { background: var(--acc); height: 3px; }
+#ageName { font-family: var(--serif); font-size: calc(22px * var(--title-size)); color: var(--text); line-height: 1; display: inline-block; }
+#ageNum { color: var(--muted); font-family: var(--label, var(--sans)); }
+h2, h3, .kicker + h2 { font-family: var(--serif); }
+h2 { font-size: calc(1.4em * var(--title-size)); font-weight: 400; }
+.dom-th h3, .dom-card h3, .c-name { font-size: calc(20px * var(--title-size)); font-weight: 400; }
+.kicker, .lbl { font-family: var(--label, var(--sans)); color: var(--acc); }
+
+/* les cartes : tracées à l’encre, pas d’ombres */
+.card, .dom-card, .modal-box, .rec, .passbox, .stepbox { background: color-mix(in srgb, var(--panel) 85%, transparent); border: 1.5px solid var(--line2); box-shadow: none; }
+.card.acc, .goal-card { border: 1.5px dashed var(--text); }
+.dom-pass { border: 3px double var(--acc); }
+.modal { background: color-mix(in srgb, var(--text) 38%, transparent); }
+.modal-box { border: 1.5px solid var(--text); background: var(--bg); }
+.btn { background: var(--panel); border: 1.5px solid var(--text); color: var(--text); box-shadow: none; }
+.btn.pri { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+.btn.ghost { background: transparent; border-color: var(--line2); }
+.mini { background: var(--panel); border: 1.5px solid var(--text); color: var(--text); }
+.chip, .icon-btn, .exp-mini { background: transparent; border: 1.5px solid var(--line2); color: var(--text); }
+.chip.intu { color: var(--text); }
+.ic { background: var(--panel); border-color: var(--line2); }
+.ic.gic { background: transparent; border-color: var(--line2); }
+.gis-ic { background: var(--panel); border-color: var(--text); }
+.gis-ic.hand { border-color: var(--acc); }
+.dom-tip { background: color-mix(in srgb, var(--intu) 10%, var(--bg)); border: 1.5px dashed var(--intu); }
+.bar { background: color-mix(in srgb, var(--text) 10%, transparent); border: 1px solid var(--line2); }
+.bar > i { background: var(--text); }
+.bar.pass > i { background: var(--acc); }
+#toasts > * { background: var(--bg); color: var(--text); border: 1.5px solid var(--text); box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 25%, transparent); }
+.hcount { background: var(--bg); border-color: var(--text); color: var(--good); }
+input, select, .fld input, .search input { background: var(--panel); color: var(--text); border-color: var(--line2); }
+.tip { background: color-mix(in srgb, var(--intu) 8%, var(--bg)); border-color: var(--line2); color: var(--text); }
+
+/* le ciel et le terminal restent la nuit */
+#v-cosmos { background: #0d1118; color: #e8e2d6; --text: #e8e2d6; --muted: #a8a196; --panel: #161c26; --panel2: #1e2632; --bg: #0d1118; --line: rgba(232, 226, 214, 0.1); --line2: rgba(232, 226, 214, 0.22); }
+.term { background: #0b0d0b; color: #9fe39f; }
+
+/* ---------------------------------------------------------------- les ornements de l’époque */
+#orn { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+#top > *:not(#orn) { position: relative; z-index: 1; }
+#orn svg.gi { position: absolute; }
+body[data-ep="pigments"] #orn .o1 { width: 44px; height: 44px; left: 40%; top: 2px; color: #b5562a; opacity: .2; transform: rotate(-16deg); }
+body[data-ep="pigments"] #orn .o2 { width: 26px; height: 26px; left: 34%; top: 20px; color: #7a2a14; opacity: .16; transform: rotate(12deg); }
+body[data-ep="papyrus"] #top { border-bottom: 0; padding-bottom: 14px; }
+body[data-ep="papyrus"] #top::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 11px; background-repeat: repeat-x;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12' viewBox='0 0 24 12'%3E%3Cpath d='M0 .75H24M0 11.25H24M3 11.25V3.5H13V8.5H8V6H10.5' fill='none' stroke='%233b2a17' stroke-width='1.3'/%3E%3C/svg%3E"); }
+body[data-ep="papyrus"] #ageName { letter-spacing: 0.03em; font-weight: 700; }
+body[data-ep="enluminure"] #ageName::first-letter { display: inline-block; float: left; font-size: 1.3em; line-height: 1; padding: 2px 5px 0; margin-right: 3px; background: #9b1c1c; color: #f5eedb; border: 2px solid #c9a227; }
+body[data-ep="enluminure"] #orn .o1 { width: 36px; height: 36px; left: 40%; top: 8px; color: #9b1c1c; opacity: .18; transform: rotate(-8deg); }
+body[data-ep="enluminure"] #top { border-bottom: 0; padding-bottom: 12px; }
+body[data-ep="enluminure"] #top::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 12px; background-repeat: repeat-x;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='118' height='12' viewBox='0 0 118 12'%3E%3Cpath d='M0 6 C 15 0, 29 12, 44 6 S 74 0, 88 6 S 110 12, 118 6' fill='none' stroke='%23231a14' stroke-width='1.1'/%3E%3Ccircle cx='44' cy='6' r='2.4' fill='%239b1c1c'/%3E%3Ccircle cx='88' cy='6' r='2' fill='%2327467e'/%3E%3C/svg%3E"); }
+body[data-ep="enluminure"] .dom-th h3::first-letter { color: var(--acc); font-size: 1.35em; }
+body[data-ep="registre"] #orn .o1 { width: 34px; height: 34px; left: 40%; top: 6px; color: var(--text); opacity: .13; }
+body[data-ep="registre"] #ageName { font-weight: 800; }
+body[data-ep="quadrille"] #ageName { font-weight: 700; background: linear-gradient(transparent 58%, rgba(95, 211, 148, 0.55) 58%); padding: 0 2px; }
+body[data-ep="quadrille"] .dom-th h3 { background: linear-gradient(transparent 62%, rgba(95, 211, 148, 0.5) 62%); padding: 0 2px; }
+body[data-ep="quadrille"] .goal-card { background: #fff3a6; border: 0; transform: rotate(-0.6deg); box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1); }
+body[data-ep="bord"] #orn .o1 { width: 26px; height: 26px; left: 40%; top: 11px; color: var(--text); opacity: .2; }
+body[data-ep="bord"] #orn .o1 + i { position: absolute; left: calc(40% - 9px); top: 2px; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--text); opacity: .18; }
+body[data-ep="bord"] .dom-pass { border: 1.5px solid var(--text); outline: 1px dashed var(--acc); outline-offset: 4px; }
+
+/* ---------------------------------------------------------------- la page qui tourne */
+#views.turn { animation: pageturn 0.75s ease-out; transform-origin: left center; }
+@keyframes pageturn {
+  0% { transform: perspective(1200px) rotateY(-12deg); opacity: 0.2; }
+  100% { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { #views.turn { animation: none; } }
+
+/* ---------------------------------------------------------------- l’Atelier sur le papier */
+svg.gi.gl { width: 1.1em; height: 1.1em; vertical-align: -0.18em; }
+.geste, .gestes button { background: var(--panel); border: 1.5px solid var(--line2); color: var(--text); box-shadow: none; }
+.geste.on { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 12%, var(--panel)); color: var(--text); }
+.geste .gi svg.gi, .geste svg.gi { width: 26px; height: 26px; }
+.bench, .bench.m-pierre, .bench.m-metal, .bench.m-labo { background: transparent; border: 1.5px solid var(--text); box-shadow: none; }
+.bench .heat { color: var(--muted); text-shadow: none; }
+.slot { background: var(--panel); border: 1.5px dashed var(--line2); box-shadow: none; }
+.slot.full { background: var(--panel); border: 1.5px solid var(--acc); }
+.slot .sn, .slot .tiny.muted { color: var(--text); }
+.slot .plus { color: var(--dim); }
+.forge-btn { background: var(--acc); color: var(--acc-ink); border: 0; box-shadow: none; font-family: var(--serif); text-shadow: none; }
+.forge-btn svg.gi { width: 22px; height: 22px; }
+.forge-btn:disabled { filter: none; opacity: .45; }
+.bench-clear { color: var(--muted); border-color: var(--line2); background: transparent; }
+.inv { background: var(--panel); border: 1.5px solid var(--line2); box-shadow: none; }
+.hbar { background: var(--panel); border: 1.5px solid var(--line2); }
+.strike svg.gi { width: 54px; height: 54px; }
+.filters button { background: transparent; border: 1.5px solid var(--line2); color: var(--text); }
+.filters button.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+.thermo .tmark { background: var(--bg); border-color: var(--text); }
+body[data-tab="cosmos"] #views { background: #0d1118; }
+.chip.mem { background: transparent; border: 1.5px solid var(--acc); color: var(--acc); }
+.chip.mem b { color: var(--acc); }
