@@ -9,8 +9,8 @@ const { createEngine, migrate, SAVE_VERSION } = require("../js/engine.js");
 const fixture = (f) => fs.readFileSync(path.join(__dirname, "fixtures", f), "utf8");
 
 let T = 1e12;
-/* une partie neuve ; usine « avance » pour les tests du débit, des sorties et des tapis */
-const mk = (usine) => { const E = createEngine({ now: () => T, rand: () => 0.99 }); if (usine) E.state.settings.usine = usine; return E; };
+/* une partie neuve */
+const mk = () => createEngine({ now: () => T, rand: () => 0.99 });
 let passed = 0;
 function test(name, fn) {
   try { fn(); passed++; console.log("  ✓ " + name); }
@@ -192,82 +192,77 @@ test("passages : une partie d’avant garde ses terres ouvertes, comptées comme
   assert.strictEqual(F.state.meta.traces, 0); assert.deepStrictEqual(F.state.meta.mem, {});
 });
 /* pose une cabane sur le gisement de bois de la Lisière et la relie à la Réserve */
-function cabane(E) {
-  const d = E.deposits().find((x) => x.res === "bois");
-  assert.ok(E.fabPlaceExt(d.x, d.y, "cabane").ok);
-  assert.ok(E.fabLink(d.x, d.y).ok);
-  return E.fabCell(d.x, d.y);
-}
-test("extracteurs : coût croissant, posés sur un gisement, reliés à la Réserve", () => {
-  const E = mk("avance");
+test("extracteurs : coût croissant, posés sur un gisement, la récolte va à la Réserve", () => {
+  const E = mk();
   const c0 = E.costFor("cabane").fibre;
   force(E, "cabane");
   assert.ok(E.costFor("cabane").fibre > c0);
   const b = E.count("bois");
   T += 4000; E.update();
   assert.strictEqual(E.count("bois"), b, "rangée dans le stock, une cabane ne récolte rien");
-  const d = E.deposits().find((x) => x.res === "bois");
-  E.fabPlaceExt(d.x, d.y, "cabane");
-  const e = E.fabCell(d.x, d.y);
-  T += 1000; E.update();
-  assert.strictEqual(E.machInfo(e.id).s, "noout", "rien ne sort sans tapis");
-  assert.ok(E.fabLink(d.x, d.y).ok);
+  const r = E.domExtAdd("lisiere", "bois", 1);
+  assert.deepStrictEqual([r.ok, r.placed, r.queued, r.t], [true, 1, 0, "cabane"]);
   T += 100; E.update();
   const b1 = E.count("bois");
   T += 4000; E.update();
   assert.ok(Math.abs(E.count("bois") - b1 - 4 * 1.2) < 0.01, "une cabane sur le bois : 0,4 × 3 matières = 1,2/s");
   assert.ok(E.state.flags.extDone);
   assert.ok(Math.abs(E.rate("bois") - 1.2) < 1e-9);
+  assert.strictEqual(E.machInfo("lisiere:bois").s, "ok");
 });
 test("gisements : récolte à la main, règles de pose", () => {
   const E = mk();
   const ds = E.deposits();
   assert.deepStrictEqual(ds.map((d) => d.res).sort(), ["bois", "caillou", "charbon", "fibre"], "la Lisière seule au départ");
-  const bois = ds.find((d) => d.res === "bois"), charbon = ds.find((d) => d.res === "charbon");
-  assert.strictEqual(E.tapDeposit(bois.x, bois.y), 1);
-  assert.strictEqual(E.count("bois"), 1);
-  assert.strictEqual(E.tapDeposit(charbon.x, charbon.y), 0, "le charbon ne se ramasse pas à la main");
-  assert.strictEqual(E.fabExtWhy(bois.x, bois.y, "cabane"), "noext");
-  E.add("cabane", 2); E.add("charbonniere", 1);
-  assert.strictEqual(E.fabExtWhy(bois.x, bois.y, "charbonniere"), "wrongext");
-  assert.strictEqual(E.fabExtWhy(0, 4, "cabane"), "nodep");
-  assert.ok(E.fabPlaceExt(charbon.x, charbon.y, "charbonniere").ok);
-  const e = E.fabPlaceExt(bois.x, bois.y, "cabane").e;
-  E.fabSetExt(e.id, "cabane", 5);
+  assert.ok(ds.find((d) => d.res === "bois").hand && !ds.find((d) => d.res === "charbon").hand);
+  assert.strictEqual(E.tap("bois", "lisiere"), 1);
+  assert.strictEqual(E.tap("charbon", "lisiere"), 0, "le charbon ne se ramasse pas à la main");
+  assert.strictEqual(E.domExtAdd("lisiere", "bois", 1).why, "noext", "aucun extracteur connu");
+  E.add("cabane", 2); E.add("charbonniere", 1); E.add("collets", 1);
+  assert.strictEqual(E.domExtSet("lisiere", "bois", "charbonniere", 1), null, "une meule ne fait pas de bois");
+  assert.strictEqual(E.domExtSet("plaine", "os", "collets", 1), null, "pas sur une terre fermée");
+  assert.ok(E.domExtSet("lisiere", "charbon", "charbonniere", 1));
+  const e = E.domExtSet("lisiere", "bois", "cabane", 5);
   assert.strictEqual(e.u.cabane, 2, "pas plus que les cabanes possédées");
   assert.strictEqual(E.extUnits().cabane.used, 2);
+  assert.strictEqual(E.freeExt("cabane"), 0);
+  assert.strictEqual(E.domExtSet("lisiere", "bois", "cabane", 0), null, "à zéro, le gisement est libéré");
+  assert.strictEqual(E.extUnits().cabane.used, 0);
   E.state.zones.plaine = true;
-  assert.ok(E.deposits().some((d) => d.res === "os"), "chaque terre ouverte apporte sa parcelle");
-  assert.ok(E.fabR() >= 12, "la carte s’agrandit");
+  assert.ok(E.deposits().some((d) => d.z === "plaine" && d.res === "os"), "chaque terre ouverte apporte ses gisements");
+  E.domExtSet("lisiere", "bois", "cabane", 1);
+  E.domExtToggle("lisiere", "bois");
+  run(E, 2);
+  assert.strictEqual(E.machInfo("lisiere:bois").s, "off");
 });
-test("le tracé automatique évite les gisements et rejoint un tapis existant", () => {
+test("« +1 » : un extracteur libre est posé, sinon les mains le fabriquent puis le posent", () => {
   const E = mk();
-  E.add("cabane", 2);
-  const ds = E.deposits(), bois = ds.find((d) => d.res === "bois"), fibre = ds.find((d) => d.res === "fibre");
-  E.fabPlaceExt(bois.x, bois.y, "cabane");
-  const r1 = E.fabLink(bois.x, bois.y);
-  assert.ok(r1.ok && r1.n > 0);
-  for (const k in E.state.fab.c) { const [x, y] = k.split(",").map(Number); if (E.state.fab.c[k].k === "belt") assert.ok(!E.deposit(x, y), "pas de tapis sur un gisement"); }
-  E.fabPlaceExt(fibre.x, fibre.y, "cabane");
-  const before = Object.keys(E.state.fab.c).length;
-  assert.ok(E.fabLink(fibre.x, fibre.y).ok);
-  const g = E.fabGraph();
-  assert.ok(g.prods[E.fabCell(fibre.x, fibre.y).id].t.res, "la fibre arrive à la Réserve");
-  assert.ok(Object.keys(E.state.fab.c).length - before <= r1.n, "le second tracé profite du premier");
+  E.state.known.cabane = true;
+  E.add("manche", 50); E.add("corde", 50); E.add("fibre", 200);
+  const r = E.domExtAdd("lisiere", "fibre", 2);
+  assert.deepStrictEqual([r.ok, r.placed, r.queued], [true, 0, 2], JSON.stringify(r));
+  assert.strictEqual(E.domQueued("x:lisiere:fibre"), 2);
+  run(E, Math.ceil(E.handInfo().left) + 2);
+  assert.strictEqual(E.domExt("lisiere", "fibre").u.cabane, 2, "posées une fois finies");
+  assert.strictEqual(E.domQueued("x:lisiere:fibre"), 0);
+  assert.strictEqual(E.domExtAdd("lisiere", "bois", 1).placed, 0);
+  const F = mk();
+  F.state.known.cabane = true;
+  const q = F.domExtAdd("lisiere", "bois", 1);
+  assert.ok(!q.ok && q.missing, "rien pour la fabriquer : " + JSON.stringify(q));
 });
-test("un extracteur nourrit directement une machine", () => {
+test("machines : celle qui fait un ingrédient passe avant celle qui s’en sert", () => {
   const E = mk();
-  E.add("cabane", 1); E.add("automate_bois", 1); E.state.known.manche = true;
-  const bois = E.deposits().find((d) => d.res === "bois");
-  E.fabPlaceExt(bois.x, bois.y, "cabane");
-  E.fabSetExt(E.fabCell(bois.x, bois.y).id, "cabane", 1);
-  // le tapis descend de la case du bois et passe contre l’automate avant la Réserve
-  E.fabDraw([{ x: bois.x, y: bois.y + 1, d: 1 }, { x: bois.x, y: bois.y + 2, d: 1 }, { x: bois.x, y: bois.y + 3, d: 1 }, { x: bois.x, y: bois.y + 4, d: 0 }, { x: bois.x + 1, y: bois.y + 4, d: 0 }, { x: bois.x + 2, y: bois.y + 4, d: 1 }, { x: bois.x + 2, y: bois.y + 5, d: 1 }]);
-  E.fabSet(E.fabCell(bois.x, bois.y).id, { d: 1 });
-  const m = E.fabPlace("mach", bois.x + 1, bois.y + 2, { m: "automate_bois", r: "manche", d: 2 }).e;
-  run(E, 60);
-  assert.ok(E.state.made.manche >= 5, "des manches, sans passer par le stock : " + E.state.made.manche);
-  assert.ok(E.fabDrain().some((f) => f.to === m.id && f.i === "bois" && f.from[0] === "X"));
+  E.add("automate_bois", 2);
+  stations(E, ["etabli"]);
+  ["manche", "corde", "archet"].forEach((k) => (E.state.known[k] = true));
+  E.add("bois", 100); E.add("corde", 100);
+  const B = E.domMachAdd("archet").e; // ajoutée la première
+  E.domMachAdd("manche");
+  run(E, 120);
+  assert.ok(E.count("archet") > 0, "des archets, faits avec les manches de l’autre machine");
+  assert.ok(E.state.made.manche > 0);
+  assert.notStrictEqual(E.machInfo(B.id).s, "norec");
 });
 test("maîtrise : chefs-d’œuvre", () => {
   const E = createEngine({ now: () => T, rand: () => 0 });
@@ -288,7 +283,7 @@ test("explorations : coût, durée, fragment", () => {
 test("hors-ligne : rattrapage plafonné à 12 h", () => {
   const E = mk();
   force(E, "cabane");
-  cabane(E);
+  E.domExtAdd("lisiere", "bois", 1);
   T += 100; E.update();
   const b = E.count("bois");
   let off = null;
@@ -309,26 +304,29 @@ test("sauvegarde : aller-retour et export base64", () => {
 
 
 console.log("Sauvegardes (compatibilité)");
-test("les sauvegardes v1, v2, v3 et v4 se chargent sans rien perdre", () => {
-  for (const f of fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v[1234]/.test(x))) {
+const FIXTURES = fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v\d/.test(x));
+test("les sauvegardes v1 à v5 se chargent sans rien perdre", () => {
+  assert.ok(FIXTURES.some((f) => /^save-v5/.test(f)));
+  for (const f of FIXTURES) {
     const raw = fixture(f);
     const old = JSON.parse(raw);
     const E = mk();
     E.load(raw);
     const S = E.state;
     assert.strictEqual(S.v, SAVE_VERSION, f);
-    for (const k in old.inv) assert.strictEqual(S.inv[k], old.inv[k], f + " : stock de " + k);
+    for (const k in old.inv) assert.ok(S.inv[k] >= old.inv[k] - 1e-9, f + " : stock de " + k);
     for (const k in old.known) assert.ok(S.known[k], f + " : recette " + k);
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
     assert.strictEqual(S.age, old.age); assert.strictEqual(S.intu, old.intu);
     assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
-    assert.strictEqual(S.flags.news, "5", "annonce des nouveautés");
+    assert.strictEqual(S.flags.news, "6", "annonce des nouveautés");
+    assert.ok(S.dom && !S.fab && !S.settings.usine);
     assert.strictEqual(raw, fixture(f), "la chaîne d’origine n’est pas modifiée");
     T += 5000; E.update(); // le jeu tourne
   }
 });
-const machs = (E) => Object.values(E.state.fab.c).filter((e) => e.k === "mach");
-test("les chaînes d’assemblage v1 deviennent des machines de l’usine", () => {
+const machs = (E) => E.state.dom.mach;
+test("les chaînes d’assemblage v1 deviennent des machines du Domaine", () => {
   const E = mk();
   E.load(fixture("save-v1-age10-chaines.json"));
   assert.deepStrictEqual(machs(E).map((e) => [e.r, e.m, e.n]).sort(), [["bobine", "chaine", 1], ["plaque_fer", "chaine", 1]]);
@@ -337,7 +335,7 @@ test("les chaînes d’assemblage v1 deviennent des machines de l’usine", () =
   for (let i = 0; i < 20; i++) { T += 100; E.update(); }
   assert.ok(E.count("plaque_fer") > before, "la machine produit");
 });
-test("les lignes v2 deviennent des machines le long d’un tapis", () => {
+test("les lignes v2 deviennent des chaînes du Domaine", () => {
   const raw = fixture("save-v2-age7-fabrique.json");
   const old = JSON.parse(raw);
   const E = mk();
@@ -346,17 +344,13 @@ test("les lignes v2 deviennent des machines le long d’un tapis", () => {
   const want = old.lines.map((L) => [L.r, L.m, L.n, L.on, L.cap]).sort();
   assert.deepStrictEqual(got, want, "réglages conservés");
   assert.deepStrictEqual(E.state.flags.fab3, { placed: 5, left: 0 });
-  const g = E.fabGraph();
-  machs(E).forEach((e) => assert.ok((g.sup[e.id] || []).some((p) => p[0] === "P"), e.r + " est alimentée par la sortie"));
-  machs(E).forEach((e) => assert.ok(g.prods[e.id].t.res, e.r + " renvoie vers la Réserve"));
-  // le fil de cuivre passe avant… rien ne le consomme ici, mais l’ordre suit le tapis
   E.add("bois", 100); E.add("plaque_cuivre", 50); E.add("lingot_fer", 50);
   const b = { fil: E.count("fil_cuivre"), clous: E.count("clous"), manche: E.count("manche") };
   for (let i = 0; i < 300; i++) { T += 100; E.update(); }
   assert.ok(E.count("fil_cuivre") > b.fil && E.count("clous") > b.clous && E.count("manche") > b.manche, "tout produit");
   assert.strictEqual(E.machInfo(machs(E).find((e) => e.r === "corde").id).s, "off");
 });
-test("v4 : les extracteurs d’avant sont posés, reliés, et produisent autant", () => {
+test("v4 : les extracteurs d’avant sont posés et produisent autant", () => {
   for (const f of ["save-v1-age7.json", "save-v1-age10-chaines.json", "save-v2-age7-fabrique.json", "save-v3-age7-usine.json"]) {
     const raw = fixture(f), old = JSON.parse(raw);
     const E = mk();
@@ -364,113 +358,79 @@ test("v4 : les extracteurs d’avant sont posés, reliés, et produisent autant"
     const S = E.state, info = S.flags.fab4;
     const owned = E.EXTS.reduce((a, t) => a + Math.floor(old.inv[t] || 0), 0);
     assert.strictEqual(info.placed, owned, f + " : tous posés");
-    assert.strictEqual(info.linked, info.sites, f + " : tous reliés");
     // production totale : celle d’avant (extracteurs « tout seuls »), à 10 % près
     let before = 0;
     E.EXTS.forEach((t) => { const it = D.ITEMS[t]; for (const r in it.p) before += it.p[r] * Math.floor(old.inv[t] || 0); });
     let after = 0;
-    for (const k in S.fab.c) { const e = S.fab.c[k]; if (e.k === "ext") for (const t in e.u) after += e.u[t] * E.extRate(t, e.res); }
+    for (const k in S.dom.ext) { const e = S.dom.ext[k]; for (const t in e.u) after += e.u[t] * E.extRate(t, e.res); }
     assert.ok(Math.abs(after - before) / before < 0.1, f + " : " + before.toFixed(1) + " → " + after.toFixed(1));
     run(E, 2);
-    for (const k in S.fab.c) if (S.fab.c[k].k === "ext") assert.strictEqual(E.machInfo(S.fab.c[k].id).s, "ok", f + " : " + k);
+    for (const k in S.dom.ext) assert.strictEqual(E.machInfo(k).s, "ok", f + " : " + k);
   }
 });
-/* une petite usine : sortie → machine → tapis → Réserve */
-function miniUsine(E, r, m) {
-  assert.ok(E.fabPlace("port", 2, 0).ok);
-  const p = E.fabPlace("mach", 3, 0, { m: m || "automate_bois", r, d: 3 });
-  assert.ok(p.ok, JSON.stringify(p));
-  E.fabDraw([{ x: 3, y: -1, d: 2 }, { x: 2, y: -1, d: 2 }]);
-  return p.e;
-}
-test("usine : règles de construction", () => {
+test("machines : une chaîne produit, s’arrête au stock visé, réclame ce qui manque", () => {
   const E = mk();
-  assert.strictEqual(E.fabPlace("port", 4, 4).why, "port", "une sortie touche la Réserve");
-  assert.strictEqual(E.fabPlace("belt", 0, 0, { d: 0 }).why, "res");
-  assert.strictEqual(E.fabPlace("mach", 3, 3, { m: "automate_bois" }).why, "nomach", "il faut posséder la machine");
-  assert.strictEqual(E.fabPlace("belt", 99, 0, { d: 0 }).why, "out");
-  E.add("automate_bois", 1);
-  assert.ok(E.fabPlace("mach", 3, 3, { m: "automate_bois" }).ok);
-  assert.strictEqual(E.fabPlace("mach", 4, 4, { m: "automate_bois" }).why, "nomach", "une seule machine possédée");
-  assert.strictEqual(E.fabPlace("belt", 3, 3, { d: 0 }).why, "taken");
-  const p = E.fabPlace("port", -2, 1).e;
-  assert.strictEqual(p.d, 2, "la sortie regarde loin de la Réserve");
-  E.fabRotate(-2, 1); assert.strictEqual(p.d, 3);
-  E.fabRotate(-2, 1); assert.strictEqual(p.d, 1, "jamais vers la Réserve");
-});
-test("usine : une machine produit, s’arrête au stock visé, réclame ce qui manque", () => {
-  const E = mk("avance");
-  E.state.age = 3; // des sorties assez rapides pour ne pas la freiner
-  E.add("automate_bois", 2); E.state.known.manche = true;
-  E.add("bois", 30);
-  const m = miniUsine(E, "manche");
-  E.fabSet(m.id, { n: 5 });
+  assert.strictEqual(E.domMachAdd("manche").why, "norec", "recette inconnue");
+  E.state.known.manche = true;
+  assert.strictEqual(E.domMachAdd("manche").why, "nomach", "il faut posséder la machine");
+  E.add("automate_bois", 2); E.add("bois", 30);
+  const m = E.domMachAdd("manche").e;
+  assert.deepStrictEqual([m.m, m.n, m.on], ["automate_bois", 1, true]);
+  E.domMachSet(m.id, { n: 5 });
   assert.strictEqual(m.n, 2, "pas plus que les machines possédées");
+  assert.strictEqual(E.domMachAdd("manche").why, "nomach", "plus de machine libre");
   run(E, 30); // 30 s à 12/min
   assert.strictEqual(E.count("manche"), 6);
   assert.ok(E.state.flags.lineDone);
-  E.fabSet(m.id, { cap: 7 });
+  E.domMachSet(m.id, { cap: 7 });
   run(E, 30);
   assert.strictEqual(E.count("manche"), 7); assert.strictEqual(E.machInfo(m.id).s, "cap");
-  E.fabSet(m.id, { cap: 0 });
+  E.domMachSet(m.id, { cap: 0 });
   run(E, 60);
   assert.ok(E.count("bois") < 3); assert.strictEqual(E.machInfo(m.id).s, "starved");
   assert.deepStrictEqual(E.machInfo(m.id).miss, { bois: "stock" });
-  E.fabRemove(2, 0);
-  run(E, 1);
-  assert.deepStrictEqual(E.machInfo(m.id).miss, { bois: "link" }, "plus rien ne l’alimente");
-  const bois = E.count("bois");
-  E.fabRemove(3, 0);
-  assert.ok(E.count("bois") >= bois, "ce qui restait dans la machine revient au stock");
+  const bois = E.count("bois") + (E.machBuf(m.id).b.bois || 0);
+  E.domMachRemove(m.id);
+  assert.ok(Math.abs(E.count("bois") - bois) < 1e-9, "ce qui restait dans la machine revient au stock");
+  assert.strictEqual(machs(E).length, 0);
   assert.ok(!E.automatable("feu") && !E.automatable("cabane"), "pas d’objets uniques ni d’extracteurs");
 });
-test("usine : une machine en alimente une autre par un tapis", () => {
+test("« + » sur une chaîne : les machines libres d’abord, les mains font le reste", () => {
   const E = mk();
+  E.state.known.manche = true; E.state.known.automate_bois = true;
   E.add("automate_bois", 2);
-  stations(E, ["etabli"]);
-  ["manche", "corde", "archet"].forEach((k) => (E.state.known[k] = true));
-  E.add("bois", 100); E.add("corde", 100);
-  // la sortie envoie bois et cordes sur un tapis qui fait un crochet puis rentre dans la Réserve ;
-  // A (manches) se sert dessus et pose ses manches sur la partie retour, qui passe devant B (archets)
-  E.fabPlace("port", 2, 0); // → (3,0)
-  E.fabDraw([{ x: 3, y: 0, d: 0 }, { x: 4, y: 0, d: 0 }, { x: 5, y: 0, d: 1 }, { x: 5, y: 1, d: 1 }, { x: 5, y: 2, d: 2 },
-    { x: 4, y: 2, d: 2 }, { x: 3, y: 2, d: 2 }, { x: 2, y: 2, d: 3 }, { x: 2, y: 1, d: 2 }]);
-  const A = E.fabPlace("mach", 4, 1, { m: "automate_bois", r: "manche", d: 1 }).e; // pose en (4,2)
-  const B = E.fabPlace("mach", 3, 1, { m: "automate_bois", r: "archet", d: 2 }).e; // pose en (2,1)
-  const g = E.fabGraph();
-  assert.ok(g.sup[B.id].includes(A.id), "B se sert sur le tapis de A");
-  assert.ok(g.sup[B.id].includes("P2,0"), "B touche aussi le tapis de la sortie");
-  assert.ok(g.order.indexOf(A.id) < g.order.indexOf(B.id));
-  const manches = E.count("manche");
-  run(E, 120);
-  assert.ok(E.count("archet") > 0, "des archets arrivent");
-  assert.ok(E.state.made.manche > 0 && E.count("manche") >= manches);
-  const fl = E.fabDrain();
-  assert.ok(fl.some((f) => f.from === A.id && f.to === B.id && f.i === "manche"), "les manches passent de A à B");
+  const m = E.domMachAdd("manche").e;
+  E.add("engrenage_bois", 100); E.add("corde", 100); E.add("caillou", 500);
+  const r = E.domMachMore(m.id, 3);
+  assert.deepStrictEqual([r.ok, r.added, r.queued], [true, 1, 2], JSON.stringify(r));
+  assert.strictEqual(m.n, 2);
+  assert.strictEqual(E.domQueued("m:" + m.id), 2);
+  run(E, Math.ceil(E.handInfo().left) + 2);
+  assert.strictEqual(m.n, 4, "les automates fabriqués rejoignent la chaîne");
 });
-test("usine : sortie bouchée, la machine s’arrête", () => {
-  const E = mk("avance");
-  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 300);
-  E.fabPlace("port", 2, 0);
-  const m = E.fabPlace("mach", 3, 0, { m: "automate_bois", r: "manche", d: 0 }).e; // rien devant
-  run(E, 120);
-  assert.strictEqual(E.machInfo(m.id).s, "noout");
-  assert.ok(E.machBuf(m.id).o <= 4, "elle n’accumule pas sans fin");
-  assert.ok(E.count("bois") > 250);
-});
-test("usine : production hors ligne et sauvegarde", () => {
+test("Domaine : production hors ligne et sauvegarde", () => {
   const E = mk();
   E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 2000);
-  miniUsine(E, "manche");
+  E.domMachAdd("manche");
+  E.add("cabane", 1); E.domExtSet("lisiere", "fibre", "cabane", 1);
   T += 3600 * 1000; E.update(); // une heure à 6/min
   assert.ok(Math.abs(E.count("manche") - 360) <= 2, "≈ 360 manches : " + E.count("manche"));
-  assert.strictEqual(E.fabDrain().length, 0, "pas d’animation pour le temps passé dehors");
   const E2 = mk();
   E2.load(E.serialize());
-  assert.deepStrictEqual(E2.state.fab.c, E.state.fab.c);
-  E2.load(JSON.stringify(Object.assign(JSON.parse(E.serialize()), { fab: { r: 7, c: { "5,5": { k: "laser" }, "0,0": { k: "belt", d: 0 }, "4,4": { k: "belt", d: 1 } } } })));
-  assert.deepStrictEqual(Object.keys(E2.state.fab.c), ["4,4"]);
-  assert.deepStrictEqual(Object.keys(E2.state.orphans.fab).sort(), ["0,0", "5,5"], "cases illisibles mises de côté");
+  assert.deepStrictEqual(E2.state.dom, E.state.dom);
+  const o = JSON.parse(E.serialize());
+  o.dom.ext["lisiere:laser"] = { u: { cabane: 1 } };
+  o.dom.ext["nulle-part:bois"] = { u: { cabane: 1 } };
+  o.dom.ext["lisiere:bois"] = { u: { cabane: 3, inconnu: 2, charbonniere: 1 } };
+  o.dom.mach.push({ id: "M99", m: "laser", r: "manche", n: 1 }, { id: "M98", m: "automate_bois", r: "inconnu", n: 4 });
+  o.dom.site = { inconnu: { on: true } };
+  E2.load(JSON.stringify(o));
+  const D2 = E2.state.dom;
+  assert.deepStrictEqual(Object.keys(D2.ext), ["lisiere:fibre"], "une seule cabane : elle reste sur la fibre");
+  assert.deepStrictEqual(D2.mach.map((e) => e.id), [E.state.dom.mach[0].id], "pas plus de machines que possédées");
+  assert.deepStrictEqual(D2.site, {});
+  assert.deepStrictEqual(Object.keys(E2.state.orphans.dom).sort(),
+    ["ext:lisiere:bois:charbonniere", "ext:lisiere:bois:inconnu", "ext:lisiere:laser", "ext:nulle-part:bois", "mach:M98", "mach:M99", "site:inconnu"], "mis de côté, pas jetés");
 });
 test("sauvegarde illisible ou d’une version future : erreur, rien n’est touché", () => {
   const E = mk();
@@ -592,7 +552,7 @@ test("la Lune, sept fois", () => {
 test("flûte : l’Appel des Lucioles augmente la production", () => {
   const E = mk();
   force(E, "cabane");
-  const e = cabane(E);
+  const e = E.domExtSet("lisiere", "bois", "cabane", 1);
   const r0 = E.extOut(e);
   [2, 2, 3, 1, 5, 2, 4].forEach((n) => E.playNote(n));
   assert.ok(E.state.flags.lucioles);
@@ -786,139 +746,17 @@ test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
   assert.ok(!E.study("os"), "pas une matière jamais vue");
 });
 
-test("usine avancée : la Réserve pleine arrête l’extracteur, sans rien perdre", () => {
-  const E = mk("avance");
-  const cap = E.storeCap("bois");
-  assert.strictEqual(cap, D.STORE[0]);
-  assert.strictEqual(E.storeCap("manche"), Infinity, "ce qui se fabrique n’a pas de limite");
-  E.add("cabane", 2);
-  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 2).ok);
-  assert.ok(E.fabLink(-3, -7).ok);
-  const x = E.fabCell(-3, -7);
-  E.add("bois", cap - 5);
-  run(E, 30);
-  assert.strictEqual(E.count("bois"), cap, "plein, pas plus");
-  assert.strictEqual(E.machInfo(x.id).s, "full");
-  // la récolte à la main aussi
-  assert.strictEqual(E.tap("bois"), 0);
-  // on dépense : ça repart
-  E.add("bois", -100);
-  run(E, 5);
-  assert.notStrictEqual(E.machInfo(x.id).s, "full");
-  assert.ok(E.count("bois") > cap - 100);
-  // un stock déjà au-dessus n’est jamais rogné ; l’usine simple n’a pas de limite
-  E.add("fibre", cap * 3);
-  run(E, 1);
-  assert.strictEqual(E.count("fibre"), cap * 3);
-  const F = mk();
-  assert.strictEqual(F.storeCap("bois"), Infinity);
-  F.add("bois", 1e6); assert.ok(F.tap("bois") > 0);
-});
-test("usine avancée : Réserve pleine, l’extracteur nourrit encore la machine de son tapis", () => {
-  const E = mk("avance");
-  E.add("cabane", 1); E.add("automate_bois", 1); E.state.known.manche = true;
-  const bois = E.deposits().find((d) => d.res === "bois");
-  E.fabPlaceExt(bois.x, bois.y, "cabane");
-  E.fabDraw([{ x: bois.x, y: bois.y + 1, d: 1 }, { x: bois.x, y: bois.y + 2, d: 1 }, { x: bois.x, y: bois.y + 3, d: 1 }]);
-  E.fabSet(E.fabCell(bois.x, bois.y).id, { d: 1 });
-  const m = E.fabPlace("mach", bois.x + 1, bois.y + 2, { m: "automate_bois", r: "manche", d: 0 }).e;
-  assert.ok(E.fabLink(bois.x + 1, bois.y + 2).ok, "les manches vont à la Réserve");
-  E.add("bois", E.storeCap("bois"));
-  run(E, 60);
-  const x = E.fabCell(bois.x, bois.y);
-  assert.notStrictEqual(E.machInfo(x.id).s, "full", "elle a un preneur en route : " + E.machInfo(x.id).s);
-  assert.ok(E.state.made.manche >= 3, "les manches sortent : " + E.state.made.manche + " · " + E.machInfo(m.id).s);
-  assert.strictEqual(E.count("bois"), E.storeCap("bois"));
-});
-test("tapis : un tapis ne porte pas plus que son débit", () => {
-  const E = mk("avance");
-  E.add("cabane", 20);
-  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 10).ok);
-  assert.ok(E.fabLink(-3, -7).ok);
-  const x = E.fabCell(-3, -7), cap = E.beltCap();
-  assert.ok(E.extOut(x) > cap, "dix cabanes récoltent plus qu’un tapis de l’âge du Bois ne porte");
-  const b0 = E.count("bois");
-  run(E, 20);
-  const got = E.count("bois") - b0;
-  assert.ok(got <= cap * 20 + 1e-6 && got > cap * 18, "au débit du tapis : " + got);
-  assert.strictEqual(E.machInfo(x.id).s, "sat");
-  assert.ok(Math.abs(E.rate("bois") - cap) < 1e-9, "la production affichée est celle qui arrive");
-  E.state.age = 7;
-  run(E, 5);
-  assert.strictEqual(E.machInfo(x.id).s, "ok", "à l’âge 7, les tapis suivent");
-});
-test("tapis : chaque entrée dans la Réserve a son débit, le tracé automatique en ouvre une nouvelle", () => {
-  const E = mk("avance");
-  E.state.age = 3;
-  E.add("cabane", 20);
-  E.fabPlaceExt(-3, -7, "cabane", 7); E.fabLink(-3, -7);
-  E.fabPlaceExt(-1, -7, "cabane", 7); E.fabLink(-1, -7);
-  const g = E.fabGraph(), X = E.fabCell(-3, -7), Y = E.fabCell(-1, -7);
-  assert.notStrictEqual(g.prods[X.id].t.ents[0].k, g.prods[Y.id].t.ents[0].k, "deux entrées distinctes");
-  const cap = E.beltCap();
-  assert.ok(E.extOut(X) < cap && E.extOut(X) * 2 > cap, "chacune passe seule, pas les deux ensemble");
-  run(E, 5);
-  assert.deepStrictEqual(E.fabSat(), {});
-});
-test("tapis : deux gisements sur le même tapis, l’entrée commune déborde", () => {
-  const E = mk("avance");
-  E.state.age = 3;
-  E.add("cabane", 20);
-  E.fabPlaceExt(-3, -7, "cabane", 7); E.fabCell(-3, -7).d = 1;
-  E.fabPlaceExt(-1, -7, "cabane", 7); E.fabCell(-1, -7).d = 1;
-  // le bois descend sur un tapis qui passe sous la fibre, puis file vers la Réserve
-  E.fabDraw([{ x: -3, y: -6, d: 0 }, { x: -2, y: -6, d: 0 }, { x: -1, y: -6, d: 0 }, { x: 0, y: -6, d: 1 },
-    { x: 0, y: -5, d: 1 }, { x: 0, y: -4, d: 1 }, { x: 0, y: -3, d: 1 }, { x: 0, y: -2, d: 1 }]);
-  const g = E.fabGraph(), X = E.fabCell(-3, -7), Y = E.fabCell(-1, -7);
-  assert.strictEqual(g.prods[X.id].t.ents[0].k, "0,-2");
-  assert.strictEqual(g.prods[Y.id].t.ents[0].k, "0,-2", "la même entrée");
-  const cap = E.beltCap(), b0 = E.count("bois"), f0 = E.count("fibre");
-  run(E, 20);
-  const got = E.count("bois") - b0 + E.count("fibre") - f0;
-  assert.ok(got <= cap * 20 + 1e-6 && got > cap * 18, "un seul tapis de débit : " + got);
-  assert.ok(Math.abs(E.count("bois") - b0 - (E.count("fibre") - f0)) < cap, "partagé à parts égales");
-  assert.deepStrictEqual(E.fabSat(), { "0,-2": 1 });
-  assert.strictEqual(E.machInfo(X.id).s, "jam");
-  // un répartiteur ouvre une deuxième entrée : tout passe
-  E.fabRemove(0, -4);
-  assert.ok(E.fabPlace("split", 0, -4).ok);
-  E.fabDraw([{ x: 1, y: -4, d: 1 }, { x: 1, y: -3, d: 1 }, { x: 1, y: -2, d: 1 }]);
-  E.fabRemove(-1, -4);
-  assert.strictEqual(E.fabGraph().prods[X.id].t.ents.length, 2);
-  const b1 = E.count("bois"), f1 = E.count("fibre");
-  run(E, 20);
-  const got2 = E.count("bois") - b1 + E.count("fibre") - f1;
-  assert.ok(got2 > (E.extOut(X) + E.extOut(Y)) * 19, "deux entrées : toute la récolte passe (" + got2 + ")");
-});
-test("la Réserve ne laisse sortir qu’un certain débit, toutes sorties confondues", () => {
-  const E = mk("avance");
-  E.add("automate_bois", 2); E.state.known.manche = true;
-  E.add("bois", 1000);
-  const m = miniUsine(E, "manche");
-  run(E, 60);
-  const out = E.resOutCap();
-  assert.ok(1000 - E.count("bois") <= out * 60 + 1e-6, "pas plus que la porte de la Réserve");
-  assert.ok(E.count("manche") > 0);
-  void m;
-});
-
-test("chantier d’un Grand Œuvre : posé sur la carte, nourri par tapis", () => {
-  const E = mk("avance");
-  assert.strictEqual(E.fabPlace("site", 4, 0, { p: "dyson" }).why, "kind", "pas avant d’avoir le projet");
-  E.state.flags.arche = true;
-  E.state.age = 12;
-  E.recalc();
-  assert.ok(E.fabPlace("site", 4, 0, { p: "dyson" }).ok);
-  assert.strictEqual(E.fabPlace("site", 5, 3, { p: "dyson" }).why, "siteone", "un seul chantier par Grand Œuvre");
+test("Grand Œuvre alimenté : il se sert dans la Réserve, au débit de l’âge", () => {
+  const E = mk();
+  assert.strictEqual(E.domSite("inconnu", true), null);
+  E.state.flags.arche = true; E.state.age = 12; E.recalc();
+  assert.ok(E.domSite("dyson", true));
+  assert.ok(E.siteOn("dyson"));
   E.add("supra", 400); E.add("metal_mercure", 60000); E.add("regolithe", 20000);
-  run(E, 2);
-  assert.strictEqual(E.machInfo("S:dyson").s, "nolink", "aucun tapis ne l’atteint");
-  assert.ok(E.fabPlace("port", 2, 0).ok);
-  E.fabDraw([{ x: 3, y: 0, d: 0 }]);
-  run(E, 10);
+  run(E, 5);
   const ps = E.projState("dyson");
-  const paid = Object.values(ps.paid).reduce((a, b) => a + b, 0);
-  assert.ok(paid > 0 && paid <= E.resOutCap() * 10 + 1e-6, "au débit des sorties de la Réserve : " + paid);
+  const paid = Object.values(ps.paid);
+  assert.ok(paid.some((v) => v > 0) && paid.every((v) => v <= E.siteRate() * 5 + 1e-6), "au débit de l’âge : " + JSON.stringify(ps.paid));
   assert.strictEqual(E.machInfo("S:dyson").s, "ok");
   ps.paid = { supra: 380, metal_mercure: 49990, regolithe: 12500 };
   let step = null;
@@ -926,84 +764,55 @@ test("chantier d’un Grand Œuvre : posé sur la carte, nourri par tapis", () =
   run(E, 1);
   assert.deepStrictEqual(step, { pid: "dyson", step: 0 });
   assert.strictEqual(ps.step, 1, "étape suivante");
-  // sauvegarde : le chantier reste, un chantier inconnu est mis de côté
-  const o = JSON.parse(E.serialize());
-  o.fab.c["6,6"] = { k: "site", id: "S:inconnu", p: "inconnu" };
-  const F = mk();
-  F.load(o);
-  assert.ok(F.siteOf("dyson"));
-  assert.ok(F.state.orphans.fab["6,6"]);
-  assert.strictEqual(F.fabRemove(4, 0).k, "site");
+  E.domSite("dyson", false);
+  const before = JSON.stringify(ps.paid);
+  run(E, 2);
+  assert.strictEqual(JSON.stringify(ps.paid), before, "à l’arrêt, il ne prend plus rien");
 });
-test("usine simple : une machine posée n’importe où prend au stock et y range ce qu’elle fait", () => {
+test("une machine prend au stock et y range ce qu’elle fait, deux pièces d’avance en main", () => {
   const E = mk();
-  assert.ok(E.easy(), "l’usine simple par défaut");
   E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 30);
-  const r = E.fabPlace("mach", 6, 6, { m: "automate_bois", r: "manche" });
-  assert.ok(r.ok);
-  run(E, 30); // 30 s à 6/min, sans sortie ni tapis
+  const m = E.domMachAdd("manche").e;
+  run(E, 30); // 30 s à 6/min
   assert.strictEqual(E.count("manche"), 3);
   assert.strictEqual(E.count("bois"), 30 - 3 * 3 - 6, "trois manches faits, deux d’avance dans la machine");
-  assert.strictEqual(E.machInfo(r.e.id).s, "ok");
+  assert.strictEqual(E.machInfo(m.id).s, "ok");
   run(E, 90);
   assert.strictEqual(E.count("manche"), 10, "tout le bois y est passé");
-  assert.strictEqual(E.machInfo(r.e.id).s, "starved");
-  assert.deepStrictEqual(E.machInfo(r.e.id).miss, { bois: "stock" }, "jamais « aucun tapis n’en apporte »");
+  assert.strictEqual(E.machInfo(m.id).s, "starved");
+  assert.deepStrictEqual(E.machInfo(m.id).miss, { bois: "stock" });
 });
-test("usine simple : un extracteur sans tapis remplit le stock, sans plafond de débit", () => {
+test("un extracteur remplit le stock sans plafond, la main aussi", () => {
   const E = mk();
   E.add("cabane", 20);
-  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 10).ok);
-  const x = E.fabCell(-3, -7), out = E.extOut(x);
-  assert.ok(out > E.beltCap(), "plus qu’un tapis de l’âge du Bois ne porte");
+  const x = E.domExtSet("lisiere", "bois", "cabane", 10), out = E.extOut(x);
   const b0 = E.count("bois");
   run(E, 10);
   assert.ok(Math.abs(E.count("bois") - b0 - out * 10) < 1e-6, "tout arrive : " + (E.count("bois") - b0));
-  assert.strictEqual(E.machInfo(x.id).s, "ok");
-  assert.deepStrictEqual(E.fabSat(), {});
-  // une machine que touche son tapis se sert au passage, le reste va au stock
-  E.add("automate_bois", 1); E.state.known.manche = true;
-  assert.ok(E.fabLink(-3, -7).ok);
-  E.state.settings.usine = "avance";
-  run(E, 1);
-  assert.notStrictEqual(E.machInfo(x.id).s, "noout", "relié, il reste utile en usine avancée");
+  assert.strictEqual(E.machInfo("lisiere:bois").s, "ok");
+  E.add("bois", 1e6);
+  assert.ok(E.tap("bois") > 0);
 });
 test("production : la récolte des extracteurs et ce que font et prennent les machines", () => {
   const E = mk();
   E.add("cabane", 2);
-  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 2).ok);
+  const x = E.domExtSet("lisiere", "bois", "cabane", 2);
   E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 30);
-  assert.ok(E.fabPlace("mach", 6, 6, { m: "automate_bois", r: "manche" }).ok);
+  assert.ok(E.domMachAdd("manche").ok);
   run(E, 60);
-  const p = E.production(), bois = p.find((x) => x.id === "bois"), manche = p.find((x) => x.id === "manche");
-  const out = E.extOut(E.fabCell(-3, -7));
+  const p = E.production(), bois = p.find((y) => y.id === "bois"), manche = p.find((y) => y.id === "manche");
+  const out = E.extOut(x);
   assert.ok(Math.abs(bois.in - out) < out * 0.05, "bois récolté : " + bois.in + " / " + out);
   assert.ok(Math.abs(bois.out - 0.3) < 0.03, "le bois que prend l’automate (6/min × 3) : " + bois.out);
   assert.ok(Math.abs(manche.in - 0.1) < 0.01, "les manches : " + manche.in);
 });
-test("usine simple : un chantier posé n’importe où se sert dans la Réserve", () => {
+test("relève : le Domaine repart de zéro", () => {
   const E = mk();
-  E.state.flags.arche = true; E.state.age = 12; E.recalc();
-  assert.ok(E.fabPlace("site", 9, 9, { p: "dyson" }).ok);
-  E.add("supra", 400); E.add("metal_mercure", 60000); E.add("regolithe", 20000);
-  run(E, 5);
-  const paid = Object.values(E.projState("dyson").paid).reduce((a, b) => a + b, 0);
-  assert.ok(paid > 0, "les matières arrivent sans tapis : " + paid);
-  assert.strictEqual(E.machInfo("S:dyson").s, "ok");
-});
-test("usine : une partie existante garde l’usine avancée si elle a des répartiteurs", () => {
-  const E = mk();
-  E.add("cabane", 1); E.fabPlaceExt(-3, -7, "cabane", 1); E.fabLink(-3, -7);
-  const save = JSON.parse(E.serialize());
-  delete save.settings.usine;
-  E.load(JSON.stringify(save));
-  assert.ok(E.easy(), "sans répartiteur ni croisement : usine simple");
-  save.fab.c["5,5"] = { k: "split" };
-  E.load(JSON.stringify(save));
-  assert.ok(!E.easy(), "avec un répartiteur : usine avancée");
-  E.state.settings.usine = "simple";
-  E.load(E.serialize());
-  assert.ok(E.easy(), "le choix du joueur est gardé");
+  E.add("cabane", 1); E.domExtSet("lisiere", "bois", "cabane", 1);
+  E.add("automate_bois", 1); E.state.known.manche = true; E.domMachAdd("manche");
+  E.newCycle();
+  assert.deepStrictEqual(E.state.dom, { ext: {}, mach: [], site: {}, ms: {}, seq: 0 });
+  run(E, 1);
 });
 test("jalons : les objectifs rangés par âge", () => {
   const E = mk();
@@ -1040,12 +849,19 @@ test("âge accompli : toutes ses étapes faites, un peu d’Intuition, une seule
   const F = mk(); F.load(JSON.stringify(raw));
   assert.ok(F.state.flags.ages[0]); assert.strictEqual(F.state.intu, 5);
 });
-test("v4 → v5 : l’usine, les souvenirs et les Grands Œuvres restent tels quels", () => {
+const extTotals = (cells) => { const o = {}; cells.forEach((e) => { if (e.u && (e.k === undefined || e.k === "ext")) for (const t in e.u) o[t] = (o[t] || 0) + e.u[t]; }); return o; };
+const machList = (list) => list.map((e) => [e.id, e.m, e.r || null, e.n, e.on !== false, e.cap || 0].join(" ")).sort();
+test("v4 → v6 : les extracteurs et les machines de l’usine passent dans le Domaine", () => {
   const raw = fixture("save-v4-age8-carte.json"), old = JSON.parse(raw);
   const E = mk();
   E.load(raw);
-  const S = E.state;
-  assert.deepStrictEqual(S.fab.c, old.fab.c, "chaque case de l’usine");
+  const S = E.state, cells = Object.values(old.fab.c);
+  assert.deepStrictEqual(extTotals(Object.values(S.dom.ext)), extTotals(cells), "autant d’extracteurs de chaque type");
+  assert.deepStrictEqual(machList(S.dom.mach), machList(cells.filter((e) => e.k === "mach")), "les mêmes machines, mêmes réglages");
+  assert.deepStrictEqual(S.orphans.fab5.c, old.fab.c, "l’ancienne usine est gardée de côté");
+  // la récolte par matière est la même
+  const rate = (list) => { const o = {}; list.forEach((e) => { if (e.u && e.k !== "mach") for (const t in e.u) o[e.res] = (o[e.res] || 0) + e.u[t] * E.extRate(t, e.res); }); return o; };
+  assert.deepStrictEqual(rate(Object.values(S.dom.ext)), rate(cells.filter((e) => e.k === "ext")));
   assert.deepStrictEqual(S.hints, old.hints, "les indices déjà obtenus");
   assert.deepStrictEqual(S.hand, { q: [], p: 0 });
   assert.deepStrictEqual(S.studied, {});
@@ -1056,6 +872,31 @@ test("v4 → v5 : l’usine, les souvenirs et les Grands Œuvres restent tels qu
   F.load(o);
   assert.ok(F.state.flags.v5proj, "on prévient le joueur");
   assert.deepStrictEqual(F.projState("dyson"), { step: 1, paid: { panneau_dyson: 120 } }, "ce qui a été versé reste acquis");
+});
+test("v5 → v6 : rien ne se perd, ce qui était en route revient au stock", () => {
+  const raw = fixture("save-v5-age8-usine.json"), old = JSON.parse(raw);
+  const E = mk();
+  E.load(raw);
+  const S = E.state, cells = Object.values(old.fab.c), ms = old.fab.ms;
+  assert.strictEqual(old.v, 5);
+  assert.ok(cells.some((e) => e.k === "belt") && cells.some((e) => e.k === "split"), "une vraie usine avancée");
+  assert.deepStrictEqual(extTotals(Object.values(S.dom.ext)), extTotals(cells));
+  assert.deepStrictEqual(machList(S.dom.mach), machList(cells.filter((e) => e.k === "mach")));
+  const want = Object.assign({}, old.inv);
+  const put = (i, v) => { if (v > 0) want[i] = (want[i] || 0) + v; };
+  cells.forEach((e) => {
+    const B = e.id && ms[e.id];
+    if (!B) return;
+    if (e.k === "ext") put(e.res, B.o);
+    if (e.k === "mach" && e.r) { put(e.r, B.o); assert.deepStrictEqual(S.dom.ms[e.id].b, B.b, "ce qu’a en main " + e.id); }
+    if (e.k === "site") for (const i in B.b) put(i, B.b[i]);
+  });
+  for (const i in want) assert.ok(Math.abs((S.inv[i] || 0) - want[i]) < 1e-6, i + " : " + S.inv[i] + " / " + want[i]);
+  assert.ok(E.siteOn("dyson"), "le chantier devient un Grand Œuvre alimenté");
+  assert.ok(!("usine" in S.settings));
+  assert.deepStrictEqual(S.orphans.fab5, old.fab);
+  run(E, 5);
+  Object.keys(S.dom.ext).forEach((k) => assert.strictEqual(E.machInfo(k).s, "ok", k));
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

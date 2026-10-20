@@ -5,12 +5,11 @@
  * améliorations de la Mémoire des mains. Sert à régler D.PASSAGES[z].cost et .tr.
  * (tools/sim.js, lui, est l’ancien bot qui joue une partie complète jusqu’à une fin.)
  *
- *   node tools/sim-passages.js [--minutes 120] [--mem recolte=1,extr=2,…] [--avance]
+ *   node tools/sim-passages.js [--minutes 120] [--mem recolte=1,extr=2,…]
  *                     [--offline H] [--compare] [--reflexion 20] [--carnet N]
  *                     [--taps 4] [--retour 120] [--journal] [--cout riviere=2,collines=3] [--cycles N]
  *
  *   --mem       niveaux de la Mémoire (ids de D.MEMOIRE) ; la relève est simulée (newCycle)
- *   --avance    usine avancée (Réserve limitée, tapis qui saturent) au lieu de l’usine simple
  *   --offline H après chaque passage, une absence de H heures (le jeu tourne seul, E.catchUp)
  *   --compare   4 profils côte à côte : aucune mémoire · recolte=1 · recolte=2,extr=2,mains=2 ·
  *               recolte=3,extr=4,mains=3,paquetage=2,raccourci=1
@@ -55,7 +54,7 @@ const ACHATS = ["recolte", "mains", "recolte", "paquetage", "extr", "mains", "ra
 
 /* ------------------------------------------------------------------ options */
 function lire(argv) {
-  const o = { minutes: 120, mem: {}, avance: false, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1 };
+  const o = { minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1 };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], val = () => argv[++i];
     if (a === "--minutes") o.minutes = +val();
@@ -65,7 +64,7 @@ function lire(argv) {
         if (!m || !(+v >= 0) || +v > m.cost.length) throw new Error("--mem : « " + p + " » inconnu (ids : " + D.MEMOIRE.map((x) => x.id + "≤" + x.cost.length).join(" ") + ")");
         if (+v > 0) o.mem[k] = +v;
       });
-    } else if (a === "--avance") o.avance = true;
+    }
     else if (a === "--offline") o.offline = +val();
     else if (a === "--compare") o.compare = true;
     else if (a === "--reflexion") o.reflexion = +val();
@@ -88,7 +87,6 @@ function lire(argv) {
 function play(o) {
   let T = 1e12;
   const T0 = T, E = createEngine({ now: () => T, rand: () => 0.5 }), S = () => E.state;
-  if (o.avance) S().settings.usine = "avance";
   for (const id in I) if (I[id].r && !I[id].sec && !I[id].path) E.learn(id, true); // il connaît tout
   const avecMem = Object.keys(o.mem).length > 0;
   if (avecMem) { S().meta.mem = Object.assign({}, o.mem); E.recalc(); E.newCycle(); } // paquetage, raccourci
@@ -188,8 +186,8 @@ function play(o) {
     let g = 0, res = null;
     if (it.t === "ext") {
       for (const r in it.p) {
-        const dep = E.deposits().find((d) => d.z === it.z && d.res === r), cell = dep && E.fabCell(dep.x, dep.y);
-        if (!need[r] || !dep || !handRate(r) || (cell && cell.id && E.machInfo(cell.id).s === "sat")) continue;
+        const dep = E.deposits().find((d) => d.z === it.z && d.res === r);
+        if (!need[r] || !dep || !handRate(r)) continue;
         const v = E.extOut({ u: { [id]: 1 }, res: r }) / handRate(r);
         if (v > g) { g = v; res = r; }
       }
@@ -229,8 +227,7 @@ function play(o) {
       if (n < 1) continue;
       const deps = E.deposits().filter((d) => d.z === I[t].z && E.extRate(t, d.res) > 0)
         .sort((a, b) => (b.res === planned[t]) - (a.res === planned[t]) || (need[b.res] || 0) - (need[a.res] || 0) || E.extRate(t, b.res) - E.extRate(t, a.res));
-      const r = deps.length && E.fabPlaceExt(deps[0].x, deps[0].y, t, n);
-      if (r && r.ok && r.fresh && !E.easy()) E.fabLink(deps[0].x, deps[0].y); // en usine simple, il se relie seul
+      if (deps.length) E.domExtSet(deps[0].z, deps[0].res, t, ((E.domExt(deps[0].z, deps[0].res) || { u: {} }).u[t] || 0) + n);
     }
   }
 
@@ -268,14 +265,14 @@ function play(o) {
     const pick = (src) => {
       for (const r in src) {
         const y = bestZone(r) && E.tapYield(r, bestZone(r));
-        if (src[r] <= 0 || !y || E.storeFull(r)) continue;
+        if (src[r] <= 0 || !y) continue;
         const s = (src[r] - E.rate(r) * 15) / y; // ce que les extracteurs apporteront n’est pas à récolter
         if (s > sc) { sc = s; best = r; }
       }
     };
     pick(urgent);
     if (!best) pick(need);
-    if (!best) { best = ["bois", "fibre", "caillou"][rr++ % 3]; if (E.storeFull(best)) return; } // à tour de rôle
+    if (!best) { best = ["bois", "fibre", "caillou"][rr++ % 3]; } // à tour de rôle
     const g = E.tap(best, bestZone(best));
     if (need[best] > 0) need[best] -= g;
     if (urgent[best] > 0) urgent[best] -= g;
@@ -337,7 +334,7 @@ function murTxt(r) {
   return nomPass(r.mur.z) + (p && p.ready ? " versé à " + Math.round(p.frac * 100) + " %, reste : " + left : " pas encore possible, objectif : " + r.mur.objectif);
 }
 function afficher(o, r) {
-  console.log("Joueur simulé : " + o.taps + " appuis/s · réflexion " + o.reflexion + " s · usine " + (o.avance ? "avancée" : "simple") +
+  console.log("Joueur simulé : " + o.taps + " appuis/s · réflexion " + o.reflexion + " s" +
     " · mémoire : " + memTxt(o.mem) + " · " + o.minutes + " min de jeu actif" + (o.offline ? " · absence de " + o.offline + " h après chaque passage" : ""));
   console.log("\n  Passage                         Minute  Durée dont réfl. Versé en  Âge                   Traces");
   let prev = 0, prevP = 0;
@@ -355,7 +352,7 @@ function afficher(o, r) {
     (r.gels ? " · chaînes figées par le moteur, refaites pièce par pièce : " + r.gels : ""));
 }
 function afficherCycles(o, r) {
-  console.log("Joueur simulé : " + o.cycles + " cycles de " + o.minutes + " min de jeu actif · usine " + (o.avance ? "avancée" : "simple") + " · réflexion " + o.reflexion + " s (une fois par recette, le Carnet reste acquis)");
+  console.log("Joueur simulé : " + o.cycles + " cycles de " + o.minutes + " min de jeu actif · réflexion " + o.reflexion + " s (une fois par recette, le Carnet reste acquis)");
   r.cycles.forEach((c, i) => {
     console.log("\n  Cycle " + (i + 1) + " · mémoire : " + memTxt(c.mem) + " · Traces gagnées : " + c.traces);
     console.log("    " + (c.rows.map((x) => x.z + " " + (x.offert ? "offert" : x.t.toFixed(1))).join(" · ") || "aucun passage franchi"));
@@ -364,7 +361,7 @@ function afficherCycles(o, r) {
 }
 function comparer(o) {
   const res = PROFILS.map((p) => play(Object.assign({}, o, { mem: p.mem, cycles: 1 })));
-  console.log("Comparaison (" + o.minutes + " min de jeu actif · usine " + (o.avance ? "avancée" : "simple") + (o.offline ? " · absence " + o.offline + " h après chaque passage" : "") + " · réflexion " + o.reflexion + " s, carnet connu jusqu’à l’âge 4 avec une mémoire)\n");
+  console.log("Comparaison (" + o.minutes + " min de jeu actif" + (o.offline ? " · absence " + o.offline + " h après chaque passage" : "") + " · réflexion " + o.reflexion + " s, carnet connu jusqu’à l’âge 4 avec une mémoire)\n");
   console.log("  " + "Minute du passage".padEnd(30) + PROFILS.map((p) => p.nom.padStart(18)).join(""));
   Object.keys(D.PASSAGES).forEach((z) => {
     if (!res.some((r) => r.rows.some((x) => x.z === z))) return;

@@ -11,7 +11,7 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 5;
+  const SAVE_VERSION = 6;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -34,44 +34,44 @@
   const RES_ZONE = {};
   D.ZONES.forEach((z) => z.res.forEach((r) => (RES_ZONE[r] = RES_ZONE[r] || z.id)));
   const MACHINES = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "mach").sort((a, b) => D.ITEMS[a].spd - D.ITEMS[b].spd);
-
-  /* Géométrie de l’Usine : directions 0 → droite, 1 → bas, 2 → gauche, 3 → haut.
-   * La Réserve occupe les cases de -RES à RES autour de l’origine. */
-  const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
-  const RES = 1;
-  const FAB_R0 = 7, FAB_RMAX = 13;
-  const ck = (x, y) => x + "," + y;
-  const isRes = (x, y) => Math.abs(x) <= RES && Math.abs(y) <= RES;
-  const touchesRes = (x, y) => (Math.abs(x) === RES + 1 && Math.abs(y) <= RES) || (Math.abs(y) === RES + 1 && Math.abs(x) <= RES);
-  const FAB_KINDS = { belt: 1, port: 1, split: 1, cross: 1, mach: 1, ext: 1, site: 1 };
-  const freshFab = () => ({ r: FAB_R0, c: {}, seq: 0, ms: {} });
-
-  /* Les gisements : chaque terre a sa parcelle sur la carte de la Fabrique, avec
-   * une case par ressource (celles qu’on y récolte, et celles que produisent ses
-   * extracteurs). Positions fixes : la carte est la même d’une partie à l’autre,
-   * et elle s’étend à chaque nouvelle terre. */
-  const PATCH = {
+  /* Les gisements de chaque terre : ce qu’on y récolte à la main, puis ce que
+   * produisent les extracteurs de la terre. */
+  const EXTS = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
+  const ZONE_DEPS = {}; // zone → [{ res, hand }]
+  D.ZONES.forEach((z) => {
+    const list = z.res.slice();
+    EXTS.forEach((id) => { if (D.ITEMS[id].z === z.id) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
+    ZONE_DEPS[z.id] = list.map((r) => ({ res: r, hand: z.res.includes(r) }));
+  });
+  const extKey = (z, res) => z + ":" + res;
+  /* un extracteur posé met tout son effort sur la matière de son gisement */
+  const extRate = (id, r) => { const p = D.ITEMS[id] && D.ITEMS[id].p; return p && p[r] ? p[r] * Object.keys(p).length : 0; };
+  /* Où étaient ces gisements sur la grille de l’ancienne usine (sauvegardes v4 et
+   * v5) : ne sert plus qu’à la migration, pour savoir ce qu’exploitait chaque case. */
+  const OLD_PATCH = {
     lisiere: [0, -7], plaine: [8, 0], riviere: [0, 8], collines: [-9, 0], mine: [9, -9], desert: [-10, 9],
     gisement: [10, 10], montagnes: [-11, -10], orbite: [0, -16], lune: [17, 0], mercure: [0, 17], caveau: [-17, 0]
   };
-  const EXTS = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
-  const DEPOSITS = {}; // "x,y" → { res, z, hand }
-  const DEP_AT = {}; // zone → ressource → "x,y"
+  const OLD_DEPOSITS = {}; // "x,y" → { z, res }
   D.ZONES.forEach((z, i) => {
-    const list = z.res.slice();
-    EXTS.forEach((id) => { if (D.ITEMS[id].z === z.id) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
-    const far = 20 + i * 3;
-    const [cx, cy] = PATCH[z.id] || [Math.round(Math.cos(i * 2.4) * far), Math.round(Math.sin(i * 2.4) * far)];
-    DEP_AT[z.id] = {};
-    list.forEach((r, j) => {
-      const k = ck(cx - (list.length - 1) + 2 * j, cy);
-      if (DEPOSITS[k]) throw new Error("Deux gisements au même endroit : " + k);
-      DEPOSITS[k] = { res: r, z: z.id, hand: z.res.includes(r) };
-      DEP_AT[z.id][r] = k;
-    });
+    const far = 20 + i * 3, deps = ZONE_DEPS[z.id];
+    const [cx, cy] = OLD_PATCH[z.id] || [Math.round(Math.cos(i * 2.4) * far), Math.round(Math.sin(i * 2.4) * far)];
+    deps.forEach((d, j) => (OLD_DEPOSITS[(cx - (deps.length - 1) + 2 * j) + "," + cy] = { z: z.id, res: d.res }));
   });
-  /* un extracteur posé met tout son effort sur la matière de sa case */
-  const extRate = (id, r) => { const p = D.ITEMS[id] && D.ITEMS[id].p; return p && p[r] ? p[r] * Object.keys(p).length : 0; };
+  /* profondeur d’une recette (0 pour une matière brute) : sert à faire tourner les
+   * machines qui font un ingrédient avant celles qui l’utilisent */
+  const DEPTH = {};
+  const depthOf = (id, seen) => {
+    if (DEPTH[id] !== undefined) return DEPTH[id];
+    const it = D.ITEMS[id];
+    if (!it || !it.r || seen[id]) return 0;
+    seen[id] = true;
+    let d = 0;
+    for (const i in it.r[1]) d = Math.max(d, depthOf(i, seen) + 1);
+    return (DEPTH[id] = d);
+  };
+  for (const id in D.ITEMS) depthOf(id, {});
+  const freshDom = () => ({ ext: {}, mach: [], site: {}, ms: {}, seq: 0 });
 
   function freshState(now) {
     return {
@@ -79,13 +79,13 @@
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
-      fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
+      dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
       hand: { q: [], p: 0 }, studied: {},
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {} },
-      settings: { sound: true, vibe: true, usine: "simple" },
+      settings: { sound: true, vibe: true },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
   }
@@ -145,52 +145,81 @@
       o.flags.news = "5";
       o.v = 5;
     }
+    if (from < 6) {
+      // v6 : plus de grille ni de tapis. Les extracteurs, les machines et les chantiers
+      // passent dans le Domaine (voir domFromFab) ; l’ancienne usine est gardée de côté.
+      o.flags = o.flags || {};
+      o.dom = domFromFab(o);
+      if (o.fab && o.fab.c && Object.keys(o.fab.c).length) { o.orphans = o.orphans || {}; o.orphans.fab5 = o.fab; }
+      delete o.fab;
+      if (o.settings && typeof o.settings === "object") delete o.settings.usine;
+      o.flags.news = "6";
+      o.v = 6;
+    }
     return o;
   }
 
-  /* Disposition des anciennes lignes : une sortie, un tapis qui fait le tour de la
-   * Réserve puis y rentre, et les machines posées tout autour, tournées vers lui.
-   * Elles se servent sur le tapis et y déposent ce qu’elles fabriquent. */
+  /* v2 → v3 : chaque ligne de production devenait une machine posée sur la grille
+   * de l’usine. La grille n’existe plus : on ne garde que les machines, que la v6
+   * range dans le Domaine (voir domFromFab). */
   function fabFromLines(lines) {
-    const fab = freshFab();
+    const fab = { c: {}, ms: {}, seq: 0 };
     const live = lines.filter((L) => L && D.ITEMS[L.r] && D.ITEMS[L.m] && D.ITEMS[L.m].t === "mach" && L.n > 0);
-    if (!live.length) return { fab, placed: 0, left: 0 };
-    // une ligne qui fabrique l’ingrédient d’une autre passe avant elle sur le tapis
-    const order = [], done = {};
-    const visit = (L, depth) => {
-      if (done[L.r] === 2 || depth > 50) return;
-      done[L.r] = 1;
-      const ing = D.ITEMS[L.r].r ? D.ITEMS[L.r].r[1] : {};
-      live.forEach((M) => { if (M !== L && ing[M.r] !== undefined && done[M.r] !== 1) visit(M, depth + 1); });
-      if (done[L.r] !== 2) { done[L.r] = 2; live.filter((M) => M.r === L.r).forEach((M) => order.includes(M) || order.push(M)); }
-    };
-    live.forEach((L) => visit(L, 0));
-    const put = (x, y, e) => (fab.c[ck(x, y)] = e);
-    put(RES + 1, 0, { k: "port", d: 0, f: null });
-    const ring = [];
-    for (let y = 0; y <= 2; y++) ring.push([3, y, 1]);
-    ring.push([3, 3, 2]);
-    for (let x = 2; x >= -2; x--) ring.push([x, 3, 2]);
-    ring.push([-3, 3, 3]);
-    for (let y = 2; y >= -2; y--) ring.push([-3, y, 3]);
-    ring.push([-3, -3, 0]);
-    for (let x = -2; x <= 2; x++) ring.push([x, -3, 0]);
-    ring.push([3, -3, 1], [3, -2, 1], [3, -1, 2], [2, -1, 2]);
-    ring.forEach(([x, y, d]) => put(x, y, { k: "belt", d }));
-    const slots = [];
-    for (let y = 0; y <= 3; y++) slots.push([4, y, 2]);
-    for (let x = 3; x >= -3; x--) slots.push([x, 4, 3]);
-    for (let y = 3; y >= -3; y--) slots.push([-4, y, 0]);
-    for (let x = -3; x <= 3; x++) slots.push([x, -4, 1]);
-    for (let y = -3; y <= -1; y++) slots.push([4, y, 2]);
-    let placed = 0;
-    order.forEach((L, i) => {
-      const sl = slots[i];
-      if (!sl) return;
-      put(sl[0], sl[1], { k: "mach", id: "M" + ++fab.seq, m: L.m, r: L.r, d: sl[2], n: Math.max(1, Math.floor(L.n)), on: L.on !== false, cap: Math.max(0, Math.floor(L.cap) || 0) });
-      placed++;
+    live.forEach((L, i) => {
+      fab.c["L" + i] = { k: "mach", id: "M" + ++fab.seq, m: L.m, r: L.r, n: Math.max(1, Math.floor(L.n)), on: L.on !== false, cap: Math.max(0, Math.floor(L.cap) || 0) };
     });
-    return { fab, placed, left: order.length - placed };
+    return { fab, placed: live.length, left: 0 };
+  }
+
+  /* rend au stock d’une sauvegarde ce qui était en route (ou le met de côté si l’objet n’existe plus) */
+  function backToInv(o, b) {
+    if (!b || typeof b !== "object") return;
+    for (const i in b) {
+      const v = Number(b[i]);
+      if (!(v > 0)) continue;
+      if (D.ITEMS[i]) o.inv[i] = (o.inv[i] || 0) + v;
+      else { o.orphans = o.orphans || {}; (o.orphans.inv = o.orphans.inv || {})[i] = (o.orphans.inv[i] || 0) + v; }
+    }
+  }
+  /* v5 → v6 : la grille disparaît. Chaque exploitation rejoint son gisement, chaque
+   * machine devient une chaîne du Domaine, chaque chantier un Grand Œuvre alimenté.
+   * Ce que les extracteurs et les chantiers avaient en main rejoint la Réserve. */
+  function domFromFab(o) {
+    const dom = freshDom(), f = o.fab;
+    if (!f || typeof f !== "object" || !f.c || typeof f.c !== "object") return dom;
+    const ms = f.ms && typeof f.ms === "object" ? f.ms : {};
+    dom.seq = Math.max(0, Math.floor(f.seq) || 0);
+    const hasDep = (z, res) => !!z && !!ZONE_DEPS[z] && ZONE_DEPS[z].some((d) => d.res === res);
+    for (const k in f.c) {
+      const e = f.c[k];
+      if (!e || typeof e !== "object") continue;
+      const B = typeof e.id === "string" && ms[e.id] && typeof ms[e.id] === "object" ? ms[e.id] : null;
+      if (e.k === "ext" && e.u && typeof e.u === "object") {
+        let dep = OLD_DEPOSITS[k];
+        if (!dep || dep.res !== e.res) {
+          // une case qui n’était pas sur son gisement : la terre de ses extracteurs, sinon la première qui l’a
+          const z = Object.keys(e.u).map((t) => D.ITEMS[t] && D.ITEMS[t].z).concat([RES_ZONE[e.res]]).find((x) => hasDep(x, e.res)) ||
+            D.ZONES.map((x) => x.id).find((x) => hasDep(x, e.res));
+          dep = z ? { z, res: e.res } : null;
+        }
+        if (dep) {
+          const x = dom.ext[extKey(dep.z, dep.res)] || (dom.ext[extKey(dep.z, dep.res)] = { z: dep.z, res: dep.res, u: {}, on: false });
+          for (const t in e.u) { const n = Math.floor(e.u[t]) || 0; if (n > 0) x.u[t] = (x.u[t] || 0) + n; }
+          x.on = x.on || e.on !== false;
+        }
+        if (B && e.res) backToInv(o, { [e.res]: B.o });
+      } else if (e.k === "mach" && typeof e.id === "string") {
+        dom.mach.push({ id: e.id, m: e.m, r: e.r || null, n: e.n, on: e.on !== false, cap: e.cap });
+        if (B) {
+          dom.ms[e.id] = { p: Number(B.p) || 0, b: Object.assign({}, B.b && typeof B.b === "object" ? B.b : {}) };
+          if (e.r) backToInv(o, { [e.r]: B.o });
+        }
+      } else if (e.k === "site" && typeof e.p === "string") {
+        dom.site[e.p] = { on: true };
+        if (B) backToInv(o, B.b);
+      }
+    }
+    return dom;
   }
 
   function createEngine(opts) {
@@ -198,7 +227,7 @@
     const now = opts.now || (() => Date.now());
     const rand = opts.rand || Math.random;
     const listeners = {};
-    const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION, DX, DY };
+    const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION };
     let S = freshState(now());
     let C = null; // caches dérivés de l’état
 
@@ -380,30 +409,20 @@
     E.tap = function (res, zid) {
       zid = zid || RES_ZONE[res];
       if (!zoneOpen(zid) || !ZONES[zid].res.includes(res)) return 0;
-      const n = Math.min(tapYield(res, zid), Math.floor(storeRoom(res)));
-      if (!(n > 0)) return 0; // la Réserve est pleine (usine avancée)
+      const n = tapYield(res, zid);
+      if (!(n > 0)) return 0;
       add(res, n);
       S.stats.taps++;
       return n;
     };
-    /* Usine avancée : la place dans la Réserve pour une matière brute (sans limite en usine
-     * simple, et pour tout ce qui se fabrique). */
     E.tapYieldOf = (res) => { const z = RES_ZONE[res]; return z && zoneOpen(z) ? tapYield(res, z) : 0; };
-    E.storeCap = (id) => (easy() || !item(id) || item(id).t !== "res" ? Infinity : D.STORE[Math.min(S.age, D.STORE.length - 1)]);
-    const storeRoom = (id) => Math.max(0, E.storeCap(id) - (S.inv[id] || 0));
-    E.storeRoom = storeRoom;
-    E.storeFull = (id) => storeRoom(id) < 1;
-    /* production des extracteurs posés pour une matière (par seconde) */
+    /* ce que récoltent les extracteurs pour une matière (par seconde) */
     E.rate = (res) => {
       let r = 0;
       const c = E.cache();
-      for (const k in S.fab.c) {
-        const e = S.fab.c[k];
-        const st = e.k === "ext" && e.res === res && machStat[e.id];
-        if (!st) continue;
-        if (st.s === "ok") r += extOut(e, c);
-        else if (st.s === "sat") r += E.beltCap();
-        else if (st.s === "jam") r += st.avg;
+      for (const k in S.dom.ext) {
+        const e = S.dom.ext[k];
+        if (e.res === res && machStat[k] && machStat[k].s === "ok") r += extOut(e, c);
       }
       return r;
     };
@@ -815,8 +834,9 @@
       }
       return true;
     }
-    /* met une fabrication dans la file ; avec `chain`, ses sous-composants aussi */
-    E.queue = function (id, times, chain) {
+    /* met une fabrication dans la file ; avec `chain`, ses sous-composants aussi.
+     * `to` : le gisement ("x:zone:res") ou la chaîne ("m:id") où poser ce qui sortira */
+    E.queue = function (id, times, chain, to) {
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
@@ -844,13 +864,14 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !last.k && !isScaled(it) && !isUnique(it)) {
+      if (steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !last.k && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         E.emit("hand", { kind: "add", job: last });
         return { ok: true, job: last, time: jobTime(last, false), merged: true };
       }
       const j = { id, s: steps, i: 0, k: 0, b: bench };
+      if (typeof to === "string") j.to = to;
       S.hand.q.push(j);
       E.emit("hand", { kind: "add", job: j });
       return { ok: true, job: j, time: jobTime(j, S.hand.q.length === 1) };
@@ -901,6 +922,7 @@
         S.hand.p = Math.max(S.hand.p, tm);
         const last = j.i === j.s.length - 1;
         const r = makeIt(x, m, offline || !last, last ? null : j.b);
+        if (last && j.to) deliver(j.to, x, m);
         j.k += m;
         if (!offline) E.emit("handdone", { id: x, n: r.n, bonus: r.bonus, first: r.first, last });
         if (j.k >= n) { j.i++; j.k = 0; S.hand.p = 0; }
@@ -1235,78 +1257,47 @@
       return lines;
     };
 
-    /* ------------------------------------------------------ l’Usine
-     * Une grille avec, au centre, la Réserve (le stock du joueur). Les sorties
-     * posées contre la Réserve envoient sur les tapis ce que les machines
-     * réclament. Une machine se sert sur les tapis qui la touchent ou qui entrent
-     * dedans, et pose sa production sur la case devant elle. Ce qui arrive au bout
-     * d’un tapis qui entre dans la Réserve rejoint le stock.
-     * Le calcul se fait de machine à machine, pas objet par objet : il donne le
-     * même résultat jeu ouvert ou fermé. Les objets qui roulent sur les tapis ne
-     * sont que l’image de ces échanges (voir E.fabDrain). */
-    /* L’usine simple (par défaut) : la Réserve sert toutes les machines et reçoit
-     * tout ce qui est fabriqué ou récolté, avec ou sans tapis, et rien n’est
-     * limité par le débit des tapis. Les tapis gardent leur rôle (une machine se
-     * sert d’abord sur ceux qui la touchent) ; seule l’usine avancée en fait un
-     * casse-tête de débit, de sorties et de répartiteurs. */
-    const easy = () => !S.settings || S.settings.usine !== "avance";
-    E.easy = easy;
-    E.setUsine = (m) => { S.settings.usine = m === "avance" ? "avance" : "simple"; fabChanged(); };
-    const machStat = {}; // état des machines (non sauvegardé)
-    let G = null; // graphe de l’usine, recalculé à chaque modification
-    let fabLog = []; // échanges récents, pour l’animation
-    let fabQuiet = false;
+    /* ------------------------------------------------------ le Domaine
+     * Chaque terre ouverte a ses gisements. On y pose des extracteurs, qui versent
+     * leur récolte dans la Réserve. Les machines sont rangées en chaînes (une
+     * recette, un type de machine, un nombre) : elles se servent dans la Réserve et
+     * y déposent ce qu’elles font. Un Grand Œuvre « alimenté » se sert seul dans la
+     * Réserve, à un débit qui dépend de l’âge. Rien ne dépend d’une position.
+     * Le calcul se fait par pas de temps : il donne le même résultat jeu ouvert ou
+     * fermé. */
+    const machStat = {}; // état des machines, des gisements et des chantiers (non sauvegardé)
+    let order = null; // ordre de calcul des machines, refait à chaque modification
+    function domChanged() { order = null; E.emit("dom"); }
+    function forgetDom() {
+      for (const k in machStat) delete machStat[k];
+      order = null;
+      E.emit("dom");
+    }
 
     E.automatable = (id) => {
       const it = item(id);
       return !!(it && it.r && S.known[id] && !isUnique(it) && !isScaled(it));
     };
-    /* la carte s’étend jusqu’aux parcelles des terres ouvertes */
-    let patchMemo = { key: "", r: 0 };
-    function patchR() {
-      const key = Object.keys(S.zones).join();
-      if (patchMemo.key === key) return patchMemo.r;
-      let r = 0;
-      for (const k in DEPOSITS) {
-        if (!S.zones[DEPOSITS[k].z]) continue;
-        const i = k.indexOf(",");
-        r = Math.max(r, Math.abs(+k.slice(0, i)), Math.abs(+k.slice(i + 1)));
-      }
-      patchMemo = { key, r: r ? r + 3 : 0 };
-      return patchMemo.r;
-    }
-    const fabR = () => Math.max(S.fab.r || FAB_R0, Math.min(FAB_RMAX, 5 + S.age), patchR());
-    const inGrid = (x, y) => { const R = fabR(); return Math.abs(x) <= R && Math.abs(y) <= R; };
-    const cellAt = (x, y) => S.fab.c[ck(x, y)];
-    E.fabR = fabR;
-    E.inGrid = inGrid;
-    E.isRes = isRes;
-    E.touchesRes = touchesRes;
-    E.fabCell = (x, y) => (isRes(x, y) ? { k: "res" } : cellAt(x, y) || null);
+
     /* --- gisements et extracteurs */
-    const depAt = (x, y) => { const d = DEPOSITS[ck(x, y)]; return d && S.zones[d.z] ? d : null; };
-    E.deposit = depAt;
-    E.deposits = () => Object.keys(DEPOSITS).filter((k) => S.zones[DEPOSITS[k].z]).map((k) => {
-      const i = k.indexOf(",");
-      return Object.assign({ x: +k.slice(0, i), y: +k.slice(i + 1) }, DEPOSITS[k]);
-    });
-    /* la parcelle d’une terre, ouverte ou non (pour dessiner la brume des terres à venir) */
-    E.zonePatch = (zid) => Object.keys(DEP_AT[zid] || {}).map((r) => {
-      const k = DEP_AT[zid][r], i = k.indexOf(",");
-      return { x: +k.slice(0, i), y: +k.slice(i + 1), res: r };
-    });
     E.EXTS = EXTS;
     E.extRate = extRate;
+    E.extKey = extKey;
+    E.zoneDeps = (z) => ZONE_DEPS[z] || [];
+    E.deposits = () => {
+      const out = [];
+      D.ZONES.forEach((z) => { if (zoneOpen(z.id)) ZONE_DEPS[z.id].forEach((d) => out.push({ z: z.id, res: d.res, hand: d.hand, key: extKey(z.id, d.res) })); });
+      return out;
+    };
     E.extFor = (r) => EXTS.filter((t) => extRate(t, r) > 0);
     E.extUnits = function () {
       const out = {};
       EXTS.forEach((t) => (out[t] = { own: Math.floor(count(t)), used: 0 }));
-      for (const k in S.fab.c) {
-        const e = S.fab.c[k];
-        if (e.k === "ext") for (const t in e.u) if (out[t]) out[t].used += e.u[t];
-      }
+      for (const k in S.dom.ext) { const u = S.dom.ext[k].u; for (const t in u) if (out[t]) out[t].used += u[t]; }
       return out;
     };
+    const freeExt = (t) => { const u = E.extUnits()[t]; return u ? Math.max(0, u.own - u.used) : 0; };
+    E.freeExt = freeExt;
     /* production d’une exploitation, par seconde */
     function extOut(e, c) {
       let r = 0;
@@ -1317,139 +1308,203 @@
       return r;
     }
     E.extOut = (e) => extOut(e, E.cache());
-    /* récolter à la main sur la case d’un gisement */
-    E.tapDeposit = (x, y) => { const d = depAt(x, y); return d && d.hand ? E.tap(d.res, d.z) : 0; };
-    function fabChanged() { G = null; E.emit("fab"); }
-    function forgetFab() {
-      for (const k in machStat) delete machStat[k];
-      G = null;
-      fabLog = [];
-      E.emit("fab");
+    E.domExt = (z, res) => S.dom.ext[extKey(z, res)] || null;
+    /* le type d’extracteur que pose un « +1 » : le plus productif parmi les libres,
+     * sinon le plus productif qu’on sait fabriquer */
+    E.extChoice = function (res) {
+      const types = E.extFor(res).sort((a, b) => extRate(b, res) - extRate(a, res));
+      const free = types.find((t) => freeExt(t) >= 1);
+      if (free) return { t: free, free: freeExt(free) };
+      const known = types.find((t) => S.known[t]);
+      return known ? { t: known, free: 0 } : null;
+    };
+    /* pose jusqu’à n extracteurs libres du type t sur un gisement ; renvoie combien */
+    function assignExt(z, res, t, n) {
+      if (!zoneOpen(z) || !(ZONE_DEPS[z] || []).some((d) => d.res === res) || !extRate(t, res)) return 0;
+      const k = Math.min(Math.floor(n), freeExt(t));
+      if (!(k >= 1)) return 0;
+      const key = extKey(z, res), e = S.dom.ext[key] || (S.dom.ext[key] = { z, res, u: {}, on: true });
+      e.u[t] = (e.u[t] || 0) + k;
+      domChanged();
+      return k;
     }
-    function machById(id) {
-      for (const k in S.fab.c) if (S.fab.c[k].id === id) return S.fab.c[k];
-      return null;
+    /* « +1 », « ×10 » : pose ce qui est libre, et fait fabriquer le reste par les
+     * mains, qui le poseront ici une fois fini */
+    E.domExtAdd = function (z, res, n, t) {
+      n = Math.max(1, Math.floor(n || 1));
+      const ch = t ? { t } : E.extChoice(res);
+      if (!ch) return { ok: false, why: "noext" };
+      t = ch.t;
+      const placed = assignExt(z, res, t, n);
+      if (placed >= n) return { ok: true, placed, queued: 0, t };
+      const q = E.queue(t, n - placed, true, "x:" + extKey(z, res));
+      if (!q.ok) return { ok: placed > 0, placed, queued: 0, t, why: q.why, missing: q.missing || (q.plan && q.plan.missing) };
+      return { ok: true, placed, queued: n - placed, t };
+    };
+    /* nombre exact d’extracteurs d’un type sur un gisement (0 les retire) */
+    E.domExtSet = function (z, res, t, n) {
+      if (!zoneOpen(z) || !extRate(t, res) || !(ZONE_DEPS[z] || []).some((d) => d.res === res)) return null;
+      const key = extKey(z, res);
+      let e = S.dom.ext[key];
+      const cur = (e && e.u[t]) || 0, v = Math.max(0, Math.min(Math.floor(n) || 0, cur + freeExt(t)));
+      if (!e) {
+        if (!v) return null;
+        e = S.dom.ext[key] = { z, res, u: {}, on: true };
+      }
+      if (v) e.u[t] = v; else delete e.u[t];
+      if (!Object.keys(e.u).length) { delete S.dom.ext[key]; delete machStat[key]; }
+      domChanged();
+      return S.dom.ext[key] || null;
+    };
+    E.domExtToggle = function (z, res, on) {
+      const e = S.dom.ext[extKey(z, res)];
+      if (!e) return null;
+      e.on = on === undefined ? !e.on : !!on;
+      domChanged();
+      return e;
+    };
+    /* Pose un extracteur libre sur le gisement de sa terre où il manque le plus.
+     * Sert au bot de simulation et aux parties d’avant la v4, dont les extracteurs
+     * ne travaillaient sur aucun gisement. */
+    E.domAutoExt = function (t) {
+      const it = item(t);
+      if (!it || it.t !== "ext" || freeExt(t) < 1 || !zoneOpen(it.z)) return null;
+      const spots = ZONE_DEPS[it.z].filter((d) => extRate(t, d.res) > 0).map((d) => ({ r: d.res }));
+      if (!spots.length) return null;
+      // viser ce que donneraient tous les extracteurs s’ils travaillaient partout,
+      // en couvrant d’abord les matières qui ne sont pas encore extraites
+      const target = {}, cur = {};
+      EXTS.forEach((u) => { const n = Math.floor(count(u)); for (const r in item(u).p) target[r] = (target[r] || 0) + n * item(u).p[r]; });
+      for (const k in S.dom.ext) { const e = S.dom.ext[k]; for (const u in e.u) cur[e.res] = (cur[e.res] || 0) + e.u[u] * extRate(u, e.res); }
+      spots.forEach((sp) => {
+        const d = (target[sp.r] || 0) - (cur[sp.r] || 0);
+        sp.score = (cur[sp.r] ? 0 : 1000) + Math.abs(d) - Math.abs(d - extRate(t, sp.r));
+      });
+      spots.sort((a, b) => b.score - a.score);
+      return assignExt(it.z, spots[0].r, t, 1) ? { z: it.z, res: spots[0].r } : null;
+    };
+    function placeOldExtractors() {
+      let placed = 0;
+      const power = (t) => Object.values(item(t).p).reduce((a, b) => a + b, 0);
+      EXTS.slice().sort((a, b) => power(b) - power(a)).forEach((t) => { const n = freeExt(t); for (let i = 0; i < n; i++) if (E.domAutoExt(t)) placed++; });
+      S.flags.fab4 = { placed };
     }
-    E.machById = machById;
+
+    /* --- machines */
     E.machines = function () {
       const out = {};
       MACHINES.forEach((m) => (out[m] = { own: Math.floor(count(m)), used: 0, spd: item(m).spd }));
-      for (const k in S.fab.c) { const e = S.fab.c[k]; if (e.k === "mach" && out[e.m]) out[e.m].used += e.n; }
+      S.dom.mach.forEach((e) => { if (out[e.m]) out[e.m].used += e.n; });
       return out;
     };
-    E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) || Object.keys(S.fab.c).length > 0;
-    /* ce qu’un tapis porte au plus, par seconde ; et ce que la Réserve laisse sortir, en tout */
-    E.beltCap = () => D.BELT.cap[Math.min(S.age, D.BELT.cap.length - 1)] * E.cache().aspd;
-    E.resOutCap = () => E.beltCap() * D.BELT.out;
+    const freeMach = (m) => { const x = E.machines()[m]; return x ? Math.max(0, x.own - x.used) : 0; };
+    E.freeMach = freeMach;
+    const machById = (id) => S.dom.mach.find((e) => e.id === id) || null;
+    E.machById = machById;
+    E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) ||
+      Object.keys(S.dom.ext).length > 0 || S.dom.mach.length > 0;
     E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd * memV("mach") : 0);
-    const buf = (id) => S.fab.ms[id] || (S.fab.ms[id] = { p: 0, b: {}, o: 0 });
+    const buf = (id) => S.dom.ms[id] || (S.dom.ms[id] = { p: 0, b: {} });
     E.machBuf = buf;
     E.machInfo = (id) => machStat[id] || { s: "wait", avg: 0 };
-
-    /* Suit le chemin de ce qui sort d’une case (x, y) vers la direction d. */
-    function trace(x, y, d, self) {
-      const nodes = [], cons = {}, out = { nodes, cons, res: null, ents: [] };
-      const seen = {};
-      const q = [{ x: x + DX[d], y: y + DY[d], d, p: -1 }];
-      const reach = (id, at) => { if (id !== self && !(id in cons)) cons[id] = at; };
-      while (q.length) {
-        const s = q.shift();
-        if (isRes(s.x, s.y)) {
-          // la case d’où l’on entre dans la Réserve : chacune porte au plus un tapis de débit
-          const k = s.p < 0 ? ck(x, y) : ck(nodes[s.p].x, nodes[s.p].y);
-          if (!out.res) out.res = { at: s.p };
-          if (!out.ents.some((en) => en.k === k)) out.ents.push({ at: s.p, k });
-          continue;
-        }
-        const e = inGrid(s.x, s.y) ? cellAt(s.x, s.y) : null;
-        if (!e || e.k === "port" || e.k === "ext") continue;
-        if (e.k === "mach" || e.k === "site") { reach(e.id, s.p); continue; }
-        if (e.k === "belt" && e.d === (s.d + 2) % 4) continue; // tapis à contresens
-        const key = e.k === "cross" ? ck(s.x, s.y) + ":" + (s.d % 2) : ck(s.x, s.y);
-        if (seen[key]) continue;
-        seen[key] = true;
-        const i = nodes.push({ x: s.x, y: s.y, p: s.p }) - 1;
-        if (e.k === "belt") {
-          for (let k = 0; k < 4; k++) {
-            const n = cellAt(s.x + DX[k], s.y + DY[k]);
-            if (n && (n.k === "mach" || n.k === "site")) reach(n.id, i);
-          }
-          q.push({ x: s.x + DX[e.d], y: s.y + DY[e.d], d: e.d, p: i });
-        } else if (e.k === "cross") q.push({ x: s.x + DX[s.d], y: s.y + DY[s.d], d: s.d, p: i });
-        else if (e.k === "split") {
-          for (let k = 0; k < 4; k++) if (k !== (s.d + 2) % 4) q.push({ x: s.x + DX[k], y: s.y + DY[k], d: k, p: i });
-        }
-      }
-      return out;
+    /* ce qu’une machine avait en main rejoint la Réserve */
+    function refund(id) {
+      const B = S.dom.ms[id];
+      if (B) for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]);
+      delete S.dom.ms[id];
+      delete machStat[id];
     }
-    /* Qui alimente qui, et dans quel ordre calculer les machines. */
-    function graph() {
-      if (G) return G;
-      const prods = {}, sup = {}, pos = {};
-      for (const k in S.fab.c) {
-        const e = S.fab.c[k];
-        if (e.k !== "mach" && e.k !== "port" && e.k !== "ext") continue;
-        const [x, y] = k.split(",").map(Number);
-        if (e.k === "port" && !touchesRes(x, y)) continue;
-        const id = e.k === "port" ? "P" + k : e.id;
-        pos[id] = { x, y };
-        const t = trace(x, y, e.d, e.k === "port" ? null : e.id);
-        prods[id] = { id, e, x, y, t };
-        for (const c in t.cons) (sup[c] = sup[c] || []).push(id);
+    /* nouvelle chaîne : une recette et une machine libre (la plus rapide, sauf choix) */
+    E.domMachAdd = function (r, m) {
+      if (r && !E.automatable(r)) return { ok: false, why: "norec" };
+      const ms = E.machines();
+      m = m || MACHINES.slice().reverse().find((x) => ms[x].own - ms[x].used >= 1);
+      if (!m || !ms[m] || ms[m].own - ms[m].used < 1) return { ok: false, why: "nomach" };
+      const e = { id: "M" + ++S.dom.seq, m, r: r || null, n: 1, on: true, cap: 0 };
+      S.dom.mach.push(e);
+      domChanged();
+      return { ok: true, e };
+    };
+    /* réglages d’une chaîne : recette, type de machine, nombre, marche, stock visé */
+    E.domMachSet = function (id, patch) {
+      const e = machById(id);
+      if (!e) return null;
+      if (patch.r !== undefined && patch.r !== e.r && (patch.r === null || E.automatable(patch.r))) {
+        refund(id);
+        e.r = patch.r;
       }
-      // les machines qui en alimentent d’autres passent d’abord
-      const ms = Object.keys(prods).filter((id) => prods[id].e.k === "mach");
-      const indeg = {};
-      ms.forEach((id) => (indeg[id] = (sup[id] || []).filter((p) => prods[p].e.k === "mach").length));
-      const order = [], ready = ms.filter((id) => !indeg[id]);
-      while (ready.length) {
-        const id = ready.shift();
-        order.push(id);
-        for (const c in prods[id].t.cons) if (indeg[c] !== undefined && --indeg[c] === 0) ready.push(c);
+      if (patch.m && patch.m !== e.m && item(patch.m) && item(patch.m).t === "mach") {
+        const free = freeMach(patch.m);
+        if (free < 1) return e;
+        e.m = patch.m;
+        e.n = Math.min(e.n, free);
       }
-      ms.forEach((id) => { if (!order.includes(id)) order.push(id); }); // boucles
-      const exts = Object.keys(prods).filter((id) => prods[id].e.k === "ext");
-      const sites = [];
-      for (const k in S.fab.c) {
-        const e = S.fab.c[k];
-        if (e.k !== "site") continue;
-        const [x, y] = k.split(",").map(Number);
-        pos[e.id] = { x, y };
-        sites.push(e.id);
+      if (patch.n !== undefined) e.n = Math.max(1, Math.min(Math.floor(patch.n) || 1, e.n + freeMach(e.m)));
+      if (patch.on !== undefined) e.on = !!patch.on;
+      if (patch.cap !== undefined) e.cap = Math.max(0, Math.floor(patch.cap) || 0);
+      domChanged();
+      return e;
+    };
+    /* « + » sur une chaîne : les machines libres d’abord, les mains font le reste */
+    E.domMachMore = function (id, n) {
+      const e = machById(id);
+      if (!e) return { ok: false, why: "none" };
+      n = Math.max(1, Math.floor(n || 1));
+      const k = Math.min(n, freeMach(e.m));
+      if (k > 0) { e.n += k; domChanged(); }
+      if (k >= n) return { ok: true, added: k, queued: 0 };
+      const q = E.queue(e.m, n - k, true, "m:" + id);
+      if (!q.ok) return { ok: k > 0, added: k, queued: 0, why: q.why, missing: q.missing || (q.plan && q.plan.missing) };
+      return { ok: true, added: k, queued: n - k };
+    };
+    E.domMachRemove = function (id) {
+      const i = S.dom.mach.findIndex((e) => e.id === id);
+      if (i < 0) return null;
+      refund(id);
+      const e = S.dom.mach.splice(i, 1)[0];
+      domChanged();
+      return e;
+    };
+    /* ce que les mains ont fini pour un gisement ou une chaîne y est posé */
+    function deliver(to, id, n) {
+      const it = item(id);
+      if (!it || typeof to !== "string") return;
+      if (to.slice(0, 2) === "x:" && it.t === "ext") {
+        const i = to.indexOf(":", 2);
+        assignExt(to.slice(2, i), to.slice(i + 1), id, n);
+      } else if (to.slice(0, 2) === "m:" && it.t === "mach") {
+        const e = machById(to.slice(2));
+        const k = e && e.m === id ? Math.min(n, freeMach(id)) : 0;
+        if (k > 0) { e.n += k; domChanged(); }
       }
-      G = { prods, sup, pos, order, exts, sites };
-      return G;
     }
-    E.fabGraph = graph;
-    const supplies = (P, i) => (P.e.k === "port" ? !P.e.f || P.e.f === i : P.e.k === "ext" ? P.e.res === i : P.e.r === i);
-    const outOf = (e) => (e.k === "ext" ? e.res : e.r);
+    /* pièces encore attendues des mains pour un gisement ("x:zone:res") ou une chaîne ("m:id") */
+    E.domQueued = (to) => {
+      let n = 0;
+      S.hand.q.forEach((j) => {
+        if (j.to !== to) return;
+        const s = j.s[j.s.length - 1];
+        n += s[1] - (j.i === j.s.length - 1 ? j.k : 0);
+      });
+      return n;
+    };
 
-    function logFlow(from, to, i, q) {
-      if (fabQuiet || !(q > 0)) return;
-      fabLog.push({ from, to, i, q });
-      if (fabLog.length > 600) fabLog.splice(0, fabLog.length - 600);
-    }
-    E.fabDrain = () => { const l = fabLog; fabLog = []; return l; };
+    /* --- chantiers des Grands Œuvres */
+    E.domSite = function (pid, on) {
+      if (!D.PROJECTS[pid]) return null;
+      if (on) S.dom.site[pid] = { on: true };
+      else { delete S.dom.site[pid]; delete machStat["S:" + pid]; }
+      domChanged();
+      return S.dom.site[pid] || null;
+    };
+    E.siteOn = (pid) => !!(S.dom.site[pid] && S.dom.site[pid].on);
+    E.siteRate = () => D.SITE_RATE[Math.min(S.age, D.SITE_RATE.length - 1)] * E.cache().aspd;
 
-    function pull(cid, i, need, g) {
-      const B = buf(cid), srcs = g.sup[cid] || [];
-      const take = (pid, q) => { B.b[i] = (B.b[i] || 0) + q; need -= q; logFlow(pid, cid, i, q); };
-      // d’abord ce que posent les machines et les extracteurs voisins, ensuite le stock
-      for (const pid of srcs) {
-        const P = g.prods[pid];
-        if (P.e.k === "port" || outOf(P.e) !== i) continue;
-        const PB = buf(pid), q = Math.min(need, PB.o);
-        if (q > 0) { PB.o -= q; take(pid, q); }
-        if (need <= 1e-9) return;
-      }
-      for (const pid of srcs) {
-        const P = g.prods[pid];
-        if (P.e.k !== "port" || !supplies(P, i)) continue;
-        const q = Math.min(need, S.inv[i] || 0, portLeft);
-        if (q > 0) { add(i, -q); portLeft -= q; take(pid, q); }
-        if (need <= 1e-9) return;
-      }
-      if (easy()) { const q = Math.min(need, S.inv[i] || 0); if (q > 0) { add(i, -q); take("res", q); } }
+    /* --- le calcul */
+    /* les machines qui font un ingrédient passent avant celles qui s’en servent */
+    function machOrder() {
+      if (!order) order = S.dom.mach.slice().sort((a, b) => (DEPTH[a.r] || 0) - (DEPTH[b.r] || 0));
+      return order;
     }
     function produce(id, k) {
       const it = item(id);
@@ -1463,7 +1518,19 @@
       if (!S.flags.lineDone) { S.flags.lineDone = true; checkAges(); E.emit("struct"); }
       return it.r[2] * (k + bonus);
     }
-    function runMachine(e, g, dt, c) {
+    function runExt(key, e, dt, c) {
+      const st = machStat[key] || (machStat[key] = { s: "wait", avg: 0 });
+      let made = 0;
+      const done = (s) => { st.s = s; st.avg += (1 - Math.exp(-dt / 5)) * (made / dt - st.avg); };
+      if (!e.on) return done("off");
+      const rate = extOut(e, c);
+      if (!(rate > 0)) return done("idle");
+      made = rate * dt;
+      add(e.res, made);
+      if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
+      return done("ok");
+    }
+    function runMachine(e, dt, c) {
       const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0, miss: null });
       const B = buf(e.id);
       let made = 0;
@@ -1474,32 +1541,18 @@
       if (!(e.n > 0) || !M) return done("idle");
       const b = blocker(e.r);
       if (b) { st.b = b; return done("blocked"); }
-      const ez = easy(), lane = ez ? Infinity : E.beltCap(), outQ = it.r[2], rate = Math.min((e.n * M.spd / 60) * c.aspd * memV("mach"), lane / outQ);
-      const P = g.prods[e.id], ing = it.r[1], srcs = g.sup[e.id] || [];
-      const ncons = Object.keys(P.t.cons).length;
-      if (!ez && !P.t.res && !ncons) return done("noout");
-      // un ingrédient qu’aucun tapis n’apporte : inutile d’attendre (l’usine simple, elle, le prend au stock)
-      let link = null;
-      if (!ez) for (const i in ing) if (!srcs.some((p) => supplies(g.prods[p], i))) (link = link || {})[i] = "link";
-      if (link) {
-        st.miss = link;
-        for (const i in ing) if (!link[i] && (B.b[i] || 0) < ing[i]) st.miss[i] = "stock";
-        B.p = Math.min(B.p, 1);
-        return done("starved");
-      }
-      // ce qu’elle a posé ne part pas (tapis plein, ou machines suivantes qui ne prennent pas tout)
-      if (B.o >= Math.max(outQ * 4, lane * (dt + 2))) return done("jam");
-      B.p += rate * dt;
+      const outQ = it.r[2], ing = it.r[1];
+      B.p += (e.n * M.spd / 60) * c.aspd * memV("mach") * dt;
       let want = Math.floor(B.p + 1e-9);
       if (e.cap > 0) {
-        const room = e.cap - count(e.r) - B.o;
+        const room = e.cap - count(e.r);
         if (room <= 0) { B.p = Math.min(B.p, 1); return done("cap"); }
         want = Math.min(want, Math.ceil(room / outQ));
       }
-      // la machine se sert au passage : de quoi faire ce qu’elle doit, et deux d’avance
+      // la machine se sert dans la Réserve : de quoi faire ce qu’elle doit, et deux d’avance
       for (const i in ing) {
-        const need = (Math.max(0, want) + 2) * ing[i] - (B.b[i] || 0);
-        if (need > 1e-9) pull(e.id, i, need, g);
+        const q = Math.min((Math.max(0, want) + 2) * ing[i] - (B.b[i] || 0), S.inv[i] || 0);
+        if (q > 1e-9) { add(i, -q); B.b[i] = (B.b[i] || 0) + q; }
       }
       if (want <= 0) return done(st.s === "starved" || st.s === "ok" ? st.s : "ok");
       let k = want;
@@ -1508,437 +1561,87 @@
         for (const i in ing) { B.b[i] -= k * ing[i]; if (B.b[i] < 1e-9) delete B.b[i]; }
         B.p -= k;
         made = k;
-        B.o += produce(e.r, k);
+        add(e.r, produce(e.r, k));
       }
       if (k < want) {
         B.p = Math.min(B.p, 1);
         st.miss = {};
-        for (const i in ing) {
-          if ((B.b[i] || 0) >= ing[i]) continue;
-          st.miss[i] = portLeft <= 1e-9 && (S.inv[i] || 0) >= 1 ? "slow" : "stock";
-        }
+        for (const i in ing) if ((B.b[i] || 0) < ing[i]) st.miss[i] = "stock";
         return done("starved");
       }
       st.miss = null;
       return done("ok");
     }
-    function runExt(e, g, dt, c) {
-      const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0 });
-      const B = buf(e.id);
-      let made = 0;
-      const done = (s) => { st.s = s; st.avg += (1 - Math.exp(-dt / 5)) * (made / dt - st.avg); };
-      if (!e.on) return done("off");
-      const rate = extOut(e, c);
-      if (!(rate > 0)) return done("idle");
-      const P = g.prods[e.id], ez = easy();
-      if (!ez && !P.t.res && !Object.keys(P.t.cons).length) return done("noout");
-      // la Réserve est pleine de ce qu’il récolte, et aucune machine ne le prend en route : il s’arrête
-      if (!ez && !Object.keys(P.t.cons).length && storeRoom(e.res) < 1e-9) return done("full");
-      // un tapis ne porte pas plus que son débit ; et rien ne s’entasse si ça ne part pas
-      const lane = ez ? Infinity : E.beltCap(), want = Math.min(rate, lane) * dt;
-      made = Math.max(0, Math.min(want, Math.max(4, lane * (dt + 2)) - B.o));
-      B.o += made;
-      return done(made < want * 0.98 ? "jam" : rate > lane * 1.001 ? "sat" : "ok");
-    }
-    let portLeft = 0; // ce que la Réserve peut encore laisser sortir pendant ce pas
-    let satEnts = {}; // cases d’entrée dans la Réserve qui débordent
-    function runFab(dt) {
-      const g = graph();
-      if (!g.order.length && !g.exts.length && !g.sites.length) { satEnts = {}; return; }
-      const c = E.cache(), ez = easy();
-      portLeft = ez ? Infinity : E.resOutCap() * dt;
-      for (const id of g.exts) runExt(g.prods[id].e, g, dt, c);
-      for (const id of g.order) runMachine(g.prods[id].e, g, dt, c);
-      for (const id of g.sites) runSite(machById(id), g, dt);
-      // ce qui arrive à la Réserve rejoint le stock, dans la limite de ce que porte
-      // chaque tapis qui y entre : d’abord une part égale à chacun, puis le reste
-      const cap = ez ? Infinity : E.beltCap() * dt, room = {}, users = {};
-      const outs = g.exts.concat(g.order).filter((id) => g.prods[id].t.ents.length && buf(id).o > 1e-9);
-      outs.forEach((id) => g.prods[id].t.ents.forEach((en) => { room[en.k] = cap; users[en.k] = (users[en.k] || 0) + 1; }));
-      for (let pass = 0; pass < 2; pass++) {
-        for (const id of outs) {
-          const P = g.prods[id], B = buf(id), r = outOf(P.e);
-          for (const en of P.t.ents) {
-            if (!(B.o > 1e-9)) break;
-            const q = Math.min(B.o, storeRoom(r), pass ? room[en.k] : Math.min(room[en.k], cap / users[en.k]));
-            if (!(q > 0)) continue;
-            B.o -= q;
-            room[en.k] -= q;
-            add(r, q);
-            logFlow(id, "res", r, q);
-          }
-          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
-        }
-      }
-      // usine simple : ce qui n’a pas trouvé preneur rejoint le stock, tapis ou pas
-      if (ez) {
-        for (const id of g.exts.concat(g.order)) {
-          const P = g.prods[id], B = buf(id);
-          if (!(B.o > 1e-9)) continue;
-          const r = outOf(P.e);
-          add(r, B.o);
-          logFlow(id, "res", r, B.o);
-          B.o = 0;
-          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
-        }
-      }
-      if (!fabQuiet) {
-        satEnts = {};
-        outs.forEach((id) => { if (buf(id).o > 1e-6) g.prods[id].t.ents.forEach((en) => { if (room[en.k] <= cap * 0.02) satEnts[en.k] = 1; }); });
-      }
-    }
-    /* Un chantier de Grand Œuvre se sert sur les tapis qui le touchent, comme une
-     * machine : de quoi avancer l’étape en cours, un tapis de débit par matière. */
-    function runSite(e, g, dt) {
-      if (!e) return;
-      const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0 });
-      const P = D.PROJECTS[e.p];
-      if (!P || !projVisible(e.p)) { st.s = "idle"; return; }
-      const ps = projState(e.p), step = P.steps[ps.step];
+    /* Un Grand Œuvre alimenté se sert dans la Réserve : de quoi avancer l’étape en
+     * cours, au plus `siteRate` par seconde et par matière. */
+    function runSite(pid, dt) {
+      const st = machStat["S:" + pid] || (machStat["S:" + pid] = { s: "wait", avg: 0 });
+      const P = D.PROJECTS[pid];
+      if (!P || !projVisible(pid)) { st.s = "idle"; return; }
+      const ps = projState(pid), step = P.steps[ps.step];
       if (!step) { st.s = "done"; return; }
       if (!step.cost) { st.s = "act"; return; } // mise à feu, mélodie : ça se décide ailleurs
       if (step.need && !S.frags[step.need]) { st.s = "need"; return; }
-      const B = buf(e.id), lane = E.beltCap() * dt, srcs = g.sup[e.id] || [];
+      const lane = E.siteRate() * dt;
       let got = 0, done = true;
       st.miss = null;
       for (const i in step.cost) {
         const left = step.cost[i] - (ps.paid[i] || 0);
-        if (left <= 1e-9) continue;
-        if (!easy() && !srcs.some((p) => supplies(g.prods[p], i))) (st.miss = st.miss || {})[i] = "link";
-        else pull(e.id, i, Math.min(left, lane) - (B.b[i] || 0), g);
-        const q = Math.min(B.b[i] || 0, left);
-        if (q > 0) { B.b[i] -= q; if (B.b[i] < 1e-9) delete B.b[i]; ps.paid[i] = (ps.paid[i] || 0) + q; got += q; }
+        if (left > 1e-9) {
+          const q = Math.min(left, lane, S.inv[i] || 0);
+          if (q > 0) { add(i, -q); ps.paid[i] = (ps.paid[i] || 0) + q; got += q; } else (st.miss = st.miss || {})[i] = "stock";
+        }
         if ((ps.paid[i] || 0) < step.cost[i] - 1e-6) done = false;
       }
       st.avg += (1 - Math.exp(-dt / 5)) * (got / dt - st.avg);
       if (done) {
         ps.step++; ps.paid = {};
-        E.emit("projstep", { pid: e.p, step: ps.step - 1 });
+        E.emit("projstep", { pid, step: ps.step - 1 });
         E.emit("struct");
         if (ps.step >= P.steps.length) endGame(P.end);
         st.s = "ok";
         return;
       }
-      st.s = got > 0 ? "ok" : st.miss && Object.keys(st.miss).length === Object.keys(step.cost).filter((i) => (ps.paid[i] || 0) < step.cost[i]).length ? "nolink" : "starved";
+      st.s = got > 0 ? "ok" : "starved";
     }
-    E.siteOf = (pid) => {
-      for (const k in S.fab.c) if (S.fab.c[k].k === "site" && S.fab.c[k].p === pid) { const i = k.indexOf(","); return { x: +k.slice(0, i), y: +k.slice(i + 1), e: S.fab.c[k] }; }
-      return null;
-    };
-    /* les cases d’où un tapis plein entre dans la Réserve */
-    E.fabSat = () => satEnts;
-    /* Débits des machines (par seconde, moyenne glissante). */
+    function runDom(dt) {
+      const c = E.cache();
+      for (const k in S.dom.ext) runExt(k, S.dom.ext[k], dt, c);
+      for (const e of machOrder()) runMachine(e, dt, c);
+      for (const p in S.dom.site) if (S.dom.site[p].on) runSite(p, dt);
+    }
+
+    /* --- ce qui entre et sort, par seconde */
     /* fabrications par seconde : sa cadence quand elle tourne bien (la moyenne, faite de
      * coups espacés, oscille), sinon ce qu’elle a vraiment fait ces derniers temps */
     function machRate(e, st) {
       const it = item(e.r), M = item(e.m);
       if (st.s !== "ok" || !it || !it.r || !M) return st.avg;
-      return Math.min((e.n * M.spd / 60) * E.cache().aspd * memV("mach"), easy() ? Infinity : E.beltCap() / it.r[2]);
+      return (e.n * M.spd / 60) * E.cache().aspd * memV("mach");
     }
     E.flows = function () {
       const prod = {}, cons = {};
-      for (const k in S.fab.c) {
-        const e = S.fab.c[k];
-        const st = e.k === "mach" && machStat[e.id];
+      S.dom.mach.forEach((e) => {
+        const st = machStat[e.id];
         const it = st && st.avg > 1e-6 && item(e.r);
-        if (!it || !it.r) continue;
+        if (!it || !it.r) return;
         const r = machRate(e, st);
         prod[e.r] = (prod[e.r] || 0) + r * it.r[2];
         for (const i in it.r[1]) cons[i] = (cons[i] || 0) + r * it.r[1][i];
-      }
+      });
       return { prod, cons };
     };
-
-    /* Tout ce que l’usine fait entrer et sortir, par matière (par seconde, en moyenne) :
+    /* Tout ce que le Domaine fait entrer et sortir, par matière (par seconde, en moyenne) :
      * la récolte des extracteurs et ce que font les machines, moins ce qu’elles consomment. */
     E.production = function () {
       const f = E.flows(), inn = Object.assign({}, f.prod);
-      for (const k in S.fab.c) {
-        const e = S.fab.c[k], st = e.k === "ext" && machStat[e.id];
-        if (st && st.s !== "full" && st.s !== "off" && st.avg > 1e-6) inn[e.res] = (inn[e.res] || 0) + st.avg;
+      for (const k in S.dom.ext) {
+        const e = S.dom.ext[k], st = machStat[k];
+        if (st && st.s === "ok" && st.avg > 1e-6) inn[e.res] = (inn[e.res] || 0) + st.avg;
       }
       const ids = Object.keys(inn).concat(Object.keys(f.cons).filter((k) => !(k in inn)));
       return ids.map((id) => ({ id, in: inn[id] || 0, out: f.cons[id] || 0, net: (inn[id] || 0) - (f.cons[id] || 0) }))
         .sort((a, b) => b.in - a.in || b.out - a.out);
-    };
-
-    /* --- construction */
-    const portDir = (x, y) => (x === RES + 1 ? 0 : x === -RES - 1 ? 2 : y === RES + 1 ? 1 : 3);
-    const intoRes = (x, y, d) => isRes(x + DX[d], y + DY[d]);
-    function placeWhy(k, x, y, o) {
-      if (!inGrid(x, y)) return "out";
-      if (isRes(x, y)) return "res";
-      if (cellAt(x, y)) return "taken";
-      if (k === "port" && !touchesRes(x, y)) return "port";
-      if (k === "site" && (!D.PROJECTS[o.p] || !projVisible(o.p))) return "kind";
-      if (k === "site" && E.siteOf(o.p)) return "siteone";
-      if (k === "mach") {
-        const ms = E.machines();
-        if (!ms[o.m]) return "kind";
-        if (ms[o.m].own - ms[o.m].used < 1) return "nomach";
-      }
-      return null;
-    }
-    E.fabWhy = (k, x, y, o) => placeWhy(k, x, y, o || {});
-    E.fabPlace = function (k, x, y, o) {
-      o = o || {};
-      const why = placeWhy(k, x, y, o);
-      if (why) return { ok: false, why };
-      let e;
-      if (k === "belt") e = { k, d: (o.d | 0) % 4 };
-      else if (k === "port") e = { k, d: o.d !== undefined && !intoRes(x, y, o.d) ? o.d : portDir(x, y), f: E.automatable(o.f) || (item(o.f) && S.seen[o.f]) ? o.f : null };
-      else if (k === "split" || k === "cross") e = { k };
-      else if (k === "mach") e = { k, id: "M" + ++S.fab.seq, m: o.m, r: E.automatable(o.r) ? o.r : null, d: (o.d | 0) % 4, n: 1, on: true, cap: 0 };
-      else if (k === "site") e = { k, id: "S:" + o.p, p: o.p };
-      else return { ok: false, why: "kind" };
-      S.fab.c[ck(x, y)] = e;
-      fabChanged();
-      return { ok: true, e };
-    };
-    /* Pose ou réoriente des tapis le long d’un tracé [{x, y, d}]. */
-    E.fabDraw = function (path) {
-      let n = 0;
-      for (const p of path) {
-        if (!inGrid(p.x, p.y) || isRes(p.x, p.y)) continue;
-        const e = cellAt(p.x, p.y);
-        if (!e) { S.fab.c[ck(p.x, p.y)] = { k: "belt", d: p.d }; n++; }
-        else if (e.k === "belt" && e.d !== p.d) { e.d = p.d; n++; }
-      }
-      if (n) fabChanged();
-      return n;
-    };
-    function refund(id) {
-      const B = S.fab.ms[id];
-      if (B) {
-        for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]);
-        const e = machById(id);
-        if (e && B.o > 0 && item(outOf(e))) add(outOf(e), B.o);
-      }
-      delete S.fab.ms[id];
-      delete machStat[id];
-    }
-    E.fabRotate = function (x, y) {
-      const e = cellAt(x, y);
-      if (!e || e.d === undefined) return null;
-      e.d = (e.d + 1) % 4;
-      if (e.k === "port" && intoRes(x, y, e.d)) e.d = (e.d + 1) % 4;
-      fabChanged();
-      return e;
-    };
-    E.fabRemove = function (x, y) {
-      const e = cellAt(x, y);
-      if (!e) return null;
-      if (e.k === "mach" || e.k === "ext") refund(e.id);
-      if (e.k === "site") { const B = S.fab.ms[e.id]; if (B) for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]); delete S.fab.ms[e.id]; }
-      delete S.fab.c[ck(x, y)];
-      fabChanged();
-      return e;
-    };
-    /* Réglages d’une machine : recette, nombre, type, marche, stock visé. */
-    E.fabSet = function (id, patch) {
-      const e = machById(id);
-      if (!e) return null;
-      if (patch.r !== undefined && patch.r !== e.r && (patch.r === null || E.automatable(patch.r))) {
-        refund(id);
-        e.r = patch.r;
-      }
-      if (patch.m && patch.m !== e.m && item(patch.m) && item(patch.m).t === "mach") {
-        const ms = E.machines();
-        const free = ms[patch.m].own - ms[patch.m].used;
-        if (free < 1) return e;
-        e.m = patch.m;
-        e.n = Math.min(e.n, free);
-      }
-      if (patch.n !== undefined) {
-        const ms = E.machines();
-        const max = ms[e.m].own - (ms[e.m].used - e.n);
-        e.n = Math.max(1, Math.min(Math.floor(patch.n), max));
-      }
-      if (patch.on !== undefined) e.on = !!patch.on;
-      if (patch.cap !== undefined) e.cap = Math.max(0, Math.floor(patch.cap) || 0);
-      if (patch.d !== undefined) e.d = patch.d % 4;
-      fabChanged();
-      return e;
-    };
-    /* Annuler : l’usine revient à une copie antérieure. Les machines qui
-     * disparaissent ou changent de recette rendent leur contenu au stock. */
-    E.fabSnapshot = () => JSON.stringify(S.fab.c);
-    E.fabRestore = function (snap) {
-      let c;
-      try { c = JSON.parse(snap); } catch (e) { return false; }
-      if (!c || typeof c !== "object") return false;
-      const was = {};
-      for (const k in c) if (c[k].id) was[c[k].id] = outOf(c[k]);
-      for (const k in S.fab.c) {
-        const e = S.fab.c[k];
-        if (e.id && (!(e.id in was) || was[e.id] !== outOf(e))) refund(e.id);
-      }
-      S.fab.c = c;
-      const ms = E.machines(), us = E.extUnits();
-      for (const k in c) {
-        const e = c[k];
-        if (e.k === "mach" && ms[e.m] && ms[e.m].used > ms[e.m].own) { ms[e.m].used -= e.n; delete c[k]; }
-        if (e.k === "ext") for (const t in e.u) if (us[t] && us[t].used > us[t].own) { const x = Math.min(e.u[t], us[t].used - us[t].own); e.u[t] -= x; us[t].used -= x; if (!e.u[t]) delete e.u[t]; }
-      }
-      fabChanged();
-      return true;
-    };
-    /* --- extracteurs sur les gisements */
-    E.fabExtWhy = function (x, y, t) {
-      const dep = depAt(x, y);
-      if (!dep) return "nodep";
-      if (!extRate(t, dep.res)) return "wrongext";
-      const e = cellAt(x, y);
-      if (e && e.k !== "ext") return "taken";
-      const u = E.extUnits()[t];
-      if (!u || u.own - u.used < 1) return "noext";
-      return null;
-    };
-    /* pose n extracteurs du type t sur le gisement (x, y) ; crée l’exploitation au besoin */
-    E.fabPlaceExt = function (x, y, t, n) {
-      const why = E.fabExtWhy(x, y, t);
-      if (why) return { ok: false, why };
-      const dep = depAt(x, y), u = E.extUnits()[t];
-      let e = cellAt(x, y), fresh = false;
-      if (!e) { e = { k: "ext", id: "X" + ++S.fab.seq, res: dep.res, u: {}, d: 0, on: true }; S.fab.c[ck(x, y)] = e; fresh = true; }
-      e.u[t] = (e.u[t] || 0) + Math.max(1, Math.min(u.own - u.used, Math.floor(n || 1)));
-      fabChanged();
-      return { ok: true, e, fresh };
-    };
-    /* nombre d’extracteurs d’un type dans une exploitation */
-    E.fabSetExt = function (id, t, n) {
-      const e = machById(id);
-      if (!e || e.k !== "ext" || !extRate(t, e.res)) return null;
-      const u = E.extUnits()[t], cur = e.u[t] || 0;
-      const v = Math.max(0, Math.min(Math.floor(n), u ? u.own - u.used + cur : cur));
-      if (v) e.u[t] = v; else delete e.u[t];
-      fabChanged();
-      return e;
-    };
-    /* Trace un tapis depuis ce qui est posé en (x, y) jusqu’à la Réserve, ou jusqu’à
-     * un tapis qui y mène, et tourne la sortie vers lui. Évite les gisements. */
-    E.fabLink = function (x, y) {
-      const src = cellAt(x, y);
-      if (!src || src.d === undefined || src.k === "belt") return { ok: false, why: "kind" };
-      if (src.id) { const P = graph().prods[src.id]; if (P && P.t.res) return { ok: true, n: 0 }; }
-      // combien de producteurs entrent déjà dans la Réserve par chaque case
-      const g = graph(), users = {};
-      for (const id in g.prods) g.prods[id].t.ents.forEach((en) => (users[en.k] = (users[en.k] || 0) + 1));
-      const memo = {};
-      const entryOf = (cx, cy, din) => {
-        const k = cx + "," + cy + "," + din;
-        if (!(k in memo)) { const t = trace(cx - DX[din], cy - DY[din], din, src.id || null); memo[k] = t.ents.length ? t.ents[0].k : null; }
-        return memo[k];
-      };
-      /* entrer dans la Réserve ne coûte rien ; rejoindre un tapis qui y mène coûte
-       * d’autant plus qu’il est chargé (un tapis ne porte qu’un certain débit) ; -1 : impossible */
-      const joinCost = (cx, cy, d) => {
-        if (isRes(cx, cy)) return 0;
-        const e = cellAt(cx, cy);
-        if (!e || e.k !== "belt" || e.d === (d + 2) % 4) return -1;
-        const k = entryOf(cx, cy, d);
-        return k === null ? -1 : 2 + (easy() ? 0 : 6 * (users[k] || 0)); // en usine simple, on rejoint volontiers un tapis existant
-      };
-      // plus court chemin sur les cases libres (Dijkstra, petit tas binaire)
-      const R = fabR(), dist = {}, prev = {}, heap = [];
-      const pushH = (n) => {
-        heap.push(n);
-        for (let i = heap.length - 1; i > 0;) { const j = (i - 1) >> 1; if (heap[j].c <= heap[i].c) break; [heap[i], heap[j]] = [heap[j], heap[i]]; i = j; }
-      };
-      const popH = () => {
-        const top = heap[0], last = heap.pop();
-        if (heap.length) {
-          heap[0] = last;
-          for (let i = 0; ;) {
-            const l = 2 * i + 1, r = l + 1;
-            let m = i;
-            if (l < heap.length && heap[l].c < heap[m].c) m = l;
-            if (r < heap.length && heap[r].c < heap[m].c) m = r;
-            if (m === i) break;
-            [heap[i], heap[m]] = [heap[m], heap[i]]; i = m;
-          }
-        }
-        return top;
-      };
-      const free = (cx, cy) => Math.abs(cx) <= R && Math.abs(cy) <= R && !isRes(cx, cy) && !cellAt(cx, cy);
-      // les gisements restent libres, et le tour de la Réserve aussi (place des sorties)
-      const cost = (cx, cy) => (DEPOSITS[ck(cx, cy)] ? 8 : touchesRes(cx, cy) ? 4 : 1);
-      for (let d = 0; d < 4; d++) {
-        const nx = x + DX[d], ny = y + DY[d], jc = joinCost(nx, ny, d);
-        if (jc >= 0) pushH({ c: jc, end: { d0: d, direct: true } });
-        if (!free(nx, ny)) continue;
-        const k = ck(nx, ny), c0 = cost(nx, ny);
-        if (dist[k] === undefined || c0 < dist[k]) { dist[k] = c0; prev[k] = { d0: d }; pushH({ x: nx, y: ny, c: c0 }); }
-      }
-      let end = null;
-      while (heap.length) {
-        const u = popH();
-        if (u.end) { end = u.end; break; }
-        const uk = ck(u.x, u.y);
-        if (u.c > dist[uk]) continue;
-        for (let d = 0; d < 4; d++) {
-          const vx = u.x + DX[d], vy = u.y + DY[d], jc = joinCost(vx, vy, d);
-          if (jc >= 0) pushH({ c: u.c + jc, end: { x: u.x, y: u.y, d } });
-          if (!free(vx, vy)) continue;
-          const vk = ck(vx, vy), c = u.c + cost(vx, vy);
-          if (dist[vk] === undefined || c < dist[vk]) { dist[vk] = c; prev[vk] = { x: u.x, y: u.y, d }; pushH({ x: vx, y: vy, c }); }
-        }
-      }
-      if (!end) return { ok: false, why: "nopath" };
-      if (end.direct) { src.d = end.d0; fabChanged(); return { ok: true, n: 0 }; }
-      const path = [{ x: end.x, y: end.y, d: end.d }];
-      let k = ck(end.x, end.y);
-      while (prev[k] && prev[k].x !== undefined) { const p = prev[k]; path.unshift({ x: p.x, y: p.y, d: p.d }); k = ck(p.x, p.y); }
-      src.d = prev[k].d0;
-      E.fabDraw(path);
-      fabChanged();
-      return { ok: true, n: path.length };
-    };
-    /* Pose un extracteur là où il manque le plus (et relie sa case si elle est
-     * nouvelle). Sert au bot de simulation et à la mise à jour des anciennes parties. */
-    E.fabAutoExt = function (t, noLink) {
-      const it = item(t);
-      if (!it || it.t !== "ext") return null;
-      const spots = Object.keys(it.p).map((r) => {
-        const k = DEP_AT[it.z] && DEP_AT[it.z][r];
-        if (!k) return null;
-        const i = k.indexOf(","), x = +k.slice(0, i), y = +k.slice(i + 1);
-        if (E.fabExtWhy(x, y, t)) return null;
-        const e = cellAt(x, y);
-        return { x, y, r, have: e ? e.u[t] || 0 : 0, p: it.p[r] };
-      }).filter(Boolean);
-      if (!spots.length) return null;
-      // viser ce que donneraient tous les extracteurs s’ils travaillaient partout,
-      // en couvrant d’abord les matières qui ne sont pas encore extraites
-      const target = {}, cur = {};
-      EXTS.forEach((u) => { const n = Math.floor(count(u)); for (const r in item(u).p) target[r] = (target[r] || 0) + n * item(u).p[r]; });
-      for (const k in S.fab.c) { const e = S.fab.c[k]; if (e.k === "ext") for (const u in e.u) cur[e.res] = (cur[e.res] || 0) + e.u[u] * extRate(u, e.res); }
-      spots.forEach((sp) => {
-        const d = (target[sp.r] || 0) - (cur[sp.r] || 0);
-        sp.score = (cur[sp.r] ? 0 : 1000) + Math.abs(d) - Math.abs(d - extRate(t, sp.r));
-      });
-      spots.sort((a, b) => b.score - a.score);
-      const sp = spots[0], res = E.fabPlaceExt(sp.x, sp.y, t, 1);
-      if (res.ok && res.fresh && !noLink) E.fabLink(sp.x, sp.y);
-      return res;
-    };
-    /* mise à jour d’une partie d’avant la v4 : tous les extracteurs sont posés puis reliés */
-    function placeOldExtractors() {
-      let placed = 0;
-      const power = (t) => Object.values(item(t).p).reduce((a, b) => a + b, 0);
-      EXTS.slice().sort((a, b) => power(b) - power(a)).forEach((t) => { const n = Math.floor(count(t)); for (let i = 0; i < n; i++) if (E.fabAutoExt(t, true)) placed++; });
-      const list = Object.keys(S.fab.c).filter((k) => S.fab.c[k].k === "ext").map((k) => k.split(",").map(Number))
-        .sort((a, b) => Math.abs(a[0]) + Math.abs(a[1]) - Math.abs(b[0]) - Math.abs(b[1]));
-      let linked = 0;
-      list.forEach(([x, y]) => { if (E.fabLink(x, y).ok) linked++; });
-      S.flags.fab4 = { placed, sites: list.length, linked };
-    }
-    E.fabSetPort = function (x, y, f) {
-      const e = cellAt(x, y);
-      if (!e || e.k !== "port") return null;
-      e.f = f && item(f) ? f : null;
-      fabChanged();
-      return e;
     };
 
     /* ------------------------------------------------------ grands œuvres */
@@ -2000,7 +1703,6 @@
       const n = freshState(now());
       n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets; n.studied = old.studied || {};
       n.seen = old.seen; n.meta = old.meta; n.settings = old.settings; n.pins = old.pins || {};
-      n.fab.r = old.fab ? old.fab.r : FAB_R0;
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
@@ -2023,7 +1725,7 @@
         S.pass[z] = { paid: {}, done: true, free: true };
         S.zones[z] = true;
       });
-      forgetFab();
+      forgetDom();
       recalc();
       E.emit("cycle", n.cycle);
       E.emit("struct");
@@ -2033,7 +1735,7 @@
     function step(dt, offline) {
       const c = E.cache();
       for (const r in c.rates) add(r, c.rates[r] * dt);
-      runFab(dt);
+      runDom(dt);
       handStep(dt, offline);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
@@ -2070,9 +1772,7 @@
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
       let left = dt;
-      fabQuiet = true;
       while (left > 0) { const d = Math.min(chunk, left); step(d, true); left -= d; }
-      fabQuiet = false;
       let exp = null;
       if (S.exp.active && now() >= S.exp.active.t0 + S.exp.active.dur) { exp = S.exp.active; finishExp(true); }
       const gains = {};
@@ -2088,49 +1788,64 @@
     E.serialize = () => JSON.stringify(S);
     /* Lit une sauvegarde (chaîne JSON ou objet), la migre et la valide.
      * Ne modifie l’état courant que si tout s’est bien passé. */
-    /* Usine d’une sauvegarde : ce qui est illisible est mis de côté, pas jeté. */
-    function checkFab(o) {
-      const f = o.fab && typeof o.fab === "object" ? o.fab : freshFab();
-      if (typeof f.c !== "object" || !f.c) f.c = {};
-      if (typeof f.ms !== "object" || !f.ms) f.ms = {};
-      f.r = Math.max(FAB_R0, Math.min(40, Math.floor(f.r) || FAB_R0));
-      f.seq = Math.floor(f.seq) || 0;
-      const sitesSeen = {};
-      for (const k in f.c) {
-        const e = f.c[k], m = /^(-?\d+),(-?\d+)$/.exec(k);
-        let ok = m && e && FAB_KINDS[e.k] && !isRes(+m[1], +m[2]);
-        if (ok && e.k === "mach") {
-          ok = !!(D.ITEMS[e.m] && D.ITEMS[e.m].t === "mach" && typeof e.id === "string");
-          if (ok && e.r && !D.ITEMS[e.r]) e.r = null;
-          if (ok) { e.n = Math.max(1, Math.floor(e.n) || 1); e.d = (e.d | 0) & 3; e.cap = Math.max(0, Math.floor(e.cap) || 0); e.on = e.on !== false; }
-          const n = ok && +e.id.slice(1);
-          if (n > f.seq) f.seq = n;
+    /* Domaine d’une sauvegarde : ce qui est illisible est mis de côté, pas jeté. */
+    function checkDom(o) {
+      const d = o.dom && typeof o.dom === "object" ? o.dom : freshDom();
+      const aside = (k, v) => { o.orphans = o.orphans || {}; (o.orphans.dom = o.orphans.dom || {})[k] = v; };
+      if (!d.ext || typeof d.ext !== "object") d.ext = {};
+      if (!Array.isArray(d.mach)) d.mach = [];
+      if (!d.site || typeof d.site !== "object") d.site = {};
+      if (!d.ms || typeof d.ms !== "object") d.ms = {};
+      d.seq = Math.max(0, Math.floor(d.seq) || 0);
+      for (const k in d.ext) {
+        const e = d.ext[k], i = k.indexOf(":"), z = k.slice(0, i), res = k.slice(i + 1);
+        if (!e || typeof e !== "object" || !e.u || typeof e.u !== "object" || !(ZONE_DEPS[z] || []).some((x) => x.res === res)) {
+          aside("ext:" + k, e); delete d.ext[k]; continue;
         }
-        if (ok && e.k === "ext") {
-          ok = typeof e.id === "string" && !!D.ITEMS[e.res] && !!e.u && typeof e.u === "object";
-          if (ok) {
-            for (const t in e.u) {
-              const n = Math.max(0, Math.floor(e.u[t]) || 0);
-              if (!D.ITEMS[t] || D.ITEMS[t].t !== "ext" || !extRate(t, e.res) || !n) delete e.u[t]; else e.u[t] = n;
-            }
-            e.d = (e.d | 0) & 3; e.on = e.on !== false;
-            const n = +e.id.slice(1);
-            if (n > f.seq) f.seq = n;
-          }
+        e.z = z; e.res = res; e.on = e.on !== false;
+        for (const t in e.u) {
+          const n = Math.max(0, Math.floor(e.u[t]) || 0);
+          if (!D.ITEMS[t] || D.ITEMS[t].t !== "ext" || !extRate(t, res) || !n) { if (n) aside("ext:" + k + ":" + t, n); delete e.u[t]; } else e.u[t] = n;
         }
-        if (ok && (e.k === "belt" || e.k === "port")) e.d = (e.d | 0) & 3;
-        if (ok && e.k === "site") {
-          ok = !!D.PROJECTS[e.p] && !sitesSeen[e.p];
-          if (ok) { sitesSeen[e.p] = true; e.id = "S:" + e.p; }
-        }
-        if (ok && e.k === "port" && e.f && !D.ITEMS[e.f]) e.f = null;
-        if (!ok) {
-          o.orphans = o.orphans || {};
-          (o.orphans.fab = o.orphans.fab || {})[k] = e;
-          delete f.c[k];
-        } else if (m) f.r = Math.max(f.r, Math.abs(+m[1]), Math.abs(+m[2]));
+        if (!Object.keys(e.u).length) delete d.ext[k];
       }
-      o.fab = f;
+      // jamais plus d’extracteurs posés qu’on n’en possède
+      const own = (t) => Math.floor(Number(o.inv[t]) || 0), used = {};
+      for (const k in d.ext) for (const t in d.ext[k].u) {
+        const v = Math.min(d.ext[k].u[t], Math.max(0, own(t) - (used[t] || 0)));
+        used[t] = (used[t] || 0) + v;
+        if (v) d.ext[k].u[t] = v; else delete d.ext[k].u[t];
+      }
+      for (const k in d.ext) if (!Object.keys(d.ext[k].u).length) delete d.ext[k];
+      const ids = {}, usedM = {};
+      d.mach = d.mach.filter((e) => {
+        const ok = e && typeof e === "object" && typeof e.id === "string" && !ids[e.id] && D.ITEMS[e.m] && D.ITEMS[e.m].t === "mach";
+        if (!ok) { aside("mach:" + (e && e.id), e); return false; }
+        if (e.r && !D.ITEMS[e.r]) e.r = null;
+        e.n = Math.min(Math.max(1, Math.floor(e.n) || 1), own(e.m) - (usedM[e.m] || 0));
+        if (!(e.n >= 1)) { aside("mach:" + e.id, e); return false; }
+        usedM[e.m] = (usedM[e.m] || 0) + e.n;
+        ids[e.id] = true;
+        e.cap = Math.max(0, Math.floor(e.cap) || 0);
+        e.on = e.on !== false;
+        const n = +e.id.slice(1);
+        if (n > d.seq) d.seq = n;
+        return true;
+      });
+      for (const p in d.site) {
+        if (!D.PROJECTS[p]) { aside("site:" + p, d.site[p]); delete d.site[p]; } else d.site[p] = { on: !!d.site[p] && d.site[p].on !== false };
+      }
+      for (const id in d.ms) {
+        const B = d.ms[id];
+        if (!ids[id] || !B || typeof B !== "object") { if (B && typeof B === "object") backToInv(o, B.b); delete d.ms[id]; continue; }
+        B.p = Math.max(0, Number(B.p) || 0);
+        if (!B.b || typeof B.b !== "object") B.b = {};
+        for (const i in B.b) {
+          const v = Number(B.b[i]);
+          if (!D.ITEMS[i]) { backToInv(o, { [i]: v }); delete B.b[i]; } else if (!(v > 0)) delete B.b[i]; else B.b[i] = v;
+        }
+      }
+      o.dom = d;
     }
     /* File des mains d’une sauvegarde : une fabrication illisible est annulée et
      * ses matières rendues au stock (ou mises de côté si l’objet n’existe plus). */
@@ -2155,6 +1870,7 @@
         j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
         j.i = Math.max(0, Math.min(j.s.length, Math.floor(j.i) || 0));
         j.k = Math.max(0, Math.floor(j.k) || 0);
+        if (typeof j.to !== "string") delete j.to;
         keep.push(j);
       });
       o.hand = { q: keep, p: keep.length ? Math.max(0, Number(h.p) || 0) : 0 };
@@ -2177,19 +1893,12 @@
         for (const z in o.zones || {}) if (o.zones[z] && D.PASSAGES[z]) o.pass[z] = { paid: {}, done: true };
       }
       o.settings = Object.assign({ sound: true, vibe: true }, o.settings);
-      // l’usine simple par défaut ; une partie qui a déjà des répartiteurs ou des croisements garde l’usine avancée
-      if (o.settings.usine !== "simple" && o.settings.usine !== "avance") {
-        const cells = Object.values((o.fab && o.fab.c) || {});
-        o.settings.usine = cells.some((e) => e && (e.k === "split" || e.k === "cross")) ? "avance" : "simple";
-        // une usine déjà construite passe en simple : on le dira une fois au joueur
-        if (o.settings.usine === "simple" && cells.some((e) => e && (e.k === "mach" || e.k === "port"))) { o.flags = o.flags || {}; o.flags.usineNote = true; }
-      }
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
       if (!o.tried || typeof o.tried !== "object") o.tried = {};
       checkHand(o);
-      checkFab(o);
+      checkDom(o);
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {
         if (!o[k] || typeof o[k] !== "object") return;
@@ -2208,14 +1917,14 @@
     E.load = function (src) {
       const o = parseSave(src);
       S = o;
-      forgetFab();
+      forgetDom();
       recalc();
       if (S.flags.fab4 === "todo") placeOldExtractors();
       if (!S.flags.ages) checkAges(true); // une partie d’avant les âges accomplis
       E.emit("struct");
       return true;
     };
-    E.reset = function () { S = freshState(now()); forgetFab(); recalc(); E.emit("struct"); };
+    E.reset = function () { S = freshState(now()); forgetDom(); recalc(); E.emit("struct"); };
     E.exportSave = () => {
       const s = E.serialize();
       return typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(s))) : Buffer.from(s, "utf8").toString("base64");
@@ -2232,7 +1941,7 @@
     return E;
   }
 
-  const API = { createEngine, freshState, migrate, SAVE_VERSION, DX, DY, RES };
+  const API = { createEngine, freshState, migrate, SAVE_VERSION };
   root.EclatEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof window !== "undefined" ? window : globalThis);

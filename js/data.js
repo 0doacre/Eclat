@@ -909,15 +909,9 @@
    * rien ; la recette s’inscrit, et on choisit ensuite de la fabriquer, prix affiché. */
   D.DISCOVER_FREE = 6;
 
-  /* Usine avancée : la place dans la Réserve pour chaque matière brute, à chaque âge.
-   * Pleine, ce qui arrive attend sur son tapis et les extracteurs s’arrêtent ; ce que
-   * les machines fabriquent n’a pas de limite (transformer, c’est faire de la place). */
-  D.STORE = [500, 750, 1000, 2000, 3000, 5000, 8000, 12000, 20000, 30000, 50000, 80000, 120000];
-
-  /* Les tapis : ce qu’un tapis porte au plus (objets par seconde), à chaque âge.
-   * Les améliorations qui accélèrent l’usine les accélèrent aussi. La Réserve ne
-   * laisse sortir que out × ce débit, toutes sorties confondues. */
-  D.BELT = { cap: [3, 4, 6, 10, 14, 18, 30, 50, 70, 140, 300, 500, 1500], out: 0.5 };
+  /* Un Grand Œuvre alimenté se sert seul dans la Réserve : au plus ça par seconde et
+   * par matière, à chaque âge (les améliorations qui accélèrent les machines comptent). */
+  D.SITE_RATE = [3, 4, 6, 10, 14, 18, 30, 50, 70, 140, 300, 500, 1500];
 
   /* Les mains : fabriquer à la main prend du temps, une pièce après l’autre.
    * Durée d’une pièce (s) : (base + age × âge de l’objet) × (1 − star × étoiles de maîtrise)
