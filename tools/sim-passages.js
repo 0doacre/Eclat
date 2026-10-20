@@ -7,7 +7,7 @@
  *
  *   node tools/sim-passages.js [--minutes 120] [--mem recolte=1,extr=2,…] [--avance]
  *                     [--offline H] [--compare] [--reflexion 20] [--carnet N]
- *                     [--taps 4] [--retour 120] [--journal]
+ *                     [--taps 4] [--retour 120] [--journal] [--cout riviere=2,collines=3] [--cycles N]
  *
  *   --mem       niveaux de la Mémoire (ids de D.MEMOIRE) ; la relève est simulée (newCycle)
  *   --avance    usine avancée (Réserve limitée, tapis qui saturent) au lieu de l’usine simple
@@ -18,6 +18,9 @@
  *               des âges ≤ N sont déjà connues (−1 : aucune ; avec une mémoire : 4, car une
  *               relève a déjà eu lieu) ; --taps : appuis par seconde (4) ; --retour : voir ci-dessous
  *   --journal   affiche l’heure de chaque objectif atteint (pour voir où le joueur coince)
+ *   --cout z=k  multiplie par k le prix du passage z (en mémoire seulement : data.js reste intact)
+ *   --cycles N  enchaîne N cycles de --minutes chacun : relève (newCycle) puis achats de Mémoire
+ *               automatiques dans l’ordre ACHATS, avec les Traces gagnées ; le Carnet reste acquis
  *
  * Le joueur simulé (simple, réaliste, pas optimal) :
  *  - il connaît toutes les recettes, mais perd --reflexion secondes (sans récolter) à chaque
@@ -44,9 +47,13 @@ const PROFILS = [
   { nom: "r3 e4 m3 p2 rac1", mem: { recolte: 3, extr: 4, mains: 3, paquetage: 2, raccourci: 1 } }
 ];
 
+/* Ordre des achats de Mémoire avec --cycles (strict : si les Traces ne suffisent pas, on économise) */
+const ACHATS = ["recolte", "mains", "recolte", "paquetage", "extr", "mains", "raccourci", "recolte", "extr", "paquetage", "raccourci",
+  "mains", "recolte", "extr", "extr", "chemins", "recolte", "mains", "extr", "chemins", "chemins", "mains", "recolte", "extr"];
+
 /* ------------------------------------------------------------------ options */
 function lire(argv) {
-  const o = { minutes: 120, mem: {}, avance: false, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false };
+  const o = { minutes: 120, mem: {}, avance: false, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1 };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], val = () => argv[++i];
     if (a === "--minutes") o.minutes = +val();
@@ -64,6 +71,12 @@ function lire(argv) {
     else if (a === "--taps") o.taps = +val();
     else if (a === "--retour") o.retour = +val();
     else if (a === "--journal") o.journal = true;
+    else if (a === "--cycles") o.cycles = Math.max(1, Math.floor(+val()));
+    else if (a === "--cout") val().split(",").filter(Boolean).forEach((p) => { // --cout riviere=2,collines=3
+      const [z, v] = p.split("=");
+      if (!D.PASSAGES[z] || !(+v > 0)) throw new Error("--cout : « " + p + " » inconnu (passages : " + Object.keys(D.PASSAGES).join(" ") + ")");
+      o.cout[z] = +v;
+    });
     else throw new Error("option inconnue : " + a + " (voir l’en-tête de tools/sim-passages.js)");
   }
   return o;
@@ -80,11 +93,16 @@ function play(o) {
   const carnet = o.carnet === null ? (avecMem ? 4 : -1) : o.carnet;
   const decouvert = new Set(Object.keys(I).filter((id) => I[id].r && I[id].a <= carnet)); // recettes déjà faites
 
-  const rows = [];
-  let traces = 0, absent = 0, partir = false, pense = 0, penseTotal = 0;
-  const minutes = () => (T - T0 - absent) / 60000;
-  for (const z in S().pass) if (S().pass[z].done) rows.push({ z, t: 0, age: S().age, traces, offert: true });
-  E.on("passdone", ({ z, tr }) => { traces += tr; rows.push({ z, t: minutes(), age: S().age, traces }); if (o.offline > 0) partir = true; });
+  let rows = [], traces = 0, prete = {}, debut = 0, pense0 = 0; // le cycle en cours (prete : minute où l’objet-clé rend le passage possible)
+  let absent = 0, partir = false, pense = 0, penseTotal = 0;
+  const minutes = () => (T - T0 - absent) / 60000, cyc = () => minutes() - debut;
+  const ouverts = () => { for (const z in S().pass) if (S().pass[z].done) rows.push({ z, t: 0, age: S().age, traces: 0, offert: true }); };
+  ouverts();
+  E.on("passage", (z) => { if (prete[z] === undefined) prete[z] = cyc(); });
+  E.on("passdone", ({ z, tr }) => {
+    traces += tr; rows.push({ z, t: cyc(), age: S().age, traces, prete: prete[z], pense: penseTotal / 60 - pense0 });
+    if (o.offline > 0) partir = true;
+  });
 
   /* objectifs du jeu, avec leur indice (E.objective ne sait pas regarder plus loin) */
   const objs = D.OBJECTIVES.map((x, i) => (Array.isArray(x) ? { i, k: "craft", id: x[0] } : Object.assign({ i }, x)));
@@ -105,7 +123,9 @@ function play(o) {
   }
 
   /* ---- matières : où récolter, combien ça coûte en secondes de main ---- */
-  let need = {}, planned = {}, invest = null, rr = 0, tapAcc = 0;
+  let need = {}, urgent = {}, planned = {}, invest = null, rr = 0, tapAcc = 0, attente = 0, gels = 0;
+  let evite = new Set(); // investissements abandonnés (trop longs à réunir) pour ce cycle
+  const plat = new Set(); // objets dont la fabrication en chaîne s’est figée
   function bestZone(r) {
     let best = null, by = 0;
     for (const z of E.openZones()) if (z.res.includes(r) && E.tapYield(r, z.id) > by) { by = E.tapYield(r, z.id); best = z.id; }
@@ -124,9 +144,9 @@ function play(o) {
   const secs = (lv) => Object.keys(lv).reduce((a, r) => a + (handRate(r) ? lv[r] / handRate(r) : Infinity), 0);
 
   /* ---- ordres : ce qu’il faut avoir (id, qty) → récolte à faire, ou mise en file ---- */
-  function queue(id, k) {
-    const frais = E.plan(id, k).steps.map((s) => s[0]).filter((x) => !decouvert.has(x));
-    if (!E.queue(id, k, true).ok) return;
+  function queue(id, k, chaine) {
+    const frais = (chaine === false ? [id] : E.plan(id, k).steps.map((s) => s[0])).filter((x) => !decouvert.has(x));
+    if (!E.queue(id, k, chaine !== false).ok) return;
     frais.forEach((x) => decouvert.add(x));
     pense += frais.length * o.reflexion; penseTotal += frais.length * o.reflexion;
   }
@@ -138,7 +158,15 @@ function play(o) {
     const s = E.nextStep(id); // station, objet-clé d’une terre… à faire d’abord
     if (s.why === "pass") return;
     if (s.id !== id) { if ((depth || 0) < 8) order(s.id, 1, (depth || 0) + 1); return; }
-    const times = E.isUnique(it) ? 1 : d, p = E.plan(id, times);
+    const times = E.isUnique(it) ? 1 : d;
+    if (plat.has(id)) { // chaîne figée : les ingrédients d’abord, puis la pièce quand ils sont en stock
+      const c = E.totalCost(id, times);
+      if ((depth || 0) < 10) for (const i in c) order(i, c[i], (depth || 0) + 1);
+      const k = Math.min(times, E.maxCraftable(id, times));
+      if (k >= Math.min(times, 6)) queue(id, k, false);
+      return;
+    }
+    const p = E.plan(id, times);
     for (const m in p.missing) if (gathered(m)) need[m] = (need[m] || 0) + p.missing[m];
     if (p.ok) return queue(id, times);
     const k = E.isUnique(it) ? 0 : E.maxPlan(id, times); // en plusieurs fois s’il y en a beaucoup
@@ -146,7 +174,8 @@ function play(o) {
   }
   function souhaits(x) {
     if (!x) return [];
-    if (x.k === "craft") return [[x.id, 1]];
+    // l’objectif demande de FABRIQUER l’objet (S.made) : le stock du paquetage ne compte pas
+    if (x.k === "craft") return [[x.id, S().made[x.id] > 0 ? 1 : E.count(x.id) + 1]];
     const n = x.k === "exp" && E.nextExp(x.z);
     return n && n.x.id === x.x ? Object.entries(n.x.cost || {}) : [];
   }
@@ -181,11 +210,11 @@ function play(o) {
       const it = I[id];
       if (!it.r || it.sec || it.path || it.a > S().age || (it.e && it.e.zone) || !["ext", "tool", "upg"].includes(it.t)) continue;
       if (it.t !== "ext" && (!it.e || !(it.e.tap || it.e.auto))) continue;
-      if (E.isUnique(it) && S().made[id] > 0) continue;
+      if (E.isUnique(it) && S().made[id] > 0 || evite.has(id)) continue;
       const g = gain(id, total);
       if (!(g.g > 0) || E.nextStep(id).id !== id) continue;
       const pb = secs(leaves(id, 1)) / g.g; // temps de remboursement
-      if (pb <= o.retour && total >= pb && (!best || pb < best.pb)) best = { id, pb, base: E.count(id) };
+      if (pb <= o.retour && total >= pb && (!best || pb < best.pb)) best = { id, pb, base: E.count(id), t0: minutes() };
       if (best && best.id === id) planned[id] = g.res;
     }
     return best;
@@ -206,13 +235,26 @@ function play(o) {
   /* ---- la tête du joueur : une fois par demi-seconde ---- */
   function brain() {
     need = {};
+    /* défaut du moteur : une fabrication en chaîne peut se figer (étape placée avant sa sous-pièce).
+     * Comme un joueur, il l’annule au bout de 5 s et la refait pièce par pièce. */
+    const j0 = S().hand.q[0];
+    attente = j0 && j0.w ? attente + 0.5 : 0;
+    if (attente >= 5) { plat.add(j0.id); E.cancelJob(0); attente = 0; gels++; }
     const [a, b] = etapes();
-    if (invest && E.count(invest.id) > invest.base) invest = null;
+    if (invest && (E.count(invest.id) > invest.base || minutes() - invest.t0 > 4)) { // fait, ou abandonné au bout de 4 min
+      if (E.count(invest.id) <= invest.base) evite.add(invest.id);
+      invest = null;
+    }
     const W = [];
     E.passPending().forEach((z) => { const p = E.passInfo(z); for (const i in p.left) W.push([i, p.left[i]]); });
     souhaits(a).forEach((w) => W.push(w));
-    if (invest) W.push([invest.id, invest.base + 1]);
     W.forEach(([id, q]) => order(id, q));
+    const gros = need;
+    need = {};
+    if (invest) order(invest.id, invest.base + 1); // petit achat : ses besoins passent avant le gros besoin
+    urgent = need;
+    need = gros;
+    for (const r in urgent) need[r] = (need[r] || 0) + urgent[r];
     if (!Object.keys(need).length && !E.passPending().length) souhaits(b).forEach(([id, q]) => order(id, q)); // il prépare la suite
     if (a && a.k === "exp" && !S().exp.active) E.startExp(a.z);
     E.passPending().forEach((z) => E.passPour(z)); // il verse dès qu’il peut
@@ -221,41 +263,66 @@ function play(o) {
   }
   function tapOnce() {
     let best = null, sc = -Infinity;
-    for (const r in need) {
-      const y = bestZone(r) && E.tapYield(r, bestZone(r));
-      if (need[r] <= 0 || !y || E.storeFull(r)) continue;
-      const s = (need[r] - E.rate(r) * 15) / y; // ce que les extracteurs apporteront n’est pas à récolter
-      if (s > sc) { sc = s; best = r; }
-    }
+    const pick = (src) => {
+      for (const r in src) {
+        const y = bestZone(r) && E.tapYield(r, bestZone(r));
+        if (src[r] <= 0 || !y || E.storeFull(r)) continue;
+        const s = (src[r] - E.rate(r) * 15) / y; // ce que les extracteurs apporteront n’est pas à récolter
+        if (s > sc) { sc = s; best = r; }
+      }
+    };
+    pick(urgent);
+    if (!best) pick(need);
     if (!best) { best = ["bois", "fibre", "caillou"][rr++ % 3]; if (E.storeFull(best)) return; } // à tour de rôle
     const g = E.tap(best, bestZone(best));
     if (need[best] > 0) need[best] -= g;
+    if (urgent[best] > 0) urgent[best] -= g;
+  }
+
+  /* ---- le mur : le prochain passage, versé en partie ou pas encore possible ---- */
+  function mur() {
+    const ob = E.objective(), pend = E.passPending()[0], z = pend || (objs.find((x) => x.k === "pass" && !fait(x)) || {}).z;
+    return z && { z, info: E.passInfo(z), objectif: ob && (ob.n || ob.id) };
+  }
+  /* la relève : Traces gagnées, puis achats de Mémoire dans l’ordre, tant que les Traces suffisent */
+  function releve() {
+    E.newCycle();
+    for (const id of ACHATS) if (!E.memBuy(id) && E.memCost(id) !== undefined) break;
+    need = {}; urgent = {}; planned = {}; invest = null; evite = new Set(); rows = []; traces = 0; prete = {}; debut = minutes(); pense0 = penseTotal / 60;
+    ouverts();
   }
 
   /* ---- la boucle : pas de 100 ms, 4 appuis par seconde ---- */
+  const cycles = [];
   let objPrec = -1;
-  for (let step = 0; minutes() < o.minutes; step++) {
-    T += 100;
-    E.update();
-    if (o.journal && step % 10 === 0) { // --journal : l’heure de chaque objectif franchi
-      const ob = E.objective();
-      if (ob && ob.i !== objPrec) { objPrec = ob.i; console.log("  " + mm(minutes()) + " min  objectif " + String(ob.i).padStart(2) + " : " + (ob.id || ob.n)); }
+  for (let c = 1; ; c++) {
+    for (let step = 0; cyc() < o.minutes; step++) {
+      T += 100;
+      E.update();
+      if (o.journal && step % 10 === 0) { // --journal : l’heure de chaque objectif franchi
+        const ob = E.objective();
+        if (ob && ob.i !== objPrec) { objPrec = ob.i; console.log("  " + mm(cyc()) + " min  objectif " + String(ob.i).padStart(2) + " : " + (ob.id || ob.n)); }
+      }
+      if (partir) { partir = false; T += o.offline * 3600e3; absent += o.offline * 3600e3; E.update(); } // absence : E.catchUp
+      if (pense > 0) { pense -= 0.1; continue; } // il réfléchit à l’Atelier : ni décision ni récolte
+      if (step % 5 === 0) brain();
+      tapAcc += o.taps / 10;
+      for (; tapAcc >= 1; tapAcc--) tapOnce();
     }
-    if (partir) { partir = false; T += o.offline * 3600e3; absent += o.offline * 3600e3; E.update(); } // absence : E.catchUp
-    if (pense > 0) { pense -= 0.1; continue; } // il réfléchit à l’Atelier : ni décision ni récolte
-    if (step % 5 === 0) brain();
-    tapAcc += o.taps / 10;
-    for (; tapAcc >= 1; tapAcc--) tapOnce();
+    cycles.push({ rows, traces, mem: Object.assign({}, S().meta.mem), mur: mur() });
+    if (c >= o.cycles || !E.canReleve()) break;
+    if (o.journal) console.log("  --- relève " + c + " : +" + E.releveGain() + " Traces");
+    releve();
   }
 
-  /* ---- bilan ---- */
-  const ob = E.objective(), pend = E.passPending()[0];
-  const nextPass = pend || ((objs.find((x) => x.k === "pass" && !fait(x)) || {}).z);
-  const mur = nextPass && { z: nextPass, info: E.passInfo(nextPass), objectif: ob && (ob.n || ob.id) };
+  /* ---- bilan (fin du dernier cycle) ---- */
   const ext = {};
   E.EXTS.forEach((t) => { if (E.count(t) >= 1) ext[t] = Math.floor(E.count(t)); });
   const stocks = Object.keys(S().inv).filter((i) => I[i] && I[i].t === "res" && S().inv[i] >= 1).sort((a, b) => S().inv[b] - S().inv[a]).slice(0, 8).map((i) => i + " " + Math.floor(S().inv[i]));
-  return { rows, traces, mur, ext, stocks, age: S().age, minutes: minutes(), absent: absent / 60000, penseTotal, taps: S().stats.taps, crafts: S().stats.crafts, rate: E.rate };
+  const rend = ["bois", "fibre", "caillou", "os", "cuir", "argile", "silex", "sable", "malachite", "fer_min"].filter((i) => gathered(i) && bestZone(i))
+    .map((i) => i + " " + Math.round(handRate(i)) + "|" + Math.round(E.rate(i)));
+  const last = cycles[cycles.length - 1];
+  return { cycles, rows: last.rows, traces: last.traces, mur: last.mur, ext, stocks, rend, age: S().age, minutes: cyc(), absent: absent / 60, penseTotal, gels, taps: S().stats.taps, crafts: S().stats.crafts };
 }
 
 /* ------------------------------------------------------------------ affichage */
@@ -270,21 +337,31 @@ function murTxt(r) {
 function afficher(o, r) {
   console.log("Joueur simulé : " + o.taps + " appuis/s · réflexion " + o.reflexion + " s · usine " + (o.avance ? "avancée" : "simple") +
     " · mémoire : " + memTxt(o.mem) + " · " + o.minutes + " min de jeu actif" + (o.offline ? " · absence de " + o.offline + " h après chaque passage" : ""));
-  console.log("\n  Passage                         Minute  Durée  Âge                   Traces");
-  let prev = 0;
+  console.log("\n  Passage                         Minute  Durée dont réfl. Versé en  Âge                   Traces");
+  let prev = 0, prevP = 0;
   r.rows.forEach((x) => {
-    console.log("  " + nomPass(x.z).padEnd(32) + (x.offert ? "offert".padStart(6) : mm(x.t)) + (x.offert ? "      " : mm(x.t - prev).slice(0, 6)) + "  " +
+    console.log("  " + nomPass(x.z).padEnd(32) + (x.offert ? "offert".padStart(6) : mm(x.t)) + (x.offert ? "".padStart(21) : mm(x.t - prev) + mm(x.pense - prevP) + "  " + mm(x.t - x.prete)) + "  " +
       D.AGES[x.age].n.padEnd(22) + String(x.traces).padStart(4) + (x.offert ? "  (raccourci : pas de Traces)" : ""));
-    if (!x.offert) prev = x.t;
+    if (!x.offert) { prev = x.t; prevP = x.pense; }
   });
   if (!r.rows.length) console.log("  (aucun passage franchi)");
   console.log("\n  Mur à " + r.minutes.toFixed(0) + " min : " + murTxt(r));
   console.log("  Stocks : " + r.stocks.join(", "));
-  console.log("  Extracteurs : " + (Object.keys(r.ext).map((t) => t + "×" + r.ext[t]).join(", ") || "aucun") + " · Traces en jeu : " + r.traces);
-  console.log("  Réflexion cumulée : " + (r.penseTotal / 60).toFixed(1) + " min · appuis : " + r.taps + " · fabrications : " + r.crafts + (r.absent ? " · absences : " + r.absent / 60 + " h" : ""));
+  console.log("  Récolte par seconde (main|extracteurs) : " + r.rend.join(", "));
+  console.log("  Extracteurs : " + (Object.keys(r.ext).map((t) => t + "×" + r.ext[t]).join(", ") || "aucun") + " · Traces gagnées par les passages : " + r.traces);
+  console.log("  Réflexion cumulée : " + (r.penseTotal / 60).toFixed(1) + " min · appuis : " + r.taps + " · fabrications : " + r.crafts + (r.absent ? " · absences : " + r.absent.toFixed(0) + " h" : "") +
+    (r.gels ? " · chaînes figées par le moteur, refaites pièce par pièce : " + r.gels : ""));
+}
+function afficherCycles(o, r) {
+  console.log("Joueur simulé : " + o.cycles + " cycles de " + o.minutes + " min de jeu actif · usine " + (o.avance ? "avancée" : "simple") + " · réflexion " + o.reflexion + " s (une fois par recette, le Carnet reste acquis)");
+  r.cycles.forEach((c, i) => {
+    console.log("\n  Cycle " + (i + 1) + " · mémoire : " + memTxt(c.mem) + " · Traces gagnées : " + c.traces);
+    console.log("    " + (c.rows.map((x) => x.z + " " + (x.offert ? "offert" : x.t.toFixed(1))).join(" · ") || "aucun passage franchi"));
+    console.log("    mur : " + murTxt(c));
+  });
 }
 function comparer(o) {
-  const res = PROFILS.map((p) => play(Object.assign({}, o, { mem: p.mem })));
+  const res = PROFILS.map((p) => play(Object.assign({}, o, { mem: p.mem, cycles: 1 })));
   console.log("Comparaison (" + o.minutes + " min de jeu actif · usine " + (o.avance ? "avancée" : "simple") + (o.offline ? " · absence " + o.offline + " h après chaque passage" : "") + " · réflexion " + o.reflexion + " s, carnet connu jusqu’à l’âge 4 avec une mémoire)\n");
   console.log("  " + "Minute du passage".padEnd(30) + PROFILS.map((p) => p.nom.padStart(18)).join(""));
   Object.keys(D.PASSAGES).forEach((z) => {
@@ -300,7 +377,11 @@ function comparer(o) {
   res.forEach((r, i) => console.log("   " + PROFILS[i].nom.padEnd(18) + murTxt(r)));
 }
 
-try {
-  const o = lire(process.argv.slice(2));
-  if (o.compare) comparer(o); else afficher(o, play(o));
-} catch (e) { console.error(e.message); process.exitCode = 1; }
+if (require.main === module) {
+  try {
+    const o = lire(process.argv.slice(2));
+    for (const z in o.cout) for (const i in D.PASSAGES[z].cost) D.PASSAGES[z].cost[i] = Math.max(1, Math.round(D.PASSAGES[z].cost[i] * o.cout[z]));
+    if (o.compare) comparer(o); else if (o.cycles > 1) afficherCycles(o, play(o)); else afficher(o, play(o));
+  } catch (e) { console.error(e.message); process.exitCode = 1; }
+}
+module.exports = { play, lire, PROFILS };
