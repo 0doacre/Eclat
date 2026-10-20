@@ -1,6 +1,10 @@
 # Prompt : phrases d’échec pour les âges de la Pierre et du Cuivre
 
-À donner tel quel à un assistant (Gemini, Sonnet…) ouvert sur ce dépôt.
+À donner tel quel à un assistant (Gemini, Sonnet…) ouvert sur ce dépôt, **avec la consigne de
+livraison de `docs/prompts/README.md` collée à la fin** (sinon le travail reste sur ton ordinateur).
+
+> Fait en version 4.5.1. Pour les âges suivants, reprends ce prompt en changeant la liste des
+> matières et le nom des âges.
 
 ---
 
@@ -38,3 +42,12 @@ deux matières qu’un joueur essaierait naturellement ensemble).
 ## Rendu
 
 Le bloc ajouté à `D.FAIL_ONE`, et la sortie de `node tools/test.js`.
+
+## Livraison
+
+Travaille dans un clone du dépôt GitHub `0doacre/craftgame`, à jour (`git pull` sur `main` avant
+de commencer), jamais dans une copie ou un dossier temporaire. Crée une nouvelle branche au nom de
+la tâche (par exemple `gemini-echecs-ages-2-3`). Quand `node tools/test.js` passe, fais un commit
+qui dit ce que tu as changé, puis pousse la branche sur GitHub : `git push -u origin <branche>`.
+Ne touche pas à `main`, ne fusionne rien : la branche sera relue avant d’être intégrée. Termine en
+donnant le nom de la branche et la sortie de `node tools/test.js`.
