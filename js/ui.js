@@ -823,7 +823,7 @@
   function goalOpen() {
     const st = S();
     if (st.track && I[st.track.id]) return !!U.goalPeek;
-    return st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
+    return st.settings.goalOpen === undefined ? st.age < 3 && st.cycle <= 1 : st.settings.goalOpen;
   }
   /* les jalons : ce qu’il y a à faire à chaque âge, et le premier pas vers le suivant */
   function mileName(ob) {
@@ -851,12 +851,13 @@
     const p = E.passInfo(z), st = S();
     if (!p || !p.ready) return "";
     return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
-      '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div><div class="row wrap small">' +
+      '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
+      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">+' + p.P.tr + " ✦ à ta prochaine relève</span></div>") +
+      '<div class="row wrap small">' +
       Object.keys(p.cost).map((i) => {
         const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i);
         return '<span class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + fmt(got) + " / " + fmt(p.cost[i]) + (ok ? " ✓" : ' <span class="tiny muted">(' + fmt(st.inv[i] || 0) + ")" + (eta ? " · " + eta : "") + "</span>") + "</span>";
-      }).join("") + "</div>" +
-      (p.done ? "" : '<div class="row wrap" style="margin-top:6px"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">+' + p.P.tr + " ✦ à ta prochaine relève</span></div>") + "</div>";
+      }).join("") + "</div></div>";
   }
   /* combien de temps avant d’avoir de quoi payer une matière, à la production actuelle (extracteurs, machines) */
   function passEta(p, i) {
@@ -1255,7 +1256,7 @@
   /* l’Usine se dessine sur un canvas (usine.js) : on la monte une fois, puis on
    * ne rafraîchit que ses panneaux */
   function mountUsine(el) {
-    if (Usine.mounted()) { Usine.refresh(); return; }
+    if (Usine.mounted()) { if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; } Usine.refresh(); return; }
     Usine.mount(el);
     if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; }
     if (U.sitePlace) { const p = U.sitePlace; U.sitePlace = null; setTimeout(() => Usine.placeSite(p), 80); }
@@ -1966,9 +1967,9 @@
     openModal({
       html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
         "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + leftHTML() +
-        '<p class="small muted">Une copie de ta partie est mise de côté avant (☰ → Sauvegardes).</p>' +
+        '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
-      on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; setTab("carte"); setTimeout(intro, 200); } }
+      on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; U.focusZone = "lisiere"; Usine.clearSel(); setTab("carte"); setTimeout(intro, 200); } }
     });
   }
   /* ------------------------------------------------------------ MÉMOIRE DES MAINS
@@ -2075,9 +2076,10 @@
     E.on("passdone", (o) => {
       const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
       fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève" });
-      if (first) setTimeout(() => simpleModal("Nouveau", "✦ La relève",
-        "<p>Tu as franchi ton premier passage. Tu peux maintenant <b>passer le relais</b> quand tu veux : un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet et la <b>Mémoire des mains</b>, que tu achètes avec les Traces des passages.</p>" +
-        '<p class="small muted">Rien ne presse : plus tu vas loin, plus tu gagnes de Traces. Touche ✦ en haut de l’écran pour voir.</p>'), 2200);
+      if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
+        "<p><b>Rien ne presse, et rien ne s’efface :</b> continue ta partie aussi longtemps que tu veux.</p>" +
+        "<p>Chaque passage franchi laisse des Traces ✦. Un jour, quand tu le voudras, tu pourras <b>passer le relais</b> : un nouveau Semeur repartira du début, mais avec tes recettes et des mains plus habiles, achetées avec ces Traces.</p>" +
+        '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent.</p>', "Compris"), 2200);
     });
     E.on("zone", (z) => {
       U.zone = z;
@@ -2127,6 +2129,7 @@
         .concat(rw.inv ? Object.keys(rw.inv).map((i) => "+" + rw.inv[i] + " " + I[i].n) : [])
         .concat(rw.item ? Object.keys(rw.item).map((i) => I[i].n) : [])
         .concat(rw.intu ? ["+" + rw.intu + " ✨"] : []);
+      if (F && !r.fragNew) { toast("🧭 " + esc(r.x.n) + " : déjà raconté dans ton Journal." + (gains.length ? " Tu rapportes : " + esc(gains.join(", ")) + "." : ""), { key: "exp" }); return; }
       openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? F.n : r.x.n) + "</h2>" + (F ? loreHTML(F.t) : "") +
         (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") + '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
     });

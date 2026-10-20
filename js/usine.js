@@ -400,7 +400,7 @@
       if (V.tool === "tapis") V.draw = { path: [{ x: c.x, y: c.y, d: null }] };
       if (V.tool === "del") { if (demolish(c)) V.gest.done[c.x + "," + c.y] = 1; }
       // garder le doigt sur un gisement : on continue de récolter
-      const dep = V.tool === "voir" && !E.fabCell(c.x, c.y) && E.deposit(c.x, c.y);
+      const fc = E.fabCell(c.x, c.y), dep = V.tool === "voir" && (!fc || fc.k === "ext") && E.deposit(c.x, c.y);
       if (dep && dep.hand) {
         const g = V.gest;
         g.hold = setTimeout(function rep() { if (V.gest !== g || g.moved) return; g.held = true; harvest(c); g.hold = setTimeout(rep, 140); }, 400);
@@ -784,6 +784,7 @@
             (us[t].own - us[t].used) + " libre" + (us[t].own - us[t].used > 1 ? "s" : "") + '</span></span><button class="mini" data-u="eu" data-t="' + t + '" data-v="-1">−</button><b>' + (e.u[t] || 0) +
             '</b><button class="mini" data-u="eu" data-t="' + t + '" data-v="1">+</button></div>').join("") + "</div>"
             : '<p class="small muted">Aucun de tes extracteurs ne sait récolter ça. Regarde au Carnet ce qui pourrait.</p>') +
+          (d && d.hand ? '<p class="tiny muted">✋ Garde le doigt appuyé sur la case : tu récoltes aussi à la main, en plus de l’extracteur.</p>' : "") +
           '<div class="u-row acts">' + (loose ? '<button class="btn small pri" data-u="link">🛤️ Relier à la Réserve</button>' : "") +
           '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + "</button>" + (E.easy() ? "" : '<button class="btn small" data-u="rot">🔄 Tourner</button>') + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       } else if (e.k === "port") {
@@ -1790,7 +1791,9 @@
       toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
     }
 
-    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, useMach, useExt, cellRect, reveal, tool: () => V.tool, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
+    /* plus rien de choisi (après une relève, la case d’avant n’existe plus) */
+    function clearSel() { V.sel = null; V.zsel = null; if (V.el) sheet(); }
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, clearSel, prepare, placeSite, useMach, useExt, cellRect, reveal, tool: () => V.tool, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
   }
 
   window.EclatUsine = { create };
