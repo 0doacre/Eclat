@@ -102,7 +102,9 @@ Améliorations permanentes achetées avec les Traces (`D.MEMOIRE`), gardées d�
 
 Chaque tâche ci-dessous peut être confiée à un assistant avec ce document et le dépôt.
 Règles communes : ne jamais casser une sauvegarde existante ; textes en français,
-simples, sans jargon ; lancer `node tools/test.js` avant de rendre le travail.
+simples, sans jargon ; lancer `node tools/test.js` avant de rendre le travail ; livrer sur une
+branche GitHub poussée, jamais dans un dossier à part (consigne de livraison dans
+`docs/prompts/README.md`).
 
 1. **Textes des passages** : pour chaque terre de `D.PASSAGES`, une phrase d’ambiance
    (« Les hautes herbes cachent un gué… ») et un nom de passage. Ton : celui de
