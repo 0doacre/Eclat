@@ -518,6 +518,9 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 .u-pr > span:last-child { color: var(--muted); flex-basis: 48px; }
 .u-pr.u-ph > span:not(.grow) { flex: 0 0 64px; text-align: right; }
 .u-pr.u-ph > span:last-child { flex-basis: 48px; }
+.u-prod-full { color: #8fb3ff; margin: 4px 0; }
+.u-pr > span.full { color: #8fb3ff; font-weight: 600; }
+.u-pr > span.full::after { content: " 📦"; }
 .u-pr .ell { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .u-ins { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
 .u-in { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px 2px 3px; border-radius: 99px; background: var(--bg2); border: 1px solid var(--line); font-size: 12px; cursor: pointer; }

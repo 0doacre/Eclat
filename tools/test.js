@@ -693,6 +693,50 @@ test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
   assert.ok(!E.study("os"), "pas une matière jamais vue");
 });
 
+test("usine avancée : la Réserve pleine arrête l’extracteur, sans rien perdre", () => {
+  const E = mk("avance");
+  const cap = E.storeCap("bois");
+  assert.strictEqual(cap, D.STORE[0]);
+  assert.strictEqual(E.storeCap("manche"), Infinity, "ce qui se fabrique n’a pas de limite");
+  E.add("cabane", 2);
+  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 2).ok);
+  assert.ok(E.fabLink(-3, -7).ok);
+  const x = E.fabCell(-3, -7);
+  E.add("bois", cap - 5);
+  run(E, 30);
+  assert.strictEqual(E.count("bois"), cap, "plein, pas plus");
+  assert.strictEqual(E.machInfo(x.id).s, "full");
+  // la récolte à la main aussi
+  assert.strictEqual(E.tap("bois"), 0);
+  // on dépense : ça repart
+  E.add("bois", -100);
+  run(E, 5);
+  assert.notStrictEqual(E.machInfo(x.id).s, "full");
+  assert.ok(E.count("bois") > cap - 100);
+  // un stock déjà au-dessus n’est jamais rogné ; l’usine simple n’a pas de limite
+  E.add("fibre", cap * 3);
+  run(E, 1);
+  assert.strictEqual(E.count("fibre"), cap * 3);
+  const F = mk();
+  assert.strictEqual(F.storeCap("bois"), Infinity);
+  F.add("bois", 1e6); assert.ok(F.tap("bois") > 0);
+});
+test("usine avancée : Réserve pleine, l’extracteur nourrit encore la machine de son tapis", () => {
+  const E = mk("avance");
+  E.add("cabane", 1); E.add("automate_bois", 1); E.state.known.manche = true;
+  const bois = E.deposits().find((d) => d.res === "bois");
+  E.fabPlaceExt(bois.x, bois.y, "cabane");
+  E.fabDraw([{ x: bois.x, y: bois.y + 1, d: 1 }, { x: bois.x, y: bois.y + 2, d: 1 }, { x: bois.x, y: bois.y + 3, d: 1 }]);
+  E.fabSet(E.fabCell(bois.x, bois.y).id, { d: 1 });
+  const m = E.fabPlace("mach", bois.x + 1, bois.y + 2, { m: "automate_bois", r: "manche", d: 0 }).e;
+  assert.ok(E.fabLink(bois.x + 1, bois.y + 2).ok, "les manches vont à la Réserve");
+  E.add("bois", E.storeCap("bois"));
+  run(E, 60);
+  const x = E.fabCell(bois.x, bois.y);
+  assert.notStrictEqual(E.machInfo(x.id).s, "full", "elle a un preneur en route : " + E.machInfo(x.id).s);
+  assert.ok(E.state.made.manche >= 3, "les manches sortent : " + E.state.made.manche + " · " + E.machInfo(m.id).s);
+  assert.strictEqual(E.count("bois"), E.storeCap("bois"));
+});
 test("tapis : un tapis ne porte pas plus que son débit", () => {
   const E = mk("avance");
   E.add("cabane", 20);

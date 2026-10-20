@@ -308,11 +308,18 @@
     E.tap = function (res, zid) {
       zid = zid || RES_ZONE[res];
       if (!zoneOpen(zid) || !ZONES[zid].res.includes(res)) return 0;
-      const n = tapYield(res, zid);
+      const n = Math.min(tapYield(res, zid), Math.floor(storeRoom(res)));
+      if (!(n > 0)) return 0; // la Réserve est pleine (usine avancée)
       add(res, n);
       S.stats.taps++;
       return n;
     };
+    /* Usine avancée : la place dans la Réserve pour une matière brute (sans limite en usine
+     * simple, et pour tout ce qui se fabrique). */
+    E.storeCap = (id) => (easy() || !item(id) || item(id).t !== "res" ? Infinity : D.STORE[Math.min(S.age, D.STORE.length - 1)]);
+    const storeRoom = (id) => Math.max(0, E.storeCap(id) - (S.inv[id] || 0));
+    E.storeRoom = storeRoom;
+    E.storeFull = (id) => storeRoom(id) < 1;
     /* production des extracteurs posés pour une matière (par seconde) */
     E.rate = (res) => {
       let r = 0;
@@ -1440,6 +1447,8 @@
       if (!(rate > 0)) return done("idle");
       const P = g.prods[e.id], ez = easy();
       if (!ez && !P.t.res && !Object.keys(P.t.cons).length) return done("noout");
+      // la Réserve est pleine de ce qu’il récolte, et aucune machine ne le prend en route : il s’arrête
+      if (!ez && !Object.keys(P.t.cons).length && storeRoom(e.res) < 1e-9) return done("full");
       // un tapis ne porte pas plus que son débit ; et rien ne s’entasse si ça ne part pas
       const lane = ez ? Infinity : E.beltCap(), want = Math.min(rate, lane) * dt;
       made = Math.max(0, Math.min(want, Math.max(4, lane * (dt + 2)) - B.o));
@@ -1466,7 +1475,7 @@
           const P = g.prods[id], B = buf(id), r = outOf(P.e);
           for (const en of P.t.ents) {
             if (!(B.o > 1e-9)) break;
-            const q = Math.min(B.o, pass ? room[en.k] : Math.min(room[en.k], cap / users[en.k]));
+            const q = Math.min(B.o, storeRoom(r), pass ? room[en.k] : Math.min(room[en.k], cap / users[en.k]));
             if (!(q > 0)) continue;
             B.o -= q;
             room[en.k] -= q;
@@ -1561,7 +1570,7 @@
       const f = E.flows(), inn = Object.assign({}, f.prod);
       for (const k in S.fab.c) {
         const e = S.fab.c[k], st = e.k === "ext" && machStat[e.id];
-        if (st && st.avg > 1e-6) inn[e.res] = (inn[e.res] || 0) + st.avg;
+        if (st && st.s !== "full" && st.s !== "off" && st.avg > 1e-6) inn[e.res] = (inn[e.res] || 0) + st.avg;
       }
       const ids = Object.keys(inn).concat(Object.keys(f.cons).filter((k) => !(k in inn)));
       return ids.map((id) => ({ id, in: inn[id] || 0, out: f.cons[id] || 0, net: (inn[id] || 0) - (f.cons[id] || 0) }))

@@ -174,7 +174,10 @@
       if (!d) return false;
       if (!d.hand) { toast(esc(I[d.res].n) + " : ça ne se ramasse pas à la main. Il faut un extracteur (outil ⛏️)."); return true; }
       const n = E.tapDeposit(c.x, c.y);
-      if (!n) return true;
+      if (!n) {
+        if (E.storeFull(d.res)) toast("📦 La Réserve est pleine de " + esc(I[d.res].n.toLowerCase()) + " (" + fmt(E.storeCap(d.res)) + ") : dépense-en, ou fais-en autre chose avec une machine.", { key: "full" });
+        return true;
+      }
       harvCount(c, d.res, n);
       for (let k = 0; k < 4; k++) {
         const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, v = 2.2 + Math.random() * 2.4;
@@ -648,7 +651,8 @@
               "<p>Tu aimes les casse-têtes ? Menu ☰ → <b>Usine avancée</b> : sorties de la Réserve, débit des tapis, répartiteurs et croisements.</p>"
             : "<p>Avec l’outil ⛏️, pose un <b>extracteur</b> sur la case qui lui convient (une cabane sur le bois, plus tard des mines et des pompes…). Il récolte seul, puis pose sa récolte sur la case que montre sa flèche. Trace un tapis de là jusqu’à la Réserve, ou touche-le et choisis 🛤️ <b>Relier à la Réserve</b>.</p>" +
               "<p>Une <b>machine</b> se sert sur les tapis qui la touchent, et pose ce qu’elle fabrique devant sa flèche. Fais passer le tapis d’un extracteur devant une machine : elle prend ce qu’il lui faut, le reste continue jusqu’à la Réserve.</p>" +
-              "<p>Une <b>sortie</b>, posée contre la Réserve, envoie aux machines ce qu’elles réclament dans le stock. Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>") +
+              "<p>Une <b>sortie</b>, posée contre la Réserve, envoie aux machines ce qu’elles réclament dans le stock. Le <b>répartiteur</b> envoie ce qu’il reçoit de tous les côtés. Le <b>croisement</b> laisse passer deux tapis l’un sur l’autre.</p>" +
+              "<p>📦 La Réserve n’a de place que pour " + fmt(E.storeCap("bois")) + " de chaque matière brute à cet âge (plus aux âges suivants). Pleine, ce qui arrive attend sur son tapis et l’extracteur s’arrête. Ce que fabriquent les machines n’a pas de limite : transformer, c’est faire de la place.</p>") +
           "<p>Pour tracer un tapis, garde le doigt appuyé et glisse. Deux doigts pour te déplacer et zoomer. ↶ annule la dernière modification.</p>" +
           "<p>Tout tourne aussi quand le jeu est fermé.</p></div>" +
           '<div class="acts"><button class="btn pri" data-m="close">Compris</button></div>'
@@ -683,6 +687,8 @@
     const toRes = (e) => { const P = E.fabGraph().prods[e.id]; return !!(P && P.t.res); };
     const JAM_RES = () => "Le tapis qui entre dans la Réserve est plein : un tapis porte au plus " + fmtNum(E.beltCap()) + " objets/s à cet âge. Fais entrer un autre tapis dans la Réserve (un 🔀 répartiteur sur le chemin, par exemple), ou relie autrement ce qui partage ce tapis.";
     const JAM_MACH = "Les machines de son tapis ne prennent pas tout. Fais aller ce tapis jusqu’à la Réserve.";
+    /* usine avancée : la Réserve n’a de place que pour tant de chaque matière brute */
+    const FULL = (id) => "La Réserve garde au plus " + fmt(E.storeCap(id)) + " " + esc(I[id].n.toLowerCase()) + " à cet âge (plus aux âges suivants). Dépense-en, ou fais passer son tapis par une machine qui le transforme : ce qu’elle fabrique n’a pas de limite.";
     function machStatus(e) {
       const info = E.machInfo(e.id);
       const it = I[e.r];
@@ -694,7 +700,8 @@
         if (Object.values(info.miss).includes("slow")) more += ". La Réserve ne laisse sortir que " + fmtNum(E.resOutCap()) + " objets/s en tout, toutes sorties confondues. Pour aller plus vite, amène ses matières par tapis, depuis les gisements ou d’autres machines.";
       }
       if (info.s === "noout") more = "La flèche montre où elle pose ce qu’elle fabrique. Mets là un tapis qui rejoint la Réserve, ou une autre machine.";
-      if (info.s === "jam") more = toRes(e) ? JAM_RES() : JAM_MACH;
+      if (info.s === "jam") more = it && E.storeFull(e.r) ? FULL(e.r) : toRes(e) ? JAM_RES() : JAM_MACH;
+      if (info.s === "jam" && it && E.storeFull(e.r)) s = "Arrêtée : la Réserve est pleine de " + esc(it.n.toLowerCase());
       if (info.s === "cap") s += " (" + fmt(e.cap) + ")";
       if (info.s === "blocked" && info.b) s = info.b.why === "heat" ? "Il faut " + fmtHeat(info.b.heat) + " pour cette recette" : "Il te manque la station pour ce geste";
       return { s, more, lvl: LEVEL[info.s] || "dim" };
@@ -709,7 +716,8 @@
         noout: ["Ce qu’il récolte ne va nulle part", "bad", "La flèche montre où il pose sa récolte. Relie-le à la Réserve, ou trace un tapis vers une machine."],
         sat: ["Récolte " + fmtNum(E.beltCap()) + " " + esc(I[e.res].n.toLowerCase()) + "/s sur " + fmtNum(rate) + " : le tapis ne suit pas", "warn",
           "Un tapis porte au plus " + fmtNum(E.beltCap()) + " objets/s à cet âge. Les extracteurs en trop ici ne servent à rien pour l’instant : ils travailleraient mieux sur un autre gisement. Les tapis vont plus vite aux âges suivants."],
-        jam: ["Ralenti : sa récolte ne part pas assez vite", "warn", toRes(e) ? JAM_RES() : JAM_MACH]
+        jam: E.storeFull(e.res) ? ["La Réserve est pleine de " + esc(I[e.res].n.toLowerCase()), "warn", FULL(e.res)] : ["Ralenti : sa récolte ne part pas assez vite", "warn", toRes(e) ? JAM_RES() : JAM_MACH],
+        full: ["Arrêté : la Réserve est pleine de " + esc(I[e.res].n.toLowerCase()), "warn", FULL(e.res)]
       }[info.s] || ["", "dim", ""];
       return { s: T[0], lvl: T[1], more: T[2], code: info.s };
     }
@@ -717,10 +725,13 @@
     const perTime = (v) => (v >= 1 ? fmtNum(v) + "/s" : fmtNum(v * 60) + "/min");
     function resProdHTML() {
       const P = E.production().filter((x) => x.in > 1e-4 || x.out > 1e-4), st = S();
-      if (!P.length) return '<p class="tiny muted u-prod">Rien n’y entre encore tout seul. Pose un extracteur sur un gisement : il la remplira, même jeu fermé.</p>';
+      const full = Array.from(new Set(Object.values(st.fab.c).filter((e) => e.k === "ext" && E.machInfo(e.id).s === "full").map((e) => e.res)));
+      const fullTxt = full.length ? '<p class="tiny u-prod-full">📦 Pleine de ' + full.map((k) => esc(I[k].n.toLowerCase()) + " (" + fmt(st.inv[k] || 0) + ")").join(", ") + " : " + (full.length > 1 ? "leurs extracteurs sont arrêtés" : "son extracteur est arrêté") + ".</p>" : "";
+      if (!P.length) return '<div class="u-prod">' + (fullTxt || '<p class="tiny muted">Rien n’y entre encore tout seul. Pose un extracteur sur un gisement : il la remplira, même jeu fermé.</p>') + "</div>";
       return '<div class="u-prod"><div class="u-pr u-ph tiny muted"><span class="grow">Production</span><span>entre</span><span>sort</span><span>stock</span></div>' +
         P.slice(0, 14).map((x) => '<div class="u-pr">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
-          "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + "</i><span>" + fmt(st.inv[x.id] || 0) + "</span></div>").join("") +
+          "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + "</i><span" + (E.storeFull(x.id) ? ' class="full" title="Pleine"' : "") + ">" + fmt(st.inv[x.id] || 0) + "</span></div>").join("") +
+        fullTxt + (E.easy() ? "" : '<div class="tiny muted">📦 Place pour chaque matière brute : ' + fmt(E.storeCap("bois")) + " (plus à chaque âge). Ce que font les machines n’a pas de limite.</div>") +
         (P.length > 14 ? '<div class="tiny muted">… et ' + (P.length - 14) + " autres.</div>" : "") + "</div>";
     }
     /* ce qui sort de là ne va ni à la Réserve ni à une machine */
@@ -913,6 +924,11 @@
       if (exts.some((e) => E.machInfo(e.id).s === "noout")) return "Un extracteur n’a nulle part où poser sa récolte. Touche-le puis 🛤️ <b>Relier à la Réserve</b>, ou trace un tapis avec l’outil ➜.";
       if (!st.flags.extDone) return "Ça arrive. Regarde la récolte rouler jusqu’à la Réserve.";
       if (freeE && !st.flags.tip_freeExt) return "Tu as " + freeE + " extracteur" + (freeE > 1 ? "s" : "") + " qui attend" + (freeE > 1 ? "ent" : "") + " d’être posé" + (freeE > 1 ? "s" : "") + " (outil ⛏️).";
+      const full = exts.find((e) => E.machInfo(e.id).s === "full");
+      if (full && !st.flags.tip_full) {
+        return "📦 La Réserve est pleine de " + esc(I[full.res].n.toLowerCase()) + " : son extracteur s’arrête. Une machine sur son tapis en ferait autre chose (ce qu’elle fait n’a pas de limite). " +
+          '<button class="btn small ghost" data-u="tip" data-f="tip_full">Compris</button>';
+      }
       if (!own && !machs.length) return null;
       if (!machs.length) return "Prends l’outil ⚙️ <b>Machine</b> et touche une case pour poser ton automate.";
       if (machs.some((e) => !e.r)) return "Touche ta machine et choisis ce qu’elle doit fabriquer.";
@@ -1410,7 +1426,7 @@
       if (main) drawIcon(main, X - z * 0.04, Y - z * 0.05 + bob, z * 0.5, false);
       drawIcon(e.res, X + z * 0.26, Y + z * 0.26, z * 0.26, true);
       arrow(X + DX[e.d] * z * 0.47, Y + DY[e.d] * z * 0.47, e.d, z * 0.13, "#ffe2ae");
-      const lv = { ok: "#7fd18b", wait: "#7fd18b", idle: "#ffbf4a", sat: "#ffbf4a", off: "#6f6556", noout: "#ff6a55", jam: "#ff9a3c" }[info.s] || "#6f6556";
+      const lv = { ok: "#7fd18b", wait: "#7fd18b", idle: "#ffbf4a", sat: "#ffbf4a", off: "#6f6556", noout: "#ff6a55", jam: "#ff9a3c", full: "#8fb3ff" }[info.s] || "#6f6556";
       c.fillStyle = lv;
       c.beginPath(); c.arc(X + z * 0.28, Y - z * 0.28, z * 0.07, 0, 6.3); c.fill();
       if (lv === "#ff6a55" || lv === "#ffbf4a") {

@@ -437,7 +437,7 @@
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
       on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
-      onClose: () => { st.flags.news = null; delete st.flags.fab3; delete st.flags.fab4; delete st.flags.v5proj; save(); }
+      onClose: () => { st.flags.news = null; st.flags.ver = D.VERSION; delete st.flags.fab3; delete st.flags.fab4; delete st.flags.v5proj; save(); }
     });
   }
 
@@ -1822,7 +1822,7 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
-        '<div class="toggle"><span>Usine <span class="tiny muted" data-usinetxt>' + (E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits et répartiteurs") +
+        '<div class="toggle"><span>Usine <span class="tiny muted" data-usinetxt>' + (E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits, répartiteurs et Réserve limitée") +
           '</span></span><button class="btn small" data-m="usine">' + (E.easy() ? "Simple" : "Avancée") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
@@ -1846,9 +1846,9 @@
           E.setUsine(E.easy() ? "avance" : "simple");
           b.textContent = E.easy() ? "Simple" : "Avancée";
           const t = b.closest(".modal-box").querySelector("[data-usinetxt]");
-          if (t) t.textContent = E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits et répartiteurs";
+          if (t) t.textContent = E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits, répartiteurs et Réserve limitée";
           toast(E.easy() ? "🏭 Usine simple : tes machines se servent dans la Réserve et y rangent ce qu’elles font. Les tapis restent possibles."
-            : "🏭 Usine avancée : les machines se servent sur les tapis (sorties de la Réserve, gisements), et chaque tapis a son débit.");
+            : "🏭 Usine avancée : les machines se servent sur les tapis (sorties de la Réserve, gisements), chaque tapis a son débit, et la Réserve n’a de place que pour " + fmt(E.storeCap("bois")) + " de chaque matière brute.");
           save(); return true;
         },
         tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre reviendra au moment où il sert."); },
@@ -1889,7 +1889,7 @@
       html: '<div class="lore" style="padding:10px 0">' + lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + esc(l) + "</p>").join("") +
         '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>',
       onClose: () => {
-        st.introSeen = true; st.flags.news = null; save(); A.init();
+        st.introSeen = true; st.flags.news = null; st.flags.ver = D.VERSION; save(); A.init();
         if (st.flags.capsuleMsg) {
           st.flags.capsuleMsg = false;
           simpleModal("Capsule temporelle", "Un message de toi-même",
@@ -2194,9 +2194,12 @@
     U.offline = null;
     const list = o.top.map((k) => '<span class="ing">' + icon(k, "sm") + "+" + fmt(o.gains[k]) + " " + esc(I[k].n) + "</span>").join("");
     const auto = Object.values(S().fab.c).some((e) => e.k === "ext" || e.k === "mach");
+    // usine avancée : ce qui s’est arrêté faute de place dans la Réserve
+    const full = Array.from(new Set(Object.values(S().fab.c).filter((e) => e.k === "ext" && E.machInfo(e.id).s === "full").map((e) => e.res)));
     simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
       (list ? '<p class="small muted">Pendant ce temps, tout a travaillé pour toi :</p><div class="row wrap">' + list + "</div>"
         : '<p class="small">Rien n’a tourné pendant ton absence.' + (auto ? "" : " Une cabane posée sur un gisement récolte même jeu fermé : c’est la prochaine chose à viser.") + "</p>") +
+      (full.length ? '<p class="small">📦 La Réserve s’est remplie de ' + full.map((k) => esc(I[k].n.toLowerCase())).join(", ") + " : " + (full.length > 1 ? "leurs extracteurs se sont arrêtés" : "son extracteur s’est arrêté") + ". Une machine qui " + (full.length > 1 ? "les" : "le") + " transforme ferait de la place.</p>" : "") +
       (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : ""));
   }
 
@@ -2260,7 +2263,8 @@
     if (status === "error") showBadSave();
     else if (!S().introSeen) intro();
     else {
-      if (S().flags.news) showNews();
+      // une partie qui revient d’une version précédente voit une fois ce qui a changé
+      if (S().flags.news || S().flags.ver !== D.VERSION) showNews();
       if (S().flags.usineNote) {
         delete S().flags.usineNote;
         simpleModal("Nouveau", "🏭 L’usine simple",

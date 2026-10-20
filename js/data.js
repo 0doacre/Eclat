@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.3.0";
+  D.VERSION = "4.4.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -868,6 +868,11 @@
    * rien ; la recette s’inscrit, et on choisit ensuite de la fabriquer, prix affiché. */
   D.DISCOVER_FREE = 6;
 
+  /* Usine avancée : la place dans la Réserve pour chaque matière brute, à chaque âge.
+   * Pleine, ce qui arrive attend sur son tapis et les extracteurs s’arrêtent ; ce que
+   * les machines fabriquent n’a pas de limite (transformer, c’est faire de la place). */
+  D.STORE = [500, 750, 1000, 2000, 3000, 5000, 8000, 12000, 20000, 30000, 50000, 80000, 120000];
+
   /* Les tapis : ce qu’un tapis porte au plus (objets par seconde), à chaque âge.
    * Les améliorations qui accélèrent l’usine les accélèrent aussi. La Réserve ne
    * laisse sortir que out × ce débit, toutes sorties confondues. */
@@ -898,6 +903,14 @@
   };
 
   D.CHANGES = [
+    "🖐️ Plus rien ne bouge sous le doigt à l’Atelier : le bouton d’œuvre agit au relâcher, la même pièce demandée plusieurs fois s’allonge (×N), un petit établi reste en haut quand on descend dans la liste. Deux messages au plus, sous l’objectif ; un bouton grisé dit pourquoi quand on le touche.",
+    "🎉 Des fêtes : une découverte, une recette trouvée, une étape ou un âge accompli s’affichent au centre de l’écran. La récolte rebondit et se compte (+9 Bois), et le feu de camp brille sur la carte.",
+    "🏁 Des étapes plus claires : cinq à l’âge de l’Os, un compteur qui suit l’âge en cours, et +3 ✨ quand un âge est accompli.",
+    "⚡ ×1, ×10 et Max fabriquent aussi les pièces qui manquent : dix cabanes d’un coup, depuis le Carnet ou la roue.",
+    "📊 Touche la Réserve : ce qui entre et sort, matière par matière.",
+    "✦ Journal → Fins explique les cycles et les Échos, et permet de lancer un nouveau cycle quand on veut.",
+    "🔍 Découvrir coûte peu : une grosse découverte s’inscrit au Carnet sans rien prendre, prix affiché. Au Carnet, le nom d’une recette inconnue reste caché. Les échecs ont des phrases écrites à la main, avec les bons articles.",
+    "📦 Usine avancée : la Réserve n’a de place que pour un certain nombre de chaque matière brute (plus à chaque âge). Pleine, l’extracteur s’arrête : transformer, c’est faire de la place.",
     "🏭 L’usine simple, par défaut : une machine posée n’importe où se sert dans la Réserve et y range ce qu’elle fabrique, un extracteur se relie tout seul, et plus de débit à surveiller. Les amateurs de casse-têtes retrouvent sorties, débits et répartiteurs dans ☰ → Usine : Avancée.",
     "🌱 Un début plus léger : au départ, la forêt et l’objectif, rien d’autre. Les outils, la roue, l’Intuition, le Carnet et le Journal apparaissent quand ils servent.",
     "🧭 Plus fluide pour qui découvre : la bulle du tutoriel ne se pose plus sur les boutons (réduite, elle devient 💭 en haut), une fenêtre ne se ferme plus sous le doigt, un nouvel âge s’annonce vraiment, la carte « Recette comprise » suit la fabrication, les matières épuisées gardent leur place à l’Atelier (et se posent encore sur l’établi), la roue garde ses recettes à la même place.",
