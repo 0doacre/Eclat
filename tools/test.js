@@ -167,6 +167,19 @@ test("relève : on garde le savoir, on gagne des Traces ; la Mémoire des mains"
   E.state.meta.traces = 10; const c0 = E.passCost("riviere").bois;
   assert.ok(E.memBuy("chemins")); assert.ok(E.passCost("riviere").bois < c0);
 });
+test("relève : une réminiscence déjà lue ne revient pas", () => {
+  const E = mk();
+  let n = 0; E.on("event", () => n++);
+  stations(E, []); E.add("bois", 30); E.add("caillou", 20); E.add("archet", 1); E.state.known.feu = true;
+  assert.ok(E.craft("feu").ok); assert.strictEqual(n, 1, "« Seuil 1 » la première fois");
+  E.state.pass.plaine = { paid: {}, done: true };
+  E.newCycle();
+  E.add("bois", 30); E.add("caillou", 20); E.add("archet", 1);
+  assert.ok(E.craft("feu").ok); assert.strictEqual(n, 1, "pas une deuxième fois");
+  // une partie d’avant : les réminiscences des objets déjà faits comptent comme lues
+  const raw = JSON.parse(E.serialize()); delete raw.meta.ev; raw.made.feu = 1;
+  const F = mk(); F.load(JSON.stringify(raw)); assert.ok(F.state.meta.ev.feu);
+});
 test("passages : une partie d’avant garde ses terres ouvertes, comptées comme franchies", () => {
   const E = mk();
   const raw = JSON.parse(E.serialize());

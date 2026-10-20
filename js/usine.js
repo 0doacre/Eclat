@@ -315,7 +315,7 @@
         if (m) { selectZone({ z: m.z, i: m.i }); return; }
         if (!e && harvest(c)) return;
         if (!e) { const g = labelAt(c.x, c.y); if (g) { selectZone({ z: g.id }); return; } }
-        if (!e) { const mz = (V.mists || []).find((q) => c.x >= q.x0 && c.x <= q.x1 && c.y >= q.y0 && c.y <= q.y1 && E.passPending().includes(q.z)); if (mz) { selectZone({ z: mz.z, pass: true }); return; } }
+        if (!e) { const mz = (V.mists || []).find((q) => c.x >= q.x0 && c.x <= q.x1 && c.y >= q.y0 && c.y <= q.y1 && D.PASSAGES[q.z]); if (mz) { selectZone({ z: mz.z, pass: true }); return; } }
         select(e && e.k !== undefined ? c : null);
         return;
       }
@@ -868,6 +868,11 @@
       if (zs.pass) {
         const p = E.passInfo(zs.z);
         if (p && p.done) return h + '<div class="u-head"><span class="ic">✓</span><div class="grow"><b>' + esc(p.P.n) + '</b><div class="u-st good">Franchi : ' + esc(z.n) + " est ouverte.</div></div></div>";
+        if (p && !p.ready) { // la terre suivante : l’objet qui y mène, puis ce que coûtera son passage
+          const req = I[z.req], known = req && (st.known[z.req] || req.a <= st.age + 1);
+          return h + '<div class="u-head"><span class="ic">🌫️</span><div class="grow"><b>' + (known ? esc(z.n) : "Une terre inconnue") + '</b><div class="u-st warn">' + (known ? "Il te faut d’abord : " + esc(req.n) : "Un objet que tu ne connais pas encore y mène.") + "</div></div></div>" +
+            (known ? '<p class="small muted">Ensuite, le passage <b>' + esc(p.P.n) + "</b> : " + Object.keys(p.cost).map((i) => fmt(p.cost[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + " (+" + p.P.tr + " ✦ à la relève).</p>" : "");
+        }
         return h + '<div class="u-head"><span class="ic">🚧</span><div class="grow"><b>Vers ' + esc(z.n) + '</b><div class="tiny muted">Verse ce qu’il faut depuis la Réserve, en plusieurs fois si besoin.</div></div></div>' + (passHTML ? passHTML(zs.z) : "");
       }
       if (zs.i !== undefined) {
@@ -924,10 +929,11 @@
       const own = E.MACHINES.reduce((a, m) => a + ms[m].own, 0);
       const machs = ents.filter((e) => e.k === "mach"), exts = ents.filter((e) => e.k === "ext");
       const freeE = E.EXTS.reduce((a, t) => a + us[t].own - us[t].used, 0);
+      const vet = st.cycle > 1; // un Semeur qui a déjà passé le relais connaît les gestes de base
       if (!exts.length && !freeE && !own) {
-        return st.stats.taps < 20 || st.known.cabane ? "Touche une case colorée de la Lisière pour récolter à la main. Garde le doigt appuyé pour continuer." : null;
+        return !vet && (st.stats.taps < 20 || st.known.cabane) ? "Touche une case colorée de la Lisière pour récolter à la main. Garde le doigt appuyé pour continuer." : null;
       }
-      if (!exts.length && freeE) return "Prends l’outil ⛏️ <b>Extracteur</b> et touche une case de gisement (le bois de la Lisière, par exemple) pour y poser ton extracteur.";
+      if (!exts.length && freeE && !vet) return "Prends l’outil ⛏️ <b>Extracteur</b> et touche une case de gisement (le bois de la Lisière, par exemple) pour y poser ton extracteur.";
       if (exts.some((e) => E.machInfo(e.id).s === "noout")) return "Un extracteur n’a nulle part où poser sa récolte. Touche-le puis 🛤️ <b>Relier à la Réserve</b>, ou trace un tapis avec l’outil ➜.";
       if (!st.flags.extDone) return "Ça arrive. Regarde la récolte rouler jusqu’à la Réserve.";
       if (freeE && !st.flags.tip_freeExt) return "Tu as " + freeE + " extracteur" + (freeE > 1 ? "s" : "") + " qui attend" + (freeE > 1 ? "ent" : "") + " d’être posé" + (freeE > 1 ? "s" : "") + " (outil ⛏️).";

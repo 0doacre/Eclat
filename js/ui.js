@@ -811,6 +811,11 @@
       h += '<div class="goal">' + (st.known[ob.id] ? icon(ob.id) : '<span class="ic unk">?</span>') + '<div class="grow"><div class="name">' + esc(it.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
         (it.h && !st.known[ob.id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "") + "</div></div>";
       h += stepBox(g.step, g.why, g.step === ob.id);
+      const z = it.e && it.e.zone;
+      if (z && D.PASSAGES[z] && !(st.pass[z] && st.pass[z].done)) {
+        const c = E.passCost(z);
+        h += '<div class="tiny muted" style="margin-top:6px">🚧 Ensuite, le passage <b>' + esc(D.PASSAGES[z].n) + "</b> vers " + esc(zoneName(z)) + " : " + Object.keys(c).map((i) => fmt(c[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + " (+" + D.PASSAGES[z].tr + " ✦).</div>";
+      }
     }
     return h + "</div>";
   }
@@ -1316,7 +1321,7 @@
     } else {
       const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
       h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes manuelles", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],
-        ["Expériences à l’atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Cycle", st.cycle]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
+        ["Expériences à l’atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Semeur", st.cycle + 6 + "e"]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
       if (evs.length) {
         h += '<h3 class="sub">Réminiscences</h3>';
         evs.forEach((id) => { h += '<div class="card small serif" style="font-size:15px">' + icon(id, "sm") + " " + esc(D.EVENTS[id]) + "</div>"; });
@@ -1960,7 +1965,7 @@
     const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0), gain = E.releveGain();
     openModal({
       html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
-        "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" +
+        "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + leftHTML() +
         '<p class="small muted">Une copie de ta partie est mise de côté avant (☰ → Sauvegardes).</p>' +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
       on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; setTab("carte"); setTimeout(intro, 200); } }
@@ -1982,10 +1987,32 @@
       const soon = !max && m.traces < c && can && m.traces + gain >= c; // possible juste après la relève
       return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
         '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
-        (x.next ? '<div class="tiny dim">S’applique à ton prochain réveil (après une relève).</div>' : "") + "</div>" +
+        (x.next ? '<div class="tiny dim">S’applique à ton prochain réveil (après une relève).</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
         (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
     }).join("") + "</div>";
     return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
+  }
+  /* ce que la relève laisse derrière elle, en chiffres */
+  function leftHTML() {
+    const st = S(), cells = Object.values(st.fab.c), n = (k) => cells.filter((e) => e.k === k).reduce((a, e) => a + (k === "ext" ? Object.values(e.u || {}).reduce((x, y) => x + y, 0) : e.n || 1), 0);
+    const top = Object.keys(st.inv).filter((i) => I[i] && !E.isUnique(I[i]) && !E.isScaled(I[i]) && st.inv[i] >= 1).sort((a, b) => st.inv[b] - st.inv[a]).slice(0, 3);
+    const paid = Object.keys(st.pass).filter((z) => !st.pass[z].done && D.PASSAGES[z]);
+    const parts = [];
+    if (n("ext")) parts.push(n("ext") + " extracteur" + (n("ext") > 1 ? "s" : ""));
+    if (n("mach")) parts.push(n("mach") + " machine" + (n("mach") > 1 ? "s" : ""));
+    if (top.length) parts.push("ton stock (" + top.map((i) => fmt(st.inv[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + "…)");
+    if (paid.length) parts.push("ce que tu as versé dans " + paid.map((z) => esc(D.PASSAGES[z].n)).join(", "));
+    return parts.length ? '<p class="small muted">Tu laisses : ' + parts.join(", ") + ".</p>" : "";
+  }
+  /* un aperçu concret de la prochaine amélioration */
+  function memPreview(x) {
+    const l = E.memLvl(x.id), a = x.v(l), b = x.v(l + 1);
+    if (b === undefined || typeof a !== "number") return "";
+    if (x.id === "extr") { const r = E.production().reduce((s, p) => s + (I[p.id] && I[p.id].t === "res" ? p.in : 0), 0); return r > 0 ? "Tes extracteurs : " + fmtNum(r) + "/s → " + fmtNum(r * b / a) + "/s" : ""; }
+    if (x.id === "recolte") return "Un appui sur le bois : " + fmtNum(E.tapYieldOf("bois") || a) + " → " + fmtNum((E.tapYieldOf("bois") || a) * b / a);
+    if (x.id === "chemins") { const z = D.ZONES.map((y) => y.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id)); if (!z) return ""; const c = E.passCost(z), k = Object.keys(c)[0]; return esc(D.PASSAGES[z].n) + " : " + fmt(c[k]) + " → " + fmt(Math.ceil(c[k] * b / a)) + " " + esc(I[k].n.toLowerCase()); }
+    if (x.id === "mach") { const m = Object.values(S().fab.c).filter((e) => e.k === "mach" && e.r); return m.length ? "Tes " + m.length + " machine" + (m.length > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
+    return "";
   }
   /* le prochain passage : ce qu’il rapporte, et l’objet qui le rend possible */
   function nextPassHTML() {
@@ -2275,6 +2302,7 @@
         if (l) { l.innerHTML = carnetList(); refresh(); }
       }
     });
+    views.addEventListener("focusin", (ev) => { if (ev.target.id === "cq" || ev.target.id === "iq") ev.target.select(); });
     views.addEventListener("toggle", (ev) => {
       const d = ev.target;
       if (d.matches && d.matches("details[data-age]")) U.openAges[d.dataset.age] = d.open;

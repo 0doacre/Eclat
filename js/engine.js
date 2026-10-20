@@ -84,7 +84,7 @@
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {} },
       settings: { sound: true, vibe: true, usine: "simple" },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
@@ -388,6 +388,7 @@
     };
     /* Usine avancée : la place dans la Réserve pour une matière brute (sans limite en usine
      * simple, et pour tout ce qui se fabrique). */
+    E.tapYieldOf = (res) => { const z = RES_ZONE[res]; return z && zoneOpen(z) ? tapYield(res, z) : 0; };
     E.storeCap = (id) => (easy() || !item(id) || item(id).t !== "res" ? Infinity : D.STORE[Math.min(S.age, D.STORE.length - 1)]);
     const storeRoom = (id) => Math.max(0, E.storeCap(id) - (S.inv[id] || 0));
     E.storeRoom = storeRoom;
@@ -553,7 +554,7 @@
       if (e.fireworks) E.emit("fx", "fireworks");
       if (e.arche && !S.flags.arche) { S.flags.arche = true; archeSay("radio"); }
       if (e.decode) decodeSignal();
-      if (D.EVENTS[id]) E.emit("event", { id, txt: D.EVENTS[id] });
+      if (D.EVENTS[id] && !S.meta.ev[id]) { S.meta.ev[id] = 1; E.emit("event", { id, txt: D.EVENTS[id] }); }
       if (id === "cerf_volant" || id === "boussole") E.emit("struct");
       E.emit("discover", id);
       checkAges();
@@ -2168,6 +2169,8 @@
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
       o.meta = Object.assign({ endings: {}, capsule: false, traces: 0, tracesTotal: 0 }, o.meta);
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
+      // les réminiscences déjà lues (avant qu’on les retienne) : celles des objets déjà faits
+      if (!o.meta.ev || typeof o.meta.ev !== "object") { o.meta.ev = {}; for (const id in o.made || {}) if (o.made[id] > 0 && D.EVENTS[id]) o.meta.ev[id] = 1; }
       // avant les passages : chaque terre déjà ouverte compte comme passage franchi
       if (!hadPass) {
         o.pass = {};
