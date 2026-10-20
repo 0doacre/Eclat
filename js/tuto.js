@@ -64,7 +64,7 @@
             done: () => U.slots.includes("bois") || S().known.manche },
           { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche le gros bouton pour fabriquer !" : "Reprends le geste Tailler."),
             done: () => S().known.manche },
-          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Un manche ! Une découverte sort tout de suite et s’inscrit dans ton Carnet. Refaire une recette connue prend un peu de temps : tes mains travaillent une pièce après l’autre.", next: true },
+          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Un manche ! Une petite découverte sort tout de suite et s’inscrit dans ton Carnet. Refaire une recette connue prend un peu de temps : tes mains travaillent une pièce après l’autre.", next: true },
           { tab: "carte", go: "Retourne sur la Carte.", at: ".goal-card", text: "L’objectif, en haut, te dit quoi chercher ensuite. 🏁 montre tout ce qu’il y a à faire à cet âge.", next: true, done: () => S().known.corde },
           { text: "À toi de chercher, maintenant : de quoi lier les choses entre elles. Ramasse des fibres, puis essaie des gestes à l’Atelier. Le thermomètre te dit si tu chauffes, et chaque essai nouveau réveille des souvenirs.",
             free: true, done: () => S().known.corde },

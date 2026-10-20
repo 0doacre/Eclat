@@ -46,6 +46,34 @@ test("tentative : fabrication, apprentissage, échec", () => {
   const f = E.attempt("tresser", ["caillou"]);
   assert.strictEqual(f.kind, "fail");
 });
+test("découvrir coûte peu : une grosse recette s’inscrit sans rien prendre", () => {
+  const E = mk();
+  E.add("archet", 1); E.add("bois", 30); E.add("caillou", 20);
+  const r = E.attempt("assembler", ["archet", "bois", "caillou"]);
+  assert.strictEqual(r.kind, "learn"); assert.strictEqual(r.missing, null); assert.ok(r.fresh);
+  assert.ok(E.state.known.feu);
+  assert.strictEqual(E.count("bois"), 30, "rien n’est pris");
+  assert.ok(!(E.state.made.feu > 0));
+  // une petite découverte sort tout de suite
+  const m = E.attempt("tailler", ["bois"]);
+  assert.strictEqual(m.kind, "craft");
+});
+test("échecs : écrits à la main pour les essais probables, avec les bons articles", () => {
+  const E = mk();
+  for (const k in D.FAIL_ONE) {
+    const [g, ids] = k.split(":"), list = ids.split("+");
+    assert.ok(!E.RECIPES[E.keyOf(g, list)], "« " + k + " » est une vraie recette");
+    assert.deepStrictEqual(list.slice().sort(), list, "« " + k + " » : matières dans l’ordre");
+    list.forEach((i) => assert.ok(D.ITEMS[i], i));
+  }
+  assert.strictEqual(E.failText("tresser", ["caillou"]), D.FAIL_ONE["tresser:caillou"]);
+  assert.strictEqual(E.the("os"), "l’os"); assert.strictEqual(E.the("fibre"), "les fibres"); assert.strictEqual(E.the("hache_pierre"), "la hache de pierre");
+  assert.strictEqual(E.the("helium3"), "l’hélium-3"); assert.strictEqual(E.the("charbon"), "le charbon");
+  const t = E.failText("tremper", ["fibre"]);
+  assert.ok(!/\{|\}/.test(t) && /^[A-ZÀ-Ý]/.test(t), t);
+  assert.strictEqual(E.failText("tremper", ["fibre"]), t, "la même tentative, la même phrase");
+  for (const g in D.FAIL) D.FAIL[g].forEach((x) => assert.ok(!/\{[^x}][^}]*\}/.test(x.replace(/\{[^{}|]*\|[^{}]*\}/g, "")), "modèle mal formé : " + x));
+});
 test("thermomètre : mauvais geste / ingrédient manquant", () => {
   const E = mk();
   ["bois", "fibre", "caillou", "manche", "corde"].forEach((i) => (E.state.seen[i] = true));

@@ -1037,9 +1037,12 @@
       const made = (S().made[r.id] || 0) - (r.made0 || 0), q = E.queued(r.id);
       if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultHTML(); }
       const miss = q ? null : E.missingFor(r.id, 1);
-      const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette comprise</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
+      const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
       if (q) return head + '<div class="small">✋ Tes mains s’y mettent : la recette et ses pièces sont dans ta file.</div></div></div>';
-      if (!miss) return head + '<div class="small">Tout est là.</div><div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
+      // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
+      if (!miss) return head + '<div class="small muted">' + esc(I[r.id].d || "") + "</div>" + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
+        '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tout est là. Il en coûte :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
+        '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
       return head + '<div class="small">Tu sais comment faire, mais il te manque :</div><div class="row wrap small">' +
         Object.keys(miss).map((i) => '<span class="ing lack link" data-goto="' + i + '">' + icon(i, "sm") + fmt(miss[i]) + " " + esc(I[i].n) + "</span>").join("") + "</div>" +
         '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-chain="' + r.id + '">⚡ Fabriquer tout</button><button class="btn small" data-tree="' + r.id + '">🌳 Détail</button><button class="btn small" data-track="' + r.id + '">🎯 Suivre</button></div></div></div>';
@@ -1104,15 +1107,27 @@
     const it = I[id];
     return !U.showOwned && E.isUnique(it) && S().made[id] > 0 && U.carnetFilter !== "pin";
   }
+  /* Le nom d’une recette encore inconnue reste caché (on cherche sans savoir ce qui va sortir),
+   * sauf si le jeu l’a déjà dit : objectif, étape d’un âge, prochaine étape, objet déjà vu. */
+  function namedSet() {
+    const st = S(), out = {}, g = E.guide();
+    E.milestones().forEach((l, a) => { if (l && a <= st.age + 1) l.forEach((x) => { if (x.ob.k === "craft") out[x.ob.id] = 1; }); });
+    if (g && g.step) out[g.step] = 1;
+    if (st.track) out[st.track.id] = 1;
+    return out;
+  }
+  const nameShown = (id, set) => { const st = S(); return !!(st.known[id] || st.seen[id] || !I[id].r || (set || namedSet())[id]); };
   function carnetList() {
     const st = S();
     const q = norm(U.q);
+    U.named = namedSet();
     let nHidden = 0;
     const keep = (id) => { if (!passFilter(id)) return false; if (hiddenOwned(id)) { nHidden++; return false; } return true; };
     let h = "";
     if (q) {
       const ids = visibleRecipes().filter((id) => {
         const it = I[id];
+        if (!nameShown(id, U.named)) return false; // un nom caché ne se trouve pas en cherchant
         if (norm(it.n).includes(q)) return true;
         if (!st.known[id]) return false;
         return Object.keys(it.r[1]).some((i) => norm(I[i].n).includes(q));
@@ -1161,7 +1176,8 @@
       const lvl = st.hints[id] || 0;
       const ing = Object.keys(it.r[1]);
       const big = mainIngredient(id);
-      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
+      const shown = nameShown(id, U.named);
+      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
         (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
         '<div class="rl tiny muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Matière : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " matière" + (ing.length > 1 ? "s" : "") + "</div></div>";
     }
@@ -1498,6 +1514,8 @@
       if (bench) { bench.classList.remove("glow"); void bench.offsetWidth; bench.classList.add("glow"); }
     } else if (r.kind === "learn" || r.kind === "blocked") {
       A.fail(4); if (r.fresh) setTimeout(() => A.discover(), 150);
+      // trouver la recette, c’est déjà découvrir : la fabriquer viendra après
+      if (r.fresh && !I[r.id].sec) fete({ id: r.id, kick: "Recette trouvée", title: I[r.id].n, sub: r.kind === "blocked" ? "Inscrite dans ton Carnet. Il te faudra une meilleure station." : "Inscrite dans ton Carnet, à fabriquer quand tu veux." });
     } else {
       A.fail(r.temp || 0);
       vibe(20);
@@ -1511,7 +1529,7 @@
     const n = (id) => "<b>" + esc(I[id].n) + "</b>";
     if (r.kind === "craft") return r.fresh ? "✨ Nouvelle découverte : " + n(r.id) : "+" + fmt(r.n) + " " + n(r.id);
     if (r.kind === "queued") return "✋ " + n(r.id) + " : prêt dans " + fmtTime(r.time) + ".";
-    if (r.kind === "learn") return "📖 Recette comprise : " + n(r.id) + ". Il manque " + Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n)).join(", ") + ".";
+    if (r.kind === "learn") return "📖 Recette trouvée : " + n(r.id) + (r.missing ? ". Il manque " + Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n)).join(", ") + "." : ". À fabriquer quand tu veux.");
     if (r.kind === "blocked") return "🔥 " + n(r.id) + " : il faudrait plus de chaleur ou une meilleure station.";
     if (r.kind === "owned") return "Tu possèdes déjà " + n(r.id) + ".";
     if (r.kind === "busy") return "Tes mains sont déjà bien occupées.";
@@ -1644,7 +1662,7 @@
     const uniq = E.isUnique(it), owned = uniq && (st.made[id] || 0) > 0;
     const nav = (k, extra) => '<button class="ing link" data-m="nav" data-id="' + k + '">' + (st.seen[k] || st.known[k] ? icon(k, "sm") : '<span class="ic sm unk">?</span>') + esc(I[k].n) + (extra || "") + "</button>";
     let h = '<div class="rwin"><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
-      '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + esc(it.n) + "</h2>" +
+      '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + (nameShown(id) ? esc(it.n) : "Recette inconnue") + "</h2>" +
       (E.stars(id) ? '<div class="stars">' + "★".repeat(E.stars(id)) + "</div>" : "") + "</div>" +
       (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Matière favorite" title="Matière favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
       (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
@@ -1852,7 +1870,7 @@
       (E.easy() ? "Une <b>machine</b> posée sur la carte se sert dans la Réserve et y range ce qu’elle fabrique : choisis sa recette, c’est tout. Les tapis restent possibles (une machine se sert d’abord sur ceux qui la touchent). Menu ☰ → Usine avancée pour gérer sorties, débits et répartiteurs. "
         : "Relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. ") +
       "Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les étapes de chaque âge. Le bouton <b>🛠️</b> ouvre la roue : toutes tes recettes connues, par famille, à fabriquer sans quitter la carte, et les machines ou extracteurs prêts à poser d’un geste.</p>" +
-      "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une découverte sort tout de suite ; ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
+      "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une petite découverte sort tout de suite ; une grosse s’inscrit dans le Carnet sans rien prendre, et tu la fabriques quand tu veux, prix affiché. Ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
       "<p><b>📖 Carnet.</b> Tes recettes. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent (tes mains les font d’abord), <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
       "<p><b>🏁 Étapes et ✦ cycles.</b> Chaque âge a ses étapes : toutes faites, l’âge est accompli (+" + D.AGE_DONE + " ✨). Le monde a plusieurs fins ; après l’une d’elles, un nouveau cycle repart de zéro en gardant ton Carnet, et chaque fin atteinte donne un Écho : +50 % de récolte et de production pour toujours (Journal → Fins).</p>" +
@@ -1933,7 +1951,8 @@
     });
     E.on("discover", (id) => {
       const it = I[id];
-      if (!U.forging && !it.sec) fete({ id, kick: "Nouvelle découverte", title: it.n, sub: fxText(id) });
+      // hors de l’Atelier, la recette était déjà connue : c’est sa première fabrication
+      if (!U.forging && !it.sec) fete({ id, kick: "Première fabrication", title: it.n, sub: fxText(id) });
       U.lastDiscover = Date.now();
       if (it.e && it.e.sky) badge("cosmos");
       if (it.t === "mach") badge("carte");
@@ -1944,9 +1963,11 @@
     });
     E.on("guidehint", (h) => {
       const it = I[h.id];
-      const line = D.GUIDE.lines[h.lvl - 1]
+      // une variante par objet, pour que deux souvenirs ne se ressemblent pas mot pour mot
+      const vs = D.GUIDE.lines[h.lvl - 1], k = Array.from(h.id).reduce((a, c) => a + c.charCodeAt(0), 0);
+      const line = vs[k % vs.length]
         .replace("{g}", D.GESTES[it.r[0]].n.toLowerCase())
-        .replace("{i}", I[mainIngredient(h.id)].n.toLowerCase());
+        .replace("{i}", E.the(mainIngredient(h.id)));
       A.secret();
       toast("💭 <b>" + esc(it.n) + "</b> : " + esc(line));
       badge("carte");

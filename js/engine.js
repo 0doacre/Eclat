@@ -534,19 +534,50 @@
           const q = E.queue(id, 1);
           return q.ok ? { kind: "queued", id, time: q.time } : { kind: "busy", id, why: q.why };
         }
+        // découvrir coûte peu : ce qui coûte cher s’inscrit sans rien prendre, on choisit ensuite
+        const cost = totalCost(id, 1);
+        if (Object.values(cost).reduce((a, b) => a + b, 0) > D.DISCOVER_FREE) {
+          learn(id);
+          return { kind: "learn", id, missing: null, fresh: true, temp: 4, cost };
+        }
         learn(id);
         const res = craft(id, 1, true);
         E.emit("crafted", id, res);
         return Object.assign({ kind: "craft", id, fresh: true }, res);
       }
       const t = temperature(g, ids);
-      const pool = D.FAIL[g] || D.FAIL.assembler;
-      const names = ids.map((i) => item(i).n.toLowerCase());
-      const x = names.length > 1 ? names.slice(0, -1).join(", ") + " et " + names[names.length - 1] : names[0];
-      const flav = pool[Math.floor(rand() * pool.length)].replace(/\{x\}/g, x);
       const mem = remember(g, ids);
-      return { kind: "fail", temp: t.temp, why: t.why, msg: flav.charAt(0).toUpperCase() + flav.slice(1), mem };
+      return { kind: "fail", temp: t.temp, why: t.why, msg: failText(g, ids), mem };
     };
+
+    /* les matières avec leur article : « le bois », « l’os », « les fibres » */
+    const GF = new Set(D.GENRE.f.split(" ")), GP = new Set(D.GENRE.p.split(" "));
+    function the(id) {
+      const n = item(id).n, low = n.charAt(0).toLowerCase() + n.slice(1);
+      if (GP.has(id)) return "les " + low;
+      if (/^[aeiouyœæ]/i.test(low.normalize("NFD")) || /^hélium/i.test(low)) return "l’" + low;
+      return (GF.has(id) ? "la " : "le ") + low;
+    }
+    E.the = the;
+    /* Une phrase d’échec : écrite à la main pour les essais les plus probables, sinon tirée
+     * d’un modèle du geste (toujours la même pour la même tentative). */
+    function failText(g, ids) {
+      const sorted = ids.slice().sort(), key = g + ":" + sorted.join("+");
+      const x = ids.length > 1 ? ids.slice(0, -1).map(the).join(", ") + " et " + the(ids[ids.length - 1]) : the(ids[0]);
+      const plural = ids.length > 1 || GP.has(ids[0]);
+      let t = D.FAIL_ONE[key];
+      if (!t && ids.length === 1 && D.FAIL_SOLO[g]) t = D.FAIL_SOLO[g];
+      if (!t) {
+        const pool = D.FAIL[g] || D.FAIL.assembler;
+        let h = 0;
+        for (const c of key) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+        t = pool[h % pool.length];
+      }
+      t = t.replace(/\{([^{}|]*)\|([^{}]*)\}/g, (m, one, many) => (plural ? many : one)).replace(/\{x\}/g, x);
+      // une majuscule en tête de chaque phrase (pas après « … », qui suspend la phrase)
+      return t.charAt(0).toUpperCase() + t.slice(1).replace(/([.!?] )(\p{Ll})/gu, (m, p, c) => p + c.toUpperCase());
+    }
+    E.failText = failText;
 
     /* Thermomètre d’intuition : à quel point la tentative est-elle proche
      * d’une recette encore inconnue (et réalisable avec des matières déjà vues) ? */
