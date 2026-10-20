@@ -880,7 +880,7 @@
   D.PASSAGES = {
     plaine: { n: "Le Sentier des Herbes", t: "Les herbes de la plaine sont plus hautes que toi. Il faut s’y frayer un chemin, et des pierres pour le marquer.", cost: { bois: 120, fibre: 80, caillou: 40 }, tr: 2 },
     riviere: { n: "La Passerelle", t: "La rivière est large et lente. Une passerelle de bois, liée de cuir et d’os, te mènerait sur l’autre rive.", cost: { bois: 2400, cuir: 360, os: 480 }, tr: 3 },
-    collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 15000, argile: 2000, brique: 400 }, tr: 5 },
+    collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 15000, argile: 600, brique: 150 }, tr: 5 },
     mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 30000, plaque_cuivre: 3000, lingot_bronze: 2400 }, tr: 8 },
     desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 60000, plaque_bronze: 4500, roue: 600 }, tr: 12 },
     gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendra.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
@@ -896,8 +896,8 @@
     { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 21, 34, 55, 89] },
     { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 34, 55, 89, 144] },
     { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Passages ×{v} du prix.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
-    { id: "paquetage", n: "Le paquetage", ic: "🎒", d: "Au réveil : {v}.", v: (l) => ["rien", "des matières, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
-    { id: "raccourci", n: "Raccourci", ic: "🗺️", d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
+    { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "des matières, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
+    { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
     { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps compte jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
   ];
   /* ce que contient le paquetage, niveau par niveau (cumulé) */

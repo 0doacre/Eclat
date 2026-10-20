@@ -2002,7 +2002,7 @@
       n.fab.r = old.fab ? old.fab.r : FAB_R0;
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
-      n.intu = 3 + Math.floor(old.intu / 2);
+      n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
       n.introSeen = true;
       n.stats = Object.assign({}, old.stats);
       // le tutoriel déjà vu, les conseils déjà lus et la version vue ne reviennent pas

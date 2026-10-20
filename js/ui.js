@@ -848,10 +848,17 @@
     return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
       '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div><div class="row wrap small">' +
       Object.keys(p.cost).map((i) => {
-        const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i];
-        return '<span class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + fmt(got) + " / " + fmt(p.cost[i]) + (ok ? " ✓" : ' <span class="tiny muted">(' + fmt(st.inv[i] || 0) + ")</span>") + "</span>";
+        const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i);
+        return '<span class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + fmt(got) + " / " + fmt(p.cost[i]) + (ok ? " ✓" : ' <span class="tiny muted">(' + fmt(st.inv[i] || 0) + ")" + (eta ? " · " + eta : "") + "</span>") + "</span>";
       }).join("") + "</div>" +
       (p.done ? "" : '<div class="row wrap" style="margin-top:6px"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">+' + p.P.tr + " ✦ à ta prochaine relève</span></div>") + "</div>";
+  }
+  /* combien de temps avant d’avoir de quoi payer une matière, à la production actuelle (extracteurs, machines) */
+  function passEta(p, i) {
+    const need = (p.left[i] || 0) - (S().inv[i] || 0);
+    if (need <= 0) return "prêt";
+    const x = E.production().find((y) => y.id === i), r = x ? x.net : 0;
+    return r > 1e-6 ? "≈ " + fmtTime(need / r) : "";
   }
   function pour(z, btn) {
     const r = E.passPour(z), p = E.passInfo(z);
@@ -1117,7 +1124,9 @@
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = '<h2 class="title">Carnet</h2>';
     if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque sur la carte. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
-    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
+    // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
+    const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
+    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + (all > known ? " à ta portée · " + all + " en tout" : "") + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une matière…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
     h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Production"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
@@ -1853,7 +1862,7 @@
         '<div class="toggle"><span>Usine <span class="tiny muted" data-usinetxt>' + (E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits, répartiteurs et Réserve limitée") +
           '</span></span><button class="btn small" data-m="usine">' + (E.easy() ? "Simple" : "Avancée") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
-        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
         '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
       onOpen: (box) => {
@@ -1961,20 +1970,29 @@
    * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
   function memHTML() {
     const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
-    let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + "</h2>" +
+    let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
       '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
     h += '<div class="card memrel">' + (can
       ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<button class="btn pri" data-m="releve" style="margin-top:8px;width:100%">Passer le relais ✦</button>'
       : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
-      (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : "") + "</div>";
+      (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : nextPassHTML()) + "</div>";
     h += '<div class="mems">' + D.MEMOIRE.map((x) => {
       const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
       const now = x.d.replace("{v}", String(x.v(l)).replace(".", ",")), next = max ? "" : x.d.replace("{v}", String(x.v(l + 1)).replace(".", ","));
+      const soon = !max && m.traces < c && can && m.traces + gain >= c; // possible juste après la relève
       return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
-        '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div></div>" +
-        (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦</button>") + "</div>";
+        '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
+        (x.next ? '<div class="tiny dim">S’applique à ton prochain réveil (après une relève).</div>' : "") + "</div>" +
+        (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
     }).join("") + "</div>";
     return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
+  }
+  /* le prochain passage : ce qu’il rapporte, et l’objet qui le rend possible */
+  function nextPassHTML() {
+    const z = D.ZONES.map((x) => x.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id) && !(S().pass[id] && S().pass[id].done));
+    if (!z) return "";
+    const P = D.PASSAGES[z], req = E.ZONES[z].req, ready = S().pass[z];
+    return '<p class="tiny muted">Prochain passage : <b>' + esc(P.n) + "</b> vers " + esc(zoneName(z)) + " (+" + P.tr + " ✦)" + (ready ? "." : I[req] ? ", après " + esc(I[req].n) + "." : ".") + "</p>";
   }
   function openMemoire() {
     const o = {
@@ -1982,7 +2000,11 @@
       on: {
         buy: (b) => {
           if (E.memBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([10, 30, 10]); save(); }
-          else { A.fail(0); toast("Il te faut plus de Traces : franchis des passages, puis passe le relais.", { key: "mem" }); }
+          else {
+            A.fail(0);
+            const c = E.memCost(b.dataset.id), m = S().meta;
+            toast(c !== undefined && E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras l’acheter juste après la relève, avec les Traces qu’elle rapporte." : "Il te faut plus de Traces : franchis des passages, puis passe le relais.", { key: "mem" });
+          }
           swapModal(Object.assign(o, { html: memHTML() }));
           return true;
         },
