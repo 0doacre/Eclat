@@ -62,7 +62,7 @@
             text: "Ici, une recette, c’est un geste et des matières. Le geste Tailler est déjà choisi.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
           { tab: "atelier", at: () => (U.slots.includes("bois") ? null : '[data-inv="bois"]'), text: "Pose du bois sur l’établi : touche-le.",
             done: () => U.slots.includes("bois") || S().known.manche },
-          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Œuvre !" : "Reprends le geste Tailler."),
+          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche le gros bouton pour fabriquer !" : "Reprends le geste Tailler."),
             done: () => S().known.manche },
           { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Un manche ! Une découverte sort tout de suite et s’inscrit dans ton Carnet. Refaire une recette connue prend un peu de temps : tes mains travaillent une pièce après l’autre.", next: true },
           { tab: "carte", go: "Retourne sur la Carte.", at: ".goal-card", text: "L’objectif, en haut, te dit quoi chercher ensuite. 🏁 montre tout ce qu’il y a à faire à cet âge.", next: true, done: () => S().known.corde },
@@ -128,10 +128,10 @@
             text: "Étudie-la avec un peu d’Intuition ✨ : tu sauras avec quels gestes elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },
           { tab: "atelier", text: "Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi. À toi de trouver avec quoi.", next: true }
         ] },
-      { id: "jalons", n: "Les jalons",
+      { id: "jalons", n: "Les étapes",
         when: () => U.tab === "carte" && S().age >= 1 && !S().flags.milesSeen && !!document.querySelector("[data-miles]"),
         steps: [
-          { tab: "carte", at: "[data-miles]", text: "🏁 Les jalons de l’âge : tout ce qu’il y a à faire, d’un coup d’œil. Touche-les quand tu ne sais plus par où continuer.",
+          { tab: "carte", at: "[data-miles]", text: "🏁 Les étapes de l’âge : tout ce qu’il y a à faire, d’un coup d’œil. Touche-les quand tu ne sais plus par où continuer.",
             next: true, done: () => !!S().flags.milesSeen }
         ] },
       { id: "debit", n: "Un tapis qui déborde",

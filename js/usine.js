@@ -27,7 +27,7 @@
       el: null, cv: null, ctx: null, w: 0, h: 0, dpr: 1, ro: null,
       cam: { x: 0, y: 0, z: 44 }, camSet: false,
       tool: "voir", mtype: null, sel: null, raf: 0, t: 0, last: 0,
-      packets: [], credit: {}, lastSpawn: {}, paths: {}, pulse: {},
+      packets: [], credit: {}, lastSpawn: {}, paths: {}, pulse: {}, chips: [], harv: null, rg: {}, rgAt: 0,
       ptrs: new Map(), gest: null, draw: null, undo: [], emoji: {}
     };
 
@@ -98,8 +98,9 @@
      * bande libre reste sur le même endroit (pas de grand vide noir quand on replie l’objectif) */
     function keepBand() {
       const f = freeBand();
+      // seulement pour l’objectif et le Suivi, en haut : un conseil qui paraît en bas ne fait rien glisser sous le doigt
       if (V.band && !V.ptrs.size) {
-        const d = (f.top - V.band.top) - (f.bot - V.band.bot);
+        const d = f.top - V.band.top;
         if (Math.abs(d) > 2) { V.cam.y -= d / 2 / V.cam.z; clampCam(); }
       }
       V.band = f;
@@ -174,12 +175,71 @@
       if (!d.hand) { toast(esc(I[d.res].n) + " : ça ne se ramasse pas à la main. Il faut un extracteur (outil ⛏️)."); return true; }
       const n = E.tapDeposit(c.x, c.y);
       if (!n) return true;
-      const r = V.cv.getBoundingClientRect();
-      if (floater) floater("+" + fmt(n) + " " + I[d.res].n, r.left + sx(c.x) + (Math.random() - 0.5) * 16, r.top + sy(c.y) - V.cam.z * 0.4);
+      harvCount(c, d.res, n);
+      for (let k = 0; k < 4; k++) {
+        const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.2, v = 2.2 + Math.random() * 2.4;
+        V.chips.push({ x: c.x, y: c.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t: 0, col: depColor(d.res) });
+      }
+      if (V.chips.length > 120) V.chips.splice(0, V.chips.length - 120);
       V.pulse["d" + c.x + "," + c.y] = V.t;
       A.tap(d.res);
       vibe(5);
       return true;
+    }
+    /* le compteur de récolte : « +18 Bois », qui grossit à chaque prise tant qu’on récolte au même endroit */
+    function harvCount(c, res, n) {
+      const key = c.x + "," + c.y, now = performance.now(), H = V.harv;
+      if (H && H.key === key && now - H.t < 1200 && H.el.isConnected) { H.n += n; }
+      else {
+        if (H && H.el) H.el.remove();
+        const el = document.createElement("div");
+        el.className = "hcount";
+        V.el.querySelector(".usine").appendChild(el);
+        V.harv = { key, res, n, el, x: c.x, y: c.y };
+      }
+      const h = V.harv;
+      h.t = now;
+      h.el.textContent = "+" + fmt(h.n) + " " + I[res].n;
+      h.el.classList.remove("bump"); void h.el.offsetWidth; h.el.classList.add("bump");
+      clearTimeout(h.tm);
+      h.tm = setTimeout(() => { h.el.classList.add("out"); setTimeout(() => h.el.remove(), 400); if (V.harv === h) V.harv = null; }, 1100);
+      placeHarv();
+    }
+    function placeHarv() {
+      const h = V.harv;
+      if (!h || !h.el.isConnected) return;
+      const cr = V.cv.getBoundingClientRect(), ur = V.el.querySelector(".usine").getBoundingClientRect();
+      h.el.style.left = Math.round(cr.left - ur.left + sx(h.x)) + "px";
+      h.el.style.top = Math.round(cr.top - ur.top + sy(h.y) - V.cam.z * 0.75) + "px";
+    }
+    /* les éclats de récolte, et le camp qui grandit autour de la Réserve */
+    function drawChips(dt) {
+      const c = V.ctx, z = V.cam.z;
+      V.chips = V.chips.filter((p) => (p.t += dt) < 0.55);
+      for (const p of V.chips) {
+        const k = p.t / 0.55, X = sx(p.x + p.vx * p.t * 0.6), Y = sy(p.y + p.vy * p.t * 0.6 + 4.5 * p.t * p.t);
+        c.globalAlpha = 1 - k;
+        c.fillStyle = p.col;
+        c.fillRect(X - z * 0.05, Y - z * 0.05, z * 0.1, z * 0.1);
+      }
+      c.globalAlpha = 1;
+    }
+    const CAMP = [[-1.5, 1.62], [1.5, 1.62], [-1.62, -1.5], [1.62, -1.5]];
+    function drawCamp() {
+      const st = S(), c = V.ctx, z = V.cam.z;
+      const owned = Object.keys(st.made).filter((k) => I[k] && I[k].t === "stat" && st.made[k] > 0).sort((a, b) => I[a].a - I[b].a);
+      owned.slice(-4).forEach((k, i) => {
+        const [x, y] = CAMP[i], X = sx(x), Y = sy(y);
+        const f = k === "feu" ? 1 + Math.sin(V.t * 9) * 0.06 + Math.sin(V.t * 23) * 0.04 : 1;
+        if (k === "feu") { // la lueur du feu
+          const g = c.createRadialGradient(X, Y, 0, X, Y, z * 0.9);
+          g.addColorStop(0, "rgba(255,160,60," + (0.35 + Math.sin(V.t * 7) * 0.06) + ")"); g.addColorStop(1, "rgba(255,120,40,0)");
+          c.fillStyle = g; c.beginPath(); c.arc(X, Y, z * 0.9, 0, 6.3); c.fill();
+        }
+        c.font = Math.round(z * 0.5 * f) + "px serif";
+        c.textAlign = "center"; c.textBaseline = "middle";
+        c.fillText(I[k].ic || "🔥", X, Y - (f - 1) * z);
+      });
     }
     /* le gisement le plus proche où poser un extracteur libre */
     function extSpot() {
@@ -1005,7 +1065,7 @@
         if (f.to === "res") { const it = I[f.i]; unit = it && it.r ? it.r[2] : 1; }
         else { const m = E.machById(f.to), it = m && I[m.r]; unit = it && it.r[1][f.i] ? it.r[1][f.i] : 1; }
         V.credit[key] = Math.min(4, (V.credit[key] || 0) + f.q / unit);
-        if (f.to === "res") V.pulse.res = V.t;
+        if (f.to === "res") { V.pulse.res = V.t; V.rg[f.i] = (V.rg[f.i] || 0) + f.q; }
       }
     }
     function spawn(speed) {
@@ -1033,6 +1093,7 @@
       V.raf = requestAnimationFrame(frame);
       const dt = Math.min(0.1, (now - V.last) / 1000);
       V.last = now;
+      V.dt = dt;
       if (document.hidden) return;
       V.t += dt;
       if (V.t - (V.lastRef || 0) > 0.5) { V.lastRef = V.t; refresh(); }
@@ -1040,6 +1101,15 @@
       feed();
       spawn(speed);
       keepBand();
+      if (V.t - V.rgAt > 1.6) {
+        V.rgAt = V.t;
+        const top = Object.keys(V.rg).sort((a, b) => V.rg[b] - V.rg[a])[0];
+        if (top && V.rg[top] >= 1 && floater) {
+          const r = V.cv.getBoundingClientRect(), Y = r.top + sy(-1.6);
+          if (Y > r.top + 40 && Y < r.bottom - 40) floater("+" + fmt(V.rg[top]) + " " + I[top].n, r.left + sx(0), Y, "var(--good)");
+        }
+        V.rg = {};
+      }
       for (const p of V.packets) p.s += p.v * dt;
       V.packets = V.packets.filter((p) => {
         if (p.s < p.len) return true;
@@ -1129,6 +1199,7 @@
       drawSat();
       drawLinks();
       drawReserve();
+      drawCamp();
       for (const [x, y, e] of vis) {
         if (e.k === "split") drawSplit(x, y);
         else if (e.k === "port") drawPort(x, y, e);
@@ -1136,6 +1207,8 @@
       if (V.draw) drawPreview();
       for (const p of V.packets) drawPacket(p);
       for (const [x, y, e] of vis) { if (e.k === "mach") drawMach(x, y, e); else if (e.k === "ext") drawExt(x, y, e); else if (e.k === "site") drawSite(x, y, e); }
+      drawChips(V.dt || 0.016);
+      placeHarv();
       drawMarks();
       drawWalker();
       // la nuit tombe sur la carte, à l’heure de l’appareil
@@ -1172,7 +1245,7 @@
         c.arc(X + ((hh >> 2) % 17 - 8) * z / 22, Y + ((hh >> 6) % 17 - 8) * z / 22, z * (0.04 + (hh % 3) * 0.02), 0, 6.3);
         c.fill();
       }
-      if (!E.fabCell(d.x, d.y)) drawIcon(d.res, X, Y - pulse * z * 0.06, z * (0.5 + pulse * 0.1), false);
+      if (!E.fabCell(d.x, d.y)) drawIcon(d.res, X, Y - pulse * z * 0.14, z * (0.5 + pulse * 0.24), false); // la case rebondit sous le doigt
       // le stock de la matière, juste dessous
       if (z > 26) {
         c.font = "600 " + Math.round(z * 0.21) + "px system-ui, sans-serif";
