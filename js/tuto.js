@@ -50,7 +50,8 @@
      * Une étape : tab (l’onglet où elle se passe), at (ce qu’elle montre : un
      * sélecteur, un élément, ou { cell: [x, y] } sur la carte), text, done (fini ?),
      * next (bouton « Suivant »), dim (assombrir autour, oui par défaut s’il y a une
-     * cible), modal (elle se passe dans une fenêtre), roue (dans la roue). */
+     * cible), modal (elle se passe dans une fenêtre), roue (dans la roue),
+     * only (« simple » ou « avance » : seulement avec cette usine). */
     const CH = [
       { id: "debut", n: "Premiers gestes",
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts,
@@ -61,9 +62,9 @@
             text: "Ici, une recette, c’est un geste et des matières. Le geste Tailler est déjà choisi.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
           { tab: "atelier", at: () => (U.slots.includes("bois") ? null : '[data-inv="bois"]'), text: "Pose du bois sur l’établi : touche-le.",
             done: () => U.slots.includes("bois") || S().known.manche },
-          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Œuvre !" : "Reprends le geste Tailler."),
+          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche le gros bouton pour fabriquer !" : "Reprends le geste Tailler."),
             done: () => S().known.manche },
-          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Un manche ! Une découverte sort tout de suite et s’inscrit dans ton Carnet. Refaire une recette connue prend un peu de temps : tes mains travaillent une pièce après l’autre.", next: true },
+          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Un manche ! Une petite découverte sort tout de suite et s’inscrit dans ton Carnet. Refaire une recette connue prend un peu de temps : tes mains travaillent une pièce après l’autre.", next: true },
           { tab: "carte", go: "Retourne sur la Carte.", at: ".goal-card", text: "L’objectif, en haut, te dit quoi chercher ensuite. 🏁 montre tout ce qu’il y a à faire à cet âge.", next: true, done: () => S().known.corde },
           { text: "À toi de chercher, maintenant : de quoi lier les choses entre elles. Ramasse des fibres, puis essaie des gestes à l’Atelier. Le thermomètre te dit si tu chauffes, et chaque essai nouveau réveille des souvenirs.",
             free: true, done: () => S().known.corde },
@@ -85,14 +86,15 @@
           { tab: "carte", at: '.u-tools [data-tool="ext"]', text: "Ta cabane peut récolter à ta place, même jeu fermé. Prends l’outil Extracteur.",
             done: () => Usine.tool() === "ext" || any("ext") },
           { tab: "carte", at: () => deposit("bois"), text: "Touche le bois pour y poser ta cabane.", done: () => any("ext") },
-          { tab: "carte", at: '.u-sheet:not(.hidden) [data-u="link"]', alt: "Touche ta cabane, puis « Relier à la Réserve ».",
+          { tab: "carte", at: '.u-sheet:not(.hidden) [data-u="link"]', alt: "Touche ta cabane, puis « Relier à la Réserve ».", only: "avance",
             text: "Sa récolte doit rejoindre la Réserve. Touche « Relier à la Réserve » : le tapis se pose tout seul.", done: linked },
-          { tab: "carte", text: "Les tapis portent la récolte jusqu’à la Réserve. Tu peux aussi en tracer au doigt avec l’outil ➜.", next: true }
+          { tab: "carte", text: "Les tapis portent la récolte jusqu’à la Réserve. Tu peux aussi en tracer au doigt avec l’outil ➜.", next: true, only: "avance" },
+          { tab: "carte", text: "Le tapis s’est posé tout seul : sa récolte file vers la Réserve, même jeu fermé. Pose d’autres extracteurs, ils se relient pareil.", next: true, only: "simple" }
         ] },
       { id: "mains", n: "Tes mains",
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "carte"),
         steps: [
-          { at: () => (document.querySelector("#hands .hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
+          { at: () => (document.querySelector("#hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
             text: "Ce que tu fabriques à la main passe par ta file ✋ : une pièce après l’autre, même jeu fermé. Répéter un geste va de plus en plus vite, et ✕ annule en rendant les matières.", next: true }
         ] },
       { id: "roue", n: "La roue",
@@ -107,12 +109,14 @@
         still: () => !S().flags.lineDone,
         steps: [
           { tab: "carte", at: '.u-tools [data-tool="mach"]', text: "Ton automate refait un geste à ta place. Prends l’outil Machine.", done: () => Usine.tool() === "mach" || any("mach") },
-          { tab: "carte", at: () => ({ cell: [0, 0], span: 5 }), text: "Touche une case vide près de la Réserve pour la poser, puis choisis ce qu’elle fabrique.", free: true,
+          { tab: "carte", at: () => ({ cell: [0, 0], span: 5 }), text: () => (E.easy() ? "Touche une case vide, près de la Réserve par exemple, pour la poser, puis choisis ce qu’elle fabrique."
+            : "Touche une case vide près de la Réserve pour la poser, puis choisis ce qu’elle fabrique."), free: true,
             done: () => cells().some((e) => e.k === "mach" && e.r) },
-          { tab: "carte", at: '.u-tools [data-tool="port"]', text: "Il lui faut des matières. Prends l’outil Sortie et pose-la contre la Réserve.", done: () => any("port") },
-          { tab: "carte", at: '.u-tools [data-tool="tapis"]', text: "Avec l’outil Tapis, pars de la flèche de la sortie et glisse le doigt jusqu’à longer ta machine : elle se servira au passage.", done: fed },
-          { tab: "carte", text: "Ce qu’elle fabrique sort par sa petite flèche. Tournée vers la Réserve, ça y rentre tout seul ; sinon, trace un tapis jusqu’à elle.", next: true },
-          { tab: "carte", text: "Astuce : la Réserve ne laisse sortir qu’un petit débit. Pour aller plus vite, amène à tes machines leurs matières directement depuis les gisements.", next: true }
+          { tab: "carte", text: "C’est tout : elle se sert dans la Réserve et y range ce qu’elle fabrique (le pointillé). Change sa recette quand tu veux en la touchant.", next: true, only: "simple" },
+          { tab: "carte", at: '.u-tools [data-tool="port"]', text: "Il lui faut des matières. Prends l’outil Sortie et pose-la contre la Réserve.", done: () => any("port"), only: "avance" },
+          { tab: "carte", at: '.u-tools [data-tool="tapis"]', text: "Avec l’outil Tapis, pars de la flèche de la sortie et glisse le doigt jusqu’à longer ta machine : elle se servira au passage.", done: fed, only: "avance" },
+          { tab: "carte", text: "Ce qu’elle fabrique sort par sa petite flèche. Tournée vers la Réserve, ça y rentre tout seul ; sinon, trace un tapis jusqu’à elle.", next: true, only: "avance" },
+          { tab: "carte", text: "Astuce : la Réserve ne laisse sortir qu’un petit débit. Pour aller plus vite, amène à tes machines leurs matières directement depuis les gisements.", next: true, only: "avance" }
         ] },
       { id: "etude", n: "Étudier une matière",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
@@ -124,10 +128,10 @@
             text: "Étudie-la avec un peu d’Intuition ✨ : tu sauras avec quels gestes elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },
           { tab: "atelier", text: "Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi. À toi de trouver avec quoi.", next: true }
         ] },
-      { id: "jalons", n: "Les jalons",
+      { id: "jalons", n: "Les étapes",
         when: () => U.tab === "carte" && S().age >= 1 && !S().flags.milesSeen && !!document.querySelector("[data-miles]"),
         steps: [
-          { tab: "carte", at: "[data-miles]", text: "🏁 Les jalons de l’âge : tout ce qu’il y a à faire, d’un coup d’œil. Touche-les quand tu ne sais plus par où continuer.",
+          { tab: "carte", at: "[data-miles]", text: "🏁 Les étapes de l’âge : tout ce qu’il y a à faire, d’un coup d’œil. Touche-les quand tu ne sais plus par où continuer.",
             next: true, done: () => !!S().flags.milesSeen }
         ] },
       { id: "debit", n: "Un tapis qui déborde",
@@ -145,7 +149,8 @@
         end: () => { S().flags.tip_site = true; },
         steps: [
           { tab: "cosmos", go: "Un Grand Œuvre t’attend. Ouvre le Cosmos.", at: '[data-ct="oeuvres"]', text: "Ouvre les Grands Œuvres.", done: () => U.cosmosTab === "oeuvres" },
-          { tab: "cosmos", at: "[data-site]", text: "Il se construit sur la Carte : pose son chantier, puis amène-lui ses matières par tapis, depuis une sortie de la Réserve ou tes machines.",
+          { tab: "cosmos", at: "[data-site]", text: () => (E.easy() ? "Il se construit sur la Carte : pose son chantier, il se servira dans la Réserve au fil de ce que tu produis."
+            : "Il se construit sur la Carte : pose son chantier, puis amène-lui ses matières par tapis, depuis une sortie de la Réserve ou tes machines."),
             done: () => any("site") }
         ] }
     ];
@@ -160,6 +165,7 @@
     const enabled = () => S().settings.tuto !== false;
     let lastEnd = 0, lastQueue = 0, shownKey = "", stepAt = 0, revealed = "", revealAt = 0, raf = 0, mini = false;
     const chapter = () => CH.find((c) => c.id === state().c) || null;
+    const fits = (st) => !st.only || st.only === (E.easy() ? "simple" : "avance");
     const active = () => enabled() && !!chapter();
 
     function finish(ch, quietly) {
@@ -290,7 +296,8 @@
       if (shownKey !== key) {
         shownKey = key;
         const ch = chapter(), T = state();
-        el.querySelector(".tu-k").textContent = "💭 " + ch.n + (ch.steps.length > 1 ? " · " + (T.i + 1) + "/" + ch.steps.length : "");
+        const n = ch.steps.filter(fits).length, at = ch.steps.slice(0, T.i + 1).filter(fits).length;
+        el.querySelector(".tu-k").textContent = "💭 " + ch.n + (n > 1 ? " · " + at + "/" + n : "");
         el.querySelector(".tu-t").innerHTML = esc(view.text);
         el.querySelector(".tu-acts").innerHTML = '<button class="tu-b" data-t="skip">Passer</button>' +
           (view.free ? '<button class="tu-b" data-t="min">Réduire</button>' : "") + (view.next ? '<button class="tu-b pri" data-t="next">Suivant</button>' : "");
@@ -320,6 +327,7 @@
       }
       // un chapitre qui n’a plus lieu d’être s’efface, tant qu’on ne l’a pas commencé
       if (T.i === 0 && ch.still && !ch.still()) { finish(ch, true); return; }
+      while (ch.steps[T.i] && !fits(ch.steps[T.i])) T.i++;
       const s = ch.steps[T.i];
       if (!s) { finish(ch); return; }
       if (s.done && s.done()) { advance(); return; }

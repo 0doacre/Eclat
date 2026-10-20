@@ -122,7 +122,7 @@
       }
       if (!W.sel) {
         if (W.cat === "hand") return '<p class="tiny muted">Touche une fabrication pour la voir ou l’annuler. Elles se font l’une après l’autre, même jeu fermé.</p>';
-        if (inRing()) return '<p class="tiny muted">Touche une recette. Bordure verte : tout est là. Pointillés : faisable en fabriquant aussi ses pièces (⚡).</p>';
+        if (inRing()) return '<p class="tiny muted">Touche une recette. Bordure verte : tout est là. Pointillés : faisable, tes mains feront d’abord ses pièces.</p>';
         return '<p class="tiny muted">Choisis une famille de recettes. Au centre, ta file ✋ ; en haut, la recherche.</p>';
       }
       const id = W.sel, it = I[id], b = E.blocker(id);
@@ -137,9 +137,7 @@
       const t = E.handTime(id);
       h += '<div class="rw-acts">';
       if (E.isUnique(it)) h += '<button class="btn small pri" data-r="q" data-n="1">Fabriquer</button>';
-      else if (E.isScaled(it)) h += '<button class="btn small pri" data-r="q" data-n="1">Fabriquer</button><button class="btn small" data-r="q" data-n="5">×5</button>';
-      else h += '<button class="btn small pri" data-r="q" data-n="1">×1</button><button class="btn small" data-r="q" data-n="10">×10</button><button class="btn small" data-r="q" data-n="max">Max</button>';
-      h += '<button class="btn small" data-r="chain" title="Avec ses pièces">⚡</button>';
+      else h += '<button class="btn small pri" data-r="q" data-n="1">' + (E.isScaled(it) ? "Fabriquer" : "×1") + '</button><button class="btn small" data-r="q" data-n="10">×10</button><button class="btn small" data-r="q" data-n="max">Max</button>';
       if (it.t === "mach" || it.t === "ext") h += '<button class="btn small" data-r="place">📍 Poser <span data-rf></span></button>';
       h += "</div>" + '<p class="tiny muted rw-t">✋ ' + fmtTime(t) + " la pièce" + (E.isUnique(it) || E.isScaled(it) ? "" : ", plus vite en série") + '<span class="rw-miss" data-rmiss></span></p>';
       return h;
@@ -180,18 +178,16 @@
       if (rj && jj) rj.innerHTML = jobLine(jj);
       W.el.querySelectorAll("[data-jp]").forEach((c) => { const j = hi.jobs[+c.dataset.jp]; if (j && +c.dataset.jp === 0) c.setAttribute("stroke-dasharray", (100 * (1 - j.left / j.tot)).toFixed(1) + " 100"); });
       if (W.sel) {
-        const id = W.sel, max = E.maxCraftable(id, 100000);
+        // les boutons fabriquent aussi les pièces qui manquent
+        const id = W.sel, max = E.maxPlan(id), direct = E.maxCraftable(id, 1) >= 1;
         W.el.querySelectorAll('[data-r="q"]').forEach((b) => {
           const n = b.dataset.n;
-          b.disabled = hi.full || (n === "max" ? max < 1 : max < Number(n));
+          b.disabled = hi.full || (n === "max" ? max < 1 : n === "1" ? max < 1 : !E.plan(id, Number(n)).ok);
           if (n === "max") b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
         });
-        const ch = W.el.querySelector('[data-r="chain"]');
-        const chainOK = E.plan(id, 1).ok;
-        if (ch) ch.disabled = hi.full || !chainOK;
         // un bouton grisé dit pourquoi
         const ms = W.el.querySelector("[data-rmiss]");
-        if (ms) ms.textContent = hi.full ? " · tes mains sont pleines" : max >= 1 ? "" : chainOK ? " · ⚡ fabrique aussi ce qui manque" : " · il manque ce qui est en rouge";
+        if (ms) ms.textContent = E.queued(id) > 0 ? " · en route dans tes mains" : hi.full ? " · tes mains sont pleines" : direct ? "" : max >= 1 ? " · tes mains feront d’abord les pièces" : " · il manque ce qui est en rouge";
         const pl = W.el.querySelector('[data-r="place"]');
         if (pl) {
           const free = freeOf(id);
@@ -210,7 +206,7 @@
     /* ------------------------------------------------------------ actions */
     function queue(btn, n, chain) {
       const id = W.sel;
-      if (n === "max") n = E.maxCraftable(id, 100000);
+      if (n === "max") n = E.maxPlan(id);
       if (!(n >= 1)) return;
       A.init();
       const r = E.queue(id, n, chain);
@@ -251,8 +247,7 @@
         W.page = (W.page + Number(b.dataset.d) + pages) % pages;
         A.page ? A.page() : A.click();
         render();
-      } else if (r === "q") queue(b, b.dataset.n === "max" ? "max" : Number(b.dataset.n), false);
-      else if (r === "chain") queue(b, 1, true);
+      } else if (r === "q") queue(b, b.dataset.n === "max" ? "max" : Number(b.dataset.n), true);
       else if (r === "pin") { E.togglePin(W.sel); A.click(); render(); }
       else if (r === "info") goto(b.dataset.id);
       else if (r === "place") { const id = W.sel; close(); onPlace(I[id].t, id); }
