@@ -19,7 +19,7 @@
   const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
 
   function create(api) {
-    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel, quiet } = api;
+    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel, quiet, passHTML } = api;
     const I = D.ITEMS;
     const { DX, DY } = window.EclatEngine;
     const S = () => E.state;
@@ -315,6 +315,7 @@
         if (m) { selectZone({ z: m.z, i: m.i }); return; }
         if (!e && harvest(c)) return;
         if (!e) { const g = labelAt(c.x, c.y); if (g) { selectZone({ z: g.id }); return; } }
+        if (!e) { const mz = (V.mists || []).find((q) => c.x >= q.x0 && c.x <= q.x1 && c.y >= q.y0 && c.y <= q.y1 && D.PASSAGES[q.z]); if (mz) { selectZone({ z: mz.z, pass: true }); return; } }
         select(e && e.k !== undefined ? c : null);
         return;
       }
@@ -399,7 +400,7 @@
       if (V.tool === "tapis") V.draw = { path: [{ x: c.x, y: c.y, d: null }] };
       if (V.tool === "del") { if (demolish(c)) V.gest.done[c.x + "," + c.y] = 1; }
       // garder le doigt sur un gisement : on continue de récolter
-      const dep = V.tool === "voir" && !E.fabCell(c.x, c.y) && E.deposit(c.x, c.y);
+      const fc = E.fabCell(c.x, c.y), dep = V.tool === "voir" && (!fc || fc.k === "ext") && E.deposit(c.x, c.y);
       if (dep && dep.hand) {
         const g = V.gest;
         g.hold = setTimeout(function rep() { if (V.gest !== g || g.moved) return; g.held = true; harvest(c); g.hold = setTimeout(rep, 140); }, 400);
@@ -743,7 +744,7 @@
     function sheet() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (!box) return;
-      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); box.dataset.zs = V.zsel.i !== undefined ? markState(V.zsel.z, V.zsel.i) : ""; return; }
+      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); box.dataset.zs = V.zsel.i !== undefined ? markState(V.zsel.z, V.zsel.i) : ""; box.dataset.ps = V.zsel.pass ? passSig(V.zsel.z) : ""; return; }
       const c = V.sel, e = c && E.fabCell(c.x, c.y);
       if (!e) { box.classList.add("hidden"); box.innerHTML = ""; V.sel = null; return; }
       box.classList.remove("hidden");
@@ -783,6 +784,7 @@
             (us[t].own - us[t].used) + " libre" + (us[t].own - us[t].used > 1 ? "s" : "") + '</span></span><button class="mini" data-u="eu" data-t="' + t + '" data-v="-1">−</button><b>' + (e.u[t] || 0) +
             '</b><button class="mini" data-u="eu" data-t="' + t + '" data-v="1">+</button></div>').join("") + "</div>"
             : '<p class="small muted">Aucun de tes extracteurs ne sait récolter ça. Regarde au Carnet ce qui pourrait.</p>') +
+          (d && d.hand ? '<p class="tiny muted">✋ Garde le doigt appuyé sur la case : tu récoltes aussi à la main, en plus de l’extracteur.</p>' : "") +
           '<div class="u-row acts">' + (loose ? '<button class="btn small pri" data-u="link">🛤️ Relier à la Réserve</button>' : "") +
           '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + "</button>" + (E.easy() ? "" : '<button class="btn small" data-u="rot">🔄 Tourner</button>') + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       } else if (e.k === "port") {
@@ -860,9 +862,20 @@
       if (n.locked) return "locked";
       return "next";
     }
+    const passSig = (zid) => { const p = E.passInfo(zid); return p ? Object.keys(p.cost).map((i) => (p.paid[i] || 0) + ":" + Math.floor(S().inv[i] || 0)).join(",") + (p.done ? "!" : "") : ""; };
     function zoneSheet(zs) {
       const st = S(), z = E.ZONES[zs.z];
       let h = '<button class="u-x" data-u="close" aria-label="Fermer">✕</button>';
+      if (zs.pass) {
+        const p = E.passInfo(zs.z);
+        if (p && p.done) return h + '<div class="u-head"><span class="ic">✓</span><div class="grow"><b>' + esc(p.P.n) + '</b><div class="u-st good">Franchi : ' + esc(z.n) + " est ouverte.</div></div></div>";
+        if (p && !p.ready) { // la terre suivante : l’objet qui y mène, puis ce que coûtera son passage
+          const req = I[z.req], known = req && (st.known[z.req] || req.a <= st.age + 1);
+          return h + '<div class="u-head"><span class="ic">🌫️</span><div class="grow"><b>' + (known ? esc(z.n) : "Une terre inconnue") + '</b><div class="u-st warn">' + (known ? "Il te faut d’abord : " + esc(req.n) : "Un objet que tu ne connais pas encore y mène.") + "</div></div></div>" +
+            (known ? '<p class="small muted">Ensuite, le passage <b>' + esc(p.P.n) + "</b> : " + Object.keys(p.cost).map((i) => fmt(p.cost[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + " (+" + p.P.tr + " ✦ à la relève).</p>" : "");
+        }
+        return h + '<div class="u-head"><span class="ic">🚧</span><div class="grow"><b>Vers ' + esc(z.n) + '</b><div class="tiny muted">Verse ce qu’il faut depuis la Réserve, en plusieurs fois si besoin.</div></div></div>' + (passHTML ? passHTML(zs.z) : "");
+      }
       if (zs.i !== undefined) {
         const x = z.exps[zs.i], state = markState(zs.z, zs.i);
         const hidden = x.hidden && state !== "done" && state !== "active";
@@ -917,10 +930,11 @@
       const own = E.MACHINES.reduce((a, m) => a + ms[m].own, 0);
       const machs = ents.filter((e) => e.k === "mach"), exts = ents.filter((e) => e.k === "ext");
       const freeE = E.EXTS.reduce((a, t) => a + us[t].own - us[t].used, 0);
+      const vet = st.cycle > 1; // un Semeur qui a déjà passé le relais connaît les gestes de base
       if (!exts.length && !freeE && !own) {
-        return st.stats.taps < 20 || st.known.cabane ? "Touche une case colorée de la Lisière pour récolter à la main. Garde le doigt appuyé pour continuer." : null;
+        return !vet && (st.stats.taps < 20 || st.known.cabane) ? "Touche une case colorée de la Lisière pour récolter à la main. Garde le doigt appuyé pour continuer." : null;
       }
-      if (!exts.length && freeE) return "Prends l’outil ⛏️ <b>Extracteur</b> et touche une case de gisement (le bois de la Lisière, par exemple) pour y poser ton extracteur.";
+      if (!exts.length && freeE && !vet) return "Prends l’outil ⛏️ <b>Extracteur</b> et touche une case de gisement (le bois de la Lisière, par exemple) pour y poser ton extracteur.";
       if (exts.some((e) => E.machInfo(e.id).s === "noout")) return "Un extracteur n’a nulle part où poser sa récolte. Touche-le puis 🛤️ <b>Relier à la Réserve</b>, ou trace un tapis avec l’outil ➜.";
       if (!st.flags.extDone) return "Ça arrive. Regarde la récolte rouler jusqu’à la Réserve.";
       if (freeE && !st.flags.tip_freeExt) return "Tu as " + freeE + " extracteur" + (freeE > 1 ? "s" : "") + " qui attend" + (freeE > 1 ? "ent" : "") + " d’être posé" + (freeE > 1 ? "s" : "") + " (outil ⛏️).";
@@ -1005,6 +1019,7 @@
     function sheetLive() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (box && V.zsel && V.zsel.i !== undefined && box.dataset.zs !== markState(V.zsel.z, V.zsel.i)) { sheet(); return; }
+      if (box && V.zsel && V.zsel.pass) { if (box.dataset.ps !== passSig(V.zsel.z)) sheet(); return; }
       const e = V.sel && E.fabCell(V.sel.x, V.sel.y);
       if (box && e && e.k === "site") {
         const ps = E.projState(e.p), step = D.PROJECTS[e.p].steps[ps.step];
@@ -1302,26 +1317,33 @@
         c.strokeStyle = shade(col, 0.25); c.lineWidth = 2; c.stroke();
         decorate(g, deco, col);
       }
-      // la prochaine terre, encore dans la brume
-      const next = D.ZONES.find((zz) => !E.zoneOpen(zz.id) && !zz.secret);
-      if (next) {
-        const cells = E.zonePatch(next.id);
-        if (cells.length) {
-          const xs = cells.map((q) => q.x), cy = cells[0].y;
-          const X = sx(Math.min.apply(null, xs) - 1.6), Y = sy(cy - 2.2), W = (Math.max.apply(null, xs) - Math.min.apply(null, xs) + 3.2) * z, H = 3.8 * z;
-          c.fillStyle = "rgba(160,160,170,0.12)";
-          roundRect(c, X, Y, W, H, z * 0.9); c.fill();
-          c.setLineDash([5, 6]); c.strokeStyle = "rgba(220,220,230,0.3)"; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]);
-          if (z > 16) {
-            const req = I[next.req], known = req && (S().known[next.req] || req.a <= S().age + 1);
-            c.font = "600 " + Math.max(10, Math.round(z * 0.26)) + "px system-ui, sans-serif";
-            c.textAlign = "center"; c.textBaseline = "middle";
-            c.fillStyle = "rgba(235,235,245,0.75)";
-            c.fillText("🌫️ " + (known ? next.n : "Terre inconnue"), X + W / 2, Y + H * 0.4);
-            if (known) { c.font = Math.max(9, Math.round(z * 0.21)) + "px system-ui, sans-serif"; c.fillText("il te faut : " + req.n, X + W / 2, Y + H * 0.66); }
-          }
+      // la prochaine terre, encore dans la brume, et chaque terre dont le passage est en cours (🚧)
+      const next = D.ZONES.find((zz) => !E.zoneOpen(zz.id) && !zz.secret), pend = E.passPending();
+      V.mists = [];
+      D.ZONES.filter((zz) => !E.zoneOpen(zz.id) && (zz === next || pend.includes(zz.id))).forEach((nz) => {
+        const cells = E.zonePatch(nz.id);
+        if (!cells.length) return;
+        const xs = cells.map((q) => q.x), cy = cells[0].y, x0 = Math.min.apply(null, xs) - 1.6, x1 = Math.max.apply(null, xs) + 1.6;
+        V.mists.push({ z: nz.id, x0, x1, y0: cy - 2.2, y1: cy + 1.6 });
+        const X = sx(x0), Y = sy(cy - 2.2), W = (x1 - x0) * z, H = 3.8 * z, p = pend.includes(nz.id) && E.passInfo(nz.id);
+        c.fillStyle = p ? "rgba(255,211,107,0.10)" : "rgba(160,160,170,0.12)";
+        roundRect(c, X, Y, W, H, z * 0.9); c.fill();
+        c.setLineDash([5, 6]); c.strokeStyle = p ? "rgba(255,211,107,0.55)" : "rgba(220,220,230,0.3)"; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]);
+        if (p) { // l’avancement du passage
+          c.fillStyle = "rgba(255,211,107,0.25)";
+          roundRect(c, X + z * 0.3, Y + H - z * 0.55, (W - z * 0.6) * p.frac, z * 0.22, z * 0.11); c.fill();
         }
-      }
+        if (z > 16) {
+          const req = I[nz.req], known = req && (S().known[nz.req] || req.a <= S().age + 1);
+          c.font = "600 " + Math.max(10, Math.round(z * 0.26)) + "px system-ui, sans-serif";
+          c.textAlign = "center"; c.textBaseline = "middle";
+          c.fillStyle = "rgba(235,235,245,0.8)";
+          c.fillText((p ? "🚧 " : "🌫️ ") + (known || p ? nz.n : "Terre inconnue"), X + W / 2, Y + H * 0.36);
+          c.font = Math.max(9, Math.round(z * 0.21)) + "px system-ui, sans-serif";
+          if (p) c.fillText("passage : " + Math.floor(p.frac * 100) + " % · touche pour verser", X + W / 2, Y + H * 0.6);
+          else if (known) c.fillText("il te faut : " + req.n, X + W / 2, Y + H * 0.62);
+        }
+      });
     }
     function decorate(g, deco, col) {
       const c = V.ctx, z = V.cam.z, b = g.box;
@@ -1769,7 +1791,9 @@
       toast("Touche une case vide pour poser la machine qui fabriquera : <b>" + esc(I[id].n) + "</b>");
     }
 
-    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, prepare, placeSite, useMach, useExt, cellRect, reveal, tool: () => V.tool, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
+    /* plus rien de choisi (après une relève, la case d’avant n’existe plus) */
+    function clearSel() { V.sel = null; V.zsel = null; if (V.el) sheet(); }
+    return { mount, unmount, refresh, mounted, setTool, pickRecipe, select, clearSel, prepare, placeSite, useMach, useExt, cellRect, reveal, tool: () => V.tool, focusZone, zonesOnMap, cam: () => ({ x: V.cam.x, y: V.cam.y, z: V.cam.z, w: V.w, h: V.h }) };
   }
 
   window.EclatUsine = { create };

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.4.0";
+  D.VERSION = "4.5.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -817,14 +817,17 @@
     ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi, même quand le jeu est fermé."],
     { k: "ext", n: "Installer ta cabane", txt: "Sur la Carte, pose ta cabane sur une case de la Lisière, puis trace un tapis jusqu’à la Réserve. Elle récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
+    { k: "pass", z: "plaine", n: "Ouvrir le passage vers la Plaine", txt: "Ton épieu te donne le courage d’y aller. Reste à te frayer un chemin dans les hautes herbes : verse ce qu’il faut depuis la Réserve." },
     ["laniere", "Les bêtes de la plaine laissent leur peau derrière elles. Découpée en bandes, elle lie mieux que l’herbe."],
     { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Au milieu de la plaine, des os blanchissent au soleil. Lance une exploration : tu en rapporteras de quoi travailler." },
     ["aiguille", "Pour coudre une peau, il faut une pointe percée."],
     ["collets", "Des pièges posés dans la plaine attraperaient os et peaux à ta place. Pose-les sur la Carte, comme ta cabane."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
+    { k: "pass", z: "riviere", n: "Ouvrir le passage vers la Rivière", txt: "L’eau est là, large et lente. Il te faut de quoi la franchir." },
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
     ["hache_pierre", "Avec un tranchant de pierre, tu abattrais bien plus de bois. Les outils multiplient tes récoltes."],
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer."],
+    { k: "pass", z: "collines", n: "Ouvrir le passage vers les Collines", txt: "Les collines sont raides : il faudra y tailler des marches." },
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Il faudrait quelque chose pour les refaire à ta place."],
     { k: "line", n: "Faire tourner ton automate", txt: "Sur la Carte, pose ton automate, une sortie contre la Réserve, et relie-les par un tapis. Il fabriquera tant qu’on lui apportera ses matières." },
     ["four", "Le feu de camp ne chauffe plus assez."],
@@ -834,11 +837,13 @@
     ["lingot_bronze", "Le métal rouge est trop mou. Allie-le."],
     ["automate_bronze", "Un automate de bronze travaillerait bien plus vite que ta marionnette de bois."],
     ["pioche_bronze", "Creuse vers les Profondeurs."],
+    { k: "pass", z: "mine", n: "Ouvrir le passage vers les Profondeurs", txt: "Pour descendre, il faut un puits solide, tenu par du métal." },
     ["enclume_bronze", "Le fer ne se laissera pas battre sur une simple pierre."],
     ["bas_fourneau", "Le minerai de fer exige une chaleur rugissante."],
     ["lingot_fer", "Bats le fer."],
     ["lunette", "Une étoile rouge pulse dans le ciel. Il te faut la voir de plus près."],
     ["chariot", "Au-delà des collines s’étend un désert de verre. Il te faut de quoi y transporter tes outils."],
+    { k: "pass", z: "desert", n: "Ouvrir le passage vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
     ["haut_fourneau", "Pour l’acier, il faut encore plus chaud."],
     ["lingot_acier", "Fer et carbone, à très haute température."],
     ["tour", "La précision des machines."],
@@ -850,17 +855,53 @@
     ["silicium", "Le cristal du désert cache un métal qui pense."],
     ["ordinateur", "Construis une machine qui calcule."],
     ["foreuse", "L’huile noire dort sous le Gisement Noir. Il te faut une sonde pour l’atteindre."],
+    { k: "pass", z: "gisement", n: "Ouvrir le passage vers le Gisement Noir", txt: "L’huile dort loin sous la croûte. Il faut y creuser une tranchée." },
     ["reacteur", "Recompose les molécules."],
     ["dynamite", "Les Pics Fracturés ne s’ouvriront qu’à l’explosif."],
+    { k: "pass", z: "montagnes", n: "Ouvrir le passage vers les Pics Fracturés", txt: "Les Pics n’ont qu’un col. Il faut l’ouvrir, puis le tenir." },
     ["titane", "Le métal le plus noble des montagnes."],
     ["autoclave", "Pour les composites, il faut cuire sous pression."],
     ["composite", "Le matériau des fusées."],
     ["fusee", "Monte en orbite."],
+    { k: "pass", z: "orbite", n: "Ouvrir le passage vers l’Orbite", txt: "Une fusée ne suffit pas : il faut une rampe, et de quoi recommencer." },
     ["alunisseur", "Pose le pied sur la Lune."],
+    { k: "pass", z: "lune", n: "Ouvrir le passage vers la Lune", txt: "Se poser ne suffit pas : il faut de quoi tenir là-haut." },
     ["reacteur_fusion", "Une étoile en bouteille."],
     ["vaisseau", "Cap sur Mercure."],
+    { k: "pass", z: "mercure", n: "Ouvrir le passage vers Mercure", txt: "Si près du soleil, rien ne tient sans bouclier." },
     ["forge_stellaire", "Le cœur d’une étoile."]
   ];
+
+  /* ------------------------------------------------- PASSAGES ET MÉMOIRE (voir docs/PROGRESSION.md)
+   * Un passage par terre : l’objet qui ouvrait la terre le rend possible, la terre
+   * s’ouvre quand il est payé (on verse depuis la Réserve, en plusieurs fois si besoin).
+   * tr : les Traces qu’il rapporte à la relève. Prix réglés avec tools/sim-passages.js :
+   * première partie arrêtée vers les Collines (~25 min), chaque relève va une terre plus loin. */
+  D.PASSAGES = {
+    plaine: { n: "Le Sentier des Herbes", t: "Les herbes de la plaine sont plus hautes que toi. Il faut s’y frayer un chemin, et des pierres pour le marquer.", cost: { bois: 120, fibre: 80, caillou: 40 }, tr: 2 },
+    riviere: { n: "La Passerelle", t: "La rivière est large et lente. Une passerelle de bois, liée de cuir et d’os, te mènerait sur l’autre rive.", cost: { bois: 2400, cuir: 360, os: 480 }, tr: 3 },
+    collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 15000, argile: 600, brique: 150 }, tr: 5 },
+    mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 40000, plaque_cuivre: 1200, lingot_bronze: 800 }, tr: 8 },
+    desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 80000, plaque_bronze: 1500, roue: 200 }, tr: 12 },
+    gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendra.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
+    montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 7500, plastique: 1200, moteur_elec: 180 }, tr: 27 },
+    orbite: { n: "La Rampe", t: "Une fusée ne suffit pas : il faut une rampe, et de quoi recommencer.", cost: { aluminium: 4500, titane: 900, composite: 900 }, tr: 40 },
+    lune: { n: "La Base avancée", t: "Se poser ne suffit pas : il faut de quoi tenir là-haut.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
+    mercure: { n: "Le Bouclier solaire", t: "Si près du soleil, rien ne tient sans bouclier.", cost: { regolithe: 18000, helium3: 4500, composite: 6000 }, tr: 90 }
+  };
+  /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
+  D.MEMOIRE = [
+    { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 16, 32] },
+    { id: "mains", n: "Gestes sûrs", ic: "⏱️", d: "Fabriquer à la main va plus vite : ×{v} de la durée.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 12, 20] },
+    { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 21, 34, 55, 89] },
+    { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 34, 55, 89, 144] },
+    { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Passages ×{v} du prix.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
+    { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "des matières, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
+    { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
+    { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps compte jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
+  ];
+  /* ce que contient le paquetage, niveau par niveau (cumulé) */
+  D.PAQUETAGE = [{ bois: 60, fibre: 60, caillou: 30, manche: 4, corde: 4 }, { cabane: 1 }, { cabane: 2, feu: 1 }];
 
   /* Un âge accompli (toutes ses étapes faites) rapporte un peu d’Intuition. */
   D.AGE_DONE = 3;
@@ -903,6 +944,10 @@
   };
 
   D.CHANGES = [
+    "🚧 Des passages entre les terres : l’objet qui y mène ne suffit plus, il faut aussi franchir le passage en y versant des matières depuis la Réserve (en plusieurs fois si besoin). Chaque passage coûte bien plus que le précédent.",
+    "✦ La relève : dès un passage franchi, tu peux passer le relais. Un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet et gagne des Traces.",
+    "✋ La Mémoire des mains : avec les Traces, des améliorations pour toujours (récolte, mains, extracteurs, machines, passages, paquetage, raccourci, nuits plus longues). Touche ✦ en haut de l’écran.",
+    "🛠️ Une fabrication en chaîne ne reste plus bloquée quand une pièce est en partie en stock.",
     "🖐️ Plus rien ne bouge sous le doigt à l’Atelier : le bouton d’œuvre agit au relâcher, la même pièce demandée plusieurs fois s’allonge (×N), un petit établi reste en haut quand on descend dans la liste. Deux messages au plus, sous l’objectif ; un bouton grisé dit pourquoi quand on le touche.",
     "🎉 Des fêtes : une découverte, une recette trouvée, une étape ou un âge accompli s’affichent au centre de l’écran. La récolte rebondit et se compte (+9 Bois), et le feu de camp brille sur la carte.",
     "🏁 Des étapes plus claires : cinq à l’âge de l’Os, un compteur qui suit l’âge en cours, et +3 ✨ quand un âge est accompli.",

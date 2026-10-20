@@ -77,9 +77,19 @@ for (const pid in D.PROJECTS) {
   if (!D.ENDINGS[p.end]) err("œuvre " + pid + " : fin inconnue");
   p.steps.forEach((s) => { if (s.cost) for (const i in s.cost) if (!I[i]) err("œuvre " + pid + " : coût inconnu " + i); });
 }
+// les passages : une terre existante, ouverte par un objet, des coûts connus, des Traces
+for (const z in D.PASSAGES) {
+  const P = D.PASSAGES[z];
+  if (!Z[z]) err("passage vers une terre inconnue " + z);
+  else if (!Z[z].req || !I[Z[z].req]) err("passage " + z + " : aucun objet n’ouvre cette terre");
+  for (const i in P.cost) if (!I[i]) err("passage " + z + " : coût inconnu " + i);
+  if (!(P.tr > 0)) err("passage " + z + " : pas de Traces");
+}
+D.MEMOIRE.forEach((m) => { if (!m.cost.length || typeof m.v !== "function") err("mémoire " + m.id + " : mal formée"); });
 D.OBJECTIVES.forEach((o) => {
   if (Array.isArray(o)) { if (!I[o[0]]) err("objectif inconnu " + o[0]); return; }
   if (o.k === "exp") { if (!Z[o.z] || !Z[o.z].exps.find((x) => x.id === o.x)) err("objectif d’exploration inconnu " + o.z + "/" + o.x); }
+  else if (o.k === "pass") { if (!D.PASSAGES[o.z]) err("objectif de passage inconnu " + o.z); }
   else if (o.k !== "line" && o.k !== "ext") err("type d’objectif inconnu " + o.k);
   if (!o.txt || !o.n) err("objectif " + o.k + " sans texte");
 });

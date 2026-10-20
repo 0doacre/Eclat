@@ -79,12 +79,12 @@
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
-      fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {},
+      fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
       hand: { q: [], p: 0 }, studied: {},
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {} },
       settings: { sound: true, vibe: true, usine: "simple" },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
@@ -299,10 +299,82 @@
       E.emit("struct");
     }
 
+    /* ------------------------------------------------------ Mémoire des mains (voir docs/PROGRESSION.md)
+     * Les améliorations que les Semeurs se transmettent, achetées avec les Traces. */
+    const MEM = {};
+    D.MEMOIRE.forEach((m) => (MEM[m.id] = m));
+    const memLvl = (id) => (S.meta && S.meta.mem && S.meta.mem[id]) || 0;
+    const memV = (id) => MEM[id].v(memLvl(id));
+    E.memLvl = memLvl;
+    E.memV = memV;
+    E.memCost = (id) => MEM[id].cost[memLvl(id)]; // undefined : au maximum
+    E.memBuy = function (id) {
+      const m = MEM[id], c = m && m.cost[memLvl(id)];
+      if (c === undefined || S.meta.traces < c) return false;
+      S.meta.traces -= c;
+      S.meta.mem[id] = memLvl(id) + 1;
+      recalc();
+      E.emit("struct");
+      return true;
+    };
+
+    /* ------------------------------------------------------ passages
+     * L’objet qui ouvrait une terre rend son passage possible ; la terre s’ouvre quand
+     * le passage est payé. On verse depuis la Réserve, en plusieurs fois si besoin. */
+    const PASS = D.PASSAGES;
+    function reachZone(zid) {
+      if (!PASS[zid]) return unlockZone(zid);
+      const p = S.pass[zid] || (S.pass[zid] = { paid: {}, done: false });
+      if (p.done) return unlockZone(zid);
+      E.emit("passage", zid);
+      E.emit("struct");
+    }
+    E.passCost = function (zid) {
+      const k = memV("chemins"), out = {};
+      for (const i in PASS[zid].cost) out[i] = Math.max(1, Math.ceil(PASS[zid].cost[i] * k));
+      return out;
+    };
+    /* où en est un passage : possible (l’objet est fait), payé, ce qui reste */
+    E.passInfo = function (zid) {
+      const P = PASS[zid], p = S.pass[zid];
+      if (!P) return null;
+      const cost = E.passCost(zid), paid = (p && p.paid) || {}, left = {};
+      let need = 0, got = 0;
+      for (const i in cost) {
+        const g = Math.min(cost[i], paid[i] || 0);
+        need += cost[i]; got += g;
+        if (g < cost[i]) left[i] = cost[i] - g;
+      }
+      return { z: zid, P, cost, paid, left, ready: !!p, done: !!(p && p.done), frac: need ? got / need : 1, can: Object.keys(left).some((i) => (S.inv[i] || 0) >= 1) };
+    };
+    E.passPending = () => Object.keys(PASS).filter((z) => S.pass[z] && !S.pass[z].done);
+    E.passPour = function (zid) {
+      const p = S.pass[zid];
+      if (!p || p.done) return { ok: false };
+      const cost = E.passCost(zid), gave = {};
+      for (const i in cost) {
+        const g = Math.min(Math.floor(S.inv[i] || 0), cost[i] - (p.paid[i] || 0));
+        if (g > 0) { add(i, -g); p.paid[i] = (p.paid[i] || 0) + g; gave[i] = g; }
+      }
+      const done = Object.keys(cost).every((i) => (p.paid[i] || 0) >= cost[i]);
+      if (done) {
+        p.done = true;
+        E.emit("passdone", { z: zid, tr: PASS[zid].tr });
+        unlockZone(zid);
+        checkAges();
+      }
+      E.emit("struct");
+      return { ok: Object.keys(gave).length > 0, gave, done };
+    };
+    /* ------------------------------------------------------ la relève
+     * Ce qu’un nouveau Semeur gagnerait maintenant : les Traces des passages franchis. */
+    E.releveGain = () => Object.keys(S.pass || {}).reduce((a, z) => a + (S.pass[z].done && !S.pass[z].free && PASS[z] ? PASS[z].tr : 0), 0);
+    E.canReleve = () => E.releveGain() > 0 || Object.keys(S.endings || {}).length > 0;
+
     /* ------------------------------------------------------ récolte */
     function tapYield(res, zid) {
       const c = E.cache();
-      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo;
+      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte");
     }
     E.tapYield = tapYield;
     E.tap = function (res, zid) {
@@ -316,6 +388,7 @@
     };
     /* Usine avancée : la place dans la Réserve pour une matière brute (sans limite en usine
      * simple, et pour tout ce qui se fabrique). */
+    E.tapYieldOf = (res) => { const z = RES_ZONE[res]; return z && zoneOpen(z) ? tapYield(res, z) : 0; };
     E.storeCap = (id) => (easy() || !item(id) || item(id).t !== "res" ? Infinity : D.STORE[Math.min(S.age, D.STORE.length - 1)]);
     const storeRoom = (id) => Math.max(0, E.storeCap(id) - (S.inv[id] || 0));
     E.storeRoom = storeRoom;
@@ -471,7 +544,7 @@
       const it = item(id);
       const e = it.e || {};
       if (!it.sec && !it.path && it.a > S.age) setAge(it.a);
-      if (e.zone) unlockZone(e.zone);
+      if (e.zone) reachZone(e.zone);
       if (e.once && e.once.intu) S.intu += e.once.intu;
       if (it.sec) {
         S.intu += 2;
@@ -481,7 +554,7 @@
       if (e.fireworks) E.emit("fx", "fireworks");
       if (e.arche && !S.flags.arche) { S.flags.arche = true; archeSay("radio"); }
       if (e.decode) decodeSignal();
-      if (D.EVENTS[id]) E.emit("event", { id, txt: D.EVENTS[id] });
+      if (D.EVENTS[id] && !S.meta.ev[id]) { S.meta.ev[id] = 1; E.emit("event", { id, txt: D.EVENTS[id] }); }
       if (id === "cerf_volant" || id === "boussole") E.emit("struct");
       E.emit("discover", id);
       checkAges();
@@ -663,7 +736,18 @@
       }
       need(id, isUnique(item(id)) ? 1 : times, 0, true);
       for (const k in missing) missing[k] = Math.ceil(missing[k] - 1e-9);
-      const steps = Object.keys(crafts).sort((a, b) => depth[b] - depth[a]).map((x) => [x, crafts[x]]);
+      // chaque fabrication après celles qui lui fournissent des pièces (un tri par profondeur
+      // ne suffit pas : une pièce prise en partie au stock n’a pas sa profondeur mise à jour)
+      const order = [], seenO = {};
+      const visit = (x) => {
+        if (seenO[x]) return;
+        seenO[x] = true;
+        const it = item(x);
+        Object.keys(it.r[1]).filter((i) => crafts[i]).sort((a, b) => depth[b] - depth[a]).forEach(visit);
+        order.push(x);
+      };
+      Object.keys(crafts).sort((a, b) => depth[b] - depth[a]).forEach(visit);
+      const steps = order.map((x) => [x, crafts[x]]);
       return { ok: !Object.keys(missing).length && !Object.keys(blocked).length, id, times, steps, missing, blocked, locked: Object.keys(locked), used };
     };
     /* Exécute un plan complet ; ne fait rien s’il manque quoi que ce soit. */
@@ -702,7 +786,7 @@
       const it = item(id);
       const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
       const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
-      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old;
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains");
     }
     E.handTime = handTime;
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
@@ -888,6 +972,7 @@
       if (o.k === "exp") return (S.exp.done[o.z] || 0) > ZONES[o.z].exps.findIndex((x) => x.id === o.x);
       if (o.k === "line") return !!S.flags.lineDone;
       if (o.k === "ext") return !!S.flags.extDone;
+      if (o.k === "pass") return !!(S.pass && S.pass[o.z] && S.pass[o.z].done) || (!PASS[o.z] && zoneOpen(o.z));
       return true;
     }
     /* Le premier objectif non atteint après le plus avancé déjà atteint :
@@ -923,7 +1008,7 @@
         if (!it.r) {
           // matière première d’une zone fermée : il faut la clé de la zone
           const req = zid && ZONES[zid].req;
-          if (req && req[0] !== "@") return walk(req, d + 1) || { id: req, why: "zone", z: zid };
+          if (req && req[0] !== "@") return walk(req, d + 1) || (S.pass[zid] && !S.pass[zid].done ? { id: req, why: "pass", z: zid } : { id: req, why: "zone", z: zid });
           return null;
         }
         // sinon (y compris le charbon avant les Profondeurs) : on la fabrique
@@ -1227,7 +1312,7 @@
       let r = 0;
       for (const t in e.u) {
         const it = item(t);
-        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
+        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr");
       }
       return r;
     }
@@ -1256,7 +1341,7 @@
     /* ce qu’un tapis porte au plus, par seconde ; et ce que la Réserve laisse sortir, en tout */
     E.beltCap = () => D.BELT.cap[Math.min(S.age, D.BELT.cap.length - 1)] * E.cache().aspd;
     E.resOutCap = () => E.beltCap() * D.BELT.out;
-    E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd : 0);
+    E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd * memV("mach") : 0);
     const buf = (id) => S.fab.ms[id] || (S.fab.ms[id] = { p: 0, b: {}, o: 0 });
     E.machBuf = buf;
     E.machInfo = (id) => machStat[id] || { s: "wait", avg: 0 };
@@ -1389,7 +1474,7 @@
       if (!(e.n > 0) || !M) return done("idle");
       const b = blocker(e.r);
       if (b) { st.b = b; return done("blocked"); }
-      const ez = easy(), lane = ez ? Infinity : E.beltCap(), outQ = it.r[2], rate = Math.min((e.n * M.spd / 60) * c.aspd, lane / outQ);
+      const ez = easy(), lane = ez ? Infinity : E.beltCap(), outQ = it.r[2], rate = Math.min((e.n * M.spd / 60) * c.aspd * memV("mach"), lane / outQ);
       const P = g.prods[e.id], ing = it.r[1], srcs = g.sup[e.id] || [];
       const ncons = Object.keys(P.t.cons).length;
       if (!ez && !P.t.res && !ncons) return done("noout");
@@ -1548,7 +1633,7 @@
     function machRate(e, st) {
       const it = item(e.r), M = item(e.m);
       if (st.s !== "ok" || !it || !it.r || !M) return st.avg;
-      return Math.min((e.n * M.spd / 60) * E.cache().aspd, easy() ? Infinity : E.beltCap() / it.r[2]);
+      return Math.min((e.n * M.spd / 60) * E.cache().aspd * memV("mach"), easy() ? Infinity : E.beltCap() / it.r[2]);
     }
     E.flows = function () {
       const prod = {}, cons = {};
@@ -1909,20 +1994,35 @@
     /* Nouveau cycle : le Semeur suivant s’éveille. On garde le savoir. */
     E.newCycle = function () {
       const old = S;
+      const gain = E.releveGain();
+      old.meta.traces = (old.meta.traces || 0) + gain;
+      old.meta.tracesTotal = (old.meta.tracesTotal || 0) + gain;
       const n = freshState(now());
       n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets; n.studied = old.studied || {};
       n.seen = old.seen; n.meta = old.meta; n.settings = old.settings; n.pins = old.pins || {};
       n.fab.r = old.fab ? old.fab.r : FAB_R0;
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
-      n.intu = 3 + Math.floor(old.intu / 2);
+      n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
       n.introSeen = true;
       n.stats = Object.assign({}, old.stats);
+      // le tutoriel déjà vu, les conseils déjà lus et la version vue ne reviennent pas
+      for (const k in old.flags) if (k === "tuto" || k === "ver" || k === "milesSeen" || k === "roueSeen" || k.indexOf("tip_") === 0) n.flags[k] = old.flags[k];
       if (old.meta.capsule) {
         n.flags.capsuleMsg = true;
         Object.assign(n.inv, { bois: 60, fibre: 60, caillou: 40, manche: 10, corde: 10 });
       }
       S = n;
+      // la Mémoire des mains : le paquetage, et les terres déjà connues
+      // ce que le paquetage donne compte comme déjà fait (les étapes « manche », « corde »… passent)
+      D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); } });
+      ["plaine", "riviere"].slice(0, memLvl("raccourci")).forEach((z) => {
+        const tool = ZONES[z].req;
+        S.inv[tool] = 1; S.made[tool] = 1; markSeen(tool);
+        S.age = Math.max(S.age, item(tool).a || 0);
+        S.pass[z] = { paid: {}, done: true, free: true };
+        S.zones[z] = true;
+      });
       forgetFab();
       recalc();
       E.emit("cycle", n.cycle);
@@ -1966,7 +2066,7 @@
     };
 
     E.catchUp = function (dt) {
-      dt = Math.min(dt, OFFLINE_CAP);
+      dt = Math.min(dt, memV("veille") * 3600 || OFFLINE_CAP);
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
       let left = dt;
@@ -2064,9 +2164,18 @@
       const o = typeof src === "string" ? JSON.parse(src) : JSON.parse(JSON.stringify(src));
       if (!o || typeof o !== "object" || !o.inv || typeof o.inv !== "object") throw new Error("Ce n’est pas une sauvegarde d’Éclat.");
       migrate(o);
+      const hadPass = !!o.pass && typeof o.pass === "object";
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
-      o.meta = Object.assign({ endings: {}, capsule: false }, o.meta);
+      o.meta = Object.assign({ endings: {}, capsule: false, traces: 0, tracesTotal: 0 }, o.meta);
+      if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
+      // les réminiscences déjà lues (avant qu’on les retienne) : celles des objets déjà faits
+      if (!o.meta.ev || typeof o.meta.ev !== "object") { o.meta.ev = {}; for (const id in o.made || {}) if (o.made[id] > 0 && D.EVENTS[id]) o.meta.ev[id] = 1; }
+      // avant les passages : chaque terre déjà ouverte compte comme passage franchi
+      if (!hadPass) {
+        o.pass = {};
+        for (const z in o.zones || {}) if (o.zones[z] && D.PASSAGES[z]) o.pass[z] = { paid: {}, done: true };
+      }
       o.settings = Object.assign({ sound: true, vibe: true }, o.settings);
       // l’usine simple par défaut ; une partie qui a déjà des répartiteurs ou des croisements garde l’usine avancée
       if (o.settings.usine !== "simple" && o.settings.usine !== "avance") {

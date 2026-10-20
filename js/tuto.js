@@ -91,6 +91,15 @@
           { tab: "carte", text: "Les tapis portent la récolte jusqu’à la Réserve. Tu peux aussi en tracer au doigt avec l’outil ➜.", next: true, only: "avance" },
           { tab: "carte", text: "Le tapis s’est posé tout seul : sa récolte file vers la Réserve, même jeu fermé. Pose d’autres extracteurs, ils se relient pareil.", next: true, only: "simple" }
         ] },
+      { id: "passage", n: "Un passage",
+        when: () => U.tab === "carte" && E.passPending().length > 0 && !S().meta.tracesTotal && !!document.querySelector(".goal-card [data-pour], .u-sheet:not(.hidden) [data-pour]"),
+        still: () => E.passPending().length > 0,
+        steps: [
+          { tab: "carte", at: () => (document.querySelector(".u-sheet:not(.hidden) [data-pour]") ? ".u-sheet:not(.hidden) [data-pour]" : ".goal-card [data-pour]"),
+            text: "🚧 Une nouvelle terre t’attend, mais il faut d’abord franchir son passage. Verse ici ce qu’il demande : tout ce que tu donnes reste acquis, même en plusieurs fois.",
+            done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
+          { tab: "carte", text: "Récolte, fabrique, puis reviens verser. Chaque passage franchi laisse des ✦ Traces : un jour, elles serviront à ton successeur.", next: true }
+        ] },
       { id: "mains", n: "Tes mains",
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "carte"),
         steps: [

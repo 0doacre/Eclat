@@ -262,7 +262,7 @@
   }
   const Scenes = window.EclatScenes;
   const Usine = window.EclatUsine.create({
-    E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, Scenes,
+    E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, Scenes, passHTML,
     overlay: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     onZone: (z) => { U.zone = z; soundScene(); },
     openWheel: (o) => Roue.open(o),
@@ -784,7 +784,7 @@
     }
     const ob = g.ob;
     const open = goalOpen();
-    const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : ob.k === "ext" ? "⛏️ " + esc(ob.n) : esc(I[ob.id].n);
+    const title = ob.k === "exp" ? "🧭 " + esc(ob.n) : ob.k === "line" ? "🏭 " + esc(ob.n) : ob.k === "ext" ? "⛏️ " + esc(ob.n) : ob.k === "pass" ? "🚧 " + esc(ob.n) : esc(I[ob.id].n);
     // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
     const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
     let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span>' + (open ? "" : '<span class="gname">' + title + "</span>") + '<span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
@@ -802,6 +802,8 @@
       h += '<div class="name">🧭 ' + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>";
       if (n && !n.locked && !st.exp.active) h += '<button class="btn small pri" style="margin-top:8px" data-exp="' + ob.z + '">Explorer</button>';
       else if (st.exp.active) h += '<div class="tiny muted" style="margin-top:6px">Une exploration est déjà en cours.</div>';
+    } else if (ob.k === "pass") {
+      h += '<div class="name">🚧 ' + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" + passHTML(ob.z);
     } else if (ob.k === "line" || ob.k === "ext") {
       h += '<div class="name">' + (ob.k === "ext" ? "⛏️ " : "🏭 ") + esc(ob.n) + '</div><div class="small">' + esc(ob.txt) + "</div>";
     } else {
@@ -809,6 +811,11 @@
       h += '<div class="goal">' + (st.known[ob.id] ? icon(ob.id) : '<span class="ic unk">?</span>') + '<div class="grow"><div class="name">' + esc(it.n) + '</div><div class="small">' + esc(ob.txt) + "</div>" +
         (it.h && !st.known[ob.id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "") + "</div></div>";
       h += stepBox(g.step, g.why, g.step === ob.id);
+      const z = it.e && it.e.zone;
+      if (z && D.PASSAGES[z] && !(st.pass[z] && st.pass[z].done)) {
+        const c = E.passCost(z);
+        h += '<div class="tiny muted" style="margin-top:6px">🚧 Ensuite, le passage <b>' + esc(D.PASSAGES[z].n) + "</b> vers " + esc(zoneName(z)) + " : " + Object.keys(c).map((i) => fmt(c[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + " (+" + D.PASSAGES[z].tr + " ✦).</div>";
+      }
     }
     return h + "</div>";
   }
@@ -816,12 +823,12 @@
   function goalOpen() {
     const st = S();
     if (st.track && I[st.track.id]) return !!U.goalPeek;
-    return st.settings.goalOpen === undefined ? st.age < 3 : st.settings.goalOpen;
+    return st.settings.goalOpen === undefined ? st.age < 3 && st.cycle <= 1 : st.settings.goalOpen;
   }
   /* les jalons : ce qu’il y a à faire à chaque âge, et le premier pas vers le suivant */
   function mileName(ob) {
     if (ob.k === "craft") return (S().known[ob.id] ? icon(ob.id, "sm") : '<span class="ic sm unk">?</span>') + ' <span class="link-txt" data-goto="' + ob.id + '">' + esc(I[ob.id].n) + "</span>";
-    return (ob.k === "exp" ? "🧭 " : ob.k === "ext" ? "⛏️ " : "🏭 ") + esc(ob.n);
+    return (ob.k === "exp" ? "🧭 " : ob.k === "ext" ? "⛏️ " : ob.k === "pass" ? "🚧 " : "🏭 ") + esc(ob.n);
   }
   function openMilestones() {
     const st = S(), ms = E.milestones(), cur = E.objective();
@@ -838,9 +845,42 @@
     });
     openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
-  const WHY_STEP = { station: "Il te faut d’abord une station :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", unknown: "Prochaine étape :" };
+  const WHY_STEP = { station: "Il te faut d’abord une station :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
+  /* un passage vers une terre : ce qu’il coûte, ce qui est déjà versé, et le bouton pour verser */
+  function passHTML(z) {
+    const p = E.passInfo(z), st = S();
+    if (!p || !p.ready) return "";
+    return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
+      '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
+      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">+' + p.P.tr + " ✦ à ta prochaine relève</span></div>") +
+      '<div class="row wrap small">' +
+      Object.keys(p.cost).map((i) => {
+        const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i);
+        return '<span class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + fmt(got) + " / " + fmt(p.cost[i]) + (ok ? " ✓" : ' <span class="tiny muted">(' + fmt(st.inv[i] || 0) + ")" + (eta ? " · " + eta : "") + "</span>") + "</span>";
+      }).join("") + "</div></div>";
+  }
+  /* combien de temps avant d’avoir de quoi payer une matière, à la production actuelle (extracteurs, machines) */
+  function passEta(p, i) {
+    const need = (p.left[i] || 0) - (S().inv[i] || 0);
+    if (need <= 0) return "prêt";
+    const x = E.production().find((y) => y.id === i), r = x ? x.net : 0;
+    return r > 1e-6 ? "≈ " + fmtTime(need / r) : "";
+  }
+  function pour(z, btn) {
+    const r = E.passPour(z), p = E.passInfo(z);
+    if (!r.ok) {
+      A.fail(0);
+      toast("Rien à verser pour l’instant. Il manque " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
+      return;
+    }
+    A.click(); vibe(10);
+    const pt = elCenter(btn);
+    if (!r.done) floater("🚧 " + Math.floor(p.frac * 100) + " %", pt.x, pt.y - 16, "var(--good)");
+    render(true);
+  }
   function stepBox(id, why, isTarget) {
     const st = S(), it = I[id];
+    if (why === "pass") { const z = E.passPending().find((x) => E.ZONES[x].req === id); if (z) return '<div class="stepbox"><div class="tiny muted">' + WHY_STEP.pass + "</div>" + passHTML(z) + "</div>"; }
     let h = '<div class="stepbox">';
     if (!isTarget) h += '<div class="tiny muted">' + (WHY_STEP[why] || "Prochaine étape :") + "</div><div class=\"row\" style=\"margin:4px 0\">" + (st.known[id] ? icon(id, "sm") : '<span class="ic sm unk">?</span>') +
       ' <b class="link-txt" data-goto="' + id + '">' + esc(it.n) + "</b></div>" + (it.h && !st.known[id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "");
@@ -1090,7 +1130,9 @@
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = '<h2 class="title">Carnet</h2>';
     if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque sur la carte. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
-    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
+    // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
+    const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
+    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + (all > known ? " à ta portée · " + all + " en tout" : "") + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une matière…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
     h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Production"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
@@ -1214,7 +1256,7 @@
   /* l’Usine se dessine sur un canvas (usine.js) : on la monte une fois, puis on
    * ne rafraîchit que ses panneaux */
   function mountUsine(el) {
-    if (Usine.mounted()) { Usine.refresh(); return; }
+    if (Usine.mounted()) { if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; } Usine.refresh(); return; }
     Usine.mount(el);
     if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; }
     if (U.sitePlace) { const p = U.sitePlace; U.sitePlace = null; setTimeout(() => Usine.placeSite(p), 80); }
@@ -1266,12 +1308,12 @@
     } else if (U.journalTab === "fins") {
       // le prestige, dit simplement : ce qu’on garde, ce qu’on gagne
       const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
-      h += '<div class="card cyc"><b>✦ Cycles et Échos</b><p class="small">Le monde a plusieurs fins. Une fois l’une d’elles atteinte, tu peux éveiller un nouveau Semeur : un <b>nouveau cycle</b>. ' +
-        "Le monde, tes matières et tes machines repartent de zéro, mais tu gardes ton Carnet (toutes tes recettes), tes fragments et tes secrets.</p>" +
-        '<p class="small">Chaque fin atteinte laisse un <b>Écho</b>, pour toujours : +50 % de récolte et de production par Écho, dès le cycle suivant.</p>' +
-        '<div class="stat"><span class="muted">Ce cycle</span><b>Cycle ' + st.cycle + " · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
-        '<div class="stat"><span class="muted">Au prochain cycle</span><b>' + ech + " Écho" + (ech > 1 ? "s" : "") + " (+" + ech * 50 + " %)</b></div>" +
-        (ech > st.echoes ? '<button class="btn small pri" data-cycle style="margin-top:8px">Nouveau cycle ✦</button>' : '<p class="tiny muted">' + (ech ? "Atteins une fin dans ce cycle (la même ou une autre) : un Écho de plus." : "Atteins une fin pour gagner ton premier Écho.") + "</p>") + "</div>";
+      h += '<div class="card cyc"><b>✦ Relève, Traces et Échos</b><p class="small">Dès qu’un passage vers une nouvelle terre est franchi, tu peux passer le relais : un nouveau Semeur s’éveille. ' +
+        "Le monde, tes matières, tes machines et les terres repartent de zéro, mais tu gardes ton Carnet, tes fragments, tes secrets et la <b>Mémoire des mains</b>, achetée avec les <b>Traces</b> que laissent les passages.</p>" +
+        '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b>, pour toujours : +50 % de récolte et de production par Écho, dès la relève suivante.</p>' +
+        '<div class="stat"><span class="muted">Ce Semeur</span><b>' + (st.cycle + 6) + "e · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
+        '<div class="stat"><span class="muted">À la relève</span><b>+' + E.releveGain() + " ✦ · " + ech + " Écho" + (ech > 1 ? "s" : "") + "</b></div>" +
+        '<button class="btn small pri" data-cycle style="margin-top:8px">✦ Mémoire des mains</button></div>';
       Object.keys(D.ENDINGS).forEach((k) => {
         const en = D.ENDINGS[k], got = st.meta.endings[k];
         h += '<div class="frag' + (got ? "" : " unk") + '"><span class="fi">' + (got ? en.ic : "❔") + '</span><div class="grow"><b>' + (got ? esc(en.n) : "???") + '</b><div class="tiny muted">' +
@@ -1280,7 +1322,7 @@
     } else {
       const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
       h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes manuelles", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],
-        ["Expériences à l’atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Cycle", st.cycle]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
+        ["Expériences à l’atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Semeur", st.cycle + 6 + "e"]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
       if (evs.length) {
         h += '<h3 class="sub">Réminiscences</h3>';
         evs.forEach((id) => { h += '<div class="card small serif" style="font-size:15px">' + icon(id, "sm") + " " + esc(D.EVENTS[id]) + "</div>"; });
@@ -1373,6 +1415,7 @@
     const st = S();
     stepWatch();
     $("#intu").textContent = Math.floor(st.intu);
+    memChip();
     const xp = E.expProgress();
     const mini = $("#expMini");
     if (xp) {
@@ -1825,7 +1868,7 @@
         '<div class="toggle"><span>Usine <span class="tiny muted" data-usinetxt>' + (E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits, répartiteurs et Réserve limitée") +
           '</span></span><button class="btn small" data-m="usine">' + (E.easy() ? "Simple" : "Avancée") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
-        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
         '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
       onOpen: (box) => {
@@ -1855,6 +1898,7 @@
         saves: () => setTimeout(openSaves, 80),
         account: () => { openAccount(); return true; },
         help: () => setTimeout(openHelp, 80),
+        mem: () => setTimeout(openMemoire, 80),
         news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
         reset: () => setTimeout(() => {
           openModal({ html: '<h2>Tout recommencer ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans ☰ → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Non</button><button class="btn pri" style="background:var(--bad)" data-m="go">Effacer</button></div>',
@@ -1873,7 +1917,9 @@
       "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une petite découverte sort tout de suite ; une grosse s’inscrit dans le Carnet sans rien prendre, et tu la fabriques quand tu veux, prix affiché. Ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
       "<p><b>📖 Carnet.</b> Tes recettes. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent (tes mains les font d’abord), <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
-      "<p><b>🏁 Étapes et ✦ cycles.</b> Chaque âge a ses étapes : toutes faites, l’âge est accompli (+" + D.AGE_DONE + " ✨). Le monde a plusieurs fins ; après l’une d’elles, un nouveau cycle repart de zéro en gardant ton Carnet, et chaque fin atteinte donne un Écho : +50 % de récolte et de production pour toujours (Journal → Fins).</p>" +
+      "<p><b>🚧 Passages.</b> Pour entrer dans une nouvelle terre, il faut l’objet qui y mène (l’épieu pour la Plaine…), puis franchir son passage : verse ce qu’il demande depuis la Réserve, en plusieurs fois si besoin. Chaque passage coûte bien plus que le précédent.</p>" +
+      "<p><b>✦ Relève et Mémoire des mains.</b> Dès un passage franchi, tu peux passer le relais : un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet, tes fragments, tes secrets et la Mémoire des mains, achetée avec les Traces des passages (récolte, mains, extracteurs, machines plus forts…). Chaque fin atteinte donne en plus un Écho : +50 % de récolte et de production pour toujours.</p>" +
+      "<p><b>🏁 Étapes.</b> Chaque âge a ses étapes : toutes faites, l’âge est accompli (+" + D.AGE_DONE + " ✨).</p>" +
       "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se construit sur la Carte : " + (E.easy() ? "son chantier se sert dans la Réserve." : "son chantier se nourrit par tapis.") + "</p>" +
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p>" +
       "<p><b>💭 Tutoriel.</b> Des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible. Menu ☰ : le couper, ou le revoir depuis le début.</p></div>", "Compris");
@@ -1917,13 +1963,93 @@
   }
   function confirmCycle() {
     const st = S();
-    const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
+    const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0), gain = E.releveGain();
     openModal({
-      html: '<div class="kicker">Nouveau cycle</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières et tes machines seront remis à zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b> et tes <b>secrets</b>.</p>" +
-        "<p>Échos accumulés : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production.</p>" +
-        '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Recommencer</button></div>',
-      on: { go: () => { pushBackup(E.serialize(), "Avant le cycle " + (st.cycle + 1)); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; setTab("carte"); setTimeout(intro, 200); } }
+      html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
+        "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + leftHTML() +
+        '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
+        '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
+      on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; U.focusZone = "lisiere"; Usine.clearSel(); setTab("carte"); setTimeout(intro, 200); } }
     });
+  }
+  /* ------------------------------------------------------------ MÉMOIRE DES MAINS
+   * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
+  function memHTML() {
+    const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
+    let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
+      '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
+    h += '<div class="card memrel">' + (can
+      ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<button class="btn pri" data-m="releve" style="margin-top:8px;width:100%">Passer le relais ✦</button>'
+      : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
+      (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : nextPassHTML()) + "</div>";
+    h += '<div class="mems">' + D.MEMOIRE.map((x) => {
+      const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
+      const now = x.d.replace("{v}", String(x.v(l)).replace(".", ",")), next = max ? "" : x.d.replace("{v}", String(x.v(l + 1)).replace(".", ","));
+      const soon = !max && m.traces < c && can && m.traces + gain >= c; // possible juste après la relève
+      return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
+        '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
+        (x.next ? '<div class="tiny dim">S’applique à ton prochain réveil (après une relève).</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
+        (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
+    }).join("") + "</div>";
+    return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
+  }
+  /* ce que la relève laisse derrière elle, en chiffres */
+  function leftHTML() {
+    const st = S(), cells = Object.values(st.fab.c), n = (k) => cells.filter((e) => e.k === k).reduce((a, e) => a + (k === "ext" ? Object.values(e.u || {}).reduce((x, y) => x + y, 0) : e.n || 1), 0);
+    const top = Object.keys(st.inv).filter((i) => I[i] && !E.isUnique(I[i]) && !E.isScaled(I[i]) && st.inv[i] >= 1).sort((a, b) => st.inv[b] - st.inv[a]).slice(0, 3);
+    const paid = Object.keys(st.pass).filter((z) => !st.pass[z].done && D.PASSAGES[z]);
+    const parts = [];
+    if (n("ext")) parts.push(n("ext") + " extracteur" + (n("ext") > 1 ? "s" : ""));
+    if (n("mach")) parts.push(n("mach") + " machine" + (n("mach") > 1 ? "s" : ""));
+    if (top.length) parts.push("ton stock (" + top.map((i) => fmt(st.inv[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + "…)");
+    if (paid.length) parts.push("ce que tu as versé dans " + paid.map((z) => esc(D.PASSAGES[z].n)).join(", "));
+    return parts.length ? '<p class="small muted">Tu laisses : ' + parts.join(", ") + ".</p>" : "";
+  }
+  /* un aperçu concret de la prochaine amélioration */
+  function memPreview(x) {
+    const l = E.memLvl(x.id), a = x.v(l), b = x.v(l + 1);
+    if (b === undefined || typeof a !== "number") return "";
+    if (x.id === "extr") { const r = E.production().reduce((s, p) => s + (I[p.id] && I[p.id].t === "res" ? p.in : 0), 0); return r > 0 ? "Tes extracteurs : " + fmtNum(r) + "/s → " + fmtNum(r * b / a) + "/s" : ""; }
+    if (x.id === "recolte") return "Un appui sur le bois : " + fmtNum(E.tapYieldOf("bois") || a) + " → " + fmtNum((E.tapYieldOf("bois") || a) * b / a);
+    if (x.id === "chemins") { const z = D.ZONES.map((y) => y.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id)); if (!z) return ""; const c = E.passCost(z), k = Object.keys(c)[0]; return esc(D.PASSAGES[z].n) + " : " + fmt(c[k]) + " → " + fmt(Math.ceil(c[k] * b / a)) + " " + esc(I[k].n.toLowerCase()); }
+    if (x.id === "mach") { const m = Object.values(S().fab.c).filter((e) => e.k === "mach" && e.r); return m.length ? "Tes " + m.length + " machine" + (m.length > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
+    return "";
+  }
+  /* le prochain passage : ce qu’il rapporte, et l’objet qui le rend possible */
+  function nextPassHTML() {
+    const z = D.ZONES.map((x) => x.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id) && !(S().pass[id] && S().pass[id].done));
+    if (!z) return "";
+    const P = D.PASSAGES[z], req = E.ZONES[z].req, ready = S().pass[z];
+    return '<p class="tiny muted">Prochain passage : <b>' + esc(P.n) + "</b> vers " + esc(zoneName(z)) + " (+" + P.tr + " ✦)" + (ready ? "." : I[req] ? ", après " + esc(I[req].n) + "." : ".") + "</p>";
+  }
+  function openMemoire() {
+    const o = {
+      html: memHTML(),
+      on: {
+        buy: (b) => {
+          if (E.memBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([10, 30, 10]); save(); }
+          else {
+            A.fail(0);
+            const c = E.memCost(b.dataset.id), m = S().meta;
+            toast(c !== undefined && E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras l’acheter juste après la relève, avec les Traces qu’elle rapporte." : "Il te faut plus de Traces : franchis des passages, puis passe le relais.", { key: "mem" });
+          }
+          swapModal(Object.assign(o, { html: memHTML() }));
+          return true;
+        },
+        releve: () => { setTimeout(confirmCycle, 80); }
+      }
+    };
+    openModal(o);
+  }
+  function memChip() {
+    const m = S().meta, b = $("#memBtn"), can = E.canReleve(), gain = E.releveGain();
+    const show = can || m.traces > 0 || m.tracesTotal > 0;
+    b.classList.toggle("hidden", !show);
+    if (!show) return;
+    const txt = can && gain ? "+" + gain : fmt(m.traces);
+    const n = $("#memN");
+    if (n.textContent !== txt) n.textContent = txt;
+    b.classList.toggle("ready", can && gain > 0);
   }
 
   /* ============================================================ ÉVÉNEMENTS DU MOTEUR */
@@ -1942,6 +2068,19 @@
       }), 700);
     });
     E.on("learn", () => badge("carnet"));
+    /* un passage devient possible, puis il est franchi */
+    E.on("passage", (z) => {
+      badge("carte");
+      setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", verse ce qu’il faut depuis la Réserve (dans l’objectif, ou touche la brume sur la carte).", { key: "pass:" + z, p: 2 }), 900);
+    });
+    E.on("passdone", (o) => {
+      const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
+      fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève" });
+      if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
+        "<p><b>Rien ne presse, et rien ne s’efface :</b> continue ta partie aussi longtemps que tu veux.</p>" +
+        "<p>Chaque passage franchi laisse des Traces ✦. Un jour, quand tu le voudras, tu pourras <b>passer le relais</b> : un nouveau Semeur repartira du début, mais avec tes recettes et des mains plus habiles, achetées avec ces Traces.</p>" +
+        '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent.</p>', "Compris"), 2200);
+    });
     E.on("zone", (z) => {
       U.zone = z;
       // la découverte qui ouvre cette terre le dit déjà (« Débloque : … ») : pas de second message
@@ -1990,6 +2129,7 @@
         .concat(rw.inv ? Object.keys(rw.inv).map((i) => "+" + rw.inv[i] + " " + I[i].n) : [])
         .concat(rw.item ? Object.keys(rw.item).map((i) => I[i].n) : [])
         .concat(rw.intu ? ["+" + rw.intu + " ✨"] : []);
+      if (F && !r.fragNew) { toast("🧭 " + esc(r.x.n) + " : déjà raconté dans ton Journal." + (gains.length ? " Tu rapportes : " + esc(gains.join(", ")) + "." : ""), { key: "exp" }); return; }
       openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? F.n : r.x.n) + "</h2>" + (F ? loreHTML(F.t) : "") +
         (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") + '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
     });
@@ -2059,6 +2199,7 @@
     }, { passive: false });
     $("#tabs").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-tab]"); if (b) { A.init(); A.click(); setTab(b.dataset.tab); } });
     $("#menuBtn").addEventListener("click", () => { A.init(); openMenu(); });
+    $("#memBtn").addEventListener("click", () => { A.init(); A.click(); openMemoire(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
     $("#intuBtn").addEventListener("click", () => simpleModal("Intuition", "✨ " + Math.floor(S().intu),
       '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les matières : touche une matière, puis 🔍 Étudier, pour savoir avec quels gestes elle cache encore des recettes.</p>' +
@@ -2109,7 +2250,8 @@
       if ((b = t.closest("[data-autoline]"))) { buildInUsine(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
-      if (t.closest("[data-cycle]")) { A.click(); confirmCycle(); return; }
+      if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
+      if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }
       if ((b = t.closest("[data-goalt]"))) {
         const st = S(), open = goalOpen();
         if (st.track && I[st.track.id]) U.goalPeek = !open; else st.settings.goalOpen = !open;
@@ -2163,6 +2305,7 @@
         if (l) { l.innerHTML = carnetList(); refresh(); }
       }
     });
+    views.addEventListener("focusin", (ev) => { if (ev.target.id === "cq" || ev.target.id === "iq") ev.target.select(); });
     views.addEventListener("toggle", (ev) => {
       const d = ev.target;
       if (d.matches && d.matches("details[data-age]")) U.openAges[d.dataset.age] = d.open;
