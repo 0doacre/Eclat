@@ -735,7 +735,18 @@
       }
       need(id, isUnique(item(id)) ? 1 : times, 0, true);
       for (const k in missing) missing[k] = Math.ceil(missing[k] - 1e-9);
-      const steps = Object.keys(crafts).sort((a, b) => depth[b] - depth[a]).map((x) => [x, crafts[x]]);
+      // chaque fabrication après celles qui lui fournissent des pièces (un tri par profondeur
+      // ne suffit pas : une pièce prise en partie au stock n’a pas sa profondeur mise à jour)
+      const order = [], seenO = {};
+      const visit = (x) => {
+        if (seenO[x]) return;
+        seenO[x] = true;
+        const it = item(x);
+        Object.keys(it.r[1]).filter((i) => crafts[i]).sort((a, b) => depth[b] - depth[a]).forEach(visit);
+        order.push(x);
+      };
+      Object.keys(crafts).sort((a, b) => depth[b] - depth[a]).forEach(visit);
+      const steps = order.map((x) => [x, crafts[x]]);
       return { ok: !Object.keys(missing).length && !Object.keys(blocked).length, id, times, steps, missing, blocked, locked: Object.keys(locked), used };
     };
     /* Exécute un plan complet ; ne fait rien s’il manque quoi que ce soit. */
@@ -2002,8 +2013,8 @@
       }
       S = n;
       // la Mémoire des mains : le paquetage, et les terres déjà connues
-      D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) add(i, kit[i]); });
-      if (S.inv.feu) S.made.feu = 1;
+      // ce que le paquetage donne compte comme déjà fait (les étapes « manche », « corde »… passent)
+      D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); } });
       ["plaine", "riviere"].slice(0, memLvl("raccourci")).forEach((z) => {
         const tool = ZONES[z].req;
         S.inv[tool] = 1; S.made[tool] = 1; markSeen(tool);

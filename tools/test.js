@@ -122,6 +122,17 @@ test("passages : on verse en plusieurs fois, la terre s’ouvre une fois tout pa
   const G = mk(); stations(G, ["feu"]); force(G, "epieu");
   assert.strictEqual(G.nextStep("argile").why, "pass");
 });
+test("plan : une pièce prise en partie au stock se fabrique avant celles qui s’en servent", () => {
+  const E = mk();
+  for (const k in D.ITEMS) E.state.known[k] = true;
+  stations(E, ["enclume_bronze", "creuset", "four", "feu", "enclume_pierre"]);
+  E.add("lingot_bronze", 5); E.add("lingot_cuivre", 200); E.add("lingot_etain", 200); E.add("caillou", 5000); E.add("bois", 5000); E.add("corde", 500); E.add("manche", 500); E.add("charbon", 500);
+  const steps = E.plan("automate_bronze", 1).steps.map((x) => x[0]);
+  steps.forEach((x, k) => Object.keys(D.ITEMS[x].r[1]).forEach((i) => { const j = steps.indexOf(i); assert.ok(j < 0 || j < k, i + " avant " + x + " : " + steps); }));
+  assert.ok(E.queue("automate_bronze", 1, true).ok);
+  run(E, 300);
+  assert.strictEqual(E.count("automate_bronze"), 1); assert.strictEqual(E.state.hand.q.length, 0, "la file ne reste pas bloquée");
+});
 test("relève : on garde le savoir, on gagne des Traces ; la Mémoire des mains", () => {
   const E = mk();
   stations(E, ["feu"]);
@@ -146,6 +157,8 @@ test("relève : on garde le savoir, on gagne des Traces ; la Mémoire des mains"
   assert.ok(E.memBuy("paquetage") && E.memBuy("paquetage") && E.memBuy("raccourci"));
   E.newCycle();
   assert.strictEqual(E.state.inv.cabane, 1, "le paquetage : une cabane");
+  assert.ok(E.state.made.manche && E.state.made.cabane, "ce qu’il donne compte comme fait");
+  assert.notStrictEqual(E.objective().id, "manche", "l’étape « manche » est passée");
   assert.ok(E.state.inv.bois >= 60);
   assert.ok(E.zoneOpen("plaine") && E.has("epieu"), "le raccourci ouvre la Plaine");
   assert.strictEqual(E.releveGain(), 0, "un passage offert ne rapporte rien");

@@ -875,18 +875,19 @@
   /* ------------------------------------------------- PASSAGES ET MÉMOIRE (voir docs/PROGRESSION.md)
    * Un passage par terre : l’objet qui ouvrait la terre le rend possible, la terre
    * s’ouvre quand il est payé (on verse depuis la Réserve, en plusieurs fois si besoin).
-   * tr : les Traces qu’il rapporte à la relève. */
+   * tr : les Traces qu’il rapporte à la relève. Prix réglés avec tools/sim-passages.js :
+   * première partie arrêtée vers les Collines (~25 min), chaque relève va une terre plus loin. */
   D.PASSAGES = {
     plaine: { n: "Le Sentier des Herbes", t: "Les herbes de la plaine sont plus hautes que toi. Il faut s’y frayer un chemin, et des pierres pour le marquer.", cost: { bois: 120, fibre: 80, caillou: 40 }, tr: 2 },
-    riviere: { n: "La Passerelle", t: "La rivière est large et lente. Une passerelle de bois, liée de cuir et d’os, te mènerait sur l’autre rive.", cost: { bois: 400, cuir: 60, os: 80 }, tr: 3 },
-    collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 1500, argile: 200, brique: 40 }, tr: 5 },
-    mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 6000, plaque_cuivre: 150, lingot_bronze: 120 }, tr: 8 },
-    desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 9000, plaque_bronze: 150, roue: 20 }, tr: 12 },
-    gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendra.", cost: { plaque_fer: 1500, lingot_acier: 600, cable: 200 }, tr: 18 },
-    montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 2500, plastique: 400, moteur_elec: 60 }, tr: 27 },
-    orbite: { n: "La Rampe", t: "Une fusée ne suffit pas : il faut une rampe, et de quoi recommencer.", cost: { aluminium: 1500, titane: 300, composite: 300 }, tr: 40 },
-    lune: { n: "La Base avancée", t: "Se poser ne suffit pas : il faut de quoi tenir là-haut.", cost: { titane: 1500, composite: 900, debris: 2000 }, tr: 60 },
-    mercure: { n: "Le Bouclier solaire", t: "Si près du soleil, rien ne tient sans bouclier.", cost: { regolithe: 6000, helium3: 1500, composite: 2000 }, tr: 90 }
+    riviere: { n: "La Passerelle", t: "La rivière est large et lente. Une passerelle de bois, liée de cuir et d’os, te mènerait sur l’autre rive.", cost: { bois: 2400, cuir: 360, os: 480 }, tr: 3 },
+    collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 15000, argile: 2000, brique: 400 }, tr: 5 },
+    mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 30000, plaque_cuivre: 3000, lingot_bronze: 2400 }, tr: 8 },
+    desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 60000, plaque_bronze: 4500, roue: 600 }, tr: 12 },
+    gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendra.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
+    montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 7500, plastique: 1200, moteur_elec: 180 }, tr: 27 },
+    orbite: { n: "La Rampe", t: "Une fusée ne suffit pas : il faut une rampe, et de quoi recommencer.", cost: { aluminium: 4500, titane: 900, composite: 900 }, tr: 40 },
+    lune: { n: "La Base avancée", t: "Se poser ne suffit pas : il faut de quoi tenir là-haut.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
+    mercure: { n: "Le Bouclier solaire", t: "Si près du soleil, rien ne tient sans bouclier.", cost: { regolithe: 18000, helium3: 4500, composite: 6000 }, tr: 90 }
   };
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
   D.MEMOIRE = [
