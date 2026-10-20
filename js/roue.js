@@ -191,7 +191,7 @@
         if (ch) ch.disabled = hi.full || !chainOK;
         // un bouton grisé dit pourquoi
         const ms = W.el.querySelector("[data-rmiss]");
-        if (ms) ms.textContent = hi.full ? " · tes mains sont pleines" : max >= 1 ? "" : chainOK ? " · ⚡ fabrique aussi ce qui manque" : " · il manque ce qui est en rouge";
+        if (ms) ms.textContent = E.queued(id) > 0 ? " · en route dans tes mains" : hi.full ? " · tes mains sont pleines" : max >= 1 ? "" : chainOK ? " · ⚡ fabrique aussi ce qui manque" : " · il manque ce qui est en rouge";
         const pl = W.el.querySelector('[data-r="place"]');
         if (pl) {
           const free = freeOf(id);

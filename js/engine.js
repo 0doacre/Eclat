@@ -603,7 +603,7 @@
         const n = root ? qty : Math.ceil(qty / it.r[2]);
         crafts[x] = (crafts[x] || 0) + n;
         depth[x] = Math.max(depth[x] || 0, d);
-        const cost = isScaled(it) ? totalCost(x, n) : (() => { const c = {}; for (const i in it.r[1]) c[i] = it.r[1][i] * n; return c; })();
+        const cost = isScaled(it) ? totalCost(x, n, count(x) + queued(x)) : (() => { const c = {}; for (const i in it.r[1]) c[i] = it.r[1][i] * n; return c; })();
         for (const i in cost) need(i, cost[i], d + 1, false);
         if (!root) { const surplus = n * it.r[2] - qty; if (surplus > 0) avail[x] = (avail[x] || 0) + surplus; }
       }
@@ -704,6 +704,14 @@
         steps = [[id, times]];
       }
       for (const i in bench) add(i, -bench[i]);
+      // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
+      const last = S.hand.q[S.hand.q.length - 1];
+      if (!chain && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !last.k && !isScaled(it) && !isUnique(it)) {
+        last.s[0][1] += times;
+        for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
+        E.emit("hand", { kind: "add", job: last });
+        return { ok: true, job: last, time: jobTime(last, false), merged: true };
+      }
       const j = { id, s: steps, i: 0, k: 0, b: bench };
       S.hand.q.push(j);
       E.emit("hand", { kind: "add", job: j });
@@ -1863,7 +1871,7 @@
         S.intuAcc += (c.intu / 60) * dt;
         if (S.intuAcc >= 1) { const k = Math.floor(S.intuAcc); S.intu += k; S.intuAcc -= k; }
       }
-      S.stats.play += dt;
+      if (!offline) S.stats.play += dt; // le temps passé à jouer, pas l’absence
     }
     E.step = step;
 

@@ -59,7 +59,7 @@
   I.bois = { n: "Bois", ic: "🪵", a: 0, t: "res", d: "Branches mortes, bois vert. La forêt n’en manque pas." };
   I.fibre = { n: "Fibres", ic: "🌿", a: 0, t: "res", d: "Longues herbes et lianes. Ça se plie, ça se noue." };
   I.caillou = { n: "Pierre", ic: "🪨", a: 0, t: "res", d: "Cailloux, galets, blocs. Lourds et patients." };
-  I.manche = { n: "Manche", ic: "🥢", a: 0, t: "comp", r: ["tailler", { bois: 3 }, 1],
+  I.manche = { n: "Manche", sym: "╱", col: "#8a5a32", a: 0, t: "comp", r: ["tailler", { bois: 3 }, 1],
     d: "Un bâton droit, écorcé, à la bonne longueur. La base de presque tout.",
     h: "Retire au bois tout ce qui n’est pas utile." };
   I.corde = { n: "Corde", ic: "🪢", a: 0, t: "comp", r: ["tresser", { fibre: 3 }, 1],
@@ -96,7 +96,7 @@
   I.cuir = { n: "Peau", ic: "🦌", a: 1, t: "res", d: "Une peau séchée au soleil. Elle plie sans se déchirer." };
   I.aiguille = { n: "Aiguille en os", ic: "🪡", a: 1, t: "comp", r: ["tailler", { os: 2 }, 2],
     d: "Un éclat d’os affiné, percé d’un chas.", h: "Ce qui reste des bêtes, affiné jusqu’à la pointe." };
-  I.laniere = { n: "Lanières", ic: "🎗️", a: 1, t: "comp", r: ["tailler", { cuir: 1 }, 2],
+  I.laniere = { n: "Lanières", sym: "≈", col: "#9a6a42", a: 1, t: "comp", r: ["tailler", { cuir: 1 }, 2],
     d: "Des bandes de peau qui serrent plus fort en séchant.", h: "Découpe la peau en longues bandes." };
   I.colle_os = { n: "Colle d’os", sym: "≋", col: "#d8c9a0", a: 1, t: "comp", r: ["chauffer", { os: 3 }, 2, { heat: 600 }],
     d: "Une pâte poisseuse qui durcit en séchant.", h: "Ce qui reste des bêtes, cuit longtemps jusqu’à devenir poisseux." };
@@ -105,7 +105,7 @@
   I.fronde = { n: "Fronde", ic: "🪃", a: 1, t: "tool", r: ["tresser", { laniere: 4, cuir: 4 }, 1],
     e: { tap: { plaine: 2 } }, d: "Un caillou bien lancé vaut mieux qu’une longue course.",
     h: "Des lanières entrelacées, une poche de peau au milieu." };
-  I.outre = { n: "Outre en peau", ic: "🍶", a: 1, t: "tool", r: ["assembler", { cuir: 8, laniere: 6, aiguille: 2 }, 1],
+  I.outre = { n: "Outre en peau", ic: "👝", a: 1, t: "tool", r: ["assembler", { cuir: 8, laniere: 6, aiguille: 2 }, 1],
     e: { zone: "riviere" }, d: "De l’eau pour la route. La rivière n’est plus si loin.",
     h: "Coudre une peau pour qu’elle garde l’eau." };
   I.pic_os = { n: "Pic en os", ic: "⛏️", a: 1, t: "tool", r: ["assembler", { manche: 1, os: 10, laniere: 4 }, 1],
@@ -164,8 +164,8 @@
     d: "Le vent l’emporte haut. En le suivant des yeux, tu remarques sous les arbres de la lisière un cercle parfait de pierres levées. (Nouvelle exploration à la Lisière.)" };
 
   /* Âge 3 — Cuivre */
-  I.malachite = { n: "Malachite", sym: "Ml", col: "#2f8f5b", a: 3, t: "res", d: "Une pierre verte et veinée, lourde pour sa taille. Il y a du métal là-dedans." };
-  I.cassiterite = { n: "Cassitérite", sym: "Cs", col: "#4b4b54", a: 3, t: "res", d: "Des cristaux sombres et lourds." };
+  I.malachite = { n: "Malachite", sym: "❖", col: "#2f8f5b", a: 3, t: "res", d: "Une pierre verte et veinée, lourde pour sa taille. Il y a du métal là-dedans." };
+  I.cassiterite = { n: "Cassitérite", sym: "▲", col: "#4b4b54", a: 3, t: "res", d: "Des cristaux sombres et lourds." };
   I.lingot_cuivre = { n: "Lingot de cuivre", sym: "Cu", col: "#c7713b", a: 3, t: "comp",
     r: ["chauffer", { malachite: 3, charbon: 1 }, 1, { heat: 1100 }],
     d: "Ton premier métal, rouge et souple.",
@@ -249,7 +249,7 @@
     d: "Des dizaines de roues dentées qui calculent le ciel. Une aiguille suit une étoile que tu n’as jamais vue, marquée d’un nom : Kher. (+1 ✨ par minute, débloque le Ciel.)" };
 
   /* Âge 5 — Fer */
-  I.fer_min = { n: "Minerai de fer", sym: "Hm", col: "#8e3b2c", a: 5, t: "res", d: "Une roche rouge sang, lourde de métal." };
+  I.fer_min = { n: "Minerai de fer", sym: "◣", col: "#8e3b2c", a: 5, t: "res", d: "Une roche rouge sang, lourde de métal." };
   I.bas_fourneau = { n: "Bas-fourneau", ic: "🌋", a: 5, t: "stat", r: ["assembler", { brique: 130, soufflet: 3, argile: 95 }, 1],
     e: { st: [{ g: "chauffer", heat: 1300 }] }, d: "Une cheminée de terre où le soufflet fait rugir la braise.",
     h: "Une haute tour de briques, de l’argile, et de quoi souffler sur le feu." };
@@ -380,7 +380,7 @@
     d: "Elle perce la roche en chantant.", h: "Un moteur silencieux, une mèche d’acier durci, un bâti de tôle." };
 
   /* Âge 8 — Silicium */
-  I.quartz = { b: 0.5, n: "Quartz", sym: "Qz", col: "#d9d4f0", a: 4, t: "res", d: "Des cristaux limpides, tirés du sable." };
+  I.quartz = { b: 0.5, n: "Quartz", sym: "◇", col: "#d9d4f0", a: 4, t: "res", d: "Des cristaux limpides, tirés du sable." };
   I.silicium = { n: "Silicium", sym: "Si", col: "#62758a", a: 8, t: "comp", r: ["chauffer", { quartz: 3, charbon: 2 }, 1, { heat: 3500 }],
     d: "Un métal qui n’en est pas tout à fait un.", h: "Le cristal du désert, réduit par la braise dans un éclair permanent." };
   I.wafer = { n: "Plaquette de silicium", ic: "💿", a: 8, t: "comp", r: ["tailler", { silicium: 1 }, 4],
@@ -423,9 +423,9 @@
 
   /* Âge 9 — Polymères */
   I.petrole = { b: 0.5, n: "Pétrole", sym: "●", col: "#17120e", a: 9, t: "res", d: "Des forêts mortes il y a cent millions d’années." };
-  I.bauxite = { b: 0.5, n: "Bauxite", sym: "Bx", col: "#b8612f", a: 9, t: "res", d: "Une terre rouge qui cache un métal léger." };
-  I.ilmenite = { b: 0.5, n: "Ilménite", sym: "Il", col: "#4a4a5c", a: 9, t: "res", d: "Un sable noir et lourd." };
-  I.terres_rares = { b: 0.2, n: "Terres rares", sym: "TR", col: "#8a6bbe", a: 9, t: "res", d: "Pas si rares, mais si dispersées." };
+  I.bauxite = { b: 0.5, n: "Bauxite", sym: "◒", col: "#b8612f", a: 9, t: "res", d: "Une terre rouge qui cache un métal léger." };
+  I.ilmenite = { b: 0.5, n: "Ilménite", sym: "◓", col: "#4a4a5c", a: 9, t: "res", d: "Un sable noir et lourd." };
+  I.terres_rares = { b: 0.2, n: "Terres rares", sym: "✳", col: "#8a6bbe", a: 9, t: "res", d: "Pas si rares, mais si dispersées." };
   I.reacteur = { n: "Réacteur chimique", ic: "🧪", a: 9, t: "stat", r: ["assembler", { acier_trempe: 240, verre_trempe: 120, processeur: 40 }, 1],
     e: { st: [{ g: "synthetiser" }] }, d: "Des cuves, et des tuyaux partout.",
     h: "Des cuves d’acier durci, des hublots incassables, un cerveau pour tout piloter." };

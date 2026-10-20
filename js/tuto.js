@@ -94,7 +94,7 @@
       { id: "mains", n: "Tes mains",
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "carte"),
         steps: [
-          { at: () => (document.querySelector("#hands .hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
+          { at: () => (document.querySelector("#hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
             text: "Ce que tu fabriques à la main passe par ta file ✋ : une pièce après l’autre, même jeu fermé. Répéter un geste va de plus en plus vite, et ✕ annule en rendant les matières.", next: true }
         ] },
       { id: "roue", n: "La roue",

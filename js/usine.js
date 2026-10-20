@@ -39,8 +39,7 @@
           '<div class="u-bar"><div class="u-free" id="uFree"></div><button class="u-help" data-u="help" aria-label="Comment ça marche">?</button></div>' +
           '<div class="u-top"><div id="uOver"></div></div>' +
           '<canvas id="uCan"></canvas>' +
-          '<button class="u-fab" data-u="roue" aria-label="Fabriquer">🛠️<i id="uFabN"></i></button>' +
-          '<div class="u-zoom"><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button><button data-u="help" class="u-help2" aria-label="Comment ça marche">?</button></div>' +
+          '<div class="u-zoom"><button class="u-fab" data-u="roue" aria-label="Fabriquer">🛠️<i id="uFabN"></i></button><button data-u="zin" aria-label="Zoomer">+</button><button data-u="zout" aria-label="Dézoomer">−</button><button data-u="center" aria-label="Recentrer">⌖</button><button data-u="undo" id="uUndo" aria-label="Annuler" disabled>↶</button><button data-u="help" class="u-help2" aria-label="Comment ça marche">?</button></div>' +
           '<div class="u-sheet hidden" id="uSheet"></div>' +
           '<div class="u-hint hidden" id="uHint"></div>' +
           '<div class="u-tools" id="uTools">' + TOOLS.map((t) => '<button data-tool="' + t[0] + '"><span>' + t[1] + "</span><i>" + t[2] + "</i></button>").join("") + "</div>" +
@@ -133,8 +132,13 @@
 
     /* ------------------------------------------------------------ outils */
     function setTool(t) {
+      const was = V.tool;
       V.tool = t;
-      if (t !== "voir") select(null);
+      if (t !== "voir") { V.zsel = null; select(null); }
+      if (t !== was && V.cv && V.ready) {
+        if (t === "ext") { const d = extSpot(); if (d) reveal(d.x, d.y); }
+        else if (t === "mach" || t === "port") reveal(0, 0);
+      }
       if (!V.el) return;
       V.el.querySelectorAll("[data-tool]").forEach((b) => b.classList.toggle("on", b.dataset.tool === t));
     }
@@ -176,6 +180,18 @@
       A.tap(d.res);
       vibe(5);
       return true;
+    }
+    /* le gisement le plus proche où poser un extracteur libre */
+    function extSpot() {
+      let best = null, bd = 1e9;
+      for (const d of E.deposits()) {
+        if (!freeExt(d.res).length) continue;
+        const e = E.fabCell(d.x, d.y);
+        if (e && e.k !== "ext") continue;
+        const dd = Math.hypot(d.x - V.cam.x, d.y - V.cam.y);
+        if (dd < bd) { bd = dd; best = d; }
+      }
+      return best;
     }
     function freeExt(res) {
       const us = E.extUnits();
@@ -488,8 +504,11 @@
       else if (u === "exp") {
         const r = E.startExp(b.dataset.z);
         if (r.ok) { A.explore ? A.explore() : A.click(); toast("🧭 C’est parti. L’exploration avance toute seule."); }
-        else if (r.why === "busy") toast("Une exploration est déjà en cours.");
-        else if (r.why === "cost") toast("Il te manque de quoi partir.");
+        else if (r.why === "busy") toast("Une exploration est déjà en cours : une à la fois.", { key: "nope" });
+        else if (r.why === "cost") {
+          const x = E.ZONES[b.dataset.z].exps[E.nextExp(b.dataset.z).i], st = S();
+          toast("Il te manque " + Object.keys(x.cost).filter((i) => (st.inv[i] || 0) < x.cost[i]).map((i) => esc(I[i].n)).join(", ") + " pour partir.", { key: "nope" });
+        }
       } else if (u === "zone") selectZone({ z: b.dataset.z });
       else if (u === "rot" && e) { remember(); E.fabRotate(sel.x, sel.y); A.click(); }
       else if (u === "rm" && e) { demolish(sel); }
@@ -643,7 +662,7 @@
     function sheet() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (!box) return;
-      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); return; }
+      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); box.dataset.zs = V.zsel.i !== undefined ? markState(V.zsel.z, V.zsel.i) : ""; return; }
       const c = V.sel, e = c && E.fabCell(c.x, c.y);
       if (!e) { box.classList.add("hidden"); box.innerHTML = ""; V.sel = null; return; }
       box.classList.remove("hidden");
@@ -687,7 +706,7 @@
             '</b><button class="mini" data-u="eu" data-t="' + t + '" data-v="1">+</button></div>').join("") + "</div>"
             : '<p class="small muted">Aucun de tes extracteurs ne sait récolter ça. Regarde au Carnet ce qui pourrait.</p>') +
           '<div class="u-row acts">' + (loose ? '<button class="btn small pri" data-u="link">🛤️ Relier à la Réserve</button>' : "") +
-          '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + '</button><button class="btn small" data-u="rot">🔄 Tourner</button><button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
+          '<button class="btn small" data-u="on">' + (e.on ? "⏸ Pause" : "▶ Reprendre") + "</button>" + (E.easy() ? "" : '<button class="btn small" data-u="rot">🔄 Tourner</button>') + '<button class="btn small ghost" data-u="rm">🗑️ Retirer</button></div>';
       } else if (e.k === "port") {
         const g = E.fabGraph(), P = g.prods["P" + c.x + "," + c.y];
         const n = P ? Object.keys(P.t.cons).length : 0;
@@ -781,11 +800,14 @@
           h += '<div class="u-st dim">Un autre lieu à explorer d’abord.</div></div></div>';
         } else {
           const n = E.nextExp(zs.z);
+          const lack = x.cost ? Object.keys(x.cost).filter((i) => (st.inv[i] || 0) < x.cost[i]) : [];
           const cost = x.cost ? Object.keys(x.cost).map((i) => x.cost[i] + " " + esc(I[i].n.toLowerCase())).join(", ") : "";
           const busy = !!st.exp.active;
-          h += '<div class="u-st ' + (state === "next" ? "good" : "warn") + '">' + (state === "locked" ? (x.hidden ? esc(x.hidden) : "Il te faut : " + esc(I[n.x.need].n)) :
-            fmtTime(x.dur / E.expMult()) + (cost ? " · il faut " + cost : "")) + "</div></div></div>" +
-            (state === "next" ? '<div class="u-row acts"><button class="btn small pri" data-u="exp" data-z="' + zs.z + '"' + (busy ? " disabled" : "") + ">🧭 Explorer</button>" +
+          h += '<div class="u-st ' + (state === "next" && !lack.length ? "good" : "warn") + '">' + (state === "locked" ? (x.hidden ? esc(x.hidden) : "Il te faut : " + esc(I[n.x.need].n)) :
+            fmtTime(x.dur / E.expMult()) + (lack.length ? "" : cost ? " · il faut " + cost : "")) + "</div></div></div>" +
+            (lack.length && state === "next" ? '<p class="small u-lack">Il te manque : ' + lack.map((i) => '<span class="link-txt" data-u="goto" data-id="' + i + '">' + fmt(x.cost[i] - Math.floor(st.inv[i] || 0)) + " " + esc(I[i].n) + "</span>" +
+              (!st.known[i] && I[i].h ? ' <span class="muted">« ' + esc(I[i].h) + " »</span>" : "")).join(", ") + "</p>" : "") +
+            (state === "next" ? '<div class="u-row acts"><button class="btn small pri' + (busy || lack.length ? " nope" : "") + '" data-u="exp" data-z="' + zs.z + '">🧭 Explorer</button>' +
               (busy ? '<span class="tiny muted">Une exploration est déjà en cours.</span>' : "") + "</div>" : "");
         }
         return h;
@@ -878,7 +900,9 @@
       const ext = E.EXTS.some((t) => us[t].own > 0) || has("ext");
       const mach = E.MACHINES.some((m) => ms[m].own > 0) || has("mach");
       const any = cells.length > 0, adv = !ez && (ext || mach || any);
-      return { voir: ext || mach || any, ext, mach, tapis: adv || has("belt"), port: adv || has("port"), split: adv || has("split"), cross: adv || has("cross"), turn: any, del: any };
+      const lot = has("mach") || has("site"); // en usine simple, tapis et retouches servent quand des machines tournent
+      return { voir: ext || mach || any, ext, mach, tapis: adv || (lot && has("belt")), port: adv || has("port"), split: adv || has("split"), cross: adv || has("cross"),
+        turn: ez ? lot : any, del: ez ? lot : any };
     }
     function showTools(bar) {
       const u = V.el && V.el.querySelector(".usine");
@@ -897,6 +921,7 @@
     /* met à jour l’état de la machine choisie sans reconstruire le panneau */
     function sheetLive() {
       const box = V.el && V.el.querySelector("#uSheet");
+      if (box && V.zsel && V.zsel.i !== undefined && box.dataset.zs !== markState(V.zsel.z, V.zsel.i)) { sheet(); return; }
       const e = V.sel && E.fabCell(V.sel.x, V.sel.y);
       if (box && e && e.k === "site") {
         const ps = E.projState(e.p), step = D.PROJECTS[e.p].steps[ps.step];

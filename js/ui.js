@@ -168,13 +168,29 @@
       sparks(innerWidth * (0.2 + Math.random() * 0.6), innerHeight * (0.15 + Math.random() * 0.35), 26, cols[k % cols.length]);
     }, k * 260);
   }
-  function toast(html) {
-    const t = document.createElement("div");
-    t.className = "toast";
+  /* Un message. Deux au plus à l’écran ; un même sujet (o.key, par défaut le texte) remplace le
+   * précédent au lieu de s’empiler, sauf s’il est moins important (o.p). Sur la carte, ils
+   * s’affichent sous l’objectif, pour ne jamais le cacher. */
+  function toast(html, o) {
+    o = o || {};
+    const box = $("#toasts"), key = o.key || html, p = o.p || 0;
+    const ut = document.body.classList.contains("in-usine") && $(".u-top");
+    box.style.top = ut ? Math.round(ut.getBoundingClientRect().bottom + 6) + "px" : "";
+    let t = Array.from(box.children).find((x) => x.dataset.k === key);
+    if (t) {
+      if (p < Number(t.dataset.p)) return;
+      clearTimeout(t._tm);
+      t.style.animation = "none"; void t.offsetWidth; t.style.animation = ""; // repart de zéro
+    } else {
+      t = document.createElement("div");
+      t.className = "toast";
+      t.dataset.k = key;
+      box.appendChild(t);
+      while (box.children.length > 2) box.firstChild.remove();
+    }
+    t.dataset.p = p;
     t.innerHTML = html;
-    $("#toasts").appendChild(t);
-    while ($("#toasts").children.length > 4) $("#toasts").firstChild.remove();
-    setTimeout(() => t.remove(), 3100);
+    t._tm = setTimeout(() => t.remove(), 3100);
   }
   function vibe(ms) { if (S().settings.vibe && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* ignoré */ } }
   function elCenter(el) {
@@ -645,6 +661,7 @@
     render(true);
   }
   function updateBadges() {
+    S().flags.badges = Object.assign({}, U.badges); // les pastilles survivent à la fermeture
     $$("#tabs button").forEach((b) => {
       const on = U.badges[b.dataset.tab];
       let d = $(".dot", b);
@@ -673,7 +690,8 @@
     updateBadges();
     const el = $("#v-" + U.tab);
     const sc = $("#views").scrollTop;
-    const anc = U.anchor && el.querySelector(U.anchor), ay = anc ? anc.getBoundingClientRect().top : 0;
+    if (U.anchor && performance.now() - (U.anchorAt || 0) > 800) U.anchor = null; // un ancrage oublié ne sert plus
+    const anc = U.anchor && findAnchor(el, U.anchor), ay = anc ? anc.getBoundingClientRect().top : 0;
     // garder le focus d’un champ de saisie pendant le rendu
     const ae = document.activeElement;
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
@@ -684,12 +702,40 @@
     else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
-    if (anc) { const a2 = el.querySelector(U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
+    if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
     U.anchor = null;
+    if (U.tab === "atelier") { S().flags.bench = { g: U.geste, s: U.slots.slice() }; updMini(); }
     if (focus) { const f = document.getElementById(focus.id); if (f) { f.focus(); try { f.setSelectionRange(focus.s, focus.e); } catch (e) { /* champ sans sélection */ } } }
     refresh();
     ambient();
     soundScene();
+  }
+  /* l’ancrage : un sélecteur, ou { sel, idx } quand plusieurs éléments le partagent */
+  function findAnchor(root, a) { return typeof a === "string" ? root.querySelector(a) : root.querySelectorAll(a.sel)[a.idx] || null; }
+  const ANCHORS = ["data-g", "data-slot", "data-clear", "data-cr", "data-chain", "data-if", "data-track", "data-untrack", "data-tree", "data-roue"];
+  function anchorFor(t) {
+    const root = $("#v-" + U.tab);
+    // depuis le petit établi (fixe à l’écran), c’est la liste visible qui doit rester en place
+    if (t.closest("#mbench")) {
+      const top = $("#views").getBoundingClientRect().top + 60;
+      const tile = Array.from(root.querySelectorAll(".inv[data-inv]")).find((x) => x.getBoundingClientRect().top >= top);
+      return tile ? '[data-inv="' + tile.dataset.inv + '"]' : null;
+    }
+    if (t.closest("#forge")) return "#forge";
+    for (const a of ANCHORS) {
+      const b = t.closest("[" + a + "]");
+      if (!b) continue;
+      const sel = "[" + a + '="' + b.getAttribute(a) + '"]';
+      return { sel, idx: Array.from(root.querySelectorAll(sel)).indexOf(b) };
+    }
+    return null;
+  }
+  /* le petit établi : quand le grand est sorti de l’écran, ses cases et son bouton restent sous la main */
+  function updMini() {
+    const m = $("#mbench"), b = $("#bench");
+    if (!m || !b) return;
+    const out = b.getBoundingClientRect().bottom < $("#views").getBoundingClientRect().top + 24;
+    m.classList.toggle("hidden", !(out && U.tab === "atelier" && U.slots.some(Boolean)));
   }
   /* la musique suit l’âge, l’ambiance suit l’endroit */
   function soundScene() {
@@ -826,7 +872,7 @@
     let h = "";
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
     if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. <b>Œuvre</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
-    h += '<div id="hands">' + handsHTML() + "</div>";
+    if (st.stats.crafts > 0 || st.hand.q.length) h += '<div id="hands" class="hbar">' + handsHTML() + "</div>";
     h += pinsHTML();
     h += '<div class="gestes">';
     let locks = 0;
@@ -846,14 +892,17 @@
     if (U.geste === "chauffer" || U.geste === "allier") heat = "🌡️ Ta meilleure chaleur : " + fmtHeat(E.heat());
     else if ((U.geste === "marteler" || U.geste === "electriser") && E.level(U.geste) > 1) heat = G.d + " (niveau " + E.level(U.geste) + ")";
     const mat = st.age >= 9 ? " m-labo" : st.age >= 6 ? " m-metal" : st.age >= 3 ? " m-pierre" : "";
-    h += '<div class="card bench' + mat + '" id="bench">' + (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") +
-      '<div class="heat small">' + esc(heat) + '</div><div class="slots">';
+    h += '<div class="card bench' + mat + '" id="bench"><div class="heat small"><span>' + esc(heat) + "</span>" +
+      (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") + '</div><div class="slots">';
     U.slots.forEach((id, i) => {
       if (i) h += '<span class="plus-sep">+</span>';
       if (id) h += '<button class="slot full" data-slot="' + i + '">' + icon(id) + '<span class="sn">' + esc(I[id].n) + '</span><span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
       else h += '<button class="slot" data-slot="' + i + '"><span class="plus">+</span></button>';
     });
     h += '</div><button class="forge-btn" id="forge">' + G.ic + " " + G.n.toUpperCase() + "</button></div>";
+    h += '<div id="mbench" class="mbench hidden"><span class="mg">' + G.ic + "</span>" +
+      U.slots.map((id, i) => '<button class="mslot" data-slot="' + i + '">' + (id ? icon(id, "sm") : "+") + "</button>").join("") +
+      '<button class="mforge" data-forge>' + G.ic + " " + esc(G.n) + "</button></div>";
     h += '<div class="card result" id="result">' + resultHTML() + "</div>";
     const sugg = E.knownWith(U.slots).filter((id) => !(U.last && U.last.id === id)).slice(0, 6);
     if (sugg.length) {
@@ -1298,16 +1347,11 @@
       const id = b.dataset.cr, n = b.dataset.n;
       const max = E.maxCraftable(id, n === "max" ? 100000 : Number(n));
       const ok = n === "max" ? max >= 1 : max >= Number(n);
-      b.disabled = !ok;
+      b.classList.toggle("nope", !ok);
       if (n === "max") b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
     });
-    $$("[data-chain]", view).forEach((b) => { b.disabled = !E.plan(b.dataset.chain, 1).ok; });
-    $$("[data-exp]", view).forEach((b) => {
-      const n = E.nextExp(b.dataset.exp);
-      let ok = !st.exp.active && n && !n.locked;
-      if (ok && n.x.cost) for (const i in n.x.cost) if ((st.inv[i] || 0) < n.x.cost[i]) ok = false;
-      b.disabled = !ok;
-    });
+    $$("[data-chain]", view).forEach((b) => { b.classList.toggle("nope", !E.plan(b.dataset.chain, 1).ok); });
+    $$("[data-exp]", view).forEach((b) => b.classList.toggle("nope", !!expWhy(b.dataset.exp)));
     if (U.tab === "carte") soundScene();
     if (U.tab === "atelier") {
       const f = $("#forge");
@@ -1338,6 +1382,34 @@
     if (!showPip && pip) pip.remove();
   }
 
+  /* pourquoi on ne peut pas fabriquer (n fois, en chaîne ou non), en une phrase */
+  function whyNot(id, n, chain) {
+    const it = I[id], b = E.blocker(id);
+    if (E.handInfo().full) return "Tes mains sont pleines : attends qu’une fabrication se termine.";
+    if (b && b.why === "owned") return "Tu possèdes déjà " + esc(it.n) + ".";
+    if (b) return esc(it.n) + " : " + (b.why === "heat" ? "il faut une chaleur de " + fmtHeat(b.heat) : b.why === "lvl" ? "il faut une station plus solide" : "tu ne maîtrises pas encore ce geste") + ".";
+    const names = (m) => Object.keys(m).map((k) => fmt(m[k]) + " " + esc(I[k].n)).join(", ");
+    if (chain) {
+      const p = E.plan(id, n);
+      const raw = {};
+      for (const k in p.missing) if (!p.locked.includes(k)) raw[k] = p.missing[k];
+      return (Object.keys(raw).length ? "Il manque " + names(raw) + "." : "") +
+        (p.locked.length ? " Recette encore inconnue : " + p.locked.map((k) => esc(I[k].n)).join(", ") + "." : "") || "Impossible pour l’instant.";
+    }
+    const m = E.missingFor(id, n);
+    return m ? "Il manque " + names(m) + ". ⚡ En chaîne fabrique aussi les pièces." : "Impossible pour l’instant.";
+  }
+  /* pourquoi on ne peut pas explorer ce lieu tout de suite (rien si on peut) */
+  function expWhy(z) {
+    const st = S(), n = E.nextExp(z);
+    if (!n) return "Plus rien à explorer ici pour l’instant.";
+    if (st.exp.active) return "Tu explores déjà ailleurs : une exploration à la fois.";
+    if (n.locked) return "Il te faut d’abord : " + esc(I[n.x.need].n) + ".";
+    const lack = n.x.cost ? Object.keys(n.x.cost).filter((i) => (st.inv[i] || 0) < n.x.cost[i]) : [];
+    if (!lack.length) return "";
+    return "Il te manque " + lack.map((i) => fmt(n.x.cost[i] - Math.floor(st.inv[i] || 0)) + " " + esc(I[i].n) +
+      (st.known[i] ? " (voir le Carnet)" : I[i].h ? " : « " + esc(I[i].h) + " »" : "")).join(", ") + ".";
+  }
   /* ============================================================ ACTIONS */
   function putInSlot(id) {
     const i = U.slots.indexOf(id);
@@ -1348,7 +1420,7 @@
       U.slots[free] = id;
     }
     A.click();
-    U.anchor = '[data-inv="' + id + '"]';
+    U.anchor = '[data-inv="' + id + '"]'; U.anchorAt = performance.now();
     render(true);
   }
 
@@ -1362,6 +1434,7 @@
     U.forging = false;
     U.last = r;
     if (r.kind === "learn") r.made0 = S().made[r.id] || 0;
+    if (U.fromMini) toast(resultLine(r), { key: "forge" });
     const bench = $("#bench");
     const p = elCenter($("#forge"));
     strike(g, bench, r.kind === "craft" || r.kind === "queued");
@@ -1386,6 +1459,18 @@
     render(true);
   }
 
+  /* le résultat d’un essai en une ligne (quand la carte de résultat est hors de l’écran) */
+  function resultLine(r) {
+    const n = (id) => "<b>" + esc(I[id].n) + "</b>";
+    if (r.kind === "craft") return r.fresh ? "✨ Nouvelle découverte : " + n(r.id) : "+" + fmt(r.n) + " " + n(r.id);
+    if (r.kind === "queued") return "✋ " + n(r.id) + " : prêt dans " + fmtTime(r.time) + ".";
+    if (r.kind === "learn") return "📖 Recette comprise : " + n(r.id) + ". Il manque " + Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n)).join(", ") + ".";
+    if (r.kind === "blocked") return "🔥 " + n(r.id) + " : il faudrait plus de chaleur ou une meilleure station.";
+    if (r.kind === "owned") return "Tu possèdes déjà " + n(r.id) + ".";
+    if (r.kind === "busy") return "Tes mains sont déjà bien occupées.";
+    if (r.kind === "fail") return "<b>" + D.TEMPS[r.temp || 0].n + "</b> · " + esc(WHY[r.why] || "");
+    return "";
+  }
   /* l’outil du geste s’abat sur l’établi */
   function strike(g, bench, ok) {
     const fx = $("#fx");
@@ -1438,17 +1523,14 @@
   /* la file de « Tes mains » : ce qui est en cours, ce qui attend */
   function handsHTML() {
     const h = E.handInfo();
-    if (!h.jobs.length) return "";
-    let out = '<div class="card hands"><div class="row between"><div class="lbl">✋ Tes mains</div><span class="tiny muted">' + h.jobs.length + "/" + D.HAND.max + " · " + fmtTime(h.left) + "</span></div>";
-    h.jobs.forEach((j, i) => {
-      const it = I[j.id];
-      const what = j.wait ? '<span style="color:var(--bad)">Il manque des matières : elles ont dû partir ailleurs.</span>'
-        : j.steps > 1 ? "Étape " + (j.i + 1) + "/" + j.steps + " · " + esc(I[j.step].n) + " " + fmt(j.k) + "/" + fmt(j.of) : E.isUnique(it) ? "" : fmt(j.k) + "/" + fmt(j.of);
-      out += '<div class="hjob' + (i ? "" : " cur") + '">' + icon(j.id, "sm") + '<div class="grow"><div class="small"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) + "</div>" +
-        '<div class="tiny muted">' + what + "</div>" + (i ? "" : '<div class="bar"><i data-hp style="width:' + (100 * (1 - j.left / j.tot)).toFixed(1) + '%"></i></div>') + "</div>" +
-        '<span class="tiny muted" data-hl="' + i + '">' + fmtTime(i ? j.at : j.left) + '</span><button class="hx" data-hcancel="' + i + '" aria-label="Annuler">✕</button></div>';
-    });
-    return out + "</div>";
+    if (!h.jobs.length) return '<span class="hh">✋</span><span class="grow tiny muted">Tes mains sont libres.</span>';
+    const j = h.jobs[0], it = I[j.id];
+    const what = j.wait ? '<span style="color:var(--bad)">il manque des matières</span>'
+      : j.steps > 1 ? "étape " + (j.i + 1) + "/" + j.steps + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.k) + "/" + fmt(j.of);
+    return '<span class="hh">✋</span>' + icon(j.id, "sm") + '<div class="grow hmain" data-hopen><div class="small ell"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) +
+      ' <span class="tiny muted">' + what + '</span></div><div class="bar"><i data-hp style="width:' + (100 * (1 - j.left / j.tot)).toFixed(1) + '%"></i></div></div>' +
+      '<span class="tiny muted" data-hl="0">' + fmtTime(j.left) + "</span>" + (h.jobs.length > 1 ? '<button class="hmore" data-hopen>+' + (h.jobs.length - 1) + "</button>" : "") +
+      '<button class="hx" data-hcancel="0" aria-label="Annuler">✕</button>';
   }
   const handSig = () => S().hand.q.map((j) => j.id + ":" + j.i + ":" + j.k + ":" + (j.w ? 1 : 0)).join("|");
   function studyHTML(id) {
@@ -1795,13 +1877,15 @@
     E.on("learn", () => badge("carnet"));
     E.on("zone", (z) => {
       U.zone = z;
-      toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Elle apparaît sur la carte.");
+      // la découverte qui ouvre cette terre le dit déjà (« Débloque : … ») : pas de second message
+      setTimeout(() => { if (Date.now() - (U.lastDiscover || 0) > 1500) toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Elle apparaît sur la carte."); }, 80);
       badge("carte");
       setTimeout(() => { if (Usine.mounted()) Usine.focusZone(z); else U.focusZone = z; }, 50);
     });
     E.on("discover", (id) => {
       const it = I[id];
-      if (!U.forging && !it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " · " + esc(fxText(id)) : ""));
+      if (!U.forging && !it.sec) toast("Découverte : <b>" + esc(it.n) + "</b>" + (fxText(id) ? " · " + esc(fxText(id)) : ""), { key: "it:" + id, p: 3 });
+      U.lastDiscover = Date.now();
       if (it.e && it.e.sky) badge("cosmos");
       if (it.t === "mach") badge("carte");
       updateBadges();
@@ -1818,7 +1902,7 @@
       toast("💭 <b>" + esc(it.n) + "</b> : " + esc(line));
       badge("carte");
     });
-    E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé."); });
+    E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé.", { key: "it:" + id, p: 2 }); });
     E.on("secret", (id) => {
       badge("journal");
       const it = I[id];
@@ -1851,13 +1935,13 @@
     E.on("handdone", (d) => {
       const now = Date.now();
       if (now - lastHand > 350) { lastHand = now; A.craft(I[d.id].r[0]); }
-      const el = U.tab === "atelier" ? $("#hands .hjob.cur") : null;
+      const el = U.tab === "atelier" ? $("#hands") : null;
       if (el && d.last) { const p = elCenter(el); floater("+" + fmt(d.n) + " " + I[d.id].n, p.x, p.y - 10, "var(--good)"); if (d.bonus) setTimeout(() => floater("★ +" + fmt(d.bonus), p.x, p.y - 26, "var(--intu)"), 200); }
     });
     E.on("hand", (e) => {
       if (e.kind !== "done") return;
       const it = I[e.job.id], n = e.job.s[e.job.s.length - 1][1];
-      if (U.tab !== "atelier") toast("✋ Fini : <b>" + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(n)));
+      if (U.tab !== "atelier") toast("✋ Fini : <b>" + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(n)), { key: "it:" + e.job.id, p: 1 });
       else render(); // pas pendant un appui long sur une matière
     });
     E.on("projstep", (x) => {
@@ -1870,7 +1954,7 @@
       if (E.cache().pip && (id === "pip" || Math.random() < 0.3)) setTimeout(() => A.pip(), 250);
       if (I[id] && I[id].t === "ext") {
         badge("carte");
-        setTimeout(() => toast("⛏️ <b>" + esc(I[id].n) + "</b> : pose-la sur un gisement de la Carte pour qu’elle récolte."), 900);
+        setTimeout(() => toast("⛏️ <b>" + esc(I[id].n) + "</b> : pose-la sur un gisement de la Carte pour qu’elle récolte.", { key: "it:" + id, p: 4 }), 900);
       }
     });
     E.on("decoded", () => {
@@ -1886,7 +1970,7 @@
     E.on("offline", (o) => {
       if (o.dt < 60) return;
       const top = Object.keys(o.gains).filter((k) => I[k]).sort((a, b) => o.gains[b] - o.gains[a]).slice(0, 10);
-      if (!top.length && !o.exp) return;
+      if (!top.length && !o.exp && o.dt < 600) return;
       U.offline = { dt: o.dt, top, gains: o.gains, exp: o.exp };
     });
   }
@@ -1920,6 +2004,8 @@
 
     const views = $("#views");
     views.addEventListener("pointerdown", (ev) => {
+      // le bouton d’œuvre agit au relâcher, même si l’établi s’est redessiné entre-temps (taper vite)
+      if (ev.target.closest("#forge, [data-forge]")) U.fdown = { x: ev.clientX, y: ev.clientY, mini: !!ev.target.closest("[data-forge]") };
       const inv = ev.target.closest(".inv");
       if (inv) {
         const id = inv.dataset.inv;
@@ -1928,17 +2014,24 @@
     });
     const cancelLp = () => { if (U.lp) { clearTimeout(U.lp.t); U.lp.up = true; } };
     ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
-    views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } }, { passive: true });
+    views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } updMini(); }, { passive: true });
     views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".inv, .slot")) ev.preventDefault(); });
 
     views.addEventListener("click", (ev) => {
       const t = ev.target;
       let b;
+      if (U.tab === "atelier") { U.anchor = anchorFor(t); U.anchorAt = performance.now(); }
       if ((b = t.closest(".inv"))) {
         if (U.lp) { cancelLp(); U.lp = null; putInSlot(b.dataset.inv); }
         return;
       }
       if ((b = t.closest("[data-pin]"))) { const on = E.togglePin(b.dataset.pin); A.click(); toast(on ? "★ Épinglée : visible en haut de l’Atelier." : "Recette désépinglée."); render(true); return; }
+      if ((b = t.closest(".nope[data-chain], .nope[data-cr]"))) {
+        A.fail(0);
+        toast(whyNot(b.dataset.chain || b.dataset.cr, b.dataset.n === "max" ? 1 : Number(b.dataset.n) || 1, !!b.dataset.chain), { key: "nope" });
+        return;
+      }
+      if ((b = t.closest("[data-hopen]"))) { A.init(); Roue.open({ cat: "hand" }); return; }
       if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
       if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
       if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (voir la carte)"); render(true); return; }
@@ -1956,7 +2049,10 @@
       if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une matière ci-dessous pour la poser ici."); return; }
       if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
       if (t.closest("[data-roue]")) { A.init(); Roue.open(); return; }
-      if (t.closest("#forge")) { forge(); return; }
+      if (t.closest("#forge, [data-forge]")) {
+        if (performance.now() - (U.forgeUp || 0) < 600) return; // déjà fait au relâcher
+        U.fromMini = !!t.closest("[data-forge]"); forge(); U.fromMini = false; return;
+      }
       if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
       if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
       if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
@@ -1968,8 +2064,10 @@
       }
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
       if ((b = t.closest("[data-exp]"))) {
+        const why = expWhy(b.dataset.exp);
+        if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
         const r = E.startExp(b.dataset.exp);
-        if (r.ok) { A.init(); A.explore(); toast("🧭 C’est parti. L’exploration avance toute seule."); } else if (r.why === "busy") toast("Tu explores déjà ailleurs.");
+        if (r.ok) { A.init(); A.explore(); toast("🧭 C’est parti. L’exploration avance toute seule."); }
         render(true); return;
       }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
@@ -2003,6 +2101,13 @@
     });
     views.addEventListener("pointerup", (ev) => {
       if (ev.target.id === "skyCanvas") skyTap(ev);
+      const d = U.fdown;
+      U.fdown = null;
+      if (d && Math.hypot(ev.clientX - d.x, ev.clientY - d.y) < 12 && ev.target.closest("#forge, [data-forge]")) {
+        U.forgeUp = performance.now();
+        U.anchor = d.mini ? anchorFor(ev.target) : "#forge"; U.anchorAt = performance.now();
+        U.fromMini = d.mini; forge(); U.fromMini = false;
+      }
     });
 
     document.addEventListener("visibilitychange", () => {
@@ -2017,8 +2122,10 @@
     if (!o) return;
     U.offline = null;
     const list = o.top.map((k) => '<span class="ing">' + icon(k, "sm") + "+" + fmt(o.gains[k]) + " " + esc(I[k].n) + "</span>").join("");
-    simpleModal("Pendant ton absence", "Tu as été absent " + fmtTime(o.dt),
-      (list ? '<p class="small muted">Tes machines ont travaillé :</p><div class="row wrap">' + list + "</div>" : "") +
+    const auto = Object.values(S().fab.c).some((e) => e.k === "ext" || e.k === "mach");
+    simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
+      (list ? '<p class="small muted">Pendant ce temps, tout a travaillé pour toi :</p><div class="row wrap">' + list + "</div>"
+        : '<p class="small">Rien n’a tourné pendant ton absence.' + (auto ? "" : " Une cabane posée sur un gisement récolte même jeu fermé : c’est la prochaine chose à viser.") + "</p>") +
       (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : ""));
   }
 
@@ -2073,6 +2180,12 @@
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
     setTab("carte");
+    Object.assign(U.badges, S().flags.badges || {});
+    const bk = S().flags.bench;
+    if (bk && Array.isArray(bk.s)) {
+      if (D.GESTES[bk.g] && E.gesteOK(bk.g)) U.geste = bk.g;
+      U.slots = [0, 1, 2].map((i) => (bk.s[i] && I[bk.s[i]] && S().seen[bk.s[i]] ? bk.s[i] : null));
+    }
     if (status === "error") showBadSave();
     else if (!S().introSeen) intro();
     else {

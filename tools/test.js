@@ -588,9 +588,28 @@ test("mains : découverte immédiate, recette connue dans la file, outil unique 
   E.add("fibre", 100); E.learn("panier");
   assert.ok(E.queue("panier", 1).ok);
   assert.strictEqual(E.queue("panier", 1).why, "queued");
-  for (let i = 0; i < 7; i++) E.queue("manche", 1);
   E.learn("corde");
+  for (let i = 0; i < 7; i++) E.queue(i % 2 ? "corde" : "manche", 1); // en alternance : chacune a sa place
+  assert.strictEqual(E.state.hand.q.length, 8);
   assert.strictEqual(E.queue("corde", 1).why, "full");
+});
+test("mains : la même pièce demandée plusieurs fois d’affilée s’allonge au lieu d’empiler", () => {
+  const E = mk();
+  E.state.known.manche = true; E.add("bois", 60);
+  for (let i = 0; i < 4; i++) assert.ok(E.queue("manche", 1).ok);
+  assert.deepStrictEqual(E.state.hand.q.map((j) => j.s[0][1]), [1, 3], "la première est en cours, les trois suivantes n’en font qu’une");
+  run(E, 30);
+  assert.strictEqual(E.count("manche"), 4);
+  assert.strictEqual(E.count("bois"), 60 - 12);
+});
+test("mains : trois extracteurs en chaîne d’affilée sortent tous (le prix monte pour chacun)", () => {
+  const E = mk();
+  ["manche", "corde", "cabane"].forEach((k) => (E.state.known[k] = true));
+  E.add("bois", 500); E.add("fibre", 500);
+  for (let i = 0; i < 3; i++) assert.ok(E.queue("cabane", 1, true).ok, "mise en file " + (i + 1));
+  run(E, 120);
+  assert.strictEqual(E.state.hand.q.length, 0, "la file s’est vidée : " + JSON.stringify(E.state.hand.q.map((j) => [j.id, j.i, j.k, j.w])));
+  assert.strictEqual(E.count("cabane"), 3);
 });
 test("mains : la file survit à la sauvegarde et avance pendant l’absence", () => {
   const E = mk();
