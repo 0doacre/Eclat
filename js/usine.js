@@ -19,7 +19,7 @@
   const CAPS = [0, 10, 50, 100, 200, 500, 1000, 5000, 20000, 100000];
 
   function create(api) {
-    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel, quiet } = api;
+    const { E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, overlay, onZone, Scenes, openWheel, quiet, passHTML } = api;
     const I = D.ITEMS;
     const { DX, DY } = window.EclatEngine;
     const S = () => E.state;
@@ -315,6 +315,7 @@
         if (m) { selectZone({ z: m.z, i: m.i }); return; }
         if (!e && harvest(c)) return;
         if (!e) { const g = labelAt(c.x, c.y); if (g) { selectZone({ z: g.id }); return; } }
+        if (!e) { const mz = (V.mists || []).find((q) => c.x >= q.x0 && c.x <= q.x1 && c.y >= q.y0 && c.y <= q.y1 && E.passPending().includes(q.z)); if (mz) { selectZone({ z: mz.z, pass: true }); return; } }
         select(e && e.k !== undefined ? c : null);
         return;
       }
@@ -743,7 +744,7 @@
     function sheet() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (!box) return;
-      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); box.dataset.zs = V.zsel.i !== undefined ? markState(V.zsel.z, V.zsel.i) : ""; return; }
+      if (V.zsel) { box.classList.remove("hidden"); box.innerHTML = zoneSheet(V.zsel); box.dataset.zs = V.zsel.i !== undefined ? markState(V.zsel.z, V.zsel.i) : ""; box.dataset.ps = V.zsel.pass ? passSig(V.zsel.z) : ""; return; }
       const c = V.sel, e = c && E.fabCell(c.x, c.y);
       if (!e) { box.classList.add("hidden"); box.innerHTML = ""; V.sel = null; return; }
       box.classList.remove("hidden");
@@ -860,9 +861,15 @@
       if (n.locked) return "locked";
       return "next";
     }
+    const passSig = (zid) => { const p = E.passInfo(zid); return p ? Object.keys(p.cost).map((i) => (p.paid[i] || 0) + ":" + Math.floor(S().inv[i] || 0)).join(",") + (p.done ? "!" : "") : ""; };
     function zoneSheet(zs) {
       const st = S(), z = E.ZONES[zs.z];
       let h = '<button class="u-x" data-u="close" aria-label="Fermer">✕</button>';
+      if (zs.pass) {
+        const p = E.passInfo(zs.z);
+        if (p && p.done) return h + '<div class="u-head"><span class="ic">✓</span><div class="grow"><b>' + esc(p.P.n) + '</b><div class="u-st good">Franchi : ' + esc(z.n) + " est ouverte.</div></div></div>";
+        return h + '<div class="u-head"><span class="ic">🚧</span><div class="grow"><b>Vers ' + esc(z.n) + '</b><div class="tiny muted">Verse ce qu’il faut depuis la Réserve, en plusieurs fois si besoin.</div></div></div>' + (passHTML ? passHTML(zs.z) : "");
+      }
       if (zs.i !== undefined) {
         const x = z.exps[zs.i], state = markState(zs.z, zs.i);
         const hidden = x.hidden && state !== "done" && state !== "active";
@@ -1005,6 +1012,7 @@
     function sheetLive() {
       const box = V.el && V.el.querySelector("#uSheet");
       if (box && V.zsel && V.zsel.i !== undefined && box.dataset.zs !== markState(V.zsel.z, V.zsel.i)) { sheet(); return; }
+      if (box && V.zsel && V.zsel.pass) { if (box.dataset.ps !== passSig(V.zsel.z)) sheet(); return; }
       const e = V.sel && E.fabCell(V.sel.x, V.sel.y);
       if (box && e && e.k === "site") {
         const ps = E.projState(e.p), step = D.PROJECTS[e.p].steps[ps.step];
@@ -1302,26 +1310,33 @@
         c.strokeStyle = shade(col, 0.25); c.lineWidth = 2; c.stroke();
         decorate(g, deco, col);
       }
-      // la prochaine terre, encore dans la brume
-      const next = D.ZONES.find((zz) => !E.zoneOpen(zz.id) && !zz.secret);
-      if (next) {
-        const cells = E.zonePatch(next.id);
-        if (cells.length) {
-          const xs = cells.map((q) => q.x), cy = cells[0].y;
-          const X = sx(Math.min.apply(null, xs) - 1.6), Y = sy(cy - 2.2), W = (Math.max.apply(null, xs) - Math.min.apply(null, xs) + 3.2) * z, H = 3.8 * z;
-          c.fillStyle = "rgba(160,160,170,0.12)";
-          roundRect(c, X, Y, W, H, z * 0.9); c.fill();
-          c.setLineDash([5, 6]); c.strokeStyle = "rgba(220,220,230,0.3)"; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]);
-          if (z > 16) {
-            const req = I[next.req], known = req && (S().known[next.req] || req.a <= S().age + 1);
-            c.font = "600 " + Math.max(10, Math.round(z * 0.26)) + "px system-ui, sans-serif";
-            c.textAlign = "center"; c.textBaseline = "middle";
-            c.fillStyle = "rgba(235,235,245,0.75)";
-            c.fillText("🌫️ " + (known ? next.n : "Terre inconnue"), X + W / 2, Y + H * 0.4);
-            if (known) { c.font = Math.max(9, Math.round(z * 0.21)) + "px system-ui, sans-serif"; c.fillText("il te faut : " + req.n, X + W / 2, Y + H * 0.66); }
-          }
+      // la prochaine terre, encore dans la brume, et chaque terre dont le passage est en cours (🚧)
+      const next = D.ZONES.find((zz) => !E.zoneOpen(zz.id) && !zz.secret), pend = E.passPending();
+      V.mists = [];
+      D.ZONES.filter((zz) => !E.zoneOpen(zz.id) && (zz === next || pend.includes(zz.id))).forEach((nz) => {
+        const cells = E.zonePatch(nz.id);
+        if (!cells.length) return;
+        const xs = cells.map((q) => q.x), cy = cells[0].y, x0 = Math.min.apply(null, xs) - 1.6, x1 = Math.max.apply(null, xs) + 1.6;
+        V.mists.push({ z: nz.id, x0, x1, y0: cy - 2.2, y1: cy + 1.6 });
+        const X = sx(x0), Y = sy(cy - 2.2), W = (x1 - x0) * z, H = 3.8 * z, p = pend.includes(nz.id) && E.passInfo(nz.id);
+        c.fillStyle = p ? "rgba(255,211,107,0.10)" : "rgba(160,160,170,0.12)";
+        roundRect(c, X, Y, W, H, z * 0.9); c.fill();
+        c.setLineDash([5, 6]); c.strokeStyle = p ? "rgba(255,211,107,0.55)" : "rgba(220,220,230,0.3)"; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]);
+        if (p) { // l’avancement du passage
+          c.fillStyle = "rgba(255,211,107,0.25)";
+          roundRect(c, X + z * 0.3, Y + H - z * 0.55, (W - z * 0.6) * p.frac, z * 0.22, z * 0.11); c.fill();
         }
-      }
+        if (z > 16) {
+          const req = I[nz.req], known = req && (S().known[nz.req] || req.a <= S().age + 1);
+          c.font = "600 " + Math.max(10, Math.round(z * 0.26)) + "px system-ui, sans-serif";
+          c.textAlign = "center"; c.textBaseline = "middle";
+          c.fillStyle = "rgba(235,235,245,0.8)";
+          c.fillText((p ? "🚧 " : "🌫️ ") + (known || p ? nz.n : "Terre inconnue"), X + W / 2, Y + H * 0.36);
+          c.font = Math.max(9, Math.round(z * 0.21)) + "px system-ui, sans-serif";
+          if (p) c.fillText("passage : " + Math.floor(p.frac * 100) + " % · touche pour verser", X + W / 2, Y + H * 0.6);
+          else if (known) c.fillText("il te faut : " + req.n, X + W / 2, Y + H * 0.62);
+        }
+      });
     }
     function decorate(g, deco, col) {
       const c = V.ctx, z = V.cam.z, b = g.box;
