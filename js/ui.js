@@ -2407,7 +2407,10 @@
     else if (!S().introSeen) intro();
     else {
       // une partie qui revient d’une version précédente voit une fois ce qui a changé
-      if (S().flags.news || S().flags.ver !== D.VERSION) showNews();
+      // une correction (4.5.0 → 4.5.1) ne rouvre pas la fenêtre ; une nouvelle version (4.4 → 4.5), si
+      const minor = (v) => String(v || "").split(".").slice(0, 2).join(".");
+      if (S().flags.news || minor(S().flags.ver) !== minor(D.VERSION)) showNews();
+      else S().flags.ver = D.VERSION;
       if (S().flags.usineNote) {
         delete S().flags.usineNote;
         simpleModal("Nouveau", "🏭 L’usine simple",
