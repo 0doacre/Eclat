@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.5.0";
+  D.VERSION = "4.5.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -944,6 +944,7 @@
   };
 
   D.CHANGES = [
+    "💬 Une cinquantaine de nouvelles phrases d’échec à l’Atelier, pour les âges de la Pierre et du Cuivre.",
     "🚧 Des passages entre les terres : l’objet qui y mène ne suffit plus, il faut aussi franchir le passage en y versant des matières depuis la Réserve (en plusieurs fois si besoin). Chaque passage coûte bien plus que le précédent.",
     "✦ La relève : dès un passage franchi, tu peux passer le relais. Un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet et gagne des Traces.",
     "✋ La Mémoire des mains : avec les Traces, des améliorations pour toujours (récolte, mains, extracteurs, machines, passages, paquetage, raccourci, nuits plus longues). Touche ✦ en haut de l’écran.",
@@ -1035,7 +1036,54 @@
     "assembler:caillou+fibre": "Une pierre emballée dans des herbes. Joli paquet. Inutile.",
     "assembler:caillou+manche": "Une pierre au bout d’un bâton… qui tombe dès que tu le lèves. Avec quoi tenait-elle, dans tes souvenirs ?",
     "tresser:bois+fibre": "Tu tresses des herbes autour d’une bûche. Trop grosse, trop raide : il faudrait un bois plus fin.",
-    "tresser:caillou+fibre": "Tu emprisonnes une pierre dans un filet d’herbes. Ça fait un très joli presse-papier."
+    "tresser:caillou+fibre": "Tu emprisonnes une pierre dans un filet d’herbes. Ça fait un très joli presse-papier.",
+    /* Âges de la Pierre et du Cuivre (écrites avec Gemini, relues : un échec ne prend jamais rien) */
+    "tresser:argile": "Tu essaies de tresser des boudins d’argile. Ça colle à tes paumes et s’écrase en bouillie informe.",
+    "tailler:argile": "Tu donnes des coups de lame dans la motte d’argile. Elle se referme aussitôt, comme pour se moquer.",
+    "marteler:argile": "Tu abats ton marteau sur l’argile fraîche. Une belle éclaboussure sur ton visage, et une motte aplatie.",
+    "tresser:silex": "Tresser du silex ? À part ébrécher tes ongles sur les arêtes dures, la roche ne veut rien savoir.",
+    "chauffer:silex": "Le silex crépite dans la braise et lâche une esquille brûlante. Tu as failli y laisser un œil.",
+    "marteler:silex": "Tu cognes le silex de toutes tes forces. Il s’écaille en poussière au lieu de se fendre nettement.",
+    "tresser:sable": "Tresser du sable. Les grains coulent entre tes doigts. Même le vent semble se moquer de toi.",
+    "tailler:sable": "Tailler du sable ? La lame glisse au travers sans laisser la moindre trace. Tu as juste déplacé un petit tas.",
+    "marteler:sable": "Un grand coup de marteau dans le sable. Un nuage de poussière dans les yeux, et un cratère minuscule.",
+    "tresser:eclat": "Tresser des éclats tranchants ? Tes doigts s’en souviendront longtemps.",
+    "chauffer:eclat": "L’éclat rougit sur la braise et son fil se ternit. Tu le retires avant qu’il ne devienne cassant.",
+    "marteler:eclat": "Tu frappes sur la lame de silex. Un éclat de plus vole à travers l’atelier, et elle n’en coupe pas mieux.",
+    "tresser:brique": "Tresser de la terre cuite. La brique ne plie pas d’un millimètre ; tes doigts, eux, commencent à plier.",
+    "tailler:brique": "Tu râpes la brique avec ta lame. Beaucoup de poussière rouge, et une lame un peu moins fière.",
+    "chauffer:brique": "La brique est déjà cuite. La remettre au feu ne fait qu’attiser la braise pour rien.",
+    "marteler:brique": "Un coup sec sur la brique. Elle sonne, te renvoie le choc jusqu’au coude, et ne devient rien d’autre.",
+    "tresser:engrenage_bois": "Tu tentes de tresser le rouage avec lui-même. Ses dents s’accrochent partout sauf là où tu veux.",
+    "chauffer:engrenage_bois": "Le rouage se met à fumer, ses belles dents noircissent. Tu le retires du feu juste à temps.",
+    "marteler:engrenage_bois": "Le bois craque sous le choc. Tu t’arrêtes avant qu’une dent ne saute.",
+    "assembler:argile+sable": "Tu pétris l’argile et le sable à mains nues. Ça fait une boue rugueuse qui refuse de tenir en forme.",
+    "assembler:argile+silex": "Tu enfonces le silex dans l’argile fraîche. Tes doigts répètent ce geste avec une certitude étrange, comme s’ils scellaient un caveau ancien.",
+    "assembler:brique+manche": "Une brique au bout d’un bâton. C’est lourd, branlant, et la brique finit droit sur tes orteils.",
+    "assembler:eclat+manche": "L’éclat posé sur le bois glisse dès que tu le brandis. Sans un lien serré pour tenir la lame, rien ne tient.",
+    "tresser:malachite": "Tresser de la pierre verte ? Même ses veines les plus fines restent dures comme le roc.",
+    "tailler:malachite": "Tu essaies de sculpter la pierre verte. Tes doigts esquissent un visage sous un casque rond, avant que la roche ne s’effrite.",
+    "marteler:malachite": "Tu tapes sur le minerai vert. Au lieu de s’aplatir, il s’effrite en poussière d’émeraude.",
+    "allier:malachite": "La malachite brute refuse de fondre ainsi. Il lui faut la chaleur d’un four et du charbon avant de songer aux mélanges.",
+    "tresser:cassiterite": "Les cristaux sombres et lourds ne plient pas d’un pouce. Tes doigts se fatiguent pour rien.",
+    "tailler:cassiterite": "La lame glisse sur les cristaux noirs sans même entamer leur surface.",
+    "marteler:cassiterite": "Un grand coup de masse : la cassitérite crache des gravillons grisâtres, mais pas la moindre feuille.",
+    "tresser:lingot_cuivre": "Tresser un bloc de métal rouge ? Même souple, il te tordrait les poignets avant de plier.",
+    "tailler:lingot_cuivre": "Tailler le cuivre à la lame ne donne que des copeaux tordus. Pour lui donner forme, il vaut mieux le battre.",
+    "chauffer:lingot_cuivre": "Le lingot rougeoie sur les braises. Sans moule où le couler, il refroidit tel qu’il était.",
+    "tresser:plaque_cuivre": "Une feuille de métal ne se tresse pas : elle plisse, et ses coins te piquent les paumes.",
+    "chauffer:plaque_cuivre": "La feuille de cuivre rougit et ondule sous la chaleur, comme une feuille morte. Puis elle refroidit, toute plate.",
+    "marteler:plaque_cuivre": "Tu bats la plaque encore et encore. Elle s’étire un peu, et tu t’arrêtes avant de la percer.",
+    "chauffer:fil_cuivre": "Le fil rougit d’un coup dans la flamme et commence à fondre par le milieu. Tu le retires avant qu’il ne parte en gouttes.",
+    "marteler:fil_cuivre": "Tu martèles le fil de cuivre. Il s’aplatit en un ruban tout mou, que tu redresses tant bien que mal.",
+    "assembler:fil_cuivre+manche": "Tu enroules le fil rouge autour du bois. Ça brille au soleil, mais ça ne sert à rien de précis.",
+    "tresser:lingot_etain": "Tresser un lingot d’étain ? Il plie un peu en crissant, puis refuse d’aller plus loin.",
+    "tailler:lingot_etain": "Le métal est tendre, mais le tailler au couteau ne laisse qu’un tas de rognures grises.",
+    "chauffer:lingot_etain": "L’étain fond à toute vitesse et file entre les braises. Tu rattrapes l’essentiel avant qu’il ne se noie dans la cendre.",
+    "marteler:lingot_etain": "Tu frappes l’étain sur la pierre. Il s’étale mollement en une galette terne et sans ressort.",
+    "allier:cassiterite+malachite": "Deux minerais bruts dans le creuset ? Ils noircissent et s’encrassent sans jamais couler ensemble.",
+    "assembler:lingot_cuivre+lingot_etain": "Tu poses le lingot rouge contre le lingot gris. Rien ne colle : pour les unir, il faut les fondre ensemble.",
+    "assembler:engrenage_bois+lingot_cuivre": "Tu tentes d’emboîter le bois dans le métal. Un frisson te traverse : dans une autre vie, des machines bien plus grandes tournaient sous tes yeux."
   };
   /* le genre et le nombre des matières, pour les articles (le, la, l’, les) */
   D.GENRE = {
