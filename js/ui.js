@@ -480,8 +480,6 @@
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
         (st.flags.news === "6" && (Object.keys(st.dom.ext).length || st.dom.mach.length) ? '<p class="small">Plus de tapis : tes extracteurs et tes machines sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils produisent autant qu’avant ; ce qui roulait sur les tapis est revenu dans ta Réserve.</p>' : "") +
-        (st.flags.fab4 && st.flags.fab4.placed ? '<p class="small">Tes ' + st.flags.fab4.placed + " extracteurs travaillent maintenant sur les gisements de leurs terres (onglet Domaine).</p>" : "") +
-        (st.flags.fab3 && st.flags.fab3.placed ? '<p class="small">Tes lignes de production sont devenues des machines du Domaine. Tout tourne comme avant.</p>' : "") +
         (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
@@ -1919,7 +1917,7 @@
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
-        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">Nouveautés</button><button class="btn" data-m="credits">Crédits</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
         '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
       onOpen: (box) => {
@@ -1938,6 +1936,10 @@
         tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
         tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre reviendra au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
+        credits: () => setTimeout(() => simpleModal("Éclat", "Crédits",
+          '<div class="small"><p><b>Icônes</b> : <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a>, par Lorc, Delapouite et leurs contributeurs, sous licence CC BY 3.0. Recolorées, dessin inchangé.</p>' +
+          "<p><b>Polices</b> (licence SIL OFL 1.1) : Alegreya Sans, IM Fell English, Cinzel, Playfair Display, Special Elite, Caveat, Space Grotesk, IBM Plex Mono.</p>" +
+          "<p>Musique et bruitages synthétisés dans le jeu.</p></div>", "Fermer"), 80),
         account: () => { openAccount(); return true; },
         help: () => setTimeout(openHelp, 80),
         mem: () => setTimeout(openMemoire, 80),

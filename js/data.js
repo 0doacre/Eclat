@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.5.1";
+  D.VERSION = "5.0.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -942,7 +942,7 @@
     "⚙️ Les machines travaillent en chaînes : une recette, des machines. Elles se servent dans la Réserve et y rangent ce qu’elles font. Plus de tapis, plus de débit à surveiller.",
     "🗺️ Une nouvelle carte, dessinée, qui se lit de bas en haut. La brume cache ce que tu n’as pas atteint ; on y explore les lieux et on y verse dans les passages.",
     "🏗️ Un Grand Œuvre se bâtit depuis le Domaine : verse-lui ses matières, ou laisse-le se servir seul dans la Réserve.",
-    "🖼️ De vraies icônes, dessinées par les auteurs de game-icons.net, à la place des emoji."
+    "🔍 De vraies icônes, dessinées par les auteurs de game-icons.net, à la place des emoji. Le jeu devient le carnet du Semeur : papier, encre et ornements changent avec les âges."
   ];
 
 

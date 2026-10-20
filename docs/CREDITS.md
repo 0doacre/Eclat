@@ -18,4 +18,14 @@ Dépôt source : <https://github.com/game-icons/icons> (les fichiers y sont rang
 
 ## Polices
 
-TODO : à compléter (liste des polices et licences).
+Toutes sous licence [SIL Open Font License 1.1](https://openfontlicense.org), embarquées
+(sous-ensemble latin) dans `assets/fonts/` depuis Google Fonts :
+
+- Alegreya Sans — Juan Pablo del Peral (Huerta Tipográfica)
+- IM Fell English — Igino Marini (d’après les caractères du Dr John Fell)
+- Cinzel — Natanael Gama
+- Playfair Display — Claus Eggers Sørensen
+- Special Elite — Astigmatic
+- Caveat — Impallari Type
+- Space Grotesk — Florian Karsten
+- IBM Plex Mono — Mike Abbink, Bold Monday
