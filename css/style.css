@@ -406,6 +406,8 @@ textarea.save { width: 100%; min-height: 110px; background: var(--bg2); color: v
 .goal-card .ghead-row { display: flex; align-items: center; gap: 8px; }
 .goal-card .ghead { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; }
 .gmiles { flex: 0 0 auto; border: 1px solid var(--line2); background: var(--bg2); border-radius: 999px; padding: 2px 9px; font-size: 12px; color: var(--muted); }
+.gmiles.ok { color: var(--good); border-color: var(--good); }
+.miles.full summary .muted { color: var(--good); }
 .miles { margin: 8px 0; padding: 8px 12px; border-radius: 12px; background: var(--bg2); border: 1px solid var(--line); }
 .miles summary { cursor: pointer; }
 .mile { display: flex; align-items: center; gap: 6px; padding: 5px 0; font-size: 13.5px; border-top: 1px dashed var(--line); }
@@ -506,6 +508,16 @@ ul.news li { margin: 6px 0; font-size: 14px; }
 .u-st.good { color: var(--good); } .u-st.warn { color: var(--intu); } .u-st.bad { color: var(--bad); } .u-st.dim { color: var(--muted); }
 .u-more { margin: 6px 0 0; color: var(--muted); }
 .u-recipe { width: 100%; display: flex; align-items: center; gap: 8px; margin: 10px 0 6px; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); text-align: left; }
+.u-prod { margin: 6px 0 2px; }
+.u-pr { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 13px; border-top: 1px dashed var(--line); }
+.u-pr:first-child, .u-pr.u-ph + .u-pr { border-top: 0; }
+.u-pr b, .u-pr i, .u-pr > span:last-child { flex: 0 0 64px; text-align: right; font-style: normal; font-variant-numeric: tabular-nums; }
+.u-pr b { color: var(--good); font-weight: 600; }
+.u-pr i { color: var(--bad); }
+.u-pr > span:last-child { color: var(--muted); flex-basis: 48px; }
+.u-pr.u-ph > span:not(.grow) { flex: 0 0 64px; text-align: right; }
+.u-pr.u-ph > span:last-child { flex-basis: 48px; }
+.u-pr .ell { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .u-ins { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
 .u-in { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px 2px 3px; border-radius: 99px; background: var(--bg2); border: 1px solid var(--line); font-size: 12px; cursor: pointer; }
 .u-in i { font-style: normal; color: var(--muted); }

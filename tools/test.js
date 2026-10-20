@@ -602,6 +602,23 @@ test("mains : la même pièce demandée plusieurs fois d’affilée s’allonge 
   assert.strictEqual(E.count("manche"), 4);
   assert.strictEqual(E.count("bois"), 60 - 12);
 });
+test("mains : ×10 cabanes depuis les matières premières, en une seule fabrication", () => {
+  const E = mk();
+  ["manche", "corde", "cabane"].forEach((k) => (E.state.known[k] = true));
+  E.add("bois", 2000); E.add("fibre", 2000);
+  const max = E.maxPlan("cabane");
+  assert.ok(max >= 10, "Max : " + max);
+  assert.ok(E.queue("cabane", 10, true).ok);
+  assert.strictEqual(E.state.hand.q.length, 1, "une seule ligne dans la file");
+  run(E, 900);
+  assert.strictEqual(E.count("cabane"), 10);
+});
+test("mains : en chaîne avec tout en stock, la même pièce s’allonge aussi", () => {
+  const E = mk();
+  E.state.known.manche = true; E.add("bois", 60);
+  for (let i = 0; i < 3; i++) assert.ok(E.queue("manche", 1, true).ok);
+  assert.deepStrictEqual(E.state.hand.q.map((j) => j.s[0][1]), [1, 2]);
+});
 test("mains : trois extracteurs en chaîne d’affilée sortent tous (le prix monte pour chacun)", () => {
   const E = mk();
   ["manche", "corde", "cabane"].forEach((k) => (E.state.known[k] = true));
@@ -786,6 +803,19 @@ test("usine simple : un extracteur sans tapis remplit le stock, sans plafond de 
   run(E, 1);
   assert.notStrictEqual(E.machInfo(x.id).s, "noout", "relié, il reste utile en usine avancée");
 });
+test("production : la récolte des extracteurs et ce que font et prennent les machines", () => {
+  const E = mk();
+  E.add("cabane", 2);
+  assert.ok(E.fabPlaceExt(-3, -7, "cabane", 2).ok);
+  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 30);
+  assert.ok(E.fabPlace("mach", 6, 6, { m: "automate_bois", r: "manche" }).ok);
+  run(E, 60);
+  const p = E.production(), bois = p.find((x) => x.id === "bois"), manche = p.find((x) => x.id === "manche");
+  const out = E.extOut(E.fabCell(-3, -7));
+  assert.ok(Math.abs(bois.in - out) < out * 0.05, "bois récolté : " + bois.in + " / " + out);
+  assert.ok(Math.abs(bois.out - 0.3) < 0.03, "le bois que prend l’automate (6/min × 3) : " + bois.out);
+  assert.ok(Math.abs(manche.in - 0.1) < 0.01, "les manches : " + manche.in);
+});
 test("usine simple : un chantier posé n’importe où se sert dans la Réserve", () => {
   const E = mk();
   E.state.flags.arche = true; E.state.age = 12; E.recalc();
@@ -822,6 +852,29 @@ test("jalons : les objectifs rangés par âge", () => {
   assert.strictEqual(all, D.OBJECTIVES.length);
 });
 
+test("jalons : chaque âge en a plusieurs, le compte est cohérent", () => {
+  const m = mk().milestones();
+  assert.ok(m[1].length >= 4, "l’âge de l’Os a ses étapes : " + m[1].map((x) => x.ob.id || x.ob.n));
+  // la première étape de l’Os fait entrer dans l’Os (pas une étape d’un autre âge)
+  assert.strictEqual(D.ITEMS[m[1][0].ob.id].a, 1);
+});
+test("âge accompli : toutes ses étapes faites, un peu d’Intuition, une seule fois", () => {
+  const E = mk();
+  const S = E.state, before = S.intu;
+  E.milestones()[0].forEach((x) => { if (x.ob.k === "craft") S.made[x.ob.id] = 1; });
+  S.exp.done.lisiere = 1; S.flags.extDone = true;
+  E.checkAges();
+  assert.ok(S.flags.ages[0], "l’âge du Bois est accompli");
+  assert.strictEqual(S.intu, before + D.AGE_DONE);
+  E.checkAges();
+  assert.strictEqual(S.intu, before + D.AGE_DONE, "pas deux fois");
+  assert.ok(!S.flags.ages[1]);
+  // une ancienne partie : ses âges finis sont marqués sans récompense
+  const raw = JSON.parse(E.serialize());
+  delete raw.flags.ages; raw.intu = 5;
+  const F = mk(); F.load(JSON.stringify(raw));
+  assert.ok(F.state.flags.ages[0]); assert.strictEqual(F.state.intu, 5);
+});
 test("v4 → v5 : l’usine, les souvenirs et les Grands Œuvres restent tels quels", () => {
   const raw = fixture("save-v4-age8-carte.json"), old = JSON.parse(raw);
   const E = mk();

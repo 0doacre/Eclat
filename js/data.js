@@ -817,6 +817,10 @@
     ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi, même quand le jeu est fermé."],
     { k: "ext", n: "Installer ta cabane", txt: "Sur la Carte, pose ta cabane sur une case de la Lisière, puis trace un tapis jusqu’à la Réserve. Elle récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
+    ["laniere", "Les bêtes de la plaine laissent leur peau derrière elles. Découpée en bandes, elle lie mieux que l’herbe."],
+    { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Au milieu de la plaine, des os blanchissent au soleil. Lance une exploration : tu en rapporteras de quoi travailler." },
+    ["aiguille", "Pour coudre une peau, il faut une pointe percée."],
+    ["collets", "Des pièges posés dans la plaine attraperaient os et peaux à ta place. Pose-les sur la Carte, comme ta cabane."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
     ["hache_pierre", "Avec un tranchant de pierre, tu abattrais bien plus de bois. Les outils multiplient tes récoltes."],
@@ -857,6 +861,9 @@
     ["vaisseau", "Cap sur Mercure."],
     ["forge_stellaire", "Le cœur d’une étoile."]
   ];
+
+  /* Un âge accompli (toutes ses étapes faites) rapporte un peu d’Intuition. */
+  D.AGE_DONE = 3;
 
   /* Les tapis : ce qu’un tapis porte au plus (objets par seconde), à chaque âge.
    * Les améliorations qui accélèrent l’usine les accélèrent aussi. La Réserve ne

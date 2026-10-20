@@ -713,6 +713,16 @@
       }[info.s] || ["", "dim", ""];
       return { s: T[0], lvl: T[1], more: T[2], code: info.s };
     }
+    /* le tableau de production : ce qui entre dans la Réserve, ce que les machines y prennent */
+    const perTime = (v) => (v >= 1 ? fmtNum(v) + "/s" : fmtNum(v * 60) + "/min");
+    function resProdHTML() {
+      const P = E.production().filter((x) => x.in > 1e-4 || x.out > 1e-4), st = S();
+      if (!P.length) return '<p class="tiny muted u-prod">Rien n’y entre encore tout seul. Pose un extracteur sur un gisement : il la remplira, même jeu fermé.</p>';
+      return '<div class="u-prod"><div class="u-pr u-ph tiny muted"><span class="grow">Production</span><span>entre</span><span>sort</span><span>stock</span></div>' +
+        P.slice(0, 14).map((x) => '<div class="u-pr">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
+          "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + "</i><span>" + fmt(st.inv[x.id] || 0) + "</span></div>").join("") +
+        (P.length > 14 ? '<div class="tiny muted">… et ' + (P.length - 14) + " autres.</div>" : "") + "</div>";
+    }
     /* ce qui sort de là ne va ni à la Réserve ni à une machine */
     function needsLink(e) {
       if (!e || !e.id || (e.k !== "ext" && e.k !== "mach") || E.easy()) return false;
@@ -730,11 +740,8 @@
       box.dataset.loose = loose ? "1" : "";
       let h = '<button class="u-x" data-u="close" aria-label="Fermer">✕</button>';
       if (e.k === "res") {
-        const f = E.flows();
-        const ins = Object.keys(f.prod).filter((k) => f.prod[k] - (f.cons[k] || 0) > 1e-4).sort((a, b) => f.prod[b] - f.prod[a]).slice(0, 8);
         h += "<b>La Réserve</b><p class=\"small muted\">" + (E.easy() ? "Ton stock. Tes machines y prennent ce qu’il leur faut et y rangent ce qu’elles font ; tes extracteurs la remplissent."
-          : "Ton stock. Les sorties posées contre elle l’envoient aux machines, et les tapis qui y entrent le remplissent.") + "</p>" +
-          (ins.length ? '<div class="u-ins">' + ins.map((k) => '<span class="u-in">' + icon(k, "sm") + "<i>+" + fmtNum((f.prod[k] - (f.cons[k] || 0)) * 60) + "/min</i></span>").join("") + "</div>" : "");
+          : "Ton stock. Les sorties posées contre elle l’envoient aux machines, et les tapis qui y entrent le remplissent.") + "</p>" + resProdHTML();
       } else if (e.k === "mach") {
         const it = I[e.r], ms = E.machines(), st = machStatus(e);
         const types = E.MACHINES.filter((m) => ms[m].own > 0 || m === e.m);
@@ -987,6 +994,11 @@
         const ps = E.projState(e.p), step = D.PROJECTS[e.p].steps[ps.step];
         if (box.dataset.site !== e.p + ":" + ps.step + ":" + E.machInfo(e.id).s) { sheet(); return; }
         if (step && step.cost) box.querySelectorAll("[data-sp]").forEach((el) => { const k = el.dataset.sp; el.textContent = fmt(ps.paid[k] || 0) + " / " + fmt(step.cost[k]); });
+        return;
+      }
+      if (box && e && e.k === "res") {
+        const pr = box.querySelector(".u-prod"), h = resProdHTML();
+        if (pr && pr.outerHTML !== h) pr.outerHTML = h;
         return;
       }
       if (!box || !e || (e.k !== "mach" && e.k !== "ext")) return;

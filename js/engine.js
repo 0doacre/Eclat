@@ -77,7 +77,7 @@
     return {
       v: SAVE_VERSION, t: now, start: now,
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
-      intu: 3, zones: { lisiere: true }, flags: {}, frags: {}, secrets: {},
+      intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
       fab: freshFab(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {},
       hand: { q: [], p: 0 }, studied: {},
@@ -477,7 +477,23 @@
       if (D.EVENTS[id]) E.emit("event", { id, txt: D.EVENTS[id] });
       if (id === "cerf_volant" || id === "boussole") E.emit("struct");
       E.emit("discover", id);
+      checkAges();
     }
+
+    /* Un âge accompli : toutes ses étapes faites, même celles qu’on peut sauter.
+     * Un peu d’Intuition en récompense, une fois par âge et par cycle. silent : sans
+     * récompense (une ancienne partie, dont les âges finis le sont depuis longtemps). */
+    function checkAges(silent) {
+      const got = S.flags.ages || (S.flags.ages = {});
+      E.milestones().forEach((l, a) => {
+        if (!l || got[a] || !l.every((x) => x.done)) return;
+        got[a] = 1;
+        if (silent) return;
+        S.intu += D.AGE_DONE;
+        E.emit("ageDone", { a, intu: D.AGE_DONE });
+      });
+    }
+    E.checkAges = checkAges;
 
     function setAge(a) {
       S.age = a;
@@ -706,7 +722,7 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (!chain && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !last.k && !isScaled(it) && !isUnique(it)) {
+      if (steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !last.k && !isScaled(it) && !isUnique(it)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         E.emit("hand", { kind: "add", job: last });
@@ -976,6 +992,7 @@
       let fragNew = false;
       if (rw.frag) fragNew = addFrag(rw.frag, true);
       E.emit("expdone", { z: a.z, x, frag: rw.frag, fragNew, silent });
+      checkAges();
       E.emit("struct");
     }
 
@@ -1320,7 +1337,7 @@
       if (!S.known[id]) learn(id, true);
       if (first) onFirstCraft(id);
       if (S.track && S.track.id === id) { S.track = null; E.emit("tracked", id); E.emit("struct"); }
-      if (!S.flags.lineDone) { S.flags.lineDone = true; E.emit("struct"); }
+      if (!S.flags.lineDone) { S.flags.lineDone = true; checkAges(); E.emit("struct"); }
       return it.r[2] * (k + bonus);
     }
     function runMachine(e, g, dt, c) {
@@ -1425,7 +1442,7 @@
             add(r, q);
             logFlow(id, "res", r, q);
           }
-          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; E.emit("struct"); }
+          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
         }
       }
       // usine simple : ce qui n’a pas trouvé preneur rejoint le stock, tapis ou pas
@@ -1437,7 +1454,7 @@
           add(r, B.o);
           logFlow(id, "res", r, B.o);
           B.o = 0;
-          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; E.emit("struct"); }
+          if (P.e.k === "ext" && !S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
         }
       }
       if (!fabQuiet) {
@@ -1486,6 +1503,13 @@
     /* les cases d’où un tapis plein entre dans la Réserve */
     E.fabSat = () => satEnts;
     /* Débits des machines (par seconde, moyenne glissante). */
+    /* fabrications par seconde : sa cadence quand elle tourne bien (la moyenne, faite de
+     * coups espacés, oscille), sinon ce qu’elle a vraiment fait ces derniers temps */
+    function machRate(e, st) {
+      const it = item(e.r), M = item(e.m);
+      if (st.s !== "ok" || !it || !it.r || !M) return st.avg;
+      return Math.min((e.n * M.spd / 60) * E.cache().aspd, easy() ? Infinity : E.beltCap() / it.r[2]);
+    }
     E.flows = function () {
       const prod = {}, cons = {};
       for (const k in S.fab.c) {
@@ -1493,10 +1517,24 @@
         const st = e.k === "mach" && machStat[e.id];
         const it = st && st.avg > 1e-6 && item(e.r);
         if (!it || !it.r) continue;
-        prod[e.r] = (prod[e.r] || 0) + st.avg * it.r[2];
-        for (const i in it.r[1]) cons[i] = (cons[i] || 0) + st.avg * it.r[1][i];
+        const r = machRate(e, st);
+        prod[e.r] = (prod[e.r] || 0) + r * it.r[2];
+        for (const i in it.r[1]) cons[i] = (cons[i] || 0) + r * it.r[1][i];
       }
       return { prod, cons };
+    };
+
+    /* Tout ce que l’usine fait entrer et sortir, par matière (par seconde, en moyenne) :
+     * la récolte des extracteurs et ce que font les machines, moins ce qu’elles consomment. */
+    E.production = function () {
+      const f = E.flows(), inn = Object.assign({}, f.prod);
+      for (const k in S.fab.c) {
+        const e = S.fab.c[k], st = e.k === "ext" && machStat[e.id];
+        if (st && st.avg > 1e-6) inn[e.res] = (inn[e.res] || 0) + st.avg;
+      }
+      const ids = Object.keys(inn).concat(Object.keys(f.cons).filter((k) => !(k in inn)));
+      return ids.map((id) => ({ id, in: inn[id] || 0, out: f.cons[id] || 0, net: (inn[id] || 0) - (f.cons[id] || 0) }))
+        .sort((a, b) => b.in - a.in || b.out - a.out);
     };
 
     /* --- construction */
@@ -2024,6 +2062,7 @@
       forgetFab();
       recalc();
       if (S.flags.fab4 === "todo") placeOldExtractors();
+      if (!S.flags.ages) checkAges(true); // une partie d’avant les âges accomplis
       E.emit("struct");
       return true;
     };
