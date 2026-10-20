@@ -23,6 +23,15 @@ Une recette n’est pas une grille : c’est un **geste** appliqué à des **mat
 - **Maîtrise.** Refabriquer une recette fait monter sa maîtrise (★) et donne des chefs-d’œuvre : des lots bonus gratuits.
 - **Rappels d’un âge à l’autre.** Tu tresseras à nouveau, mais de la fibre de carbone. Le charbon du premier feu deviendra du graphène. L’argile de tes premières briques finira en bouclier thermique.
 
+### Passages, relève et Mémoire des mains (la méta-progression)
+
+Voir [`docs/PROGRESSION.md`](docs/PROGRESSION.md) pour la conception complète.
+
+- **Passages** : pour entrer dans une nouvelle terre, l’objet qui y mène (l’épieu pour la Plaine, l’outre pour la Rivière…) rend le passage possible ; on le franchit en y versant des matières depuis la Réserve, en plusieurs fois si besoin. Chaque passage coûte bien plus que le précédent : c’est le mur.
+- **Relève** : dès un passage franchi, on peut passer le relais. Un nouveau Semeur s’éveille : stocks, machines, terres et âges repartent de zéro ; le Carnet, les fragments, les secrets, les Échos et la Mémoire restent. Chaque passage franchi rapporte des **Traces** (2, 3, 5, 8, 12…).
+- **Mémoire des mains** : huit améliorations permanentes achetées avec les Traces (récolte, mains, extracteurs, machines, passages moins chers, paquetage de départ, terres déjà ouvertes, temps hors ligne).
+- Rythme visé (réglé avec `tools/sim-passages.js`) : la première partie bute vers les Collines au bout d’environ 25 minutes ; chaque relève va environ une terre plus loin.
+
 ### La Carte : terres, gisements, extracteurs, tapis et machines
 
 Tout se passe sur une seule carte vue de dessus. Au centre, la **Réserve** (le stock). Autour, chaque terre atteinte est une région, avec ses **gisements** (une case par ressource : bois, pierre, cuivre, pétrole…) et ses **lieux à explorer** 🧭. Toucher le nom d’une terre ouvre sa fiche et son paysage. La carte s’agrandit à chaque nouvelle terre.
@@ -65,7 +74,7 @@ Chaque terre cache des **explorations** qui rapportent des fragments d’histoir
 
 ### Les fins
 
-Trois fins. Deux sont proposées ouvertement par la voix qui te guide : **la Sphère de Dyson** et **le Brise-Monde**. La troisième ne se trouve qu’en suivant les secrets. Après une fin, tu peux commencer un **nouveau cycle** (tout de suite, ou plus tard depuis Journal → Fins) : tu gardes ton Carnet, tes fragments et tes secrets, et chaque fin atteinte laisse un **Écho** : +50 % de récolte et de production pour toujours. Journal → Fins explique tout cela et montre ce que rapporterait le prochain cycle.
+Trois fins. Deux sont proposées ouvertement par la voix qui te guide : **la Sphère de Dyson** et **le Brise-Monde**. La troisième ne se trouve qu’en suivant les secrets. Après une fin, on peut passer le relais comme après un passage (la relève, plus haut) ; chaque fin atteinte laisse en plus un **Écho** : +50 % de récolte et de production pour toujours. Journal → Fins explique tout cela.
 
 > Les solutions complètes (secrets, codes, chemin de la fin cachée) sont dans [`docs/SOLUTIONS.md`](docs/SOLUTIONS.md). **Spoilers.**
 
@@ -111,6 +120,7 @@ sw.js                 service worker (hors ligne)
 tools/validate.js     vérifie le contenu : références, recettes en double, atteignabilité de chaque objet
 tools/test.js         tests du moteur, dont le chemin secret complet jusqu’à la fin cachée
 tools/sim.js          bot qui joue une partie entière pour mesurer le rythme
+tools/sim-passages.js joueur simulé pour régler les passages, la relève et la Mémoire (--compare, --cycles, --cout)
 tools/build.js        empreinte de version du service worker (sans elle, les joueurs ne reçoivent pas la mise à jour)
 tools/fixtures/       sauvegardes des versions 1, 2 et 3, pour tester la compatibilité
 ```
@@ -123,6 +133,8 @@ npm run sim                    # partie simulée, temps d’arrivée à chaque �
 node tools/sim.js 1 brisemonde # 1 tape/seconde, vise le Brise-Monde
 OBJ=1 node tools/sim.js        # détail des objectifs
 MAINS=1 node tools/sim.js      # avec la file des mains (les machines possédées aident)
+node tools/sim-passages.js --compare        # minute de chaque passage, sans et avec Mémoire
+node tools/sim-passages.js --cycles 5 --minutes 30   # cinq relèves enchaînées
 ```
 
 Avant de publier une nouvelle version : `npm run build` puis `npm test`. Si le format de sauvegarde change, augmente `SAVE_VERSION` dans `js/engine.js` et ajoute une étape à `migrate()` ; le test de compatibilité recharge les sauvegardes de `tools/fixtures`.

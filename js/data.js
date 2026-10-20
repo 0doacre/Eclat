@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "4.4.0";
+  D.VERSION = "4.5.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -944,6 +944,10 @@
   };
 
   D.CHANGES = [
+    "🚧 Des passages entre les terres : l’objet qui y mène ne suffit plus, il faut aussi franchir le passage en y versant des matières depuis la Réserve (en plusieurs fois si besoin). Chaque passage coûte bien plus que le précédent.",
+    "✦ La relève : dès un passage franchi, tu peux passer le relais. Un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet et gagne des Traces.",
+    "✋ La Mémoire des mains : avec les Traces, des améliorations pour toujours (récolte, mains, extracteurs, machines, passages, paquetage, raccourci, nuits plus longues). Touche ✦ en haut de l’écran.",
+    "🛠️ Une fabrication en chaîne ne reste plus bloquée quand une pièce est en partie en stock.",
     "🖐️ Plus rien ne bouge sous le doigt à l’Atelier : le bouton d’œuvre agit au relâcher, la même pièce demandée plusieurs fois s’allonge (×N), un petit établi reste en haut quand on descend dans la liste. Deux messages au plus, sous l’objectif ; un bouton grisé dit pourquoi quand on le touche.",
     "🎉 Des fêtes : une découverte, une recette trouvée, une étape ou un âge accompli s’affichent au centre de l’écran. La récolte rebondit et se compte (+9 Bois), et le feu de camp brille sur la carte.",
     "🏁 Des étapes plus claires : cinq à l’âge de l’Os, un compteur qui suit l’âge en cours, et +3 ✨ quand un âge est accompli.",
