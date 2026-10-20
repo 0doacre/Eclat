@@ -23,9 +23,9 @@
  *               automatiques dans l’ordre ACHATS, avec les Traces gagnées ; le Carnet reste acquis
  *
  * Le joueur simulé (simple, réaliste, pas optimal) :
- *  - il connaît toutes les recettes, mais perd --reflexion secondes (sans récolter) à chaque
- *    recette qu’il fait pour la première fois, sous-pièces comprises ;
- *  - il récolte à la main 4 fois par seconde, sur la matière brute qui lui manque le plus
+ *  - il connaît toutes les recettes (E.learn), mais perd --reflexion secondes (sans récolter) à
+ *    chaque recette qu’il fait pour la première fois, sous-pièces comprises ;
+ *  - il récolte à la main --taps fois par seconde, sur la matière brute qui lui manque le plus
  *    pour son but (sinon bois, fibres, pierre à tour de rôle), dans la terre qui rend le plus ;
  *  - il suit l’objectif du jeu (E.objective) : il met en file ce qu’il faut (E.queue en chaîne),
  *    lance les explorations, verse dans les passages dès qu’il peut ; il prépare l’objectif suivant
@@ -33,8 +33,10 @@
  *  - il investit : extracteur, outil ou amélioration de récolte, un à la fois, quand l’achat
  *    se rembourse en moins de --retour secondes (coût en secondes de récolte à la main ÷ gain)
  *    et qu’il reste assez à récolter ; l’extracteur va sur le gisement de la matière demandée ;
+ *    les matières de cet achat passent avant le gros besoin, et un achat trop long est abandonné ;
+ *  - une fabrication en chaîne que le moteur fige (voir brain) est annulée puis refaite pièce par pièce ;
  *  - il joue sans interruption (hors --offline). La « minute » des tableaux est du jeu actif.
- * Le moteur n’est jamais modifié : ce qui ressemble à un bug se lit dans le rapport. */
+ * Le moteur n’est jamais modifié. Le fichier s’importe aussi : { play, lire, PROFILS }. */
 "use strict";
 const D = require("../js/data.js");
 const { createEngine } = require("../js/engine.js");
@@ -369,7 +371,7 @@ function comparer(o) {
     console.log("  " + (z + " (+" + D.PASSAGES[z].tr + ")").padEnd(30) + res.map((r) => { const x = r.rows.find((y) => y.z === z); return (x ? (x.offert ? "offert" : x.t.toFixed(1)) : "—").padStart(18); }).join(""));
   });
   const ligne = (nom, f) => console.log("  " + nom.padEnd(30) + res.map((r) => String(f(r)).padStart(18)).join(""));
-  ligne("Traces à la relève", (r) => r.traces);
+  ligne("Traces gagnées (passages)", (r) => r.traces);
   ligne("Âge atteint", (r) => D.AGES[r.age].id);
   ligne("Extracteurs posés", (r) => Object.values(r.ext).reduce((a, b) => a + b, 0));
   ligne("Réflexion (min)", (r) => (r.penseTotal / 60).toFixed(1));
