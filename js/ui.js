@@ -20,7 +20,7 @@
 
   /* ------------------------------------------------------------ état UI */
   const U = {
-    tab: "carte", geste: "tailler", slots: [null, null, null], last: null,
+    tab: "domaine", geste: "tailler", slots: [null, null, null], last: null,
     invFilter: "tout", carnetFilter: "tout", journalTab: "fragments", cosmosTab: "ciel",
     q: "", showOwned: false,
     openAges: {}, dirty: true, lastRender: 0, mq: [], mcur: null,
@@ -73,9 +73,22 @@
     const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
     return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6 ? "#1a1208" : "#ffffff";
   }
+  /* les icônes : un sprite (assets/icons.svg, game-icons.net) glissé dans la page au démarrage */
+  const GI = window.ECLAT_ICONS || { items: {} };
+  const gi = (name, cls) => '<svg class="gi' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#gi-' + name + '"/></svg>';
+  function loadSprite() {
+    fetch("assets/icons.svg").then((r) => (r.ok ? r.text() : "")).then((t) => {
+      if (!t) return;
+      const d = document.createElement("div");
+      d.hidden = true;
+      d.innerHTML = t;
+      document.body.prepend(d);
+    }).catch(() => { /* hors ligne sans cache : les icônes restent vides */ });
+  }
   function icon(id, cls) {
     const it = I[id];
     if (!it) return "";
+    if (GI.items[id]) return '<span class="ic gic ' + (cls || "") + '">' + gi(GI.items[id]) + "</span>";
     if (it.sym) return '<span class="ic sym ' + (cls || "") + '" style="--c:' + it.col + ";--ink:" + ink(it.col) + '">' + esc(it.sym) + "</span>";
     return '<span class="ic ' + (cls || "") + '">' + it.ic + "</span>";
   }
@@ -197,8 +210,6 @@
   function toast(html, o) {
     o = o || {};
     const box = $("#toasts"), key = o.key || html, p = o.p || 0;
-    const ut = document.body.classList.contains("in-usine") && $(".u-top");
-    box.style.top = ut ? Math.round(ut.getBoundingClientRect().bottom + 6) + "px" : "";
     let t = Array.from(box.children).find((x) => x.dataset.k === key);
     if (t) {
       if (p < Number(t.dataset.p)) return;
@@ -247,6 +258,11 @@
   function setupModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     box.addEventListener("click", (ev) => {
+      // un passage à verser, une matière à voir, depuis une fiche
+      const pb = ev.target.closest("[data-pour]");
+      if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
+      const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
+      if (gb && U.mcur && !fresh()) { closeModal(); setTimeout(() => goto(gb.dataset.goto), 80); return; }
       const b = ev.target.closest("[data-m]");
       if (!b || !U.mcur || fresh()) return;
       const k = b.dataset.m;
@@ -261,24 +277,27 @@
       '<div class="acts"><button class="btn pri" data-m="close">' + (btn || "Continuer") + "</button></div>" });
   }
   const Scenes = window.EclatScenes;
-  const Usine = window.EclatUsine.create({
-    E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, goto, fmtHeat, floater, Scenes, passHTML,
-    overlay: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
-    onZone: (z) => { U.zone = z; soundScene(); },
-    openWheel: (o) => Roue.open(o),
-    quiet: () => Tuto.active()
+  /* le Domaine : ce qui produit ; la Carte : où l’on est */
+  const Dom = window.EclatDomaine.create({
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
+    render: (f) => render(f), quiet: () => Tuto.active(),
+    top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>"
+  });
+  const Carte = window.EclatCarte.create({
+    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, expWhy: (z) => expWhy(z), explore: (z) => explore(z), goto: (id) => goto(id),
+    goDomaine: (z) => { U.zone = z; setTab("domaine"); Dom.focusZone(z); }
   });
   /* la Roue : fabriquer depuis n’importe où, et poser aussitôt ce qui se pose */
   const Roue = window.EclatRoue.create({
     E, A, D, esc, fmt, fmtNum, fmtTime, icon, toast, goto, floater, vibe, elCenter, norm, gesteChip, fxText,
     openTree: (id, n) => openTree(id, n),
     onPlace: (k, id) => {
-      const go = () => (k === "mach" ? Usine.useMach(id) : Usine.useExt(id));
-      if (U.tab !== "carte") { setTab("carte"); setTimeout(go, 80); } else go();
+      const go = () => (k === "mach" ? Dom.placeMach(id) : Dom.placeExt(id));
+      if (U.tab !== "domaine") { setTab("domaine"); setTimeout(go, 80); } else go();
     }
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
-  const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Usine, Roue, save: () => save() });
+  const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Dom, Roue, save: () => save() });
   const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
 
   /* ============================================================ SAUVEGARDES
@@ -347,7 +366,7 @@
     U.saveLocked = false; U.badSave = null;
     save();
     U.slots = [null, null, null]; U.last = null;
-    setTab("carte");
+    setTab("domaine");
     toast("Partie chargée.");
     return true;
   }
@@ -418,7 +437,7 @@
         fresh: () => {
           pushBackup(b.raw, "Sauvegarde illisible mise à l’abri");
           U.saveLocked = false; U.badSave = null;
-          E.reset(); save(); setTab("carte"); setTimeout(intro, 100);
+          E.reset(); save(); setTab("domaine"); setTimeout(intro, 100);
         }
       }
     });
@@ -429,11 +448,10 @@
     openModal({
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
-        (st.flags.fab4 && st.flags.fab4.placed ? '<p class="small">⛏️ Tes extracteurs travaillent maintenant sur les gisements de la Carte. Les ' + st.flags.fab4.placed + " que tu avais y ont été posés" +
-          (st.flags.fab4.linked === st.flags.fab4.sites ? ", et reliés à la Réserve par des tapis. Ta production continue." : ". Certains n’ont pas pu être reliés à la Réserve : ouvre la Carte pour tracer leurs tapis.") + "</p>" : "") +
-        (st.flags.fab3 && st.flags.fab3.placed ? '<p class="small">🏭 Tes ' + (st.flags.fab3.placed > 1 ? st.flags.fab3.placed + " lignes de production sont devenues autant de machines, posées" : "ligne de production est devenue une machine, posée") +
-          " autour de la Réserve le long d’un tapis. Tout tourne comme avant." + (st.flags.fab3.left ? " " + st.flags.fab3.left + " n’ont pas trouvé de place : leurs machines t’attendent dans l’usine." : "") + "</p>" : "") +
-        (st.flags.v5proj ? '<p class="small">🏗️ Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Pour la suite, pose son chantier sur la Carte (depuis le Cosmos) et relie-le par un tapis à une sortie de la Réserve.</p>' : "") +
+        (st.flags.news === "6" && (Object.keys(st.dom.ext).length || st.dom.mach.length) ? '<p class="small">Plus de tapis : tes extracteurs et tes machines sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils produisent autant qu’avant ; ce qui roulait sur les tapis est revenu dans ta Réserve.</p>' : "") +
+        (st.flags.fab4 && st.flags.fab4.placed ? '<p class="small">Tes ' + st.flags.fab4.placed + " extracteurs travaillent maintenant sur les gisements de leurs terres (onglet Domaine).</p>" : "") +
+        (st.flags.fab3 && st.flags.fab3.placed ? '<p class="small">Tes lignes de production sont devenues des machines du Domaine. Tout tourne comme avant.</p>' : "") +
+        (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
       on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
@@ -671,17 +689,22 @@
     return true;
   }
   function setTab(t) {
-    if (!tabAvailable(t)) t = "carte";
+    if (!tabAvailable(t)) t = "domaine";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
-    if (U.tab === "carte" && t !== "carte") { Usine.unmount(); $("#v-carte").innerHTML = ""; }
+    const was = U.tab;
     U.tab = t;
-    $$(".view").forEach((v) => v.classList.toggle("on", v.id === "v-" + t));
-    document.body.classList.toggle("in-usine", t === "carte");
+    $$(".view").forEach((v) => { v.classList.toggle("on", v.id === "v-" + t); delete v.dataset.sig; });
+    document.body.dataset.tab = t;
     $$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === t));
     if (U.badges[t]) { U.badges[t] = false; updateBadges(); }
     if (t === "journal" || t === "carnet") A.page();
     $("#views").scrollTop = 0;
     render(true);
+    // la carte s’ouvre sur la terre où l’on est
+    if (t === "carte" && was !== "carte") {
+      const v = $("#views"), svg = $("#v-carte svg");
+      if (svg) v.scrollTop = Math.max(0, svg.getBoundingClientRect().height * Carte.focusY(U.zone) - v.clientHeight * 0.55);
+    }
   }
   function updateBadges() {
     S().flags.badges = Object.assign({}, U.badges); // les pastilles survivent à la fermeture
@@ -720,7 +743,8 @@
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
-    else if (U.tab === "carte") mountUsine(el);
+    else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
+    else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
     $("#views").scrollTop = sc;
@@ -766,10 +790,7 @@
     A.setScene({ age: S().age, tab: U.tab, zone: z, night: !Scenes.isNightless(z) && Scenes.daypart(new Date().getHours()) === "night", machines: workingMachines() });
   }
   function workingMachines() {
-    let n = 0;
-    const c = S().fab.c;
-    for (const k in c) if (c[k].k === "mach" && E.machInfo(c[k].id).s === "ok") n += c[k].n;
-    return n;
+    return S().dom.mach.reduce((n, e) => n + (E.machInfo(e.id).s === "ok" ? e.n : 0), 0);
   }
   const VOL0 = { music: 0.5, amb: 0.6, sfx: 0.8 };
   const volumes = () => Object.assign({}, VOL0, S().settings.vol);
@@ -819,7 +840,7 @@
     }
     return h + "</div>";
   }
-  /* l’objectif déplié ou non : pendant un Suivi, il reste replié (on peut le rouvrir un moment) pour laisser voir la carte */
+  /* l’objectif déplié ou non : pendant un Suivi, il reste replié (on peut le rouvrir un moment) pour laisser voir le Domaine */
   function goalOpen() {
     const st = S();
     if (st.track && I[st.track.id]) return !!U.goalPeek;
@@ -995,7 +1016,7 @@
         h += '<div class="inv-age">' + (k < 0 ? "♥ Favorites" : esc(D.AGES[k].n)) + '</div><div class="inv-grid">' + groups[k].map(tile).join("") + "</div>";
       });
     } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
-    if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter sur la Carte.") + "</p>";
+    if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.") + "</p>";
     else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : sa fiche, ♥ pour la garder en tête de liste, 🔍 pour l’étudier. Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi.</p>';
     return h;
   }
@@ -1129,7 +1150,7 @@
     let known = 0, total = 0;
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = '<h2 class="title">Carnet</h2>';
-    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque sur la carte. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
+    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
     h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + (all > known ? " à ta portée · " + all + " en tout" : "") + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
@@ -1242,7 +1263,7 @@
         h += '<div class="acts">' + craftBtns(id) +
           '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳</button>' +
           (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯</button>') +
-          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Construire une machine pour ça sur la Carte">🏭</button>' : "") + "</div>";
+          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Confier ça à une machine du Domaine">🏭</button>' : "") + "</div>";
       }
     }
     return h + "</div>";
@@ -1250,20 +1271,6 @@
   function stationLink(g, heat, lvl) {
     const s = E.stationFor(g, heat, lvl);
     return s ? '<span class="link-txt" data-goto="' + s + '">' + esc(I[s].n) + "</span>" : "?";
-  }
-
-  /* ------------------------------------------------------------ USINE */
-  /* l’Usine se dessine sur un canvas (usine.js) : on la monte une fois, puis on
-   * ne rafraîchit que ses panneaux */
-  function mountUsine(el) {
-    if (Usine.mounted()) { if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; } Usine.refresh(); return; }
-    Usine.mount(el);
-    if (U.focusZone) { Usine.focusZone(U.focusZone); U.focusZone = null; }
-    if (U.sitePlace) { const p = U.sitePlace; U.sitePlace = null; setTimeout(() => Usine.placeSite(p), 80); }
-  }
-  function buildInUsine(id) {
-    setTab("carte");
-    Usine.prepare(id);
   }
 
   /* ------------------------------------------------------------ JOURNAL */
@@ -1358,7 +1365,7 @@
       if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
       else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ARCHE.</p>';
     } else {
-      h += '<p class="small muted">Un Grand Œuvre se construit sur la Carte : pose son chantier, puis amène-lui ses matières par tapis, depuis une sortie de la Réserve ou directement depuis tes machines. Il en faut des quantités colossales.</p>';
+      h += '<p class="small muted">Un Grand Œuvre se bâtit avec ce que tu verses depuis la Réserve, ou ce qu’il y prend seul quand tu l’alimentes. Il en faut des quantités colossales.</p>';
       for (const pid in D.PROJECTS) if (E.projVisible(pid)) h += projCard(pid);
     }
     return h;
@@ -1376,9 +1383,7 @@
             h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(paid) + "/" + fmt(s.cost[k]) + '</span><div class="bar"><i style="width:' + (100 * paid / s.cost[k]).toFixed(1) + '%"></i></div></div>';
           }
           if (s.need && !st.frags[s.need]) h += '<div class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[s.need].n) + ".</div>";
-          h += '<div class="row wrap" style="margin-top:8px">' + (E.siteOf(pid)
-            ? '<button class="btn small" data-site="' + pid + '">🏗️ Voir le chantier</button><span class="tiny muted">Il se sert sur les tapis qui le touchent.</span>'
-            : '<button class="btn small pri" data-site="' + pid + '">📍 Poser le chantier sur la Carte</button><span class="tiny muted">Ses matières lui arriveront par tapis.</span>') + "</div>";
+          if (!(s.need && !st.frags[s.need])) h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Verser</button><button class="btn small' + (E.siteOn(pid) ? " on" : "") + '" data-feed="' + pid + '">' + (E.siteOn(pid) ? "Alimenté ✓" : "Alimenter") + "</button></div>";
         } else if (s.fire) h += '<button class="btn wide pri" style="margin-top:8px;background:#ff5a3c" data-fire="' + pid + '">💥 Mise à feu</button>';
         else if (s.melody) h += '<p class="small" style="margin-top:6px">🎶 Prends ta flûte (Journal) et joue <b>' + esc(D.MELODIES[s.melody].n) + "</b>.</p>";
       }
@@ -1458,7 +1463,8 @@
     });
     $$("[data-chain]", view).forEach((b) => { b.classList.toggle("nope", !E.plan(b.dataset.chain, 1).ok); });
     $$("[data-exp]", view).forEach((b) => b.classList.toggle("nope", !!expWhy(b.dataset.exp)));
-    if (U.tab === "carte") soundScene();
+    if (U.tab === "domaine") { Dom.live($("#v-domaine")); soundScene(); }
+    if (U.tab === "carte") Carte.live($("#v-carte"));
     if (U.tab === "atelier") {
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
@@ -1483,7 +1489,7 @@
       }
     } else if (!S().flags.lucioles && ff.length) ff.forEach((f) => f.remove());
     let pip = $(".pip");
-    const showPip = E.cache().pip > 0 && U.tab === "carte";
+    const showPip = E.cache().pip > 0 && U.tab === "domaine";
     if (showPip && !pip) { pip = document.createElement("div"); pip.className = "pip"; pip.textContent = "🐞"; app.appendChild(pip); }
     if (!showPip && pip) pip.remove();
   }
@@ -1677,7 +1683,7 @@
       on: {
         tn: (b) => { times = Math.max(1, times + Number(b.dataset.d) * (times >= 100 ? 10 : 1)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
         tmax: () => { times = Math.max(1, E.maxPlan(id)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
-        track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id].n) + "</b> (voir la carte)"); },
+        track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id].n) + "</b> (en haut du Domaine)"); },
         go: (b) => { chainCraft(b, id, times); }
       }
     });
@@ -1737,7 +1743,7 @@
           if (!owned && !b) {
             h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +
               '<button class="btn small ghost" data-m="tree">🌳</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯</button>') +
-              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Une machine pour ça sur la Carte">🏭</button>' : "") + "</div>";
+              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Confier ça à une machine du Domaine">🏭</button>' : "") + "</div>";
           }
         } else {
           const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
@@ -1770,15 +1776,15 @@
       on: {
         nav: (b) => { recipeNav(b.dataset.id); return true; },
         back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
-        zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; U.focusZone = z; setTimeout(() => setTab("carte"), 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
+        zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => { setTab("domaine"); Dom.focusZone(z); }, 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
         cr: (b) => { craftFrom(b); redraw(); return true; },
         chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
         tree: () => { setTimeout(() => openTree(id, 1), 60); },
-        track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (voir la carte)"); redraw(); return true; },
+        track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (en haut du Domaine)"); redraw(); return true; },
         pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
         fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier") render(true); return true; },
         study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier") render(true); } redraw(); return true; },
-        usine: () => { setTimeout(() => buildInUsine(id), 60); },
+        usine: () => { setTimeout(() => { setTab("domaine"); Dom.chainFor(id); }, 60); },
         carnet: () => { setTimeout(() => showInCarnet(id), 60); }
       }
     };
@@ -1865,8 +1871,6 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
-        '<div class="toggle"><span>Usine <span class="tiny muted" data-usinetxt>' + (E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits, répartiteurs et Réserve limitée") +
-          '</span></span><button class="btn small" data-m="usine">' + (E.easy() ? "Simple" : "Avancée") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">🆕 Nouveautés</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
@@ -1885,15 +1889,6 @@
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
         tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
-        usine: (b) => {
-          E.setUsine(E.easy() ? "avance" : "simple");
-          b.textContent = E.easy() ? "Simple" : "Avancée";
-          const t = b.closest(".modal-box").querySelector("[data-usinetxt]");
-          if (t) t.textContent = E.easy() ? "simple : la Réserve sert toutes les machines" : "avancée : sorties, débits, répartiteurs et Réserve limitée";
-          toast(E.easy() ? "🏭 Usine simple : tes machines se servent dans la Réserve et y rangent ce qu’elles font. Les tapis restent possibles."
-            : "🏭 Usine avancée : les machines se servent sur les tapis (sorties de la Réserve, gisements), chaque tapis a son débit, et la Réserve n’a de place que pour " + fmt(E.storeCap("bois")) + " de chaque matière brute.");
-          save(); return true;
-        },
         tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre reviendra au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
         account: () => { openAccount(); return true; },
@@ -1907,20 +1902,27 @@
       }
     });
   }
+  /* lancer l’exploration du prochain lieu d’une terre */
+  function explore(z) {
+    const why = expWhy(z);
+    if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
+    const r = E.startExp(z);
+    if (r.ok) { A.init(); A.explore(); toast("🧭 C’est parti. L’exploration avance toute seule."); }
+    render(true);
+  }
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🗺️ Carte.</b> Ton monde. Chaque terre atteinte y a ses gisements : touche-les pour récolter, garde le doigt dessus pour continuer, ou poses-y un <b>extracteur</b> qui récolte seul (même jeu fermé, jusqu’à 12 h). " +
-      (E.easy() ? "Une <b>machine</b> posée sur la carte se sert dans la Réserve et y range ce qu’elle fabrique : choisis sa recette, c’est tout. Les tapis restent possibles (une machine se sert d’abord sur ceux qui la touchent). Menu ☰ → Usine avancée pour gérer sorties, débits et répartiteurs. "
-        : "Relie-le à la Réserve par un tapis. Les <b>machines</b> se servent sur les tapis qui passent devant elles. Un tapis porte un nombre limité d’objets par seconde (davantage aux âges suivants) : une entrée de la Réserve qui déborde clignote ⚠️. La Réserve, elle, ne laisse sortir vers les machines qu’un petit débit : amène-leur plutôt leurs matières directement. ") +
-      "Les 🧭 sont des lieux à explorer : ils racontent l’histoire du monde. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les étapes de chaque âge. Le bouton <b>🛠️</b> ouvre la roue : toutes tes recettes connues, par famille, à fabriquer sans quitter la carte, et les machines ou extracteurs prêts à poser d’un geste.</p>" +
+      "<p><b>🏡 Domaine.</b> Tout ce qui produit, terre par terre. Touche l’icône d’une matière pour la ramasser, garde le doigt dessus pour continuer. <b>+1</b> pose un <b>extracteur</b> sur le gisement : il récolte seul, même jeu fermé (jusqu’à 12 h). S’il n’en reste pas de libre, tes mains en fabriquent un et le posent là. " +
+      "Plus bas, les <b>machines</b> : chacune répète une recette, se sert dans la Réserve et y range ce qu’elle fait. Touche une ligne pour la régler. L’<b>objectif</b>, en haut, dit quoi faire ensuite, et 🏁 montre les étapes de chaque âge.</p>" +
+      "<p><b>🗺️ Carte.</b> Ton monde, de la Lisière jusqu’aux étoiles. La brume cache ce que tu n’as pas atteint. Touche une terre pour aller à ses gisements, un 🧭 lieu pour l’explorer (ils racontent l’histoire du monde), une étiquette « Passage » pour y verser.</p>" +
       "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une petite découverte sort tout de suite ; une grosse s’inscrit dans le Carnet sans rien prendre, et tu la fabriques quand tu veux, prix affiché. Ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
       "<p><b>📖 Carnet.</b> Tes recettes. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent (tes mains les font d’abord), <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Certains textes cachent des recettes, des codes ou des airs.</p>" +
       "<p><b>🚧 Passages.</b> Pour entrer dans une nouvelle terre, il faut l’objet qui y mène (l’épieu pour la Plaine…), puis franchir son passage : verse ce qu’il demande depuis la Réserve, en plusieurs fois si besoin. Chaque passage coûte bien plus que le précédent.</p>" +
       "<p><b>✦ Relève et Mémoire des mains.</b> Dès un passage franchi, tu peux passer le relais : un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet, tes fragments, tes secrets et la Mémoire des mains, achetée avec les Traces des passages (récolte, mains, extracteurs, machines plus forts…). Chaque fin atteinte donne en plus un Écho : +50 % de récolte et de production pour toujours.</p>" +
       "<p><b>🏁 Étapes.</b> Chaque âge a ses étapes : toutes faites, l’âge est accompli (+" + D.AGE_DONE + " ✨).</p>" +
-      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se construit sur la Carte : " + (E.easy() ? "son chantier se sert dans la Réserve." : "son chantier se nourrit par tapis.") + "</p>" +
+      "<p><b>🔭 Cosmos.</b> Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se bâtit dans le Domaine : verse-lui ses matières, ou laisse-le se servir seul dans la Réserve.</p>" +
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p>" +
       "<p><b>💭 Tutoriel.</b> Des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible. Menu ☰ : le couper, ou le revoir depuis le début.</p></div>", "Compris");
   }
@@ -1969,7 +1971,7 @@
         "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + leftHTML() +
         '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
-      on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; U.focusZone = "lisiere"; Usine.clearSel(); setTab("carte"); setTimeout(intro, 200); } }
+      on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; U.zone = "lisiere"; U.domAll = false; U.domOpen = null; setTab("domaine"); setTimeout(intro, 200); } }
     });
   }
   /* ------------------------------------------------------------ MÉMOIRE DES MAINS
@@ -1995,7 +1997,7 @@
   }
   /* ce que la relève laisse derrière elle, en chiffres */
   function leftHTML() {
-    const st = S(), cells = Object.values(st.fab.c), n = (k) => cells.filter((e) => e.k === k).reduce((a, e) => a + (k === "ext" ? Object.values(e.u || {}).reduce((x, y) => x + y, 0) : e.n || 1), 0);
+    const st = S(), n = (k) => (k === "ext" ? Object.values(st.dom.ext).reduce((a, e) => a + Object.values(e.u).reduce((x, y) => x + y, 0), 0) : st.dom.mach.reduce((a, e) => a + e.n, 0));
     const top = Object.keys(st.inv).filter((i) => I[i] && !E.isUnique(I[i]) && !E.isScaled(I[i]) && st.inv[i] >= 1).sort((a, b) => st.inv[b] - st.inv[a]).slice(0, 3);
     const paid = Object.keys(st.pass).filter((z) => !st.pass[z].done && D.PASSAGES[z]);
     const parts = [];
@@ -2012,7 +2014,7 @@
     if (x.id === "extr") { const r = E.production().reduce((s, p) => s + (I[p.id] && I[p.id].t === "res" ? p.in : 0), 0); return r > 0 ? "Tes extracteurs : " + fmtNum(r) + "/s → " + fmtNum(r * b / a) + "/s" : ""; }
     if (x.id === "recolte") return "Un appui sur le bois : " + fmtNum(E.tapYieldOf("bois") || a) + " → " + fmtNum((E.tapYieldOf("bois") || a) * b / a);
     if (x.id === "chemins") { const z = D.ZONES.map((y) => y.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id)); if (!z) return ""; const c = E.passCost(z), k = Object.keys(c)[0]; return esc(D.PASSAGES[z].n) + " : " + fmt(c[k]) + " → " + fmt(Math.ceil(c[k] * b / a)) + " " + esc(I[k].n.toLowerCase()); }
-    if (x.id === "mach") { const m = Object.values(S().fab.c).filter((e) => e.k === "mach" && e.r); return m.length ? "Tes " + m.length + " machine" + (m.length > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
+    if (x.id === "mach") { const m = S().dom.mach.filter((e) => e.r); return m.length ? "Tes " + m.length + " machine" + (m.length > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
     return "";
   }
   /* le prochain passage : ce qu’il rapporte, et l’objet qui le rend possible */
@@ -2070,8 +2072,8 @@
     E.on("learn", () => badge("carnet"));
     /* un passage devient possible, puis il est franchi */
     E.on("passage", (z) => {
-      badge("carte");
-      setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", verse ce qu’il faut depuis la Réserve (dans l’objectif, ou touche la brume sur la carte).", { key: "pass:" + z, p: 2 }), 900);
+      badge("domaine");
+      setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", verse ce qu’il faut depuis la Réserve (dans le Domaine, ou sur la Carte).", { key: "pass:" + z, p: 2 }), 900);
     });
     E.on("passdone", (o) => {
       const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
@@ -2084,9 +2086,9 @@
     E.on("zone", (z) => {
       U.zone = z;
       // la découverte qui ouvre cette terre le dit déjà (« Débloque : … ») : pas de second message
-      setTimeout(() => { if (Date.now() - (U.lastDiscover || 0) > 1500) toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Elle apparaît sur la carte."); }, 80);
+      setTimeout(() => { if (Date.now() - (U.lastDiscover || 0) > 1500) toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans le Domaine."); }, 80);
       badge("carte");
-      setTimeout(() => { if (Usine.mounted()) Usine.focusZone(z); else U.focusZone = z; }, 50);
+      setTimeout(() => { if (U.tab === "domaine") Dom.focusZone(z); else U.domOpen = z; }, 50);
     });
     E.on("discover", (id) => {
       const it = I[id];
@@ -2094,7 +2096,7 @@
       if (!U.forging && !it.sec) fete({ id, kick: "Première fabrication", title: it.n, sub: fxText(id) });
       U.lastDiscover = Date.now();
       if (it.e && it.e.sky) badge("cosmos");
-      if (it.t === "mach") badge("carte");
+      if (it.t === "mach") badge("domaine");
       updateBadges();
     });
     E.on("event", (ev) => {
@@ -2109,7 +2111,7 @@
         .replace("{i}", E.the(mainIngredient(h.id)));
       A.secret();
       toast("💭 <b>" + esc(it.n) + "</b> : " + esc(line));
-      badge("carte");
+      badge("domaine");
     });
     E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé.", { key: "it:" + id, p: 2 }); });
     E.on("secret", (id) => {
@@ -2163,8 +2165,9 @@
     E.on("crafted", (id) => {
       if (E.cache().pip && (id === "pip" || Math.random() < 0.3)) setTimeout(() => A.pip(), 250);
       if (I[id] && I[id].t === "ext") {
-        badge("carte");
-        setTimeout(() => toast("⛏️ <b>" + esc(I[id].n) + "</b> : pose-la sur un gisement de la Carte pour qu’elle récolte.", { key: "it:" + id, p: 4 }), 900);
+        badge("domaine");
+        // déjà posée par les mains (un « +1 ») : rien à dire
+        setTimeout(() => { if (E.freeExt(id) >= 1) toast("⛏️ <b>" + esc(I[id].n) + "</b> : touche +1 sur un gisement du Domaine pour la poser.", { key: "it:" + id, p: 4 }); }, 900);
       }
     });
     E.on("decoded", () => {
@@ -2204,7 +2207,7 @@
     $("#intuBtn").addEventListener("click", () => simpleModal("Intuition", "✨ " + Math.floor(S().intu),
       '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les matières : touche une matière, puis 🔍 Étudier, pour savoir avec quels gestes elle cache encore des recettes.</p>' +
       (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
-    $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.focusZone = a && a.z; setTab("carte"); });
+    $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.zone = a ? a.z : U.zone; setTab("carte"); });
     $("#handMini").addEventListener("click", () => { A.init(); Roue.open({ cat: "hand" }); });
     $("#updBar").addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-u]");
@@ -2215,6 +2218,7 @@
 
     const views = $("#views");
     views.addEventListener("pointerdown", (ev) => {
+      if (U.tab === "domaine" && Dom.down(ev)) return; // récolte à la main
       // le bouton d’œuvre agit au relâcher, même si l’établi s’est redessiné entre-temps (taper vite)
       if (ev.target.closest("#forge, [data-forge]")) U.fdown = { x: ev.clientX, y: ev.clientY, mini: !!ev.target.closest("[data-forge]") };
       const inv = ev.target.closest(".inv");
@@ -2225,13 +2229,16 @@
     });
     const cancelLp = () => { if (U.lp) { clearTimeout(U.lp.t); U.lp.up = true; } };
     ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
+    ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, (ev) => Dom.up(ev)));
     views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } updMini(); }, { passive: true });
-    views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".inv, .slot")) ev.preventDefault(); });
+    views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".inv, .slot, [data-harv]")) ev.preventDefault(); });
 
     views.addEventListener("click", (ev) => {
       const t = ev.target;
       let b;
       if (U.tab === "atelier") { U.anchor = anchorFor(t); U.anchorAt = performance.now(); }
+      if (U.tab === "carte" && Carte.click(t)) return;
+      if (Dom.click(t)) return;
       if ((b = t.closest(".inv"))) {
         if (U.lp) { cancelLp(); U.lp = null; putInSlot(b.dataset.inv); }
         return;
@@ -2245,9 +2252,9 @@
       if ((b = t.closest("[data-hopen]"))) { A.init(); Roue.open({ cat: "hand" }); return; }
       if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
       if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
-      if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (voir la carte)"); render(true); return; }
+      if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
-      if ((b = t.closest("[data-autoline]"))) { buildInUsine(b.dataset.autoline); return; }
+      if ((b = t.closest("[data-autoline]"))) { setTab("domaine"); Dom.chainFor(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
@@ -2276,13 +2283,7 @@
         return;
       }
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
-      if ((b = t.closest("[data-exp]"))) {
-        const why = expWhy(b.dataset.exp);
-        if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
-        const r = E.startExp(b.dataset.exp);
-        if (r.ok) { A.init(); A.explore(); toast("🧭 C’est parti. L’exploration avance toute seule."); }
-        render(true); return;
-      }
+      if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
       if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; render(true); return; }
       if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n), loreHTML(F.t), "Refermer"); return; }
@@ -2290,7 +2291,6 @@
       if ((b = t.closest("[data-play]"))) { A.init(); A.melody(D.MELODIES[b.dataset.play].notes); return; }
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
       if (t.closest("#listen")) { listen(); return; }
-      if ((b = t.closest("[data-site]"))) { A.click(); U.sitePlace = b.dataset.site; setTab("carte"); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }
     });
     views.addEventListener("change", (ev) => {
@@ -2336,9 +2336,8 @@
     if (!o) return;
     U.offline = null;
     const list = o.top.map((k) => '<span class="ing">' + icon(k, "sm") + "+" + fmt(o.gains[k]) + " " + esc(I[k].n) + "</span>").join("");
-    const auto = Object.values(S().fab.c).some((e) => e.k === "ext" || e.k === "mach");
-    // usine avancée : ce qui s’est arrêté faute de place dans la Réserve
-    const full = Array.from(new Set(Object.values(S().fab.c).filter((e) => e.k === "ext" && E.machInfo(e.id).s === "full").map((e) => e.res)));
+    const auto = Object.keys(S().dom.ext).length > 0 || S().dom.mach.length > 0;
+    const full = [];
     simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
       (list ? '<p class="small muted">Pendant ce temps, tout a travaillé pour toi :</p><div class="row wrap">' + list + "</div>"
         : '<p class="small">Rien n’a tourné pendant ton absence.' + (auto ? "" : " Une cabane posée sur un gisement récolte même jeu fermé : c’est la prochaine chose à viser.") + "</p>") +
@@ -2390,13 +2389,14 @@
 
   function boot() {
     setupModal();
+    loadSprite();
     bindEngine();
     const status = loadSave();
     A.setEnabled(S().settings.sound);
     A.setVolumes(volumes());
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
-    setTab("carte");
+    setTab("domaine");
     Object.assign(U.badges, S().flags.badges || {});
     const bk = S().flags.bench;
     if (bk && Array.isArray(bk.s)) {
@@ -2411,12 +2411,6 @@
       const minor = (v) => String(v || "").split(".").slice(0, 2).join(".");
       if (S().flags.news || minor(S().flags.ver) !== minor(D.VERSION)) showNews();
       else S().flags.ver = D.VERSION;
-      if (S().flags.usineNote) {
-        delete S().flags.usineNote;
-        simpleModal("Nouveau", "🏭 L’usine simple",
-          "<p>Tes machines se servent maintenant directement dans la Réserve et y rangent ce qu’elles fabriquent : plus besoin de sortie ni de tapis pour les nourrir, et plus de débit à surveiller. Tout ce que tu as construit continue de tourner, en mieux.</p>" +
-          '<p class="small muted">Tu préfères gérer sorties, débits et répartiteurs ? Menu ☰ → Usine : Avancée.</p>');
-      }
       showOffline();
     }
     setTimeout(() => { U.live = true; }, 1500);
@@ -2426,7 +2420,7 @@
     setupSW();
     cloudTimers();
     setTimeout(cloudCheck, 1500);
-    window.__eclat = { E, U, render, save, backups, Cloud, Usine };
+    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

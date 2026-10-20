@@ -135,7 +135,7 @@
   I.engrenage_bois = { n: "Rouage de bois", sym: "⚙", col: "#9a6b3c", a: 2, t: "comp", r: ["tailler", { manche: 2, eclat: 1 }, 2],
     d: "Une petite roue dentée, taillée dans un bâton.", h: "Un bâton, taillé en roue dentée par une lame de pierre." };
   I.automate_bois = { n: "Automate de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
-    d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Pose-la sur la Carte, près de la Réserve.",
+    d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Dans le Domaine, confie-lui une recette.",
     h: "Des rouages de bois, des cordes, et un lourd contrepoids." };
   I.hache_pierre = { n: "Hache de pierre", ic: "🪓", a: 2, t: "tool", r: ["assembler", { manche: 2, eclat: 4, laniere: 4 }, 1],
     e: { tap: { bois: 3, fibre: 2 } }, d: "Les petits arbres tombent en quelques coups.",
@@ -236,7 +236,7 @@
     e: { auto: { lisiere: 1.5, riviere: 1.5 } }, d: "La rivière fait tourner la roue, jour et nuit.",
     h: "Des roues, des engrenages, une charpente de bois." };
   I.courroies = { n: "Courroies de cuir", ic: "➰", a: 4, t: "upg", r: ["assembler", { laniere: 40, roue: 6, engrenage: 10 }, 1],
-    e: { aspd: 1.25 }, d: "Des courroies de cuir entraînent tes automates : ton usine tourne plus vite.",
+    e: { aspd: 1.25 }, d: "Des courroies de cuir entraînent tes automates : tes machines tournent plus vite.",
     h: "Beaucoup de lanières, des roues, des roues dentées." };
   I.brouette = { n: "Brouettes", ic: "🛒", a: 4, t: "upg", r: ["assembler", { roue: 3, manche: 15, plaque_bronze: 6 }, 1],
     e: { auto: { lisiere: 1.25, riviere: 1.25, collines: 1.25 } }, d: "Tes cueilleurs transportent deux fois plus en un seul voyage.",
@@ -439,7 +439,7 @@
   I.caoutchouc = { n: "Caoutchouc", sym: "◖", col: "#3b3b3b", a: 9, t: "comp", r: ["synthetiser", { petrole: 2, charbon: 1 }, 2],
     d: "Il rebondit, il isole.", h: "L’huile noire et le noir qui brûle, recomposés en une matière qui rebondit." };
   I.convoyeurs = { n: "Tapis convoyeurs", ic: "📦", a: 9, t: "upg", r: ["assembler", { caoutchouc: 80, moteur_elec: 12, lingot_acier: 80 }, 1],
-    e: { aspd: 1.5 }, d: "Des tapis plus rapides et des bras qui chargent tout seuls : ton usine tourne 50 % plus vite.",
+    e: { aspd: 1.5 }, d: "Des bras qui chargent tout seuls et des courroies plus rapides : tes machines tournent 50 % plus vite.",
     h: "Des bandes de caoutchouc, des moteurs, une structure d’acier." };
   I.aluminium = { n: "Aluminium", sym: "Al", col: "#c4cad3", a: 9, t: "comp", r: ["electriser", { bauxite: 4, charbon: 1 }, 1],
     d: "Autrefois plus précieux que l’or.", h: "La terre rouge des montagnes, électrisée sur des électrodes de carbone." };
@@ -709,7 +709,7 @@
     alunisseur: "La poussière grise se soulève sans bruit. Au-dessus de toi, la Terre tient derrière ton pouce.",
     vaisseau: "Cap sur le Soleil. La Terre devient un point bleu, puis rien.",
     automate_bois: "La marionnette se met en marche, clac, clac. Elle refait ton geste, puis le refait encore. Ce travail-là se fera sans toi.",
-    presse_vapeur: "La presse siffle et cogne en cadence. Sur la Carte, toutes les machines s’accélèrent.",
+    presse_vapeur: "La presse siffle et cogne en cadence. Dans le Domaine, toutes les machines s’accélèrent.",
     forge_stellaire: "Tu tiens un morceau d’étoile dans une cage d’aimants. À cette chaleur, même le carbone le plus fin deviendrait éternel. ARCHE ne dit rien pendant un moment, puis : « ESTIMATION : TU ES PRÊT. »",
     dynamite: "La mèche crépite. Un souvenir qui n’est pas à toi : du cuivre jeté dans les flammes, et le feu qui vire au vert.",
     moteur_elec: "Le moteur ronronne dans ta main comme un petit animal. Avec un cerveau et une laisse, il te suivrait partout.",
@@ -815,13 +815,13 @@
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Ce chêne immense t’attire. Lance une exploration depuis la Lisière : elle avance toute seule pendant que tu fais autre chose." },
     ["feu", "La nuit tombe vite. Fais du feu."],
     ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi, même quand le jeu est fermé."],
-    { k: "ext", n: "Installer ta cabane", txt: "Sur la Carte, pose ta cabane sur une case de la Lisière, puis trace un tapis jusqu’à la Réserve. Elle récoltera pour toi, même quand le jeu est fermé." },
+    { k: "ext", n: "Installer ta cabane", txt: "Dans le Domaine, touche +1 sur le bois ou les fibres de la Lisière. Ta cabane récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
     { k: "pass", z: "plaine", n: "Ouvrir le passage vers la Plaine", txt: "Ton épieu te donne le courage d’y aller. Reste à te frayer un chemin dans les hautes herbes : verse ce qu’il faut depuis la Réserve." },
     ["laniere", "Les bêtes de la plaine laissent leur peau derrière elles. Découpée en bandes, elle lie mieux que l’herbe."],
     { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Au milieu de la plaine, des os blanchissent au soleil. Lance une exploration : tu en rapporteras de quoi travailler." },
     ["aiguille", "Pour coudre une peau, il faut une pointe percée."],
-    ["collets", "Des pièges posés dans la plaine attraperaient os et peaux à ta place. Pose-les sur la Carte, comme ta cabane."],
+    ["collets", "Des pièges posés dans la plaine attraperaient os et peaux à ta place. Pose-les dans le Domaine, comme ta cabane."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
     { k: "pass", z: "riviere", n: "Ouvrir le passage vers la Rivière", txt: "L’eau est là, large et lente. Il te faut de quoi la franchir." },
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
@@ -829,7 +829,7 @@
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer."],
     { k: "pass", z: "collines", n: "Ouvrir le passage vers les Collines", txt: "Les collines sont raides : il faudra y tailler des marches." },
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Il faudrait quelque chose pour les refaire à ta place."],
-    { k: "line", n: "Faire tourner ton automate", txt: "Sur la Carte, pose ton automate, une sortie contre la Réserve, et relie-les par un tapis. Il fabriquera tant qu’on lui apportera ses matières." },
+    { k: "line", n: "Faire tourner ton automate", txt: "Dans le Domaine, touche « nouvelle chaîne » et choisis ce que fabrique ton automate. Il se sert dans la Réserve, tant qu’elle a ses matières." },
     ["four", "Le feu de camp ne chauffe plus assez."],
     ["lingot_cuivre", "La pierre verte des collines cache un métal."],
     ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur."],
@@ -938,31 +938,13 @@
   };
 
   D.CHANGES = [
-    "💬 Une cinquantaine de nouvelles phrases d’échec à l’Atelier, pour les âges de la Pierre et du Cuivre.",
-    "🚧 Des passages entre les terres : l’objet qui y mène ne suffit plus, il faut aussi franchir le passage en y versant des matières depuis la Réserve (en plusieurs fois si besoin). Chaque passage coûte bien plus que le précédent.",
-    "✦ La relève : dès un passage franchi, tu peux passer le relais. Un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet et gagne des Traces.",
-    "✋ La Mémoire des mains : avec les Traces, des améliorations pour toujours (récolte, mains, extracteurs, machines, passages, paquetage, raccourci, nuits plus longues). Touche ✦ en haut de l’écran.",
-    "🛠️ Une fabrication en chaîne ne reste plus bloquée quand une pièce est en partie en stock.",
-    "🖐️ Plus rien ne bouge sous le doigt à l’Atelier : le bouton d’œuvre agit au relâcher, la même pièce demandée plusieurs fois s’allonge (×N), un petit établi reste en haut quand on descend dans la liste. Deux messages au plus, sous l’objectif ; un bouton grisé dit pourquoi quand on le touche.",
-    "🎉 Des fêtes : une découverte, une recette trouvée, une étape ou un âge accompli s’affichent au centre de l’écran. La récolte rebondit et se compte (+9 Bois), et le feu de camp brille sur la carte.",
-    "🏁 Des étapes plus claires : cinq à l’âge de l’Os, un compteur qui suit l’âge en cours, et +3 ✨ quand un âge est accompli.",
-    "⚡ ×1, ×10 et Max fabriquent aussi les pièces qui manquent : dix cabanes d’un coup, depuis le Carnet ou la roue.",
-    "📊 Touche la Réserve : ce qui entre et sort, matière par matière.",
-    "✦ Journal → Fins explique les cycles et les Échos, et permet de lancer un nouveau cycle quand on veut.",
-    "🔍 Découvrir coûte peu : une grosse découverte s’inscrit au Carnet sans rien prendre, prix affiché. Au Carnet, le nom d’une recette inconnue reste caché. Les échecs ont des phrases écrites à la main, avec les bons articles.",
-    "📦 Usine avancée : la Réserve n’a de place que pour un certain nombre de chaque matière brute (plus à chaque âge). Pleine, l’extracteur s’arrête : transformer, c’est faire de la place.",
-    "🏭 L’usine simple, par défaut : une machine posée n’importe où se sert dans la Réserve et y range ce qu’elle fabrique, un extracteur se relie tout seul, et plus de débit à surveiller. Les amateurs de casse-têtes retrouvent sorties, débits et répartiteurs dans ☰ → Usine : Avancée.",
-    "🌱 Un début plus léger : au départ, la forêt et l’objectif, rien d’autre. Les outils, la roue, l’Intuition, le Carnet et le Journal apparaissent quand ils servent.",
-    "🧭 Plus fluide pour qui découvre : la bulle du tutoriel ne se pose plus sur les boutons (réduite, elle devient 💭 en haut), une fenêtre ne se ferme plus sous le doigt, un nouvel âge s’annonce vraiment, la carte « Recette comprise » suit la fabrication, les matières épuisées gardent leur place à l’Atelier (et se posent encore sur l’établi), la roue garde ses recettes à la même place.",
-    "💭 Un tutoriel : des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible (premiers gestes, cabane, roue, automate, étude des matières, tapis qui débordent…). Il se coupe ou se revoit dans le menu ☰.",
-    "🗺️ Une seule carte : les Terres et la Fabrique ne font plus qu’un. Chaque terre y est une région, avec ses gisements et ses lieux à explorer (🧭). Touche son nom pour voir son paysage.",
-    "✋ À l’Atelier, une découverte sort tout de suite. Ensuite, fabriquer à la main prend un peu de temps et passe par la file « Tes mains », qui avance même jeu fermé. Répéter un geste va de plus en plus vite, et les gestes des âges passés aussi. Pour produire en grand, il y a les machines.",
-    "🔍 Plus d’indices à acheter : l’Intuition sert maintenant à étudier les matières, pour savoir avec quels gestes elles cachent encore des recettes.",
-    "🛤️ Les tapis ont un débit, qui augmente avec les âges. Une entrée de la Réserve qui déborde clignote ⚠️ : fais-en entrer une deuxième. La Réserve ne laisse sortir vers les machines qu’un petit débit, alors amène-leur leurs matières directement.",
-    "🏗️ Les Grands Œuvres se construisent sur la Carte : pose leur chantier, puis nourris-le par tapis.",
-    "🏁 Les jalons de chaque âge, d’un coup d’œil, depuis la carte d’objectif.",
-    "🛠️ La roue : depuis la carte, toutes tes recettes connues en cercle, par famille (machines, extracteurs, stations, outils, pièces…), avec la recherche. On fabrique sans changer d’onglet, puis on pose la machine ou l’extracteur d’un geste. Elle s’ouvre aussi toute seule quand l’outil Machine ou Extracteur n’a plus rien de libre."
+    "🏡 Le Domaine remplace l’usine : tes terres et leurs gisements en liste, chacun avec ses extracteurs. +1 en pose un ; s’il n’en reste plus de libre, tes mains le fabriquent et le posent.",
+    "⚙️ Les machines travaillent en chaînes : une recette, des machines. Elles se servent dans la Réserve et y rangent ce qu’elles font. Plus de tapis, plus de débit à surveiller.",
+    "🗺️ Une nouvelle carte, dessinée, qui se lit de bas en haut. La brume cache ce que tu n’as pas atteint ; on y explore les lieux et on y verse dans les passages.",
+    "🏗️ Un Grand Œuvre se bâtit depuis le Domaine : verse-lui ses matières, ou laisse-le se servir seul dans la Réserve.",
+    "🖼️ De vraies icônes, dessinées par les auteurs de game-icons.net, à la place des emoji."
   ];
+
 
   /* ---------------------------------------------------- ÉCHECS (saveur)
    * {x} : les matières, avec leur article (« le bois et les fibres ») ; {a|b} : a si

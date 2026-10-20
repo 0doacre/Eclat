@@ -67,6 +67,11 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(OUT, svg);
   console.log(names.length + ' icônes, sprite ' + Buffer.byteLength(svg) + ' octets (' + path.relative(ROOT, OUT) + ')');
+  // la correspondance, pour le jeu (js/icons.js)
+  const js = '/* Généré par tools/icons.js à partir de tools/icons.json : ne pas modifier à la main. */\n' +
+    'window.ECLAT_ICONS = ' + JSON.stringify(map) + ';\n';
+  fs.writeFileSync(path.join(ROOT, 'js', 'icons.js'), js);
+  console.log('js/icons.js écrit');
 }
 
 main().catch((e) => { console.error(e.message); process.exit(1); });
