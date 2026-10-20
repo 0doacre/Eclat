@@ -95,8 +95,75 @@ test("objets uniques et zones", () => {
   const E = mk();
   stations(E, ["feu"]);
   force(E, "epieu");
-  assert.ok(E.zoneOpen("plaine"));
+  assert.ok(!E.zoneOpen("plaine"), "l’épieu rend le passage possible, il ne l’ouvre pas");
+  assert.ok(E.passInfo("plaine").ready);
   assert.strictEqual(E.craft("epieu").why, "owned");
+});
+test("passages : on verse en plusieurs fois, la terre s’ouvre une fois tout payé", () => {
+  const E = mk();
+  stations(E, ["feu"]);
+  assert.strictEqual(E.passPour("plaine").ok, false, "pas avant l’épieu");
+  force(E, "epieu");
+  const cost = E.passCost("plaine");
+  // le guidage mène au passage
+  const ob = E.objective();
+  assert.strictEqual(ob.k, "pass"); assert.strictEqual(ob.z, "plaine");
+  E.state.inv = {}; E.add("bois", 50);
+  const r1 = E.passPour("plaine");
+  assert.ok(r1.ok && !r1.done); assert.strictEqual(E.count("bois"), 0);
+  assert.ok(E.passInfo("plaine").frac > 0 && E.passInfo("plaine").frac < 1);
+  for (const i in cost) E.add(i, cost[i]);
+  const r2 = E.passPour("plaine");
+  assert.ok(r2.done); assert.ok(E.zoneOpen("plaine"));
+  assert.strictEqual(E.count("bois"), 50, "seul le reste est pris");
+  assert.strictEqual(E.releveGain(), D.PASSAGES.plaine.tr);
+  assert.ok(E.canReleve());
+  // tant qu’un passage n’est pas payé, la prochaine étape vers la Rivière le dit
+  const G = mk(); stations(G, ["feu"]); force(G, "epieu");
+  assert.strictEqual(G.nextStep("argile").why, "pass");
+});
+test("relève : on garde le savoir, on gagne des Traces ; la Mémoire des mains", () => {
+  const E = mk();
+  stations(E, ["feu"]);
+  force(E, "epieu");
+  for (const i in E.passCost("plaine")) E.add(i, E.passCost("plaine")[i]);
+  E.passPour("plaine");
+  E.state.flags.tuto = { done: { debut: true }, c: null, i: 0 }; E.state.flags.tip_full = true; E.state.flags.extDone = true;
+  const known = Object.keys(E.state.known).length, tap0 = E.tap("bois");
+  E.newCycle();
+  const S = E.state;
+  assert.strictEqual(S.meta.traces, D.PASSAGES.plaine.tr);
+  assert.strictEqual(Object.keys(S.known).length, known, "le Carnet est gardé");
+  assert.ok(!E.zoneOpen("plaine") && !S.pass.plaine, "les terres repartent de zéro");
+  assert.strictEqual(S.flags.tuto.done.debut, true, "le tutoriel déjà vu ne revient pas");
+  assert.ok(S.flags.tip_full && !S.flags.extDone);
+  assert.strictEqual(E.releveGain(), 0); assert.ok(!E.canReleve());
+  // acheter : récolte ×2, paquetage
+  assert.ok(E.memBuy("recolte")); assert.strictEqual(S.meta.traces, 0);
+  assert.ok(!E.memBuy("paquetage"), "plus de Traces");
+  assert.strictEqual(E.tap("bois"), tap0 * 2);
+  S.meta.traces = 100;
+  assert.ok(E.memBuy("paquetage") && E.memBuy("paquetage") && E.memBuy("raccourci"));
+  E.newCycle();
+  assert.strictEqual(E.state.inv.cabane, 1, "le paquetage : une cabane");
+  assert.ok(E.state.inv.bois >= 60);
+  assert.ok(E.zoneOpen("plaine") && E.has("epieu"), "le raccourci ouvre la Plaine");
+  assert.strictEqual(E.releveGain(), 0, "un passage offert ne rapporte rien");
+  assert.strictEqual(E.memLvl("recolte"), 1, "la Mémoire est gardée");
+  // chemins connus : les passages coûtent moins
+  E.state.meta.traces = 10; const c0 = E.passCost("riviere").bois;
+  assert.ok(E.memBuy("chemins")); assert.ok(E.passCost("riviere").bois < c0);
+});
+test("passages : une partie d’avant garde ses terres ouvertes, comptées comme franchies", () => {
+  const E = mk();
+  const raw = JSON.parse(E.serialize());
+  delete raw.pass; delete raw.meta.traces; delete raw.meta.mem;
+  raw.zones = { lisiere: true, plaine: true, riviere: true };
+  const F = mk(); F.load(JSON.stringify(raw));
+  assert.ok(F.zoneOpen("riviere"));
+  assert.ok(F.state.pass.plaine.done && F.state.pass.riviere.done);
+  assert.strictEqual(F.releveGain(), D.PASSAGES.plaine.tr + D.PASSAGES.riviere.tr);
+  assert.strictEqual(F.state.meta.traces, 0); assert.deepStrictEqual(F.state.meta.mem, {});
 });
 /* pose une cabane sur le gisement de bois de la Lisière et la relie à la Réserve */
 function cabane(E) {
@@ -934,7 +1001,7 @@ test("âge accompli : toutes ses étapes faites, un peu d’Intuition, une seule
   const E = mk();
   const S = E.state, before = S.intu;
   E.milestones()[0].forEach((x) => { if (x.ob.k === "craft") S.made[x.ob.id] = 1; });
-  S.exp.done.lisiere = 1; S.flags.extDone = true;
+  S.exp.done.lisiere = 1; S.flags.extDone = true; S.pass.plaine = { paid: {}, done: true };
   E.checkAges();
   assert.ok(S.flags.ages[0], "l’âge du Bois est accompli");
   assert.strictEqual(S.intu, before + D.AGE_DONE);
