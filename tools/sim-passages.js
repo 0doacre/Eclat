@@ -324,7 +324,7 @@ function play(o) {
   const rend = ["bois", "fibre", "caillou", "os", "cuir", "argile", "silex", "sable", "malachite", "fer_min"].filter((i) => gathered(i) && bestZone(i))
     .map((i) => i + " " + Math.round(handRate(i)) + "|" + Math.round(E.rate(i)));
   const last = cycles[cycles.length - 1];
-  return { cycles, rows: last.rows, traces: last.traces, mur: last.mur, ext, stocks, rend, age: S().age, minutes: cyc(), absent: absent / 60, penseTotal, gels, taps: S().stats.taps, crafts: S().stats.crafts };
+  return { E, cycles, rows: last.rows, traces: last.traces, mur: last.mur, ext, stocks, rend, age: S().age, minutes: cyc(), absent: absent / 60, penseTotal, gels, taps: S().stats.taps, crafts: S().stats.crafts };
 }
 
 /* ------------------------------------------------------------------ affichage */
