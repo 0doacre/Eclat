@@ -1512,6 +1512,14 @@
     const buf = (id) => S.dom.ms[id] || (S.dom.ms[id] = { p: 0, b: {} });
     E.machBuf = buf;
     E.machInfo = (id) => machStat[id] || { s: "wait", avg: 0 };
+    E.machCan = function (m, r) {
+      const it = item(r), M = item(m);
+      if (!it || !it.r || !M) return false;
+      return Object.keys(it.r[1] || {}).length <= (M.ing !== undefined ? M.ing : 1);
+    };
+    E.machFor = function (r) {
+      return MACHINES.find((m) => E.machCan(m, r)) || null;
+    };
     /* ce qu’une machine avait en main rejoint la Réserve */
     function refund(id) {
       const B = S.dom.ms[id];
@@ -1519,12 +1527,19 @@
       delete S.dom.ms[id];
       delete machStat[id];
     }
-    /* nouvelle chaîne : une recette et une machine libre (la plus rapide, sauf choix) */
+    /* nouvelle chaîne : une recette et une machine libre (la plus rapide qui sait la faire) */
     E.domMachAdd = function (r, m) {
       if (r && !E.automatable(r)) return { ok: false, why: "norec" };
       const ms = E.machines();
-      m = m || MACHINES.slice().reverse().find((x) => ms[x].own - ms[x].used >= 1);
-      if (!m || !ms[m] || ms[m].own - ms[m].used < 1) return { ok: false, why: "nomach" };
+      if (m) {
+        if (r && !E.machCan(m, r)) return { ok: false, why: "tier", need: E.machFor(r) };
+        if (!ms[m] || ms[m].own - ms[m].used < 1) return { ok: false, why: "nomach" };
+      } else {
+        const anyFree = MACHINES.some((x) => ms[x].own - ms[x].used >= 1);
+        if (!anyFree) return { ok: false, why: "nomach" };
+        m = MACHINES.slice().reverse().find((x) => ms[x].own - ms[x].used >= 1 && (!r || E.machCan(x, r)));
+        if (!m) return { ok: false, why: "tier", need: E.machFor(r) };
+      }
       const e = { id: "M" + ++S.dom.seq, m, r: r || null, n: 1, on: true, cap: 0 };
       S.dom.mach.push(e);
       domChanged();
@@ -1539,6 +1554,8 @@
         e.r = patch.r;
       }
       if (patch.m && patch.m !== e.m && item(patch.m) && item(patch.m).t === "mach") {
+        const tr = patch.r !== undefined ? patch.r : e.r;
+        if (tr && !E.machCan(patch.m, tr)) return e;
         const free = freeMach(patch.m);
         if (free < 1) return e;
         e.m = patch.m;
@@ -1644,6 +1661,7 @@
       const it = item(e.r), M = item(e.m);
       if (!it || !it.r) return done("norec");
       if (!(e.n > 0) || !M) return done("idle");
+      if (!E.machCan(e.m, e.r)) return done("tier");
       const b = blocker(e.r);
       if (b) { st.b = b; return done("blocked"); }
       const outQ = it.r[2], ing = it.r[1];
@@ -1668,10 +1686,126 @@
         made = k;
         add(e.r, produce(e.r, k));
       }
-      if (k < want) {
+      const prof = M.prof || 0;
+      if (prof >= 1 && B.p >= 1 && (e.cap <= 0 || count(e.r) < e.cap)) {
+        function canSub(subId, d) {
+          if (d > prof) return false;
+          const subIt = item(subId);
+          if (!subIt || !subIt.r) return false;
+          if (!S.known[subId]) return false;
+          if (!E.automatable(subId)) return false;
+          if (!E.machCan(e.m, subId)) return false;
+          if (blocker(subId)) return false;
+          return true;
+        }
+
+        let stuck = false;
+        while (B.p >= 1 && !stuck) {
+          if (e.cap > 0 && count(e.r) >= e.cap) break;
+
+          let canMakeDirect = true;
+          for (const i in ing) {
+            if ((B.b[i] || 0) < ing[i]) {
+              const pull = Math.min(ing[i] - (B.b[i] || 0), S.inv[i] || 0);
+              if (pull > 0) { add(i, -pull); B.b[i] = (B.b[i] || 0) + pull; }
+              if ((B.b[i] || 0) < ing[i]) { canMakeDirect = false; break; }
+            }
+          }
+
+          if (canMakeDirect) {
+            for (const i in ing) { B.b[i] -= ing[i]; if (B.b[i] < 1e-9) delete B.b[i]; }
+            B.p -= 1;
+            made += 1;
+            add(e.r, produce(e.r, 1));
+            continue;
+          }
+
+          let missingIng = null;
+          for (const i in ing) {
+            if ((B.b[i] || 0) < ing[i]) { missingIng = i; break; }
+          }
+
+          if (!missingIng || !canSub(missingIng, 1)) { stuck = true; break; }
+
+          const subIng = item(missingIng).r[1];
+          for (const j in subIng) {
+            if ((B.b[j] || 0) < subIng[j] && (S.inv[j] || 0) > 0) {
+              const pull = Math.min(subIng[j] - (B.b[j] || 0), S.inv[j]);
+              add(j, -pull);
+              B.b[j] = (B.b[j] || 0) + pull;
+            }
+          }
+
+          let canMakeSub = true;
+          for (const j in subIng) {
+            if ((B.b[j] || 0) < subIng[j]) { canMakeSub = false; break; }
+          }
+
+          if (canMakeSub) {
+            for (const j in subIng) { B.b[j] -= subIng[j]; if (B.b[j] < 1e-9) delete B.b[j]; }
+            B.p -= 1;
+            const got = produce(missingIng, 1);
+            B.b[missingIng] = (B.b[missingIng] || 0) + got;
+            continue;
+          }
+
+          let missingSub = null;
+          for (const j in subIng) {
+            if ((B.b[j] || 0) < subIng[j]) { missingSub = j; break; }
+          }
+
+          if (!missingSub || !canSub(missingSub, 2)) { stuck = true; break; }
+
+          const subSubIng = item(missingSub).r[1];
+          for (const k in subSubIng) {
+            if ((B.b[k] || 0) < subSubIng[k] && (S.inv[k] || 0) > 0) {
+              const pull = Math.min(subSubIng[k] - (B.b[k] || 0), S.inv[k]);
+              add(k, -pull);
+              B.b[k] = (B.b[k] || 0) + pull;
+            }
+          }
+
+          let canMakeSubSub = true;
+          for (const k in subSubIng) {
+            if ((B.b[k] || 0) < subSubIng[k]) { canMakeSubSub = false; break; }
+          }
+
+          if (canMakeSubSub) {
+            for (const k in subSubIng) { B.b[k] -= subSubIng[k]; if (B.b[k] < 1e-9) delete B.b[k]; }
+            B.p -= 1;
+            const got = produce(missingSub, 1);
+            B.b[missingSub] = (B.b[missingSub] || 0) + got;
+            continue;
+          }
+
+          stuck = true;
+          break;
+        }
+      }
+      if (k < want && B.p >= 1) {
         B.p = Math.min(B.p, 1);
         st.miss = {};
-        for (const i in ing) if ((B.b[i] || 0) < ing[i]) st.miss[i] = "stock";
+        for (const i in ing) {
+          if ((B.b[i] || 0) < ing[i]) {
+            let m = i;
+            if (prof >= 1 && item(i) && item(i).r) {
+              const s1 = item(i).r[1];
+              for (const j in s1) {
+                if ((B.b[j] || 0) < s1[j]) {
+                  m = j;
+                  if (prof >= 2 && item(j) && item(j).r) {
+                    const s2 = item(j).r[1];
+                    for (const k in s2) {
+                      if ((B.b[k] || 0) < s2[k]) { m = k; break; }
+                    }
+                  }
+                  break;
+                }
+              }
+            }
+            st.miss[m] = "stock";
+          }
+        }
         return done("starved");
       }
       st.miss = null;

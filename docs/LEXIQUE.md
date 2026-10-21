@@ -38,7 +38,7 @@ Chaque fiche affiche la sorte d’objet et une phrase qui dit à quoi elle sert 
 | **Amélioration** | Agit dès qu’on l’a : extracteurs ou machines plus rapides. |
 | **Station** | Reste à l’Atelier, ouvre un geste ou une chaleur. Un message de blocage la **nomme toujours** : « il faut : Four en argile (1 100 °C) ». |
 | **Extracteur** | Se pose sur un gisement **de sa terre** et récolte seul. Son nom court (`sn`, `pl` dans `data.js`) sert aux boutons : « + cabane ». |
-| **Machine** | Refait une recette en boucle avec la Réserve. Nom court aussi : « 2 automates de bois ». |
+| **Machine** | Refait une recette en boucle avec la Réserve (onglet Machines). Chaque palier limite le nombre d’ingrédients et la profondeur de sous-fabrication. Nom court : « 2 automates de bois ». |
 
 ## Progression
 

@@ -46,8 +46,7 @@
           const r = rest.reduce((a, z) => a + zoneRate(z), 0);
           h += '<button class="dom-more" data-dall>' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>voir ▾</span></button>';
         }
-      } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall>Replier les terres anciennes<span>▴</span></button>';
-      h += machinesHTML();
+      h += domaineMachinesSummary();
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
         const p = E.passInfo(z);
@@ -112,34 +111,108 @@
     /* ------------------------------------------------------------ machines */
     const MST = {
       ok: "en marche", wait: "démarre", off: "en pause", norec: "rien à fabriquer : touche pour choisir", idle: "aucune machine",
-      starved: "à l’arrêt : il manque des matières", cap: "à l’arrêt : assez en réserve", blocked: "à l’arrêt"
+      starved: "à l’arrêt : il manque des matières", cap: "à l’arrêt : assez en réserve", blocked: "à l’arrêt",
+      tier: "à l’arrêt : trop complexe"
     };
+    function machTierDesc(m) {
+      const M = I[m];
+      if (!M) return "";
+      let t = M.ing === 1 ? "recettes à 1 ingrédient" : "recettes à " + M.ing + " ingrédients au plus";
+      if (M.prof === 1) t += " · fabrique aussi les pièces qui manquent (1 niveau)";
+      else if (M.prof === 2) t += " · fabrique aussi les pièces qui manquent (2 niveaux)";
+      return t;
+    }
     function machLine(e) {
       const info = E.machInfo(e.id), it = I[e.r];
       if ((info.s === "ok" || info.s === "wait") && it) {
         const r = E.machRate(e);
         return "+" + perTime(r * it.r[2]) + " · utilise " + Object.keys(it.r[1]).map((k) => esc(I[k].n.toLowerCase()) + " " + perTime(r * it.r[1][k])).join(", ");
       }
+      if (info.s === "tier" && e.r) {
+        const need = E.machFor(e.r);
+        return "à l’arrêt : trop complexe, il faut : " + esc(need && I[need] ? I[need].n : "machine supérieure");
+      }
       if (info.s === "starved" && info.miss) return "à l’arrêt : il manque " + Object.keys(info.miss).map((k) => esc(I[k].n.toLowerCase())).join(", ");
       if (info.s === "cap") return "à l’arrêt : assez en réserve (" + fmt(e.cap) + ")";
       if (info.s === "blocked" && info.b && e.r) return "à l’arrêt : " + esc(needText(e.r, info.b));
       return MST[info.s] || "";
     }
-    function machinesHTML() {
+    function domaineMachinesSummary() {
       const st = S(), ms = E.machines();
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
       if (!owned.length && !st.dom.mach.length) return "";
-      let h = '<section class="dom-card dom-mach"><h3>Machines</h3>';
-      st.dom.mach.forEach((e) => {
-        const info = E.machInfo(e.id), lvl = info.s === "ok" || info.s === "wait" ? "good" : info.s === "off" || info.s === "cap" ? "dim" : "warn";
-        h += '<div class="mrow" data-msheet="' + e.id + '">' + icon(e.r || e.m) +
-          '<div class="grow"><div class="mrow-t"><b>' + esc(many(e.m, e.n)) + "</b> → " + (I[e.r] ? esc(I[e.r].n) : '<i class="muted">choisir</i>') + "</div>" +
-          '<div class="tiny ' + lvl + '" data-mline="' + e.id + '">' + machLine(e) + "</div></div>" +
-          '<button class="mini" data-mn="' + e.id + '" data-v="-1" aria-label="Une machine de moins"' + (e.n > 1 ? "" : " disabled") + '>−</button><button class="mini' + (E.freeMach(e.m) >= 1 || E.plan(e.m, 1).ok ? "" : " nope") + '" data-mn="' + e.id + '" data-v="1" aria-label="Une machine de plus">+</button></div>';
-      });
+      const work = st.dom.mach.reduce((a, e) => a + e.n, 0);
+      const rest = E.MACHINES.reduce((a, m) => a + E.freeMach(m), 0);
+      return '<button class="dom-more dom-mach-link" data-tab2="machines" data-dmach>⚙️ ' +
+        work + " " + (work > 1 ? "machines" : "machine") + " au travail · " +
+        rest + " au repos · <span>voir ▸</span></button>";
+    }
+    function machinesView() {
+      const st = S(), ms = E.machines();
+      const owned = E.MACHINES.filter((m) => ms[m].own > 0);
+      let h = '<div class="dom dom-mach-tab">';
+      h += '<h2 class="title" style="margin-top:0">Machines</h2>';
+      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Elles fabriquent en boucle avec ce qu’il y a dans la Réserve.</p>';
+      if (st.dom.mach.length) {
+        st.dom.mach.forEach((e) => {
+          const it = I[e.r], info = E.machInfo(e.id);
+          const lvl = info.s === "ok" || info.s === "wait" ? "good" : info.s === "off" || info.s === "cap" ? "dim" : "warn";
+          const types = E.MACHINES.filter((m) => ms[m].own > 0 || m === e.m);
+          h += '<section class="dom-card mach-card" data-mach-id="' + e.id + '">';
+          h += '<div class="sheet-h">' + icon(e.m) +
+            '<div class="grow"><h3 style="margin:0">' + esc(many(e.m, e.n)) + '</h3>' +
+            '<div class="tiny muted">' + esc(machTierDesc(e.m)) + '</div></div></div>';
+          h += '<button class="u-recipe" data-mrec="' + e.id + '">' +
+            (it ? icon(e.r) + '<span class="grow">' + esc(it.n) + '</span>' : '<span class="grow">Choisir une recette</span>') +
+            '<span>▾</span></button>';
+          h += '<div class="tiny ' + lvl + '" data-mline="' + e.id + '">' + machLine(e) + '</div>';
+          h += '<div class="row wrap between" style="align-items:center;margin-top:6px">' +
+            '<div class="row" style="align-items:center;gap:6px">' +
+            '<button class="mini" data-mn="' + e.id + '" data-v="-1" aria-label="Une machine de moins"' + (e.n > 1 ? '' : ' disabled') + '>−</button>' +
+            '<b>' + e.n + '</b>' +
+            '<button class="mini' + (E.freeMach(e.m) >= 1 || E.plan(e.m, 1).ok ? '' : ' nope') + '" data-mn="' + e.id + '" data-v="1" aria-label="Une machine de plus">+</button>' +
+            '</div>' +
+            '<div class="row" style="gap:6px">' +
+            '<button class="btn small" data-mon="' + e.id + '">' + (e.on ? 'Pause' : 'Reprendre') + '</button>' +
+            '<button class="btn small ghost" data-mrm="' + e.id + '">Retirer</button>' +
+            '</div></div>';
+          h += '<details class="mach-details" style="margin-top:6px">' +
+            '<summary class="tiny muted" style="cursor:pointer">Réglages ▾</summary>' +
+            '<div class="u-row" style="margin-top:6px">' +
+            '<span class="tiny muted">S’arrêter quand la Réserve en a</span>' +
+            '<select data-mcap="' + e.id + '" aria-label="S’arrêter à">' +
+            CAPS.map((v) => '<option value="' + v + '"' + (v === e.cap ? ' selected' : '') + '>' + (v ? fmt(v) : 'jamais') + '</option>').join('') +
+            (CAPS.includes(e.cap) ? '' : '<option value="' + e.cap + '" selected>' + fmt(e.cap) + '</option>') +
+            '</select></div>';
+          if (types.length > 1) {
+            h += '<div class="u-row" style="margin-top:6px">' +
+              '<span class="tiny muted">Type</span>' +
+              '<select data-mtype="' + e.id + '" aria-label="Type de machine">' +
+              types.map((m) => '<option value="' + m + '"' + (m === e.m ? ' selected' : '') + '>' + esc(I[m].n) + ' (' + (ms[m].own - ms[m].used + (m === e.m ? e.n : 0)) + ')</option>').join('') +
+              '</select></div>';
+          }
+          h += '</details></section>';
+        });
+      } else {
+        h += '<p class="small muted" style="padding:10px 0">Aucune machine au travail.</p>';
+      }
+
       const free = owned.filter((m) => E.freeMach(m) >= 1);
-      if (free.length) h += '<button class="dom-free" data-mnew><i>Au repos : ' + esc(free.map((m) => many(m, E.freeMach(m))).join(", ")) + "</i><span>Mettre au travail ▸</span></button>";
-      return h + "</section>";
+      if (free.length) {
+        h += '<h3 class="sub" style="margin-top:16px">Au repos</h3>';
+        free.forEach((m) => {
+          h += '<div class="dom-card dom-mach-rest" style="margin-bottom:8px">' +
+            '<div class="row between" style="align-items:center">' +
+            '<div class="row" style="align-items:center;gap:8px">' +
+            icon(m) +
+            '<div><b>' + esc(many(m, E.freeMach(m))) + '</b> au repos' +
+            '<div class="tiny muted">' + esc(machTierDesc(m)) + '</div></div></div>' +
+            '<button class="btn small pri" data-mstart="' + m + '">Mettre au travail</button>' +
+            '</div></div>';
+        });
+      }
+      h += '</div>';
+      return h;
     }
 
     /* ------------------------------------------------------------ Le Comptoir */
@@ -428,10 +501,46 @@
       });
     }
     const recipes = () => Object.keys(S().known).filter(E.automatable).sort((a, b) => I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
+    function machRecipePicker(m, cb) {
+      const all = recipes();
+      const valid = m ? all.filter((r) => E.machCan(m, r)) : all;
+      const complex = m ? all.filter((r) => !E.machCan(m, r)) : [];
+      openModal({
+        html: "<h2>Que doit-elle fabriquer ?</h2>" +
+          '<p class="small muted">Les recettes qui se répètent. La machine se sert dans la Réserve et y range ce qu’elle fait.</p>' +
+          '<div class="search"><input id="dpq" type="search" placeholder="Chercher…" autocomplete="off"></div>' +
+          '<div class="picklist">' +
+          valid.map((id) => '<button class="pick" data-m="pick" data-id="' + id + '" data-n="' + esc(norm(I[id].n)) + '">' + icon(id, "sm") +
+            '<span class="grow">' + esc(I[id].n) + '</span><span class="tiny muted">' + esc(D.AGES[I[id].a].n.replace("Âge ", "")) + "</span></button>").join("") +
+          (complex.length ? complex.map((id) => {
+            const need = E.machFor(id);
+            const needTxt = need && I[need] ? "il faut : " + I[need].n : "trop complexe";
+            return '<button class="pick nope" disabled data-n="' + esc(norm(I[id].n)) + '" style="opacity:0.45;cursor:not-allowed">' + icon(id, "sm") +
+              '<span class="grow">' + esc(I[id].n) + '</span><span class="tiny muted" style="color:var(--warn)">' + esc(needTxt) + "</span></button>";
+          }).join("") : "") +
+          "</div>" +
+          '<div class="acts"><button class="btn" data-m="close">Annuler</button></div>',
+        onOpen: (box) => {
+          const inp = box.querySelector("#dpq");
+          if (inp) {
+            inp.addEventListener("input", () => {
+              const q = norm(inp.value);
+              box.querySelectorAll(".pick[data-n]").forEach((b) => b.classList.toggle("hidden", !!q && !b.dataset.n.includes(q)));
+            });
+          }
+        },
+        on: { pick: (b) => { closeModal(); cb(b.dataset.id || null); } }
+      });
+    }
     function newChain(m) {
-      listPicker("Que doit-elle fabriquer ?", "Les recettes que tu connais et qui se répètent. La machine se sert dans la Réserve et y range ce qu’elle fait.", recipes(), (id) => {
+      machRecipePicker(m, (id) => {
+        if (!id) return;
         const r = E.domMachAdd(id, m);
-        if (!r.ok) { A.fail(0); toast("Aucune machine au repos.", { key: "mq" }); return; }
+        if (!r.ok) {
+          A.fail(0);
+          toast(r.why === "tier" ? "Cette machine ne sait pas faire cette recette." : "Aucune machine au repos.", { key: "mq" });
+          return;
+        }
         A.craft ? A.craft("usiner") : A.click();
         render(true);
       });
@@ -449,7 +558,7 @@
         }),
         mach: id,
         on: {
-          recipe: () => { setTimeout(() => listPicker("Que doit-elle fabriquer ?", "", recipes(), (r) => { E.domMachSet(id, { r }); A.craft ? A.craft("usiner") : A.click(); render(true); setTimeout(() => machSheet(id), 80); }), 60); },
+          recipe: () => { setTimeout(() => machRecipePicker(E.machById(id) ? E.machById(id).m : null, (r) => { E.domMachSet(id, { r }); A.craft ? A.craft("usiner") : A.click(); render(true); setTimeout(() => machSheet(id), 80); }), 60); },
           n: (b) => { more(id, Number(b.dataset.v)); return redraw(); },
           on: () => { const e = E.machById(id); E.domMachSet(id, { on: !e.on }); A.click(); return redraw(); },
           rm: () => { E.domMachRemove(id); A.click(); render(true); }
@@ -549,6 +658,31 @@
       }
       if ((b = t.closest("[data-gsheet]"))) { A.click(); extSheet(b.dataset.gsheet); return true; }
       if ((b = t.closest("[data-mn]"))) { const rc = b.getBoundingClientRect(); more(b.dataset.mn, Number(b.dataset.v), { x: rc.left + rc.width / 2, y: rc.top }); return true; }
+      if ((b = t.closest("[data-mstart]"))) { A.click(); newChain(b.dataset.mstart); return true; }
+      if ((b = t.closest("[data-mrec]"))) {
+        const id = b.dataset.mrec, e = E.machById(id);
+        if (e) {
+          A.click();
+          machRecipePicker(e.m, (r) => {
+            E.domMachSet(id, { r });
+            A.craft ? A.craft("usiner") : A.click();
+            render(true);
+          });
+        }
+        return true;
+      }
+      if ((b = t.closest("[data-mon]"))) {
+        const id = b.dataset.mon, e = E.machById(id);
+        if (e) { E.domMachSet(id, { on: !e.on }); A.click(); render(true); }
+        return true;
+      }
+      if ((b = t.closest("[data-mrm]"))) {
+        const id = b.dataset.mrm;
+        E.domMachRemove(id);
+        A.click();
+        render(true);
+        return true;
+      }
       if ((b = t.closest("[data-msheet]"))) { A.click(); machSheet(b.dataset.msheet); return true; }
       if (t.closest("[data-mnew]")) { A.click(); newChain(); return true; }
       if (t.closest("[data-comptoir]")) { A.click(); comptoirSheet(); return true; }
@@ -609,15 +743,24 @@
       newChain(m);
     }
 
-    /* « une machine pour ça » depuis une recette, si une machine est au repos */
     function chainFor(r) {
       const x = E.domMachAdd(r);
       if (x.ok) { toast("Au travail : " + esc(many(x.e.m, 1)) + " → " + esc(I[r].n.toLowerCase()) + ".", { key: "mq" }); render(true); return; }
       A.fail(0);
-      toast(x.why === "nomach" ? "Aucune machine au repos. La première à fabriquer : l’automate de bois." : "Cette recette ne se confie pas à une machine.", { key: "mq" });
+      toast(x.why === "tier" ? "Aucune machine assez avancée au repos. Il faut : " + esc(I[x.need || E.machFor(r)].n) + "."
+        : x.why === "nomach" ? "Aucune machine au repos. La première à fabriquer : l’automate de bois."
+        : "Cette recette ne se confie pas à une machine.", { key: "mq" });
     }
 
-    return { view, live, sig, click, down, up, focusZone, placeExt, placeMach, chainFor, extSheet, machSheet, comptoirSheet };
+    function machSig() {
+      const st = S(), ms = E.machines();
+      return [
+        st.dom.mach.map((e) => e.id + e.r + e.n + e.on + e.m + e.cap + E.machInfo(e.id).s).join(),
+        E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join()
+      ].join("|");
+    }
+
+    return { view, live, sig, machSig, click, down, up, focusZone, placeExt, placeMach, chainFor, extSheet, machSheet, comptoirSheet, machinesView };
   }
 
   window.EclatDomaine = { create };

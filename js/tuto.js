@@ -86,12 +86,14 @@
             text: "⟳ En boucle : tes mains refont cette recette tant qu’il y a de quoi, même jeu fermé. ▶ sur un gisement fait pareil pour la récolte. Une seule chose tourne à la fois." }
         ] },
       { id: "automate", n: "Ton automate",
-        when: () => U.tab === "domaine" && E.MACHINES.some(has) && !S().dom.mach.length && !!document.querySelector("[data-mnew]"),
+        when: () => (U.tab === "machines" || U.tab === "domaine") && E.MACHINES.some(has) && !S().dom.mach.length && !!(document.querySelector("[data-mstart]") || document.querySelector("[data-dmach]")),
         still: () => !S().flags.lineDone,
         steps: [
-          { tab: "domaine", at: "[data-mnew]", text: "Ton automate refait un geste à ta place. Touche « Mettre au travail » et choisis ce qu’il fabrique.",
+          { tab: "domaine", at: "[data-dmach]", text: "Ton premier automate est prêt. Ouvre l’onglet Machines dans l’Atelier.",
+            done: () => U.tab === "machines" || S().dom.mach.some((e) => e.r) },
+          { tab: "machines", at: "[data-mstart]", text: "Ton automate refait un geste à ta place. Un automate de bois ne fabrique que des recettes à un ingrédient. Touche « Mettre au travail » et choisis ce qu’il fabrique.",
             done: () => S().dom.mach.some((e) => e.r) },
-          { tab: "domaine", text: "Il se sert dans la Réserve et y range ce qu’il fait. Touche sa ligne pour le régler ; + ajoute une machine de plus sur la même recette.", next: true }
+          { tab: "machines", text: "Il se sert dans la Réserve et y range ce qu’il fait. Sa carte montre tous ses réglages : pause, arrêt, et + pour ajouter une machine sur la même recette.", next: true }
         ] },
       { id: "comptoir", n: "Le Comptoir",
         when: () => U.tab === "domaine" && E.zoneOpen(D.COMPTOIR.zone) && !Object.keys((S().comptoir && S().comptoir.sold) || {}).length && !!document.querySelector("#dcomptoir"),
