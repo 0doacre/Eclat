@@ -37,3 +37,7 @@ puis la fusionne.
   l’Atelier, version 5.5.0. La consigne de livraison est déjà incluse.
 - `parcours-5-6.md` : première renaissance obligatoire, ruines, scènes d’éveil, version 5.6.0.
   Consigne de livraison (avec la vérification dans le navigateur) incluse.
+- `commandes-5-7.md` : les commandes, machines qui aident toutes les fabrications (5.7.0).
+- `secrets-5-8.md` : silhouettes de secrets, énigmes, chaleur étrange (5.8.0).
+- `troqueur-5-9.md` : écus convertis à la relève, demandes du Troqueur (5.9.0).
+  Ces trois-là se font **dans l’ordre**, chacune partant de `main` après le merge de la précédente.
