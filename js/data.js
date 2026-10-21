@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.2.0";
+  D.VERSION = "5.2.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -814,7 +814,7 @@
     ["corde", "Il te faudrait de quoi lier les choses entre elles."],
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Ce chêne immense t’attire. Lance une exploration depuis la Lisière : elle avance toute seule pendant que tu fais autre chose." },
     ["feu", "La nuit tombe vite. Fais du feu."],
-    ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi, même quand le jeu est fermé."],
+    ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi."],
     { k: "ext", n: "Installer ta cabane", txt: "Dans le Domaine, touche +1 sur le bois ou les fibres de la Lisière. Ta cabane récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
     { k: "pass", z: "plaine", n: "Ouvrir le passage vers la Plaine", txt: "Ton épieu te donne le courage d’y aller. Reste à te frayer un chemin dans les hautes herbes : verse ce qu’il faut depuis la Réserve." },
@@ -863,9 +863,9 @@
     ["autoclave", "Pour les composites, il faut cuire sous pression."],
     ["composite", "Le matériau des fusées."],
     ["fusee", "Monte en orbite."],
-    { k: "pass", z: "orbite", n: "Ouvrir le passage vers l’Orbite", txt: "Une fusée ne suffit pas : il faut une rampe, et de quoi recommencer." },
+    { k: "pass", z: "orbite", n: "Ouvrir le passage vers l’Orbite", txt: "Il faut une rampe de lancement, et de quoi repartir." },
     ["alunisseur", "Pose le pied sur la Lune."],
-    { k: "pass", z: "lune", n: "Ouvrir le passage vers la Lune", txt: "Se poser ne suffit pas : il faut de quoi tenir là-haut." },
+    { k: "pass", z: "lune", n: "Ouvrir le passage vers la Lune", txt: "Pour rester sur la Lune, il faut une base." },
     ["reacteur_fusion", "Une étoile en bouteille."],
     ["vaisseau", "Cap sur Mercure."],
     { k: "pass", z: "mercure", n: "Ouvrir le passage vers Mercure", txt: "Si près du soleil, rien ne tient sans bouclier." },
@@ -885,8 +885,8 @@
     desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 80000, plaque_bronze: 1500, roue: 200 }, tr: 12 },
     gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendra.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
     montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 7500, plastique: 1200, moteur_elec: 180 }, tr: 27 },
-    orbite: { n: "La Rampe", t: "Une fusée ne suffit pas : il faut une rampe, et de quoi recommencer.", cost: { aluminium: 4500, titane: 900, composite: 900 }, tr: 40 },
-    lune: { n: "La Base avancée", t: "Se poser ne suffit pas : il faut de quoi tenir là-haut.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
+    orbite: { n: "La Rampe", t: "Il faut une rampe de lancement, et de quoi repartir.", cost: { aluminium: 4500, titane: 900, composite: 900 }, tr: 40 },
+    lune: { n: "La Base avancée", t: "Pour rester sur la Lune, il faut une base.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
     mercure: { n: "Le Bouclier solaire", t: "Si près du soleil, rien ne tient sans bouclier.", cost: { regolithe: 18000, helium3: 4500, composite: 6000 }, tr: 90 }
   };
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
