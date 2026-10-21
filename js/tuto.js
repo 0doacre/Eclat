@@ -64,6 +64,13 @@
           { tab: "domaine", at: '[data-xadd="lisiere:bois"]', text: "Ta cabane peut récolter à ta place, même jeu fermé. Touche « + cabane » sur le bois pour l’y poser.", done: anyExt },
           { tab: "domaine", text: "Elle verse sa récolte dans la Réserve. Le même bouton en pose d’autres ; s’il ne t’en reste plus à poser, tes mains en fabriquent une, puis la posent.", next: true }
         ] },
+      { id: "ruine", n: "Une ruine",
+        when: () => (U.tab === "domaine" || U.tab === "machines") && Object.keys(E.ruins()).length > 0 && !!document.querySelector("[data-repair]"),
+        still: () => Object.keys(E.ruins()).length > 0,
+        steps: [
+          { at: "[data-repair]", text: "Ce que ton prédécesseur a construit t’attend ici. Une ruine se répare pour presque rien : touche « Réparer ».",
+            done: () => !document.querySelector("[data-repair]") }
+        ] },
       { id: "passage", n: "Un passage",
         when: () => U.tab === "domaine" && E.passPending().length > 0 && !S().meta.tracesTotal && !!document.querySelector(".goal-card [data-pour], .dom-pass [data-pour]"),
         still: () => E.passPending().length > 0,

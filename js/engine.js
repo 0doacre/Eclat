@@ -87,7 +87,7 @@
       ecus: 0, comptoir: { sold: {}, traces: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
       settings: { sound: true, vibe: true },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
@@ -232,6 +232,7 @@
     const listeners = {};
     const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION };
     let S = freshState(now());
+    S.meta.parcours = 1;
     let C = null; // caches dérivés de l’état
 
     /* ------------------------------------------------------- événements */
@@ -2059,9 +2060,16 @@
       const gain = E.releveGain();
       old.meta.traces = (old.meta.traces || 0) + gain;
       old.meta.tracesTotal = (old.meta.tracesTotal || 0) + gain;
+      const cap = (D.RUINES && D.RUINES.cap) || 3;
+      const ruins = {};
+      EXTS.concat(MACHINES).forEach((id) => {
+        const cnt = Math.floor(old.inv[id] || 0);
+        if (cnt > 0) ruins[id] = Math.min(cnt, cap);
+      });
+      old.meta.ruins = ruins;
       const n = freshState(now());
       n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets; n.studied = old.studied || {};
-      n.seen = old.seen; n.meta = old.meta; n.settings = old.settings; n.pins = old.pins || {};
+      n.seen = old.seen; n.meta = old.meta; n.meta.ruins = Object.assign({}, ruins); n.settings = old.settings; n.pins = old.pins || {};
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
@@ -2090,6 +2098,62 @@
       recalc();
       E.emit("cycle", n.cycle);
       E.emit("struct");
+    };
+
+    /* Première renaissance obligatoire (fin du tutoriel) */
+    E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.flags && S.flags.extDone && S.exp && S.exp.done && S.exp.done.lisiere >= 1);
+    E.forcedReleve = function () {
+      if (S.meta.forcedDone || S.cycle !== 1) return false;
+      S.meta.forcedDone = true;
+      const gift = (D.PARCOURS && D.PARCOURS.gift) || 3;
+      S.meta.traces = (S.meta.traces || 0) + gift;
+      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + gift;
+      E.newCycle();
+      return true;
+    };
+
+    /* Les ruines : ce qu’un Semeur a construit attend le suivant */
+    E.ruins = function () {
+      const out = {};
+      for (const id in (S.meta && S.meta.ruins) || {}) {
+        if (S.meta.ruins[id] > 0) out[id] = S.meta.ruins[id];
+      }
+      return out;
+    };
+    E.ruinCost = function (id) {
+      const it = item(id);
+      if (!it || !it.r || !it.r[1]) return {};
+      const part = (D.RUINES && D.RUINES.part) || 0.1;
+      const cost = {};
+      for (const k in it.r[1]) cost[k] = Math.ceil(it.r[1][k] * part);
+      return cost;
+    };
+    E.repair = function (id) {
+      const it = item(id);
+      if (!it || !(S.meta && S.meta.ruins && S.meta.ruins[id] > 0)) return { ok: false, why: "noruin" };
+      const cost = E.ruinCost(id);
+      const missing = {};
+      for (const k in cost) {
+        const have = S.inv[k] || 0;
+        if (have < cost[k]) missing[k] = cost[k] - have;
+      }
+      if (Object.keys(missing).length > 0) return { ok: false, why: "missing", missing };
+      for (const k in cost) S.inv[k] -= cost[k];
+      add(id, 1);
+      S.meta.ruins[id] -= 1;
+      if (S.meta.ruins[id] <= 0) delete S.meta.ruins[id];
+      if (it.t === "ext") E.domAutoExt(id);
+      recalc();
+      domChanged();
+      E.emit("struct");
+      return { ok: true, id, cost };
+    };
+    E.ruinName = function (id) {
+      const it = item(id);
+      if (!it) return id;
+      if (it.ruine) return it.ruine;
+      if (it.t === "mach") return (it.sn || it.n) + " rouillé";
+      return (it.sn || it.n) + " en ruine";
     };
 
     /* ------------------------------------------------------ temps */
@@ -2253,6 +2317,19 @@
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
       // les réminiscences déjà lues (avant qu’on les retienne) : celles des objets déjà faits
       if (!o.meta.ev || typeof o.meta.ev !== "object") { o.meta.ev = {}; for (const id in o.made || {}) if (o.made[id] > 0 && D.EVENTS[id]) o.meta.ev[id] = 1; }
+      if (!o.meta.ruins || typeof o.meta.ruins !== "object" || Array.isArray(o.meta.ruins)) {
+        o.meta.ruins = {};
+      } else {
+        const ruins = {};
+        for (const id in o.meta.ruins) {
+          const n = Math.floor(Number(o.meta.ruins[id]));
+          if (Number.isFinite(n) && n > 0) {
+            if (D.ITEMS[id]) ruins[id] = n;
+            else { o.orphans = o.orphans || {}; (o.orphans.ruins = o.orphans.ruins || {})[id] = n; }
+          }
+        }
+        o.meta.ruins = ruins;
+      }
       // avant les passages : chaque terre déjà ouverte compte comme passage franchi
       if (!hadPass) {
         o.pass = {};
@@ -2317,7 +2394,7 @@
       E.emit("struct");
       return true;
     };
-    E.reset = function () { S = freshState(now()); forgetDom(); recalc(); E.emit("struct"); };
+    E.reset = function () { S = freshState(now()); S.meta.parcours = 1; forgetDom(); recalc(); E.emit("struct"); };
     E.exportSave = () => {
       const s = E.serialize();
       return typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(s))) : Buffer.from(s, "utf8").toString("base64");

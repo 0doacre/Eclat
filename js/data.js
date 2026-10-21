@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.5.0";
+  D.VERSION = "5.6.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -80,7 +80,7 @@
   I.epieu = { n: "Épieu durci", ic: "🗡️", a: 0, t: "tool", r: ["chauffer", { manche: 2 }, 1, { heat: 600 }],
     e: { zone: "plaine" }, d: "Une pointe passée au feu, dure comme l’os. De quoi oser la plaine.",
     h: "Un bâton pointu, durci par la flamme." };
-  I.cabane = { n: "Cabane de cueillette", sn: "cabane", pl: "cabanes", ic: "🛖", a: 0, t: "ext", z: "lisiere", s: 1.2,
+  I.cabane = { n: "Cabane de cueillette", sn: "cabane", pl: "cabanes", ic: "🛖", a: 0, t: "ext", z: "lisiere", s: 1.2, ruine: "Cabane effondrée",
     r: ["assembler", { manche: 5, corde: 4, fibre: 15 }, 1], p: { bois: 0.4, fibre: 0.4, caillou: 0.2 },
     d: "Un abri où s’entasse ce que donne la lisière. Le soir, des Lucioles tournent autour.",
     h: "Des bâtons, des liens, un toit d’herbes." };
@@ -134,7 +134,7 @@
     h: "La pierre noire de la rivière cache un bord qui coupe." };
   I.engrenage_bois = { n: "Rouage de bois", sym: "⚙", col: "#9a6b3c", a: 2, t: "comp", r: ["tailler", { manche: 2, eclat: 1 }, 2],
     d: "Une petite roue dentée, taillée dans un bâton.", h: "Un bâton, taillé en roue dentée par une lame de pierre." };
-  I.automate_bois = { n: "Automate de bois", sn: "automate de bois", pl: "automates de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, ing: 1, prof: 0, r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
+  I.automate_bois = { n: "Automate de bois", sn: "automate de bois", pl: "automates de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, ing: 1, prof: 0, ruine: "Automate rouillé", r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
     d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Dans le Domaine, confie-lui une recette.",
     h: "Des rouages de bois, des cordes, et un lourd contrepoids." };
   I.hache_pierre = { n: "Hache de pierre", ic: "🪓", a: 2, t: "tool", r: ["assembler", { manche: 2, eclat: 4, laniere: 4 }, 1],
@@ -963,12 +963,21 @@
     buy: 3            // une matière achetée coûte 3 fois sa valeur
   };
 
+  /* Le premier parcours : première renaissance obligatoire */
+  D.PARCOURS = {
+    gift: 3           // Traces offertes lors de la relève obligatoire du cycle 1
+  };
+
+  /* Les ruines : ce qu’un Semeur a construit attend le suivant */
+  D.RUINES = {
+    cap: 3,           // nombre maximum d’exemplaires en ruine par machine ou extracteur
+    part: 0.1         // fraction du coût de base de la recette pour réparer
+  };
+
   D.CHANGES = [
-    "⚙️ Paliers des machines : chaque machine a un nombre d’ingrédients maximum qu’elle sait assembler.",
-    "🧬 Profondeur : les lignes d’assemblage et assembleurs fabriquent eux-mêmes les pièces intermédiaires manquantes.",
-    "🏭 Nouvel onglet Machines dans l’Atelier : chaque groupe a sa carte avec tous ses réglages visibles.",
-    "📋 Dans le Carnet, chaque recette indique la machine minimale requise.",
-    "✨ Coup de chance : en récoltant à la main, un appui rapporte parfois le double, avec des étincelles. « Coup d’œil », dans la Mémoire des mains, le rend plus fréquent."
+    "✦ Premier parcours : une première renaissance obligatoire clôt le tutoriel du Semeur 7.",
+    "🛖 Ruines : les extracteurs et machines construits lors d’un cycle vous attendent au cycle suivant, à réparer pour presque rien.",
+    "📜 Scènes d’éveil : les Semeurs 8, 9 et 10 découvrent les traces laissées par leurs prédécesseurs."
   ];
 
 
@@ -1126,6 +1135,29 @@
     "Tu ne te souviens de rien, pas même de ton nom.",
     "Tes mains, elles, semblent savoir quoi faire."
   ];
+
+  /* Scènes d’éveil des Semeurs 8 à 10 (cycles 2 à 4) */
+  D.EVEILS = {
+    2: [
+      "Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.",
+      "À quelques pas, la cabane de cueillette s’est affaissée dans les fougères.",
+      "Le bois est encore solide, les cordes tiennent. Il ne manque presque rien pour la relever.",
+      "Tu es le Semeur 8."
+    ],
+    3: [
+      "L’herbe est froide sous tes paumes neuves.",
+      "Près du foyer éteint, un manche taillé porte des entailles nettes, faites au couteau.",
+      "Quelqu’un y a gravé trois mots : « Fais le relais ».",
+      "Tu es le Semeur 9. Tu ramasses du bois, et le travail recommence."
+    ],
+    4: [
+      "Tu ouvres les yeux sous les mêmes frondaisons.",
+      "Dans l’herbe, des sentiers sont déjà tracés par des pas qui ressemblaient aux tiens.",
+      "Sous la mousse affleurent des pierres calées, des pieux et des fragments d’outils.",
+      "Vous avez été nombreux à passer par là.",
+      "Tu es le Semeur 10."
+    ]
+  };
 
   root.ECLAT_DATA = D;
   if (typeof module !== "undefined" && module.exports) module.exports = D;

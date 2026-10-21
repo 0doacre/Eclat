@@ -62,10 +62,29 @@
       return h + "</div>";
     }
 
+    function ruinHTML(id, count) {
+      const st = S(), it = I[id];
+      const cost = E.ruinCost(id);
+      const can = Object.keys(cost).every((k) => (st.inv[k] || 0) >= cost[k]);
+      const costTxt = Object.keys(cost).map((k) => I[k].n.toLowerCase() + " ×" + cost[k]).join(", ");
+      const name = E.ruinName(id);
+      return '<div class="dom-ruine" data-druin="' + id + '">' +
+        '<div class="grow"><div class="small"><b>' + esc(name) + "</b> · réparer (" + esc(costTxt) + ")</div>" +
+        (count > 1 ? '<div class="tiny muted">' + count + " ruines à cet endroit</div>" : "") +
+        "</div>" +
+        '<button class="btn small' + (can ? " pri" : " nope") + '" data-repair="' + id + '">Réparer</button>' +
+        "</div>";
+    }
+
     function terreHTML(z) {
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
       let h = '<section class="dom-terre" id="dt-' + z + '"><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
+      const ruins = E.ruins();
+      for (const id in ruins) {
+        const it = I[id];
+        if (it && it.t === "ext" && it.z === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
+      }
       deps.forEach((d) => { h += gisHTML(z, d); });
       if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Rien ne s’y récolte à la main : il faut des extracteurs.</p>';
       void st;
@@ -143,12 +162,13 @@
     function domaineMachinesSummary() {
       const st = S(), ms = E.machines();
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
-      if (!owned.length && !st.dom.mach.length) return "";
+      const machRuins = Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "mach");
+      if (!owned.length && !st.dom.mach.length && !machRuins.length) return "";
       const work = st.dom.mach.reduce((a, e) => a + e.n, 0);
       const rest = E.MACHINES.reduce((a, m) => a + E.freeMach(m), 0);
       return '<button class="dom-more dom-mach-link" data-tab2="machines" data-dmach>⚙️ ' +
         work + " " + (work > 1 ? "machines" : "machine") + " au travail · " +
-        rest + " au repos · <span>voir ▸</span></button>";
+        rest + " au repos" + (machRuins.length ? " · 🛖 ruines" : "") + " · <span>voir ▸</span></button>";
     }
     function machinesView() {
       const st = S(), ms = E.machines();
@@ -156,6 +176,11 @@
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines</h2>';
       h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Elles fabriquent en boucle avec ce qu’il y a dans la Réserve.</p>';
+      const ruins = E.ruins();
+      for (const id in ruins) {
+        const it = I[id];
+        if (it && it.t === "mach" && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
+      }
       if (st.dom.mach.length) {
         st.dom.mach.forEach((e) => {
           const it = I[e.r], info = E.machInfo(e.id);
@@ -710,6 +735,22 @@
         render(true);
         return true;
       }
+      if ((b = t.closest("[data-repair]"))) {
+        const id = b.dataset.repair;
+        const r = E.repair(id);
+        if (r.ok) {
+          A.init(); A.click(); vibe([10, 30]);
+          const it = I[id];
+          if (it.t === "ext") toast("<b>" + esc(I[id].n) + "</b> : réparation faite, de nouveau au travail.", { key: "repair" });
+          else toast("<b>" + esc(I[id].n) + "</b> : réparation faite. Elle attend au repos, dans l’onglet Machines.", { key: "repair" });
+        } else {
+          A.fail(0);
+          if (r.missing) toast("Il manque encore : " + Object.keys(r.missing).map((m) => r.missing[m] + " " + esc(I[m].n.toLowerCase())).join(", ") + ".", { key: "repair" });
+          else toast("Impossible de réparer.", { key: "repair" });
+        }
+        render(true);
+        return true;
+      }
       if (t.closest("[data-prod]") && t.closest("summary")) { U.prodOpen = !t.closest("details").open; return false; }
       return false;
     }
@@ -733,7 +774,7 @@
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext), st.dom.mach.map((e) => e.id + e.r + e.n + e.on + e.m + E.machInfo(e.id).s).join(),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own).join(),
         st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join(),
-        (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) : "")].join("|");
+        (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) : ""), JSON.stringify(E.ruins())].join("|");
     }
 
     /* une terre précise : on la déplie et on la montre */
@@ -767,7 +808,8 @@
       const st = S(), ms = E.machines();
       return [
         st.dom.mach.map((e) => e.id + e.r + e.n + e.on + e.m + e.cap + E.machInfo(e.id).s).join(),
-        E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join()
+        E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
+        JSON.stringify(E.ruins())
       ].join("|");
     }
 
