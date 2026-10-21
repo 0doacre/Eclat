@@ -309,7 +309,7 @@
           '<span class="small" style="font-weight:700">+' + ask.tr + ' ✦</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini' + (can ? ' pri' : '') + '" data-m="deliver" data-idx="' + i + '"' + (can ? '' : ' disabled') + '>' +
-          '<b>Livrer</b> <small>' + fmt(ask.n) + ' ' + esc(I[ask.id].n.toLowerCase()) + ' contre +' + ask.tr + ' ✦</small></button>' +
+          '<b>Livrer</b> <small>contre +' + ask.tr + ' ✦</small></button>' +
           '</div></div>';
       }
 
