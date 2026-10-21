@@ -173,3 +173,18 @@ svg.gi.gl { width: 1.1em; height: 1.1em; vertical-align: -0.18em; }
 body[data-tab="cosmos"] #views { background: #0d1118; }
 .chip.mem { background: transparent; border: 1.5px solid var(--acc); color: var(--acc); }
 .chip.mem b { color: var(--acc); }
+
+/* ---------------------------------------------------------------- deux pages par onglet, la prochaine action */
+.subtabs { display: flex; gap: 0; margin: 0 0 12px; border-bottom: 1.5px solid var(--text); }
+.subtabs button { flex: 1 1 0; padding: 8px 4px 7px; border: 0; background: none; color: var(--muted); font: 400 calc(18px * var(--title-size)) var(--serif); position: relative; }
+.subtabs button.on { color: var(--text); }
+.subtabs button.on::after { content: ""; position: absolute; left: 20%; right: 20%; bottom: -2px; height: 3px; background: var(--acc); }
+.subtabs .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--acc); vertical-align: middle; }
+.goal-card .ghead-row { display: flex; align-items: center; gap: 8px; }
+.goal-card .ghead { flex: 1 1 auto; display: flex; align-items: baseline; gap: 8px; min-width: 0; border: 0; background: none; padding: 0; text-align: left; color: var(--text); }
+.goal-card .gname { font-family: var(--serif); font-size: calc(19px * var(--title-size)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto; }
+.gact { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.gact .grow { flex: 1 1 160px; min-width: 0; }
+.goal-card .gis.gact { min-height: 0; flex-wrap: nowrap; }
+.btn.gmake { width: 100%; justify-content: center; }
+.gdetail { margin-top: 8px; color: var(--muted); }
