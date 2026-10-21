@@ -1077,38 +1077,156 @@ test("un outil, une station ou un objet unique ne se vend pas", () => {
   const r = E.sell("epieu", 1);
   assert.strictEqual(r.ok, false);
 });
-test("le prix d’une Trace monte après un achat ; on ne peut pas acheter sans assez d’écus", () => {
+test("conversion des écus à la relève (et 0 écu → 0 Trace)", () => {
   const E = mk();
-  const c0 = E.traceCost();
-  assert.strictEqual(c0, D.COMPTOIR.trace);
-  const fail = E.buyTrace();
-  assert.strictEqual(fail.ok, false);
-  assert.strictEqual(fail.why, "ecus");
-  E.state.ecus = c0 + 10;
-  const r = E.buyTrace();
-  assert.ok(r.ok);
-  assert.strictEqual(E.state.meta.traces, 1);
-  assert.strictEqual(E.state.meta.tracesTotal, 1);
-  assert.strictEqual(E.state.comptoir.traces, 1);
-  const c1 = E.traceCost();
-  assert.ok(c1 > c0, "le prix d’une Trace monte");
-  assert.ok(Math.abs(c1 - c0 * D.COMPTOIR.traceUp) < 1e-6);
+  const t0 = E.state.meta.traces;
+  // 0 écu donne 0 Trace
+  E.state.ecus = 0;
+  assert.strictEqual(E.ecusToTraces(0), 0);
+  E.newCycle();
+  assert.strictEqual(E.state.meta.traces, t0);
+
+  // Conversion à l’âge 0 : base = 100 écus
+  const base0 = E.traceBasePrice(0);
+  assert.strictEqual(base0, D.COMPTOIR.trace);
+  E.state.ecus = 250;
+  assert.strictEqual(E.ecusToTraces(250, 0), 2);
+  E.newCycle();
+  assert.strictEqual(E.state.meta.traces, t0 + 2);
+  assert.strictEqual(E.state.ecus, 0);
+
+  // Conversion à l’âge 2 : base = 100 * (1.8^2) = 324
+  E.state.age = 2;
+  const base2 = E.traceBasePrice(2);
+  assert.ok(Math.abs(base2 - 100 * 1.8 * 1.8) < 1e-6);
+  E.state.ecus = 650;
+  assert.strictEqual(E.ecusToTraces(650, 2), 2);
+  E.newCycle();
+  assert.strictEqual(E.state.meta.traces, t0 + 2 + 2);
+  assert.strictEqual(E.state.ecus, 0);
 });
-test("après newCycle() : 0 écu, comptoir vide, Traces achetées toujours là", () => {
+test("après newCycle() : 0 écu, comptoir vide, Traces converties toujours là", () => {
   const E = mk();
   E.state.ecus = 5000;
-  E.buyTrace();
   E.add("bois", 100);
   E.sell("bois", 50);
-  assert.strictEqual(E.state.meta.traces, 1);
-  assert.strictEqual(E.state.comptoir.traces, 1);
   assert.strictEqual(E.state.comptoir.sold.bois, 50);
   E.state.pass.plaine = { paid: {}, done: true };
+  const expectedGain = E.releveGain(); // 2 traces pour la plaine
+  const expectedEcusTr = E.ecusToTraces(E.state.ecus, E.state.age); // 50 traces
   E.newCycle();
   assert.strictEqual(E.state.ecus, 0);
-  assert.deepStrictEqual(E.state.comptoir, { sold: {}, traces: 0 });
-  assert.ok(E.state.meta.traces >= 1, "Traces achetées gardées");
-  assert.ok(E.state.meta.tracesTotal >= 1);
+  assert.deepStrictEqual(E.state.comptoir, { sold: {}, traces: 0, asks: [], next: 0 });
+  assert.strictEqual(E.state.meta.traces, expectedGain + expectedEcusTr);
+  assert.strictEqual(E.state.meta.tracesTotal, expectedGain + expectedEcusTr);
+});
+test("les demandes ne proposent que des objets connus et déjà fabriqués, d’un âge permis", () => {
+  const E = mk();
+  E.state.zones.plaine = true;
+  E.state.age = 2; // âges permis : [2-1, 2] = [1, 2]
+
+  // Objet âge 0 (manche) : connu et fabriqué, mais hors âge permis (< 1)
+  E.state.known.manche = true;
+  E.state.made.manche = 10;
+
+  // Objet âge 1 (laniere) : connu mais pas fabriqué
+  E.state.known.laniere = true;
+  E.state.made.laniere = 0;
+
+  // Objet âge 1 (tunique) : fabriqué mais pas connu
+  E.state.known.tunique = false;
+  E.state.made.tunique = 5;
+
+  // Objet âge 1 unique (fronde) : connu et fabriqué mais unique
+  E.state.known.fronde = true;
+  E.state.made.fronde = 1;
+
+  // Objet âge 2 permis : brique (connu et fabriqué)
+  E.state.known.brique = true;
+  E.state.made.brique = 10;
+
+  // Objet âge 1 permis : colle_os (connu et fabriqué)
+  E.state.known.colle_os = true;
+  E.state.made.colle_os = 5;
+
+  const elig = E.troqueurEligibleItems();
+  assert.ok(elig.includes("brique"), "brique doit être éligible");
+  assert.ok(elig.includes("colle_os"), "colle_os doit être éligible");
+  assert.ok(!elig.includes("manche"), "manche âge 0 exclu quand joueur à l’âge 2");
+  assert.ok(!elig.includes("laniere"), "laniere pas fabriquée");
+  assert.ok(!elig.includes("tunique"), "tunique pas connue");
+  assert.ok(!elig.includes("fronde"), "fronde unique");
+
+  E.refreshTroqueur(true);
+  const asks = E.state.comptoir.asks;
+  assert.ok(asks.length > 0 && asks.length <= D.TROQUEUR.slots);
+  asks.forEach((a) => {
+    assert.ok(elig.includes(a.id));
+    assert.ok(a.n > 0);
+    assert.ok(a.tr >= 1);
+  });
+});
+test("livrer retire de la Réserve et donne les Traces ; pas de livraison sans la quantité", () => {
+  const E = mk();
+  E.state.zones.plaine = true;
+  E.state.age = 0;
+  E.state.known.manche = true;
+  E.state.made.manche = 10;
+  E.refreshTroqueur(true);
+  const ask = E.state.comptoir.asks[0];
+  assert.ok(ask, "demande présente");
+
+  // Pas assez en réserve
+  const fail = E.deliverAsk(0);
+  assert.strictEqual(fail.ok, false);
+  assert.strictEqual(fail.why, "missing");
+
+  // Presque assez
+  E.add(ask.id, ask.n - 1);
+  assert.strictEqual(E.deliverAsk(0).ok, false);
+
+  // Quantité complète
+  E.add(ask.id, 1);
+  const trBefore = E.state.meta.traces;
+  const r = E.deliverAsk(0);
+  assert.ok(r.ok);
+  assert.strictEqual(E.count(ask.id), 0, "objets retirés de la Réserve");
+  assert.strictEqual(E.state.meta.traces, trBefore + ask.tr, "Traces accordées");
+  assert.strictEqual(E.state.comptoir.asks[0], null, "place vide après livraison");
+
+  // Deuxième livraison impossible sur le même slot
+  const fail2 = E.deliverAsk(0);
+  assert.strictEqual(fail2.ok, false);
+  assert.strictEqual(fail2.why, "empty");
+});
+test("renouvellement après refresh, y compris hors ligne", () => {
+  const E = mk();
+  E.state.zones.plaine = true;
+  E.state.known.manche = true;
+  E.state.made.manche = 10;
+  E.refreshTroqueur(true);
+  const ask = E.state.comptoir.asks[0];
+  E.add(ask.id, ask.n);
+  E.deliverAsk(0);
+  assert.strictEqual(E.state.comptoir.asks[0], null);
+
+  // Temps insuffisant : pas de renouvellement
+  T += 100 * 1000;
+  E.update();
+  assert.strictEqual(E.state.comptoir.asks[0], null);
+
+  // Temps écoulé en jeu : renouvellement
+  T += (D.TROQUEUR.refresh + 10) * 1000;
+  E.update();
+  assert.ok(E.state.comptoir.asks[0] !== null, "slot renouvelé");
+
+  // Renouvellement hors ligne (catchUp)
+  E.add(E.state.comptoir.asks[0].id, E.state.comptoir.asks[0].n);
+  E.deliverAsk(0);
+  assert.strictEqual(E.state.comptoir.asks[0], null);
+  T += (D.TROQUEUR.refresh + 100) * 1000;
+  E.catchUp(D.TROQUEUR.refresh + 100);
+  assert.ok(E.state.comptoir.asks[0] !== null, "slot renouvelé hors ligne");
 });
 test("sauvegarde sans ecus ou corrompue : se charge nettoyée", () => {
   const E = mk();
@@ -1119,14 +1237,37 @@ test("sauvegarde sans ecus ou corrompue : se charge nettoyée", () => {
   const F = mk();
   F.load(JSON.stringify(o));
   assert.strictEqual(F.state.ecus, 0);
-  assert.deepStrictEqual(F.state.comptoir, { sold: {}, traces: 0 });
+  assert.deepStrictEqual(F.state.comptoir, { sold: {}, traces: 0, asks: [], next: 0 });
 
   const o2 = JSON.parse(raw);
   o2.ecus = "abc";
   o2.comptoir = 42;
   F.load(JSON.stringify(o2));
   assert.strictEqual(F.state.ecus, 0);
-  assert.deepStrictEqual(F.state.comptoir, { sold: {}, traces: 0 });
+  assert.deepStrictEqual(F.state.comptoir, { sold: {}, traces: 0, asks: [], next: 0 });
+
+  // Sauvegarde avec comptoir illisible / asks corrompus
+  const o3 = JSON.parse(raw);
+  o3.comptoir = {
+    sold: "corrompu",
+    traces: -10,
+    asks: "pas un tableau",
+    next: "demain"
+  };
+  F.load(JSON.stringify(o3));
+  assert.deepStrictEqual(F.state.comptoir.asks, []);
+  assert.strictEqual(F.state.comptoir.next, 0);
+  assert.strictEqual(F.state.comptoir.traces, 0);
+  assert.deepStrictEqual(F.state.comptoir.sold, {});
+
+  // Tableau avec entrées invalides
+  o3.comptoir.asks = [
+    { id: "item_inexistant", n: 10, tr: 2 },
+    { id: "bois", n: -5, tr: 2 },
+    null
+  ];
+  F.load(JSON.stringify(o3));
+  assert.deepStrictEqual(F.state.comptoir.asks, [null, null, null]);
 });
 test("sérialiser puis recharger garde écus et quantités vendues", () => {
   const E = mk();

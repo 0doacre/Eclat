@@ -244,9 +244,12 @@
         "« Le bois ne vaut presque rien. Ce que tu en fais, si. »"
       ];
       const phrase = phrases[(st.cycle + st.age) % phrases.length];
+      const count = E.troqueurCount ? E.troqueurCount() : 0;
+      const askLine = count === 0 ? "Aucune demande du Troqueur" : count === 1 ? "1 demande du Troqueur" : count + " demandes du Troqueur";
       return '<section class="dom-card dom-comptoir" id="dcomptoir">' +
         '<h3>🪙 Le Comptoir</h3>' +
         '<p class="small muted">' + esc(phrase) + '</p>' +
+        '<div class="small" style="margin-top:6px"><b>' + esc(askLine) + '</b></div>' +
         '<div class="row wrap between" style="align-items:center;margin-top:8px">' +
         '<span class="small"><b>' + fmt(st.ecus || 0) + '</b> écus en réserve</span>' +
         '<button class="btn small pri" data-comptoir>Ouvrir le Comptoir</button>' +
@@ -293,12 +296,30 @@
           '</div></div>';
       }
 
+      function askRowHTML(ask, i) {
+        if (!ask) {
+          return '<div class="comptoir-row" style="opacity:0.6;border-style:dashed">' +
+            '<p class="small muted center" style="margin:4px 0">Emplacement vide · demande livrée</p></div>';
+        }
+        const have = S().inv[ask.id] || 0;
+        const can = have >= ask.n;
+        return '<div class="comptoir-row" data-aline="' + i + '">' +
+          '<div class="comptoir-head">' + icon(ask.id, "sm") +
+          '<div class="grow"><b>' + esc(I[ask.id].n) + '</b><span class="tiny muted"> · <span data-c="' + ask.id + '">' + fmt(have) + '</span> / ' + fmt(ask.n) + ' en réserve</span></div>' +
+          '<span class="small" style="font-weight:700">+' + ask.tr + ' ✦</span></div>' +
+          '<div class="comptoir-btns">' +
+          '<button class="btn mini' + (can ? ' pri' : '') + '" data-m="deliver" data-idx="' + i + '"' + (can ? '' : ' disabled') + '>' +
+          '<b>Livrer</b> <small>' + fmt(ask.n) + ' ' + esc(I[ask.id].n.toLowerCase()) + ' contre +' + ask.tr + ' ✦</small></button>' +
+          '</div></div>';
+      }
+
       function comptoirModalHTML() {
         const st = S();
         let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus en réserve</div></div></div>';
         h += '<div class="subtabs">' +
           '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
           '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +
+          '<button class="' + (curTab === "demandes" ? "on" : "") + '" data-m="ctab" data-t="demandes">Demandes</button>' +
           '</div>';
 
         if (curTab === "vendre") {
@@ -310,16 +331,24 @@
           } else {
             h += '<div class="comptoir-list" id="sell-list">' + items.map(sellRowHTML).join("") + '</div>';
           }
-        } else {
-          const trCost = E.traceCost(), ecus = st.ecus || 0;
-          h += '<div class="comptoir-trace">' +
-            '<button class="btn pri big-btn" data-m="buytrace"' + (ecus < trCost ? ' disabled' : '') + '>Acheter 1 ✦ Trace : ' + fmt(trCost) + ' écus</button>' +
-            '<p class="tiny muted center" style="margin:6px 0 16px">Le prix monte à chaque achat et redescend à la relève.</p>' +
-            '</div>';
+        } else if (curTab === "acheter") {
           const buyable = E.buyableRes();
           if (buyable.length) {
-            h += '<h4 class="sub" style="margin:12px 0 8px">Ressources</h4>';
             h += '<div class="comptoir-list">' + buyable.map(buyResRowHTML).join("") + '</div>';
+          } else {
+            h += '<p class="small muted center" style="padding:20px 0">Aucune ressource disponible à l’achat pour l’instant.</p>';
+          }
+        } else if (curTab === "demandes") {
+          const asks = E.troqueurAsks ? E.troqueurAsks() : [];
+          const next = (st.comptoir && st.comptoir.next) || 0;
+          const leftSec = Math.max(0, Math.ceil((next - Date.now()) / 1000));
+          if (!asks.length) {
+            h += '<p class="small muted center" style="padding:20px 0">Le Troqueur n’a pas de demande pour l’instant. Fabrique des objets de ton âge.</p>';
+          } else {
+            h += '<div class="comptoir-list">' + asks.map(askRowHTML).join("") + '</div>';
+          }
+          if (next > 0) {
+            h += '<p class="tiny muted center" style="margin:10px 0 6px">Prochain renouvellement dans ' + fmtTime(leftSec) + '.</p>';
           }
         }
 
@@ -373,15 +402,16 @@
             render(true);
             return true;
           },
-          buytrace: () => {
-            const r = E.buyTrace();
+          deliver: (b) => {
+            const idx = Number(b.dataset.idx);
+            const r = E.deliverAsk(idx);
             if (!r.ok) {
               A.fail(0);
-              toast("Pas assez d’écus pour cette Trace.", { key: "comptoir" });
+              toast("Impossible de livrer : " + (r.why === "missing" ? "tu n’en as plus assez." : "demande indisponible."), { key: "comptoir" });
               return redraw();
             }
             A.click(); vibe(10);
-            toast("✦ 1 Trace achetée !", { key: "comptoir" });
+            toast("✦ +" + r.ask.tr + " Trace" + (r.ask.tr > 1 ? "s" : "") + " !", { key: "comptoir" });
             return redraw();
           },
           buyres: (b) => {
@@ -578,7 +608,7 @@
         render(true);
         return true;
       }
-      if (t.closest("[data-comptoir]")) { A.click(); comptoirSheet(); return true; }
+      if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
@@ -635,7 +665,7 @@
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
         st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join(),
-        (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) : ""), JSON.stringify(E.ruins())].join("|");
+        (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
     }
 
     /* une terre précise : on la déplie et on la montre */
