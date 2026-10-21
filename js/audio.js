@@ -7,7 +7,7 @@
   let ctx = null, master = null, sfxBus = null, musicBus = null, ambBus = null, verb = null, noiseBuf = null;
   let enabled = true;
   const vol = { music: 0.5, amb: 0.6, sfx: 0.8 };
-  const scene = { age: 0, zone: "lisiere", tab: "carte", night: false, machines: 0 };
+  const scene = { age: 0, zone: "lisiere", tab: "domaine", night: false, machines: 0 };
   const PENTA = [523.25, 587.33, 659.25, 783.99, 880.0]; // do ré mi sol la (la flûte)
 
   /* ------------------------------------------------------------ mise en route */
@@ -410,8 +410,8 @@
       cosmos: { hum: [41, 0.02], ev: [] }
     };
     const d = D[z] || D.lisiere;
-    /* sur la carte, les machines qui tournent s’ajoutent au paysage */
-    const m = scene.tab === "carte" ? Math.min(10, scene.machines || 0) : 0;
+    /* dans le Domaine, les machines qui tournent s’ajoutent au paysage */
+    const m = scene.tab === "domaine" ? Math.min(10, scene.machines || 0) : 0;
     if (!m || z === "cosmos") return d;
     return {
       beds: d.beds, hum: d.hum || [50, 0.008 + m * 0.002],
@@ -420,7 +420,7 @@
   }
   function ambience() {
     if (!ready() || vol.amb <= 0) { stopAmb(); return; }
-    const k = ambKey() + (scene.tab === "carte" ? ":" + Math.min(10, scene.machines || 0) : "");
+    const k = ambKey() + (scene.tab === "domaine" ? ":" + Math.min(10, scene.machines || 0) : "");
     if (amb && amb.k === k) return;
     stopAmb();
     const def = ambDef(ambKey());

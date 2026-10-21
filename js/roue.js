@@ -2,7 +2,7 @@
  * Un menu circulaire. Premier tour : les familles de recettes connues. Dans une
  * famille, ses recettes en anneau (celles qu’on peut faire tout de suite d’abord)
  * et, au centre, celle qu’on a choisie. Tout part dans la file de « Tes mains » ;
- * une machine ou un extracteur prêts se posent ensuite sur la carte d’un geste. */
+ * une machine ou un extracteur prêts se posent ensuite dans le Domaine. */
 (function () {
   "use strict";
 

@@ -108,8 +108,8 @@ function produce(id, qty, depth) {
       busyTotal += d; handTotal += h;
     }
     E.craft(id, n, true);
-    // un extracteur ne travaille que posé sur un gisement et relié à la Réserve
-    if (it.t === "ext") for (let k = 0; k < n; k++) E.fabAutoExt(id);
+    // un extracteur ne travaille que posé sur un gisement
+    if (it.t === "ext") for (let k = 0; k < n; k++) E.domAutoExt(id);
   }
 }
 
@@ -163,18 +163,10 @@ function currentTargets() {
   if (interim) return { [interim]: E.isUnique(I[interim]) ? 1 : (S().inv[interim] || 0) + 1 };
   const ob = E.objective();
   if (ob && ob.k === "exp") return null; // les explorations sont lancées à chaque tour
-  if (ob && ob.k === "ext") { if (S().inv.cabane >= 1 && !Object.values(S().fab.c).some((e) => e.k === "ext")) E.fabAutoExt("cabane"); return { bois: (S().inv.bois || 0) + 1 }; }
+  if (ob && ob.k === "ext") { if (S().inv.cabane >= 1 && !Object.keys(S().dom.ext).length) E.domAutoExt("cabane"); return { bois: (S().inv.bois || 0) + 1 }; }
   if (ob && ob.k === "line") {
-    // une petite usine : sortie → automate → tapis → Réserve
-    if (!Object.values(S().fab.c).some((e) => e.k === "mach")) {
-      for (const [x, y, d] of [[2, 0, 0], [-2, 0, 2], [0, 2, 1], [0, -2, 3], [2, 1, 0], [-2, 1, 2], [1, 2, 1], [-1, -2, 3]]) {
-        if (E.fabCell(x, y) || E.fabCell(x + E.DX[d], y + E.DY[d])) continue;
-        E.fabPlace("port", x, y, { d });
-        E.fabPlace("mach", x + E.DX[d], y + E.DY[d], { m: "automate_bois", r: "manche", d });
-        E.fabLink(x + E.DX[d], y + E.DY[d]);
-        break;
-      }
-    }
+    // une chaîne : un automate qui fait des manches
+    if (!S().dom.mach.length) E.domMachAdd("manche", "automate_bois");
     return { bois: (S().inv.bois || 0) + 3 };
   }
   if (ob) return { [ob.id]: 1 };

@@ -32,31 +32,34 @@ Voir [`docs/PROGRESSION.md`](docs/PROGRESSION.md) pour la conception complète.
 - **Mémoire des mains** : huit améliorations permanentes achetées avec les Traces (récolte, mains, extracteurs, machines, passages moins chers, paquetage de départ, terres déjà ouvertes, temps hors ligne).
 - Rythme visé (réglé avec `tools/sim-passages.js`) : la première partie bute vers les Collines au bout d’environ 25 minutes ; chaque relève va environ une terre plus loin.
 
-### La Carte : terres, gisements, extracteurs, tapis et machines
+### Le Domaine : terres, gisements, extracteurs et machines
 
-Tout se passe sur une seule carte vue de dessus. Au centre, la **Réserve** (le stock). Autour, chaque terre atteinte est une région, avec ses **gisements** (une case par ressource : bois, pierre, cuivre, pétrole…) et ses **lieux à explorer** 🧭. Toucher le nom d’une terre ouvre sa fiche et son paysage. La carte s’agrandit à chaque nouvelle terre.
+Le **Domaine** est l’écran d’accueil : une page qui défile, avec tout ce qui produit.
 
-- On touche une case de gisement pour récolter à la main, on garde le doigt dessus pour continuer. Les outils multiplient ce qu’on ramasse.
-- On y pose un **extracteur** adapté (cabane, puits, scierie, derrick, réplicateur…). Il récolte tout seul, même jeu fermé, et pose sa récolte devant lui. Un extracteur met tout son effort sur la matière de sa case.
-- **Usine simple** (par défaut) : une machine posée n’importe où se sert dans la Réserve et y range ce qu’elle fabrique, un extracteur se relie tout seul à la Réserve, et aucun débit n’est à surveiller. Les tapis restent possibles : une machine se sert d’abord sur ceux qui la touchent. Le menu ☰ → Usine : **Avancée** ouvre la logistique décrite ci-dessous (une partie qui avait déjà des répartiteurs ou des croisements la garde).
-- On trace des **tapis** au doigt jusqu’à la Réserve, ou on laisse le jeu tracer le chemin (« Relier à la Réserve »).
-- Les **machines** (automate de bois, automate de bronze, presse à vapeur, chaîne d’assemblage, assembleur moléculaire) fabriquent une recette et se servent sur les tapis qui passent devant elles. Le tapis d’un extracteur peut donc longer des machines avant d’arriver à la Réserve : une ligne complète, du gisement au produit fini.
-- Une **sortie** posée contre la Réserve envoie aux machines ce qu’elles réclament dans le stock, mais la Réserve ne laisse sortir qu’un petit débit, toutes sorties confondues : mieux vaut amener aux machines leurs matières directement. **Répartiteurs** et **croisements** aident à organiser les tapis.
-- Un **tapis** porte un nombre limité d’objets par seconde, de plus en plus aux âges suivants. Chaque case par laquelle un tapis entre dans la Réserve a ce débit : quand plusieurs gisements la partagent, elle déborde et clignote ⚠️. Un répartiteur qui ouvre une deuxième entrée règle le problème.
-- En usine avancée, la **Réserve est limitée** : 500 de chaque matière brute à l’âge du Bois, puis davantage à chaque âge. Pleine, ce qui arrive attend sur son tapis, l’extracteur s’arrête (pastille bleue), et la récolte à la main aussi. Ce que fabriquent les machines n’a pas de limite : transformer, c’est faire de la place. Un stock déjà au-dessus n’est jamais rogné.
-- Toucher la Réserve ouvre le **tableau de production** : par matière, ce qui entre (extracteurs, machines), ce que les machines prennent, et le stock.
-- Les **Grands Œuvres** se construisent sur la carte : on pose leur **chantier** où l’on veut, et on le nourrit par tapis.
-- Les objets qui roulent sur les tapis montrent ce qui circule ; les voyants des machines disent ce qui manque. Courroies, convoyeurs et intelligence artificielle accélèrent les machines ; brouettes, chemin de fer et compagnie, les extracteurs.
+- Chaque terre ouverte, la plus récente en premier, liste ses **gisements** (bois, pierre, cuivre, pétrole…). On touche l’icône d’une matière pour la ramasser, on garde le doigt dessus pour continuer. Les outils multiplient ce qu’on ramasse.
+- **+1** et **×10** posent des **extracteurs** sur un gisement (cabane, puits, scierie, derrick, réplicateur…). Ils récoltent seuls, même jeu fermé, et versent leur récolte dans la Réserve. S’il n’en reste plus de libre, les mains le fabriquent puis le posent. Toucher la ligne ouvre sa fiche : type d’extracteur, nombre, pause.
+- Les **machines** (automate de bois, automate de bronze, presse à vapeur, chaîne d’assemblage, assembleur moléculaire) travaillent en **chaînes** : une recette, un type de machine, un nombre. Elles se servent dans la Réserve et y rangent ce qu’elles font ; celles qui font un ingrédient tournent avant celles qui l’utilisent. Une chaîne peut s’arrêter à un stock visé.
+- Le **passage** en cours et le **Grand Œuvre** en cours ont leur carte : on y verse, ou on « alimente » le Grand Œuvre pour qu’il se serve seul dans la Réserve, à un débit qui dépend de l’âge.
+- En bas, le tableau de production (ce qui entre et sort, par matière) et la phrase de l’âge.
+- Courroies, convoyeurs et intelligence artificielle accélèrent les machines ; brouettes, chemin de fer et compagnie, les extracteurs.
+
+### La Carte : le monde sous la brume
+
+Une carte dessinée qui se lit de bas en haut, de la Lisière jusqu’aux étoiles. Les terres ouvertes sont dessinées et nommées ; les deux suivantes se devinent sous la brume, avec un nom vague ; le reste est hachuré. On y touche une terre pour aller à ses gisements, un lieu 🧭 pour l’explorer, une étiquette « Passage » pour y verser. On n’y construit rien.
+
+### Le carnet au fil des âges
+
+Le jeu est le carnet de terrain du Semeur. La mise en page ne change pas, mais le papier, l’encre, la police des titres et un ornement suivent l’époque : pigments (Bois, Os, Pierre), papyrus (Cuivre, Bronze), enluminure (Fer), registre (Acier, Électricité), cahier quadrillé (Silicium, Polymères, Composites), journal de bord (Spatial, Stellaire). La couleur de l’âge teinte l’accent. Les icônes viennent de game-icons.net, les polices sont embarquées (voir `docs/CREDITS.md`).
 
 ### Confort de jeu
 
 - **⚡ Fabrication en chaîne** : ×1, ×10 et Max fabriquent un objet *et tous ses sous-composants* (réseau électrique → moteurs → bobines → fils de cuivre), à partir du stock ; Max calcule combien on peut en faire ainsi (dix cabanes d’un coup, par exemple). Le détail 🌳 montre les étapes, ce qui est pris dans le stock et ce qui manque.
-- **🎯 Suivi** : on suit une recette ; la carte affiche ce qui manque, avec un temps estimé.
+- **🎯 Suivi** : on suit une recette ; le haut du Domaine affiche ce qui manque, avec un temps estimé.
 - **🏁 Étapes** : ce qu’il y a à faire à chaque âge (cinq à l’âge de l’Os, par exemple), depuis la carte d’objectif ; le compteur suit l’âge en cours. Certaines se sautent. Toutes faites, l’âge est **accompli** : +3 ✨ Intuition, une fois par âge et par cycle.
 - **🎉 Fêtes** : une découverte, une recette trouvée, une première fabrication, une étape ou un âge accompli s’affichent au centre de l’écran, sans rien bloquer.
-- **🌱 Un écran qui se remplit au fil du jeu** : au départ, la forêt et l’objectif. Outils de la carte, bande des machines libres, roue, Intuition, Carnet et Journal apparaissent quand ils servent ; la recherche et les filtres de l’Atelier, quand il y a assez de matières.
-- **💭 Tutoriel** : des souvenirs guident la main, chapitre par chapitre. Chacun se lance quand une chose devient possible et n’a pas encore été faite (premiers gestes, lieux à explorer, première cabane, file des mains, roue, automate, étude des matières, jalons, tapis qui déborde, chantier d’un Grand Œuvre) : une bulle éclaire l’endroit à toucher et attend que ce soit fait. Rien n’est bloqué ; on peut passer un chapitre, couper le tutoriel ou le revoir (menu ☰). Une partie avancée ne revoit pas les débuts, seulement ce qu’elle n’a pas encore fait.
-- **🛠️ La roue** : sur la carte, un menu circulaire avec toutes les recettes connues, par famille (machines, extracteurs, stations, outils, pièces, curiosités, raccourcis) et une recherche. Les recettes faisables tout de suite viennent d’abord. On met en file (×1, ×10, Max, pièces comprises), puis 📍 on pose la machine ou l’extracteur. Au centre, la file des mains. La roue s’ouvre d’elle-même quand l’outil Machine ou Extracteur n’a plus rien de libre.
+- **🌱 Un écran qui se remplit au fil du jeu** : au départ, la forêt et l’objectif. Machines, roue, Intuition, Carnet et Journal apparaissent quand ils servent ; la recherche et les filtres de l’Atelier, quand il y a assez de matières.
+- **💭 Tutoriel** : des souvenirs guident la main, chapitre par chapitre. Chacun se lance quand une chose devient possible et n’a pas encore été faite (premiers gestes, lieux à explorer, première cabane, file des mains, roue, automate, étude des matières, jalons, Grand Œuvre) : une bulle éclaire l’endroit à toucher et attend que ce soit fait. Rien n’est bloqué ; on peut passer un chapitre, couper le tutoriel ou le revoir (menu ☰). Une partie avancée ne revoit pas les débuts, seulement ce qu’elle n’a pas encore fait.
+- **🛠️ La roue** : depuis le Domaine ou l’Atelier, un menu circulaire avec toutes les recettes connues, par famille (machines, extracteurs, stations, outils, pièces, curiosités, raccourcis) et une recherche. Les recettes faisables tout de suite viennent d’abord. On met en file (×1, ×10, Max, pièces comprises) ; une machine ou un extracteur fabriqué rejoint le Domaine. Au centre, la file des mains.
 - **📖 Carnet** : recherche (par nom ou par ingrédient), épingles ☆ (raccourcis en haut de l’Atelier), objets déjà possédés masqués, chaque ingrédient est cliquable et mène à sa recette.
 - **Objectif guidé** : il indique la *prochaine étape* concrète (la sous-recette inconnue, la station ou la zone qui manque). Chaque combinaison nouvelle essayée à l’Atelier réveille des **souvenirs** : à force, ils soufflent le geste, puis une matière, puis la recette entière. Attendre ne donne rien.
 - **Fiches** : toucher un objet ouvre sa fiche (recette, stock, station, ce qu’il sert à fabriquer) ; tout y est cliquable pour passer de recette en recette, avec un retour arrière.
@@ -103,12 +106,16 @@ Tous les chemins sont relatifs : le jeu fonctionne depuis n’importe quel sous-
 
 ```
 index.html            page unique
-css/style.css         styles (mobile d’abord, thème par âge)
+css/style.css         styles (mobile d’abord)
+css/theme.css         le carnet par époque : papier, encre, polices, ornements
+css/fonts.css         polices embarquées (assets/fonts)
 js/data.js            tout le contenu : âges, gestes, recettes, zones, explorations, lore, fins
 js/engine.js          moteur de jeu, sans DOM (tourne aussi sous Node)
 js/ui.js              interface
-js/usine.js           la Carte : terres, gisements, tapis, machines, chantiers (canvas, commandes tactiles)
-js/roue.js            la roue : fabriquer depuis la carte (menu circulaire des recettes connues)
+js/domaine.js         le Domaine : gisements, extracteurs, chaînes de machines, passage, Grand Œuvre
+js/carte.js           la Carte : le monde en SVG, brume, lieux, passages
+js/icons.js           correspondance objets → icônes (générée par tools/icons.js)
+js/roue.js            la roue : fabriquer d’où l’on est (menu circulaire des recettes connues)
 js/tuto.js            le tutoriel : chapitres déclenchés au fil du jeu, bulles qui pointent
 js/scenes.js          les paysages des terres (SVG, dans leur fiche)
 js/cloud.js           compte joueur : clés, chiffrement, échanges avec le serveur
@@ -122,7 +129,8 @@ tools/test.js         tests du moteur, dont le chemin secret complet jusqu’à 
 tools/sim.js          bot qui joue une partie entière pour mesurer le rythme
 tools/sim-passages.js joueur simulé pour régler les passages, la relève et la Mémoire (--compare, --cycles, --cout)
 tools/build.js        empreinte de version du service worker (sans elle, les joueurs ne reçoivent pas la mise à jour)
-tools/fixtures/       sauvegardes des versions 1, 2 et 3, pour tester la compatibilité
+tools/icons.js        sprite assets/icons.svg et js/icons.js à partir de tools/icons.json
+tools/fixtures/       sauvegardes des versions 1 à 5, pour tester la compatibilité
 ```
 
 ```sh

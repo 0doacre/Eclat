@@ -7,56 +7,34 @@
   "use strict";
 
   function create(api) {
-    const { E, D, A, U, esc, fmtNum, Usine, Roue, save } = api;
+    const { E, D, A, U, esc, Roue, save } = api;
     const S = () => E.state;
-    const TABS = { carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet", journal: "le Journal", cosmos: "le Cosmos" };
+    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet", journal: "le Journal", cosmos: "le Cosmos" };
     const GAP = 8000; // entre deux chapitres
 
     /* ------------------------------------------------------------ petits repères */
     const has = (id) => (S().inv[id] || 0) >= 1;
-    const cells = () => Object.values(S().fab.c);
-    const any = (k) => cells().some((e) => e.k === k);
+    const anyExt = () => Object.keys(S().dom.ext).length > 0;
     const modalOpen = () => !!document.querySelector(".modal:not(.hidden)");
-    function deposit(res) {
-      const d = E.zonePatch("lisiere").find((p) => p.res === res);
-      return d ? { cell: [d.x, d.y] } : null;
-    }
-    function landmark(zid, i) {
-      const g = Usine.zonesOnMap().find((z) => z.id === zid), m = g && g.marks[i];
-      return m ? { cell: [m.x, m.y] } : null;
-    }
-    const linked = () => { const g = E.fabGraph(); return cells().some((e) => e.k === "ext" && g.prods[e.id] && g.prods[e.id].t.res); };
-    const fed = () => { const g = E.fabGraph(); return cells().some((e) => e.k === "mach" && e.r && (g.sup[e.id] || []).length > 0); };
-    /* une entrée de la Réserve qui déborde, ou un extracteur qui récolte plus que son tapis ne porte */
-    function satCell() {
-      const k = Object.keys(E.fabSat())[0];
-      if (k) { const i = k.indexOf(","); return { cell: [+k.slice(0, i), +k.slice(i + 1)], ent: true }; }
-      for (const key in S().fab.c) {
-        const e = S().fab.c[key];
-        if (e.k === "ext" && E.machInfo(e.id).s === "sat") { const i = key.indexOf(","); return { cell: [+key.slice(0, i), +key.slice(i + 1)], ent: false }; }
-      }
-      return null;
-    }
     /* une matière de l’Atelier qui cache encore des recettes : celle-là vaut la peine d’être étudiée */
     function studyTile() {
       const tiles = Array.from(document.querySelectorAll("[data-inv]"));
       const ok = tiles.find((t) => Object.keys(D.ITEMS).some((k) => D.ITEMS[k].r && D.ITEMS[k].r[1][t.dataset.inv] !== undefined && !S().known[k]));
       return ok || null;
     }
-    const lone = () => Object.keys(D.PROJECTS).find((p) => E.projVisible(p) && !E.siteOf(p) && E.projState(p).step < D.PROJECTS[p].steps.length);
+    const lone = () => Object.keys(D.PROJECTS).find((p) => E.projVisible(p) && !E.siteOn(p) && E.projState(p).step < D.PROJECTS[p].steps.length);
 
     /* ------------------------------------------------------------ les chapitres
      * when : quand il commence ; still : tant qu’il a un sens (sinon il s’arrête).
      * Une étape : tab (l’onglet où elle se passe), at (ce qu’elle montre : un
-     * sélecteur, un élément, ou { cell: [x, y] } sur la carte), text, done (fini ?),
-     * next (bouton « Suivant »), dim (assombrir autour, oui par défaut s’il y a une
-     * cible), modal (elle se passe dans une fenêtre), roue (dans la roue),
-     * only (« simple » ou « avance » : seulement avec cette usine). */
+     * sélecteur ou un élément), text, done (fini ?), next (bouton « Suivant »),
+     * dim (assombrir autour, oui par défaut s’il y a une cible), modal (elle se
+     * passe dans une fenêtre), roue (dans la roue). */
     const CH = [
       { id: "debut", n: "Premiers gestes",
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts,
         steps: [
-          { tab: "carte", at: () => deposit("bois"), text: "Touche le bois pour en ramasser. Garde le doigt appuyé : tu ramasses sans t’arrêter.",
+          { tab: "domaine", at: '[data-harv="lisiere:bois"]', text: "Touche le bois pour en ramasser. Garde le doigt appuyé : tu ramasses sans t’arrêter.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
           { tab: "atelier", go: "Tu en as assez pour un premier outil. Ouvre l’Atelier.", at: ".gestes",
             text: "Ici, une recette, c’est un geste et des matières. Le geste Tailler est déjà choisi.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
@@ -65,67 +43,56 @@
           { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche le gros bouton pour fabriquer !" : "Reprends le geste Tailler."),
             done: () => S().known.manche },
           { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Un manche ! Une petite découverte sort tout de suite et s’inscrit dans ton Carnet. Refaire une recette connue prend un peu de temps : tes mains travaillent une pièce après l’autre.", next: true },
-          { tab: "carte", go: "Retourne sur la Carte.", at: ".goal-card", text: "L’objectif, en haut, te dit quoi chercher ensuite. 🏁 montre tout ce qu’il y a à faire à cet âge.", next: true, done: () => S().known.corde },
+          { tab: "domaine", go: "Retourne au Domaine.", at: ".goal-card", text: "L’objectif, en haut, te dit quoi chercher ensuite. 🏁 montre tout ce qu’il y a à faire à cet âge.", next: true, done: () => S().known.corde },
           { text: "À toi de chercher, maintenant : de quoi lier les choses entre elles. Ramasse des fibres, puis essaie des gestes à l’Atelier. Le thermomètre te dit si tu chauffes, et chaque essai nouveau réveille des souvenirs.",
             free: true, done: () => S().known.corde },
           { text: "Bien trouvé. C’est tout le jeu : chercher, découvrir, puis faire travailler le monde pour toi. L’objectif te guide, et ❓ explique le reste.", next: true }
         ] },
       { id: "lieux", n: "Les lieux",
-        when: () => { const ob = E.objective(); return U.tab === "carte" && ob && ob.k === "exp" && !S().exp.active && !Object.keys(S().exp.done).length; },
+        when: () => { const ob = E.objective(); return (U.tab === "domaine" || U.tab === "carte") && ob && ob.k === "exp" && !S().exp.active && !Object.keys(S().exp.done).length; },
         still: () => !S().exp.active && !Object.keys(S().exp.done).length,
         steps: [
-          { tab: "carte", at: () => landmark("lisiere", 0), text: "Ce grand chêne t’attire. Touche-le.",
-            done: () => !!document.querySelector('.u-sheet:not(.hidden) [data-u="exp"]') },
-          { tab: "carte", at: '.u-sheet:not(.hidden) [data-u="exp"]', alt: "Touche le chêne 🧭, puis Explorer.",
+          { tab: "carte", go: "Un lieu t’attend sur la Carte. Ouvre-la.", at: '[data-cl="lisiere:0"]', text: "Ce grand chêne t’attire. Touche-le.",
+            done: () => !!document.querySelector('.modal:not(.hidden) [data-m="go"]') || !!S().exp.active },
+          { modal: true, at: '.modal:not(.hidden) [data-m="go"]', back: 0,
             text: "Explore-le. Ça avance tout seul pendant que tu fais autre chose, et ça raconte un bout de l’histoire.", done: () => !!S().exp.active }
         ] },
       { id: "cabane", n: "Ta première cabane",
-        when: () => U.tab === "carte" && has("cabane") && !any("ext"),
+        when: () => U.tab === "domaine" && has("cabane") && !anyExt(),
         still: () => !S().flags.extDone,
         steps: [
-          { tab: "carte", at: '.u-tools [data-tool="ext"]', text: "Ta cabane peut récolter à ta place, même jeu fermé. Prends l’outil Extracteur.",
-            done: () => Usine.tool() === "ext" || any("ext") },
-          { tab: "carte", at: () => deposit("bois"), text: "Touche le bois pour y poser ta cabane.", done: () => any("ext") },
-          { tab: "carte", at: '.u-sheet:not(.hidden) [data-u="link"]', alt: "Touche ta cabane, puis « Relier à la Réserve ».", only: "avance",
-            text: "Sa récolte doit rejoindre la Réserve. Touche « Relier à la Réserve » : le tapis se pose tout seul.", done: linked },
-          { tab: "carte", text: "Les tapis portent la récolte jusqu’à la Réserve. Tu peux aussi en tracer au doigt avec l’outil ➜.", next: true, only: "avance" },
-          { tab: "carte", text: "Le tapis s’est posé tout seul : sa récolte file vers la Réserve, même jeu fermé. Pose d’autres extracteurs, ils se relient pareil.", next: true, only: "simple" }
+          { tab: "domaine", at: '[data-xadd="lisiere:bois"]', text: "Ta cabane peut récolter à ta place, même jeu fermé. Touche +1 sur le bois pour l’y poser.", done: anyExt },
+          { tab: "domaine", text: "Elle verse sa récolte dans la Réserve, jeu ouvert ou fermé. +1 en pose d’autres ; s’il n’en reste plus de libre, tes mains en fabriquent une et la posent.", next: true }
         ] },
       { id: "passage", n: "Un passage",
-        when: () => U.tab === "carte" && E.passPending().length > 0 && !S().meta.tracesTotal && !!document.querySelector(".goal-card [data-pour], .u-sheet:not(.hidden) [data-pour]"),
+        when: () => U.tab === "domaine" && E.passPending().length > 0 && !S().meta.tracesTotal && !!document.querySelector(".goal-card [data-pour], .dom-pass [data-pour]"),
         still: () => E.passPending().length > 0,
         steps: [
-          { tab: "carte", at: () => (document.querySelector(".u-sheet:not(.hidden) [data-pour]") ? ".u-sheet:not(.hidden) [data-pour]" : ".goal-card [data-pour]"),
+          { tab: "domaine", at: () => (document.querySelector(".goal-card [data-pour]") ? ".goal-card [data-pour]" : ".dom-pass [data-pour]"),
             text: "🚧 Une nouvelle terre t’attend, mais il faut d’abord franchir son passage. Verse ici ce qu’il demande : tout ce que tu donnes reste acquis, même en plusieurs fois.",
             done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
-          { tab: "carte", text: "Récolte, fabrique, puis reviens verser. Chaque passage franchi laisse des ✦ Traces : un jour, elles serviront à ton successeur.", next: true }
+          { tab: "domaine", text: "Récolte, fabrique, puis reviens verser. Chaque passage franchi laisse des ✦ Traces : un jour, elles serviront à ton successeur.", next: true }
         ] },
       { id: "mains", n: "Tes mains",
-        when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "carte"),
+        when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "domaine"),
         steps: [
           { at: () => (document.querySelector("#hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
             text: "Ce que tu fabriques à la main passe par ta file ✋ : une pièce après l’autre, même jeu fermé. Répéter un geste va de plus en plus vite, et ✕ annule en rendant les matières.", next: true }
         ] },
       { id: "roue", n: "La roue",
-        when: () => U.tab === "carte" && Object.keys(S().known).length >= 5 && !S().flags.roueSeen,
+        when: () => U.tab === "domaine" && Object.keys(S().known).length >= 5 && !S().flags.roueSeen && !!document.querySelector(".dom-bar [data-roue]"),
         steps: [
-          { tab: "carte", at: ".u-fab", text: "🛠️ La roue : toutes tes recettes connues, sans quitter la carte. Ouvre-la.", done: () => Roue.isOpen() || S().flags.roueSeen },
-          { roue: true, at: ".rw-wheel", text: "Choisis une famille, puis une recette : ses boutons apparaissent dessous. Au centre, ta file ✋. Une machine ou un extracteur prêts se posent ensuite d’un geste (📍).", next: true,
+          { tab: "domaine", at: ".dom-bar [data-roue]", text: "La roue : toutes tes recettes connues, sans quitter le Domaine. Ouvre-la.", done: () => Roue.isOpen() || S().flags.roueSeen },
+          { roue: true, at: ".rw-wheel", text: "Choisis une famille, puis une recette : ses boutons apparaissent dessous. Au centre, ta file ✋. Une machine ou un extracteur fabriqués se posent dans le Domaine.", next: true,
             done: () => Roue.touched() }
         ] },
       { id: "automate", n: "Ton automate",
-        when: () => U.tab === "carte" && E.MACHINES.some(has) && !any("mach"),
+        when: () => U.tab === "domaine" && E.MACHINES.some(has) && !S().dom.mach.length && !!document.querySelector("[data-mnew]"),
         still: () => !S().flags.lineDone,
         steps: [
-          { tab: "carte", at: '.u-tools [data-tool="mach"]', text: "Ton automate refait un geste à ta place. Prends l’outil Machine.", done: () => Usine.tool() === "mach" || any("mach") },
-          { tab: "carte", at: () => ({ cell: [0, 0], span: 5 }), text: () => (E.easy() ? "Touche une case vide, près de la Réserve par exemple, pour la poser, puis choisis ce qu’elle fabrique."
-            : "Touche une case vide près de la Réserve pour la poser, puis choisis ce qu’elle fabrique."), free: true,
-            done: () => cells().some((e) => e.k === "mach" && e.r) },
-          { tab: "carte", text: "C’est tout : elle se sert dans la Réserve et y range ce qu’elle fabrique (le pointillé). Change sa recette quand tu veux en la touchant.", next: true, only: "simple" },
-          { tab: "carte", at: '.u-tools [data-tool="port"]', text: "Il lui faut des matières. Prends l’outil Sortie et pose-la contre la Réserve.", done: () => any("port"), only: "avance" },
-          { tab: "carte", at: '.u-tools [data-tool="tapis"]', text: "Avec l’outil Tapis, pars de la flèche de la sortie et glisse le doigt jusqu’à longer ta machine : elle se servira au passage.", done: fed, only: "avance" },
-          { tab: "carte", text: "Ce qu’elle fabrique sort par sa petite flèche. Tournée vers la Réserve, ça y rentre tout seul ; sinon, trace un tapis jusqu’à elle.", next: true, only: "avance" },
-          { tab: "carte", text: "Astuce : la Réserve ne laisse sortir qu’un petit débit. Pour aller plus vite, amène à tes machines leurs matières directement depuis les gisements.", next: true, only: "avance" }
+          { tab: "domaine", at: "[data-mnew]", text: "Ton automate refait un geste à ta place. Touche « nouvelle chaîne » et choisis ce qu’il fabrique.",
+            done: () => S().dom.mach.some((e) => e.r) },
+          { tab: "domaine", text: "Il se sert dans la Réserve et y range ce qu’il fait. Touche sa ligne pour le régler ; + lui ajoute une machine.", next: true }
         ] },
       { id: "etude", n: "Étudier une matière",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
@@ -138,29 +105,18 @@
           { tab: "atelier", text: "Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi. À toi de trouver avec quoi.", next: true }
         ] },
       { id: "jalons", n: "Les étapes",
-        when: () => U.tab === "carte" && S().age >= 1 && !S().flags.milesSeen && !!document.querySelector("[data-miles]"),
+        when: () => U.tab === "domaine" && S().age >= 1 && !S().flags.milesSeen && !!document.querySelector("[data-miles]"),
         steps: [
-          { tab: "carte", at: "[data-miles]", text: "🏁 Les étapes de l’âge : tout ce qu’il y a à faire, d’un coup d’œil. Touche-les quand tu ne sais plus par où continuer.",
+          { tab: "domaine", at: "[data-miles]", text: "🏁 Les étapes de l’âge : tout ce qu’il y a à faire, d’un coup d’œil. Touche-les quand tu ne sais plus par où continuer.",
             next: true, done: () => !!S().flags.milesSeen }
         ] },
-      { id: "debit", n: "Un tapis qui déborde",
-        when: () => U.tab === "carte" && !!satCell(),
-        end: () => { S().flags.tip_sat = true; },
-        steps: [
-          { tab: "carte", at: satCell, next: true,
-            text: () => { const c = satCell(), cap = fmtNum(E.beltCap()); return c && !c.ent
-              ? "Ce gisement récolte plus que son tapis ne porte : " + cap + " objets par seconde au plus, à cet âge. Les extracteurs en trop ici travailleraient mieux sur un autre gisement, et les tapis iront plus vite aux âges suivants."
-              : "Ce tapis déborde : il porte au plus " + cap + " objets par seconde à cet âge. Fais entrer un deuxième tapis dans la Réserve, avec un 🔀 répartiteur sur le chemin par exemple."; } }
-        ] },
       { id: "chantier", n: "Un Grand Œuvre",
-        when: () => !!lone() && !any("site") && !!document.querySelector('#tabs [data-tab="cosmos"]:not(.hidden)'),
-        still: () => !!lone() && !any("site"),
+        when: () => U.tab === "domaine" && !!lone() && !!document.querySelector(".dom-oeuvre [data-feed]"),
+        still: () => !!lone(),
         end: () => { S().flags.tip_site = true; },
         steps: [
-          { tab: "cosmos", go: "Un Grand Œuvre t’attend. Ouvre le Cosmos.", at: '[data-ct="oeuvres"]', text: "Ouvre les Grands Œuvres.", done: () => U.cosmosTab === "oeuvres" },
-          { tab: "cosmos", at: "[data-site]", text: () => (E.easy() ? "Il se construit sur la Carte : pose son chantier, il se servira dans la Réserve au fil de ce que tu produis."
-            : "Il se construit sur la Carte : pose son chantier, puis amène-lui ses matières par tapis, depuis une sortie de la Réserve ou tes machines."),
-            done: () => any("site") }
+          { tab: "domaine", at: ".dom-oeuvre [data-feed]", text: "Un Grand Œuvre demande des quantités énormes. Touche « Alimenter » : il se servira seul dans la Réserve. Tu peux aussi verser d’un coup.",
+            done: () => !lone() }
         ] }
     ];
 
@@ -174,7 +130,7 @@
     const enabled = () => S().settings.tuto !== false;
     let lastEnd = 0, lastQueue = 0, shownKey = "", stepAt = 0, revealed = "", revealAt = 0, raf = 0, mini = false;
     const chapter = () => CH.find((c) => c.id === state().c) || null;
-    const fits = (st) => !st.only || st.only === (E.easy() ? "simple" : "avance");
+    const fits = () => true;
     const active = () => enabled() && !!chapter();
 
     function finish(ch, quietly) {
@@ -226,31 +182,22 @@
     function band() {
       const top = document.getElementById("top"), tabs = document.getElementById("tabs");
       let lo = top ? top.getBoundingClientRect().bottom : 0, hi = tabs ? tabs.getBoundingClientRect().top : window.innerHeight;
-      document.querySelectorAll(".u-tools, .u-sheet:not(.hidden)").forEach((n) => { const r = n.getBoundingClientRect(); if (r.height && r.top < hi) hi = r.top; });
       return { lo, hi };
     }
     /* une cible dans une page qui défile (Atelier, Carnet…) n’est montrée que si elle est vraiment à l’écran */
-    const scrolls = (t) => !!(t && t.el && t.el.closest("#views") && !t.el.closest("#v-carte"));
+    const scrolls = (t) => !!(t && t.el && t.el.closest("#views"));
     function inBand(r) { const b = band(); return r.top >= b.lo - 1 && r.bottom <= b.hi + 1; }
     function resolve(at) {
       let t = typeof at === "function" ? at() : at;
       if (!t) return null;
       if (typeof t === "string") t = document.querySelector(t);
       if (!t) return null;
-      if (t.cell) return { cell: t.cell, span: t.span };
       const r = t.getBoundingClientRect();
       if (!r.width || !r.height) return null;
       return { el: t, r };
     }
     function rectOf(target) {
       if (!target) return null;
-      if (target.cell) {
-        const r = Usine.cellRect(target.cell[0], target.cell[1]), k = target.span || 1;
-        if (!r) return null;
-        // une case, ou plusieurs autour d’elle (la Réserve et ses abords)
-        const w = r.width * k, h = r.height * k, left = r.left + r.width / 2 - w / 2, top = r.top + r.height / 2 - h / 2;
-        return { left, top, width: w, height: h, right: left + w, bottom: top + h };
-      }
       return target.el.getBoundingClientRect();
     }
     /* place le projecteur et la bulle ; relancé à chaque image tant qu’une étape est affichée */
@@ -360,8 +307,7 @@
         const key = ch.id + ":" + T.i;
         if (target && revealed !== key) {
           revealed = key; revealAt = Date.now();
-          if (target.cell) Usine.reveal(target.cell[0], target.cell[1]);
-          else if (scrolls(target) && !inBand(target.r)) target.el.scrollIntoView({ block: "center", behavior: "smooth" });
+          if (scrolls(target) && !inBand(target.r)) target.el.scrollIntoView({ block: "center", behavior: "smooth" });
         } else if (target && scrolls(target) && !inBand(target.r) && Date.now() - revealAt > 800 && Date.now() - revealAt < 3000) {
           target.el.scrollIntoView({ block: "center" });
         }
