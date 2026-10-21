@@ -952,9 +952,9 @@
     rawAge: 2.5,      // ×2,5 par âge de la matière
     work: 1.25,       // bonus de travail par étape de recette
     sat: 2000,        // saturation : quantité qui divise le prix par deux pendant un cycle
-    trace: 200,       // prix de la première Trace, à l’âge 0
-    traceAge: 2.5,    // ×2,5 par âge atteint
-    traceUp: 1.6,     // ×1,6 à chaque Trace achetée pendant le cycle
+    trace: 100,       // prix de la première Trace, à l’âge 0
+    traceAge: 1.8,    // ×1,8 par âge atteint
+    traceUp: 1.5,     // ×1,5 à chaque Trace achetée pendant le cycle
     buy: 3            // une matière achetée coûte 3 fois sa valeur
   };
 
@@ -962,7 +962,8 @@
     "🪙 Le Comptoir : vends ce qui encombre la Réserve contre des écus, auprès du Troqueur dans la Plaine.",
     "📉 Saturation : plus tu vends d’une même matière pendant un cycle, plus son prix baisse.",
     "✦ Convertis tes écus en Traces avant la relève pour renforcer la Mémoire des mains.",
-    "📦 Achète les matières premières des terres déjà ouvertes pour compléter tes fabrications."
+    "📦 Achète les matières premières des terres déjà ouvertes pour compléter tes fabrications.",
+    "🔧 Dans la fiche d’une machine, « Choisir une recette » ouvre bien la liste."
   ];
 
 

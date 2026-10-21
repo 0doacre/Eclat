@@ -146,9 +146,9 @@
     function comptoirHTML() {
       const st = S();
       const phrases = [
-        "« Ce qui t’encombre m’intéresse. Ce que j’ai t’aidera pour la suite. »",
-        "« Je prends tout ce qui déborde de ta Réserve, et mes Traces renforcent tes mains. »",
-        "« Dépose ici tes surplus. Je ne pose pas de questions. »"
+        "« Encore toi. Montre-moi ce que tu as en trop. »",
+        "Le Troqueur cliquette en comptant ses écus. Il n’a jamais l’air pressé.",
+        "« Le bois ne vaut presque rien. Ce que tu en fais, si. »"
       ];
       const phrase = phrases[(st.cycle + st.age) % phrases.length];
       return '<section class="dom-card dom-comptoir" id="dcomptoir">' +
@@ -176,7 +176,7 @@
         return '<div class="comptoir-row" data-sline="' + id + '">' +
           '<div class="comptoir-head">' + icon(id, "sm") +
           '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> en réserve</span></div>' +
-          '<span class="tiny muted">' + fmtNum(p) + ' écus/u</span></div>' +
+          '<span class="tiny muted">' + fmtNum(p) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n10 + '" title="Vendre 10 %"><b>10 %</b> <small>+' + fmtNum(q10) + '</small></button>' +
           '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n50 + '" title="Vendre la moitié"><b>La moitié</b> <small>+' + fmtNum(q50) + '</small></button>' +
@@ -193,7 +193,7 @@
         return '<div class="comptoir-row" data-bline="' + id + '">' +
           '<div class="comptoir-head">' + icon(id, "sm") +
           '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> en réserve</span></div>' +
-          '<span class="tiny muted">' + fmtNum(c1) + ' écus/u</span></div>' +
+          '<span class="tiny muted">' + fmtNum(c1) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini" data-m="buyres" data-id="' + id + '" data-n="100"' + (ecus < c100 ? ' disabled' : '') + '>+100 <small>' + fmt(c100) + ' écus</small></button>' +
           '<button class="btn mini" data-m="buyres" data-id="' + id + '" data-n="1000"' + (ecus < c1000 ? ' disabled' : '') + '>+1 000 <small>' + fmt(c1000) + ' écus</small></button>' +
@@ -210,7 +210,7 @@
 
         if (curTab === "vendre") {
           const items = Object.keys(st.inv)
-            .filter((id) => E.sellable(id) && (st.inv[id] || 0) > 0)
+            .filter((id) => E.sellable(id) && (st.inv[id] || 0) >= 1)
             .sort((a, b) => E.sellQuote(b, st.inv[b]) - E.sellQuote(a, st.inv[a]));
           if (!items.length) {
             h += '<p class="small muted center" style="padding:20px 0" id="sell-empty">Rien à vendre dans ta Réserve pour l’instant. Récolte des matières ou fabrique des pièces.</p>';

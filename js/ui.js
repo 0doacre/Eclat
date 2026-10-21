@@ -308,7 +308,8 @@
     $("#modal").classList.add("hidden");
     U.mcur = null;
     if (o && o.onClose) o.onClose();
-    setTimeout(nextModal, 60);
+    // une fenêtre ouverte entre-temps (une liste ouverte depuis une fiche) reste ouverte
+    setTimeout(() => { if (!U.mcur) nextModal(); }, 60);
   }
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
   const fresh = () => Date.now() - (U.mAt || 0) < 450;
