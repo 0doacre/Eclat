@@ -48,6 +48,7 @@
         }
       } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall>Replier les terres anciennes<span>▴</span></button>';
       h += machinesHTML();
+      if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
         const p = E.passInfo(z);
         if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + z + '"><h3>Vers ' + esc(E.ZONES[z].n) + "</h3>" + passHTML(z) + "</section>";
@@ -139,6 +140,171 @@
       const free = owned.filter((m) => E.freeMach(m) >= 1);
       if (free.length) h += '<button class="dom-free" data-mnew><i>Au repos : ' + esc(free.map((m) => many(m, E.freeMach(m))).join(", ")) + "</i><span>Mettre au travail ▸</span></button>";
       return h + "</section>";
+    }
+
+    /* ------------------------------------------------------------ Le Comptoir */
+    function comptoirHTML() {
+      const st = S();
+      const phrases = [
+        "« Ce qui t’encombre m’intéresse. Ce que j’ai t’aidera pour la suite. »",
+        "« Je prends tout ce qui déborde de ta Réserve, et mes Traces renforcent tes mains. »",
+        "« Dépose ici tes surplus. Je ne pose pas de questions. »"
+      ];
+      const phrase = phrases[(st.cycle + st.age) % phrases.length];
+      return '<section class="dom-card dom-comptoir" id="dcomptoir">' +
+        '<h3>🪙 Le Comptoir</h3>' +
+        '<p class="small muted">' + esc(phrase) + '</p>' +
+        '<div class="row wrap between" style="align-items:center;margin-top:8px">' +
+        '<span class="small"><b>' + fmt(st.ecus || 0) + '</b> écus en réserve</span>' +
+        '<button class="btn small pri" data-comptoir>Ouvrir le Comptoir</button>' +
+        '</div></section>';
+    }
+
+    function comptoirSheet(tab) {
+      let curTab = tab || "vendre";
+      const mbox = () => document.querySelector("#modal .modal-box");
+
+      function sellRowHTML(id) {
+        const have = S().inv[id] || 0;
+        const p = E.unitPrice(id);
+        const n10 = Math.max(1, Math.floor(have * 0.1));
+        const n50 = Math.max(1, Math.floor(have * 0.5));
+        const nAll = Math.max(0, have - 100);
+        const q10 = E.sellQuote(id, n10);
+        const q50 = E.sellQuote(id, n50);
+        const qAll = nAll > 0 ? E.sellQuote(id, nAll) : 0;
+        return '<div class="comptoir-row" data-sline="' + id + '">' +
+          '<div class="comptoir-head">' + icon(id, "sm") +
+          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> en réserve</span></div>' +
+          '<span class="tiny muted">' + fmtNum(p) + ' écus/u</span></div>' +
+          '<div class="comptoir-btns">' +
+          '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n10 + '" title="Vendre 10 %"><b>10 %</b> <small>+' + fmtNum(q10) + '</small></button>' +
+          '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n50 + '" title="Vendre la moitié"><b>La moitié</b> <small>+' + fmtNum(q50) + '</small></button>' +
+          '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + nAll + '"' + (nAll <= 0 ? ' disabled' : '') + ' title="Tout sauf 100"><b>Tout sauf 100</b> <small>' + (nAll > 0 ? '+' + fmtNum(qAll) : '−') + '</small></button>' +
+          '</div></div>';
+      }
+
+      function buyResRowHTML(id) {
+        const have = S().inv[id] || 0;
+        const c1 = E.buyResCost(id, 1);
+        const c100 = E.buyResCost(id, 100);
+        const c1000 = E.buyResCost(id, 1000);
+        const ecus = S().ecus || 0;
+        return '<div class="comptoir-row" data-bline="' + id + '">' +
+          '<div class="comptoir-head">' + icon(id, "sm") +
+          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> en réserve</span></div>' +
+          '<span class="tiny muted">' + fmtNum(c1) + ' écus/u</span></div>' +
+          '<div class="comptoir-btns">' +
+          '<button class="btn mini" data-m="buyres" data-id="' + id + '" data-n="100"' + (ecus < c100 ? ' disabled' : '') + '>+100 <small>' + fmt(c100) + ' écus</small></button>' +
+          '<button class="btn mini" data-m="buyres" data-id="' + id + '" data-n="1000"' + (ecus < c1000 ? ' disabled' : '') + '>+1 000 <small>' + fmt(c1000) + ' écus</small></button>' +
+          '</div></div>';
+      }
+
+      function comptoirModalHTML() {
+        const st = S();
+        let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus en réserve</div></div></div>';
+        h += '<div class="subtabs">' +
+          '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
+          '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +
+          '</div>';
+
+        if (curTab === "vendre") {
+          const items = Object.keys(st.inv)
+            .filter((id) => E.sellable(id) && (st.inv[id] || 0) > 0)
+            .sort((a, b) => E.sellQuote(b, st.inv[b]) - E.sellQuote(a, st.inv[a]));
+          if (!items.length) {
+            h += '<p class="small muted center" style="padding:20px 0" id="sell-empty">Rien à vendre dans ta Réserve pour l’instant. Récolte des matières ou fabrique des pièces.</p>';
+          } else {
+            h += '<div class="comptoir-list" id="sell-list">' + items.map(sellRowHTML).join("") + '</div>';
+          }
+        } else {
+          const trCost = E.traceCost(), ecus = st.ecus || 0;
+          h += '<div class="comptoir-trace">' +
+            '<button class="btn pri big-btn" data-m="buytrace"' + (ecus < trCost ? ' disabled' : '') + '>Acheter 1 ✦ Trace : ' + fmt(trCost) + ' écus</button>' +
+            '<p class="tiny muted center" style="margin:6px 0 16px">Le prix monte à chaque achat et redescend à la relève.</p>' +
+            '</div>';
+          const buyable = E.buyableRes();
+          if (buyable.length) {
+            h += '<h4 class="sub" style="margin:12px 0 8px">Matières premières</h4>';
+            h += '<div class="comptoir-list">' + buyable.map(buyResRowHTML).join("") + '</div>';
+          }
+        }
+
+        h += '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+        return h;
+      }
+
+      function redraw() {
+        const b = mbox();
+        if (b) b.innerHTML = comptoirModalHTML();
+        render(true);
+        return true;
+      }
+
+      openModal({
+        html: comptoirModalHTML(),
+        refresh: () => comptoirModalHTML(),
+        on: {
+          ctab: (b) => {
+            curTab = b.dataset.t;
+            A.click();
+            return redraw();
+          },
+          sell: (b) => {
+            const id = b.dataset.id, n = Number(b.dataset.n);
+            const r = E.sell(id, n);
+            if (!r.ok) {
+              A.fail(0);
+              toast("Impossible de vendre : " + (r.why === "missing" ? "tu n’en as plus assez." : "quantité invalide."), { key: "comptoir" });
+              return redraw();
+            }
+            A.click(); vibe(8);
+            toast("+" + fmtNum(r.ecus) + " écus (" + esc(I[id].n) + ")", { key: "comptoir" });
+            const box = mbox();
+            if (box) {
+              const ecEl = box.querySelector("[data-cecus]");
+              if (ecEl) ecEl.textContent = fmt(S().ecus || 0);
+              const row = box.querySelector('[data-sline="' + id + '"]');
+              if (row) {
+                if ((S().inv[id] || 0) <= 0) {
+                  row.remove();
+                  const list = box.querySelector("#sell-list");
+                  if (list && !list.children.length) {
+                    list.outerHTML = '<p class="small muted center" style="padding:20px 0" id="sell-empty">Rien à vendre dans ta Réserve pour l’instant. Récolte des matières ou fabrique des pièces.</p>';
+                  }
+                } else {
+                  row.outerHTML = sellRowHTML(id);
+                }
+              }
+            }
+            render(true);
+            return true;
+          },
+          buytrace: () => {
+            const r = E.buyTrace();
+            if (!r.ok) {
+              A.fail(0);
+              toast("Pas assez d’écus pour cette Trace.", { key: "comptoir" });
+              return redraw();
+            }
+            A.click(); vibe(10);
+            toast("✦ 1 Trace achetée !", { key: "comptoir" });
+            return redraw();
+          },
+          buyres: (b) => {
+            const id = b.dataset.id, n = Number(b.dataset.n);
+            const r = E.buyRes(id, n);
+            if (!r.ok) {
+              A.fail(0);
+              toast("Pas assez d’écus.", { key: "comptoir" });
+              return redraw();
+            }
+            A.click(); vibe(8);
+            toast("+" + fmt(n) + " " + esc(I[id].n) + " en réserve", { key: "comptoir" });
+            return redraw();
+          }
+        }
+      });
     }
 
     /* ------------------------------------------------------------ Grand Œuvre */
@@ -385,6 +551,7 @@
       if ((b = t.closest("[data-mn]"))) { const rc = b.getBoundingClientRect(); more(b.dataset.mn, Number(b.dataset.v), { x: rc.left + rc.width / 2, y: rc.top }); return true; }
       if ((b = t.closest("[data-msheet]"))) { A.click(); machSheet(b.dataset.msheet); return true; }
       if (t.closest("[data-mnew]")) { A.click(); newChain(); return true; }
+      if (t.closest("[data-comptoir]")) { A.click(); comptoirSheet(); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
@@ -420,7 +587,8 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext), st.dom.mach.map((e) => e.id + e.r + e.n + e.on + e.m + E.machInfo(e.id).s).join(),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join()].join("|");
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join(),
+        (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) : "")].join("|");
     }
 
     /* une terre précise : on la déplie et on la montre */
@@ -449,7 +617,7 @@
       toast(x.why === "nomach" ? "Aucune machine au repos. La première à fabriquer : l’automate de bois." : "Cette recette ne se confie pas à une machine.", { key: "mq" });
     }
 
-    return { view, live, sig, click, down, up, focusZone, placeExt, placeMach, chainFor, extSheet, machSheet };
+    return { view, live, sig, click, down, up, focusZone, placeExt, placeMach, chainFor, extSheet, machSheet, comptoirSheet };
   }
 
   window.EclatDomaine = { create };

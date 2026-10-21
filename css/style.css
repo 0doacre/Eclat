@@ -736,3 +736,18 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .lexique dd { margin: 2px 0 0; color: var(--muted); }
 .passcost { display: flex; flex-direction: column; gap: 4px; }
 .passcost .ing { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+/* ---------------------------------------------------------------- comptoir */
+.dom-comptoir { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 8%, var(--panel)); }
+.comptoir-list { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+.comptoir-row {
+  padding: 8px 10px; border-radius: 12px; border: 1px solid var(--line2); background: var(--panel2);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.comptoir-head { display: flex; align-items: center; gap: 8px; }
+.comptoir-btns { display: flex; gap: 6px; }
+.comptoir-btns .btn { flex: 1 1 0; padding: 6px 4px; font-size: 11.5px; line-height: 1.15; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.comptoir-btns .btn small { font-size: 10px; opacity: .8; font-weight: normal; margin-top: 2px; }
+.comptoir-trace { text-align: center; margin: 8px 0 14px; }
+.big-btn { width: 100%; min-height: 48px; font-size: 15px; font-weight: 700; }
+

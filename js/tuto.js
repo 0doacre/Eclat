@@ -93,6 +93,16 @@
             done: () => S().dom.mach.some((e) => e.r) },
           { tab: "domaine", text: "Il se sert dans la Réserve et y range ce qu’il fait. Touche sa ligne pour le régler ; + ajoute une machine de plus sur la même recette.", next: true }
         ] },
+      { id: "comptoir", n: "Le Comptoir",
+        when: () => U.tab === "domaine" && E.zoneOpen(D.COMPTOIR.zone) && !Object.keys((S().comptoir && S().comptoir.sold) || {}).length && !!document.querySelector("#dcomptoir"),
+        still: () => !Object.keys((S().comptoir && S().comptoir.sold) || {}).length,
+        steps: [
+          { tab: "domaine", at: "#dcomptoir", text: "Le Troqueur s’installe dans la Plaine : un vieil automate qui achète tout. Touche « Ouvrir le Comptoir ».",
+            done: () => modalOpen() || Object.keys((S().comptoir && S().comptoir.sold) || {}).length > 0 },
+          { modal: true, at: () => (document.querySelector('.modal:not(.hidden) [data-m="sell"]') ? '.modal:not(.hidden) [data-m="sell"]' : null),
+            text: "Vends ce qui encombre ta Réserve contre des écus. Plus tu vends d’une même matière, plus son prix baisse.",
+            done: () => Object.keys((S().comptoir && S().comptoir.sold) || {}).length > 0 }
+        ] },
       { id: "etude", n: "Étudier une matière",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
         still: () => !Object.keys(S().studied).length,

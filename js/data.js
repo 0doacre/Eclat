@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.3.0";
+  D.VERSION = "5.4.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -945,13 +945,24 @@
     ]
   };
 
+  /* Le Comptoir : marché tenu par le Troqueur dans la Plaine */
+  D.COMPTOIR = {
+    zone: "plaine",   // le Comptoir s’ouvre avec cette terre
+    raw: 0.1,         // valeur d’une matière première de l’âge 0, en écus
+    rawAge: 2.5,      // ×2,5 par âge de la matière
+    work: 1.25,       // bonus de travail par étape de recette
+    sat: 2000,        // saturation : quantité qui divise le prix par deux pendant un cycle
+    trace: 200,       // prix de la première Trace, à l’âge 0
+    traceAge: 2.5,    // ×2,5 par âge atteint
+    traceUp: 1.6,     // ×1,6 à chaque Trace achetée pendant le cycle
+    buy: 3            // une matière achetée coûte 3 fois sa valeur
+  };
+
   D.CHANGES = [
-    "🔤 Les mêmes mots partout : on récolte, on fabrique, tout va dans la Réserve. L’aide (❓) a une page « Les mots du jeu ».",
-    "⛏️ Chaque extracteur ne travaille que dans sa terre : plus de nasses de la Rivière dans le Désert. Ceux qui étaient posés ailleurs sont rentrés chez eux, aucun n’est perdu.",
-    "🏷️ Les boutons disent ce qu’ils posent : « + cabane », « + meule »… au lieu de « +1 ». Les machines se mettent au travail avec « Mettre au travail ».",
-    "🔥 Quand une recette est bloquée, le jeu nomme ce qu’il faut : « il faut : Four en argile (1 100 °C) », plus jamais « il manque la station ».",
-    "⏱️ Tous les débits se lisent par minute. Les fiches disent à quoi sert chaque sorte d’objet. ✦ Traces et ✨ Intuition ont leur nom en haut de l’écran.",
-    "Trois noms changés pour éviter les doublons : Pelleteuse électrique (ex-Excavatrice), Filet orbital (ex-Station orbitale), Ligne d’assemblage (ex-Chaîne d’assemblage)."
+    "🪙 Le Comptoir : vends ce qui encombre la Réserve contre des écus, auprès du Troqueur dans la Plaine.",
+    "📉 Saturation : plus tu vends d’une même matière pendant un cycle, plus son prix baisse.",
+    "✦ Convertis tes écus en Traces avant la relève pour renforcer la Mémoire des mains.",
+    "📦 Achète les matières premières des terres déjà ouvertes pour compléter tes fabrications."
   ];
 
 

@@ -1015,4 +1015,148 @@ test("compétences et action : sauvegarde, relève", () => {
   assert.strictEqual(E.state.act, null);
 });
 
+console.log("Le Comptoir");
+test("tout objet vendable a une valeur > 0 et finie", () => {
+  const E = mk();
+  for (const id in D.ITEMS) {
+    if (E.sellable(id)) {
+      const v = E.value(id);
+      assert.ok(v > 0, id + " a une valeur positive");
+      assert.ok(Number.isFinite(v), id + " a une valeur finie");
+    }
+  }
+});
+test("vendre retire de la Réserve et ajoute les écus", () => {
+  const E = mk();
+  E.add("bois", 100);
+  const r = E.sell("bois", 40);
+  assert.ok(r.ok);
+  assert.strictEqual(r.n, 40);
+  assert.strictEqual(E.count("bois"), 60);
+  assert.ok(E.state.ecus > 0);
+  assert.strictEqual(E.state.ecus, r.ecus);
+  assert.strictEqual(E.state.comptoir.sold.bois, 40);
+});
+test("vendre n d’un coup rapporte autant que n/2 puis n/2 (à 1e-6 près)", () => {
+  const E1 = mk();
+  const E2 = mk();
+  E1.add("fibre", 500);
+  E2.add("fibre", 500);
+  const r1 = E1.sell("fibre", 500);
+  const r2a = E2.sell("fibre", 250);
+  const r2b = E2.sell("fibre", 250);
+  assert.ok(Math.abs(r1.ecus - (r2a.ecus + r2b.ecus)) < 1e-6, "intégrale exacte");
+  assert.ok(Math.abs(E1.state.ecus - E2.state.ecus) < 1e-6);
+});
+test("le prix unitaire baisse après une vente", () => {
+  const E = mk();
+  const p0 = E.unitPrice("caillou");
+  E.add("caillou", 1000);
+  E.sell("caillou", 1000);
+  const p1 = E.unitPrice("caillou");
+  assert.ok(p1 < p0, "le prix unitaire doit baisser avec la saturation");
+  assert.strictEqual(p1, E.value("caillou") / (1 + 1000 / D.COMPTOIR.sat));
+});
+test("un outil, une station ou un objet unique ne se vend pas", () => {
+  const E = mk();
+  assert.strictEqual(E.sellable("epieu"), false);
+  assert.strictEqual(E.sellable("feu"), false);
+  assert.strictEqual(E.sellable("cabane"), false);
+  assert.strictEqual(E.sellable("automate_bois"), false);
+  assert.strictEqual(E.sellable("tablette"), false);
+  assert.strictEqual(E.sellable("boussole"), false);
+  assert.ok(E.sellable("bois"), "matière");
+  assert.ok(E.sellable("manche"), "pièce");
+  E.add("epieu", 1);
+  const r = E.sell("epieu", 1);
+  assert.strictEqual(r.ok, false);
+});
+test("le prix d’une Trace monte après un achat ; on ne peut pas acheter sans assez d’écus", () => {
+  const E = mk();
+  const c0 = E.traceCost();
+  assert.strictEqual(c0, D.COMPTOIR.trace);
+  const fail = E.buyTrace();
+  assert.strictEqual(fail.ok, false);
+  assert.strictEqual(fail.why, "ecus");
+  E.state.ecus = c0 + 10;
+  const r = E.buyTrace();
+  assert.ok(r.ok);
+  assert.strictEqual(E.state.meta.traces, 1);
+  assert.strictEqual(E.state.meta.tracesTotal, 1);
+  assert.strictEqual(E.state.comptoir.traces, 1);
+  const c1 = E.traceCost();
+  assert.ok(c1 > c0, "le prix d’une Trace monte");
+  assert.ok(Math.abs(c1 - c0 * D.COMPTOIR.traceUp) < 1e-6);
+});
+test("après newCycle() : 0 écu, comptoir vide, Traces achetées toujours là", () => {
+  const E = mk();
+  E.state.ecus = 5000;
+  E.buyTrace();
+  E.add("bois", 100);
+  E.sell("bois", 50);
+  assert.strictEqual(E.state.meta.traces, 1);
+  assert.strictEqual(E.state.comptoir.traces, 1);
+  assert.strictEqual(E.state.comptoir.sold.bois, 50);
+  E.state.pass.plaine = { paid: {}, done: true };
+  E.newCycle();
+  assert.strictEqual(E.state.ecus, 0);
+  assert.deepStrictEqual(E.state.comptoir, { sold: {}, traces: 0 });
+  assert.ok(E.state.meta.traces >= 1, "Traces achetées gardées");
+  assert.ok(E.state.meta.tracesTotal >= 1);
+});
+test("sauvegarde sans ecus ou corrompue : se charge nettoyée", () => {
+  const E = mk();
+  const raw = E.serialize();
+  const o = JSON.parse(raw);
+  delete o.ecus;
+  delete o.comptoir;
+  const F = mk();
+  F.load(JSON.stringify(o));
+  assert.strictEqual(F.state.ecus, 0);
+  assert.deepStrictEqual(F.state.comptoir, { sold: {}, traces: 0 });
+
+  const o2 = JSON.parse(raw);
+  o2.ecus = "abc";
+  o2.comptoir = 42;
+  F.load(JSON.stringify(o2));
+  assert.strictEqual(F.state.ecus, 0);
+  assert.deepStrictEqual(F.state.comptoir, { sold: {}, traces: 0 });
+});
+test("sérialiser puis recharger garde écus et quantités vendues", () => {
+  const E = mk();
+  E.state.ecus = 123.45;
+  E.state.comptoir = { sold: { bois: 250, fibre: 80 }, traces: 2 };
+  const F = mk();
+  F.load(E.serialize());
+  assert.strictEqual(F.state.ecus, 123.45);
+  assert.strictEqual(F.state.comptoir.traces, 2);
+  assert.strictEqual(F.state.comptoir.sold.bois, 250);
+  assert.strictEqual(F.state.comptoir.sold.fibre, 80);
+});
+test("acheter une matière : seulement en terre ouverte, coût 3x valeur sans saturation", () => {
+  const E = mk();
+  assert.ok(E.canBuyRes("bois"), "Lisière est ouverte au départ");
+  assert.strictEqual(E.canBuyRes("os"), false, "Plaine n’est pas ouverte");
+  const cost = E.buyResCost("bois", 100);
+  assert.strictEqual(cost, 100 * D.COMPTOIR.buy * E.value("bois"));
+  assert.strictEqual(cost, 100 * 3 * 0.1);
+  const fail = E.buyRes("bois", 100);
+  assert.strictEqual(fail.ok, false);
+  assert.strictEqual(fail.why, "ecus");
+  E.state.ecus = 50;
+  const r = E.buyRes("bois", 100);
+  assert.ok(r.ok);
+  assert.strictEqual(E.count("bois"), 100);
+  assert.strictEqual(E.state.ecus, 20);
+  const rOs = E.buyRes("os", 10);
+  assert.strictEqual(rOs.ok, false);
+  assert.strictEqual(rOs.why, "unavailable");
+  E.state.zones.plaine = true;
+  assert.ok(E.canBuyRes("os"));
+  const rOsOk = E.buyRes("os", 10);
+  assert.ok(rOsOk.ok);
+  assert.strictEqual(E.count("os"), 10);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
+
