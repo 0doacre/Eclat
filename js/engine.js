@@ -84,6 +84,7 @@
       dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
       hand: { q: [], p: 0 }, studied: {}, skills: {}, act: null,
       proj: {}, endings: {},
+      ecus: 0, comptoir: { sold: {}, traces: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {} },
@@ -1798,6 +1799,123 @@
     }
     E.endingsCount = () => Object.keys(S.meta.endings).length;
 
+    /* ----------------------------------------------------------- LE COMPTOIR
+     * Marché tenu par le Troqueur dans la Plaine : on vend ce qui encombre la
+     * Réserve contre des écus, et on achète des Traces et des matières premières. */
+    const VAL_CACHE = {};
+    function valueOf(id) {
+      if (VAL_CACHE[id] !== undefined) return VAL_CACHE[id];
+      const it = D.ITEMS[id];
+      if (!it) return 0;
+      if (it.r) {
+        const [, ing, qty] = it.r;
+        let sum = 0;
+        for (const i in ing) sum += valueOf(i) * ing[i];
+        return (VAL_CACHE[id] = (sum / (qty || 1)) * D.COMPTOIR.work);
+      }
+      if (it.t === "res") {
+        return (VAL_CACHE[id] = D.COMPTOIR.raw * Math.pow(D.COMPTOIR.rawAge, it.a || 0));
+      }
+      return (VAL_CACHE[id] = 0);
+    }
+    E.value = valueOf;
+
+    E.sellable = function (id) {
+      const it = D.ITEMS[id];
+      if (!it) return false;
+      if (it.t !== "res" && it.t !== "comp") return false;
+      if (isUnique(it)) return false;
+      return true;
+    };
+
+    E.soldCount = (id) => (S.comptoir && S.comptoir.sold && S.comptoir.sold[id]) || 0;
+
+    E.unitPrice = function (id) {
+      const v = valueOf(id);
+      if (!(v > 0)) return 0;
+      const q = E.soldCount(id), sat = D.COMPTOIR.sat;
+      return v / (1 + q / sat);
+    };
+
+    E.sellQuote = function (id, n) {
+      n = Math.floor(Number(n));
+      if (!(n > 0) || !E.sellable(id)) return 0;
+      const v = valueOf(id);
+      if (!(v > 0)) return 0;
+      const q = E.soldCount(id), sat = D.COMPTOIR.sat;
+      return v * sat * Math.log((sat + q + n) / (sat + q));
+    };
+
+    E.sell = function (id, n) {
+      n = Math.floor(Number(n));
+      if (!(n > 0)) return { ok: false, why: "qty" };
+      if (!E.sellable(id)) return { ok: false, why: "unsellable" };
+      if (count(id) < n) return { ok: false, why: "missing" };
+      const ecus = E.sellQuote(id, n);
+      add(id, -n);
+      S.ecus = (S.ecus || 0) + ecus;
+      S.comptoir = S.comptoir || { sold: {}, traces: 0 };
+      S.comptoir.sold = S.comptoir.sold || {};
+      S.comptoir.sold[id] = (S.comptoir.sold[id] || 0) + n;
+      E.emit("sold", { id, n, ecus });
+      E.emit("struct");
+      return { ok: true, n, ecus };
+    };
+
+    E.traceCost = function () {
+      const k = (S.comptoir && S.comptoir.traces) || 0;
+      const C = D.COMPTOIR;
+      return C.trace * Math.pow(C.traceAge, S.age || 0) * Math.pow(C.traceUp, k);
+    };
+
+    E.buyTrace = function () {
+      const cost = E.traceCost();
+      if ((S.ecus || 0) < cost) return { ok: false, why: "ecus", need: cost };
+      S.ecus -= cost;
+      S.comptoir = S.comptoir || { sold: {}, traces: 0 };
+      S.comptoir.traces = (S.comptoir.traces || 0) + 1;
+      S.meta.traces = (S.meta.traces || 0) + 1;
+      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + 1;
+      E.emit("bought", { kind: "trace", ecus: cost });
+      E.emit("struct");
+      return { ok: true, ecus: cost };
+    };
+
+    function canBuyRes(id) {
+      const it = D.ITEMS[id];
+      if (!it || it.t !== "res") return false;
+      return D.ZONES.some((z) => zoneOpen(z.id) && z.res.includes(id));
+    }
+    E.canBuyRes = canBuyRes;
+
+    E.buyResCost = (id, n) => (Math.floor(Number(n)) || 0) * D.COMPTOIR.buy * valueOf(id);
+
+    E.buyableRes = function () {
+      const seen = {}, list = [];
+      D.ZONES.forEach((z) => {
+        if (!zoneOpen(z.id)) return;
+        z.res.forEach((r) => {
+          if (!seen[r]) { seen[r] = true; list.push(r); }
+        });
+      });
+      return list;
+    };
+
+    E.buyRes = function (id, n) {
+      n = Math.floor(Number(n));
+      if (!(n > 0)) return { ok: false, why: "qty" };
+      if (!canBuyRes(id)) return { ok: false, why: "unavailable" };
+      const cost = E.buyResCost(id, n);
+      if ((S.ecus || 0) < cost) return { ok: false, why: "ecus", need: cost };
+      S.ecus -= cost;
+      add(id, n);
+      E.emit("bought", { kind: "res", id, n, ecus: cost });
+      E.emit("struct");
+      return { ok: true, id, n, ecus: cost };
+    };
+
+    E.comptoirOpen = () => zoneOpen(D.COMPTOIR.zone);
+
     /* Nouveau cycle : le Semeur suivant s’éveille. On garde le savoir. */
     E.newCycle = function () {
       const old = S;
@@ -2008,6 +2126,22 @@
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
       if (!o.tried || typeof o.tried !== "object") o.tried = {};
+      const ec = Number(o.ecus);
+      o.ecus = Number.isFinite(ec) && ec >= 0 ? ec : 0;
+      const cp = o.comptoir;
+      if (!cp || typeof cp !== "object" || Array.isArray(cp)) {
+        o.comptoir = { sold: {}, traces: 0 };
+      } else {
+        const sold = {};
+        if (cp.sold && typeof cp.sold === "object" && !Array.isArray(cp.sold)) {
+          for (const id in cp.sold) {
+            const q = Number(cp.sold[id]);
+            if (Number.isFinite(q) && q > 0) sold[id] = q;
+          }
+        }
+        const tr = Math.max(0, Math.floor(Number(cp.traces)) || 0);
+        o.comptoir = { sold, traces: tr };
+      }
       checkHand(o);
       checkDom(o);
       // compétences et action en cours : des nombres, et une action qui a un sens

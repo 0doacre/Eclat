@@ -308,7 +308,8 @@
     $("#modal").classList.add("hidden");
     U.mcur = null;
     if (o && o.onClose) o.onClose();
-    setTimeout(nextModal, 60);
+    // une fenêtre ouverte entre-temps (une liste ouverte depuis une fiche) reste ouverte
+    setTimeout(() => { if (!U.mcur) nextModal(); }, 60);
   }
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
   const fresh = () => Date.now() - (U.mAt || 0) < 450;
@@ -2129,6 +2130,7 @@
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
       "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une matière, pour savoir avec quels gestes elle cache encore des recettes.</dd>" +
       "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde avec tes recettes, et les Traces achètent des mains plus habiles (Mémoire des mains).</dd>" +
+      "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des matières premières.</dd>" +
       "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
       "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Il se nourrit dans la Réserve.</dd></dl>" +
       '<h3 class="sub">Les écrans</h3>' +
@@ -2180,9 +2182,11 @@
   function confirmCycle() {
     const st = S();
     const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0), gain = E.releveGain();
+    const ecus = Math.floor(st.ecus || 0);
+    const ecusWarn = ecus > 0 ? '<p class="small" style="color:var(--bad)">Tes ' + fmt(ecus) + ' écus seront perdus : convertis-les en Traces au Comptoir avant.</p>' : '';
     openModal({
       html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
-        "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + leftHTML() +
+        "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusWarn + leftHTML() +
         '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
       on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; U.zone = "lisiere"; U.domAll = false; U.domOpen = null; setTab("domaine"); setTimeout(intro, 200); } }

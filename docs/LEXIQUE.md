@@ -49,6 +49,7 @@ Chaque fiche affiche la sorte d’objet et une phrase qui dit à quoi elle sert 
 | **Passage** | Ce qu’il faut verser pour entrer dans une nouvelle terre. |
 | **Intuition ✨** | Se gagne en découvrant ; sert à étudier une matière. |
 | **Traces ✦** | Laissées par chaque passage franchi ; achètent la Mémoire des mains. |
+| **Comptoir, écus** | Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des matières premières. |
 | **Relève** | Recommencer le monde en gardant ses recettes. Le bouton dit « Passer le relais ». |
 | **Grand Œuvre** | Chantier final qui mène à une fin. |
 

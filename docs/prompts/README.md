@@ -25,3 +25,5 @@ puis la fusionne.
   Sert de modèle pour les âges suivants : change la liste des matières et le nom de l’âge.
 - `comptoir-5-4.md` : le Comptoir (écus, vente, achat de Traces), version 5.4.0. La consigne
   de livraison est déjà incluse.
+- `machines-5-5.md` : machines à paliers (ingrédients, profondeur) et onglet Machines dans
+  l’Atelier, version 5.5.0. La consigne de livraison est déjà incluse.
