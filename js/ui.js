@@ -168,7 +168,13 @@
       if (it.t === "ext") out.push("Se pose sur un gisement " + deZone(it.z) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
       else out.push("Chacun : " + Object.keys(it.p).map((r) => fmtRate(it.p[r] * m) + " " + I[r].n).join(", "));
     }
-    if (it.t === "mach") out.push("Machine : " + fmtNum(it.spd * E.cache().aspd) + " fabrications/min");
+    if (it.t === "mach") {
+      out.push("Machine : " + fmtNum(it.spd * E.cache().aspd) + " fabrications/min");
+      if (it.ing === 1) out.push("Recettes à 1 ingrédient");
+      else if (it.ing) out.push("Recettes à " + it.ing + " ingrédients au plus");
+      if (it.prof === 1) out.push("Fabrique aussi les pièces qui manquent (1 niveau)");
+      else if (it.prof === 2) out.push("Fabrique aussi les pièces qui manquent (2 niveaux)");
+    }
     if (e.intu) out.push("+" + e.intu + " ✨/min");
     if (e.exp) out.push("Explorations " + fmtMul(e.exp));
     if (e.sky) out.push("Ouvre le Cosmos");
@@ -339,7 +345,7 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
@@ -744,12 +750,13 @@
   /* les onglets arrivent quand ils ont quelque chose à montrer : le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
   /* quatre onglets : le Carnet se range dans l’Atelier, le Cosmos dans le Journal */
-  const PARENT = { carnet: "atelier", cosmos: "journal" };
+  const PARENT = { carnet: "atelier", machines: "atelier", cosmos: "journal" };
   function tabAvailable(t) {
     const st = S();
     if (t === "cosmos") return E.cache().sky;
     if (t === "journal" && E.cache().sky) return true;
     if (t === "carnet") return Object.keys(st.known).length > 0;
+    if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0);
     if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0;
     return true;
   }
@@ -786,10 +793,16 @@
     // l’Intuition se montre quand elle commence à servir
     $("#intuBtn").classList.toggle("hidden", Object.keys(S().known).length < 3 && !Object.keys(S().studied).length);
   }
-  /* les deux pages d’un même onglet */
-  function subTabs(a, b, na, nb) {
-    if (!tabAvailable(b)) return "";
-    return '<div class="subtabs"><button data-tab2="' + a + '" class="' + (U.tab === a ? "on" : "") + '">' + na + '</button><button data-tab2="' + b + '" class="' + (U.tab === b ? "on" : "") + '">' + nb + (U.badges[b] ? ' <i class="dot"></i>' : "") + "</button></div>";
+  /* les onglets d’un même groupe (2 ou 3 pages) */
+  function subTabs(...args) {
+    let list;
+    if (args.length === 6) list = [[args[0], args[3]], [args[1], args[4]], [args[2], args[5]]];
+    else list = [[args[0], args[2]], [args[1], args[3]]];
+    const avail = list.filter(([t]) => tabAvailable(t));
+    if (avail.length <= 1) return "";
+    return '<div class="subtabs">' + avail.map(([t, lbl]) =>
+      '<button data-tab2="' + t + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
+    ).join("") + "</div>";
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); if (PARENT[t] === U.tab) render(true); } }
 
@@ -811,6 +824,7 @@
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
+    else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
@@ -1069,7 +1083,7 @@
   /* ------------------------------------------------------------ ATELIER */
   function viewAtelier() {
     const st = S();
-    let h = subTabs("atelier", "carnet", "Découvrir", "Carnet");
+    let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
     if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
     if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque geste est son niveau : il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
@@ -1266,7 +1280,7 @@
     const book = E.carnet();
     let known = 0, total = 0;
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
-    let h = subTabs("atelier", "carnet", "Découvrir", "Carnet");
+    let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
     if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
@@ -1275,6 +1289,12 @@
     h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     return h + '<div id="clist">' + carnetList() + "</div>";
+  }
+
+  function viewMachines() {
+    let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
+    h += Dom.machinesView ? Dom.machinesView() : "";
+    return h;
   }
   function visibleRecipes() {
     const st = S();
@@ -1576,6 +1596,7 @@
     $$("[data-gleft]", view).forEach((el) => { el.textContent = fmt(Math.max(0, Number(el.dataset.q) - (st.inv[el.dataset.gleft] || 0))); });
     $$("[data-exp]", view).forEach((b) => b.classList.toggle("nope", !!expWhy(b.dataset.exp)));
     if (U.tab === "domaine") { Dom.live($("#v-domaine")); soundScene(); }
+    if (U.tab === "machines") { Dom.live($("#v-machines")); soundScene(); }
     if (U.tab === "carte") Carte.live($("#v-carte"));
     if (U.tab === "atelier") {
       const f = $("#forge");
@@ -1938,10 +1959,14 @@
             const sta = opt.heat ? E.stationFor("chauffer", opt.heat, 0) : E.stationFor(it.r[0], 0, opt.lvl);
             if (sta) h += '<p class="tiny muted">Station : ' + nav(sta) + (S().made[sta] || E.count(sta) >= 1 ? " ✓ tu l’as" : "") + "</p>";
           }
+          if (E.automatable(id)) {
+            const mneed = E.machFor(id);
+            if (mneed && I[mneed]) h += '<p class="small muted">Machine : ' + esc(I[mneed].n) + " ou mieux</p>";
+          }
           if (!owned && !b) {
             h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +
               '<button class="btn small ghost" data-m="tree">🌳 Détail</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯 Suivre</button>') +
-              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Confier ça à une machine du Domaine">🏭 À une machine</button>' : "") + "</div>";
+              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Confier ça à une machine">🏭 À une machine</button>' : "") + "</div>";
           }
         } else {
           const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
@@ -1982,7 +2007,7 @@
         pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
         fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier") render(true); return true; },
         study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier") render(true); } redraw(); return true; },
-        usine: () => { setTimeout(() => { setTab("domaine"); Dom.chainFor(id); }, 60); },
+        usine: () => { setTimeout(() => { setTab("machines"); Dom.chainFor(id); }, 60); },
         carnet: () => { setTimeout(() => showInCarnet(id), 60); }
       }
     };
@@ -2119,13 +2144,13 @@
       '<h3 class="sub">Les mots du jeu</h3><dl class="lexique">' +
       "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Tout ce qui est récolté ou fabriqué y va ; tout ce qui se fabrique y puise.</dd>" +
       "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement, c’est une matière à récolter.</dd>" +
-      "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt pour continuer), ou ▶ pour récolter en continu.</dd>" +
+      "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt pour continuer), ou ▶ pour récolter en continu. Parfois, un appui rapporte le double : un coup de chance.</dd>" +
       "<dt>Geste, recette</dt><dd>Une recette, c’est un geste (Tailler, Tresser…) et des matières. On les découvre à l’Atelier, en essayant.</dd>" +
       "<dt>Pièce</dt><dd>Un objet fabriqué qui sert à en fabriquer d’autres (manche, corde…).</dd>" +
       "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
       "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et ouvre un geste, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
       "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même jeu fermé.</dd>" +
-      "<dt>Machine</dt><dd>Automate, presse… Dans le Domaine, elle refait une recette en boucle avec ce qu’il y a dans la Réserve. « Mettre au travail » lui donne sa recette.</dd>" +
+      "<dt>Machine</dt><dd>Automate, presse… Dans l’onglet Machines de l’Atelier, elle refait une recette en boucle avec ce qu’il y a dans la Réserve. Un automate de bois ne fait que des recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse jusqu’à 3 ; les plus grandes fabriquent aussi les pièces qui manquent.</dd>" +
       "<dt>Tes mains</dt><dd>Ce que tu fabriques toi-même passe par la file de tes mains (barre ✋ au-dessus des onglets), une pièce après l’autre.</dd>" +
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
       "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une matière, pour savoir avec quels gestes elle cache encore des recettes.</dd>" +
@@ -2134,9 +2159,9 @@
       "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
       "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Il se nourrit dans la Réserve.</dd></dl>" +
       '<h3 class="sub">Les écrans</h3>' +
-      "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, tes machines, les passages et le Grand Œuvre. Touche une ligne pour sa fiche.</p>" +
+      "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
       "<p><b>🗺️ Carte.</b> Le monde, et la brume sur ce que tu n’as pas atteint. Touche un 🧭 lieu pour l’explorer : il raconte un bout de l’histoire.</p>" +
-      "<p><b>🔨 Atelier.</b> Choisis un geste, pose jusqu’à trois matières, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Sa deuxième page, le <b>Carnet</b>, garde toutes tes recettes : <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent, <b>⟳ En boucle</b> continue tant qu’il y a de quoi, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine.</p>" +
+      "<p><b>🔨 Atelier.</b> Choisis un geste, pose jusqu’à trois matières, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent, <b>⟳ En boucle</b> continue tant qu’il y a de quoi, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> fabriquent en boucle pour toi.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
       "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même : 1 % plus rapide par niveau, et une chance de pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
       "<p><b>Jeu fermé.</b> Extracteurs, machines, tes mains et ce qui tourne en boucle continuent jusqu’à 12 h.</p>" +
@@ -2492,7 +2517,7 @@
       if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
       if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
-      if ((b = t.closest("[data-autoline]"))) { setTab("domaine"); Dom.chainFor(b.dataset.autoline); return; }
+      if ((b = t.closest("[data-autoline]"))) { setTab("machines"); Dom.chainFor(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
@@ -2538,6 +2563,8 @@
     views.addEventListener("change", (ev) => {
       const t = ev.target;
       if (t.id === "isort") { S().settings.inv = Object.assign({}, S().settings.inv, { sort: t.value }); render(true); }
+      if (t.dataset.mcap) { E.domMachSet(t.dataset.mcap, { cap: Number(t.value) }); A.click(); render(true); }
+      if (t.dataset.mtype) { E.domMachSet(t.dataset.mtype, { m: t.value }); A.click(); render(true); }
     });
     views.addEventListener("input", (ev) => {
       if (ev.target.id === "iq") { U.iq = ev.target.value; render(true); return; }

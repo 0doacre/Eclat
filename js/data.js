@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.4.0";
+  D.VERSION = "5.5.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -134,7 +134,7 @@
     h: "La pierre noire de la rivière cache un bord qui coupe." };
   I.engrenage_bois = { n: "Rouage de bois", sym: "⚙", col: "#9a6b3c", a: 2, t: "comp", r: ["tailler", { manche: 2, eclat: 1 }, 2],
     d: "Une petite roue dentée, taillée dans un bâton.", h: "Un bâton, taillé en roue dentée par une lame de pierre." };
-  I.automate_bois = { n: "Automate de bois", sn: "automate de bois", pl: "automates de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
+  I.automate_bois = { n: "Automate de bois", sn: "automate de bois", pl: "automates de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, ing: 1, prof: 0, r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
     d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Dans le Domaine, confie-lui une recette.",
     h: "Des rouages de bois, des cordes, et un lourd contrepoids." };
   I.hache_pierre = { n: "Hache de pierre", ic: "🪓", a: 2, t: "tool", r: ["assembler", { manche: 2, eclat: 4, laniere: 4 }, 1],
@@ -212,7 +212,7 @@
     d: "Une roue qui en fait tourner une autre.", h: "Une feuille dorée, découpée en roue dentée." };
   I.ressort = { n: "Ressort de bronze", sym: "⌇", col: "#c8963e", a: 4, t: "comp", r: ["marteler", { lingot_bronze: 1, fil_cuivre: 2 }, 2],
     d: "Il veut toujours revenir à sa forme.", h: "Le métal doré battu autour d’un fil rouge, jusqu’à ce qu’il veuille revenir." };
-  I.automate_bronze = { n: "Automate de bronze", sn: "automate de bronze", pl: "automates de bronze", ic: "🦿", a: 4, t: "mach", s: 1.25, spd: 15, r: ["assembler", { engrenage: 15, ressort: 8, plaque_bronze: 10 }, 1],
+  I.automate_bronze = { n: "Automate de bronze", sn: "automate de bronze", pl: "automates de bronze", ic: "🦿", a: 4, t: "mach", s: 1.25, spd: 15, ing: 2, prof: 0, r: ["assembler", { engrenage: 15, ressort: 8, plaque_bronze: 10 }, 1],
     d: "Engrenages, ressorts, corps de bronze. Il ne se fatigue pas (15 fabrications par minute).",
     h: "Des roues dentées dorées, des ressorts, un corps de métal doré." };
   I.hache_bronze = { n: "Hache de bronze", ic: "🪓", a: 4, t: "tool", r: ["assembler", { manche: 4, plaque_bronze: 10, laniere: 9 }, 1],
@@ -319,7 +319,7 @@
     d: "Un ventre de fer. L’eau y bout sous pression.", h: "Des tôles battues et rivetées en un ventre étanche." };
   I.moteur_vapeur = { n: "Moteur à vapeur", ic: "🚂", a: 6, t: "comp", r: ["assembler", { chaudiere: 1, piston: 2, engrenage_acier: 4 }, 1],
     d: "La première machine qui travaille sans toi.", h: "Un ventre de fer bouillant, des cylindres qui poussent, des roues dentées." };
-  I.presse_vapeur = { n: "Presse à vapeur", sn: "presse", pl: "presses", ic: "📠", a: 6, t: "mach", s: 1.25, spd: 40, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
+  I.presse_vapeur = { n: "Presse à vapeur", sn: "presse", pl: "presses", ic: "📠", a: 6, t: "mach", s: 1.25, spd: 40, ing: 3, prof: 0, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
     d: "Une machine-outil qui siffle et cogne toute la journée (40 fabrications par minute).",
     h: "Un moteur à vapeur, des roulements, un bâti de tôle." };
   I.pompe = { n: "Pompe d’exhaure", ic: "⛽", a: 6, t: "upg", r: ["assembler", { moteur_vapeur: 4, plaque_fer: 55 }, 1],
@@ -404,7 +404,7 @@
     h: "Des cerveaux de silicium, de l’énergie, un écran incassable." };
   I.robots = { n: "Robots ouvriers", ic: "🤖", a: 8, t: "upg", r: ["assembler", { processeur: 45, moteur_elec: 75, acier_trempe: 180 }, 1],
     e: { auto: { "*": 1.5 } }, d: "Ils ne dorment jamais.", h: "Des cerveaux, des muscles électriques, un squelette d’acier." };
-  I.chaine = { n: "Ligne d’assemblage", sn: "ligne d’assemblage", pl: "lignes d’assemblage", ic: "🏗️", a: 8, t: "mach", s: 1.3, spd: 120,
+  I.chaine = { n: "Ligne d’assemblage", sn: "ligne d’assemblage", pl: "lignes d’assemblage", ic: "🏗️", a: 8, t: "mach", s: 1.3, spd: 120, ing: 3, prof: 1,
     r: ["assembler", { processeur: 10, moteur_elec: 20, lingot_acier: 150 }, 1],
     d: "Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium. Elle fabrique 120 fois par minute.",
     h: "Des cerveaux, des moteurs, des tapis d’acier." };
@@ -515,7 +515,7 @@
   I.ia = { n: "Intelligence artificielle", ic: "🧠", a: 11, t: "upg", r: ["assembler", { processeur: 720, supra: 200, graphene: 280 }, 1],
     e: { aspd: 3, intu: 5 }, d: "Toutes tes machines vont trois fois plus vite. (+5 ✨/min.)",
     h: "Des dizaines de cerveaux, des aimants parfaits, des feuilles d’atomes." };
-  I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 11, t: "mach", s: 1.3, spd: 600, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
+  I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 11, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
     d: "Il assemble la matière atome par atome (600 fabrications par minute).",
     h: "Des cerveaux, des aimants parfaits, des circuits par dizaines." };
 
@@ -898,10 +898,15 @@
     { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Passages ×{v} du prix.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
     { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "des matières, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
     { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
+    { id: "oeil", n: "Coup d’œil", ic: "✨", d: "En récoltant à la main, {v} de chances d’un coup de chance (×2).", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 24, 48] },
     { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps compte jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
   ];
   /* ce que contient le paquetage, niveau par niveau (cumulé) */
   D.PAQUETAGE = [{ bois: 60, fibre: 60, caillou: 30, manche: 4, corde: 4 }, { cabane: 1 }, { cabane: 2, feu: 1 }];
+
+  /* Coup de chance : de temps en temps, un appui récolte double (6 % au départ, +4 % par
+   * niveau de « Coup d’œil » dans la Mémoire des mains). */
+  D.CRIT = { chance: 0.06, up: 0.04, mult: 2 };
 
   /* Un âge accompli (toutes ses étapes faites) rapporte un peu d’Intuition. */
   D.AGE_DONE = 3;
@@ -959,11 +964,11 @@
   };
 
   D.CHANGES = [
-    "🪙 Le Comptoir : vends ce qui encombre la Réserve contre des écus, auprès du Troqueur dans la Plaine.",
-    "📉 Saturation : plus tu vends d’une même matière pendant un cycle, plus son prix baisse.",
-    "✦ Convertis tes écus en Traces avant la relève pour renforcer la Mémoire des mains.",
-    "📦 Achète les matières premières des terres déjà ouvertes pour compléter tes fabrications.",
-    "🔧 Dans la fiche d’une machine, « Choisir une recette » ouvre bien la liste."
+    "⚙️ Paliers des machines : chaque machine a un nombre d’ingrédients maximum qu’elle sait assembler.",
+    "🧬 Profondeur : les lignes d’assemblage et assembleurs fabriquent eux-mêmes les pièces intermédiaires manquantes.",
+    "🏭 Nouvel onglet Machines dans l’Atelier : chaque groupe a sa carte avec tous ses réglages visibles.",
+    "📋 Dans le Carnet, chaque recette indique la machine minimale requise.",
+    "✨ Coup de chance : en récoltant à la main, un appui rapporte parfois le double, avec des étincelles. « Coup d’œil », dans la Mémoire des mains, le rend plus fréquent."
   ];
 
 

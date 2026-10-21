@@ -751,3 +751,6 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .comptoir-trace { text-align: center; margin: 8px 0 14px; }
 .big-btn { width: 100%; min-height: 48px; font-size: 15px; font-weight: 700; }
 
+.hcount.crit { color: #ffd36b; border-color: #ffd36b; }
+/* le compteur de récolte au-dessus du nom de la matière, jamais coupé par le bord de l’écran */
+.gis > .hcount { left: 58px; top: -8px; transform: none; font-size: 14px; }

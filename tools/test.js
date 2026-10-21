@@ -279,7 +279,7 @@ test("« +1 » : un extracteur libre est posé, sinon les mains le fabriquent pu
 });
 test("machines : celle qui fait un ingrédient passe avant celle qui s’en sert", () => {
   const E = mk();
-  E.add("automate_bois", 2);
+  E.add("automate_bronze", 1); E.add("automate_bois", 1);
   stations(E, ["etabli"]);
   ["manche", "corde", "archet"].forEach((k) => (E.state.known[k] = true));
   E.add("bois", 100); E.add("corde", 100);
@@ -1158,5 +1158,113 @@ test("acheter une matière : seulement en terre ouverte, coût 3x valeur sans sa
   assert.strictEqual(E.count("os"), 10);
 });
 
-console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
+console.log("Machines à paliers");
+test("machines : machCan vérifie le nombre d’ingrédients selon le palier", () => {
+  const E = mk();
+  assert.ok(E.machCan("automate_bois", "manche"), "manche : 1 ingrédient");
+  assert.ok(!E.machCan("automate_bois", "lingot_bronze"), "lingot de bronze : 2 ingrédients (cuivre + étain)");
+  assert.ok(E.machCan("automate_bronze", "lingot_bronze"));
+  assert.ok(E.machCan("presse_vapeur", "moteur_vapeur"), "moteur à vapeur : 3 ingrédients");
+  assert.ok(!E.machCan("automate_bronze", "moteur_vapeur"));
+  assert.strictEqual(E.machFor("manche"), "automate_bois");
+  assert.strictEqual(E.machFor("lingot_bronze"), "automate_bronze");
+  assert.strictEqual(E.machFor("moteur_vapeur"), "presse_vapeur");
+});
+test("machines : domMachAdd choisit une machine capable ou refuse avec why tier", () => {
+  const E = mk();
+  ["manche", "archet"].forEach((k) => (E.state.known[k] = true));
+  E.add("automate_bois", 1);
+  const r1 = E.domMachAdd("archet");
+  assert.strictEqual(r1.ok, false);
+  assert.strictEqual(r1.why, "tier");
+  assert.strictEqual(r1.need, "automate_bronze");
+  E.add("automate_bronze", 1);
+  const r2 = E.domMachAdd("archet");
+  assert.ok(r2.ok);
+  assert.strictEqual(r2.e.m, "automate_bronze");
+  const r3 = E.domMachAdd("manche");
+  assert.ok(r3.ok);
+  assert.strictEqual(r3.e.m, "automate_bois");
+  // domMachSet refuse aussi un changement vers une machine incapable
+  E.add("automate_bois", 1);
+  const switched = E.domMachSet(r2.e.id, { m: "automate_bois" });
+  assert.strictEqual(switched.m, "automate_bronze", "changement refusé");
+});
+test("machines : sauvegarde avec automate de bois sur recette trop complexe se charge à l’arrêt tier", () => {
+  const E = mk();
+  E.add("automate_bois", 1);
+  E.state.known.archet = true;
+  // Une sauvegarde ancienne où l’automate avait une recette à 2 ingrédients
+  E.state.dom.mach.push({ id: "M1", m: "automate_bois", r: "archet", n: 1, on: true, cap: 0 });
+  E.state.dom.ms["M1"] = { p: 0.5, b: { manche: 2 } };
+  const txt = E.serialize();
+  const F = mk();
+  F.load(txt);
+  assert.strictEqual(F.state.dom.mach[0].r, "archet", "recette gardée");
+  assert.strictEqual(F.state.dom.ms["M1"].b.manche, 2, "matières mises de côté conservées");
+  run(F, 10);
+  assert.strictEqual(F.machInfo("M1").s, "tier", "à l’arrêt tier");
+  assert.strictEqual(F.state.dom.ms["M1"].b.manche, 2, "rien de perdu");
+});
+test("machines : profondeur, la ligne d’assemblage fabrique elle-même la pièce manquante", () => {
+  // archet : { manche: 1, corde: 2 } (2 ingrédients)
+  // manche : { bois: 3 } (1 ingrédient)
+  const E1 = mk();
+  ["manche", "corde", "archet"].forEach((k) => (E1.state.known[k] = true));
+  E1.add("chaine", 1);
+  E1.add("manche", 100);
+  E1.add("corde", 200); // manche déjà en réserve
+  E1.domMachAdd("archet");
+  run(E1, 60);
+  const madeWithStock = E1.count("archet");
 
+  const E2 = mk();
+  ["manche", "corde", "archet"].forEach((k) => (E2.state.known[k] = true));
+  E2.add("chaine", 1);
+  E2.add("bois", 600);
+  E2.add("corde", 200); // pas de manche en réserve, mais du bois pour les faire
+  assert.strictEqual(E2.count("manche"), 0);
+  E2.domMachAdd("archet");
+  run(E2, 60);
+  const madeWithSub = E2.count("archet");
+  assert.ok(madeWithSub > 0, "a fabriqué des archets sans manches en réserve : " + madeWithSub);
+  assert.strictEqual(E2.count("manche"), 0, "les manches sous-fabriqués ne vont pas dans la réserve");
+  assert.ok(madeWithSub < madeWithStock, "produit moins vite : " + madeWithSub + " vs " + madeWithStock);
+});
+test("machines : une machine de prof 0 ne fabrique jamais de pièce manquante", () => {
+  const E = mk();
+  ["manche", "corde", "archet"].forEach((k) => (E.state.known[k] = true));
+  E.add("automate_bronze", 1); // prof: 0, ing: 2
+  E.add("bois", 600);
+  E.add("corde", 200); // pas de manche
+  assert.strictEqual(E.count("manche"), 0);
+  const m = E.domMachAdd("archet").e;
+  run(E, 60);
+  assert.strictEqual(E.count("archet"), 0, "rien fabriqué");
+  assert.strictEqual(E.machInfo(m.id).s, "starved");
+  assert.ok(E.machInfo(m.id).miss && E.machInfo(m.id).miss.manche, "il manque le manche");
+});
+
+
+
+console.log("Coup de chance");
+test("récolte à la main : coup de chance ×2, plus fréquent avec « Coup d’œil »", () => {
+  let r = 0.99;
+  const E = createEngine({ now: () => T, rand: () => r });
+  const n = E.tap("bois", "lisiere");
+  assert.ok(!E.lastCrit, "pas de chance à 0,99");
+  r = 0.05;
+  const before = E.count("bois"), m = E.tap("bois", "lisiere");
+  assert.ok(E.lastCrit, "6 % : 0,05 est un coup de chance");
+  assert.strictEqual(m, n * D.CRIT.mult);
+  assert.strictEqual(E.count("bois") - before, m);
+  r = 0.08;
+  E.tap("bois", "lisiere");
+  assert.ok(!E.lastCrit, "0,08 dépasse les 6 % de départ");
+  E.state.meta.mem.oeil = 1;
+  E.tap("bois", "lisiere");
+  assert.ok(E.lastCrit, "avec un niveau de Coup d’œil, 10 %");
+  assert.strictEqual(E.state.stats.crits, 2);
+});
+
+console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
