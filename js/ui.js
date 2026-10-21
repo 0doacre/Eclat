@@ -839,6 +839,7 @@
     refresh();
     ambient();
     soundScene();
+    checkForcedReleve();
   }
   /* l’ancrage : un sélecteur, ou { sel, idx } quand plusieurs éléments le partagent */
   function findAnchor(root, a) { return typeof a === "string" ? root.querySelector(a) : root.querySelectorAll(a.sel)[a.idx] || null; }
@@ -2155,6 +2156,7 @@
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
       "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une matière, pour savoir avec quels gestes elle cache encore des recettes.</dd>" +
       "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde avec tes recettes, et les Traces achètent des mains plus habiles (Mémoire des mains).</dd>" +
+      "<dt>Ruine</dt><dd>Ce qu’un Semeur a construit t’attend au cycle suivant : elle se répare pour une fraction de son coût d’origine, sans repasser par l’Atelier.</dd>" +
       "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des matières premières.</dd>" +
       "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
       "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Il se nourrit dans la Réserve.</dd></dl>" +
@@ -2170,9 +2172,9 @@
 
   function intro() {
     const st = S();
-    const lines = st.cycle > 1
+    const lines = (D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
       ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Ton corps est neuf. Tes souvenirs, non : des recettes entières dansent derrière tes paupières.", "Tu es le Semeur " + (st.cycle + 6) + ". Le précédent a laissé une trace dans ton Carnet."]
-      : D.INTRO;
+      : D.INTRO);
     openModal({
       persistent: true,
       html: '<div class="lore" style="padding:10px 0">' + lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + esc(l) + "</p>").join("") +
@@ -2214,7 +2216,21 @@
         "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusWarn + leftHTML() +
         '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
-      on: { go: () => { pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")"); E.newCycle(); save(); U.slots = [null, null, null]; U.last = null; U.memAfter = true; U.zone = "lisiere"; U.domAll = false; U.domOpen = null; setTab("domaine"); setTimeout(intro, 200); } }
+      on: {
+        go: () => {
+          pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")");
+          E.newCycle();
+          save();
+          U.slots = [null, null, null];
+          U.last = null;
+          U.memAfter = true;
+          U.zone = "lisiere";
+          U.domAll = false;
+          U.domOpen = null;
+          setTab("domaine");
+          openMemoire(() => { setTimeout(intro, 200); });
+        }
+      }
     });
   }
   /* ------------------------------------------------------------ MÉMOIRE DES MAINS
@@ -2267,9 +2283,10 @@
     const P = D.PASSAGES[z], req = E.ZONES[z].req, ready = S().pass[z];
     return '<p class="tiny muted">Prochain passage : <b>' + esc(P.n) + "</b> vers " + esc(zoneName(z)) + " (+" + P.tr + " ✦)" + (ready ? "." : I[req] ? ", après " + esc(I[req].n) + "." : ".") + "</p>";
   }
-  function openMemoire() {
+  function openMemoire(onClose) {
     const o = {
       html: memHTML(),
+      onClose,
       on: {
         buy: (b) => {
           if (E.memBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([10, 30, 10]); save(); }
@@ -2286,6 +2303,43 @@
     };
     openModal(o);
   }
+
+  function openForcedReleve() {
+    openModal({
+      persistent: true,
+      html: '<div class="kicker">La relève</div><h2>La nuit tombe</h2>' +
+        '<div class="lore" style="padding:10px 0">' +
+        '<p style="opacity:0;animation:fadeup 1.2s 0.3s forwards">La nuit tombe sur la Lisière. Près de la cabane, le bois récolté s’empile sans que tu aies à lever la main.</p>' +
+        '<p style="opacity:0;animation:fadeup 1.2s 1.4s forwards">Tes paupières sont lourdes. Tu as fait ce qu’il fallait : posé les premiers gestes, ouvert le premier chemin.</p>' +
+        '<p style="opacity:0;animation:fadeup 1.2s 2.5s forwards">Un autre s’éveillera à cette même lisière. Ce que tes mains ont appris l’attend déjà.</p>' +
+        '</div>' +
+        '<div class="acts" style="opacity:0;animation:fadeup 1.2s 3.2s forwards">' +
+        '<button class="btn pri wide" data-m="go">Passer le relais</button>' +
+        '</div>',
+      on: {
+        go: () => {
+          pushBackup(E.serialize(), "Avant la relève (Semeur 7)");
+          E.forcedReleve();
+          save();
+          U.slots = [null, null, null];
+          U.last = null;
+          U.zone = "lisiere";
+          U.domAll = false;
+          U.domOpen = null;
+          setTab("domaine");
+          openMemoire(() => { setTimeout(intro, 200); });
+        }
+      }
+    });
+  }
+
+  let forcedModalShown = false;
+  function checkForcedReleve() {
+    if (!forcedModalShown && E.canForcedReleve && E.canForcedReleve()) {
+      forcedModalShown = true;
+      setTimeout(openForcedReleve, 400);
+    }
+  }
   function memChip() {
     const m = S().meta, b = $("#memBtn"), can = E.canReleve(), gain = E.releveGain();
     const show = can || m.traces > 0 || m.tracesTotal > 0;
@@ -2299,7 +2353,8 @@
 
   /* ============================================================ ÉVÉNEMENTS DU MOTEUR */
   function bindEngine() {
-    E.on("struct", () => { U.dirty = true; });
+    E.on("struct", () => { U.dirty = true; checkForcedReleve(); });
+    E.on("cycle", () => { forcedModalShown = false; });
     /* un nouvel âge : un vrai moment, dans la file des fenêtres, après la réminiscence qui l’a amené */
     E.on("age", (a) => {
       const ag = D.AGES[a], miles = (E.milestones()[a] || []).filter((x) => !x.done).length;
@@ -2380,6 +2435,7 @@
     E.on("frag", () => badge("journal"));
     E.on("expdone", (r) => {
       A.found();
+      checkForcedReleve();
       if (r.frag) badge("journal");
       if (r.silent) return;
       const F = r.frag && D.FRAGS[r.frag];

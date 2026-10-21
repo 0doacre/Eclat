@@ -1267,4 +1267,124 @@ test("récolte à la main : coup de chance ×2, plus fréquent avec « Coup d’
   assert.strictEqual(E.state.stats.crits, 2);
 });
 
+console.log("Premier parcours et ruines");
+test("une partie neuve a meta.parcours ; une sauvegarde chargée sans ce drapeau ne l’a pas, et n’est jamais forcée", () => {
+  const E1 = mk();
+  assert.strictEqual(E1.state.meta.parcours, 1, "partie neuve a parcours");
+  E1.state.flags.extDone = true;
+  E1.state.exp.done = { lisiere: 1 };
+  assert.ok(E1.canForcedReleve(), "peut faire la première renaissance forcée");
+
+  // Ancienne sauvegarde sans parcours
+  const oldSave = JSON.stringify({
+    v: 5, t: 1000, start: 1000,
+    inv: { bois: 50 }, seen: {}, made: {}, known: {}, hints: {},
+    cycle: 1, flags: { extDone: true }, exp: { done: { lisiere: 1 } },
+    meta: { endings: {}, traces: 0, tracesTotal: 0 }
+  });
+  const E2 = mk();
+  E2.load(oldSave);
+  assert.strictEqual(E2.state.meta.parcours, undefined, "pas de drapeau parcours");
+  assert.ok(!E2.canForcedReleve(), "jamais forcée");
+});
+
+test("forcedReleve() : cycle 2, cadeau de Traces reçu, Carnet gardé, ne se refait pas", () => {
+  const E = mk();
+  E.state.known.cabane = true;
+  assert.strictEqual(E.state.cycle, 1);
+  assert.strictEqual(E.state.meta.traces, 0);
+
+  const res1 = E.forcedReleve();
+  assert.strictEqual(res1, true, "forcedReleve a réussi");
+  assert.strictEqual(E.state.cycle, 2, "maintenant au cycle 2");
+  assert.strictEqual(E.state.meta.traces, D.PARCOURS.gift, "cadeau de 3 Traces reçu");
+  assert.strictEqual(E.state.meta.tracesTotal, D.PARCOURS.gift, "tracesTotal augmenté");
+  assert.ok(E.state.known.cabane, "Carnet gardé");
+  assert.ok(!E.canForcedReleve(), "ne peut plus être forcé");
+
+  const res2 = E.forcedReleve();
+  assert.strictEqual(res2, false, "ne se refait pas");
+  assert.strictEqual(E.state.cycle, 2);
+  assert.strictEqual(E.state.meta.traces, D.PARCOURS.gift);
+});
+
+test("ruines : après une relève avec 5 cabanes et 1 automate, meta.ruins vaut { cabane: 3, automate_bois: 1 } ; réparer coûte bien part du prix, ajoute 1, pose la cabane, décrémente ; sans les matières, ok: false et missing", () => {
+  const E = mk();
+  E.add("cabane", 5);
+  E.add("automate_bois", 1);
+  assert.strictEqual(E.count("cabane"), 5);
+  assert.strictEqual(E.count("automate_bois"), 1);
+
+  E.newCycle();
+
+  assert.deepStrictEqual(E.state.meta.ruins, { cabane: 3, automate_bois: 1 }, "plafond à 3 cabanes et 1 automate");
+  assert.deepStrictEqual(E.ruins(), { cabane: 3, automate_bois: 1 });
+
+  // Coût de réparation de la cabane : part (0.1) du coût de base { manche: 5, corde: 4, fibre: 15 }
+  // manche: ceil(0.5) = 1, corde: ceil(0.4) = 1, fibre: ceil(1.5) = 2
+  const expectedCost = { manche: 1, corde: 1, fibre: 2 };
+  assert.deepStrictEqual(E.ruinCost("cabane"), expectedCost, "coût de réparation");
+
+  // Sans matières : échec
+  const fail = E.repair("cabane");
+  assert.strictEqual(fail.ok, false);
+  assert.strictEqual(fail.why, "missing");
+  assert.deepStrictEqual(fail.missing, expectedCost);
+
+  // Avec une partie des matières : échec
+  E.add("manche", 1);
+  const fail2 = E.repair("cabane");
+  assert.strictEqual(fail2.ok, false);
+  assert.deepStrictEqual(fail2.missing, { corde: 1, fibre: 2 });
+
+  // Avec toutes les matières : succès
+  E.add("corde", 1);
+  E.add("fibre", 5);
+  const ok = E.repair("cabane");
+  assert.strictEqual(ok.ok, true);
+  assert.strictEqual(E.count("manche"), 0, "manche consommé");
+  assert.strictEqual(E.count("corde"), 0, "corde consommée");
+  assert.strictEqual(E.count("fibre"), 3, "2 fibres consommées sur 5");
+  assert.strictEqual(E.count("cabane"), 1, "ajoute 1 à la Réserve");
+  assert.strictEqual(E.state.meta.ruins.cabane, 2, "décrémente les ruines");
+
+  // Posé tout de suite sur un gisement de sa terre
+  const placed = Object.values(E.state.dom.ext).some((e) => e.z === "lisiere" && e.u && e.u.cabane >= 1);
+  assert.ok(placed, "la cabane est posée tout de suite sur un gisement de sa terre");
+});
+
+test("une seconde relève remplace les ruines au lieu de les cumuler", () => {
+  const E = mk();
+  E.add("cabane", 2);
+  E.newCycle();
+  assert.deepStrictEqual(E.state.meta.ruins, { cabane: 2 });
+
+  // Au cycle 2, on ne possède qu'un automate_bois, 0 cabanes
+  E.add("automate_bois", 1);
+  E.newCycle();
+  assert.deepStrictEqual(E.state.meta.ruins, { automate_bois: 1 }, "remplace au lieu de cumuler");
+});
+
+test("sauvegarde avec meta.ruins illisible : se charge, nettoyée", () => {
+  const E1 = mk();
+  E1.load(JSON.stringify({
+    v: 6, t: 1000, start: 1000,
+    inv: { bois: 10 }, seen: {}, made: {}, known: {}, hints: {},
+    meta: { ruins: "corrompu" }
+  }));
+  assert.deepStrictEqual(E1.state.meta.ruins, {}, "chaîne devient objet vide");
+
+  const E2 = mk();
+  E2.load(JSON.stringify({
+    v: 6, t: 1000, start: 1000,
+    inv: { bois: 10 }, seen: {}, made: {}, known: {}, hints: {},
+    meta: { ruins: { cabane: "2", automate_bois: -5, truc_inconnu: 4, autre: "abc" } }
+  }));
+  assert.strictEqual(E2.state.meta.ruins.cabane, 2, "nombre entier positif gardé");
+  assert.strictEqual(E2.state.meta.ruins.automate_bois, undefined, "négatif ignoré");
+  assert.strictEqual(E2.state.meta.ruins.autre, undefined, "invalide ignoré");
+  assert.strictEqual(E2.state.meta.ruins.truc_inconnu, undefined, "inconnu retiré des ruines");
+  assert.strictEqual(E2.state.orphans.ruins.truc_inconnu, 4, "inconnu mis dans orphans");
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

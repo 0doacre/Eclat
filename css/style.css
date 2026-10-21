@@ -496,6 +496,7 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .dom-bar { display: flex; justify-content: flex-end; margin: -4px 0 -6px; }
 .dom-tip { padding: 8px 12px; border-radius: 12px; font-size: 13.5px; background: color-mix(in srgb, var(--intu) 10%, var(--panel)); border: 1px solid color-mix(in srgb, var(--intu) 35%, transparent); }
 .dom-terre { display: flex; flex-direction: column; gap: 8px; }
+.dom-ruine { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: color-mix(in srgb, var(--panel) 75%, transparent); border: 1px dashed var(--line2); border-radius: 10px; margin: 2px 0; }
 .dom-th { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--line2); padding-bottom: 4px; }
 .dom-th h3, .dom-card h3 { margin: 0; font: 600 20px/1.2 var(--serif); }
 .dom-lieu { flex: 1 1 140px; max-width: 220px; }
