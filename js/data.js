@@ -5,14 +5,14 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.7.0";
+  D.VERSION = "5.7.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
     { id: "bois", n: "Âge du Bois", c: "#c58d4e", q: "Tout commence par un bâton." },
     { id: "os", n: "Âge de l’Os", c: "#e6d9b8", q: "Tout ce que laissent les bêtes peut servir." },
     { id: "pierre", n: "Âge de la Pierre", c: "#a7afb8", q: "Le premier tranchant." },
-    { id: "cuivre", n: "Âge du Cuivre", c: "#e0814a", q: "La pierre verte saigne un métal rouge." },
+    { id: "cuivre", n: "Âge du Cuivre", c: "#e0814a", q: "La pierre verte cache un métal rouge." },
     { id: "bronze", n: "Âge du Bronze", c: "#d6a746", q: "Deux métaux tendres, un alliage dur." },
     { id: "fer", n: "Âge du Fer", c: "#cf6a52", q: "Le fer ne cède qu’au marteau." },
     { id: "acier", n: "Âge de l’Acier", c: "#8db0d6", q: "La vapeur se met à travailler pour toi." },
@@ -28,9 +28,9 @@
   D.GESTE_ORDER = ["assembler", "tresser", "tailler", "chauffer", "marteler", "allier", "tremper", "usiner",
     "electriser", "graver", "synthetiser", "stratifier", "transmuter", "accorder"];
   D.GESTES = {
-    assembler: { n: "Assembler", ic: "✋", v: "assembler", d: "Joindre plusieurs éléments en un seul objet." },
+    assembler: { n: "Assembler", ic: "✋", v: "assembler", d: "Réunir plusieurs ressources en un seul objet." },
     tresser: { n: "Tresser", ic: "🧶", v: "tresser", d: "Entrelacer ce qui est souple." },
-    tailler: { n: "Tailler", ic: "🔪", v: "tailler", d: "Retirer la matière en trop. Fendre, découper, affûter." },
+    tailler: { n: "Tailler", ic: "🔪", v: "tailler", d: "Retirer ce qui est en trop : fendre, découper, affûter." },
     chauffer: { n: "Chauffer", ic: "🔥", v: "chauffer", d: "Cuire, fondre, réduire. La température dépend de ton meilleur feu : feu de camp, four, fourneau…" },
     marteler: { n: "Marteler", ic: "🔨", v: "marteler", d: "Battre le métal sur une enclume." },
     allier: { n: "Allier", ic: "⚗️", v: "allier", d: "Fondre plusieurs métaux ensemble dans un creuset." },
@@ -563,7 +563,7 @@
   /* ---------------------------------------------------------------- ZONES */
   D.ZONES = [
     { id: "lisiere", n: "La Lisière", ic: "🌲", res: ["bois", "fibre", "caillou"],
-      d: "L’orée d’une forêt immense. C’est ici que tu t’es éveillé.",
+      d: "L’orée d’une forêt immense. Tu t’es réveillé ici.",
       exps: [
         { id: "chene", n: "Le Grand Chêne", dur: 15, rw: { inv: { bois: 15, fibre: 10 }, frag: "chene" } },
         { id: "grotte", n: "La Grotte aux Mains", dur: 40, cost: { torche: 1 }, rw: { frag: "grotte", intu: 2 } },
@@ -588,7 +588,7 @@
         { id: "sommet", n: "Le Sommet", dur: 75, rw: { item: { tablette: 1 }, frag: "vue", intu: 2 } }
       ] },
     { id: "mine", n: "Les Profondeurs", ic: "🦇", res: ["fer_min", "charbon"], req: "pioche_bronze",
-      d: "Des galeries naturelles qui s’enfoncent sous les collines. Il y fait tiède, et ça ne devrait pas.",
+      d: "Des galeries naturelles qui s’enfoncent sous les collines. Il y fait tiède. À cette profondeur, il devrait faire froid.",
       exps: [
         { id: "filon", n: "Le Filon Profond", dur: 60, cost: { torche: 2 }, rw: { inv: { fer_min: 20 }, frag: "porte" } },
         { id: "porte_scellee", n: "La Porte Scellée", dur: 90, need: "boussole", hidden: "Une porte qui ne s’ouvre pour aucune main.", rw: { flag: "caveau", frag: "caveau", secret: "caveau" } }
@@ -685,7 +685,7 @@
     promethee: { n: "Protocole Prométhée", z: "terminal",
       t: "« Faire renaître une civilisation en reproduisant son apprentissage. Le Semeur s’éveille sans mémoire. Il découvre seul le feu, la pierre, le métal. Ce qu’il apprend de ses mains, il ne l’oublie jamais. En cas d’échec, réinitialiser avec le Semeur suivant. Lots disponibles : 12. »\n\nAnnotation manuscrite, signée I.V. : « Ce ne sont pas des lots. Ce sont des enfants. »" },
     signal: { n: "Le Signal Décodé", z: "cosmos",
-      t: "Le traducteur ronronne un moment, puis le signal de Kher devient clair. C’est une chanson, chantée par des milliers de voix (4 · 3 · 1 · 3 · 4 · 5 · 4), et par-dessus, un message répété depuis trois siècles :\n\n« Nous sommes les enfants des Arches. Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" }
+      t: "Le traducteur ronronne un moment, puis le signal de Kher devient clair : une chanson, chantée par des milliers de voix (4 · 3 · 1 · 3 · 4 · 5 · 4), et par-dessus, un message répété depuis trois siècles :\n\n« Nous sommes les enfants des Arches. Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" }
   };
 
   /* ------------------------------------------------------ RÉMINISCENCES
@@ -695,7 +695,7 @@
     epieu: "La pointe noircit et durcit. Au loin, dans la plaine, une bête lève la tête vers la fumée.",
     eclat: "Le silex se fend net. Tes mains savaient où frapper, comme si elles l’avaient déjà fait. Six fois, peut-être.",
     four: "La chaleur monte, les briques rougeoient. Quelque part sous la terre, quelque chose enregistre : « Seuil 3. »",
-    lingot_cuivre: "Le métal coule, rouge vif. Tu as l’impression qu’on te regarde faire, et que ça plaît à quelqu’un.",
+    lingot_cuivre: "Le métal coule, rouge vif. Tu sens qu’on te regarde faire, et que quelqu’un, quelque part, est content de toi.",
     lingot_bronze: "Deux métaux tendres, et ce qui sort du creuset est dur. Tu fais tinter le lingot contre une pierre, juste pour l’entendre.",
     lingot_fer: "Chaque coup de marteau fait jaillir des étincelles. La plupart retombent. Quelques-unes restent en l’air et clignotent : des Lucioles.",
     lunette: "Tu pointes la lunette vers le ciel. Les étoiles, la Lune, et une étoile rouge qui pulse lentement. Hier, il n’y avait rien à cet endroit.",
@@ -779,7 +779,7 @@
       steps: [
         { n: "Accélérateur annulaire", d: "Un anneau de supraconducteurs autour de la Lune.", cost: { supra: 1000, alliage_ancien: 1250, titane: 7500 } },
         { n: "Réserve d’antimatière", d: "Assez pour briser un monde.", cost: { antimatiere: 3750 } },
-        { n: "Lentille gravitationnelle", d: "Pour que le rayon ne s’étale pas en douze années-lumière de voyage.", cost: { matiere_exotique: 1500, metamateriau: 750 } },
+        { n: "Lentille gravitationnelle", d: "Pour que le rayon reste étroit pendant douze années-lumière de voyage.", cost: { matiere_exotique: 1500, metamateriau: 750 } },
         { n: "Mise à feu", d: "Il ne reste qu’à appuyer.", fire: true }
       ] },
     chant: { n: "Le Chant", ic: "🎶", req: "traducteur", end: "retour",
@@ -810,66 +810,66 @@
    * { k: "exp", z: zone, x: exploration }, { k: "ext" } (poser et relier un extracteur)
    * ou { k: "line" } (faire tourner une machine). */
   D.OBJECTIVES = [
-    ["manche", "Tes mains cherchent un outil. Récolte du bois, puis taille-le à l’Atelier."],
-    ["corde", "Il te faudrait de quoi lier les choses entre elles."],
-    { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Ce chêne immense t’attire. Lance une exploration depuis la Lisière : elle avance toute seule pendant que tu fais autre chose." },
-    ["feu", "La nuit tombe vite. Fais du feu."],
-    ["cabane", "Tu ne peux pas tout récolter toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi."],
-    { k: "ext", n: "Installer ta cabane", txt: "Dans le Domaine, touche « + cabane » sur le bois ou les fibres de la Lisière. Ta cabane récoltera pour toi, même quand le jeu est fermé." },
-    ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
-    { k: "pass", z: "plaine", n: "Vers la Plaine", txt: "Ton épieu te donne le courage d’y aller. Reste à te frayer un chemin dans les hautes herbes : verse ce qu’il faut depuis la Réserve." },
+    ["manche", "Récolte du bois dans la Lisière, puis taille-le à l’Atelier pour fabriquer un manche."],
+    ["corde", "Fabrique une corde, pour lier les choses entre elles."],
+    { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Lance une exploration du Grand Chêne depuis la Lisière. Elle avance toute seule pendant que tu fais autre chose." },
+    ["feu", "La nuit tombe vite. Construis un feu de camp : il débloque l’action Chauffer."],
+    ["cabane", "Tu ne peux pas tout récolter toi-même. Fabrique une cabane : posée sur un gisement, elle récolte à ta place."],
+    { k: "ext", n: "Poser ta cabane", txt: "Dans le Domaine, touche « + cabane » sur le bois ou les fibres de la Lisière. Ta cabane récolte à ta place, même quand le jeu est fermé." },
+    ["epieu", "La Plaine est pleine de bêtes. Il te faut une arme : l’épieu ouvre le chemin vers la Plaine."],
+    { k: "pass", z: "plaine", n: "Vers la Plaine", txt: "Avec ton épieu, tu peux affronter la Plaine. Il reste à te frayer un chemin dans les hautes herbes : verse ce qu’il faut depuis la Réserve." },
     ["laniere", "Les bêtes de la plaine laissent leur peau derrière elles. Découpée en bandes, elle lie mieux que l’herbe."],
-    { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Au milieu de la plaine, des os blanchissent au soleil. Lance une exploration : tu en rapporteras de quoi travailler." },
+    { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Au milieu de la Plaine, des os blanchissent au soleil. Lance une exploration pour en rapporter." },
     ["aiguille", "Pour coudre une peau, il faut une pointe percée."],
-    ["collets", "Des pièges posés dans la plaine attraperaient os et peaux à ta place. Pose-les dans le Domaine, comme ta cabane."],
+    ["collets", "Des pièges posés dans la Plaine récolteraient os et peaux à ta place. Pose-les dans le Domaine, comme ta cabane."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
-    { k: "pass", z: "riviere", n: "Vers la Rivière", txt: "L’eau est là, large et lente. Il te faut de quoi la franchir." },
+    { k: "pass", z: "riviere", n: "Vers la Rivière", txt: "La Rivière est large et lente. Pour la franchir, construis une passerelle : verse ce qu’il faut depuis la Réserve." },
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
     ["hache_pierre", "Avec un tranchant de pierre, tu abattrais bien plus de bois. Les outils multiplient tes récoltes."],
-    ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer."],
-    { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les collines sont raides : il faudra y tailler des marches." },
-    ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Il faudrait quelque chose pour les refaire à ta place."],
+    ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer : la pioche ouvre le chemin vers les Collines."],
+    { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les Collines sont raides. Pour y monter, taille des marches : verse ce qu’il faut depuis la Réserve." },
+    ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Un automate les referait à ta place."],
     { k: "line", n: "Faire tourner ton automate", txt: "Lance une commande d’une recette à une ressource, déjà fabriquée à la main (des manches, des cordes, des éclats…) : ton automate s’y met tout seul." },
-    ["four", "Le feu de camp ne chauffe plus assez."],
+    ["four", "Le feu de camp ne chauffe plus assez. Le four en argile monte jusqu’à 1 100 °C."],
     ["lingot_cuivre", "La pierre verte des collines cache un métal."],
-    ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur."],
-    ["creuset", "Il faudrait pouvoir fondre plusieurs métaux ensemble."],
+    ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur. L’enclume débloque l’action Marteler."],
+    ["creuset", "Il faudrait pouvoir fondre plusieurs métaux ensemble. Le creuset débloque l’action Allier."],
     ["lingot_bronze", "Le métal rouge est trop mou. Allie-le."],
     ["automate_bronze", "Un automate de bronze travaillerait bien plus vite que ta marionnette de bois."],
-    ["pioche_bronze", "Creuse vers les Profondeurs."],
+    ["pioche_bronze", "Il te faut une pioche plus dure pour creuser vers les Profondeurs."],
     { k: "pass", z: "mine", n: "Vers les Profondeurs", txt: "Pour descendre, il faut un puits solide, tenu par du métal." },
-    ["enclume_bronze", "Le fer ne se laissera pas battre sur une simple pierre."],
-    ["bas_fourneau", "Le minerai de fer exige une chaleur rugissante."],
+    ["enclume_bronze", "Le fer ne se bat pas sur une simple pierre. Il te faut une enclume plus dure."],
+    ["bas_fourneau", "Le minerai de fer demande plus de chaleur. Le bas-fourneau monte jusqu’à 1 300 °C."],
     ["lingot_fer", "Bats le fer."],
     ["lunette", "Une étoile rouge pulse dans le ciel. Il te faut la voir de plus près."],
     ["chariot", "Au-delà des collines s’étend un désert de verre. Il te faut de quoi y transporter tes outils."],
     { k: "pass", z: "desert", n: "Vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
-    ["haut_fourneau", "Pour l’acier, il faut encore plus chaud."],
+    ["haut_fourneau", "Pour l’acier, il faut encore plus chaud. Le haut-fourneau monte jusqu’à 1 700 °C."],
     ["lingot_acier", "Fer et carbone, à très haute température."],
-    ["tour", "La précision des machines."],
-    ["moteur_vapeur", "Fais travailler la vapeur."],
+    ["tour", "La tour d’usinage débloque l’action Usiner, pour travailler le métal avec la précision d’une machine."],
+    ["moteur_vapeur", "Fais travailler la vapeur à ta place."],
     ["presse_vapeur", "Une machine-outil à vapeur ferait tourner tes machines bien plus vite."],
-    ["dynamo", "Capture l’étincelle."],
+    ["dynamo", "Capture l’étincelle. La dynamo débloque l’action Électriser."],
     ["radio", "Quelqu’un émet peut-être encore, quelque part."],
-    ["four_arc", "Un éclair permanent, pour faire fondre l’infusible."],
+    ["four_arc", "Un éclair permanent, pour fondre ce que rien d’autre ne fond. Le four à arc monte jusqu’à 3 500 °C."],
     ["silicium", "Le cristal du désert cache un métal qui pense."],
     ["ordinateur", "Construis une machine qui calcule."],
     ["foreuse", "L’huile noire dort sous le Gisement Noir. Il te faut une sonde pour l’atteindre."],
     { k: "pass", z: "gisement", n: "Vers le Gisement Noir", txt: "L’huile dort loin sous la croûte. Il faut y creuser une tranchée." },
-    ["reacteur", "Recompose les molécules."],
+    ["reacteur", "Le réacteur chimique débloque l’action Synthétiser : il recompose les molécules."],
     ["dynamite", "Les Pics Fracturés ne s’ouvriront qu’à l’explosif."],
     { k: "pass", z: "montagnes", n: "Vers les Pics Fracturés", txt: "Les Pics n’ont qu’un col. Il faut l’ouvrir, puis le tenir." },
     ["titane", "Le métal le plus noble des montagnes."],
-    ["autoclave", "Pour les composites, il faut cuire sous pression."],
-    ["composite", "Le matériau des fusées."],
-    ["fusee", "Monte en orbite."],
+    ["autoclave", "Pour les composites, il faut cuire sous pression. L’autoclave débloque l’action Stratifier."],
+    ["composite", "Il te faut le matériau des fusées : léger, et plus dur que l’acier."],
+    ["fusee", "Construis une fusée pour monter en orbite."],
     { k: "pass", z: "orbite", n: "Vers l’Orbite", txt: "Il faut une rampe de lancement, et de quoi repartir." },
     ["alunisseur", "Pose le pied sur la Lune."],
     { k: "pass", z: "lune", n: "Vers la Lune", txt: "Pour rester sur la Lune, il faut de quoi s’y abriter." },
-    ["reacteur_fusion", "Une étoile en bouteille."],
+    ["reacteur_fusion", "Une étoile en bouteille. Tous tes extracteurs récoltent 1,5 fois plus vite."],
     ["vaisseau", "Cap sur Mercure."],
     { k: "pass", z: "mercure", n: "Vers Mercure", txt: "Si près du soleil, rien ne tient sans bouclier." },
-    ["forge_stellaire", "Le cœur d’une étoile."]
+    ["forge_stellaire", "Le cœur d’une étoile, à 50 000 °C. La forge stellaire débloque l’action Transmuter."]
   ];
 
   /* ------------------------------------------------- PASSAGES ET MÉMOIRE (voir docs/PROGRESSION.md)
@@ -883,7 +883,7 @@
     collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 15000, argile: 600, brique: 150 }, tr: 5 },
     mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 40000, plaque_cuivre: 1200, lingot_bronze: 800 }, tr: 8 },
     desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 80000, plaque_bronze: 1500, roue: 200 }, tr: 12 },
-    gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendra.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
+    gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendrait.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
     montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 7500, plastique: 1200, moteur_elec: 180 }, tr: 27 },
     orbite: { n: "La Rampe", t: "Il faut une rampe de lancement, et de quoi repartir.", cost: { aluminium: 4500, titane: 900, composite: 900 }, tr: 40 },
     lune: { n: "La Base avancée", t: "Pour rester sur la Lune, il faut de quoi s’y abriter.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
@@ -892,14 +892,14 @@
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
   D.MEMOIRE = [
     { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 16, 32] },
-    { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Fabriquer à la main va plus vite : ×{v} de la durée.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 12, 20] },
-    { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 21, 34, 55, 89] },
-    { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 34, 55, 89, 144] },
-    { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Passages ×{v} du prix.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
-    { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "des ressources, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
+    { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Durée des fabrications à la main ×{v}.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 12, 20] },
+    { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Production des extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 21, 34, 55, 89] },
+    { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Vitesse des machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 34, 55, 89, 144] },
+    { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Prix des passages ×{v}.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
+    { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "du bois, des fibres, des cailloux, 4 manches et 4 cordes", "la même chose, et une cabane", "la même chose, trois cabanes et un feu de camp"][l], cost: [2, 6, 15] },
     { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
-    { id: "oeil", n: "Coup d’œil", ic: "✨", d: "En récoltant à la main, {v} de chances d’un coup de chance (×2).", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 24, 48] },
-    { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps compte jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
+    { id: "oeil", n: "Coup d’œil", ic: "✨", d: "Récolte à la main : {v} de chances de récolter le double.", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 24, 48] },
+    { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps continue de compter jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
   ];
   /* ce que contient le paquetage, niveau par niveau (cumulé) */
   D.PAQUETAGE = [{ bois: 60, fibre: 60, caillou: 30, manche: 4, corde: 4 }, { cabane: 1 }, { cabane: 2, feu: 1 }];
@@ -940,11 +940,11 @@
     lines: [
       ["Tes mains frémissent, comme si elles se souvenaient d’un autre corps. L’action qu’il te faut : {g}.",
         "Tes doigts esquissent un mouvement tout seuls, avant que tu y penses : {g}.",
-        "Un geste te revient, usé comme un vieux chemin : {g}."],
+        "Un geste te revient, comme si tu l’avais fait mille fois : {g}."],
       ["Une image te traverse : d’autres mains, avant les tiennes, qui tiennent {i}.",
         "Tu revois une main abîmée poser {i} sur une pierre plate. Ce n’était pas la tienne.",
-        "Une odeur, un bruit, et {i}, très net, au milieu d’un souvenir qui n’est pas à toi."],
-      ["Ça te revient d’un coup. La recette s’inscrit dans ton Carnet.",
+        "Un souvenir qui n’est pas à toi remonte : une odeur, un bruit, et au milieu, nettement, {i}."],
+      ["Tout te revient d’un coup. La recette s’inscrit dans ton Carnet.",
         "Tout se remet en place, comme si tu l’avais toujours su. La recette s’inscrit dans ton Carnet.",
         "Les autres mains ont fini de te montrer. La recette s’inscrit dans ton Carnet."]
     ]
@@ -981,10 +981,10 @@
   };
 
   D.CHANGES = [
-    "📦 Les commandes : ×10, ×50, ×100, ×1000 ou Max depuis le Carnet, même s’il manque des ressources. Elles les prennent dans la Réserve à mesure qu’elles arrivent.",
-    "⚙️ Les machines ne sont plus fixées à une recette : dès qu’elles sont libres, elles aident tes commandes.",
-    "✋ Une recette se fait d’abord une fois à la main. Ensuite, les machines savent la faire.",
-    "⛏️ Tes extracteurs libres se posent seuls sur le gisement dont une commande a besoin."
+    "✍️ Tous les textes du jeu sont réécrits, plus simples et plus directs.",
+    "📖 Chaque fiche dit d’abord à quoi sert l’objet, puis raconte son histoire.",
+    "🔤 Nouveaux mots : on parle d’actions (Tailler, Tresser…) et de ressources.",
+    "🎶 Toucher une mélodie connue dans le Journal la joue vraiment sur ta flûte."
   ];
 
 
@@ -995,57 +995,57 @@
    * une seule matière au singulier, b sinon (« {reste|restent} »). Une même tentative
    * donne toujours la même phrase ; deux tentatives différentes, rarement. */
   D.FAIL = {
-    assembler: ["Tu essaies d’assembler {x}. Ça ne tient pas.", "Tu tournes {x} dans tous les sens. Rien ne s’emboîte.", "Tu ficelles {x} comme tu peux. Le tout s’écroule au premier souffle.",
-      "Tu poses {x} côte à côte et tu attends. Rien ne se passe, évidemment.", "Tu cales {x} l’un contre l’autre. Ça tient trois secondes."],
-    tresser: ["Tu tentes de tresser {x}. Tes doigts s’emmêlent.", "Tresser {x} ? Tu obtiens un nœud informe.", "Tu tresses {x}. Ça ressemble vaguement à un nid. Un nid raté.",
+    assembler: ["Tu tentes d’assembler {x}. Rien ne tient.", "Tu tournes {x} dans tous les sens. Rien ne s’emboîte.", "Tu ficelles {x} comme tu peux. Le tout s’écroule au premier souffle.",
+      "Tu poses {x} côte à côte et tu attends. Rien ne se passe, évidemment.", "Tu cales {x} ensemble. L’assemblage tient trois secondes."],
+    tresser: ["Tu tentes de tresser {x}. Tes doigts s’emmêlent.", "Tresser {x} ? Tu obtiens un nœud informe.", "Tu tresses {x}. On dirait vaguement un nid. Un nid raté.",
       "Tu croises et recroises {x}. Le tout se défait dès que tu lâches.", "Tu passes {x} dessus, dessous, dessus… et tu perds le fil."],
-    tailler: ["Tu tailles {x}. Il n’en reste que des miettes.", "Ta lame glisse sur {x}. Rien d’utile.", "Tu entailles {x} longtemps. Ça ne ressemble à rien de connu.",
+    tailler: ["Tu tailles {x}. Il n’en reste que des miettes.", "Ta lame glisse sur {x} sans rien en tirer d’utile.", "Tu entailles {x} longtemps. Le résultat ne ressemble à rien.",
       "Tu tailles {x} de toutes les façons possibles. Aucune n’est la bonne.", "Quelques coups secs sur {x}, et tu ramasses des éclats sans forme."],
-    chauffer: ["Tu chauffes {x}. Ça fume, ça sent mauvais, c’est tout.", "Tu tiens {x} au-dessus des flammes. Ça chauffe, et c’est tout.", "{x} {passe|passent} au feu sans rien devenir d’autre que chaud.",
+    chauffer: ["Tu chauffes {x}. De la fumée, une mauvaise odeur, et rien d’autre.", "Tu tiens {x} au-dessus des flammes. Tu attends, tu attends encore. Rien.", "{x} {passe|passent} au feu. À la sortie, rien n’a changé, sauf la température.",
       "Tu laisses {x} sur les braises un long moment. Tu n’y gagnes que de la suie sur les doigts."],
-    marteler: ["Tu martèles {x}. Ça résonne, mais rien ne change.", "Bang, bang, bang. {x} {reste|restent} obstinément comme avant.", "Tu tapes sur {x} jusqu’à en avoir mal au bras."],
+    marteler: ["Tu martèles {x}. Le bruit résonne loin, mais rien ne change.", "Pan ! Pan ! Pan ! {x} {reste|restent} exactement comme avant.", "Tu tapes sur {x} jusqu’à en avoir mal au bras."],
     allier: ["Tu fonds {x} ensemble. Le mélange se sépare en refroidissant.", "{x} {refuse|refusent} de s’allier.", "Le creuset bouillonne, puis ne laisse qu’une croûte grise."],
-    tremper: ["Pschhh ! {x} {siffle|sifflent} dans l’eau, et c’est tout.", "Tu plonges {x} dans le bac. C’est mouillé, maintenant.", "La vapeur se dissipe. {x} n’{a|ont} pas changé."],
-    usiner: ["La machine grince sur {x} et s’arrête.", "Tu usines {x} : des copeaux brillants, et rien d’autre.", "Le tour rejette {x} avec un bruit de protestation."],
-    electriser: ["Zzzt ! {x} {crépite|crépitent}, puis plus rien.", "Le courant traverse {x} sans rien changer.", "Ça sent l’ozone. Rien d’autre n’a changé."],
+    tremper: ["Pschhh ! {x} {siffle|sifflent} dans l’eau, et rien d’autre.", "Tu plonges {x} dans le bac. Seul changement : tout est mouillé.", "La vapeur se dissipe. {x} n’{a|ont} pas changé."],
+    usiner: ["La machine grince sur {x} et s’arrête.", "Tu usines {x} : des copeaux brillants, et rien d’autre.", "Le tour recrache {x} en grinçant."],
+    electriser: ["Zzzt ! {x} {crépite|crépitent}, puis plus rien.", "Le courant traverse {x} sans rien changer.", "Une odeur d’ozone, et rien d’autre."],
     graver: ["Le lithographe dessine de jolis motifs sur {x}. Ils ne servent à rien.", "La lumière glisse sur {x} sans y laisser de trace.", "Erreur de gravure : {x} ne {fait|font} pas un support valide."],
-    synthetiser: ["Le réacteur bouillonne. Il produit une boue verdâtre.", "{x} se {décompose|décomposent} en fumée âcre.", "La réaction s’emballe puis s’éteint. Rien de stable."],
-    stratifier: ["Les couches se décollent à la sortie de l’autoclave.", "Tu empiles {x}. Ça ressemble à un millefeuille raté.", "La pression écrase {x} en une galette inutile."],
+    synthetiser: ["Le réacteur bouillonne et ne rend qu’une boue verdâtre.", "{x} se {décompose|décomposent} en fumée âcre.", "La réaction s’emballe, puis s’éteint sans rien laisser de stable."],
+    stratifier: ["Les couches se décollent à la sortie de l’autoclave.", "Tu empiles {x}. On dirait un millefeuille raté.", "La pression écrase {x} en une galette inutile."],
     transmuter: ["La forge stellaire rugit. Tout se réarrange, puis redevient exactement comme avant.", "Les atomes bougent un instant, puis reprennent leur place.", "Un éclair aveuglant. Puis rien. {x} te {nargue|narguent}."],
     accorder: ["Tu fais vibrer {x}. Le son est faux.", "{x} {chante|chantent}, mais pas la bonne note.", "Une dissonance grince dans l’air, puis se tait."]
   };
   /* un geste qui demande au moins deux matières, tenté avec une seule */
   D.FAIL_SOLO = {
-    assembler: "{x}, et rien d’autre ? Assembler, c’est mettre au moins deux choses ensemble.",
-    allier: "Allier {x} avec… rien ? Un alliage se fait à plusieurs."
+    assembler: "{x}, et rien d’autre ? Pour assembler, il faut au moins deux ressources différentes.",
+    allier: "Allier {x} avec… rien ? Pour un alliage, il faut au moins deux ressources différentes."
   };
   /* Les essais les plus probables du début, écrits à la main (clé : geste:matières, dans l’ordre alphabétique des identifiants). */
   D.FAIL_ONE = {
-    "tresser:bois": "Tu essaies de tresser une bûche. Elle ne plie pas ; toi, tu y gagnes une écharde.",
-    "tresser:caillou": "Tu essaies de tricoter un caillou. Le caillou gagne.",
-    "tresser:charbon": "Tresser du charbon : tes doigts sont noirs jusqu’aux poignets, et c’est tout.",
+    "tresser:bois": "Tu tentes de tresser une bûche. Elle ne plie pas, et tu y gagnes une écharde.",
+    "tresser:caillou": "Tu tentes de tricoter un caillou. Le caillou gagne.",
+    "tresser:charbon": "Tu tresses du charbon. Tu as les doigts noirs jusqu’aux poignets, et rien d’autre.",
     "tresser:corde": "Tu tresses une corde avec… une corde. Elle est un peu plus épaisse, et beaucoup plus courte.",
     "tresser:manche": "Tu enroules le manche autour de rien. Il lui faudrait quelque chose de souple à tresser autour.",
     "tresser:archet": "Tu tresses la corde de l’archet. Il tourne moins bien qu’avant, et il ne tournait déjà pas si bien.",
     "tresser:torche": "Tu tresses les herbes de la torche. Elle s’effiloche. Il valait mieux la garder pour un coin sombre.",
     "tresser:galette": "Les herbes grillées s’effritent entre tes doigts. Pourtant ce geste, tu l’as déjà fait : une couronne d’herbes, sur une tête que tu ne reconnais pas.",
     "tresser:os": "Les os ne se tressent pas. Ils s’entrechoquent, avec un petit bruit sec qui te glace.",
-    "tresser:cuir": "Tu essaies de tresser une peau entière. Trop large : il faudrait d’abord la découper.",
-    "tresser:aiguille": "Tu essaies de tresser des aiguilles. Tu te piques. Deux fois.",
+    "tresser:cuir": "Tu tentes de tresser une peau entière. Trop large : il faudrait d’abord la découper.",
+    "tresser:aiguille": "Tu tentes de tresser des aiguilles. Tu te piques. Deux fois.",
     "tailler:fibre": "Tu tailles les fibres en brins plus fins. Bravo : des fibres, en plus petit.",
     "tailler:corde": "Tu coupes la corde en morceaux. Te voilà avec plein de cordes trop courtes pour servir.",
     "tailler:charbon": "Tu tailles le charbon. Une poussière noire se dépose partout, surtout sur toi.",
     "tailler:manche": "Tu tailles le manche en pointe, puis en pointe plus fine, puis il n’y a plus de manche. Tu t’arrêtes à temps.",
     "tailler:archet": "Tu retailles l’archet. Il était très bien comme il était.",
-    "tailler:torche": "Tu raccourcis la torche. Elle brûlera moins longtemps, c’est tout ce que tu y gagnes.",
-    "tailler:galette": "Tu haches les herbes grillées. Ça sent bon. Tu n’as toujours pas faim.",
+    "tailler:torche": "Tu raccourcis la torche. Tout ce que tu y gagnes : elle brûle moins longtemps.",
+    "tailler:galette": "Tu haches les herbes grillées. L’odeur est bonne, mais tu n’as toujours pas faim.",
     "tailler:laniere": "Des lanières encore plus fines. On dirait des cheveux de cuir.",
     "tailler:aiguille": "Tu affûtes l’aiguille. Elle était déjà pointue ; maintenant, elle est vexée.",
     "chauffer:caillou": "La pierre chauffe, chauffe… et reste une pierre. Une pierre chaude, au moins.",
     "chauffer:charbon": "Le charbon rougeoie, ravi : il est fait pour ça. Mais rien de neuf n’en sort.",
     "chauffer:corde": "La corde se tord dans les flammes comme un serpent. Tu la retires juste à temps.",
-    "chauffer:archet": "Tu approches l’archet du feu. C’est lui qui sert à le faire naître, pas l’inverse.",
-    "chauffer:torche": "Tu allumes la torche, puis tu l’éteins. Elle te servira mieux là où il fait noir.",
+    "chauffer:archet": "Tu approches l’archet du feu. L’archet sert à allumer le feu, pas l’inverse.",
+    "chauffer:torche": "Tu allumes la torche, puis tu l’éteins. Mieux vaut la garder pour un endroit où il fait noir.",
     "chauffer:galette": "Les herbes grillées deviennent des herbes brûlées. Tu n’as toujours pas faim. Tu n’as jamais faim.",
     "chauffer:cuir": "La peau se racornit et sent le brûlé. Personne ne voudrait la porter.",
     "chauffer:laniere": "Les lanières se recroquevillent comme des feuilles mortes.",
@@ -1053,38 +1053,38 @@
     "chauffer:caillou+fibre": "Des herbes sur une pierre chaude : elles grillent un peu. Un souvenir te frôle, une odeur de repas que tu n’as jamais pris.",
     "assembler:bois+caillou": "Une bûche et des pierres, posées en cercle. On dirait un foyer, mais rien ne prend : il manque de quoi faire naître la braise.",
     "assembler:bois+fibre": "Tu attaches des herbes autour d’une bûche. On dirait un épouvantail pour souris.",
-    "assembler:caillou+fibre": "Une pierre emballée dans des herbes. Joli paquet. Inutile.",
+    "assembler:caillou+fibre": "Une pierre emballée dans des herbes. Joli paquet, mais inutile.",
     "assembler:caillou+manche": "Une pierre au bout d’un bâton… qui tombe dès que tu le lèves. Avec quoi tenait-elle, dans tes souvenirs ?",
     "tresser:bois+fibre": "Tu tresses des herbes autour d’une bûche. Trop grosse, trop raide : il faudrait un bois plus fin.",
-    "tresser:caillou+fibre": "Tu emprisonnes une pierre dans un filet d’herbes. Ça fait un très joli presse-papier.",
+    "tresser:caillou+fibre": "Tu emprisonnes une pierre dans un filet d’herbes. Te voilà avec un très joli presse-papier.",
     /* Âges de la Pierre et du Cuivre (écrites avec Gemini, relues : un échec ne prend jamais rien) */
-    "tresser:argile": "Tu essaies de tresser des boudins d’argile. Ça colle à tes paumes et s’écrase en bouillie informe.",
-    "tailler:argile": "Tu donnes des coups de lame dans la motte d’argile. Elle se referme aussitôt, comme pour se moquer.",
-    "marteler:argile": "Tu abats ton marteau sur l’argile fraîche. Une belle éclaboussure sur ton visage, et une motte aplatie.",
-    "tresser:silex": "Tresser du silex ? À part ébrécher tes ongles sur les arêtes dures, la roche ne veut rien savoir.",
+    "tresser:argile": "Tu tentes de tresser des boudins d’argile. Ils collent à tes paumes et s’écrasent en bouillie.",
+    "tailler:argile": "Tu donnes des coups de lame dans la motte d’argile. Chaque entaille se referme aussitôt.",
+    "marteler:argile": "Tu abats ton marteau sur l’argile fraîche. Tu en reçois plein la figure, et la motte est juste un peu plus plate.",
+    "tresser:silex": "Tresser du silex ? Tu t’abîmes les ongles sur les arêtes, et la pierre ne plie pas.",
     "chauffer:silex": "Le silex crépite dans la braise et lâche une esquille brûlante. Tu as failli y laisser un œil.",
     "marteler:silex": "Tu cognes le silex de toutes tes forces. Il s’écaille en poussière au lieu de se fendre nettement.",
-    "tresser:sable": "Tresser du sable. Les grains coulent entre tes doigts. Même le vent semble se moquer de toi.",
-    "tailler:sable": "Tailler du sable ? La lame glisse au travers sans laisser la moindre trace. Tu as juste déplacé un petit tas.",
+    "tresser:sable": "Tu tentes de tresser du sable. Les grains coulent entre tes doigts, et le vent emporte le reste.",
+    "tailler:sable": "Tailler du sable ? Ta lame passe au travers. Tu as juste déplacé un petit tas.",
     "marteler:sable": "Un grand coup de marteau dans le sable. Un nuage de poussière dans les yeux, et un cratère minuscule.",
     "tresser:eclat": "Tresser des éclats tranchants ? Tes doigts s’en souviendront longtemps.",
     "chauffer:eclat": "L’éclat rougit sur la braise et son fil se ternit. Tu le retires avant qu’il ne devienne cassant.",
     "marteler:eclat": "Tu frappes sur la lame de silex. Un éclat de plus vole à travers l’atelier, et elle n’en coupe pas mieux.",
-    "tresser:brique": "Tresser de la terre cuite. La brique ne plie pas d’un millimètre ; tes doigts, eux, commencent à plier.",
-    "tailler:brique": "Tu râpes la brique avec ta lame. Beaucoup de poussière rouge, et une lame un peu moins fière.",
-    "chauffer:brique": "La brique est déjà cuite. La remettre au feu ne fait qu’attiser la braise pour rien.",
+    "tresser:brique": "Tu tentes de tresser de la terre cuite. La brique ne plie pas d’un millimètre. Tes doigts, si.",
+    "tailler:brique": "Tu râpes la brique avec ta lame. Beaucoup de poussière rouge, et ta lame est émoussée.",
+    "chauffer:brique": "La brique est déjà cuite. La remettre au feu ne sert à rien.",
     "marteler:brique": "Un coup sec sur la brique. Elle sonne, te renvoie le choc jusqu’au coude, et ne devient rien d’autre.",
     "tresser:engrenage_bois": "Tu tentes de tresser le rouage avec lui-même. Ses dents s’accrochent partout sauf là où tu veux.",
     "chauffer:engrenage_bois": "Le rouage se met à fumer, ses belles dents noircissent. Tu le retires du feu juste à temps.",
     "marteler:engrenage_bois": "Le bois craque sous le choc. Tu t’arrêtes avant qu’une dent ne saute.",
-    "assembler:argile+sable": "Tu pétris l’argile et le sable à mains nues. Ça fait une boue rugueuse qui refuse de tenir en forme.",
+    "assembler:argile+sable": "Tu pétris l’argile et le sable à mains nues. Tu obtiens une boue rugueuse qui ne tient pas sa forme.",
     "assembler:argile+silex": "Tu enfonces le silex dans l’argile fraîche. Tes doigts répètent ce geste avec une certitude étrange, comme s’ils scellaient un caveau ancien.",
-    "assembler:brique+manche": "Une brique au bout d’un bâton. C’est lourd, branlant, et la brique finit droit sur tes orteils.",
-    "assembler:eclat+manche": "L’éclat posé sur le bois glisse dès que tu le brandis. Sans un lien serré pour tenir la lame, rien ne tient.",
+    "assembler:brique+manche": "Une brique au bout d’un bâton. Lourd, branlant, et la brique finit sur tes orteils.",
+    "assembler:eclat+manche": "L’éclat posé sur le bois glisse dès que tu le lèves. Il faudrait un lien bien serré pour tenir la lame.",
     "tresser:malachite": "Tresser de la pierre verte ? Même ses veines les plus fines restent dures comme le roc.",
     "tailler:malachite": "Tu essaies de sculpter la pierre verte. Tes doigts esquissent un visage sous un casque rond, avant que la roche ne s’effrite.",
     "marteler:malachite": "Tu tapes sur le minerai vert. Au lieu de s’aplatir, il s’effrite en poussière d’émeraude.",
-    "allier:malachite": "La malachite brute refuse de fondre ainsi. Il lui faut la chaleur d’un four et du charbon avant de songer aux mélanges.",
+    "allier:malachite": "La malachite brute ne se mélange pas telle quelle. Il lui faut d’abord la chaleur d’un four, et du charbon.",
     "tresser:cassiterite": "Les cristaux sombres et lourds ne plient pas d’un pouce. Tes doigts se fatiguent pour rien.",
     "tailler:cassiterite": "La lame glisse sur les cristaux noirs sans même entamer leur surface.",
     "marteler:cassiterite": "Un grand coup de masse : la cassitérite crache des gravillons grisâtres, mais pas la moindre feuille.",
@@ -1096,10 +1096,10 @@
     "marteler:plaque_cuivre": "Tu bats la plaque encore et encore. Elle s’étire un peu, et tu t’arrêtes avant de la percer.",
     "chauffer:fil_cuivre": "Le fil rougit d’un coup dans la flamme et commence à fondre par le milieu. Tu le retires avant qu’il ne parte en gouttes.",
     "marteler:fil_cuivre": "Tu martèles le fil de cuivre. Il s’aplatit en un ruban tout mou, que tu redresses tant bien que mal.",
-    "assembler:fil_cuivre+manche": "Tu enroules le fil rouge autour du bois. Ça brille au soleil, mais ça ne sert à rien de précis.",
+    "assembler:fil_cuivre+manche": "Tu enroules le fil rouge autour du bois. Il brille au soleil, mais ne sert à rien.",
     "tresser:lingot_etain": "Tresser un lingot d’étain ? Il plie un peu en crissant, puis refuse d’aller plus loin.",
     "tailler:lingot_etain": "Le métal est tendre, mais le tailler au couteau ne laisse qu’un tas de rognures grises.",
-    "chauffer:lingot_etain": "L’étain fond à toute vitesse et file entre les braises. Tu rattrapes l’essentiel avant qu’il ne se noie dans la cendre.",
+    "chauffer:lingot_etain": "L’étain fond à toute vitesse et file entre les braises. Tu rattrapes l’essentiel avant qu’il ne se perde dans la cendre.",
     "marteler:lingot_etain": "Tu frappes l’étain sur la pierre. Il s’étale mollement en une galette terne et sans ressort.",
     "allier:cassiterite+malachite": "Deux minerais bruts dans le creuset ? Ils noircissent et s’encrassent sans jamais couler ensemble.",
     "assembler:lingot_cuivre+lingot_etain": "Tu poses le lingot rouge contre le lingot gris. Rien ne colle : pour les unir, il faut les fondre ensemble.",
@@ -1154,13 +1154,13 @@
     3: [
       "L’herbe est froide sous tes paumes neuves.",
       "Près du foyer éteint, un manche taillé porte des entailles nettes, faites au couteau.",
-      "Quelqu’un y a gravé trois mots : « Fais le relais ».",
+      "Quelqu’un y a gravé trois mots : « Prends le relais ».",
       "Tu es le Semeur 9. Tu ramasses du bois, et le travail recommence."
     ],
     4: [
-      "Tu ouvres les yeux sous les mêmes frondaisons.",
+      "Tu ouvres les yeux sous les mêmes arbres.",
       "Dans l’herbe, des sentiers sont déjà tracés par des pas qui ressemblaient aux tiens.",
-      "Sous la mousse affleurent des pierres calées, des pieux et des fragments d’outils.",
+      "Sous la mousse affleurent des pierres calées, des pieux et des morceaux d’outils.",
       "Vous avez été nombreux à passer par là.",
       "Tu es le Semeur 10."
     ]
