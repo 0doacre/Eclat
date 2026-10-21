@@ -277,18 +277,17 @@ test("« +1 » : un extracteur libre est posé, sinon les mains le fabriquent pu
   const q = F.domExtAdd("lisiere", "bois", 1);
   assert.ok(!q.ok && q.missing, "rien pour la fabriquer : " + JSON.stringify(q));
 });
-test("machines : celle qui fait un ingrédient passe avant celle qui s’en sert", () => {
+test("machines : sur une commande en chaîne, les machines aident sur les sous-pièces et la cible", () => {
   const E = mk();
   E.add("automate_bronze", 1); E.add("automate_bois", 1);
   stations(E, ["etabli"]);
-  ["manche", "corde", "archet"].forEach((k) => (E.state.known[k] = true));
+  ["manche", "corde", "archet"].forEach((k) => { E.state.known[k] = true; E.state.made[k] = 1; });
   E.add("bois", 100); E.add("corde", 100);
-  const B = E.domMachAdd("archet").e; // ajoutée la première
-  E.domMachAdd("manche");
+  const r = E.order("archet", 10);
+  assert.ok(r.ok);
   run(E, 120);
-  assert.ok(E.count("archet") > 0, "des archets, faits avec les manches de l’autre machine");
-  assert.ok(E.state.made.manche > 0);
-  assert.notStrictEqual(E.machInfo(B.id).s, "norec");
+  assert.strictEqual(E.count("archet"), 10, "les 10 archets sont fabriqués avec leurs manches");
+  assert.ok(E.state.flags.lineDone);
 });
 test("maîtrise : chefs-d’œuvre", () => {
   const E = createEngine({ now: () => T, rand: () => 0 });
@@ -352,29 +351,25 @@ test("les sauvegardes v1 à v5 se chargent sans rien perdre", () => {
   }
 });
 const machs = (E) => E.state.dom.mach;
-test("les chaînes d’assemblage v1 deviennent des machines du Domaine", () => {
+test("les chaînes d’assemblage v1 se chargent : groupes dissous, machines possédées au repos", () => {
   const E = mk();
   E.load(fixture("save-v1-age10-chaines.json"));
-  assert.deepStrictEqual(machs(E).map((e) => [e.r, e.m, e.n]).sort(), [["bobine", "chaine", 1], ["plaque_fer", "chaine", 1]]);
+  assert.deepStrictEqual(machs(E), []);
+  assert.ok(E.state.flags.mach57);
   assert.ok(E.state.auto === undefined && E.state.lines === undefined);
-  const before = E.count("plaque_fer");
-  for (let i = 0; i < 20; i++) { T += 100; E.update(); }
-  assert.ok(E.count("plaque_fer") > before, "la machine produit");
+  assert.ok(E.count("chaine") >= 2 && E.freeMach("chaine") === Math.floor(E.count("chaine")));
 });
-test("les lignes v2 deviennent des chaînes du Domaine", () => {
+test("les lignes v2 se chargent : groupes dissous, machines possédées au repos", () => {
   const raw = fixture("save-v2-age7-fabrique.json");
   const old = JSON.parse(raw);
   const E = mk();
   E.load(raw);
-  const got = machs(E).map((e) => [e.r, e.m, e.n, e.on, e.cap]).sort();
-  const want = old.lines.map((L) => [L.r, L.m, L.n, L.on, L.cap]).sort();
-  assert.deepStrictEqual(got, want, "réglages conservés");
-  assert.deepStrictEqual(E.state.flags.fab3, { placed: 5, left: 0 });
-  E.add("bois", 100); E.add("plaque_cuivre", 50); E.add("lingot_fer", 50);
-  const b = { fil: E.count("fil_cuivre"), clous: E.count("clous"), manche: E.count("manche") };
-  for (let i = 0; i < 300; i++) { T += 100; E.update(); }
-  assert.ok(E.count("fil_cuivre") > b.fil && E.count("clous") > b.clous && E.count("manche") > b.manche, "tout produit");
-  assert.strictEqual(E.machInfo(machs(E).find((e) => e.r === "corde").id).s, "off");
+  assert.deepStrictEqual(machs(E), []);
+  assert.ok(E.state.flags.mach57);
+  ["automate_bois", "automate_bronze", "presse_vapeur"].forEach((m) => {
+    assert.strictEqual(E.count(m), old.inv[m], m + " conservé");
+    assert.strictEqual(E.freeMach(m), old.inv[m], m + " au repos");
+  });
 });
 test("v4 : les extracteurs d’avant sont posés et produisent autant", () => {
   for (const f of ["save-v1-age7.json", "save-v1-age10-chaines.json", "save-v2-age7-fabrique.json", "save-v3-age7-usine.json"]) {
@@ -394,53 +389,50 @@ test("v4 : les extracteurs d’avant sont posés et produisent autant", () => {
     for (const k in S.dom.ext) assert.strictEqual(E.machInfo(k).s, "ok", f + " : " + k);
   }
 });
-test("machines : une chaîne produit, s’arrête au stock visé, réclame ce qui manque", () => {
-  const E = mk();
-  assert.strictEqual(E.domMachAdd("manche").why, "norec", "recette inconnue");
-  E.state.known.manche = true;
-  assert.strictEqual(E.domMachAdd("manche").why, "nomach", "il faut posséder la machine");
-  E.add("automate_bois", 2); E.add("bois", 30);
-  const m = E.domMachAdd("manche").e;
-  assert.deepStrictEqual([m.m, m.n, m.on], ["automate_bois", 1, true]);
-  E.domMachSet(m.id, { n: 5 });
-  assert.strictEqual(m.n, 2, "pas plus que les machines possédées");
-  assert.strictEqual(E.domMachAdd("manche").why, "nomach", "plus de machine libre");
-  run(E, 30); // 30 s à 12/min
-  assert.strictEqual(E.count("manche"), 6);
-  assert.ok(E.state.flags.lineDone);
-  E.domMachSet(m.id, { cap: 7 });
-  run(E, 30);
-  assert.strictEqual(E.count("manche"), 7); assert.strictEqual(E.machInfo(m.id).s, "cap");
-  E.domMachSet(m.id, { cap: 0 });
-  run(E, 60);
-  assert.ok(E.count("bois") < 3); assert.strictEqual(E.machInfo(m.id).s, "starved");
-  assert.deepStrictEqual(E.machInfo(m.id).miss, { bois: "stock" });
-  const bois = E.count("bois") + (E.machBuf(m.id).b.bois || 0);
-  E.domMachRemove(m.id);
-  assert.ok(Math.abs(E.count("bois") - bois) < 1e-9, "ce qui restait dans la machine revient au stock");
-  assert.strictEqual(machs(E).length, 0);
-  assert.ok(!E.automatable("feu") && !E.automatable("cabane"), "pas d’objets uniques ni d’extracteurs");
+test("commandes : ×10 sans machine puis avec un automate de bois au repos (finit plus vite)", () => {
+  const E1 = mk();
+  E1.state.known.manche = true; E1.state.made.manche = 1; E1.add("bois", 30);
+  const r1 = E1.order("manche", 10);
+  assert.ok(r1.ok);
+  let t1 = 0;
+  while (E1.state.hand.q.length > 0 && t1 < 3000) { T += 10; E1.update(); t1++; }
+  assert.strictEqual(E1.count("manche"), 10, "×10 sans machine : les mains font tout");
+
+  const E2 = mk();
+  E2.state.known.manche = true; E2.state.made.manche = 1; E2.add("bois", 30);
+  E2.add("automate_bois", 1);
+  const r2 = E2.order("manche", 10);
+  assert.ok(r2.ok);
+  assert.ok(r2.time < r1.time, "temps estimé plus court avec l’automate");
+  assert.strictEqual(E2.machines().automate_bois.used, 1, "l’automate travaille sur la commande");
+  let t2 = 0;
+  while (E2.state.hand.q.length > 0 && t2 < 3000) { T += 10; E2.update(); t2++; }
+  assert.strictEqual(E2.count("manche"), 10);
+  assert.ok(t2 < t1, "la commande finit plus vite avec l’automate : " + t2 + " < " + t1);
+  assert.strictEqual(E2.machines().automate_bois.used, 0, "l’automate retourne au repos");
+  assert.ok(!E2.automatable("feu") && !E2.automatable("cabane"), "pas d’objets uniques ni d’extracteurs");
 });
-test("« + » sur une chaîne : les machines libres d’abord, les mains font le reste", () => {
+test("commandes : plusieurs machines libres se répartissent sur les étapes et les commandes suivantes", () => {
   const E = mk();
-  E.state.known.manche = true; E.state.known.automate_bois = true;
+  ["manche", "corde"].forEach((k) => { E.state.known[k] = true; E.state.made[k] = 1; });
   E.add("automate_bois", 2);
-  const m = E.domMachAdd("manche").e;
-  E.add("engrenage_bois", 100); E.add("corde", 100); E.add("caillou", 500);
-  const r = E.domMachMore(m.id, 3);
-  assert.deepStrictEqual([r.ok, r.added, r.queued], [true, 1, 2], JSON.stringify(r));
-  assert.strictEqual(m.n, 2);
-  assert.strictEqual(E.domQueued("m:" + m.id), 2);
-  run(E, Math.ceil(E.handInfo().left) + 2);
-  assert.strictEqual(m.n, 4, "les automates fabriqués rejoignent la chaîne");
+  E.add("bois", 60); E.add("fibre", 60);
+  assert.ok(E.order("manche", 10).ok);
+  assert.ok(E.order("corde", 10).ok);
+  // les deux automates aident la première commande, ou se répartissent
+  assert.strictEqual(E.machines().automate_bois.used, 2);
+  run(E, 120);
+  assert.strictEqual(E.count("manche"), 10);
+  assert.strictEqual(E.count("corde"), 10);
+  assert.strictEqual(E.machines().automate_bois.used, 0);
 });
-test("Domaine : production hors ligne et sauvegarde", () => {
+test("Domaine : commande et extracteurs hors ligne, sauvegarde et nettoyage", () => {
   const E = mk();
-  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 2000);
-  E.domMachAdd("manche");
+  E.add("automate_bois", 1); E.state.known.manche = true; E.state.made.manche = 1; E.add("bois", 2000);
+  E.order("manche", 360);
   E.add("cabane", 1); E.domExtSet("lisiere", "fibre", "cabane", 1);
-  T += 3600 * 1000; E.update(); // une heure à 6/min
-  assert.ok(Math.abs(E.count("manche") - 360) <= 2, "≈ 360 manches : " + E.count("manche"));
+  T += 3600 * 1000; E.update(); // une heure : la commande de 360 manches est terminée
+  assert.strictEqual(E.count("manche"), 360, "360 manches : " + E.count("manche"));
   const E2 = mk();
   E2.load(E.serialize());
   assert.deepStrictEqual(E2.state.dom, E.state.dom);
@@ -453,7 +445,7 @@ test("Domaine : production hors ligne et sauvegarde", () => {
   E2.load(JSON.stringify(o));
   const D2 = E2.state.dom;
   assert.deepStrictEqual(Object.keys(D2.ext), ["lisiere:fibre"], "une seule cabane : elle reste sur la fibre");
-  assert.deepStrictEqual(D2.mach.map((e) => e.id), [E.state.dom.mach[0].id], "pas plus de machines que possédées");
+  assert.deepStrictEqual(D2.mach, [], "groupes de machines dissous");
   assert.deepStrictEqual(D2.site, {});
   assert.deepStrictEqual(Object.keys(E2.state.orphans.dom).sort(),
     ["ext:lisiere:bois:charbonniere", "ext:lisiere:bois:inconnu", "ext:lisiere:laser", "ext:nulle-part:bois", "mach:M98", "mach:M99", "site:inconnu"], "mis de côté, pas jetés");
@@ -795,18 +787,25 @@ test("Grand Œuvre alimenté : il se sert dans la Réserve, au débit de l’âg
   run(E, 2);
   assert.strictEqual(JSON.stringify(ps.paid), before, "à l’arrêt, il ne prend plus rien");
 });
-test("une machine prend au stock et y range ce qu’elle fait, deux pièces d’avance en main", () => {
+test("commandes : une commande qui manque de bois attend, pose une cabane au repos sur le bois, puis reprend", () => {
   const E = mk();
-  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 30);
-  const m = E.domMachAdd("manche").e;
-  run(E, 30); // 30 s à 6/min
-  assert.strictEqual(E.count("manche"), 3);
-  assert.strictEqual(E.count("bois"), 30 - 3 * 3 - 6, "trois manches faits, deux d’avance dans la machine");
-  assert.strictEqual(E.machInfo(m.id).s, "ok");
-  run(E, 90);
-  assert.strictEqual(E.count("manche"), 10, "tout le bois y est passé");
-  assert.strictEqual(E.machInfo(m.id).s, "starved");
-  assert.deepStrictEqual(E.machInfo(m.id).miss, { bois: "stock" });
+  E.state.known.manche = true; E.state.made.manche = 1;
+  E.add("bois", 3); // de quoi faire 1 manche sur 3
+  const r = E.order("manche", 3);
+  assert.ok(r.ok);
+  assert.strictEqual(E.count("bois"), 0, "les 3 bois disponibles sont pris sur l’établi");
+  assert.strictEqual(E.state.hand.q[0].miss.bois, 6, "il manque 6 bois");
+  run(E, 20);
+  assert.strictEqual(E.count("manche"), 1, "1 manche fait, la commande attend le reste du bois");
+  assert.strictEqual(E.state.hand.q.length, 1);
+  assert.ok(E.handInfo().jobs[0].wait, "la commande est en attente de matières");
+  // une cabane libre est posée automatiquement sur le gisement de bois
+  E.add("cabane", 1);
+  run(E, 1);
+  assert.ok(E.domExt("lisiere", "bois") && E.domExt("lisiere", "bois").u.cabane === 1, "la cabane au repos est posée sur le bois");
+  run(E, 30);
+  assert.strictEqual(E.count("manche"), 3, "la commande a repris et fini grâce au bois récolté");
+  assert.strictEqual(E.state.hand.q.length, 0);
 });
 test("un extracteur remplit le stock sans plafond, la main aussi", () => {
   const E = mk();
@@ -819,25 +818,27 @@ test("un extracteur remplit le stock sans plafond, la main aussi", () => {
   E.add("bois", 1e6);
   assert.ok(E.tap("bois") > 0);
 });
-test("production : la récolte des extracteurs et ce que font et prennent les machines", () => {
+test("production : la récolte des extracteurs et ce que font et prennent les machines sur une commande", () => {
   const E = mk();
   E.add("cabane", 2);
   const x = E.domExtSet("lisiere", "bois", "cabane", 2);
-  E.add("automate_bois", 1); E.state.known.manche = true; E.add("bois", 30);
-  assert.ok(E.domMachAdd("manche").ok);
-  run(E, 60);
+  run(E, 25);
+  E.add("automate_bois", 1); E.state.known.manche = true; E.state.made.manche = 1; E.add("bois", 1500);
+  assert.ok(E.order("manche", 500).ok);
+  run(E, 5);
   const p = E.production(), bois = p.find((y) => y.id === "bois"), manche = p.find((y) => y.id === "manche");
   const out = E.extOut(x);
   assert.ok(Math.abs(bois.in - out) < out * 0.05, "bois récolté : " + bois.in + " / " + out);
-  assert.ok(Math.abs(bois.out - 0.3) < 0.03, "le bois que prend l’automate (6/min × 3) : " + bois.out);
+  assert.ok(Math.abs(bois.out - 0.3) < 0.03, "le bois que consomme l’automate (6/min × 3) : " + bois.out);
   assert.ok(Math.abs(manche.in - 0.1) < 0.01, "les manches : " + manche.in);
 });
 test("relève : le Domaine repart de zéro", () => {
   const E = mk();
   E.add("cabane", 1); E.domExtSet("lisiere", "bois", "cabane", 1);
-  E.add("automate_bois", 1); E.state.known.manche = true; E.domMachAdd("manche");
+  E.add("automate_bois", 1); E.state.known.manche = true; E.order("manche", 5);
   E.newCycle();
   assert.deepStrictEqual(E.state.dom, { ext: {}, mach: [], site: {}, ms: {}, seq: 0 });
+  assert.deepStrictEqual(E.state.hand.q, []);
   run(E, 1);
 });
 test("jalons : les objectifs rangés par âge", () => {
@@ -877,13 +878,14 @@ test("âge accompli : toutes ses étapes faites, un peu d’Intuition, une seule
 });
 const extTotals = (cells) => { const o = {}; cells.forEach((e) => { if (e.u && (e.k === undefined || e.k === "ext")) for (const t in e.u) o[t] = (o[t] || 0) + e.u[t]; }); return o; };
 const machList = (list) => list.map((e) => [e.id, e.m, e.r || null, e.n, e.on !== false, e.cap || 0].join(" ")).sort();
-test("v4 → v6 : les extracteurs et les machines de l’usine passent dans le Domaine", () => {
+test("v4 → v6 : les extracteurs de l’usine passent dans le Domaine, les groupes de machines sont dissous", () => {
   const raw = fixture("save-v4-age8-carte.json"), old = JSON.parse(raw);
   const E = mk();
   E.load(raw);
   const S = E.state, cells = Object.values(old.fab.c);
   assert.deepStrictEqual(extTotals(Object.values(S.dom.ext)), extTotals(cells), "autant d’extracteurs de chaque type");
-  assert.deepStrictEqual(machList(S.dom.mach), machList(cells.filter((e) => e.k === "mach")), "les mêmes machines, mêmes réglages");
+  assert.deepStrictEqual(S.dom.mach, [], "groupes de machines dissous");
+  assert.ok(S.flags.mach57);
   assert.deepStrictEqual(S.orphans.fab5.c, old.fab.c, "l’ancienne usine est gardée de côté");
   // la récolte par matière est la même
   const rate = (list) => { const o = {}; list.forEach((e) => { if (e.u && e.k !== "mach") for (const t in e.u) o[e.res] = (o[e.res] || 0) + e.u[t] * E.extRate(t, e.res); }); return o; };
@@ -899,7 +901,7 @@ test("v4 → v6 : les extracteurs et les machines de l’usine passent dans le D
   assert.ok(F.state.flags.v5proj, "on prévient le joueur");
   assert.deepStrictEqual(F.projState("dyson"), { step: 1, paid: { panneau_dyson: 120 } }, "ce qui a été versé reste acquis");
 });
-test("v5 → v6 : rien ne se perd, ce qui était en route revient au stock", () => {
+test("v5 → v6 : rien ne se perd, ce qui était en route ou dans les machines revient au stock", () => {
   const raw = fixture("save-v5-age8-usine.json"), old = JSON.parse(raw);
   const E = mk();
   E.load(raw);
@@ -907,14 +909,15 @@ test("v5 → v6 : rien ne se perd, ce qui était en route revient au stock", () 
   assert.strictEqual(old.v, 5);
   assert.ok(cells.some((e) => e.k === "belt") && cells.some((e) => e.k === "split"), "une vraie usine avancée");
   assert.deepStrictEqual(extTotals(Object.values(S.dom.ext)), extTotals(cells));
-  assert.deepStrictEqual(machList(S.dom.mach), machList(cells.filter((e) => e.k === "mach")));
+  assert.deepStrictEqual(S.dom.mach, [], "groupes de machines dissous");
+  assert.ok(S.flags.mach57);
   const want = Object.assign({}, old.inv);
   const put = (i, v) => { if (v > 0) want[i] = (want[i] || 0) + v; };
   cells.forEach((e) => {
     const B = e.id && ms[e.id];
     if (!B) return;
     if (e.k === "ext") put(e.res, B.o);
-    if (e.k === "mach" && e.r) { put(e.r, B.o); assert.deepStrictEqual(S.dom.ms[e.id].b, B.b, "ce qu’a en main " + e.id); }
+    if (e.k === "mach" && e.r) { put(e.r, B.o); for (const i in B.b) put(i, B.b[i]); }
     if (e.k === "site") for (const i in B.b) put(i, B.b[i]);
   });
   for (const i in want) assert.ok(Math.abs((S.inv[i] || 0) - want[i]) < 1e-6, i + " : " + S.inv[i] + " / " + want[i]);
@@ -937,11 +940,14 @@ test("gestes : l’expérience vient de ce qu’on fait à la main, un niveau re
   assert.ok(k.xp >= 100 * E.xpOf("manche") - 1e-9, "100 manches : " + k.xp);
   assert.ok(k.lvl > 1);
   assert.ok(E.handTime("manche") < t0, "plus rapide");
-  // une machine ne donne pas d’expérience
-  const xp = k.xp;
-  E.add("automate_bois", 1); E.add("bois", 300); E.domMachAdd("manche");
-  run(E, 60);
-  assert.strictEqual(E.skill("tailler").xp, xp);
+  // une pièce faite par une machine ne donne pas d’expérience (les mains sont occupées sur une recette à 2 ingrédients)
+  E.state.known.archet = true; E.add("manche", 500); E.add("corde", 1000);
+  assert.ok(E.order("archet", 500).ok); // 2 ingrédients : l’automate de bois ne peut pas la faire, les mains s’en chargent
+  const xp = E.skill("tailler").xp, mBefore = E.count("manche");
+  E.add("automate_bois", 1); E.add("bois", 300); assert.ok(E.order("manche", 5).ok); // l’automate de bois fait les manches seul pendant ce temps
+  run(E, 12);
+  assert.ok(E.count("manche") > mBefore, "l’automate a fabriqué des manches");
+  assert.strictEqual(E.skill("tailler").xp, xp, "les manches faits par l’automate ne donnent pas d’XP en tailler");
   // paliers : une chance de pièce en plus
   E.state.skills.tresser = E.XP_T[25];
   assert.strictEqual(E.skill("tresser").perks, 2);
@@ -972,29 +978,29 @@ test("action qui tourne : ramasser en continu, même jeu fermé", () => {
   E.stopAct();
   assert.strictEqual(E.state.act, null);
 });
-test("action qui tourne : refaire une recette en boucle, jusqu’à ce qu’il manque de quoi", () => {
+test("commandes : annuler rend tout l’établi ; sauvegarder au milieu d’une commande reprend où elle en était", () => {
   const E = mk();
-  E.state.known.manche = true;
-  assert.strictEqual(E.startAct({ k: "make", id: "feu" }), null, "pas un objet unique ni inconnu");
-  E.add("bois", 30);
-  let stop = null;
-  E.on("actstop", (x) => (stop = x));
-  E.startAct({ k: "make", id: "manche" });
-  assert.ok(E.state.hand.q.some((j) => j.loop), "une série dans la file");
-  run(E, 120);
-  assert.strictEqual(E.count("manche"), 10, "tout le bois y est passé");
-  assert.ok(stop && stop.why === "missing", JSON.stringify(stop));
-  assert.strictEqual(E.state.act, null);
-  // en chaîne : des cordes faites en route pour des collets
+  assert.strictEqual(E.startAct({ k: "make", id: "manche" }), null, "la boucle de recette n’existe plus");
+  ["manche", "corde", "archet"].forEach((k) => { E.state.known[k] = true; E.state.made[k] = 1; });
+  E.add("bois", 30); E.add("fibre", 60);
+  assert.ok(E.order("archet", 5).ok);
+  run(E, 1); // quelques manches fabriqués sur l’établi
+  const j = E.state.hand.q[0];
+  assert.ok(j && (j.b.manche || 0) >= 1, "des manches intermédiaires sont sur l’établi");
+  // sauvegarde et rechargement au milieu de la commande
+  const saved = E.serialize();
   const F = mk();
-  ["corde", "collets"].forEach((k) => (F.state.known[k] = true));
-  stations(F, ["etabli"]);
-  F.add("fibre", 400); F.add("os", 50); F.add("manche", 50);
-  if (D.ITEMS.collets.r) {
-    F.startAct({ k: "make", id: "collets" });
-    run(F, 300);
-    assert.ok((F.state.made.collets || 0) >= 1, "des collets : " + JSON.stringify(F.state.made));
-  }
+  F.load(saved);
+  assert.strictEqual(F.state.hand.q.length, 1);
+  assert.deepStrictEqual(F.state.hand.q[0].done, j.done, "progression conservée");
+  run(F, 30);
+  assert.strictEqual(F.count("archet"), 5, "la commande rechargée va jusqu’au bout");
+  // annuler sur E rend les matières restantes et les manches déjà faits sur l’établi
+  const madeManches = j.b.manche || 0;
+  assert.ok(E.cancelJob(0));
+  assert.strictEqual(E.count("manche"), madeManches, "les sous-pièces déjà faites sur l’établi vont en Réserve");
+  assert.strictEqual(E.count("bois"), 30 - madeManches * 3, "le bois non consommé revient en Réserve");
+  assert.strictEqual(E.count("fibre"), 60, "les fibres reviennent en Réserve");
 });
 test("compétences et action : sauvegarde, relève", () => {
   const E = mk();
@@ -1170,79 +1176,67 @@ test("machines : machCan vérifie le nombre d’ingrédients selon le palier", (
   assert.strictEqual(E.machFor("lingot_bronze"), "automate_bronze");
   assert.strictEqual(E.machFor("moteur_vapeur"), "presse_vapeur");
 });
-test("machines : domMachAdd choisit une machine capable ou refuse avec why tier", () => {
+test("machines et commandes : un automate choisit une étape compatible avec son palier", () => {
   const E = mk();
-  ["manche", "archet"].forEach((k) => (E.state.known[k] = true));
-  E.add("automate_bois", 1);
-  const r1 = E.domMachAdd("archet");
-  assert.strictEqual(r1.ok, false);
-  assert.strictEqual(r1.why, "tier");
-  assert.strictEqual(r1.need, "automate_bronze");
-  E.add("automate_bronze", 1);
-  const r2 = E.domMachAdd("archet");
-  assert.ok(r2.ok);
-  assert.strictEqual(r2.e.m, "automate_bronze");
-  const r3 = E.domMachAdd("manche");
-  assert.ok(r3.ok);
-  assert.strictEqual(r3.e.m, "automate_bois");
-  // domMachSet refuse aussi un changement vers une machine incapable
-  E.add("automate_bois", 1);
-  const switched = E.domMachSet(r2.e.id, { m: "automate_bois" });
-  assert.strictEqual(switched.m, "automate_bronze", "changement refusé");
+  ["manche", "corde", "archet"].forEach((k) => { E.state.known[k] = true; E.state.made[k] = 1; });
+  E.add("automate_bois", 1); // ing: 1
+  E.add("manche", 10); E.add("corde", 20);
+  E.order("archet", 5); // archet : 2 ingrédients
+  assert.strictEqual(E.machines().automate_bois.used, 0, "l’automate de bois ne peut pas faire un archet (2 ingrédients)");
+  E.add("automate_bronze", 1); // ing: 2
+  assert.strictEqual(E.machines().automate_bronze.used, 1, "l’automate de bronze prend l’archet");
+  assert.strictEqual(E.machines().automate_bronze.byRec.archet, 1);
 });
-test("machines : sauvegarde avec automate de bois sur recette trop complexe se charge à l’arrêt tier", () => {
+test("machines : une sauvegarde avec des groupes de machines les dissout et rend leurs matières à la Réserve", () => {
   const E = mk();
   E.add("automate_bois", 1);
   E.state.known.archet = true;
-  // Une sauvegarde ancienne où l’automate avait une recette à 2 ingrédients
   E.state.dom.mach.push({ id: "M1", m: "automate_bois", r: "archet", n: 1, on: true, cap: 0 });
-  E.state.dom.ms["M1"] = { p: 0.5, b: { manche: 2 } };
+  E.state.dom.ms["M1"] = { p: 0.5, b: { manche: 2, corde: 3 } };
   const txt = E.serialize();
   const F = mk();
   F.load(txt);
-  assert.strictEqual(F.state.dom.mach[0].r, "archet", "recette gardée");
-  assert.strictEqual(F.state.dom.ms["M1"].b.manche, 2, "matières mises de côté conservées");
-  run(F, 10);
-  assert.strictEqual(F.machInfo("M1").s, "tier", "à l’arrêt tier");
-  assert.strictEqual(F.state.dom.ms["M1"].b.manche, 2, "rien de perdu");
+  assert.deepStrictEqual(F.state.dom.mach, [], "groupes retirés");
+  assert.deepStrictEqual(F.state.dom.ms, {}, "buffers de machines vidés");
+  assert.strictEqual(F.count("manche"), 2, "manches revenus à la Réserve");
+  assert.strictEqual(F.count("corde"), 3, "cordes revenues à la Réserve");
+  assert.strictEqual(F.count("automate_bois"), 1, "machine toujours possédée");
+  assert.strictEqual(F.freeMach("automate_bois"), 1, "machine au repos");
+  assert.ok(F.state.flags.mach57);
 });
-test("machines : profondeur, la ligne d’assemblage fabrique elle-même la pièce manquante", () => {
-  // archet : { manche: 1, corde: 2 } (2 ingrédients)
-  // manche : { bois: 3 } (1 ingrédient)
-  const E1 = mk();
-  ["manche", "corde", "archet"].forEach((k) => (E1.state.known[k] = true));
-  E1.add("chaine", 1);
-  E1.add("manche", 100);
-  E1.add("corde", 200); // manche déjà en réserve
-  E1.domMachAdd("archet");
-  run(E1, 60);
-  const madeWithStock = E1.count("archet");
-
-  const E2 = mk();
-  ["manche", "corde", "archet"].forEach((k) => (E2.state.known[k] = true));
-  E2.add("chaine", 1);
-  E2.add("bois", 600);
-  E2.add("corde", 200); // pas de manche en réserve, mais du bois pour les faire
-  assert.strictEqual(E2.count("manche"), 0);
-  E2.domMachAdd("archet");
-  run(E2, 60);
-  const madeWithSub = E2.count("archet");
-  assert.ok(madeWithSub > 0, "a fabriqué des archets sans manches en réserve : " + madeWithSub);
-  assert.strictEqual(E2.count("manche"), 0, "les manches sous-fabriqués ne vont pas dans la réserve");
-  assert.ok(madeWithSub < madeWithStock, "produit moins vite : " + madeWithSub + " vs " + madeWithStock);
-});
-test("machines : une machine de prof 0 ne fabrique jamais de pièce manquante", () => {
+test("commandes : une recette jamais fabriquée se fait d’abord à la main (et avec firstByHand: false, la machine peut)", () => {
   const E = mk();
-  ["manche", "corde", "archet"].forEach((k) => (E.state.known[k] = true));
-  E.add("automate_bronze", 1); // prof: 0, ing: 2
-  E.add("bois", 600);
-  E.add("corde", 200); // pas de manche
-  assert.strictEqual(E.count("manche"), 0);
-  const m = E.domMachAdd("archet").e;
+  E.state.known.manche = true; // mais made.manche vaut 0
+  E.add("automate_bois", 1);
+  E.add("bois", 30);
+  E.order("manche", 5);
+  assert.strictEqual(E.machines().automate_bois.used, 0, "jamais fait à la main : l’automate attend");
+  // Avec firstByHand: false, la machine peut tout de suite
+  D.COMMANDES.firstByHand = false;
+  try {
+    assert.strictEqual(E.machines().automate_bois.used, 1, "avec firstByHand: false, l’automate travaille tout de suite");
+  } finally {
+    D.COMMANDES.firstByHand = true;
+  }
+  // Dès que les mains ont fait le premier exemplaire, l’automate rejoint la commande
+  E.step(E.handTime("manche") + 0.05);
+  assert.ok(E.state.made.manche >= 1, "le premier manche est fait à la main");
+  assert.strictEqual(E.machines().automate_bois.used, 1, "l’automate aide sur les suivants");
   run(E, 60);
-  assert.strictEqual(E.count("archet"), 0, "rien fabriqué");
-  assert.strictEqual(E.machInfo(m.id).s, "starved");
-  assert.ok(E.machInfo(m.id).miss && E.machInfo(m.id).miss.manche, "il manque le manche");
+  assert.strictEqual(E.count("manche"), 5);
+});
+test("commandes : E.order ajoute les sous-pièces manquantes et les machines aident sur chaque étape", () => {
+  const E = mk();
+  ["manche", "corde", "archet"].forEach((k) => { E.state.known[k] = true; E.state.made[k] = 1; });
+  E.add("automate_bois", 1); // ing: 1 -> peut faire manche et corde
+  E.add("bois", 30); E.add("fibre", 60);
+  assert.strictEqual(E.count("manche"), 0);
+  const r = E.order("archet", 5);
+  assert.ok(r.ok);
+  assert.strictEqual(E.machines().automate_bois.used, 1, "l’automate de bois aide sur les sous-pièces à 1 ingrédient");
+  run(E, 180);
+  assert.strictEqual(E.count("archet"), 5, "a fabriqué les 5 archets à partir du bois et des fibres");
+  assert.strictEqual(E.count("manche"), 0, "les manches intermédiaires ont servi aux archets");
 });
 
 

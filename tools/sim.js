@@ -164,10 +164,13 @@ function currentTargets() {
   const ob = E.objective();
   if (ob && ob.k === "exp") return null; // les explorations sont lancées à chaque tour
   if (ob && ob.k === "ext") { if (S().inv.cabane >= 1 && !Object.keys(S().dom.ext).length) E.domAutoExt("cabane"); return { bois: (S().inv.bois || 0) + 1 }; }
+  if (ob && ob.k === "pass") { S().pass[ob.z].done = true; S().zones[ob.z] = true; E.recalc(); return null; }
   if (ob && ob.k === "line") {
-    // une chaîne : un automate qui fait des manches
-    if (!S().dom.mach.length) E.domMachAdd("manche", "automate_bois");
-    return { bois: (S().inv.bois || 0) + 3 };
+    // une commande : un automate qui aide à faire des manches
+    S().known.manche = true;
+    S().made.manche = Math.max(1, S().made.manche || 0);
+    if (S().inv.automate_bois >= 1 && !S().hand.q.length) E.order("manche", 5);
+    return { bois: (S().inv.bois || 0) + 15 };
   }
   if (ob) return { [ob.id]: 1 };
   const ps = E.projState(PROJECT);
@@ -223,6 +226,7 @@ function considerInvest(deficit, goalTaps) {
 
 for (T = 0; T < MAX_T * 1000 && !projDone && !stopNow; T += 1000) {
   E.update();
+  for (const z of E.passPending()) { S().pass[z].done = true; S().zones[z] = true; E.recalc(); }
   // explorations
   if (!S().exp.active) for (const z of E.openZones()) {
     const n = E.nextExp(z.id);

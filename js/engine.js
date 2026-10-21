@@ -212,9 +212,10 @@
         }
         if (B && e.res) backToInv(o, { [e.res]: B.o });
       } else if (e.k === "mach" && typeof e.id === "string") {
-        dom.mach.push({ id: e.id, m: e.m, r: e.r || null, n: e.n, on: e.on !== false, cap: e.cap });
+        o.flags = o.flags || {};
+        o.flags.mach57 = true;
         if (B) {
-          dom.ms[e.id] = { p: Number(B.p) || 0, b: Object.assign({}, B.b && typeof B.b === "object" ? B.b : {}) };
+          backToInv(o, B.b);
           if (e.r) backToInv(o, { [e.r]: B.o });
         }
       } else if (e.k === "site" && typeof e.p === "string") {
@@ -844,12 +845,16 @@
       return lo;
     };
 
-    /* ------------------------------------------------------ les mains
-     * Fabriquer à la main prend du temps : une pièce après l’autre, dans l’ordre de
-     * la file. Les matières sont mises de côté sur l’établi dès la mise en file (les
-     * machines ne peuvent plus les prendre) et rendues si on annule. Les sous-composants
-     * d’une fabrication en chaîne restent sur l’établi jusqu’à l’étape qui s’en sert. */
+    /* ------------------------------------------------------ les mains et les commandes
+     * Une commande (dans S.hand.q) rassemble un objet, une quantité, ses étapes s
+     * (des plus profondes aux plus proches, comme les donne E.plan) et son établi b.
+     * Les matières disponibles sont mises sur l’établi dès le départ, et ce qui manque
+     * y est tiré au fil des récoltes. Les machines libres et les mains y travaillent
+     * ensemble. */
     const H = D.HAND;
+    const machPool = []; // une entrée par machine possédée : { m, job, sIdx, rec }
+    let hWork = { job: null, sIdx: -1, rec: null };
+
     /* une pièce seule ; les gestes d’un âge passé vont plus vite */
     function handTime(id) {
       const it = item(id);
@@ -861,18 +866,95 @@
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
     const stepTime = (id, n) => handTime(id) * Math.pow(n, H.batch);
     E.batchTime = stepTime;
+
+    function stepDone(j, idx) {
+      if (j.done && j.done[idx] !== undefined) return j.done[idx];
+      return idx < j.i ? j.s[idx][1] : idx === j.i ? j.k : 0;
+    }
+    function syncJobPos(j) {
+      if (!j.done || j.done.length !== j.s.length) {
+        j.done = j.s.map((s, idx) => (idx < j.i ? s[1] : idx === j.i ? j.k : 0));
+      }
+      if (!j.hMade || j.hMade.length !== j.s.length) j.hMade = j.done.slice();
+      if (!j.sp || j.sp.length !== j.s.length) j.sp = j.s.map(() => 0);
+      if (!j.mAcc || j.mAcc.length !== j.s.length) j.mAcc = j.s.map(() => 0);
+      if (!j.miss || typeof j.miss !== "object") j.miss = {};
+      let i = 0;
+      while (i < j.s.length && j.done[i] >= j.s[i][1]) i++;
+      j.i = i;
+      j.k = i < j.s.length ? j.done[i] : 0;
+    }
+
     /* pièces de `id` encore à faire dans la file */
     function queued(id) {
       let n = 0;
-      S.hand.q.forEach((j) => j.s.forEach((s, i) => { if (s[0] === id && i >= j.i) n += s[1] - (i === j.i ? j.k : 0); }));
+      S.hand.q.forEach((j) => j.s.forEach((s, i) => {
+        if (s[0] === id) n += Math.max(0, s[1] - stepDone(j, i));
+      }));
       return n;
     }
     E.queued = queued;
-    /* temps restant ; pour la première de la file, S.hand.p est le temps déjà passé sur l’étape en cours */
+
+    function machUnitRate(m, c) {
+      const M = item(m);
+      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") : 0;
+    }
+    function machReadyFor(m, rec) {
+      if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
+      if (D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
+      if (blocker(rec)) return false;
+      return true;
+    }
+    function anyOwnedMachReadyFor(rec) {
+      return MACHINES.some((m) => Math.floor(count(m)) >= 1 && machReadyFor(m, rec));
+    }
+    /* durée estimée d’une étape (n unités de x) avec les machines capables disponibles */
+    function estStepTime(x, n, freeOnly) {
+      if (!(n > 0)) return 0;
+      const c = E.cache();
+      let mRate = 0;
+      if (E.automatable(x) && !blocker(x)) {
+        MACHINES.forEach((m) => {
+          if (!E.machCan(m, x)) return;
+          const cnt = freeOnly ? freeMach(m) : Math.floor(count(m));
+          if (cnt > 0) mRate += cnt * machUnitRate(m, c);
+        });
+      }
+      if (!(mRate > 0)) return stepTime(x, n);
+      const firstHand = D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[x] > 0);
+      if (firstHand) {
+        const t1 = handTime(x);
+        if (n <= 1) return t1;
+        const hRest = Math.max(1e-6, stepTime(x, n) - t1);
+        const hRate = (n - 1) / hRest;
+        return t1 + (n - 1) / (hRate + mRate);
+      }
+      const hTotal = Math.max(1e-6, stepTime(x, n));
+      const hRate = n / hTotal;
+      return n / (hRate + mRate);
+    }
+    /* durée approximative d’une commande de n exemplaires de id avec les machines libres */
+    E.orderTime = function (id, times) {
+      const p = E.plan(id, times);
+      if (!p.steps.length) return handTime(id);
+      return p.steps.reduce((a, [x, n]) => a + estStepTime(x, n, false), 0);
+    };
+    /* temps restant sur une commande en file */
     function jobTime(j, first) {
+      syncJobPos(j);
       let t = 0;
-      j.s.forEach((s, i) => { if (i >= j.i) t += stepTime(s[0], s[1]); });
-      return Math.max(0, t - (first ? S.hand.p : 0));
+      j.s.forEach((s, idx) => {
+        const rem = Math.max(0, s[1] - j.done[idx] - (j.sp[idx] || 0));
+        if (rem <= 0) return;
+        const full = estStepTime(s[0], s[1], false);
+        t += full * (rem / s[1]);
+      });
+      if (first && S.hand.p > 0 && !MACHINES.some((m) => Math.floor(count(m)) > 0)) {
+        let raw = 0;
+        j.s.forEach((s, i) => { if (i >= j.i) raw += stepTime(s[0], s[1]); });
+        return Math.max(0, raw - S.hand.p);
+      }
+      return Math.max(0, t);
     }
     /* prend `cost` sur l’établi d’abord, puis dans le stock ; rien s’il manque quelque chose */
     function take(cost, bench) {
@@ -884,8 +966,175 @@
       }
       return true;
     }
+    /* tire vers l’établi des commandes ce qui est arrivé en Réserve, et pose les
+     * extracteurs libres de la bonne terre sur les gisements des matières manquantes */
+    function pullOrderInputs() {
+      S.hand.q.forEach((j) => {
+        syncJobPos(j);
+        for (const res in j.miss) {
+          const need = j.miss[res];
+          if (!(need > 1e-9)) { delete j.miss[res]; continue; }
+          const have = S.inv[res] || 0;
+          if (have > 1e-9) {
+            const pull = Math.min(need, have);
+            add(res, -pull);
+            j.b[res] = (j.b[res] || 0) + pull;
+            j.miss[res] -= pull;
+          }
+          if (j.miss[res] <= 1e-9) {
+            delete j.miss[res];
+          } else {
+            const rNeed = j.miss[res];
+            void rNeed;
+            D.ZONES.forEach((z) => {
+              if (!zoneOpen(z.id) || !(ZONE_DEPS[z.id] || []).some((d) => d.res === res)) return;
+              E.extFor(res, z.id).sort((a, b) => extRate(b, res) - extRate(a, res)).forEach((t) => {
+                const free = freeExt(t);
+                if (free >= 1) {
+                  assignExt(z.id, res, t, free);
+                  if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
+                }
+              });
+            });
+          }
+        }
+      });
+    }
+    function syncMachPool() {
+      const want = [];
+      MACHINES.slice().reverse().forEach((m) => {
+        const n = Math.floor(count(m));
+        for (let i = 0; i < n; i++) want.push(m);
+      });
+      machPool.length = want.length;
+      for (let i = 0; i < want.length; i++) {
+        if (!machPool[i] || machPool[i].m !== want[i]) {
+          machPool[i] = { m: want[i], job: null, sIdx: -1, rec: null };
+        }
+      }
+    }
+    /* combien d’unités de l’étape (j, sIdx) peuvent être alimentées par l’établi (après
+     * ce qui est déjà réservé par d’autres étapes en cours sur j) */
+    function affordableUnits(j, sIdx, reserved) {
+      const rec = j.s[sIdx][0], it = item(rec);
+      const b = blocker(rec);
+      if (b && b.why !== "owned") return 0;
+      const cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+      let maxU = j.s[sIdx][1] - j.done[sIdx];
+      if (maxU <= 0) return 0;
+      if (isScaled(it) || isUnique(it)) maxU = Math.min(maxU, 1);
+      for (const i in cost) {
+        const avail = Math.max(0, (j.b[i] || 0) - (reserved[i] || 0)) + (S.inv[i] || 0);
+        maxU = Math.min(maxU, Math.floor((avail + 1e-9) / cost[i]));
+      }
+      return Math.max(0, maxU);
+    }
+    /* répartit les machines possédées et les mains sur les étapes prêtes des commandes */
+    function assignWorkers() {
+      syncMachPool();
+      machPool.forEach((w) => { w.job = null; w.sIdx = -1; w.rec = null; });
+      hWork = { job: null, sIdx: -1, rec: null };
+      if (!S.hand.q.length) return;
+
+      const jobResv = S.hand.q.map(() => ({}));
+      const stepMachs = S.hand.q.map((j) => { syncJobPos(j); return j.s.map(() => 0); });
+
+      // 1. Les machines : par priorité de commande, puis étape la plus profonde
+      machPool.forEach((w) => {
+        for (let jIdx = 0; jIdx < S.hand.q.length; jIdx++) {
+          const j = S.hand.q[jIdx], resv = jobResv[jIdx];
+          for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
+            const rec = j.s[sIdx][0];
+            if (!machReadyFor(w.m, rec)) continue;
+            const aff = affordableUnits(j, sIdx, resv);
+            if (aff < 1) continue;
+            w.job = j; w.sIdx = sIdx; w.rec = rec;
+            stepMachs[jIdx][sIdx]++;
+            const cost = item(rec).r[1];
+            for (const i in cost) resv[i] = (resv[i] || 0) + cost[i];
+            return;
+          }
+        }
+      });
+
+      // 2. Les mains : d’abord ce qu’aucune machine ne peut faire, sinon comme une machine de plus
+      for (let pass = 0; pass < 2 && !hWork.job; pass++) {
+        for (let jIdx = 0; jIdx < S.hand.q.length && !hWork.job; jIdx++) {
+          const j = S.hand.q[jIdx], resv = jobResv[jIdx];
+          for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
+            const rec = j.s[sIdx][0];
+            if (j.done[sIdx] >= j.s[sIdx][1]) continue;
+            if (pass === 0 && anyOwnedMachReadyFor(rec)) continue;
+            // Sur une étape où des machines travaillent déjà, les mains peuvent aider sur la même unité
+            const checkResv = stepMachs[jIdx][sIdx] > 0 ? {} : resv;
+            const aff = affordableUnits(j, sIdx, checkResv);
+            if (aff < 1) continue;
+            hWork = { job: j, sIdx, rec };
+            if (stepMachs[jIdx][sIdx] === 0) {
+              const it = item(rec), cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+              for (const i in cost) resv[i] = (resv[i] || 0) + cost[i];
+            }
+            break;
+          }
+        }
+      }
+
+      // 3. Une commande sur laquelle personne ne peut avancer est en attente
+      S.hand.q.forEach((j, jIdx) => {
+        const anyM = stepMachs[jIdx].some((n) => n > 0);
+        const anyH = hWork.job === j;
+        j.w = anyM || anyH ? 0 : 1;
+      });
+    }
+
+    /* Lance une commande (avec planification récursive des sous-composants).
+     * Démarre même s’il manque des matières premières : elles seront tirées de la Réserve. */
+    E.order = function (id, times, to) {
+      times = Math.max(1, Math.floor(times || 1));
+      const it = item(id);
+      if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
+      const b = blocker(id);
+      if (b) return { ok: false, why: b.why, info: b };
+      if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
+      if (isUnique(it)) {
+        times = 1;
+        if (queued(id) > 0) return { ok: false, why: "queued" };
+      }
+      const p = E.plan(id, times);
+      if (p.locked.length || Object.keys(p.blocked).length) return { ok: false, why: "plan", plan: p };
+      const bench = {};
+      for (const i in p.used) {
+        bench[i] = p.used[i];
+        add(i, -bench[i]);
+      }
+      const miss = {};
+      for (const i in p.missing) if (p.missing[i] > 0) miss[i] = p.missing[i];
+      const last = S.hand.q[S.hand.q.length - 1];
+      if (p.steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+        last.s[0][1] += times;
+        for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
+        last.miss = last.miss || {};
+        for (const i in miss) last.miss[i] = (last.miss[i] || 0) + miss[i];
+        pullOrderInputs();
+        assignWorkers();
+        E.emit("hand", { kind: "add", job: last });
+        return { ok: true, job: last, time: jobTime(last, false), missing: Object.keys(last.miss).length ? Object.assign({}, last.miss) : null, merged: true };
+      }
+      const j = {
+        id, s: p.steps, i: 0, k: 0,
+        done: p.steps.map(() => 0), hMade: p.steps.map(() => 0), sp: p.steps.map(() => 0), mAcc: p.steps.map(() => 0),
+        b: bench, miss
+      };
+      if (typeof to === "string") j.to = to;
+      S.hand.q.push(j);
+      pullOrderInputs();
+      assignWorkers();
+      E.emit("hand", { kind: "add", job: j });
+      return { ok: true, job: j, time: jobTime(j, S.hand.q.length === 1), missing: Object.keys(j.miss).length ? Object.assign({}, j.miss) : null };
+    };
+
     /* met une fabrication dans la file ; avec `chain`, ses sous-composants aussi.
-     * `to` : le gisement ("x:zone:res") ou la chaîne ("m:id") où poser ce qui sortira */
+     * `to` : le gisement ("x:zone:res") où poser ce qui sortira */
     E.queue = function (id, times, chain, to) {
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
@@ -914,15 +1163,21 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !last.k && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
+        assignWorkers();
         E.emit("hand", { kind: "add", job: last });
         return { ok: true, job: last, time: jobTime(last, false), merged: true };
       }
-      const j = { id, s: steps, i: 0, k: 0, b: bench };
+      const j = {
+        id, s: steps, i: 0, k: 0,
+        done: steps.map(() => 0), hMade: steps.map(() => 0), sp: steps.map(() => 0), mAcc: steps.map(() => 0),
+        b: bench, miss: {}
+      };
       if (typeof to === "string") j.to = to;
       S.hand.q.push(j);
+      assignWorkers();
       E.emit("hand", { kind: "add", job: j });
       return { ok: true, job: j, time: jobTime(j, S.hand.q.length === 1) };
     };
@@ -932,68 +1187,162 @@
       for (const i in j.b) add(i, j.b[i]);
       S.hand.q.splice(idx, 1);
       if (idx === 0) S.hand.p = 0;
+      assignWorkers();
       E.emit("hand", { kind: "cancel", job: j });
       return true;
     };
-    /* la file, pour l’affichage : pour chaque fabrication, l’étape en cours et le temps restant */
+    /* la file des commandes, pour l’affichage : étape en cours, temps restant, ce qui manque et qui y travaille */
     E.handInfo = function () {
+      assignWorkers();
       let t = 0;
       const jobs = S.hand.q.map((j, n) => {
+        syncJobPos(j);
         const s = j.s[Math.min(j.i, j.s.length - 1)], left = jobTime(j, n === 0);
         t += left;
-        const tot = j.s.reduce((a, x) => a + stepTime(x[0], x[1]), 0);
-        return { id: j.id, n: j.s[j.s.length - 1][1], step: s[0], k: j.k, of: s[1], i: j.i, steps: j.s.length, left, at: t, wait: !!j.w, tot };
+        const tot = Math.max(1e-6, j.s.reduce((a, x) => a + estStepTime(x[0], x[1], false), 0));
+        const totalCrafts = j.s.reduce((a, x) => a + x[1], 0);
+        const doneCrafts = j.s.reduce((a, x, idx) => a + j.done[idx] + (j.sp[idx] || 0), 0);
+        const machs = {};
+        machPool.forEach((w) => {
+          if (w.job !== j) return;
+          const cur = machs[w.m] || (machs[w.m] = { n: 0, rec: w.rec });
+          cur.n++;
+        });
+        const stepList = j.s.map(([sid, sn], idx) => {
+          const hands = hWork.job === j && hWork.sIdx === idx;
+          let mCnt = 0;
+          const machByType = {};
+          machPool.forEach((w) => {
+            if (w.job === j && w.sIdx === idx) {
+              mCnt++;
+              machByType[w.m] = (machByType[w.m] || 0) + 1;
+            }
+          });
+          return { id: sid, n: sn, done: j.done[idx], hands, machs: mCnt, machByType };
+        });
+        const activeStep = (hWork.job === j && hWork.rec) || (Object.values(machs)[0] && Object.values(machs)[0].rec) || s[0];
+        const miss = j.miss && Object.keys(j.miss).length ? Object.assign({}, j.miss) : null;
+        return {
+          id: j.id, n: j.s[j.s.length - 1][1],
+          done: j.done[j.s.length - 1], finalDone: j.done[j.s.length - 1],
+          total: totalCrafts, doneCrafts,
+          step: activeStep, k: j.k, of: s[1], i: j.i, steps: stepList,
+          frac: totalCrafts ? Math.min(1, doneCrafts / totalCrafts) : 0,
+          left, at: t, wait: !!j.w, tot, miss,
+          hand: hWork.job === j ? hWork.rec : null,
+          machs
+        };
       });
       return { jobs, left: t, full: S.hand.q.length >= H.max };
     };
     function finishJob(j, offline) {
       for (const i in j.b) add(i, j.b[i]);
-      S.hand.q.shift();
-      S.hand.p = 0;
+      const idx = S.hand.q.indexOf(j);
+      if (idx >= 0) S.hand.q.splice(idx, 1);
+      if (idx === 0) S.hand.p = 0;
       if (!offline) E.emit("hand", { kind: "done", job: j });
     }
-    function handStep(dt, offline) {
+    function workStep(dt, offline) {
       let left = dt, guard = 0;
-      while (left > 1e-9 && S.hand.q.length && guard++ < 5000) {
-        const j = S.hand.q[0];
-        if (j.i >= j.s.length) { finishJob(j, offline); continue; }
-        const x = j.s[j.i][0], n = j.s[j.i][1], it = item(x), t = handTime(x), total = t * Math.pow(n, H.batch);
-        // la q-ième pièce de l’étape est finie au bout de t × q^batch secondes
-        const p = Math.min(S.hand.p + left, total);
-        const due = (p >= total - 1e-9 ? n : Math.min(n, Math.floor(Math.pow(p / t, 1 / H.batch) + 1e-9))) - j.k;
-        if (due < 1) { left -= p - S.hand.p; S.hand.p = p; continue; }
-        // plusieurs pièces d’un coup, sauf pour les objets dont le prix monte à chaque exemplaire
-        const m = isScaled(it) || isUnique(it) ? 1 : due;
-        const cost = isScaled(it) ? costFor(x, count(x)) : totalCost(x, m);
-        if (blocker(x) && blocker(x).why !== "owned" || !take(cost, j.b)) { j.w = 1; return; }
-        j.w = 0;
-        const tm = Math.min(total, t * Math.pow(j.k + m, H.batch));
-        left -= Math.max(0, tm - S.hand.p);
-        S.hand.p = Math.max(S.hand.p, tm);
-        const last = j.i === j.s.length - 1;
-        const r = makeIt(x, m, offline || !last, last ? null : j.b);
-        if (last && j.to) deliver(j.to, x, m);
-        j.k += m;
-        if (!offline) E.emit("handdone", { id: x, n: r.n, bonus: r.bonus, first: r.first, last });
-        if (j.k >= n) { j.i++; j.k = 0; S.hand.p = 0; }
-        if (j.i >= j.s.length) finishJob(j, offline);
+      const c = E.cache();
+      while (left > 1e-9 && S.hand.q.length && guard++ < 20000) {
+        pullOrderInputs();
+        // Nettoyer les commandes déjà terminées
+        let cleaned = false;
+        for (let i = 0; i < S.hand.q.length; i++) {
+          const j = S.hand.q[i];
+          syncJobPos(j);
+          if (j.i >= j.s.length) { finishJob(j, offline); cleaned = true; break; }
+        }
+        if (cleaned) continue;
+
+        assignWorkers();
+
+        // Quelles étapes (j, sIdx) ont au moins un travailleur actif ?
+        const active = [];
+        S.hand.q.forEach((j) => {
+          j.s.forEach((s, sIdx) => {
+            const rec = s[0];
+            const hOn = hWork.job === j && hWork.sIdx === sIdx;
+            let mRate = 0, mCnt = 0;
+            machPool.forEach((w) => {
+              if (w.job === j && w.sIdx === sIdx) { mRate += machUnitRate(w.m, c); mCnt++; }
+            });
+            if (!hOn && !mCnt) return;
+            let hRate = 0, hDur = 0;
+            if (hOn) {
+              const q = (j.hMade[sIdx] || 0) + 1;
+              hDur = Math.max(1e-6, handTime(rec) * (Math.pow(q, H.batch) - Math.pow(q - 1, H.batch)));
+              hRate = 1 / hDur;
+            }
+            const rate = hRate + mRate;
+            if (rate > 1e-9) {
+              const needTime = Math.max(0, (1 - (j.sp[sIdx] || 0)) / rate);
+              active.push({ j, sIdx, rec, hOn, hRate, hDur, mRate, mCnt, rate, needTime });
+            }
+          });
+        });
+
+        if (!active.length) break;
+
+        let stepDt = left;
+        active.forEach((a) => { if (a.needTime < stepDt) stepDt = a.needTime; });
+        stepDt = Math.max(0, Math.min(left, stepDt));
+        left -= stepDt;
+
+        for (const a of active) {
+          const { j, sIdx, rec, hOn, mRate, mCnt, rate } = a;
+          j.sp[sIdx] = (j.sp[sIdx] || 0) + rate * stepDt;
+          if (mCnt > 0) {
+            j.mAcc[sIdx] = (j.mAcc[sIdx] || 0) + mRate * stepDt;
+            j.byMach = j.byMach || {};
+            j.byMach[rec] = true;
+            if (!S.flags.lineDone) { S.flags.lineDone = true; checkAges(); E.emit("struct"); }
+          }
+          if (hOn && S.hand.q[0] === j && sIdx === j.i) {
+            const t = handTime(rec);
+            S.hand.p = t * Math.pow(j.hMade[sIdx] + Math.min(1, j.sp[sIdx]), H.batch);
+          }
+          if (j.sp[sIdx] + 1e-9 >= 1) {
+            j.sp[sIdx] = 0;
+            const it = item(rec);
+            const cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+            if (!take(cost, j.b)) { j.w = 1; continue; }
+            const last = sIdx === j.s.length - 1;
+            const byMachine = !hOn || j.mAcc[sIdx] >= 1 - 1e-9;
+            if (byMachine && mCnt > 0) {
+              j.mAcc[sIdx] = Math.max(0, j.mAcc[sIdx] - 1);
+              const out = produce(rec, 1);
+              if (last && !isUnique(it) && !isScaled(it)) add(rec, out);
+              else if (!last && !isUnique(it) && !isScaled(it)) { j.b[rec] = (j.b[rec] || 0) + out; markSeen(rec); }
+              else add(rec, out);
+              if (last && j.to) deliver(j.to, rec, 1);
+              j.done[sIdx]++;
+              syncJobPos(j);
+              if (!offline) E.emit("handdone", { id: rec, n: out, bonus: out - it.r[2], first: false, last, mach: true });
+            } else {
+              j.hMade[sIdx] = (j.hMade[sIdx] || 0) + 1;
+              const r = makeIt(rec, 1, offline || !last, last ? null : j.b);
+              if (last && j.to) deliver(j.to, rec, 1);
+              j.done[sIdx]++;
+              syncJobPos(j);
+              if (!offline) E.emit("handdone", { id: rec, n: r.n, bonus: r.bonus, first: r.first, last });
+            }
+            if (S.hand.q[0] === j && j.done[sIdx] >= j.s[sIdx][1]) S.hand.p = 0;
+            if (j.i >= j.s.length) finishJob(j, offline);
+          }
+        }
       }
+      pullOrderInputs();
+      assignWorkers();
     }
 
     /* ------------------------------------------------------ l’action qui tourne
-     * Une seule à la fois : ramasser une matière en continu, ou refaire une recette
-     * en boucle (les mains la fabriquent par séries, pièces intermédiaires comprises).
-     * Elle continue jeu fermé, et s’arrête d’elle-même quand il n’y a plus de quoi. */
+     * Récolter une matière en continu (▶). Continue jeu fermé. */
     E.startAct = function (a) {
-      if (!a) return null;
-      if (a.k === "harv") {
-        if (!zoneOpen(a.z) || !ZONES[a.z].res.includes(a.res)) return null;
-        S.act = { k: "harv", z: a.z, res: a.res, p: 0, got: 0 };
-      } else if (a.k === "make") {
-        const it = item(a.id);
-        if (!it || !it.r || !S.known[a.id] || isUnique(it)) return null;
-        S.act = { k: "make", id: a.id, made0: S.made[a.id] || 0 };
-      } else return null;
+      if (!a || a.k !== "harv") return null;
+      if (!zoneOpen(a.z) || !ZONES[a.z].res.includes(a.res)) return null;
+      S.act = { k: "harv", z: a.z, res: a.res, p: 0, got: 0 };
       E.emit("act", S.act);
       runAct(0, false);
       return S.act;
@@ -1002,17 +1351,12 @@
       if (!S.act) return;
       const a = S.act;
       S.act = null;
-      // ce qui est encore dans la file reste à faire : on finit la série en cours
-      S.hand.q.forEach((j) => { if (j.loop) delete j.loop; });
       E.emit("actstop", { act: a, why: why || "stop" });
     };
     E.actInfo = function () {
       const a = S.act;
-      if (!a) return null;
-      if (a.k === "harv") return { k: "harv", z: a.z, res: a.res, frac: a.p, dur: SK.harvest / skillSpeed("recolte"), got: a.got };
-      const j = S.hand.q.find((x) => x.loop), hi = E.handInfo(), n = (S.made[a.id] || 0) - a.made0;
-      const jj = j ? hi.jobs[S.hand.q.indexOf(j)] : null;
-      return { k: "make", id: a.id, made: n * item(a.id).r[2], frac: jj && jj.tot ? 1 - jj.left / jj.tot : 0, wait: !!(j && j.w) };
+      if (!a || a.k !== "harv") return null;
+      return { k: "harv", z: a.z, res: a.res, frac: a.p, dur: SK.harvest / skillSpeed("recolte"), got: a.got };
     };
     function runAct(dt, offline) {
       const a = S.act;
@@ -1023,14 +1367,7 @@
         while (a.p >= 1) { a.p -= 1; a.got += E.tap(a.res, a.z); }
         return;
       }
-      // fabriquer en boucle : une nouvelle série dès que la précédente est finie
-      if (S.hand.q.some((j) => j.loop)) return;
-      if (S.hand.q.length >= H.max) return; // la file est pleine : on attend
-      const n = Math.min(25, E.maxPlan(a.id, 25));
-      if (!(n >= 1)) { E.stopAct("missing"); return; }
-      const r = E.queue(a.id, n, true);
-      if (r.ok) r.job.loop = true;
-      else if (r.why !== "full") E.stopAct(r.why || "missing");
+      E.stopAct("stop");
       void offline;
     }
 
@@ -1369,14 +1706,17 @@
      * Réserve, à un débit qui dépend de l’âge. Rien ne dépend d’une position.
      * Le calcul se fait par pas de temps : il donne le même résultat jeu ouvert ou
      * fermé. */
-    const machStat = {}; // état des machines, des gisements et des chantiers (non sauvegardé)
-    let order = null; // ordre de calcul des machines, refait à chaque modification
+    const machStat = {}; // état des gisements et des chantiers (non sauvegardé)
+    let order = null;
     function domChanged() { order = null; E.emit("dom"); }
     function forgetDom() {
       for (const k in machStat) delete machStat[k];
       order = null;
+      machPool.length = 0;
+      hWork.job = null; hWork.sIdx = -1; hWork.rec = null;
       E.emit("dom");
     }
+    E.machInfo = (k) => machStat[k] || { s: "wait", avg: 0 };
 
     E.automatable = (id) => {
       const it = item(id);
@@ -1501,21 +1841,22 @@
 
     /* --- machines */
     E.machines = function () {
+      assignWorkers();
       const out = {};
-      MACHINES.forEach((m) => (out[m] = { own: Math.floor(count(m)), used: 0, spd: item(m).spd }));
-      S.dom.mach.forEach((e) => { if (out[e.m]) out[e.m].used += e.n; });
+      MACHINES.forEach((m) => (out[m] = { own: Math.floor(count(m)), used: 0, spd: item(m).spd, byRec: {} }));
+      machPool.forEach((w) => {
+        if (w.job !== null && out[w.m]) {
+          out[w.m].used++;
+          if (w.rec) out[w.m].byRec[w.rec] = (out[w.m].byRec[w.rec] || 0) + 1;
+        }
+      });
       return out;
     };
     const freeMach = (m) => { const x = E.machines()[m]; return x ? Math.max(0, x.own - x.used) : 0; };
     E.freeMach = freeMach;
-    const machById = (id) => S.dom.mach.find((e) => e.id === id) || null;
-    E.machById = machById;
     E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) ||
-      Object.keys(S.dom.ext).length > 0 || S.dom.mach.length > 0;
-    E.machRate = (e) => (e && e.n > 0 && item(e.m) ? (e.n * item(e.m).spd) / 60 * E.cache().aspd * memV("mach") : 0);
-    const buf = (id) => S.dom.ms[id] || (S.dom.ms[id] = { p: 0, b: {} });
-    E.machBuf = buf;
-    E.machInfo = (id) => machStat[id] || { s: "wait", avg: 0 };
+      Object.keys(S.dom.ext).length > 0 || S.hand.q.length > 0;
+    E.machRate = (m) => (item(m) && item(m).t === "mach" ? machUnitRate(m) : 0);
     E.machCan = function (m, r) {
       const it = item(r), M = item(m);
       if (!it || !it.r || !M) return false;
@@ -1524,93 +1865,23 @@
     E.machFor = function (r) {
       return MACHINES.find((m) => E.machCan(m, r)) || null;
     };
-    /* ce qu’une machine avait en main rejoint la Réserve */
-    function refund(id) {
-      const B = S.dom.ms[id];
-      if (B) for (const i in B.b) if (B.b[i] > 0) add(i, B.b[i]);
-      delete S.dom.ms[id];
-      delete machStat[id];
-    }
-    /* nouvelle chaîne : une recette et une machine libre (la plus rapide qui sait la faire) */
-    E.domMachAdd = function (r, m) {
-      if (r && !E.automatable(r)) return { ok: false, why: "norec" };
-      const ms = E.machines();
-      if (m) {
-        if (r && !E.machCan(m, r)) return { ok: false, why: "tier", need: E.machFor(r) };
-        if (!ms[m] || ms[m].own - ms[m].used < 1) return { ok: false, why: "nomach" };
-      } else {
-        const anyFree = MACHINES.some((x) => ms[x].own - ms[x].used >= 1);
-        if (!anyFree) return { ok: false, why: "nomach" };
-        m = MACHINES.slice().reverse().find((x) => ms[x].own - ms[x].used >= 1 && (!r || E.machCan(x, r)));
-        if (!m) return { ok: false, why: "tier", need: E.machFor(r) };
-      }
-      const e = { id: "M" + ++S.dom.seq, m, r: r || null, n: 1, on: true, cap: 0 };
-      S.dom.mach.push(e);
-      domChanged();
-      return { ok: true, e };
-    };
-    /* réglages d’une chaîne : recette, type de machine, nombre, marche, stock visé */
-    E.domMachSet = function (id, patch) {
-      const e = machById(id);
-      if (!e) return null;
-      if (patch.r !== undefined && patch.r !== e.r && (patch.r === null || E.automatable(patch.r))) {
-        refund(id);
-        e.r = patch.r;
-      }
-      if (patch.m && patch.m !== e.m && item(patch.m) && item(patch.m).t === "mach") {
-        const tr = patch.r !== undefined ? patch.r : e.r;
-        if (tr && !E.machCan(patch.m, tr)) return e;
-        const free = freeMach(patch.m);
-        if (free < 1) return e;
-        e.m = patch.m;
-        e.n = Math.min(e.n, free);
-      }
-      if (patch.n !== undefined) e.n = Math.max(1, Math.min(Math.floor(patch.n) || 1, e.n + freeMach(e.m)));
-      if (patch.on !== undefined) e.on = !!patch.on;
-      if (patch.cap !== undefined) e.cap = Math.max(0, Math.floor(patch.cap) || 0);
-      domChanged();
-      return e;
-    };
-    /* « + » sur une chaîne : les machines libres d’abord, les mains font le reste */
-    E.domMachMore = function (id, n) {
-      const e = machById(id);
-      if (!e) return { ok: false, why: "none" };
-      n = Math.max(1, Math.floor(n || 1));
-      const k = Math.min(n, freeMach(e.m));
-      if (k > 0) { e.n += k; domChanged(); }
-      if (k >= n) return { ok: true, added: k, queued: 0 };
-      const q = E.queue(e.m, n - k, true, "m:" + id);
-      if (!q.ok) return { ok: k > 0, added: k, queued: 0, why: q.why, missing: q.missing || (q.plan && q.plan.missing) };
-      return { ok: true, added: k, queued: n - k };
-    };
-    E.domMachRemove = function (id) {
-      const i = S.dom.mach.findIndex((e) => e.id === id);
-      if (i < 0) return null;
-      refund(id);
-      const e = S.dom.mach.splice(i, 1)[0];
-      domChanged();
-      return e;
-    };
-    /* ce que les mains ont fini pour un gisement ou une chaîne y est posé */
+    /* ce que les mains ont fini pour un gisement y est posé */
     function deliver(to, id, n) {
       const it = item(id);
       if (!it || typeof to !== "string") return;
       if (to.slice(0, 2) === "x:" && it.t === "ext") {
         const i = to.indexOf(":", 2);
         assignExt(to.slice(2, i), to.slice(i + 1), id, n);
-      } else if (to.slice(0, 2) === "m:" && it.t === "mach") {
-        const e = machById(to.slice(2));
-        const k = e && e.m === id ? Math.min(n, freeMach(id)) : 0;
-        if (k > 0) { e.n += k; domChanged(); }
       }
     }
-    /* pièces encore attendues des mains pour un gisement ("x:zone:res") ou une chaîne ("m:id") */
+    /* pièces encore attendues pour un gisement ("x:zone:res") */
     E.domQueued = (to) => {
       let n = 0;
       S.hand.q.forEach((j) => {
         if (j.to !== to) return;
         const s = j.s[j.s.length - 1];
-        n += s[1] - (j.i === j.s.length - 1 ? j.k : 0);
+        const done = j.done ? j.done[j.s.length - 1] : (j.i === j.s.length - 1 ? j.k : 0);
+        n += Math.max(0, s[1] - done);
       });
       return n;
     };
@@ -1627,11 +1898,6 @@
     E.siteRate = () => D.SITE_RATE[Math.min(S.age, D.SITE_RATE.length - 1)] * E.cache().aspd;
 
     /* --- le calcul */
-    /* les machines qui font un ingrédient passent avant celles qui s’en servent */
-    function machOrder() {
-      if (!order) order = S.dom.mach.slice().sort((a, b) => (DEPTH[a.r] || 0) - (DEPTH[b.r] || 0));
-      return order;
-    }
     function produce(id, k) {
       const it = item(id);
       const bonus = bonusFor(it, k);
@@ -1654,165 +1920,6 @@
       made = rate * dt;
       add(e.res, made);
       if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
-      return done("ok");
-    }
-    function runMachine(e, dt, c) {
-      const st = machStat[e.id] || (machStat[e.id] = { s: "wait", avg: 0, miss: null });
-      const B = buf(e.id);
-      let made = 0;
-      const done = (s) => { st.s = s; st.avg += (1 - Math.exp(-dt / 5)) * (made / dt - st.avg); };
-      if (!e.on) return done("off");
-      const it = item(e.r), M = item(e.m);
-      if (!it || !it.r) return done("norec");
-      if (!(e.n > 0) || !M) return done("idle");
-      if (!E.machCan(e.m, e.r)) return done("tier");
-      const b = blocker(e.r);
-      if (b) { st.b = b; return done("blocked"); }
-      const outQ = it.r[2], ing = it.r[1];
-      B.p += (e.n * M.spd / 60) * c.aspd * memV("mach") * dt;
-      let want = Math.floor(B.p + 1e-9);
-      if (e.cap > 0) {
-        const room = e.cap - count(e.r);
-        if (room <= 0) { B.p = Math.min(B.p, 1); return done("cap"); }
-        want = Math.min(want, Math.ceil(room / outQ));
-      }
-      // la machine se sert dans la Réserve : de quoi faire ce qu’elle doit, et deux d’avance
-      for (const i in ing) {
-        const q = Math.min((Math.max(0, want) + 2) * ing[i] - (B.b[i] || 0), S.inv[i] || 0);
-        if (q > 1e-9) { add(i, -q); B.b[i] = (B.b[i] || 0) + q; }
-      }
-      if (want <= 0) return done(st.s === "starved" || st.s === "ok" ? st.s : "ok");
-      let k = want;
-      for (const i in ing) k = Math.min(k, Math.floor((B.b[i] || 0) / ing[i] + 1e-9));
-      if (k > 0) {
-        for (const i in ing) { B.b[i] -= k * ing[i]; if (B.b[i] < 1e-9) delete B.b[i]; }
-        B.p -= k;
-        made = k;
-        add(e.r, produce(e.r, k));
-      }
-      const prof = M.prof || 0;
-      if (prof >= 1 && B.p >= 1 && (e.cap <= 0 || count(e.r) < e.cap)) {
-        function canSub(subId, d) {
-          if (d > prof) return false;
-          const subIt = item(subId);
-          if (!subIt || !subIt.r) return false;
-          if (!S.known[subId]) return false;
-          if (!E.automatable(subId)) return false;
-          if (!E.machCan(e.m, subId)) return false;
-          if (blocker(subId)) return false;
-          return true;
-        }
-
-        let stuck = false;
-        while (B.p >= 1 && !stuck) {
-          if (e.cap > 0 && count(e.r) >= e.cap) break;
-
-          let canMakeDirect = true;
-          for (const i in ing) {
-            if ((B.b[i] || 0) < ing[i]) {
-              const pull = Math.min(ing[i] - (B.b[i] || 0), S.inv[i] || 0);
-              if (pull > 0) { add(i, -pull); B.b[i] = (B.b[i] || 0) + pull; }
-              if ((B.b[i] || 0) < ing[i]) { canMakeDirect = false; break; }
-            }
-          }
-
-          if (canMakeDirect) {
-            for (const i in ing) { B.b[i] -= ing[i]; if (B.b[i] < 1e-9) delete B.b[i]; }
-            B.p -= 1;
-            made += 1;
-            add(e.r, produce(e.r, 1));
-            continue;
-          }
-
-          let missingIng = null;
-          for (const i in ing) {
-            if ((B.b[i] || 0) < ing[i]) { missingIng = i; break; }
-          }
-
-          if (!missingIng || !canSub(missingIng, 1)) { stuck = true; break; }
-
-          const subIng = item(missingIng).r[1];
-          for (const j in subIng) {
-            if ((B.b[j] || 0) < subIng[j] && (S.inv[j] || 0) > 0) {
-              const pull = Math.min(subIng[j] - (B.b[j] || 0), S.inv[j]);
-              add(j, -pull);
-              B.b[j] = (B.b[j] || 0) + pull;
-            }
-          }
-
-          let canMakeSub = true;
-          for (const j in subIng) {
-            if ((B.b[j] || 0) < subIng[j]) { canMakeSub = false; break; }
-          }
-
-          if (canMakeSub) {
-            for (const j in subIng) { B.b[j] -= subIng[j]; if (B.b[j] < 1e-9) delete B.b[j]; }
-            B.p -= 1;
-            const got = produce(missingIng, 1);
-            B.b[missingIng] = (B.b[missingIng] || 0) + got;
-            continue;
-          }
-
-          let missingSub = null;
-          for (const j in subIng) {
-            if ((B.b[j] || 0) < subIng[j]) { missingSub = j; break; }
-          }
-
-          if (!missingSub || !canSub(missingSub, 2)) { stuck = true; break; }
-
-          const subSubIng = item(missingSub).r[1];
-          for (const k in subSubIng) {
-            if ((B.b[k] || 0) < subSubIng[k] && (S.inv[k] || 0) > 0) {
-              const pull = Math.min(subSubIng[k] - (B.b[k] || 0), S.inv[k]);
-              add(k, -pull);
-              B.b[k] = (B.b[k] || 0) + pull;
-            }
-          }
-
-          let canMakeSubSub = true;
-          for (const k in subSubIng) {
-            if ((B.b[k] || 0) < subSubIng[k]) { canMakeSubSub = false; break; }
-          }
-
-          if (canMakeSubSub) {
-            for (const k in subSubIng) { B.b[k] -= subSubIng[k]; if (B.b[k] < 1e-9) delete B.b[k]; }
-            B.p -= 1;
-            const got = produce(missingSub, 1);
-            B.b[missingSub] = (B.b[missingSub] || 0) + got;
-            continue;
-          }
-
-          stuck = true;
-          break;
-        }
-      }
-      if (k < want && B.p >= 1) {
-        B.p = Math.min(B.p, 1);
-        st.miss = {};
-        for (const i in ing) {
-          if ((B.b[i] || 0) < ing[i]) {
-            let m = i;
-            if (prof >= 1 && item(i) && item(i).r) {
-              const s1 = item(i).r[1];
-              for (const j in s1) {
-                if ((B.b[j] || 0) < s1[j]) {
-                  m = j;
-                  if (prof >= 2 && item(j) && item(j).r) {
-                    const s2 = item(j).r[1];
-                    for (const k in s2) {
-                      if ((B.b[k] || 0) < s2[k]) { m = k; break; }
-                    }
-                  }
-                  break;
-                }
-              }
-            }
-            st.miss[m] = "stock";
-          }
-        }
-        return done("starved");
-      }
-      st.miss = null;
       return done("ok");
     }
     /* Un Grand Œuvre alimenté se sert dans la Réserve : de quoi avancer l’étape en
@@ -1850,26 +1957,19 @@
     function runDom(dt) {
       const c = E.cache();
       for (const k in S.dom.ext) runExt(k, S.dom.ext[k], dt, c);
-      for (const e of machOrder()) runMachine(e, dt, c);
       for (const p in S.dom.site) if (S.dom.site[p].on) runSite(p, dt);
     }
 
     /* --- ce qui entre et sort, par seconde */
-    /* fabrications par seconde : sa cadence quand elle tourne bien (la moyenne, faite de
-     * coups espacés, oscille), sinon ce qu’elle a vraiment fait ces derniers temps */
-    function machRate(e, st) {
-      const it = item(e.r), M = item(e.m);
-      if (st.s !== "ok" || !it || !it.r || !M) return st.avg;
-      return (e.n * M.spd / 60) * E.cache().aspd * memV("mach");
-    }
     E.flows = function () {
       const prod = {}, cons = {};
-      S.dom.mach.forEach((e) => {
-        const st = machStat[e.id];
-        const it = st && st.avg > 1e-6 && item(e.r);
+      assignWorkers();
+      machPool.forEach((w) => {
+        if (w.job === null || !w.rec) return;
+        const it = item(w.rec);
         if (!it || !it.r) return;
-        const r = machRate(e, st);
-        prod[e.r] = (prod[e.r] || 0) + r * it.r[2];
+        const r = machUnitRate(w.m);
+        prod[w.rec] = (prod[w.rec] || 0) + r * it.r[2];
         for (const i in it.r[1]) cons[i] = (cons[i] || 0) + r * it.r[1][i];
       });
       return { prod, cons };
@@ -2160,9 +2260,11 @@
     function step(dt, offline) {
       const c = E.cache();
       for (const r in c.rates) add(r, c.rates[r] * dt);
+      pullOrderInputs();
       runDom(dt);
-      handStep(dt, offline);
+      pullOrderInputs();
       runAct(dt, offline);
+      workStep(dt, offline);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];
@@ -2214,14 +2316,14 @@
     E.serialize = () => JSON.stringify(S);
     /* Lit une sauvegarde (chaîne JSON ou objet), la migre et la valide.
      * Ne modifie l’état courant que si tout s’est bien passé. */
-    /* Domaine d’une sauvegarde : ce qui est illisible est mis de côté, pas jeté. */
+    /* Domaine d’une sauvegarde : ce qui est illisible est mis de côté, pas jeté.
+     * Les anciens groupes fixes de machines (S.dom.mach) sont dissous : leurs
+     * tampons retournent à la Réserve et les machines restent possédées, au repos. */
     function checkDom(o) {
       const d = o.dom && typeof o.dom === "object" ? o.dom : freshDom();
       const aside = (k, v) => { o.orphans = o.orphans || {}; (o.orphans.dom = o.orphans.dom || {})[k] = v; };
       if (!d.ext || typeof d.ext !== "object") d.ext = {};
-      if (!Array.isArray(d.mach)) d.mach = [];
       if (!d.site || typeof d.site !== "object") d.site = {};
-      if (!d.ms || typeof d.ms !== "object") d.ms = {};
       d.seq = Math.max(0, Math.floor(d.seq) || 0);
       for (const k in d.ext) {
         const e = d.ext[k], i = k.indexOf(":"), z = k.slice(0, i), res = k.slice(i + 1);
@@ -2246,37 +2348,38 @@
         if (v) d.ext[k].u[t] = v; else delete d.ext[k].u[t];
       }
       for (const k in d.ext) if (!Object.keys(d.ext[k].u).length) delete d.ext[k];
-      const ids = {}, usedM = {};
-      d.mach = d.mach.filter((e) => {
-        const ok = e && typeof e === "object" && typeof e.id === "string" && !ids[e.id] && D.ITEMS[e.m] && D.ITEMS[e.m].t === "mach";
-        if (!ok) { aside("mach:" + (e && e.id), e); return false; }
-        if (e.r && !D.ITEMS[e.r]) e.r = null;
-        e.n = Math.min(Math.max(1, Math.floor(e.n) || 1), own(e.m) - (usedM[e.m] || 0));
-        if (!(e.n >= 1)) { aside("mach:" + e.id, e); return false; }
-        usedM[e.m] = (usedM[e.m] || 0) + e.n;
-        ids[e.id] = true;
-        e.cap = Math.max(0, Math.floor(e.cap) || 0);
-        e.on = e.on !== false;
-        const n = +e.id.slice(1);
-        if (n > d.seq) d.seq = n;
-        return true;
-      });
+      const recById = {};
+      if (Array.isArray(d.mach) && d.mach.length > 0) {
+        o.flags = o.flags || {};
+        o.flags.mach57 = true;
+        d.mach.forEach((e, idx) => {
+          if (!e || typeof e !== "object" || !D.ITEMS[e.m] || D.ITEMS[e.m].t !== "mach" || (e.r && (!D.ITEMS[e.r] || !D.ITEMS[e.r].r))) {
+            aside("mach:" + ((e && e.id) || idx), e);
+          } else if (e.id && e.r) {
+            recById[e.id] = e.r;
+          }
+        });
+      }
+      if (d.ms && typeof d.ms === "object") {
+        for (const id in d.ms) {
+          const B = d.ms[id];
+          if (B && typeof B === "object") {
+            backToInv(o, B.b);
+            if (B.o && typeof B.o === "object") backToInv(o, B.o);
+            else if (Number(B.o) > 0 && recById[id]) backToInv(o, { [recById[id]]: Number(B.o) });
+            o.flags = o.flags || {};
+            o.flags.mach57 = true;
+          }
+        }
+      }
+      d.mach = [];
+      d.ms = {};
       for (const p in d.site) {
         if (!D.PROJECTS[p]) { aside("site:" + p, d.site[p]); delete d.site[p]; } else d.site[p] = { on: !!d.site[p] && d.site[p].on !== false };
       }
-      for (const id in d.ms) {
-        const B = d.ms[id];
-        if (!ids[id] || !B || typeof B !== "object") { if (B && typeof B === "object") backToInv(o, B.b); delete d.ms[id]; continue; }
-        B.p = Math.max(0, Number(B.p) || 0);
-        if (!B.b || typeof B.b !== "object") B.b = {};
-        for (const i in B.b) {
-          const v = Number(B.b[i]);
-          if (!D.ITEMS[i]) { backToInv(o, { [i]: v }); delete B.b[i]; } else if (!(v > 0)) delete B.b[i]; else B.b[i] = v;
-        }
-      }
       o.dom = d;
     }
-    /* File des mains d’une sauvegarde : une fabrication illisible est annulée et
+    /* File des commandes d’une sauvegarde : une commande illisible est annulée et
      * ses matières rendues au stock (ou mises de côté si l’objet n’existe plus). */
     function checkHand(o) {
       const h = o.hand && typeof o.hand === "object" ? o.hand : {};
@@ -2297,13 +2400,48 @@
         if (!ok || keep.length >= D.HAND.max) { refund(j && j.b); return; }
         for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
         j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
-        j.i = Math.max(0, Math.min(j.s.length, Math.floor(j.i) || 0));
-        j.k = Math.max(0, Math.floor(j.k) || 0);
+        if (Array.isArray(j.done) && j.done.length === j.s.length) {
+          j.done = j.done.map((d, idx) => Math.max(0, Math.min(j.s[idx][1], Math.floor(Number(d)) || 0)));
+        } else {
+          const i0 = Math.max(0, Math.min(j.s.length, Math.floor(j.i) || 0));
+          const k0 = Math.max(0, Math.floor(j.k) || 0);
+          j.done = j.s.map((s, idx) => idx < i0 ? s[1] : idx === i0 ? Math.min(s[1], k0) : 0);
+        }
+        if (Array.isArray(j.hMade) && j.hMade.length === j.s.length) {
+          j.hMade = j.hMade.map((d, idx) => Math.max(0, Math.min(j.done[idx], Math.floor(Number(d)) || 0)));
+        } else {
+          j.hMade = j.done.slice();
+        }
+        if (Array.isArray(j.sp) && j.sp.length === j.s.length) {
+          j.sp = j.sp.map((v) => Math.max(0, Number(v) || 0));
+        } else {
+          j.sp = j.s.map(() => 0);
+          const p0 = Math.max(0, Number(h.p) || 0);
+          const first = j.done.findIndex((d, idx) => d < j.s[idx][1]);
+          if (first >= 0 && p0 > 0 && keep.length === 0) j.sp[first] = p0;
+        }
+        if (Array.isArray(j.mAcc) && j.mAcc.length === j.s.length) {
+          j.mAcc = j.mAcc.map((v) => Math.max(0, Number(v) || 0));
+        } else {
+          j.mAcc = j.s.map(() => 0);
+        }
+        const cleanMiss = {};
+        if (j.miss && typeof j.miss === "object") {
+          for (const k in j.miss) {
+            const v = Number(j.miss[k]);
+            if (D.ITEMS[k] && v > 0) cleanMiss[k] = v;
+          }
+        }
+        j.miss = cleanMiss;
+        let cur = j.done.findIndex((d, idx) => d < j.s[idx][1]);
+        if (cur < 0) cur = j.s.length;
+        j.i = cur;
+        j.k = cur < j.s.length ? j.done[cur] : 0;
         if (typeof j.to !== "string") delete j.to;
-        if (j.loop !== true) delete j.loop;
+        delete j.loop;
         keep.push(j);
       });
-      o.hand = { q: keep, p: keep.length ? Math.max(0, Number(h.p) || 0) : 0 };
+      o.hand = { q: keep, p: keep.length && keep[0].i < keep[0].s.length ? (keep[0].sp[keep[0].i] || 0) : 0 };
       if (!o.studied || typeof o.studied !== "object") o.studied = {};
     }
     function parseSave(src) {
@@ -2362,9 +2500,8 @@
       if (!o.skills || typeof o.skills !== "object") o.skills = {};
       for (const g in o.skills) { const v = Number(o.skills[g]); if (!(v >= 0) || !(D.GESTES[g] || g === "recolte")) delete o.skills[g]; else o.skills[g] = v; }
       const a = o.act;
-      if (a && !((a.k === "harv" && ZONES[a.z] && D.ITEMS[a.res]) || (a.k === "make" && D.ITEMS[a.id] && D.ITEMS[a.id].r))) o.act = null;
+      if (a && !(a.k === "harv" && ZONES[a.z] && D.ITEMS[a.res])) o.act = null;
       if (o.act && o.act.k === "harv") { o.act.p = Math.max(0, Math.min(1, Number(o.act.p) || 0)); o.act.got = Number(o.act.got) || 0; }
-      if (o.act && o.act.k === "make") o.act.made0 = Number(o.act.made0) || 0;
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {
         if (!o[k] || typeof o[k] !== "object") return;
