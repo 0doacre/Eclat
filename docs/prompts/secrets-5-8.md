@@ -41,8 +41,8 @@ résultat d’un essai (cherche `thermo(`) et le Carnet (`viewCarnet`).
 
 Une phrase, deux au plus, dans le ton des textes de `D.FRAGS` : concret, au présent, sans
 emphase. **Elles ne nomment ni le geste, ni les matières, ni l’objet.** Elles évoquent une
-image qui y mène (« Tu n’as jamais eu faim. Et pourtant, l’odeur de l’herbe qui grille te
-dit quelque chose. »). Pas de « mystérieux », « étrange », « secret » dans l’énigme
+image qui y mène, sans la donner. Elle doit faire chercher, pas réciter : si on peut en
+déduire la recette sans rien essayer, elle est trop explicite. Pas de « mystérieux », « étrange », « secret » dans l’énigme
 elle-même, pas de tiret cadratin.
 
 ## Version, tests
