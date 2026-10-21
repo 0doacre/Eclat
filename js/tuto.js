@@ -46,7 +46,7 @@
           { tab: "domaine", go: "Retourne au Domaine.", at: ".goal-card", text: "L’objectif, en haut, te dit quoi chercher ensuite. 🏁 montre tout ce qu’il y a à faire à cet âge.", next: true, done: () => S().known.corde },
           { text: "À toi de chercher, maintenant : de quoi lier les choses entre elles. Ramasse des fibres, puis essaie des gestes à l’Atelier. Le thermomètre te dit si tu chauffes, et chaque essai nouveau réveille des souvenirs.",
             free: true, done: () => S().known.corde },
-          { text: "Bien trouvé. C’est tout le jeu : chercher, découvrir, puis faire travailler le monde pour toi. L’objectif te guide, et ❓ explique le reste.", next: true }
+          { text: "Bien trouvé. L’objectif, en haut, donne la suite ; ❓ explique le reste.", next: true }
         ] },
       { id: "lieux", n: "Les lieux",
         when: () => { const ob = E.objective(); return (U.tab === "domaine" || U.tab === "carte") && ob && ob.k === "exp" && !S().exp.active && !Object.keys(S().exp.done).length; },
@@ -77,7 +77,7 @@
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "domaine"),
         steps: [
           { at: () => (document.querySelector("#actbar:not(.hidden)") ? "#actbar" : null),
-            text: "Ce que tu fabriques à la main s’affiche ici, au-dessus des onglets : une pièce après l’autre, même jeu fermé. Touche la barre pour voir la file ou annuler.", next: true }
+            text: "Ce que tu fabriques à la main s’affiche ici, au-dessus des onglets : une pièce après l’autre. Touche la barre pour voir la file ou annuler.", next: true }
         ] },
       { id: "boucle", n: "En boucle",
         when: () => U.tab === "domaine" && S().stats.crafts >= 3 && !S().act && !!document.querySelector(".goal-card [data-loop]"),

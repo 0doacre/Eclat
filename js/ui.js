@@ -1386,7 +1386,7 @@
       }
     } else if (U.journalTab === "secrets") {
       const n = D.SECRETS.filter((s) => st.secrets[s.id]).length;
-      h += '<p class="small muted">' + n + "/" + D.SECRETS.length + " secrets découverts. Les textes en disent plus qu’il n’y paraît.</p><div class=\"secret-grid\">";
+      h += '<p class="small muted">' + n + "/" + D.SECRETS.length + " secrets découverts. Relis les fragments : certains cachent un code.</p><div class=\"secret-grid\">";
       D.SECRETS.forEach((s) => {
         const found = st.secrets[s.id];
         const name = s.n || (I[s.id] ? I[s.id].n : D.MELODIES[s.id] ? D.MELODIES[s.id].n : s.id);
@@ -1743,7 +1743,7 @@
     if (S().act && S().act.k === "make" && S().act.id === id) { E.stopAct(); A.click(); render(true); return; }
     const r = E.startAct({ k: "make", id });
     if (!r) { A.fail(0); toast("Ça ne se refait pas en boucle.", { key: "act" }); return; }
-    if (S().act) { A.click(); toast("⟳ " + esc(I[id].n) + " en boucle, tant qu’il y a de quoi. Ça continue jeu fermé.", { key: "act" }); }
+    if (S().act) { A.click(); toast("⟳ " + esc(I[id].n) + " en boucle, tant qu’il y a de quoi.", { key: "act" }); }
     render(true);
   }
   function startHarvest(key) {
@@ -1752,7 +1752,7 @@
     if (S().act && S().act.k === "harv" && S().act.res === res && S().act.z === z) { E.stopAct(); A.click(); render(true); return; }
     if (!E.startAct({ k: "harv", z, res })) { A.fail(0); toast(esc(I[res].n) + " ne se ramasse pas à la main.", { key: "act" }); return; }
     A.click();
-    toast("▶ Tu ramasses " + esc(I[res].n.toLowerCase()) + " en continu, même jeu fermé.", { key: "act" });
+    toast("▶ Tu ramasses " + esc(I[res].n.toLowerCase()) + " en continu.", { key: "act" });
     render(true);
   }
   /* la barre au-dessus des onglets : ce qui tourne, ou ce que font les mains */
@@ -1805,7 +1805,7 @@
       hi.jobs.map((j, i) => '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n)) +
         '<br><span class="tiny muted">' + (j.wait ? "il manque des matières" : i ? "prête dans " + fmtTime(j.at) : "prête dans " + fmtTime(j.left)) + "</span></span>" +
         '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>').join("") +
-      '</div><p class="tiny muted">Une pièce après l’autre, même jeu fermé. Annuler rend les matières à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+      '</div><p class="tiny muted">Annuler rend les matières à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
   }
   function openHands() {
     openModal({
@@ -2049,7 +2049,7 @@
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">Nouveautés</button><button class="btn" data-m="credits">Crédits</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
-        '<p class="tiny dim center" style="margin-top:12px">Éclat — du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
+        '<p class="tiny dim center" style="margin-top:12px">Éclat, du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
       onOpen: (box) => {
         $$("[data-vol]", box).forEach((r) => {
           r.addEventListener("input", () => {
@@ -2095,8 +2095,8 @@
       "<p><b>🏡 Domaine.</b> Tout ce qui produit, terre par terre. Touche l’icône d’une matière pour la ramasser, garde le doigt dessus pour continuer. <b>+1</b> pose un <b>extracteur</b> sur le gisement : il récolte seul, même jeu fermé (jusqu’à 12 h). S’il n’en reste pas de libre, tes mains en fabriquent un et le posent là. " +
       "Plus bas, les <b>machines</b> : chacune répète une recette, se sert dans la Réserve et y range ce qu’elle fait. Touche une ligne pour la régler. L’<b>objectif</b>, en haut, donne la prochaine chose à faire : ramasser ce qui manque (sur place, d’un appui), fabriquer d’un geste avec les pièces intermédiaires, ou aller découvrir une recette. Touche son titre pour le détail, et 🏁 montre les étapes de chaque âge.</p>" +
       "<p><b>🗺️ Carte.</b> Ton monde, de la Lisière jusqu’aux étoiles. La brume cache ce que tu n’as pas atteint. Touche une terre pour aller à ses gisements, un 🧭 lieu pour l’explorer (ils racontent l’histoire du monde), une étiquette « Passage » pour y verser.</p>" +
-      "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une petite découverte sort tout de suite ; une grosse s’inscrit dans le Carnet sans rien prendre, et tu la fabriques quand tu veux, prix affiché. Ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
-      "<p><b>⟳ Ce qui tourne.</b> ▶ sur un gisement ramasse en continu ; ⟳ refait une recette en boucle tant qu’il y a de quoi. Une seule chose tourne à la fois, même jeu fermé ; la barre au-dessus des onglets la montre, ■ l’arrête.</p>" +
+      "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une petite découverte sort tout de suite ; une grosse s’inscrit dans le Carnet sans rien prendre, et tu la fabriques quand tu veux, prix affiché. Ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> du Domaine. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
+      "<p><b>⟳ Ce qui tourne.</b> ▶ sur un gisement ramasse en continu ; ⟳ refait une recette en boucle tant qu’il y a de quoi. Une seule chose tourne à la fois, et elle continue jeu fermé ; la barre au-dessus des onglets la montre, ■ l’arrête.</p>" +
       "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même (pas tes machines) : 1 % plus rapide par niveau, et aux niveaux 10, 25, 50, 75 et 99 une chance de pièce en plus. À la relève, il en reste un dixième.</p>" +
       "<p><b>📖 Carnet</b> (deuxième page de l’Atelier). Tes recettes. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent (tes mains les font d’abord), <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies, et la page du ciel quand tu sauras le regarder. Certains textes cachent des recettes, des codes ou des airs.</p>" +
@@ -2260,7 +2260,7 @@
       const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
       fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève" });
       if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
-        "<p><b>Rien ne presse, et rien ne s’efface :</b> continue ta partie aussi longtemps que tu veux.</p>" +
+        "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
         "<p>Chaque passage franchi laisse des Traces ✦. Un jour, quand tu le voudras, tu pourras <b>passer le relais</b> : un nouveau Semeur repartira du début, mais avec tes recettes et des mains plus habiles, achetées avec ces Traces.</p>" +
         '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent.</p>', "Compris"), 2200);
     });
@@ -2545,7 +2545,7 @@
     const full = [];
     simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
       (list ? '<p class="small muted">Pendant ce temps, tout a travaillé pour toi :</p><div class="row wrap">' + list + "</div>"
-        : '<p class="small">Rien n’a tourné pendant ton absence.' + (auto ? "" : " Une cabane posée sur un gisement récolte même jeu fermé : c’est la prochaine chose à viser.") + "</p>") +
+        : '<p class="small">Rien n’a tourné pendant ton absence.' + (auto ? "" : " Pose une cabane sur un gisement : elle récoltera pendant ton absence.") + "</p>") +
       (full.length ? '<p class="small">📦 La Réserve s’est remplie de ' + full.map((k) => esc(I[k].n.toLowerCase())).join(", ") + " : " + (full.length > 1 ? "leurs extracteurs se sont arrêtés" : "son extracteur s’est arrêté") + ". Une machine qui " + (full.length > 1 ? "les" : "le") + " transforme ferait de la place.</p>" : "") +
       (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : ""));
   }
