@@ -1,6 +1,6 @@
 # Renaissances, Comptoir et méta-progression
 
-Document de conception des versions 5.4 à 5.6. Il complète `docs/PROGRESSION.md`
+Document de conception des versions 5.4 à 5.7. Il complète `docs/PROGRESSION.md`
 (passages, relève, Mémoire des mains), qui reste valable pour tout ce qu’il ne
 contredit pas. Les chiffres marqués « cible » se règlent au simulateur
 (`tools/sim-passages.js`), pas à l’intuition.
@@ -191,12 +191,12 @@ vendre au Comptoir et convertir en Traces, acheter dans l’arbre. Cibles à ten
 
 ## 10. Découpage
 
-1. **5.4 : le Comptoir.** Écus, vente avec saturation, achat de Traces et de
-   matières, chapitre du tutoriel, simulateur. Utile tout de suite, sans toucher
-   au rythme.
-2. **5.5 : le premier parcours.** Cycles guidés, renaissance obligatoire du cycle
-   1, scènes d’éveil, ruines, réglage des passages au mur doux.
-3. **5.6 : la méta en arbre.** Branches, projection « avant / après relève »,
+1. **5.4 : le Comptoir.** Fait.
+2. (5.5 : machines à paliers et onglet Machines, hors de ce document. Fait.)
+3. **5.6 : le premier parcours.** Renaissance obligatoire du cycle 1, ruines, scènes
+   d’éveil. Le réglage des passages au mur doux (§2) se fait juste après, au
+   simulateur.
+4. **5.7 : la méta en arbre.** Branches, projection « avant / après relève »,
    énigmes entre cycles, ruines des Semeurs 1 à 6.
 
 ## 11. Questions ouvertes

@@ -9,10 +9,18 @@ travailler dans un dossier à part, sur ton ordinateur, et rien n’arrive sur G
 > **Livraison.** Travaille dans un clone du dépôt GitHub `0doacre/craftgame`, à jour
 > (`git pull` sur `main` avant de commencer), jamais dans une copie ou un dossier temporaire.
 > Crée une nouvelle branche au nom de la tâche (par exemple `gemini-echecs-ages-4-5`).
-> Quand `node tools/test.js` passe, fais un commit qui dit ce que tu as changé, puis pousse la
+> Quand `npm test` passe en entier, **ouvre le jeu dans un vrai navigateur** avant de livrer :
+> `npx http-server -p 8765 -c-1 .` à la racine du dépôt, puis `http://localhost:8765/` (au
+> besoin avec Playwright). Le jeu doit se charger, la console ne doit montrer aucune erreur, et
+> ce que tu as changé doit se voir et marcher à l’écran. Les tests ne chargent que le moteur :
+> une erreur dans `js/ui.js` ou `js/domaine.js` peut passer les tests et casser tout le jeu
+> (c’est arrivé en 5.5). Si tu ne peux pas ouvrir de navigateur, dis-le clairement dans ton
+> compte rendu au lieu de livrer comme si c’était vérifié.
+> Fais ensuite un commit qui dit ce que tu as changé, puis pousse la
 > branche sur GitHub : `git push -u origin <nom-de-la-branche>`. Ne touche pas à `main`, ne
 > fusionne rien : la branche sera relue avant d’être intégrée. Termine en donnant le nom de
-> la branche et la sortie de `node tools/test.js`.
+> la branche, la sortie de `npm test`, ce que tu as vérifié dans le navigateur, et ce que tu
+> n’as pas pu faire.
 
 ## Ensuite
 
@@ -27,3 +35,5 @@ puis la fusionne.
   de livraison est déjà incluse.
 - `machines-5-5.md` : machines à paliers (ingrédients, profondeur) et onglet Machines dans
   l’Atelier, version 5.5.0. La consigne de livraison est déjà incluse.
+- `parcours-5-6.md` : première renaissance obligatoire, ruines, scènes d’éveil, version 5.6.0.
+  Consigne de livraison (avec la vérification dans le navigateur) incluse.
