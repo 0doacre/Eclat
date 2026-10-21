@@ -10,7 +10,8 @@ Le Comptoir (5.4, `D.COMPTOIR`, `E.sell`, `E.buyTrace` dans `js/engine.js`, fen�
 tout vendre rapporte 42 000 écus, soit **1 Trace**, quand la relève en rapporte 48. Le
 prix d’une Trace grimpe plus vite que ce qu’on a à vendre.
 
-Lis `docs/RENAISSANCES.md` (section 5), `docs/LEXIQUE.md`, et le code du Comptoir.
+Lis `docs/STYLE.md` (comment écrire tout texte affiché : obligatoire), `docs/RENAISSANCES.md` (section 5),
+`docs/LEXIQUE.md`, et le code du Comptoir.
 
 ## Ta tâche
 
