@@ -34,6 +34,7 @@
     if (!(n > 0)) return "0";
     if (n < 10 && Math.abs(n - Math.round(n)) > 1e-6) return (Math.floor(n * 10) / 10).toFixed(1).replace(".", ",");
     if (n < 1000) return String(Math.floor(n + 1e-9));
+    if (n >= 1e24) return n.toExponential(1).replace(".", ",").replace("e+", "e"); // au-delà des unités
     let u = -1, v = n;
     while (v >= 1000 && u < UNITS.length - 1) { v /= 1000; u++; }
     const s = v < 10 ? (Math.floor(v * 100) / 100).toFixed(2) : v < 100 ? (Math.floor(v * 10) / 10).toFixed(1) : Math.floor(v).toFixed(0);
@@ -502,7 +503,7 @@
     openModal({
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
-        (st.flags.mach57 ? '<p class="small">Tes anciennes chaînes de machines ont été libérées : tes machines attendent maintenant au repos pour aider sur tes commandes, et les matières en cours sont revenues dans ta Réserve.</p>' : "") +
+        (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles attendent au repos et aident tes commandes. Ce qu’elles avaient en main est revenu dans ta Réserve.</p>' : "") +
         (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Plus de tapis : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils produisent autant qu’avant ; ce qui roulait sur les tapis est revenu dans ta Réserve.</p>' : "") +
         (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
@@ -1267,10 +1268,11 @@
   function craftBtns(id) {
     const it = I[id];
     if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Fabriquer</button>';
-    const sizes = (D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000];
+    // le prix d’un extracteur ou d’une machine monte à chaque exemplaire : pas de ×1000
+    const sizes = E.isScaled(it) ? [10] : (D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000];
     const lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
-    return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="~' + fmtTime(E.orderTime(id, 1)) + '">' + lbl + "</button>" +
-      sizes.map((sz) => '<button class="btn small" data-cr="' + id + '" data-n="' + sz + '" title="~' + fmtTime(E.orderTime(id, sz)) + '">×' + sz + "</button>").join("") +
+    return '<button class="btn small pri" data-cr="' + id + '" data-n="1">' + lbl + "</button>" +
+      sizes.map((sz) => '<button class="btn small" data-cr="' + id + '" data-n="' + sz + '">×' + sz + "</button>").join("") +
       '<button class="btn small" data-cr="' + id + '" data-n="max">Max</button>';
   }
 
@@ -1917,7 +1919,8 @@
   /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
   function treeHTML(id, n) {
     const p = E.plan(id, n), st = S();
-    const canLaunch = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length;
+    // un extracteur ou une machine (prix qui monte) ne se commande qu’avec tout en main
+    const canLaunch = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length && (p.ok || !E.isScaled(I[id]));
     let h = '<div class="kicker">Tout ce qu’il faut fabriquer</div><div class="row">' + icon(id, "lg") + '<div class="grow"><h2 style="margin:0">' + esc(I[id].n) + "</h2>";
     if (!E.isUnique(I[id])) h += '<div class="row" style="margin-top:6px"><button class="mini" data-m="tn" data-d="-1">−</button><b style="min-width:40px;text-align:center">×' + fmt(n) + '</b><button class="mini" data-m="tn" data-d="1">+</button><button class="btn small ghost" data-m="tmax">Max</button></div>';
     h += "</div></div>";
@@ -1925,7 +1928,7 @@
     const used = Object.keys(p.used);
     if (used.length) h += '<h3 class="sub">Pris dans la Réserve</h3><div class="row wrap small">' + used.map((k) => '<span class="ing">' + icon(k, "sm") + fmt(p.used[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     const miss = Object.keys(p.missing).filter((k) => !p.locked.includes(k) && !p.blocked[k]);
-    if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">Il manque (tiré de la Réserve au fil des arrivées)</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
+    if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">' + (E.isScaled(I[id]) ? "Il manque" : "Il manque (tiré de la Réserve au fil des arrivées)") + '</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     if (p.locked.length) h += '<p class="why">Recettes encore inconnues : ' + p.locked.map((k) => esc(I[k].n)).join(", ") + "</p>";
     const bl = Object.keys(p.blocked);
     if (bl.length) h += '<p class="why">' + bl.map((k) => esc(I[k].n) + " : " + needText(k, p.blocked[k], true)).join(" · ") + "</p>";

@@ -91,7 +91,7 @@
         still: () => !S().flags.lineDone,
         steps: [
           { tab: "machines", go: "Ton premier automate est prêt. Ouvre l’onglet Machines dans l’Atelier.", at: '[data-tab2="machines"]',
-            text: "Ton automate travaille seul sur les commandes des recettes qu’il sait faire (une fois la pièce faite une fois à la main). Lance une commande depuis le Carnet (×10, ×50…) pour le voir aider tes mains.",
+            text: "Ton automate aide tes commandes tout seul. Un automate de bois fait les recettes à un ingrédient, si tu les as déjà faites une fois à la main. Lance ×10 ou ×50 depuis le Carnet pour le voir travailler.",
             next: true, done: () => !!S().flags.lineDone }
         ] },
       { id: "comptoir", n: "Le Comptoir",

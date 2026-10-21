@@ -1239,6 +1239,27 @@ test("commandes : E.order ajoute les sous-pièces manquantes et les machines aid
   assert.strictEqual(E.count("manche"), 0, "les manches intermédiaires ont servi aux archets");
 });
 
+test("commandes : le charbon se commande (il se récolte aussi) ; un extracteur ne se commande pas à crédit", () => {
+  const E = mk();
+  E.add("feu", 1); E.add("four", 1); E.state.zones.mine = true; E.recalc(); E.state.known.charbon = true; E.add("bois", 40);
+  const r = E.order("charbon", 5);
+  assert.ok(r.ok, "commande acceptée : " + r.why);
+  assert.deepStrictEqual(r.job.s, [["charbon", 5]], "une vraie étape, pas une commande vide");
+  E.state.known.cabane = true; E.state.inv.bois = 0;
+  assert.strictEqual(E.order("cabane", 10).why, "plan", "le prix monte à chaque cabane : il faut tout avoir");
+});
+
+test("commandes : des machines rapides finissent plusieurs pièces d’un pas, sans y passer des secondes", () => {
+  const E = mk();
+  E.state.known.manche = true; E.state.made.manche = 1;
+  E.add("automate_bois", 200); E.add("bois", 3e6);
+  assert.ok(E.order("manche", 1e6).ok);
+  const t0 = Date.now();
+  run(E, 60);
+  assert.ok(Date.now() - t0 < 700, "une minute de jeu calculée en " + (Date.now() - t0) + " ms");
+  assert.ok(E.count("manche") > 1000, "les manches sortent : " + E.count("manche"));
+});
+
 
 
 console.log("Coup de chance");

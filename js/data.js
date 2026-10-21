@@ -981,10 +981,10 @@
   };
 
   D.CHANGES = [
-    "📦 Les commandes : commandez ×10, ×50, ×100, ×1000 ou Max depuis le Carnet, même s’il manque des matières.",
-    "⚙️ Les machines ne sont plus fixées à une recette : elles aident désormais toutes vos fabrications dès qu’elles sont libres.",
-    "✋ Première fois à la main : fabriquez une recette une fois à la main pour que vos machines apprennent le geste.",
-    "⛏️ Les extracteurs libres de la bonne terre se posent tout seuls sur les gisements dont une commande a besoin."
+    "📦 Les commandes : ×10, ×50, ×100, ×1000 ou Max depuis le Carnet, même s’il manque des matières. Elles les prennent dans la Réserve à mesure qu’elles arrivent.",
+    "⚙️ Les machines ne sont plus fixées à une recette : dès qu’elles sont libres, elles aident tes commandes.",
+    "✋ Une recette se fait d’abord une fois à la main. Ensuite, les machines savent la faire.",
+    "⛏️ Tes extracteurs libres se posent seuls sur le gisement dont une commande a besoin."
   ];
 
 

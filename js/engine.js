@@ -792,7 +792,7 @@
           if (qty <= 1e-9) return;
         }
         const zid = RES_ZONE[x];
-        const gather = it.t === "res" && zid && zoneOpen(zid);
+        const gather = !root && it.t === "res" && zid && zoneOpen(zid); // le charbon se récolte, mais « Fabriquer » le fabrique
         if (!it.r || gather) { missing[x] = (missing[x] || 0) + qty; return; }
         if (!S.known[x]) { locked[x] = true; missing[x] = (missing[x] || 0) + qty; return; }
         const b = blocker(x);
@@ -969,34 +969,32 @@
     /* tire vers l’établi des commandes ce qui est arrivé en Réserve, et pose les
      * extracteurs libres de la bonne terre sur les gisements des matières manquantes */
     function pullOrderInputs() {
+      let units = null; // extracteurs libres, calculés une fois et seulement s’il manque quelque chose
       S.hand.q.forEach((j) => {
         syncJobPos(j);
         for (const res in j.miss) {
-          const need = j.miss[res];
-          if (!(need > 1e-9)) { delete j.miss[res]; continue; }
-          const have = S.inv[res] || 0;
-          if (have > 1e-9) {
-            const pull = Math.min(need, have);
+          const pull = Math.min(j.miss[res], S.inv[res] || 0);
+          if (pull > 1e-9) {
             add(res, -pull);
             j.b[res] = (j.b[res] || 0) + pull;
             j.miss[res] -= pull;
           }
-          if (j.miss[res] <= 1e-9) {
-            delete j.miss[res];
-          } else {
-            const rNeed = j.miss[res];
-            void rNeed;
-            D.ZONES.forEach((z) => {
-              if (!zoneOpen(z.id) || !(ZONE_DEPS[z.id] || []).some((d) => d.res === res)) return;
-              E.extFor(res, z.id).sort((a, b) => extRate(b, res) - extRate(a, res)).forEach((t) => {
-                const free = freeExt(t);
-                if (free >= 1) {
-                  assignExt(z.id, res, t, free);
-                  if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
-                }
-              });
-            });
+          if (!(j.miss[res] > 1e-9)) { delete j.miss[res]; continue; }
+          if (!units) {
+            units = E.extUnits();
+            units.free = EXTS.some((t) => units[t].own > units[t].used);
           }
+          if (!units.free) continue;
+          D.ZONES.forEach((z) => {
+            if (!zoneOpen(z.id) || !(ZONE_DEPS[z.id] || []).some((d) => d.res === res)) return;
+            E.extFor(res, z.id).sort((a, b) => extRate(b, res) - extRate(a, res)).forEach((t) => {
+              const free = units[t].own - units[t].used;
+              if (free < 1) return;
+              units[t].used += assignExt(z.id, res, t, free);
+              if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
+            });
+          });
+          units.free = EXTS.some((t) => units[t].own > units[t].used);
         }
       });
     }
@@ -1040,7 +1038,10 @@
       const stepMachs = S.hand.q.map((j) => { syncJobPos(j); return j.s.map(() => 0); });
 
       // 1. Les machines : par priorité de commande, puis étape la plus profonde
+      const idle = {}; // une sorte de machine qui n’a rien trouvé : les suivantes de la même sorte non plus
       machPool.forEach((w) => {
+        if (idle[w.m]) return;
+        idle[w.m] = true;
         for (let jIdx = 0; jIdx < S.hand.q.length; jIdx++) {
           const j = S.hand.q[jIdx], resv = jobResv[jIdx];
           for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
@@ -1049,6 +1050,7 @@
             const aff = affordableUnits(j, sIdx, resv);
             if (aff < 1) continue;
             w.job = j; w.sIdx = sIdx; w.rec = rec;
+            idle[w.m] = false;
             stepMachs[jIdx][sIdx]++;
             const cost = item(rec).r[1];
             for (const i in cost) resv[i] = (resv[i] || 0) + cost[i];
@@ -1102,6 +1104,9 @@
       }
       const p = E.plan(id, times);
       if (p.locked.length || Object.keys(p.blocked).length) return { ok: false, why: "plan", plan: p };
+      if (!p.steps.length) return { ok: false, why: "none" };
+      // un extracteur ou une machine coûte plus cher à chaque exemplaire : pas de commande à crédit
+      if (isScaled(it) && !p.ok) return { ok: false, why: "plan", plan: p };
       const bench = {};
       for (const i in p.used) {
         bench[i] = p.used[i];
@@ -1285,9 +1290,12 @@
 
         if (!active.length) break;
 
-        let stepDt = left;
+        // on avance jusqu’à la prochaine pièce finie, mais jamais par pas plus petits que
+        // `quant` : les machines rapides finissent alors plusieurs pièces d’un coup
+        const quant = offline ? 1 : 0.1;
+        let stepDt = Infinity;
         active.forEach((a) => { if (a.needTime < stepDt) stepDt = a.needTime; });
-        stepDt = Math.max(0, Math.min(left, stepDt));
+        stepDt = Math.max(0, Math.min(left, Math.max(stepDt, quant)));
         left -= stepDt;
 
         for (const a of active) {
@@ -1304,30 +1312,31 @@
             S.hand.p = t * Math.pow(j.hMade[sIdx] + Math.min(1, j.sp[sIdx]), H.batch);
           }
           if (j.sp[sIdx] + 1e-9 >= 1) {
-            j.sp[sIdx] = 0;
             const it = item(rec);
-            const cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
-            if (!take(cost, j.b)) { j.w = 1; continue; }
+            const one = isScaled(it) || isUnique(it);
+            let k = Math.min(Math.floor(j.sp[sIdx] + 1e-9), j.s[sIdx][1] - j.done[sIdx], one ? 1 : Infinity);
+            const unit = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+            for (const i in unit) k = Math.min(k, Math.floor(((j.b[i] || 0) + (S.inv[i] || 0) + 1e-9) / unit[i]));
+            j.sp[sIdx] = Math.min(1, Math.max(0, j.sp[sIdx] - Math.max(k, 1)));
+            if (!(k >= 1) || !take(isScaled(it) ? unit : totalCost(rec, k), j.b)) { j.w = 1; continue; }
             const last = sIdx === j.s.length - 1;
-            const byMachine = !hOn || j.mAcc[sIdx] >= 1 - 1e-9;
-            if (byMachine && mCnt > 0) {
-              j.mAcc[sIdx] = Math.max(0, j.mAcc[sIdx] - 1);
-              const out = produce(rec, 1);
-              if (last && !isUnique(it) && !isScaled(it)) add(rec, out);
-              else if (!last && !isUnique(it) && !isScaled(it)) { j.b[rec] = (j.b[rec] || 0) + out; markSeen(rec); }
+            // les pièces payées par l’avance des machines sont à elles, le reste aux mains
+            const km = mCnt > 0 ? (hOn ? Math.min(k, Math.floor(j.mAcc[sIdx] + 1e-9)) : k) : 0, kh = k - km;
+            if (km > 0) {
+              j.mAcc[sIdx] = Math.max(0, j.mAcc[sIdx] - km);
+              const out = produce(rec, km);
+              if (!last && !one) { j.b[rec] = (j.b[rec] || 0) + out; markSeen(rec); }
               else add(rec, out);
-              if (last && j.to) deliver(j.to, rec, 1);
-              j.done[sIdx]++;
-              syncJobPos(j);
-              if (!offline) E.emit("handdone", { id: rec, n: out, bonus: out - it.r[2], first: false, last, mach: true });
-            } else {
-              j.hMade[sIdx] = (j.hMade[sIdx] || 0) + 1;
-              const r = makeIt(rec, 1, offline || !last, last ? null : j.b);
-              if (last && j.to) deliver(j.to, rec, 1);
-              j.done[sIdx]++;
-              syncJobPos(j);
+              if (!offline) E.emit("handdone", { id: rec, n: out, bonus: out - it.r[2] * km, first: false, last, mach: true });
+            }
+            if (kh > 0) {
+              j.hMade[sIdx] = (j.hMade[sIdx] || 0) + kh;
+              const r = makeIt(rec, kh, offline || !last, last ? null : j.b);
               if (!offline) E.emit("handdone", { id: rec, n: r.n, bonus: r.bonus, first: r.first, last });
             }
+            if (last && j.to) deliver(j.to, rec, k);
+            j.done[sIdx] += k;
+            syncJobPos(j);
             if (S.hand.q[0] === j && j.done[sIdx] >= j.s[sIdx][1]) S.hand.p = 0;
             if (j.i >= j.s.length) finishJob(j, offline);
           }
@@ -2415,10 +2424,7 @@
         if (Array.isArray(j.sp) && j.sp.length === j.s.length) {
           j.sp = j.sp.map((v) => Math.max(0, Number(v) || 0));
         } else {
-          j.sp = j.s.map(() => 0);
-          const p0 = Math.max(0, Number(h.p) || 0);
-          const first = j.done.findIndex((d, idx) => d < j.s[idx][1]);
-          if (first >= 0 && p0 > 0 && keep.length === 0) j.sp[first] = p0;
+          j.sp = j.s.map(() => 0); // l’ancien S.hand.p comptait des secondes : la pièce en cours repart de zéro
         }
         if (Array.isArray(j.mAcc) && j.mAcc.length === j.s.length) {
           j.mAcc = j.mAcc.map((v) => Math.max(0, Number(v) || 0));
@@ -2441,7 +2447,7 @@
         delete j.loop;
         keep.push(j);
       });
-      o.hand = { q: keep, p: keep.length && keep[0].i < keep[0].s.length ? (keep[0].sp[keep[0].i] || 0) : 0 };
+      o.hand = { q: keep, p: 0 };
       if (!o.studied || typeof o.studied !== "object") o.studied = {};
     }
     function parseSave(src) {
