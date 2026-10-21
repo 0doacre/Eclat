@@ -141,9 +141,9 @@
     comp: "Une pièce : elle sert à fabriquer autre chose.",
     tool: "Un outil : il agit dès que tu l’as, rien à poser.",
     stat: "Une station : elle reste à l’Atelier et débloque une action ou une chaleur.",
-    ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même jeu fermé.",
+    ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même quand le jeu est fermé.",
     upg: "Une amélioration : elle agit dès que tu l’as, rien à poser.",
-    mach: "Une machine : elle aide automatiquement tes mains sur les commandes des recettes qu’elle sait faire.",
+    mach: "Une machine : elle reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire.",
     curio: "Une curiosité : elle n’a pas d’usage pratique.", relic: "Une relique, trouvée en explorant."
   };
   const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
@@ -152,7 +152,7 @@
     const n = zoneName(z);
     return /^Le /.test(n) ? "du " + n.slice(3) : /^Les /.test(n) ? "des " + n.slice(4) : /^La /.test(n) ? "de la " + n.slice(3) : /^L’/.test(n) ? "de l’" + n.slice(2) : "de " + n;
   };
-  const targetName = (k) => (k === "*" ? "toutes les zones" : E.ZONES[k] ? E.ZONES[k].n : I[k] ? I[k].n : k);
+  const targetName = (k) => (k === "*" ? "toutes les terres" : E.ZONES[k] ? E.ZONES[k].n : I[k] ? I[k].n : k);
   const isRawGather = (id) => I[id] && I[id].t === "res" && E.RES_ZONE[id];
 
   function fxList(id) {
@@ -180,8 +180,8 @@
     if (e.exp) out.push("Explorations " + fmtMul(e.exp));
     if (e.sky) out.push("Ouvre le Cosmos");
     if (e.arche) out.push("Capte les ondes radio");
-    if (e.term) out.push("Terminal");
-    if (e.signal) out.push("Écouter le ciel");
+    if (e.term) out.push("Débloque le terminal");
+    if (e.signal) out.push("Permet d’écouter le ciel");
     if (e.aspd) out.push("Machines " + fmtMul(e.aspd));
     if (e.pip) out.push("Récolte seul " + perMin(e.pip));
     if (e.flute) out.push("Débloque la flûte");
@@ -443,7 +443,7 @@
   function openSaves() {
     const list = backups();
     openModal({
-      html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Ta partie s’enregistre toute seule sur cet appareil. Pour la mettre à l’abri ou la transférer, télécharge-la en fichier.</p>" +
+      html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Ta partie s’enregistre toute seule sur cet appareil. Pour la mettre à l’abri ou la passer sur un autre appareil, télécharge-la dans un fichier.</p>" +
         '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="dl">⬇️ Télécharger ma sauvegarde</button><button class="btn" data-m="up">⬆️ Charger un fichier de sauvegarde</button>' +
         '<button class="btn ghost" data-m="code">📋 Code texte (ancien format)</button></div>' +
         (list.length ? '<h3 class="sub">Copies de sécurité automatiques</h3>' + list.map((b, i) =>
@@ -463,7 +463,7 @@
     try { o = E.parseSave(E.decodeSave(txt)); } catch (e) { toast("Fichier illisible : " + esc(e.message)); return; }
     openModal({
       html: "<h2>Charger cette partie ?</h2><p>Âge : <b>" + esc(D.AGES[o.age].n) + "</b> · " + Object.keys(o.known).length + " recettes connues · cycle " + (o.cycle || 1) + ".</p>" +
-        '<p class="small muted">Ta partie actuelle sera remplacée. Une copie de sécurité en est faite avant.</p><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">Charger</button></div>',
+        '<p class="small muted">Ta partie actuelle sera remplacée. Une copie de sécurité est faite juste avant.</p><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">Charger</button></div>',
       on: { go: () => { replaceWith(txt, why); } }
     });
   }
@@ -476,7 +476,7 @@
       onOpen: (box) => { const t = $("textarea", box); t.focus(); t.select(); },
       on: {
         copy: () => { try { navigator.clipboard.writeText($("#codeTxt").value); toast("Copié."); } catch (e) { /* ignoré */ } return true; },
-        load: () => { const v = $("#codeTxt").value; if (v.trim() === code) { toast("C’est déjà ta partie actuelle."); return true; } setTimeout(() => confirmReplace(v, "Avant le chargement d’un code"), 80); }
+        load: () => { const v = $("#codeTxt").value; if (v.trim() === code) { toast("Ce code correspond déjà à ta partie actuelle."); return true; } setTimeout(() => confirmReplace(v, "Avant le chargement d’un code"), 80); }
       }
     });
   }
@@ -505,8 +505,8 @@
     openModal({
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
-        (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles attendent au repos et aident tes commandes. Ce qu’elles avaient en main est revenu dans ta Réserve.</p>' : "") +
-        (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Plus de tapis : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils produisent autant qu’avant ; ce qui roulait sur les tapis est revenu dans ta Réserve.</p>' : "") +
+        (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles attendent au repos et aident tes commandes. Les ressources qu’elles utilisaient sont revenues dans ta Réserve.</p>' : "") +
+        (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Les tapis disparaissent : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils récoltent autant qu’avant, et ce qui se trouvait sur les tapis est revenu dans ta Réserve.</p>' : "") +
         (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
@@ -537,7 +537,7 @@
   const unbusy = (b) => { if (b && b.isConnected) { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; } };
   function openAccount(msg) {
     if (!Cloud.configured()) {
-      simpleModal("Compte", "Pas encore de comptes", "<p>Les comptes en ligne ne sont pas encore ouverts sur ce jeu. En attendant, ta partie se garde sur cet appareil, et tu peux la télécharger dans ☰ → Sauvegardes.</p>" +
+      simpleModal("Compte", "Pas encore de comptes", "<p>Les comptes en ligne ne sont pas encore ouverts sur ce jeu. En attendant, ta partie reste enregistrée sur cet appareil, et tu peux la télécharger dans ☰ → Sauvegardes.</p>" +
         '<p class="tiny dim">Pour la personne qui publie le jeu : la marche à suivre est dans server/README.md.</p>');
       return;
     }
@@ -548,13 +548,13 @@
     const up = U.acMode === "up";
     return {
       html: '<div class="kicker">Compte</div><h2>' + (up ? "Créer un compte" : "Se connecter") + "</h2>" +
-        '<p class="small muted">Avec un compte, ta partie est aussi gardée en ligne, et tu la retrouves sur un autre appareil.</p>' +
+        '<p class="small muted">Avec un compte, ta partie est aussi gardée en ligne, et tu peux la retrouver sur un autre appareil.</p>' +
         '<div class="seg"><button data-m="tin" class="' + (up ? "" : "on") + '">J’ai un compte</button><button data-m="tup" class="' + (up ? "on" : "") + '">Nouveau compte</button></div>' +
         '<label class="fld"><span>Pseudo</span><input id="acP" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="24" value="' + esc(pseudo || "") + '"></label>' +
         '<label class="fld"><span>Mot de passe</span><input id="acW" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '"></label>' +
-        (up ? '<label class="fld"><span>Encore une fois</span><input id="acW2" type="password" autocomplete="new-password"></label>' : "") +
+        (up ? '<label class="fld"><span>Confirme le mot de passe</span><input id="acW2" type="password" autocomplete="new-password"></label>' : "") +
         '<p class="small err" id="acErr">' + esc(msg || "") + "</p>" +
-        '<p class="tiny dim">Ta partie est chiffrée sur ton appareil avant d’être envoyée : sans ton mot de passe, personne ne peut la lire, pas même le serveur. Le revers : si tu l’oublies, la copie en ligne est perdue. Celle de l’appareil reste.</p>' +
+        '<p class="tiny dim">Ta partie est chiffrée sur ton appareil avant d’être envoyée : sans ton mot de passe, personne ne peut la lire, pas même le serveur. En contrepartie, si tu oublies ton mot de passe, la copie en ligne est perdue. Celle de cet appareil reste.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">' + (up ? "Créer le compte" : "Se connecter") + "</button></div>",
       onOpen: (box) => { const f = $(pseudo ? "#acW" : "#acP", box); if (f) f.focus(); },
       on: {
@@ -567,8 +567,8 @@
   async function doLogin(b, up) {
     const p = $("#acP").value.trim(), w = $("#acW").value, err = $("#acErr");
     const say = (t) => { if (err) err.textContent = t; };
-    if (!/^[\p{L}\p{N}_.-]{3,24}$/u.test(p)) return say("Le pseudo fait 3 à 24 caractères : lettres, chiffres, tiret, point ou souligné.");
-    if (up && w.length < 8) return say("Il faut au moins 8 caractères au mot de passe.");
+    if (!/^[\p{L}\p{N}_.-]{3,24}$/u.test(p)) return say("Le pseudo doit faire de 3 à 24 caractères : lettres, chiffres, tiret, point ou tiret bas.");
+    if (up && w.length < 8) return say("Le mot de passe doit faire au moins 8 caractères.");
     if (up && w !== $("#acW2").value) return say("Les deux mots de passe ne sont pas identiques.");
     if (!w) return say("Il manque le mot de passe.");
     busy(b, up ? "Création…" : "Connexion…");
@@ -584,7 +584,7 @@
     try { if (!isNew) cloud = await Cloud.pull(); } catch (e) { swapModal(accountModal(e.message)); return; }
     if (!cloud) {
       await cloudPush({ force: true, quiet: true });
-      swapModal(accountModal("C’est fait. Ta partie est maintenant gardée en ligne aussi."));
+      swapModal(accountModal("Voilà : ta partie est maintenant gardée en ligne aussi."));
       updateCloudBtn();
       return;
     }
@@ -600,7 +600,7 @@
         '<div class="vs"><div class="card"><b>📱 Cet appareil</b><div class="small muted">' + summary(S()) + '</div></div><div class="card"><b>☁️ En ligne</b><div class="small muted">' + summary(o) +
         "<br>Envoyée le " + esc(fmtDate(cloud.updated)) + "</div></div></div>" +
         '<p class="tiny dim">Celle que tu ne gardes pas n’est pas perdue : elle va dans les copies de sécurité (☰ → Sauvegardes).</p>' +
-        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="cloud">Prendre celle en ligne</button><button class="btn" data-m="local">Garder celle de cet appareil</button></div>',
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="cloud">Prendre la partie en ligne</button><button class="btn" data-m="local">Garder celle de cet appareil</button></div>',
       on: {
         cloud: () => { if (replaceWith(cloud.text, "Avant de charger la partie du compte")) { Cloud.adopt(cloud.rev, cloud.updated); U.sync.conflict = null; updateCloudBtn(); } },
         local: () => { pushBackup(cloud.text, "Partie du compte, remplacée par celle de l’appareil"); U.sync.conflict = null; cloudPush({ force: true, manual: true }); }
@@ -615,7 +615,7 @@
         (msg ? '<p class="small">' + esc(msg) + "</p>" : "") +
         (c ? '<div class="card warnc"><b>Une autre version de ta partie est en ligne.</b><div class="small muted">Envoyée le ' + esc(fmtDate(c.updated)) + ', sans doute depuis un autre appareil.</div><button class="btn small pri" data-m="solve" style="margin-top:8px">Choisir la partie à garder</button></div>' : "") +
         '<p class="small muted">' + (a.last ? "Dernier envoi : " + esc(fmtDate(a.last)) : "Rien n’a encore été envoyé.") + (U.sync.err ? '<br><span class="err">' + esc(U.sync.err) + "</span>" : "") + "</p>" +
-        '<div class="toggle"><span>Envoi automatique<br><span class="tiny dim">toutes les quelques minutes, et quand tu quittes le jeu</span></span><button class="btn small" data-m="auto">' + (a.auto ? "Activé" : "Coupé") + "</button></div>" +
+        '<div class="toggle"><span>Envoi automatique<br><span class="tiny dim">régulièrement, et quand tu quittes le jeu</span></span><button class="btn small" data-m="auto">' + (a.auto ? "Activé" : "Coupé") + "</button></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="push">⬆️ Envoyer maintenant</button><button class="btn" data-m="pull">⬇️ Récupérer la partie en ligne</button>' +
         '<button class="btn ghost" data-m="pw">🔑 Changer de mot de passe</button><button class="btn ghost" data-m="out">🚪 Se déconnecter</button><button class="btn ghost" data-m="del" style="color:var(--bad)">🗑️ Supprimer le compte</button>' +
         '<button class="btn" data-m="close">Fermer</button></div>',
@@ -625,12 +625,12 @@
         pull: (b) => {
           busy(b, "Téléchargement…");
           Cloud.pull().then((cl) => {
-            if (!cl) swapModal(accountModal("Il n’y a pas encore de partie en ligne."));
-            else chooseVersion(cl, "Voici ce qu’il y a en ligne.");
+            if (!cl) swapModal(accountModal("Aucune partie en ligne pour l’instant."));
+            else chooseVersion(cl, "Voici la partie enregistrée en ligne.");
           }).catch((e) => swapModal(accountModal(e.message)));
           return true;
         },
-        solve: (b) => { busy(b); Cloud.pull().then((cl) => cl && chooseVersion(cl, "Ta partie a avancé ailleurs.")).catch((e) => swapModal(accountModal(e.message))); return true; },
+        solve: (b) => { busy(b); Cloud.pull().then((cl) => cl && chooseVersion(cl, "Ta partie a avancé sur un autre appareil.")).catch((e) => swapModal(accountModal(e.message))); return true; },
         pw: () => { swapModal(passwordModal()); return true; },
         out: () => { Cloud.logout().then(updateCloudBtn); toast("Déconnecté. Ta partie reste sur cet appareil."); },
         del: () => { swapModal(deleteModal()); return true; }
@@ -642,14 +642,14 @@
       html: '<div class="kicker">Compte</div><h2>Changer de mot de passe</h2>' +
         '<label class="fld"><span>Mot de passe actuel</span><input id="pw0" type="password" autocomplete="current-password"></label>' +
         '<label class="fld"><span>Nouveau mot de passe</span><input id="pw1" type="password" autocomplete="new-password"></label>' +
-        '<label class="fld"><span>Encore une fois</span><input id="pw2" type="password" autocomplete="new-password"></label>' +
+        '<label class="fld"><span>Confirme le nouveau mot de passe</span><input id="pw2" type="password" autocomplete="new-password"></label>' +
         '<p class="small err" id="pwErr"></p><p class="tiny dim">Ta partie en ligne est rechiffrée avec le nouveau mot de passe. Tes autres appareils devront se reconnecter.</p>' +
         '<div class="acts"><button class="btn" data-m="back">Retour</button><button class="btn pri" data-m="go">Changer</button></div>',
       on: {
         back: () => { swapModal(accountModal()); return true; },
         go: (b) => {
           const o = $("#pw0").value, n = $("#pw1").value, err = $("#pwErr");
-          if (n.length < 8) { err.textContent = "Il faut au moins 8 caractères."; return true; }
+          if (n.length < 8) { err.textContent = "Le nouveau mot de passe doit faire au moins 8 caractères."; return true; }
           if (n !== $("#pw2").value) { err.textContent = "Les deux nouveaux mots de passe ne sont pas identiques."; return true; }
           busy(b, "Chiffrement…");
           save();
@@ -710,7 +710,7 @@
     try {
       const cl = await Cloud.pull();
       if (!cl || cl.rev === a.rev) return;
-      const ask = () => { if (U.mcur) { setTimeout(ask, 1000); return; } chooseVersion(cl, "Ta partie en ligne a changé depuis ton dernier passage ici. Un autre appareil, sans doute."); };
+      const ask = () => { if (U.mcur) { setTimeout(ask, 1000); return; } chooseVersion(cl, "Ta partie en ligne a changé depuis ton dernier passage ici, sans doute sur un autre appareil."); };
       ask();
     } catch (e) { U.sync.err = e.message; updateCloudBtn(); }
   }
@@ -886,7 +886,7 @@
     const st = S();
     const g = E.guide();
     if (!g) {
-      return st.flags.arche ? '<div class="card acc goal-card compact"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Il t’attend dans le Domaine, et dans le ciel du Journal.</div></div>' : "";
+      return st.flags.arche ? '<div class="card acc goal-card compact"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Il t’attend dans le Domaine, et dans l’onglet Cosmos du Journal.</div></div>' : "";
     }
     const ob = g.ob;
     const open = goalOpen();
@@ -902,7 +902,7 @@
     if (ob.k === "craft") {
       const it = I[ob.id];
       if (it.h && !st.known[ob.id]) h += '<div class="riddle small">« ' + esc(it.h) + " »</div>";
-      if (g.step !== ob.id && I[g.step]) h += '<div class="tiny muted">Avant ça : ' + (st.known[g.step] ? icon(g.step, "sm") + " " : "") + '<b class="link-txt" data-goto="' + g.step + '">' + esc(I[g.step].n) + "</b></div>";
+      if (g.step !== ob.id && I[g.step]) h += '<div class="tiny muted">Il faut d’abord : ' + (st.known[g.step] ? icon(g.step, "sm") + " " : "") + '<b class="link-txt" data-goto="' + g.step + '">' + esc(I[g.step].n) + "</b></div>";
       if (st.known[ob.id]) h += '<div class="row wrap" style="margin-top:6px"><button class="btn small ghost" data-tree="' + ob.id + '">Détail</button>' + (st.track && st.track.id === ob.id ? "" : '<button class="btn small ghost" data-track="' + ob.id + '">Suivre</button>') + "</div>";
       const z = it.e && it.e.zone;
       if (z && D.PASSAGES[z] && !(st.pass[z] && st.pass[z].done)) {
@@ -940,7 +940,7 @@
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
         '</div><button class="btn small pri" data-gotab="atelier">Chercher</button>');
     }
-    if (E.queued(id) > 0) return line('<span class="small">✋ Tes mains fabriquent ' + esc(it.n.toLowerCase()) + ".</span>");
+    if (E.queued(id) > 0) return line('<span class="small">✋ En cours de fabrication : ' + esc(it.n.toLowerCase()) + ".</span>");
     const b = E.blocker(id);
     if (b && b.why !== "owned") return line('<span class="small">' + cap1(needText(id, b, true)) + ".</span>");
     if (b && b.why === "owned") return "";
@@ -959,7 +959,7 @@
         (st.act && st.act.k === "harv" && st.act.res === hand ? '<span class="tiny muted">en cours…</span>' : '<button class="btn small" data-hloop="' + z + ":" + hand + '">▶</button>') + "</div>";
     }
     const ext = miss.find((k) => isRawGather(k));
-    if (ext) return line('<span class="small">Il manque ' + fmt(p.missing[ext]) + " " + esc(I[ext].n.toLowerCase()) + " : ça ne se récolte pas à la main, il faut un extracteur sur son gisement.</span>");
+    if (ext) return line('<span class="small">Il manque ' + fmt(p.missing[ext]) + " " + esc(I[ext].n.toLowerCase()) + " : cette ressource ne se récolte pas à la main. Pose un extracteur sur son gisement.</span>");
     return line('<span class="small">Il manque : ' + miss.map((k) => '<b class="link-txt" data-goto="' + k + '">' + fmt(p.missing[k]) + " " + esc(I[k].n.toLowerCase()) + "</b>").join(", ") + ".</span>");
   }
   /* ce qui change la carte d’objectif (pour la redessiner au bon moment) */
@@ -984,7 +984,7 @@
   function openMilestones() {
     const st = S(), ms = E.milestones(), cur = E.objective();
     st.flags.milesSeen = true;
-    let h = '<div class="kicker">Les étapes</div><h2>' + esc(D.AGES[st.age].n) + '</h2><p class="small muted">Chaque âge a ses étapes. Fais-les toutes et l’âge est <b>accompli</b> : +' + D.AGE_DONE + " ✨ Intuition. Certaines se sautent : tu peux passer à l’âge suivant sans elles, et revenir les faire quand tu veux.</p>";
+    let h = '<div class="kicker">Les étapes</div><h2>' + esc(D.AGES[st.age].n) + '</h2><p class="small muted">Chaque âge a ses étapes. Fais-les toutes et l’âge est <b>accompli</b> : +' + D.AGE_DONE + " ✨ Intuition. Certaines sont facultatives : tu peux passer à l’âge suivant sans elles, et revenir les faire quand tu veux.</p>";
     ms.forEach((list, a) => {
       if (!list || a > st.age + 1) return;
       const done = list.filter((x) => x.done).length, next = a === st.age + 1, full = done === list.length;
@@ -996,7 +996,7 @@
     });
     openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
-  const WHY_STEP = { station: "Il te faut d’abord :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
+  const WHY_STEP = { station: "Il te faut d’abord :", zone: "Il te faut d’abord atteindre une nouvelle terre. Elle s’ouvre avec :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
   /* un passage vers une terre : ce qu’il coûte, ce qui est déjà versé, et le bouton pour verser */
   function passHTML(z) {
     const p = E.passInfo(z), st = S();
@@ -1056,7 +1056,7 @@
     const what = (["l’action", "une des ressources", "la recette entière"][m.lvl] || "") + (I[m.id] ? " de « " + I[m.id].n + " »" : "");
     return '<div class="memory"><div class="row between tiny"><span>💭 Souvenirs' + (gain ? ' <b class="gain">' + gain + "</b>" : "") + "</span><span class=\"muted\">prochain : " + what + "</span></div>" +
       '<div class="bar"><i style="width:' + (f * 100).toFixed(0) + '%"></i></div>' +
-      (gain ? "" : '<div class="tiny dim">Chaque combinaison nouvelle essayée à l’Atelier en réveille, surtout si elle s’approche de ce que tu cherches.</div>') + "</div>";
+      (gain ? "" : '<div class="tiny dim">Chaque nouvelle combinaison tentée à l’Atelier réveille des souvenirs, surtout si elle se rapproche de ce que tu cherches.</div>') + "</div>";
   }
   function trackerHTML() {
     const t = S().track;
@@ -1064,7 +1064,7 @@
     const id = t.id, p = E.plan(id, 1);
     let h = '<div class="card track"><div class="row between"><div class="lbl">🎯 Suivi</div><button class="btn small ghost" data-untrack>✕</button></div>' +
       '<div class="row" style="margin:4px 0 6px">' + icon(id, "sm") + ' <b class="link-txt" data-goto="' + id + '">' + esc(I[id].n) + "</b></div>";
-    if (E.queued(id) > 0) return h + '<div class="small">✋ Tes mains s’y mettent : c’est en route.</div></div>';
+    if (E.queued(id) > 0) return h + '<div class="small">✋ Tes mains s’y mettent : fabrication en cours.</div></div>';
     if (p.ok) return h + '<div class="small" style="color:var(--good)">Tout est prêt.</div><button class="btn small pri" style="margin-top:6px" data-chain="' + id + '">⚡ Fabriquer</button></div>';
     const f = E.flows();
     Object.keys(p.missing).forEach((k) => {
@@ -1121,7 +1121,7 @@
     h += '<div class="card result" id="result">' + resultHTML() + "</div>";
     const sugg = E.knownWith(U.slots).filter((id) => !(U.last && U.last.id === id)).slice(0, 6);
     if (sugg.length) {
-      h += '<h3 class="sub">Tu sais déjà faire avec ces ressources</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
+      h += '<h3 class="sub">Recettes connues avec ces ressources</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
     }
     const o = invOpts();
     // recherche, tri et filtres quand il y a de quoi chercher
@@ -1148,7 +1148,7 @@
       });
     } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
     if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.") + "</p>";
-    else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : sa fiche, ♥ pour la garder en tête de liste, 🔍 pour l’étudier. Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</p>';
+    else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</p>';
     return h;
   }
   const INV_SORTS = [["age", "Par âge"], ["name", "Par nom"], ["qty", "Les plus nombreuses"], ["new", "Dernières trouvées"]];
@@ -1230,19 +1230,19 @@
       if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultHTML(); }
       const miss = q ? null : E.missingFor(r.id, 1);
       const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
-      if (q) return head + '<div class="small">✋ Tes mains s’y mettent : la recette et ses pièces sont dans ta file.</div></div></div>';
+      if (q) return head + '<div class="small">✋ Tes mains s’y mettent : la recette et ses pièces sont dans la file des commandes.</div></div></div>';
       // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
       if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
-        '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tout est là. Il en coûte :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
+        '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tu as tout ce qu’il faut. Coût :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
         '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
-      return head + '<div class="small">Tu sais comment faire, mais il te manque :</div><div class="row wrap small">' +
+      return head + '<div class="small">Tu connais la recette, mais il te manque :</div><div class="row wrap small">' +
         Object.keys(miss).map((i) => '<span class="ing lack link" data-goto="' + i + '">' + icon(i, "sm") + fmt(miss[i]) + " " + esc(I[i].n) + "</span>").join("") + "</div>" +
-        '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-chain="' + r.id + '">⚡ Fabriquer tout</button><button class="btn small" data-tree="' + r.id + '">🌳 Détail</button><button class="btn small" data-track="' + r.id + '">🎯 Suivre</button></div></div></div>';
+        '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-chain="' + r.id + '">⚡ Tout fabriquer</button><button class="btn small" data-tree="' + r.id + '">🌳 Détail</button><button class="btn small" data-track="' + r.id + '">🎯 Suivre</button></div></div></div>';
     }
     if (r.kind === "blocked") {
       const b = r.info;
       let msg = "Il te manque un outil.";
-      if (b.why === "heat") msg = "Ça rougeoie, mais ça ne prend pas. Il faudrait au moins " + fmtHeat(b.heat) + " (tu atteins " + fmtHeat(E.heat()) + ").";
+      if (b.why === "heat") msg = "Tu chauffes, mais rien ne prend. Il faut au moins " + fmtHeat(b.heat) + " (tu atteins " + fmtHeat(E.heat()) + ").";
       if (b.why === "lvl") msg = U.geste === "marteler" ? "Ton enclume n’est pas assez dure pour ce métal." : "Il faudrait bien plus de puissance.";
       const st = b.why === "heat" ? E.stationFor("chauffer", b.heat) : b.why === "lvl" ? E.stationFor(I[r.id].r[0], 0, b.lvl) : null;
       return thermo(4) + '<div class="row" style="margin-top:6px">' + icon(r.id) + '<div class="grow"><b>' + esc(I[r.id].n) + '</b><div class="small">' + esc(msg) + "</div>" +
@@ -1256,14 +1256,14 @@
       const msg = done ? "✓ Fabriqué : la pièce est rangée dans ta Réserve."
         : r.kind === "queued" ? "✋ Tes mains s’y mettent. Prêt dans " + fmtTime(r.time) + "."
         : r.why === "full" ? "Tes mains sont déjà bien occupées. Attends qu’une fabrication se termine."
-        : r.why === "queued" ? "C’est déjà en route." : "Impossible pour l’instant.";
+        : r.why === "queued" ? "Déjà en cours de fabrication." : "Impossible pour l’instant.";
       return '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + '</div><div class="small">' + msg + "</div>" +
         (E.isUnique(it) ? "" : '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div>") + "</div></div>";
     }
     if (r.kind === "fail") {
       const m = E.memory();
       return thermo(r.temp) + '<p class="small" style="margin-top:8px">' + esc(r.msg) + '</p><p class="tiny muted">' + WHY[r.why] + "</p>" +
-        (r.mem ? memoryHTML(m, "+" + r.mem) : m && !r.mem ? '<p class="tiny dim">Tu avais déjà essayé ça : rien ne te revient.</p>' : "");
+        (r.mem ? memoryHTML(m, "+" + r.mem) : m && !r.mem ? '<p class="tiny dim">Tu avais déjà tenté cette combinaison : aucun souvenir ne revient.</p>' : "");
     }
     return "";
   }
@@ -1285,7 +1285,7 @@
     let known = 0, total = 0;
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
-    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande avec les pièces qui manquent, et tes machines aident automatiquement. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
+    if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande : les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
     h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
@@ -1462,8 +1462,8 @@
       });
     } else {
       const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
-      h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes manuelles", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],
-        ["Expériences à l’atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Semeur", st.cycle + 6 + "e"]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
+      h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes à la main", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],
+        ["Tentatives à l’Atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Semeur", st.cycle + 6 + "e"]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
       if (evs.length) {
         h += '<h3 class="sub">Réminiscences</h3>';
         evs.forEach((id) => { h += '<div class="card small serif" style="font-size:15px">' + icon(id, "sm") + " " + esc(D.EVENTS[id]) + "</div>"; });
@@ -1499,7 +1499,7 @@
       if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
       else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ARCHE.</p>';
     } else {
-      h += '<p class="small muted">Un Grand Œuvre se bâtit avec ce que tu verses depuis la Réserve, ou ce qu’il y prend seul quand tu l’alimentes. Il en faut des quantités colossales.</p>';
+      h += '<p class="small muted">Un Grand Œuvre se bâtit avec ce que tu verses depuis la Réserve, ou ce qu’il y prend seul quand tu l’alimentes. Il en demande des quantités énormes.</p>';
       for (const pid in D.PROJECTS) if (E.projVisible(pid)) h += projCard(pid);
     }
     return h;
@@ -1768,7 +1768,7 @@
     if (!r.ok) {
       if (r.why === "plan") { openTree(id, n); return false; }
       A.fail(0);
-      toast(r.why === "full" ? "File complète : " + D.HAND.max + " commandes en attente au plus." : r.why === "queued" ? esc(I[id].n) + " : c’est déjà en route." : whyNot(id, n, true));
+      toast(r.why === "full" ? "File pleine : " + D.HAND.max + " commandes en attente au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours de fabrication." : whyNot(id, n, true));
       return false;
     }
     A.click();
@@ -1780,7 +1780,7 @@
       const mTxt = missKeys.map((k) => fmt(Math.ceil(r.missing[k])) + " " + esc(I[k].n.toLowerCase())).join(", ");
       toast("✋ Commande lancée : <b>" + esc(I[id].n) + "</b>" + (n > 1 ? " ×" + fmt(n) : "") + " · il manque : " + mTxt + ".");
     } else if (sub > 0) {
-      toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à faire avant : prêt dans " + fmtTime(r.time) + ".");
+      toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à fabriquer avant : prêt dans " + fmtTime(r.time) + ".");
     }
     render(true);
     return true;
@@ -1822,7 +1822,7 @@
     if (S().act && S().act.k === "harv" && S().act.res === res && S().act.z === z) { E.stopAct(); A.click(); render(true); return; }
     if (!E.startAct({ k: "harv", z, res })) { A.fail(0); toast(esc(I[res].n) + " ne se récolte pas à la main.", { key: "act" }); return; }
     A.click();
-    toast("▶ Tu récoltes " + esc(I[res].n.toLowerCase()) + " en continu.", { key: "act" });
+    toast("▶ Récolte en continu : " + esc(I[res].n.toLowerCase()) + ".", { key: "act" });
     render(true);
   }
   /* la barre au-dessus des onglets : la commande en tête de file, ou la récolte continue */
@@ -1865,7 +1865,7 @@
   function skillsHTML() {
     const st = S();
     const shown = E.SKILLS.filter((g) => g === "recolte" || E.gesteOK(g) || (st.skills[g] || 0) > 0);
-    return '<div class="kicker">Tes mains</div><h2>Actions et récolte</h2><p class="small muted">Chaque pièce fabriquée à la main fait monter son action, et chaque récolte fait monter la récolte. Un niveau rend l’action 1 % plus rapide (la récolte rapporte 1 % de plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", une chance de pièce en plus. À la relève, il en reste un dixième.</p>" +
+    return '<div class="kicker">Tes mains</div><h2>Actions et récolte</h2><p class="small muted">Chaque pièce fabriquée à la main fait progresser son action, et chaque récolte fait progresser la récolte. Chaque niveau rend l’action 1 % plus rapide (pour la récolte : 1 % de ressources en plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", tu gagnes une chance d’avoir une pièce en plus. À la relève, tu gardes un dixième de ta progression.</p>" +
       '<div class="skills">' + shown.map((g) => {
         const k = E.skill(g);
         return '<div class="skill"><span class="sk-ic">' + (g === "recolte" ? gi(GI.ui && GI.ui.recolte || "sickle") : gIc(g)) + '</span><div class="grow"><div class="row between"><b>' + esc(skillName(g)) + '</b><span class="sk-l">niv. ' + k.lvl + "</span></div>" +
@@ -1890,7 +1890,7 @@
           '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span></span>" +
           '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
       }).join("") +
-      '</div><p class="tiny muted">Annuler rend les ressources de l’établi à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+      '</div><p class="tiny muted">Annuler une commande rend ses ressources à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
   }
   function openHands() {
     openModal({
@@ -1930,7 +1930,7 @@
     const used = Object.keys(p.used);
     if (used.length) h += '<h3 class="sub">Pris dans la Réserve</h3><div class="row wrap small">' + used.map((k) => '<span class="ing">' + icon(k, "sm") + fmt(p.used[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     const miss = Object.keys(p.missing).filter((k) => !p.locked.includes(k) && !p.blocked[k]);
-    if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">' + (E.isScaled(I[id]) ? "Il manque" : "Il manque (tiré de la Réserve au fil des arrivées)") + '</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
+    if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">' + (E.isScaled(I[id]) ? "Il manque" : "Il manque (pris dans la Réserve au fur et à mesure)") + '</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     if (p.locked.length) h += '<p class="why">Recettes encore inconnues : ' + p.locked.map((k) => esc(I[k].n)).join(", ") + "</p>";
     const bl = Object.keys(p.blocked);
     if (bl.length) h += '<p class="why">' + bl.map((k) => esc(I[k].n) + " : " + needText(k, p.blocked[k], true)).join(" · ") + "</p>";
@@ -1978,7 +1978,7 @@
       (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Ressource favorite" title="Ressource favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
       (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
     if (!visible) {
-      h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Tu en sauras plus en avançant.</p>';
+      h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Avance dans le jeu pour en savoir plus.</p>';
     } else {
       // d’abord ce que fait l’objet (la couche « jeu »), puis le récit, à part
       if (known || !it.r) {
@@ -1989,7 +1989,7 @@
       if (fxText(id)) h += '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>";
       h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En réserve : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
       const zid = E.RES_ZONE[id];
-      if (zid) h += '<div class="row wrap small">Se récolte : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
+      if (zid) h += '<div class="row wrap small">Se récolte dans : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
         (E.zoneOpen(zid) ? "" : ' <span class="tiny muted">(terre pas encore atteinte)</span>') + "</div>";
       if (it.r) {
         h += '<h3 class="sub">Recette</h3>';
@@ -2158,7 +2158,7 @@
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
         tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
-        tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre reviendra au moment où il sert."); },
+        tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre réapparaît au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
         credits: () => setTimeout(() => simpleModal("Éclat", "Crédits",
           '<div class="small"><p><b>Icônes</b> : <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a>, par Lorc, Delapouite et leurs contributeurs, sous licence CC BY 3.0. Recolorées, dessin inchangé.</p>' +
@@ -2180,7 +2180,7 @@
     const why = expWhy(z);
     if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
     const r = E.startExp(z);
-    if (r.ok) { A.init(); A.explore(); toast("🧭 C’est parti. L’exploration avance toute seule."); }
+    if (r.ok) { A.init(); A.explore(); toast("🧭 Exploration lancée : elle avance toute seule."); }
     render(true);
   }
   function openHelp() {
@@ -2188,38 +2188,38 @@
       '<div class="small">' +
       "<p><b>En bref.</b> Tu récoltes des ressources, tu découvres des recettes à l’Atelier, puis tu poses des extracteurs et des machines qui travaillent pour toi. L’<b>objectif</b>, en haut du Domaine, dit toujours quoi faire ensuite.</p>" +
       '<h3 class="sub">Les mots du jeu</h3><dl class="lexique">' +
-      "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Tout ce qui est récolté ou fabriqué y va ; tout ce qui se fabrique y puise.</dd>" +
+      "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Ce que tu récoltes ou fabriques y arrive, et chaque fabrication y prend ses ressources.</dd>" +
       "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement est une ressource à récolter.</dd>" +
-      "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt pour continuer), ou ▶ pour récolter en continu. Parfois, un appui rapporte le double : un coup de chance.</dd>" +
+      "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt dessus pour continuer), ou toucher ▶ pour récolter en continu. Un appui rapporte parfois le double : un coup de chance.</dd>" +
       "<dt>Action, recette</dt><dd>Une recette associe une action (Tailler, Tresser…) à une ou plusieurs ressources. Tu les découvres à l’Atelier, en faisant des tentatives.</dd>" +
       "<dt>Pièce</dt><dd>Un objet fabriqué qui sert à en fabriquer d’autres (manche, corde…).</dd>" +
       "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
       "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et débloque une action, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
-      "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même jeu fermé.</dd>" +
-      "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce faite à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
+      "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même quand le jeu est fermé.</dd>" +
+      "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce fabriquée à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
       "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les ressources sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
-      "<dt>Tes mains</dt><dd>Ce que tu fabriques passe par la file de tes mains (barre ✋ au-dessus des onglets), aidées par tes machines.</dd>" +
+      "<dt>Tes mains</dt><dd>Tout ce que tu fabriques passe par la file des commandes (barre ✋ au-dessus des onglets). Tes machines t’y aident.</dd>" +
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
       "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource, pour savoir avec quelles actions elle cache encore des recettes.</dd>" +
-      "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde avec tes recettes, et les Traces achètent des mains plus habiles (Mémoire des mains).</dd>" +
-      "<dt>Ruine</dt><dd>Ce qu’un Semeur a construit t’attend au cycle suivant : elle se répare pour une fraction de son coût d’origine, sans repasser par l’Atelier.</dd>" +
+      "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde en gardant tes recettes. Les Traces servent à acheter des améliorations dans la Mémoire des mains.</dd>" +
+      "<dt>Ruine</dt><dd>Ce qu’un Semeur a construit attend le suivant. Une ruine se répare sur place pour une fraction de son coût d’origine, sans repasser par l’Atelier.</dd>" +
       "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des ressources.</dd>" +
       "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
-      "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Il se nourrit dans la Réserve.</dd></dl>" +
+      "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Tu y verses des ressources de la Réserve, ou tu l’alimentes pour qu’il s’y serve seul.</dd></dl>" +
       '<h3 class="sub">Les écrans</h3>' +
       "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
-      "<p><b>🗺️ Carte.</b> Le monde, et la brume sur ce que tu n’as pas atteint. Touche un 🧭 lieu pour l’explorer : il raconte un bout de l’histoire.</p>" +
+      "<p><b>🗺️ Carte.</b> Le monde, avec de la brume sur les terres que tu n’as pas encore atteintes. Touche un lieu 🧭 pour l’explorer : chaque lieu raconte un morceau de l’histoire.</p>" +
       "<p><b>🔨 Atelier.</b> Choisis une action, pose jusqu’à trois ressources, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
-      "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même : 1 % plus rapide par niveau, et une chance de pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
-      "<p><b>Jeu fermé.</b> Extracteurs, commandes et exploration continuent jusqu’à 12 h.</p>" +
+      "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
+      "<p><b>Jeu fermé.</b> Les extracteurs, les commandes et l’exploration continuent pendant 12 h au plus.</p>" +
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
   }
 
   function intro() {
     const st = S();
     const lines = (D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
-      ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Ton corps est neuf. Tes souvenirs, non : des recettes entières dansent derrière tes paupières.", "Tu es le Semeur " + (st.cycle + 6) + ". Le précédent a laissé une trace dans ton Carnet."]
+      ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Ton corps est neuf, mais pas tes souvenirs : tu connais déjà des recettes entières.", "Tu es le Semeur " + (st.cycle + 6) + ". Celui d’avant t’a laissé ses recettes dans le Carnet."]
       : D.INTRO);
     openModal({
       persistent: true,
@@ -2256,7 +2256,7 @@
     const st = S();
     const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0), gain = E.releveGain();
     const ecus = Math.floor(st.ecus || 0);
-    const ecusWarn = ecus > 0 ? '<p class="small" style="color:var(--bad)">Tes ' + fmt(ecus) + ' écus seront perdus : convertis-les en Traces au Comptoir avant.</p>' : '';
+    const ecusWarn = ecus > 0 ? '<p class="small" style="color:var(--bad)">Tes ' + fmt(ecus) + ' écus seront perdus : achète des Traces au Comptoir avant de partir.</p>' : '';
     openModal({
       html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes ressources, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
         "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusWarn + leftHTML() +
@@ -2295,7 +2295,7 @@
       const soon = !max && m.traces < c && can && m.traces + gain >= c; // possible juste après la relève
       return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
         '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
-        (x.next ? '<div class="tiny dim">S’applique à ton prochain réveil (après une relève).</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
+        (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
         (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
     }).join("") + "</div>";
     return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
@@ -2424,8 +2424,8 @@
       fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève" });
       if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
         "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
-        "<p>Chaque passage franchi laisse des Traces ✦. Un jour, quand tu le voudras, tu pourras <b>passer le relais</b> : un nouveau Semeur repartira du début, mais avec tes recettes et des mains plus habiles, achetées avec ces Traces.</p>" +
-        '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent.</p>', "Compris"), 2200);
+        "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
+        '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent d’acheter.</p>', "Compris"), 2200);
     });
     E.on("zone", (z) => {
       U.zone = z;
@@ -2467,8 +2467,8 @@
     });
     E.on("actstop", (x) => {
       const a = x.act, n = a.id ? I[a.id].n : I[a.res].n;
-      if (x.why === "missing") toast("⟳ Plus de quoi faire " + esc(n.toLowerCase()) + " : la boucle s’arrête.", { key: "act" });
-      else if (x.why === "zone") toast("La récolte de " + esc(n.toLowerCase()) + " s’arrête.", { key: "act" });
+      if (x.why === "missing") toast("⟳ Fabrication en boucle arrêtée (" + esc(n.toLowerCase()) + ") : il manque des ressources.", { key: "act" });
+      else if (x.why === "zone") toast("Récolte arrêtée : " + esc(n.toLowerCase()) + ".", { key: "act" });
       render(true);
     });
     E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé.", { key: "it:" + id, p: 2 }); });
@@ -2564,8 +2564,8 @@
     $("#memBtn").addEventListener("click", () => { A.init(); A.click(); openMemoire(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
     $("#intuBtn").addEventListener("click", () => simpleModal("Intuition", "✨ " + Math.floor(S().intu),
-      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les ressources : touche une ressource, puis 🔍 Étudier, pour savoir avec quelles actions elle cache encore des recettes.</p>' +
-      (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
+      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les ressources : ouvre la fiche d’une ressource, puis touche 🔍 Étudier, pour savoir avec quelles actions elle cache encore des recettes.</p>' +
+      (E.cache().intu ? '<p class="small muted">Gain automatique : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
     $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.zone = a ? a.z : U.zone; setTab("carte"); });
     $("#actbar").addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-ab]");
@@ -2633,7 +2633,7 @@
         A.click(); render(true); return;
       }
       if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
-      if ((b = t.closest("[data-lock]"))) { toast("Une action que tu ne connais pas encore. Elle se débloque avec la station qui va avec : feu, enclume, creuset…"); return; }
+      if ((b = t.closest("[data-lock]"))) { toast("Action encore inconnue. Elle se débloque avec sa station : feu, enclume, creuset…"); return; }
       if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
       if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
       if (t.closest("#forge, [data-forge]")) {
@@ -2706,8 +2706,8 @@
     const auto = Object.keys(S().dom.ext).length > 0 || S().hand.q.length > 0;
     const full = [];
     simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
-      (list ? '<p class="small muted">Pendant ce temps, tout a travaillé pour toi :</p><div class="row wrap">' + list + "</div>"
-        : '<p class="small">Rien n’a tourné pendant ton absence.' + (auto ? "" : " Pose une cabane sur un gisement : elle récoltera pendant ton absence.") + "</p>") +
+      (list ? '<p class="small muted">Pendant ce temps, voici ce qui a été récolté et fabriqué :</p><div class="row wrap">' + list + "</div>"
+        : '<p class="small">Rien n’a été récolté ni fabriqué pendant ton absence.' + (auto ? "" : " Pose une cabane sur un gisement : elle récolte même quand le jeu est fermé.") + "</p>") +
       (full.length ? '<p class="small">📦 La Réserve s’est remplie de ' + full.map((k) => esc(I[k].n.toLowerCase())).join(", ") + " : " + (full.length > 1 ? "leurs extracteurs se sont arrêtés" : "son extracteur s’est arrêté") + ". Une machine qui " + (full.length > 1 ? "les" : "le") + " transforme ferait de la place.</p>" : "") +
       (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : ""));
   }

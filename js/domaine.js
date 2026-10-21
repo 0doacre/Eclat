@@ -86,7 +86,7 @@
         if (it && it.t === "ext" && it.z === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
       }
       deps.forEach((d) => { h += gisHTML(z, d); });
-      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Rien ne s’y récolte à la main : il faut des extracteurs.</p>';
+      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ici, rien ne se récolte à la main : pose des extracteurs.</p>';
       void st;
       return h + "</section>";
     }
@@ -173,7 +173,7 @@
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
-      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Tes mains et tes machines avancent ensemble sur les commandes lancées depuis l’Atelier.</p>';
+      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Tes mains et tes machines travaillent ensemble sur les commandes lancées depuis l’Atelier.</p>';
       const ruins = E.ruins();
       for (const id in ruins) {
         const it = I[id];
@@ -206,7 +206,7 @@
           h += '</section>';
         });
       } else {
-        h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Lance une commande (×10, ×50, ×100, ×1000) depuis l’Atelier.</p>';
+        h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Tu peux en lancer une depuis l’Atelier ou le Carnet (×10, ×50, ×100, ×1000).</p>';
       }
 
       h += '<h3 class="sub" style="margin-top:16px">Machines possédées</h3>';
@@ -240,7 +240,7 @@
       const st = S();
       const phrases = [
         "« Encore toi. Montre-moi ce que tu as en trop. »",
-        "Le Troqueur cliquette en comptant ses écus. Il n’a jamais l’air pressé.",
+        "Le Troqueur fait tinter ses écus en les comptant. Il n’a jamais l’air pressé.",
         "« Le bois ne vaut presque rien. Ce que tu en fais, si. »"
       ];
       const phrase = phrases[(st.cycle + st.age) % phrases.length];
@@ -273,7 +273,7 @@
           '<div class="comptoir-btns">' +
           '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n10 + '" title="Vendre 10 %"><b>10 %</b> <small>+' + fmtNum(q10) + '</small></button>' +
           '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n50 + '" title="Vendre la moitié"><b>La moitié</b> <small>+' + fmtNum(q50) + '</small></button>' +
-          '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + nAll + '"' + (nAll <= 0 ? ' disabled' : '') + ' title="Tout sauf 100"><b>Tout sauf 100</b> <small>' + (nAll > 0 ? '+' + fmtNum(qAll) : '−') + '</small></button>' +
+          '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + nAll + '"' + (nAll <= 0 ? ' disabled' : '') + ' title="Tout vendre, sauf 100"><b>Tout sauf 100</b> <small>' + (nAll > 0 ? '+' + fmtNum(qAll) : '−') + '</small></button>' +
           '</div></div>';
       }
 
@@ -413,7 +413,7 @@
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
         else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Verser</button>' +
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
-          '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve, " + fmtNum(E.siteRate()) + " par seconde et par ressource au plus." : "Alimenté, il se sert seul dans la Réserve.") + "</span></div>";
+          '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve : au plus " + fmtNum(E.siteRate()) + " par seconde pour chaque ressource." : "Une fois alimenté, il se sert seul dans la Réserve.") + "</span></div>";
       } else if (step.fire) h += '<p class="small">Tout est prêt. La décision se prend dans le Cosmos.</p>';
       else if (step.melody) h += '<p class="small">Il ne reste qu’à jouer <b>' + esc(D.MELODIES[step.melody].n) + "</b> sur la flûte (Journal).</p>";
       return h + "</section>";
@@ -472,16 +472,16 @@
       const types = E.extFor(res, z).filter((t) => us[t].own > 0 || (e && e.u[t]) || S().known[t]);
       const rate = depRate(z, res);
       let h = '<div class="sheet-h">' + icon(res) + '<div class="grow"><h2>' + esc(I[res].n) + '</h2><div class="tiny muted">' + esc(E.ZONES[z].n) + "</div></div></div>";
-      h += '<p class="small">' + (!e ? "Aucun extracteur ne travaille ici." : info.s === "off" ? "En pause." : rate > 0 ? "Les extracteurs posés ici récoltent " + perTime(rate) + ", même quand le jeu est fermé." : "Démarre…") + "</p>";
+      h += '<p class="small">' + (!e ? "Aucun extracteur ne travaille ici." : info.s === "off" ? "En pause." : rate > 0 ? "Les extracteurs posés ici récoltent " + perTime(rate) + ", même quand le jeu est fermé." : "Démarrage…") + "</p>";
       if (types.length) {
-        h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + ". Chacun ne récolte que le gisement où tu le poses.</p>";
+        h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + " : chacun récolte seulement le gisement où tu le poses.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
           const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0;
           return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par extracteur · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span></span>" +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
-      } else h += '<p class="small muted">Tu ne connais encore aucun extracteur pour ce gisement. Il se trouve à l’Atelier, comme toute recette.</p>';
+      } else h += '<p class="small muted">Tu ne connais encore aucun extracteur pour ce gisement. Il faut d’abord le découvrir à l’Atelier, comme toute recette.</p>';
       if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans le Domaine, ou garde le doigt dessus.</p>';
       h += '<div class="acts">' + (e ? '<button class="btn" data-m="toggle">' + (e.on ? "Pause" : "Reprendre") + '</button><button class="btn ghost" data-m="clear">Tout retirer</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div>';
       return h;
@@ -491,7 +491,7 @@
       if (r.placed || r.queued) {
         A.click(); vibe(8);
         if (at) floater((r.placed ? "+" + r.placed + " " : "") + (r.queued ? "✋ " + r.queued : ""), at.x, at.y - 14, "var(--good)");
-        if (r.queued) toast("✋ Tes mains fabriquent " + esc(many(t, r.queued)) + ", pour ce gisement.", { key: "xq" });
+        if (r.queued) toast("✋ Tes mains fabriquent " + esc(many(t, r.queued)) + " pour ce gisement.", { key: "xq" });
         return;
       }
       A.fail(0);
@@ -651,7 +651,7 @@
       else toast(esc(I[t].n) + " : touche « + " + esc(nm(t, 1)) + " » sur un gisement " + esc(deZone(I[t].z)) + ".", { key: "xq" });
     }
     function placeMach(m) {
-      toast(esc(I[m].n) + " : au repos, prêt à aider sur tes prochaines commandes.", { key: "mq" });
+      toast(esc(I[m].n) + " : au repos, en attente de tes prochaines commandes.", { key: "mq" });
     }
 
     function machSig() {
