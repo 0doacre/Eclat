@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.0.0";
+  D.VERSION = "5.1.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -938,12 +938,12 @@
   };
 
   D.CHANGES = [
-    "🏡 Le Domaine remplace l’usine : tes terres et leurs gisements en liste, chacun avec ses extracteurs. +1 en pose un ; s’il n’en reste plus de libre, tes mains le fabriquent et le posent.",
-    "⚙️ Les machines travaillent en chaînes : une recette, des machines. Elles se servent dans la Réserve et y rangent ce qu’elles font. Plus de tapis, plus de débit à surveiller.",
-    "🗺️ Une nouvelle carte, dessinée, qui se lit de bas en haut. La brume cache ce que tu n’as pas atteint ; on y explore les lieux et on y verse dans les passages.",
-    "🏗️ Un Grand Œuvre se bâtit depuis le Domaine : verse-lui ses matières, ou laisse-le se servir seul dans la Réserve.",
-    "🔍 De vraies icônes, dessinées par les auteurs de game-icons.net, à la place des emoji. Le jeu devient le carnet du Semeur : papier, encre et ornements changent avec les âges."
+    "🎯 L’objectif donne la prochaine chose à faire, et une seule : ramasser ce qui manque sur place (l’icône à toucher est dans l’objectif), puis fabriquer d’un bouton, pièces intermédiaires comprises. Plus de recette à aller chercher de mémoire.",
+    "📖 Quatre onglets au lieu de six : le Carnet devient la deuxième page de l’Atelier, le Cosmos la deuxième page du Journal.",
+    "✋ La roue disparaît : l’objectif, le Carnet (×1, ×10, Max) et les +1 du Domaine font tout ce qu’elle faisait. Touche ✋ en haut pour voir ce que fabriquent tes mains.",
+    "Le détail de l’objectif (énigme, étapes, passage) s’ouvre en touchant son titre."
   ];
+
 
 
   /* ---------------------------------------------------- ÉCHECS (saveur)

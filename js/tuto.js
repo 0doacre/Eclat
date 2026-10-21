@@ -1,15 +1,15 @@
 /* ÉCLAT — le tutoriel : des souvenirs qui guident la main.
  * Il avance par chapitres. Un chapitre se lance quand une chose devient possible
- * et n’a pas encore été faite (une cabane à poser, une roue à ouvrir…) ; chacune
+ * et n’a pas encore été faite (une cabane à poser, un automate à régler…) ; chacune
  * de ses étapes éclaire l’endroit à toucher et attend que ce soit fait. Rien
  * n’est bloqué : on peut toucher ailleurs, passer, ou couper le tutoriel. */
 (function () {
   "use strict";
 
   function create(api) {
-    const { E, D, A, U, esc, Roue, save } = api;
+    const { E, D, A, U, esc, save } = api;
     const S = () => E.state;
-    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet", journal: "le Journal", cosmos: "le Cosmos" };
+    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
     const GAP = 8000; // entre deux chapitres
 
     /* ------------------------------------------------------------ petits repères */
@@ -29,7 +29,7 @@
      * Une étape : tab (l’onglet où elle se passe), at (ce qu’elle montre : un
      * sélecteur ou un élément), text, done (fini ?), next (bouton « Suivant »),
      * dim (assombrir autour, oui par défaut s’il y a une cible), modal (elle se
-     * passe dans une fenêtre), roue (dans la roue). */
+     * passe dans une fenêtre). */
     const CH = [
       { id: "debut", n: "Premiers gestes",
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts,
@@ -78,13 +78,6 @@
         steps: [
           { at: () => (document.querySelector("#hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
             text: "Ce que tu fabriques à la main passe par ta file ✋ : une pièce après l’autre, même jeu fermé. Répéter un geste va de plus en plus vite, et ✕ annule en rendant les matières.", next: true }
-        ] },
-      { id: "roue", n: "La roue",
-        when: () => U.tab === "domaine" && Object.keys(S().known).length >= 5 && !S().flags.roueSeen && !!document.querySelector(".dom-bar [data-roue]"),
-        steps: [
-          { tab: "domaine", at: ".dom-bar [data-roue]", text: "La roue : toutes tes recettes connues, sans quitter le Domaine. Ouvre-la.", done: () => Roue.isOpen() || S().flags.roueSeen },
-          { roue: true, at: ".rw-wheel", text: "Choisis une famille, puis une recette : ses boutons apparaissent dessous. Au centre, ta file ✋. Une machine ou un extracteur fabriqués se posent dans le Domaine.", next: true,
-            done: () => Roue.touched() }
         ] },
       { id: "automate", n: "Ton automate",
         when: () => U.tab === "domaine" && E.MACHINES.some(has) && !S().dom.mach.length && !!document.querySelector("[data-mnew]"),
@@ -269,13 +262,12 @@
     function tick() {
       // ce que le joueur a déjà fait seul n’a plus besoin d’être montré
       if (S().hand.q.length) lastQueue = Date.now();
-      if (Roue.isOpen()) S().flags.roueSeen = true;
       if (!enabled() || !S().introSeen) { hide(); return; }
       const T = state();
       let ch = chapter();
       if (!ch) {
         // un nouveau chapitre ? pas pendant une fenêtre, ni juste après le précédent
-        if (modalOpen() || Roue.isOpen() || Date.now() - lastEnd < (lastEnd ? GAP : 1500)) { hide(); return; }
+        if (modalOpen() || Date.now() - lastEnd < (lastEnd ? GAP : 1500)) { hide(); return; }
         ch = CH.find((c) => !T.done[c.id] && c.when());
         if (!ch) { hide(); return; }
         T.c = ch.id; T.i = 0; stepAt = 0; mini = false;
@@ -289,15 +281,17 @@
       if (s.done && s.done()) { advance(); return; }
       if (s.back !== undefined && !modalOpen()) { T.i = s.back; stepAt = 0; return; }
       // où se passe l’étape
-      if (s.roue && !Roue.isOpen()) { advance(); return; }
-      if ((modalOpen() && !s.modal) || (Roue.isOpen() && !s.roue)) { hide(); return; }
+      if (modalOpen() && !s.modal) { hide(); return; }
       // une explication qu’on a laissée en changeant d’onglet : tant pis, on n’y ramène pas
       if (s.next && !s.go && s.tab && U.tab !== s.tab) { advance(); return; }
       // un chapitre pas encore entamé ne rappelle pas vers un autre onglet : il attend qu’on y revienne
       if (T.i === 0 && !s.go && s.tab && U.tab !== s.tab) { hide(); return; }
       let view;
       if (s.tab && U.tab !== s.tab && !s.modal) {
-        view = { target: resolve('#tabs [data-tab="' + s.tab + '"]'), text: s.go || "Ouvre " + TABS[s.tab] + "." };
+        // le Carnet est une page de l’Atelier, le Cosmos une page du Journal
+        const par = { carnet: "atelier", cosmos: "journal" }[s.tab];
+        const sel = par && U.tab === par ? '[data-tab2="' + s.tab + '"]' : '#tabs [data-tab="' + (par || s.tab) + '"]';
+        view = { target: resolve(sel), text: s.go || "Ouvre " + TABS[s.tab] + "." };
       } else {
         const target = resolve(s.at);
         const text = typeof s.text === "function" ? s.text() : s.text;
@@ -328,7 +322,7 @@
     function restart() {
       const T = state();
       T.done = {}; T.c = null; T.i = 0;
-      S().flags.roueSeen = false; S().flags.milesSeen = false;
+      S().flags.milesSeen = false;
       S().settings.tuto = true;
       lastEnd = 0;
       save();

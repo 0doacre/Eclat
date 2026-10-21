@@ -54,12 +54,13 @@ Le jeu est le carnet de terrain du Semeur. La mise en page ne change pas, mais l
 ### Confort de jeu
 
 - **⚡ Fabrication en chaîne** : ×1, ×10 et Max fabriquent un objet *et tous ses sous-composants* (réseau électrique → moteurs → bobines → fils de cuivre), à partir du stock ; Max calcule combien on peut en faire ainsi (dix cabanes d’un coup, par exemple). Le détail 🌳 montre les étapes, ce qui est pris dans le stock et ce qui manque.
+- **🎯 La prochaine action** : l’objectif dit une seule chose à faire. Il manque une matière : son icône est là, dans l’objectif, à toucher ou à maintenir. Tout est réuni : un bouton fabrique l’objet et ses pièces intermédiaires. La recette est inconnue : l’objectif envoie à l’Atelier. Son titre déplie le détail (énigme, étapes, passage).
 - **🎯 Suivi** : on suit une recette ; le haut du Domaine affiche ce qui manque, avec un temps estimé.
+- **Quatre onglets** : Domaine, Carte, Atelier (pages Découvrir et Carnet), Journal (pages Journal et Cosmos, quand le ciel s’ouvre).
 - **🏁 Étapes** : ce qu’il y a à faire à chaque âge (cinq à l’âge de l’Os, par exemple), depuis la carte d’objectif ; le compteur suit l’âge en cours. Certaines se sautent. Toutes faites, l’âge est **accompli** : +3 ✨ Intuition, une fois par âge et par cycle.
 - **🎉 Fêtes** : une découverte, une recette trouvée, une première fabrication, une étape ou un âge accompli s’affichent au centre de l’écran, sans rien bloquer.
-- **🌱 Un écran qui se remplit au fil du jeu** : au départ, la forêt et l’objectif. Machines, roue, Intuition, Carnet et Journal apparaissent quand ils servent ; la recherche et les filtres de l’Atelier, quand il y a assez de matières.
-- **💭 Tutoriel** : des souvenirs guident la main, chapitre par chapitre. Chacun se lance quand une chose devient possible et n’a pas encore été faite (premiers gestes, lieux à explorer, première cabane, file des mains, roue, automate, étude des matières, jalons, Grand Œuvre) : une bulle éclaire l’endroit à toucher et attend que ce soit fait. Rien n’est bloqué ; on peut passer un chapitre, couper le tutoriel ou le revoir (menu ☰). Une partie avancée ne revoit pas les débuts, seulement ce qu’elle n’a pas encore fait.
-- **🛠️ La roue** : depuis le Domaine ou l’Atelier, un menu circulaire avec toutes les recettes connues, par famille (machines, extracteurs, stations, outils, pièces, curiosités, raccourcis) et une recherche. Les recettes faisables tout de suite viennent d’abord. On met en file (×1, ×10, Max, pièces comprises) ; une machine ou un extracteur fabriqué rejoint le Domaine. Au centre, la file des mains.
+- **🌱 Un écran qui se remplit au fil du jeu** : au départ, la forêt et l’objectif. Machines, Intuition, Carnet et Journal apparaissent quand ils servent ; la recherche et les filtres de l’Atelier, quand il y a assez de matières.
+- **💭 Tutoriel** : des souvenirs guident la main, chapitre par chapitre. Chacun se lance quand une chose devient possible et n’a pas encore été faite (premiers gestes, lieux à explorer, première cabane, file des mains, automate, étude des matières, jalons, Grand Œuvre) : une bulle éclaire l’endroit à toucher et attend que ce soit fait. Rien n’est bloqué ; on peut passer un chapitre, couper le tutoriel ou le revoir (menu ☰). Une partie avancée ne revoit pas les débuts, seulement ce qu’elle n’a pas encore fait.
 - **📖 Carnet** : recherche (par nom ou par ingrédient), épingles ☆ (raccourcis en haut de l’Atelier), objets déjà possédés masqués, chaque ingrédient est cliquable et mène à sa recette.
 - **Objectif guidé** : il indique la *prochaine étape* concrète (la sous-recette inconnue, la station ou la zone qui manque). Chaque combinaison nouvelle essayée à l’Atelier réveille des **souvenirs** : à force, ils soufflent le geste, puis une matière, puis la recette entière. Attendre ne donne rien.
 - **Fiches** : toucher un objet ouvre sa fiche (recette, stock, station, ce qu’il sert à fabriquer) ; tout y est cliquable pour passer de recette en recette, avec un retour arrière.
@@ -115,7 +116,6 @@ js/ui.js              interface
 js/domaine.js         le Domaine : gisements, extracteurs, chaînes de machines, passage, Grand Œuvre
 js/carte.js           la Carte : le monde en SVG, brume, lieux, passages
 js/icons.js           correspondance objets → icônes (générée par tools/icons.js)
-js/roue.js            la roue : fabriquer d’où l’on est (menu circulaire des recettes connues)
 js/tuto.js            le tutoriel : chapitres déclenchés au fil du jeu, bulles qui pointent
 js/scenes.js          les paysages des terres (SVG, dans leur fiche)
 js/cloud.js           compte joueur : clés, chiffrement, échanges avec le serveur

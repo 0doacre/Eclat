@@ -35,7 +35,6 @@
       const st = S(), zs = openZones().reverse();
       let h = '<div class="dom">';
       h += api.top();
-      if (Object.keys(st.known).length >= 5) h += '<div class="dom-bar"><button class="btn small ghost" data-roue>Fabriquer une pièce</button></div>';
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -173,7 +172,8 @@
       const st = S(), us = E.extUnits(), ms = E.machines();
       const exts = Object.keys(st.dom.ext).length, freeE = E.EXTS.filter((t) => us[t].own - us[t].used > 0);
       const vet = st.cycle > 1;
-      if (!exts && !freeE.length && !st.dom.mach.length) return !vet && st.stats.taps < 20 ? "Touche l’icône du bois pour en ramasser. Garde le doigt appuyé : tu ramasses sans t’arrêter." : null;
+      if (!exts && !freeE.length && !st.dom.mach.length) return null; // l’objectif dit quoi faire
+      void vet;
       if (freeE.length && !st.flags.tip_freeExt) {
         const t = freeE[0], n = us[t].own - us[t].used;
         return "Tu as " + plural(n, esc(shortName(t, 1))) + " qui attend" + (n > 1 ? "ent" : "") + " : touche <b>+1</b> sur un gisement pour " + (n > 1 ? "les" : "la") + " poser. " +
@@ -412,7 +412,7 @@
     /* signature de ce qui change la mise en page : on ne redessine que si elle change */
     function sig() {
       const st = S(), ms = E.machines();
-      return [openZones().join(), JSON.stringify(st.dom.ext), st.dom.mach.map((e) => e.id + e.r + e.n + e.on + e.m + E.machInfo(e.id).s).join(),
+      return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext), st.dom.mach.map((e) => e.id + e.r + e.n + e.on + e.m + E.machInfo(e.id).s).join(),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own).join(),
         st.hand.q.length, st.exp.active ? st.exp.active.z : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join()].join("|");
     }
