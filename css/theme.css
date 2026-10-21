@@ -188,3 +188,25 @@ body[data-tab="cosmos"] #views { background: #0d1118; }
 .goal-card .gis.gact { min-height: 0; flex-wrap: nowrap; }
 .btn.gmake { width: 100%; justify-content: center; }
 .gdetail { margin-top: 8px; color: var(--muted); }
+
+/* ---------------------------------------------------------------- la barre d’action, les niveaux */
+.actbar { position: absolute; left: 8px; right: 8px; bottom: calc(var(--nav) + var(--safe-b) + 6px); z-index: 6; display: flex; align-items: stretch; gap: 6px;
+  background: var(--bg); border: 1.5px solid var(--text); border-radius: 12px; padding: 4px; box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 18%, transparent); }
+.actbar.hidden { display: none; }
+body.has-act .view { padding-bottom: calc(var(--nav) + var(--safe-b) + 84px); }
+.ab-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 2px 4px; text-align: left; color: var(--text); }
+.ab-t { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ab-n { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ab-bar { height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--text) 12%, transparent); overflow: hidden; }
+.ab-bar i { display: block; height: 100%; width: 0; background: var(--acc); transition: width .25s linear; }
+.ab-c { flex: 0 0 auto; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--good); }
+.ab-x { flex: 0 0 auto; width: 40px; border-radius: 9px; border: 1.5px solid var(--line2); background: var(--panel); color: var(--text); font-size: 14px; }
+.geste { position: relative; }
+.geste .glv { position: absolute; top: 3px; right: 5px; font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.mini.on, .btn.on { border-color: var(--acc); color: var(--acc); }
+.skills { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; max-height: 56vh; overflow-y: auto; }
+.skill { display: flex; align-items: center; gap: 10px; }
+.skill .sk-ic svg.gi { width: 28px; height: 28px; }
+.skill .bar { height: 6px; margin: 3px 0; }
+.sk-l { font-variant-numeric: tabular-nums; color: var(--acc); font-weight: 700; }
+.gact .btn.gmake { flex: 1 1 auto; width: auto; }

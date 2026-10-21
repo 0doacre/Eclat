@@ -292,6 +292,8 @@
       // un passage à verser, une matière à voir, depuis une fiche
       const pb = ev.target.closest("[data-pour]");
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
+      const lb = ev.target.closest("[data-loop]");
+      if (lb && U.mcur && !fresh()) { closeModal(); startLoop(lb.dataset.loop); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { closeModal(); setTimeout(() => goto(gb.dataset.goto), 80); return; }
       const b = ev.target.closest("[data-m]");
@@ -902,7 +904,8 @@
     const p = E.plan(id, 1);
     if (p.ok) {
       const parts = p.steps.filter((x) => x[0] !== id).map((x) => esc(I[x[0]].n.toLowerCase()));
-      return line('<button class="btn pri gmake" data-chain="' + id + '">Fabriquer : ' + esc(it.n) + (parts.length ? ' <span class="tiny">(avec ' + parts.join(", ") + ")</span>" : "") + "</button>");
+      return line('<button class="btn pri gmake" data-chain="' + id + '">Fabriquer : ' + esc(it.n) + (parts.length ? ' <span class="tiny">(avec ' + parts.join(", ") + ")</span>" : "") + "</button>" +
+        (E.isUnique(it) ? "" : '<button class="btn small" data-loop="' + id + '" title="En boucle, tant qu’il y a de quoi">⟳ En boucle</button>'));
     }
     // ce qui manque : d’abord ce qui se ramasse à la main, ici même
     const miss = Object.keys(p.missing);
@@ -910,7 +913,8 @@
     if (hand) {
       const z = E.RES_ZONE[hand], tot = Math.ceil((st.inv[hand] || 0) + p.missing[hand]);
       return '<div class="gis gact">' + '<button class="gis-ic hand" data-harv="' + z + ":" + hand + '" aria-label="Récolter : ' + esc(I[hand].n) + '">' + icon(hand) + "</button>" +
-        '<div class="grow"><div class="small">Il manque <b data-gleft="' + hand + '" data-q="' + tot + '">' + fmt(p.missing[hand]) + "</b> " + esc(I[hand].n.toLowerCase()) + " pour " + esc(it.n.toLowerCase()) + '.</div><div class="tiny muted">Touche l’icône, ou garde le doigt dessus.</div></div></div>';
+        '<div class="grow"><div class="small">Il manque <b data-gleft="' + hand + '" data-q="' + tot + '">' + fmt(p.missing[hand]) + "</b> " + esc(I[hand].n.toLowerCase()) + " pour " + esc(it.n.toLowerCase()) + '.</div><div class="tiny muted">Touche l’icône, ou ramasse en continu.</div></div>' +
+        (st.act && st.act.k === "harv" && st.act.res === hand ? '<span class="tiny muted">en cours…</span>' : '<button class="btn small" data-hloop="' + z + ":" + hand + '">▶</button>') + "</div>";
     }
     const ext = miss.find((k) => isRawGather(k));
     if (ext) return line('<span class="small">Il manque ' + fmt(p.missing[ext]) + " " + esc(I[ext].n.toLowerCase()) + " : ça ne se ramasse pas à la main, il faut un extracteur sur son gisement.</span>");
@@ -921,7 +925,8 @@
     const g = E.guide();
     if (!g || g.ob.k !== "craft") return g ? g.ob.k + (g.ob.z || "") + (S().exp.active ? 1 : 0) : "";
     const p = I[g.step] && S().known[g.step] ? E.plan(g.step, 1) : null;
-    return g.step + (p ? (p.ok ? 1 : Object.keys(p.missing).join()) : "?") + E.queued(g.step) + goalOpen();
+    const a = S().act;
+    return g.step + (p ? (p.ok ? 1 : Object.keys(p.missing).join()) : "?") + E.queued(g.step) + goalOpen() + (a ? a.k + (a.id || a.res) : "");
   }
   /* l’objectif déplié ou non : pendant un Suivi, il reste replié (on peut le rouvrir un moment) pour laisser voir le Domaine */
   function goalOpen() {
@@ -1039,7 +1044,7 @@
     let h = subTabs("atelier", "carnet", "Découvrir", "Carnet");
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
     if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
-    if (st.stats.crafts > 0 || st.hand.q.length) h += '<div id="hands" class="hbar">' + handsHTML() + "</div>";
+    if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Chaque pièce faite à la main fait monter son geste.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
     h += pinsHTML();
     h += '<div class="gestes">';
     let locks = 0;
@@ -1051,7 +1056,7 @@
         h += '<button class="geste lock" data-lock="' + g + '"><span class="gi">?</span><span class="gn">???</span></button>';
         continue;
       }
-      h += '<button class="geste' + (U.geste === g ? " on" : "") + (G.secret ? " secret" : "") + '" data-g="' + g + '"><span class="gi">' + gIc(g) + '</span><span class="gn">' + G.n + "</span></button>";
+      h += '<button class="geste' + (U.geste === g ? " on" : "") + (G.secret ? " secret" : "") + '" data-g="' + g + '"><span class="gi">' + gIc(g) + '</span><span class="gn">' + G.n + "</span>" + (st.stats.crafts > 0 ? '<i class="glv">' + E.skill(g).lvl + "</i>" : "") + "</button>";
     }
     h += "</div>";
     const G = D.GESTES[U.geste];
@@ -1222,8 +1227,9 @@
   function craftBtns(id) {
     const it = I[id];
     if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Fabriquer</button>';
-    if (E.isScaled(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Construire</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>';
-    return '<button class="btn small pri" data-cr="' + id + '" data-n="1">×1</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>';
+    const loop = '<button class="btn small' + (S().act && S().act.id === id ? " on" : "") + '" data-loop="' + id + '" title="En boucle, tant qu’il y a de quoi">⟳</button>';
+    if (E.isScaled(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Construire</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>' + loop;
+    return '<button class="btn small pri" data-cr="' + id + '" data-n="1">×1</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>' + loop;
   }
 
   /* ------------------------------------------------------------ CARNET */
@@ -1516,9 +1522,8 @@
       $$("[data-xl]").forEach((b) => (b.textContent = fmtTime(xp.left)));
     } else mini.classList.add("hidden");
     Tuto.tick();
-    const hi = E.handInfo(), hm = $("#handMini");
-    hm.classList.toggle("hidden", !hi.jobs.length || U.tab === "atelier");
-    if (hi.jobs.length) hm.textContent = "✋ " + fmtTime(hi.left);
+    const hi = E.handInfo();
+    actBar();
     const hb = U.tab === "atelier" && $("#hands");
     if (hb) {
       const sig = handSig();
@@ -1732,6 +1737,66 @@
       '<span class="tiny muted" data-hl="0">' + fmtTime(j.left) + "</span>" + (h.jobs.length > 1 ? '<button class="hmore" data-hopen>+' + (h.jobs.length - 1) + "</button>" : "") +
       '<button class="hx" data-hcancel="0" aria-label="Annuler">✕</button>';
   }
+  /* ------------------------------------------------------------ l’action qui tourne */
+  function startLoop(id) {
+    A.init();
+    if (S().act && S().act.k === "make" && S().act.id === id) { E.stopAct(); A.click(); render(true); return; }
+    const r = E.startAct({ k: "make", id });
+    if (!r) { A.fail(0); toast("Ça ne se refait pas en boucle.", { key: "act" }); return; }
+    if (S().act) { A.click(); toast("⟳ " + esc(I[id].n) + " en boucle, tant qu’il y a de quoi. Ça continue jeu fermé.", { key: "act" }); }
+    render(true);
+  }
+  function startHarvest(key) {
+    A.init();
+    const i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
+    if (S().act && S().act.k === "harv" && S().act.res === res && S().act.z === z) { E.stopAct(); A.click(); render(true); return; }
+    if (!E.startAct({ k: "harv", z, res })) { A.fail(0); toast(esc(I[res].n) + " ne se ramasse pas à la main.", { key: "act" }); return; }
+    A.click();
+    toast("▶ Tu ramasses " + esc(I[res].n.toLowerCase()) + " en continu, même jeu fermé.", { key: "act" });
+    render(true);
+  }
+  /* la barre au-dessus des onglets : ce qui tourne, ou ce que font les mains */
+  function actBar() {
+    const bar = $("#actbar"), st = S(), a = E.actInfo(), hi = E.handInfo();
+    if (!a && !hi.jobs.length) { if (!bar.classList.contains("hidden")) { bar.classList.add("hidden"); bar.dataset.sig = ""; document.body.classList.remove("has-act"); } return; }
+    bar.classList.remove("hidden");
+    document.body.classList.add("has-act");
+    let sig, frac, line;
+    if (a && a.k === "harv") {
+      sig = "h" + a.res; frac = a.frac; line = "+" + fmt(a.got);
+    } else if (a) {
+      sig = "m" + a.id + (a.wait ? "w" : ""); frac = a.frac; line = a.wait ? "il manque des matières" : "×" + fmt(a.made);
+    } else {
+      const j = hi.jobs[0];
+      sig = "j" + j.id + j.step; frac = j.tot ? 1 - j.left / j.tot : 0; line = fmtTime(hi.left);
+    }
+    if (bar.dataset.sig !== sig) {
+      bar.dataset.sig = sig;
+      let ic, name;
+      if (a && a.k === "harv") { ic = icon(a.res, "sm"); name = "Ramasser · " + esc(I[a.res].n); }
+      else if (a) { ic = icon(a.id, "sm"); name = "En boucle · " + esc(I[a.id].n); }
+      else { const j = hi.jobs[0]; ic = icon(j.id, "sm"); name = "Tes mains · " + esc(I[j.id].n) + (hi.jobs.length > 1 ? ' <span class="tiny muted">+' + (hi.jobs.length - 1) + "</span>" : ""); }
+      bar.innerHTML = '<button class="ab-main" data-ab="hands">' + ic + '<span class="ab-t"><span class="ab-n">' + name + '</span><span class="ab-bar"><i></i></span></span><b class="ab-c"></b></button>' +
+        (a ? '<button class="ab-x" data-ab="stop" aria-label="Arrêter">■</button>' : "");
+      iconize(bar);
+    }
+    bar.querySelector(".ab-bar i").style.width = (Math.max(0, Math.min(1, frac)) * 100).toFixed(1) + "%";
+    bar.querySelector(".ab-c").textContent = line;
+  }
+  /* les gestes et la récolte : niveaux, ce qu’ils donnent, le prochain palier */
+  function skillName(g) { return g === "recolte" ? D.SKILL_RECOLTE.n : D.GESTES[g].n; }
+  function skillsHTML() {
+    const st = S();
+    const shown = E.SKILLS.filter((g) => g === "recolte" || E.gesteOK(g) || (st.skills[g] || 0) > 0);
+    return '<div class="kicker">Tes mains</div><h2>Gestes et récolte</h2><p class="small muted">Chaque pièce faite à la main, et chaque récolte, font monter le geste. Un niveau rend le geste 1 % plus rapide (la récolte rapporte 1 % de plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", une chance de pièce en plus. À la relève, il en reste un dixième.</p>" +
+      '<div class="skills">' + shown.map((g) => {
+        const k = E.skill(g);
+        return '<div class="skill"><span class="sk-ic">' + (g === "recolte" ? gi(GI.ui && GI.ui.recolte || "sickle") : gIc(g)) + '</span><div class="grow"><div class="row between"><b>' + esc(skillName(g)) + '</b><span class="sk-l">niv. ' + k.lvl + "</span></div>" +
+          '<div class="bar"><i style="width:' + (k.frac * 100).toFixed(1) + '%"></i></div><div class="tiny muted">' + (k.lvl < D.SKILL.max ? fmt(k.hi - k.xp) + " d’expérience avant le niveau " + (k.lvl + 1) : "Niveau maximal") +
+          (k.perks ? " · pièce en plus : " + Math.round(E.perkChance(g) * 100) + " %" : "") + (k.next ? " · palier au niveau " + k.next : "") + "</div></div></div>";
+      }).join("") + '</div><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+  }
+  function openSkills() { openModal({ html: skillsHTML() }); }
   /* la file des mains, en détail : ce qui est en cours, ce qui attend, et de quoi annuler */
   function handsSheet() {
     const hi = E.handInfo();
@@ -2031,6 +2096,8 @@
       "Plus bas, les <b>machines</b> : chacune répète une recette, se sert dans la Réserve et y range ce qu’elle fait. Touche une ligne pour la régler. L’<b>objectif</b>, en haut, donne la prochaine chose à faire : ramasser ce qui manque (sur place, d’un appui), fabriquer d’un geste avec les pièces intermédiaires, ou aller découvrir une recette. Touche son titre pour le détail, et 🏁 montre les étapes de chaque âge.</p>" +
       "<p><b>🗺️ Carte.</b> Ton monde, de la Lisière jusqu’aux étoiles. La brume cache ce que tu n’as pas atteint. Touche une terre pour aller à ses gisements, un 🧭 lieu pour l’explorer (ils racontent l’histoire du monde), une étiquette « Passage » pour y verser.</p>" +
       "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une petite découverte sort tout de suite ; une grosse s’inscrit dans le Carnet sans rien prendre, et tu la fabriques quand tu veux, prix affiché. Ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> de la Carte. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
+      "<p><b>⟳ Ce qui tourne.</b> ▶ sur un gisement ramasse en continu ; ⟳ refait une recette en boucle tant qu’il y a de quoi. Une seule chose tourne à la fois, même jeu fermé ; la barre au-dessus des onglets la montre, ■ l’arrête.</p>" +
+      "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même (pas tes machines) : 1 % plus rapide par niveau, et aux niveaux 10, 25, 50, 75 et 99 une chance de pièce en plus. À la relève, il en reste un dixième.</p>" +
       "<p><b>📖 Carnet</b> (deuxième page de l’Atelier). Tes recettes. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent (tes mains les font d’abord), <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies, et la page du ciel quand tu sauras le regarder. Certains textes cachent des recettes, des codes ou des airs.</p>" +
       "<p><b>🚧 Passages.</b> Pour entrer dans une nouvelle terre, il faut l’objet qui y mène (l’épieu pour la Plaine…), puis franchir son passage : verse ce qu’il demande depuis la Réserve, en plusieurs fois si besoin. Chaque passage coûte bien plus que le précédent.</p>" +
@@ -2227,6 +2294,20 @@
       toast("💭 <b>" + esc(it.n) + "</b> : " + esc(line));
       badge("domaine");
     });
+    E.on("level", (x) => {
+      if (!U.live) return;
+      const k = E.skill(x.g);
+      toast("<b>" + esc(skillName(x.g)) + "</b> niveau " + x.lvl + (x.perk ? " : une chance sur " + Math.round(1 / (E.perkChance(x.g) || 1)) + " d’avoir une pièce en plus." : "."), { key: "lvl:" + x.g });
+      if (x.perk) A.discover && A.discover();
+      void k;
+      if (U.tab === "atelier") render(true);
+    });
+    E.on("actstop", (x) => {
+      const a = x.act, n = a.id ? I[a.id].n : I[a.res].n;
+      if (x.why === "missing") toast("⟳ Plus de quoi faire " + esc(n.toLowerCase()) + " : la boucle s’arrête.", { key: "act" });
+      else if (x.why === "zone") toast("La récolte de " + esc(n.toLowerCase()) + " s’arrête.", { key: "act" });
+      render(true);
+    });
     E.on("tracked", (id) => { toast("🎯 Fabriqué : <b>" + esc(I[id].n) + "</b>. Suivi terminé.", { key: "it:" + id, p: 2 }); });
     E.on("secret", (id) => {
       badge("journal");
@@ -2322,7 +2403,13 @@
       '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les matières : touche une matière, puis 🔍 Étudier, pour savoir avec quels gestes elle cache encore des recettes.</p>' +
       (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
     $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.zone = a ? a.z : U.zone; setTab("carte"); });
-    $("#handMini").addEventListener("click", () => { A.init(); openHands(); });
+    $("#actbar").addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-ab]");
+      if (!b) return;
+      A.init();
+      if (b.dataset.ab === "stop") { E.stopAct(); A.click(); render(true); actBar(); return; }
+      openHands();
+    });
     $("#updBar").addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-u]");
       if (!b) return;
@@ -2374,6 +2461,9 @@
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
       if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }
       if ((b = t.closest("[data-gotab]"))) { A.click(); setTab(b.dataset.gotab); return; }
+      if ((b = t.closest("[data-loop]"))) { startLoop(b.dataset.loop); return; }
+      if ((b = t.closest("[data-hloop]"))) { startHarvest(b.dataset.hloop); return; }
+      if (t.closest("[data-skills]")) { A.click(); openSkills(); return; }
       if ((b = t.closest("[data-tab2]"))) { A.click(); setTab(b.dataset.tab2); return; }
       if ((b = t.closest("[data-goalt]"))) {
         const st = S(), open = goalOpen();

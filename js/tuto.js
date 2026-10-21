@@ -76,8 +76,14 @@
       { id: "mains", n: "Tes mains",
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "domaine"),
         steps: [
-          { at: () => (document.querySelector("#hands") ? "#hands" : document.querySelector("#handMini:not(.hidden)") ? "#handMini" : null),
-            text: "Ce que tu fabriques à la main passe par ta file ✋ : une pièce après l’autre, même jeu fermé. Répéter un geste va de plus en plus vite, et ✕ annule en rendant les matières.", next: true }
+          { at: () => (document.querySelector("#actbar:not(.hidden)") ? "#actbar" : null),
+            text: "Ce que tu fabriques à la main s’affiche ici, au-dessus des onglets : une pièce après l’autre, même jeu fermé. Touche la barre pour voir la file ou annuler.", next: true }
+        ] },
+      { id: "boucle", n: "En boucle",
+        when: () => U.tab === "domaine" && S().stats.crafts >= 3 && !S().act && !!document.querySelector(".goal-card [data-loop]"),
+        steps: [
+          { tab: "domaine", at: ".goal-card [data-loop]", next: true,
+            text: "⟳ En boucle : tes mains refont cette recette tant qu’il y a de quoi, même jeu fermé. ▶ sur un gisement fait pareil pour la récolte. Une seule chose tourne à la fois." }
         ] },
       { id: "automate", n: "Ton automate",
         when: () => U.tab === "domaine" && E.MACHINES.some(has) && !S().dom.mach.length && !!document.querySelector("[data-mnew]"),

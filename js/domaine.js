@@ -92,9 +92,13 @@
         : rate > 0 ? '<span class="dom-rate" data-rate="' + key + '">+' + perTime(rate) + "</span>"
         : d.hand ? '<span class="dom-rate hand">à la main</span>' : "";
       let btns = "";
+      if (d.hand) {
+        const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;
+        btns += '<button class="mini' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-label="' + (on ? "Arrêter de ramasser" : "Ramasser en continu") + '" title="' + (on ? "Arrêter" : "Ramasser en continu") + '">' + (on ? "■" : "▶") + "</button>";
+      }
       if (ch) {
         const free = E.freeExt(ch.t), can = free >= 1 || E.plan(ch.t, 1).ok;
-        btns = '<button class="mini' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="' + esc(I[ch.t].n) + '" aria-label="Un extracteur de plus : ' + esc(I[ch.t].n) + '">+1</button>';
+        btns += '<button class="mini' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="' + esc(I[ch.t].n) + '" aria-label="Un extracteur de plus : ' + esc(I[ch.t].n) + '">+1</button>';
         if (e || free >= 2) btns += '<button class="mini' + (free >= 10 || E.plan(ch.t, 10 - Math.min(free, 9)).ok ? "" : " nope") + '" data-xadd="' + key + '" data-n="10" aria-label="Dix de plus">×10</button>';
       }
       return '<div class="gis" data-gis="' + key + '">' +
@@ -414,7 +418,7 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext), st.dom.mach.map((e) => e.id + e.r + e.n + e.on + e.m + E.machInfo(e.id).s).join(),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join()].join("|");
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join()].join("|");
     }
 
     /* une terre précise : on la déplie et on la montre */
