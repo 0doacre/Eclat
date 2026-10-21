@@ -307,7 +307,16 @@ p { margin: 0.4em 0; }
 .rec { padding: 10px; border-radius: 13px; background: var(--bg2); border: 1px solid var(--line); }
 .rec .rh { display: flex; align-items: center; gap: 10px; }
 .rec .rt { font-weight: 650; }
-.rec .badge { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line2); border-radius: 6px; padding: 1px 5px; margin-left: 4px; vertical-align: 2px; }
+.rec .badge { display: inline-block; white-space: nowrap; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border: 1px solid var(--line2); border-radius: 6px; padding: 1px 5px; margin-left: 4px; vertical-align: 2px; }
+/* chaque sorte d’objet a sa couleur : on repère d’un coup d’œil machines, extracteurs, stations */
+.rec .badge.t-mach { color: #fff; background: #6b5bd6; border-color: #6b5bd6; }
+.rec .badge.t-ext { color: #fff; background: #3f8a4f; border-color: #3f8a4f; }
+.rec .badge.t-stat { color: #fff; background: #c8642c; border-color: #c8642c; }
+.rec .badge.t-tool, .rec .badge.t-upg { color: #fff; background: #3a78b5; border-color: #3a78b5; }
+.rec .badge.t-curio, .rec .badge.t-relic { color: var(--intu); border-color: var(--intu); }
+.rec:has(.badge.t-mach) { border-left: 3px solid #6b5bd6; }
+.rec:has(.badge.t-ext) { border-left: 3px solid #3f8a4f; }
+.rec:has(.badge.t-stat) { border-left: 3px solid #c8642c; }
 .rec .stars { color: var(--intu); font-size: 11px; letter-spacing: 1px; }
 .rec .rl { margin-top: 8px; font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; row-gap: 4px; }
 .rec .rl .g { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--panel2); border: 1px solid var(--line2); margin-right: 8px; font-size: 12.5px; }
@@ -337,7 +346,8 @@ p { margin: 0.4em 0; }
 }
 .hole:active, .hole.ping { background: radial-gradient(circle at 40% 35%, #fff2c9, #c9a24a 70%); color: #2a1d0a; }
 .flute-body { background: linear-gradient(180deg, #efe3c4, #cbb98d); border-radius: 40px; padding: 10px 14px; box-shadow: inset 0 -4px 0 rgba(0,0,0,.2); }
-.notes { text-align: center; font-family: var(--mono); letter-spacing: .3em; color: var(--muted); min-height: 22px; }
+.notes { text-align: center; font-family: var(--mono); letter-spacing: .3em; color: var(--muted); min-height: 22px; transition: opacity .4s; }
+.notes.fade { opacity: 0; }
 .stat { display: flex; justify-content: space-between; padding: 6px 2px; border-bottom: 1px solid var(--line); font-size: 14px; }
 
 /* ---------------------------------------------------------------- cosmos */

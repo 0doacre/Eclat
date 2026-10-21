@@ -133,6 +133,14 @@
     return '<span class="ic ' + (cls || "") + '">' + it.ic + "</span>";
   }
   const TYPE = { res: "Ressource", comp: "Pièce", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", mach: "Machine", auto: "Machine", curio: "Curiosité", relic: "Relique" };
+  /* la sorte d’objet, en couleur ; un extracteur dit aussi sa terre, une machine son palier */
+  function badgeHTML(id) {
+    const it = I[id];
+    let t = TYPE[it.t];
+    if (it.t === "ext" && it.z && E.ZONES[it.z]) t += " · " + E.ZONES[it.z].n.replace(/^(Le |La |Les |L’)/, "");
+    else if (it.t === "mach" && it.ing) t += " · palier " + it.ing;
+    return '<span class="badge t-' + it.t + '">' + esc(t) + "</span>";
+  }
   /* ce que fait l’objet (couche « jeu »), puis son récit en italique */
   const descHTML = (it) => (it.u ? '<div class="small">' + esc(it.u) + "</div>" : "") + (it.d ? '<div class="small muted"><i>' + esc(it.d) + "</i></div>" : "");
   /* ce que fait chaque sorte d’objet, en une phrase, sur sa fiche */
@@ -1381,14 +1389,14 @@
       const ing = Object.keys(it.r[1]);
       const big = mainIngredient(id);
       const shown = nameShown(id, U.named);
-      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
+      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + badgeHTML(id) + '</div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
         (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
         '<div class="rl tiny muted">Action : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Ressource : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " ressource" + (ing.length > 1 ? "s" : "") + "</div></div>";
     }
     const uniq = E.isUnique(it);
     const owned = uniq && (st.made[id] || 0) > 0;
     const stars = E.stars(id);
-    let h = '<div class="rec' + (owned ? " owned" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + '<span class="badge">' + TYPE[it.t] + "</span></div>" +
+    let h = '<div class="rec' + (owned ? " owned" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + "</div>" +
       (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div><div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
       '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
     if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
@@ -1439,7 +1447,7 @@
       });
       h += "</div>";
     } else if (U.journalTab === "flute") {
-      h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer.</p><div class="flute-body"><div class="flute">' +
+      h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer. Une pause de quelques secondes, et l’air recommence à zéro.</p><div class="flute-body"><div class="flute">' +
         [1, 2, 3, 4, 5].map((n) => '<button class="hole" data-note="' + n + '">' + n + "</button>").join("") + '</div></div><div class="notes" id="notes">' + st.notes.join(" · ") + "</div></div>";
       const known = Object.keys(D.MELODIES).filter((m) => st.secrets[m]);
       if (known.length) {
@@ -2112,7 +2120,10 @@
     if (btn) { btn.classList.add("ping"); setTimeout(() => btn.classList.remove("ping"), 160); }
     const r = E.playNote(n);
     const el = $("#notes");
-    if (el) el.textContent = S().notes.join(" · ");
+    if (el) { el.textContent = S().notes.join(" · "); el.classList.remove("fade"); }
+    // après une pause, l’air recommence : les notes s’effacent
+    clearTimeout(U.noteT);
+    U.noteT = setTimeout(() => { E.clearNotes(); const e2 = $("#notes"); if (e2) { e2.classList.add("fade"); setTimeout(() => { if (!S().notes.length) e2.textContent = ""; e2.classList.remove("fade"); }, 400); } }, 2500);
     if (r) {
       const M = D.MELODIES[r.id];
       setTimeout(() => {
@@ -2652,7 +2663,7 @@
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
       if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
-      if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; render(true); return; }
+      if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
       if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n), loreHTML(F.t), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
       if ((b = t.closest("[data-play]"))) { A.init(); D.MELODIES[b.dataset.play].notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420)); return; } // la jouer pour de bon
