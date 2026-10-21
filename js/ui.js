@@ -877,7 +877,7 @@
     // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
     const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
     let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
-      (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : md + "/" + ml.length) + "</button>" : "") + "</div>";
+      (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
     h += nextAction(g);
     if (!open) return h + "</div>";
     // le détail, à la demande
@@ -987,11 +987,12 @@
     if (!p || !p.ready) return "";
     return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
       '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
-      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">+' + p.P.tr + " ✦ à ta prochaine relève</span></div>") +
-      '<div class="row wrap small">' +
+      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
+      '<div class="passcost small">' +
       Object.keys(p.cost).map((i) => {
-        const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i);
-        return '<span class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + fmt(got) + " / " + fmt(p.cost[i]) + (ok ? " ✓" : ' <span class="tiny muted">(' + fmt(st.inv[i] || 0) + ")" + (eta ? " · " + eta : "") + "</span>") + "</span>";
+        const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
+        return '<div class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + "<b>" + esc(I[i].n) + "</b> " + fmt(got) + " / " + fmt(p.cost[i]) + " versés" +
+          (ok ? " ✓" : ' <span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? " : de quoi finir" : eta ? " · encore " + eta : "") + "</span>") + "</div>";
       }).join("") + "</div></div>";
   }
   /* combien de temps avant d’avoir de quoi payer une matière, à la production actuelle (extracteurs, machines) */
@@ -1070,7 +1071,7 @@
     let h = subTabs("atelier", "carnet", "Découvrir", "Carnet");
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
     if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
-    if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Chaque pièce faite à la main fait monter son geste.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
+    if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque geste est son niveau : il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
     h += pinsHTML();
     h += '<div class="gestes">';
     let locks = 0;
@@ -1194,7 +1195,7 @@
   }
   function resultHTML() {
     const r = U.last;
-    if (!r) return '<p class="small muted">Choisis un geste, pose jusqu’à trois matières, puis touche le gros bouton. Le <b>thermomètre</b> te dit si tu chauffes.</p>';
+    if (!r) return '<p class="small muted">Choisis un geste, touche des matières dans la liste plus bas pour les poser (trois au plus), puis le gros bouton. Après chaque essai, le <b>thermomètre</b> dit si tu t’approches d’une recette.</p>';
     if (r.kind === "craft") {
       const it = I[r.id];
       let h = '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow">' +
@@ -1268,7 +1269,7 @@
     if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
-    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + (all > known ? " à ta portée · " + all + " en tout" : "") + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
+    h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une matière…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
     h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
@@ -1907,7 +1908,7 @@
     const nav = (k, extra) => '<button class="ing link" data-m="nav" data-id="' + k + '">' + (st.seen[k] || st.known[k] ? icon(k, "sm") : '<span class="ic sm unk">?</span>') + esc(I[k].n) + (extra || "") + "</button>";
     let h = '<div class="rwin"><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
       '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + (nameShown(id) ? esc(it.n) : "Recette inconnue") + "</h2>" +
-      (E.stars(id) ? '<div class="stars">' + "★".repeat(E.stars(id)) + "</div>" : "") + "</div>" +
+      (E.stars(id) ? '<div class="stars" title="Maîtrise : fabriqué ' + fmt(st.made[id] || 0) + ' fois">' + "★".repeat(E.stars(id)) + ' <span class="tiny muted">maîtrise</span></div>' : "") + "</div>" +
       (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Matière favorite" title="Matière favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
       (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
     if (!visible) {
@@ -1924,7 +1925,7 @@
         h += '<h3 class="sub">Recette</h3>';
         if (known) {
           const cost = E.costFor(id);
-          h += '<div class="rrow">' + gesteChip(id) + '<span class="muted">×' + fmt(it.r[2]) + "</span></div>" +
+          h += '<div class="rrow">' + gesteChip(id) + '<span class="muted">donne ' + fmt(it.r[2]) + "</span></div>" +
             '<div class="rings">' + Object.keys(cost).map((k) => {
               const have = st.inv[k] || 0, lack = have + 1e-9 < cost[k];
               return '<button class="ring' + (lack ? " lack" : "") + '" data-m="nav" data-id="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(have) + " / " + fmt(cost[k]) + "</span><span class=\"go\">›</span></button>";
@@ -1934,7 +1935,7 @@
           if (b && b.why !== "owned") h += '<p class="why">' + (station ? "Il faut d’abord : " + nav(station) + (b.why === "heat" ? " (" + fmtHeat(b.heat) + ")" : "") : cap1(needText(id, b))) + "</p>";
           else if (opt.heat || opt.lvl) {
             const sta = opt.heat ? E.stationFor("chauffer", opt.heat, 0) : E.stationFor(it.r[0], 0, opt.lvl);
-            if (sta) h += '<p class="tiny muted">Station : ' + nav(sta) + "</p>";
+            if (sta) h += '<p class="tiny muted">Station : ' + nav(sta) + (S().made[sta] || E.count(sta) >= 1 ? " ✓ tu l’as" : "") + "</p>";
           }
           if (!owned && !b) {
             h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +
@@ -1957,7 +1958,7 @@
         const now = Object.values(E.reactions(id)).reduce((a, b) => a + b, 0), later = unk - now;
         const unkTxt = (now ? now + " à trouver dès maintenant" : "") + (now && later ? ", " : "") + (later ? later + " plus tard" : "");
         h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + ku.map((k) => nav(k)).join("") +
-          (unk ? '<span class="tiny muted">' + (ku.length ? "et encore : " : "Recettes inconnues : ") + unkTxt + "</span>" : "") + "</div>";
+          (unk ? '<span class="tiny muted">' + (ku.length ? "et d’autres recettes encore inconnues : " : "Recettes encore inconnues : ") + unkTxt + "</span>" : "") + "</div>";
         if (unk && st.seen[id]) h += studyHTML(id);
       }
     }

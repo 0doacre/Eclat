@@ -734,3 +734,5 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .lexique { margin: 6px 0 10px; }
 .lexique dt { font-weight: 700; margin-top: 8px; }
 .lexique dd { margin: 2px 0 0; color: var(--muted); }
+.passcost { display: flex; flex-direction: column; gap: 4px; }
+.passcost .ing { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }

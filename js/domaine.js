@@ -44,7 +44,7 @@
         const rest = zs.filter((z, i) => i >= SHOWN && U.domOpen !== z);
         if (rest.length) {
           const r = rest.reduce((a, z) => a + zoneRate(z), 0);
-          h += '<button class="dom-more" data-dall>' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>ouvrir ▸</span></button>';
+          h += '<button class="dom-more" data-dall>' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>voir ▾</span></button>';
         }
       } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall>Replier les terres anciennes<span>▴</span></button>';
       h += machinesHTML();
@@ -80,7 +80,7 @@
       const nx = E.nextExp(z);
       if (!nx) return '<span class="tiny muted">' + done + "/" + n + " lieux</span>";
       if (nx.locked) return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(nx.x.hidden ? "un lieu caché" : "il faut " + I[nx.x.need].n.toLowerCase()) + "</span>";
-      return '<button class="btn small" data-exp="' + z + '">🧭 ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
+      return '<button class="btn small" data-exp="' + z + '">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
     }
     function gisHTML(z, d) {
       const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
@@ -91,7 +91,7 @@
       sub = '<span data-c="' + res + '">' + sub + "</span> en réserve" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
       const right = e && info.s === "off" ? '<span class="dom-rate off">en pause</span>'
         : rate > 0 ? '<span class="dom-rate" data-rate="' + key + '">+' + perTime(rate) + "</span>"
-        : d.hand ? '<span class="dom-rate hand">à la main</span>' : "";
+        : d.hand ? '<span class="dom-rate hand">récolte à la main</span>' : "";
       let btns = "";
       if (d.hand) {
         const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;
@@ -184,7 +184,7 @@
           '<button class="btn small ghost" data-tip="tip_freeExt">Compris</button>';
       }
       const own = E.MACHINES.some((m) => ms[m].own > 0);
-      if (own && !st.dom.mach.length) return "Ta machine attend : touche <b>Mettre au travail</b> et choisis ce qu’elle fabrique.";
+      if (own && !st.dom.mach.length) return "Une machine attend sa recette : touche <b>Mettre au travail</b>, plus bas dans Machines, et choisis ce qu’elle fabrique.";
       if (st.dom.mach.some((e) => !e.r)) return "Une de tes machines n’a rien à fabriquer : touche-la pour choisir.";
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOn(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
       if (lone && !st.flags.tip_site) return "Ton Grand Œuvre peut se servir seul dans la Réserve : touche <b>Alimenter</b>. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
@@ -221,7 +221,7 @@
         h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + ". Chacun ne récolte que le gisement où tu le poses.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
           const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0;
-          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par extracteur · " + (own ? "à poser : " + free + " sur " + own : "à fabriquer") + "</span></span>" +
+          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par extracteur · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span></span>" +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
