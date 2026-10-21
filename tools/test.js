@@ -1644,4 +1644,330 @@ test("thermomètre : sec: true pour une tentative proche d’une recette secrèt
   assert.strictEqual(aNorm.sec, false);
 });
 
+console.log("Le moteur du Récit, du Livre et des Questions (6.0)");
+
+const mkRecit = (recit) => createEngine({ now: () => T, rand: () => 0.99, recit });
+
+test("E.cond : chaque forme, une clé inconnue vaut faux", () => {
+  const E = mk();
+  assert.strictEqual(E.cond(null), true);
+  assert.strictEqual(E.cond({}), true);
+  assert.strictEqual(E.cond({ inconnue_totale: 1 }), false);
+
+  // frag
+  assert.strictEqual(E.cond({ frag: "t_f" }), false);
+  E.state.frags.t_f = true;
+  assert.strictEqual(E.cond({ frag: "t_f" }), true);
+
+  // page
+  assert.strictEqual(E.cond({ page: "p_x" }), false);
+  E.state.livre.p.p_x = 1;
+  assert.strictEqual(E.cond({ page: "p_x" }), true);
+
+  // made
+  assert.strictEqual(E.cond({ made: "corde" }), false);
+  E.state.made.corde = 1;
+  assert.strictEqual(E.cond({ made: "corde" }), true);
+
+  // has
+  assert.strictEqual(E.cond({ has: "bois" }), false);
+  E.state.inv.bois = 5;
+  assert.strictEqual(E.cond({ has: "bois" }), true);
+
+  // flag
+  assert.strictEqual(E.cond({ flag: "mon_flag" }), false);
+  E.state.flags.mon_flag = true;
+  assert.strictEqual(E.cond({ flag: "mon_flag" }), true);
+
+  // secret
+  assert.strictEqual(E.cond({ secret: "sec1" }), false);
+  E.state.secrets.sec1 = true;
+  assert.strictEqual(E.cond({ secret: "sec1" }), true);
+
+  // cycle
+  E.state.cycle = 2;
+  assert.strictEqual(E.cond({ cycle: 1 }), true);
+  assert.strictEqual(E.cond({ cycle: 2 }), true);
+  assert.strictEqual(E.cond({ cycle: 3 }), false);
+
+  // age
+  E.state.age = 1;
+  assert.strictEqual(E.cond({ age: 0 }), true);
+  assert.strictEqual(E.cond({ age: 1 }), true);
+  assert.strictEqual(E.cond({ age: 2 }), false);
+
+  // exp
+  assert.strictEqual(E.cond({ exp: "lisiere:chene" }), false);
+  E.state.exp.done.lisiere = 1;
+  assert.strictEqual(E.cond({ exp: "lisiere:chene" }), true);
+  assert.strictEqual(E.cond({ exp: "lisiere:lieu_inexistant" }), false);
+  assert.strictEqual(E.cond({ exp: "zone_inconnue:chene" }), false);
+
+  // all, any, not
+  assert.strictEqual(E.cond({ all: [{ cycle: 2 }, { age: 1 }] }), true);
+  assert.strictEqual(E.cond({ all: [{ cycle: 2 }, { age: 9 }] }), false);
+  assert.strictEqual(E.cond({ any: [{ cycle: 99 }, { age: 1 }] }), true);
+  assert.strictEqual(E.cond({ any: [{ cycle: 99 }, { age: 99 }] }), false);
+  assert.strictEqual(E.cond({ not: { cycle: 99 } }), true);
+  assert.strictEqual(E.cond({ not: { cycle: 2 } }), false);
+});
+
+test("une page s’obtient par exploration, par première réparation (pas la deuxième), par achat au Comptoir (écus retirés, page sortie de la liste), par condition", () => {
+  const recit = {
+    pages: {
+      p_exp: { n: 1, titre: "Page Exp", src: [{ k: "exp", at: "lisiere:chene" }] },
+      p_rep: { n: 2, titre: "Page Rep", src: [{ k: "repair", id: "cabane" }] },
+      p_buy: { n: 3, titre: "Page Buy", src: [{ k: "buy", ecus: 150 }] },
+      p_cnd: { n: 4, titre: "Page Cnd", src: [{ k: "cond", c: { flag: "obtenue" } }] }
+    }
+  };
+  const E = mkRecit(recit);
+
+  // Exploration
+  assert.ok(!E.hasPage("p_exp"));
+  let pageEvt = null;
+  E.on("page", (p) => (pageEvt = p));
+  E.startExp("lisiere");
+  T += 16000;
+  E.update();
+  assert.ok(E.hasPage("p_exp"));
+  assert.strictEqual(pageEvt.id, "p_exp");
+  assert.strictEqual(pageEvt.src, "exp");
+
+  // Première réparation
+  assert.ok(!E.hasPage("p_rep"));
+  E.state.meta.ruins = { cabane: 2 };
+  E.state.inv = { manche: 10, corde: 10, fibre: 10 }; // de quoi réparer cabane
+  const rep1 = E.repair("cabane");
+  assert.ok(rep1.ok);
+  assert.ok(E.hasPage("p_rep"));
+  assert.strictEqual(pageEvt.id, "p_rep");
+  assert.strictEqual(pageEvt.src, "repair");
+
+  // Seconde réparation : ne redonne pas la page
+  pageEvt = null;
+  E.state.inv = { manche: 10, corde: 10, fibre: 10 };
+  const rep2 = E.repair("cabane");
+  assert.ok(rep2.ok);
+  assert.strictEqual(pageEvt, null);
+
+  // Achat au Comptoir
+  const buyable = E.buyablePages();
+  assert.strictEqual(buyable.length, 1);
+  assert.strictEqual(buyable[0].id, "p_buy");
+  assert.strictEqual(buyable[0].ecus, 150);
+
+  E.state.ecus = 50;
+  assert.strictEqual(E.buyPage("p_buy").ok, false);
+  E.state.ecus = 200;
+  const buyRes = E.buyPage("p_buy");
+  assert.ok(buyRes.ok);
+  assert.strictEqual(E.state.ecus, 50);
+  assert.ok(E.hasPage("p_buy"));
+  assert.strictEqual(E.buyablePages().length, 0);
+
+  // Condition
+  assert.ok(!E.hasPage("p_cnd"));
+  E.state.flags.obtenue = true;
+  T += 1000;
+  E.update();
+  assert.ok(E.hasPage("p_cnd"));
+});
+
+test("notes : une note conditionnelle apparaît quand sa condition devient vraie, et la page a « du nouveau » jusqu’à E.readPage", () => {
+  const recit = {
+    pages: {
+      p_notes: {
+        n: 5,
+        titre: "Page avec notes",
+        imprime: "Texte imprimé",
+        notes: [
+          { t: "Note 1 de base" },
+          { t: "Note 2 au cycle 2", cond: { cycle: 2 } }
+        ]
+      }
+    }
+  };
+  const E = mkRecit(recit);
+  E.givePage("p_notes", "test");
+
+  let c = E.livre()[4];
+  assert.strictEqual(c.notes.length, 1);
+  assert.strictEqual(c.nouveau, true);
+
+  E.readPage("p_notes");
+  c = E.livre()[4];
+  assert.strictEqual(c.nouveau, false);
+
+  // La condition devient vraie au cycle 2
+  E.state.cycle = 2;
+  c = E.livre()[4];
+  assert.strictEqual(c.notes.length, 2);
+  assert.strictEqual(c.nouveau, true);
+
+  E.readPage("p_notes");
+  c = E.livre()[4];
+  assert.strictEqual(c.nouveau, false);
+});
+
+test("pages, revisites et questions survivent à newCycle et à un aller-retour de sauvegarde", () => {
+  const recit = {
+    pages: { p1: { n: 1, titre: "P1" } },
+    questions: { q1: { titre: "Q1", aides: ["A1"] } }
+  };
+  const E1 = mkRecit(recit);
+  E1.givePage("p1", "test");
+  E1.readPage("p1");
+  E1.state.revus["frag1:0"] = 1;
+  E1.state.questions.q1 = { lvl: 1 };
+
+  E1.newCycle();
+  assert.ok(E1.hasPage("p1"));
+  assert.strictEqual(E1.state.revus["frag1:0"], 1);
+  assert.strictEqual(E1.state.questions.q1.lvl, 1);
+
+  const raw = E1.serialize();
+  const E2 = mkRecit(recit);
+  E2.load(raw);
+  assert.ok(E2.hasPage("p1"));
+  assert.strictEqual(E2.state.revus["frag1:0"], 1);
+  assert.strictEqual(E2.state.questions.q1.lvl, 1);
+});
+
+test("un fragment archivé n’est plus listé ni compté, mais reste dans la sauvegarde", () => {
+  const recit = {
+    frags: {
+      frag_arch: { n: "Archivé", t: "Ancien lore" },
+      frag_act: { n: "Actif", t: "Lore actuel" }
+    },
+    archive: ["frag_arch"]
+  };
+  const E = mkRecit(recit);
+  const vis = E.visibleFrags();
+  assert.ok(!vis.includes("frag_arch"));
+  assert.ok(vis.includes("frag_act"));
+
+  E.addFrag("frag_arch");
+  assert.ok(E.state.frags.frag_arch);
+
+  const raw = E.serialize();
+  const E2 = mkRecit(recit);
+  E2.load(raw);
+  assert.ok(E2.state.frags.frag_arch);
+  assert.ok(!E2.visibleFrags().includes("frag_arch"));
+});
+
+test("expFrag remplace le fragment donné ; une revisite s’affiche quand le fragment est connu", () => {
+  const recit = {
+    expFrag: { "lisiere:chene": "frag_remplace" },
+    frags: {
+      frag_remplace: {
+        n: "Remplacé",
+        t: "Lore",
+        revisit: [
+          { cond: { cycle: 1 }, t: "Revisite 1" },
+          { cond: { cycle: 2 }, t: "Revisite 2" }
+        ]
+      }
+    }
+  };
+  const E = mkRecit(recit);
+  let lastExp = null;
+  E.on("expdone", (r) => (lastExp = r));
+
+  // Première exploration : donne le fragment remplacé
+  E.startExp("lisiere");
+  T += 16000;
+  E.update();
+  assert.strictEqual(lastExp.frag, "frag_remplace");
+  assert.strictEqual(lastExp.fragNew, true);
+  assert.strictEqual(lastExp.revisit, null);
+  assert.ok(E.state.frags.frag_remplace);
+
+  // Deuxième exploration alors que le fragment est déjà connu : revisite
+  E.state.exp.active = { z: "lisiere", i: 0, t0: T, dur: 1000 };
+  T += 1000;
+  E.update();
+  assert.strictEqual(lastExp.frag, "frag_remplace");
+  assert.strictEqual(lastExp.fragNew, false);
+  assert.ok(lastExp.revisit);
+  assert.strictEqual(lastExp.revisit.t, "Revisite 1");
+  assert.strictEqual(E.state.revus["frag_remplace:0"], 1);
+});
+
+test("questions : apparition, prix (5 × (1 + âge), ×3, ×9), refus sans Intuition, résolution", () => {
+  const recit = {
+    questions: {
+      q_test: {
+        titre: "Une grande énigme",
+        quand: { cycle: 2 },
+        aides: ["Aide 1", "Aide 2", "Aide 3"],
+        resolu: { flag: "resolu_flag" }
+      }
+    },
+    aide: { base: 5, mult: 3 }
+  };
+  const E = mkRecit(recit);
+
+  // Apparition
+  assert.strictEqual(E.questions().length, 0);
+  E.state.cycle = 2;
+  let qs = E.questions();
+  assert.strictEqual(qs.length, 1);
+  assert.strictEqual(qs[0].id, "q_test");
+  assert.strictEqual(qs[0].resolu, false);
+
+  // Prix selon l’âge
+  assert.strictEqual(E.questionCost("q_test"), 5); // age 0: 5 * (1 + 0) * 1 = 5
+  E.state.age = 1;
+  assert.strictEqual(E.questionCost("q_test"), 10); // age 1: 5 * (1 + 1) * 1 = 10
+  E.state.age = 0;
+
+  // Refus sans Intuition
+  E.state.intu = 2;
+  const fail = E.askHelp("q_test");
+  assert.strictEqual(fail.ok, false);
+  assert.strictEqual(fail.why, "intu");
+
+  // Achats successifs : x1 (5), x3 (15), x9 (45)
+  E.state.intu = 100;
+  const h1 = E.askHelp("q_test");
+  assert.strictEqual(h1.ok, true);
+  assert.strictEqual(h1.lvl, 1);
+  assert.strictEqual(E.state.intu, 95);
+  assert.strictEqual(E.questionCost("q_test"), 15);
+
+  const h2 = E.askHelp("q_test");
+  assert.strictEqual(h2.ok, true);
+  assert.strictEqual(h2.lvl, 2);
+  assert.strictEqual(E.state.intu, 80);
+  assert.strictEqual(E.questionCost("q_test"), 45);
+
+  const h3 = E.askHelp("q_test");
+  assert.strictEqual(h3.ok, true);
+  assert.strictEqual(h3.lvl, 3);
+  assert.strictEqual(E.state.intu, 35);
+  assert.strictEqual(E.questionCost("q_test"), null);
+  assert.strictEqual(E.askHelp("q_test").why, "max");
+
+  // Résolution
+  assert.strictEqual(E.questions()[0].resolu, false);
+  E.state.flags.resolu_flag = true;
+  qs = E.questions();
+  assert.strictEqual(qs[0].resolu, true);
+  assert.strictEqual(qs[0].aides.length, 3);
+});
+
+test("une sauvegarde avec livre: 'abc' ou questions: 42 se charge, nettoyée", () => {
+  const E = mk();
+  const s = JSON.parse(E.serialize());
+  s.livre = "abc";
+  s.questions = 42;
+  s.revus = "corrompu";
+  E.load(JSON.stringify(s));
+  assert.deepStrictEqual(E.state.livre, { p: {}, vu: {} });
+  assert.deepStrictEqual(E.state.questions, {});
+  assert.deepStrictEqual(E.state.revus, {});
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

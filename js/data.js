@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.9.0";
+  D.VERSION = "6.0.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -987,9 +987,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🪙 À la relève, tes écus restants se convertissent automatiquement en Traces.",
-    "🤝 Au Comptoir, le Troqueur te propose ses demandes : livre les objets fabriqués qu’il cherche contre des Traces.",
-    "📦 Ses demandes se renouvellent régulièrement, même pendant ton absence."
+    "📖 Le Journal a deux onglets de plus : le Livre et les Questions.",
+    "🧭 Le Comptoir propose désormais une section dédiée aux pages du Livre."
   ];
 
 
@@ -1173,4 +1172,7 @@
 
   root.ECLAT_DATA = D;
   if (typeof module !== "undefined" && module.exports) module.exports = D;
+  if (typeof require !== "undefined") {
+    try { require("./recit.js"); } catch (_) {}
+  }
 })(typeof window !== "undefined" ? window : globalThis);

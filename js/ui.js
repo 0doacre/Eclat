@@ -363,7 +363,20 @@
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
   const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Dom, save: () => save() });
-  const loreHTML = (t) => '<div class="lore">' + t.split("\n\n").map((p) => "<p>" + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>";
+  function recitHTML(t) {
+    if (!t) return "";
+    const st = S();
+    const cycle = (st && st.cycle) || 1;
+    const semeur = cycle + 6;
+    const age = (st && st.age) || 0;
+    let s = esc(String(t));
+    s = s.replace(/\{cycle\}/g, cycle)
+         .replace(/\{semeur\}/g, semeur)
+         .replace(/\{age\}/g, age)
+         .replace(/\[([a-zA-Z0-9_\u00C0-\u017F-]+)\]/g, '<span class="signe" data-s="$1">◇</span>');
+    return s.split(/\n\n+/).map((p) => "<p>" + p.replace(/\n/g, "<br>") + "</p>").join("");
+  }
+  const loreHTML = (t) => '<div class="lore">' + recitHTML(t) + '</div>';
 
   /* ============================================================ SAUVEGARDES
    * Règles : on ne réécrit jamais une sauvegarde qu’on n’a pas su lire ; avant
@@ -766,7 +779,7 @@
     if (t === "journal" && E.cache().sky) return true;
     if (t === "carnet") return Object.keys(st.known).length > 0;
     if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
-    if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0;
+    if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions());
     return true;
   }
   function setTab(t) {
@@ -1420,24 +1433,76 @@
   /* ------------------------------------------------------------ JOURNAL */
   function viewJournal() {
     const st = S();
-    const tabs = [["fragments", "Fragments"], ["secrets", "Secrets"]];
+    const tabs = [["fragments", "Fragments"]];
+    const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
+    if (E.hasLivre && E.hasLivre()) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
+    if (E.hasQuestions && E.hasQuestions()) tabs.push(["questions", "Questions"]);
+    tabs.push(["secrets", "Secrets"]);
     if (E.has("flute")) tabs.push(["flute", "Flûte"]);
     tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
     if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
     let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     if (U.journalTab === "fragments") {
-      const ids = Object.keys(D.FRAGS);
+      const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
       const n = ids.filter((f) => st.frags[f]).length;
       h += '<p class="small muted">' + n + "/" + ids.length + " fragments de l’histoire retrouvés.</p>";
       const miss = {};
       ids.forEach((f) => {
         const F = D.FRAGS[f];
-        if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div></div></button>";
+        if (!F) return;
+        if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n || F.titre) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div></div></button>";
         else { const k = unkPlace(F.z); miss[k] = (miss[k] || 0) + 1; }
       });
       if (Object.keys(miss).length) {
         h += '<h3 class="sub">Encore à découvrir</h3>';
         for (const k in miss) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow">' + esc(k) + '<div class="tiny muted">' + miss[k] + " fragment" + (miss[k] > 1 ? "s" : "") + "</div></div></div>";
+      }
+    } else if (U.journalTab === "livre") {
+      const cases = E.livre ? E.livre() : [];
+      const foundCount = cases.filter((c) => c.page).length;
+      h += '<p class="small muted">' + foundCount + "/32 pages retrouvées dans le Livre des Semeurs.</p>";
+      h += '<div class="livre-grid">';
+      cases.forEach((c) => {
+        if (c.page) {
+          h += '<button class="livre-cell found' + (c.nouveau ? ' has-new' : '') + '" data-page="' + esc(c.id) + '">';
+          h += '<span class="livre-num">' + c.n + '</span>';
+          if (c.nouveau) h += '<span class="livre-dot">●</span>';
+          h += '<span class="livre-titre">' + esc(c.page.titre || ("Page " + c.n)) + '</span>';
+          h += '</button>';
+        } else {
+          h += '<div class="livre-cell empty"><span class="livre-num">' + c.n + '</span></div>';
+        }
+      });
+      h += '</div>';
+    } else if (U.journalTab === "questions") {
+      const list = E.questions ? E.questions() : [];
+      const sorted = list.slice().sort((a, b) => (a.resolu === b.resolu ? 0 : a.resolu ? 1 : -1));
+      if (!sorted.length) {
+        h += '<p class="small muted center" style="padding:20px 0">Aucune question pour l’instant.</p>';
+      } else {
+        h += '<div class="questions-list">';
+        sorted.forEach((q) => {
+          const isResolu = q.resolu;
+          h += '<div class="card question-card' + (isResolu ? ' resolu' : '') + '">';
+          h += '<div class="question-title' + (isResolu ? ' strikethrough' : '') + '">' + esc(q.titre) + '</div>';
+          if (q.aides && q.aides.length) {
+            h += '<div class="question-aides">';
+            q.aides.forEach((aide, idx) => {
+              h += '<div class="question-aide"><span class="aide-num">Piste ' + (idx + 1) + ' :</span> ' + recitHTML(aide) + '</div>';
+            });
+            h += '</div>';
+          }
+          if (!isResolu && q.cost !== null) {
+            const canAfford = (st.intu || 0) >= q.cost;
+            const whyText = canAfford ? "" : " (manque d’Intuition)";
+            h += '<div class="acts" style="margin-top:8px">';
+            h += '<button class="btn' + (canAfford ? ' pri' : ' dis') + '" data-askhelp="' + esc(q.id) + '"' + (canAfford ? '' : ' disabled') + '>';
+            h += '💭 Réfléchir : ' + q.cost + ' ✨' + (canAfford ? '' : ' <span class="tiny muted">' + whyText + '</span>');
+            h += '</button></div>';
+          }
+          h += '</div>';
+        });
+        h += '</div>';
       }
     } else if (U.journalTab === "secrets") {
       const n = D.SECRETS.filter((s) => st.secrets[s.id]).length;
@@ -2507,6 +2572,10 @@
       else if (id === "caveau" || id === "lune7" || id[0] === "c") setTimeout(() => A.secret(), 300);
     });
     E.on("frag", () => badge("journal"));
+    E.on("page", (p) => {
+      badge("journal");
+      toast("📖 Une page du Livre : n° " + p.n);
+    });
     E.on("expdone", (r) => {
       A.found();
       checkForcedReleve();
@@ -2518,8 +2587,17 @@
         .concat(rw.inv ? Object.keys(rw.inv).map((i) => "+" + rw.inv[i] + " " + I[i].n) : [])
         .concat(rw.item ? Object.keys(rw.item).map((i) => I[i].n) : [])
         .concat(rw.intu ? ["+" + rw.intu + " ✨"] : []);
+      if (r.revisit) {
+        openModal({
+          html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" +
+            loreHTML(r.revisit.t) +
+            (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") +
+            '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>'
+        });
+        return;
+      }
       if (F && !r.fragNew) { toast("🧭 " + esc(r.x.n) + " : déjà raconté dans ton Journal." + (gains.length ? " Tu rapportes : " + esc(gains.join(", ")) + "." : ""), { key: "exp" }); return; }
-      openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? F.n : r.x.n) + "</h2>" + (F ? loreHTML(F.t) : "") +
+      openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" + (F ? loreHTML(F.t) : "") +
         (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") + '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
     });
     E.on("arche", (key) => {
@@ -2681,7 +2759,39 @@
       if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
       if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
-      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n), loreHTML(F.t), "Refermer"); return; }
+      if ((b = t.closest("[data-page]"))) {
+        const pid = b.dataset.page;
+        const c = E.livre ? E.livre().find((x) => x.id === pid) : null;
+        if (c && c.page) {
+          E.readPage(pid);
+          render(true);
+          const p = c.page;
+          const notesHTML = (c.notes && c.notes.length) ?
+            '<div class="livre-notes">' + c.notes.map((n) =>
+              '<div class="livre-note">' + recitHTML(n.t) +
+              (n.sig ? '<div class="livre-sig">' + esc(n.sig) + '</div>' : '') +
+              '</div>'
+            ).join("") + '</div>' : '';
+          openModal({
+            html: '<div class="kicker">Le Livre des Semeurs · n° ' + c.n + '</div>' +
+              '<h2>' + esc(p.titre || ("Page " + c.n)) + '</h2>' +
+              '<div class="livre-imprime lore">' + recitHTML(p.imprime) + '</div>' +
+              notesHTML +
+              '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>'
+          });
+        }
+        return;
+      }
+      if ((b = t.closest("[data-askhelp]"))) {
+        const qid = b.dataset.askhelp;
+        const res = E.askHelp ? E.askHelp(qid) : null;
+        if (res && res.ok) {
+          A.click();
+          render(true);
+        }
+        return;
+      }
+      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(F.t || F.lore), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
       if ((b = t.closest("[data-play]"))) { A.init(); D.MELODIES[b.dataset.play].notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420)); return; } // la jouer pour de bon
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
