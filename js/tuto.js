@@ -23,6 +23,12 @@
       return ok || null;
     }
     const lone = () => Object.keys(D.PROJECTS).find((p) => E.projVisible(p) && !E.siteOn(p) && E.projState(p).step < D.PROJECTS[p].steps.length);
+    function decipherGoal() {
+      const g = E.guide();
+      if (!g || !g.step || S().known[g.step] || S().hints[g.step]) return null;
+      const c = E.decipherCost && E.decipherCost(g.step);
+      return c !== null && S().intu >= c ? g.step : null;
+    }
 
     /* ------------------------------------------------------------ les chapitres
      * when : quand il commence ; still : tant qu’il a un sens (sinon il s’arrête).
@@ -113,6 +119,17 @@
           { modal: true, at: '.modal:not(.hidden) [data-m="study"]', back: 0,
             text: "Étudie-la contre un peu d’Intuition ✨ : tu sauras avec quelles actions elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },
           { tab: "atelier", text: "Une ressource étudiée affiche un ✦ quand elle réagit avec l’action sélectionnée. À toi de trouver la bonne combinaison.", next: true }
+        ] },
+      { id: "dechiffrer", n: "Déchiffrer une recette", modal: true,
+        when: () => !!decipherGoal() && Object.keys(S().known).length >= 4 && (U.tab === "domaine" || U.tab === "carnet" || !!document.querySelector('.modal:not(.hidden) [data-m="decipher"]')),
+        still: () => !!decipherGoal(),
+        steps: [
+          { at: () => document.querySelector('.goal-card [data-goto="' + decipherGoal() + '"], [data-rec="' + decipherGoal() + '"]'),
+            text: "Tu as assez d’Intuition ✨ pour déchiffrer la recette de ton objectif. Touche-la pour ouvrir sa fiche.",
+            done: () => !!document.querySelector('.modal:not(.hidden) [data-m="decipher"]') },
+          { modal: true, at: '.modal:not(.hidden) [data-m="decipher"]', back: 0,
+            text: "Touche « Déchiffrer » pour révéler un indice contre de l’Intuition ✨ : l’action, une ressource, puis la recette entière.",
+            next: true, done: () => !decipherGoal() }
         ] },
       { id: "jalons", n: "Les étapes",
         when: () => U.tab === "domaine" && S().age >= 1 && !S().flags.milesSeen && !!document.querySelector("[data-miles]"),
@@ -283,9 +300,9 @@
       const T = state();
       let ch = chapter();
       if (!ch) {
-        // un nouveau chapitre ? pas pendant une fenêtre, ni juste après le précédent
-        if (modalOpen() || Date.now() - lastEnd < (lastEnd ? GAP : 1500)) { hide(); return; }
-        ch = CH.find((c) => !T.done[c.id] && c.when());
+        // un nouveau chapitre ? pas pendant une fenêtre (sauf s’il commence dedans), ni juste après le précédent
+        if (Date.now() - lastEnd < (lastEnd ? GAP : 1500)) { hide(); return; }
+        ch = CH.find((c) => !T.done[c.id] && (!modalOpen() || c.modal) && c.when());
         if (!ch) { hide(); return; }
         T.c = ch.id; T.i = 0; stepAt = 0; mini = false;
         save();

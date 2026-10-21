@@ -765,3 +765,7 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .hcount.crit { color: #ffd36b; border-color: #ffd36b; }
 /* le compteur de récolte au-dessus du nom de la matière, jamais coupé par le bord de l’écran */
 .gis > .hcount { left: 58px; top: -8px; transform: none; font-size: 14px; }
+
+/* déchiffrer et chaleur étrange (5.8) */
+.decipher { margin-top: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.sec-heat { margin-top: 6px; color: #c9b8ff; font-style: italic; }

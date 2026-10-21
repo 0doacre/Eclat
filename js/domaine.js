@@ -101,7 +101,7 @@
       }
       const nx = E.nextExp(z);
       if (!nx) return '<span class="tiny muted">' + done + "/" + n + " lieux</span>";
-      if (nx.locked) return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(nx.x.hidden ? "un lieu caché" : "il faut " + I[nx.x.need].n.toLowerCase()) + "</span>";
+      if (nx.locked) return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(nx.x.hidden ? nx.x.hidden : "il faut " + I[nx.x.need].n.toLowerCase()) + "</span>";
       return '<button class="btn small" data-exp="' + z + '">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
     }
     function gisHTML(z, d) {

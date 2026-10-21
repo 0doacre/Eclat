@@ -697,7 +697,7 @@
       }
       const t = temperature(g, ids);
       const mem = remember(g, ids);
-      return { kind: "fail", temp: t.temp, why: t.why, msg: failText(g, ids), mem };
+      return { kind: "fail", temp: t.temp, why: t.why, sec: !!t.sec, msg: failText(g, ids), mem };
     };
 
     /* les matières avec leur article : « le bois », « l’os », « les fibres » */
@@ -753,7 +753,7 @@
           else { t = 2; why = "tiede"; }
         } else if (same) { t = 3; why = "geste"; }
         else { t = 1; why = "frais"; }
-        if (t > best.temp) best = { temp: t, why };
+        if (t > best.temp) best = it.sec ? { temp: t, why, sec: true } : { temp: t, why };
         if (best.temp === 3) break;
       }
       return best;
@@ -1405,6 +1405,34 @@
         out[it.r[0]] = (out[it.r[0]] || 0) + 1;
       }
       return out;
+    };
+
+    /* Déchiffrer : révéler une recette inconnue du Carnet étape par étape contre de l’Intuition. */
+    E.decipherCost = function (id) {
+      const it = item(id);
+      if (!it || !it.r || S.known[id] || it.sec || it.path) return null;
+      if ((it.a || 0) > S.age + 1) return null;
+      const lvl = S.hints[id] || 0;
+      if (lvl >= 3) return null;
+      return Math.round(D.DECHIFFRER.cost[lvl] * (1 + (it.a || 0)) * Object.keys(it.r[1]).length);
+    };
+    E.decipher = function (id) {
+      const it = item(id);
+      if (!it || !it.r) return { ok: false, why: "none" };
+      if (S.known[id]) return { ok: false, why: "known" };
+      if (it.sec || it.path) return { ok: false, why: "secret" };
+      if ((it.a || 0) > S.age + 1) return { ok: false, why: "age" };
+      const lvl0 = S.hints[id] || 0;
+      if (lvl0 >= 3) return { ok: false, why: "known" };
+      const c = E.decipherCost(id);
+      if (S.intu < c) return { ok: false, why: "intu" };
+      S.intu -= c;
+      const lvl = lvl0 + 1;
+      S.hints[id] = lvl;
+      if (lvl >= 3) learn(id, true);
+      E.emit("guidehint", { id, lvl });
+      E.emit("struct");
+      return { ok: true, lvl };
     };
 
     /* ------------------------------------------------------ carnet */
