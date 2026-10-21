@@ -1142,7 +1142,7 @@
       "Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.",
       "À quelques pas, la cabane de cueillette s’est affaissée dans les fougères.",
       "Le bois est encore solide, les cordes tiennent. Il ne manque presque rien pour la relever.",
-      "Tu es le Semeur 8. Tes mains savent déjà quoi faire."
+      "Tu es le Semeur 8."
     ],
     3: [
       "L’herbe est froide sous tes paumes neuves.",
@@ -1154,8 +1154,8 @@
       "Tu ouvres les yeux sous les mêmes frondaisons.",
       "Dans l’herbe, des sentiers sont déjà tracés par des pas qui ressemblaient aux tiens.",
       "Sous la mousse affleurent des pierres calées, des pieux et des fragments d’outils.",
-      "Vous avez été nombreux à passer par là. Chacun a posé sa pierre avant de s’endormir.",
-      "Tu es le Semeur 10. La terre commence à te connaître."
+      "Vous avez été nombreux à passer par là.",
+      "Tu es le Semeur 10."
     ]
   };
 

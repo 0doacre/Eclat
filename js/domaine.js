@@ -66,7 +66,7 @@
       const st = S(), it = I[id];
       const cost = E.ruinCost(id);
       const can = Object.keys(cost).every((k) => (st.inv[k] || 0) >= cost[k]);
-      const costTxt = Object.keys(cost).map((k) => cost[k] + " " + (cost[k] > 1 ? (I[k].pl || I[k].n.toLowerCase() + "s") : (I[k].sn || I[k].n.toLowerCase()))).join(", ");
+      const costTxt = Object.keys(cost).map((k) => I[k].n.toLowerCase() + " ×" + cost[k]).join(", ");
       const name = E.ruinName(id);
       return '<div class="dom-ruine" data-druin="' + id + '">' +
         '<div class="grow"><div class="small"><b>' + esc(name) + "</b> · réparer (" + esc(costTxt) + ")</div>" +
@@ -741,8 +741,8 @@
         if (r.ok) {
           A.init(); A.click(); vibe([10, 30]);
           const it = I[id];
-          if (it.t === "ext") toast("<b>" + esc(I[id].n) + "</b> réparée et posée au travail !", { key: "repair" });
-          else toast("<b>" + esc(I[id].n) + "</b> réparée ! Elle t’attend au repos.", { key: "repair" });
+          if (it.t === "ext") toast("<b>" + esc(I[id].n) + "</b> : réparation faite, de nouveau au travail.", { key: "repair" });
+          else toast("<b>" + esc(I[id].n) + "</b> : réparation faite. Elle attend au repos, dans l’onglet Machines.", { key: "repair" });
         } else {
           A.fail(0);
           if (r.missing) toast("Il manque encore : " + Object.keys(r.missing).map((m) => r.missing[m] + " " + esc(I[m].n.toLowerCase())).join(", ") + ".", { key: "repair" });

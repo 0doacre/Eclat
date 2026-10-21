@@ -2309,9 +2309,9 @@
       persistent: true,
       html: '<div class="kicker">La relève</div><h2>La nuit tombe</h2>' +
         '<div class="lore" style="padding:10px 0">' +
-        '<p style="opacity:0;animation:fadeup 1.2s 0.3s forwards">La nuit tombe sur la Lisière. Près de la cabane, le bois récolté s’empile sans que tu aies à lever la main.</p>' +
-        '<p style="opacity:0;animation:fadeup 1.2s 1.4s forwards">Tes paupières sont lourdes. Tu as fait ce qu’il fallait : posé les premiers gestes, ouvert le premier chemin.</p>' +
-        '<p style="opacity:0;animation:fadeup 1.2s 2.5s forwards">Un autre s’éveillera à cette même lisière. Ce que tes mains ont appris l’attend déjà.</p>' +
+        '<p style="opacity:0;animation:fadeup 1.2s 0.3s forwards">La nuit tombe sur la Lisière. Près de la cabane, le bois s’empile sans que tu y touches.</p>' +
+        '<p style="opacity:0;animation:fadeup 1.2s 1.4s forwards">Tu t’assieds contre le Grand Chêne. Tes paupières sont lourdes.</p>' +
+        '<p style="opacity:0;animation:fadeup 1.2s 2.5s forwards">Demain, quelqu’un d’autre ouvrira les yeux ici. Il saura déjà ce que tes mains ont appris.</p>' +
         '</div>' +
         '<div class="acts" style="opacity:0;animation:fadeup 1.2s 3.2s forwards">' +
         '<button class="btn pri wide" data-m="go">Passer le relais</button>' +
