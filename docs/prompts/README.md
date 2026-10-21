@@ -46,3 +46,5 @@ puis la fusionne.
 - `secrets-5-8.md` : Déchiffrer contre de l’Intuition, énigme des lieux cachés dans le Domaine, chaleur étrange (5.8.0).
 - `troqueur-5-9.md` : écus convertis à la relève, demandes du Troqueur (5.9.0).
   Ces trois-là se font **dans l’ordre**, chacune partant de `main` après le merge de la précédente.
+- `livre-6-0.md` : moteur du Livre des Semeurs, fragments archivés et revisités, onglet Questions,
+  avec un contenu provisoire (6.0.0). Le vrai contenu du récit est écrit par Claude.

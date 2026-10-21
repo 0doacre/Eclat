@@ -84,7 +84,7 @@
       dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
       hand: { q: [], p: 0 }, studied: {}, skills: {}, act: null,
       proj: {}, endings: {},
-      ecus: 0, comptoir: { sold: {}, traces: 0 },
+      ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
@@ -2139,23 +2139,127 @@
       return { ok: true, n, ecus };
     };
 
-    E.traceCost = function () {
-      const k = (S.comptoir && S.comptoir.traces) || 0;
+    E.traceBasePrice = function (age) {
       const C = D.COMPTOIR;
-      return C.trace * Math.pow(C.traceAge, S.age || 0) * Math.pow(C.traceUp, k);
+      return C.trace * Math.pow(C.traceAge, (age !== undefined ? age : S.age) || 0);
+    };
+    E.traceCost = E.traceBasePrice;
+
+    E.ecusToTraces = function (ecus, age) {
+      const e = ecus !== undefined ? ecus : (S.ecus || 0);
+      const base = E.traceBasePrice(age);
+      if (!(base > 0) || !(e > 0)) return 0;
+      return Math.floor(e / base);
     };
 
-    E.buyTrace = function () {
-      const cost = E.traceCost();
-      if ((S.ecus || 0) < cost) return { ok: false, why: "ecus", need: cost };
-      S.ecus -= cost;
-      S.comptoir = S.comptoir || { sold: {}, traces: 0 };
-      S.comptoir.traces = (S.comptoir.traces || 0) + 1;
-      S.meta.traces = (S.meta.traces || 0) + 1;
-      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + 1;
-      E.emit("bought", { kind: "trace", ecus: cost });
+    /* Arrondi à un nombre rond (ex. 1, 2, 5, 10, 25, 50, 100, 130...) */
+    function roundNice(n) {
+      if (n <= 5) return Math.max(1, Math.round(n));
+      if (n <= 20) return Math.round(n / 2) * 2;
+      if (n <= 100) return Math.round(n / 5) * 5;
+      const p = Math.pow(10, Math.floor(Math.log10(n)) - 1);
+      return Math.max(1, Math.round(n / p) * p);
+    }
+    E.roundNice = roundNice;
+
+    /* Prochain passage à franchir (pour les Traces de récompense) */
+    E.nextPassageTraces = function () {
+      const z = D.ZONES.map((x) => x.id).find((id) => D.PASSAGES[id] && !zoneOpen(id) && !(S.pass && S.pass[id] && S.pass[id].done));
+      if (z && D.PASSAGES[z]) return D.PASSAGES[z].tr || 1;
+      const passKeys = Object.keys(D.PASSAGES);
+      const lastKey = passKeys[passKeys.length - 1];
+      return (D.PASSAGES[lastKey] && D.PASSAGES[lastKey].tr) || 1;
+    };
+
+    /* Récompense d’une demande du Troqueur */
+    E.troqueurReward = function () {
+      const tr = E.nextPassageTraces();
+      const share = (D.TROQUEUR && D.TROQUEUR.share) || 0.15;
+      return Math.max(1, Math.round(share * tr));
+    };
+
+    /* Objets que le joueur sait fabriquer, déjà fabriqués, d’un âge permis */
+    E.troqueurEligibleItems = function () {
+      const minAge = Math.max(0, (S.age || 0) - 1);
+      const maxAge = S.age || 0;
+      const list = [];
+      for (const id in S.known) {
+        if (!S.known[id]) continue;
+        const it = D.ITEMS[id];
+        if (!it || !it.r) continue;
+        if (it.sec) continue;
+        if (isUnique(it) || isScaled(it)) continue;
+        if (!(S.made && S.made[id] > 0)) continue;
+        const a = it.a || 0;
+        if (a < minAge || a > maxAge) continue;
+        const v = valueOf(id);
+        if (!(v > 0)) continue;
+        list.push(id);
+      }
+      return list;
+    };
+
+    /* Renouvellement des demandes du Troqueur */
+    E.refreshTroqueur = function (force) {
+      if (!E.comptoirOpen() && !force) return false;
+      const eligible = E.troqueurEligibleItems();
+      const TQ = D.TROQUEUR || { slots: 3, refresh: 1200, share: 0.15, size: 2 };
+      const slots = TQ.slots || 3;
+      const base = E.traceBasePrice();
+      const size = TQ.size || 2;
+      const tr = E.troqueurReward();
+
+      const pool = eligible.slice();
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+      }
+      const picked = pool.slice(0, slots);
+      const asks = picked.map((id) => {
+        const v = valueOf(id);
+        const rawN = (size * base * tr) / v;
+        const n = roundNice(rawN);
+        return { id, n, tr };
+      });
+
+      S.comptoir = S.comptoir || { sold: {}, traces: 0, asks: [], next: 0 };
+      S.comptoir.asks = asks;
+      S.comptoir.next = now() + (TQ.refresh || 1200) * 1000;
+      E.emit("troqueur", { asks });
       E.emit("struct");
-      return { ok: true, ecus: cost };
+      return true;
+    };
+
+    /* Liste courante des demandes (renouvelle si expirée) */
+    E.troqueurAsks = function () {
+      if (!S.comptoir) S.comptoir = { sold: {}, traces: 0, asks: [], next: 0 };
+      if (E.comptoirOpen()) {
+        const t = now();
+        if (!S.comptoir.next || t >= S.comptoir.next) {
+          E.refreshTroqueur();
+        } else if ((!S.comptoir.asks || !S.comptoir.asks.length) && E.troqueurEligibleItems().length > 0) {
+          E.refreshTroqueur();
+        }
+      }
+      return S.comptoir.asks || [];
+    };
+
+    E.troqueurCount = () => (S.comptoir && S.comptoir.asks ? S.comptoir.asks.filter(Boolean).length : 0);
+
+    /* Livrer une demande du Troqueur */
+    E.deliverAsk = function (idx) {
+      if (!S.comptoir || !S.comptoir.asks) return { ok: false, why: "no_asks" };
+      idx = Number(idx);
+      const ask = S.comptoir.asks[idx];
+      if (!ask) return { ok: false, why: "empty" };
+      if (count(ask.id) < ask.n) return { ok: false, why: "missing", need: ask.n, have: count(ask.id) };
+      add(ask.id, -ask.n);
+      S.meta.traces = (S.meta.traces || 0) + ask.tr;
+      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + ask.tr;
+      S.comptoir.asks[idx] = null;
+      E.emit("delivered", { ask, idx });
+      E.emit("struct");
+      return { ok: true, ask };
     };
 
     function canBuyRes(id) {
@@ -2197,8 +2301,11 @@
     E.newCycle = function () {
       const old = S;
       const gain = E.releveGain();
-      old.meta.traces = (old.meta.traces || 0) + gain;
-      old.meta.tracesTotal = (old.meta.tracesTotal || 0) + gain;
+      const ecusGain = E.ecusToTraces(old.ecus, old.age);
+      const totalGain = gain + ecusGain;
+      old.meta.traces = (old.meta.traces || 0) + totalGain;
+      old.meta.tracesTotal = (old.meta.tracesTotal || 0) + totalGain;
+      if (old.comptoir) { old.comptoir.asks = []; old.comptoir.next = 0; }
       const cap = (D.RUINES && D.RUINES.cap) || 3;
       const ruins = {};
       EXTS.concat(MACHINES).forEach((id) => {
@@ -2322,6 +2429,14 @@
     }
     E.step = step;
 
+    function checkTroqueur() {
+      if (!E.comptoirOpen()) return;
+      if (!S.comptoir) S.comptoir = { sold: {}, traces: 0, asks: [], next: 0 };
+      if (!S.comptoir.next || now() >= S.comptoir.next) {
+        E.refreshTroqueur();
+      }
+    }
+
     /* Avance le temps jusqu’à maintenant. Gère aussi le hors-ligne. */
     E.update = function () {
       const t = now();
@@ -2331,6 +2446,7 @@
       if (dt > 5) return E.catchUp(dt);
       step(dt, false);
       if (S.exp.active && t >= S.exp.active.t0 + S.exp.active.dur) finishExp(false);
+      checkTroqueur();
       return dt;
     };
 
@@ -2348,6 +2464,7 @@
         if (g >= 1) gains[k] = g;
       }
       E.emit("offline", { dt, gains, exp });
+      checkTroqueur();
       return dt;
     };
 
@@ -2518,7 +2635,7 @@
       o.ecus = Number.isFinite(ec) && ec >= 0 ? ec : 0;
       const cp = o.comptoir;
       if (!cp || typeof cp !== "object" || Array.isArray(cp)) {
-        o.comptoir = { sold: {}, traces: 0 };
+        o.comptoir = { sold: {}, traces: 0, asks: [], next: 0 };
       } else {
         const sold = {};
         if (cp.sold && typeof cp.sold === "object" && !Array.isArray(cp.sold)) {
@@ -2528,7 +2645,25 @@
           }
         }
         const tr = Math.max(0, Math.floor(Number(cp.traces)) || 0);
-        o.comptoir = { sold, traces: tr };
+        let asks = [];
+        if (Array.isArray(cp.asks)) {
+          for (let i = 0; i < cp.asks.length; i++) {
+            const a = cp.asks[i];
+            if (a === null) {
+              asks.push(null);
+            } else if (a && typeof a === "object" && typeof a.id === "string" && D.ITEMS[a.id]) {
+              const n = Math.floor(Number(a.n));
+              const atr = Math.floor(Number(a.tr));
+              if (n > 0 && atr > 0) asks.push({ id: a.id, n, tr: atr });
+              else asks.push(null);
+            } else {
+              asks.push(null);
+            }
+          }
+        }
+        const nxt = Number(cp.next);
+        const next = Number.isFinite(nxt) && nxt > 0 ? nxt : 0;
+        o.comptoir = { sold, traces: tr, asks, next };
       }
       checkHand(o);
       checkDom(o);

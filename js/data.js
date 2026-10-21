@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.8.0";
+  D.VERSION = "5.9.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -963,6 +963,9 @@
     buy: 3            // une matière achetée coûte 3 fois sa valeur
   };
 
+  /* Les demandes du Troqueur : livrer des objets fabriqués contre des Traces */
+  D.TROQUEUR = { slots: 3, refresh: 1200, share: 0.15, size: 2 };
+
   /* Le premier parcours : première renaissance obligatoire */
   D.PARCOURS = {
     gift: 3           // Traces offertes lors de la relève obligatoire du cycle 1
@@ -984,9 +987,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "✨ Tu peux déchiffrer une recette inconnue contre de l’Intuition : l’action, une ressource, puis la recette entière.",
-    "🔒 Dans le Domaine, un lieu caché affiche maintenant son énigme.",
-    "🌡️ À l’Atelier, une chaleur étrange te signale qu’un mélange cache une recette secrète."
+    "🪙 À la relève, tes écus restants se convertissent automatiquement en Traces.",
+    "🤝 Au Comptoir, le Troqueur te propose ses demandes : livre les objets fabriqués qu’il cherche contre des Traces.",
+    "📦 Ses demandes se renouvellent régulièrement, même pendant ton absence."
   ];
 
 
