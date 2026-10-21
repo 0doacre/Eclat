@@ -5,7 +5,7 @@
   "description": "Éclat — du silex aux étoiles. Un jeu de craft mobile : découvre les recettes par le geste, bâtis ton usine, traverse les âges, perce le secret de l’étoile rouge.",
   "scripts": {
     "start": "npx --yes serve -l 8080 .",
-    "test": "node tools/validate.js && node tools/test.js && node --no-warnings server/test.js && node tools/build.js --check",
+    "test": "node tools/syntax.js && node tools/validate.js && node tools/test.js && node --no-warnings server/test.js && node tools/build.js --check",
     "sim": "node tools/sim.js 3 dyson",
     "build": "node tools/build.js",
     "serveur": "node --no-warnings server/dev.js"

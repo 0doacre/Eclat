@@ -345,7 +345,7 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
@@ -2144,13 +2144,13 @@
       '<h3 class="sub">Les mots du jeu</h3><dl class="lexique">' +
       "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Tout ce qui est récolté ou fabriqué y va ; tout ce qui se fabrique y puise.</dd>" +
       "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement, c’est une matière à récolter.</dd>" +
-      "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt pour continuer), ou ▶ pour récolter en continu.</dd>" +
+      "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt pour continuer), ou ▶ pour récolter en continu. Parfois, un appui rapporte le double : un coup de chance.</dd>" +
       "<dt>Geste, recette</dt><dd>Une recette, c’est un geste (Tailler, Tresser…) et des matières. On les découvre à l’Atelier, en essayant.</dd>" +
       "<dt>Pièce</dt><dd>Un objet fabriqué qui sert à en fabriquer d’autres (manche, corde…).</dd>" +
       "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
       "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et ouvre un geste, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
       "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même jeu fermé.</dd>" +
-      "<dt>Machine</dt><dd>Automate, presse… Dans l’onglet Machines de l’Atelier, elle refait une recette en boucle avec la Réserve. Chaque palier limite les ingrédients (1, 2 ou 3) et la profondeur de sous-fabrication.</dd>" +
+      "<dt>Machine</dt><dd>Automate, presse… Dans l’onglet Machines de l’Atelier, elle refait une recette en boucle avec ce qu’il y a dans la Réserve. Un automate de bois ne fait que des recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse jusqu’à 3 ; les plus grandes fabriquent aussi les pièces qui manquent.</dd>" +
       "<dt>Tes mains</dt><dd>Ce que tu fabriques toi-même passe par la file de tes mains (barre ✋ au-dessus des onglets), une pièce après l’autre.</dd>" +
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
       "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une matière, pour savoir avec quels gestes elle cache encore des recettes.</dd>" +
@@ -2161,7 +2161,7 @@
       '<h3 class="sub">Les écrans</h3>' +
       "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
       "<p><b>🗺️ Carte.</b> Le monde, et la brume sur ce que tu n’as pas atteint. Touche un 🧭 lieu pour l’explorer : il raconte un bout de l’histoire.</p>" +
-      "<p><b>🔨 Atelier.</b> Découvre des recettes en associant geste et matières. Ses autres pages sont le <b>Carnet</b> (tes recettes) et les <b>Machines</b> (qui fabriquent en boucle pour toi).</p>" +
+      "<p><b>🔨 Atelier.</b> Choisis un geste, pose jusqu’à trois matières, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent, <b>⟳ En boucle</b> continue tant qu’il y a de quoi, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> fabriquent en boucle pour toi.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
       "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même : 1 % plus rapide par niveau, et une chance de pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
       "<p><b>Jeu fermé.</b> Extracteurs, machines, tes mains et ce qui tourne en boucle continuent jusqu’à 12 h.</p>" +

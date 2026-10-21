@@ -443,8 +443,11 @@
     E.tap = function (res, zid) {
       zid = zid || RES_ZONE[res];
       if (!zoneOpen(zid) || !ZONES[zid].res.includes(res)) return 0;
-      const n = tapYield(res, zid);
+      let n = tapYield(res, zid);
       if (!(n > 0)) return 0;
+      // coup de chance : la récolte double, et l’interface fait des étincelles
+      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil");
+      if (E.lastCrit) { n *= D.CRIT.mult; S.stats.crits = (S.stats.crits || 0) + 1; }
       add(res, n);
       S.stats.taps++;
       gainXp("recolte", SK.tapXp);

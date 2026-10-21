@@ -9,7 +9,7 @@
   const SHOWN = 2; // terres dépliées d’office ; les plus anciennes se replient
 
   function create(api) {
-    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
+    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
     const I = D.ITEMS;
     const S = () => E.state;
     const perTime = perMin;
@@ -17,6 +17,8 @@
     /* le nom court d’un extracteur ou d’une machine, accordé : « 1 cabane », « 3 meules » */
     const nm = (id, n) => (n > 1 ? I[id].pl || I[id].n.toLowerCase() : I[id].sn || I[id].n.toLowerCase());
     const many = (id, n) => n + " " + nm(id, n);
+    /* « Âge de l’Électricité » → « Électricité » */
+    const ageShort = (a) => D.AGES[a].n.replace(/^Âge (du |de la |de l’|des |de )?/, "");
 
     /* ------------------------------------------------------------ données */
     function openZones() { return D.ZONES.filter((z) => E.zoneOpen(z.id)).map((z) => z.id); }
@@ -46,6 +48,7 @@
           const r = rest.reduce((a, z) => a + zoneRate(z), 0);
           h += '<button class="dom-more" data-dall>' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>voir ▾</span></button>';
         }
+      } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall>Replier les terres anciennes<span>▴</span></button>';
       h += domaineMachinesSummary();
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
@@ -488,7 +491,7 @@
         html: "<h2>" + esc(title) + "</h2>" + (sub ? '<p class="small muted">' + sub + "</p>" : "") +
           '<div class="search"><input id="dpq" type="search" placeholder="Chercher…" autocomplete="off"></div>' +
           '<div class="picklist">' + ids.map((id) => '<button class="pick" data-m="pick" data-id="' + id + '" data-n="' + esc(norm(I[id].n)) + '">' + icon(id, "sm") +
-            '<span class="grow">' + esc(I[id].n) + '</span><span class="tiny muted">' + esc(D.AGES[I[id].a].n.replace("Âge ", "")) + "</span></button>").join("") + "</div>" +
+            '<span class="grow">' + esc(I[id].n) + '</span><span class="tiny muted">' + esc(ageShort(I[id].a)) + "</span></button>").join("") + "</div>" +
           '<div class="acts"><button class="btn" data-m="close">Annuler</button></div>',
         onOpen: (box) => {
           const inp = box.querySelector("#dpq");
@@ -511,7 +514,7 @@
           '<div class="search"><input id="dpq" type="search" placeholder="Chercher…" autocomplete="off"></div>' +
           '<div class="picklist">' +
           valid.map((id) => '<button class="pick" data-m="pick" data-id="' + id + '" data-n="' + esc(norm(I[id].n)) + '">' + icon(id, "sm") +
-            '<span class="grow">' + esc(I[id].n) + '</span><span class="tiny muted">' + esc(D.AGES[I[id].a].n.replace("Âge ", "")) + "</span></button>").join("") +
+            '<span class="grow">' + esc(I[id].n) + '</span><span class="tiny muted">' + esc(ageShort(I[id].a)) + "</span></button>").join("") +
           (complex.length ? complex.map((id) => {
             const need = E.machFor(id);
             const needTxt = need && I[need] ? "il faut : " + I[need].n : "trop complexe";
@@ -529,7 +532,7 @@
             });
           }
         },
-        on: { pick: (b) => { closeModal(); cb(b.dataset.id || null); } }
+        on: { pick: (b) => { closeModal(); cb(b.dataset.id || null); return true; } }
       });
     }
     function newChain(m) {
@@ -600,7 +603,14 @@
       const key = btn.dataset.harv, i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
       const n = E.tap(res, z);
       if (!n) return;
-      A.tap(res); vibe(5);
+      const crit = E.lastCrit;
+      A.tap(res); vibe(crit ? [8, 30, 14] : 5);
+      if (crit) {
+        const rc = btn.getBoundingClientRect(), x = rc.left + rc.width / 2, y = rc.top + rc.height / 2;
+        sparks(x, y, 16, "#ffd36b");
+        floater("×2 !", x, y - 26, "#ffd36b");
+        if (A.discover) A.discover();
+      }
       const row = btn.closest(".gis");
       let c = row && row.querySelector(".hcount");
       const now = performance.now();
@@ -614,6 +624,7 @@
       }
       c.dataset.t = now;
       c.textContent = "+" + fmt(Number(c.dataset.n)) + " " + I[res].n;
+      c.classList.toggle("crit", crit);
       c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump");
       clearTimeout(c._tm);
       c._tm = setTimeout(() => { c.classList.add("out"); setTimeout(() => c.remove(), 400); }, 1100);

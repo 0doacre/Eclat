@@ -898,10 +898,15 @@
     { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Passages ×{v} du prix.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
     { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "des matières, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
     { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
+    { id: "oeil", n: "Coup d’œil", ic: "✨", d: "En récoltant à la main, {v} de chances d’un coup de chance (×2).", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 24, 48] },
     { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps compte jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
   ];
   /* ce que contient le paquetage, niveau par niveau (cumulé) */
   D.PAQUETAGE = [{ bois: 60, fibre: 60, caillou: 30, manche: 4, corde: 4 }, { cabane: 1 }, { cabane: 2, feu: 1 }];
+
+  /* Coup de chance : de temps en temps, un appui récolte double (6 % au départ, +4 % par
+   * niveau de « Coup d’œil » dans la Mémoire des mains). */
+  D.CRIT = { chance: 0.06, up: 0.04, mult: 2 };
 
   /* Un âge accompli (toutes ses étapes faites) rapporte un peu d’Intuition. */
   D.AGE_DONE = 3;
@@ -962,7 +967,8 @@
     "⚙️ Paliers des machines : chaque machine a un nombre d’ingrédients maximum qu’elle sait assembler.",
     "🧬 Profondeur : les lignes d’assemblage et assembleurs fabriquent eux-mêmes les pièces intermédiaires manquantes.",
     "🏭 Nouvel onglet Machines dans l’Atelier : chaque groupe a sa carte avec tous ses réglages visibles.",
-    "📋 Dans le Carnet, chaque recette indique la machine minimale requise."
+    "📋 Dans le Carnet, chaque recette indique la machine minimale requise.",
+    "✨ Coup de chance : en récoltant à la main, un appui rapporte parfois le double, avec des étincelles. « Coup d’œil », dans la Mémoire des mains, le rend plus fréquent."
   ];
 
 

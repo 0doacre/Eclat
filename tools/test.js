@@ -1245,5 +1245,26 @@ test("machines : une machine de prof 0 ne fabrique jamais de pièce manquante", 
   assert.ok(E.machInfo(m.id).miss && E.machInfo(m.id).miss.manche, "il manque le manche");
 });
 
-console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
 
+
+console.log("Coup de chance");
+test("récolte à la main : coup de chance ×2, plus fréquent avec « Coup d’œil »", () => {
+  let r = 0.99;
+  const E = createEngine({ now: () => T, rand: () => r });
+  const n = E.tap("bois", "lisiere");
+  assert.ok(!E.lastCrit, "pas de chance à 0,99");
+  r = 0.05;
+  const before = E.count("bois"), m = E.tap("bois", "lisiere");
+  assert.ok(E.lastCrit, "6 % : 0,05 est un coup de chance");
+  assert.strictEqual(m, n * D.CRIT.mult);
+  assert.strictEqual(E.count("bois") - before, m);
+  r = 0.08;
+  E.tap("bois", "lisiere");
+  assert.ok(!E.lastCrit, "0,08 dépasse les 6 % de départ");
+  E.state.meta.mem.oeil = 1;
+  E.tap("bois", "lisiere");
+  assert.ok(E.lastCrit, "avec un niveau de Coup d’œil, 10 %");
+  assert.strictEqual(E.state.stats.crits, 2);
+});
+
+console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
