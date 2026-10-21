@@ -985,8 +985,8 @@
 
   D.CHANGES = [
     "✨ Tu peux déchiffrer une recette inconnue contre de l’Intuition : l’action, une ressource, puis la recette entière.",
-    "🔒 Dans le Domaine, un lieu caché affiche désormais son énigme au lieu de dire « un lieu caché ».",
-    "🌡️ À l’Atelier, une chaleur étrange signale quand ton mélange approche d’une recette secrète."
+    "🔒 Dans le Domaine, un lieu caché affiche maintenant son énigme.",
+    "🌡️ À l’Atelier, une chaleur étrange te signale qu’un mélange cache une recette secrète."
   ];
 
 
