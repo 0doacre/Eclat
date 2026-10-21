@@ -54,6 +54,8 @@ Le jeu est le carnet de terrain du Semeur. La mise en page ne change pas, mais l
 ### Confort de jeu
 
 - **⚡ Fabrication en chaîne** : ×1, ×10 et Max fabriquent un objet *et tous ses sous-composants* (réseau électrique → moteurs → bobines → fils de cuivre), à partir du stock ; Max calcule combien on peut en faire ainsi (dix cabanes d’un coup, par exemple). Le détail 🌳 montre les étapes, ce qui est pris dans le stock et ce qui manque.
+- **⟳ L’action qui tourne** : ▶ sur un gisement ramasse en continu, ⟳ refait une recette en boucle (pièces intermédiaires comprises) tant qu’il y a de quoi. Une seule à la fois, même jeu fermé ; une barre au-dessus des onglets la montre.
+- **📈 Niveaux des gestes** : chaque geste et la récolte montent jusqu’à 99 avec ce qu’on fait soi-même (pas les machines). 1 % plus rapide par niveau, une chance de pièce en plus aux paliers 10, 25, 50, 75 et 99. Un dixième de l’expérience survit à la relève.
 - **🎯 La prochaine action** : l’objectif dit une seule chose à faire. Il manque une matière : son icône est là, dans l’objectif, à toucher ou à maintenir. Tout est réuni : un bouton fabrique l’objet et ses pièces intermédiaires. La recette est inconnue : l’objectif envoie à l’Atelier. Son titre déplie le détail (énigme, étapes, passage).
 - **🎯 Suivi** : on suit une recette ; le haut du Domaine affiche ce qui manque, avec un temps estimé.
 - **Quatre onglets** : Domaine, Carte, Atelier (pages Découvrir et Carnet), Journal (pages Journal et Cosmos, quand le ciel s’ouvre).

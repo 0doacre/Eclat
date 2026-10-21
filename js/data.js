@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.1.0";
+  D.VERSION = "5.2.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -920,6 +920,14 @@
    * n pièces d’affilée : durée d’une pièce × n^batch. max : fabrications dans la file. */
   D.HAND = { base: 0.5, age: 0.2, star: 0.1, old: 0.75, batch: 0.6, unique: 3, scaled: 2, max: 8 };
 
+  /* Les gestes, et la récolte à la main, sont des compétences : chaque pièce faite à la
+   * main (pas par une machine) et chaque récolte rapportent de l’expérience. Un niveau
+   * rend le geste plus rapide (speed par niveau) ; certains paliers donnent une chance
+   * de pièce en plus (perk par palier). À la relève, il reste keep de l’expérience.
+   * La courbe est celle des grands jeux du genre, multipliée par k. */
+  D.SKILL = { max: 99, k: 1, speed: 0.01, perks: [10, 25, 50, 75, 99], perk: 0.04, keep: 0.1, xp: 1, tapXp: 1, harvest: 1.5 };
+  D.SKILL_RECOLTE = { n: "Récolte", ic: "🧺", d: "Ramasser à la main, sur les gisements." };
+
   /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
    * l’Atelier), les mains des Semeurs précédents guident les siennes. */
   D.GUIDE = {
@@ -938,11 +946,12 @@
   };
 
   D.CHANGES = [
-    "🎯 L’objectif donne la prochaine chose à faire, et une seule : ramasser ce qui manque sur place (l’icône à toucher est dans l’objectif), puis fabriquer d’un bouton, pièces intermédiaires comprises. Plus de recette à aller chercher de mémoire.",
-    "📖 Quatre onglets au lieu de six : le Carnet devient la deuxième page de l’Atelier, le Cosmos la deuxième page du Journal.",
-    "✋ La roue disparaît : l’objectif, le Carnet (×1, ×10, Max) et les +1 du Domaine font tout ce qu’elle faisait. Touche ✋ en haut pour voir ce que fabriquent tes mains.",
-    "Le détail de l’objectif (énigme, étapes, passage) s’ouvre en touchant son titre."
+    "⟳ Une action qui tourne : ▶ sur un gisement le fait ramasser en continu, ⟳ refait une recette en boucle (pièces intermédiaires comprises) tant qu’il y a de quoi. Une seule à la fois, et elle continue jeu fermé.",
+    "✋ Une barre au-dessus des onglets montre ce qui tourne et ce que font tes mains. ■ l’arrête ; la toucher ouvre la file.",
+    "📈 Les gestes et la récolte ont un niveau (jusqu’à 99). Chaque pièce faite à la main et chaque récolte en rapportent. Un niveau rend le geste 1 % plus rapide ; aux niveaux 10, 25, 50, 75 et 99, une chance de pièce en plus. À la relève, il en reste un dixième.",
+    "Les niveaux se voient sur les gestes de l’Atelier, et en détail avec le bouton « Niveaux »."
   ];
+
 
 
 

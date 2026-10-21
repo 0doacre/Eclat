@@ -80,7 +80,7 @@
       intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
       dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
-      hand: { q: [], p: 0 }, studied: {},
+      hand: { q: [], p: 0 }, studied: {}, skills: {}, act: null,
       proj: {}, endings: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
@@ -401,9 +401,40 @@
     E.canReleve = () => E.releveGain() > 0 || Object.keys(S.endings || {}).length > 0;
 
     /* ------------------------------------------------------ récolte */
+    /* ------------------------------------------------------ compétences
+     * Une par geste, et la récolte. L’expérience vient de ce qu’on fait soi-même. */
+    const SK = D.SKILL;
+    const SKILLS = D.GESTE_ORDER.concat(["recolte"]);
+    const XP_T = [0, 0]; // XP_T[L] : expérience totale pour atteindre le niveau L
+    for (let L = 2, acc = 0; L <= SK.max; L++) { acc += Math.floor(L - 1 + 300 * Math.pow(2, (L - 1) / 7)) / 4; XP_T[L] = Math.floor(acc * SK.k); }
+    const levelOf = (xp) => { let L = 1; while (L < SK.max && xp >= XP_T[L + 1]) L++; return L; };
+    const lvl = (g) => levelOf((S.skills && S.skills[g]) || 0);
+    E.SKILLS = SKILLS;
+    E.XP_T = XP_T;
+    E.skill = function (g) {
+      const xp = (S.skills && S.skills[g]) || 0, L = levelOf(xp), lo = XP_T[L], hi = L < SK.max ? XP_T[L + 1] : lo;
+      return { g, xp, lvl: L, lo, hi, frac: hi > lo ? (xp - lo) / (hi - lo) : 1, perks: SK.perks.filter((p) => L >= p).length, next: SK.perks.find((p) => p > L) || null };
+    };
+    /* plus rapide à chaque niveau ; une chance de pièce en plus à chaque palier */
+    const skillSpeed = (g) => 1 + SK.speed * (lvl(g) - 1);
+    const perkChance = (g) => SK.perk * SK.perks.filter((p) => lvl(g) >= p).length;
+    E.skillSpeed = skillSpeed;
+    E.perkChance = perkChance;
+    function gainXp(g, n) {
+      if (!(n > 0) || !SKILLS.includes(g)) return;
+      const before = lvl(g);
+      S.skills[g] = (S.skills[g] || 0) + n;
+      const after = lvl(g);
+      if (after > before) E.emit("level", { g, lvl: after, perk: SK.perks.includes(after) });
+    }
+    E.gainXp = gainXp;
+    /* l’expérience d’une pièce : le temps qu’elle demande à la main, en somme */
+    const xpOf = (id) => { const it = item(id); return Math.max(1, Math.round(SK.xp * (H.base + H.age * (it.a || 0)) * (isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1))); };
+    E.xpOf = xpOf;
+
     function tapYield(res, zid) {
       const c = E.cache();
-      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte");
+      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * skillSpeed("recolte");
     }
     E.tapYield = tapYield;
     E.tap = function (res, zid) {
@@ -413,6 +444,7 @@
       if (!(n > 0)) return 0;
       add(res, n);
       S.stats.taps++;
+      gainXp("recolte", SK.tapXp);
       return n;
     };
     E.tapYieldOf = (res) => { const z = RES_ZONE[res]; return z && zoneOpen(z) ? tapYield(res, z) : 0; };
@@ -516,7 +548,7 @@
     function bonusFor(it, times) {
       let bonus = 0;
       if (it.t !== "comp" && it.t !== "res") return 0;
-      const ch = 0.04 * E.stars(it.id);
+      const ch = 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0);
       if (ch > 0) {
         if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
         else bonus = Math.floor(times * ch + rand());
@@ -547,6 +579,7 @@
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
       S.stats.crafts += times;
+      gainXp(it.r[0], xpOf(id) * times);
       if (bench && !isUnique(it) && !isScaled(it)) {
         bench[id] = (bench[id] || 0) + out;
         markSeen(id);
@@ -805,7 +838,7 @@
       const it = item(id);
       const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
       const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
-      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains");
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") / (it.r ? skillSpeed(it.r[0]) : 1);
     }
     E.handTime = handTime;
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
@@ -928,6 +961,60 @@
         if (j.k >= n) { j.i++; j.k = 0; S.hand.p = 0; }
         if (j.i >= j.s.length) finishJob(j, offline);
       }
+    }
+
+    /* ------------------------------------------------------ l’action qui tourne
+     * Une seule à la fois : ramasser une matière en continu, ou refaire une recette
+     * en boucle (les mains la fabriquent par séries, pièces intermédiaires comprises).
+     * Elle continue jeu fermé, et s’arrête d’elle-même quand il n’y a plus de quoi. */
+    E.startAct = function (a) {
+      if (!a) return null;
+      if (a.k === "harv") {
+        if (!zoneOpen(a.z) || !ZONES[a.z].res.includes(a.res)) return null;
+        S.act = { k: "harv", z: a.z, res: a.res, p: 0, got: 0 };
+      } else if (a.k === "make") {
+        const it = item(a.id);
+        if (!it || !it.r || !S.known[a.id] || isUnique(it)) return null;
+        S.act = { k: "make", id: a.id, made0: S.made[a.id] || 0 };
+      } else return null;
+      E.emit("act", S.act);
+      runAct(0, false);
+      return S.act;
+    };
+    E.stopAct = function (why) {
+      if (!S.act) return;
+      const a = S.act;
+      S.act = null;
+      // ce qui est encore dans la file reste à faire : on finit la série en cours
+      S.hand.q.forEach((j) => { if (j.loop) delete j.loop; });
+      E.emit("actstop", { act: a, why: why || "stop" });
+    };
+    E.actInfo = function () {
+      const a = S.act;
+      if (!a) return null;
+      if (a.k === "harv") return { k: "harv", z: a.z, res: a.res, frac: a.p, dur: SK.harvest / skillSpeed("recolte"), got: a.got };
+      const j = S.hand.q.find((x) => x.loop), hi = E.handInfo(), n = (S.made[a.id] || 0) - a.made0;
+      const jj = j ? hi.jobs[S.hand.q.indexOf(j)] : null;
+      return { k: "make", id: a.id, made: n * item(a.id).r[2], frac: jj && jj.tot ? 1 - jj.left / jj.tot : 0, wait: !!(j && j.w) };
+    };
+    function runAct(dt, offline) {
+      const a = S.act;
+      if (!a) return;
+      if (a.k === "harv") {
+        if (!zoneOpen(a.z)) { E.stopAct("zone"); return; }
+        a.p += dt * skillSpeed("recolte") / SK.harvest;
+        while (a.p >= 1) { a.p -= 1; a.got += E.tap(a.res, a.z); }
+        return;
+      }
+      // fabriquer en boucle : une nouvelle série dès que la précédente est finie
+      if (S.hand.q.some((j) => j.loop)) return;
+      if (S.hand.q.length >= H.max) return; // la file est pleine : on attend
+      const n = Math.min(25, E.maxPlan(a.id, 25));
+      if (!(n >= 1)) { E.stopAct("missing"); return; }
+      const r = E.queue(a.id, n, true);
+      if (r.ok) r.job.loop = true;
+      else if (r.why !== "full") E.stopAct(r.why || "missing");
+      void offline;
     }
 
     /* ------------------------------------------------------ étude des matières
@@ -1706,6 +1793,8 @@
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
+      // les mains se souviennent un peu : une part de l’expérience reste
+      for (const g in old.skills || {}) n.skills[g] = Math.floor((old.skills[g] || 0) * D.SKILL.keep);
       n.introSeen = true;
       n.stats = Object.assign({}, old.stats);
       // le tutoriel déjà vu, les conseils déjà lus et la version vue ne reviennent pas
@@ -1737,6 +1826,7 @@
       for (const r in c.rates) add(r, c.rates[r] * dt);
       runDom(dt);
       handStep(dt, offline);
+      runAct(dt, offline);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];
@@ -1871,6 +1961,7 @@
         j.i = Math.max(0, Math.min(j.s.length, Math.floor(j.i) || 0));
         j.k = Math.max(0, Math.floor(j.k) || 0);
         if (typeof j.to !== "string") delete j.to;
+        if (j.loop !== true) delete j.loop;
         keep.push(j);
       });
       o.hand = { q: keep, p: keep.length ? Math.max(0, Number(h.p) || 0) : 0 };
@@ -1899,6 +1990,13 @@
       if (!o.tried || typeof o.tried !== "object") o.tried = {};
       checkHand(o);
       checkDom(o);
+      // compétences et action en cours : des nombres, et une action qui a un sens
+      if (!o.skills || typeof o.skills !== "object") o.skills = {};
+      for (const g in o.skills) { const v = Number(o.skills[g]); if (!(v >= 0) || !(D.GESTES[g] || g === "recolte")) delete o.skills[g]; else o.skills[g] = v; }
+      const a = o.act;
+      if (a && !((a.k === "harv" && ZONES[a.z] && D.ITEMS[a.res]) || (a.k === "make" && D.ITEMS[a.id] && D.ITEMS[a.id].r))) o.act = null;
+      if (o.act && o.act.k === "harv") { o.act.p = Math.max(0, Math.min(1, Number(o.act.p) || 0)); o.act.got = Number(o.act.got) || 0; }
+      if (o.act && o.act.k === "make") o.act.made0 = Number(o.act.made0) || 0;
       // identifiants inconnus (objets retirés) : mis de côté, jamais perdus
       ITEM_MAPS.forEach((k) => {
         if (!o[k] || typeof o[k] !== "object") return;

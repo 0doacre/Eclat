@@ -899,4 +899,94 @@ test("v5 → v6 : rien ne se perd, ce qui était en route revient au stock", () 
   Object.keys(S.dom.ext).forEach((k) => assert.strictEqual(E.machInfo(k).s, "ok", k));
 });
 
+console.log("Compétences et action qui tourne");
+test("gestes : l’expérience vient de ce qu’on fait à la main, un niveau rend plus rapide", () => {
+  const E = mk();
+  assert.strictEqual(E.skill("tailler").lvl, 1);
+  const t0 = E.handTime("manche");
+  E.state.known.manche = true; E.add("bois", 600);
+  assert.ok(E.queue("manche", 100).ok);
+  run(E, 400);
+  const k = E.skill("tailler");
+  assert.ok(k.xp >= 100 * E.xpOf("manche") - 1e-9, "100 manches : " + k.xp);
+  assert.ok(k.lvl > 1);
+  assert.ok(E.handTime("manche") < t0, "plus rapide");
+  // une machine ne donne pas d’expérience
+  const xp = k.xp;
+  E.add("automate_bois", 1); E.add("bois", 300); E.domMachAdd("manche");
+  run(E, 60);
+  assert.strictEqual(E.skill("tailler").xp, xp);
+  // paliers : une chance de pièce en plus
+  E.state.skills.tresser = E.XP_T[25];
+  assert.strictEqual(E.skill("tresser").perks, 2);
+  assert.ok(Math.abs(E.perkChance("tresser") - 2 * D.SKILL.perk) < 1e-9);
+  let lv = null;
+  E.on("level", (x) => (lv = x));
+  E.state.skills.assembler = E.XP_T[10] - 1;
+  E.gainXp("assembler", 1);
+  assert.deepStrictEqual(lv, { g: "assembler", lvl: 10, perk: true });
+});
+test("récolte à la main : de l’expérience, et un rendement qui monte", () => {
+  const E = mk();
+  const y0 = E.tap("bois", "lisiere");
+  assert.strictEqual(E.skill("recolte").xp, 1);
+  E.state.skills.recolte = E.XP_T[50];
+  assert.ok(Math.abs(E.tap("bois", "lisiere") - y0 * 1.49) < 1e-9, "niveau 50 : ×1,49");
+});
+test("action qui tourne : ramasser en continu, même jeu fermé", () => {
+  const E = mk();
+  assert.strictEqual(E.startAct({ k: "harv", z: "plaine", res: "os" }), null, "pas sur une terre fermée");
+  E.startAct({ k: "harv", z: "lisiere", res: "bois" });
+  run(E, 60);
+  assert.ok(Math.abs(E.count("bois") - 40) <= 1, "une prise toutes les 1,5 s : " + E.count("bois"));
+  assert.strictEqual(E.actInfo().got, E.count("bois"));
+  const b = E.count("bois");
+  T += 3600 * 1000; E.update();
+  assert.ok(E.count("bois") - b > 2000, "une heure dehors : " + (E.count("bois") - b));
+  E.stopAct();
+  assert.strictEqual(E.state.act, null);
+});
+test("action qui tourne : refaire une recette en boucle, jusqu’à ce qu’il manque de quoi", () => {
+  const E = mk();
+  E.state.known.manche = true;
+  assert.strictEqual(E.startAct({ k: "make", id: "feu" }), null, "pas un objet unique ni inconnu");
+  E.add("bois", 30);
+  let stop = null;
+  E.on("actstop", (x) => (stop = x));
+  E.startAct({ k: "make", id: "manche" });
+  assert.ok(E.state.hand.q.some((j) => j.loop), "une série dans la file");
+  run(E, 120);
+  assert.strictEqual(E.count("manche"), 10, "tout le bois y est passé");
+  assert.ok(stop && stop.why === "missing", JSON.stringify(stop));
+  assert.strictEqual(E.state.act, null);
+  // en chaîne : des cordes faites en route pour des collets
+  const F = mk();
+  ["corde", "collets"].forEach((k) => (F.state.known[k] = true));
+  stations(F, ["etabli"]);
+  F.add("fibre", 400); F.add("os", 50); F.add("manche", 50);
+  if (D.ITEMS.collets.r) {
+    F.startAct({ k: "make", id: "collets" });
+    run(F, 300);
+    assert.ok((F.state.made.collets || 0) >= 1, "des collets : " + JSON.stringify(F.state.made));
+  }
+});
+test("compétences et action : sauvegarde, relève", () => {
+  const E = mk();
+  E.state.skills.tailler = 5000; E.state.skills.recolte = 300;
+  E.startAct({ k: "harv", z: "lisiere", res: "fibre" });
+  const F = mk();
+  F.load(E.serialize());
+  assert.deepStrictEqual(F.state.skills, E.state.skills);
+  assert.strictEqual(F.state.act.res, "fibre");
+  const o = JSON.parse(E.serialize());
+  o.skills.inconnu = 5; o.skills.tailler = "x"; o.act = { k: "make", id: "laser" };
+  F.load(JSON.stringify(o));
+  assert.deepStrictEqual(F.state.skills, { recolte: 300 });
+  assert.strictEqual(F.state.act, null);
+  E.state.pass.plaine = { paid: {}, done: true };
+  E.newCycle();
+  assert.deepStrictEqual(E.state.skills, { tailler: 500, recolte: 30 }, "un dixième reste");
+  assert.strictEqual(E.state.act, null);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
