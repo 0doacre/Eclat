@@ -1651,6 +1651,8 @@
       }
       return null;
     };
+    /* une pause dans le jeu de flûte : l’air recommence à zéro */
+    E.clearNotes = () => { S.notes = []; };
     function melody(mid) {
       const fresh = addSecret(mid);
       if (mid === "appel" && !S.flags.lucioles) { S.flags.lucioles = true; recalc(); }

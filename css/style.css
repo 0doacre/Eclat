@@ -337,7 +337,8 @@ p { margin: 0.4em 0; }
 }
 .hole:active, .hole.ping { background: radial-gradient(circle at 40% 35%, #fff2c9, #c9a24a 70%); color: #2a1d0a; }
 .flute-body { background: linear-gradient(180deg, #efe3c4, #cbb98d); border-radius: 40px; padding: 10px 14px; box-shadow: inset 0 -4px 0 rgba(0,0,0,.2); }
-.notes { text-align: center; font-family: var(--mono); letter-spacing: .3em; color: var(--muted); min-height: 22px; }
+.notes { text-align: center; font-family: var(--mono); letter-spacing: .3em; color: var(--muted); min-height: 22px; transition: opacity .4s; }
+.notes.fade { opacity: 0; }
 .stat { display: flex; justify-content: space-between; padding: 6px 2px; border-bottom: 1px solid var(--line); font-size: 14px; }
 
 /* ---------------------------------------------------------------- cosmos */

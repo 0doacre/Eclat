@@ -1439,7 +1439,7 @@
       });
       h += "</div>";
     } else if (U.journalTab === "flute") {
-      h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer.</p><div class="flute-body"><div class="flute">' +
+      h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer. Une pause de quelques secondes, et l’air recommence à zéro.</p><div class="flute-body"><div class="flute">' +
         [1, 2, 3, 4, 5].map((n) => '<button class="hole" data-note="' + n + '">' + n + "</button>").join("") + '</div></div><div class="notes" id="notes">' + st.notes.join(" · ") + "</div></div>";
       const known = Object.keys(D.MELODIES).filter((m) => st.secrets[m]);
       if (known.length) {
@@ -2112,7 +2112,10 @@
     if (btn) { btn.classList.add("ping"); setTimeout(() => btn.classList.remove("ping"), 160); }
     const r = E.playNote(n);
     const el = $("#notes");
-    if (el) el.textContent = S().notes.join(" · ");
+    if (el) { el.textContent = S().notes.join(" · "); el.classList.remove("fade"); }
+    // après une pause, l’air recommence : les notes s’effacent
+    clearTimeout(U.noteT);
+    U.noteT = setTimeout(() => { E.clearNotes(); const e2 = $("#notes"); if (e2) { e2.classList.add("fade"); setTimeout(() => { if (!S().notes.length) e2.textContent = ""; e2.classList.remove("fade"); }, 400); } }, 2500);
     if (r) {
       const M = D.MELODIES[r.id];
       setTimeout(() => {
@@ -2652,7 +2655,7 @@
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
       if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
-      if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; render(true); return; }
+      if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
       if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n), loreHTML(F.t), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
       if ((b = t.closest("[data-play]"))) { A.init(); D.MELODIES[b.dataset.play].notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420)); return; } // la jouer pour de bon
