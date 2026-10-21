@@ -21,6 +21,11 @@ travailler dans un dossier à part, sur ton ordinateur, et rien n’arrive sur G
 > fusionne rien : la branche sera relue avant d’être intégrée. Termine en donnant le nom de
 > la branche, la sortie de `npm test`, ce que tu as vérifié dans le navigateur, et ce que tu
 > n’as pas pu faire.
+>
+> **Secrets.** L’auteur joue à l’aveugle : n’écris jamais une solution de secret, une
+> combinaison de recette secrète, un code ou un air dans ton compte rendu, tes messages de
+> commit ou `D.CHANGES`. Écris « une recette secrète », « un lieu caché », pas leur contenu.
+> N’ouvre pas `docs/coffre/` sauf si le prompt le demande.
 
 ## Ensuite
 

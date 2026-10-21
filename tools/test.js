@@ -1402,4 +1402,105 @@ test("sauvegarde avec meta.ruins illisible : se charge, nettoyée", () => {
   assert.strictEqual(E2.state.orphans.ruins.truc_inconnu, 4, "inconnu mis dans orphans");
 });
 
+console.log("Déchiffrer et secrets (5.8)");
+test("déchiffrer : le prix suit la formule (âge, nombre de ressources, niveau)", () => {
+  const E = mk();
+  // manche : âge 0, 1 ressource -> 3, 8, 20
+  assert.strictEqual(E.decipherCost("manche"), 3);
+  E.state.hints.manche = 1;
+  assert.strictEqual(E.decipherCost("manche"), 8);
+  E.state.hints.manche = 2;
+  assert.strictEqual(E.decipherCost("manche"), 20);
+  // ordinateur : âge 8, 3 ressources -> 81, 216, 540
+  E.state.age = 8;
+  assert.strictEqual(E.decipherCost("ordinateur"), 81);
+  E.state.hints.ordinateur = 1;
+  assert.strictEqual(E.decipherCost("ordinateur"), 216);
+  E.state.hints.ordinateur = 2;
+  assert.strictEqual(E.decipherCost("ordinateur"), 540);
+});
+
+test("déchiffrer : monte S.hints de 1, retire l’Intuition, et apprend la recette au niveau 3", () => {
+  const E = mk();
+  E.state.intu = 100;
+  const events = [];
+  E.on("guidehint", (h) => events.push(h));
+  // cabane : âge 0, 3 ressources -> coûts 9, 24, 60 (total 93)
+  const r1 = E.decipher("cabane");
+  assert.deepStrictEqual(r1, { ok: true, lvl: 1 });
+  assert.strictEqual(E.state.hints.cabane, 1);
+  assert.strictEqual(E.state.intu, 91);
+  assert.ok(!E.state.known.cabane);
+
+  const r2 = E.decipher("cabane");
+  assert.deepStrictEqual(r2, { ok: true, lvl: 2 });
+  assert.strictEqual(E.state.hints.cabane, 2);
+  assert.strictEqual(E.state.intu, 67);
+  assert.ok(!E.state.known.cabane);
+
+  const r3 = E.decipher("cabane");
+  assert.deepStrictEqual(r3, { ok: true, lvl: 3 });
+  assert.strictEqual(E.state.hints.cabane, 3);
+  assert.strictEqual(E.state.intu, 7, "learn(id, true) ne redonne pas +1 ✨");
+  assert.ok(E.state.known.cabane, "recette connue au niveau 3");
+  assert.strictEqual(E.decipherCost("cabane"), null);
+  assert.strictEqual(events.length, 3);
+});
+
+test("déchiffrer : refus (recette connue, sans recette, objet secret, pas assez d’Intuition, âge pas atteint)", () => {
+  const E = mk();
+  E.state.intu = 1000;
+  assert.strictEqual(E.decipherCost("bois"), null);
+  assert.strictEqual(E.decipher("bois").ok, false);
+
+  E.state.known.manche = true;
+  assert.strictEqual(E.decipherCost("manche"), null);
+  assert.strictEqual(E.decipher("manche").why, "known");
+
+  assert.strictEqual(E.decipherCost("galette"), null, "secret refusé");
+  assert.strictEqual(E.decipher("galette").why, "secret");
+  assert.strictEqual(E.decipherCost("diapason"), null, "recette de la Résonance refusée");
+  assert.strictEqual(E.decipher("diapason").why, "secret");
+
+  assert.strictEqual(E.decipherCost("ordinateur"), null, "âge pas atteint");
+  assert.strictEqual(E.decipher("ordinateur").why, "age");
+
+  E.state.intu = 2;
+  assert.strictEqual(E.decipherCost("corde"), 3);
+  assert.deepStrictEqual(E.decipher("corde"), { ok: false, why: "intu" });
+});
+
+test("déchiffrer : la sauvegarde garde le niveau (aller-retour serialize / load)", () => {
+  const E1 = mk();
+  E1.state.intu = 50;
+  E1.decipher("cabane");
+  E1.decipher("cabane");
+  assert.strictEqual(E1.state.hints.cabane, 2);
+  const raw = E1.serialize();
+  const E2 = mk();
+  E2.load(raw);
+  assert.strictEqual(E2.state.hints.cabane, 2);
+  assert.strictEqual(E2.decipherCost("cabane"), 60);
+});
+
+test("thermomètre : sec: true pour une tentative proche d’une recette secrète, et pas pour une recette normale", () => {
+  const E = mk();
+  E.add("feu", 1); E.add("fibre", 5); E.add("caillou", 5); E.recalc();
+  // galette (sec: true) = chauffer : fibre. Avec chauffer : fibre + caillou -> chaud (trop), sec: true
+  const tSec = E.temperature("chauffer", ["fibre", "caillou"]);
+  assert.strictEqual(tSec.temp, 3);
+  assert.strictEqual(tSec.sec, true);
+  const aSec = E.attempt("chauffer", ["fibre", "caillou"]);
+  assert.strictEqual(aSec.kind, "fail");
+  assert.strictEqual(aSec.sec, true);
+
+  // corde (normale) = tresser : fibre. Avec assembler : fibre -> chaud (geste), pas sec
+  const tNorm = E.temperature("assembler", ["fibre"]);
+  assert.strictEqual(tNorm.temp, 3);
+  assert.ok(!tNorm.sec);
+  const aNorm = E.attempt("assembler", ["fibre"]);
+  assert.strictEqual(aNorm.kind, "fail");
+  assert.strictEqual(aNorm.sec, false);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

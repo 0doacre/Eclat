@@ -538,6 +538,7 @@
     U.mcur = o;
     $("#modal").className = "modal " + (o.cls || "");
     box.innerHTML = o.html;
+    iconize(box);
     if (o.onOpen) o.onOpen(box);
   }
   const summary = (o) => esc(D.AGES[o.age] ? D.AGES[o.age].n : "?") + " · " + fmtTime((o.stats && o.stats.play) || 0) + " de jeu · " + Object.keys(o.known || {}).length + " recettes";
@@ -943,7 +944,7 @@
     if (!it) return "";
     if (!st.known[id]) {
       const lvl = st.hints[id] || 0;
-      return line('<div class="grow"><div class="small">À découvrir : ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>une recette nouvelle</b>") + "</div>" +
+      return line('<div class="grow" data-goto="' + id + '"><div class="small">À découvrir : ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>une recette nouvelle</b>") + "</div>" +
         (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
         '</div><button class="btn small pri" data-gotab="atelier">Chercher</button>');
@@ -976,7 +977,7 @@
     if (!g || g.ob.k !== "craft") return g ? g.ob.k + (g.ob.z || "") + (S().exp.active ? 1 : 0) : "";
     const p = I[g.step] && S().known[g.step] ? E.plan(g.step, 1) : null;
     const a = S().act;
-    return g.step + (p ? (p.ok ? 1 : Object.keys(p.missing).join()) : "?") + E.queued(g.step) + goalOpen() + (a ? a.k + (a.id || a.res) : "");
+    return g.step + ":" + (S().hints[g.step] || 0) + (p ? (p.ok ? 1 : Object.keys(p.missing).join()) : "?") + E.queued(g.step) + goalOpen() + (a ? a.k + (a.id || a.res) : "");
   }
   /* l’objectif déplié ou non : pendant un Suivi, il reste replié (on peut le rouvrir un moment) pour laisser voir le Domaine */
   function goalOpen() {
@@ -1271,6 +1272,7 @@
     if (r.kind === "fail") {
       const m = E.memory();
       return thermo(r.temp) + '<p class="small" style="margin-top:8px">' + esc(r.msg) + '</p><p class="tiny muted">' + WHY[r.why] + "</p>" +
+        (r.sec ? '<p class="small sec-heat">Une chaleur étrange : ce mélange cache quelque chose.</p>' : "") +
         (r.mem ? memoryHTML(m, "+" + r.mem) : m && !r.mem ? '<p class="tiny dim">Tu avais déjà tenté cette combinaison : aucun souvenir ne revient.</p>' : "");
     }
     return "";
@@ -1389,7 +1391,7 @@
       const ing = Object.keys(it.r[1]);
       const big = mainIngredient(id);
       const shown = nameShown(id, U.named);
-      return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + badgeHTML(id) + '</div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
+      return '<div class="rec unknown" data-rec="' + id + '" data-goto="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + badgeHTML(id) + '</div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
         (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
         '<div class="rl tiny muted">Action : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Ressource : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " ressource" + (ing.length > 1 ? "s" : "") + "</div></div>";
     }
@@ -1734,7 +1736,7 @@
     if (r.kind === "blocked") return "🔥 " + n(r.id) + " : " + needText(r.id, r.info, true) + ".";
     if (r.kind === "owned") return "Tu possèdes déjà " + n(r.id) + ".";
     if (r.kind === "busy") return "Tes mains sont déjà bien occupées.";
-    if (r.kind === "fail") return "<b>" + D.TEMPS[r.temp || 0].n + "</b> · " + esc(WHY[r.why] || "");
+    if (r.kind === "fail") return "<b>" + D.TEMPS[r.temp || 0].n + "</b> · " + esc(WHY[r.why] || "") + (r.sec ? " · Une chaleur étrange : ce mélange cache quelque chose." : "");
     return "";
   }
   /* l’outil du geste s’abat sur l’établi */
@@ -1994,7 +1996,10 @@
         else if (TYPE_HINT[it.t]) h += '<p class="tiny muted">' + TYPE_HINT[it.t] + "</p>";
         if (it.d) h += '<p class="serif rdesc"><i>' + esc(it.d) + "</i></p>";
       }
-      if (fxText(id)) h += '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>";
+      // l’effet en vert, sauf ce que la ligne « jeu » dit déjà
+      const plain = (t) => t.toLowerCase().replace(/[^a-zà-ÿ0-9]+/g, " ").trim();
+      const fx = fxList(id).filter((f) => !(it.u && plain(it.u).includes(plain(f))));
+      if (fx.length) h += '<p class="small" style="color:var(--good)">' + esc(fx.join(" · ")) + "</p>";
       h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En réserve : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
       const zid = E.RES_ZONE[id];
       if (zid) h += '<div class="row wrap small">Se récolte dans : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
@@ -2027,6 +2032,13 @@
           const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
           if (it.h) h += '<div class="riddle small">« ' + esc(it.h) + " »</div>";
           h += '<p class="small muted">Action : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · " + n + " ressource" + (n > 1 ? "s" : "") + (lvl >= 2 ? " dont " + nav(big) : "") + "</p>";
+          const dc = E.decipherCost(id);
+          if (dc !== null) {
+            const rev = ["Révèle l’action.", "Révèle une des ressources.", "Révèle la recette entière."][lvl];
+            const ok = st.intu >= dc;
+            h += '<div class="decipher"><button class="btn small' + (ok ? " pri" : "") + '" data-m="decipher"' + (ok ? "" : " disabled") + ">✨ Déchiffrer : " + dc + " ✨</button>" +
+              '<div class="tiny muted">' + rev + (ok ? "" : " Pas assez d’Intuition (tu as " + Math.floor(st.intu) + " ✨).") + "</div></div>";
+          }
           const m = E.memory();
           if (m && m.id === id) h += memoryHTML(m);
           else h += '<p class="tiny muted">À toi de la trouver à l’Atelier. Étudier les ressources aide à savoir quoi tenter.</p>';
@@ -2062,6 +2074,7 @@
         pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
         fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier") render(true); return true; },
         study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier") render(true); } redraw(); return true; },
+        decipher: () => { const r = E.decipher(id); if (r.ok) { if (r.lvl >= 3) A.discover(); save(); render(true); } redraw(); return true; },
         carnet: () => { setTimeout(() => showInCarnet(id), 60); }
       }
     };
@@ -2211,7 +2224,8 @@
       "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les ressources sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
       "<dt>Tes mains</dt><dd>Tout ce que tu fabriques passe par la file des commandes (barre ✋ au-dessus des onglets). Tes machines t’y aident.</dd>" +
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
-      "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource, pour savoir avec quelles actions elle cache encore des recettes.</dd>" +
+      "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource (pour savoir avec quelles actions elle cache des recettes) et à déchiffrer une recette inconnue étape par étape.</dd>" +
+      "<dt>Déchiffrer</dt><dd>Révéler une recette inconnue contre de l’Intuition : d’abord l’action, puis une des ressources, puis la recette entière.</dd>" +
       "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde en gardant tes recettes. Les Traces servent à acheter des améliorations dans la Mémoire des mains.</dd>" +
       "<dt>Ruine</dt><dd>Ce qu’un Semeur a construit attend le suivant. Une ruine se répare sur place pour une fraction de son coût d’origine, sans repasser par l’Atelier.</dd>" +
       "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des ressources.</dd>" +
@@ -2575,7 +2589,7 @@
     $("#memBtn").addEventListener("click", () => { A.init(); A.click(); openMemoire(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
     $("#intuBtn").addEventListener("click", () => simpleModal("Intuition", "✨ " + Math.floor(S().intu),
-      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les ressources : ouvre la fiche d’une ressource, puis touche 🔍 Étudier, pour savoir avec quelles actions elle cache encore des recettes.</p>' +
+      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier une ressource (touche 🔍 Étudier sur sa fiche) et à déchiffrer une recette inconnue étape par étape (touche ✨ Déchiffrer sur sa fiche).</p>' +
       (E.cache().intu ? '<p class="small muted">Gain automatique : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
     $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.zone = a ? a.z : U.zone; setTab("carte"); });
     $("#actbar").addEventListener("click", (ev) => {

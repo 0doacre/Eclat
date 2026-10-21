@@ -12,6 +12,7 @@ Avant d’écrire un texte affiché, vérifier ici le mot à employer, et lire `
 | Créer un objet (à la main ou par machine) | **fabriquer** | œuvrer, faire, produire, crafter |
 | Trouver une recette à l’Atelier | **découvrir** | inventer |
 | Essayer une recette à l’Atelier | **tenter**, une **tentative** | essayer, un essai |
+| Révéler une recette inconnue contre de l’Intuition | **déchiffrer** | débloquer, acheter |
 | Tailler, Tresser, Chauffer… | une **action** | geste (le mot reste permis dans le récit) |
 | Mettre un extracteur sur un gisement | **poser** | installer, placer |
 | Lancer une fabrication en lot au Carnet | **commander** | |
@@ -51,7 +52,8 @@ Chaque fiche affiche la sorte d’objet et une phrase qui dit à quoi elle sert 
 | **Âge**, **étapes** | Le jeu avance d’âge en âge ; 🏁 montre les étapes (jamais « jalons » à l’écran). |
 | **Objectif** | La prochaine chose à faire, en haut du Domaine. |
 | **Passage** | Ce qu’il faut verser pour entrer dans une nouvelle terre. |
-| **Intuition ✨** | Se gagne en découvrant ; sert à étudier une ressource. |
+| **Intuition ✨** | Se gagne en découvrant ; sert à étudier une ressource et à déchiffrer une recette inconnue. |
+| **Déchiffrer** | Révéler une recette inconnue étape par étape contre de l’Intuition (l’action, une des ressources, puis la recette entière). |
 | **Traces ✦** | Laissées par chaque passage franchi ; achètent la Mémoire des mains. |
 | **Comptoir, écus** | Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des ressources. |
 | **Relève** | Recommencer le monde en gardant ses recettes. Le bouton dit « Passer le relais ». |

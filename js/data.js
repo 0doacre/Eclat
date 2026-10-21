@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.7.1";
+  D.VERSION = "5.8.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -980,11 +980,13 @@
     sizes: [10, 50, 100, 1000]
   };
 
+  /* Déchiffrer : révéler une recette inconnue étape par étape contre de l’Intuition */
+  D.DECHIFFRER = { cost: [3, 8, 20] };
+
   D.CHANGES = [
-    "✍️ Tous les textes du jeu sont réécrits, plus simples et plus directs.",
-    "📖 Chaque fiche dit d’abord à quoi sert l’objet, puis raconte son histoire.",
-    "🔤 Nouveaux mots : on parle d’actions (Tailler, Tresser…) et de ressources.",
-    "🎶 Toucher une mélodie connue dans le Journal la joue vraiment sur ta flûte."
+    "✨ Tu peux déchiffrer une recette inconnue contre de l’Intuition : l’action, une ressource, puis la recette entière.",
+    "🔒 Dans le Domaine, un lieu caché affiche maintenant son énigme.",
+    "🌡️ À l’Atelier, une chaleur étrange te signale qu’un mélange cache une recette secrète."
   ];
 
 
