@@ -34,7 +34,7 @@
       { id: "debut", n: "Premiers gestes",
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts,
         steps: [
-          { tab: "domaine", at: '[data-harv="lisiere:bois"]', text: "Touche le bois pour en ramasser. Garde le doigt appuyé : tu ramasses sans t’arrêter.",
+          { tab: "domaine", at: '[data-harv="lisiere:bois"]', text: "Touche le bois pour en récolter. Garde le doigt appuyé : tu récoltes sans t’arrêter.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
           { tab: "atelier", go: "Tu en as assez pour un premier outil. Ouvre l’Atelier.", at: ".gestes",
             text: "Ici, une recette, c’est un geste et des matières. Le geste Tailler est déjà choisi.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
@@ -44,7 +44,7 @@
             done: () => S().known.manche },
           { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Un manche ! Une petite découverte sort tout de suite et s’inscrit dans ton Carnet. Refaire une recette connue prend un peu de temps : tes mains travaillent une pièce après l’autre.", next: true },
           { tab: "domaine", go: "Retourne au Domaine.", at: ".goal-card", text: "L’objectif, en haut, te dit quoi chercher ensuite. 🏁 montre tout ce qu’il y a à faire à cet âge.", next: true, done: () => S().known.corde },
-          { text: "À toi de chercher, maintenant : de quoi lier les choses entre elles. Ramasse des fibres, puis essaie des gestes à l’Atelier. Le thermomètre te dit si tu chauffes, et chaque essai nouveau réveille des souvenirs.",
+          { text: "À toi de chercher, maintenant : de quoi lier les choses entre elles. Récolte des fibres, puis essaie des gestes à l’Atelier. Le thermomètre te dit si tu chauffes, et chaque essai nouveau réveille des souvenirs.",
             free: true, done: () => S().known.corde },
           { text: "Bien trouvé. L’objectif, en haut, donne la suite ; ❓ explique le reste.", next: true }
         ] },
@@ -61,8 +61,8 @@
         when: () => U.tab === "domaine" && has("cabane") && !anyExt(),
         still: () => !S().flags.extDone,
         steps: [
-          { tab: "domaine", at: '[data-xadd="lisiere:bois"]', text: "Ta cabane peut récolter à ta place, même jeu fermé. Touche +1 sur le bois pour l’y poser.", done: anyExt },
-          { tab: "domaine", text: "Elle verse sa récolte dans la Réserve, jeu ouvert ou fermé. +1 en pose d’autres ; s’il n’en reste plus de libre, tes mains en fabriquent une et la posent.", next: true }
+          { tab: "domaine", at: '[data-xadd="lisiere:bois"]', text: "Ta cabane peut récolter à ta place, même jeu fermé. Touche « + cabane » sur le bois pour l’y poser.", done: anyExt },
+          { tab: "domaine", text: "Elle verse sa récolte dans la Réserve. Le même bouton en pose d’autres ; s’il ne t’en reste plus à poser, tes mains en fabriquent une, puis la posent.", next: true }
         ] },
       { id: "passage", n: "Un passage",
         when: () => U.tab === "domaine" && E.passPending().length > 0 && !S().meta.tracesTotal && !!document.querySelector(".goal-card [data-pour], .dom-pass [data-pour]"),
@@ -89,9 +89,9 @@
         when: () => U.tab === "domaine" && E.MACHINES.some(has) && !S().dom.mach.length && !!document.querySelector("[data-mnew]"),
         still: () => !S().flags.lineDone,
         steps: [
-          { tab: "domaine", at: "[data-mnew]", text: "Ton automate refait un geste à ta place. Touche « nouvelle chaîne » et choisis ce qu’il fabrique.",
+          { tab: "domaine", at: "[data-mnew]", text: "Ton automate refait un geste à ta place. Touche « Mettre au travail » et choisis ce qu’il fabrique.",
             done: () => S().dom.mach.some((e) => e.r) },
-          { tab: "domaine", text: "Il se sert dans la Réserve et y range ce qu’il fait. Touche sa ligne pour le régler ; + lui ajoute une machine.", next: true }
+          { tab: "domaine", text: "Il se sert dans la Réserve et y range ce qu’il fait. Touche sa ligne pour le régler ; + ajoute une machine de plus sur la même recette.", next: true }
         ] },
       { id: "etude", n: "Étudier une matière",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),

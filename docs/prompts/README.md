@@ -23,3 +23,5 @@ puis la fusionne.
 
 - `echecs-ages-2-3.md` : phrases d’échec des âges de la Pierre et du Cuivre (fait, version 4.5.1).
   Sert de modèle pour les âges suivants : change la liste des matières et le nom de l’âge.
+- `comptoir-5-4.md` : le Comptoir (écus, vente, achat de Traces), version 5.4.0. La consigne
+  de livraison est déjà incluse.

@@ -71,6 +71,8 @@ b, strong { font-weight: 650; }
   background: var(--panel); border: 1px solid var(--line); font-size: 14px; line-height: 1;
 }
 .chip.intu b { color: var(--intu); }
+.chip .cv { display: inline-flex; flex-direction: column; align-items: flex-start; line-height: 1; }
+.chip .cv small { font-size: 8.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-top: 2px; font-weight: 600; }
 .chip.mem b { color: #ffd36b; }
 .chip.mem.ready { border-color: #ffd36b; box-shadow: 0 0 10px rgba(255, 211, 107, 0.45); animation: memglow 2.4s ease-in-out infinite; }
 @keyframes memglow { 50% { box-shadow: 0 0 2px rgba(255, 211, 107, 0.2); } }
@@ -513,6 +515,8 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .gis-b { flex: 0 0 auto; display: flex; gap: 4px; }
 .gis-b .mini { min-width: 42px; height: 34px; }
 .mini.nope { opacity: .45; }
+.gis-b .mini.lbl { font-size: 12.5px; font-weight: 700; max-width: 112px; line-height: 1.05; white-space: normal; padding: 0 7px; }
+.dom-free i { font-style: normal; min-width: 0; }
 .hcount { position: absolute; left: 4px; top: -14px; z-index: 2; pointer-events: none; padding: 1px 8px; border-radius: 99px; background: var(--panel2); border: 1px solid var(--line2); font-size: 12.5px; font-weight: 700; color: var(--good); white-space: nowrap; }
 .hcount.bump { animation: hbump .2s ease-out; }
 .hcount.out { opacity: 0; transition: opacity .4s; }
@@ -726,3 +730,9 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .hcount.bump { animation: hbump .22s cubic-bezier(.2,1.8,.4,1); }
 .hcount.out { opacity: 0; }
 @keyframes hbump { 0% { transform: translate(-50%, -100%) scale(1.35); } 100% { transform: translate(-50%, -100%) scale(1); } }
+/* aide : les mots du jeu */
+.lexique { margin: 6px 0 10px; }
+.lexique dt { font-weight: 700; margin-top: 8px; }
+.lexique dd { margin: 2px 0 0; color: var(--muted); }
+.passcost { display: flex; flex-direction: column; gap: 4px; }
+.passcost .ing { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }

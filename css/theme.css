@@ -182,7 +182,7 @@ body[data-tab="cosmos"] #views { background: #0d1118; }
 .subtabs .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--acc); vertical-align: middle; }
 .goal-card .ghead-row { display: flex; align-items: center; gap: 8px; }
 .goal-card .ghead { flex: 1 1 auto; display: flex; align-items: baseline; gap: 8px; min-width: 0; border: 0; background: none; padding: 0; text-align: left; color: var(--text); }
-.goal-card .gname { font-family: var(--serif); font-size: calc(19px * var(--title-size)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto; }
+.goal-card .gname { font-family: var(--serif); font-size: calc(19px * var(--title-size)); line-height: 1.15; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; flex: 1 1 auto; text-align: left; }
 .gact { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 .gact .grow { flex: 1 1 160px; min-width: 0; }
 .goal-card .gis.gact { min-height: 0; flex-wrap: nowrap; }

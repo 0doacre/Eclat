@@ -45,11 +45,9 @@
     if (a < 10) return a.toFixed(1).replace(".", ",");
     return fmt(a);
   }
-  function fmtRate(r) { return r > 0 ? "+" + fmtNum(r) + "/s" : ""; }
-  function fmtNet(r) {
-    if (Math.abs(r) < 1e-6) return "";
-    return (r > 0 ? "+" : "−") + fmtNum(r) + "/s";
-  }
+  /* un débit (par seconde dans le moteur) se lit toujours par minute ; par heure s’il est infime */
+  function perMin(r) { const a = Math.abs(r); return a * 60 >= 0.1 ? fmtNum(a * 60) + "/min" : fmtNum(a * 3600) + "/h"; }
+  function fmtRate(r) { return r > 0 ? "+" + perMin(r) : ""; }
   function fmtTime(s) {
     s = Math.max(0, s);
     // sous dix secondes, au dixième (une pièce faite à la main, par exemple)
@@ -61,6 +59,18 @@
     return m + " min" + (r ? " " + String(r).padStart(2, "0") : "");
   }
   const fmtHeat = (h) => h.toLocaleString("fr-FR") + " °C";
+  /* Ce qui bloque une recette, en nommant toujours l’objet qui manque :
+   * « il faut : Four en argile (1 100 °C) », jamais « il manque la station ». */
+  function needText(id, b, html) {
+    b = b || E.blocker(id);
+    if (!b) return "";
+    if (b.why === "owned") return "déjà possédé";
+    const st = E.blockStation(id, b), g = D.GESTES[I[id].r[0]];
+    const det = b.why === "heat" ? fmtHeat(b.heat) : b.why === "geste" ? "pour " + g.v : "plus solide, pour " + g.v;
+    if (!st) return "geste inconnu : " + g.n;
+    return "il faut : " + (html ? '<span class="link-txt" data-goto="' + st + '">' + esc(I[st].n) + "</span>" : I[st].n) + " (" + det + ")";
+  }
+  const cap1 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   const fmtMul = (v) => "×" + String(Math.round(v * 100) / 100).replace(".", ",");
   function fmtDate(t) {
     const d = new Date(t);
@@ -121,25 +131,41 @@
     if (it.sym) return '<span class="ic sym ' + (cls || "") + '" style="--c:' + it.col + ";--ink:" + ink(it.col) + '">' + esc(it.sym) + "</span>";
     return '<span class="ic ' + (cls || "") + '">' + it.ic + "</span>";
   }
-  const TYPE = { res: "Matière", comp: "Composant", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", mach: "Machine", auto: "Machine", curio: "Curiosité", relic: "Relique" };
+  const TYPE = { res: "Matière", comp: "Pièce", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", mach: "Machine", auto: "Machine", curio: "Curiosité", relic: "Relique" };
+  /* ce que fait chaque sorte d’objet, en une phrase, sur sa fiche */
+  const TYPE_HINT = {
+    res: "Une matière première : elle se récolte sur un gisement.",
+    comp: "Une pièce : elle sert à fabriquer autre chose.",
+    tool: "Un outil : il agit dès que tu l’as, rien à poser.",
+    stat: "Une station : elle reste à l’Atelier et ouvre un geste ou une chaleur.",
+    ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même jeu fermé.",
+    upg: "Une amélioration : elle agit dès que tu l’as, rien à poser.",
+    mach: "Une machine : dans le Domaine, elle refait une recette en boucle avec ce qu’il y a dans la Réserve.",
+    curio: "Une curiosité : elle n’a pas d’usage pratique.", relic: "Une relique, trouvée en explorant."
+  };
   const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
+  /* « de » + nom de terre, contracté : du Désert de Verre, des Profondeurs, de la Lisière */
+  const deZone = (z) => {
+    const n = zoneName(z);
+    return /^Le /.test(n) ? "du " + n.slice(3) : /^Les /.test(n) ? "des " + n.slice(4) : /^La /.test(n) ? "de la " + n.slice(3) : /^L’/.test(n) ? "de l’" + n.slice(2) : "de " + n;
+  };
   const targetName = (k) => (k === "*" ? "toutes les zones" : E.ZONES[k] ? E.ZONES[k].n : I[k] ? I[k].n : k);
   const isRawGather = (id) => I[id] && I[id].t === "res" && E.RES_ZONE[id];
 
   function fxList(id) {
     const it = I[id], e = it.e || {}, out = [];
-    if (e.zone) out.push("Débloque : " + zoneName(e.zone));
+    if (e.zone) out.push("Ouvre le chemin vers " + zoneName(e.zone));
     if (e.st) e.st.forEach((s) => {
       const g = D.GESTES[s.g].n;
       if (s.heat) out.push(s.g === "chauffer" ? "Chauffer jusqu’à " + fmtHeat(s.heat) : g);
-      else if ((s.lvl || 1) > 1) out.push(g + " niveau " + s.lvl);
-      else out.push("Geste : " + g);
+      else if ((s.lvl || 1) > 1) out.push(g + " les matières plus dures");
+      else out.push("Ouvre le geste " + g);
     });
-    if (e.tap) for (const k in e.tap) out.push("Récolte " + (k === "*" ? "partout" : targetName(k)) + " " + fmtMul(e.tap[k]));
-    if (e.auto) for (const k in e.auto) out.push("Production " + (k === "*" ? "partout" : targetName(k)) + " " + fmtMul(e.auto[k]));
+    if (e.tap) for (const k in e.tap) out.push("Récolte à la main " + (k === "*" ? "partout" : E.ZONES[k] ? deZone(k).replace(/^de la /, "à la ").replace(/^du /, "au ").replace(/^des /, "aux ").replace(/^de l’/, "à l’") : ": " + targetName(k)) + " " + fmtMul(e.tap[k]));
+    if (e.auto) for (const k in e.auto) out.push("Extracteurs " + (k === "*" ? "de toutes les terres" : deZone(k)) + " " + fmtMul(e.auto[k]));
     if (it.p) {
       const c = E.cache(), m = (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
-      if (it.t === "ext") out.push("Posé sur un gisement de " + zoneName(it.z) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
+      if (it.t === "ext") out.push("Se pose sur un gisement " + deZone(it.z) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
       else out.push("Chacun : " + Object.keys(it.p).map((r) => fmtRate(it.p[r] * m) + " " + I[r].n).join(", "));
     }
     if (it.t === "mach") out.push("Machine : " + fmtNum(it.spd * E.cache().aspd) + " fabrications/min");
@@ -149,8 +175,8 @@
     if (e.arche) out.push("Capte les ondes radio");
     if (e.term) out.push("Terminal");
     if (e.signal) out.push("Écouter le ciel");
-    if (e.aspd) out.push("Fabrique " + fmtMul(e.aspd));
-    if (e.pip) out.push("Récolte automatique " + e.pip + "/s");
+    if (e.aspd) out.push("Machines " + fmtMul(e.aspd));
+    if (e.pip) out.push("Récolte seul " + perMin(e.pip));
     if (e.flute) out.push("Débloque la flûte");
     if (e.decode) out.push("Décode le signal de Kher");
     return out;
@@ -312,7 +338,7 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
@@ -851,7 +877,7 @@
     // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
     const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
     let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
-      (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : md + "/" + ml.length) + "</button>" : "") + "</div>";
+      (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
     h += nextAction(g);
     if (!open) return h + "</div>";
     // le détail, à la demande
@@ -881,8 +907,8 @@
     }
     if (ob.k === "pass") return passHTML(ob.z);
     if (ob.k === "ext") {
-      const d = E.deposits().find((x) => { const c = E.extChoice(x.res); return c && (c.free > 0 || E.plan(c.t, 1).ok); });
-      return d ? line('<button class="btn small pri" data-xadd="' + d.key + '" data-n="1">Poser ' + esc(I[E.extChoice(d.res).t].n.toLowerCase()) + " sur " + esc(I[d.res].n.toLowerCase()) + "</button>") : line('<span class="small">' + esc(ob.txt) + "</span>");
+      const d = E.deposits().find((x) => { const c = E.extChoice(x.res, x.z); return c && (c.free > 0 || E.plan(c.t, 1).ok); });
+      return d ? line('<button class="btn small pri" data-xadd="' + d.key + '" data-n="1">Poser ' + esc(I[E.extChoice(d.res, d.z).t].n.toLowerCase()) + " sur " + esc(I[d.res].n.toLowerCase()) + "</button>") : line('<span class="small">' + esc(ob.txt) + "</span>");
     }
     if (ob.k === "line") {
       const free = E.MACHINES.some((m) => E.freeMach(m) >= 1);
@@ -899,7 +925,7 @@
     }
     if (E.queued(id) > 0) return line('<span class="small">✋ Tes mains fabriquent ' + esc(it.n.toLowerCase()) + ".</span>");
     const b = E.blocker(id);
-    if (b && b.why === "heat") return line('<span class="small">Il faut plus de chaleur : ' + fmtHeat(b.heat) + ".</span>");
+    if (b && b.why !== "owned") return line('<span class="small">' + cap1(needText(id, b, true)) + ".</span>");
     if (b && b.why === "owned") return "";
     const p = E.plan(id, 1);
     if (p.ok) {
@@ -913,11 +939,11 @@
     if (hand) {
       const z = E.RES_ZONE[hand], tot = Math.ceil((st.inv[hand] || 0) + p.missing[hand]);
       return '<div class="gis gact">' + '<button class="gis-ic hand" data-harv="' + z + ":" + hand + '" aria-label="Récolter : ' + esc(I[hand].n) + '">' + icon(hand) + "</button>" +
-        '<div class="grow"><div class="small">Il manque <b data-gleft="' + hand + '" data-q="' + tot + '">' + fmt(p.missing[hand]) + "</b> " + esc(I[hand].n.toLowerCase()) + " pour " + esc(it.n.toLowerCase()) + '.</div><div class="tiny muted">Touche l’icône, ou ramasse en continu.</div></div>' +
+        '<div class="grow"><div class="small">Il manque <b data-gleft="' + hand + '" data-q="' + tot + '">' + fmt(p.missing[hand]) + "</b> " + esc(I[hand].n.toLowerCase()) + " pour " + esc(it.n.toLowerCase()) + '.</div><div class="tiny muted">Touche l’icône, ou ▶ pour récolter en continu.</div></div>' +
         (st.act && st.act.k === "harv" && st.act.res === hand ? '<span class="tiny muted">en cours…</span>' : '<button class="btn small" data-hloop="' + z + ":" + hand + '">▶</button>') + "</div>";
     }
     const ext = miss.find((k) => isRawGather(k));
-    if (ext) return line('<span class="small">Il manque ' + fmt(p.missing[ext]) + " " + esc(I[ext].n.toLowerCase()) + " : ça ne se ramasse pas à la main, il faut un extracteur sur son gisement.</span>");
+    if (ext) return line('<span class="small">Il manque ' + fmt(p.missing[ext]) + " " + esc(I[ext].n.toLowerCase()) + " : ça ne se récolte pas à la main, il faut un extracteur sur son gisement.</span>");
     return line('<span class="small">Il manque : ' + miss.map((k) => '<b class="link-txt" data-goto="' + k + '">' + fmt(p.missing[k]) + " " + esc(I[k].n.toLowerCase()) + "</b>").join(", ") + ".</span>");
   }
   /* ce qui change la carte d’objectif (pour la redessiner au bon moment) */
@@ -954,18 +980,19 @@
     });
     openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
-  const WHY_STEP = { station: "Il te faut d’abord une station :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
+  const WHY_STEP = { station: "Il te faut d’abord :", zone: "Il te faut d’abord atteindre une nouvelle terre, grâce à :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
   /* un passage vers une terre : ce qu’il coûte, ce qui est déjà versé, et le bouton pour verser */
   function passHTML(z) {
     const p = E.passInfo(z), st = S();
     if (!p || !p.ready) return "";
     return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
       '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
-      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">+' + p.P.tr + " ✦ à ta prochaine relève</span></div>") +
-      '<div class="row wrap small">' +
+      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
+      '<div class="passcost small">' +
       Object.keys(p.cost).map((i) => {
-        const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i);
-        return '<span class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + fmt(got) + " / " + fmt(p.cost[i]) + (ok ? " ✓" : ' <span class="tiny muted">(' + fmt(st.inv[i] || 0) + ")" + (eta ? " · " + eta : "") + "</span>") + "</span>";
+        const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
+        return '<div class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + "<b>" + esc(I[i].n) + "</b> " + fmt(got) + " / " + fmt(p.cost[i]) + " versés" +
+          (ok ? " ✓" : ' <span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? " : de quoi finir" : eta ? " · encore " + eta : "") + "</span>") + "</div>";
       }).join("") + "</div></div>";
   }
   /* combien de temps avant d’avoir de quoi payer une matière, à la production actuelle (extracteurs, machines) */
@@ -1034,7 +1061,7 @@
       void have;
     });
     p.locked.forEach((k) => { h += '<div class="why" data-goto="' + k + '">Recette inconnue : ' + esc(I[k].n) + "</div>"; });
-    Object.keys(p.blocked).forEach((k) => { const b = p.blocked[k]; h += '<div class="why">' + esc(I[k].n) + " : " + (b.why === "heat" ? "il faut " + fmtHeat(b.heat) : b.why === "lvl" ? "station de niveau " + b.lvl : "geste inconnu") + "</div>"; });
+    Object.keys(p.blocked).forEach((k) => { const b = p.blocked[k]; h += '<div class="why">' + esc(I[k].n) + " : " + needText(k, b, true) + "</div>"; });
     return h + "</div>";
   }
 
@@ -1044,7 +1071,7 @@
     let h = subTabs("atelier", "carnet", "Découvrir", "Carnet");
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
     if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
-    if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Chaque pièce faite à la main fait monter son geste.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
+    if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque geste est son niveau : il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
     h += pinsHTML();
     h += '<div class="gestes">';
     let locks = 0;
@@ -1116,7 +1143,7 @@
     const st = S(), it = I[id];
     const uniq = E.isUnique(it), owned = uniq && st.made[id] > 0;
     return '<div class="pin">' + icon(id, "sm") + '<span class="grow pn link-txt" data-goto="' + id + '">' + esc(it.n) + (uniq ? "" : ' <span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span>") + "</span>" +
-      (owned ? '<span class="tiny muted">✓ possédé</span>' : '<button class="btn small" data-cr="' + id + '" data-n="1">' + (uniq ? "Fabriquer" : "×1") + "</button>") + "</div>";
+      (owned ? '<span class="tiny muted">✓ possédé</span>' : '<button class="btn small" data-cr="' + id + '" data-n="1">' + "Fabriquer" + "</button>") + "</div>";
   }
   function pinsHTML() {
     const ids = Object.keys(S().pins).filter((id) => I[id] && I[id].r && S().known[id]);
@@ -1168,7 +1195,7 @@
   }
   function resultHTML() {
     const r = U.last;
-    if (!r) return '<p class="small muted">Choisis un geste, pose jusqu’à trois matières, puis œuvre. Le <b>thermomètre</b> te dit si tu chauffes.</p>';
+    if (!r) return '<p class="small muted">Choisis un geste, touche des matières dans la liste plus bas pour les poser (trois au plus), puis le gros bouton. Après chaque essai, le <b>thermomètre</b> dit si tu t’approches d’une recette.</p>';
     if (r.kind === "craft") {
       const it = I[r.id];
       let h = '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow">' +
@@ -1227,9 +1254,9 @@
   function craftBtns(id) {
     const it = I[id];
     if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Fabriquer</button>';
-    const loop = '<button class="btn small' + (S().act && S().act.id === id ? " on" : "") + '" data-loop="' + id + '" title="En boucle, tant qu’il y a de quoi">⟳</button>';
+    const loop = '<button class="btn small' + (S().act && S().act.id === id ? " on" : "") + '" data-loop="' + id + '" title="En boucle, tant qu’il y a de quoi">⟳ En boucle</button>';
     if (E.isScaled(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Construire</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>' + loop;
-    return '<button class="btn small pri" data-cr="' + id + '" data-n="1">×1</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>' + loop;
+    return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Fabriquer</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>' + loop;
   }
 
   /* ------------------------------------------------------------ CARNET */
@@ -1239,12 +1266,12 @@
     let known = 0, total = 0;
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = subTabs("atelier", "carnet", "Découvrir", "Carnet");
-    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
+    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
-    h += '<p class="small muted">' + known + (known > 1 ? " recettes connues" : " recette connue") + " sur " + total + (all > known ? " à ta portée · " + all + " en tout" : "") + " · ✨ " + Math.floor(st.intu) + " Intuition</p>";
+    h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une matière…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
-    h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Production"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+    h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     return h + '<div id="clist">' + carnetList() + "</div>";
   }
@@ -1345,21 +1372,15 @@
     if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:4px">Possédés : ' + Math.floor(st.inv[id] || 0) + "</div>";
     if (!owned) {
       const b = E.blocker(id);
-      if (b && b.why === "heat") h += '<div class="why">Nécessite ' + fmtHeat(b.heat) + " · " + stationLink("chauffer", b.heat, 0) + "</div>";
-      else if (b && b.why === "lvl") h += '<div class="why">Nécessite ' + D.GESTES[it.r[0]].n + " niveau " + b.lvl + " · " + stationLink(it.r[0], 0, b.lvl) + "</div>";
-      else if (b && b.why === "geste") h += '<div class="why">Geste inconnu : ' + D.GESTES[it.r[0]].n + (it.r[0] !== "accorder" ? " · " + stationLink(it.r[0], 0, 0) : "") + "</div>";
+      if (b && b.why !== "owned") h += '<div class="why">' + cap1(needText(id, b, true)) + "</div>";
       else {
         h += '<div class="acts">' + craftBtns(id) +
-          '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳</button>' +
-          (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯</button>') +
-          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Confier ça à une machine du Domaine">🏭</button>' : "") + "</div>";
+          '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳 Détail</button>' +
+          (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯 Suivi</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯 Suivre</button>') +
+          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Confier ça à une machine du Domaine">🏭 À une machine</button>' : "") + "</div>";
       }
     }
     return h + "</div>";
-  }
-  function stationLink(g, heat, lvl) {
-    const s = E.stationFor(g, heat, lvl);
-    return s ? '<span class="link-txt" data-goto="' + s + '">' + esc(I[s].n) + "</span>" : "?";
   }
 
   /* ------------------------------------------------------------ JOURNAL */
@@ -1589,7 +1610,7 @@
     const it = I[id], b = E.blocker(id);
     if (E.handInfo().full) return "Tes mains sont pleines : attends qu’une fabrication se termine.";
     if (b && b.why === "owned") return "Tu possèdes déjà " + esc(it.n) + ".";
-    if (b) return esc(it.n) + " : " + (b.why === "heat" ? "il faut une chaleur de " + fmtHeat(b.heat) : b.why === "lvl" ? "il faut une station plus solide" : "tu ne maîtrises pas encore ce geste") + ".";
+    if (b) return esc(it.n) + " : " + esc(needText(id, b)) + ".";
     const names = (m) => Object.keys(m).map((k) => fmt(m[k]) + " " + esc(I[k].n)).join(", ");
     if (chain) {
       const p = E.plan(id, n);
@@ -1654,7 +1675,7 @@
     } else if (r.kind === "learn" || r.kind === "blocked") {
       A.fail(4); if (r.fresh) setTimeout(() => A.discover(), 150);
       // trouver la recette, c’est déjà découvrir : la fabriquer viendra après
-      if (r.fresh && !I[r.id].sec) fete({ id: r.id, kick: "Recette trouvée", title: I[r.id].n, sub: r.kind === "blocked" ? "Inscrite dans ton Carnet. Il te faudra une meilleure station." : "Inscrite dans ton Carnet, à fabriquer quand tu veux." });
+      if (r.fresh && !I[r.id].sec) fete({ id: r.id, kick: "Recette trouvée", title: I[r.id].n, sub: r.kind === "blocked" ? "Inscrite dans ton Carnet. " + cap1(needText(r.id, r.info)) + "." : "Inscrite dans ton Carnet, à fabriquer quand tu veux." });
     } else {
       A.fail(r.temp || 0);
       vibe(20);
@@ -1669,7 +1690,7 @@
     if (r.kind === "craft") return r.fresh ? "✨ Nouvelle découverte : " + n(r.id) : "+" + fmt(r.n) + " " + n(r.id);
     if (r.kind === "queued") return "✋ " + n(r.id) + " : prêt dans " + fmtTime(r.time) + ".";
     if (r.kind === "learn") return "📖 Recette trouvée : " + n(r.id) + (r.missing ? ". Il manque " + Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n)).join(", ") + "." : ". À fabriquer quand tu veux.");
-    if (r.kind === "blocked") return "🔥 " + n(r.id) + " : il faudrait plus de chaleur ou une meilleure station.";
+    if (r.kind === "blocked") return "🔥 " + n(r.id) + " : " + needText(r.id, r.info, true) + ".";
     if (r.kind === "owned") return "Tu possèdes déjà " + n(r.id) + ".";
     if (r.kind === "busy") return "Tes mains sont déjà bien occupées.";
     if (r.kind === "fail") return "<b>" + D.TEMPS[r.temp || 0].n + "</b> · " + esc(WHY[r.why] || "");
@@ -1750,9 +1771,9 @@
     A.init();
     const i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
     if (S().act && S().act.k === "harv" && S().act.res === res && S().act.z === z) { E.stopAct(); A.click(); render(true); return; }
-    if (!E.startAct({ k: "harv", z, res })) { A.fail(0); toast(esc(I[res].n) + " ne se ramasse pas à la main.", { key: "act" }); return; }
+    if (!E.startAct({ k: "harv", z, res })) { A.fail(0); toast(esc(I[res].n) + " ne se récolte pas à la main.", { key: "act" }); return; }
     A.click();
-    toast("▶ Tu ramasses " + esc(I[res].n.toLowerCase()) + " en continu.", { key: "act" });
+    toast("▶ Tu récoltes " + esc(I[res].n.toLowerCase()) + " en continu.", { key: "act" });
     render(true);
   }
   /* la barre au-dessus des onglets : ce qui tourne, ou ce que font les mains */
@@ -1773,7 +1794,7 @@
     if (bar.dataset.sig !== sig) {
       bar.dataset.sig = sig;
       let ic, name;
-      if (a && a.k === "harv") { ic = icon(a.res, "sm"); name = "Ramasser · " + esc(I[a.res].n); }
+      if (a && a.k === "harv") { ic = icon(a.res, "sm"); name = "Récolte · " + esc(I[a.res].n); }
       else if (a) { ic = icon(a.id, "sm"); name = "En boucle · " + esc(I[a.id].n); }
       else { const j = hi.jobs[0]; ic = icon(j.id, "sm"); name = "Tes mains · " + esc(I[j.id].n) + (hi.jobs.length > 1 ? ' <span class="tiny muted">+' + (hi.jobs.length - 1) + "</span>" : ""); }
       bar.innerHTML = '<button class="ab-main" data-ab="hands">' + ic + '<span class="ab-t"><span class="ab-n">' + name + '</span><span class="ab-bar"><i></i></span></span><b class="ab-c"></b></button>' +
@@ -1836,17 +1857,17 @@
   /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
   function treeHTML(id, n) {
     const p = E.plan(id, n), st = S();
-    let h = '<div class="kicker">Fabrication en chaîne</div><div class="row">' + icon(id, "lg") + '<div class="grow"><h2 style="margin:0">' + esc(I[id].n) + "</h2>";
+    let h = '<div class="kicker">Tout ce qu’il faut fabriquer</div><div class="row">' + icon(id, "lg") + '<div class="grow"><h2 style="margin:0">' + esc(I[id].n) + "</h2>";
     if (!E.isUnique(I[id])) h += '<div class="row" style="margin-top:6px"><button class="mini" data-m="tn" data-d="-1">−</button><b style="min-width:40px;text-align:center">×' + fmt(n) + '</b><button class="mini" data-m="tn" data-d="1">+</button><button class="btn small ghost" data-m="tmax">Max</button></div>';
     h += "</div></div>";
     h += '<h3 class="sub">Étapes</h3><div class="tsteps">' + p.steps.map(([x, k]) => '<div class="tstep">' + D.GESTES[I[x].r[0]].ic + ' <span class="tiny muted">' + D.GESTES[I[x].r[0]].n + "</span> " + icon(x, "sm") + " <b>" + esc(I[x].n) + '</b> <span class="muted">× ' + fmt(k) + "</span></div>").join("") + "</div>";
     const used = Object.keys(p.used);
-    if (used.length) h += '<h3 class="sub">Pris dans ton stock</h3><div class="row wrap small">' + used.map((k) => '<span class="ing">' + icon(k, "sm") + fmt(p.used[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
+    if (used.length) h += '<h3 class="sub">Pris dans la Réserve</h3><div class="row wrap small">' + used.map((k) => '<span class="ing">' + icon(k, "sm") + fmt(p.used[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     const miss = Object.keys(p.missing).filter((k) => !p.locked.includes(k) && !p.blocked[k]);
     if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">Il manque</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     if (p.locked.length) h += '<p class="why">Recettes encore inconnues : ' + p.locked.map((k) => esc(I[k].n)).join(", ") + "</p>";
     const bl = Object.keys(p.blocked);
-    if (bl.length) h += '<p class="why">' + bl.map((k) => esc(I[k].n) + (p.blocked[k].why === "owned" ? " : déjà possédé" : p.blocked[k].why === "heat" ? " : il faut " + fmtHeat(p.blocked[k].heat) : " : station manquante")).join(" · ") + "</p>";
+    if (bl.length) h += '<p class="why">' + bl.map((k) => esc(I[k].n) + " : " + needText(k, p.blocked[k], true)).join(" · ") + "</p>";
     h += '<div class="acts"><button class="btn" data-m="close">Fermer</button>' + (st.track && st.track.id === id ? "" : '<button class="btn" data-m="track">🎯 Suivre</button>') +
       '<button class="btn pri" data-m="go"' + (p.ok ? "" : " disabled") + ">⚡ Tout fabriquer</button></div>";
     return h;
@@ -1887,15 +1908,16 @@
     const nav = (k, extra) => '<button class="ing link" data-m="nav" data-id="' + k + '">' + (st.seen[k] || st.known[k] ? icon(k, "sm") : '<span class="ic sm unk">?</span>') + esc(I[k].n) + (extra || "") + "</button>";
     let h = '<div class="rwin"><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
       '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + (nameShown(id) ? esc(it.n) : "Recette inconnue") + "</h2>" +
-      (E.stars(id) ? '<div class="stars">' + "★".repeat(E.stars(id)) + "</div>" : "") + "</div>" +
+      (E.stars(id) ? '<div class="stars" title="Maîtrise : fabriqué ' + fmt(st.made[id] || 0) + ' fois">' + "★".repeat(E.stars(id)) + ' <span class="tiny muted">maîtrise</span></div>' : "") + "</div>" +
       (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Matière favorite" title="Matière favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
       (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
     if (!visible) {
       h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Tu en sauras plus en avançant.</p>';
     } else {
       if (known || !it.r) h += '<p class="serif rdesc">' + esc(it.d || "") + "</p>";
+      if (TYPE_HINT[it.t] && (known || !it.r)) h += '<p class="tiny muted">' + TYPE_HINT[it.t] + "</p>";
       if (fxText(id)) h += '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>";
-      h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En stock : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
+      h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En réserve : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
       const zid = E.RES_ZONE[id];
       if (zid) h += '<div class="row wrap small">Se récolte : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
         (E.zoneOpen(zid) ? "" : ' <span class="tiny muted">(terre pas encore atteinte)</span>') + "</div>";
@@ -1903,22 +1925,22 @@
         h += '<h3 class="sub">Recette</h3>';
         if (known) {
           const cost = E.costFor(id);
-          h += '<div class="rrow">' + gesteChip(id) + '<span class="muted">×' + fmt(it.r[2]) + "</span></div>" +
+          h += '<div class="rrow">' + gesteChip(id) + '<span class="muted">donne ' + fmt(it.r[2]) + "</span></div>" +
             '<div class="rings">' + Object.keys(cost).map((k) => {
               const have = st.inv[k] || 0, lack = have + 1e-9 < cost[k];
               return '<button class="ring' + (lack ? " lack" : "") + '" data-m="nav" data-id="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(have) + " / " + fmt(cost[k]) + "</span><span class=\"go\">›</span></button>";
             }).join("") + "</div>";
           const b = E.blocker(id), opt = it.r[3] || {};
           const station = b && b.why === "heat" ? E.stationFor("chauffer", b.heat, 0) : b && b.why === "lvl" ? E.stationFor(it.r[0], 0, b.lvl) : b && b.why === "geste" && it.r[0] !== "accorder" ? E.stationFor(it.r[0], 0, 0) : null;
-          if (b && b.why !== "owned") h += '<p class="why">' + (b.why === "heat" ? "Il faut " + fmtHeat(b.heat) : b.why === "lvl" ? "Il faut une station plus solide" : "Geste inconnu : " + esc(D.GESTES[it.r[0]].n)) + (station ? " · " + nav(station) : "") + "</p>";
+          if (b && b.why !== "owned") h += '<p class="why">' + (station ? "Il faut d’abord : " + nav(station) + (b.why === "heat" ? " (" + fmtHeat(b.heat) + ")" : "") : cap1(needText(id, b))) + "</p>";
           else if (opt.heat || opt.lvl) {
             const sta = opt.heat ? E.stationFor("chauffer", opt.heat, 0) : E.stationFor(it.r[0], 0, opt.lvl);
-            if (sta) h += '<p class="tiny muted">Station : ' + nav(sta) + "</p>";
+            if (sta) h += '<p class="tiny muted">Station : ' + nav(sta) + (S().made[sta] || E.count(sta) >= 1 ? " ✓ tu l’as" : "") + "</p>";
           }
           if (!owned && !b) {
             h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +
-              '<button class="btn small ghost" data-m="tree">🌳</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯</button>') +
-              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Confier ça à une machine du Domaine">🏭</button>' : "") + "</div>";
+              '<button class="btn small ghost" data-m="tree">🌳 Détail</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯 Suivre</button>') +
+              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Confier ça à une machine du Domaine">🏭 À une machine</button>' : "") + "</div>";
           }
         } else {
           const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
@@ -1936,7 +1958,7 @@
         const now = Object.values(E.reactions(id)).reduce((a, b) => a + b, 0), later = unk - now;
         const unkTxt = (now ? now + " à trouver dès maintenant" : "") + (now && later ? ", " : "") + (later ? later + " plus tard" : "");
         h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + ku.map((k) => nav(k)).join("") +
-          (unk ? '<span class="tiny muted">' + (ku.length ? "et encore : " : "Recettes inconnues : ") + unkTxt + "</span>" : "") + "</div>";
+          (unk ? '<span class="tiny muted">' + (ku.length ? "et d’autres recettes encore inconnues : " : "Recettes encore inconnues : ") + unkTxt + "</span>" : "") + "</div>";
         if (unk && st.seen[id]) h += studyHTML(id);
       }
     }
@@ -2092,20 +2114,31 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>🏡 Domaine.</b> Tout ce qui produit, terre par terre. Touche l’icône d’une matière pour la ramasser, garde le doigt dessus pour continuer. <b>+1</b> pose un <b>extracteur</b> sur le gisement : il récolte seul, même jeu fermé (jusqu’à 12 h). S’il n’en reste pas de libre, tes mains en fabriquent un et le posent là. " +
-      "Plus bas, les <b>machines</b> : chacune répète une recette, se sert dans la Réserve et y range ce qu’elle fait. Touche une ligne pour la régler. L’<b>objectif</b>, en haut, donne la prochaine chose à faire : ramasser ce qui manque (sur place, d’un appui), fabriquer d’un geste avec les pièces intermédiaires, ou aller découvrir une recette. Touche son titre pour le détail, et 🏁 montre les étapes de chaque âge.</p>" +
-      "<p><b>🗺️ Carte.</b> Ton monde, de la Lisière jusqu’aux étoiles. La brume cache ce que tu n’as pas atteint. Touche une terre pour aller à ses gisements, un 🧭 lieu pour l’explorer (ils racontent l’histoire du monde), une étiquette « Passage » pour y verser.</p>" +
-      "<p><b>🔨 Atelier.</b> Ton laboratoire. Un <b>geste</b>, jusqu’à trois <b>matières</b>, et tu œuvres. Une petite découverte sort tout de suite ; une grosse s’inscrit dans le Carnet sans rien prendre, et tu la fabriques quand tu veux, prix affiché. Ensuite, ce que tu fabriques à la main prend un peu de temps et passe par la file de <b>✋ Tes mains</b> (elle avance même jeu fermé). Pour produire en grand, ce sont les <b>machines</b> du Domaine. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches d’une recette, et chaque essai nouveau réveille des <b>souvenirs</b> : à force, ils te soufflent la réponse. Avec de l’<b>Intuition ✨</b>, tu peux <b>étudier</b> une matière (🔍 dans sa fiche) pour savoir avec quels gestes elle cache encore des recettes.</p>" +
-      "<p><b>⟳ Ce qui tourne.</b> ▶ sur un gisement ramasse en continu ; ⟳ refait une recette en boucle tant qu’il y a de quoi. Une seule chose tourne à la fois, et elle continue jeu fermé ; la barre au-dessus des onglets la montre, ■ l’arrête.</p>" +
-      "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même (pas tes machines) : 1 % plus rapide par niveau, et aux niveaux 10, 25, 50, 75 et 99 une chance de pièce en plus. À la relève, il en reste un dixième.</p>" +
-      "<p><b>📖 Carnet</b> (deuxième page de l’Atelier). Tes recettes. <b>×1, ×10, Max</b> fabriquent aussi les pièces qui manquent (tes mains les font d’abord), <b>🎯 Suivre</b> montre ce qui manque, <b>☆</b> épingle une recette dans l’Atelier. Touche un ingrédient pour aller à sa recette. Les recettes inconnues ont une énigme.</p>" +
-      "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies, et la page du ciel quand tu sauras le regarder. Certains textes cachent des recettes, des codes ou des airs.</p>" +
-      "<p><b>🚧 Passages.</b> Pour entrer dans une nouvelle terre, il faut l’objet qui y mène (l’épieu pour la Plaine…), puis franchir son passage : verse ce qu’il demande depuis la Réserve, en plusieurs fois si besoin. Chaque passage coûte bien plus que le précédent.</p>" +
-      "<p><b>✦ Relève et Mémoire des mains.</b> Dès un passage franchi, tu peux passer le relais : un nouveau Semeur s’éveille, le monde repart de zéro, mais il garde ton Carnet, tes fragments, tes secrets et la Mémoire des mains, achetée avec les Traces des passages (récolte, mains, extracteurs, machines plus forts…). Chaque fin atteinte donne en plus un Écho : +50 % de récolte et de production pour toujours.</p>" +
-      "<p><b>🏁 Étapes.</b> Chaque âge a ses étapes : toutes faites, l’âge est accompli (+" + D.AGE_DONE + " ✨).</p>" +
-      "<p><b>🔭 Cosmos</b> (deuxième page du Journal). Le ciel, la voix d’ARCHE, et les Grands Œuvres qui mènent aux fins (il y en a plus d’une). Un Grand Œuvre se bâtit dans le Domaine : verse-lui ses matières, ou laisse-le se servir seul dans la Réserve.</p>" +
-      "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou la changer d’appareil.</p>" +
-      "<p><b>💭 Tutoriel.</b> Des souvenirs te montrent où toucher, chaque fois qu’une nouvelle chose devient possible. Menu ☰ : le couper, ou le revoir depuis le début.</p></div>", "Compris");
+      "<p><b>En bref.</b> Tu récoltes des matières, tu découvres des recettes à l’Atelier, puis tu poses des extracteurs et des machines qui travaillent pour toi. L’<b>objectif</b>, en haut du Domaine, dit toujours quoi faire ensuite.</p>" +
+      '<h3 class="sub">Les mots du jeu</h3><dl class="lexique">' +
+      "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Tout ce qui est récolté ou fabriqué y va ; tout ce qui se fabrique y puise.</dd>" +
+      "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement, c’est une matière à récolter.</dd>" +
+      "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt pour continuer), ou ▶ pour récolter en continu.</dd>" +
+      "<dt>Geste, recette</dt><dd>Une recette, c’est un geste (Tailler, Tresser…) et des matières. On les découvre à l’Atelier, en essayant.</dd>" +
+      "<dt>Pièce</dt><dd>Un objet fabriqué qui sert à en fabriquer d’autres (manche, corde…).</dd>" +
+      "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
+      "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et ouvre un geste, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
+      "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même jeu fermé.</dd>" +
+      "<dt>Machine</dt><dd>Automate, presse… Dans le Domaine, elle refait une recette en boucle avec ce qu’il y a dans la Réserve. « Mettre au travail » lui donne sa recette.</dd>" +
+      "<dt>Tes mains</dt><dd>Ce que tu fabriques toi-même passe par la file de tes mains (barre ✋ au-dessus des onglets), une pièce après l’autre.</dd>" +
+      "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
+      "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une matière, pour savoir avec quels gestes elle cache encore des recettes.</dd>" +
+      "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde avec tes recettes, et les Traces achètent des mains plus habiles (Mémoire des mains).</dd>" +
+      "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
+      "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Il se nourrit dans la Réserve.</dd></dl>" +
+      '<h3 class="sub">Les écrans</h3>' +
+      "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, tes machines, les passages et le Grand Œuvre. Touche une ligne pour sa fiche.</p>" +
+      "<p><b>🗺️ Carte.</b> Le monde, et la brume sur ce que tu n’as pas atteint. Touche un 🧭 lieu pour l’explorer : il raconte un bout de l’histoire.</p>" +
+      "<p><b>🔨 Atelier.</b> Choisis un geste, pose jusqu’à trois matières, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Sa deuxième page, le <b>Carnet</b>, garde toutes tes recettes : <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent, <b>⟳ En boucle</b> continue tant qu’il y a de quoi, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine.</p>" +
+      "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
+      "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même : 1 % plus rapide par niveau, et une chance de pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
+      "<p><b>Jeu fermé.</b> Extracteurs, machines, tes mains et ce qui tourne en boucle continuent jusqu’à 12 h.</p>" +
+      "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
   }
 
   function intro() {
@@ -2184,7 +2217,7 @@
     const parts = [];
     if (n("ext")) parts.push(n("ext") + " extracteur" + (n("ext") > 1 ? "s" : ""));
     if (n("mach")) parts.push(n("mach") + " machine" + (n("mach") > 1 ? "s" : ""));
-    if (top.length) parts.push("ton stock (" + top.map((i) => fmt(st.inv[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + "…)");
+    if (top.length) parts.push("ta Réserve (" + top.map((i) => fmt(st.inv[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + "…)");
     if (paid.length) parts.push("ce que tu as versé dans " + paid.map((z) => esc(D.PASSAGES[z].n)).join(", "));
     return parts.length ? '<p class="small muted">Tu laisses : ' + parts.join(", ") + ".</p>" : "";
   }
@@ -2192,7 +2225,7 @@
   function memPreview(x) {
     const l = E.memLvl(x.id), a = x.v(l), b = x.v(l + 1);
     if (b === undefined || typeof a !== "number") return "";
-    if (x.id === "extr") { const r = E.production().reduce((s, p) => s + (I[p.id] && I[p.id].t === "res" ? p.in : 0), 0); return r > 0 ? "Tes extracteurs : " + fmtNum(r) + "/s → " + fmtNum(r * b / a) + "/s" : ""; }
+    if (x.id === "extr") { const r = E.production().reduce((s, p) => s + (I[p.id] && I[p.id].t === "res" ? p.in : 0), 0); return r > 0 ? "Tes extracteurs : " + perMin(r) + " → " + perMin(r * b / a) : ""; }
     if (x.id === "recolte") return "Un appui sur le bois : " + fmtNum(E.tapYieldOf("bois") || a) + " → " + fmtNum((E.tapYieldOf("bois") || a) * b / a);
     if (x.id === "chemins") { const z = D.ZONES.map((y) => y.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id)); if (!z) return ""; const c = E.passCost(z), k = Object.keys(c)[0]; return esc(D.PASSAGES[z].n) + " : " + fmt(c[k]) + " → " + fmt(Math.ceil(c[k] * b / a)) + " " + esc(I[k].n.toLowerCase()); }
     if (x.id === "mach") { const m = S().dom.mach.filter((e) => e.r); return m.length ? "Tes " + m.length + " machine" + (m.length > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
@@ -2361,8 +2394,8 @@
       if (E.cache().pip && (id === "pip" || Math.random() < 0.3)) setTimeout(() => A.pip(), 250);
       if (I[id] && I[id].t === "ext") {
         badge("domaine");
-        // déjà posée par les mains (un « +1 ») : rien à dire
-        setTimeout(() => { if (E.freeExt(id) >= 1) toast("⛏️ <b>" + esc(I[id].n) + "</b> : touche +1 sur un gisement du Domaine pour la poser.", { key: "it:" + id, p: 4 }); }, 900);
+        // déjà posé par les mains (bouton « + cabane ») : rien à dire
+        setTimeout(() => { if (E.freeExt(id) >= 1) toast("⛏️ <b>" + esc(I[id].n) + "</b> : touche « + " + esc(I[id].sn || I[id].n) + " » sur un gisement " + esc(deZone(I[id].z)) + ", dans le Domaine.", { key: "it:" + id, p: 4 }); }, 900);
       }
     });
     E.on("decoded", () => {
@@ -2471,7 +2504,7 @@
         A.click(); render(true); return;
       }
       if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
-      if ((b = t.closest("[data-lock]"))) { toast("Un geste que tu ne maîtrises pas encore. Il te faut une nouvelle station."); return; }
+      if ((b = t.closest("[data-lock]"))) { toast("Un geste que tu ne connais pas encore. Il s’ouvrira quand tu fabriqueras la station qui va avec : feu, enclume, creuset…"); return; }
       if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une matière ci-dessous pour la poser ici."); return; }
       if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
       if (t.closest("#forge, [data-forge]")) {
