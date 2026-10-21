@@ -9,20 +9,21 @@
   const SHOWN = 2; // terres dépliées d’office ; les plus anciennes se replient
 
   function create(api) {
-    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
+    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
     const I = D.ITEMS;
     const S = () => E.state;
-    const perTime = (v) => (v >= 1 ? fmtNum(v) + "/s" : v * 60 >= 0.1 ? fmtNum(v * 60) + "/min" : fmtNum(v * 3600) + "/h");
+    const perTime = perMin;
     const plural = (n, w) => n + " " + w + (n > 1 ? "s" : "");
-    /* « cabane de cueillette » → « cabanes » : le premier mot suffit dans une ligne */
-    const shortName = (id, n) => { const w = I[id].n.split(/[ ’']/)[0].toLowerCase(); return n > 1 && !/[sx]$/.test(w) ? w + "s" : w; };
+    /* le nom court d’un extracteur ou d’une machine, accordé : « 1 cabane », « 3 meules » */
+    const nm = (id, n) => (n > 1 ? I[id].pl || I[id].n.toLowerCase() : I[id].sn || I[id].n.toLowerCase());
+    const many = (id, n) => n + " " + nm(id, n);
 
     /* ------------------------------------------------------------ données */
     function openZones() { return D.ZONES.filter((z) => E.zoneOpen(z.id)).map((z) => z.id); }
     /* un gisement se montre s’il se récolte à la main, s’il est exploité, ou si on connaît de quoi l’exploiter */
     function depShown(z, d) {
       if (d.hand || E.domExt(z, d.res)) return true;
-      return E.extFor(d.res).some((t) => S().known[t] || E.count(t) >= 1);
+      return E.extFor(d.res, z).some((t) => S().known[t] || E.count(t) >= 1);
     }
     function depRate(z, res) {
       const e = E.domExt(z, res);
@@ -63,7 +64,7 @@
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
       let h = '<section class="dom-terre" id="dt-' + z + '"><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
       deps.forEach((d) => { h += gisHTML(z, d); });
-      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Rien ne s’y ramasse à la main : il faut des extracteurs.</p>';
+      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Rien ne s’y récolte à la main : il faut des extracteurs.</p>';
       void st;
       return h + "</section>";
     }
@@ -83,9 +84,9 @@
     }
     function gisHTML(z, d) {
       const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
-      const ch = E.extChoice(res), q = E.domQueued("x:" + key);
+      const ch = E.extChoice(res, z), q = E.domQueued("x:" + key);
       const info = E.machInfo(key), rate = depRate(z, res);
-      const used = e ? Object.keys(e.u).map((t) => shortName(t, e.u[t]) + " ×" + e.u[t]).join(", ") : "";
+      const used = e ? Object.keys(e.u).map((t) => many(t, e.u[t])).join(", ") : "";
       let sub = fmt(st.inv[res] || 0);
       sub = '<span data-c="' + res + '">' + sub + "</span> en réserve" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
       const right = e && info.s === "off" ? '<span class="dom-rate off">en pause</span>'
@@ -94,12 +95,11 @@
       let btns = "";
       if (d.hand) {
         const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;
-        btns += '<button class="mini' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-label="' + (on ? "Arrêter de ramasser" : "Ramasser en continu") + '" title="' + (on ? "Arrêter" : "Ramasser en continu") + '">' + (on ? "■" : "▶") + "</button>";
+        btns += '<button class="mini' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-label="' + (on ? "Arrêter de récolter" : "Récolter en continu") + '" title="' + (on ? "Arrêter" : "Récolter en continu") + '">' + (on ? "■" : "▶") + "</button>";
       }
       if (ch) {
         const free = E.freeExt(ch.t), can = free >= 1 || E.plan(ch.t, 1).ok;
-        btns += '<button class="mini' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="' + esc(I[ch.t].n) + '" aria-label="Un extracteur de plus : ' + esc(I[ch.t].n) + '">+1</button>';
-        if (e || free >= 2) btns += '<button class="mini' + (free >= 10 || E.plan(ch.t, 10 - Math.min(free, 9)).ok ? "" : " nope") + '" data-xadd="' + key + '" data-n="10" aria-label="Dix de plus">×10</button>';
+        btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '">+ ' + esc(nm(ch.t, 1)) + "</button>";
       }
       return '<div class="gis" data-gis="' + key + '">' +
         '<button class="gis-ic' + (d.hand ? " hand" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + icon(res) + "</button>" +
@@ -110,18 +110,18 @@
 
     /* ------------------------------------------------------------ machines */
     const MST = {
-      ok: "en marche", wait: "démarre", off: "en pause", norec: "sans recette", idle: "aucune machine",
-      starved: "il lui manque des matières", cap: "stock visé atteint", blocked: "il manque une station"
+      ok: "en marche", wait: "démarre", off: "en pause", norec: "rien à fabriquer : touche pour choisir", idle: "aucune machine",
+      starved: "à l’arrêt : il manque des matières", cap: "à l’arrêt : assez en réserve", blocked: "à l’arrêt"
     };
     function machLine(e) {
       const info = E.machInfo(e.id), it = I[e.r];
       if ((info.s === "ok" || info.s === "wait") && it) {
         const r = E.machRate(e);
-        return "+" + perTime(r * it.r[2]) + " · prennent " + Object.keys(it.r[1]).map((k) => perTime(r * it.r[1][k]) + " " + esc(I[k].n.toLowerCase())).join(", ");
+        return "+" + perTime(r * it.r[2]) + " · utilise " + Object.keys(it.r[1]).map((k) => esc(I[k].n.toLowerCase()) + " " + perTime(r * it.r[1][k])).join(", ");
       }
-      if (info.s === "starved" && info.miss) return "il manque : " + Object.keys(info.miss).map((k) => esc(I[k].n.toLowerCase())).join(", ");
-      if (info.s === "cap") return "stock visé atteint (" + fmt(e.cap) + ")";
-      if (info.s === "blocked" && info.b) return info.b.why === "heat" ? "il faut plus de chaleur" : "il manque la station";
+      if (info.s === "starved" && info.miss) return "à l’arrêt : il manque " + Object.keys(info.miss).map((k) => esc(I[k].n.toLowerCase())).join(", ");
+      if (info.s === "cap") return "à l’arrêt : assez en réserve (" + fmt(e.cap) + ")";
+      if (info.s === "blocked" && info.b && e.r) return "à l’arrêt : " + esc(needText(e.r, info.b));
       return MST[info.s] || "";
     }
     function machinesHTML() {
@@ -132,12 +132,12 @@
       st.dom.mach.forEach((e) => {
         const info = E.machInfo(e.id), lvl = info.s === "ok" || info.s === "wait" ? "good" : info.s === "off" || info.s === "cap" ? "dim" : "warn";
         h += '<div class="mrow" data-msheet="' + e.id + '">' + icon(e.r || e.m) +
-          '<div class="grow"><div class="mrow-t"><b>' + e.n + " " + esc(shortName(e.m, e.n)) + "</b> → " + (I[e.r] ? esc(I[e.r].n) : '<i class="muted">choisir</i>') + "</div>" +
+          '<div class="grow"><div class="mrow-t"><b>' + esc(many(e.m, e.n)) + "</b> → " + (I[e.r] ? esc(I[e.r].n) : '<i class="muted">choisir</i>') + "</div>" +
           '<div class="tiny ' + lvl + '" data-mline="' + e.id + '">' + machLine(e) + "</div></div>" +
           '<button class="mini" data-mn="' + e.id + '" data-v="-1" aria-label="Une machine de moins"' + (e.n > 1 ? "" : " disabled") + '>−</button><button class="mini' + (E.freeMach(e.m) >= 1 || E.plan(e.m, 1).ok ? "" : " nope") + '" data-mn="' + e.id + '" data-v="1" aria-label="Une machine de plus">+</button></div>';
       });
       const free = owned.filter((m) => E.freeMach(m) >= 1);
-      if (free.length) h += '<button class="dom-free" data-mnew>' + free.map((m) => icon(m, "sm") + " " + E.freeMach(m) + " " + esc(shortName(m, E.freeMach(m)))).join(" · ") + " au repos<span>nouvelle chaîne ▸</span></button>";
+      if (free.length) h += '<button class="dom-free" data-mnew><i>Au repos : ' + esc(free.map((m) => many(m, E.freeMach(m))).join(", ")) + "</i><span>Mettre au travail ▸</span></button>";
       return h + "</section>";
     }
 
@@ -165,7 +165,7 @@
       const P = E.production().filter((x) => x.in > 1e-4 || x.out > 1e-4), st = S();
       if (!P.length) return "";
       return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary>Tout ce qui entre et sort, par matière</summary>' +
-        '<div class="u-pr u-ph tiny muted"><span class="grow">Matière</span><span>entre</span><span>sort</span><span>stock</span></div>' +
+        '<div class="u-pr u-ph tiny muted"><span class="grow">Matière</span><span>entre</span><span>sort</span><span>réserve</span></div>' +
         P.slice(0, 30).map((x) => '<div class="u-pr" data-goto="' + x.id + '">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
           "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + '</i><span data-c="' + x.id + '">' + fmt(st.inv[x.id] || 0) + "</span></div>").join("") + "</details>";
     }
@@ -180,12 +180,12 @@
       void vet;
       if (freeE.length && !st.flags.tip_freeExt) {
         const t = freeE[0], n = us[t].own - us[t].used;
-        return "Tu as " + plural(n, esc(shortName(t, 1))) + " qui attend" + (n > 1 ? "ent" : "") + " : touche <b>+1</b> sur un gisement pour " + (n > 1 ? "les" : "la") + " poser. " +
+        return "Tu as " + esc(many(t, n)) + " à poser : touche <b>+ " + esc(nm(t, 1)) + "</b> sur un gisement " + esc(deZone(I[t].z)) + ". " +
           '<button class="btn small ghost" data-tip="tip_freeExt">Compris</button>';
       }
       const own = E.MACHINES.some((m) => ms[m].own > 0);
-      if (own && !st.dom.mach.length) return "Ta machine attend : touche <b>nouvelle chaîne</b> et choisis ce qu’elle fabrique.";
-      if (st.dom.mach.some((e) => !e.r)) return "Une de tes machines n’a pas de recette : touche-la pour en choisir une.";
+      if (own && !st.dom.mach.length) return "Ta machine attend : touche <b>Mettre au travail</b> et choisis ce qu’elle fabrique.";
+      if (st.dom.mach.some((e) => !e.r)) return "Une de tes machines n’a rien à fabriquer : touche-la pour choisir.";
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOn(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
       if (lone && !st.flags.tip_site) return "Ton Grand Œuvre peut se servir seul dans la Réserve : touche <b>Alimenter</b>. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
       return null;
@@ -202,7 +202,7 @@
         on: {
           eu: (b) => {
             const t = b.dataset.t, v = Number(b.dataset.v), cur = ((E.domExt(z, res) || { u: {} }).u[t]) || 0;
-            if (v > 0 && E.freeExt(t) < 1) feedback(E.domExtAdd(z, res, 1, t), t); else { E.domExtSet(z, res, t, cur + v); A.click(); }
+            if (v > 0 && E.freeExt(t) < v) feedback(E.domExtAdd(z, res, v, t), t); else { E.domExtSet(z, res, t, cur + v); A.click(); }
             return redraw();
           },
           toggle: () => { E.domExtToggle(z, res); A.click(); return redraw(); },
@@ -213,17 +213,19 @@
     function extHTML(key) {
       const i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
       const e = E.domExt(z, res), us = E.extUnits(), info = E.machInfo(key), dep = E.zoneDeps(z).find((d) => d.res === res);
-      const types = E.extFor(res).filter((t) => us[t].own > 0 || (e && e.u[t]) || S().known[t]);
+      const types = E.extFor(res, z).filter((t) => us[t].own > 0 || (e && e.u[t]) || S().known[t]);
       const rate = depRate(z, res);
       let h = '<div class="sheet-h">' + icon(res) + '<div class="grow"><h2>' + esc(I[res].n) + '</h2><div class="tiny muted">' + esc(E.ZONES[z].n) + "</div></div></div>";
-      h += '<p class="small">' + (!e ? "Aucun extracteur ici pour l’instant." : info.s === "off" ? "En pause." : rate > 0 ? "Récolte " + perTime(rate) + ", même quand le jeu est fermé." : "Démarre…") + "</p>";
+      h += '<p class="small">' + (!e ? "Aucun extracteur ne travaille ici." : info.s === "off" ? "En pause." : rate > 0 ? "Les extracteurs posés ici récoltent " + perTime(rate) + ", même quand le jeu est fermé." : "Démarre…") + "</p>";
       if (types.length) {
+        h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + ". Chacun ne récolte que le gisement où tu le poses.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
           const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0;
-          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " chacun · " + plural(free, "libre") + "</span></span>" +
-            '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1">+</button></div>';
+          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par extracteur · " + (own ? "à poser : " + free + " sur " + own : "à fabriquer") + "</span></span>" +
+            '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
+            '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
-      } else h += '<p class="small muted">Aucun extracteur que tu connais ne sait récolter ça. Le Carnet te dira peut-être lequel chercher.</p>';
+      } else h += '<p class="small muted">Tu ne connais encore aucun extracteur pour ce gisement. Il se trouve à l’Atelier, comme toute recette.</p>';
       if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans le Domaine, ou garde le doigt dessus.</p>';
       h += '<div class="acts">' + (e ? '<button class="btn" data-m="toggle">' + (e.on ? "Pause" : "Reprendre") + '</button><button class="btn ghost" data-m="clear">Tout retirer</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div>';
       return h;
@@ -233,13 +235,13 @@
       if (r.placed || r.queued) {
         A.click(); vibe(8);
         if (at) floater((r.placed ? "+" + r.placed + " " : "") + (r.queued ? "✋ " + r.queued : ""), at.x, at.y - 14, "var(--good)");
-        if (r.queued && !r.placed) toast("✋ Tes mains fabriquent " + plural(r.queued, esc(shortName(t, 1))) + " : " + (r.queued > 1 ? "elles seront posées" : "elle sera posée") + " ici une fois finie" + (r.queued > 1 ? "s" : "") + ".", { key: "xq" });
+        if (r.queued) toast("✋ Tes mains fabriquent " + esc(many(t, r.queued)) + ", pour ce gisement.", { key: "xq" });
         return;
       }
       A.fail(0);
       const miss = r.missing ? Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n.toLowerCase())).join(", ") : "";
       toast(r.why === "full" ? "Tes mains sont déjà bien occupées : attends qu’une fabrication se termine." :
-        r.why === "noext" ? "Tu ne connais encore aucun extracteur pour ça." :
+        r.why === "noext" ? "Tu ne connais encore aucun extracteur pour ce gisement." :
           "Pas de quoi fabriquer " + esc(I[t].n.toLowerCase()) + (miss ? " : il manque " + miss : "") + ".", { key: "xq" });
     }
     function listPicker(title, sub, ids, cb) {
@@ -263,7 +265,7 @@
     function newChain(m) {
       listPicker("Que doit-elle fabriquer ?", "Les recettes que tu connais et qui se répètent. La machine se sert dans la Réserve et y range ce qu’elle fait.", recipes(), (id) => {
         const r = E.domMachAdd(id, m);
-        if (!r.ok) { A.fail(0); toast("Aucune machine libre.", { key: "mq" }); return; }
+        if (!r.ok) { A.fail(0); toast("Aucune machine au repos.", { key: "mq" }); return; }
         A.craft ? A.craft("usiner") : A.click();
         render(true);
       });
@@ -299,7 +301,7 @@
         '<span class="u-arrow">→</span><span class="u-in">' + icon(e.r, "sm") + "<i>" + fmt(it.r[2]) + "</i></span></div>";
       h += '<div class="u-row"><span class="tiny muted">Machines</span><button class="mini" data-m="n" data-v="-1"' + (e.n > 1 ? "" : " disabled") + ">−</button><b>" + e.n + '</b><button class="mini" data-m="n" data-v="1">+</button>' +
         (types.length > 1 ? '<select data-ms="type" aria-label="Type de machine">' + types.map((m) => '<option value="' + m + '"' + (m === e.m ? " selected" : "") + ">" + esc(I[m].n) + " (" + (ms[m].own - ms[m].used + (m === e.m ? e.n : 0)) + ")</option>").join("") + "</select>" : "") + "</div>" +
-        '<div class="u-row"><span class="tiny muted">S’arrêter quand le stock atteint</span><select data-ms="cap" aria-label="Stock visé">' + CAPS.map((v) => '<option value="' + v + '"' + (v === e.cap ? " selected" : "") + ">" + (v ? fmt(v) : "jamais") + "</option>").join("") +
+        '<div class="u-row"><span class="tiny muted">S’arrêter quand la Réserve en a</span><select data-ms="cap" aria-label="S’arrêter à">' + CAPS.map((v) => '<option value="' + v + '"' + (v === e.cap ? " selected" : "") + ">" + (v ? fmt(v) : "jamais") + "</option>").join("") +
         (CAPS.includes(e.cap) ? "" : '<option value="' + e.cap + '" selected>' + fmt(e.cap) + "</option>") + "</select></div>";
       h += '<div class="acts"><button class="btn" data-m="on">' + (e.on ? "Pause" : "Reprendre") + '</button><button class="btn ghost" data-m="rm">Retirer</button><button class="btn pri" data-m="close">Fermer</button></div>';
       return h;
@@ -312,7 +314,7 @@
       if (r.added || r.queued) {
         A.click(); vibe(8);
         if (at) floater(r.added ? "+1" : "✋", at.x, at.y - 14, "var(--good)");
-        if (r.queued) toast("✋ Tes mains fabriquent " + esc(I[e.m].n.toLowerCase()) + " : elle rejoindra la chaîne une fois finie.", { key: "mq" });
+        if (r.queued) toast("✋ Tes mains fabriquent " + esc(many(e.m, 1)) + ", qui rejoindra les autres.", { key: "mq" });
       } else feedback(r, e.m);
       render(true);
     }
@@ -371,7 +373,7 @@
       if (t.closest("[data-harv]")) return true; // géré à l’appui
       if ((b = t.closest("[data-xadd]"))) {
         const key = b.dataset.xadd, i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
-        const ch = E.extChoice(res);
+        const ch = E.extChoice(res, z);
         if (!ch) return true;
         const r = E.domExtAdd(z, res, Number(b.dataset.n) || 1);
         const rc = b.getBoundingClientRect();
@@ -427,11 +429,11 @@
       render(true);
       setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30);
     }
-    /* un extracteur ou une machine vient d’être fabriqué ailleurs (la Roue) : on le pose */
+    /* un extracteur vient d’être fabriqué ailleurs (Atelier, Carnet) : on le pose */
     function placeExt(t) {
       const r = E.domAutoExt(t);
-      if (r) { toast(esc(I[t].n) + " posée sur " + esc(I[r.res].n.toLowerCase()) + " (" + esc(E.ZONES[r.z].n) + ").", { key: "xq" }); focusZone(r.z); }
-      else toast(esc(I[t].n) + " : touche +1 sur le gisement de ton choix pour la poser.", { key: "xq" });
+      if (r) { toast(esc(I[t].n) + " au travail : " + esc(I[r.res].n.toLowerCase()) + ", " + esc(E.ZONES[r.z].n) + ".", { key: "xq" }); focusZone(r.z); }
+      else toast(esc(I[t].n) + " : touche « + " + esc(nm(t, 1)) + " » sur un gisement " + esc(deZone(I[t].z)) + ".", { key: "xq" });
     }
     function placeMach(m) {
       const ex = S().dom.mach.find((e) => !e.r && e.m === m);
@@ -439,12 +441,12 @@
       newChain(m);
     }
 
-    /* « une machine pour ça » depuis une recette : une chaîne de plus, si une machine est libre */
+    /* « une machine pour ça » depuis une recette, si une machine est au repos */
     function chainFor(r) {
       const x = E.domMachAdd(r);
-      if (x.ok) { toast("Nouvelle chaîne : " + esc(I[x.e.m].n.toLowerCase()) + " → " + esc(I[r].n.toLowerCase()) + ".", { key: "mq" }); render(true); return; }
+      if (x.ok) { toast("Au travail : " + esc(many(x.e.m, 1)) + " → " + esc(I[r].n.toLowerCase()) + ".", { key: "mq" }); render(true); return; }
       A.fail(0);
-      toast(x.why === "nomach" ? "Il te faut une machine libre (un automate de bois, pour commencer)." : "Cette recette ne se confie pas à une machine.", { key: "mq" });
+      toast(x.why === "nomach" ? "Aucune machine au repos. La première à fabriquer : l’automate de bois." : "Cette recette ne se confie pas à une machine.", { key: "mq" });
     }
 
     return { view, live, sig, click, down, up, focusZone, placeExt, placeMach, chainFor, extSheet, machSheet };

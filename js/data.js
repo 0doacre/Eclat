@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.2.1";
+  D.VERSION = "5.3.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -31,7 +31,7 @@
     assembler: { n: "Assembler", ic: "✋", v: "assembler", d: "Joindre plusieurs éléments en un seul objet." },
     tresser: { n: "Tresser", ic: "🧶", v: "tresser", d: "Entrelacer ce qui est souple." },
     tailler: { n: "Tailler", ic: "🔪", v: "tailler", d: "Retirer la matière en trop. Fendre, découper, affûter." },
-    chauffer: { n: "Chauffer", ic: "🔥", v: "chauffer", d: "Cuire, fondre, réduire. La température dépend de ta meilleure station." },
+    chauffer: { n: "Chauffer", ic: "🔥", v: "chauffer", d: "Cuire, fondre, réduire. La température dépend de ton meilleur feu : feu de camp, four, fourneau…" },
     marteler: { n: "Marteler", ic: "🔨", v: "marteler", d: "Battre le métal sur une enclume." },
     allier: { n: "Allier", ic: "⚗️", v: "allier", d: "Fondre plusieurs métaux ensemble dans un creuset." },
     tremper: { n: "Tremper", ic: "💧", v: "tremper", d: "Refroidir brutalement pour durcir." },
@@ -80,7 +80,7 @@
   I.epieu = { n: "Épieu durci", ic: "🗡️", a: 0, t: "tool", r: ["chauffer", { manche: 2 }, 1, { heat: 600 }],
     e: { zone: "plaine" }, d: "Une pointe passée au feu, dure comme l’os. De quoi oser la plaine.",
     h: "Un bâton pointu, durci par la flamme." };
-  I.cabane = { n: "Cabane de cueillette", ic: "🛖", a: 0, t: "ext", z: "lisiere", s: 1.2,
+  I.cabane = { n: "Cabane de cueillette", sn: "cabane", pl: "cabanes", ic: "🛖", a: 0, t: "ext", z: "lisiere", s: 1.2,
     r: ["assembler", { manche: 5, corde: 4, fibre: 15 }, 1], p: { bois: 0.4, fibre: 0.4, caillou: 0.2 },
     d: "Un abri où s’entasse ce que donne la lisière. Le soir, des Lucioles tournent autour.",
     h: "Des bâtons, des liens, un toit d’herbes." };
@@ -111,7 +111,7 @@
   I.pic_os = { n: "Pic en os", ic: "⛏️", a: 1, t: "tool", r: ["assembler", { manche: 1, os: 10, laniere: 4 }, 1],
     e: { tap: { caillou: 2 } }, d: "Une pointe d’os emmanchée. La pierre cède plus vite.",
     h: "Un os pointu au bout d’un manche, tenu serré." };
-  I.collets = { n: "Collets", ic: "🪤", a: 1, t: "ext", z: "plaine", s: 1.2,
+  I.collets = { n: "Collets", sn: "collets", pl: "collets", ic: "🪤", a: 1, t: "ext", z: "plaine", s: 1.2,
     r: ["assembler", { corde: 6, manche: 4, os: 8 }, 1], p: { os: 0.3, cuir: 0.25 },
     d: "Des pièges discrets. Quand tu repasses, il y a souvent quelque chose dedans.",
     h: "Des boucles de corde, des piquets, un appât." };
@@ -134,7 +134,7 @@
     h: "La pierre noire de la rivière cache un bord qui coupe." };
   I.engrenage_bois = { n: "Rouage de bois", sym: "⚙", col: "#9a6b3c", a: 2, t: "comp", r: ["tailler", { manche: 2, eclat: 1 }, 2],
     d: "Une petite roue dentée, taillée dans un bâton.", h: "Un bâton, taillé en roue dentée par une lame de pierre." };
-  I.automate_bois = { n: "Automate de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
+  I.automate_bois = { n: "Automate de bois", sn: "automate de bois", pl: "automates de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
     d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Dans le Domaine, confie-lui une recette.",
     h: "Des rouages de bois, des cordes, et un lourd contrepoids." };
   I.hache_pierre = { n: "Hache de pierre", ic: "🪓", a: 2, t: "tool", r: ["assembler", { manche: 2, eclat: 4, laniere: 4 }, 1],
@@ -151,11 +151,11 @@
   I.four = { n: "Four en argile", ic: "🏺", a: 2, t: "stat", r: ["assembler", { brique: 30, argile: 20, charbon: 10 }, 1],
     e: { st: [{ g: "chauffer", heat: 1100 }] }, d: "Une chambre de briques qui retient la chaleur.",
     h: "Des briques, de l’argile pour les joindre, et un combustible plus chaud que le bois." };
-  I.nasse = { n: "Nasses et claies", ic: "🪣", a: 2, t: "ext", z: "riviere", s: 1.2,
+  I.nasse = { n: "Nasses et claies", sn: "nasses", pl: "nasses", ic: "🪣", a: 2, t: "ext", z: "riviere", s: 1.2,
     r: ["assembler", { manche: 8, corde: 6, brique: 4 }, 1], p: { argile: 0.3, silex: 0.2, sable: 0.3 },
     d: "Des barrages de branches qui retiennent ce que la rivière charrie.",
     h: "Des bâtons et des liens plantés dans le courant, lestés de terre cuite." };
-  I.hutte = { n: "Hutte de bûcheron", ic: "🏚️", a: 2, t: "ext", z: "lisiere", s: 1.2,
+  I.hutte = { n: "Hutte de bûcheron", sn: "hutte", pl: "huttes", ic: "🏚️", a: 2, t: "ext", z: "lisiere", s: 1.2,
     r: ["assembler", { manche: 15, eclat: 6, corde: 10 }, 1], p: { bois: 1.2, fibre: 0.8, caillou: 0.6 },
     d: "Un abri solide, des lames de pierre à portée de main.",
     h: "Des bâtons, des lames de pierre, beaucoup de corde." };
@@ -184,11 +184,11 @@
   I.creuset = { n: "Creuset", ic: "⚗️", a: 3, t: "stat", r: ["chauffer", { argile: 20, os: 15 }, 1, { heat: 1100 }],
     e: { st: [{ g: "allier" }] }, d: "Un pot réfractaire où les métaux fondent ensemble.",
     h: "De l’argile mêlée de cendre d’os, cuite à cœur." };
-  I.puits = { n: "Puits de mine", ic: "🕳️", a: 3, t: "ext", z: "collines", s: 1.2,
+  I.puits = { n: "Puits de mine", sn: "puits", pl: "puits", ic: "🕳️", a: 3, t: "ext", z: "collines", s: 1.2,
     r: ["assembler", { manche: 20, corde: 12, plaque_cuivre: 6 }, 1], p: { malachite: 0.4, cassiterite: 0.2 },
     d: "Un trou étayé, une poulie, des seaux cerclés de métal.",
     h: "Des étais de bois, une poulie de corde, des seaux de métal rouge." };
-  I.charbonniere = { n: "Meule de charbonnier", ic: "🌫️", a: 3, t: "ext", z: "lisiere", s: 1.2,
+  I.charbonniere = { n: "Meule de charbonnier", sn: "meule", pl: "meules", ic: "🌫️", a: 3, t: "ext", z: "lisiere", s: 1.2,
     r: ["assembler", { bois: 120, argile: 30, manche: 10 }, 1], p: { charbon: 0.3 },
     d: "Une butte de terre qui fume pendant des jours. Dessous, le bois devient charbon.",
     h: "Du bois empilé, recouvert de terre, qui couve sans flamme." };
@@ -212,7 +212,7 @@
     d: "Une roue qui en fait tourner une autre.", h: "Une feuille dorée, découpée en roue dentée." };
   I.ressort = { n: "Ressort de bronze", sym: "⌇", col: "#c8963e", a: 4, t: "comp", r: ["marteler", { lingot_bronze: 1, fil_cuivre: 2 }, 2],
     d: "Il veut toujours revenir à sa forme.", h: "Le métal doré battu autour d’un fil rouge, jusqu’à ce qu’il veuille revenir." };
-  I.automate_bronze = { n: "Automate de bronze", ic: "🦿", a: 4, t: "mach", s: 1.25, spd: 15, r: ["assembler", { engrenage: 15, ressort: 8, plaque_bronze: 10 }, 1],
+  I.automate_bronze = { n: "Automate de bronze", sn: "automate de bronze", pl: "automates de bronze", ic: "🦿", a: 4, t: "mach", s: 1.25, spd: 15, r: ["assembler", { engrenage: 15, ressort: 8, plaque_bronze: 10 }, 1],
     d: "Engrenages, ressorts, corps de bronze. Il ne se fatigue pas (15 fabrications par minute).",
     h: "Des roues dentées dorées, des ressorts, un corps de métal doré." };
   I.hache_bronze = { n: "Hache de bronze", ic: "🪓", a: 4, t: "tool", r: ["assembler", { manche: 4, plaque_bronze: 10, laniere: 9 }, 1],
@@ -241,7 +241,7 @@
   I.brouette = { n: "Brouettes", ic: "🛒", a: 4, t: "upg", r: ["assembler", { roue: 3, manche: 15, plaque_bronze: 6 }, 1],
     e: { auto: { lisiere: 1.25, riviere: 1.25, collines: 1.25 } }, d: "Tes cueilleurs transportent deux fois plus en un seul voyage.",
     h: "Une roue, deux bras de bois, une caisse de métal doré." };
-  I.tamis = { n: "Tamis du désert", ic: "🕸️", a: 4, t: "ext", z: "desert", s: 1.22,
+  I.tamis = { n: "Tamis du désert", sn: "tamis", pl: "tamis", ic: "🕸️", a: 4, t: "ext", z: "desert", s: 1.22,
     r: ["assembler", { manche: 30, plaque_bronze: 9, corde: 20 }, 1], p: { quartz: 0.25, sable: 0.5 },
     d: "Un grand cadre qui trie le sable des cristaux.", h: "Un cadre de bois, une grille de métal doré, des cordes." };
   I.anticythere = { n: "Mécanisme d’Anticythère", ic: "🕰️", a: 4, t: "curio", sec: true,
@@ -266,13 +266,13 @@
   I.outils_fer = { n: "Outils de fer", ic: "🧰", a: 5, t: "tool", r: ["assembler", { lingot_fer: 25, manche: 15, clous: 65 }, 1],
     e: { tap: { collines: 2, mine: 2, riviere: 2 } }, d: "Marteau, hachette, burin, pelle.",
     h: "Du fer, des manches, et de quoi tout fixer." };
-  I.galerie = { n: "Galerie étayée", ic: "🚧", a: 5, t: "ext", z: "mine", s: 1.22,
+  I.galerie = { n: "Galerie étayée", sn: "galerie", pl: "galeries", ic: "🚧", a: 5, t: "ext", z: "mine", s: 1.22,
     r: ["assembler", { manche: 50, clous: 65, plaque_fer: 10 }, 1], p: { fer_min: 0.4, charbon: 0.5 },
     d: "Des boisages cloués qui s’enfoncent dans la roche.", h: "Des poutres, des clous, des tôles de fer." };
   I.palan = { n: "Palan à chaîne", ic: "⛓️", a: 5, t: "upg", r: ["assembler", { chainon: 10, roue: 4, manche: 20 }, 1],
     e: { auto: { mine: 1.25, collines: 1.25 } }, d: "Les charges lourdes remontent toutes seules des galeries.",
     h: "Une chaîne de fer, des poulies, une potence de bois." };
-  I.enclos = { n: "Enclos d’élevage", ic: "🐐", a: 5, t: "ext", z: "plaine", s: 1.22,
+  I.enclos = { n: "Enclos d’élevage", sn: "enclos", pl: "enclos", ic: "🐐", a: 5, t: "ext", z: "plaine", s: 1.22,
     r: ["assembler", { clous: 95, bois: 320, corde: 50 }, 1], p: { os: 1.2, cuir: 1 },
     d: "Plus besoin de chasser.", h: "Une palissade de bois clouée, des cordes pour les bêtes." };
   I.verre = { n: "Verre", sym: "◇", col: "#7fc9da", a: 5, t: "comp", r: ["chauffer", { sable: 4 }, 1, { heat: 1300 }],
@@ -319,19 +319,19 @@
     d: "Un ventre de fer. L’eau y bout sous pression.", h: "Des tôles battues et rivetées en un ventre étanche." };
   I.moteur_vapeur = { n: "Moteur à vapeur", ic: "🚂", a: 6, t: "comp", r: ["assembler", { chaudiere: 1, piston: 2, engrenage_acier: 4 }, 1],
     d: "La première machine qui travaille sans toi.", h: "Un ventre de fer bouillant, des cylindres qui poussent, des roues dentées." };
-  I.presse_vapeur = { n: "Presse à vapeur", ic: "📠", a: 6, t: "mach", s: 1.25, spd: 40, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
+  I.presse_vapeur = { n: "Presse à vapeur", sn: "presse", pl: "presses", ic: "📠", a: 6, t: "mach", s: 1.25, spd: 40, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
     d: "Une machine-outil qui siffle et cogne toute la journée (40 fabrications par minute).",
     h: "Un moteur à vapeur, des roulements, un bâti de tôle." };
   I.pompe = { n: "Pompe d’exhaure", ic: "⛽", a: 6, t: "upg", r: ["assembler", { moteur_vapeur: 4, plaque_fer: 55 }, 1],
     e: { auto: { mine: 1.5, collines: 1.5 } }, d: "Les galeries inondées se vident. On creuse plus profond.",
     h: "Un moteur qui avale l’eau des galeries, et des tôles pour la canaliser." };
-  I.scierie = { n: "Scierie à vapeur", ic: "🪚", a: 6, t: "ext", z: "lisiere", s: 1.25,
+  I.scierie = { n: "Scierie à vapeur", sn: "scierie", pl: "scieries", ic: "🪚", a: 6, t: "ext", z: "lisiere", s: 1.25,
     r: ["assembler", { moteur_vapeur: 2, lame: 7, bois: 360 }, 1], p: { bois: 3, fibre: 2, caillou: 2 },
     d: "La forêt recule en hurlant.", h: "Un moteur, des lames, une charpente." };
-  I.drague = { n: "Drague à vapeur", ic: "⛴️", a: 6, t: "ext", z: "riviere", s: 1.25,
+  I.drague = { n: "Drague à vapeur", sn: "drague", pl: "dragues", ic: "⛴️", a: 6, t: "ext", z: "riviere", s: 1.25,
     r: ["assembler", { moteur_vapeur: 2, plaque_fer: 20, clous: 110 }, 1], p: { argile: 1.2, silex: 0.8, sable: 1.2 },
     d: "Elle racle le lit de la rivière.", h: "Un moteur sur une coque de tôles rivetées." };
-  I.treuil = { n: "Treuil à vapeur", ic: "🪝", a: 6, t: "ext", z: "collines", s: 1.25,
+  I.treuil = { n: "Treuil à vapeur", sn: "treuil", pl: "treuils", ic: "🪝", a: 6, t: "ext", z: "collines", s: 1.25,
     r: ["assembler", { moteur_vapeur: 2, corde: 70, lingot_acier: 20 }, 1], p: { malachite: 1.2, cassiterite: 0.6 },
     d: "Les wagonnets remontent tout seuls.", h: "Un moteur, beaucoup de corde, une poulie d’acier." };
   I.locomotive = { n: "Chemin de fer", ic: "🛤️", a: 6, t: "upg", r: ["assembler", { moteur_vapeur: 7, roue: 35, plaque_fer: 110 }, 1],
@@ -372,10 +372,10 @@
     h: "Des briques qui ne craignent rien, du métal rouge très pur, et beaucoup d’énergie stockée." };
   I.reseau = { n: "Réseau électrique", ic: "🗼", a: 7, t: "upg", r: ["assembler", { moteur_elec: 20, fil_cuivre: 600, cuivre_pur: 100 }, 1],
     e: { auto: { "*": 1.5 } }, d: "Des pylônes relient tous tes sites.", h: "Des moteurs, des kilomètres de fil, du métal rouge très pur." };
-  I.excavatrice = { n: "Excavatrice", ic: "🚜", a: 7, t: "ext", z: "desert", s: 1.25,
+  I.excavatrice = { n: "Pelleteuse électrique", sn: "pelleteuse", pl: "pelleteuses", ic: "🚜", a: 7, t: "ext", z: "desert", s: 1.25,
     r: ["assembler", { moteur_elec: 4, plaque_fer: 40, roue: 10 }, 1], p: { quartz: 1, sable: 2 },
     d: "Elle avale les dunes.", h: "Des moteurs silencieux sur des roues, une benne de tôle." };
-  I.foreuse_elec = { n: "Foreuse électrique", ic: "🔧", a: 7, t: "ext", z: "mine", s: 1.25,
+  I.foreuse_elec = { n: "Foreuse électrique", sn: "foreuse", pl: "foreuses", ic: "🔧", a: 7, t: "ext", z: "mine", s: 1.25,
     r: ["assembler", { moteur_elec: 4, acier_trempe: 15, plaque_fer: 30 }, 1], p: { fer_min: 1.5, charbon: 1.5 },
     d: "Elle perce la roche en chantant.", h: "Un moteur silencieux, une mèche d’acier durci, un bâti de tôle." };
 
@@ -404,13 +404,13 @@
     h: "Des cerveaux de silicium, de l’énergie, un écran incassable." };
   I.robots = { n: "Robots ouvriers", ic: "🤖", a: 8, t: "upg", r: ["assembler", { processeur: 45, moteur_elec: 75, acier_trempe: 180 }, 1],
     e: { auto: { "*": 1.5 } }, d: "Ils ne dorment jamais.", h: "Des cerveaux, des muscles électriques, un squelette d’acier." };
-  I.chaine = { n: "Chaîne d’assemblage", ic: "🏗️", a: 8, t: "mach", s: 1.3, spd: 120,
+  I.chaine = { n: "Ligne d’assemblage", sn: "ligne d’assemblage", pl: "lignes d’assemblage", ic: "🏗️", a: 8, t: "mach", s: 1.3, spd: 120,
     r: ["assembler", { processeur: 10, moteur_elec: 20, lingot_acier: 150 }, 1],
     d: "Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium. Elle fabrique 120 fois par minute.",
     h: "Des cerveaux, des moteurs, des tapis d’acier." };
   I.foreuse = { n: "Sonde pétrolière", ic: "🌪️", a: 8, t: "tool", r: ["assembler", { moteur_elec: 15, acier_trempe: 75, engrenage_acier: 90 }, 1],
     e: { zone: "gisement" }, d: "Une longue tige d’acier qui perce jusqu’à l’huile noire. Rien à voir avec la foreuse des mines : celle-ci descend bien plus profond.", h: "Des moteurs, une mèche d’acier durci, des engrenages d’acier." };
-  I.derrick = { n: "Derrick", ic: "🛢️", a: 8, t: "ext", z: "gisement", s: 1.25,
+  I.derrick = { n: "Derrick", sn: "derrick", pl: "derricks", ic: "🛢️", a: 8, t: "ext", z: "gisement", s: 1.25,
     r: ["assembler", { moteur_elec: 6, lingot_acier: 60, clous: 240 }, 1], p: { petrole: 1 },
     d: "Il hoche la tête et l’huile monte.", h: "Un moteur, une tour d’acier clouée." };
   I.radiotelescope = { n: "Radiotélescope", ic: "📡", a: 8, t: "tool", r: ["assembler", { processeur: 15, plaque_fer: 450, bobine: 90 }, 1],
@@ -452,7 +452,7 @@
     h: "Des aimants terriblement puissants, des moteurs, des tonnes de métal rouge très pur." };
   I.outillage = { n: "Outillage électrique", ic: "🔧", a: 9, t: "tool", r: ["assembler", { titane: 60, plastique: 120, moteur_elec: 15 }, 1],
     e: { tap: { montagnes: 3, gisement: 3, desert: 2 } }, d: "Perceuse, tronçonneuse, marteau-piqueur.", h: "Du titane, des poignées de plastique, un moteur." };
-  I.carriere = { n: "Carrière à ciel ouvert", ic: "🏔️", a: 9, t: "ext", z: "montagnes", s: 1.25,
+  I.carriere = { n: "Carrière à ciel ouvert", sn: "carrière", pl: "carrières", ic: "🏔️", a: 9, t: "ext", z: "montagnes", s: 1.25,
     r: ["assembler", { dynamite: 80, moteur_elec: 10, acier_trempe: 60 }, 1], p: { bauxite: 1, ilmenite: 0.8, terres_rares: 0.3 },
     d: "On ne creuse plus : on fait sauter.", h: "Des explosifs, des moteurs, des godets d’acier." };
   I.feu_artifice = { n: "Feu d’artifice", ic: "🎆", a: 9, t: "curio", sec: true, r: ["chauffer", { dynamite: 1, plaque_cuivre: 1 }, 1, { heat: 600 }],
@@ -485,10 +485,10 @@
     e: { zone: "orbite" }, d: "Tu t’assieds tout en haut, au-dessus de tonnes de carburant.", h: "Des moteurs-fusées, une coque de composite, des boucliers." };
   I.drones = { n: "Essaim de drones", ic: "🐝", a: 10, t: "upg", r: ["assembler", { composite: 200, processeur: 150, moteur_elec: 200 }, 1],
     e: { auto: { "*": 1.5 } }, d: "Des milliers de petites ailes au travail.", h: "Des coques de composite, des cerveaux, des moteurs." };
-  I.plateforme = { n: "Plateforme pétrolière", ic: "🛳️", a: 10, t: "ext", z: "gisement", s: 1.25,
+  I.plateforme = { n: "Plateforme pétrolière", sn: "plateforme", pl: "plateformes", ic: "🛳️", a: 10, t: "ext", z: "gisement", s: 1.25,
     r: ["assembler", { composite: 50, moteur_elec: 40, acier_trempe: 150 }, 1], p: { petrole: 3 },
     d: "Une ville flottante qui pompe l’huile.", h: "Une coque de composite, des moteurs, une structure d’acier durci." };
-  I.excavateur = { n: "Excavateur géant", ic: "🦣", a: 10, t: "ext", z: "montagnes", s: 1.25,
+  I.excavateur = { n: "Excavateur géant", sn: "excavateur", pl: "excavateurs", ic: "🦣", a: 10, t: "ext", z: "montagnes", s: 1.25,
     r: ["assembler", { titane: 120, moteur_elec: 50, dynamite: 250 }, 1], p: { bauxite: 3, ilmenite: 2, terres_rares: 0.8 },
     d: "Un monstre de titane qui mange les montagnes.", h: "Du titane, des moteurs, beaucoup d’explosifs." };
 
@@ -496,14 +496,14 @@
   I.debris = { b: 0.25, n: "Débris orbitaux", sym: "⁂", col: "#7a7f8a", a: 11, t: "res", d: "Des satellites morts, des panneaux, des boulons, qui tournent là depuis des milliers d’années." };
   I.helium3 = { b: 0.1, n: "Hélium-3", sym: "³He", col: "#7fd9e6", a: 11, t: "res", d: "Rare sur Terre, abondant dans la poussière lunaire." };
   I.regolithe = { b: 0.5, n: "Régolithe", sym: "∷", col: "#9a9a9a", a: 11, t: "res", d: "La poussière grise de la Lune." };
-  I.station_orbitale = { n: "Station orbitale", ic: "🛰️", a: 11, t: "ext", z: "orbite", s: 1.25,
+  I.station_orbitale = { n: "Filet orbital", sn: "filet", pl: "filets", ic: "🛰️", a: 11, t: "ext", z: "orbite", s: 1.25,
     r: ["assembler", { composite: 280, supra: 45, cellule: 150 }, 1], p: { debris: 0.5 },
     d: "Un filet qui ramasse les restes des Anciens.", h: "Une coque de composite, des aimants parfaits, des panneaux qui boivent la lumière." };
   I.alliage_ancien = { n: "Alliage ancien", sym: "Ω", col: "#a99cf0", a: 11, t: "comp", r: ["usiner", { debris: 5 }, 1],
     d: "Un métal que tu ne sais pas fabriquer. Les Anciens, si.", h: "Récupère et usine ce que les Anciens ont laissé en orbite." };
   I.alunisseur = { n: "Alunisseur", ic: "🌙", a: 11, t: "tool", r: ["assembler", { moteur_fusee: 45, alliage_ancien: 200, bouclier_th: 90 }, 1],
     e: { zone: "lune" }, d: "Un petit pas pour un Semeur.", h: "Des moteurs-fusées, du métal des Anciens, des boucliers." };
-  I.base_lunaire = { n: "Base lunaire", ic: "🏕️", a: 11, t: "ext", z: "lune", s: 1.25,
+  I.base_lunaire = { n: "Base lunaire", sn: "base", pl: "bases", ic: "🏕️", a: 11, t: "ext", z: "lune", s: 1.25,
     r: ["assembler", { alliage_ancien: 200, supra: 90, processeur: 150 }, 1], p: { helium3: 0.5, regolithe: 1.5 },
     d: "Des dômes sous la lumière de la Terre.", h: "Du métal des Anciens, des aimants parfaits, des cerveaux." };
   I.propulseur = { n: "Propulseur à fusion", sym: "⇶", col: "#ffb347", a: 11, t: "comp", r: ["assembler", { supra: 10, helium3: 30, titane: 30 }, 1],
@@ -513,9 +513,9 @@
   I.vaisseau = { n: "Vaisseau interplanétaire", ic: "🛸", a: 11, t: "tool", r: ["assembler", { propulseur: 45, composite: 960, alliage_ancien: 480 }, 1],
     e: { zone: "mercure" }, d: "De quoi aller jusqu’à Mercure.", h: "Des propulseurs à fusion, une coque immense, du métal des Anciens." };
   I.ia = { n: "Intelligence artificielle", ic: "🧠", a: 11, t: "upg", r: ["assembler", { processeur: 720, supra: 200, graphene: 280 }, 1],
-    e: { aspd: 3, intu: 5 }, d: "Tes chaînes d’assemblage vont trois fois plus vite. (+5 ✨/min.)",
+    e: { aspd: 3, intu: 5 }, d: "Toutes tes machines vont trois fois plus vite. (+5 ✨/min.)",
     h: "Des dizaines de cerveaux, des aimants parfaits, des feuilles d’atomes." };
-  I.assembleur = { n: "Assembleur moléculaire", ic: "🧬", a: 11, t: "mach", s: 1.3, spd: 600, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
+  I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 11, t: "mach", s: 1.3, spd: 600, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
     d: "Il assemble la matière atome par atome (600 fabrications par minute).",
     h: "Des cerveaux, des aimants parfaits, des circuits par dizaines." };
 
@@ -524,7 +524,7 @@
   I.forge_stellaire = { n: "Forge stellaire", ic: "🌟", a: 12, t: "stat", r: ["assembler", { propulseur: 45, graphene: 720, bouclier_th: 280 }, 1],
     e: { st: [{ g: "transmuter" }, { g: "chauffer", heat: 50000 }] }, d: "Chauffer y atteint 50 000 °C, et la matière se laisse transmuter.",
     h: "Des petites étoiles en bouteille, des feuilles d’atomes, des boucliers." };
-  I.replicateur = { n: "Réplicateur", ic: "🦾", a: 12, t: "ext", z: "mercure", s: 1.12,
+  I.replicateur = { n: "Réplicateur", sn: "réplicateur", pl: "réplicateurs", ic: "🦾", a: 12, t: "ext", z: "mercure", s: 1.12,
     r: ["assembler", { processeur: 150, alliage_ancien: 150, propulseur: 9 }, 1], p: { metal_mercure: 3 },
     d: "Une machine qui démonte une planète pour se construire elle-même.", h: "Des cerveaux, du métal des Anciens, des petites étoiles en bouteille." };
   I.metamateriau = { n: "Métamatériau", sym: "✶", col: "#d58cff", a: 12, t: "comp", r: ["stratifier", { graphene: 4, metal_mercure: 10 }, 1],
@@ -814,8 +814,8 @@
     ["corde", "Il te faudrait de quoi lier les choses entre elles."],
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Ce chêne immense t’attire. Lance une exploration depuis la Lisière : elle avance toute seule pendant que tu fais autre chose." },
     ["feu", "La nuit tombe vite. Fais du feu."],
-    ["cabane", "Tu ne peux pas tout ramasser toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi."],
-    { k: "ext", n: "Installer ta cabane", txt: "Dans le Domaine, touche +1 sur le bois ou les fibres de la Lisière. Ta cabane récoltera pour toi, même quand le jeu est fermé." },
+    ["cabane", "Tu ne peux pas tout récolter toi-même. Construis un abri où les choses s’entassent : il récoltera pour toi."],
+    { k: "ext", n: "Installer ta cabane", txt: "Dans le Domaine, touche « + cabane » sur le bois ou les fibres de la Lisière. Ta cabane récoltera pour toi, même quand le jeu est fermé." },
     ["epieu", "La plaine est pleine de bêtes. Il te faut une arme."],
     { k: "pass", z: "plaine", n: "Ouvrir le passage vers la Plaine", txt: "Ton épieu te donne le courage d’y aller. Reste à te frayer un chemin dans les hautes herbes : verse ce qu’il faut depuis la Réserve." },
     ["laniere", "Les bêtes de la plaine laissent leur peau derrière elles. Découpée en bandes, elle lie mieux que l’herbe."],
@@ -829,7 +829,7 @@
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer."],
     { k: "pass", z: "collines", n: "Ouvrir le passage vers les Collines", txt: "Les collines sont raides : il faudra y tailler des marches." },
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Il faudrait quelque chose pour les refaire à ta place."],
-    { k: "line", n: "Faire tourner ton automate", txt: "Dans le Domaine, touche « nouvelle chaîne » et choisis ce que fabrique ton automate. Il se sert dans la Réserve, tant qu’elle a ses matières." },
+    { k: "line", n: "Faire tourner ton automate", txt: "Dans le Domaine, touche « Mettre au travail » et choisis ce que fabrique ton automate. Il se sert dans la Réserve, tant qu’elle a ses matières." },
     ["four", "Le feu de camp ne chauffe plus assez."],
     ["lingot_cuivre", "La pierre verte des collines cache un métal."],
     ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur."],
@@ -865,7 +865,7 @@
     ["fusee", "Monte en orbite."],
     { k: "pass", z: "orbite", n: "Ouvrir le passage vers l’Orbite", txt: "Il faut une rampe de lancement, et de quoi repartir." },
     ["alunisseur", "Pose le pied sur la Lune."],
-    { k: "pass", z: "lune", n: "Ouvrir le passage vers la Lune", txt: "Pour rester sur la Lune, il faut une base." },
+    { k: "pass", z: "lune", n: "Ouvrir le passage vers la Lune", txt: "Pour rester sur la Lune, il faut de quoi s’y abriter." },
     ["reacteur_fusion", "Une étoile en bouteille."],
     ["vaisseau", "Cap sur Mercure."],
     { k: "pass", z: "mercure", n: "Ouvrir le passage vers Mercure", txt: "Si près du soleil, rien ne tient sans bouclier." },
@@ -886,7 +886,7 @@
     gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendra.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
     montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 7500, plastique: 1200, moteur_elec: 180 }, tr: 27 },
     orbite: { n: "La Rampe", t: "Il faut une rampe de lancement, et de quoi repartir.", cost: { aluminium: 4500, titane: 900, composite: 900 }, tr: 40 },
-    lune: { n: "La Base avancée", t: "Pour rester sur la Lune, il faut une base.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
+    lune: { n: "La Base avancée", t: "Pour rester sur la Lune, il faut de quoi s’y abriter.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
     mercure: { n: "Le Bouclier solaire", t: "Si près du soleil, rien ne tient sans bouclier.", cost: { regolithe: 18000, helium3: 4500, composite: 6000 }, tr: 90 }
   };
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
@@ -926,7 +926,7 @@
    * de pièce en plus (perk par palier). À la relève, il reste keep de l’expérience.
    * La courbe est celle des grands jeux du genre, multipliée par k. */
   D.SKILL = { max: 99, k: 1, speed: 0.01, perks: [10, 25, 50, 75, 99], perk: 0.04, keep: 0.1, xp: 1, tapXp: 1, harvest: 1.5 };
-  D.SKILL_RECOLTE = { n: "Récolte", ic: "🧺", d: "Ramasser à la main, sur les gisements." };
+  D.SKILL_RECOLTE = { n: "Récolte", ic: "🧺", d: "Récolter à la main, sur les gisements." };
 
   /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
    * l’Atelier), les mains des Semeurs précédents guident les siennes. */
@@ -946,10 +946,12 @@
   };
 
   D.CHANGES = [
-    "⟳ Une action qui tourne : ▶ sur un gisement le fait ramasser en continu, ⟳ refait une recette en boucle (pièces intermédiaires comprises) tant qu’il y a de quoi. Une seule à la fois, et elle continue jeu fermé.",
-    "✋ Une barre au-dessus des onglets montre ce qui tourne et ce que font tes mains. ■ l’arrête ; la toucher ouvre la file.",
-    "📈 Les gestes et la récolte ont un niveau (jusqu’à 99). Chaque pièce faite à la main et chaque récolte en rapportent. Un niveau rend le geste 1 % plus rapide ; aux niveaux 10, 25, 50, 75 et 99, une chance de pièce en plus. À la relève, il en reste un dixième.",
-    "Les niveaux se voient sur les gestes de l’Atelier, et en détail avec le bouton « Niveaux »."
+    "🔤 Les mêmes mots partout : on récolte, on fabrique, tout va dans la Réserve. L’aide (❓) a une page « Les mots du jeu ».",
+    "⛏️ Chaque extracteur ne travaille que dans sa terre : plus de nasses de la Rivière dans le Désert. Ceux qui étaient posés ailleurs sont rentrés chez eux, aucun n’est perdu.",
+    "🏷️ Les boutons disent ce qu’ils posent : « + cabane », « + meule »… au lieu de « +1 ». Les machines se mettent au travail avec « Mettre au travail ».",
+    "🔥 Quand une recette est bloquée, le jeu nomme ce qu’il faut : « il faut : Four en argile (1 100 °C) », plus jamais « il manque la station ».",
+    "⏱️ Tous les débits se lisent par minute. Les fiches disent à quoi sert chaque sorte d’objet. ✦ Traces et ✨ Intuition ont leur nom en haut de l’écran.",
+    "Trois noms changés pour éviter les doublons : Pelleteuse électrique (ex-Excavatrice), Filet orbital (ex-Station orbitale), Ligne d’assemblage (ex-Chaîne d’assemblage)."
   ];
 
 

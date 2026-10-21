@@ -235,6 +235,32 @@ test("gisements : récolte à la main, règles de pose", () => {
   run(E, 2);
   assert.strictEqual(E.machInfo("lisiere:bois").s, "off");
 });
+test("un extracteur ne travaille que sur sa terre ; une ancienne pose ailleurs rentre chez elle", () => {
+  const E = mk();
+  ["plaine", "riviere", "collines", "mine", "desert"].forEach((z) => (E.state.zones[z] = true));
+  E.add("nasse", 3); E.add("tamis", 1); E.add("cabane", 1); E.state.known.nasse = true;
+  assert.strictEqual(E.domExtSet("desert", "sable", "nasse", 1), null, "des nasses ne vont pas au désert");
+  assert.strictEqual(E.domExtSet("collines", "caillou", "cabane", 1), null, "une cabane reste à la Lisière");
+  assert.deepStrictEqual(E.extFor("sable", "desert").sort(), ["excavatrice", "tamis"]);
+  assert.strictEqual(E.extChoice("sable", "desert").t, "tamis");
+  // un Carnet hérité connaît la scierie, mais on ne peut payer qu’une cabane : le bouton propose la cabane
+  const G = mk();
+  G.state.known.cabane = G.state.known.hutte = G.state.known.scierie = true;
+  assert.strictEqual(G.extChoice("bois", "lisiere").t, "cabane", "rien de payable : le plus simple");
+  for (const i in D.ITEMS.cabane.r[1]) G.add(i, D.ITEMS.cabane.r[1][i] * 5);
+  assert.strictEqual(G.extChoice("bois", "lisiere").t, "cabane", "payable : la cabane, pas la scierie");
+  assert.strictEqual(E.domExtAdd("collines", "caillou", 1).why, "noext");
+  // une sauvegarde d’avant la 5.3 : trois nasses posées sur le sable du désert
+  const o = JSON.parse(E.serialize());
+  o.dom.ext["desert:sable"] = { z: "desert", res: "sable", u: { nasse: 3 }, on: true };
+  const F = mk();
+  F.load(JSON.stringify(o));
+  assert.ok(!F.domExt("desert", "sable"), "plus rien d’étranger au désert");
+  const back = F.deposits().filter((d) => d.z === "riviere").reduce((a, d) => a + (((F.domExt(d.z, d.res) || { u: {} }).u.nasse) || 0), 0);
+  assert.strictEqual(back, 3, "les trois nasses sont reposées à la Rivière");
+  assert.strictEqual(F.count("nasse"), 3, "aucune perdue");
+  assert.ok(!F.state.flags.reExt);
+});
 test("« +1 » : un extracteur libre est posé, sinon les mains le fabriquent puis le posent", () => {
   const E = mk();
   E.state.known.cabane = true;

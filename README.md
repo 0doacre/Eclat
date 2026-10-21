@@ -36,9 +36,9 @@ Voir [`docs/PROGRESSION.md`](docs/PROGRESSION.md) pour la conception complète.
 
 Le **Domaine** est l’écran d’accueil : une page qui défile, avec tout ce qui produit.
 
-- Chaque terre ouverte, la plus récente en premier, liste ses **gisements** (bois, pierre, cuivre, pétrole…). On touche l’icône d’une matière pour la ramasser, on garde le doigt dessus pour continuer. Les outils multiplient ce qu’on ramasse.
-- **+1** et **×10** posent des **extracteurs** sur un gisement (cabane, puits, scierie, derrick, réplicateur…). Ils récoltent seuls, même jeu fermé, et versent leur récolte dans la Réserve. S’il n’en reste plus de libre, les mains le fabriquent puis le posent. Toucher la ligne ouvre sa fiche : type d’extracteur, nombre, pause.
-- Les **machines** (automate de bois, automate de bronze, presse à vapeur, chaîne d’assemblage, assembleur moléculaire) travaillent en **chaînes** : une recette, un type de machine, un nombre. Elles se servent dans la Réserve et y rangent ce qu’elles font ; celles qui font un ingrédient tournent avant celles qui l’utilisent. Une chaîne peut s’arrêter à un stock visé.
+- Chaque terre ouverte, la plus récente en premier, liste ses **gisements** (bois, pierre, cuivre, pétrole…). On touche l’icône d’une matière pour la récolter, on garde le doigt dessus pour continuer. Les outils multiplient ce qu’on récolte.
+- Le bouton **« + cabane »** (« + meule », « + puits »…) pose un **extracteur** sur un gisement. Chaque extracteur ne travaille que dans sa terre : la cabane à la Lisière, les nasses à la Rivière. Ils récoltent seuls, même jeu fermé, et versent leur récolte dans la Réserve. S’il n’en reste plus à poser, les mains en fabriquent un puis le posent. Toucher la ligne ouvre sa fiche : sorte d’extracteur, nombre (+, +10), pause.
+- Les **machines** (automate de bois, automate de bronze, presse à vapeur, ligne d’assemblage, assembleur moléculaire) se mettent au travail sur une recette (« Mettre au travail »), par groupe d’une même sorte. Elles se servent dans la Réserve et y rangent ce qu’elles font ; celles qui font un ingrédient tournent avant celles qui l’utilisent. Un groupe peut s’arrêter quand la Réserve en a assez.
 - Le **passage** en cours et le **Grand Œuvre** en cours ont leur carte : on y verse, ou on « alimente » le Grand Œuvre pour qu’il se serve seul dans la Réserve, à un débit qui dépend de l’âge.
 - En bas, le tableau de production (ce qui entre et sort, par matière) et la phrase de l’âge.
 - Courroies, convoyeurs et intelligence artificielle accélèrent les machines ; brouettes, chemin de fer et compagnie, les extracteurs.
@@ -51,10 +51,14 @@ Une carte dessinée qui se lit de bas en haut, de la Lisière jusqu’aux étoil
 
 Le jeu est le carnet de terrain du Semeur. La mise en page ne change pas, mais le papier, l’encre, la police des titres et un ornement suivent l’époque : pigments (Bois, Os, Pierre), papyrus (Cuivre, Bronze), enluminure (Fer), registre (Acier, Électricité), cahier quadrillé (Silicium, Polymères, Composites), journal de bord (Spatial, Stellaire). La couleur de l’âge teinte l’accent. Les icônes viennent de game-icons.net, les polices sont embarquées (voir `docs/CREDITS.md`).
 
+### Les mots du jeu
+
+Un mot par idée, partout dans le jeu : voir `docs/LEXIQUE.md`. Les messages de blocage nomment toujours ce qu’il faut (« il faut : Four en argile (1 100 °C) ») et les débits se lisent par minute.
+
 ### Confort de jeu
 
-- **⚡ Fabrication en chaîne** : ×1, ×10 et Max fabriquent un objet *et tous ses sous-composants* (réseau électrique → moteurs → bobines → fils de cuivre), à partir du stock ; Max calcule combien on peut en faire ainsi (dix cabanes d’un coup, par exemple). Le détail 🌳 montre les étapes, ce qui est pris dans le stock et ce qui manque.
-- **⟳ L’action qui tourne** : ▶ sur un gisement ramasse en continu, ⟳ refait une recette en boucle (pièces intermédiaires comprises) tant qu’il y a de quoi. Une seule à la fois, même jeu fermé ; une barre au-dessus des onglets la montre.
+- **⚡ Fabriquer avec les pièces qui manquent** : Fabriquer, ×10 et Max fabriquent un objet *et toutes ses pièces* (réseau électrique → moteurs → bobines → fils de cuivre), à partir de la Réserve ; Max calcule combien on peut en faire ainsi (dix cabanes d’un coup, par exemple). Le détail 🌳 montre les étapes, ce qui est pris dans la Réserve et ce qui manque.
+- **⟳ L’action qui tourne** : ▶ sur un gisement récolte en continu, ⟳ refait une recette en boucle (pièces intermédiaires comprises) tant qu’il y a de quoi. Une seule à la fois, même jeu fermé ; une barre au-dessus des onglets la montre.
 - **📈 Niveaux des gestes** : chaque geste et la récolte montent jusqu’à 99 avec ce qu’on fait soi-même (pas les machines). 1 % plus rapide par niveau, une chance de pièce en plus aux paliers 10, 25, 50, 75 et 99. Un dixième de l’expérience survit à la relève.
 - **🎯 La prochaine action** : l’objectif dit une seule chose à faire. Il manque une matière : son icône est là, dans l’objectif, à toucher ou à maintenir. Tout est réuni : un bouton fabrique l’objet et ses pièces intermédiaires. La recette est inconnue : l’objectif envoie à l’Atelier. Son titre déplie le détail (énigme, étapes, passage).
 - **🎯 Suivi** : on suit une recette ; le haut du Domaine affiche ce qui manque, avec un temps estimé.

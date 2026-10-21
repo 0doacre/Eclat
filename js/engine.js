@@ -46,6 +46,8 @@
   const extKey = (z, res) => z + ":" + res;
   /* un extracteur posé met tout son effort sur la matière de son gisement */
   const extRate = (id, r) => { const p = D.ITEMS[id] && D.ITEMS[id].p; return p && p[r] ? p[r] * Object.keys(p).length : 0; };
+  /* un extracteur ne travaille que sur les gisements de sa propre terre */
+  const extOk = (id, z, r) => !!(D.ITEMS[id] && D.ITEMS[id].z === z && extRate(id, r) > 0);
   /* Où étaient ces gisements sur la grille de l’ancienne usine (sauvegardes v4 et
    * v5) : ne sert plus qu’à la migration, pour savoir ce qu’exploitait chaque case. */
   const OLD_PATCH = {
@@ -493,6 +495,16 @@
       return null;
     }
     E.blocker = blocker;
+    /* la station qui lèverait ce blocage (four plus chaud, enclume plus dure, station du geste) */
+    E.blockStation = function (id, b) {
+      b = b || blocker(id);
+      const g = item(id).r[0];
+      if (!b) return null;
+      if (b.why === "heat") return stationFor("chauffer", b.heat, 0);
+      if (b.why === "lvl") return stationFor(g, 0, b.lvl);
+      if (b.why === "geste" && !(D.GESTES[g] && D.GESTES[g].secret)) return stationFor(g, 0, 0);
+      return null;
+    };
 
     function missingFor(id, times) {
       const tot = totalCost(id, times), miss = {};
@@ -1376,7 +1388,8 @@
       D.ZONES.forEach((z) => { if (zoneOpen(z.id)) ZONE_DEPS[z.id].forEach((d) => out.push({ z: z.id, res: d.res, hand: d.hand, key: extKey(z.id, d.res) })); });
       return out;
     };
-    E.extFor = (r) => EXTS.filter((t) => extRate(t, r) > 0);
+    E.extOk = extOk;
+    E.extFor = (r, z) => EXTS.filter((t) => (z ? extOk(t, z, r) : extRate(t, r) > 0));
     E.extUnits = function () {
       const out = {};
       EXTS.forEach((t) => (out[t] = { own: Math.floor(count(t)), used: 0 }));
@@ -1396,18 +1409,22 @@
     }
     E.extOut = (e) => extOut(e, E.cache());
     E.domExt = (z, res) => S.dom.ext[extKey(z, res)] || null;
-    /* le type d’extracteur que pose un « +1 » : le plus productif parmi les libres,
-     * sinon le plus productif qu’on sait fabriquer */
-    E.extChoice = function (res) {
-      const types = E.extFor(res).sort((a, b) => extRate(b, res) - extRate(a, res));
+    /* le type d’extracteur que pose le bouton « + cabane » : le plus productif parmi
+     * ceux qui attendent d’être posés, sinon le plus productif qu’on peut fabriquer
+     * tout de suite, sinon le plus simple qu’on connaisse (un Carnet hérité d’une
+     * relève connaît des extracteurs bien trop chers pour le début) */
+    E.extChoice = function (res, z) {
+      const types = E.extFor(res, z).sort((a, b) => extRate(b, res) - extRate(a, res));
       const free = types.find((t) => freeExt(t) >= 1);
       if (free) return { t: free, free: freeExt(free) };
-      const known = types.find((t) => S.known[t]);
-      return known ? { t: known, free: 0 } : null;
+      const known = types.filter((t) => S.known[t]);
+      if (!known.length) return null;
+      const can = known.find((t) => E.plan(t, 1).ok);
+      return { t: can || known[known.length - 1], free: 0 };
     };
     /* pose jusqu’à n extracteurs libres du type t sur un gisement ; renvoie combien */
     function assignExt(z, res, t, n) {
-      if (!zoneOpen(z) || !(ZONE_DEPS[z] || []).some((d) => d.res === res) || !extRate(t, res)) return 0;
+      if (!zoneOpen(z) || !(ZONE_DEPS[z] || []).some((d) => d.res === res) || !extOk(t, z, res)) return 0;
       const k = Math.min(Math.floor(n), freeExt(t));
       if (!(k >= 1)) return 0;
       const key = extKey(z, res), e = S.dom.ext[key] || (S.dom.ext[key] = { z, res, u: {}, on: true });
@@ -1419,8 +1436,8 @@
      * mains, qui le poseront ici une fois fini */
     E.domExtAdd = function (z, res, n, t) {
       n = Math.max(1, Math.floor(n || 1));
-      const ch = t ? { t } : E.extChoice(res);
-      if (!ch) return { ok: false, why: "noext" };
+      const ch = t ? { t } : E.extChoice(res, z);
+      if (!ch || !extOk(ch.t, z, res)) return { ok: false, why: "noext" };
       t = ch.t;
       const placed = assignExt(z, res, t, n);
       if (placed >= n) return { ok: true, placed, queued: 0, t };
@@ -1430,7 +1447,7 @@
     };
     /* nombre exact d’extracteurs d’un type sur un gisement (0 les retire) */
     E.domExtSet = function (z, res, t, n) {
-      if (!zoneOpen(z) || !extRate(t, res) || !(ZONE_DEPS[z] || []).some((d) => d.res === res)) return null;
+      if (!zoneOpen(z) || !extOk(t, z, res) || !(ZONE_DEPS[z] || []).some((d) => d.res === res)) return null;
       const key = extKey(z, res);
       let e = S.dom.ext[key];
       const cur = (e && e.u[t]) || 0, v = Math.max(0, Math.min(Math.floor(n) || 0, cur + freeExt(t)));
@@ -1895,7 +1912,10 @@
         e.z = z; e.res = res; e.on = e.on !== false;
         for (const t in e.u) {
           const n = Math.max(0, Math.floor(e.u[t]) || 0);
-          if (!D.ITEMS[t] || D.ITEMS[t].t !== "ext" || !extRate(t, res) || !n) { if (n) aside("ext:" + k + ":" + t, n); delete e.u[t]; } else e.u[t] = n;
+          if (!D.ITEMS[t] || D.ITEMS[t].t !== "ext" || !extRate(t, res) || !n) { if (n) aside("ext:" + k + ":" + t, n); delete e.u[t]; }
+          // posé sur une autre terre que la sienne (permis avant la 5.3) : il rentre chez lui au chargement
+          else if (D.ITEMS[t].z !== z) { const m = (o.flags.reExt = o.flags.reExt || {}); m[t] = (m[t] || 0) + n; delete e.u[t]; }
+          else e.u[t] = n;
         }
         if (!Object.keys(e.u).length) delete d.ext[k];
       }
@@ -2018,6 +2038,10 @@
       forgetDom();
       recalc();
       if (S.flags.fab4 === "todo") placeOldExtractors();
+      if (S.flags.reExt) {
+        for (const t in S.flags.reExt) for (let i = 0; i < S.flags.reExt[t]; i++) if (!E.domAutoExt(t)) break;
+        delete S.flags.reExt;
+      }
       if (!S.flags.ages) checkAges(true); // une partie d’avant les âges accomplis
       E.emit("struct");
       return true;
