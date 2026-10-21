@@ -9,7 +9,7 @@
   function create(api) {
     const { E, D, A, U, esc, save } = api;
     const S = () => E.state;
-    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
+    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
     const GAP = 8000; // entre deux chapitres
 
     /* ------------------------------------------------------------ petits repères */
@@ -84,23 +84,15 @@
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "domaine"),
         steps: [
           { at: () => (document.querySelector("#actbar:not(.hidden)") ? "#actbar" : null),
-            text: "Ce que tu fabriques à la main s’affiche ici, au-dessus des onglets : une pièce après l’autre. Touche la barre pour voir la file ou annuler.", next: true }
-        ] },
-      { id: "boucle", n: "En boucle",
-        when: () => U.tab === "domaine" && S().stats.crafts >= 3 && !S().act && !!document.querySelector(".goal-card [data-loop]"),
-        steps: [
-          { tab: "domaine", at: ".goal-card [data-loop]", next: true,
-            text: "⟳ En boucle : tes mains refont cette recette tant qu’il y a de quoi, même jeu fermé. ▶ sur un gisement fait pareil pour la récolte. Une seule chose tourne à la fois." }
+            text: "Tes commandes s’affichent ici, au-dessus des onglets. Touche la barre pour voir les commandes en cours ou en annuler une.", next: true }
         ] },
       { id: "automate", n: "Ton automate",
-        when: () => (U.tab === "machines" || U.tab === "domaine") && E.MACHINES.some(has) && !S().dom.mach.length && !!(document.querySelector("[data-mstart]") || document.querySelector("[data-dmach]")),
+        when: () => (U.tab === "machines" || U.tab === "domaine" || U.tab === "carnet") && E.MACHINES.some(has) && !S().flags.lineDone,
         still: () => !S().flags.lineDone,
         steps: [
-          { tab: "domaine", at: "[data-dmach]", text: "Ton premier automate est prêt. Ouvre l’onglet Machines dans l’Atelier.",
-            done: () => U.tab === "machines" || S().dom.mach.some((e) => e.r) },
-          { tab: "machines", at: "[data-mstart]", text: "Ton automate refait un geste à ta place. Un automate de bois ne fabrique que des recettes à un ingrédient. Touche « Mettre au travail » et choisis ce qu’il fabrique.",
-            done: () => S().dom.mach.some((e) => e.r) },
-          { tab: "machines", text: "Il se sert dans la Réserve et y range ce qu’il fait. Sa carte montre tous ses réglages : pause, arrêt, et + pour ajouter une machine sur la même recette.", next: true }
+          { tab: "machines", go: "Ton premier automate est prêt. Ouvre l’onglet Machines dans l’Atelier.", at: '[data-tab2="machines"]',
+            text: "Ton automate aide tes commandes tout seul. Un automate de bois fait les recettes à un ingrédient, si tu les as déjà faites une fois à la main. Lance ×10 ou ×50 depuis le Carnet pour le voir travailler.",
+            next: true, done: () => !!S().flags.lineDone }
         ] },
       { id: "comptoir", n: "Le Comptoir",
         when: () => U.tab === "domaine" && E.zoneOpen(D.COMPTOIR.zone) && !Object.keys((S().comptoir && S().comptoir.sold) || {}).length && !!document.querySelector("#dcomptoir"),
@@ -313,8 +305,8 @@
       if (T.i === 0 && !s.go && s.tab && U.tab !== s.tab) { hide(); return; }
       let view;
       if (s.tab && U.tab !== s.tab && !s.modal) {
-        // le Carnet est une page de l’Atelier, le Cosmos une page du Journal
-        const par = { carnet: "atelier", cosmos: "journal" }[s.tab];
+        // le Carnet et les Machines sont des pages de l’Atelier, le Cosmos une page du Journal
+        const par = { carnet: "atelier", machines: "atelier", cosmos: "journal" }[s.tab];
         const sel = par && U.tab === par ? '[data-tab2="' + s.tab + '"]' : '#tabs [data-tab="' + (par || s.tab) + '"]';
         view = { target: resolve(sel), text: s.go || "Ouvre " + TABS[s.tab] + "." };
       } else {

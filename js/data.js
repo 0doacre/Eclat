@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "5.6.0";
+  D.VERSION = "5.7.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -829,7 +829,7 @@
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer."],
     { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les collines sont raides : il faudra y tailler des marches." },
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Il faudrait quelque chose pour les refaire à ta place."],
-    { k: "line", n: "Faire tourner ton automate", txt: "Dans le Domaine, touche « Mettre au travail » et choisis ce que fabrique ton automate. Il se sert dans la Réserve, tant qu’elle a ses matières." },
+    { k: "line", n: "Faire tourner ton automate", txt: "Lance une commande d’une recette à une matière déjà faite à la main (des manches, des cordes, des éclats…) : ton automate s’y met tout seul." },
     ["four", "Le feu de camp ne chauffe plus assez."],
     ["lingot_cuivre", "La pierre verte des collines cache un métal."],
     ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur."],
@@ -974,10 +974,17 @@
     part: 0.1         // fraction du coût de base de la recette pour réparer
   };
 
+  /* Les commandes : le joueur commande un objet et une quantité, ses machines libres s’y mettent */
+  D.COMMANDES = {
+    firstByHand: true,     // la première fois qu’on fabrique une recette, c’est à la main
+    sizes: [10, 50, 100, 1000]
+  };
+
   D.CHANGES = [
-    "✦ Premier parcours : une première renaissance obligatoire clôt le tutoriel du Semeur 7.",
-    "🛖 Ruines : les extracteurs et machines construits lors d’un cycle vous attendent au cycle suivant, à réparer pour presque rien.",
-    "📜 Scènes d’éveil : les Semeurs 8, 9 et 10 découvrent les traces laissées par leurs prédécesseurs."
+    "📦 Les commandes : ×10, ×50, ×100, ×1000 ou Max depuis le Carnet, même s’il manque des matières. Elles les prennent dans la Réserve à mesure qu’elles arrivent.",
+    "⚙️ Les machines ne sont plus fixées à une recette : dès qu’elles sont libres, elles aident tes commandes.",
+    "✋ Une recette se fait d’abord une fois à la main. Ensuite, les machines savent la faire.",
+    "⛏️ Tes extracteurs libres se posent seuls sur le gisement dont une commande a besoin."
   ];
 
 

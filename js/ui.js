@@ -34,6 +34,7 @@
     if (!(n > 0)) return "0";
     if (n < 10 && Math.abs(n - Math.round(n)) > 1e-6) return (Math.floor(n * 10) / 10).toFixed(1).replace(".", ",");
     if (n < 1000) return String(Math.floor(n + 1e-9));
+    if (n >= 1e24) return n.toExponential(1).replace(".", ",").replace("e+", "e"); // au-delà des unités
     let u = -1, v = n;
     while (v >= 1000 && u < UNITS.length - 1) { v /= 1000; u++; }
     const s = v < 10 ? (Math.floor(v * 100) / 100).toFixed(2) : v < 100 ? (Math.floor(v * 10) / 10).toFixed(1) : Math.floor(v).toFixed(0);
@@ -140,7 +141,7 @@
     stat: "Une station : elle reste à l’Atelier et ouvre un geste ou une chaleur.",
     ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même jeu fermé.",
     upg: "Une amélioration : elle agit dès que tu l’as, rien à poser.",
-    mach: "Une machine : dans le Domaine, elle refait une recette en boucle avec ce qu’il y a dans la Réserve.",
+    mach: "Une machine : elle aide automatiquement tes mains sur les commandes des recettes qu’elle sait faire.",
     curio: "Une curiosité : elle n’a pas d’usage pratique.", relic: "Une relique, trouvée en explorant."
   };
   const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
@@ -172,8 +173,6 @@
       out.push("Machine : " + fmtNum(it.spd * E.cache().aspd) + " fabrications/min");
       if (it.ing === 1) out.push("Recettes à 1 ingrédient");
       else if (it.ing) out.push("Recettes à " + it.ing + " ingrédients au plus");
-      if (it.prof === 1) out.push("Fabrique aussi les pièces qui manquent (1 niveau)");
-      else if (it.prof === 2) out.push("Fabrique aussi les pièces qui manquent (2 niveaux)");
     }
     if (e.intu) out.push("+" + e.intu + " ✨/min");
     if (e.exp) out.push("Explorations " + fmtMul(e.exp));
@@ -325,8 +324,6 @@
       // un passage à verser, une matière à voir, depuis une fiche
       const pb = ev.target.closest("[data-pour]");
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
-      const lb = ev.target.closest("[data-loop]");
-      if (lb && U.mcur && !fresh()) { closeModal(); startLoop(lb.dataset.loop); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { closeModal(); setTimeout(() => goto(gb.dataset.goto), 80); return; }
       const b = ev.target.closest("[data-m]");
@@ -506,12 +503,13 @@
     openModal({
       html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
-        (st.flags.news === "6" && (Object.keys(st.dom.ext).length || st.dom.mach.length) ? '<p class="small">Plus de tapis : tes extracteurs et tes machines sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils produisent autant qu’avant ; ce qui roulait sur les tapis est revenu dans ta Réserve.</p>' : "") +
+        (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles attendent au repos et aident tes commandes. Ce qu’elles avaient en main est revenu dans ta Réserve.</p>' : "") +
+        (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Plus de tapis : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils produisent autant qu’avant ; ce qui roulait sur les tapis est revenu dans ta Réserve.</p>' : "") +
         (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
       on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
-      onClose: () => { st.flags.news = null; st.flags.ver = D.VERSION; delete st.flags.fab3; delete st.flags.fab4; delete st.flags.v5proj; save(); }
+      onClose: () => { st.flags.news = null; st.flags.ver = D.VERSION; delete st.flags.fab3; delete st.flags.fab4; delete st.flags.v5proj; delete st.flags.mach57; save(); }
     });
   }
 
@@ -756,7 +754,7 @@
     if (t === "cosmos") return E.cache().sky;
     if (t === "journal" && E.cache().sky) return true;
     if (t === "carnet") return Object.keys(st.known).length > 0;
-    if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0);
+    if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
     if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0;
     return true;
   }
@@ -874,7 +872,8 @@
     A.setScene({ age: S().age, tab: U.tab, zone: z, night: !Scenes.isNightless(z) && Scenes.daypart(new Date().getHours()) === "night", machines: workingMachines() });
   }
   function workingMachines() {
-    return S().dom.mach.reduce((n, e) => n + (E.machInfo(e.id).s === "ok" ? e.n : 0), 0);
+    const ms = E.machines();
+    return E.MACHINES.reduce((n, m) => n + ms[m].used, 0);
   }
   const VOL0 = { music: 0.5, amb: 0.6, sfx: 0.8 };
   const volumes = () => Object.assign({}, VOL0, S().settings.vol);
@@ -927,8 +926,8 @@
       return d ? line('<button class="btn small pri" data-xadd="' + d.key + '" data-n="1">Poser ' + esc(I[E.extChoice(d.res, d.z).t].n.toLowerCase()) + " sur " + esc(I[d.res].n.toLowerCase()) + "</button>") : line('<span class="small">' + esc(ob.txt) + "</span>");
     }
     if (ob.k === "line") {
-      const free = E.MACHINES.some((m) => E.freeMach(m) >= 1);
-      return line(free ? '<button class="btn small pri" data-mnew>Confier une recette à ta machine</button>' : '<span class="small">' + esc(ob.txt) + "</span>");
+      const rec = st.known.manche && st.made.manche > 0 ? "manche" : Object.keys(st.known).find((k) => st.made[k] > 0 && E.automatable(k) && E.machCan("automate_bois", k));
+      return line(rec ? '<button class="btn small pri" data-cr="' + rec + '" data-n="10">Commander : ' + esc(I[rec].n) + ' ×10</button>' : '<span class="small">' + esc(ob.txt) + "</span>");
     }
     const id = g.step, it = I[id];
     if (!it) return "";
@@ -946,8 +945,7 @@
     const p = E.plan(id, 1);
     if (p.ok) {
       const parts = p.steps.filter((x) => x[0] !== id).map((x) => esc(I[x[0]].n.toLowerCase()));
-      return line('<button class="btn pri gmake" data-chain="' + id + '">Fabriquer : ' + esc(it.n) + (parts.length ? ' <span class="tiny">(avec ' + parts.join(", ") + ")</span>" : "") + "</button>" +
-        (E.isUnique(it) ? "" : '<button class="btn small" data-loop="' + id + '" title="En boucle, tant qu’il y a de quoi">⟳ En boucle</button>'));
+      return line('<button class="btn pri gmake" data-chain="' + id + '">Fabriquer : ' + esc(it.n) + (parts.length ? ' <span class="tiny">(avec ' + parts.join(", ") + ")</span>" : "") + "</button>");
     }
     // ce qui manque : d’abord ce qui se ramasse à la main, ici même
     const miss = Object.keys(p.missing);
@@ -1270,9 +1268,12 @@
   function craftBtns(id) {
     const it = I[id];
     if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Fabriquer</button>';
-    const loop = '<button class="btn small' + (S().act && S().act.id === id ? " on" : "") + '" data-loop="' + id + '" title="En boucle, tant qu’il y a de quoi">⟳ En boucle</button>';
-    if (E.isScaled(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Construire</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>' + loop;
-    return '<button class="btn small pri" data-cr="' + id + '" data-n="1">Fabriquer</button><button class="btn small" data-cr="' + id + '" data-n="10">×10</button><button class="btn small" data-cr="' + id + '" data-n="max">Max</button>' + loop;
+    // le prix d’un extracteur ou d’une machine monte à chaque exemplaire : pas de ×1000
+    const sizes = E.isScaled(it) ? [10] : (D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000];
+    const lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
+    return '<button class="btn small pri" data-cr="' + id + '" data-n="1">' + lbl + "</button>" +
+      sizes.map((sz) => '<button class="btn small" data-cr="' + id + '" data-n="' + sz + '">×' + sz + "</button>").join("") +
+      '<button class="btn small" data-cr="' + id + '" data-n="max">Max</button>';
   }
 
   /* ------------------------------------------------------------ CARNET */
@@ -1282,7 +1283,7 @@
     let known = 0, total = 0;
     book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
     let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
-    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. Touche un ingrédient pour aller à sa recette. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
+    if (!st.flags.tip_carnet) h += '<div class="tip">Chaque recette découverte s’inscrit ici. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande avec les pièces qui manquent, et tes machines aident automatiquement. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">OK</button></div>';
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
     h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
@@ -1398,8 +1399,7 @@
       else {
         h += '<div class="acts">' + craftBtns(id) +
           '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳 Détail</button>' +
-          (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯 Suivi</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯 Suivre</button>') +
-          (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-autoline="' + id + '" title="Confier ça à une machine du Domaine">🏭 À une machine</button>' : "") + "</div>";
+          (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯 Suivi</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯 Suivre</button>') + "</div>";
       }
     }
     return h + "</div>";
@@ -1586,14 +1586,22 @@
     $$(".inv[data-inv]", view).forEach((el) => el.classList.toggle("zero", !(st.inv[el.dataset.inv] >= 1)));
     $$("[data-need]", view).forEach((el) => el.classList.toggle("lack", (st.inv[el.dataset.need] || 0) + 1e-9 < Number(el.dataset.q)));
     $$("[data-cr]", view).forEach((b) => {
-      // ×N et Max fabriquent aussi les pièces qui manquent
+      // ×N et Max lancent une commande (qui démarre même s’il manque des matières premières)
       const id = b.dataset.cr, n = b.dataset.n;
-      const max = n === "max" ? E.maxPlan(id) : 0;
-      const ok = n === "max" ? max >= 1 : E.plan(id, Number(n)).ok;
-      b.classList.toggle("nope", !ok);
-      if (n === "max") b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
+      if (n === "max") {
+        const max = E.maxPlan(id);
+        b.classList.toggle("nope", max < 1);
+        b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
+      } else {
+        const p = E.plan(id, 1);
+        const ok = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length;
+        b.classList.toggle("nope", !ok);
+      }
     });
-    $$("[data-chain]", view).forEach((b) => { b.classList.toggle("nope", !E.plan(b.dataset.chain, 1).ok); });
+    $$("[data-chain]", view).forEach((b) => {
+      const id = b.dataset.chain, p = E.plan(id, 1);
+      b.classList.toggle("nope", !(!E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length));
+    });
     $$("[data-gleft]", view).forEach((el) => { el.textContent = fmt(Math.max(0, Number(el.dataset.q) - (st.inv[el.dataset.gleft] || 0))); });
     $$("[data-exp]", view).forEach((b) => b.classList.toggle("nope", !!expWhy(b.dataset.exp)));
     if (U.tab === "domaine") { Dom.live($("#v-domaine")); soundScene(); }
@@ -1747,49 +1755,65 @@
   function craftFrom(btn) {
     const id = btn.dataset.cr;
     const n = btn.dataset.n === "max" ? E.maxPlan(id) : Number(btn.dataset.n);
-    if (n > 0) handQueue(btn, id, n, true); // avec les pièces qui manquent
+    if (n > 0) handQueue(btn, id, n, true);
     else toast(whyNot(id, 1, true), { key: "nope" });
   }
   function chainCraft(btn, id, times) { handQueue(btn, id, times || 1, true); }
-  /* tout ce qu’on fabrique à la main part dans la file de « Tes mains » */
-  function handQueue(btn, id, n, chain) {
+  /* toute commande part dans la file des commandes, où mains et machines avancent ensemble */
+  function handQueue(btn, id, n) {
     A.init();
-    const r = E.queue(id, n, chain);
+    const r = E.order(id, n);
     if (!r.ok) {
       if (r.why === "plan") { openTree(id, n); return false; }
       A.fail(0);
-      toast(r.why === "full" ? "Tes mains sont occupées : " + D.HAND.max + " fabrications en attente, c’est le maximum." : r.why === "queued" ? esc(I[id].n) + " : c’est déjà en route." : "Impossible pour l’instant.");
+      toast(r.why === "full" ? "File complète : " + D.HAND.max + " commandes en attente au plus." : r.why === "queued" ? esc(I[id].n) + " : c’est déjà en route." : whyNot(id, n, true));
       return false;
     }
     A.click();
     const p = elCenter(btn);
     floater("✋ " + fmtTime(r.time), p.x, p.y - 16, "var(--muted)");
-    const sub = chain ? r.job.s.length - 1 : 0;
-    if (sub > 0) toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à faire avant : prêt dans " + fmtTime(r.time) + ".");
+    const missKeys = r.missing ? Object.keys(r.missing).filter((k) => r.missing[k] > 1e-9) : [];
+    const sub = r.job.s.length - 1;
+    if (missKeys.length) {
+      const mTxt = missKeys.map((k) => fmt(Math.ceil(r.missing[k])) + " " + esc(I[k].n.toLowerCase())).join(", ");
+      toast("✋ Commande lancée : <b>" + esc(I[id].n) + "</b>" + (n > 1 ? " ×" + fmt(n) : "") + " · il manque : " + mTxt + ".");
+    } else if (sub > 0) {
+      toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à faire avant : prêt dans " + fmtTime(r.time) + ".");
+    }
     render(true);
     return true;
+  }
+  function jobWorkersTag(j) {
+    const parts = [];
+    if (j.hand) parts.push("✋");
+    for (const m in j.machs || {}) {
+      const w = j.machs[m], it = I[m];
+      const lbl = it ? (w.n > 1 ? it.pl || (it.sn || it.n.toLowerCase()) + "s" : it.sn || it.n.toLowerCase()) : m;
+      parts.push(w.n + " " + lbl);
+    }
+    return parts.join(" + ");
+  }
+  function jobMissTag(j) {
+    const ks = Object.keys(j.miss || {}).filter((k) => j.miss[k] > 1e-9);
+    if (!ks.length) return "";
+    return "il manque : " + ks.map((k) => fmt(Math.ceil(j.miss[k])) + " " + I[k].n.toLowerCase()).join(", ");
   }
   /* la file de « Tes mains » : ce qui est en cours, ce qui attend */
   function handsHTML() {
     const h = E.handInfo();
     if (!h.jobs.length) return '<span class="hh">✋</span><span class="grow tiny muted">Tes mains sont libres.</span>';
     const j = h.jobs[0], it = I[j.id];
-    const what = j.wait ? '<span style="color:var(--bad)">il manque des matières</span>'
-      : j.steps > 1 ? "étape " + (j.i + 1) + "/" + j.steps + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.k) + "/" + fmt(j.of);
+    const missTxt = jobMissTag(j);
+    const what = missTxt ? '<span style="color:var(--bad)">' + esc(missTxt) + "</span>"
+      : j.wait ? '<span style="color:var(--bad)">il manque des matières</span>'
+      : j.steps.length > 1 ? "étape " + (j.i + 1) + "/" + j.steps.length + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.done) + "/" + fmt(j.n);
+    const pct = Math.min(100, 100 * (j.frac || 0));
     return '<span class="hh">✋</span>' + icon(j.id, "sm") + '<div class="grow hmain" data-hopen><div class="small ell"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) +
-      ' <span class="tiny muted">' + what + '</span></div><div class="bar"><i data-hp style="width:' + (100 * (1 - j.left / j.tot)).toFixed(1) + '%"></i></div></div>' +
+      ' <span class="tiny muted">' + what + '</span></div><div class="bar"><i data-hp style="width:' + pct.toFixed(1) + '%"></i></div></div>' +
       '<span class="tiny muted" data-hl="0">' + fmtTime(j.left) + "</span>" + (h.jobs.length > 1 ? '<button class="hmore" data-hopen>+' + (h.jobs.length - 1) + "</button>" : "") +
       '<button class="hx" data-hcancel="0" aria-label="Annuler">✕</button>';
   }
   /* ------------------------------------------------------------ l’action qui tourne */
-  function startLoop(id) {
-    A.init();
-    if (S().act && S().act.k === "make" && S().act.id === id) { E.stopAct(); A.click(); render(true); return; }
-    const r = E.startAct({ k: "make", id });
-    if (!r) { A.fail(0); toast("Ça ne se refait pas en boucle.", { key: "act" }); return; }
-    if (S().act) { A.click(); toast("⟳ " + esc(I[id].n) + " en boucle, tant qu’il y a de quoi.", { key: "act" }); }
-    render(true);
-  }
   function startHarvest(key) {
     A.init();
     const i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
@@ -1799,27 +1823,34 @@
     toast("▶ Tu récoltes " + esc(I[res].n.toLowerCase()) + " en continu.", { key: "act" });
     render(true);
   }
-  /* la barre au-dessus des onglets : ce qui tourne, ou ce que font les mains */
+  /* la barre au-dessus des onglets : la commande en tête de file, ou la récolte continue */
   function actBar() {
-    const bar = $("#actbar"), st = S(), a = E.actInfo(), hi = E.handInfo();
+    const bar = $("#actbar"), a = E.actInfo(), hi = E.handInfo();
     if (!a && !hi.jobs.length) { if (!bar.classList.contains("hidden")) { bar.classList.add("hidden"); bar.dataset.sig = ""; document.body.classList.remove("has-act"); } return; }
     bar.classList.remove("hidden");
     document.body.classList.add("has-act");
     let sig, frac, line;
-    if (a && a.k === "harv") {
-      sig = "h" + a.res; frac = a.frac; line = "+" + fmt(a.got);
-    } else if (a) {
-      sig = "m" + a.id + (a.wait ? "w" : ""); frac = a.frac; line = a.wait ? "il manque des matières" : "×" + fmt(a.made);
+    if (hi.jobs.length) {
+      const j = hi.jobs[0], w = jobWorkersTag(j), miss = jobMissTag(j);
+      sig = "j:" + j.id + ":" + j.n + ":" + w + ":" + miss + ":" + hi.jobs.length + (a ? ":h" : "");
+      frac = j.frac !== undefined ? j.frac : (j.tot ? 1 - j.left / j.tot : 0);
+      line = E.isUnique(I[j.id]) ? fmtTime(j.left) : fmt(j.done) + "/" + fmt(j.n) + (miss ? " · " + miss : "");
     } else {
-      const j = hi.jobs[0];
-      sig = "j" + j.id + j.step; frac = j.tot ? 1 - j.left / j.tot : 0; line = fmtTime(hi.left);
+      sig = "h:" + a.res; frac = a.frac; line = "+" + fmt(a.got);
     }
     if (bar.dataset.sig !== sig) {
       bar.dataset.sig = sig;
       let ic, name;
-      if (a && a.k === "harv") { ic = icon(a.res, "sm"); name = "Récolte · " + esc(I[a.res].n); }
-      else if (a) { ic = icon(a.id, "sm"); name = "En boucle · " + esc(I[a.id].n); }
-      else { const j = hi.jobs[0]; ic = icon(j.id, "sm"); name = "Tes mains · " + esc(I[j.id].n) + (hi.jobs.length > 1 ? ' <span class="tiny muted">+' + (hi.jobs.length - 1) + "</span>" : ""); }
+      if (hi.jobs.length) {
+        const j = hi.jobs[0], w = jobWorkersTag(j);
+        ic = icon(j.id, "sm");
+        name = "Fabrication · " + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n)) +
+          (w ? " · " + esc(w) : "") +
+          (hi.jobs.length > 1 ? ' <span class="tiny muted">+' + (hi.jobs.length - 1) + "</span>" : "");
+      } else {
+        ic = icon(a.res, "sm");
+        name = "Récolte · " + esc(I[a.res].n);
+      }
       bar.innerHTML = '<button class="ab-main" data-ab="hands">' + ic + '<span class="ab-t"><span class="ab-n">' + name + '</span><span class="ab-bar"><i></i></span></span><b class="ab-c"></b></button>' +
         (a ? '<button class="ab-x" data-ab="stop" aria-label="Arrêter">■</button>' : "");
       iconize(bar);
@@ -1841,15 +1872,23 @@
       }).join("") + '</div><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
   }
   function openSkills() { openModal({ html: skillsHTML() }); }
-  /* la file des mains, en détail : ce qui est en cours, ce qui attend, et de quoi annuler */
+  /* la liste des commandes en détail : ce qui est en cours, qui y travaille, ce qui manque, et de quoi annuler */
   function handsSheet() {
     const hi = E.handInfo();
-    if (!hi.jobs.length) return '<div class="kicker">Tes mains</div><h2>Tes mains sont libres</h2><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
-    return '<div class="kicker">Tes mains</div><h2>Fini dans ' + fmtTime(hi.left) + '</h2><div class="picklist">' +
-      hi.jobs.map((j, i) => '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n)) +
-        '<br><span class="tiny muted">' + (j.wait ? "il manque des matières" : i ? "prête dans " + fmtTime(j.at) : "prête dans " + fmtTime(j.left)) + "</span></span>" +
-        '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>').join("") +
-      '</div><p class="tiny muted">Annuler rend les matières à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+    if (!hi.jobs.length) return '<div class="kicker">Commandes</div><h2>Aucune commande en cours</h2><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+    return '<div class="kicker">Commandes</div><h2>' + (hi.left > 0 ? "Fini dans ~" + fmtTime(hi.left) : "Commandes en cours") + '</h2><div class="picklist">' +
+      hi.jobs.map((j, i) => {
+        const w = jobWorkersTag(j), miss = jobMissTag(j);
+        const sub = [];
+        if (w) sub.push(w);
+        if (miss) sub.push(miss);
+        else if (j.wait) sub.push("en attente");
+        else sub.push("prête dans ~" + fmtTime(i ? j.at : j.left));
+        return '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
+          '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span></span>" +
+          '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
+      }).join("") +
+      '</div><p class="tiny muted">Annuler rend les matières de l’établi à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
   }
   function openHands() {
     openModal({
@@ -1866,7 +1905,7 @@
       }
     });
   }
-  const handSig = () => S().hand.q.map((j) => j.id + ":" + j.i + ":" + j.k + ":" + (j.w ? 1 : 0)).join("|");
+  const handSig = () => S().hand.q.map((j) => j.id + ":" + j.i + ":" + j.k + ":" + (j.w ? 1 : 0) + ":" + JSON.stringify(j.miss)).join("|");
   function studyHTML(id) {
     const st = S();
     if (!st.studied[id]) {
@@ -1880,6 +1919,8 @@
   /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
   function treeHTML(id, n) {
     const p = E.plan(id, n), st = S();
+    // un extracteur ou une machine (prix qui monte) ne se commande qu’avec tout en main
+    const canLaunch = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length && (p.ok || !E.isScaled(I[id]));
     let h = '<div class="kicker">Tout ce qu’il faut fabriquer</div><div class="row">' + icon(id, "lg") + '<div class="grow"><h2 style="margin:0">' + esc(I[id].n) + "</h2>";
     if (!E.isUnique(I[id])) h += '<div class="row" style="margin-top:6px"><button class="mini" data-m="tn" data-d="-1">−</button><b style="min-width:40px;text-align:center">×' + fmt(n) + '</b><button class="mini" data-m="tn" data-d="1">+</button><button class="btn small ghost" data-m="tmax">Max</button></div>';
     h += "</div></div>";
@@ -1887,12 +1928,12 @@
     const used = Object.keys(p.used);
     if (used.length) h += '<h3 class="sub">Pris dans la Réserve</h3><div class="row wrap small">' + used.map((k) => '<span class="ing">' + icon(k, "sm") + fmt(p.used[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     const miss = Object.keys(p.missing).filter((k) => !p.locked.includes(k) && !p.blocked[k]);
-    if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">Il manque</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
+    if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">' + (E.isScaled(I[id]) ? "Il manque" : "Il manque (tiré de la Réserve au fil des arrivées)") + '</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
     if (p.locked.length) h += '<p class="why">Recettes encore inconnues : ' + p.locked.map((k) => esc(I[k].n)).join(", ") + "</p>";
     const bl = Object.keys(p.blocked);
     if (bl.length) h += '<p class="why">' + bl.map((k) => esc(I[k].n) + " : " + needText(k, p.blocked[k], true)).join(" · ") + "</p>";
     h += '<div class="acts"><button class="btn" data-m="close">Fermer</button>' + (st.track && st.track.id === id ? "" : '<button class="btn" data-m="track">🎯 Suivre</button>') +
-      '<button class="btn pri" data-m="go"' + (p.ok ? "" : " disabled") + ">⚡ Tout fabriquer</button></div>";
+      '<button class="btn pri" data-m="go"' + (canLaunch ? "" : " disabled") + ">⚡ Commander (×" + fmt(n) + ")</button></div>";
     return h;
   }
   function openTree(id, n) {
@@ -1966,8 +2007,7 @@
           }
           if (!owned && !b) {
             h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +
-              '<button class="btn small ghost" data-m="tree">🌳 Détail</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯 Suivre</button>') +
-              (E.automatable(id) && E.hasFactory() ? '<button class="btn small ghost" data-m="usine" title="Confier ça à une machine">🏭 À une machine</button>' : "") + "</div>";
+              '<button class="btn small ghost" data-m="tree">🌳 Détail</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track">🎯 Suivre</button>') + "</div>";
           }
         } else {
           const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
@@ -2008,7 +2048,6 @@
         pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
         fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier") render(true); return true; },
         study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier") render(true); } redraw(); return true; },
-        usine: () => { setTimeout(() => { setTab("machines"); Dom.chainFor(id); }, 60); },
         carnet: () => { setTimeout(() => showInCarnet(id), 60); }
       }
     };
@@ -2151,8 +2190,9 @@
       "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
       "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et ouvre un geste, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
       "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même jeu fermé.</dd>" +
-      "<dt>Machine</dt><dd>Automate, presse… Dans l’onglet Machines de l’Atelier, elle refait une recette en boucle avec ce qu’il y a dans la Réserve. Un automate de bois ne fait que des recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse jusqu’à 3 ; les plus grandes fabriquent aussi les pièces qui manquent.</dd>" +
-      "<dt>Tes mains</dt><dd>Ce que tu fabriques toi-même passe par la file de tes mains (barre ✋ au-dessus des onglets), une pièce après l’autre.</dd>" +
+      "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce faite à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
+      "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les matières sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
+      "<dt>Tes mains</dt><dd>Ce que tu fabriques passe par la file de tes mains (barre ✋ au-dessus des onglets), aidées par tes machines.</dd>" +
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
       "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une matière, pour savoir avec quels gestes elle cache encore des recettes.</dd>" +
       "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde avec tes recettes, et les Traces achètent des mains plus habiles (Mémoire des mains).</dd>" +
@@ -2163,10 +2203,10 @@
       '<h3 class="sub">Les écrans</h3>' +
       "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
       "<p><b>🗺️ Carte.</b> Le monde, et la brume sur ce que tu n’as pas atteint. Touche un 🧭 lieu pour l’explorer : il raconte un bout de l’histoire.</p>" +
-      "<p><b>🔨 Atelier.</b> Choisis un geste, pose jusqu’à trois matières, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, Max</b> fabriquent aussi les pièces qui manquent, <b>⟳ En boucle</b> continue tant qu’il y a de quoi, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> fabriquent en boucle pour toi.</p>" +
+      "<p><b>🔨 Atelier.</b> Choisis un geste, pose jusqu’à trois matières, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
       "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même : 1 % plus rapide par niveau, et une chance de pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
-      "<p><b>Jeu fermé.</b> Extracteurs, machines, tes mains et ce qui tourne en boucle continuent jusqu’à 12 h.</p>" +
+      "<p><b>Jeu fermé.</b> Extracteurs, commandes et exploration continuent jusqu’à 12 h.</p>" +
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
   }
 
@@ -2256,7 +2296,7 @@
   }
   /* ce que la relève laisse derrière elle, en chiffres */
   function leftHTML() {
-    const st = S(), n = (k) => (k === "ext" ? Object.values(st.dom.ext).reduce((a, e) => a + Object.values(e.u).reduce((x, y) => x + y, 0), 0) : st.dom.mach.reduce((a, e) => a + e.n, 0));
+    const st = S(), n = (k) => (k === "ext" ? Object.values(st.dom.ext).reduce((a, e) => a + Object.values(e.u).reduce((x, y) => x + y, 0), 0) : E.MACHINES.reduce((a, m) => a + Math.floor(st.inv[m] || 0), 0));
     const top = Object.keys(st.inv).filter((i) => I[i] && !E.isUnique(I[i]) && !E.isScaled(I[i]) && st.inv[i] >= 1).sort((a, b) => st.inv[b] - st.inv[a]).slice(0, 3);
     const paid = Object.keys(st.pass).filter((z) => !st.pass[z].done && D.PASSAGES[z]);
     const parts = [];
@@ -2273,7 +2313,7 @@
     if (x.id === "extr") { const r = E.production().reduce((s, p) => s + (I[p.id] && I[p.id].t === "res" ? p.in : 0), 0); return r > 0 ? "Tes extracteurs : " + perMin(r) + " → " + perMin(r * b / a) : ""; }
     if (x.id === "recolte") return "Un appui sur le bois : " + fmtNum(E.tapYieldOf("bois") || a) + " → " + fmtNum((E.tapYieldOf("bois") || a) * b / a);
     if (x.id === "chemins") { const z = D.ZONES.map((y) => y.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id)); if (!z) return ""; const c = E.passCost(z), k = Object.keys(c)[0]; return esc(D.PASSAGES[z].n) + " : " + fmt(c[k]) + " → " + fmt(Math.ceil(c[k] * b / a)) + " " + esc(I[k].n.toLowerCase()); }
-    if (x.id === "mach") { const m = S().dom.mach.filter((e) => e.r); return m.length ? "Tes " + m.length + " machine" + (m.length > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
+    if (x.id === "mach") { const n = E.MACHINES.reduce((acc, m) => acc + Math.floor(S().inv[m] || 0), 0); return n ? "Tes " + n + " machine" + (n > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
     return "";
   }
   /* le prochain passage : ce qu’il rapporte, et l’objet qui le rend possible */
@@ -2573,13 +2613,11 @@
       if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
       if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
-      if ((b = t.closest("[data-autoline]"))) { setTab("machines"); Dom.chainFor(b.dataset.autoline); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
       if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }
       if ((b = t.closest("[data-gotab]"))) { A.click(); setTab(b.dataset.gotab); return; }
-      if ((b = t.closest("[data-loop]"))) { startLoop(b.dataset.loop); return; }
       if ((b = t.closest("[data-hloop]"))) { startHarvest(b.dataset.hloop); return; }
       if (t.closest("[data-skills]")) { A.click(); openSkills(); return; }
       if ((b = t.closest("[data-tab2]"))) { A.click(); setTab(b.dataset.tab2); return; }
@@ -2619,8 +2657,6 @@
     views.addEventListener("change", (ev) => {
       const t = ev.target;
       if (t.id === "isort") { S().settings.inv = Object.assign({}, S().settings.inv, { sort: t.value }); render(true); }
-      if (t.dataset.mcap) { E.domMachSet(t.dataset.mcap, { cap: Number(t.value) }); A.click(); render(true); }
-      if (t.dataset.mtype) { E.domMachSet(t.dataset.mtype, { m: t.value }); A.click(); render(true); }
     });
     views.addEventListener("input", (ev) => {
       if (ev.target.id === "iq") { U.iq = ev.target.value; render(true); return; }
@@ -2661,7 +2697,7 @@
     if (!o) return;
     U.offline = null;
     const list = o.top.map((k) => '<span class="ing">' + icon(k, "sm") + "+" + fmt(o.gains[k]) + " " + esc(I[k].n) + "</span>").join("");
-    const auto = Object.keys(S().dom.ext).length > 0 || S().dom.mach.length > 0;
+    const auto = Object.keys(S().dom.ext).length > 0 || S().hand.q.length > 0;
     const full = [];
     simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
       (list ? '<p class="small muted">Pendant ce temps, tout a travaillé pour toi :</p><div class="row wrap">' + list + "</div>"
