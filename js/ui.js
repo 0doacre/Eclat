@@ -68,7 +68,7 @@
     if (b.why === "owned") return "déjà possédé";
     const st = E.blockStation(id, b), g = D.GESTES[I[id].r[0]];
     const det = b.why === "heat" ? fmtHeat(b.heat) : b.why === "geste" ? "pour " + g.v : "plus solide, pour " + g.v;
-    if (!st) return "geste inconnu : " + g.n;
+    if (!st) return "action inconnue : " + g.n;
     return "il faut : " + (html ? '<span class="link-txt" data-goto="' + st + '">' + esc(I[st].n) + "</span>" : I[st].n) + " (" + det + ")";
   }
   const cap1 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
@@ -132,13 +132,15 @@
     if (it.sym) return '<span class="ic sym ' + (cls || "") + '" style="--c:' + it.col + ";--ink:" + ink(it.col) + '">' + esc(it.sym) + "</span>";
     return '<span class="ic ' + (cls || "") + '">' + it.ic + "</span>";
   }
-  const TYPE = { res: "Matière", comp: "Pièce", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", mach: "Machine", auto: "Machine", curio: "Curiosité", relic: "Relique" };
+  const TYPE = { res: "Ressource", comp: "Pièce", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", mach: "Machine", auto: "Machine", curio: "Curiosité", relic: "Relique" };
+  /* ce que fait l’objet (couche « jeu »), puis son récit en italique */
+  const descHTML = (it) => (it.u ? '<div class="small">' + esc(it.u) + "</div>" : "") + (it.d ? '<div class="small muted"><i>' + esc(it.d) + "</i></div>" : "");
   /* ce que fait chaque sorte d’objet, en une phrase, sur sa fiche */
   const TYPE_HINT = {
-    res: "Une matière première : elle se récolte sur un gisement.",
+    res: "Une ressource : elle se récolte sur un gisement.",
     comp: "Une pièce : elle sert à fabriquer autre chose.",
     tool: "Un outil : il agit dès que tu l’as, rien à poser.",
-    stat: "Une station : elle reste à l’Atelier et ouvre un geste ou une chaleur.",
+    stat: "Une station : elle reste à l’Atelier et débloque une action ou une chaleur.",
     ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même jeu fermé.",
     upg: "Une amélioration : elle agit dès que tu l’as, rien à poser.",
     mach: "Une machine : elle aide automatiquement tes mains sur les commandes des recettes qu’elle sait faire.",
@@ -159,8 +161,8 @@
     if (e.st) e.st.forEach((s) => {
       const g = D.GESTES[s.g].n;
       if (s.heat) out.push(s.g === "chauffer" ? "Chauffer jusqu’à " + fmtHeat(s.heat) : g);
-      else if ((s.lvl || 1) > 1) out.push(g + " les matières plus dures");
-      else out.push("Ouvre le geste " + g);
+      else if ((s.lvl || 1) > 1) out.push(g + " les ressources plus dures");
+      else out.push("Débloque l’action " + g);
     });
     if (e.tap) for (const k in e.tap) out.push("Récolte à la main " + (k === "*" ? "partout" : E.ZONES[k] ? deZone(k).replace(/^de la /, "à la ").replace(/^du /, "au ").replace(/^des /, "aux ").replace(/^de l’/, "à l’") : ": " + targetName(k)) + " " + fmtMul(e.tap[k]));
     if (e.auto) for (const k in e.auto) out.push("Extracteurs " + (k === "*" ? "de toutes les terres" : deZone(k)) + " " + fmtMul(e.auto[k]));
@@ -934,8 +936,8 @@
     if (!st.known[id]) {
       const lvl = st.hints[id] || 0;
       return line('<div class="grow"><div class="small">À découvrir : ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>une recette nouvelle</b>") + "</div>" +
-        (lvl >= 1 ? '<div class="tiny muted">💭 Le geste : ' + gesteChip(id) + "</div>" : "") +
-        (lvl >= 2 ? '<div class="tiny muted">💭 Une des matières : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
+        (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
+        (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
         '</div><button class="btn small pri" data-gotab="atelier">Chercher</button>');
     }
     if (E.queued(id) > 0) return line('<span class="small">✋ Tes mains fabriquent ' + esc(it.n.toLowerCase()) + ".</span>");
@@ -1036,8 +1038,8 @@
       ' <b class="link-txt" data-goto="' + id + '">' + esc(it.n) + "</b></div>" + (it.h && !st.known[id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "");
     if (!st.known[id]) {
       const lvl = st.hints[id] || 0;
-      if (lvl >= 1) h += '<div class="memo">💭 Le geste : ' + gesteChip(id) + "</div>";
-      if (lvl >= 2) { const m = mainIngredient(id); h += '<div class="memo">💭 Une des matières : ' + icon(m, "sm") + " " + esc(I[m].n) + "</div>"; }
+      if (lvl >= 1) h += '<div class="memo">💭 L’action : ' + gesteChip(id) + "</div>";
+      if (lvl >= 2) { const m = mainIngredient(id); h += '<div class="memo">💭 Une des ressources : ' + icon(m, "sm") + " " + esc(I[m].n) + "</div>"; }
     } else {
       const b = E.blocker(id);
       h += '<div class="rl small">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
@@ -1051,7 +1053,7 @@
   function memoryHTML(m, gain) {
     if (!m) return "";
     const f = Math.max(0, Math.min(1, (m.p - m.prev) / (m.next - m.prev)));
-    const what = (["le geste", "une des matières", "la recette entière"][m.lvl] || "") + (I[m.id] ? " de « " + I[m.id].n + " »" : "");
+    const what = (["l’action", "une des ressources", "la recette entière"][m.lvl] || "") + (I[m.id] ? " de « " + I[m.id].n + " »" : "");
     return '<div class="memory"><div class="row between tiny"><span>💭 Souvenirs' + (gain ? ' <b class="gain">' + gain + "</b>" : "") + "</span><span class=\"muted\">prochain : " + what + "</span></div>" +
       '<div class="bar"><i style="width:' + (f * 100).toFixed(0) + '%"></i></div>' +
       (gain ? "" : '<div class="tiny dim">Chaque combinaison nouvelle essayée à l’Atelier en réveille, surtout si elle s’approche de ce que tu cherches.</div>') + "</div>";
@@ -1084,8 +1086,8 @@
     const st = S();
     let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
     if (!E.gesteOK(U.geste)) U.geste = "tailler";
-    if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis un <b>geste</b>. 2. Touche des <b>matières</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b> ! Essaie : <b>Tailler</b> + <b>Bois</b>.</div>';
-    if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque geste est son niveau : il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
+    if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Touche des <b>ressources</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b>. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
+    if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
     h += pinsHTML();
     h += '<div class="gestes">';
     let locks = 0;
@@ -1119,12 +1121,12 @@
     h += '<div class="card result" id="result">' + resultHTML() + "</div>";
     const sugg = E.knownWith(U.slots).filter((id) => !(U.last && U.last.id === id)).slice(0, 6);
     if (sugg.length) {
-      h += '<h3 class="sub">Tu sais déjà faire avec ces matières</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
+      h += '<h3 class="sub">Tu sais déjà faire avec ces ressources</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
     }
     const o = invOpts();
     // recherche, tri et filtres quand il y a de quoi chercher
     const many = Object.keys(st.seen).length >= 10 || !!U.iq || o.filter !== "tout";
-    h += '<div class="sub-row"><h3 class="sub">Tes matières</h3>' + "</div>" +
+    h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3>' + "</div>" +
       (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false"></div>' +
       '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
       '<div class="filters">' + INV_FILTERS.map(([k, n]) => '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>" : "");
@@ -1133,7 +1135,7 @@
       const sel = U.slots.includes(id), fav = favs()[id];
       const rx = st.studied[id] && E.reactions(id)[U.geste];
       return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + (fav ? '<i class="fav">♥</i>' : "") +
-        (rx ? '<i class="rx" title="Réagit avec ce geste">✦' + (rx > 1 ? rx : "") + "</i>" : "") + icon(id) +
+        (rx ? '<i class="rx" title="Réagit avec cette action">✦' + (rx > 1 ? rx : "") + "</i>" : "") + icon(id) +
         '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span><span class="n">' + esc(I[id].n) + "</span></button>";
     };
     if (!many) h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
@@ -1146,11 +1148,11 @@
       });
     } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
     if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.") + "</p>";
-    else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une matière : sa fiche, ♥ pour la garder en tête de liste, 🔍 pour l’étudier. Une matière étudiée porte un ✦ quand elle réagit avec le geste choisi.</p>';
+    else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : sa fiche, ♥ pour la garder en tête de liste, 🔍 pour l’étudier. Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</p>';
     return h;
   }
   const INV_SORTS = [["age", "Par âge"], ["name", "Par nom"], ["qty", "Les plus nombreuses"], ["new", "Dernières trouvées"]];
-  const INV_FILTERS = [["tout", "Tout"], ["fav", "♥ Favorites"], ["geste", "Pour ce geste"], ["res", "Récoltées"], ["comp", "Fabriquées"], ["new", "Inutilisées"]];
+  const INV_FILTERS = [["tout", "Tout"], ["fav", "♥ Favorites"], ["geste", "Pour cette action"], ["res", "Récoltées"], ["comp", "Fabriquées"], ["new", "Inutilisées"]];
   const invOpts = () => Object.assign({ sort: "age", filter: U.invFilter || "tout" }, S().settings.inv, { filter: U.invFilter || (S().settings.inv && S().settings.inv.filter) || "tout" });
   const favs = () => S().settings.favs || (S().settings.favs = {});
   function quickRow(id) {
@@ -1196,11 +1198,11 @@
   }
   const WHY = {
     froid: "Rien à tirer de ce mélange pour l’instant.",
-    frais: "Une de ces matières sert ailleurs, avec un autre geste ou d’autres matières.",
-    tiede: "Ce geste va bien avec ces matières. Cherche encore.",
-    manque: "Bon geste, mais il manque une matière.",
-    trop: "Bon geste, mais une de ces matières est en trop.",
-    geste: "Les bonnes matières, mais pas le bon geste."
+    frais: "Une de ces ressources sert dans une autre recette, avec une autre action ou d’autres ressources.",
+    tiede: "Bonne action pour ces ressources. Cherche encore.",
+    manque: "Bonne action, mais il manque une ressource.",
+    trop: "Bonne action, mais une de ces ressources est en trop.",
+    geste: "Les bonnes ressources, mais pas la bonne action."
   };
   function thermo(t) {
     const T = D.TEMPS[t];
@@ -1209,13 +1211,13 @@
   }
   function resultHTML() {
     const r = U.last;
-    if (!r) return '<p class="small muted">Choisis un geste, touche des matières dans la liste plus bas pour les poser (trois au plus), puis le gros bouton. Après chaque essai, le <b>thermomètre</b> dit si tu t’approches d’une recette.</p>';
+    if (!r) return '<p class="small muted">Choisis une action, puis touche des ressources dans la liste plus bas pour les poser (trois au plus), et touche le gros bouton. Après chaque tentative, le <b>thermomètre</b> indique si tu t’approches d’une recette.</p>';
     if (r.kind === "craft") {
       const it = I[r.id];
       let h = '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow">' +
         (r.fresh ? '<span class="new">Nouvelle découverte</span>' : "") +
         '<div class="rname">' + esc(it.n) + (E.isUnique(it) ? "" : " <span class='muted'>+" + fmt(r.n) + "</span>") + (r.bonus ? ' <span class="small" style="color:var(--intu)">★ chef-d’œuvre +' + fmt(r.bonus) + "</span>" : "") + "</div>" +
-        '<div class="small muted">' + esc(it.d || "") + "</div>" + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") + "</div></div>";
+        descHTML(it) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") + "</div></div>";
       if (!E.isUnique(it)) {
         h += '<div class="row wrap" style="margin-top:10px"><span class="small muted">' + gesteChip(r.id) + "</span>" + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>";
         h += '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div>";
@@ -1230,7 +1232,7 @@
       const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
       if (q) return head + '<div class="small">✋ Tes mains s’y mettent : la recette et ses pièces sont dans ta file.</div></div></div>';
       // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
-      if (!miss) return head + '<div class="small muted">' + esc(I[r.id].d || "") + "</div>" + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
+      if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
         '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tout est là. Il en coûte :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
         '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
       return head + '<div class="small">Tu sais comment faire, mais il te manque :</div><div class="row wrap small">' +
@@ -1251,7 +1253,7 @@
     if (r.kind === "queued" || r.kind === "busy") {
       const it = I[r.id];
       const done = r.kind === "queued" && !E.queued(r.id);
-      const msg = done ? "✓ C’est fait : la pièce est rangée avec tes matières."
+      const msg = done ? "✓ Fabriqué : la pièce est rangée dans ta Réserve."
         : r.kind === "queued" ? "✋ Tes mains s’y mettent. Prêt dans " + fmtTime(r.time) + "."
         : r.why === "full" ? "Tes mains sont déjà bien occupées. Attends qu’une fabrication se termine."
         : r.why === "queued" ? "C’est déjà en route." : "Impossible pour l’instant.";
@@ -1287,7 +1289,7 @@
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
     h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
-    h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une matière…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
+    h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
     h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     return h + '<div id="clist">' + carnetList() + "</div>";
@@ -1381,7 +1383,7 @@
       const shown = nameShown(id, U.named);
       return '<div class="rec unknown" data-rec="' + id + '"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + '<span class="badge">' + TYPE[it.t] + '</span></div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
         (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
-        '<div class="rl tiny muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Matière : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " matière" + (ing.length > 1 ? "s" : "") + "</div></div>";
+        '<div class="rl tiny muted">Action : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Ressource : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " ressource" + (ing.length > 1 ? "s" : "") + "</div></div>";
     }
     const uniq = E.isUnique(it);
     const owned = uniq && (st.made[id] || 0) > 0;
@@ -1448,7 +1450,7 @@
       // le prestige, dit simplement : ce qu’on garde, ce qu’on gagne
       const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
       h += '<div class="card cyc"><b>✦ Relève, Traces et Échos</b><p class="small">Dès qu’un passage vers une nouvelle terre est franchi, tu peux passer le relais : un nouveau Semeur s’éveille. ' +
-        "Le monde, tes matières, tes machines et les terres repartent de zéro, mais tu gardes ton Carnet, tes fragments, tes secrets et la <b>Mémoire des mains</b>, achetée avec les <b>Traces</b> que laissent les passages.</p>" +
+        "Le monde, tes ressources, tes machines et les terres repartent de zéro, mais tu gardes ton Carnet, tes fragments, tes secrets et la <b>Mémoire des mains</b>, achetée avec les <b>Traces</b> que laissent les passages.</p>" +
         '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b>, pour toujours : +50 % de récolte et de production par Écho, dès la relève suivante.</p>' +
         '<div class="stat"><span class="muted">Ce Semeur</span><b>' + (st.cycle + 6) + "e · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
         '<div class="stat"><span class="muted">À la relève</span><b>+' + E.releveGain() + " ✦ · " + ech + " Écho" + (ech > 1 ? "s" : "") + "</b></div>" +
@@ -1805,7 +1807,7 @@
     const j = h.jobs[0], it = I[j.id];
     const missTxt = jobMissTag(j);
     const what = missTxt ? '<span style="color:var(--bad)">' + esc(missTxt) + "</span>"
-      : j.wait ? '<span style="color:var(--bad)">il manque des matières</span>'
+      : j.wait ? '<span style="color:var(--bad)">il manque des ressources</span>'
       : j.steps.length > 1 ? "étape " + (j.i + 1) + "/" + j.steps.length + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.done) + "/" + fmt(j.n);
     const pct = Math.min(100, 100 * (j.frac || 0));
     return '<span class="hh">✋</span>' + icon(j.id, "sm") + '<div class="grow hmain" data-hopen><div class="small ell"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) +
@@ -1863,7 +1865,7 @@
   function skillsHTML() {
     const st = S();
     const shown = E.SKILLS.filter((g) => g === "recolte" || E.gesteOK(g) || (st.skills[g] || 0) > 0);
-    return '<div class="kicker">Tes mains</div><h2>Gestes et récolte</h2><p class="small muted">Chaque pièce faite à la main, et chaque récolte, font monter le geste. Un niveau rend le geste 1 % plus rapide (la récolte rapporte 1 % de plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", une chance de pièce en plus. À la relève, il en reste un dixième.</p>" +
+    return '<div class="kicker">Tes mains</div><h2>Actions et récolte</h2><p class="small muted">Chaque pièce fabriquée à la main fait monter son action, et chaque récolte fait monter la récolte. Un niveau rend l’action 1 % plus rapide (la récolte rapporte 1 % de plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", une chance de pièce en plus. À la relève, il en reste un dixième.</p>" +
       '<div class="skills">' + shown.map((g) => {
         const k = E.skill(g);
         return '<div class="skill"><span class="sk-ic">' + (g === "recolte" ? gi(GI.ui && GI.ui.recolte || "sickle") : gIc(g)) + '</span><div class="grow"><div class="row between"><b>' + esc(skillName(g)) + '</b><span class="sk-l">niv. ' + k.lvl + "</span></div>" +
@@ -1888,7 +1890,7 @@
           '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span></span>" +
           '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
       }).join("") +
-      '</div><p class="tiny muted">Annuler rend les matières de l’établi à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+      '</div><p class="tiny muted">Annuler rend les ressources de l’établi à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
   }
   function openHands() {
     openModal({
@@ -1896,7 +1898,7 @@
       on: {
         hc: (b) => {
           const i = Number(b.dataset.i), j = S().hand.q[i];
-          if (j && E.cancelJob(i)) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Les matières sont revenues dans ta Réserve."); }
+          if (j && E.cancelJob(i)) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Les ressources sont revenues dans ta Réserve."); }
           const box = $("#modal .modal-box");
           box.innerHTML = handsSheet(); iconize(box);
           render(true);
@@ -1910,11 +1912,11 @@
     const st = S();
     if (!st.studied[id]) {
       const c = E.studyCost(id);
-      return '<div class="study"><button class="btn small" data-m="study"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button><span class="tiny muted">Pour savoir avec quels gestes la tenter.</span></div>';
+      return '<div class="study"><button class="btn small" data-m="study"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button><span class="tiny muted">Pour savoir avec quelles actions la tenter.</span></div>';
     }
     const r = E.reactions(id), gs = D.GESTE_ORDER.filter((g) => r[g]);
     return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + gIc(g) + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
-      : '<span class="tiny muted">Rien de plus à tenter avec tes gestes et tes matières, pour l’instant.</span>') + "</div>";
+      : '<span class="tiny muted">Rien de plus à tenter avec tes actions et tes ressources, pour l’instant.</span>') + "</div>";
   }
   /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
   function treeHTML(id, n) {
@@ -1973,13 +1975,17 @@
     let h = '<div class="rwin"><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
       '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + (nameShown(id) ? esc(it.n) : "Recette inconnue") + "</h2>" +
       (E.stars(id) ? '<div class="stars" title="Maîtrise : fabriqué ' + fmt(st.made[id] || 0) + ' fois">' + "★".repeat(E.stars(id)) + ' <span class="tiny muted">maîtrise</span></div>' : "") + "</div>" +
-      (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Matière favorite" title="Matière favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
+      (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Ressource favorite" title="Ressource favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
       (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
     if (!visible) {
       h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Tu en sauras plus en avançant.</p>';
     } else {
-      if (known || !it.r) h += '<p class="serif rdesc">' + esc(it.d || "") + "</p>";
-      if (TYPE_HINT[it.t] && (known || !it.r)) h += '<p class="tiny muted">' + TYPE_HINT[it.t] + "</p>";
+      // d’abord ce que fait l’objet (la couche « jeu »), puis le récit, à part
+      if (known || !it.r) {
+        if (it.u) h += '<p class="small">' + esc(it.u) + "</p>";
+        else if (TYPE_HINT[it.t]) h += '<p class="tiny muted">' + TYPE_HINT[it.t] + "</p>";
+        if (it.d) h += '<p class="serif rdesc"><i>' + esc(it.d) + "</i></p>";
+      }
       if (fxText(id)) h += '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>";
       h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En réserve : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
       const zid = E.RES_ZONE[id];
@@ -2012,10 +2018,10 @@
         } else {
           const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
           if (it.h) h += '<div class="riddle small">« ' + esc(it.h) + " »</div>";
-          h += '<p class="small muted">Geste : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · " + n + " matière" + (n > 1 ? "s" : "") + (lvl >= 2 ? " dont " + nav(big) : "") + "</p>";
+          h += '<p class="small muted">Action : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · " + n + " ressource" + (n > 1 ? "s" : "") + (lvl >= 2 ? " dont " + nav(big) : "") + "</p>";
           const m = E.memory();
           if (m && m.id === id) h += memoryHTML(m);
-          else h += '<p class="tiny muted">À toi de la trouver à l’Atelier. Étudier les matières aide à savoir quoi tenter.</p>';
+          else h += '<p class="tiny muted">À toi de la trouver à l’Atelier. Étudier les ressources aide à savoir quoi tenter.</p>';
         }
       }
       const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] !== undefined);
@@ -2180,32 +2186,32 @@
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
       '<div class="small">' +
-      "<p><b>En bref.</b> Tu récoltes des matières, tu découvres des recettes à l’Atelier, puis tu poses des extracteurs et des machines qui travaillent pour toi. L’<b>objectif</b>, en haut du Domaine, dit toujours quoi faire ensuite.</p>" +
+      "<p><b>En bref.</b> Tu récoltes des ressources, tu découvres des recettes à l’Atelier, puis tu poses des extracteurs et des machines qui travaillent pour toi. L’<b>objectif</b>, en haut du Domaine, dit toujours quoi faire ensuite.</p>" +
       '<h3 class="sub">Les mots du jeu</h3><dl class="lexique">' +
       "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Tout ce qui est récolté ou fabriqué y va ; tout ce qui se fabrique y puise.</dd>" +
-      "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement, c’est une matière à récolter.</dd>" +
+      "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement est une ressource à récolter.</dd>" +
       "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt pour continuer), ou ▶ pour récolter en continu. Parfois, un appui rapporte le double : un coup de chance.</dd>" +
-      "<dt>Geste, recette</dt><dd>Une recette, c’est un geste (Tailler, Tresser…) et des matières. On les découvre à l’Atelier, en essayant.</dd>" +
+      "<dt>Action, recette</dt><dd>Une recette associe une action (Tailler, Tresser…) à une ou plusieurs ressources. Tu les découvres à l’Atelier, en faisant des tentatives.</dd>" +
       "<dt>Pièce</dt><dd>Un objet fabriqué qui sert à en fabriquer d’autres (manche, corde…).</dd>" +
       "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
-      "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et ouvre un geste, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
+      "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et débloque une action, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
       "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même jeu fermé.</dd>" +
       "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce faite à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
-      "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les matières sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
+      "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les ressources sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
       "<dt>Tes mains</dt><dd>Ce que tu fabriques passe par la file de tes mains (barre ✋ au-dessus des onglets), aidées par tes machines.</dd>" +
       "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
-      "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une matière, pour savoir avec quels gestes elle cache encore des recettes.</dd>" +
+      "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource, pour savoir avec quelles actions elle cache encore des recettes.</dd>" +
       "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde avec tes recettes, et les Traces achètent des mains plus habiles (Mémoire des mains).</dd>" +
       "<dt>Ruine</dt><dd>Ce qu’un Semeur a construit t’attend au cycle suivant : elle se répare pour une fraction de son coût d’origine, sans repasser par l’Atelier.</dd>" +
-      "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des matières premières.</dd>" +
+      "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des Traces et des ressources.</dd>" +
       "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
       "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Il se nourrit dans la Réserve.</dd></dl>" +
       '<h3 class="sub">Les écrans</h3>' +
       "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
       "<p><b>🗺️ Carte.</b> Le monde, et la brume sur ce que tu n’as pas atteint. Touche un 🧭 lieu pour l’explorer : il raconte un bout de l’histoire.</p>" +
-      "<p><b>🔨 Atelier.</b> Choisis un geste, pose jusqu’à trois matières, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
+      "<p><b>🔨 Atelier.</b> Choisis une action, pose jusqu’à trois ressources, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
       "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
-      "<p><b>📈 Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même : 1 % plus rapide par niveau, et une chance de pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
+      "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 avec ce que tu fais toi-même : 1 % plus rapide par niveau, et une chance de pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
       "<p><b>Jeu fermé.</b> Extracteurs, commandes et exploration continuent jusqu’à 12 h.</p>" +
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
   }
@@ -2252,7 +2258,7 @@
     const ecus = Math.floor(st.ecus || 0);
     const ecusWarn = ecus > 0 ? '<p class="small" style="color:var(--bad)">Tes ' + fmt(ecus) + ' écus seront perdus : convertis-les en Traces au Comptoir avant.</p>' : '';
     openModal({
-      html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes matières, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
+      html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes ressources, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
         "<p>Tu gagnes <b>" + gain + " ✦ Traces</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusWarn + leftHTML() +
         '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
@@ -2558,7 +2564,7 @@
     $("#memBtn").addEventListener("click", () => { A.init(); A.click(); openMemoire(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
     $("#intuBtn").addEventListener("click", () => simpleModal("Intuition", "✨ " + Math.floor(S().intu),
-      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les matières : touche une matière, puis 🔍 Étudier, pour savoir avec quels gestes elle cache encore des recettes.</p>' +
+      '<p class="small">L’Intuition s’obtient en découvrant des recettes, des fragments d’histoire et des secrets. Elle sert à étudier les ressources : touche une ressource, puis 🔍 Étudier, pour savoir avec quelles actions elle cache encore des recettes.</p>' +
       (E.cache().intu ? '<p class="small muted">Génération : +' + E.cache().intu + " ✨ par minute.</p>" : "")));
     $("#expMini").addEventListener("click", () => { const a = S().exp.active; U.zone = a ? a.z : U.zone; setTab("carte"); });
     $("#actbar").addEventListener("click", (ev) => {
@@ -2627,8 +2633,8 @@
         A.click(); render(true); return;
       }
       if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
-      if ((b = t.closest("[data-lock]"))) { toast("Un geste que tu ne connais pas encore. Il s’ouvrira quand tu fabriqueras la station qui va avec : feu, enclume, creuset…"); return; }
-      if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une matière ci-dessous pour la poser ici."); return; }
+      if ((b = t.closest("[data-lock]"))) { toast("Une action que tu ne connais pas encore. Elle se débloque avec la station qui va avec : feu, enclume, creuset…"); return; }
+      if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
       if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
       if (t.closest("#forge, [data-forge]")) {
         if (performance.now() - (U.forgeUp || 0) < 600) return; // déjà fait au relâcher
@@ -2640,7 +2646,7 @@
       if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
       if ((b = t.closest("[data-hcancel]"))) {
         const j = S().hand.q[Number(b.dataset.hcancel)];
-        if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Les matières sont revenues dans ta Réserve."); render(true); }
+        if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Les ressources sont revenues dans ta Réserve."); render(true); }
         return;
       }
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }

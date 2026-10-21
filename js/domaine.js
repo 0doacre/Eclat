@@ -306,7 +306,7 @@
             .filter((id) => E.sellable(id) && (st.inv[id] || 0) >= 1)
             .sort((a, b) => E.sellQuote(b, st.inv[b]) - E.sellQuote(a, st.inv[a]));
           if (!items.length) {
-            h += '<p class="small muted center" style="padding:20px 0" id="sell-empty">Rien à vendre dans ta Réserve pour l’instant. Récolte des matières ou fabrique des pièces.</p>';
+            h += '<p class="small muted center" style="padding:20px 0" id="sell-empty">Rien à vendre dans ta Réserve pour l’instant. Récolte des ressources ou fabrique des pièces.</p>';
           } else {
             h += '<div class="comptoir-list" id="sell-list">' + items.map(sellRowHTML).join("") + '</div>';
           }
@@ -318,7 +318,7 @@
             '</div>';
           const buyable = E.buyableRes();
           if (buyable.length) {
-            h += '<h4 class="sub" style="margin:12px 0 8px">Matières premières</h4>';
+            h += '<h4 class="sub" style="margin:12px 0 8px">Ressources</h4>';
             h += '<div class="comptoir-list">' + buyable.map(buyResRowHTML).join("") + '</div>';
           }
         }
@@ -363,7 +363,7 @@
                   row.remove();
                   const list = box.querySelector("#sell-list");
                   if (list && !list.children.length) {
-                    list.outerHTML = '<p class="small muted center" style="padding:20px 0" id="sell-empty">Rien à vendre dans ta Réserve pour l’instant. Récolte des matières ou fabrique des pièces.</p>';
+                    list.outerHTML = '<p class="small muted center" style="padding:20px 0" id="sell-empty">Rien à vendre dans ta Réserve pour l’instant. Récolte des ressources ou fabrique des pièces.</p>';
                   }
                 } else {
                   row.outerHTML = sellRowHTML(id);
@@ -413,7 +413,7 @@
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
         else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Verser</button>' +
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
-          '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve, " + fmtNum(E.siteRate()) + " par seconde et par matière au plus." : "Alimenté, il se sert seul dans la Réserve.") + "</span></div>";
+          '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve, " + fmtNum(E.siteRate()) + " par seconde et par ressource au plus." : "Alimenté, il se sert seul dans la Réserve.") + "</span></div>";
       } else if (step.fire) h += '<p class="small">Tout est prêt. La décision se prend dans le Cosmos.</p>';
       else if (step.melody) h += '<p class="small">Il ne reste qu’à jouer <b>' + esc(D.MELODIES[step.melody].n) + "</b> sur la flûte (Journal).</p>";
       return h + "</section>";
@@ -423,8 +423,8 @@
     function prodHTML() {
       const P = E.production().filter((x) => x.in > 1e-4 || x.out > 1e-4), st = S();
       if (!P.length) return "";
-      return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary>Tout ce qui entre et sort, par matière</summary>' +
-        '<div class="u-pr u-ph tiny muted"><span class="grow">Matière</span><span>entre</span><span>sort</span><span>réserve</span></div>' +
+      return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary>Tout ce qui entre et sort, par ressource</summary>' +
+        '<div class="u-pr u-ph tiny muted"><span class="grow">Ressource</span><span>entre</span><span>sort</span><span>réserve</span></div>' +
         P.slice(0, 30).map((x) => '<div class="u-pr" data-goto="' + x.id + '">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
           "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + '</i><span data-c="' + x.id + '">' + fmt(st.inv[x.id] || 0) + "</span></div>").join("") + "</details>";
     }
@@ -588,7 +588,7 @@
       }
       if ((b = t.closest("[data-contrib]"))) {
         const r = E.contribute(b.dataset.contrib);
-        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Rien à verser pour l’instant : la Réserve n’a aucune des matières demandées.", { key: "contrib" }); }
+        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Rien à verser pour l’instant : la Réserve n’a aucune des ressources demandées.", { key: "contrib" }); }
         render(true);
         return true;
       }

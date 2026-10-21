@@ -56,24 +56,24 @@
   const I = (D.ITEMS = {});
 
   /* Âge 0 — Bois */
-  I.bois = { n: "Bois", ic: "🪵", a: 0, t: "res", d: "Branches mortes, bois vert. La forêt n’en manque pas." };
-  I.fibre = { n: "Fibres", ic: "🌿", a: 0, t: "res", d: "Longues herbes et lianes. Ça se plie, ça se noue." };
-  I.caillou = { n: "Pierre", ic: "🪨", a: 0, t: "res", d: "Cailloux, galets, blocs. Lourds et patients." };
+  I.bois = { n: "Bois", ic: "🪵", a: 0, t: "res", u: "Sert dans presque toutes les premières recettes.", d: "Dans une forêt, ce n’est pas ça qui manque." };
+  I.fibre = { n: "Fibres", ic: "🌿", a: 0, t: "res", u: "Sert à tresser : cordes, paniers, cabanes.", d: "Des herbes longues et des lianes. Tu peux les plier et les nouer." };
+  I.caillou = { n: "Pierre", ic: "🪨", a: 0, t: "res", u: "Sert au feu de camp, puis aux constructions lourdes.", d: "Cailloux, galets, blocs. Lourds, mais solides." };
   I.manche = { n: "Manche", sym: "╱", col: "#8a5a32", a: 0, t: "comp", r: ["tailler", { bois: 3 }, 1],
-    d: "Un bâton droit, écorcé, à la bonne longueur. La base de presque tout.",
-    h: "Retire au bois tout ce qui n’est pas utile." };
+    u: "Sert dans les outils, l’archet à feu et la cabane.", d: "Un bâton bien droit, écorcé. L’ingrédient de base de tout jeu de survie.",
+    h: "Prends du bois et retire tout ce qui dépasse." };
   I.corde = { n: "Corde", ic: "🪢", a: 0, t: "comp", r: ["tresser", { fibre: 3 }, 1],
-    d: "Trois brins tordus ensemble, qui tiennent ton poids.",
-    h: "Une herbe seule casse. Plusieurs, entrelacées, tiennent." };
+    u: "Sert à lier : archet à feu, cabane, collets.", d: "Trois brins tordus ensemble. Elle tient ton poids.",
+    h: "Un brin d’herbe casse tout de suite. Plusieurs, tressés ensemble, tiennent bon." };
   I.panier = { n: "Panier tressé", ic: "🧺", a: 0, t: "tool", r: ["tresser", { fibre: 15, manche: 2 }, 1],
-    e: { tap: { lisiere: 2 } }, d: "Tu peux enfin porter plus que deux mains pleines.",
-    h: "Des fibres entrecroisées autour d’une armature rigide." };
+    e: { tap: { lisiere: 2 } }, u: "Double ta récolte à la main dans la Lisière.", d: "Enfin de quoi porter plus que deux mains pleines.",
+    h: "Des fibres tressées autour de deux bâtons." };
   I.archet = { n: "Archet à feu", ic: "🏹", a: 0, t: "comp", r: ["assembler", { manche: 1, corde: 2 }, 1],
-    d: "Un arc dont la corde fait tourner un bâton contre le bois, assez vite pour l’embraser.",
-    h: "Un bâton, une corde tendue : un arc qui ne tire pas de flèches." };
+    u: "Nécessaire pour construire le feu de camp.", d: "Un petit arc dont la corde fait tourner un bâton contre du bois. Tourne assez vite, et le bois finit par fumer.",
+    h: "Un bâton et une corde bien tendue : un arc, mais pas pour tirer des flèches." };
   I.feu = { n: "Feu de camp", ic: "🔥", a: 0, t: "stat", r: ["assembler", { archet: 1, bois: 25, caillou: 15 }, 1],
-    e: { st: [{ g: "chauffer", heat: 600 }] }, d: "Le premier feu que tu allumes toi-même.",
-    h: "L’outil qui fait naître la braise, de quoi la nourrir, et des pierres pour la contenir." };
+    e: { st: [{ g: "chauffer", heat: 600 }] }, u: "Débloque l’action Chauffer, jusqu’à 600 °C.", d: "Le premier feu que tu allumes toi-même.",
+    h: "L’outil qui fait la braise, du bois pour la nourrir, et des pierres tout autour." };
   I.charbon = { n: "Charbon", sym: "⬢", col: "#2b2b2b", a: 0, t: "res", r: ["chauffer", { bois: 4 }, 1, { heat: 600 }],
     d: "Du bois cuit sans flamme. Brûle bien plus chaud que le bois.",
     h: "Le bois, chauffé longtemps, devient noir et léger." };
@@ -82,8 +82,8 @@
     h: "Un bâton pointu, durci par la flamme." };
   I.cabane = { n: "Cabane de cueillette", sn: "cabane", pl: "cabanes", ic: "🛖", a: 0, t: "ext", z: "lisiere", s: 1.2, ruine: "Cabane effondrée",
     r: ["assembler", { manche: 5, corde: 4, fibre: 15 }, 1], p: { bois: 0.4, fibre: 0.4, caillou: 0.2 },
-    d: "Un abri où s’entasse ce que donne la lisière. Le soir, des Lucioles tournent autour.",
-    h: "Des bâtons, des liens, un toit d’herbes." };
+    u: "Pose-la sur un gisement de la Lisière : elle récolte à ta place.", d: "Un abri de branches où s’entasse ta cueillette. Le soir, des Lucioles tournent autour.",
+    h: "Des bâtons, des cordes et un toit d’herbes." };
   I.torche = { n: "Torche", ic: "🕯️", a: 0, t: "comp", r: ["assembler", { manche: 1, fibre: 2, charbon: 1 }, 1],
     d: "Une flamme qu’on peut emporter, pour les grottes et les souterrains.",
     h: "Un manche, de l’herbe sèche, et ce qui brûle longtemps." };
@@ -135,8 +135,8 @@
   I.engrenage_bois = { n: "Rouage de bois", sym: "⚙", col: "#9a6b3c", a: 2, t: "comp", r: ["tailler", { manche: 2, eclat: 1 }, 2],
     d: "Une petite roue dentée, taillée dans un bâton.", h: "Un bâton, taillé en roue dentée par une lame de pierre." };
   I.automate_bois = { n: "Automate de bois", sn: "automate de bois", pl: "automates de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, ing: 1, prof: 0, ruine: "Automate rouillé", r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
-    d: "Une marionnette de bois et de cordes, tirée par un contrepoids de pierre. Elle refait le geste que tu lui montres (6 fois par minute). Dans le Domaine, confie-lui une recette.",
-    h: "Des rouages de bois, des cordes, et un lourd contrepoids." };
+    u: "Palier 1. Aide tes commandes sur les recettes à une seule ressource, une fois que tu les as fabriquées à la main.", d: "Il grince à chaque mouvement, mais il ne s’arrête jamais.",
+    h: "Des rouages en bois, des cordes, et une grosse pierre pour contrepoids." };
   I.hache_pierre = { n: "Hache de pierre", ic: "🪓", a: 2, t: "tool", r: ["assembler", { manche: 2, eclat: 4, laniere: 4 }, 1],
     e: { tap: { bois: 3, fibre: 2 } }, d: "Les petits arbres tombent en quelques coups.",
     h: "Une lame de pierre, liée solidement à un manche." };
@@ -149,8 +149,8 @@
   I.brique = { n: "Brique", ic: "🧱", a: 2, t: "comp", r: ["chauffer", { argile: 2 }, 1, { heat: 600 }],
     d: "De la boue cuite, dure comme de la pierre.", h: "La terre de la rivière, cuite." };
   I.four = { n: "Four en argile", ic: "🏺", a: 2, t: "stat", r: ["assembler", { brique: 30, argile: 20, charbon: 10 }, 1],
-    e: { st: [{ g: "chauffer", heat: 1100 }] }, d: "Une chambre de briques qui retient la chaleur.",
-    h: "Des briques, de l’argile pour les joindre, et un combustible plus chaud que le bois." };
+    e: { st: [{ g: "chauffer", heat: 1100 }] }, u: "Chauffer monte jusqu’à 1 100 °C : métaux, briques, verre.", d: "Une chambre de briques qui garde la chaleur toute la nuit.",
+    h: "Des briques, de l’argile pour les coller, et un combustible plus chaud que le bois." };
   I.nasse = { n: "Nasses et claies", sn: "nasse", pl: "nasses", ic: "🪣", a: 2, t: "ext", z: "riviere", s: 1.2,
     r: ["assembler", { manche: 8, corde: 6, brique: 4 }, 1], p: { argile: 0.3, silex: 0.2, sable: 0.3 },
     d: "Des barrages de branches qui retiennent ce que la rivière charrie.",
@@ -745,7 +745,7 @@
     appel: { n: "L’Appel des Lucioles", notes: [3, 1, 5, 2, 4],
       t: "Les cinq notes montent, et des points de lumière s’allument tout autour de toi, par milliers. Les Lucioles se réveillent et se mettent au travail avec toi. (Production automatique +25 %.)" },
     berceuse: { n: "La Berceuse d’Iris", notes: [4, 3, 1, 3, 4, 5, 4],
-      t: "Une mélodie simple, un peu triste. Tu la connais par cœur, alors que tu ne l’as jamais apprise. Au Caveau, les cristaux violets se mettent à vibrer avec elle. (Nouveau geste : Accorder.)" },
+      t: "Une mélodie simple, un peu triste. Tu la connais par cœur, alors que tu ne l’as jamais apprise. Au Caveau, les cristaux violets se mettent à vibrer avec elle. (Nouvelle action : Accorder.)" },
     frere: { n: "Dormez-vous ?", notes: [1, 2, 3, 1, 1, 2, 3, 1],
       t: "Une vieille comptine. Dans ta tête, une cloche sonne les matines : ding, daing, dong. (+2 ✨)" }
   };
@@ -829,7 +829,7 @@
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer."],
     { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les collines sont raides : il faudra y tailler des marches." },
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Il faudrait quelque chose pour les refaire à ta place."],
-    { k: "line", n: "Faire tourner ton automate", txt: "Lance une commande d’une recette à une matière déjà faite à la main (des manches, des cordes, des éclats…) : ton automate s’y met tout seul." },
+    { k: "line", n: "Faire tourner ton automate", txt: "Lance une commande d’une recette à une ressource, déjà fabriquée à la main (des manches, des cordes, des éclats…) : ton automate s’y met tout seul." },
     ["four", "Le feu de camp ne chauffe plus assez."],
     ["lingot_cuivre", "La pierre verte des collines cache un métal."],
     ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur."],
@@ -892,11 +892,11 @@
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
   D.MEMOIRE = [
     { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 16, 32] },
-    { id: "mains", n: "Gestes sûrs", ic: "⏱️", d: "Fabriquer à la main va plus vite : ×{v} de la durée.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 12, 20] },
+    { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Fabriquer à la main va plus vite : ×{v} de la durée.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 12, 20] },
     { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 21, 34, 55, 89] },
     { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 34, 55, 89, 144] },
     { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Passages ×{v} du prix.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
-    { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "des matières, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
+    { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "des ressources, des manches et des cordes", "et une cabane", "et deux cabanes de plus, et un feu de camp"][l], cost: [2, 6, 15] },
     { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
     { id: "oeil", n: "Coup d’œil", ic: "✨", d: "En récoltant à la main, {v} de chances d’un coup de chance (×2).", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 24, 48] },
     { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps compte jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
@@ -938,7 +938,7 @@
   D.GUIDE = {
     tries: [6, 14, 26], // souvenirs à réunir pour le geste, une matière, puis la recette
     lines: [
-      ["Tes mains frémissent, comme si elles se souvenaient d’un autre corps. Le geste qu’il te faut : {g}.",
+      ["Tes mains frémissent, comme si elles se souvenaient d’un autre corps. L’action qu’il te faut : {g}.",
         "Tes doigts esquissent un mouvement tout seuls, avant que tu y penses : {g}.",
         "Un geste te revient, usé comme un vieux chemin : {g}."],
       ["Une image te traverse : d’autres mains, avant les tiennes, qui tiennent {i}.",
@@ -981,7 +981,7 @@
   };
 
   D.CHANGES = [
-    "📦 Les commandes : ×10, ×50, ×100, ×1000 ou Max depuis le Carnet, même s’il manque des matières. Elles les prennent dans la Réserve à mesure qu’elles arrivent.",
+    "📦 Les commandes : ×10, ×50, ×100, ×1000 ou Max depuis le Carnet, même s’il manque des ressources. Elles les prennent dans la Réserve à mesure qu’elles arrivent.",
     "⚙️ Les machines ne sont plus fixées à une recette : dès qu’elles sont libres, elles aident tes commandes.",
     "✋ Une recette se fait d’abord une fois à la main. Ensuite, les machines savent la faire.",
     "⛏️ Tes extracteurs libres se posent seuls sur le gisement dont une commande a besoin."
@@ -1113,8 +1113,8 @@
 
   D.TEMPS = [
     { n: "Froid", c: "#6aa8ff", m: "Rien ne se passe. Pas avec ça, pas pour l’instant." },
-    { n: "Frais", c: "#7fd8f5", m: "Une de ces matières cache encore une recette, avec un autre geste ou d’autres matières." },
-    { n: "Tiède", c: "#ffd36b", m: "Ce geste et ces matières ont quelque chose à se dire." },
+    { n: "Frais", c: "#7fd8f5", m: "Une de ces ressources cache encore une recette, avec une autre action ou d’autres ressources." },
+    { n: "Tiède", c: "#ffd36b", m: "Cette action et ces ressources vont ensemble. Cherche encore." },
     { n: "Chaud", c: "#ff9a3c", m: "Tu y es presque !" },
     { n: "Brûlant", c: "#ff4a3c", m: "C’est la bonne combinaison !" }
   ];
@@ -1138,9 +1138,9 @@
 
   /* -------------------------------------------------------------- INTRO */
   D.INTRO = [
-    "Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.",
-    "Tu ne te souviens de rien, pas même de ton nom.",
-    "Tes mains, elles, semblent savoir quoi faire."
+    "Tu te réveilles dans l’herbe, au bord d’une forêt. Tu ne te souviens de rien, même pas de ton nom.",
+    "Tu regardes autour de toi. Tu ramasses un morceau de bois par terre et commences à l’écorcer.",
+    "Un sourire naît au coin de tes lèvres : oui, ça, tu t’en souviens."
   ];
 
   /* Scènes d’éveil des Semeurs 8 à 10 (cycles 2 à 4) */
