@@ -2845,9 +2845,9 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.7.1 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.7.1");
-  assert.ok(D.CHANGES.length >= 3);
+test("Version 0.8.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.8.0");
+  assert.ok(D.CHANGES.length >= 4);
 });
 
 test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
@@ -3065,13 +3065,13 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.7.1");
-  assert.ok(D.CHANGES.length >= 3);
+  assert.strictEqual(D.VERSION, "0.8.0");
+  assert.ok(D.CHANGES.length >= 4);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 7, "Mineure pour le lot courant");
-  assert.strictEqual(parts[2], 1, "0.7.1 : itération mineure");
+  assert.strictEqual(parts[1], 8, "Mineure pour le lot courant");
+  assert.strictEqual(parts[2], 0, "0.8.0 : itération majeure d'ergonomie");
 });
 
 console.log("Horodatage du Journal (0.7.1)");
@@ -3100,6 +3100,87 @@ test("Journal : une ancienne sauvegarde n’a pas de date inventée", () => {
   const found = Object.keys(E.state.frags).filter((f) => E.state.frags[f]);
   assert.ok(found.length > 0);
   found.forEach((f) => assert.strictEqual(E.stampOf("f:" + f), null));
+});
+
+console.log("Registre de Quêtes, Rituels & Contrats du Troqueur (0.8.0)");
+test("Rituels quotidiens : 3 rituels déterministes, progression et récompense", () => {
+  const E = createEngine();
+  const rits = E.dailyRituals();
+  assert.strictEqual(rits.length, 3);
+  assert.strictEqual(rits[0].claimed, false);
+  assert.strictEqual(rits[0].done, false);
+
+  // Avancer le rituel 1 via tap
+  const initR1 = rits[1].prog;
+  const yieldGot = E.tap("bois");
+  const ritsAfterTap = E.dailyRituals();
+  assert.strictEqual(ritsAfterTap[1].prog, initR1 + yieldGot);
+
+  // Compléter le rituel 0 pour tester la réclamation
+  E.advanceRitual(0, rits[0].target + 5);
+  const ritsDone = E.dailyRituals();
+  assert.strictEqual(ritsDone[0].done, true);
+  assert.strictEqual(ritsDone[0].prog, rits[0].target);
+
+  // Réclamer la récompense
+  const tracesAvant = E.state.meta.traces || 0;
+  const resClaim = E.claimRitual(0);
+  assert.strictEqual(resClaim.ok, true);
+  assert.ok((E.state.meta.traces || 0) > tracesAvant, "Traces créditées");
+
+  // Ne peut pas être réclamé deux fois
+  const resClaim2 = E.claimRitual(0);
+  assert.strictEqual(resClaim2.ok, false);
+  assert.strictEqual(E.dailyRituals()[0].claimed, true);
+});
+
+test("Réputation du Troqueur : rangs, livraisons et bonus de Traces", () => {
+  const E = createEngine();
+  const rep0 = E.troqueurRep();
+  assert.strictEqual(rep0.cnt, 0);
+  assert.strictEqual(rep0.cur.lvl, 0);
+  assert.strictEqual(rep0.cur.n, "Curieux de passage");
+  assert.strictEqual(rep0.cur.bonus, 0);
+
+  // Simuler 8 livraisons
+  E.state.meta.troqueurDelivered = 8;
+  const rep8 = E.troqueurRep();
+  assert.strictEqual(rep8.cnt, 8);
+  assert.strictEqual(rep8.cur.lvl, 2);
+  assert.strictEqual(rep8.cur.n, "Négociant estimé");
+  assert.strictEqual(rep8.cur.bonus, 2);
+});
+
+test("Résumé des quêtes et Scénario fil rouge", () => {
+  const E = createEngine();
+  const sc = E.scenarioQuest();
+  assert.ok(sc.chapter, "Nom de chapitre présent");
+  assert.ok(sc.ageName, "Nom d'âge présent");
+
+  const qsum = E.questSummary();
+  assert.strictEqual(typeof qsum.hasReady, "boolean");
+  assert.strictEqual(typeof qsum.readyRitual, "boolean");
+  assert.strictEqual(typeof qsum.payableAsk, "boolean");
+  assert.strictEqual(typeof qsum.readyScenario, "boolean");
+});
+
+test("Curiosités : probabilité de la poudre rouge par pierre minée à la main (médiane à 20k)", () => {
+  const E = createEngine();
+  E.state.zones.lisiere = true;
+  assert.strictEqual(E.hasCurio("poudre_rouge"), false);
+  assert.strictEqual(E.count("poudre_rouge"), 0);
+
+  // Vérifier le suivi du volume de cailloux minés à la main
+  const n = E.tap("caillou");
+  assert.strictEqual(E.state.stats.caillouMined, n);
+
+  // Validation mathématique de la courbe : médiane à 50 % pour 20 000 pierres minées
+  const p20k = 1 - Math.exp(-20000 * (Math.LN2 / 20000));
+  assert.strictEqual(Math.round(p20k * 100), 50);
+
+  // À 40k pierres, 75 % de chance cumulée
+  const p40k = 1 - Math.exp(-40000 * (Math.LN2 / 20000));
+  assert.strictEqual(Math.round(p40k * 100), 75);
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

@@ -65,3 +65,4 @@ puis la fusionne.
 - [v6.14.0 — Profondeur late-game : résonance stellaire & murmures du temps](lategame-traces-6-14.md)
 - [v0.7.0 — Ergonomie : pastilles d'objets interactives & affordance unifiée](item-pills-0-7-0.md)
 - [v0.7.1 — Immersion : horodatage du Journal](horodatage-0-7-1.md)
+- [v0.8.0 — Ergonomie majeure : Registre de quêtes, rituels des Semeurs, contrats du Troqueur & Codex d'artisanat](ergonomie-majeure-0-8-0.md)
