@@ -2845,8 +2845,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 6.13.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "6.13.0");
+test("Version 6.14.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "6.14.0");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -2992,10 +2992,75 @@ test("Progression de l'Âge et Jalons : calcul de complétion et level design", 
   const msAfter = E.milestones();
   const doneAfter = msAfter[0].filter((x) => x.done).length;
   assert.ok(doneAfter >= initialDone);
+});
 
-  // Vérifier la conformité de D.CHANGES
-  assert.ok(D.CHANGES.some((c) => c.includes("Notifications")));
-  assert.ok(D.CHANGES.some((c) => c.includes("Progression d’âge") || c.includes("Progression d'âge")));
+console.log("Profondeur Late-Game : Résonances Stellaires et Murmures (6.14)");
+test("Résonances Stellaires : paliers infinis, coûts exponentiels et multiplicateurs", () => {
+  const E = createEngine();
+  assert.ok(Array.isArray(D.TRANSCENDANCE));
+  assert.strictEqual(D.TRANSCENDANCE.length, 3);
+
+  // Valeurs initiales
+  assert.strictEqual(E.transLvl("trans_main"), 0);
+  assert.strictEqual(E.transV("trans_main"), 1);
+  const cost0 = E.transCost("trans_main");
+  assert.strictEqual(cost0, 50);
+
+  // Tentative sans assez de Traces
+  E.state.meta.traces = 20;
+  assert.strictEqual(E.transBuy("trans_main"), false);
+  assert.strictEqual(E.transLvl("trans_main"), 0);
+
+  // Achat avec assez de Traces
+  E.state.meta.traces = 100;
+  assert.strictEqual(E.transBuy("trans_main"), true);
+  assert.strictEqual(E.state.meta.traces, 50);
+  assert.strictEqual(E.transLvl("trans_main"), 1);
+  assert.strictEqual(E.transV("trans_main"), 2); // Multiplicateur x2
+
+  // Coût du palier suivant (exponentiel)
+  const cost1 = E.transCost("trans_main");
+  assert.ok(cost1 > cost0);
+
+  // Achat du palier 2
+  E.state.meta.traces = cost1 + 10;
+  assert.strictEqual(E.transBuy("trans_main"), true);
+  assert.strictEqual(E.transLvl("trans_main"), 2);
+  assert.strictEqual(E.transV("trans_main"), 4); // Multiplicateur x4
+
+  // Effet mesurable sur tapYield
+  E.state.zones.lisiere = true;
+  const yieldWithTrans = E.tapYield("bois", "lisiere");
+  assert.ok(yieldWithTrans >= 4);
+
+  // Persistance à la relève
+  E.newCycle();
+  assert.strictEqual(E.transLvl("trans_main"), 2);
+  assert.strictEqual(E.transV("trans_main"), 4);
+});
+
+test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
+  const E = createEngine();
+  assert.strictEqual(E.hasEndingHint("exode"), false);
+
+  // Sans assez de Traces
+  E.state.meta.traces = 40;
+  assert.strictEqual(E.buyEndingHint("exode"), false);
+  assert.strictEqual(E.hasEndingHint("exode"), false);
+
+  // Avec assez de Traces (75)
+  E.state.meta.traces = 150;
+  assert.strictEqual(E.buyEndingHint("exode"), true);
+  assert.strictEqual(E.state.meta.traces, 75);
+  assert.strictEqual(E.hasEndingHint("exode"), true);
+
+  // Impossible de racheter un murmure déjà acquis
+  assert.strictEqual(E.buyEndingHint("exode"), false);
+  assert.strictEqual(E.state.meta.traces, 75);
+
+  // Persistance à la relève
+  E.newCycle();
+  assert.strictEqual(E.hasEndingHint("exode"), true);
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

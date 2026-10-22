@@ -62,3 +62,4 @@ puis la fusionne.
 - `arche-cycles-6-11.md` : Réactivité narrative d'ARCHE, mémoire des cycles et dialogues dynamiques (6.11.0).
 - [v6.12.0 — Langage naturel & épuration des textes](langage-naturel-6-12.md)
 - [v6.13.0 — Ergonomie visuelle : notifications mobiles & progression de l'âge](ergonomie-visuelle-6-13.md)
+- [v6.14.0 — Profondeur late-game : résonance stellaire & murmures du temps](lategame-traces-6-14.md)

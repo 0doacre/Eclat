@@ -87,7 +87,7 @@
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0 },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -369,6 +369,37 @@
       return true;
     };
 
+    /* ------------------------------------------------------ Résonances Stellaires (Transcendance) */
+    const TRANS = {};
+    (D.TRANSCENDANCE || []).forEach((t) => (TRANS[t.id] = t));
+    const transLvl = (id) => (S.meta && S.meta.trans && S.meta.trans[id]) || 0;
+    const transV = (id) => (TRANS[id] ? TRANS[id].v(transLvl(id)) : 1);
+    E.transLvl = transLvl;
+    E.transV = transV;
+    E.transCost = (id) => (TRANS[id] ? TRANS[id].cost(transLvl(id)) : Infinity);
+    E.transBuy = function (id) {
+      const t = TRANS[id], c = t && t.cost(transLvl(id));
+      if (!t || c === undefined || S.meta.traces < c) return false;
+      S.meta.traces -= c;
+      S.meta.trans = S.meta.trans || {};
+      S.meta.trans[id] = transLvl(id) + 1;
+      recalc();
+      E.emit("struct");
+      return true;
+    };
+
+    /* ------------------------------------------------------ Murmures du Temps */
+    E.hasEndingHint = (k) => !!(S.meta && S.meta.hints_endings && S.meta.hints_endings[k]);
+    E.buyEndingHint = function (k) {
+      const cost = D.HINT_ENDING_COST || 75;
+      if (E.hasEndingHint(k) || !D.ENDINGS || !D.ENDINGS[k] || S.meta.traces < cost) return false;
+      S.meta.traces -= cost;
+      S.meta.hints_endings = S.meta.hints_endings || {};
+      S.meta.hints_endings[k] = true;
+      E.emit("struct");
+      return true;
+    };
+
     /* ------------------------------------------------------ passages
      * L’objet qui ouvrait une terre rend son passage possible ; la terre s’ouvre quand
      * le passage est payé. On verse depuis la Réserve, en plusieurs fois si besoin. */
@@ -456,7 +487,7 @@
 
     function tapYield(res, zid) {
       const c = E.cache();
-      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * skillSpeed("recolte");
+      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
     }
     E.tapYield = tapYield;
     E.tap = function (res, zid) {
@@ -957,7 +988,7 @@
 
     function machUnitRate(m, c) {
       const M = item(m);
-      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") : 0;
+      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") : 0;
     }
     function machReadyFor(m, rec) {
       if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
@@ -2655,7 +2686,7 @@
       let r = 0;
       for (const t in e.u) {
         const it = item(t);
-        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr");
+        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
       return r;
     }
@@ -3562,8 +3593,10 @@
       const hadPass = !!o.pass && typeof o.pass === "object";
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
-      o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0 }, o.meta);
+      o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0, trans: {}, hints_endings: {} }, o.meta);
       if (!o.meta.curios || typeof o.meta.curios !== "object" || Array.isArray(o.meta.curios)) o.meta.curios = {};
+      if (!o.meta.trans || typeof o.meta.trans !== "object" || Array.isArray(o.meta.trans)) o.meta.trans = {};
+      if (!o.meta.hints_endings || typeof o.meta.hints_endings !== "object" || Array.isArray(o.meta.hints_endings)) o.meta.hints_endings = {};
       o.meta.curioHearts = Math.max(0, Math.floor(Number(o.meta.curioHearts)) || 0);
       o.meta.capsuleText = typeof o.meta.capsuleText === "string" ? o.meta.capsuleText.slice(0, 140) : "";
       if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};

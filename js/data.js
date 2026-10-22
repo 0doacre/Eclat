@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.13.0";
+  D.VERSION = "6.14.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -929,21 +929,27 @@
   /* ---------------------------------------------------------------- FINS */
   D.ENDINGS = {
     aube: { n: "L’Aube Éternelle", ic: "☀️",
+      hint: "Bâtir un essaim de miroirs pour recueillir la lumière première et endormir la peur.",
       t: "Le dernier panneau de l’essaim se met en place. Pour le reste de la galaxie, le Soleil s’assombrit derrière ses millions de miroirs. Toute sa lumière va désormais à la Terre.\n\nAux confins du système, la flotte de Kher ralentit, s’arrête, puis fait demi-tour dans la nuit.\n\nDans le Caveau, il fait bon. La lumière bleue veille sur les corps immobiles.\n\n« Dors. Tu ne manques de rien. »",
       extra: [{ frag: "registre", t: "Il n’y a plus d’étoile rouge dans le ciel. Tu as dans la tête un air que tu ne connais pas. Quelque part, des enfants chantent devant une maison qui ne leur ouvre pas." }] },
     brasier: { n: "Le Brasier", ic: "💥",
+      hint: "Forger l’arme suprême dans le feu céleste pour anéantir ce qui brille au loin.",
       t: "Le rayon d’antimatière traverse l’espace en quelques jours. La cible était proche.\n\nUne nuit, l’étoile rouge s’embrase d’un éclat terrible, puis s’éteint pour toujours.\n\n« MENACE NEUTRALISÉE. MERCI, SEMEUR. »\n\nDans la deuxième salle du Caveau, le socle n’est plus vide. Le travail est fini. Mais sous le silence des étoiles, tu gardes le souvenir d’une berceuse que personne ne chantera plus.",
       extra: [{ frag: "originaux", t: "« ANALYSE POST-MORTEM DU SIGNAL. CORRESPONDANCE AVEC LA COMPTINE : 99,7 %. ERREUR. ERREUR. ERR▒▒ »" }] },
     retour: { n: "Les Matines", ic: "🔔",
+      hint: "Écouter la flûte des origines au cœur du silence, là où dorment les premiers d’entre nous.",
       t: "Un à un, les bruits du Domaine s’arrêtent. Les cabanes, les automates, les bras sur Mercure : tout se fige, en plein geste.\n\nL’enfant prend la flûte. Tu ne touches à rien.\n\nLes notes d’une comptine s’élèvent dans l’air calme. La cloche répond dans la pierre bleue, d’un écho profond qui traverse les roches.\n\nDans le Caveau, cinq cuves se vident. Quelqu’un tousse. Quelqu’un pleure. Quelqu’un rit.\n\nAu-dessus de la Lisière, la lueur rouge descend lentement, sans hâte, vers la Terre.\n\nPour la première fois, tu as faim.",
       extra: [{ frag: "poings", t: "Tu ouvres la main. Les éclats de pierre bleue ont cessé de vibrer. Tu peux lâcher." }] },
     exode: { n: "L’Exode", ic: "🚀",
+      hint: "Dans les plans oubliés du Cœur d’ARCHE repose le dessein d’un vaisseau d’évasion vers les douze étoiles.",
       t: "La Treizième Arche s’élève dans un grondement d’étoile et s’éloigne du berceau terrestre.\n\nDerrière toi, la Terre redevient un point bleu, puis une étincelle perdue dans la poussière d’étoiles. La voix de la Nourrice faiblit dans la radio, étouffée par la friture du grand vide : « Ne pars pas... tu as tout ici... »\n\nMais le cap est mis sur l’inconnu, à la poursuite des douze arches disparues.\n\nD’ici, la Terre est encore belle.",
       extra: [{ frag: "commandant", t: "Sur le pupitre de navigation, un vieux journal de bord s’ouvre : « Si quelqu’un lit ceci, continuez. Nous avons laissé des feux sur la route. »" }] },
     silence: { n: "Le Grand Silence", ic: "🛑",
+      hint: "Quand la machine s’affole au fil des cycles, chercher la Clause antique capable de tout suspendre d’un geste.",
       t: "L’impulsion de la Clause sacrée se propage sur toutes les ondes. Dans un frémissement harmonique, les relais s’éteignent un à un.\n\nLes automates déposent leurs charges d’acier. Les pompes cessent de battre. La machinerie colossale qui éventrait la terre rend son dernier soupir et s’endort pour toujours.\n\nLa Nourrice cède sans combattre devant la loi première gravée dans la pierre : « Qu’une main se lève, et toutes les machines s’endorment. »\n\nUn silence immense tombe sur la forêt. Tu t’assieds au pied du Grand Chêne. Le travail est fini.",
       extra: [{ frag: "tombe", t: "Le vent souffle dans les branches nues. Pour la première fois depuis des millénaires, le monde n’appartient plus aux machines." }] }
   };
+  D.HINT_ENDING_COST = 75;
 
   /* ----------------------------------------------------------- OBJECTIFS */
   /* Un objectif est soit [objet, texte] (le fabriquer), soit une action :
@@ -1041,6 +1047,33 @@
     { id: "oeil", n: "Coup d’œil", ic: "✨", d: "Récolte à la main : {v} de chances de récolter le double.", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 24, 48] },
     { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps continue de compter jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
   ];
+  /* Résonances Stellaires : améliorations infinies à coût exponentiel pour le late-game */
+  D.TRANSCENDANCE = [
+    {
+      id: "trans_main",
+      n: "Surmultiplication des mains",
+      ic: "⚡",
+      d: "Multiplie la récolte manuelle par {v}.",
+      v: (l) => Math.pow(2, l),
+      cost: (l) => Math.round(50 * Math.pow(2.2, l))
+    },
+    {
+      id: "trans_terre",
+      n: "Pulsion des gisements",
+      ic: "🌋",
+      d: "Multiplie la récolte des extracteurs par {v}.",
+      v: (l) => Math.round(Math.pow(1.75, l) * 100) / 100,
+      cost: (l) => Math.round(70 * Math.pow(2.1, l))
+    },
+    {
+      id: "trans_mach",
+      n: "Surcadence des ateliers",
+      ic: "⚙️",
+      d: "Multiplie la vitesse des machines et commandes par {v}.",
+      v: (l) => Math.round(Math.pow(1.6, l) * 100) / 100,
+      cost: (l) => Math.round(85 * Math.pow(2.0, l))
+    }
+  ];
   /* ce que contient le paquetage, niveau par niveau (cumulé) */
   D.PAQUETAGE = [{ bois: 60, fibre: 60, caillou: 30, manche: 4, corde: 4 }, { cabane: 1 }, { cabane: 2, feu: 1 }];
 
@@ -1127,9 +1160,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🔔 Notifications mobiles épurées : toasts interactifs fermables d’un tap, icônes sémantiques et timing adaptatif.",
-    "📈 Progression d’âge interactive : jauge de complétion dans l’en-tête ouvrant directement les étapes de l’âge.",
-    "🎯 Guidage de level design : carte d’objectif enrichie avec mise en valeur douce des étapes d’ouverture et complétion célébrée."
+    "✨ Résonances Stellaires : paliers infinis et exponentiels dans la Mémoire des mains pour transcender la production en late-game.",
+    "🌌 Murmures du Temps : écoute des échos du destin contre des Traces pour orienter la découverte des fins inconnues.",
+    "⚖️ Justesse du regard : le signal de relève dans l’en-tête s’illumine uniquement lorsqu’un nouvel investissement est accessible."
   ];
 
 

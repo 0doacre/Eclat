@@ -3104,6 +3104,19 @@
         (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
     }).join("") + "</div>";
 
+    if (D.TRANSCENDANCE && D.TRANSCENDANCE.length) {
+      h += '<h3 class="sub" style="margin-top:16px">✨ Résonances Stellaires</h3>';
+      h += '<p class="tiny muted">Paliers infinis à coût exponentiel. Leurs multiplicateurs traversent les relèves et décuplent la puissance du monde.</p>';
+      h += '<div class="mems">' + D.TRANSCENDANCE.map((x) => {
+        const l = E.transLvl(x.id), c = E.transCost(x.id);
+        const curV = x.v(l), nextV = x.v(l + 1);
+        const soon = m.traces < c && can && m.traces + gain >= c;
+        return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">Niveau ' + l + "</span></div>" +
+          '<div class="tiny muted">' + esc(x.d.replace("{v}", "×" + String(curV).replace(".", ","))) + ' → <b style="color:var(--good)">×' + String(nextV).replace(".", ",") + '</b></div></div>' +
+          '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buytrans" data-id="' + x.id + '">' + fmt(c) + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button></div>";
+      }).join("") + "</div>";
+    }
+
     const ech = Object.values(m.endings || {}).reduce((a, b) => a + b, 0);
     const endKeys = Object.keys(D.ENDINGS);
     h += '<h3 class="sub" style="margin-top:16px">Dénouements &amp; Échos</h3>';
@@ -3112,9 +3125,15 @@
       const en = D.ENDINGS[k], got = (m.endings || {})[k] || 0;
       if (got) {
         return '<div class="mem on"><span class="mic">' + en.ic + '</span><div class="grow"><div class="small"><b>' + esc(en.n) + '</b> <span class="tiny muted">×' + got + '</span></div><div class="tiny muted">Écho actif : +' + (got * 50) + ' %</div></div><span class="tiny ok">✦ Atteint</span></div>';
-      } else {
-        return '<div class="mem dim" style="opacity:0.6"><span class="mic" style="filter:grayscale(1)">❔</span><div class="grow"><div class="small"><b>Dénouement inconnu</b></div><div class="tiny muted">À découvrir</div></div><span class="tiny muted">···</span></div>';
       }
+      const hasHint = E.hasEndingHint(k);
+      if (hasHint) {
+        return '<div class="mem on" style="border-left-color:var(--intu)"><span class="mic">✨</span><div class="grow"><div class="small"><b>Dénouement secret · Murmure céleste</b></div><div class="tiny" style="color:var(--text);font-style:italic">« ' + esc(en.hint || "Le destin attend.") + ' »</div></div><span class="tiny muted" style="color:var(--intu)">Murmure acquis</span></div>';
+      }
+      const hintCost = D.HINT_ENDING_COST || 75;
+      const canHint = m.traces >= hintCost;
+      const soonHint = !canHint && can && m.traces + gain >= hintCost;
+      return '<div class="mem dim" style="opacity:0.85"><span class="mic" style="filter:grayscale(1)">❔</span><div class="grow"><div class="small"><b>Dénouement inconnu</b></div><div class="tiny muted">Écouter un murmure du destin…</div></div><button class="btn small' + (canHint ? " pri" : " nope") + (soonHint ? " soon" : "") + '" data-m="buyhint" data-k="' + k + '">Murmure · ' + hintCost + ' ✦' + (soonHint ? '<small class="tiny">après la relève</small>' : "") + '</button></div>';
     }).join("") + "</div>";
 
     return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
@@ -3160,6 +3179,26 @@
             A.fail(0);
             const c = E.memCost(b.dataset.id), m = S().meta;
             toast(c !== undefined && E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras l’acheter juste après la relève, avec les Traces qu’elle rapporte." : "Il te faut plus de Traces : franchis des passages, puis passe le relais.", { key: "mem" });
+          }
+          swapModal(Object.assign(o, { html: memHTML() }));
+          return true;
+        },
+        buytrans: (b) => {
+          if (E.transBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([15, 40, 15]); save(); }
+          else {
+            A.fail(0);
+            const c = E.transCost(b.dataset.id), m = S().meta;
+            toast(E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras franchir ce palier stellaire juste après la relève." : "Il te faut plus de Traces pour franchir ce palier stellaire.", { key: "trans" });
+          }
+          swapModal(Object.assign(o, { html: memHTML() }));
+          return true;
+        },
+        buyhint: (b) => {
+          if (E.buyEndingHint(b.dataset.k)) { A.secret ? A.secret() : A.click(); vibe([20, 50, 20]); save(); toast("✨ Un murmure du destin résonne dans ta mémoire…", { key: "hint" }); }
+          else {
+            A.fail(0);
+            const cost = D.HINT_ENDING_COST || 75, m = S().meta;
+            toast(E.canReleve() && m.traces + E.releveGain() >= cost ? "Tu pourras écouter ce murmure juste après la relève." : "Il te faut 75 Traces pour écouter ce murmure.", { key: "hint" });
           }
           swapModal(Object.assign(o, { html: memHTML() }));
           return true;
@@ -3215,7 +3254,15 @@
     const txt = can && gain ? "+" + gain : fmt(m.traces);
     const n = $("#memN");
     if (n.textContent !== txt) n.textContent = txt;
-    b.classList.toggle("ready", can && gain > 0);
+
+    // Calcul si un achat réel est possible (maintenant ou après la relève)
+    const pot = can && gain ? m.traces + gain : m.traces;
+    const canBuyBase = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && pot >= c; });
+    const canBuyTrans = (D.TRANSCENDANCE || []).some((x) => pot >= E.transCost(x.id));
+    const canBuyHint = Object.keys(D.ENDINGS || {}).some((k) => !((m.endings || {})[k]) && !E.hasEndingHint(k) && pot >= (D.HINT_ENDING_COST || 75));
+    const hasPurchase = canBuyBase || canBuyTrans || canBuyHint;
+
+    b.classList.toggle("ready", hasPurchase && (can && gain > 0 || m.traces >= 2));
   }
 
   /* ============================================================ ÉVÉNEMENTS DU MOTEUR */
@@ -3804,7 +3851,7 @@
     setTimeout(cloudCheck, 1500);
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
-    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte, toast };
+    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
