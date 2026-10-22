@@ -553,7 +553,7 @@
   I.poudre_rouge = { n: "Poudre rouge", ic: "✨", col: "#e74c3c", sym: "✦", a: 2, t: "res", curio: true,
     d: "Une poudre fine et écarlate qui crépite doucement entre tes doigts.",
     u: "Sert à confectionner une torche rouge." };
-  I.torche_rouge = { n: "Torche rouge", ic: "🏮", col: "#e74c3c", sym: "🔥", a: 2, t: "curio", curio: true,
+  I.torche_rouge = { n: "Torche rouge", ic: "🏮", col: "#e74c3c", sym: "🔥", a: 2, t: "curio", curio: true, sec: true,
     r: ["assembler", { manche: 1, poudre_rouge: 1 }, 1],
     d: "Une torche qui brille d’une lueur rouge sans jamais chauffer.",
     h: "Un manche de bois et cette poudre rouge qui crépite.",
