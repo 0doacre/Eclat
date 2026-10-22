@@ -97,37 +97,40 @@ Ce document récapitule l'ensemble des développements menés aujourd'hui sur le
 
 ---
 
-## 5. Prochaine Étape Majeure : v0.8.0 (Lot 2) — Le Registre de Quêtes & Expansion du Troqueur
+## 5. Livré : v0.8.0 (Lot Majeur Ergonomie & Quêtes)
 
-#### Contexte & Besoin
-La carte d'objectif unique actuellement située en haut du Domaine a atteint ses limites ergonomiques et narratives. L'utilisateur souhaite la transformer en un véritable **Registre de Quêtes** articulé en 3 piliers :
+La version majeure **v0.8.0** a été entièrement implémentée, testée et validée dans Chrome headless :
 
-1. **Quête de Scénario (Fil Rouge)** :
-   - La grande traversée narrative : guide le joueur depuis les premiers émois du Bois jusqu'aux dénouements du Cosmos.
-   - Affiche les objectifs principaux, les grands paliers technologiques et les révélations de l'Arche.
-2. **Rituels Quotidiens des Semeurs** :
-   - 3 rituels renouvelés chaque jour (ou à chaque nouveau cycle).
-   - Exemples de rituels :
-     - *Patience des mains* : fabriquer 20 objets à la main sans l'aide des machines.
-     - *Mémoire de la pierre* : récolter 500 unités d'une matière spécifique.
-     - *Écoute des étoiles* : jouer une mélodie particulière à la tombée de la nuit.
-   - Récompenses : Intuition (`✨`), Traces (`✦`), ou écus.
-3. **Contrats du Troqueur (Refonte et Expansion)** :
-   - Le Troqueur est actuellement cantonné à quelques demandes statiques dans le Domaine.
-   - **Nouveau système de contrats** :
-     - Commandes commerciales à durée limitée ou à livraisons échelonnées.
-     - Système d'affinité / réputation auprès du Troqueur débloquant des recettes exclusives, des ornements ou des pages de savoir oubliées.
-     - Tableau d'affichage dynamique au Comptoir avec pastilles d'objets interactives `.item-pill`.
+1. **Piste 1 — Registre de Quêtes & Expansion du Troqueur** :
+   - Bouton dédié `#questBtn` dans le bandeau supérieur (`#top`) avec pastille réactive d'alerte (`#questDot`) et sous-titre dynamique (`#questSub`).
+   - Modale dédiée à 3 onglets (*Scénario*, *Rituels*, *Troqueur*), accessible également depuis `goalCard` (`#btnQuests`).
+   - **Scénario fil rouge** par chapitre (`Chapitre I · L’Éveil des mains` etc.) avec pastilles des composants requis, composants manquants et bouton direct `⚡ Fabriquer maintenant`.
+   - **3 rituels quotidiens des Semeurs** renouvelés chaque jour réel (`E.dailyRituals()`) : façonnage des mains (Traces ✦), moisson de la terre (écus & Traces ✦), éveil de l'esprit (Intuition ✨). Suivi en direct via `E.advanceRitual` et réclamation instantanée (`E.claimRitual`).
+   - **Prestige du Troqueur** : 5 rangs de réputation marchande (*Curieux*, *Client*, *Négociant*, *Partenaire*, *Grand Marchand*) offrant jusqu'à +5 Traces de bonus par contrat livré. Livraison directe depuis le Registre (`E.deliverAsk`).
 
-#### Architecture suggérée pour la v0.8.0
-- **Nouveau fichier moteur ou extension** : `js/quetes.js` ou dans `js/engine.js` (`E.quests()`, `E.claimQuest()`, `E.dailyRituals()`).
-- **Interface** :
-  - En haut du Domaine ou accessible depuis un onglet/bouton d'accès rapide avec badge de notification (`#questBtn`).
-  - Volet dépliable ou modale dédiée avec 3 onglets bien distincts : *Scénario*, *Rituels*, *Troqueur*.
+2. **Piste 2 — Codex d’Artisanat & Filtres Intelligents** :
+   - Nouveau filtre rapide `⚡ En stock` (`data-cf="pret"`) dans le Carnet n'affichant que les recettes réalisables immédiatement avec l'inventaire courant.
+   - Badge d'alerte `⚡ Prêt` sur les cartes de recettes disponibles.
+   - Bouton instantané `⚡ +1` sur les fiches de recettes réalisables pour fabriquer immédiatement sans ouvrir la modale.
+
+3. **Piste 3 — Confort Visuel, Domaine Dense & Game Feel** :
+   - Mode compact / dense pour le Domaine (`[data-dom-dense]` et classe `.dom-dense` sur `.dom`).
+   - Animations CSS dédiées (`questpulse`, `ready-pulse`) et retours tactiles haptiques (`vibe`).
+
+- **Validation** : 158 tests moteur + 32 tests récit + 9 tests serveur (199 tests réussis). Service worker synchronisé (`tools/build.js`).
+- **Navigateur** : Test d'intégration automatisé Chrome headless (CDP) sans aucune erreur console, validation de la navigation entre onglets du Registre, activation du filtre `⚡ En stock`, et bascule du mode dense.
 
 ---
 
-## 6. Rappels des Directives et Secrets
+## 6. Prochaine Étape : v0.9.0 vers la version 1.0.0
+
+- Approfondissement de l'équilibrage du late-game (coûts exponentiels des Traces et paliers stellaires).
+- Scénarisation enrichie des quêtes de fin de partie et dialogues d'ARCHE.
+- Préparation de la version livrable 1.0.0.
+
+---
+
+## 7. Rappels des Directives et Secrets
 
 - **Règle des Secrets** : Ne jamais écrire en clair une combinaison secrète, un air de flûte caché, un code terminal ou l'emplacement d'un secret dans les commits, changelogs ou comptes-rendus. Toujours utiliser des formules neutres (« une recette secrète », « un lieu oublié »).
 - **Vérification navigateur obligatoire** : Tout lot modifiant `js/ui.js` ou `js/domaine.js` doit être validé dans un vrai navigateur (Chrome headless ou Playwright) pour vérifier l'absence totale d'erreurs console avant livraison.

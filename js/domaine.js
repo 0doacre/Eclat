@@ -38,8 +38,9 @@
     /* ------------------------------------------------------------ la page */
     function view() {
       const st = S(), zs = openZones().reverse();
-      let h = '<div class="dom">';
+      let h = '<div class="dom' + (U.domDense ? " dom-dense" : "") + '">';
       h += api.top();
+      h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense title="Basculer entre affichage compact et normal">' + (U.domDense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -666,6 +667,7 @@
       }
       if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
+      if (t.closest("[data-dom-dense]")) { U.domDense = !U.domDense; A.click(); vibe(8); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
         E.domSite(pid, !E.siteOn(pid));

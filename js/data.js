@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.7.1";
+  D.VERSION = "0.8.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1160,10 +1160,10 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🕯️ Le Journal est daté : chaque fragment, page, signe compris et question garde le cycle, l’âge et le jour de sa découverte.",
-    "🏷️ Pastilles d’objets interactives : les matières et outils cités dans les objectifs, besoins et bloqueurs s’affichent en pastilles tactiles cliquables.",
-    "👁️ Affordance unifiée : survol éclairé, retour tactile et navigation accessible au clavier dans tout le Domaine, les besoins et le Carnet.",
-    "🌱 Nouvelle numérotation : passage au cycle 0.7.0, premier pas vers le Registre de quêtes et la version finale 1.0."
+    "📜 Registre de quêtes : scénario narratif par chapitres, rituels quotidiens des Semeurs et prestige commercial du Troqueur.",
+    "⚡ Codex d’artisanat & En stock : nouveau filtre rapide « En stock », pastille d’alerte et fabrication instantanée sans ouvrir la fiche.",
+    "🤝 Contrats du Troqueur : 5 rangs de réputation marchande avec bonus croissants en Traces et livraisons directes depuis le Registre.",
+    "🤏 Confort visuel : mode compact/dense pour le Domaine, animations tactiles et puces réactives d’alerte."
   ];
 
 

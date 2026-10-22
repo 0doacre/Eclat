@@ -413,6 +413,8 @@
       // un passage à verser, une matière à voir, depuis une fiche
       const pb = ev.target.closest("[data-pour]");
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
+      const qtb = ev.target.closest("[data-mqtab]");
+      if (qtb && U.mcur && !fresh()) { U.questTab = qtb.dataset.mqtab; A.click(); if (U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { closeModal(); setTimeout(() => goto(gb.dataset.goto), 80); return; }
       const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
@@ -1160,7 +1162,11 @@
     const title = ob.k === "craft" ? esc(I[ob.id].n) : esc(ob.n);
     // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
     const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
-    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
+    const sum = E.questSummary ? E.questSummary() : { rituals: [], hasReady: false };
+    const rits = sum.rituals || [];
+    const doneRits = rits.filter((r) => r.claimed).length;
+    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
+      '<button class="gmiles" data-open-quests title="Ouvrir le Registre de Quêtes">📜 Registre ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + '</button>' +
       (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
     if (ml.length) {
       const pct = Math.round((md / ml.length) * 100);
@@ -1660,7 +1666,7 @@
     h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
       (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
-    h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+    h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ En stock"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     return h + '<div id="clist">' + carnetList() + "</div>";
   }
@@ -1738,6 +1744,7 @@
   function passFilter(id) {
     const st = S(), it = I[id];
     if (U.carnetFilter === "tout") return true;
+    if (U.carnetFilter === "pret") return st.known[id] && !E.missingFor(id, 1) && (!E.isUnique(it) || (st.made[id] || 0) === 0);
     if (U.carnetFilter === "unk") return !st.known[id];
     if (U.carnetFilter === "craft") return st.known[id] && (E.maxCraftable(id, 1) > 0 || E.plan(id, 1).ok);
     if (U.carnetFilter === "prod") return st.known[id] && ["ext", "upg", "mach", "tool", "stat"].includes(it.t);
@@ -1758,8 +1765,11 @@
     const uniq = E.isUnique(it);
     const owned = uniq && (st.made[id] || 0) > 0;
     const stars = E.stars(id);
-    let h = '<div class="rec' + (owned ? " owned" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + "</div>" +
-      (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div><div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
+    const readyCraft = st.known[id] && !owned && !E.missingFor(id, 1);
+    let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Prêt</span>' : '') + "</div>" +
+      (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div>' +
+      (readyCraft ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
+      '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
       '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
     if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
     const fx = fxText(id);
@@ -2034,6 +2044,7 @@
     stepWatch();
     $("#intu").textContent = Math.floor(st.intu);
     memChip();
+    questChip();
     const xp = E.expProgress();
     const mini = $("#expMini");
     if (xp) {
@@ -3244,6 +3255,134 @@
     openModal(o);
   }
 
+  function questChip() {
+    const qBtn = $("#questBtn");
+    if (!qBtn) return;
+    const sum = E.questSummary();
+    const qSub = $("#questSub");
+    const qDot = $("#questDot");
+    const rits = sum.rituals;
+    const doneRits = rits.filter((r) => r.claimed).length;
+    if (qSub) qSub.textContent = doneRits + "/3";
+    if (qDot) {
+      if (sum.hasReady) {
+        qDot.classList.remove("hidden");
+        qBtn.classList.add("ready");
+      } else {
+        qDot.classList.add("hidden");
+        qBtn.classList.remove("ready");
+      }
+    }
+  }
+
+  function openQuestsModal(initialTab) {
+    U.questTab = initialTab || U.questTab || "scenario";
+    const makeHTML = () => {
+      const sum = E.questSummary();
+      const sc = sum.scenario;
+      const rits = sum.rituals;
+      const tq = sum.troqueur;
+      const rep = E.troqueurRep();
+      const tab = U.questTab;
+
+      let h = '<div class="kicker">Livre de bord</div><h2>Registre de Quêtes</h2>';
+      h += '<div class="quest-tabs">' +
+        '<button class="' + (tab === "scenario" ? "on" : "") + '" data-mqtab="scenario">📜 Scénario' + (sc.ready ? ' <span class="qdot"></span>' : '') + '</button>' +
+        '<button class="' + (tab === "rituals" ? "on" : "") + '" data-mqtab="rituals">🕯️ Rituels' + (sum.readyRitual ? ' <span class="qdot"></span>' : '') + '</button>' +
+        '<button class="' + (tab === "troqueur" ? "on" : "") + '" data-mqtab="troqueur">⚖️ Contrats Troqueur' + (sum.payableAsk ? ' <span class="qdot"></span>' : '') + '</button>' +
+        '</div>';
+
+      if (tab === "scenario") {
+        h += '<div class="quest-hero">' +
+          '<div class="quest-chapter">' + esc(sc.chapter) + ' · ' + esc(sc.ageName) + '</div>' +
+          '<div class="quest-titre">' + (sc.ob && sc.ob.n ? esc(sc.ob.n) : sc.targetId ? esc(I[sc.targetId].n) : "Objectif en cours") + '</div>' +
+          (sc.txt ? '<div class="small muted" style="margin-bottom:8px"><i>« ' + esc(sc.txt) + ' »</i></div>' : '') +
+          (sc.targetId ? '<div style="margin:8px 0">' + itemPill(sc.targetId) + '</div>' : '') +
+          (sc.ready ? '<div class="small" style="color:var(--good);font-weight:600">✓ Prêt à fabriquer !</div><button class="btn pri" style="margin-top:8px;width:100%" data-m="qmake" data-id="' + sc.targetId + '">⚡ Fabriquer maintenant</button>'
+            : sc.missKeys && sc.missKeys.length ? '<div class="small" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px"><span class="muted">Il manque :</span> ' + sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '') +
+          '</div>';
+      } else if (tab === "rituals") {
+        h += '<div class="small muted" style="margin-bottom:8px">Trois rituels renouvelés chaque jour. Réclame tes récompenses une fois les objectifs atteints :</div>';
+        rits.forEach((r, idx) => {
+          const pct = Math.min(100, Math.floor((r.prog / r.target) * 100));
+          const rewTxt = r.reward.tr ? '+' + r.reward.tr + ' ✦ Traces' : r.reward.intu ? '+' + r.reward.intu + ' ✨ Intuition' : '+' + r.reward.ecus + ' écus';
+          h += '<div class="ritual-card' + (r.done ? ' done' : '') + (r.claimed ? ' claimed' : '') + '">' +
+            '<div class="ritual-head"><span class="ritual-ic">' + r.ic + '</span><div class="grow"><div class="ritual-title">' + esc(r.n) + '</div><div class="tiny muted">' + esc(r.d) + '</div></div>' +
+            '<span class="reward-tag">' + rewTxt + '</span></div>' +
+            '<div class="ritual-prog-bar"><i style="width:' + pct + '%"></i></div>' +
+            '<div class="ritual-foot"><span class="tiny muted">' + fmt(r.prog) + ' / ' + fmt(r.target) + ' (' + pct + ' %)</span>' +
+            (r.claimed ? '<span class="tiny" style="color:var(--good);font-weight:600">✓ Réclamé</span>'
+              : r.done ? '<button class="btn small pri ready-pulse" data-m="claimrit" data-idx="' + idx + '">🎁 Réclamer</button>'
+              : '<span class="tiny muted">En cours</span>') +
+            '</div></div>';
+        });
+      } else if (tab === "troqueur") {
+        h += '<div class="troqueur-rank">' +
+          '<div class="troqueur-rank-name">⚖️ ' + esc(rep.cur.n) + ' (Rang ' + rep.cur.lvl + ')</div>' +
+          '<div class="tiny muted">Contrats honorés : <b>' + rep.cnt + '</b>' + (rep.cur.bonus ? ' · +' + rep.cur.bonus + ' ✦ bonus par contrat' : '') + (rep.next ? ' · encore ' + (rep.next.req - rep.cnt) + ' pour ' + esc(rep.next.n) : ' · rang maximum') + '</div>' +
+          '</div>';
+        if (!E.comptoirOpen()) {
+          h += '<p class="small muted center" style="padding:15px 0">Le Comptoir du Troqueur s’ouvrira lorsque tu auras atteint sa terre.</p>';
+        } else if (!tq.length) {
+          h += '<p class="small muted center" style="padding:15px 0">Aucune commande pour l’instant. Le Troqueur prépare de nouvelles demandes.</p>';
+        } else {
+          tq.forEach((ask, idx) => {
+            if (!ask) return;
+            const have = S().inv[ask.id] || 0, can = have >= ask.n;
+            h += '<div class="contract-row">' +
+              '<div class="row between"><div style="display:flex;align-items:center;gap:6px">' + itemPill(ask.id, { qty: ask.n }) + '</div><span class="small" style="font-weight:700;color:#ffd36b">+' + (ask.tr + (rep.cur.bonus || 0)) + ' ✦</span></div>' +
+              '<div class="row between tiny" style="margin-top:4px"><span class="' + (can ? 'muted' : 'bad') + '">En réserve : ' + fmt(have) + ' / ' + fmt(ask.n) + '</span>' +
+              '<button class="btn mini' + (can ? ' pri' : '') + '" data-m="delivask" data-idx="' + idx + '"' + (can ? '' : ' disabled') + '>Livrer</button></div>' +
+              '</div>';
+          });
+        }
+      }
+
+      h += '<div class="acts" style="margin-top:12px"><button class="btn ghost" data-m="close">Fermer</button></div>';
+      return h;
+    };
+
+    const modalObj = {
+      html: makeHTML(),
+      refresh: makeHTML,
+      on: {
+        claimrit: (b) => {
+          const idx = Number(b.dataset.idx);
+          const res = E.claimRitual(idx);
+          if (res.ok) {
+            A.secret ? A.secret() : A.click();
+            vibe([20, 60, 20]);
+            toast("🎁 Récompense de rituel obtenue !", { key: "rit" });
+            save();
+            render(true);
+            swapModal(Object.assign(modalObj, { html: makeHTML() }));
+          }
+          return true;
+        },
+        delivask: (b) => {
+          const idx = Number(b.dataset.idx);
+          const res = E.deliverAsk(idx);
+          if (res.ok) {
+            A.click();
+            vibe(15);
+            toast("✦ +" + (res.ask.tr + (res.bonus || 0)) + " Traces !", { key: "troqueur" });
+            save();
+            render(true);
+            swapModal(Object.assign(modalObj, { html: makeHTML() }));
+          }
+          return true;
+        },
+        qmake: (b) => {
+          const id = b.dataset.id;
+          closeModal();
+          craftChain(id, 1);
+          return true;
+        }
+      }
+    };
+    openModal(modalObj);
+  }
+
   function openForcedReleve() {
     openModal({
       persistent: true,
@@ -3527,6 +3666,8 @@
     $("#tabs").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-tab]"); if (b) { A.init(); A.click(); setTab(b.dataset.tab); } });
     const ageEl = $("#ageBtn") || $(".age");
     if (ageEl) ageEl.addEventListener("click", () => { A.init(); A.click(); openMilestones(); });
+    const qEl = $("#questBtn");
+    if (qEl) qEl.addEventListener("click", () => { A.init(); A.click(); openQuestsModal(); });
     $("#menuBtn").addEventListener("click", () => { A.init(); openMenu(); });
     $("#memBtn").addEventListener("click", () => { A.init(); A.click(); openMemoire(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
@@ -3587,6 +3728,7 @@
       if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
+      if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
       if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }

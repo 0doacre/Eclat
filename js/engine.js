@@ -87,7 +87,7 @@
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -485,6 +485,22 @@
     const xpOf = (id) => { const it = item(id); return Math.max(1, Math.round(SK.xp * (H.base + H.age * (it.a || 0)) * (isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1))); };
     E.xpOf = xpOf;
 
+    function dayKey() {
+      const d = new Date();
+      return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    }
+
+    function advanceRitual(idx, amount) {
+      const m = S.meta;
+      if (!m) return;
+      const dk = dayKey();
+      if (!m.rituals || m.rituals.day !== dk) {
+        m.rituals = { day: dk, prog: [0, 0, 0], claimed: [false, false, false] };
+      }
+      m.rituals.prog[idx] = (m.rituals.prog[idx] || 0) + (amount || 1);
+    }
+    E.advanceRitual = advanceRitual;
+
     function tapYield(res, zid) {
       const c = E.cache();
       return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
@@ -499,6 +515,7 @@
       E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil");
       if (E.lastCrit) { n *= D.CRIT.mult; S.stats.crits = (S.stats.crits || 0) + 1; }
       add(res, n);
+      advanceRitual(1, n);
       S.stats.taps++;
       gainXp("recolte", SK.tapXp);
       // curiosités (easter eggs)
@@ -659,6 +676,7 @@
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
       S.stats.crafts += times;
+      advanceRitual(0, times);
       gainXp(it.r[0], xpOf(id) * times);
       if (bench && !isUnique(it) && !isScaled(it)) {
         bench[id] = (bench[id] || 0) + out;
@@ -1489,6 +1507,7 @@
       if (S.intu < c) return false;
       S.intu -= c;
       S.studied[id] = 1;
+      advanceRitual(2, 1);
       E.emit("struct");
       return true;
     };
@@ -2066,6 +2085,7 @@
       if (okSet.has(h)) {
         st.lu = 1;
         stamp("s:" + id);
+        advanceRitual(2, 1);
         E.emit("signe", { id, mot: sDef.mot });
         return { ok: true, proche: false, mot: sDef.mot };
       }
@@ -2188,6 +2208,7 @@
       if (S.frags[fid]) return false;
       S.frags[fid] = true;
       stamp("f:" + fid);
+      advanceRitual(2, 1);
       S.intu += 1;
       if (S.flags.arche && D.ARCHE[fid]) archeSay(fid);
       if (!quiet) E.emit("frag", fid);
@@ -3216,6 +3237,22 @@
 
     E.troqueurCount = () => (S.comptoir && S.comptoir.asks ? S.comptoir.asks.filter(Boolean).length : 0);
 
+    /* Échelons et réputation auprès du Troqueur (0.8.0) */
+    E.troqueurRep = function () {
+      const cnt = S.meta.troqueurDelivered || 0;
+      const ranks = [
+        { lvl: 0, n: "Curieux de passage", req: 0, bonus: 0 },
+        { lvl: 1, n: "Client régulier", req: 3, bonus: 1 },
+        { lvl: 2, n: "Négociant estimé", req: 8, bonus: 2 },
+        { lvl: 3, n: "Partenaire de l’Arche", req: 18, bonus: 3 },
+        { lvl: 4, n: "Grand Marchand des Étoiles", req: 35, bonus: 5 }
+      ];
+      let cur = ranks[0];
+      for (const r of ranks) { if (cnt >= r.req) cur = r; }
+      const next = ranks.find((r) => r.req > cnt) || null;
+      return { cnt, cur, next };
+    };
+
     /* Livrer une demande du Troqueur */
     E.deliverAsk = function (idx) {
       if (!S.comptoir || !S.comptoir.asks) return { ok: false, why: "no_asks" };
@@ -3224,12 +3261,144 @@
       if (!ask) return { ok: false, why: "empty" };
       if (count(ask.id) < ask.n) return { ok: false, why: "missing", need: ask.n, have: count(ask.id) };
       add(ask.id, -ask.n);
-      S.meta.traces = (S.meta.traces || 0) + ask.tr;
-      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + ask.tr;
+      const rep = E.troqueurRep();
+      const bonusTr = rep.cur.bonus || 0;
+      S.meta.troqueurDelivered = (S.meta.troqueurDelivered || 0) + 1;
+      S.meta.traces = (S.meta.traces || 0) + ask.tr + bonusTr;
+      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + ask.tr + bonusTr;
       S.comptoir.asks[idx] = null;
-      E.emit("delivered", { ask, idx });
+      E.emit("delivered", { ask, idx, bonus: bonusTr });
       E.emit("struct");
-      return { ok: true, ask };
+      return { ok: true, ask, bonus: bonusTr };
+    };
+
+    /* ---------------------------------------------------- REGISTRE DE QUÊTES (0.8.0) */
+    /* Les 3 rituels quotidiens des Semeurs (renouvelés à chaque nouveau jour réel) */
+    E.dailyRituals = function () {
+      const m = S.meta;
+      const dk = dayKey();
+      if (!m.rituals || m.rituals.day !== dk) {
+        m.rituals = { day: dk, prog: [0, 0, 0], claimed: [false, false, false] };
+      }
+      const age = S.age || 0;
+      const t1 = Math.max(10, 10 * (age + 1));
+      const t2 = Math.max(80, 50 * (age + 1));
+      const t3 = 1;
+      const p = m.rituals.prog;
+      const c = m.rituals.claimed;
+
+      return [
+        {
+          id: "mains",
+          n: "Façonnage des mains",
+          d: "Façonner " + t1 + " objets à la main.",
+          ic: "✋",
+          target: t1,
+          prog: Math.min(t1, p[0] || 0),
+          done: (p[0] || 0) >= t1,
+          claimed: !!c[0],
+          reward: { tr: Math.max(2, Math.floor((age + 1) * 1.5)) }
+        },
+        {
+          id: "terre",
+          n: "Moisson de la terre",
+          d: "Récolter " + t2 + " matières brutes.",
+          ic: "🌾",
+          target: t2,
+          prog: Math.min(t2, p[1] || 0),
+          done: (p[1] || 0) >= t2,
+          claimed: !!c[1],
+          reward: { ecus: 25 * (age + 1), tr: 1 }
+        },
+        {
+          id: "esprit",
+          n: "Éveil de l’esprit",
+          d: "Étudier une matière ou percer un mystère.",
+          ic: "✨",
+          target: t3,
+          prog: Math.min(t3, p[2] || 0),
+          done: (p[2] || 0) >= t3,
+          claimed: !!c[2],
+          reward: { intu: 5 + age * 2 }
+        }
+      ];
+    };
+
+    /* Réclamer la récompense d’un rituel accompli */
+    E.claimRitual = function (idx) {
+      idx = Number(idx);
+      const rits = E.dailyRituals();
+      const r = rits[idx];
+      if (!r || !r.done || r.claimed) return { ok: false, why: !r ? "invalid" : r.claimed ? "claimed" : "not_done" };
+      S.meta.rituals.claimed[idx] = true;
+      if (r.reward.tr) {
+        S.meta.traces = (S.meta.traces || 0) + r.reward.tr;
+        S.meta.tracesTotal = (S.meta.tracesTotal || 0) + r.reward.tr;
+      }
+      if (r.reward.intu) S.intu = (S.intu || 0) + r.reward.intu;
+      if (r.reward.ecus) S.ecus = (S.ecus || 0) + r.reward.ecus;
+      E.emit("ritual_claimed", { idx, ritual: r });
+      E.emit("struct");
+      return { ok: true, reward: r.reward };
+    };
+
+    /* Quête de Scénario (Fil rouge narratif par chapitre) */
+    E.scenarioQuest = function () {
+      const g = E.guide();
+      const curAge = D.AGES[S.age] || D.AGES[0];
+      const ob = g ? g.ob : E.objective();
+      const targetId = ob && ob.k === "craft" ? ob.id : g ? g.step : null;
+      const p = targetId && S.known[targetId] ? E.plan(targetId, 1) : null;
+      const ready = p ? p.ok : false;
+      const miss = p ? Object.keys(p.missing) : [];
+
+      const chapterTitles = [
+        "Chapitre I · L’Éveil des mains",
+        "Chapitre II · Les Premiers outils",
+        "Chapitre III · Le Tranchant du silex",
+        "Chapitre IV · La Flamme et le cuivre",
+        "Chapitre V · L’Alliage du bronze",
+        "Chapitre VI · Le Marteau et le fer",
+        "Chapitre VII · L’Acier et la vapeur",
+        "Chapitre VIII · L’Étincelle captive",
+        "Chapitre IX · La Pensée du silicium",
+        "Chapitre X · La Matière noire",
+        "Chapitre XI · L’Étoffe des composites",
+        "Chapitre XII · L’Envol spatial",
+        "Chapitre XIII · La Lumière stellaire"
+      ];
+      const chapter = chapterTitles[S.age] || ("Chapitre " + (S.age + 1));
+      return {
+        chapter,
+        ageName: curAge.n,
+        ob,
+        step: g ? g.step : (ob ? ob.id : null),
+        targetId,
+        ready,
+        missing: p ? p.missing : {},
+        missKeys: miss,
+        txt: (ob && ob.txt) || curAge.q || "",
+        isArche: !!S.flags.arche
+      };
+    };
+
+    /* Synthèse globale du Registre pour pastilles, alertes et notifications */
+    E.questSummary = function () {
+      const sc = E.scenarioQuest();
+      const rits = E.dailyRituals();
+      const tqAsks = E.troqueurAsks();
+      const readyRitual = rits.some((r) => r.done && !r.claimed);
+      const payableAsk = tqAsks.some((a) => a && (S.inv[a.id] || 0) >= a.n);
+      const readyScenario = sc.ready;
+      return {
+        scenario: sc,
+        rituals: rits,
+        troqueur: tqAsks,
+        hasReady: readyRitual || payableAsk || readyScenario,
+        readyRitual,
+        payableAsk,
+        readyScenario
+      };
     };
 
     function canBuyRes(id) {
@@ -3610,7 +3779,7 @@
       const hadPass = !!o.pass && typeof o.pass === "object";
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
-      o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0, trans: {}, hints_endings: {} }, o.meta);
+      o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} }, o.meta);
       if (!o.meta.curios || typeof o.meta.curios !== "object" || Array.isArray(o.meta.curios)) o.meta.curios = {};
       if (!o.meta.trans || typeof o.meta.trans !== "object" || Array.isArray(o.meta.trans)) o.meta.trans = {};
       if (!o.meta.hints_endings || typeof o.meta.hints_endings !== "object" || Array.isArray(o.meta.hints_endings)) o.meta.hints_endings = {};
