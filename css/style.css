@@ -955,6 +955,8 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .lexique dd { margin: 2px 0 0; color: var(--muted); }
 .passcost { display: flex; flex-direction: column; gap: 4px; }
 .passcost .ing { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* une ligne de passage porte une phrase entière : elle peut aller à la ligne, ce n’est pas une pastille */
+.passcost .ing.link { white-space: normal; border-radius: 10px; padding: 4px 8px; margin: 0; }
 
 /* ---------------------------------------------------------------- comptoir */
 .dom-comptoir { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 8%, var(--panel)); }

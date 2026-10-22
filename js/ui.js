@@ -137,14 +137,17 @@
     opt = opt || {};
     const it = I[id];
     if (!it) return esc(id);
-    const known = opt.unk !== undefined ? !opt.unk : !!(S() && S().known && S().known[id]);
-    const name = known ? esc(it.n) : (it.h ? "« " + esc(it.h) + " »" : "Recette inconnue");
+    // même règle que la fiche : l’icône dès que l’objet est connu, vu, ou sans recette (matière brute) ;
+    // le nom reste toujours écrit, comme avant les pastilles
+    const st = S();
+    const known = opt.unk !== undefined ? !opt.unk : !!(st.known[id] || st.seen[id] || !it.r);
+    const name = esc(it.n);
     const ic = known ? icon(id, "sm") : '<span class="ic sm unk">?</span>';
     const qty = opt.qty ? '<span class="pill-qty">' + fmt(opt.qty) + '</span> ' : '';
     const lackCls = opt.lack ? " lack" : "";
     const unkCls = !known ? " unk" : "";
     const extraCls = opt.cls ? " " + opt.cls : "";
-    const title = known ? esc(it.n) + " (toucher pour inspecter)" : "Objet inconnu (toucher pour examiner)";
+    const title = name + " (toucher pour voir la fiche)";
     return '<span class="item-pill' + lackCls + unkCls + extraCls + '" data-goto="' + id + '" role="button" tabindex="0" title="' + title + '" aria-label="' + esc(it.n) + '">' +
       ic + qty + '<span class="pill-name">' + name + '</span></span>';
   }

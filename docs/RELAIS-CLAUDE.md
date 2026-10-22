@@ -74,6 +74,11 @@ Ce document récapitule l'ensemble des développements menés aujourd'hui sur le
 
 ## 4. Feuille de Route Immédiate pour Claude
 
+### Relecture de la v0.7.0 (faite par Claude, 22 oct. 21:56)
+- **Bug corrigé** : `itemPill()` ne regardait que `st.known`. Les matières brutes (bois, silex…) n'ont pas de recette, donc n'y figurent jamais : elles s'affichaient « Recette inconnue » avec un « ? » dans « Il manque : ». La pastille suit maintenant la même règle que la fiche (`known`, `seen` ou sans recette) et écrit toujours le nom, comme avant.
+- **CSS** : les lignes de passage (`.passcost .ing.link`) portent une phrase entière. Elles reprennent le retour à la ligne au lieu d'hériter du `nowrap` des pastilles.
+- Branche fusionnée sur `main` après `npm test` (153 / 32 / 9) et une vérification dans le navigateur, sans erreur console.
+
 ### Étape 1 : Fusion de la v0.7.0 sur `main`
 Revue habituelle de la branche `gemini-item-pills-0-7-0`, puis fusion rapide sur `main`.
 
@@ -86,7 +91,7 @@ Actuellement, les découvertes consignées dans le Journal (fragments du récit,
 
 #### Spécifications attendues pour la v0.7.1
 1. **Données d'horodatage** :
-   - À chaque ajout dans le Journal (`E.addJournalEntry`, découverte d'un fragment dans `E.explore`, lecture d'une page du Livre, déchiffrement d'un signe), enregistrer un timestamp :
+   - À chaque ajout dans le Journal (découverte d'un fragment, lecture d'une page du Livre, signe compris, air appris), enregistrer un timestamp. Les points d'entrée exacts restent à repérer dans `js/engine.js` (il n'existe pas de fonction unique `addJournalEntry`) :
      - Soit temporel réel : `Date.now()`.
      - Soit diégétique : cycle en cours (`st.cycle`) + temps écoulé ou date calendaire simplifiée.
 2. **Rendu dans l'interface** :
