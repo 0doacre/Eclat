@@ -671,7 +671,7 @@
       if (e.fireworks) E.emit("fx", "fireworks");
       if (e.arche && !S.flags.arche) { S.flags.arche = true; archeSay("radio"); }
       if (e.decode) decodeSignal();
-      if (D.EVENTS[id] && !S.meta.ev[id]) { S.meta.ev[id] = 1; E.emit("event", { id, txt: D.EVENTS[id] }); }
+      if (D.EVENTS[id] && !S.meta.ev[id]) { S.meta.ev[id] = 1; E.emit("event", { id, txt: interpolate(D.EVENTS[id]) }); }
       if (id === "cerf_volant" || id === "boussole") E.emit("struct");
       E.emit("discover", id);
       checkAges();
@@ -2149,8 +2149,16 @@
 
     /* ------------------------------------------------------ ARCHE */
     function archeSay(key) {
-      const lines = D.ARCHE[key];
+      let lines = D.ARCHE[key];
       if (!lines) return;
+      if (!Array.isArray(lines) && typeof lines === "object") {
+        const c = S.cycle || 1;
+        if (lines[c]) lines = lines[c];
+        else if (c >= 14 && lines["cycle14"]) lines = lines["cycle14"];
+        else if (c >= 7 && lines["cycle7"]) lines = lines["cycle7"];
+        else if (c >= 2 && lines["cycle2"]) lines = lines["cycle2"];
+        else lines = lines.default || lines[1] || [];
+      }
       lines.forEach((t) => S.arche.push({ t: now(), txt: interpolate(t) }));
       if (S.arche.length > 200) S.arche.splice(0, S.arche.length - 200);
       E.emit("arche", key);
@@ -2350,17 +2358,29 @@
 
     function interpolate(str) {
       if (typeof str !== "string") return str;
-      const semeur = String((S.cycle || 1) + 6);
-      const cuve = String(7 + (((S.cycle || 1) - 1) % 6));
+      const cyc = S.cycle || 1;
+      const semeurNum = cyc + 6;
+      const semeur = String(semeurNum);
+      const semeurPad = semeurNum < 10 ? "0" + semeurNum : String(semeurNum);
+      const semeurPrev = String(semeurNum - 1);
+      const cuve = String(7 + ((cyc - 1) % 6));
+      const precedents = String(semeurNum - 1);
+      const cyclesPrecedents = String(cyc - 1);
       const capText = (S.meta && typeof S.meta.capsuleText === "string" && S.meta.capsuleText.trim()) ? S.meta.capsuleText.trim() : "(silence)";
       const age = String(S.age || 0);
       return str
         .replace(/\{date\}/g, formatRealDate())
         .replace(/\{semeur\}/g, semeur)
+        .replace(/\{semeur_pad\}/g, semeurPad)
+        .replace(/\{semeur_prev\}/g, semeurPrev)
+        .replace(/\{cycle\}/g, String(cyc))
         .replace(/\{cuve\}/g, cuve)
+        .replace(/\{precedents\}/g, precedents)
+        .replace(/\{cycles_precedents\}/g, cyclesPrecedents)
         .replace(/\{capsule\}/g, capText)
         .replace(/\{age\}/g, age);
     }
+    E.interpolate = interpolate;
 
     E.terminal = function (raw) {
       const rawStr = String(raw || "");

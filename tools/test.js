@@ -2845,8 +2845,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 6.10.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "6.10.0");
+test("Version 6.11.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "6.11.0");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -2898,6 +2898,67 @@ test("Réserve : calcul des flux nets et débits actifs", () => {
 
   const netCaillou = E.rate("caillou") + (flows.prod.caillou || 0) - (flows.cons.caillou || 0);
   assert.strictEqual(netCaillou, 0, "aucun flux actif sur le caillou");
+});
+
+console.log("Réactivité d'ARCHE et Mémoire des Cycles (6.11)");
+test("ARCHE : dialogues évolutifs et interpolation du Semeur selon le cycle", () => {
+  const E = mk();
+
+  // Cycle 1 : Semeur 7 (protocole initial)
+  E.state.cycle = 1;
+  E.archeSay("radio");
+  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 7, TU M’ENTENDS ?")));
+  assert.ok(E.state.arche.some((l) => l.txt.includes("LES SIX PRÉCÉDENTS")));
+
+  // Cycle 2 : Semeur 8 (relais passé, cuve 8)
+  E.state.arche = [];
+  E.state.cycle = 2;
+  E.archeSay("radio");
+  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 8, NOUVELLE ROTATION")));
+  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 7 A PASSÉ LE RELAIS")));
+  assert.ok(E.state.arche.some((l) => l.txt.includes("CUVE 8")));
+
+  // Cycle 7 : Semeur 13 (saturation du premier tour de 6 cuves)
+  E.state.arche = [];
+  E.state.cycle = 7;
+  E.archeSay("radio");
+  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 13. CYCLE 7")));
+  assert.ok(E.state.arche.some((l) => l.txt.includes("TOUS LES LOTS DE DÉPART ONT ÉTÉ UTILISÉS")));
+
+  // Cycle 14 : Semeur 20 (vertige de la boucle)
+  E.state.arche = [];
+  E.state.cycle = 14;
+  E.archeSay("radio");
+  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 20")));
+  assert.ok(E.state.arche.some((l) => l.txt.includes("13 RELÈVES")));
+});
+
+test("Terminal : whoami et statut synchronisés avec le cycle", () => {
+  const E = createEngine();
+
+  // Cycle 1 : SEMEUR-07
+  E.state.cycle = 1;
+  let lines = E.terminal("whoami");
+  assert.strictEqual(lines[1], "SEMEUR-07");
+
+  // Cycle 2 : SEMEUR-08
+  E.state.cycle = 2;
+  lines = E.terminal("whoami");
+  assert.strictEqual(lines[1], "SEMEUR-08");
+
+  // Cycle 7 : SEMEUR-13
+  E.state.cycle = 7;
+  lines = E.terminal("whoami");
+  assert.strictEqual(lines[1], "SEMEUR-13");
+
+  // Cycle 14 : SEMEUR-20
+  E.state.cycle = 14;
+  lines = E.terminal("whoami");
+  assert.strictEqual(lines[1], "SEMEUR-20");
+
+  // Vérification de la commande statut
+  const stat = E.terminal("statut");
+  assert.ok(stat.some((l) => l.includes("CYCLE 14 · LOT 20")));
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

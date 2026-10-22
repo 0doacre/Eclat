@@ -2811,15 +2811,16 @@
   function intro() {
     const st = S();
     const isLibere = (typeof E.isLibere === "function" && E.isLibere()) || (st.meta && st.meta.endings && st.meta.endings.retour);
-    const lines = isLibere
+    const linesRaw = isLibere
       ? [
           "Tu te réveilles dans l’herbe, au bord d’une forêt.",
           "Tu as faim.",
           "Quelqu’un, à côté de toi, te tend des herbes grillées."
         ]
       : ((D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
-          ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Ton corps est neuf, mais pas tes souvenirs : tu connais déjà des recettes entières.", "Tu es le Semeur " + (st.cycle + 6) + ". Celui d’avant t’a laissé ses recettes dans le Carnet."]
+          ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt. Cycle {cycle}.", "Ton corps est neuf, mais pas tes souvenirs : tu connais déjà des recettes entières.", "Tu es le Semeur {semeur}. Celui d’avant t’a laissé ses recettes dans le Carnet."]
           : D.INTRO));
+    const lines = linesRaw.map((l) => (E.interpolate ? E.interpolate(l) : l));
     // en tête des éveils, un signe ; à la fin de la scène, l’ornement (s’il est dans les données)
     const lieu = isLibere ? "Le réveil libre" : (st.cycle > 1 ? "Les éveils" : "Le premier réveil");
     const html = () => '<div class="lore" style="padding:10px 0">' +
@@ -3525,7 +3526,7 @@
         }
         return;
       }
-      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(F.t || F.lore, F.n || F.titre || "Fragment"), "Refermer"); return; }
+      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(E.interpolate ? E.interpolate(F.t || F.lore) : (F.t || F.lore), F.n || F.titre || "Fragment"), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
       if ((b = t.closest("[data-play]"))) {
         A.init();

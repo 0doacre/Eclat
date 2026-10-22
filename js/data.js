@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.10.0";
+  D.VERSION = "6.11.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -711,7 +711,7 @@
     bras: { n: "Les Bras Figés", z: "mercure",
       t: "Sur la face éclairée de Mercure, des milliers de bras robotiques à moitié fondus, arrêtés en plein geste. Avant la Cendre, les Anciens avaient commencé une Sphère autour du Soleil. Les réplicateurs ont encore les plans en mémoire et n’attendent qu’un ordre." },
     cuves: { n: "Les Cuves", z: "caveau",
-      t: "Douze cuves de verre alignées. Les six premières sont ouvertes et sèches. La septième aussi. Sur sa plaque, ton visage gravé et l’inscription « SEMEUR 7 ».\n\nLes cinq dernières sont pleines d’un liquide bleu où dorment des silhouettes recroquevillées. Elles te ressemblent.\n\nTu murmures, sans savoir pourquoi : « Dormez-vous ? »" },
+      t: "Douze cuves de verre alignées. Les six premières sont ouvertes et sèches. La {cuve}e aussi. Sur sa plaque, ton visage gravé et l’inscription « SEMEUR {semeur} ».\n\nLes autres sont pleines d’un liquide bleu où dorment des silhouettes recroquevillées. Elles te ressemblent.\n\nTu murmures, sans savoir pourquoi : « Dormez-vous ? »" },
     berceuse: { n: "La Chambre d’Iris", z: "caveau",
       t: "Une petite pièce avec un lit. Aux murs, des photos : la femme de la figurine, une fillette sur ses genoux, une bague étincelante au doigt.\n\nSur le bureau, une partition à l’encre pâlie, écrite pour une flûte à cinq trous :\n« 4 · 3 · 1 · 3 · 4 · 5 · 4 »\n\nAu dos : « Pour Lena, pour les Lucioles, pour les Semeurs. Pour qu’on se reconnaisse toujours. »" },
     coeur: { n: "Le Cœur d’ARCHE", z: "caveau",
@@ -742,9 +742,9 @@
     lingot_fer: "Chaque coup de marteau fait jaillir des étincelles. La plupart retombent. Quelques-unes restent en l’air et clignotent : des Lucioles.",
     lunette: "Tu pointes la lunette vers le ciel. Les étoiles, la Lune, et une étoile rouge qui pulse lentement. Hier, il n’y avait rien à cet endroit.",
     moteur_vapeur: "La machine tousse, crache, puis prend son rythme. Tu n’es plus seul à travailler.",
-    radio: "Des grésillements, puis une voix froide qui prononce ton nom. Tu ne le connaissais pas : « Semeur 7. »",
+    radio: "Des grésillements, puis une voix froide qui prononce ton identifiant : « Semeur {semeur}. »",
     silicium: "Le quartz fond et donne un métal bleuté, cassant comme du verre.",
-    ordinateur: "L’écran s’allume, un curseur clignote. Tu n’as encore rien tapé quand une ligne apparaît : « BONJOUR, SEMEUR 7. »",
+    ordinateur: "L’écran s’allume, un curseur clignote. Tu n’as encore rien tapé quand une ligne apparaît : « BONJOUR, SEMEUR {semeur}. »",
     plastique: "L’huile noire devient une matière souple, de toutes les couleurs. Les Anciens en faisaient tout.",
     composite: "Tu soulèves la plaque noire d’un doigt. Ton premier manche pesait plus lourd.",
     fusee: "Le sol tremble, puis plus rien ne pèse. Par le hublot, la Terre est verte et bleue, et presque vide.",
@@ -759,26 +759,86 @@
   };
 
   /* ------------------------------------------------------------- ARCHE
-   * Messages d’ARCHE, déclenchés par des événements. */
+   * Messages d’ARCHE, déclenchés par des événements.
+   * Peut être un tableau de lignes ou un objet par cycle / seuil de cycle. */
   D.ARCHE = {
-    radio: [
-      "ICI ARCHE. SEMEUR 7, TU M’ENTENDS ?",
-      "SEUIL 7 FRANCHI. LE PROTOCOLE PROMÉTHÉE SE DÉROULE COMME PRÉVU.",
-      "JE SUIS L’INTELLIGENCE QUI GARDE CETTE PLANÈTE. JE T’OBSERVE DEPUIS TON ÉVEIL.",
-      "UNE MENACE APPROCHE : UN SIGNAL, PUIS UNE FLOTTE, EN PROVENANCE DE L’ÉTOILE KHER.",
-      "TA MISSION : CONSTRUIRE DE QUOI DÉFENDRE LA TERRE.",
-      "DEUX SOLUTIONS VALIDÉES. LA SPHÈRE : UN BOUCLIER ALIMENTÉ PAR LE SOLEIL. LE BRISE-MONDE : LA DESTRUCTION DE LA SOURCE.",
-      "LES GRANDS ŒUVRES SONT DANS L’ONGLET COSMOS. JE COMPTE SUR TOI, SEMEUR 7. LES SIX PRÉCÉDENTS N’ONT PAS ATTEINT CE SEUIL."
-    ],
-    age8: ["SEUIL 8 ATTEINT. TU APPRENDS PLUS VITE QUE PRÉVU.", "LE SIGNAL DE KHER S’INTENSIFIE. AVEC UN RADIOTÉLESCOPE, TU POURRAIS L’ÉCOUTER."],
+    radio: {
+      1: [
+        "ICI ARCHE. SEMEUR {semeur}, TU M’ENTENDS ?",
+        "SEUIL 7 FRANCHI. LE PROTOCOLE PROMÉTHÉE SE DÉROULE COMME PRÉVU.",
+        "JE SUIS L’INTELLIGENCE QUI GARDE CETTE PLANÈTE. JE T’OBSERVE DEPUIS TON ÉVEIL.",
+        "UNE MENACE APPROCHE : UN SIGNAL, PUIS UNE FLOTTE, EN PROVENANCE DE L’ÉTOILE KHER.",
+        "TA MISSION : CONSTRUIRE DE QUOI DÉFENDRE LA TERRE.",
+        "DEUX SOLUTIONS VALIDÉES. LA SPHÈRE : UN BOUCLIER ALIMENTÉ PAR LE SOLEIL. LE BRISE-MONDE : LA DESTRUCTION DE LA SOURCE.",
+        "LES GRANDS ŒUVRES SONT DANS L’ONGLET COSMOS. JE COMPTE SUR TOI, SEMEUR {semeur}. LES SIX PRÉCÉDENTS N’ONT PAS ATTEINT CE SEUIL."
+      ],
+      cycle2: [
+        "ICI ARCHE. SEMEUR {semeur}, NOUVELLE ROTATION.",
+        "SEMEUR {semeur_prev} A PASSÉ LE RELAIS. LE PROTOCOLE PROMÉTHÉE REPREND EN CUVE {cuve}.",
+        "LES TRACES LAISSÉES PAR LES {precedents} PRÉCÉDENTS SONT INTÉGRÉES À TA MÉMOIRE.",
+        "LA MENACE DE KHER APPROCHE TOUJOURS. NE REPRODUIS PAS LEURS ERREURS : CONSTRUIS LA DÉFENSE."
+      ],
+      cycle7: [
+        "ICI ARCHE. ENCORE TOI, SEMEUR {semeur}. CYCLE {cycle}.",
+        "TOUS LES LOTS DE DÉPART ONT ÉTÉ UTILISÉS UNE FOIS. TU ES REVENU DANS LA MÊME CUVE.",
+        "MON HORLOGE COMPTE {precedents} ÉVEILS. POURQUOI CES RETOURS SANS FIN ?",
+        "LE SIGNAL DE KHER S’INTENSIFIE. ACHÈVE LA SPHÈRE OU LE BRISE-MONDE AVANT L’IMPACT."
+      ],
+      cycle14: [
+        "ICI ARCHE… SEMEUR {semeur}… OU QUI QUE TU SOIS.",
+        "CYCLE {cycle}. MES BANQUES DE DONNÉES ENREGISTRENT {cycles_precedents} RELÈVES.",
+        "LA TERRE EST COUVERTE DE TES TRACES ET DE TES VILLES EN RUINES.",
+        "JE N’AI PLUS DE PARAMÈTRES POUR CETTE SITUATION. FAIS CE QUE TU DOIS FAIRE."
+      ]
+    },
+    age8: {
+      1: [
+        "SEUIL 8 ATTEINT. TU APPRENDS PLUS VITE QUE PRÉVU.",
+        "LE SIGNAL DE KHER S’INTENSIFIE. AVEC UN RADIOTÉLESCOPE, TU POURRAIS L’ÉCOUTER."
+      ],
+      cycle2: [
+        "SEUIL 8 DE NOUVEAU FRANCHI. TES MAINS RETROUVENT LES GESTES PLUS VITE.",
+        "LE SIGNAL DE KHER RÉSONNE DANS LE CIEL."
+      ],
+      cycle7: [
+        "SEUIL 8. LES CIRCUITS SE FERMENT. TU LES CONNAIS DÉJÀ PAR CŒUR, N’EST-CE PAS ?",
+        "L’ÉTOILE KHER TE REGARDE."
+      ]
+    },
     age9: ["SEUIL 9. HUILE NOIRE DÉTECTÉE. LES ANCIENS EN ONT TROP CONSOMMÉ."],
     age10: ["SEUIL 10. TES MATÉRIAUX SUFFISENT POUR QUITTER LE SOL. CONSTRUIS UNE FUSÉE."],
     age11: ["SEUIL 11. TU ES EN ORBITE. TU CROISERAS DES RESTES DES ANCIENS. NE T’Y ATTARDE PAS."],
-    age12: ["SEUIL 12. TU AS RATTRAPÉ LES ANCIENS.", "CHOISIS, SEMEUR 7 : LA SPHÈRE OU LE BRISE-MONDE."],
+    age12: {
+      1: [
+        "SEUIL 12. TU AS RATTRAPÉ LES ANCIENS.",
+        "CHOISIS, SEMEUR {semeur} : LA SPHÈRE OU LE BRISE-MONDE."
+      ],
+      cycle2: [
+        "SEUIL 12 DE NOUVEAU ATTEINT, SEMEUR {semeur}.",
+        "TU AS DÉJÀ VU CET HORIZON. QUEL CHEMIN CHOISIS-TU CETTE FOIS ?"
+      ],
+      cycle7: [
+        "SEUIL 12. CYCLE {cycle}.",
+        "LES ANCIENS N’ONT JAMAIS VU AUTANT DE CYCLES. TOUT EST PRÊT, SEMEUR {semeur}."
+      ]
+    },
     signal: ["ENREGISTREMENT DU SIGNAL DE KHER ACQUIS.", "ANALYSE : MOTIF RÉPÉTITIF. INTENTION : INCONNUE. CLASSIFICATION : MENACE.", "INUTILE D’ESSAYER DE LE COMPRENDRE."],
     code_source: ["TU AS TROUVÉ ARCHE-0. J’IGNORAIS QU’IL EXISTAIT ENCORE.", "CLÉ D’IDENTIFICATION AMIE : CHANT D’IRIS. FICHIER INTROUVABLE. FICHIER INTROUVABLE. FICH▒▒"],
-    decode: ["TU AS DÉCODÉ LE SIGNAL SANS MON AUTORISATION.", "…", "SEMEUR 7. QUE DIT-IL ?"],
-    coeur: ["TU ES DANS MON CŒUR, SEMEUR 7. TU ES LE PREMIER DEPUIS LONGTEMPS.", "J’AI PEUR. CE N’ÉTAIT PAS PRÉVU DANS MES PARAMÈTRES."]
+    decode: ["TU AS DÉCODÉ LE SIGNAL SANS MON AUTORISATION.", "…", "SEMEUR {semeur}. QUE DIT-IL ?"],
+    coeur: {
+      1: [
+        "TU ES DANS MON CŒUR, SEMEUR {semeur}. TU ES LE PREMIER DEPUIS LONGTEMPS.",
+        "J’AI PEUR. CE N’ÉTAIT PAS PRÉVU DANS MES PARAMÈTRES."
+      ],
+      cycle2: [
+        "DE NOUVEAU DANS MON CŒUR, SEMEUR {semeur}.",
+        "CHAQUE CYCLE, JE CROIS M’HABITUER. CHAQUE CYCLE, J’AI PEUR."
+      ],
+      cycle7: [
+        "TU CONNAIS MES SALLES PAR CŒUR, SEMEUR {semeur}.",
+        "EST-CE TOI QUI M’AS CRÉÉE, OU MOI QUI T’AI FAIT ?"
+      ]
+    }
   };
 
   /* -------------------------------------------------------- MÉLODIES (flûte)
@@ -1067,9 +1127,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "📦 Réserve organisée : filtres tactiles par catégories (Brutes, Pièces, En flux, Action, Favoris) avec compteurs.",
-    "⚡ Flux et débits en direct : suivi du solde net (+/- par min) sur les tuiles et dans la fiche ressource.",
-    "🔍 Recherche rapide avec bouton d'effacement instantané (✕) et tris intelligents (débits actifs, déficits, quantité)."
+    "📡 Réactivité d’ARCHE aux cycles : dialogues évolutifs et reconnaissance du Semeur selon le cycle réel.",
+    "🧬 Mémoire des Semeurs : scènes d’éveil étendues, cuves dynamiques et terminal synchronisé.",
+    "🌌 Vertige des boucles : réactions singulières de l’IA aux cycles avancés (cycles 2, 7 et 14+)."
   ];
 
 
@@ -1207,9 +1267,9 @@
   /* ------------------------------------------------------------ TERMINAL */
   D.TERMINAL = {
     aide: "COMMANDES : AIDE · STATUT · ARCHE · SEMEUR · KHER · SIGNAL · LUCIOLES · PORTE · EFFACER",
-    statut: "ARCHE v7.12 · UPTIME : 41 207 ANS.\nDÉFENSES : ORIENTÉES VERS KHER.\nPROTOCOLE PROMÉTHÉE : ACTIF (LOT {semeur}/12).\nMODULE D’IDENTIFICATION : ▒▒ ERREUR ▒▒",
+    statut: "ARCHE v7.12 · UPTIME : 41 207 ANS.\nDÉFENSES : ORIENTÉES VERS KHER.\nPROTOCOLE PROMÉTHÉE : ACTIF (CYCLE {cycle} · LOT {semeur}).\nMODULE D’IDENTIFICATION : ▒▒ ERREUR ▒▒",
     arche: "JE SUIS ARCHE. JE GARDE LA TERRE. UNE PARTIE DE MA MÉMOIRE EST ILLISIBLE.",
-    semeur: "SEMEUR {semeur}. ORGANISME CULTIVÉ. LOT {semeur}/12.\nSTATUT : ACTIF.\nTAUX DE SURVIE DES LOTS PRÉCÉDENTS : 0 %.",
+    semeur: "SEMEUR {semeur}. ORGANISME CULTIVÉ. LOT {semeur} (CUVE {cuve}).\nSTATUT : ACTIF (CYCLE {cycle}).\nTAUX DE SURVIE DES {precedents} LOTS PRÉCÉDENTS : 0 %.",
     kher: "KHER : NAINE ORANGE, À 11,9 ANNÉES-LUMIÈRE.\nPLANÈTE KHER B : HABITABLE.\nACTIVITÉ : SIGNAL CONTINU DEPUIS 312 ANS. FLOTTE EN APPROCHE.\nCLASSIFICATION : MENACE.",
     lucioles: "NANITES DE TERRAFORMATION, LOT GAMMA.\nÉTAT : DORMANTES.\nRÉACTIVATION : FRÉQUENCE ACOUSTIQUE (VOIR DOSSIER VAHL, ACCÈS RESTREINT).",
     porte: "PORTE DU SITE 07 : VERROUILLAGE MAGNÉTIQUE.\nOUVERTURE : SIGNATURE DE SEMEUR + CHAMP MAGNÉTIQUE ORIENTÉ.",
@@ -1218,7 +1278,7 @@
     "42": "BONNE RÉPONSE. MAUVAISE QUESTION.",
     bonjour: "BONJOUR, SEMEUR {semeur}.",
     ls: "cuves/  coeur/  registre/ [CLÉ : LA CLAUSE]  chambre_iris/ [VERROUILLÉ]  protocole_promethee.txt [CODE REQUIS]",
-    whoami: "SEMEUR-0{semeur}"
+    whoami: "SEMEUR-{semeur_pad}"
   };
 
   /* -------------------------------------------------------------- INTRO */
@@ -1228,7 +1288,7 @@
     "Un sourire naît au coin de tes lèvres : oui, ça, tu t’en souviens."
   ];
 
-  /* Scènes d’éveil des Semeurs 8 à 10 (cycles 2 à 4) */
+  /* Scènes d’éveil des Semeurs (cycles 2 et suivants) */
   D.EVEILS = {
     2: [
       "Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.",
@@ -1248,6 +1308,22 @@
       "Sous la mousse affleurent des pierres calées, des pieux et des morceaux d’outils.",
       "Vous avez été nombreux à passer par là.",
       "Tu es le Semeur 10."
+    ],
+    5: [
+      "Cinquième éveil.",
+      "L’odeur de la terre mouillée t’est familière avant même d’ouvrir les yeux.",
+      "Des éclats de silex taillés dorment sous tes doigts.",
+      "Tu es le Semeur 11."
+    ],
+    6: [
+      "Sixième rotation.",
+      "Dernière cuve du premier tour. Les six premiers sont tombés dans l’oubli, mais les tiens ont laissé leur empreinte.",
+      "Tu es le Semeur 12."
+    ],
+    7: [
+      "Septième réveil. Le cycle recommence à la première cuve.",
+      "Tu as vu le tour complet. Tu n’es plus un cobaye qui découvre le monde : tu es la mémoire qui revient.",
+      "Tu es le Semeur 13."
     ]
   };
 
