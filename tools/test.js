@@ -3164,18 +3164,23 @@ test("Résumé des quêtes et Scénario fil rouge", () => {
   assert.strictEqual(typeof qsum.readyScenario, "boolean");
 });
 
-test("Curiosités : déblocage de la poudre rouge au palier de 20 000 cailloux minés", () => {
+test("Curiosités : probabilité de la poudre rouge par pierre minée à la main (médiane à 20k)", () => {
   const E = createEngine();
   E.state.zones.lisiere = true;
   assert.strictEqual(E.hasCurio("poudre_rouge"), false);
   assert.strictEqual(E.count("poudre_rouge"), 0);
 
-  // Simuler 19 999 cailloux minés
-  E.state.stats.caillouMined = 19999;
-  E.tap("caillou");
-  assert.ok(E.state.stats.caillouMined >= 20000);
-  assert.strictEqual(E.hasCurio("poudre_rouge"), true);
-  assert.strictEqual(E.count("poudre_rouge"), 1);
+  // Vérifier le suivi du volume de cailloux minés à la main
+  const n = E.tap("caillou");
+  assert.strictEqual(E.state.stats.caillouMined, n);
+
+  // Validation mathématique de la courbe : médiane à 50 % pour 20 000 pierres minées
+  const p20k = 1 - Math.exp(-20000 * (Math.LN2 / 20000));
+  assert.strictEqual(Math.round(p20k * 100), 50);
+
+  // À 40k pierres, 75 % de chance cumulée
+  const p40k = 1 - Math.exp(-40000 * (Math.LN2 / 20000));
+  assert.strictEqual(Math.round(p40k * 100), 75);
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

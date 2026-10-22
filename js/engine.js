@@ -521,7 +521,9 @@
       // curiosités (easter eggs)
       if (res === "caillou" && !E.hasCurio("poudre_rouge")) {
         S.stats.caillouMined = (S.stats.caillouMined || 0) + n;
-        if (S.stats.caillouMined >= 20000 || rand() < (n / 20000)) {
+        // Probabilité par pierre minée : médiane (50 %) à 20 000 pierres (p = ln(2)/20000)
+        const pDrop = 1 - Math.exp(-n * (Math.LN2 / 20000));
+        if (rand() < pDrop) {
           add("poudre_rouge", 1);
           addCurio("poudre_rouge");
         }
@@ -2906,13 +2908,6 @@
       if (!(rate > 0)) return done("idle");
       made = rate * dt;
       add(e.res, made);
-      if (e.res === "caillou" && !E.hasCurio("poudre_rouge")) {
-        S.stats.caillouMined = (S.stats.caillouMined || 0) + made;
-        if (S.stats.caillouMined >= 20000) {
-          add("poudre_rouge", 1);
-          addCurio("poudre_rouge");
-        }
-      }
       if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
       return done("ok");
     }
