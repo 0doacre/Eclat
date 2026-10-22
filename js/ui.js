@@ -1032,7 +1032,7 @@
   }
   /* l’ancrage : un sélecteur, ou { sel, idx } quand plusieurs éléments le partagent */
   function findAnchor(root, a) { return typeof a === "string" ? root.querySelector(a) : root.querySelectorAll(a.sel)[a.idx] || null; }
-  const ANCHORS = ["data-g", "data-slot", "data-clear", "data-cr", "data-chain", "data-if", "data-track", "data-untrack", "data-tree"];
+  const ANCHORS = ["data-g", "data-slot", "data-clear", "data-cr", "data-chain", "data-if", "data-track", "data-untrack", "data-tree", "data-clear-search"];
   function anchorFor(t) {
     const root = $("#v-" + U.tab);
     // depuis le petit établi (fixe à l’écran), c’est la liste visible qui doit rester en place
@@ -1324,19 +1324,38 @@
       h += '<h3 class="sub">Recettes connues avec ces ressources</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
     }
     const o = invOpts();
+    const counts = invCounts();
     // recherche, tri et filtres quand il y a de quoi chercher
-    const many = Object.keys(st.seen).length >= 10 || !!U.iq || o.filter !== "tout";
-    h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3>' + "</div>" +
-      (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false"></div>' +
-      '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
-      '<div class="filters">' + INV_FILTERS.map(([k, n]) => '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>" : "");
+    const many = Object.keys(st.seen).length >= 8 || !!U.iq || o.filter !== "tout";
+    const totalStock = Object.keys(st.inv).reduce((acc, k) => acc + (st.inv[k] || 0), 0);
     const inv = invItems();
+    h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3>' +
+      (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + " · " + fmt(totalStock) + " en réserve</span>" : "") +
+      "</div>" +
+      (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
+      (U.iq ? '<button class="search-clear" data-clear-search="iq" aria-label="Effacer">✕</button>' : "") + '</div>' +
+      '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
+      '<div class="filters">' + INV_FILTERS.map(([k, n, ic]) => {
+        const cnt = counts[k] || 0;
+        return '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + (ic ? ic + " " : "") + n + '<span class="f-cnt">' + cnt + "</span></button>";
+      }).join("") + "</div>" : "");
+    const flows = E.flows();
     const tile = (id) => {
       const sel = U.slots.includes(id), fav = favs()[id];
       const rx = st.studied[id] && E.reactions(id)[U.geste];
-      return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' + (fav ? '<i class="fav">♥</i>' : "") +
-        (rx ? '<i class="rx" title="Réagit avec cette action">✦' + (rx > 1 ? rx : "") + "</i>" : "") + icon(id) +
-        '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span><span class="n">' + esc(I[id].n) + "</span></button>";
+      const inR = E.rate(id) + (flows.prod[id] || 0);
+      const outR = flows.cons[id] || 0;
+      const net = inR - outR;
+      const hasFlow = Math.abs(net) >= 1e-4;
+      const flowCls = net > 1e-4 ? " pos" : net < -1e-4 ? " neg" : "";
+      const flowTxt = net > 1e-4 ? "+" + perMin(net) : net < -1e-4 ? "-" + perMin(-net) : "";
+      return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' +
+        (fav ? '<i class="fav">♥</i>' : "") +
+        (rx ? '<i class="rx" title="Réagit avec cette action">✦' + (rx > 1 ? rx : "") + "</i>" : "") +
+        icon(id) +
+        '<span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + '</span>' +
+        '<span class="c-flow' + flowCls + (hasFlow ? "" : " hidden") + '" data-flow="' + id + '">' + flowTxt + '</span>' +
+        '<span class="n">' + esc(I[id].n) + "</span></button>";
     };
     if (!many) h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
     else if (o.sort === "age" && !U.iq) {
@@ -1347,12 +1366,56 @@
         h += '<div class="inv-age">' + (k < 0 ? "♥ Favorites" : esc(D.AGES[k].n)) + '</div><div class="inv-grid">' + groups[k].map(tile).join("") + "</div>";
       });
     } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
-    if (!inv.length) h += '<p class="small muted center">' + (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.") + "</p>";
-    else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</p>';
+    if (!inv.length) {
+      const emptyMsg = o.filter === "fav" ? "Aucune ressource favorite. Appui long sur une ressource pour la marquer d’un ♥."
+        : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
+        : (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.");
+      h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
+    } else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</p>';
     return h;
   }
-  const INV_SORTS = [["age", "Par âge"], ["name", "Par nom"], ["qty", "Les plus nombreuses"], ["new", "Dernières trouvées"]];
-  const INV_FILTERS = [["tout", "Tout"], ["fav", "♥ Favorites"], ["geste", "Pour cette action"], ["res", "Récoltées"], ["comp", "Fabriquées"], ["new", "Inutilisées"]];
+  const INV_SORTS = [
+    ["age", "Par âge"],
+    ["qty", "Plus nombreuses"],
+    ["flow", "⚡ Flux actifs"],
+    ["deficit", "⚠️ En déficit"],
+    ["name", "Nom (A → Z)"],
+    ["new", "Dernières trouvées"]
+  ];
+  const INV_FILTERS = [
+    ["tout", "Tout", ""],
+    ["flow", "En flux", "⚡"],
+    ["res", "Brutes", "🪨"],
+    ["comp", "Pièces", "⚙️"],
+    ["geste", "Action", "✦"],
+    ["fav", "Favoris", "♥"],
+    ["new", "Inutilisées", "✨"]
+  ];
+  function invCounts() {
+    const st = S(), fv = favs(), flows = E.flows();
+    const used = {}, forG = {};
+    for (const id in st.known) {
+      const r = I[id] && I[id].r;
+      if (!r) continue;
+      for (const i in r[1]) { used[i] = true; if (r[0] === U.geste) forG[i] = true; }
+    }
+    const all = Array.from(new Set(Object.keys(st.inv).concat(Object.keys(st.seen)))).filter((id) => {
+      const it = I[id];
+      return it && (st.inv[id] >= 1 || st.seen[id]) && !E.isUnique(it) && !E.isScaled(it);
+    });
+    const c = { tout: all.length, flow: 0, res: 0, comp: 0, geste: 0, fav: 0, new: 0 };
+    for (const id of all) {
+      const it = I[id];
+      const hasFlow = (E.rate(id) + (flows.prod[id] || 0) > 1e-4) || ((flows.cons[id] || 0) > 1e-4);
+      if (hasFlow) c.flow++;
+      if (it.t === "res") c.res++;
+      else c.comp++;
+      if (forG[id]) c.geste++;
+      if (fv[id]) c.fav++;
+      if (!used[id]) c.new++;
+    }
+    return c;
+  }
   const invOpts = () => Object.assign({ sort: "age", filter: U.invFilter || "tout" }, S().settings.inv, { filter: U.invFilter || (S().settings.inv && S().settings.inv.filter) || "tout" });
   const favs = () => S().settings.favs || (S().settings.favs = {});
   function quickRow(id) {
@@ -1368,6 +1431,12 @@
   }
   function invItems() {
     const st = S(), o = invOpts(), q = norm(U.iq || ""), fv = favs();
+    const flows = E.flows();
+    const inRate = (id) => E.rate(id) + (flows.prod[id] || 0);
+    const outRate = (id) => flows.cons[id] || 0;
+    const netRate = (id) => inRate(id) - outRate(id);
+    const actFlow = (id) => inRate(id) + outRate(id);
+
     const used = {}, forG = {};
     for (const id in st.known) {
       const r = I[id] && I[id].r;
@@ -1379,6 +1448,15 @@
       age: byAge,
       name: (a, b) => I[a].n.localeCompare(I[b].n),
       qty: (a, b) => (st.inv[b] || 0) - (st.inv[a] || 0) || byAge(a, b),
+      flow: (a, b) => actFlow(b) - actFlow(a) || Math.abs(netRate(b)) - Math.abs(netRate(a)) || byAge(a, b),
+      deficit: (a, b) => {
+        const netA = netRate(a), netB = netRate(b);
+        const defA = netA < -1e-4 ? 1 : (outRate(a) > 0 && (st.inv[a] || 0) < 10 ? 0.5 : 0);
+        const defB = netB < -1e-4 ? 1 : (outRate(b) > 0 && (st.inv[b] || 0) < 10 ? 0.5 : 0);
+        if (defB !== defA) return defB - defA;
+        if (netA !== netB) return netA - netB;
+        return (st.inv[a] || 0) - (st.inv[b] || 0) || byAge(a, b);
+      },
       new: (a, b) => (+st.seen[b] || 0) - (+st.seen[a] || 0) || byAge(b, a)
     };
     // une matière déjà eue reste dans la liste à 0 : sa place ne bouge pas, et on peut encore la poser sur l’établi
@@ -1389,6 +1467,7 @@
       if (E.isUnique(it) || E.isScaled(it)) return false;
       if (q && !norm(it.n).includes(q)) return false;
       if (o.filter === "fav") return !!fv[id];
+      if (o.filter === "flow") return inRate(id) > 1e-4 || outRate(id) > 1e-4;
       if (o.filter === "geste") return !!forG[id];
       if (o.filter === "res") return it.t === "res";
       if (o.filter === "comp") return it.t !== "res";
@@ -1490,7 +1569,8 @@
     // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
     const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
     h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
-    h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q) + '" autocomplete="off" spellcheck="false"></div>';
+    h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
+      (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
     h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     return h + '<div id="clist">' + carnetList() + "</div>";
@@ -1891,6 +1971,20 @@
       el.textContent = fmt(st.inv[id] || 0);
     });
     $$(".inv[data-inv]", view).forEach((el) => el.classList.toggle("zero", !(st.inv[el.dataset.inv] >= 1)));
+    const rf = E.flows();
+    $$("[data-flow]", view).forEach((el) => {
+      const id = el.dataset.flow;
+      const net = E.rate(id) + (rf.prod[id] || 0) - (rf.cons[id] || 0);
+      if (Math.abs(net) < 1e-4) {
+        if (!el.classList.contains("hidden")) el.classList.add("hidden");
+      } else if (net > 1e-4) {
+        el.textContent = "+" + perMin(net);
+        el.className = "c-flow pos";
+      } else {
+        el.textContent = "-" + perMin(-net);
+        el.className = "c-flow neg";
+      }
+    });
     $$("[data-need]", view).forEach((el) => el.classList.toggle("lack", (st.inv[el.dataset.need] || 0) + 1e-9 < Number(el.dataset.q)));
     $$("[data-cr]", view).forEach((b) => {
       // ×N et Max lancent une commande (qui démarre même s’il manque des matières premières)
@@ -2334,7 +2428,18 @@
       const plain = (t) => t.toLowerCase().replace(/[^a-zà-ÿ0-9]+/g, " ").trim();
       const fx = fxList(id).filter((f) => !(it.u && plain(it.u).includes(plain(f))));
       if (fx.length) h += '<p class="small" style="color:var(--good)">' + esc(fx.join(" · ")) + "</p>";
-      h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En réserve : <b>" + fmt(st.inv[id] || 0) + "</b>" + (E.rate(id) ? " · " + fmtRate(E.rate(id)) : "")) + "</p>";
+      const f = E.flows();
+      const inR = E.rate(id) + (f.prod[id] || 0);
+      const outR = f.cons[id] || 0;
+      const netR = inR - outR;
+      let flowInfo = "";
+      if (inR > 1e-4 || outR > 1e-4) {
+        const netStr = (netR > 1e-4 ? "+" : netR < -1e-4 ? "-" : "") + perMin(Math.abs(netR));
+        const color = netR > 1e-4 ? "var(--good)" : netR < -1e-4 ? "var(--bad)" : "var(--muted)";
+        flowInfo = ' · Solde : <b style="color:' + color + '">' + netStr + "</b>" +
+          (inR > 1e-4 && outR > 1e-4 ? ' <span class="tiny muted">(+' + perMin(inR) + " / -" + perMin(outR) + ")</span>" : "");
+      }
+      h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En réserve : <b>" + fmt(st.inv[id] || 0) + "</b>" + flowInfo) + "</p>";
       const zid = E.RES_ZONE[id];
       if (zid) h += '<div class="row wrap small">Se récolte dans : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
         (E.zoneOpen(zid) ? "" : ' <span class="tiny muted">(terre pas encore atteinte)</span>') + "</div>";
@@ -3355,6 +3460,20 @@
         if (performance.now() - (U.forgeUp || 0) < 600) return; // déjà fait au relâcher
         U.fromMini = !!t.closest("[data-forge]"); forge(); U.fromMini = false; return;
       }
+      if ((b = t.closest("[data-clear-search]"))) {
+        const target = b.dataset.clearSearch;
+        A.click(); vibe(6);
+        if (target === "iq") {
+          U.iq = "";
+          render(true);
+        } else if (target === "cq") {
+          U.q = "";
+          const l = $("#clist");
+          if (l) { l.innerHTML = carnetList(); refresh(); }
+          render(true);
+        }
+        return;
+      }
       if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
       if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
       if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
@@ -3455,6 +3574,18 @@
         U.q = ev.target.value;
         const l = $("#clist");
         if (l) { l.innerHTML = carnetList(); refresh(); }
+        const p = ev.target.parentNode;
+        let sc = p ? p.querySelector(".search-clear") : null;
+        if (U.q && !sc && p) {
+          sc = document.createElement("button");
+          sc.className = "search-clear";
+          sc.dataset.clearSearch = "cq";
+          sc.setAttribute("aria-label", "Effacer");
+          sc.textContent = "✕";
+          p.appendChild(sc);
+        } else if (!U.q && sc) {
+          sc.remove();
+        }
       }
     });
     views.addEventListener("focusin", (ev) => { if (ev.target.id === "cq" || ev.target.id === "iq") ev.target.select(); });

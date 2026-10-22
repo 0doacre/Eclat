@@ -2845,8 +2845,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 6.9.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "6.9.0");
+test("Version 6.10.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "6.10.0");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -2870,6 +2870,34 @@ test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
   // Annuler le suivi
   E.setTrack(null);
   assert.strictEqual(E.state.track, null);
+});
+
+console.log("Ergonomie de la Réserve et Gestion des Flux (6.10)");
+test("Réserve : partition des matières brutes et pièces", () => {
+  const resItems = Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].t === "res");
+  const compItems = Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].t === "comp");
+  assert.ok(resItems.includes("bois"));
+  assert.ok(resItems.includes("caillou"));
+  assert.ok(compItems.includes("manche"));
+  assert.ok(compItems.includes("corde"));
+});
+
+test("Réserve : calcul des flux nets et débits actifs", () => {
+  const E = mk();
+  // Don de cabanes et placement sur le gisement de bois
+  E.state.inv.cabane = 2;
+  const res = E.domExtAdd("lisiere", "bois", 2);
+  assert.strictEqual(res.ok, true);
+  T += 100;
+  E.update();
+  assert.ok(E.rate("bois") > 0, "débit d'extraction de bois positif");
+
+  const flows = E.flows();
+  const netBois = E.rate("bois") + (flows.prod.bois || 0) - (flows.cons.bois || 0);
+  assert.ok(netBois > 0, "solde net positif pour le bois");
+
+  const netCaillou = E.rate("caillou") + (flows.prod.caillou || 0) - (flows.cons.caillou || 0);
+  assert.strictEqual(netCaillou, 0, "aucun flux actif sur le caillou");
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

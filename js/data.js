@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.9.0";
+  D.VERSION = "6.10.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1067,9 +1067,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🔔 Notifications hiérarchisées : alertes, réussites et découvertes avec signaux visuels clairs.",
-    "🎯 Suivi d’artisanat interactif : progression en temps réel des ingrédients et fabrication en un geste.",
-    "✨ Confort de lecture : fiches de recettes clarifiées, débits nets et retours tactiles enrichis."
+    "📦 Réserve organisée : filtres tactiles par catégories (Brutes, Pièces, En flux, Action, Favoris) avec compteurs.",
+    "⚡ Flux et débits en direct : suivi du solde net (+/- par min) sur les tuiles et dans la fiche ressource.",
+    "🔍 Recherche rapide avec bouton d'effacement instantané (✕) et tris intelligents (débits actifs, déficits, quantité)."
   ];
 
 

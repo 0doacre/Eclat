@@ -295,10 +295,23 @@ p { margin: 0.4em 0; }
 .inv .c { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .inv.sel { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 14%, var(--panel)); }
 .inv.relic { border-color: #8a7bd8; }
-.filters { display: flex; gap: 6px; overflow-x: auto; margin: 0 -12px 8px; padding: 0 12px; scrollbar-width: none; }
+.filters { display: flex; gap: 6px; overflow-x: auto; margin: 0 -12px 8px; padding: 0 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .filters::-webkit-scrollbar { display: none; }
-.filters button { flex: 0 0 auto; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line2); background: var(--panel); font-size: 12.5px; color: var(--muted); }
-.filters button.on { color: var(--acc-ink); background: var(--acc); border-color: transparent; font-weight: 700; }
+.filters button {
+  flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; padding: 6px 11px;
+  border-radius: 999px; border: 1px solid var(--line2); background: var(--panel);
+  font-size: 12.5px; color: var(--muted); cursor: pointer; transition: all .15s ease;
+  user-select: none; -webkit-user-select: none;
+}
+.filters button.on {
+  color: var(--acc-ink); background: var(--acc); border-color: transparent; font-weight: 700;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--acc) 30%, transparent);
+}
+.filters button .f-cnt {
+  font-size: 10.5px; font-weight: 700; opacity: .85; padding: 1px 5px;
+  border-radius: 999px; background: color-mix(in srgb, currentColor 16%, transparent);
+  font-variant-numeric: tabular-nums;
+}
 
 /* ---------------------------------------------------------------- carnet */
 .age-sec > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 12px; cursor: pointer; }
@@ -497,8 +510,8 @@ textarea.save { width: 100%; min-height: 110px; background: var(--bg2); color: v
 .pinb.on { color: var(--intu); border-color: color-mix(in srgb, var(--intu) 50%, transparent); }
 
 /* recherche */
-.search { margin: 0 0 8px; }
-.search input { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); color: var(--text); font-size: 16px; user-select: text; -webkit-user-select: text; }
+.search { margin: 0 0 8px; position: relative; display: flex; align-items: center; }
+.search input { width: 100%; padding: 10px 34px 10px 12px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); color: var(--text); font-size: 16px; user-select: text; -webkit-user-select: text; }
 .search input:focus { outline: none; border-color: var(--acc); }
 .list.flat { display: flex; flex-direction: column; gap: 8px; }
 
@@ -679,12 +692,36 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 
 /* ---------------------------------------------------------------- matières : tri et filtres */
 .inv-tools { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
-.inv-tools .search { flex: 1 1 auto; margin: 0; }
-.inv-tools select { flex: 0 0 auto; max-width: 46%; min-height: 40px; border-radius: 12px; border: 1px solid var(--line2); background: var(--panel2); color: var(--text); padding: 0 8px; font-size: 13px; }
+.inv-tools .search { flex: 1 1 auto; margin: 0; position: relative; display: flex; align-items: center; }
+.inv-tools .search input { width: 100%; padding-right: 32px; }
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 24px; height: 24px; border-radius: 50%; border: none;
+  background: color-mix(in srgb, var(--text) 14%, transparent);
+  color: var(--text); font-size: 13px; line-height: 1; display: flex;
+  align-items: center; justify-content: center; cursor: pointer; padding: 0;
+  transition: transform .12s, background .12s;
+}
+.search-clear:active {
+  transform: translateY(-50%) scale(.9);
+  background: color-mix(in srgb, var(--text) 28%, transparent);
+}
+.inv-tools select { flex: 0 0 auto; max-width: 48%; min-height: 40px; border-radius: 12px; border: 1px solid var(--line2); background: var(--panel2); color: var(--text); padding: 0 8px; font-size: 13px; }
 .inv-age { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin: 10px 4px 6px; }
 .inv { position: relative; }
 .inv .fav { position: absolute; top: 3px; right: 6px; font-style: normal; font-size: 11px; color: #ff8a9a; }
 .inv .rx { position: absolute; top: 3px; left: 6px; font-style: normal; font-size: 11px; font-weight: 700; color: var(--intu); text-shadow: 0 0 6px color-mix(in srgb, var(--intu) 70%, transparent); }
+.inv .c-flow {
+  font-size: 9px; font-weight: 700; line-height: 1; padding: 1px 4px; border-radius: 4px;
+  font-variant-numeric: tabular-nums; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.inv .c-flow.pos {
+  color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent);
+}
+.inv .c-flow.neg {
+  color: var(--bad); background: color-mix(in srgb, var(--bad) 14%, transparent);
+}
+.inv .c-flow.hidden { display: none; }
 /* la file de « Tes mains » */
 .hands { padding: 10px 12px; }
 .hands .lbl { font-size: 13px; }

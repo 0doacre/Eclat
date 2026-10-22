@@ -58,3 +58,4 @@ puis la fusionne.
 - `mobile-6-7.md` : mode Veillée (thème sombre), cibles tactiles agrandies, haptique affinée et grand texte (6.7.0).
 - `curios-6-8.md` : Curiosités et clins d'œil pop culture (6.8.0).
 - `ergonomie-6-9.md` : Lisibilité générale, ergonomie et feedbacks visuels (6.9.0).
+- `reserve-filtres-6-10.md` : Ergonomie de la Réserve, filtres par catégorie, tris intelligents et flux en direct (6.10.0).
