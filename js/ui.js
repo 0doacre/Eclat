@@ -1684,19 +1684,20 @@
     } else if (U.journalTab === "secrets") {
       const n = D.SECRETS.filter((s) => st.secrets[s.id]).length;
       h += '<p class="small muted">' + n + "/" + D.SECRETS.length + " secrets découverts. Relis les fragments : certains cachent un code.</p><div class=\"secret-grid\">";
+      const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
       D.SECRETS.forEach((s) => {
         const found = st.secrets[s.id];
-        const name = s.n || (I[s.id] ? I[s.id].n : D.MELODIES[s.id] ? D.MELODIES[s.id].n : s.id);
+        const name = s.n || (I[s.id] ? I[s.id].n : allM[s.id] ? allM[s.id].n : s.id);
         h += '<div class="sec' + (found ? "" : " unk") + '"><div class="k">' + s.k + "</div>" + (found ? esc(name) : "???") + "</div>";
       });
       h += "</div>";
     } else if (U.journalTab === "flute") {
       h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer. Une pause de quelques secondes, et l’air recommence à zéro.</p><div class="flute-body"><div class="flute">' +
         [1, 2, 3, 4, 5].map((n) => '<button class="hole" data-note="' + n + '">' + n + "</button>").join("") + '</div></div><div class="notes" id="notes">' + st.notes.join(" · ") + "</div></div>";
-      const known = Object.keys(D.MELODIES).filter((m) => st.secrets[m]);
+      const known = (typeof E.melodies === "function") ? E.melodies() : Object.keys(D.MELODIES).filter((m) => st.secrets[m]).map((m) => ({ id: m, n: D.MELODIES[m].n, notes: D.MELODIES[m].notes }));
       if (known.length) {
         h += '<h3 class="sub">Mélodies connues</h3><p class="tiny muted">Touche une mélodie pour la rejouer sur ta flûte.</p>';
-        known.forEach((m) => { h += '<button class="frag" data-play="' + m + '"><span class="fi">🎶</span><div class="grow"><b>' + esc(D.MELODIES[m].n) + '</b><div class="tiny muted">' + D.MELODIES[m].notes.join(" · ") + "</div></div></button>"; });
+        known.forEach((m) => { h += '<button class="frag" data-play="' + m.id + '"><span class="fi">🎶</span><div class="grow"><b>' + esc(m.n) + '</b><div class="tiny muted">' + m.notes.join(" · ") + "</div></div></button>"; });
       } else h += '<p class="small muted">Tu ne connais encore aucune mélodie. Le monde t’en a peut-être déjà appris une sans que tu y fasses attention.</p>';
     } else if (U.journalTab === "fins") {
       // le prestige, dit simplement : ce qu’on garde, ce qu’on gagne
@@ -1771,7 +1772,11 @@
           if (s.need && !st.frags[s.need]) h += '<div class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[s.need].n) + ".</div>";
           if (!(s.need && !st.frags[s.need])) h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Verser</button><button class="btn small' + (E.siteOn(pid) ? " on" : "") + '" data-feed="' + pid + '">' + (E.siteOn(pid) ? "Alimenté ✓" : "Alimenter") + "</button></div>";
         } else if (s.fire) h += '<button class="btn wide pri" style="margin-top:8px;background:#ff5a3c" data-fire="' + pid + '">💥 Mise à feu</button>';
-        else if (s.melody) h += '<p class="small" style="margin-top:6px">🎶 Prends ta flûte (Journal) et joue <b>' + esc(D.MELODIES[s.melody].n) + "</b>.</p>";
+        else if (s.melody) {
+          const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
+          const mName = allM[s.melody] ? allM[s.melody].n : s.melody;
+          h += '<p class="small" style="margin-top:6px">🎶 Prends ta flûte (Journal) et joue <b>' + esc(mName) + "</b>.</p>";
+        }
       }
       h += "</div>";
     });
@@ -2380,11 +2385,18 @@
     clearTimeout(U.noteT);
     U.noteT = setTimeout(() => { E.clearNotes(); const e2 = $("#notes"); if (e2) { e2.classList.add("fade"); setTimeout(() => { if (!S().notes.length) e2.textContent = ""; e2.classList.remove("fade"); }, 400); } }, 2500);
     if (r) {
-      const M = D.MELODIES[r.id];
+      const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
+      const M = allM[r.id];
       setTimeout(() => {
         if (r.fresh) A.secret();
-        if (!r.ending) openModal({ html: '<div class="kicker">' + (r.fresh ? "Secret découvert" : "Mélodie") + "</div><h2>" + esc(M.n) + "</h2>" + loreHTML(M.t) +
-          '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
+        if (M && !r.ending) {
+          if (r.fresh || !r.rejouable) {
+            openModal({ html: '<div class="kicker">' + (r.fresh ? "Secret découvert" : "Mélodie") + "</div><h2>" + esc(M.n) + "</h2>" + loreHTML(M.t) +
+              '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
+          } else {
+            toast("🎶 " + esc(M.n));
+          }
+        }
       }, 350);
       render(true);
     }
@@ -2830,6 +2842,11 @@
         badge("cosmos"); badge("journal");
       }, 600);
     });
+    E.on("skyanim", (anim) => {
+      if (typeof window !== "undefined" && window.EclatSky && typeof window.EclatSky.trigger === "function") {
+        window.EclatSky.trigger(anim);
+      }
+    });
     E.on("fx", (k) => { if (k === "fireworks") setTimeout(fireworks, 300); });
     E.on("ending", (r) => { setTimeout(() => showEnding(r), 600); save(); });
     E.on("offline", (o) => {
@@ -2986,7 +3003,15 @@
       }
       if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(F.t || F.lore, F.n || F.titre || "Fragment"), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
-      if ((b = t.closest("[data-play]"))) { A.init(); D.MELODIES[b.dataset.play].notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420)); return; } // la jouer pour de bon
+      if ((b = t.closest("[data-play]"))) {
+        A.init();
+        const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
+        const mel = allM[b.dataset.play];
+        if (mel && mel.notes) {
+          mel.notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420));
+        }
+        return;
+      }
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
       if (t.closest("#listen")) { listen(); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }

@@ -2170,4 +2170,144 @@ test("sauvegarde avec signes corrompu ou identifiant inconnu", () => {
   assert.ok(E.state.orphans.signes.inconnu_xyz);
 });
 
+console.log("Moteur de la flûte et du ciel (6.2)");
+test("reconnaissance de mélodies longues jusqu'à 32 notes et buffer glissant", () => {
+  const longNotes = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 2, 3, 4];
+  const recit = {
+    melodies: {
+      longAir: {
+        n: "Un long air",
+        notes: longNotes,
+        t: "Un chant ancien qui s'étend sur bien des portées.",
+        effets: [{ k: "flag", id: "longAirJoue" }]
+      }
+    }
+  };
+  const E = createEngine({ recit });
+  for (let i = 0; i < 10; i++) E.playNote(1);
+  let res = null;
+  for (const n of longNotes) {
+    res = E.playNote(n);
+  }
+  assert.ok(res, "le long air doit être reconnu");
+  assert.strictEqual(res.id, "longAir");
+  assert.strictEqual(res.fresh, true);
+  assert.strictEqual(E.state.flags.longAirJoue, true);
+  assert.strictEqual(E.state.secrets.longAir, true);
+  assert.deepStrictEqual(E.state.notes, []);
+});
+
+test("mélodies conditionnelles et effets déclaratifs (sky, boost, intu, event)", () => {
+  let skyAnimEvent = null;
+  let customEventReceived = false;
+  let time = 1000;
+  const recit = {
+    melodies: {
+      etoileAir: {
+        n: "L'Air de l'étoile",
+        notes: [5, 4, 3, 2, 1],
+        cond: { flag: "cielOuvert" },
+        effets: [
+          { k: "sky", anim: "filantes" },
+          { k: "boost", what: "prod", mult: 1.5, dur: 60 },
+          { k: "intu", n: 3 },
+          { k: "event", name: "etoile_sonne" }
+        ]
+      }
+    }
+  };
+  const E = createEngine({ now: () => time, recit });
+  E.on("skyanim", (a) => { skyAnimEvent = a; });
+  E.on("etoile_sonne", () => { customEventReceived = true; });
+
+  for (const n of [5, 4, 3, 2, 1]) E.playNote(n);
+  assert.strictEqual(E.state.secrets.etoileAir, undefined);
+  assert.strictEqual(skyAnimEvent, null);
+
+  E.state.flags.cielOuvert = true;
+  const prevIntu = E.state.intu;
+  for (const n of [5, 4, 3, 2, 1]) E.playNote(n);
+  assert.strictEqual(E.state.secrets.etoileAir, true);
+  assert.strictEqual(skyAnimEvent, "filantes");
+  assert.strictEqual(customEventReceived, true);
+  assert.strictEqual(E.state.intu, prevIntu + 5);
+  assert.ok(E.state.boosts.prod);
+  assert.strictEqual(E.state.boosts.prod.mult, 1.5);
+  assert.strictEqual(E.state.boosts.prod.until, time + 60000);
+  assert.strictEqual(E.cache().auto["*"], 1.5);
+
+  time += 61000;
+  E.update();
+  assert.strictEqual(E.state.boosts.prod, undefined);
+  assert.strictEqual(E.cache().auto["*"], undefined);
+});
+
+test("mélodie rejouable : reconnue plusieurs fois sans modal de secret", () => {
+  const recit = {
+    melodies: {
+      vent: {
+        n: "Appel du vent",
+        notes: [2, 3, 4],
+        rejouable: true,
+        effets: [{ k: "flag", id: "vent_actif" }]
+      }
+    }
+  };
+  const E = createEngine({ recit });
+  const m1 = [2, 3, 4].map((n) => E.playNote(n)).pop();
+  assert.strictEqual(m1.id, "vent");
+  assert.strictEqual(m1.fresh, true);
+  assert.strictEqual(m1.rejouable, true);
+
+  const m2 = [2, 3, 4].map((n) => E.playNote(n)).pop();
+  assert.strictEqual(m2.id, "vent");
+  assert.strictEqual(m2.fresh, false);
+  assert.strictEqual(m2.rejouable, true);
+
+  const list = E.melodies();
+  const item = list.find((x) => x.id === "vent");
+  assert.ok(item);
+  assert.strictEqual(item.rejouable, true);
+  assert.strictEqual(item.n, "Appel du vent");
+});
+
+test("animation céleste Sky.playAnim et Sky.trigger", () => {
+  const Sky = require("../js/sky.js");
+  Sky.clearAnims();
+  assert.strictEqual(Sky.anims().length, 0);
+
+  const a1 = Sky.trigger("filantes");
+  assert.ok(a1);
+  assert.strictEqual(a1.type, "meteors");
+  assert.ok(Array.isArray(a1.meteors));
+  assert.strictEqual(Sky.anims().length, 1);
+
+  const a2 = Sky.playAnim({ type: "pulse", dur: 2 });
+  assert.ok(a2);
+  assert.strictEqual(a2.type, "pulse");
+  assert.strictEqual(a2.dur, 2000);
+  assert.strictEqual(Sky.anims().length, 2);
+
+  Sky.clearAnims();
+  assert.strictEqual(Sky.anims().length, 0);
+});
+
+test("sauvegarde et nettoyage : notes plafonnées à 32 et boosts assainis", () => {
+  const E = createEngine();
+  const s = JSON.parse(E.serialize());
+  s.notes = [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 99, "bad"];
+  s.boosts = {
+    prod: { mult: 1.25, until: 2000000000000 },
+    invalide: "chaine",
+    trop_grand: { mult: 99999, until: 100 }
+  };
+  E.load(JSON.stringify(s));
+  assert.ok(E.state.notes.length <= 32);
+  assert.ok(E.state.notes.every((n) => n >= 1 && n <= 5));
+  assert.ok(E.state.boosts.prod);
+  assert.strictEqual(E.state.boosts.prod.mult, 1.25);
+  assert.strictEqual(E.state.boosts.invalide, undefined);
+  assert.strictEqual(E.state.boosts.trop_grand.mult, 10);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

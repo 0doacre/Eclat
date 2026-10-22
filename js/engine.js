@@ -88,7 +88,7 @@
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
-      livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {},
+      livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       settings: { sound: true, vibe: true },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
@@ -294,6 +294,17 @@
       }
       c.heat = c.st.chauffer ? c.st.chauffer.heat || 0 : 0;
       if (S.flags.lucioles) c.auto["*"] = (c.auto["*"] || 1) * 1.25;
+      if (S.boosts) {
+        const curT = now();
+        for (const bk in S.boosts) {
+          const b = S.boosts[bk];
+          if (b && b.until > curT) {
+            if (bk === "prod" || bk === "auto") {
+              c.auto["*"] = (c.auto["*"] || 1) * (Number(b.mult) || 1);
+            }
+          }
+        }
+      }
       c.echo = 1 + 0.5 * (S.echoes || 0);
       C = c;
       return c;
@@ -2082,29 +2093,100 @@
     }
 
     /* ------------------------------------------------------ flûte */
+    function allMelodies() {
+      const rec = opts.recit || D.RECIT || {};
+      const res = Object.assign({}, D.MELODIES || {});
+      if (rec.melodies) Object.assign(res, rec.melodies);
+      return res;
+    }
+    E.allMelodies = allMelodies;
+
+    E.melodies = function () {
+      const all = allMelodies();
+      const list = [];
+      for (const id in all) {
+        const m = all[id];
+        const known = !!(S.secrets && S.secrets[id]);
+        const condOk = !m.cond || cond(m.cond);
+        if (known || (m.rejouable && condOk)) {
+          list.push({
+            id,
+            n: m.n,
+            notes: m.notes,
+            t: m.t,
+            rejouable: !!m.rejouable,
+            known
+          });
+        }
+      }
+      return list;
+    };
+
     E.playNote = function (n) {
+      S.notes = S.notes || [];
       S.notes.push(n);
-      if (S.notes.length > 16) S.notes.shift();
-      for (const mid in D.MELODIES) {
-        const m = D.MELODIES[mid].notes;
-        if (S.notes.length < m.length) continue;
-        const tail = S.notes.slice(-m.length);
-        if (tail.every((v, i) => v === m[i])) { S.notes = []; return melody(mid); }
+      if (S.notes.length > 32) S.notes.shift();
+      const all = allMelodies();
+      for (const mid in all) {
+        const m = all[mid];
+        const notes = m.notes;
+        if (!notes || S.notes.length < notes.length) continue;
+        if (m.cond && !cond(m.cond)) continue;
+        const tail = S.notes.slice(-notes.length);
+        if (tail.every((v, i) => v === notes[i])) {
+          S.notes = [];
+          return melody(mid, m);
+        }
       }
       return null;
     };
     /* une pause dans le jeu de flûte : l’air recommence à zéro */
     E.clearNotes = () => { S.notes = []; };
-    function melody(mid) {
+    function melody(mid, mDef) {
+      const all = allMelodies();
+      const m = mDef || all[mid] || {};
+      const isRejouable = !!m.rejouable;
       const fresh = addSecret(mid);
+      if (fresh && mid !== "frere") S.intu += 2;
+
+      // Effets historiques
       if (mid === "appel" && !S.flags.lucioles) { S.flags.lucioles = true; recalc(); }
       if (mid === "berceuse") S.flags.berceuse = true;
       if (mid === "frere" && fresh) S.intu += 2;
-      if (fresh && mid !== "frere") S.intu += 2;
+
+      // Effets déclaratifs nommés
+      const effets = m.effets || m.effects;
+      if (Array.isArray(effets)) {
+        for (const eff of effets) {
+          if (!eff || typeof eff !== "object") continue;
+          if (eff.k === "flag" && eff.id) {
+            S.flags[eff.id] = true;
+            if (eff.id === "lucioles") recalc();
+          } else if (eff.k === "sky") {
+            E.emit("skyanim", eff.anim || eff.id);
+          } else if (eff.k === "boost") {
+            S.boosts = S.boosts || {};
+            const durSec = Number(eff.dur) || 1800;
+            const curT = now();
+            S.boosts[eff.what || "prod"] = {
+              mult: Number(eff.mult) || 1.25,
+              until: curT + durSec * 1000
+            };
+            recalc();
+          } else if (eff.k === "event" && (eff.name || eff.id)) {
+            E.emit(eff.name || eff.id);
+          } else if (eff.k === "unlock" && eff.id) {
+            addSecret(eff.id);
+          } else if (eff.k === "intu") {
+            S.intu += (Number(eff.n) || 2);
+          }
+        }
+      }
+
       let ending = null;
       if (mid === "berceuse") {
         const ps = projState("chant");
-        const st = D.PROJECTS.chant.steps[ps.step];
+        const st = D.PROJECTS && D.PROJECTS.chant && D.PROJECTS.chant.steps[ps.step];
         if (projVisible("chant") && st && st.melody === "berceuse") {
           ps.step++;
           ending = endGame("retour");
@@ -2112,7 +2194,7 @@
       }
       E.emit("melody", mid, fresh);
       E.emit("struct");
-      return { id: mid, fresh, ending };
+      return { id: mid, fresh, rejouable: isRejouable, ending };
     }
 
     /* ------------------------------------------------------ terminal */
@@ -2878,6 +2960,16 @@
       const t = now();
       const dt = (t - S.t) / 1000;
       S.t = t;
+      if (S.boosts) {
+        let boostExpired = false;
+        for (const bk in S.boosts) {
+          if (S.boosts[bk] && S.boosts[bk].until <= t) {
+            delete S.boosts[bk];
+            boostExpired = true;
+          }
+        }
+        if (boostExpired) recalc();
+      }
       if (!(dt > 0)) return 0;
       if (dt > 5) return E.catchUp(dt);
       step(dt, false);
@@ -3227,6 +3319,26 @@
           }
         }
         o.signes = slist;
+      }
+
+      if (!Array.isArray(o.notes)) {
+        o.notes = [];
+      } else {
+        o.notes = o.notes.map(Number).filter((n) => Number.isFinite(n) && n >= 1 && n <= 5).slice(-32);
+      }
+
+      if (!o.boosts || typeof o.boosts !== "object" || Array.isArray(o.boosts)) {
+        o.boosts = {};
+      } else {
+        const cleanBoosts = {};
+        for (const bk in o.boosts) {
+          const b = o.boosts[bk];
+          if (b && typeof b === "object" && Number.isFinite(b.mult) && Number.isFinite(b.until)) {
+            const mult = Math.max(0.1, Math.min(10, Number(b.mult) || 1));
+            cleanBoosts[bk] = { mult, until: Math.max(0, Number(b.until) || 0) };
+          }
+        }
+        o.boosts = cleanBoosts;
       }
       return o;
     }
