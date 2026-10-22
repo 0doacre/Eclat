@@ -1919,7 +1919,12 @@
     const st = S(), n = E.nextExp(z);
     if (!n) return "Plus rien à explorer ici pour l’instant.";
     if (st.exp.active) return "Tu explores déjà ailleurs : une exploration à la fois.";
-    if (n.locked) return "Il te faut d’abord : " + esc(I[n.x.need].n) + ".";
+    if (n.locked) {
+      if (n.x.hidden) return n.x.hidden;
+      if (typeof n.x.need === "string" && I[n.x.need]) return "Il te faut d’abord : " + esc(I[n.x.need].n) + ".";
+      if (Array.isArray(n.x.need)) return "Il te faut d’abord : " + n.x.need.map((id) => esc(I[id] ? I[id].n : id)).join(", ") + ".";
+      return "Ce lieu garde son secret pour l’instant.";
+    }
     const lack = n.x.cost ? Object.keys(n.x.cost).filter((i) => (st.inv[i] || 0) < n.x.cost[i]) : [];
     if (!lack.length) return "";
     return "Il te manque " + lack.map((i) => fmt(n.x.cost[i] - Math.floor(st.inv[i] || 0)) + " " + esc(I[i].n) +

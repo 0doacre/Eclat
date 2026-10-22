@@ -65,7 +65,15 @@ for (const z of D.ZONES) {
   if (z.req && z.req[0] !== "@" && !I[z.req]) err("zone " + z.id + " : prérequis inconnu " + z.req);
   if (z.req && z.req[0] !== "@" && !(I[z.req].e && I[z.req].e.zone === z.id)) err("zone " + z.id + " : " + z.req + " ne débloque pas cette zone");
   z.exps.forEach((x) => {
-    if (x.need && !I[x.need]) err("exploration " + x.id + " : prérequis inconnu " + x.need);
+    if (x.need) {
+      if (typeof x.need === "string") {
+        if (!I[x.need]) err("exploration " + x.id + " : prérequis inconnu " + x.need);
+      } else if (Array.isArray(x.need)) {
+        x.need.forEach((it) => { if (!I[it]) err("exploration " + x.id + " : prérequis inconnu " + it); });
+      } else if (typeof x.need !== "object") {
+        err("exploration " + x.id + " : prérequis invalide");
+      }
+    }
     if (x.cost) for (const i in x.cost) if (!I[i]) err("exploration " + x.id + " : coût inconnu " + i);
     const rw = x.rw || {};
     if (rw.frag && !D.FRAGS[rw.frag]) err("exploration " + x.id + " : fragment inconnu " + rw.frag);

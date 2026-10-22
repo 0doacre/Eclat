@@ -93,16 +93,21 @@
     }
     /* le prochain lieu à explorer sur la terre, ou l’exploration en cours */
     function lieuHTML(z) {
-      const st = S(), Z = E.ZONES[z], n = (Z.exps || []).length;
-      if (!n) return "";
+      const st = S(), Z = E.ZONES[z], exps = Z.exps || [];
+      if (!exps.length) return "";
       const done = st.exp.done[z] || 0, act = st.exp.active;
+      const visible = exps.filter((x, idx) => idx < done || !x.show || E.cond(x.show));
+      const n = visible.length;
       if (act && act.z === z) {
         const p = E.expProgress();
         return '<div class="dom-lieu"><span class="tiny">🧭 ' + esc(Z.exps[act.i].n) + ' · <b data-xl>' + (p ? fmtTime(p.left) : "") + '</b></span><div class="bar"><i data-xp style="width:' + (p ? (p.p * 100).toFixed(1) : 0) + '%"></i></div></div>';
       }
       const nx = E.nextExp(z);
       if (!nx) return '<span class="tiny muted">' + done + "/" + n + " lieux</span>";
-      if (nx.locked) return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(nx.x.hidden ? nx.x.hidden : "il faut " + I[nx.x.need].n.toLowerCase()) + "</span>";
+      if (nx.locked) {
+        const reqStr = nx.x.hidden ? nx.x.hidden : (typeof nx.x.need === "string" && I[nx.x.need] ? "il faut " + I[nx.x.need].n.toLowerCase() : Array.isArray(nx.x.need) ? "il faut " + nx.x.need.map((id) => (I[id] ? I[id].n.toLowerCase() : id)).join(", ") : "lieu verrouillé");
+        return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(reqStr) + "</span>";
+      }
       return '<button class="btn small" data-exp="' + z + '">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
     }
     function gisHTML(z, d) {
