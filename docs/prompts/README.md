@@ -48,3 +48,5 @@ puis la fusionne.
   Ces trois-là se font **dans l’ordre**, chacune partant de `main` après le merge de la précédente.
 - `livre-6-0.md` : moteur du Livre des Semeurs, fragments archivés et revisités, onglet Questions,
   avec un contenu provisoire (6.0.0). Le vrai contenu du récit est écrit par Claude.
+- `signes-6-1.md` : moteur des signes (dessin, saisie, empreintes, fiche, onglet Signes), sans
+  aucun signe réel (6.1.0).
