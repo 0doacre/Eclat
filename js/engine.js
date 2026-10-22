@@ -1790,6 +1790,7 @@
       S.livre.vu = S.livre.vu || {};
       if (S.livre.p[id]) return false;
       S.livre.p[id] = 1;
+      stamp("p:" + id);
       const page = (RECIT.pages && RECIT.pages[id]) || {};
       E.emit("page", { id, n: page.n, src });
       E.emit("struct");
@@ -1926,9 +1927,10 @@
         const q = RECIT.questions[id];
         const active = !!S.questions[id] || !q.quand || cond(q.quand);
         if (active) {
-          if (!S.questions[id]) S.questions[id] = { lvl: 0 };
+          if (!S.questions[id]) { S.questions[id] = { lvl: 0 }; stamp("q:" + id); }
           const lvl = S.questions[id].lvl || 0;
           const resolu = !!(q.resolu && cond(q.resolu));
+          if (resolu) stamp("qr:" + id);
           const cost = E.questionCost(id);
           list.push({
             id,
@@ -2063,6 +2065,7 @@
 
       if (okSet.has(h)) {
         st.lu = 1;
+        stamp("s:" + id);
         E.emit("signe", { id, mot: sDef.mot });
         return { ok: true, proche: false, mot: sDef.mot };
       }
@@ -2160,6 +2163,7 @@
           if (revisit) {
             S.revus = S.revus || {};
             S.revus[fragId + ":" + revisit.index] = 1;
+            stamp("r:" + fragId + ":" + revisit.index);
           }
         }
       }
@@ -2168,9 +2172,22 @@
       E.emit("struct");
     }
 
+    /* l’horodatage du Journal (0.7.1) : quand une entrée est apparue, à quel cycle et à quel âge.
+     * Clés : « f:fragment », « r:fragment:n » (revisite), « p:page », « s:signe », « q:question », « qr:question ».
+     * Rangé dans la méta : gardé à la relève. Une entrée d’avant 0.7.1 n’a pas de date (on n’en invente pas). */
+    function stamp(k) {
+      const m = S.meta;
+      m.stamps = m.stamps || {};
+      if (!m.stamps[k]) m.stamps[k] = [now(), S.cycle || 1, S.age || 0];
+      return m.stamps[k];
+    }
+    E.stamp = stamp;
+    E.stampOf = (k) => (S.meta && S.meta.stamps && S.meta.stamps[k]) || null;
+
     function addFrag(fid, quiet) {
       if (S.frags[fid]) return false;
       S.frags[fid] = true;
+      stamp("f:" + fid);
       S.intu += 1;
       if (S.flags.arche && D.ARCHE[fid]) archeSay(fid);
       if (!quiet) E.emit("frag", fid);

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.7.0";
+  D.VERSION = "0.7.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1160,6 +1160,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🕯️ Le Journal est daté : chaque fragment, page, signe compris et question garde le cycle, l’âge et le jour de sa découverte.",
     "🏷️ Pastilles d’objets interactives : les matières et outils cités dans les objectifs, besoins et bloqueurs s’affichent en pastilles tactiles cliquables.",
     "👁️ Affordance unifiée : survol éclairé, retour tactile et navigation accessible au clavier dans tout le Domaine, les besoins et le Carnet.",
     "🌱 Nouvelle numérotation : passage au cycle 0.7.0, premier pas vers le Registre de quêtes et la version finale 1.0."

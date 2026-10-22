@@ -77,6 +77,20 @@
     const d = new Date(t);
     return d.toLocaleDateString("fr-FR") + " " + String(d.getHours()).padStart(2, "0") + "h" + String(d.getMinutes()).padStart(2, "0");
   }
+  /* l’horodatage d’une entrée du Journal (0.7.1) : « Cycle 3 · Âge du Fer · 22 oct. 21:40 ».
+   * court : « Cycle 3 · 22 oct. » pour les petites cases. Rien si l’entrée date d’avant l’horodatage. */
+  function stampTxt(k, short) {
+    const s = E.stampOf && E.stampOf(k);
+    if (!s) return "";
+    const d = new Date(s[0]);
+    const o = { day: "numeric", month: "short" };
+    if (d.getFullYear() !== new Date().getFullYear()) o.year = "numeric";
+    const day = d.toLocaleDateString("fr-FR", o);
+    if (short) return "Cycle " + s[1] + " · " + day;
+    const age = D.AGES[s[2]] ? " · " + D.AGES[s[2]].n : "";
+    return "Cycle " + s[1] + age + " · " + day + " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+  const stampHTML = (k, short) => { const t = stampTxt(k, short); return t ? '<div class="stamp">' + esc(t) + "</div>" : ""; };
 
   function ink(hex) {
     const h = hex.replace("#", "");
@@ -1785,7 +1799,7 @@
       ids.forEach((f) => {
         const F = D.FRAGS[f];
         if (!F) return;
-        if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n || F.titre) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div></div></button>";
+        if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n || F.titre) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div>" + stampHTML("f:" + f) + "</div></button>";
         else { const k = unkPlace(F.z); miss[k] = (miss[k] || 0) + 1; }
       });
       if (Object.keys(miss).length) {
@@ -1803,6 +1817,7 @@
           h += '<span class="livre-num">' + c.n + '</span>';
           if (c.nouveau) h += '<span class="livre-dot">●</span>';
           h += '<span class="livre-titre">' + esc(c.page.titre || ("Page " + c.n)) + '</span>';
+          h += stampHTML("p:" + c.id, true);
           h += '</button>';
         } else {
           h += '<div class="livre-cell empty"><span class="livre-num">' + c.n + '</span></div>';
@@ -1820,6 +1835,8 @@
           const isResolu = q.resolu;
           h += '<div class="card question-card' + (isResolu ? ' resolu' : '') + '">';
           h += '<div class="question-title' + (isResolu ? ' strikethrough' : '') + '">' + esc(q.titre) + '</div>';
+          const qs = stampTxt("q:" + q.id), qr = isResolu ? stampTxt("qr:" + q.id, true) : "";
+          if (qs || qr) h += '<div class="stamp">' + esc(qs ? "Posée : " + qs : "") + (qs && qr ? " · " : "") + esc(qr ? "résolue : " + qr : "") + "</div>";
           if (q.aides && q.aides.length) {
             h += '<div class="question-aides">';
             q.aides.forEach((aide, idx) => {
@@ -1854,7 +1871,7 @@
             (s.lu
               ? '<div class="signe-card-mot">' + esc(s.def.mot) + '</div>'
               : '<div class="signe-card-dessin">' + (window.signeSVG ? window.signeSVG(s.def.h, 36) : '') + '</div>') +
-            '<div class="signe-card-lieux">' + countTxt + '</div>' +
+            '<div class="signe-card-lieux">' + countTxt + '</div>' + (s.lu ? stampHTML("s:" + s.id, true) : "") +
             '</button>';
         });
         h += '</div>';
@@ -3634,7 +3651,7 @@
                 '</div>'
               ).join("") + '</div>' : '';
             return '<div class="kicker">Le Livre des Semeurs · n° ' + curC.n + '</div>' +
-              '<h2>' + esc(p.titre || ("Page " + curC.n)) + '</h2>' +
+              '<h2>' + esc(p.titre || ("Page " + curC.n)) + '</h2>' + stampHTML("p:" + pid) +
               '<div class="livre-imprime lore">' + recitHTML(p.imprime, "Page " + curC.n) + '</div>' +
               notesHTML +
               '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>';
@@ -3655,7 +3672,7 @@
         }
         return;
       }
-      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(E.interpolate ? E.interpolate(F.t || F.lore) : (F.t || F.lore), F.n || F.titre || "Fragment"), "Refermer"); return; }
+      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), stampHTML("f:" + b.dataset.frag) + loreHTML(E.interpolate ? E.interpolate(F.t || F.lore) : (F.t || F.lore), F.n || F.titre || "Fragment"), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
       if ((b = t.closest("[data-play]"))) {
         A.init();

@@ -1015,6 +1015,10 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
   display: inline-block;
   vertical-align: -0.18em;
 }
+/* horodatage du Journal (0.7.1) : discret, chiffres alignés */
+.stamp { font-size: 10.5px; line-height: 1.3; color: var(--dim, var(--muted)); font-variant-numeric: tabular-nums; letter-spacing: .01em; margin-top: 2px; }
+.livre-cell .stamp, .signe-card .stamp { font-size: 9.5px; margin-top: 3px; opacity: .85; }
+h2 + .stamp { margin: -4px 0 8px; }
 
 .livre-grid {
   display: grid;

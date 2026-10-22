@@ -67,43 +67,37 @@ Ce document récapitule l'ensemble des développements menés aujourd'hui sur le
 - **Branche Git actuelle** : `gemini-item-pills-0-7-0`
 - **Dernier commit** : `813fa6e` (`v0.7.0 : pastilles d'objets interactives, affordance tactile et reinitialisation de version`)
 - **Dépôt distant** : à jour sur `origin/gemini-item-pills-0-7-0`
-- **Build & Service Worker** : Service worker à jour sous le hash `b3abb06dd6`
+- **Build & Service Worker** : Service worker à jour sous le hash `182832bd6f`
 - **Arbre de travail** : Propre (`working tree clean`), aucun fichier orphelin.
 
 ---
 
-## 4. Feuille de Route Immédiate pour Claude
+## 4. Feuille de Route & Suivi des Versions
 
-### Relecture de la v0.7.0 (faite par Claude, 22 oct. 21:56)
-- **Bug corrigé** : `itemPill()` ne regardait que `st.known`. Les matières brutes (bois, silex…) n'ont pas de recette, donc n'y figurent jamais : elles s'affichaient « Recette inconnue » avec un « ? » dans « Il manque : ». La pastille suit maintenant la même règle que la fiche (`known`, `seen` ou sans recette) et écrit toujours le nom, comme avant.
-- **CSS** : les lignes de passage (`.passcost .ing.link`) portent une phrase entière. Elles reprennent le retour à la ligne au lieu d'hériter du `nowrap` des pastilles.
-- Branche fusionnée sur `main` après `npm test` (153 / 32 / 9) et une vérification dans le navigateur, sans erreur console.
+### A. v0.7.0 — Pastilles d'objets interactives & relecture
+- **Relecture & Fusion** : Fusionnée sur `main` (`515c91e`).
+- **Correctifs de relecture intégrés** : matières brutes sans recette (`bois`, `silex`…) correctement nommées et dotées de leur icône dans `.item-pill`, retour à la ligne rétabli pour les phrases complètes de `.passcost .ing.link`.
 
-### Étape 1 : Fusion de la v0.7.0 sur `main`
-Revue habituelle de la branche `gemini-item-pills-0-7-0`, puis fusion rapide sur `main`.
-
----
-
-### Étape 2 : Itération Mineure v0.7.1 — Horodatage dans le Journal
-
-#### Contexte & Besoin
-Actuellement, les découvertes consignées dans le Journal (fragments du récit, pages du Livre des Semeurs, inscriptions de signes, airs de flûte) apparaissent les unes après les autres sans repère temporel. Or, ÉCLAT est un voyage à travers les âges et les cycles : savoir *quand* une note a été écrite, ou à quel moment d'un cycle un fragment a été trouvé, renforce considérablement l'immersion et le sentiment de progression archéologique.
-
-#### Spécifications attendues pour la v0.7.1
-1. **Données d'horodatage** :
-   - À chaque ajout dans le Journal (découverte d'un fragment, lecture d'une page du Livre, signe compris, air appris), enregistrer un timestamp. Les points d'entrée exacts restent à repérer dans `js/engine.js` (il n'existe pas de fonction unique `addJournalEntry`) :
-     - Soit temporel réel : `Date.now()`.
-     - Soit diégétique : cycle en cours (`st.cycle`) + temps écoulé ou date calendaire simplifiée.
-2. **Rendu dans l'interface** :
-   - Dans l'onglet Journal ([js/ui.js](file:///c:/projets/temporaire/js/ui.js) et modales associées) : afficher un cartouche discret d'horodatage en haut ou en bas de chaque fragment/note :
-     - *Exemple de format élégant* : `Cycle 3 · 22 oct. 21:40` ou `À la 42e minute du cycle 2`.
-   - Utiliser la typographie discrète du jeu (`.tiny.muted` ou `.time-tag`).
-3. **Rétrocompatibilité** :
-   - Pour les sauvegardes antérieures n'ayant pas de timestamp stocké, gérer un fallback gracieux (ex: « *Écrit lors d’un cycle antérieur* » ou omettre la date sans casser l'affichage).
+### B. v0.7.1 — Horodatage du Journal (Réalisé)
+- **Branche** : `claude-horodatage-0-7-1`
+- **Données d'horodatage (`js/engine.js`)** :
+  - Ajout de `stamp(k)` stockant le triplet `[timestamp, cycle, age]` dans `S.meta.stamps[k]`.
+  - Persistant à la relève (`newCycle`) et sauvegardé dans le JSON (`E.serialize`).
+  - Enregistré automatiquement lors de :
+    - Découverte d'un fragment (`f:...`) et revisite (`r:...`).
+    - Obtention d'une page du Livre des Semeurs (`p:...`).
+    - Compréhension d'un signe (`s:...`).
+    - Apparition et résolution d'une question (`q:...`, `qr:...`).
+- **Rendu dans l'interface (`js/ui.js` & `css/style.css`)** :
+  - Double affichage diégétique et temporel : `Cycle X · Âge du [Nom] · 22 oct. 21:40` (format complet) et `Cycle X · 22 oct.` (format court pour les cartes compactes).
+  - Présent dans la liste des fragments, la modale de lecture, les cellules et fiches du Livre des Semeurs, les cartes de signes compris et les cartes de questions.
+  - Style discret `.stamp` en typographie à espacement tabulaire (`tabular-nums`).
+  - Fallback sobre : les entrées d'anciennes sauvegardes ne montrent aucune fausse date inventée.
+- **Validation** : 155 tests moteur, 32 tests récit, 9 tests serveur, test navigateur CDP sans erreur console.
 
 ---
 
-### Étape 3 : Itération Majeure v0.8.0 (Lot 2) — Le Registre de Quêtes & Expansion du Troqueur
+## 5. Prochaine Étape Majeure : v0.8.0 (Lot 2) — Le Registre de Quêtes & Expansion du Troqueur
 
 #### Contexte & Besoin
 La carte d'objectif unique actuellement située en haut du Domaine a atteint ses limites ergonomiques et narratives. L'utilisateur souhaite la transformer en un véritable **Registre de Quêtes** articulé en 3 piliers :
@@ -133,7 +127,7 @@ La carte d'objectif unique actuellement située en haut du Domaine a atteint ses
 
 ---
 
-## 5. Rappels des Directives et Secrets
+## 6. Rappels des Directives et Secrets
 
 - **Règle des Secrets** : Ne jamais écrire en clair une combinaison secrète, un air de flûte caché, un code terminal ou l'emplacement d'un secret dans les commits, changelogs ou comptes-rendus. Toujours utiliser des formules neutres (« une recette secrète », « un lieu oublié »).
 - **Vérification navigateur obligatoire** : Tout lot modifiant `js/ui.js` ou `js/domaine.js` doit être validé dans un vrai navigateur (Chrome headless ou Playwright) pour vérifier l'absence totale d'erreurs console avant livraison.
