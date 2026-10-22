@@ -11,6 +11,7 @@
   function create(api) {
     const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
     const uiSigne = api.uiSigne || (() => "");
+    const itemPill = api.itemPill || ((id) => esc(id));
     const I = D.ITEMS;
     const S = () => E.state;
     const perTime = perMin;
@@ -276,7 +277,7 @@
         const q50 = E.sellQuote(id, n50);
         const qAll = nAll > 0 ? E.sellQuote(id, nAll) : 0;
         return '<div class="comptoir-row" data-sline="' + id + '">' +
-          '<div class="comptoir-head">' + icon(id, "sm") +
+          '<div class="comptoir-head" data-goto="' + id + '" role="button" tabindex="0" title="' + esc(I[id].n) + ' (toucher pour inspecter)">' + icon(id, "sm") +
           '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> disponibles</span></div>' +
           '<span class="tiny muted">' + fmtNum(p) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
@@ -293,7 +294,7 @@
         const c1000 = E.buyResCost(id, 1000);
         const ecus = S().ecus || 0;
         return '<div class="comptoir-row" data-bline="' + id + '">' +
-          '<div class="comptoir-head">' + icon(id, "sm") +
+          '<div class="comptoir-head" data-goto="' + id + '" role="button" tabindex="0" title="' + esc(I[id].n) + ' (toucher pour inspecter)">' + icon(id, "sm") +
           '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> disponibles</span></div>' +
           '<span class="tiny muted">' + fmtNum(c1) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
@@ -325,7 +326,7 @@
         const have = S().inv[ask.id] || 0;
         const can = have >= ask.n;
         return '<div class="comptoir-row" data-aline="' + i + '">' +
-          '<div class="comptoir-head">' + icon(ask.id, "sm") +
+          '<div class="comptoir-head" data-goto="' + ask.id + '" role="button" tabindex="0" title="' + esc(I[ask.id].n) + ' (toucher pour inspecter)">' + icon(ask.id, "sm") +
           '<div class="grow"><b>' + esc(I[ask.id].n) + '</b><span class="tiny muted"> · <span data-c="' + ask.id + '">' + fmt(have) + '</span> / ' + fmt(ask.n) + ' en stock</span></div>' +
           '<span class="small" style="font-weight:700">+' + ask.tr + ' ✦</span></div>' +
           '<div class="comptoir-btns">' +
@@ -477,7 +478,7 @@
       if (step.cost) {
         h += Object.keys(step.cost).map((k) => {
           const paid = ps.paid[k] || 0;
-          return '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny" data-sp="' + pid + ":" + k + '">' + fmt(paid) + " / " + fmt(step.cost[k]) +
+          return '<div class="cost-row" data-goto="' + k + '" role="button" tabindex="0" title="' + esc(I[k].n) + ' (toucher pour inspecter)">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny" data-sp="' + pid + ":" + k + '">' + fmt(paid) + " / " + fmt(step.cost[k]) +
             '</span><div class="bar"><i style="width:' + (100 * paid / step.cost[k]).toFixed(1) + '%"></i></div></div>';
         }).join("");
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
@@ -503,7 +504,7 @@
       if (!P.length) return "";
       return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary>Tout ce qui entre et sort, par ressource</summary>' +
         '<div class="u-pr u-ph tiny muted"><span class="grow">Ressource</span><span>entre</span><span>sort</span><span>réserve</span></div>' +
-        P.slice(0, 30).map((x) => '<div class="u-pr" data-goto="' + x.id + '">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
+        P.slice(0, 30).map((x) => '<div class="u-pr" data-goto="' + x.id + '" role="button" tabindex="0" title="' + esc(I[x.id].n) + ' (toucher pour inspecter)">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
           "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + '</i><span data-c="' + x.id + '">' + fmt(st.inv[x.id] || 0) + "</span></div>").join("") + "</details>";
     }
 

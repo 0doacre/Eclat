@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.14.0";
+  D.VERSION = "0.7.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1160,9 +1160,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "✨ Résonances Stellaires : paliers infinis et exponentiels dans la Mémoire des mains pour transcender la production en late-game.",
-    "🌌 Murmures du Temps : écoute des échos du destin contre des Traces pour orienter la découverte des fins inconnues.",
-    "⚖️ Justesse du regard : le signal de relève dans l’en-tête s’illumine uniquement lorsqu’un nouvel investissement est accessible."
+    "🏷️ Pastilles d’objets interactives : les matières et outils cités dans les objectifs, besoins et bloqueurs s’affichent en pastilles tactiles cliquables.",
+    "👁️ Affordance unifiée : survol éclairé, retour tactile et navigation accessible au clavier dans tout le Domaine, les besoins et le Carnet.",
+    "🌱 Nouvelle numérotation : passage au cycle 0.7.0, premier pas vers le Registre de quêtes et la version finale 1.0."
   ];
 
 
