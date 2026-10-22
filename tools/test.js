@@ -302,7 +302,7 @@ test("explorations : coût, durée, fragment", () => {
   assert.ok(E.startExp("lisiere").ok);
   assert.strictEqual(E.startExp("lisiere").why, "busy");
   T += 16000; E.update();
-  assert.ok(E.state.frags.chene);
+  assert.ok(E.state.frags[(E.RECIT.expFrag || {})["lisiere:chene"] || "chene"], "le fragment du lieu");
   assert.strictEqual(E.startExp("lisiere").why, "cost", "la grotte demande une torche");
 });
 test("hors-ligne : rattrapage plafonné à 12 h", () => {
