@@ -120,6 +120,7 @@ function allTexts() {
     out.push(["fragment " + id + " titre", f.n], ["fragment " + id, f.t]);
     (f.revisit || []).forEach((r, i) => out.push(["revisite " + id + " " + i, r.t]));
   }
+  for (const k in R.interface || {}) out.push(["interface " + k, R.interface[k].t]);
   for (const id in R.questions) {
     const q = R.questions[id];
     out.push(["question " + id + " titre", q.titre]);
@@ -157,7 +158,7 @@ test("pages : numéro unique de 1 à 32, titre, imprimé, sources valides", () =
     assert.ok(Array.isArray(p.notes), id + " : notes");
     p.notes.forEach((n, i) => {
       assert.ok(typeof n.t === "string" && n.t.trim(), id + " note " + i);
-      assert.ok(typeof n.sig === "string" && n.sig.trim() && n.sig.length <= 8, id + " signature " + i);
+      assert.ok(typeof n.sig === "string" && n.sig.trim() && (n.sig.length <= 8 || /^\[[a-z]+\]$/.test(n.sig)), id + " signature " + i);
       checkCond(n.cond, id + " note " + i);
     });
   }
@@ -233,8 +234,9 @@ console.log("Récit : les signes");
 /* le texte d’un fragment ou d’une page (imprimé et notes) par identifiant */
 function textOf(id) {
   if (R.frags[id]) return [R.frags[id].t].concat(R.frags[id].revisit.map((r) => r.t)).join("\n\n");
+  if (R.interface[id]) return R.interface[id].t;
   const p = R.pages[id];
-  return [p.imprime].concat(p.notes.map((n) => n.t)).join("\n\n");
+  return [p.imprime].concat(p.notes.map((n) => n.t + "\n" + n.sig)).join("\n\n");
 }
 /* toutes les chaînes affichables qui passent par le rendu des jetons */
 function renderedTexts() {
@@ -362,11 +364,10 @@ test("inscriptions : à leur place, et aucun signe écrit en clair à la place d
     assert.ok(textOf(id).includes(INSCRIPTIONS[k].l), k + " : absente de " + id);
   }
   for (const id in PLACES) for (const s of PLACES[id]) assert.ok(textOf(id).includes("[" + s + "]"), id + " : [" + s + "] attendu");
-  // chaque signe de la 6.1 se lit dans au moins deux textes trouvables (ou par son miroir)
+  // chaque signe de la 6.1 se lit dans au moins deux textes trouvables (lieux, pages, interface)
   for (const s of SIGNES_6_1) {
-    const lieux = Object.keys(R.frags).concat(Object.keys(R.pages)).filter((id) => textOf(id).includes("[" + s + "]"));
-    if (s === "eveiller") assert.ok(lieux.includes("p01") && R.signes.dormir, s + " : page 1 et le dessin retourné");
-    else assert.ok(lieux.length >= 2, s + " : un seul lieu (" + lieux.join(", ") + ")");
+    const lieux = Object.keys(R.frags).concat(Object.keys(R.pages), Object.keys(R.interface)).filter((id) => textOf(id).includes("[" + s + "]"));
+    assert.ok(lieux.length >= 2, s + " : un seul lieu (" + lieux.join(", ") + ")");
   }
   // les lignes de signes ne contiennent que des jetons ; le mot n’y est jamais écrit en clair
   const E = mk();
@@ -382,6 +383,57 @@ test("inscriptions : à leur place, et aucun signe écrit en clair à la place d
       if (/^[\s\[\]a-z0-9_·]+$/.test(line)) for (const m of mots) assert.ok(!(" " + nu + " ").includes(" " + m + " "), where + " : « " + m + " » en clair dans une ligne de signes");
     }
   }
+});
+
+test("interface : les signes des scènes et des boutons, rien de la 6.4", () => {
+  assert.deepStrictEqual(Object.keys(R.interface).sort(), ["comptoir", "eveil", "fabriquer"]);
+  for (const k in R.interface) {
+    const x = R.interface[k];
+    assert.ok(typeof x.t === "string" && x.t.trim(), k + " : texte");
+    checkCond(x.cond, "interface " + k);
+    const ids = [...x.t.matchAll(/\[([a-z]+)\]/g)].map((m) => m[1]);
+    assert.ok(ids.length > 0, k + " : au moins un signe");
+    ids.forEach((id) => assert.ok(R.signes[id], k + " : signe de la 6.1 attendu, pas [" + id + "]"));
+  }
+  assert.deepStrictEqual(R.interface.eveil.t.match(/\[[a-z]+\]/g), ["[eveiller]"]);
+  assert.deepStrictEqual(R.interface.fabriquer.t.match(/\[[a-z]+\]/g), ["[faire]"]);
+  // le premier signe guidé : au Comptoir, à partir du deuxième cycle, avec sa parole
+  assert.deepStrictEqual(R.interface.comptoir.cond, { cycle: 2 });
+  assert.ok(/Pose ta main là/.test(R.interface.comptoir.t) && /\[main\]$/.test(R.interface.comptoir.t));
+  const E = mk();
+  assert.ok(!E.cond(R.interface.comptoir.cond));
+  E.newCycle();
+  assert.ok(E.cond(R.interface.comptoir.cond));
+  // la signature de Léon est son signe
+  const leon = R.pages.p10.notes.find((n) => n.cond && n.cond.cycle === 6);
+  assert.strictEqual(leon.sig, "[eveiller]");
+});
+test("lectures : brouillées, sous des lignes de la 6.1, seulement quand tout est compris", () => {
+  const Sg = require("../js/signes.js");
+  const src = fs.readFileSync(path.join(__dirname, "..", "js", "recit.js"), "utf8");
+  assert.ok(Array.isArray(R.lectures) && R.lectures.length === 3);
+  const textes = renderedTexts().map(([, t]) => t);
+  for (const lec of R.lectures) {
+    const ids = [...lec.l.matchAll(/\[([a-z]+)\]/g)].map((m) => m[1]);
+    assert.ok(ids.length > 0 && ids.every((id) => R.signes[id]), lec.l + " : signes de la 6.1 seulement");
+    assert.ok(textes.some((t) => t.split("\n").some((line) => line.includes(lec.l))), lec.l + " : écrite dans un texte");
+    const fr = Buffer.from(lec.fr, "base64").toString("utf8");
+    assert.ok(/^[A-Z][^\[\]]+\.$/.test(fr), lec.l + " : phrase");
+    assert.ok(!src.includes(fr) && !src.includes(fr.slice(0, 12)), lec.l + " : en clair dans le fichier");
+    const E = mk();
+    const lire = (line) => Sg.lectureLigne(line, { recit: R, state: E.state });
+    assert.strictEqual(lire(lec.l), "", "rien avant");
+    ids.slice(0, -1).forEach((id) => { T += 4000; E.essaiSigne(id, debrouille(BROUILLE[id][0])); });
+    assert.strictEqual(lire(lec.l), "", "rien tant qu’un signe manque");
+    T += 4000; E.essaiSigne(ids[ids.length - 1], debrouille(BROUILLE[ids[ids.length - 1]][0]));
+    assert.strictEqual(lire(lec.l), fr, "la phrase quand tout est compris");
+    assert.strictEqual(lire("Avant : " + lec.l), fr, "aussi dans une phrase");
+    assert.strictEqual(lire(lec.l + " [halte]"), "", "pas si la ligne a un signe non compris");
+  }
+  // les lignes qui ont un signe de la 6.4 n’ont pas de lecture
+  const E = mk();
+  for (const id of SIGNES_6_1) { T += 4000; E.essaiSigne(id, debrouille(BROUILLE[id][0])); }
+  assert.strictEqual(Sg.lectureLigne("[main] [halte] · [machine] [dormir]", { recit: R, state: E.state }), "");
 });
 
 test("chaînes de secrets gardées : les indices des anciens fragments existent toujours", () => {

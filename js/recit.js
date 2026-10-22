@@ -8,12 +8,13 @@
  *   les anciens sont archivés (cachés, gardés dans les sauvegardes) ;
  * - les questions dont toute la chaîne d’aide existe déjà dans le jeu.
  * Contenu de la 6.1 : les huit premiers signes (D.RECIT.signes) ; les inscriptions des
- * textes déjà en place, plus un signe sous les pochoirs de la Grotte.
+ * textes déjà en place, plus un signe sous les pochoirs de la Grotte ; les lectures en
+ * français des lignes entièrement comprises ; les signes de l’interface ; la signature de Léon.
  *
  * Jetons de signes : [main] [machine] [faire] [dabord] [nepas] [dormir] [eveiller]
  * [enfant] [revenir] [halte] [manquer] [nourrice] [relais] [nous].
  * Signatures (sig) : les six morts signent de traits (I à IIIII I) ; les vivants d’un
- * dessin (Hélie ❧, Kenza □, Léon ◇ tant que l’interface ne dessine pas les signatures).
+ * dessin (Hélie ❧, Kenza □, Léon : son signe, dessiné comme un jeton).
  * Enfant du cycle c : cuve 7 + ((c − 1) mod 6) ; Hélie = cycle 2, Kenza = 5, Léon = 6.
  *
  * Volontairement absent en 6.0 (mécaniques ou lieux pas encore là, pas de cul-de-sac) :
@@ -101,7 +102,7 @@
         imprime: "Un dessin : une grande paume ouverte, levée. À ses pieds, des machines couchées sur le flanc.\n\nDessous, deux lignes de signes :\n[machine] [nepas] [faire] · [main] [faire] [dabord]\n[main] [halte] · [machine] [dormir]",
         notes: [
           { t: "ILLISIBLE.", sig: "II" },
-          { t: "[machine] [nepas] [faire] · [main] [faire] [dabord]\n[main] [halte] · [machine] [dormir]", sig: "◇", cond: { cycle: 6 } }
+          { t: "[machine] [nepas] [faire] · [main] [faire] [dabord]\n[main] [halte] · [machine] [dormir]", sig: "[eveiller]", cond: { cycle: 6 } }
         ],
         src: [{ k: "exp", at: "plaine:tumulus" }]
       },
@@ -250,6 +251,25 @@
       dormir: { h: [5, 3, 1], mot: "dormir", ok: ["d1e9849a", "25c1e212", "05421d02", "b780af11", "883fc275"] },
       eveiller: { h: [1, 3, 5], mot: "éveiller", ok: ["524e118b", "beef7b9b", "f432ff78", "75a2b188", "1867a541"] },
       enfant: { h: [2, 3, 2], mot: "enfant", ok: ["8abf1c15", "d0d9b492", "b9f8ac53", "e276f660"] }
+    },
+
+    /* Lectures : la phrase en français sous une ligne de signes, affichée seulement quand
+     * tous les signes de la ligne sont compris. fr est brouillé (base64) : un coup d’œil au
+     * fichier ne donne pas le sens des signes. Seulement les lignes faites de signes de la 6.1. */
+    lectures: [
+      { l: "[machine] [nepas] [faire] · [main] [faire] [dabord]", fr: "QXVjdW5lIG1hY2hpbmUgbmUgZmFpdCBwb3VyIHVuZSBtYWluIGNlIHF1ZSBjZXR0ZSBtYWluIG7igJlhIHBhcyBmYWl0IGTigJlhYm9yZC4=" },
+      { l: "[machine] · [enfant] [dormir]", fr: "Q2VsbGUgcXVpIGNvdWNoZSBsZXMgZW5mYW50cy4=" },
+      { l: "[enfant] [eveiller]", fr: "UG91ciBs4oCZZW5mYW50IHF1aSBz4oCZw6l2ZWlsbGUu" }
+    ],
+
+    /* Les signes de l’interface et des scènes (rendus par ui.js et domaine.js) :
+     * eveil, en tête de chaque éveil (cycle 2 et suivants) ; fabriquer, sur le gros bouton
+     * de l’Atelier ; comptoir, à l’ouverture du Comptoir. L’ornement des scènes racontées
+     * (clé « ornement », avec « fins ») et le signe près de la relève arrivent en 6.4. */
+    interface: {
+      eveil: { t: "[eveiller]" },
+      fabriquer: { t: "[faire]" },
+      comptoir: { cond: { cycle: 2 }, t: "« Encore toi. Pose ta main là. »\nIl tape du doigt sur le bois du comptoir. À cet endroit, le bois est creusé, usé par les paumes, et un signe y est gravé : [main]" }
     }
   };
 

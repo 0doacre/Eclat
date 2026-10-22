@@ -51,9 +51,40 @@
     return '<span class="signe" data-s="' + esc(id) + '">◇</span>';
   }
 
+  /* Une lecture : la phrase en français d’une ligne de signes, gardée brouillée
+   * (base64) dans les données. Elle ne s’affiche que si tous les signes de la
+   * ligne sont compris. lectureLigne(ligne brute, { recit, state }) → texte ou "". */
+  function deb64(s) {
+    try {
+      const bin = (typeof atob === "function") ? atob(s) : Buffer.from(s, "base64").toString("binary");
+      return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function lectureLigne(ligne, opts) {
+    opts = opts || {};
+    const recit = opts.recit || {};
+    const lectures = recit.lectures;
+    if (!ligne || !Array.isArray(lectures) || !lectures.length) return "";
+    const ids = [];
+    String(ligne).replace(/\[([a-zA-Z0-9_\u00C0-\u017F-]+)\]/g, (m, id) => { ids.push(id); return m; });
+    if (!ids.length) return "";
+    const signes = (opts.state && opts.state.signes) || {};
+    for (const id of ids) {
+      if (!recit.signes || !recit.signes[id] || !signes[id] || !signes[id].lu) return "";
+    }
+    for (const lec of lectures) {
+      if (lec && lec.l && lec.fr && String(ligne).indexOf(lec.l) >= 0) return deb64(lec.fr);
+    }
+    return "";
+  }
+
   const Signes = {
     signeSVG,
-    renderSigneToken
+    renderSigneToken,
+    lectureLigne
   };
 
   if (typeof module !== "undefined" && module.exports) {
@@ -61,5 +92,6 @@
   }
   root.signeSVG = signeSVG;
   root.renderSigneToken = renderSigneToken;
+  root.lectureLigne = lectureLigne;
   root.EclatSignes = Signes;
 })(typeof globalThis !== "undefined" ? globalThis : this);
