@@ -613,12 +613,20 @@ test("de la boussole à la fin « Le Retour »", () => {
   force(E, "traducteur");
   assert.ok(E.state.flags.decoded && E.state.frags.signal);
   assert.ok(E.projVisible("chant"));
-  // Le Chant
+  // Les Matines (id chant)
   let ending = null;
   E.on("ending", (r) => (ending = r));
-  D.PROJECTS.chant.steps.forEach((s) => { if (s.cost) { for (const k in s.cost) E.add(k, s.cost[k]); assert.ok(E.contribute("chant").done); } });
+  const s0 = D.PROJECTS.chant.steps[0];
+  for (const k in s0.cost) E.add(k, s0.cost[k]);
+  assert.ok(E.contribute("chant").done);
+  assert.strictEqual(E.projState("chant").step, 1);
+  assert.strictEqual(E.cutRelay().ok, false);
+  E.state.frags.poings = true;
+  assert.strictEqual(E.cutRelay().ok, true);
+  assert.strictEqual(E.projState("chant").step, 2);
+  assert.strictEqual(E.releaseHand().ok, true);
   assert.strictEqual(E.projState("chant").step, 3);
-  D.MELODIES.berceuse.notes.forEach((n) => E.playNote(n));
+  E.fire("chant");
   assert.ok(ending && ending.id === "retour");
 });
 test("Brise-Monde : mise à feu", () => {
@@ -2533,6 +2541,77 @@ test("recettes secrètes : cloche et pigment", () => {
   assert.strictEqual(r2.id, "pigment");
   assert.strictEqual(E.count("pigment"), 1);
   assert.ok(E.state.secrets.pigment);
+});
+
+console.log("Moteur des fins et dénouements (6.5)");
+test("les cinq fins sont définies et conformes", () => {
+  const ends = Object.keys(D.ENDINGS);
+  assert.deepStrictEqual(ends.sort(), ["aube", "brasier", "exode", "retour", "silence"]);
+  ends.forEach((eid) => {
+    const en = D.ENDINGS[eid];
+    assert.ok(en.n && typeof en.n === "string");
+    assert.ok(en.ic && typeof en.ic === "string");
+    assert.ok(en.t && typeof en.t === "string" && en.t.length > 50);
+  });
+});
+
+test("La Treizième Arche : étapes, lancement et fin « exode »", () => {
+  const E = createEngine();
+  assert.strictEqual(E.projVisible("arche13"), false);
+  E.state.made.vaisseau = 1;
+  E.state.flags.station_morte = true;
+  assert.strictEqual(E.projVisible("arche13"), true);
+
+  let ending = null;
+  E.on("ending", (r) => (ending = r));
+
+  const p = D.PROJECTS.arche13;
+  assert.strictEqual(p.steps.length, 4);
+  for (let i = 0; i < 3; i++) {
+    const s = p.steps[i];
+    for (const k in s.cost) E.add(k, s.cost[k]);
+    assert.ok(E.contribute("arche13").done);
+  }
+  assert.strictEqual(E.projState("arche13").step, 3);
+  E.fire("arche13");
+  assert.ok(ending && ending.id === "exode");
+  assert.ok(E.state.endings.exode);
+});
+
+test("Le Grand Silence : étapes, proclamation et fin « silence »", () => {
+  const E = createEngine();
+  assert.strictEqual(E.projVisible("silence"), false);
+  E.state.signes = { halte: { lu: true } };
+  E.state.made.radiotelescope = 1;
+  assert.strictEqual(E.projVisible("silence"), true);
+
+  let ending = null;
+  E.on("ending", (r) => (ending = r));
+
+  const p = D.PROJECTS.silence;
+  assert.strictEqual(p.steps.length, 4);
+  for (let i = 0; i < 3; i++) {
+    const s = p.steps[i];
+    for (const k in s.cost) E.add(k, s.cost[k]);
+    assert.ok(E.contribute("silence").done);
+  }
+  assert.strictEqual(E.projState("silence").step, 3);
+  E.fire("silence");
+  assert.ok(ending && ending.id === "silence");
+  assert.ok(E.state.endings.silence);
+});
+
+test("Cycle post-Matines : E.isLibere() et préservation après la relève", () => {
+  const E = createEngine();
+  assert.strictEqual(E.isLibere(), false);
+  E.state.meta.endings.retour = 1;
+  assert.strictEqual(E.isLibere(), true);
+  assert.ok(E.cond({ libere: true }));
+  assert.ok(E.cond({ ending: "retour" }));
+  assert.strictEqual(E.cond({ not: { ending: "retour" } }), false);
+
+  E.newCycle();
+  assert.strictEqual(E.isLibere(), true);
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

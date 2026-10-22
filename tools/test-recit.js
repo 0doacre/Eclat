@@ -108,6 +108,8 @@ function checkCond(c, where) {
       case "cycle": case "age": assert.ok(Number.isInteger(v) && v >= 1, w + " : nombre attendu"); break;
       case "exp": assert.ok(place(v), w + " : lieu inconnu " + v); break;
       case "signe": assert.ok(R.signes && R.signes[v], w + " : signe inconnu " + v); break;
+      case "ending": assert.ok(D.ENDINGS[v], w + " : fin inconnue " + v); break;
+      case "libere": assert.ok(typeof v === "boolean", w + " : booleen attendu"); break;
       case "all": case "any":
         assert.ok(Array.isArray(v) && v.length > 0, w + " : liste attendue");
         v.forEach((x, i) => checkCond(x, w + "[" + i + "]"));
