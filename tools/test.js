@@ -2845,8 +2845,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.7.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.7.0");
+test("Version 0.7.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.7.1");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -3064,14 +3064,42 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 });
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
-test("Nouvelle convention de versionnement sémantique 0.7.0", () => {
-  assert.strictEqual(D.VERSION, "0.7.0");
+test("Convention de versionnement 0.x.y", () => {
+  assert.strictEqual(D.VERSION, "0.7.1");
   assert.ok(D.CHANGES.length >= 3);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
   assert.strictEqual(parts[1], 7, "Mineure pour le lot courant");
-  assert.strictEqual(parts[2], 0, "Patch à 0 pour nouvelle version");
+  assert.strictEqual(parts[2], 1, "0.7.1 : itération mineure");
+});
+
+console.log("Horodatage du Journal (0.7.1)");
+test("Journal : un fragment trouvé est daté (cycle, âge), gardé à la relève et à la sauvegarde", () => {
+  const E = createEngine();
+  const fid = Object.keys(D.FRAGS).find((f) => !E.state.frags[f]);
+  assert.strictEqual(E.stampOf("f:" + fid), null);
+  E.state.age = 3;
+  const avant = Date.now();
+  assert.ok(E.addFrag(fid, true));
+  const s = E.stampOf("f:" + fid);
+  assert.ok(Array.isArray(s) && s[0] >= avant && s[1] === 1 && s[2] === 3, "date, cycle 1, âge 3 : " + JSON.stringify(s));
+  // une seconde fois ne change pas la date
+  E.addFrag(fid, true);
+  assert.deepStrictEqual(E.stampOf("f:" + fid), s);
+  // la relève garde la date, la sauvegarde aussi
+  E.newCycle();
+  assert.deepStrictEqual(E.stampOf("f:" + fid), s);
+  const E2 = createEngine();
+  E2.load(E.serialize());
+  assert.deepStrictEqual(E2.stampOf("f:" + fid), s);
+});
+test("Journal : une ancienne sauvegarde n’a pas de date inventée", () => {
+  const E = createEngine();
+  E.load(fixture("save-v1-age10-chaines.json"));
+  const found = Object.keys(E.state.frags).filter((f) => E.state.frags[f]);
+  assert.ok(found.length > 0);
+  found.forEach((f) => assert.strictEqual(E.stampOf("f:" + f), null));
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
