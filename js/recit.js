@@ -1,4 +1,4 @@
-/* Éclat : le récit (version 6.0, « Le Livre »).
+/* Éclat : le récit (versions 6.0, « Le Livre », et 6.1, « Les signes »).
  * COFFRE : ce fichier contient des textes du récit. L’auteur du jeu ne le lit pas.
  * Source de vérité : docs/coffre/BIBLE.md, SECRETS.md, TEXTES.md.
  *
@@ -7,11 +7,13 @@
  * - les fragments neufs des quatre premières terres, avec leurs revisites ;
  *   les anciens sont archivés (cachés, gardés dans les sauvegardes) ;
  * - les questions dont toute la chaîne d’aide existe déjà dans le jeu.
+ * Contenu de la 6.1 : les huit premiers signes (D.RECIT.signes) ; les inscriptions des
+ * textes déjà en place, plus un signe sous les pochoirs de la Grotte.
  *
  * Jetons de signes : [main] [machine] [faire] [dabord] [nepas] [dormir] [eveiller]
  * [enfant] [revenir] [halte] [manquer] [nourrice] [relais] [nous].
  * Signatures (sig) : les six morts signent de traits (I à IIIII I) ; les vivants d’un
- * dessin (Hélie ❧, Kenza □, Léon ◇ en attendant le dessin du signe en 6.1).
+ * dessin (Hélie ❧, Kenza □, Léon ◇ tant que l’interface ne dessine pas les signatures).
  * Enfant du cycle c : cuve 7 + ((c − 1) mod 6) ; Hélie = cycle 2, Kenza = 5, Léon = 6.
  *
  * Volontairement absent en 6.0 (mécaniques ou lieux pas encore là, pas de cul-de-sac) :
@@ -152,7 +154,7 @@
       },
       grotte2: {
         n: "La Grotte aux Mains", z: "lisiere",
-        t: "Des mains au pochoir, ocre et noires, en rangs bien droits : vingt-quatre grandes, puis douze petites. Sous les grandes, un signe : [nous].\n\nPlus haut, des canots de feu montent vers une lueur rouge ; d’autres en reviennent, sous [nous] [revenir] [enfant]. Plus bas, des silhouettes couchées, les yeux fermés : [dormir]. Au-dessus de tout, une grande paume levée : [halte].\n\nPrès de l’entrée, des os percés de petits trous sont alignés sur une pierre plate. Quand le vent souffle, ils chantent.",
+        t: "Des mains au pochoir, ocre et noires, en rangs bien droits : vingt-quatre grandes, puis douze petites. Au bout de chaque rang, peint en noir, le même signe : [main]. Sous les grandes, un autre : [nous].\n\nPlus haut, des canots de feu montent vers une lueur rouge ; d’autres en reviennent, sous [nous] [revenir] [enfant]. Plus bas, des silhouettes couchées, les yeux fermés : [dormir]. Au-dessus de tout, une grande paume levée : [halte].\n\nPrès de l’entrée, des os percés de petits trous sont alignés sur une pierre plate. Quand le vent souffle, ils chantent.",
         revisit: [
           { cond: { cycle: 2 }, t: "Tu recomptes : vingt-quatre grandes mains, douze petites, aucune de plus.\n\nTu approches ta paume d’une petite main, sans toucher la peinture. Même largeur, à un doigt près." }
         ]
@@ -231,7 +233,24 @@
       }
     },
 
-    aide: { base: 5, mult: 3 }
+    aide: { base: 5, mult: 3 },
+
+    /* ------------------------------------------------- SIGNES (6.1)
+     * h : les trois hauteurs du dessin (1 en bas, 5 en haut), de gauche à droite.
+     * mot : ce qui s’affiche une fois le signe compris.
+     * ok : empreintes (E.empreinte) des réponses acceptées, jamais en clair ici.
+     * Les six autres jetons des textes restent volontairement neutres (◇) : leurs
+     * signes arrivent en 6.4, avec les lieux qui permettent de les comprendre. */
+    signes: {
+      main: { h: [3, 5, 3], mot: "main", ok: ["ea90e208", "bd1487a1", "3c3adfff"] },
+      machine: { h: [2, 4, 2], mot: "machine", ok: ["e103566e", "55408fa7", "b18a6abb", "44e618d8"] },
+      faire: { h: [1, 2, 3], mot: "faire", ok: ["d9340f62", "f9ac53d6", "065361a5", "56039ae0", "eecd44f4"] },
+      dabord: { h: [1, 5, 1], mot: "d’abord", ok: ["b52be429", "8909aa1f", "34375e0e", "31c8d987"] },
+      nepas: { h: [4, 4, 1], mot: "ne pas", ok: ["2fb1a5fc", "9c3f2b4c", "64560ffb", "e75d20eb", "f0452a17", "fcbe6b42"] },
+      dormir: { h: [5, 3, 1], mot: "dormir", ok: ["d1e9849a", "25c1e212", "05421d02", "b780af11", "883fc275"] },
+      eveiller: { h: [1, 3, 5], mot: "éveiller", ok: ["524e118b", "beef7b9b", "f432ff78", "75a2b188", "1867a541"] },
+      enfant: { h: [2, 3, 2], mot: "enfant", ok: ["8abf1c15", "d0d9b492", "b9f8ac53", "e276f660"] }
+    }
   };
 
   if (D.FRAGS && D.RECIT.frags) {

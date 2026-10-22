@@ -21,6 +21,53 @@ function test(name, fn) {
 const SIGNES = ["main", "machine", "faire", "dabord", "nepas", "dormir", "eveiller", "enfant",
   "revenir", "halte", "manquer", "nourrice", "relais", "nous"];
 const PREMIERES = ["lisiere", "plaine", "riviere", "collines"];
+/* 6.1 : huit signes définis ; les six autres jetons restent neutres (◇) jusqu’en 6.4 */
+const SIGNES_6_1 = ["main", "machine", "faire", "dabord", "nepas", "dormir", "eveiller", "enfant"];
+const NEUTRES = SIGNES.filter((s) => !SIGNES_6_1.includes(s));
+/* les dessins de la bible (§9), les quatorze */
+const DESSINS = {
+  main: [3, 5, 3], machine: [2, 4, 2], faire: [1, 2, 3], dabord: [1, 5, 1], nepas: [4, 4, 1],
+  dormir: [5, 3, 1], eveiller: [1, 3, 5], enfant: [2, 3, 2], revenir: [5, 1, 5], halte: [5, 5, 5],
+  manquer: [3, 1, 3], nourrice: [4, 2, 5], relais: [2, 5, 1], nous: [3, 3, 3]
+};
+/* empreintes des réponses de la bible, une liste par signe (jamais les mots en clair) */
+const EMPREINTES = {
+  main: ["ea90e208", "bd1487a1", "3c3adfff"],
+  machine: ["e103566e", "55408fa7", "b18a6abb", "44e618d8"],
+  faire: ["d9340f62", "f9ac53d6", "065361a5", "56039ae0", "eecd44f4"],
+  dabord: ["b52be429", "8909aa1f", "34375e0e", "31c8d987"],
+  nepas: ["2fb1a5fc", "9c3f2b4c", "64560ffb", "e75d20eb", "f0452a17", "fcbe6b42"],
+  dormir: ["d1e9849a", "25c1e212", "05421d02", "b780af11", "883fc275"],
+  eveiller: ["524e118b", "beef7b9b", "f432ff78", "75a2b188", "1867a541"],
+  enfant: ["8abf1c15", "d0d9b492", "b9f8ac53", "e276f660"]
+};
+/* les mêmes réponses, brouillées (base64 du mot à l’envers), pour jouer les essais */
+const BROUILLE = {
+  main: ["bmlhbQ==", "c25pYW0=", "ZW11YXA="],
+  machine: ["ZW5paGNhbQ==", "c2VuaWhjYW0=", "ZXRhbW90dWE=", "c2V0YW1vdHVh"],
+  faire: ["ZXJpYWY=", "cmV1cWlyYmFm", "dGlhZg==", "ZXVxaXJiYWY=", "cmXDqXJj"],
+  dabord: ["ZHJvYmHigJlk", "ZHJvYmE=", "cmVpbWVycA==", "ZXLDqGltZXJw", "dG5hdmE="],
+  nepas: ["bm9u", "c2FwIGVu", "c2Fw", "bnVjdWE=", "bmVpcg==", "c2lhbWFq"],
+  dormir: ["cmltcm9k", "dHJvZA==", "dG5lbXJvZA==", "bGllbW1vcw==", "cmltcm9kbmU="],
+  eveiller: ["cmVsbGlldsOp", "cmVsbGlldsOpcg==", "bGlldsOp", "bGlldsOpcg==", "cmV2ZWwgZXM="],
+  enfant: ["dG5hZm5l", "c3RuYWZuZQ==", "dGl0ZXA=", "c3RpdGVw"]
+};
+const debrouille = (s) => [...Buffer.from(s, "base64").toString("utf8")].reverse().join("");
+/* les inscriptions de la bible présentes en 6.1, et les textes qui doivent les porter */
+const INSCRIPTIONS = {
+  clause1: { l: "[machine] [nepas] [faire] · [main] [faire] [dabord]", ou: ["tumulus2", "carcasse2", "p10"] },
+  clause2: { l: "[main] [halte] · [machine] [dormir]", ou: ["tumulus2", "p10"] },
+  unite12: { l: "[machine] · [enfant] [dormir]", ou: ["carcasse2"] },
+  promesse: { l: "[nous] [revenir] [enfant]", ou: ["grotte2"] },
+  titre: { l: "[enfant] [eveiller]", ou: ["p01"] },
+  tombe: { l: "[enfant]", ou: ["ossements2"] }
+};
+/* les signes isolés prévus par la bible (annexe A, §14, rosettes) dans les textes de la 6.0 */
+const PLACES = {
+  p02: ["faire"], p03: ["nous", "enfant"], p04: ["manquer", "nepas"], p05: ["faire"],
+  p06: ["faire", "nepas"], p12: ["enfant", "dormir"], p14: ["machine"], p15: ["machine"],
+  grotte2: ["main", "nous", "dormir", "halte"]
+};
 const PAGES_6_0 = [1, 2, 3, 4, 5, 6, 7, 10, 12, 14, 15, 16];
 const zoneById = {};
 D.ZONES.forEach((z) => (zoneById[z.id] = z));
@@ -49,6 +96,7 @@ function checkCond(c, where) {
       case "flag": assert.ok(typeof v === "string" && v.length > 0, w + " : drapeau illisible"); break;
       case "cycle": case "age": assert.ok(Number.isInteger(v) && v >= 1, w + " : nombre attendu"); break;
       case "exp": assert.ok(place(v), w + " : lieu inconnu " + v); break;
+      case "signe": assert.ok(R.signes && R.signes[v], w + " : signe inconnu " + v); break;
       case "all": case "any":
         assert.ok(Array.isArray(v) && v.length > 0, w + " : liste attendue");
         v.forEach((x, i) => checkCond(x, w + "[" + i + "]"));
@@ -166,7 +214,7 @@ test("textes : pas de tiret cadratin, signes connus, longueurs pour mobile", () 
     assert.ok(!/—/.test(t), where + " : tiret cadratin");
     assert.ok(!/\s--\s/.test(t), where + " : faux tiret");
     assert.ok(!/ {2}/.test(t), where + " : double espace");
-    for (const m of t.matchAll(/\[([^\]]*)\]/g)) assert.ok(SIGNES.includes(m[1]), where + " : signe inconnu [" + m[1] + "]");
+    for (const m of t.matchAll(/\[([^\]]*)\]/g)) assert.ok(SIGNES_6_1.includes(m[1]) || NEUTRES.includes(m[1]), where + " : signe inconnu [" + m[1] + "]");
     if (/titre/.test(where)) assert.ok(!/\[/.test(t) && t.length <= 40, where + " : titre court, sans signe");
   }
   for (const id in R.frags) {
@@ -181,6 +229,161 @@ test("textes : aucune solution en clair (suites de notes, mots des signes)", () 
     assert.ok(!/nourrice/i.test(t.replace(/\[nourrice\]/g, "")), where + " : le nom ne s’écrit pas en clair");
   }
 });
+console.log("Récit : les signes");
+/* le texte d’un fragment ou d’une page (imprimé et notes) par identifiant */
+function textOf(id) {
+  if (R.frags[id]) return [R.frags[id].t].concat(R.frags[id].revisit.map((r) => r.t)).join("\n\n");
+  const p = R.pages[id];
+  return [p.imprime].concat(p.notes.map((n) => n.t)).join("\n\n");
+}
+/* toutes les chaînes affichables qui passent par le rendu des jetons */
+function renderedTexts() {
+  const out = allTexts().filter(([, t]) => typeof t === "string");
+  const walk = (o, where) => {
+    if (typeof o === "string") out.push([where, o]);
+    else if (o && typeof o === "object") for (const k in o) walk(o[k], where + "." + k);
+  };
+  walk(D.FRAGS, "FRAGS"); walk(D.EVENTS, "EVENTS"); walk(D.MELODIES, "MELODIES");
+  for (const id in D.ITEMS) walk(D.ITEMS[id].d, "ITEMS." + id);
+  return out;
+}
+const variantes = (w) => {
+  const out = [];
+  for (let i = 0; i < w.length; i++) {
+    if (!/[a-z]/.test(w[i])) continue;
+    out.push(w.slice(0, i) + (w[i] === "x" ? "y" : "x") + w.slice(i + 1)); // une lettre changée
+    if (w.length > 3) out.push(w.slice(0, i) + w.slice(i + 1)); // une lettre retirée
+    out.push(w.slice(0, i) + "x" + w.slice(i)); // une lettre ajoutée
+  }
+  return out;
+};
+
+test("signes : les huit de la 6.1, dessins de la bible, aucun de la 6.4", () => {
+  assert.ok(R.signes && typeof R.signes === "object");
+  assert.deepStrictEqual(Object.keys(R.signes).sort(), SIGNES_6_1.slice().sort());
+  for (const id of NEUTRES) assert.ok(!R.signes[id], id + " : prévu pour la 6.4");
+  const dessins = new Set();
+  for (const id in R.signes) {
+    const s = R.signes[id];
+    assert.ok(Array.isArray(s.h) && s.h.length === 3, id + " : trois hauteurs");
+    s.h.forEach((v) => assert.ok(Number.isInteger(v) && v >= 1 && v <= 5, id + " : hauteur " + v));
+    assert.deepStrictEqual(s.h, DESSINS[id], id + " : dessin de la bible");
+    dessins.add(s.h.join(""));
+    assert.ok(typeof s.mot === "string" && s.mot.trim() && s.mot.length <= 16, id + " : mot");
+    assert.ok(!/[[\]]/.test(s.mot), id + " : mot sans crochet");
+    checkCond(s.cond, id + " cond");
+  }
+  assert.strictEqual(dessins.size, SIGNES_6_1.length, "des dessins tous différents");
+  assert.strictEqual(new Set(Object.values(DESSINS).map((h) => h.join(""))).size, 14, "les quatorze dessins de la bible sont distincts");
+  // le dessin compris en 6.1 et son miroir : l’un se lit par l’autre
+  assert.deepStrictEqual(R.signes.eveiller.h, R.signes.dormir.h.slice().reverse());
+});
+test("signes : les empreintes sont celles des réponses prévues, sans recouvrement", () => {
+  const owner = {};
+  for (const id in R.signes) {
+    const ok = R.signes[id].ok;
+    assert.ok(Array.isArray(ok) && ok.length > 0, id + " : empreintes");
+    ok.forEach((h) => assert.ok(/^[0-9a-f]{8}$/.test(h), id + " : empreinte " + h));
+    assert.strictEqual(new Set(ok).size, ok.length, id + " : empreintes en double");
+    assert.deepStrictEqual(ok.slice().sort(), EMPREINTES[id].slice().sort(), id + " : réponses de la bible");
+    for (const h of ok) { assert.ok(!owner[h], h + " : à la fois " + owner[h] + " et " + id); owner[h] = id; }
+  }
+  // les réponses brouillées du test sont bien celles des empreintes
+  const E = mk();
+  for (const id in BROUILLE) {
+    const got = new Set(BROUILLE[id].map((b) => E.empreinte(debrouille(b))));
+    assert.deepStrictEqual([...got].sort(), EMPREINTES[id].slice().sort(), id + " : réponses brouillées");
+  }
+});
+test("signes : chaque réponse prévue est acceptée, quelle que soit la casse ou l’article", () => {
+  for (const id in BROUILLE) for (const b of BROUILLE[id]) {
+    const w = debrouille(b);
+    for (const essai of [w, w.toUpperCase(), "la " + w, "  " + w + " !"]) {
+      const E = mk();
+      const r = E.essaiSigne(id, essai);
+      assert.ok(r.ok && !r.deja && r.mot === R.signes[id].mot, id + " : réponse refusée (" + JSON.stringify(r) + ")");
+      assert.ok(E.state.signes[id].lu);
+    }
+  }
+});
+test("signes : une variante à une lettre donne « presque », un autre mot « non »", () => {
+  for (const id in BROUILLE) {
+    const ok = new Set(R.signes[id].ok);
+    const E = mk();
+    for (const b of BROUILLE[id]) {
+      const w = E.normSigne(debrouille(b));
+      const vs = variantes(w).filter((v) => !ok.has(E.empreinte(v)));
+      assert.ok(vs.length > 0, id + " : aucune variante");
+      for (const v of [vs[0], vs[vs.length - 1]]) {
+        T += 4000;
+        const r = E.essaiSigne(id, v);
+        assert.ok(!r.ok && r.proche, id + " : la variante devrait donner « presque » (" + JSON.stringify(r) + ")");
+      }
+    }
+    T += 4000;
+    const r = E.essaiSigne(id, "caillou");
+    assert.ok(!r.ok && !r.proche, id + " : un mot sans rapport");
+    assert.ok(!E.state.signes[id].lu, id + " : pas compris par erreur");
+  }
+});
+test("signes : compris, il le reste après la relève et une sauvegarde, et s’affiche en mot", () => {
+  const Sg = require("../js/signes.js");
+  const E = mk();
+  const render = (id) => Sg.renderSigneToken(id, { recit: R, state: E.state, seeSigne: E.seeSigne, lieu: "test" });
+  for (const id of SIGNES_6_1) {
+    assert.ok(/<svg/.test(render(id)) && !render(id).includes(">" + R.signes[id].mot + "<"), id + " : dessiné avant");
+    assert.ok(E.state.signes[id].vu.test, id + " : lieu noté");
+  }
+  for (const id of NEUTRES) assert.ok(/◇/.test(render(id)) && !/<svg/.test(render(id)), id + " : neutre");
+  for (const id of SIGNES_6_1) { T += 4000; assert.ok(E.essaiSigne(id, debrouille(BROUILLE[id][0])).ok); }
+  E.newCycle();
+  const E2 = mk();
+  E2.load(JSON.stringify(E.state));
+  for (const id of SIGNES_6_1) {
+    assert.ok(E2.state.signes[id] && E2.state.signes[id].lu, id + " : compris pour toujours");
+    const html = Sg.renderSigneToken(id, { recit: R, state: E2.state });
+    assert.ok(html.includes(">" + R.signes[id].mot + "<") && /signe lu/.test(html), id + " : affiché en mot");
+  }
+});
+test("jetons : chaque jeton de tous les textes est un signe défini ou volontairement neutre", () => {
+  const vus = {};
+  for (const [where, t] of renderedTexts()) {
+    for (const m of t.matchAll(/\[([a-zA-Z0-9_À-ſ-]+)\]/g)) {
+      assert.ok(R.signes[m[1]] || NEUTRES.includes(m[1]), where + " : jeton inconnu [" + m[1] + "]");
+      vus[m[1]] = 1;
+    }
+    // un jeton mal écrit (accent, espace, apostrophe) ne serait pas reconnu par le rendu
+    for (const m of t.matchAll(/\[([^\]\n]{1,24})\]/g)) assert.ok(/^[a-z0-9_]+$/.test(m[1]), where + " : jeton mal formé [" + m[1] + "]");
+  }
+  for (const id of SIGNES_6_1) assert.ok(vus[id], id + " : écrit dans au moins un texte");
+});
+test("inscriptions : à leur place, et aucun signe écrit en clair à la place du jeton", () => {
+  for (const k in INSCRIPTIONS) for (const id of INSCRIPTIONS[k].ou) {
+    assert.ok(textOf(id).includes(INSCRIPTIONS[k].l), k + " : absente de " + id);
+  }
+  for (const id in PLACES) for (const s of PLACES[id]) assert.ok(textOf(id).includes("[" + s + "]"), id + " : [" + s + "] attendu");
+  // chaque signe de la 6.1 se lit dans au moins deux textes trouvables (ou par son miroir)
+  for (const s of SIGNES_6_1) {
+    const lieux = Object.keys(R.frags).concat(Object.keys(R.pages)).filter((id) => textOf(id).includes("[" + s + "]"));
+    if (s === "eveiller") assert.ok(lieux.includes("p01") && R.signes.dormir, s + " : page 1 et le dessin retourné");
+    else assert.ok(lieux.length >= 2, s + " : un seul lieu (" + lieux.join(", ") + ")");
+  }
+  // les lignes de signes ne contiennent que des jetons ; le mot n’y est jamais écrit en clair
+  const E = mk();
+  const mots = SIGNES_6_1.map((id) => E.normSigne(R.signes[id].mot));
+  for (const [where, t] of renderedTexts()) {
+    for (const line of t.split("\n")) {
+      if (!/\[[a-z]+\]/.test(line)) continue;
+      const nu = E.normSigne(line.replace(/\[[a-z0-9_]+\]/g, " | "));
+      for (const k in INSCRIPTIONS) {
+        const enClair = E.normSigne(INSCRIPTIONS[k].l.replace(/\[([a-z]+)\]/g, (m, id) => (R.signes[id] ? R.signes[id].mot : "")));
+        if (enClair.split(" ").length >= 2) assert.ok(!nu.includes(enClair), where + " : « " + k + " » écrite en clair");
+      }
+      if (/^[\s\[\]a-z0-9_·]+$/.test(line)) for (const m of mots) assert.ok(!(" " + nu + " ").includes(" " + m + " "), where + " : « " + m + " » en clair dans une ligne de signes");
+    }
+  }
+});
+
 test("chaînes de secrets gardées : les indices des anciens fragments existent toujours", () => {
   // Flûte en os : les os percés de la Grotte
   assert.ok(/os percés/.test(R.frags.grotte2.t) && /chantent/.test(R.frags.grotte2.t));
