@@ -3456,6 +3456,7 @@
     E.on("skyanim", (anim) => {
       if (typeof window !== "undefined" && window.EclatSky && typeof window.EclatSky.trigger === "function") {
         window.EclatSky.trigger(anim);
+        if (!window.EclatSky.mounted()) badge("cosmos"); // quelque chose se passe dans le ciel
       }
     });
     E.on("releve_fenetre", () => {

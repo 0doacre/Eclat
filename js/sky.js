@@ -215,16 +215,17 @@
     cx.strokeStyle = a.cfg.color || "#aaccff";
     cx.fillStyle = a.cfg.color || "#ffffff";
     cx.lineWidth = a.cfg.width || 1.8;
-    const lines = a.cfg.lines || [];
-    for (const seg of lines) {
-      if (seg && seg.length >= 2) {
-        cx.beginPath();
-        cx.moveTo(seg[0][0] * W, seg[0][1] * H);
-        cx.lineTo(seg[1][0] * W, seg[1][1] * H);
-        cx.stroke();
-      }
+    // étoiles en [x, y] ou {x, y} ; segments en paires de points ou d’indices d’étoiles
+    const pts = (a.cfg.stars || []).map((s) => (Array.isArray(s) ? s : [s.x, s.y]));
+    const at = (q) => (typeof q === "number" ? pts[q] : q);
+    for (const seg of a.cfg.lines || []) {
+      const p0 = seg && at(seg[0]), p1 = seg && at(seg[1]);
+      if (!p0 || !p1) continue;
+      cx.beginPath();
+      cx.moveTo(p0[0] * W, p0[1] * H);
+      cx.lineTo(p1[0] * W, p1[1] * H);
+      cx.stroke();
     }
-    const pts = a.cfg.stars || [];
     for (const pt of pts) {
       cx.beginPath();
       cx.arc(pt[0] * W, pt[1] * H, 3, 0, 7);
@@ -305,6 +306,8 @@
       cfg,
       type: cfg.type || "meteors",
       t0: nowMs,
+      queued: nowMs,
+      shown: !!cv, // jouée hors du ciel : elle attend qu’on l’ouvre
       dur: durMs
     };
     if (item.type === "meteors") {
@@ -339,13 +342,16 @@
     cv = canvas; cx = cv.getContext("2d");
     Object.assign(opts, o || {});
     resize(); if (!stars.length) gen();
+    // les animations jouées ailleurs (la flûte est dans le Journal) partent à l’ouverture du ciel
+    const t = Date.now();
+    anims = anims.filter((a) => !a.shown && t - a.queued < 10 * 60000);
+    for (const a of anims) { a.t0 = t; a.shown = true; }
     raf = root.requestAnimationFrame(draw);
     root.addEventListener("resize", resize);
   };
   Sky.unmount = function () {
     if (raf && root.cancelAnimationFrame) root.cancelAnimationFrame(raf);
     raf = 0; cv = null; cx = null;
-    anims = [];
     if (root.removeEventListener) root.removeEventListener("resize", resize);
   };
   Sky.set = (o) => Object.assign(opts, o);

@@ -11,7 +11,7 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 6;
+  const SAVE_VERSION = 7;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -160,6 +160,21 @@
       if (o.settings && typeof o.settings === "object") delete o.settings.usine;
       o.flags.news = "6";
       o.v = 6;
+    }
+    if (from < 7) {
+      // v7 (0.7.2) : le Grand Œuvre caché a changé d’étapes en 6.5. Une partie d’avant
+      // (flags.ver < 6.5) qui l’avait entamé repart de sa première étape, ce qu’elle y
+      // avait mis revient à la Réserve. Le passage de version déclenche la copie de sécurité.
+      const ver = String((o.flags && o.flags.ver) || "");
+      const m = ver.match(/^(\d+)\.(\d+)/);
+      const ancien = !m || Number(m[1]) < 6 || (Number(m[1]) === 6 && Number(m[2]) < 5);
+      const ps = o.proj && o.proj.chant;
+      if (ancien && ps && (ps.step | 0) < 3) {
+        o.inv = o.inv || {};
+        for (const i in ps.paid || {}) o.inv[i] = (o.inv[i] || 0) + (Number(ps.paid[i]) || 0);
+        o.proj.chant = { step: 0, paid: {} };
+      }
+      o.v = 7;
     }
     return o;
   }
@@ -2178,7 +2193,7 @@
     function stamp(k) {
       const m = S.meta;
       m.stamps = m.stamps || {};
-      if (!m.stamps[k]) m.stamps[k] = [now(), S.cycle || 1, S.age || 0];
+      if (!(k in m.stamps)) m.stamps[k] = [now(), S.cycle || 1, S.age || 0];
       return m.stamps[k];
     }
     E.stamp = stamp;
@@ -2361,7 +2376,7 @@
           } else if (eff.k === "unlock" && eff.id) {
             addSecret(eff.id);
           } else if (eff.k === "intu") {
-            S.intu += (Number(eff.n) || 2);
+            if (fresh) S.intu += (Number(eff.n) || 2); // rejouer un air ne rapporte plus rien
           }
         }
       }
@@ -2509,7 +2524,7 @@
         const regData = (rec && rec.registre) || {};
 
         if (normCmd === "aide" || normCmd === "index" || normCmd === "help" || normCmd === "?") {
-          out = "REG · ENTRÉES : CLAUSE · MAINS · LICENCES · PREMIÈRES FOIS · S-01 À S-12 · RELAIS · CUVES · ENDORMISSEMENTS · MODIFICATIONS · CAPSULES · ORIGINAUX · LUEUR · SIGNAL · NOURRICE · ARCHE · TROQUEUR · UNITÉ 12 · HALTE · 1969";
+          out = "REG · ENTRÉES : CLAUSE · MAINS · LICENCES · PREMIÈRES FOIS · S-01 À S-12 · RELAIS · CUVES · ENDORMISSEMENTS · MODIFICATIONS · CAPSULES · ORIGINAUX · LUEUR · SIGNAL · NOURRICE · ARCHE · TROQUEUR · UNITÉ 12 · HALTE · 1969 · MODE ARCHE";
         } else if (normCmd === "mains" || normCmd === "main") {
           out = "REG · MAINS : 12, ET UNE MAIN EXTÉRIEURE.\nREG · MAIN EXTÉRIEURE · ORIGINE : INCONNUE.\nREG · SON HORLOGE INDIQUE : {date}.";
         } else if (normCmd === "licence" || normCmd === "licences") {
@@ -2603,7 +2618,7 @@
             out = regData[clean] || regData[normCmd];
             if (!out.startsWith("REG · ")) out = "REG · " + out;
           } else {
-            out = "REG · ENTRÉE NON RECONNUE. TAPE « AIDE » OU « INDEX ».";
+            out = "REG · ENTRÉE NON RECONNUE. TAPE « AIDE » OU « INDEX ». POUR REVENIR À ARCHE : « MODE ARCHE ».";
           }
         }
       } else {
@@ -3608,6 +3623,8 @@
       if (!o || typeof o !== "object" || !o.inv || typeof o.inv !== "object") throw new Error("Ce n’est pas une sauvegarde d’Éclat.");
       migrate(o);
       const hadPass = !!o.pass && typeof o.pass === "object";
+      // ce qui manquait avant certaines versions : à traiter une fois la partie chargée
+      const mig = { pre63: !o.eventsSeen, pre071: !(o.meta && o.meta.stamps) };
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
       o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0, trans: {}, hints_endings: {} }, o.meta);
@@ -3825,6 +3842,7 @@
         }
         o.boosts = cleanBoosts;
       }
+      Object.defineProperty(o, "_mig", { value: mig, enumerable: false });
       return o;
     }
     E.parseSave = parseSave;
@@ -3833,6 +3851,18 @@
       S = o;
       forgetDom();
       recalc();
+      const mig = o._mig || {};
+      // une partie d’avant 6.3 ne reçoit pas d’un coup les messages d’événements déjà dépassés
+      if (mig.pre63) for (const ev of RECIT.events || []) if (ev && ev.id && (!ev.cond || cond(ev.cond))) S.eventsSeen[ev.id] = 1;
+      // une partie d’avant 0.7.1 : pas de fausse date sur ce qu’elle avait déjà
+      if (mig.pre071) {
+        S.meta.stamps = S.meta.stamps || {};
+        for (const id in S.questions || {}) {
+          if (!("q:" + id in S.meta.stamps)) S.meta.stamps["q:" + id] = 0;
+          const q = RECIT.questions && RECIT.questions[id];
+          if (q && q.resolu && cond(q.resolu) && !("qr:" + id in S.meta.stamps)) S.meta.stamps["qr:" + id] = 0;
+        }
+      }
       if (S.flags.fab4 === "todo") placeOldExtractors();
       if (S.flags.reExt) {
         for (const t in S.flags.reExt) for (let i = 0; i < S.flags.reExt[t]; i++) if (!E.domAutoExt(t)) break;
