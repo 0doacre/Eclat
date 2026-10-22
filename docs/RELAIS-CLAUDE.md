@@ -124,9 +124,11 @@ La version majeure **v0.8.0** a été entièrement implémentée, testée et val
 
 ## 6. Prochaine Étape : v0.9.0 vers la version 1.0.0
 
-- Approfondissement de l'équilibrage du late-game (coûts exponentiels des Traces et paliers stellaires).
-- Scénarisation enrichie des quêtes de fin de partie et dialogues d'ARCHE.
-- Préparation de la version livrable 1.0.0.
+Un dossier complet d'analyse comparative et de propositions de level design inspiré des chefs-d'œuvre du genre (*Cell to Singularity*, *Fallout Shelter*, *Balatro*, *Slay the Spire*, *A Dark Room*, *Outer Wilds*, *Universal Paperclips*) a été rédigé :
+- **Piste A (v0.9.0)** : Micro-incidents et événements célestes de terre (météo diégétique, auras temporaires).
+- **Piste B (v0.9.0)** : 3 réceptacles de reliques du Semeur (synergies de build qualitatives type *Slay the Spire / Balatro*).
+- **Piste C (v0.9.0)** : Toile des rumeurs et connexions visuelles (*Outer Wilds / Cell to Singularity*).
+- **Piste D (v1.0.0)** : Ruptures de paradigme franches entre les phases de survie, industrielle, cybernétique et spatiale (*Universal Paperclips*).
 
 ---
 
