@@ -10,6 +10,7 @@
 
   function create(api) {
     const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
+    const uiSigne = api.uiSigne || (() => "");
     const I = D.ITEMS;
     const S = () => E.state;
     const perTime = perMin;
@@ -331,6 +332,9 @@
       function comptoirModalHTML() {
         const st = S();
         let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus en réserve</div></div></div>';
+        // à l’ouverture, ce que le Troqueur dit et ce que porte le bois du comptoir (données du récit)
+        const parole = uiSigne("comptoir", "Le Comptoir");
+        if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
         h += '<div class="subtabs">' +
           '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
           '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +

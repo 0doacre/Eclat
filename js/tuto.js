@@ -22,6 +22,8 @@
       const ok = tiles.find((t) => Object.keys(D.ITEMS).some((k) => D.ITEMS[k].r && D.ITEMS[k].r[1][t.dataset.inv] !== undefined && !S().known[k]));
       return ok || null;
     }
+    /* un signe des Anciens déjà compris */
+    const anyLu = () => Object.values(S().signes || {}).some((x) => x && x.lu);
     const lone = () => Object.keys(D.PROJECTS).find((p) => E.projVisible(p) && !E.siteOn(p) && E.projState(p).step < D.PROJECTS[p].steps.length);
     function decipherGoal() {
       const g = E.guide();
@@ -109,6 +111,20 @@
           { modal: true, at: () => (document.querySelector('.modal:not(.hidden) [data-m="sell"]') ? '.modal:not(.hidden) [data-m="sell"]' : null),
             text: "Vends ce qui encombre ta Réserve contre des écus. Plus tu vends d’une même ressource, plus son prix baisse.",
             done: () => Object.keys((S().comptoir && S().comptoir.sold) || {}).length > 0 }
+        ] },
+      { id: "signe", n: "Un signe", modal: true,
+        when: () => !anyLu() && !!document.querySelector(".modal:not(.hidden) .comptoir-signe .signe"),
+        still: () => !anyLu(),
+        steps: [
+          { modal: true, at: ".modal:not(.hidden) .comptoir-signe .signe",
+            text: "Un signe des Anciens est gravé dans le bois. Touche-le pour ouvrir sa fiche.",
+            done: () => anyLu() || !!document.querySelector(".modal:not(.hidden) #signeInput") },
+          { modal: true, at: () => document.querySelector(".modal:not(.hidden) #signeInput"), dim: false,
+            alt: "Rouvre la fiche du signe : touche-le, là où il est gravé.",
+            text: "Écris ce que tu crois qu’il veut dire, puis touche « Proposer ». Regarde où il est gravé, et ce que dit le Troqueur. Tu peux réessayer autant que tu veux.",
+            done: anyLu },
+          // hors des fenêtres : la bulle ne recouvre pas leurs boutons
+          { text: "Compris : partout où ce signe apparaît, il s’affiche désormais en mot. Les autres se trouvent dans le Journal, onglet Signes.", next: true }
         ] },
       { id: "etude", n: "Étudier une ressource",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),

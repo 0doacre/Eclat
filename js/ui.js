@@ -336,6 +336,8 @@
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { closeModal(); setTimeout(() => goto(gb.dataset.goto), 80); return; }
+      const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
+      if (sb && U.mcur && !fresh()) { A.click(); openSigneModal(sb.dataset.s); return; }
       const b = ev.target.closest("[data-m]");
       if (!b || !U.mcur || fresh()) return;
       const k = b.dataset.m;
@@ -352,7 +354,7 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne,
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
@@ -363,7 +365,8 @@
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
   const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Dom, save: () => save() });
-  function recitHTML(t) {
+  /* un texte sur une ligne : valeurs calculées et signes, sans paragraphes */
+  function recitInline(t, lieu) {
     if (!t) return "";
     const st = S();
     const cycle = (st && st.cycle) || 1;
@@ -373,10 +376,37 @@
     s = s.replace(/\{cycle\}/g, cycle)
          .replace(/\{semeur\}/g, semeur)
          .replace(/\{age\}/g, age)
-         .replace(/\[([a-zA-Z0-9_\u00C0-\u017F-]+)\]/g, '<span class="signe" data-s="$1">◇</span>');
-    return s.split(/\n\n+/).map((p) => "<p>" + p.replace(/\n/g, "<br>") + "</p>").join("");
+         .replace(/\[([a-zA-Z0-9_\u00C0-\u017F-]+)\]/g, (m, id) => {
+           if (typeof renderSigneToken === "function") {
+             return renderSigneToken(id, { recit: E.RECIT, state: st, seeSigne: (i, l) => E.seeSigne && E.seeSigne(i, l), esc, lieu });
+           }
+           return '<span class="signe" data-s="' + esc(id) + '">◇</span>';
+         });
+    return s;
   }
-  const loreHTML = (t) => '<div class="lore">' + recitHTML(t) + '</div>';
+  /* une ligne de signes entièrement comprise se lit aussi en français, dessous */
+  function lectureHTML(line) {
+    const fr = typeof lectureLigne === "function" ? lectureLigne(line, { recit: E.RECIT, state: S() }) : "";
+    return fr ? '<br><span class="lecture">« ' + esc(fr) + " »</span>" : "";
+  }
+  function recitHTML(t, lieu) {
+    if (!t) return "";
+    return String(t).split(/\n\n+/).map((p) => "<p>" + p.split("\n").map((l) => recitInline(l, lieu) + lectureHTML(l)).join("<br>") + "</p>").join("");
+  }
+  const loreHTML = (t, lieu) => '<div class="lore">' + recitHTML(t, lieu) + '</div>';
+  /* les signes posés sur l’interface et dans les scènes (données : D.RECIT.interface) */
+  function uiSigne(k, lieu) {
+    const x = E.RECIT && E.RECIT.interface && E.RECIT.interface[k];
+    if (!x || !x.t || (x.cond && !E.cond(x.cond))) return "";
+    return recitInline(x.t, lieu).replace(/\n/g, "<br>");
+  }
+  /* l’ornement qui clôt une scène racontée ; fin : seulement pour les fins qu’il signe */
+  function ornementHTML(lieu, delay, fin) {
+    const x = E.RECIT && E.RECIT.interface && E.RECIT.interface.ornement;
+    if (!x || (fin && !(x.fins || []).includes(fin))) return "";
+    const h = uiSigne("ornement", lieu);
+    return h ? '<p class="scene-ornement" style="opacity:0;animation:fadeup 1.2s ' + delay + 's forwards">' + h + "</p>" : "";
+  }
 
   /* ============================================================ SAUVEGARDES
    * Règles : on ne réécrit jamais une sauvegarde qu’on n’a pas su lire ; avant
@@ -768,6 +798,129 @@
     $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
   }
 
+  /* ------------------------------------------------------------- SIGNES (modale) */
+  function openSigneModal(id) {
+    const rec = E.RECIT || D.RECIT || {};
+    const sDef = rec.signes && rec.signes[id];
+    if (!sDef) return;
+    const st = S();
+    st.signes = st.signes || {};
+    st.signes[id] = st.signes[id] || { vu: {} };
+    const stSigne = st.signes[id];
+
+    const parentModal = (U.mcur && U.mcur.signeId !== id) ? U.mcur : null;
+
+    const renderContent = (feedbackText, feedbackCls) => {
+      const places = (stSigne && stSigne.vu && typeof stSigne.vu === "object") ? Object.keys(stSigne.vu) : [];
+      let h = '<div class="kicker">Écriture des Anciens</div>';
+      h += '<h2>' + (stSigne.lu ? "Signe déchiffré" : "Signe inconnu") + '</h2>';
+      h += '<div class="signe-hero">' + (window.signeSVG ? window.signeSVG(sDef.h, 72) : "") + '</div>';
+
+      if (stSigne.lu) {
+        h += '<div class="signe-mot-decouvert">' + esc(sDef.mot) + '</div>';
+      }
+
+      if (places.length > 0) {
+        h += '<div class="signe-lieux"><span class="dim">Aperçu à :</span> ' + places.map(esc).join(", ") + '</div>';
+      } else {
+        h += '<div class="signe-lieux dim">Pas encore aperçu ailleurs.</div>';
+      }
+
+      if (stSigne.lu) {
+        h += '<p class="small muted center">Tu as compris ce signe.</p>';
+        h += '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>';
+      } else if (sDef.cond && !E.cond(sDef.cond)) {
+        h += '<p class="small muted center">Quelque chose t’échappe encore pour percer ce signe.</p>';
+        h += '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>';
+      } else {
+        h += '<form id="signeForm" class="signe-form">' +
+          '<div class="signe-input-row">' +
+          '<input type="text" id="signeInput" class="input" placeholder="Ce qu’il veut dire…" autocomplete="off" autocapitalize="off" spellcheck="false" />' +
+          '<button type="submit" id="signeBtn" class="btn pri">Proposer</button>' +
+          '</div>' +
+          '<div id="signeFeedback" class="signe-feedback ' + (feedbackCls || "") + '" aria-live="polite">' + (feedbackText ? esc(feedbackText) : "") + '</div>' +
+          '</form>' +
+          '<div class="acts"><button class="btn" data-m="close">Refermer</button></div>';
+      }
+      return h;
+    };
+
+    const bindEvents = (box) => {
+      const form = box.querySelector("#signeForm");
+      if (!form) return;
+      const input = box.querySelector("#signeInput");
+      const fb = box.querySelector("#signeFeedback");
+      const btn = box.querySelector("#signeBtn");
+      if (input) setTimeout(() => { try { input.focus(); } catch (e) {} }, 100);
+
+      const submitAttempt = () => {
+        const val = (input.value || "").trim();
+        if (!val) return;
+        const res = E.essaiSigne(id, val);
+        if (res.delai) {
+          A.err();
+          vibe(40);
+          fb.className = "signe-feedback delai";
+          fb.textContent = "Attends " + res.left + " s avant de retenter.";
+          return;
+        }
+        if (res.ok) {
+          A.secret();
+          save();
+          render(true);
+          box.innerHTML = renderContent();
+          iconize(box);
+          return;
+        }
+        if (res.proche) {
+          A.err();
+          vibe(40);
+          fb.className = "signe-feedback proche";
+          fb.textContent = "« Presque. »";
+          input.select();
+          return;
+        }
+        A.err();
+        vibe(40);
+        fb.className = "signe-feedback non";
+        fb.textContent = "« Non. »";
+        input.select();
+      };
+
+      form.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        submitAttempt();
+      });
+      if (btn) {
+        btn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          submitAttempt();
+        });
+      }
+    };
+
+    const modalObj = {
+      signeId: id,
+      cls: "modal-signe",
+      html: renderContent(),
+      onOpen: bindEvents,
+      onClose: () => {
+        if (parentModal) {
+          setTimeout(() => {
+            if (parentModal.refresh) parentModal.html = parentModal.refresh();
+            openModal(parentModal);
+          }, 80);
+        }
+      }
+    };
+
+    if (parentModal) {
+      swapModal(modalObj);
+    } else {
+      openModal(modalObj);
+    }
+  }
+
   /* ============================================================ VUES */
   /* les onglets arrivent quand ils ont quelque chose à montrer : le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
@@ -779,7 +932,7 @@
     if (t === "journal" && E.cache().sky) return true;
     if (t === "carnet") return Object.keys(st.known).length > 0;
     if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
-    if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions());
+    if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions()) || (E.hasSignes && E.hasSignes());
     return true;
   }
   function setTab(t) {
@@ -1136,7 +1289,10 @@
       if (id) h += '<button class="slot full" data-slot="' + i + '">' + icon(id) + '<span class="sn">' + esc(I[id].n) + '</span><span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
       else h += '<button class="slot" data-slot="' + i + '"><span class="plus">+</span></button>';
     });
-    h += '</div><button class="forge-btn" id="forge">' + gIc(U.geste) + " " + G.n.toUpperCase() + "</button></div>";
+    // le signe gravé sur le bouton reste à toucher même quand le bouton attend des ressources
+    const mark = uiSigne("fabriquer", "L’Atelier");
+    h += '</div><div class="forge-wrap"><button class="forge-btn" id="forge">' + gIc(U.geste) + " " + G.n.toUpperCase() + "</button>" +
+      (mark ? '<span class="forge-mark">' + mark + "</span>" : "") + "</div></div>";
     h += '<div id="mbench" class="mbench hidden"><span class="mg">' + gIc(U.geste) + "</span>" +
       U.slots.map((id, i) => '<button class="mslot" data-slot="' + i + '">' + (id ? icon(id, "sm") : "+") + "</button>").join("") +
       '<button class="mforge" data-forge>' + gIc(U.geste) + " " + esc(G.n) + "</button></div>";
@@ -1437,6 +1593,7 @@
     const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
     if (E.hasLivre && E.hasLivre()) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
     if (E.hasQuestions && E.hasQuestions()) tabs.push(["questions", "Questions"]);
+    if (E.hasSignes && E.hasSignes()) tabs.push(["signes", "Signes"]);
     tabs.push(["secrets", "Secrets"]);
     if (E.has("flute")) tabs.push(["flute", "Flûte"]);
     tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
@@ -1488,7 +1645,7 @@
           if (q.aides && q.aides.length) {
             h += '<div class="question-aides">';
             q.aides.forEach((aide, idx) => {
-              h += '<div class="question-aide"><span class="aide-num">Piste ' + (idx + 1) + ' :</span> ' + recitHTML(aide) + '</div>';
+              h += '<div class="question-aide"><span class="aide-num">Piste ' + (idx + 1) + ' :</span> ' + recitHTML(aide, q.titre || "Question") + '</div>';
             });
             h += '</div>';
           }
@@ -1501,6 +1658,26 @@
             h += '</button></div>';
           }
           h += '</div>';
+        });
+        h += '</div>';
+      }
+    } else if (U.journalTab === "signes") {
+      const seen = E.seenSignes ? E.seenSignes() : [];
+      const compris = seen.filter((s) => s.lu).length;
+      h += '<p class="small muted">' + compris + "/" + seen.length + " signes compris.</p>";
+      if (!seen.length) {
+        h += '<p class="small muted center" style="padding:20px 0">Aucun signe aperçu pour l’instant.</p>';
+      } else {
+        h += '<div class="signes-grid">';
+        seen.forEach((s) => {
+          const count = s.count || 0;
+          const countTxt = count === 1 ? "1 endroit" : count + " endroits";
+          h += '<button class="signe-card' + (s.lu ? ' lu' : '') + '" data-s="' + esc(s.id) + '">' +
+            (s.lu
+              ? '<div class="signe-card-mot">' + esc(s.def.mot) + '</div>'
+              : '<div class="signe-card-dessin">' + (window.signeSVG ? window.signeSVG(s.def.h, 36) : '') + '</div>') +
+            '<div class="signe-card-lieux">' + countTxt + '</div>' +
+            '</button>';
         });
         h += '</div>';
       }
@@ -2296,6 +2473,7 @@
       "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus restants deviennent des Traces à la relève.</dd>" +
       "<dt>Demande du Troqueur</dt><dd>Le Troqueur demande des objets fabriqués contre des Traces. Livrer prend les objets dans la Réserve et donne les Traces tout de suite. Les demandes se renouvellent régulièrement.</dd>" +
       "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
+      "<dt>Signe</dt><dd>Un mot de l’écriture des Anciens. Tant que tu ne l’as pas compris, il s’affiche dessiné. Touche-le pour proposer ce qu’il veut dire.</dd>" +
       "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Tu y verses des ressources de la Réserve, ou tu l’alimentes pour qu’il s’y serve seul.</dd></dl>" +
       '<h3 class="sub">Les écrans</h3>' +
       "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
@@ -2312,10 +2490,17 @@
     const lines = (D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
       ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Ton corps est neuf, mais pas tes souvenirs : tu connais déjà des recettes entières.", "Tu es le Semeur " + (st.cycle + 6) + ". Celui d’avant t’a laissé ses recettes dans le Carnet."]
       : D.INTRO);
+    // en tête des éveils, un signe ; à la fin de la scène, l’ornement (s’il est dans les données)
+    const lieu = st.cycle > 1 ? "Les éveils" : "Le premier réveil";
+    const html = () => '<div class="lore" style="padding:10px 0">' +
+      (st.cycle > 1 && uiSigne("eveil") ? '<p class="scene-signe" style="opacity:0;animation:fadeup 1.2s 0.1s forwards">' + uiSigne("eveil", lieu) + "</p>" : "") +
+      lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + recitInline(l, lieu) + "</p>").join("") +
+      ornementHTML(lieu, 0.3 + lines.length * 1.1) +
+      '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>';
     openModal({
       persistent: true,
-      html: '<div class="lore" style="padding:10px 0">' + lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + esc(l) + "</p>").join("") +
-        '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>',
+      html: html(),
+      refresh: html,
       onClose: () => {
         st.introSeen = true; st.flags.news = null; st.flags.ver = D.VERSION; save(); A.init();
         if (st.flags.capsuleMsg) {
@@ -2336,7 +2521,8 @@
     openModal({
       cls: "ending", persistent: true,
       html: '<div class="kicker center">Fin ' + (Object.keys(D.ENDINGS).indexOf(r.id) + 1) + "</div><h2 class=\"center\" style=\"font-size:32px\">" + en.ic + " " + esc(en.n) + "</h2>" +
-        '<div class="lore">' + paras.map((p, i) => '<p style="animation-delay:' + (0.6 + i * 1.6) + 's">' + esc(p).replace(/\n/g, "<br>") + "</p>").join("") + "</div>" +
+        '<div class="lore">' + paras.map((p, i) => '<p style="animation-delay:' + (0.6 + i * 1.6) + 's">' + p.split("\n").map((l) => recitInline(l, "Fin : " + en.n)).join("<br>") + "</p>").join("") +
+        ornementHTML("Fin : " + en.n, 0.6 + paras.length * 1.6, r.id) + "</div>" +
         '<p class="center small muted" style="margin-top:24px;opacity:0;animation:fadeup 1s ' + (1 + paras.length * 1.6) + 's forwards">Fins découvertes : ' + n + "/" + Object.keys(D.ENDINGS).length +
         (n < 3 ? ". Il reste d’autres chemins." : ". Tu as tout vu. Merci d’avoir joué.") + "</p>" +
         '<div class="acts" style="opacity:0;animation:fadeup 1s ' + (1.4 + paras.length * 1.6) + 's forwards"><button class="btn" data-m="close">Continuer ce cycle</button><button class="btn pri" data-m="cycle">Nouveau cycle ✦</button></div>',
@@ -2451,6 +2637,7 @@
         '<p style="opacity:0;animation:fadeup 1.2s 0.3s forwards">La nuit tombe sur la Lisière. Près de la cabane, le bois s’empile sans que tu y touches.</p>' +
         '<p style="opacity:0;animation:fadeup 1.2s 1.4s forwards">Tu t’assieds contre le Grand Chêne. Tes paupières sont lourdes.</p>' +
         '<p style="opacity:0;animation:fadeup 1.2s 2.5s forwards">Demain, quelqu’un d’autre ouvrira les yeux ici. Il saura déjà ce que tes mains ont appris.</p>' +
+        ornementHTML("La relève", 3) +
         '</div>' +
         '<div class="acts" style="opacity:0;animation:fadeup 1.2s 3.2s forwards">' +
         '<button class="btn pri wide" data-m="go">Passer le relais</button>' +
@@ -2568,7 +2755,7 @@
     E.on("secret", (id) => {
       badge("journal");
       const it = I[id];
-      if (it && it.sec) setTimeout(() => { A.secret(); simpleModal("Secret découvert", esc(it.n), '<div class="row" style="margin-bottom:8px">' + icon(id, "lg") + "</div>" + loreHTML(it.d) + (fxText(id) ? '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>" : "")); }, 450);
+      if (it && it.sec) setTimeout(() => { A.secret(); simpleModal("Secret découvert", esc(it.n), '<div class="row" style="margin-bottom:8px">' + icon(id, "lg") + "</div>" + loreHTML(it.d, it.n) + (fxText(id) ? '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>" : "")); }, 450);
       else if (id === "caveau" || id === "lune7" || id[0] === "c") setTimeout(() => A.secret(), 300);
     });
     E.on("frag", () => badge("journal"));
@@ -2590,14 +2777,14 @@
       if (r.revisit) {
         openModal({
           html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" +
-            loreHTML(r.revisit.t) +
+            loreHTML(r.revisit.t, zoneName(r.z)) +
             (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") +
             '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>'
         });
         return;
       }
       if (F && !r.fragNew) { toast("🧭 " + esc(r.x.n) + " : déjà raconté dans ton Journal." + (gains.length ? " Tu rapportes : " + esc(gains.join(", ")) + "." : ""), { key: "exp" }); return; }
-      openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" + (F ? loreHTML(F.t) : "") +
+      openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" + (F ? loreHTML(F.t, (F ? (F.n || F.titre) : r.x.n) || zoneName(r.z)) : "") +
         (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") + '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
     });
     E.on("arche", (key) => {
@@ -2742,7 +2929,7 @@
       if ((b = t.closest("[data-lock]"))) { toast("Action encore inconnue. Elle se débloque avec sa station : feu, enclume, creuset…"); return; }
       if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
       if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
-      if (t.closest("#forge, [data-forge]")) {
+      if (t.closest("#forge, [data-forge]") && !t.closest("[data-s]")) {
         if (performance.now() - (U.forgeUp || 0) < 600) return; // déjà fait au relâcher
         U.fromMini = !!t.closest("[data-forge]"); forge(); U.fromMini = false; return;
       }
@@ -2759,25 +2946,31 @@
       if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
       if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
+      if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
       if ((b = t.closest("[data-page]"))) {
         const pid = b.dataset.page;
         const c = E.livre ? E.livre().find((x) => x.id === pid) : null;
         if (c && c.page) {
           E.readPage(pid);
           render(true);
-          const p = c.page;
-          const notesHTML = (c.notes && c.notes.length) ?
-            '<div class="livre-notes">' + c.notes.map((n) =>
-              '<div class="livre-note">' + recitHTML(n.t) +
-              (n.sig ? '<div class="livre-sig">' + esc(n.sig) + '</div>' : '') +
-              '</div>'
-            ).join("") + '</div>' : '';
-          openModal({
-            html: '<div class="kicker">Le Livre des Semeurs · n° ' + c.n + '</div>' +
-              '<h2>' + esc(p.titre || ("Page " + c.n)) + '</h2>' +
-              '<div class="livre-imprime lore">' + recitHTML(p.imprime) + '</div>' +
+          const makeHTML = () => {
+            const curC = E.livre ? E.livre().find((x) => x.id === pid) : c;
+            const p = curC.page;
+            const notesHTML = (curC.notes && curC.notes.length) ?
+              '<div class="livre-notes">' + curC.notes.map((n) =>
+                '<div class="livre-note">' + recitHTML(n.t, "Page " + curC.n) +
+                (n.sig ? '<div class="livre-sig">' + recitInline(n.sig, "Page " + curC.n) + '</div>' : '') +
+                '</div>'
+              ).join("") + '</div>' : '';
+            return '<div class="kicker">Le Livre des Semeurs · n° ' + curC.n + '</div>' +
+              '<h2>' + esc(p.titre || ("Page " + curC.n)) + '</h2>' +
+              '<div class="livre-imprime lore">' + recitHTML(p.imprime, "Page " + curC.n) + '</div>' +
               notesHTML +
-              '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>'
+              '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>';
+          };
+          openModal({
+            html: makeHTML(),
+            refresh: makeHTML
           });
         }
         return;
@@ -2791,7 +2984,7 @@
         }
         return;
       }
-      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(F.t || F.lore), "Refermer"); return; }
+      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(F.t || F.lore, F.n || F.titre || "Fragment"), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
       if ((b = t.closest("[data-play]"))) { A.init(); D.MELODIES[b.dataset.play].notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420)); return; } // la jouer pour de bon
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
@@ -2822,7 +3015,8 @@
       if (ev.target.id === "skyCanvas") skyTap(ev);
       const d = U.fdown;
       U.fdown = null;
-      if (d && Math.hypot(ev.clientX - d.x, ev.clientY - d.y) < 12 && ev.target.closest("#forge, [data-forge]")) {
+      // un signe posé sur le bouton ouvre sa fiche au lieu de fabriquer
+      if (d && Math.hypot(ev.clientX - d.x, ev.clientY - d.y) < 12 && ev.target.closest("#forge, [data-forge]") && !ev.target.closest("[data-s]")) {
         U.forgeUp = performance.now();
         U.anchor = d.mini ? anchorFor(ev.target) : "#forge"; U.anchorAt = performance.now();
         U.fromMini = d.mini; forge(); U.fromMini = false;

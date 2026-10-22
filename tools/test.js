@@ -6,6 +6,7 @@ const D = require("../js/data.js");
 const fs = require("fs");
 const path = require("path");
 const { createEngine, migrate, SAVE_VERSION } = require("../js/engine.js");
+const { signeSVG, renderSigneToken } = require("../js/signes.js");
 const fixture = (f) => fs.readFileSync(path.join(__dirname, "fixtures", f), "utf8");
 
 let T = 1e12;
@@ -1968,6 +1969,205 @@ test("une sauvegarde avec livre: 'abc' ou questions: 42 se charge, nettoyée", (
   assert.deepStrictEqual(E.state.livre, { p: {}, vu: {} });
   assert.deepStrictEqual(E.state.questions, {});
   assert.deepStrictEqual(E.state.revus, {});
+});
+
+console.log("Moteur des signes (6.1)");
+test("normalisation : accents, casse, articles, apostrophes, ponctuation, espaces", () => {
+  const E = mk();
+  assert.strictEqual(E.normSigne("Éveiller"), "eveiller");
+  assert.strictEqual(E.normSigne("L’Arbre"), "arbre");
+  assert.strictEqual(E.normSigne("l'arbre"), "arbre");
+  assert.strictEqual(E.normSigne("  Un  Grand   Arbre ! "), "grand arbre");
+  assert.strictEqual(E.normSigne("cœur"), "coeur");
+  assert.strictEqual(E.normSigne("l'oiseau-mouche"), "oiseau mouche");
+  assert.strictEqual(E.normSigne("la"), "la"); // un mot unique article n'est pas vidé
+  assert.strictEqual(E.normSigne("de la terre"), "terre");
+  assert.strictEqual(E.normSigne(""), "");
+  assert.strictEqual(E.normSigne(null), "");
+});
+
+test("empreinte : FNV-1a 32 bits stable et cohérente", () => {
+  const E = mk();
+  assert.strictEqual(E.fnv1a32("a"), "e40c292c");
+  assert.strictEqual(E.empreinte("a"), "e40c292c");
+  // Empreinte identique après normalisation
+  const h1 = E.empreinte("l'arbre");
+  const h2 = E.empreinte("  L’Arbre ! ");
+  const h3 = E.empreinte("arbre");
+  assert.strictEqual(h1, h2);
+  assert.strictEqual(h2, h3);
+  assert.strictEqual(typeof h1, "string");
+  assert.strictEqual(h1.length, 8);
+});
+
+test("signeSVG : dessin et mise en cache", () => {
+  const svg1 = signeSVG([1, 5, 1]);
+  assert.ok(svg1.includes("<svg"), "rend un svg");
+  assert.ok(svg1.includes("viewBox=\"0 0 24 24\""));
+  assert.ok(svg1.includes("stroke=\"currentColor\""));
+  // Cache par h et taille
+  const svg2 = signeSVG([1, 5, 1]);
+  assert.strictEqual(svg1, svg2);
+  const svg3 = signeSVG([1, 5, 1], 48);
+  assert.ok(svg3.includes("width=\"48\""));
+});
+
+test("moteur des signes : bonne réponse, mauvaise, presque, condition, délai", () => {
+  const fakeSignes = {
+    arbre: {
+      h: [1, 5, 1],
+      mot: "arbre",
+      ok: []
+    },
+    verrou: {
+      h: [3, 1, 5],
+      mot: "verrou",
+      ok: [],
+      cond: { flag: "cle" }
+    }
+  };
+  const E0 = mk();
+  fakeSignes.arbre.ok = [E0.empreinte("arbre")];
+  fakeSignes.verrou.ok = [E0.empreinte("verrou")];
+
+  let time = 10000;
+  const E = createEngine({ now: () => time, recit: { signes: fakeSignes, signeDelai: 3 } });
+
+  // Signe inconnu
+  assert.strictEqual(E.essaiSigne("introuvable", "arbre").why, "nosign");
+
+  // Condition non satisfaite
+  assert.strictEqual(E.essaiSigne("verrou", "verrou").why, "cond");
+  E.state.flags.cle = true;
+
+  // Mauvaise réponse sans proximité
+  time += 5000;
+  const rBad = E.essaiSigne("arbre", "caillou");
+  assert.strictEqual(rBad.ok, false);
+  assert.strictEqual(rBad.proche, false);
+
+  // Délai trop court (3 secondes)
+  time += 1000; // seulement 1s passée
+  const rTooFast = E.essaiSigne("arbre", "autre");
+  assert.strictEqual(rTooFast.delai, true);
+  assert.strictEqual(rTooFast.left, 2);
+
+  // Essai « presque » : une lettre en trop dans la saisie (retirée pour correspondre)
+  time += 3100;
+  const rPresque1 = E.essaiSigne("arbre", "arbres");
+  assert.strictEqual(rPresque1.ok, false);
+  assert.strictEqual(rPresque1.proche, true);
+
+  // Essai « presque » : une lettre manquante dans la saisie (ajoutée pour correspondre)
+  time += 3100;
+  const rPresque2 = E.essaiSigne("arbre", "arbr");
+  assert.strictEqual(rPresque2.ok, false);
+  assert.strictEqual(rPresque2.proche, true);
+
+  // Essai « presque » : une lettre changée dans la saisie
+  time += 3100;
+  const rPresque3 = E.essaiSigne("arbre", "arpre");
+  assert.strictEqual(rPresque3.ok, false);
+  assert.strictEqual(rPresque3.proche, true);
+
+  // Bonne réponse avec article et ponctuation
+  let signeEmitted = null;
+  E.on("signe", (ev) => { signeEmitted = ev; });
+  time += 3100;
+  const rOk = E.essaiSigne("arbre", "L’Arbre !");
+  assert.strictEqual(rOk.ok, true);
+  assert.strictEqual(rOk.mot, "arbre");
+  assert.deepStrictEqual(signeEmitted, { id: "arbre", mot: "arbre" });
+  assert.strictEqual(E.state.signes.arbre.lu, 1);
+});
+
+test("gardé à la relève et aller-retour de sauvegarde", () => {
+  const fakeSignes = {
+    arbre: { h: [1, 5, 1], mot: "arbre", ok: [] }
+  };
+  const E0 = mk();
+  fakeSignes.arbre.ok = [E0.empreinte("arbre")];
+
+  let time = 1000;
+  const E = createEngine({ now: () => time, recit: { signes: fakeSignes } });
+  E.seeSigne("arbre", "Page 1");
+  E.seeSigne("arbre", "Page 2");
+  time += 5000;
+  const r = E.essaiSigne("arbre", "arbre");
+  assert.strictEqual(r.ok, true);
+  assert.strictEqual(E.state.signes.arbre.lu, 1);
+  assert.strictEqual(Object.keys(E.state.signes.arbre.vu).length, 2);
+
+  // Relève
+  E.newCycle();
+  assert.ok(E.state.signes.arbre);
+  assert.strictEqual(E.state.signes.arbre.lu, 1);
+  assert.strictEqual(Object.keys(E.state.signes.arbre.vu).length, 2);
+
+  // Sauvegarde
+  const raw = E.serialize();
+  const E2 = createEngine({ now: () => time, recit: { signes: fakeSignes } });
+  E2.load(raw);
+  assert.ok(E2.state.signes.arbre);
+  assert.strictEqual(E2.state.signes.arbre.lu, 1);
+  assert.strictEqual(Object.keys(E2.state.signes.arbre.vu).length, 2);
+  assert.strictEqual(E2.hasSignes(), true);
+  const seen = E2.seenSignes();
+  assert.strictEqual(seen.length, 1);
+  assert.strictEqual(seen[0].id, "arbre");
+  assert.strictEqual(seen[0].lu, true);
+  assert.strictEqual(seen[0].count, 2);
+});
+
+test("renderSigneToken rend dessin puis mot, jeton inconnu garde ◇", () => {
+  const fakeSignes = {
+    arbre: { h: [1, 5, 1], mot: "arbre", ok: [] }
+  };
+  const state = { signes: {} };
+  const seeCalls = [];
+  const seeSigne = (id, lieu) => {
+    state.signes[id] = state.signes[id] || { vu: {} };
+    if (lieu) state.signes[id].vu[lieu] = 1;
+    seeCalls.push({ id, lieu });
+  };
+
+  // Signe inconnu
+  const htmlUnk = renderSigneToken("inconnu", { recit: { signes: fakeSignes }, state, seeSigne });
+  assert.strictEqual(htmlUnk, '<span class="signe" data-s="inconnu">◇</span>');
+
+  // Signe connu non compris -> dessin SVG
+  const htmlDessin = renderSigneToken("arbre", { recit: { signes: fakeSignes }, state, seeSigne, lieu: "Page 1" });
+  assert.ok(htmlDessin.includes('<span class="signe" data-s="arbre">'));
+  assert.ok(htmlDessin.includes('<svg class="signe-svg"'));
+  assert.strictEqual(seeCalls.length, 1);
+  assert.strictEqual(seeCalls[0].id, "arbre");
+  assert.strictEqual(seeCalls[0].lieu, "Page 1");
+
+  // Signe compris -> mot
+  state.signes.arbre.lu = 1;
+  const htmlLu = renderSigneToken("arbre", { recit: { signes: fakeSignes }, state, seeSigne, lieu: "Page 2" });
+  assert.strictEqual(htmlLu, '<span class="signe lu" data-s="arbre">arbre</span>');
+});
+
+test("sauvegarde avec signes corrompu ou identifiant inconnu", () => {
+  const fakeSignes = {
+    arbre: { h: [1, 5, 1], mot: "arbre", ok: [] }
+  };
+  const E = createEngine({ recit: { signes: fakeSignes } });
+  const s = JSON.parse(E.serialize());
+  s.signes = "corrompu";
+  E.load(JSON.stringify(s));
+  assert.deepStrictEqual(E.state.signes, {});
+
+  const s2 = JSON.parse(E.serialize());
+  s2.signes = {
+    arbre: { lu: 1, vu: { "Page 1": 1 }, essais: 2 },
+    inconnu_xyz: { lu: 1, vu: { partout: 1 } }
+  };
+  E.load(JSON.stringify(s2));
+  assert.strictEqual(E.state.signes.arbre.lu, 1);
+  assert.strictEqual(E.state.signes.inconnu_xyz, undefined);
+  assert.ok(E.state.orphans.signes.inconnu_xyz);
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

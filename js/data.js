@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.0.0";
+  D.VERSION = "6.1.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -987,8 +987,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "📖 Le Journal a deux onglets de plus : le Livre et les Questions.",
-    "🧭 Au Comptoir, le Troqueur vend aussi des pages."
+    "📖 Le Journal a un onglet Signes."
   ];
 
 
