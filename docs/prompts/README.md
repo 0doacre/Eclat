@@ -50,3 +50,4 @@ puis la fusionne.
   avec un contenu provisoire (6.0.0). Le vrai contenu du récit est écrit par Claude.
 - `signes-6-1.md` : moteur des signes (dessin, saisie, empreintes, fiche, onglet Signes), sans
   aucun signe réel (6.1.0).
+- `flute-ciel-6-2.md` : moteur de la flûte (airs longs, effets nommés déclaratifs) et animations du Ciel pilotées par données (6.2.0).

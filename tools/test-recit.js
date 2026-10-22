@@ -584,6 +584,111 @@ test("la question de la Lune : apparaît avec le Ciel, se résout avec la lumiè
   assert.ok(E.questions().some((x) => x.id === "q_lune"));
 });
 
+console.log("Récit : la flûte et le ciel (6.2)");
+test("mélodies du récit : notes, effets et déclarations", () => {
+  const m = R.melodies;
+  assert.ok(m, "R.melodies doit être défini");
+  for (const id in m) {
+    const mel = m[id];
+    assert.ok(mel.n, id + " nom manquant");
+    assert.ok(Array.isArray(mel.notes) && mel.notes.length >= 3, id + " notes invalides");
+    assert.ok(mel.notes.every((n) => n >= 1 && n <= 5), id + " note hors bornes 1..5");
+    assert.ok(mel.t, id + " texte manquant");
+    assert.ok(!/—/.test(mel.t), id + " tiret cadratin");
+    assert.ok(!/\d\s*·\s*\d/.test(mel.t), id + " notes en clair dans le texte");
+    assert.ok(!/nourrice/i.test(mel.t.replace(/\[nourrice\]/g, "")), id + " mot interdit");
+  }
+});
+
+test("les airs réels déclenchent leurs effets nommés", () => {
+  const E = mk();
+  let releveEv = false;
+  let halteEv = false;
+  let skyEv = null;
+  E.on("releve_fenetre", () => { releveEv = true; });
+  E.on("halte_jouee", () => { halteEv = true; });
+  E.on("skyanim", (a) => { skyEv = a; });
+
+  // 1. La Berceuse
+  const bNotes = R.melodies.berceuse_n.notes;
+  bNotes.forEach((n) => E.playNote(n));
+  assert.strictEqual(releveEv, true, "la berceuse doit émettre releve_fenetre");
+  assert.strictEqual(skyEv, "sommeil");
+  assert.ok(E.state.secrets.berceuse_n);
+
+  // 2. Main levée
+  skyEv = null;
+  const hNotes = R.melodies.halte.notes;
+  hNotes.forEach((n) => E.playNote(n));
+  assert.strictEqual(halteEv, true, "main levée doit émettre halte_jouee");
+  assert.strictEqual(E.state.flags.halte, true);
+  assert.ok(E.state.secrets.halte);
+
+  // 3. La Promesse
+  const pNotes = R.melodies.promesse.notes;
+  pNotes.forEach((n) => E.playNote(n));
+  assert.strictEqual(skyEv, "double_pulse");
+  assert.strictEqual(E.state.flags.promesse_jouee, true);
+  assert.strictEqual(E.state.flags.chant_visible, true);
+  assert.ok(E.state.secrets.promesse);
+
+  // 4. Le Nom
+  const nNotes = R.melodies.nom.notes;
+  nNotes.forEach((n) => E.playNote(n));
+  assert.strictEqual(E.state.flags.nom_joue, true);
+  assert.ok(E.state.secrets.nom);
+
+  // 5. Main d'abord
+  const dNotes = R.melodies.dabord.notes;
+  dNotes.forEach((n) => E.playNote(n));
+  assert.strictEqual(E.state.flags.cle_clause, true);
+  assert.ok(E.state.secrets.cregistre);
+});
+
+test("Dormez-vous ? donne Accorder après les Cuves", () => {
+  const E = mk();
+  const frereNotes = D.MELODIES.frere.notes;
+
+  // Avant les Cuves : frere donne le secret et l'intuition, mais pas Accorder
+  frereNotes.forEach((n) => E.playNote(n));
+  assert.ok(!E.state.flags.berceuse);
+  assert.ok(!E.gesteOK("accorder"));
+
+  // Avec la flûte et après les Cuves
+  E.add("flute", 1);
+  E.state.frags.cuves = true;
+  frereNotes.forEach((n) => E.playNote(n));
+  assert.ok(E.state.flags.berceuse, "flags.berceuse doit être activé");
+  assert.ok(E.gesteOK("accorder"), "action accorder doit être disponible");
+});
+
+test("la question de la lueur rouge apparaît avec le Ciel et se résout avec la Promesse", () => {
+  const E = mk();
+  assert.ok(!E.questions().some((q) => q.id === "q_rouge"));
+  E.add("lunette", 1); E.recalc();
+  const q = E.questions().find((x) => x.id === "q_rouge");
+  assert.ok(q && !q.resolu);
+  assert.strictEqual(q.aides.length, 0);
+  E.state.intu = 1e6;
+  for (let i = 1; i <= 3; i++) assert.strictEqual(E.askHelp("q_rouge").lvl, i);
+  assert.strictEqual(E.questions().find((x) => x.id === "q_rouge").aides.length, 3);
+
+  // Résolution avec la Promesse
+  R.melodies.promesse.notes.forEach((n) => E.playNote(n));
+  assert.ok(E.questions().find((x) => x.id === "q_rouge").resolu);
+});
+
+test("animations célestes du récit", () => {
+  const anims = R.skyAnims;
+  assert.ok(anims);
+  const types = ["meteors", "pulse", "aurora", "constellation"];
+  for (const id in anims) {
+    const a = anims[id];
+    assert.ok(types.includes(a.type), id + " type inconnu " + a.type);
+    assert.ok(a.dur > 0, id + " durée positive");
+  }
+});
+
 console.log("Récit : les anciennes parties");
 const FIXTURES = fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v\d/.test(x));
 test("les anciens fragments archivés restent chargés depuis les fixtures", () => {
