@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.5.0";
+  D.VERSION = "6.6.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1030,7 +1030,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "✨ De nouveaux dénouements se révèlent aux confins du monde."
+    "🎶 Les dénouements du monde s’accompagnent de paysages sonores dédiés.",
+    "✦ Une galerie des dénouements éclaire la Mémoire des mains."
   ];
 
 

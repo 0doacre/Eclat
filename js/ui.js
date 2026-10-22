@@ -2751,7 +2751,7 @@
 
   function showEnding(r) {
     const en = D.ENDINGS[r.id];
-    A.ending();
+    A.ending(r.id);
     const paras = en.t.split("\n\n").concat(r.extra);
     const st = S();
     const n = Object.keys(st.meta.endings).length;
@@ -2774,14 +2774,23 @@
     const ecusTr = E.ecusToTraces ? E.ecusToTraces(ecus) : 0;
     const totalGain = gain + ecusTr;
     const ecusMsg = ecus > 0 ? '<p class="small">Tes ' + fmt(ecus) + ' écus deviennent ' + ecusTr + ' ✦ Trace' + (ecusTr > 1 ? 's' : '') + '.</p>' : '';
+    const isLibere = (typeof E.isLibere === "function" && E.isLibere()) || (st.meta && st.meta.endings && st.meta.endings.retour);
+    const kicker = isLibere ? "Le repos partagé" : "La relève";
+    const title = isLibere ? "Passer le relais près du feu ?" : "Éveiller le Semeur " + (st.cycle + 7) + " ?";
+    const desc = isLibere
+      ? "<p>Le travail est partagé. Tu as mérité de te reposer pendant qu’un camarade veille sur les braises. Le monde et les récoltes se renouvellent, mais tu gardes ton <b>Carnet</b>, tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>"
+      : "<p>Le monde, tes ressources, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>";
+    const backupLabel = isLibere
+      ? "Avant le repos (Semeur " + (st.cycle + 7) + ")"
+      : "Avant la relève (Semeur " + (st.cycle + 7) + ")";
     openModal({
-      html: '<div class="kicker">La relève</div><h2>Éveiller le Semeur ' + (st.cycle + 7) + " ?</h2><p>Le monde, tes ressources, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>" +
+      html: '<div class="kicker">' + kicker + "</div><h2>" + title + "</h2>" + desc +
         "<p>Tu gagnes <b>" + totalGain + " ✦ Trace" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg + leftHTML() +
         '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
       on: {
         go: () => {
-          pushBackup(E.serialize(), "Avant la relève (Semeur " + (st.cycle + 7) + ")");
+          pushBackup(E.serialize(), backupLabel);
           E.newCycle();
           save();
           U.slots = [null, null, null];
@@ -2815,8 +2824,23 @@
         (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
         (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
     }).join("") + "</div>";
+
+    const ech = Object.values(m.endings || {}).reduce((a, b) => a + b, 0);
+    const endKeys = Object.keys(D.ENDINGS);
+    h += '<h3 class="sub" style="margin-top:16px">Dénouements &amp; Échos</h3>';
+    h += '<p class="tiny muted">Chaque fin atteinte dépose un Écho immuable (+50 % récolte &amp; production) qui traverse les générations.' + (ech ? ' Total : <b>+' + (ech * 50) + ' %</b> (' + ech + ' Écho' + (ech > 1 ? 's' : '') + ').' : '') + '</p>';
+    h += '<div class="mems mem-endings">' + endKeys.map((k) => {
+      const en = D.ENDINGS[k], got = (m.endings || {})[k] || 0;
+      if (got) {
+        return '<div class="mem on"><span class="mic">' + en.ic + '</span><div class="grow"><div class="small"><b>' + esc(en.n) + '</b> <span class="tiny muted">×' + got + '</span></div><div class="tiny muted">Écho actif : +' + (got * 50) + ' %</div></div><span class="tiny ok">✦ Atteint</span></div>';
+      } else {
+        return '<div class="mem dim" style="opacity:0.6"><span class="mic" style="filter:grayscale(1)">❔</span><div class="grow"><div class="small"><b>Dénouement inconnu</b></div><div class="tiny muted">À découvrir</div></div><span class="tiny muted">···</span></div>';
+      }
+    }).join("") + "</div>";
+
     return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
   }
+  U.memHTML = memHTML;
   /* ce que la relève laisse derrière elle, en chiffres */
   function leftHTML() {
     const st = S(), n = (k) => (k === "ext" ? Object.values(st.dom.ext).reduce((a, e) => a + Object.values(e.u).reduce((x, y) => x + y, 0), 0) : E.MACHINES.reduce((a, m) => a + Math.floor(st.inv[m] || 0), 0));

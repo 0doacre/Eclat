@@ -2614,4 +2614,107 @@ test("Cycle post-Matines : E.isLibere() et préservation après la relève", () 
   assert.strictEqual(E.isLibere(), true);
 });
 
+console.log("Post-game et ajouts créatifs (6.6)");
+test("Audio : synthèse sonore dédiée pour chaque fin", () => {
+  const oscs = [];
+  const noises = [];
+  const mockAudioContext = function () {
+    return {
+      createGain: () => ({
+        gain: { value: 1, cancelScheduledValues: () => {}, setTargetAtTime: () => {}, setValueAtTime: () => {}, linearRampToValueAtTime: () => {}, exponentialRampToValueAtTime: () => {} },
+        connect: () => {}
+      }),
+      createDynamicsCompressor: () => ({
+        threshold: {}, ratio: {}, attack: {}, release: {}, connect: () => {}
+      }),
+      createBuffer: () => ({ getChannelData: () => new Float32Array(100) }),
+      createConvolver: () => ({ connect: () => {} }),
+      createBufferSource: () => ({
+        connect: () => {},
+        start: () => {},
+        stop: () => {},
+        buffer: null,
+        playbackRate: { setValueAtTime: () => {} }
+      }),
+      createBiquadFilter: () => {
+        const f = {
+          type: "lowpass",
+          frequency: { setValueAtTime: (v) => { f._freq = v; }, exponentialRampToValueAtTime: () => {} },
+          Q: { value: 1 },
+          connect: () => {}
+        };
+        noises.push(f);
+        return f;
+      },
+      createOscillator: () => {
+        const o = {
+          type: "sine",
+          frequency: { value: 440, setValueAtTime: (v) => { o._freq = v; }, exponentialRampToValueAtTime: () => {} },
+          detune: { value: 0 },
+          connect: () => {},
+          start: () => {},
+          stop: () => {}
+        };
+        oscs.push(o);
+        return o;
+      },
+      destination: {},
+      sampleRate: 44100,
+      currentTime: 0,
+      state: "running"
+    };
+  };
+
+  global.window = { AudioContext: mockAudioContext };
+  const Audio = require("../js/audio.js");
+  Audio.init();
+
+  // Test aube : 7 tons ascendants avec vibrato
+  oscs.length = 0; noises.length = 0;
+  Audio.ending("aube");
+  assert.strictEqual(oscs.length, 14); // 7 notes + 7 LFO vibrato
+  assert.strictEqual(oscs[0].type, "sine");
+
+  // Test brasier : 4 basses triangulaires + grondement noise
+  oscs.length = 0; noises.length = 0;
+  Audio.ending("brasier");
+  assert.strictEqual(oscs.length, 8); // 4 notes triangle + 4 LFO vibrato
+  assert.strictEqual(oscs[0].type, "triangle");
+  assert.ok(noises.length >= 1);
+
+  // Test retour : carillon harmonique de cloche + fondation sinusoïdale
+  oscs.length = 0; noises.length = 0;
+  Audio.ending("retour");
+  assert.ok(oscs.length >= 20); // 5 cloches (partiels harmoniques) + 5 basses
+
+  // Test exode : quintes cosmiques ascendantes + souffle bandpass
+  oscs.length = 0; noises.length = 0;
+  Audio.ending("exode");
+  assert.strictEqual(oscs.length, 10); // 5 notes + 5 LFO
+  assert.ok(noises.length >= 1);
+
+  // Test silence : decrescendo harmonique descendant vers le calme
+  oscs.length = 0; noises.length = 0;
+  Audio.ending("silence");
+  assert.strictEqual(oscs.length, 5); // 5 notes sans LFO
+  assert.ok(noises.length >= 1);
+
+  // Test fallback / générique
+  oscs.length = 0; noises.length = 0;
+  Audio.ending("inconnu");
+  assert.strictEqual(oscs.length, 10);
+
+  Audio.setEnabled(false);
+});
+
+test("Dénouements et Échos dans la Mémoire des mains : données conformes", () => {
+  const endings = Object.keys(D.ENDINGS);
+  assert.strictEqual(endings.length, 5);
+  endings.forEach((k) => {
+    assert.ok(D.ENDINGS[k].ic, "Icone présente pour " + k);
+    assert.ok(D.ENDINGS[k].n, "Nom présent pour " + k);
+    assert.ok(D.ENDINGS[k].t, "Texte présent pour " + k);
+  });
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

@@ -35,12 +35,14 @@
         sfxBus = bus(vol.sfx, 0.12);
         musicBus = bus(vol.music, 0.55);
         ambBus = bus(vol.amb, 0.25);
-        document.addEventListener("visibilitychange", () => {
-          if (!ctx) return;
-          if (document.hidden) ctx.suspend(); else if (enabled) ctx.resume();
-        });
+        if (typeof document !== "undefined") {
+          document.addEventListener("visibilitychange", () => {
+            if (!ctx) return;
+            if (document.hidden) ctx.suspend(); else if (enabled) ctx.resume();
+          });
+        }
       }
-      if (ctx.state === "suspended" && !document.hidden) ctx.resume();
+      if (ctx.state === "suspended" && (typeof document === "undefined" || !document.hidden)) ctx.resume();
       if (enabled) { startMusic(); ambience(); }
     } catch (e) { ctx = null; }
   };
@@ -229,10 +231,32 @@
       noise({ f: 900 + n * 120, t: i * 0.9, d: 1, v: 0.025, q: 0.6, a: 0.3 });
     });
   };
-  A.ending = function () {
+  A.ending = function (eid) {
     if (!ready()) return;
     duck(12);
-    [130.8, 196, 261.6, 329.6, 392].forEach((f, i) => tone({ f, t: i * 0.3, d: 5, a: 0.8, v: 0.06, vib: 0.3, vibd: 2 }));
+    if (eid === "aube") {
+      [130.81, 196.0, 261.63, 329.63, 392.0, 523.25, 659.25].forEach((f, i) =>
+        tone({ f, t: i * 0.38, d: 5.5, a: 0.5, v: 0.05, type: "sine", vib: 0.3, vibd: 2 }));
+    } else if (eid === "brasier") {
+      [65.4, 98.0, 130.81, 164.81].forEach((f, i) =>
+        tone({ f, t: i * 0.28, d: 6.5, a: 0.7, v: 0.06, type: "triangle", vib: 0.5, vibd: 4 }));
+      noise({ ft: "lowpass", f: 220, t: 0.3, d: 3.5, v: 0.035, a: 0.8 });
+    } else if (eid === "retour") {
+      [261.63, 329.63, 392.0, 523.25, 659.25].forEach((f, i) => {
+        bell(f, { t: i * 0.45, d: 4.5, v: 0.055 });
+        tone({ f: f / 2, t: i * 0.45, d: 5.5, a: 0.4, v: 0.035, type: "sine" });
+      });
+    } else if (eid === "exode") {
+      [174.61, 261.63, 392.0, 587.33, 880.0].forEach((f, i) =>
+        tone({ f, f2: f * 1.012, t: i * 0.42, d: 5.5, a: 0.6, v: 0.045, type: "sine", vib: 0.5, vibd: 3 }));
+      noise({ ft: "bandpass", f: 1100, t: 0.2, d: 5.0, v: 0.025, q: 2 });
+    } else if (eid === "silence") {
+      [392.0, 329.63, 261.63, 196.0, 130.81].forEach((f, i) =>
+        tone({ f, t: i * 0.5, d: 4.8, a: 0.4, v: 0.045 * (1 - i * 0.16), type: "sine" }));
+      noise({ ft: "lowpass", f: 380, t: 1.2, d: 3.8, v: 0.02, a: 0.5 });
+    } else {
+      [130.8, 196, 261.6, 329.6, 392].forEach((f, i) => tone({ f, t: i * 0.3, d: 5, a: 0.8, v: 0.06, vib: 0.3, vibd: 2 }));
+    }
   };
   A.pip = function () {
     if (!ready()) return;
@@ -445,5 +469,6 @@
   }
 
   A.debug = () => ({ state: ctx && ctx.state, music: !!musicTimer, playing: barOn, amb: amb && amb.k, palette: palette(scene.age) });
-  root.EclatAudio = A;
-})(window);
+  if (root) root.EclatAudio = A;
+  if (typeof module !== "undefined" && module.exports) module.exports = A;
+})(typeof window !== "undefined" ? window : global);
