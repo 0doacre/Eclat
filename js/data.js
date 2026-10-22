@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.8.0";
+  D.VERSION = "6.9.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1067,8 +1067,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🎁 Les Curiosités : d'étranges clins d'œil et souvenirs secrets cachés dans le monde.",
-    "📖 Un onglet discret dans le Journal pour consigner vos trouvailles."
+    "🔔 Notifications hiérarchisées : alertes, réussites et découvertes avec signaux visuels clairs.",
+    "🎯 Suivi d’artisanat interactif : progression en temps réel des ingrédients et fabrication en un geste.",
+    "✨ Confort de lecture : fiches de recettes clarifiées, débits nets et retours tactiles enrichis."
   ];
 
 

@@ -117,9 +117,9 @@
       const used = e ? Object.keys(e.u).map((t) => many(t, e.u[t])).join(", ") : "";
       let sub = fmt(st.inv[res] || 0);
       sub = '<span data-c="' + res + '">' + sub + "</span> en réserve" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
-      const right = e && info.s === "off" ? '<span class="dom-rate off">en pause</span>'
+      const right = e && info.s === "off" ? '<span class="dom-rate off">⏸ en pause</span>'
         : rate > 0 ? '<span class="dom-rate" data-rate="' + key + '">+' + perTime(rate) + "</span>"
-        : d.hand ? '<span class="dom-rate hand">récolte à la main</span>' : "";
+        : d.hand ? '<span class="dom-rate hand">🖐️ à la main</span>' : "";
       let btns = "";
       if (d.hand) {
         const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;

@@ -396,11 +396,17 @@ p { margin: 0.4em 0; }
 @keyframes fadeup { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
 #toasts { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav) + var(--safe-b) + 10px); z-index: 61; display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: none; width: min(92vw, 520px); }
-.toast { background: rgba(28,24,20,.96); border: 1px solid var(--line2); border-radius: 12px; padding: 8px 12px; font-size: 13.5px; box-shadow: 0 8px 24px rgba(0,0,0,.4); animation: rise .25s, fade .4s 2.6s reverse forwards; max-width: 100%; }
+.toast { background: rgba(28,24,20,.96); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--line2); border-left: 4px solid var(--line2); border-radius: 12px; padding: 9px 13px; font-size: 13.5px; line-height: 1.35; box-shadow: 0 8px 24px rgba(0,0,0,.45); animation: rise .25s ease-out, fade .35s 2.75s reverse forwards; max-width: 100%; display: flex; align-items: center; gap: 8px; }
 .toast b { color: var(--acc); }
+.toast.toast-warn { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, rgba(28,24,20,.96)); }
+.toast.toast-warn b { color: var(--bad); }
+.toast.toast-good { border-left-color: var(--good); background: color-mix(in srgb, var(--good) 12%, rgba(28,24,20,.96)); }
+.toast.toast-good b { color: var(--good); }
+.toast.toast-gold { border-left-color: var(--acc); background: color-mix(in srgb, var(--acc) 14%, rgba(28,24,20,.96)); }
+.toast.toast-info { border-left-color: color-mix(in srgb, var(--text) 45%, transparent); }
 
 #fx { position: fixed; inset: 0; pointer-events: none; z-index: 45; overflow: hidden; }
-.float { position: absolute; font-weight: 800; font-size: 15px; color: var(--text); text-shadow: 0 2px 6px rgba(0,0,0,.8); animation: floatUp .85s ease-out forwards; white-space: nowrap; transform: translate(-50%, -50%); }
+.float { position: absolute; font-weight: 800; font-size: 15px; color: var(--text); text-shadow: 0 2px 6px rgba(0,0,0,.8); animation: floatUp .85s ease-out forwards; white-space: nowrap; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 4px; pointer-events: none; z-index: 50; }
 @keyframes floatUp { to { transform: translate(-50%, -260%); opacity: 0; } }
 .spark { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 8px var(--acc); animation: spark .7s ease-out forwards; }
 @keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
@@ -466,10 +472,17 @@ textarea.save { width: 100%; min-height: 110px; background: var(--bg2); color: v
 .memo .g { font-style: normal; font-family: var(--sans); }
 
 /* suivi */
-.track { border-color: color-mix(in srgb, var(--intu) 45%, transparent); }
+.track { border-color: color-mix(in srgb, var(--intu) 45%, transparent); background: color-mix(in srgb, var(--intu) 4%, var(--panel)); }
+.track.ready { border-color: color-mix(in srgb, var(--good) 65%, transparent); box-shadow: 0 0 12px color-mix(in srgb, var(--good) 25%, transparent); }
 .track .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--intu); font-weight: 700; }
-.track .cost-row { cursor: pointer; }
+.track.ready .lbl { color: var(--good); }
+.track .cost-row { cursor: pointer; padding: 4px 6px; border-radius: 8px; transition: background .15s; }
+.track .cost-row:active { background: var(--bg2); }
+.track .cost-row.ok { opacity: .75; }
+.track .cost-row.ok .tiny { color: var(--good); }
 .track .eta { min-width: 64px; text-align: right; }
+.track .ready-pulse { animation: readyPulse 2s infinite ease-in-out; }
+@keyframes readyPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); } 50% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); } }
 
 /* extracteurs au travail */
 .x.work .ic { animation: bob 1.4s ease-in-out infinite; }
@@ -537,6 +550,7 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .dom-free i { font-style: normal; min-width: 0; }
 .hcount { position: absolute; left: 4px; top: -14px; z-index: 2; pointer-events: none; padding: 1px 8px; border-radius: 99px; background: var(--panel2); border: 1px solid var(--line2); font-size: 12.5px; font-weight: 700; color: var(--good); white-space: nowrap; }
 .hcount.bump { animation: hbump .2s ease-out; }
+.hcount.crit { color: var(--acc); border-color: var(--acc); box-shadow: 0 0 10px color-mix(in srgb, var(--acc) 50%, transparent); }
 .hcount.out { opacity: 0; transition: opacity .4s; }
 @keyframes hbump { 50% { transform: scale(1.12); } }
 .dom-more, .dom-free { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding: 9px 12px; border-radius: 12px; border: 1px dashed var(--line2); background: none; color: var(--muted); font-size: 13.5px; text-align: left; }
@@ -651,10 +665,13 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .rwin .pinb { align-self: flex-start; }
 .rrow { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .rings { display: flex; flex-direction: column; gap: 5px; }
-.ring { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 10px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); text-align: left; font-size: 14px; }
+.ring { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 11px; border-radius: 12px; border: 1px solid var(--line2); background: var(--bg2); text-align: left; font-size: 14px; transition: background .15s, border-color .15s; }
 .ring .go { color: var(--dim); font-size: 18px; line-height: 1; }
-.ring.lack { border-color: color-mix(in srgb, var(--bad) 55%, transparent); }
+.ring.ok { border-color: color-mix(in srgb, var(--good) 45%, var(--line2)); background: color-mix(in srgb, var(--good) 6%, var(--bg2)); }
+.ring.ok .tiny { color: var(--good); font-weight: 700; }
+.ring.lack { border-color: color-mix(in srgb, var(--bad) 55%, transparent); background: color-mix(in srgb, var(--bad) 5%, var(--bg2)); }
 .ring.lack .tiny { color: var(--bad); }
+.ring .can-make { color: var(--acc); font-weight: 600; margin-left: 4px; font-size: 11.5px; }
 .ring:active { transform: scale(.98); }
 .rwin .ing.link { border: 1px solid var(--line2); background: var(--bg2); border-radius: 999px; padding: 3px 9px 3px 4px; display: inline-flex; align-items: center; gap: 5px; font-size: 13px; margin: 2px 4px 2px 0; }
 .rbtns { margin-top: 10px; gap: 6px; }

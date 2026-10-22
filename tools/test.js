@@ -2844,4 +2844,32 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
   assert.strictEqual(E.hasCurio("survivant"), true);
 });
 
+console.log("Lisibilité et Ergonomie (6.9)");
+test("Version 6.9.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "6.9.0");
+  assert.ok(D.CHANGES.length >= 3);
+});
+
+test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
+  const E = createEngine();
+  E.state.known.corde = true;
+  E.state.known.manche = true;
+  E.setTrack("manche");
+  assert.deepStrictEqual(E.state.track, { id: "manche" });
+
+  // Manquant au début
+  let plan = E.plan("manche", 1);
+  assert.strictEqual(plan.ok, false);
+  assert.deepStrictEqual(plan.missing, { bois: 3 });
+
+  // Ajout du bois : plan devient ok
+  E.add("bois", 3);
+  plan = E.plan("manche", 1);
+  assert.strictEqual(plan.ok, true);
+
+  // Annuler le suivi
+  E.setTrack(null);
+  assert.strictEqual(E.state.track, null);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

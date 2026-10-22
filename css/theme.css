@@ -107,7 +107,10 @@ h2 { font-size: calc(1.4em * var(--title-size)); font-weight: 400; }
 .bar { background: color-mix(in srgb, var(--text) 10%, transparent); border: 1px solid var(--line2); }
 .bar > i { background: var(--text); }
 .bar.pass > i { background: var(--acc); }
-#toasts > * { background: var(--bg); color: var(--text); border: 1.5px solid var(--text); box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 25%, transparent); }
+#toasts > * { background: var(--bg); color: var(--text); border: 1.5px solid var(--text); border-left: 4px solid var(--text); box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 25%, transparent); }
+#toasts > *.toast-warn { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, var(--bg)); }
+#toasts > *.toast-good { border-left-color: var(--good); background: color-mix(in srgb, var(--good) 8%, var(--bg)); }
+#toasts > *.toast-gold { border-left-color: var(--acc); background: color-mix(in srgb, var(--acc) 10%, var(--bg)); }
 .hcount { background: var(--bg); border-color: var(--text); color: var(--good); }
 input, select, .fld input, .search input { background: var(--panel); color: var(--text); border-color: var(--line2); }
 .tip { background: color-mix(in srgb, var(--intu) 8%, var(--bg)); border-color: var(--line2); color: var(--text); }
@@ -241,6 +244,9 @@ body.theme-dark .card.acc, body.theme-dark .goal-card { border-color: var(--line
 body.theme-dark .modal { background: rgba(0, 0, 0, 0.72); }
 body.theme-dark .modal-box { border-color: var(--line2); background: var(--bg); }
 body.theme-dark #toasts > * { background: var(--bg2); border-color: var(--line2); color: var(--text); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); }
+body.theme-dark #toasts > *.toast-warn { border-left-color: var(--bad); background: color-mix(in srgb, var(--bad) 15%, var(--bg2)); }
+body.theme-dark #toasts > *.toast-good { border-left-color: var(--good); background: color-mix(in srgb, var(--good) 15%, var(--bg2)); }
+body.theme-dark #toasts > *.toast-gold { border-left-color: var(--acc); background: color-mix(in srgb, var(--acc) 16%, var(--bg2)); }
 body.theme-dark .btn { border-color: var(--line2); }
 body.theme-dark .btn.pri { border-color: var(--acc); color: #151311; }
 body.theme-dark .forge-btn { color: #151311; font-weight: 700; }

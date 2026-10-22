@@ -280,6 +280,18 @@
   function toast(html, o) {
     o = o || {};
     const box = $("#toasts"), key = o.key || html, p = o.p || 0;
+    let kind = o.kind || o.type;
+    if (!kind) {
+      if (key === "nope" || /manque|plein|impossible|refusé|bloqué|ne se récolte pas|pas assez/i.test(html)) {
+        kind = "warn";
+      } else if (/curio|secret|découvert|⭐|✦|✨|fête/i.test(key) || /curiosité|secret|découvert|trouvaille|étoile/i.test(html)) {
+        kind = "gold";
+      } else if (/done|prêt|accompli|terminée|réussi|enregistré|sauvegardé/i.test(html) || /handdone|passdone|ageDone/i.test(key)) {
+        kind = "good";
+      } else {
+        kind = "info";
+      }
+    }
     let t = Array.from(box.children).find((x) => x.dataset.k === key);
     if (t) {
       if (p < Number(t.dataset.p)) return;
@@ -287,11 +299,11 @@
       t.style.animation = "none"; void t.offsetWidth; t.style.animation = ""; // repart de zéro
     } else {
       t = document.createElement("div");
-      t.className = "toast";
       t.dataset.k = key;
       box.appendChild(t);
       while (box.children.length > 2) box.firstChild.remove();
     }
+    t.className = "toast toast-" + kind;
     t.dataset.p = p;
     t.innerHTML = html;
     iconize(t);
@@ -1239,18 +1251,26 @@
     const t = S().track;
     if (!t || !I[t.id]) return "";
     const id = t.id, p = E.plan(id, 1);
-    let h = '<div class="card track"><div class="row between"><div class="lbl">🎯 Suivi</div><button class="btn small ghost" data-untrack>✕</button></div>' +
+    const ready = p.ok;
+    let h = '<div class="card track' + (ready ? " ready" : "") + '"><div class="row between"><div class="lbl">🎯 Suivi d’artisanat</div><button class="btn small ghost" data-untrack title="Arrêter le suivi">✕</button></div>' +
       '<div class="row" style="margin:4px 0 6px">' + icon(id, "sm") + ' <b class="link-txt" data-goto="' + id + '">' + esc(I[id].n) + "</b></div>";
-    if (E.queued(id) > 0) return h + '<div class="small">✋ Tes mains s’y mettent : fabrication en cours.</div></div>';
-    if (p.ok) return h + '<div class="small" style="color:var(--good)">Tout est prêt.</div><button class="btn small pri" style="margin-top:6px" data-chain="' + id + '">⚡ Fabriquer</button></div>';
+    if (E.queued(id) > 0) return h + '<div class="small">✋ En cours de fabrication…</div></div>';
+    if (ready) return h + '<div class="small" style="color:var(--good);font-weight:600">✓ Toutes les ressources sont réunies !</div><button class="btn small pri ready-pulse" style="margin-top:6px;width:100%" data-chain="' + id + '">⚡ Fabriquer ' + esc(I[id].n) + '</button></div>';
     const f = E.flows();
+    const cost = I[id].r ? E.costFor(id) : {};
+    if (Object.keys(cost).length > 0) {
+      h += '<div class="row wrap" style="gap:4px;margin-bottom:6px">' + Object.keys(cost).map((k) => {
+        const have = S().inv[k] || 0, req = cost[k], ok = have >= req;
+        return '<span class="ing ' + (ok ? "paid" : "lack") + '" data-goto="' + k + '">' + icon(k, "sm") + esc(I[k].n) + ' ' + fmt(have) + '/' + fmt(req) + (ok ? ' ✓' : '') + '</span>';
+      }).join("") + '</div>';
+    }
     Object.keys(p.missing).forEach((k) => {
       if (p.locked.includes(k) || p.blocked[k]) return;
       const need = p.missing[k];
       const have = Math.floor(S().inv[k] || 0);
       const net = E.rate(k) + (f.prod[k] || 0) - (f.cons[k] || 0);
       const eta = net > 0 ? "≈ " + fmtTime(need / net) : isRawGather(k) ? "à récolter" : "";
-      h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">il manque ' + fmt(need) + '</span><span class="tiny muted eta">' + eta + "</span></div>";
+      h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny" style="color:var(--bad)">il manque ' + fmt(need) + '</span><span class="tiny muted eta">' + eta + "</span></div>";
       void have;
     });
     p.locked.forEach((k) => { h += '<div class="why" data-goto="' + k + '">Recette inconnue : ' + esc(I[k].n) + "</div>"; });
@@ -2325,7 +2345,11 @@
           h += '<div class="rrow">' + gesteChip(id) + '<span class="muted">donne ' + fmt(it.r[2]) + "</span></div>" +
             '<div class="rings">' + Object.keys(cost).map((k) => {
               const have = st.inv[k] || 0, lack = have + 1e-9 < cost[k];
-              return '<button class="ring' + (lack ? " lack" : "") + '" data-m="nav" data-id="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(have) + " / " + fmt(cost[k]) + "</span><span class=\"go\">›</span></button>";
+              const ok = !lack;
+              const canMake = lack && I[k].r && E.plan(k, Math.ceil(cost[k] - have)).ok;
+              return '<button class="ring ' + (ok ? "ok" : "lack") + '" data-m="nav" data-id="' + k + '">' + icon(k, "sm") +
+                '<span class="grow">' + esc(I[k].n) + (canMake ? ' <span class="can-make">(prêt à fabriquer)</span>' : "") + '</span>' +
+                '<span class="tiny">' + fmt(have) + " / " + fmt(cost[k]) + (ok ? " ✓" : "") + '</span><span class="go">›</span></button>';
             }).join("") + "</div>";
           const b = E.blocker(id), opt = it.r[3] || {};
           const station = b && b.why === "heat" ? E.stationFor("chauffer", b.heat, 0) : b && b.why === "lvl" ? E.stationFor(it.r[0], 0, b.lvl) : b && b.why === "geste" && it.r[0] !== "accorder" ? E.stationFor(it.r[0], 0, 0) : null;
