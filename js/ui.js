@@ -2370,7 +2370,8 @@
       info.textContent = msg || "La Lune. Grise, silencieuse. Tu as l’impression qu’elle te regarde aussi.";
     } else if (hit.k === "kher") {
       info.textContent = S().flags.decoded ? "Kher. Plus une menace : une maison lointaine, d’où des enfants reviennent." :
-        S().age >= 7 ? "Kher, à 11,9 années-lumière. ARCHE la dit dangereuse. Elle pulse comme un cœur." : "Une étoile rouge qui pulse lentement. Tu jurerais qu’elle n’était pas là avant.";
+        (S().inv.traducteur || S().flags.signal) ? "Elle demande quelque chose." :
+        S().age >= 7 ? "ARCHE la dit dangereuse. Elle clignote par petits groupes." : "Elle clignote par petits groupes.";
     } else info.textContent = hit.n + ".";
   }
 
@@ -2846,6 +2847,14 @@
       if (typeof window !== "undefined" && window.EclatSky && typeof window.EclatSky.trigger === "function") {
         window.EclatSky.trigger(anim);
       }
+    });
+    E.on("releve_fenetre", () => {
+      setTimeout(confirmCycle, 800);
+    });
+    E.on("halte_jouee", () => {
+      setTimeout(() => {
+        toast("Tes doigts se raidissent sur les trous. Les machines s’arrêtent un souffle…\n« Pas celle-là. »", { key: "halte", p: 2 });
+      }, 500);
     });
     E.on("fx", (k) => { if (k === "fireworks") setTimeout(fireworks, 300); });
     E.on("ending", (r) => { setTimeout(() => showEnding(r), 600); save(); });

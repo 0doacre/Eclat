@@ -1,4 +1,4 @@
-/* Éclat : le récit (versions 6.0, « Le Livre », et 6.1, « Les signes »).
+/* Éclat : le récit (versions 6.0, « Le Livre », 6.1, « Les signes », et 6.2, « La flûte et le ciel »).
  * COFFRE : ce fichier contient des textes du récit. L’auteur du jeu ne le lit pas.
  * Source de vérité : docs/coffre/BIBLE.md, SECRETS.md, TEXTES.md.
  *
@@ -10,6 +10,8 @@
  * Contenu de la 6.1 : les huit premiers signes (D.RECIT.signes) ; les inscriptions des
  * textes déjà en place, plus un signe sous les pochoirs de la Grotte ; les lectures en
  * français des lignes entièrement comprises ; les signes de l’interface ; la signature de Léon.
+ * Contenu de la 6.2 : les nouveaux airs de flûte et leurs effets déclaratifs (D.RECIT.melodies),
+ * les animations célestes (D.RECIT.skyAnims) et la question de la lueur rouge (q_rouge).
  *
  * Jetons de signes : [main] [machine] [faire] [dabord] [nepas] [dormir] [eveiller]
  * [enfant] [revenir] [halte] [manquer] [nourrice] [relais] [nous].
@@ -231,6 +233,16 @@
           "Touche-la sept fois."
         ],
         resolu: { secret: "lune7" }
+      },
+      q_rouge: {
+        titre: "La lueur rouge",
+        quand: { any: [{ has: "anticythere" }, { has: "lunette" }, { has: "radiotelescope" }] },
+        aides: [
+          "Elle clignote par petits groupes, dès que le ciel s’ouvre.",
+          "Les groupes correspondent aux hauteurs des signes.",
+          "La seconde phrase répond à la promesse des parents."
+        ],
+        resolu: { any: [{ secret: "promesse" }, { secret: "halte" }] }
       }
     },
 
@@ -270,11 +282,121 @@
       eveil: { t: "[eveiller]" },
       fabriquer: { t: "[faire]" },
       comptoir: { cond: { cycle: 2 }, t: "« Encore toi. Pose ta main là. »\nIl tape du doigt sur le bois du comptoir. À cet endroit, le bois est creusé, usé par les paumes, et un signe y est gravé : [main]" }
+    },
+
+    /* ------------------------------------------------- MÉLODIES (6.2)
+     * Suites de notes (1 à 5) reconnues à la flûte, avec effets déclaratifs.
+     * Les solutions ne sont jamais écrites en clair sous forme de chiffres dans les
+     * textes affichés (STYLE.md). */
+    melodies: {
+      berceuse_n: {
+        n: "La Berceuse",
+        notes: [5, 3, 1, 2, 3, 2, 4, 4, 1, 3, 1, 3],
+        t: "Une mélodie très douce, qui s’enroule et revient. Tu bâilles sans t’en rendre compte. Tes paupières s’alourdissent.",
+        rejouable: true,
+        effets: [
+          { k: "event", name: "releve_fenetre" },
+          { k: "sky", anim: "sommeil" },
+          { k: "intu", n: 2 }
+        ]
+      },
+      halte: {
+        n: "Main levée",
+        notes: [3, 5, 3, 5, 5, 5],
+        t: "Tes doigts se raidissent sur les trous. La flûte se tait au milieu de l’air.\n\nPartout dans le Domaine, les machines s’arrêtent, le temps d’un souffle, puis repartent.\n\nTout près de ton oreille, une voix très douce : « Pas celle-là. »",
+        rejouable: true,
+        effets: [
+          { k: "flag", id: "halte" },
+          { k: "event", name: "halte_jouee" }
+        ]
+      },
+      promesse: {
+        n: "La Promesse",
+        notes: [3, 3, 3, 5, 1, 5, 2, 3, 2],
+        t: "Les notes montent vers le ciel. Loin là-haut, l’étoile rouge hésite, se trouble, puis répond par une double pulsation. Le signal a entendu.",
+        rejouable: true,
+        effets: [
+          { k: "flag", id: "promesse_jouee" },
+          { k: "flag", id: "chant_visible" },
+          { k: "sky", anim: "double_pulse" },
+          { k: "intu", n: 2 }
+        ]
+      },
+      nom: {
+        n: "Le Nom",
+        notes: [1, 3, 5, 4, 2, 5],
+        t: "« Je ne dors jamais. »",
+        rejouable: true,
+        effets: [
+          { k: "flag", id: "nom_joue" },
+          { k: "intu", n: 2 }
+        ]
+      },
+      dabord: {
+        n: "Main d’abord",
+        notes: [3, 5, 3, 1, 5, 1],
+        t: "Au fond de ta mémoire et dans les circuits du terminal, quelque chose se déverrouille : la Clause est reconnue.",
+        rejouable: true,
+        effets: [
+          { k: "flag", id: "cle_clause" },
+          { k: "unlock", id: "cregistre" }
+        ]
+      }
+    },
+
+    /* ------------------------------------------------- ANIMATIONS CÉLESTES (6.2)
+     * Configurations visuelles du ciel canvas (meteors, constellation, pulse, aurora). */
+    skyAnims: {
+      filantes: {
+        type: "meteors",
+        dur: 4,
+        count: 14,
+        color: "#ffd27a"
+      },
+      double_pulse: {
+        type: "pulse",
+        dur: 3,
+        target: "kher",
+        count: 2,
+        color: "#ff6a5a"
+      },
+      sommeil: {
+        type: "aurora",
+        dur: 5,
+        color: "rgba(140, 160, 255, 0.4)"
+      },
+      aurora: {
+        type: "aurora",
+        dur: 6,
+        color: "rgba(100, 240, 200, 0.45)"
+      },
+      constellation: {
+        type: "constellation",
+        dur: 5,
+        color: "#c8e0ff",
+        stars: [
+          { x: 0.24, y: 0.16 },
+          { x: 0.40, y: 0.10 },
+          { x: 0.33, y: 0.34 }
+        ],
+        lines: [[0, 1], [1, 2], [2, 0]]
+      }
     }
   };
 
   if (D.FRAGS && D.RECIT.frags) {
     Object.assign(D.FRAGS, D.RECIT.frags);
+  }
+  if (D.MELODIES && D.RECIT.melodies) {
+    Object.assign(D.MELODIES, D.RECIT.melodies);
+  }
+  if (D.SECRETS && D.RECIT.melodies) {
+    const exist = new Set(D.SECRETS.map((s) => s.id));
+    for (const id in D.RECIT.melodies) {
+      if (!exist.has(id)) {
+        D.SECRETS.push({ id, k: "air", n: D.RECIT.melodies[id].n });
+      }
+    }
   }
 
   if (typeof module !== "undefined" && module.exports) {

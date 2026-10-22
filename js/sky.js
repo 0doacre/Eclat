@@ -35,6 +35,32 @@
   const moonPos = () => ({ x: W * 0.8, y: H * 0.2, r: Math.max(16, Math.min(W, H) * 0.075) });
   const kherPos = () => ({ x: W * 0.16, y: H * 0.5 });
 
+  function patternBlink(tSec, groups, stepDuration, groupPauseDuration, endPauseDuration) {
+    stepDuration = stepDuration || 0.4;
+    groupPauseDuration = groupPauseDuration || 0.9;
+    endPauseDuration = endPauseDuration || 3.2;
+    let total = 0;
+    for (let i = 0; i < groups.length; i++) {
+      total += groups[i] * stepDuration;
+      if (i < groups.length - 1) total += groupPauseDuration;
+    }
+    total += endPauseDuration;
+    let cur = tSec % total;
+    for (let i = 0; i < groups.length; i++) {
+      const gTime = groups[i] * stepDuration;
+      if (cur < gTime) {
+        const inFlash = cur % stepDuration;
+        return inFlash < stepDuration * 0.6 ? 1 : 0;
+      }
+      cur -= gTime;
+      if (i < groups.length - 1) {
+        if (cur < groupPauseDuration) return 0;
+        cur -= groupPauseDuration;
+      }
+    }
+    return 0;
+  }
+
   function draw(ts) {
     if (!cv) return;
     const t = ts / 1000;
@@ -73,15 +99,16 @@
     [[-0.3, -0.2, 0.22], [0.25, 0.1, 0.16], [-0.05, 0.35, 0.12], [0.35, -0.35, 0.09]].forEach(([dx, dy, rr]) => {
       cx.beginPath(); cx.arc(m.x + dx * m.r, m.y + dy * m.r, rr * m.r, 0, 7); cx.fill();
     });
-    // la lumière de la Base Vahl
-    if (Math.floor(t * 1.4) % 4 === 0) {
-      cx.fillStyle = "rgba(255,240,180,0.9)";
-      cx.beginPath(); cx.arc(m.x + m.r * 0.18, m.y - m.r * 0.05, 1.2, 0, 7); cx.fill();
+    // la lumière de la Base Vahl (clignote par groupes : 3, 5, 3 · 1, 5, 1)
+    if (patternBlink(t, [3, 5, 3, 1, 5, 1], 0.38, 0.85, 3.2)) {
+      cx.fillStyle = "rgba(255,240,180,0.95)";
+      cx.beginPath(); cx.arc(m.x + m.r * 0.18, m.y - m.r * 0.05, 1.3, 0, 7); cx.fill();
     }
 
-    // Kher
+    // Kher (clignote par groupes selon le signal avant d'être décodée)
     const k = kherPos();
-    const pulse = 0.6 + 0.4 * Math.sin(t * 1.3);
+    const kherFlash = patternBlink(t, [3, 5, 3, 5, 5, 5, 3, 3, 3, 5, 1, 5, 2, 3, 2], 0.38, 0.85, 3.5);
+    const pulse = opts.decoded ? (0.6 + 0.4 * Math.sin(t * 1.3)) : (0.25 + 0.75 * kherFlash);
     const size = 2 + opts.age * 0.35;
     const kg = cx.createRadialGradient(k.x, k.y, 0, k.x, k.y, size * 7);
     const col = opts.decoded ? "255,190,120" : "255,70,60";
@@ -202,6 +229,20 @@
     cx.beginPath();
     cx.arc(center.x, center.y, r, 0, 7);
     cx.stroke();
+
+    if (a.cfg.double || a.cfg.count === 2) {
+      const p2 = Math.max(0, p - 0.25);
+      if (p2 > 0) {
+        const normP2 = p2 / 0.75;
+        const r2 = normP2 * maxR;
+        const alpha2 = (1 - normP2) * 0.75;
+        cx.globalAlpha = Math.max(0, Math.min(1, alpha2));
+        cx.lineWidth = 3 * (1 - normP2) + 1;
+        cx.beginPath();
+        cx.arc(center.x, center.y, r2, 0, 7);
+        cx.stroke();
+      }
+    }
     cx.restore();
   }
 

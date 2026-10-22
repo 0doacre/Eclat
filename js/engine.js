@@ -2069,7 +2069,7 @@
       S.moon = (S.moon || 0) + 1;
       if (S.moon >= 7 && addSecret("lune7")) {
         S.intu += 3;
-        return "Tu fixes la Lune longtemps. Près de la mer de la Tranquillité, un point lumineux clignote : trois longs, trois courts. Quelqu’un a laissé une lumière allumée. (+3 ✨)";
+        return "Tu fixes la Lune longtemps. Près de la mer de la Tranquillité, un point lumineux clignote par petits groupes : trois, cinq, trois. Un, cinq, un. Une pause, et il recommence. Quelqu’un a laissé une lumière allumée. (+3 ✨)";
       }
       return null;
     };
@@ -2152,7 +2152,13 @@
       // Effets historiques
       if (mid === "appel" && !S.flags.lucioles) { S.flags.lucioles = true; recalc(); }
       if (mid === "berceuse") S.flags.berceuse = true;
-      if (mid === "frere" && fresh) S.intu += 2;
+      if (mid === "frere") {
+        if (fresh) S.intu += 2;
+        if (!S.flags.berceuse && S.frags && (S.frags.cuves || S.frags.caveau)) {
+          S.flags.berceuse = true;
+          recalc();
+        }
+      }
 
       // Effets déclaratifs nommés
       const effets = m.effets || m.effects;
