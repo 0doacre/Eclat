@@ -344,8 +344,9 @@
     resize(); if (!stars.length) gen();
     // les animations jouées ailleurs (la flûte est dans le Journal) partent à l’ouverture du ciel
     const t = Date.now();
-    anims = anims.filter((a) => !a.shown && t - a.queued < 10 * 60000);
-    for (const a of anims) { a.t0 = t; a.shown = true; }
+    // celles qui tournaient continuent (le Cosmos se redessine souvent) ; les autres démarrent
+    anims = anims.filter((a) => (a.shown ? t - a.t0 < a.dur : t - a.queued < 10 * 60000));
+    for (const a of anims) if (!a.shown) { a.t0 = t; a.shown = true; }
     raf = root.requestAnimationFrame(draw);
     root.addEventListener("resize", resize);
   };

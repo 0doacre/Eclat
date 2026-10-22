@@ -255,7 +255,7 @@ body.theme-dark #tabs { border-top-color: var(--line2); }
 body.theme-dark #top { border-bottom-color: var(--line2); }
 body.theme-dark .actbar { border-color: var(--line2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
 body.theme-dark input, body.theme-dark select, body.theme-dark .fld input, body.theme-dark .search input { border-color: var(--line2); background: var(--panel); color: var(--text); }
-body.theme-dark [data-ep="quadrille"] .goal-card { background: #26241e; box-shadow: none; border: 1px dashed var(--line2); }
+body.theme-dark[data-ep="quadrille"] .goal-card { background: #26241e; box-shadow: none; border: 1px dashed var(--line2); }
 
 /* ---------------------------------------------------------------- CONFORT VISUEL (GRAND TEXTE) */
 body.large-text {

@@ -414,7 +414,7 @@
       const pb = ev.target.closest("[data-pour]");
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
-      if (gb && U.mcur && !fresh()) { closeModal(); setTimeout(() => goto(gb.dataset.goto), 80); return; }
+      if (gb && U.mcur && !fresh()) { const from = U.mcur.reopen || null; closeModal(); setTimeout(() => { U.rfrom = from; goto(gb.dataset.goto); }, 80); return; }
       const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
       if (sb && U.mcur && !fresh()) { A.click(); openSigneModal(sb.dataset.s); return; }
       const b = ev.target.closest("[data-m]");
@@ -874,7 +874,8 @@
       $("#orn").innerHTML = name ? gi(name, "o1") + (ep === "pigments" ? gi(name, "o2") : "") + (ep === "bord" ? "<i></i>" : "") : "";
       if (!first) { const v = $("#views"); v.classList.remove("turn"); void v.offsetWidth; v.classList.add("turn"); }
     }
-    $("#ageName").textContent = ag.n;
+    $("#ageName").textContent = ag.n.replace(/^Âge (du |de la |de l’|des |de )?/, "").replace(/^./, (c) => c.toUpperCase());
+    $("#ageBtn").setAttribute("aria-label", ag.n + " : étapes de l’âge");
     const old = ep === "papyrus" || ep === "enluminure";
     $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
     const ms = (E.milestones && E.milestones()[a]) || [];
@@ -1164,9 +1165,9 @@
       (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
     if (ml.length) {
       const pct = Math.round((md / ml.length) * 100);
-      h += '<div class="gprog-row" data-miles title="Progression de cet âge : ' + md + '/' + ml.length + ' étapes complétées">' +
+      h += '<div class="gprog-row" data-miles title="Progression de cet âge : ' + md + '/' + ml.length + ' étapes faites">' +
         '<div class="gprog-track"><i style="width:' + pct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></div>' +
-        '<span class="gprog-txt">' + (md === ml.length ? '★ Âge accompli' : 'Âge ' + esc(D.AGES[st.age].n) + ' · ' + md + '/' + ml.length + ' (' + pct + '%)') + '</span></div>';
+        '<span class="gprog-txt">' + (md === ml.length ? '★ Âge accompli' : esc(D.AGES[st.age].n) + ' · ' + md + '/' + ml.length + ' étapes') + '</span></div>';
     }
     h += nextAction(g);
     if (!open) return h + "</div>";
@@ -1273,7 +1274,7 @@
       h += '<details class="miles' + (full ? " full" : "") + '"' + (open ? " open" : "") + "><summary><b>" + (next ? "Vers l’âge suivant" : esc(D.AGES[a].n)) + '</b> <span class="tiny muted">' + (next ? esc(D.AGES[a].n) : full ? "✓ accompli" : done + " sur " + list.length) + "</span></summary>" +
         shown.map((x) => '<div class="mile' + (x.done ? " done" : cur && cur.i === x.i ? " cur" : "") + '"><span class="mk">' + (x.done ? "✓" : cur && cur.i === x.i ? "➜" : "○") + "</span>" + mileName(x.ob) + (cur && cur.i === x.i && !x.done ? ' <span class="badge" style="background:var(--acc);color:#fff">En cours</span>' : "") + "</div>").join("") + "</details>";
     });
-    openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
+    openModal({ reopen: openMilestones, html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
   const WHY_STEP = { station: "Il te faut d’abord :", zone: "Il te faut d’abord atteindre une nouvelle terre. Elle s’ouvre avec :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
   /* un passage vers une terre : ce qu’il coûte, ce qui est déjà déposé, et le bouton pour déposer */
@@ -2594,7 +2595,7 @@
       h += '<p class="small muted center" style="font-style:italic">« On coupe ? »</p>';
     }
     const back = U.rstack.length > 1;
-    h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : "") +
+    h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : U.rfrom ? '<button class="btn" data-m="rfrom">← Retour</button>' : "") +
       (it.r && known ? '<button class="btn ghost" data-m="carnet">📖 Carnet</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
     const redraw = () => { if (U.mcur && U.mcur.rec) swapModal(recipeModal()); };
     return {
@@ -2604,6 +2605,7 @@
       on: {
         nav: (b) => { recipeNav(b.dataset.id); return true; },
         back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
+        rfrom: () => { const f = U.rfrom; U.rfrom = null; closeModal(); if (f) setTimeout(f, 80); return true; },
         zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => { setTab("domaine"); Dom.focusZone(z); }, 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
         cr: (b) => { craftFrom(b); redraw(); return true; },
         chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
@@ -2631,7 +2633,7 @@
     const st = S();
     let kicker = "Mise à feu";
     let title = "Mise à feu ?";
-    let prompt = "« FAIS-LE, SEMEUR 7. ILS APPROCHENT. »";
+    let prompt = "« FAIS-LE, SEMEUR " + (S().cycle + 6) + ". ILS APPROCHENT. »";
     let btnTxt = "💥 Tirer";
     let btnBg = "background:#ff5a3c";
     let warn = "";
@@ -3147,7 +3149,7 @@
         const curV = x.v(l), nextV = x.v(l + 1);
         const soon = m.traces < c && can && m.traces + gain >= c;
         return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">Niveau ' + l + "</span></div>" +
-          '<div class="tiny muted">' + esc(x.d.replace("{v}", "×" + String(curV).replace(".", ","))) + ' → <b style="color:var(--good)">×' + String(nextV).replace(".", ",") + '</b></div></div>' +
+          '<div class="tiny muted">' + esc(x.d.replace("{v}", String(curV).replace(".", ",")).replace(/\.$/, "")) + ' → <b style="color:var(--good)">×' + String(nextV).replace(".", ",") + '</b></div></div>' +
           '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buytrans" data-id="' + x.id + '">' + fmt(c) + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button></div>";
       }).join("") + "</div>";
     }
@@ -3633,7 +3635,7 @@
       }
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
       if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
-      if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
+      if ((b = t.closest("[data-goto]"))) { U.rfrom = null; goto(b.dataset.goto); return; }
       if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
       if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
       if ((b = t.closest("[data-page]"))) {
