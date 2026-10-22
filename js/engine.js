@@ -88,6 +88,7 @@
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
+      livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {},
       settings: { sound: true, vibe: true },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
@@ -228,10 +229,14 @@
 
   function createEngine(opts) {
     opts = opts || {};
+    const RECIT = opts.recit || D.RECIT || {};
+    if (opts.recit && opts.recit.frags) {
+      Object.assign(D.FRAGS, opts.recit.frags);
+    }
     const now = opts.now || (() => Date.now());
     const rand = opts.rand || Math.random;
     const listeners = {};
-    const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION };
+    const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION, RECIT };
     let S = freshState(now());
     S.meta.parcours = 1;
     let C = null; // caches dérivés de l’état
@@ -1600,11 +1605,249 @@
       if (!a) return null;
       return { z: a.z, i: a.i, p: Math.min(1, (now() - a.t0) / a.dur), left: Math.max(0, (a.t0 + a.dur - now()) / 1000) };
     };
+    /* ----------------------------------------------------------- RÉCIT, LIVRE & QUESTIONS */
+    function cond(c) {
+      if (!c || typeof c !== "object") return true;
+      const keys = Object.keys(c);
+      if (keys.length === 0) return true;
+      for (const k of keys) {
+        const v = c[k];
+        if (k === "frag") {
+          if (!S.frags || !S.frags[v]) return false;
+        } else if (k === "page") {
+          if (!S.livre || !S.livre.p || !S.livre.p[v]) return false;
+        } else if (k === "made") {
+          if (!((S.made && S.made[v]) > 0)) return false;
+        } else if (k === "has") {
+          if (!((S.inv && S.inv[v]) > 0)) return false;
+        } else if (k === "flag") {
+          if (!S.flags || !S.flags[v]) return false;
+        } else if (k === "secret") {
+          if (!S.secrets || !S.secrets[v]) return false;
+        } else if (k === "cycle") {
+          if (!((S.cycle || 1) >= Number(v))) return false;
+        } else if (k === "age") {
+          if (!((S.age || 0) >= Number(v))) return false;
+        } else if (k === "exp") {
+          if (typeof v !== "string") return false;
+          const parts = v.split(":");
+          const zid = parts[0], xid = parts[1];
+          const z = ZONES[zid];
+          if (!z || !z.exps) return false;
+          const idx = z.exps.findIndex((x) => x.id === xid);
+          if (idx < 0) return false;
+          if (!((S.exp && S.exp.done && S.exp.done[zid]) > idx)) return false;
+        } else if (k === "all") {
+          if (!Array.isArray(v) || !v.every(cond)) return false;
+        } else if (k === "any") {
+          if (!Array.isArray(v) || !v.some(cond)) return false;
+        } else if (k === "not") {
+          if (cond(v)) return false;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    }
+    E.cond = cond;
+
+    function givePage(id, src) {
+      S.livre = S.livre || { p: {}, vu: {} };
+      S.livre.p = S.livre.p || {};
+      S.livre.vu = S.livre.vu || {};
+      if (S.livre.p[id]) return false;
+      S.livre.p[id] = 1;
+      const page = (RECIT.pages && RECIT.pages[id]) || {};
+      E.emit("page", { id, n: page.n, src });
+      E.emit("struct");
+      return true;
+    }
+    E.givePage = givePage;
+    E.hasPage = (id) => !!(S.livre && S.livre.p && S.livre.p[id]);
+
+    E.readPage = function (id) {
+      if (!S.livre || !S.livre.p || !S.livre.p[id]) return;
+      const p = RECIT.pages && RECIT.pages[id];
+      const vis = p && p.notes ? p.notes.filter((note) => !note.cond || cond(note.cond)).length : 0;
+      S.livre.vu = S.livre.vu || {};
+      S.livre.vu[id] = vis;
+      E.emit("struct");
+    };
+
+    E.livre = function () {
+      const res = [];
+      const numToId = {};
+      if (RECIT.pages) {
+        for (const id in RECIT.pages) {
+          const num = RECIT.pages[id].n;
+          if (num >= 1 && num <= 32) numToId[num] = id;
+        }
+      }
+      for (let n = 1; n <= 32; n++) {
+        const id = numToId[n];
+        if (id && S.livre && S.livre.p && S.livre.p[id]) {
+          const p = RECIT.pages[id];
+          const visNotes = (p.notes || []).filter((note) => !note.cond || cond(note.cond));
+          const vuCount = (S.livre.vu && typeof S.livre.vu[id] === "number") ? S.livre.vu[id] : -1;
+          const nouveau = vuCount === -1 || visNotes.length > vuCount;
+          res.push({
+            n,
+            id,
+            page: p,
+            notes: visNotes,
+            nouveau
+          });
+        } else {
+          res.push({
+            n,
+            id: null,
+            page: null,
+            notes: [],
+            nouveau: false
+          });
+        }
+      }
+      return res;
+    };
+
+    E.hasLivre = () => !!(S.livre && S.livre.p && Object.keys(S.livre.p).length > 0);
+    E.hasNewLivre = () => E.livre().some((c) => c.nouveau);
+
+    function checkPageSources() {
+      if (!RECIT.pages) return;
+      for (const id in RECIT.pages) {
+        if (S.livre && S.livre.p && S.livre.p[id]) continue;
+        const page = RECIT.pages[id];
+        if (!page.src) continue;
+        for (const s of page.src) {
+          if (s.k === "cond" && cond(s.c)) {
+            givePage(id, "cond");
+            break;
+          }
+        }
+      }
+    }
+    E.checkPageSources = checkPageSources;
+
+    E.buyablePages = function () {
+      const list = [];
+      if (!RECIT.pages) return list;
+      for (const id in RECIT.pages) {
+        if (S.livre && S.livre.p && S.livre.p[id]) continue;
+        const page = RECIT.pages[id];
+        if (!page.src) continue;
+        for (const s of page.src) {
+          if (s.k === "buy" && typeof s.ecus === "number") {
+            list.push({ id, n: page.n, titre: page.titre, ecus: s.ecus });
+            break;
+          }
+        }
+      }
+      return list.sort((a, b) => a.n - b.n);
+    };
+
+    E.buyPage = function (id) {
+      if (!RECIT.pages || !RECIT.pages[id]) return { ok: false, why: "nopage" };
+      if (S.livre && S.livre.p && S.livre.p[id]) return { ok: false, why: "already" };
+      const buyable = E.buyablePages().find((p) => p.id === id);
+      if (!buyable) return { ok: false, why: "notbuyable" };
+      if ((S.ecus || 0) < buyable.ecus) return { ok: false, why: "ecus" };
+      S.ecus -= buyable.ecus;
+      givePage(id, "buy");
+      E.emit("struct");
+      return { ok: true, id };
+    };
+
+    E.revisit = function (fragId) {
+      const F = D.FRAGS && D.FRAGS[fragId];
+      if (!F || !Array.isArray(F.revisit)) return null;
+      for (let i = 0; i < F.revisit.length; i++) {
+        const r = F.revisit[i];
+        if (!r.cond || cond(r.cond)) {
+          return { frag: fragId, index: i, t: r.t };
+        }
+      }
+      return null;
+    };
+
+    E.visibleFrags = function () {
+      const arch = new Set(RECIT.archive || []);
+      return Object.keys(D.FRAGS).filter((id) => !arch.has(id));
+    };
+
+    E.questionCost = function (id) {
+      const q = RECIT.questions && RECIT.questions[id];
+      if (!q) return null;
+      const lvl = (S.questions && S.questions[id] && S.questions[id].lvl) || 0;
+      if (lvl >= 3 || (q.aides && lvl >= q.aides.length)) return null;
+      const cfg = RECIT.aide || { base: 5, mult: 3 };
+      const age = S.age || 0;
+      return cfg.base * (1 + age) * Math.pow(cfg.mult, lvl);
+    };
+
+    E.questions = function () {
+      const list = [];
+      if (!RECIT.questions) return list;
+      S.questions = S.questions || {};
+      for (const id in RECIT.questions) {
+        const q = RECIT.questions[id];
+        const active = !!S.questions[id] || !q.quand || cond(q.quand);
+        if (active) {
+          if (!S.questions[id]) S.questions[id] = { lvl: 0 };
+          const lvl = S.questions[id].lvl || 0;
+          const resolu = !!(q.resolu && cond(q.resolu));
+          const cost = E.questionCost(id);
+          list.push({
+            id,
+            titre: q.titre,
+            lvl,
+            resolu,
+            aides: (q.aides || []).slice(0, lvl),
+            cost
+          });
+        }
+      }
+      return list;
+    };
+
+    E.hasQuestions = () => E.questions().length > 0;
+
+    E.askHelp = function (id) {
+      const q = RECIT.questions && RECIT.questions[id];
+      if (!q) return { ok: false, why: "noquestion" };
+      S.questions = S.questions || {};
+      if (!S.questions[id]) S.questions[id] = { lvl: 0 };
+      const curLvl = S.questions[id].lvl || 0;
+      const maxLvl = q.aides ? q.aides.length : 3;
+      if (curLvl >= maxLvl || curLvl >= 3) return { ok: false, why: "max", lvl: curLvl };
+      const cost = E.questionCost(id);
+      if (cost === null) return { ok: false, why: "max", lvl: curLvl };
+      if ((S.intu || 0) < cost) return { ok: false, why: "intu", lvl: curLvl, cost };
+      S.intu -= cost;
+      S.questions[id].lvl = curLvl + 1;
+      E.emit("struct");
+      return { ok: true, lvl: S.questions[id].lvl };
+    };
+
     function finishExp(silent) {
       const a = S.exp.active;
       const x = ZONES[a.z].exps[a.i];
       S.exp.active = null;
       S.exp.done[a.z] = (S.exp.done[a.z] || 0) + 1;
+      const locKey = a.z + ":" + x.id;
+      if (RECIT.pages) {
+        for (const pid in RECIT.pages) {
+          if (S.livre && S.livre.p && S.livre.p[pid]) continue;
+          const page = RECIT.pages[pid];
+          if (!page.src) continue;
+          for (const s of page.src) {
+            if (s.k === "exp" && s.at === locKey) {
+              givePage(pid, "exp");
+              break;
+            }
+          }
+        }
+      }
       const rw = x.rw || {};
       if (rw.inv) for (const i in rw.inv) add(i, rw.inv[i]);
       if (rw.item) for (const i in rw.item) add(i, rw.item[i]);
@@ -1612,9 +1855,24 @@
       if (rw.flag) S.flags[rw.flag] = true;
       if (rw.flag === "caveau") unlockZone("caveau");
       if (rw.secret) addSecret(rw.secret);
+      let fragId = rw.frag;
+      if (RECIT.expFrag && RECIT.expFrag[locKey]) {
+        fragId = RECIT.expFrag[locKey];
+      }
       let fragNew = false;
-      if (rw.frag) fragNew = addFrag(rw.frag, true);
-      E.emit("expdone", { z: a.z, x, frag: rw.frag, fragNew, silent });
+      let revisit = null;
+      if (fragId) {
+        if (!S.frags[fragId]) {
+          fragNew = addFrag(fragId, true);
+        } else {
+          revisit = E.revisit(fragId);
+          if (revisit) {
+            S.revus = S.revus || {};
+            S.revus[fragId + ":" + revisit.index] = 1;
+          }
+        }
+      }
+      E.emit("expdone", { z: a.z, x, frag: fragId, fragNew, revisit, silent });
       checkAges();
       E.emit("struct");
     }
@@ -2316,6 +2574,10 @@
       const n = freshState(now());
       n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets; n.studied = old.studied || {};
       n.seen = old.seen; n.meta = old.meta; n.meta.ruins = Object.assign({}, ruins); n.settings = old.settings; n.pins = old.pins || {};
+      n.livre = old.livre ? JSON.parse(JSON.stringify(old.livre)) : { p: {}, vu: {} };
+      n.revus = Object.assign({}, old.revus || {});
+      n.questions = old.questions ? JSON.parse(JSON.stringify(old.questions)) : {};
+      n.repaired = Object.assign({}, old.repaired || {});
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
@@ -2388,6 +2650,22 @@
       add(id, 1);
       S.meta.ruins[id] -= 1;
       if (S.meta.ruins[id] <= 0) delete S.meta.ruins[id];
+      S.repaired = S.repaired || {};
+      const firstRepair = !S.repaired[id];
+      S.repaired[id] = (S.repaired[id] || 0) + 1;
+      if (firstRepair && RECIT.pages) {
+        for (const pid in RECIT.pages) {
+          if (S.livre && S.livre.p && S.livre.p[pid]) continue;
+          const page = RECIT.pages[pid];
+          if (!page.src) continue;
+          for (const s of page.src) {
+            if (s.k === "repair" && s.id === id) {
+              givePage(pid, "repair");
+              break;
+            }
+          }
+        }
+      }
       if (it.t === "ext") E.domAutoExt(id);
       recalc();
       domChanged();
@@ -2405,6 +2683,7 @@
     /* ------------------------------------------------------ temps */
     function step(dt, offline) {
       const c = E.cache();
+      checkPageSources();
       for (const r in c.rates) add(r, c.rates[r] * dt);
       pullOrderInputs();
       runDom(dt);
@@ -2685,6 +2964,79 @@
       if (o.track && !D.ITEMS[o.track.id]) o.track = null;
       if (o.exp.active && !(ZONES[o.exp.active.z] && ZONES[o.exp.active.z].exps[o.exp.active.i])) o.exp.active = null;
       if (typeof o.age !== "number" || o.age < 0 || o.age >= D.AGES.length) o.age = 0;
+
+      if (!o.livre || typeof o.livre !== "object" || Array.isArray(o.livre)) {
+        o.livre = { p: {}, vu: {} };
+      } else {
+        const p = {};
+        if (o.livre.p && typeof o.livre.p === "object" && !Array.isArray(o.livre.p)) {
+          for (const id in o.livre.p) {
+            if (!RECIT.pages || RECIT.pages[id]) {
+              p[id] = 1;
+            } else {
+              o.orphans = o.orphans || {};
+              (o.orphans.livre_p = o.orphans.livre_p || {})[id] = o.livre.p[id];
+            }
+          }
+        }
+        const vu = {};
+        if (o.livre.vu && typeof o.livre.vu === "object" && !Array.isArray(o.livre.vu)) {
+          for (const id in o.livre.vu) {
+            const v = Math.floor(Number(o.livre.vu[id]));
+            if (Number.isFinite(v) && v >= 0) {
+              if (!RECIT.pages || RECIT.pages[id]) {
+                vu[id] = v;
+              } else {
+                o.orphans = o.orphans || {};
+                (o.orphans.livre_vu = o.orphans.livre_vu || {})[id] = v;
+              }
+            }
+          }
+        }
+        o.livre = { p, vu };
+      }
+
+      if (!o.revus || typeof o.revus !== "object" || Array.isArray(o.revus)) {
+        o.revus = {};
+      } else {
+        const rev = {};
+        for (const k in o.revus) {
+          if (typeof k === "string") rev[k] = 1;
+        }
+        o.revus = rev;
+      }
+
+      if (!o.questions || typeof o.questions !== "object" || Array.isArray(o.questions)) {
+        o.questions = {};
+      } else {
+        const qlist = {};
+        for (const id in o.questions) {
+          if (RECIT.questions && !RECIT.questions[id]) {
+            o.orphans = o.orphans || {};
+            (o.orphans.questions = o.orphans.questions || {})[id] = o.questions[id];
+          } else {
+            const q = o.questions[id];
+            let lvl = 0;
+            if (q && typeof q === "object") lvl = Math.floor(Number(q.lvl)) || 0;
+            else if (typeof q === "number") lvl = Math.floor(q) || 0;
+            if (lvl < 0) lvl = 0;
+            if (lvl > 3) lvl = 3;
+            qlist[id] = { lvl };
+          }
+        }
+        o.questions = qlist;
+      }
+
+      if (!o.repaired || typeof o.repaired !== "object" || Array.isArray(o.repaired)) {
+        o.repaired = {};
+      } else {
+        const rep = {};
+        for (const id in o.repaired) {
+          const v = Math.floor(Number(o.repaired[id]));
+          if (Number.isFinite(v) && v > 0) rep[id] = v;
+        }
+        o.repaired = rep;
+      }
       return o;
     }
     E.parseSave = parseSave;

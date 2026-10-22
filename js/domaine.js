@@ -296,6 +296,21 @@
           '</div></div>';
       }
 
+      function buyPageRowHTML(p) {
+        const ecus = S().ecus || 0;
+        const can = ecus >= p.ecus;
+        return '<div class="comptoir-row" data-bpage="' + esc(p.id) + '">' +
+          '<div class="comptoir-head"><span class="sheet-ic" style="font-size:20px">📖</span>' +
+          '<div class="grow"><b>Page n° ' + p.n + '</b>' +
+          (p.titre ? '<span class="tiny muted"> · ' + esc(p.titre) + '</span>' : '') +
+          '</div>' +
+          '<span class="tiny muted">' + fmt(p.ecus) + ' écus</span></div>' +
+          '<div class="comptoir-btns">' +
+          '<button class="btn mini' + (can ? ' pri' : '') + '" data-m="buypage" data-id="' + esc(p.id) + '"' + (can ? '' : ' disabled') + '>' +
+          '<b>Acheter</b> <small>' + fmt(p.ecus) + ' écus</small></button>' +
+          '</div></div>';
+      }
+
       function askRowHTML(ask, i) {
         if (!ask) {
           return '<div class="comptoir-row" style="opacity:0.6;border-style:dashed">' +
@@ -337,6 +352,11 @@
             h += '<div class="comptoir-list">' + buyable.map(buyResRowHTML).join("") + '</div>';
           } else {
             h += '<p class="small muted center" style="padding:20px 0">Aucune ressource disponible à l’achat pour l’instant.</p>';
+          }
+          const buyPages = E.buyablePages ? E.buyablePages() : [];
+          if (buyPages.length) {
+            h += '<h3 class="sub" style="margin-top:16px">Pages</h3>';
+            h += '<div class="comptoir-list">' + buyPages.map(buyPageRowHTML).join("") + '</div>';
           }
         } else if (curTab === "demandes") {
           const asks = E.troqueurAsks ? E.troqueurAsks() : [];
@@ -424,6 +444,17 @@
             }
             A.click(); vibe(8);
             toast("+" + fmt(n) + " " + esc(I[id].n) + " en réserve", { key: "comptoir" });
+            return redraw();
+          },
+          buypage: (b) => {
+            const id = b.dataset.id;
+            const r = E.buyPage(id);
+            if (!r.ok) {
+              A.fail(0);
+              toast("Pas assez d’écus.", { key: "comptoir" });
+              return redraw();
+            }
+            A.click(); vibe(8);
             return redraw();
           }
         }

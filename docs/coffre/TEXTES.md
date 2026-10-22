@@ -5,7 +5,9 @@
 > pas de tiret cadratin, peu de « ça » et de « c’est ».
 
 **Conventions.** `[main]` = un signe des Anciens : il s’affiche dessiné tant qu’il n’est pas
-compris, puis comme le mot, dans un style à part. `{n}` = valeur calculée. *(ornement)* = le
+compris, puis comme le mot, dans un style à part. Dans les données (`js/recit.js`), le jeton
+s’écrit sans accent, espace ni apostrophe, sinon le rendu ne le reconnaît pas : `[eveiller]`,
+`[dabord]`, `[nepas]`. `{n}` = valeur calculée. *(ornement)* = le
 petit signe NOURRICE qui clôt une scène racontée. Les notes manuscrites s’affichent dans la
 police à la main (Caveat), signées en bas.
 
