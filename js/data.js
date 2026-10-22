@@ -988,7 +988,7 @@
 
   D.CHANGES = [
     "📖 Le Journal a deux onglets de plus : le Livre et les Questions.",
-    "🧭 Le Comptoir propose désormais une section dédiée aux pages du Livre."
+    "🧭 Au Comptoir, le Troqueur vend aussi des pages."
   ];
 
 
