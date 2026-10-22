@@ -689,6 +689,53 @@ test("animations célestes du récit", () => {
   }
 });
 
+console.log("Récit : les voix (6.3)");
+test("données du Registre et du terminal du récit", () => {
+  assert.ok(R.registre, "R.registre présent");
+  assert.ok(R.terminal, "R.terminal présent");
+  assert.ok(R.registre.clause && R.registre.mains && R.registre.relais && R.registre.nourrice);
+  // Vérification que les réponses du registre ne contiennent pas « je » ou d’adjectifs sentimentaux
+  for (const k in R.registre) {
+    const text = R.registre[k];
+    assert.ok(typeof text === "string" && text.length > 0, k + " texte non vide");
+    assert.ok(!/\bje\b/i.test(text), k + " ne doit pas contenir « je »");
+  }
+});
+
+test("événements narratifs : validation des structures et conditions", () => {
+  assert.ok(Array.isArray(R.events) && R.events.length > 0, "R.events présent");
+  for (const ev of R.events) {
+    assert.ok(ev.id && typeof ev.id === "string", "id événement valide");
+    if (ev.cond) checkCond(ev.cond, "événement " + ev.id);
+    if (ev.arche) {
+      const lines = Array.isArray(ev.arche) ? ev.arche : [ev.arche];
+      lines.forEach((l) => assert.ok(typeof l === "string" && l.length > 0));
+    }
+    if (ev.toast) assert.ok(typeof ev.toast === "string" && ev.toast.length > 0);
+  }
+});
+
+test("parcours narratif des voix : radio ARCHE et Registre", () => {
+  const E = mk();
+  E.state.flags.arche = true;
+  // Déclenchement de l'événement radio à l'âge 7
+  E.state.age = 7;
+  E.checkEvents();
+  assert.ok(E.state.arche.some((l) => l.txt.includes("ICI ARCHE. SEMEUR 7")));
+
+  // Ouverture du Registre par la Clause
+  E.terminal("main d'abord");
+  assert.ok(E.state.flags.registre);
+  assert.ok(E.state.secrets.cregistre);
+
+  // Écriture puis lecture de la capsule
+  E.setCapsuleText("Un mot pour celui qui vient.");
+  const capLines = E.terminal("capsule");
+  assert.ok(E.state.secrets.ccapsule);
+  assert.ok(capLines.some((l) => l.includes("ENREGISTREMENT ORIGINAL : « Un mot pour celui qui vient. »")));
+  assert.ok(capLines.some((l) => l.includes("DIFFUSÉ : « Salut. C’est toi.")));
+});
+
 console.log("Récit : les anciennes parties");
 const FIXTURES = fs.readdirSync(path.join(__dirname, "fixtures")).filter((x) => /^save-v\d/.test(x));
 test("les anciens fragments archivés restent chargés depuis les fixtures", () => {

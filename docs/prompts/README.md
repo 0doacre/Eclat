@@ -51,3 +51,4 @@ puis la fusionne.
 - `signes-6-1.md` : moteur des signes (dessin, saisie, empreintes, fiche, onglet Signes), sans
   aucun signe réel (6.1.0).
 - `flute-ciel-6-2.md` : moteur de la flûte (airs longs, effets nommés déclaratifs) et animations du Ciel pilotées par données (6.2.0).
+- `voix-6-3.md` : moteur du terminal piloté par données, deux modes (ARCHE et Registre), variables dynamiques, saisie libre de la capsule temporelle et moteur d'événements conditionnels (6.3.0).

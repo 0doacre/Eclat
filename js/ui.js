@@ -1734,8 +1734,9 @@
   /* ------------------------------------------------------------ COSMOS */
   function viewCosmos() {
     const st = S();
+    const isReg = !!(st.flags.registre && st.termMode !== "arche");
     const tabs = [["ciel", "Ciel"]];
-    if (st.flags.arche || E.cache().term) tabs.push(["arche", "ARCHE"]);
+    if (st.flags.arche || E.cache().term) tabs.push(["arche", isReg ? "REGISTRE" : "ARCHE"]);
     if (Object.keys(D.PROJECTS).some(E.projVisible)) tabs.push(["oeuvres", "Grands Œuvres"]);
     if (!tabs.find((t) => t[0] === U.cosmosTab)) U.cosmosTab = "ciel";
     let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
@@ -1744,13 +1745,14 @@
       if (E.cache().signal) h += '<button class="btn wide pri" id="listen">📡 Écouter Kher</button>';
       else h += '<p class="small muted">Avec une oreille assez grande, tu pourrais peut-être entendre ce que dit l’étoile rouge.</p>';
     } else if (U.cosmosTab === "arche") {
+      const pfx = isReg ? "REG > " : "ARCHE > ";
       h += '<div class="term" id="term">';
       if (!st.flags.arche) h += '<div class="l">Aucun signal radio.</div>';
       st.arche.forEach((l) => { h += '<div class="l">' + esc(l.txt) + "</div>"; });
-      if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") ? " u" : "") + '">' + esc(l) + "</div>").join("");
+      if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") || l.startsWith("REG > ") || l.startsWith("ARCHE > ") ? " u" : "") + '">' + esc(l) + "</div>").join("");
       h += "</div>";
-      if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
-      else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ARCHE.</p>';
+      if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><span class="term-pfx">' + esc(pfx) + '</span><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
+      else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ' + (isReg ? "le Registre" : "ARCHE") + '.</p>';
     } else {
       h += '<p class="small muted">Un Grand Œuvre se bâtit avec ce que tu verses depuis la Réserve, ou ce qu’il y prend seul quand tu l’alimentes. Il en demande des quantités énormes.</p>';
       for (const pid in D.PROJECTS) if (E.projVisible(pid)) h += projCard(pid);
@@ -2498,6 +2500,47 @@
       "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
   }
 
+  function promptCapsuleText() {
+    const current = E.getCapsuleText ? E.getCapsuleText() : "";
+    const html = '<div class="kicker">Capsule temporelle</div>' +
+      '<h2>Ce que tu veux dire à celui qui viendra</h2>' +
+      '<p class="small muted">Tu peux graver un message de 140 signes au plus pour le Semeur qui prendra la suite.</p>' +
+      '<form id="capsuleForm" class="capsule-form">' +
+      '<div class="fld">' +
+      '<textarea id="capsuleInput" class="input" maxlength="140" rows="3" placeholder="Garde courage…">' + esc(current) + '</textarea>' +
+      '<div class="tiny dim right" id="capsuleCharCount" style="margin-top:4px">' + (140 - current.length) + ' signes restants</div>' +
+      '</div>' +
+      '<div class="acts" style="margin-top:12px">' +
+      '<button type="submit" class="btn pri">Graver</button>' +
+      '<button type="button" class="btn" data-m="close">Passer</button>' +
+      '</div>' +
+      '</form>';
+    openModal({
+      html,
+      onOpen: (box) => {
+        const form = box.querySelector("#capsuleForm");
+        const input = box.querySelector("#capsuleInput");
+        const counter = box.querySelector("#capsuleCharCount");
+        if (input) {
+          setTimeout(() => { try { input.focus(); } catch (e) {} }, 100);
+          input.addEventListener("input", () => {
+            const rem = 140 - input.value.length;
+            if (counter) counter.textContent = rem + " signes restants";
+          });
+        }
+        if (form) {
+          form.addEventListener("submit", (ev) => {
+            ev.preventDefault();
+            const val = input ? input.value.trim() : "";
+            if (E.setCapsuleText) E.setCapsuleText(val);
+            closeModal();
+            toast("⏳ Ton message est scellé dans la capsule.");
+          });
+        }
+      }
+    });
+  }
+
   function intro() {
     const st = S();
     const lines = (D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
@@ -2858,6 +2901,8 @@
     });
     E.on("fx", (k) => { if (k === "fireworks") setTimeout(fireworks, 300); });
     E.on("ending", (r) => { setTimeout(() => showEnding(r), 600); save(); });
+    E.on("capsulePrompt", () => { setTimeout(promptCapsuleText, 400); });
+    E.on("toast", (msg) => { if (typeof msg === "string") toast(msg); });
     E.on("offline", (o) => {
       if (o.dt < 60) return;
       const top = Object.keys(o.gains).filter((k) => I[k]).sort((a, b) => o.gains[b] - o.gains[a]).slice(0, 10);

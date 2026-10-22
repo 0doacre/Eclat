@@ -357,8 +357,10 @@ p { margin: 0.4em 0; }
 .term { background: #050806; border: 1px solid #1d3326; border-radius: var(--r); padding: 12px; font-family: var(--mono); font-size: 12.5px; color: #8cffb0; max-height: 46vh; overflow-y: auto; white-space: pre-wrap; word-break: break-word; user-select: text; -webkit-user-select: text; }
 .term .l { margin: 2px 0; }
 .term .u { color: #e2ffe9; }
-.term-in { display: flex; gap: 6px; margin-top: 8px; }
+.term-in { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.term-pfx { font-family: var(--mono); font-size: 14px; color: #8cffb0; opacity: 0.85; white-space: nowrap; user-select: none; }
 .term-in input { flex: 1; min-width: 0; background: #050806; border: 1px solid #1d3326; border-radius: 10px; padding: 10px; color: #8cffb0; font-family: var(--mono); font-size: 16px; user-select: text; -webkit-user-select: text; }
+.capsule-form textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 70px; padding: 10px; font-family: var(--font); font-size: 15px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg2); color: var(--fg); }
 .proj .ph { display: flex; align-items: center; gap: 10px; }
 .proj .ph .pi { font-size: 30px; }
 .proj .pn { font-family: var(--serif); font-size: 20px; }

@@ -2310,4 +2310,145 @@ test("sauvegarde et nettoyage : notes plafonnées à 32 et boosts assainis", () 
   assert.strictEqual(E.state.boosts.trop_grand.mult, 10);
 });
 
+console.log("Moteur des voix, du terminal et de la capsule (6.3)");
+test("terminal : normalisation et variables dynamiques en mode ARCHE", () => {
+  const E = createEngine();
+  // mode par défaut = arche
+  assert.strictEqual(E.state.termMode, "arche");
+  const lines = E.terminal("WHOAMI");
+  assert.ok(lines[0].startsWith("ARCHE > "));
+  assert.strictEqual(lines[1], "SEMEUR-07");
+  // avec accents et casse
+  const semLines = E.terminal("Sèmeur");
+  assert.ok(semLines.some((l) => l.includes("SEMEUR 7")));
+});
+
+test("terminal : ouverture de la Clause et bascule en mode Registre", () => {
+  const E = createEngine();
+  const initIntu = E.state.intu;
+  assert.strictEqual(E.state.flags.registre, undefined);
+  // saisie de la Clause avec tolérance
+  const res = E.terminal("  Main   d'Abord  ");
+  assert.ok(E.state.flags.registre);
+  assert.strictEqual(E.state.termMode, "reg");
+  assert.ok(E.state.secrets.cregistre);
+  assert.strictEqual(E.state.intu, initIntu + 2);
+  assert.ok(res[0].startsWith("REG > "));
+  assert.ok(res.some((l) => l.includes("CLAUSE RECONNUE")));
+  assert.ok(res.some((l) => l.includes("CE REGISTRE NE CONNAÎT QUE LES MAINS")));
+});
+
+test("terminal : navigation entre modes et entrées Registre", () => {
+  const E = createEngine();
+  E.terminal("main d'abord");
+  // mode registre actif
+  const aideLines = E.terminal("AIDE");
+  assert.ok(aideLines.some((l) => l.includes("REG · ENTRÉES")));
+  // mains avec date dynamique
+  const mainsLines = E.terminal("mains");
+  assert.ok(mainsLines.some((l) => l.includes("MAINS : 12")));
+  assert.ok(mainsLines.some((l) => l.includes("SON HORLOGE INDIQUE : ")));
+  // bascule vers ARCHE
+  E.terminal("mode arche");
+  assert.strictEqual(E.state.termMode, "arche");
+  const who = E.terminal("whoami");
+  assert.ok(who[0].startsWith("ARCHE > "));
+  // retour en REG
+  E.terminal("mode reg");
+  assert.strictEqual(E.state.termMode, "reg");
+});
+
+test("terminal : semeurs S-01 à S-12 et rotation selon les cycles", () => {
+  const E = createEngine();
+  E.terminal("main d'abord");
+  // S-01 est mort, relais sectionné, sépulture avec oiseau
+  const s01 = E.terminal("s-01");
+  assert.ok(s01.some((l) => l.includes("MORT")));
+  assert.ok(s01.some((l) => l.includes("RELAIS SECTIONNÉ")));
+  assert.ok(s01.some((l) => l.includes("UN OISEAU")));
+  // S-07 au cycle 1 est actif
+  const s07 = E.terminal("s-07");
+  assert.ok(s07.some((l) => l.includes("ÉVEILLÉ")));
+  assert.ok(s07.some((l) => l.includes("CYCLES 1")));
+  // S-08 au cycle 1 dort
+  const s08 = E.terminal("s-08");
+  assert.ok(s08.some((l) => l.includes("DORT")));
+  // après relève : cycle 2 -> cuve 8 éveillée, cuve 7 dort
+  E.newCycle();
+  const s07c2 = E.terminal("s-07");
+  assert.ok(s07c2.some((l) => l.includes("DORT")));
+  const s08c2 = E.terminal("s-08");
+  assert.ok(s08c2.some((l) => l.includes("ÉVEILLÉ")));
+});
+
+test("capsule : texte personnalisé, persistance et consultation au Registre", () => {
+  const E = createEngine();
+  assert.strictEqual(E.getCapsuleText(), "");
+  // texte plafonné à 140
+  const longTxt = "a".repeat(200);
+  E.setCapsuleText(longTxt);
+  assert.strictEqual(E.getCapsuleText().length, 140);
+
+  const custom = "Prends le relais, ne crains pas le noir.";
+  E.setCapsuleText(custom);
+  assert.strictEqual(E.getCapsuleText(), custom);
+
+  // survit à la sauvegarde
+  const json = E.serialize();
+  const E2 = createEngine();
+  E2.load(json);
+  assert.strictEqual(E2.getCapsuleText(), custom);
+
+  // survit à newCycle
+  E2.newCycle();
+  assert.strictEqual(E2.getCapsuleText(), custom);
+
+  // consultation au Registre
+  E2.terminal("main d'abord");
+  const initIntu = E2.state.intu;
+  const capLines = E2.terminal("capsule");
+  assert.ok(E2.state.secrets.ccapsule);
+  assert.strictEqual(E2.state.intu, initIntu + 2);
+  assert.ok(capLines.some((l) => l.includes("ENREGISTREMENT ORIGINAL : « " + custom + " »")));
+  assert.ok(capLines.some((l) => l.includes("DIFFUSÉ : « Salut. C’est toi.")));
+});
+
+test("événements narratifs conditionnels : déclenchement, once et interpolation", () => {
+  const recitCustom = {
+    events: [
+      {
+        id: "test_ev_once",
+        cond: { made: "feu" },
+        toast: "Le premier feu de {semeur}.",
+        arche: ["SEMEUR {semeur}, TU AS ALLUMÉ LE FEU."],
+        flag: "feu_notifie"
+      }
+    ]
+  };
+  const E = createEngine({ recit: recitCustom });
+  assert.strictEqual(E.state.eventsSeen.test_ev_once, undefined);
+  E.checkEvents();
+  assert.strictEqual(E.state.eventsSeen.test_ev_once, undefined);
+
+  // fabrication du feu
+  E.state.made.feu = 1;
+  E.checkEvents();
+  assert.ok(E.state.eventsSeen.test_ev_once);
+  assert.ok(E.state.flags.feu_notifie);
+  assert.ok(E.state.arche.some((l) => l.txt === "SEMEUR 7, TU AS ALLUMÉ LE FEU."));
+
+  // ne se déclenche pas une deuxième fois
+  const countBefore = E.state.arche.length;
+  E.checkEvents();
+  assert.strictEqual(E.state.arche.length, countBefore);
+
+  // survit à la relève et sauvegarde
+  const json = E.serialize();
+  const E2 = createEngine({ recit: recitCustom });
+  E2.load(json);
+  assert.ok(E2.state.eventsSeen.test_ev_once);
+  E2.newCycle();
+  assert.ok(E2.state.eventsSeen.test_ev_once);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
