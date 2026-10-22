@@ -69,7 +69,7 @@
     const st = E.blockStation(id, b), g = D.GESTES[I[id].r[0]];
     const det = b.why === "heat" ? fmtHeat(b.heat) : b.why === "geste" ? "pour " + g.v : "plus solide, pour " + g.v;
     if (!st) return "action inconnue : " + g.n;
-    return "il faut : " + (html ? '<span class="link-txt" data-goto="' + st + '">' + esc(I[st].n) + "</span>" : I[st].n) + " (" + det + ")";
+    return "il faut : " + (html ? itemPill(st) : I[st].n) + " (" + det + ")";
   }
   const cap1 = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   const fmtMul = (v) => "×" + String(Math.round(v * 100) / 100).replace(".", ",");
@@ -131,6 +131,25 @@
     if (GI.items[id]) return '<span class="ic gic ' + (cls || "") + '">' + gi(GI.items[id]) + "</span>";
     if (it.sym) return '<span class="ic sym ' + (cls || "") + '" style="--c:' + it.col + ";--ink:" + ink(it.col) + '">' + esc(it.sym) + "</span>";
     return '<span class="ic ' + (cls || "") + '">' + it.ic + "</span>";
+  }
+  /* Pastille unifiée pour les objets cliquables dans les textes, objectifs et fiches */
+  function itemPill(id, opt) {
+    opt = opt || {};
+    const it = I[id];
+    if (!it) return esc(id);
+    // même règle que la fiche : l’icône dès que l’objet est connu, vu, ou sans recette (matière brute) ;
+    // le nom reste toujours écrit, comme avant les pastilles
+    const st = S();
+    const known = opt.unk !== undefined ? !opt.unk : !!(st.known[id] || st.seen[id] || !it.r);
+    const name = esc(it.n);
+    const ic = known ? icon(id, "sm") : '<span class="ic sm unk">?</span>';
+    const qty = opt.qty ? '<span class="pill-qty">' + fmt(opt.qty) + '</span> ' : '';
+    const lackCls = opt.lack ? " lack" : "";
+    const unkCls = !known ? " unk" : "";
+    const extraCls = opt.cls ? " " + opt.cls : "";
+    const title = name + " (toucher pour voir la fiche)";
+    return '<span class="item-pill' + lackCls + unkCls + extraCls + '" data-goto="' + id + '" role="button" tabindex="0" title="' + title + '" aria-label="' + esc(it.n) + '">' +
+      ic + qty + '<span class="pill-name">' + name + '</span></span>';
   }
   const TYPE = { res: "Ressource", comp: "Pièce", tool: "Outil", stat: "Station", ext: "Extracteur", upg: "Amélioration", mach: "Machine", auto: "Machine", curio: "Curiosité", relic: "Relique" };
   /* la sorte d’objet, en couleur ; un extracteur dit aussi sa terre, une machine son palier */
@@ -400,7 +419,7 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
@@ -1142,12 +1161,12 @@
     if (ob.k === "craft") {
       const it = I[ob.id];
       if (it.h && !st.known[ob.id]) h += '<div class="riddle small">« ' + esc(it.h) + " »</div>";
-      if (g.step !== ob.id && I[g.step]) h += '<div class="tiny muted">Il faut d’abord : ' + (st.known[g.step] ? icon(g.step, "sm") + " " : "") + '<b class="link-txt" data-goto="' + g.step + '">' + esc(I[g.step].n) + "</b></div>";
+      if (g.step !== ob.id && I[g.step]) h += '<div class="tiny muted" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px">Il faut d’abord : ' + itemPill(g.step) + "</div>";
       if (st.known[ob.id]) h += '<div class="row wrap" style="margin-top:6px"><button class="btn small ghost" data-tree="' + ob.id + '">Détail</button>' + (st.track && st.track.id === ob.id ? "" : '<button class="btn small ghost" data-track="' + ob.id + '">Suivre</button>') + "</div>";
       const z = it.e && it.e.zone;
       if (z && D.PASSAGES[z] && !(st.pass[z] && st.pass[z].done)) {
         const c = E.passCost(z);
-        h += '<div class="tiny muted" style="margin-top:6px">Ensuite, le passage <b>' + esc(D.PASSAGES[z].n) + "</b> vers " + esc(zoneName(z)) + " : " + Object.keys(c).map((i) => fmt(c[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + ".</div>";
+        h += '<div class="tiny muted" style="margin-top:6px">Ensuite, le passage <b>' + esc(D.PASSAGES[z].n) + "</b> vers " + esc(zoneName(z)) + " : " + Object.keys(c).map((i) => itemPill(i, { qty: c[i] })).join("") + ".</div>";
       }
     }
     return h + "</div>";
@@ -1199,8 +1218,8 @@
         (st.act && st.act.k === "harv" && st.act.res === hand ? '<span class="tiny muted">en cours…</span>' : '<button class="btn small" data-hloop="' + z + ":" + hand + '">▶</button>') + "</div>";
     }
     const ext = miss.find((k) => isRawGather(k));
-    if (ext) return line('<span class="small">Il manque ' + fmt(p.missing[ext]) + " " + esc(I[ext].n.toLowerCase()) + " : cette ressource ne se récolte pas à la main. Pose un extracteur sur son gisement.</span>");
-    return line('<span class="small">Il manque : ' + miss.map((k) => '<b class="link-txt" data-goto="' + k + '">' + fmt(p.missing[k]) + " " + esc(I[k].n.toLowerCase()) + "</b>").join(", ") + ".</span>");
+    if (ext) return line('<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque ' + itemPill(ext, { qty: p.missing[ext], lack: true }) + " : cette ressource ne se récolte pas à la main. Pose un extracteur sur son gisement.</span>");
+    return line('<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque : ' + miss.map((k) => itemPill(k, { qty: p.missing[k], lack: true })).join("") + ".</span>");
   }
   /* ce qui change la carte d’objectif (pour la redessiner au bon moment) */
   function goalSig() {
@@ -1218,7 +1237,7 @@
   }
   /* les jalons : ce qu’il y a à faire à chaque âge, et le premier pas vers le suivant */
   function mileName(ob) {
-    if (ob.k === "craft") return (S().known[ob.id] ? icon(ob.id, "sm") : '<span class="ic sm unk">?</span>') + ' <span class="link-txt" data-goto="' + ob.id + '">' + esc(I[ob.id].n) + "</span>";
+    if (ob.k === "craft") return itemPill(ob.id);
     return (ob.k === "exp" ? "🧭 " : ob.k === "ext" ? "⛏️ " : ob.k === "pass" ? "🚧 " : "🏭 ") + esc(ob.n);
   }
   function openMilestones() {
@@ -1280,8 +1299,7 @@
     const st = S(), it = I[id];
     if (why === "pass") { const z = E.passPending().find((x) => E.ZONES[x].req === id); if (z) return '<div class="stepbox"><div class="tiny muted">' + WHY_STEP.pass + "</div>" + passHTML(z) + "</div>"; }
     let h = '<div class="stepbox">';
-    if (!isTarget) h += '<div class="tiny muted">' + (WHY_STEP[why] || "Prochaine étape :") + "</div><div class=\"row\" style=\"margin:4px 0\">" + (st.known[id] ? icon(id, "sm") : '<span class="ic sm unk">?</span>') +
-      ' <b class="link-txt" data-goto="' + id + '">' + esc(it.n) + "</b></div>" + (it.h && !st.known[id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "");
+    if (!isTarget) h += '<div class="tiny muted">' + (WHY_STEP[why] || "Prochaine étape :") + '</div><div class="row" style="margin:4px 0">' + itemPill(id) + '</div>' + (it.h && !st.known[id] ? '<div class="riddle small">« ' + esc(it.h) + " »</div>" : "");
     if (!st.known[id]) {
       const lvl = st.hints[id] || 0;
       if (lvl >= 1) h += '<div class="memo">💭 L’action : ' + gesteChip(id) + "</div>";
@@ -1310,7 +1328,7 @@
     const id = t.id, p = E.plan(id, 1);
     const ready = p.ok;
     let h = '<div class="card track' + (ready ? " ready" : "") + '"><div class="row between"><div class="lbl">🎯 Suivi d’artisanat</div><button class="btn small ghost" data-untrack title="Arrêter le suivi">✕</button></div>' +
-      '<div class="row" style="margin:4px 0 6px">' + icon(id, "sm") + ' <b class="link-txt" data-goto="' + id + '">' + esc(I[id].n) + "</b></div>";
+      '<div class="row" style="margin:4px 0 6px">' + itemPill(id) + "</div>";
     if (E.queued(id) > 0) return h + '<div class="small">✋ En cours de fabrication…</div></div>';
     if (ready) return h + '<div class="small" style="color:var(--good);font-weight:600">✓ Toutes les ressources sont réunies !</div><button class="btn small pri ready-pulse" style="margin-top:6px;width:100%" data-chain="' + id + '">⚡ Fabriquer ' + esc(I[id].n) + '</button></div>';
     const f = E.flows();
@@ -1330,8 +1348,8 @@
       h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny" style="color:var(--bad)">il manque ' + fmt(need) + '</span><span class="tiny muted eta">' + eta + "</span></div>";
       void have;
     });
-    p.locked.forEach((k) => { h += '<div class="why" data-goto="' + k + '">Recette inconnue : ' + esc(I[k].n) + "</div>"; });
-    Object.keys(p.blocked).forEach((k) => { const b = p.blocked[k]; h += '<div class="why">' + esc(I[k].n) + " : " + needText(k, b, true) + "</div>"; });
+    p.locked.forEach((k) => { h += '<div class="why" style="display:flex;align-items:center;gap:6px">Recette inconnue : ' + itemPill(k, { unk: true }) + "</div>"; });
+    Object.keys(p.blocked).forEach((k) => { const b = p.blocked[k]; h += '<div class="why" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' + itemPill(k) + " : " + needText(k, b, true) + "</div>"; });
     return h + "</div>";
   }
 
@@ -1571,8 +1589,8 @@
       if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
         '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tu as tout ce qu’il faut. Coût :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
         '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
-      return head + '<div class="small">Tu connais la recette, mais il te manque :</div><div class="row wrap small">' +
-        Object.keys(miss).map((i) => '<span class="ing lack link" data-goto="' + i + '">' + icon(i, "sm") + fmt(miss[i]) + " " + esc(I[i].n) + "</span>").join("") + "</div>" +
+      return head + '<div class="small">Tu connais la recette, mais il te manque :</div><div class="row wrap small" style="margin-top:4px;gap:4px">' +
+        Object.keys(miss).map((i) => itemPill(i, { qty: miss[i], lack: true })).join("") + "</div>" +
         '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-chain="' + r.id + '">⚡ Tout fabriquer</button><button class="btn small" data-tree="' + r.id + '">🌳 Détail</button><button class="btn small" data-track="' + r.id + '">🎯 Suivre</button></div></div></div>';
     }
     if (r.kind === "blocked") {
@@ -1582,7 +1600,7 @@
       if (b.why === "lvl") msg = U.geste === "marteler" ? "Ton enclume n’est pas assez dure pour ce métal." : "Il faudrait bien plus de puissance.";
       const st = b.why === "heat" ? E.stationFor("chauffer", b.heat) : b.why === "lvl" ? E.stationFor(I[r.id].r[0], 0, b.lvl) : null;
       return thermo(4) + '<div class="row" style="margin-top:6px">' + icon(r.id) + '<div class="grow"><b>' + esc(I[r.id].n) + '</b><div class="small">' + esc(msg) + "</div>" +
-        (st ? '<div class="small">Il te faudrait : <span class="link-txt" data-goto="' + st + '">' + esc(I[st].n) + "</span></div>" : "") +
+        (st ? '<div class="small" style="display:flex;align-items:center;gap:6px;margin-top:4px">Il te faudrait : ' + itemPill(st) + "</div>" : "") +
         (r.fresh ? '<div class="tiny muted">Recette notée dans le Carnet.</div>' : "") + "</div></div>";
     }
     if (r.kind === "owned") return '<p class="small">Tu possèdes déjà <b>' + esc(I[r.id].n) + "</b>.</p>";
@@ -3464,6 +3482,11 @@
       toast("⭐ Trente étoiles de plus brillent dans la nuit.");
     }
     document.addEventListener("keydown", (ev) => {
+      if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("[data-goto]")) {
+        ev.preventDefault();
+        goto(document.activeElement.dataset.goto);
+        return;
+      }
       if (ev.key === KONAMI[kIdx]) {
         kIdx++;
         if (kIdx === KONAMI.length) {
@@ -3851,7 +3874,8 @@
     setTimeout(cloudCheck, 1500);
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
-    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal };
+    U.itemPill = itemPill;
+    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal, itemPill };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

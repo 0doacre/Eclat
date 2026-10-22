@@ -499,10 +499,107 @@ textarea.save { width: 100%; min-height: 110px; background: var(--bg2); color: v
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-/* ================================================================ v2 */
-/* liens internes */
+/* ================================================================ v2 & 0.7.0 */
+/* liens internes et pastilles d'objets universelles */
 .link-txt { color: var(--acc); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--acc) 45%, transparent); text-underline-offset: 3px; cursor: pointer; }
-.ing.link { cursor: pointer; border-bottom: 1px dotted var(--line2); }
+.link-txt:hover { color: var(--text); }
+
+.item-pill, .ing.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  vertical-align: middle;
+  padding: 1px 8px 1px 5px;
+  margin: 1px 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 75%, var(--bg) 25%);
+  border: 1px solid color-mix(in srgb, var(--acc) 32%, var(--line2));
+  color: var(--text);
+  font-size: 0.88em;
+  font-weight: 600;
+  line-height: 1.35;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all .15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.item-pill:hover, .ing.link:hover {
+  background: color-mix(in srgb, var(--acc) 14%, var(--panel));
+  border-color: var(--acc);
+  color: var(--acc);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.item-pill:active, .ing.link:active {
+  transform: translateY(0) scale(0.97);
+}
+.item-pill:focus-visible, .ing.link:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 1px;
+}
+.item-pill.lack, .ing.link.lack {
+  border-color: color-mix(in srgb, var(--bad) 35%, var(--line2));
+  background: color-mix(in srgb, var(--bad) 8%, var(--panel));
+  color: var(--text);
+}
+.item-pill.lack:hover, .ing.link.lack:hover {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+.item-pill.paid, .ing.link.paid {
+  opacity: 0.72;
+}
+.item-pill.unk {
+  color: var(--muted);
+  border-style: dashed;
+}
+.item-pill .pill-qty, .ing.link .pill-qty, .ing.link .q {
+  font-variant-numeric: tabular-nums;
+  color: var(--acc);
+  font-weight: 700;
+}
+.item-pill.lack .pill-qty, .ing.link.lack .pill-qty, .ing.link.lack .q {
+  color: var(--bad);
+}
+.item-pill .pill-name {
+  white-space: nowrap;
+}
+
+/* Affordance renforcée sur tous les conteneurs cliquables data-goto */
+.cost-row[data-goto] {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all .15s ease;
+}
+.cost-row[data-goto]:hover {
+  background: color-mix(in srgb, var(--acc) 10%, var(--bg2));
+}
+.cost-row[data-goto]:active {
+  transform: scale(0.99);
+}
+.u-pr[data-goto] {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: background .15s ease;
+}
+.u-pr[data-goto]:hover {
+  background: color-mix(in srgb, var(--acc) 8%, var(--bg2));
+}
+.comptoir-head[data-goto] {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: background .15s ease;
+}
+.comptoir-head[data-goto]:hover {
+  background: color-mix(in srgb, var(--acc) 10%, var(--bg2));
+}
+
 .flash { animation: flashy 1.6s ease-out; }
 @keyframes flashy { 0%, 30% { box-shadow: 0 0 0 3px var(--acc); } 100% { box-shadow: 0 0 0 0 transparent; } }
 
@@ -858,6 +955,8 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .lexique dd { margin: 2px 0 0; color: var(--muted); }
 .passcost { display: flex; flex-direction: column; gap: 4px; }
 .passcost .ing { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* une ligne de passage porte une phrase entière : elle peut aller à la ligne, ce n’est pas une pastille */
+.passcost .ing.link { white-space: normal; border-radius: 10px; padding: 4px 8px; margin: 0; }
 
 /* ---------------------------------------------------------------- comptoir */
 .dom-comptoir { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 8%, var(--panel)); }

@@ -2845,8 +2845,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 6.14.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "6.14.0");
+test("Version 0.7.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.7.0");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -3061,6 +3061,17 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
   // Persistance à la relève
   E.newCycle();
   assert.strictEqual(E.hasEndingHint("exode"), true);
+});
+
+console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
+test("Nouvelle convention de versionnement sémantique 0.7.0", () => {
+  assert.strictEqual(D.VERSION, "0.7.0");
+  assert.ok(D.CHANGES.length >= 3);
+  const parts = D.VERSION.split(".").map(Number);
+  assert.strictEqual(parts.length, 3);
+  assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
+  assert.strictEqual(parts[1], 7, "Mineure pour le lot courant");
+  assert.strictEqual(parts[2], 0, "Patch à 0 pour nouvelle version");
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
