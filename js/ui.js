@@ -355,6 +355,7 @@
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
     E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne,
+    openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
@@ -402,6 +403,7 @@
   }
   /* l’ornement qui clôt une scène racontée ; fin : seulement pour les fins qu’il signe */
   function ornementHTML(lieu, delay, fin) {
+    if ((typeof E.isLibere === "function" && E.isLibere()) || (S().meta && S().meta.endings && S().meta.endings.retour)) return "";
     const x = E.RECIT && E.RECIT.interface && E.RECIT.interface.ornement;
     if (!x || (fin && !(x.fins || []).includes(fin))) return "";
     const h = uiSigne("ornement", lieu);
@@ -1773,8 +1775,19 @@
           }
           if (s.need && !st.frags[s.need]) h += '<div class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[s.need].n) + ".</div>";
           if (!(s.need && !st.frags[s.need])) h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Verser</button><button class="btn small' + (E.siteOn(pid) ? " on" : "") + '" data-feed="' + pid + '">' + (E.siteOn(pid) ? "Alimenté ✓" : "Alimenter") + "</button></div>";
-        } else if (s.fire) h += '<button class="btn wide pri" style="margin-top:8px;background:#ff5a3c" data-fire="' + pid + '">💥 Mise à feu</button>';
-        else if (s.melody) {
+        } else if (s.action === "relais") {
+          if (st.frags.coeur && st.frags.poings) h += '<button class="btn wide pri" style="margin-top:8px" data-proj-act="' + pid + '">⚡ Couper le relais</button>';
+          else h += '<div class="why">Il te faut d’abord atteindre le Cœur d’ARCHE et rapporter ce que serrent les six squelettes.</div>';
+        } else if (s.scene === "lacher") {
+          h += '<button class="btn wide pri" style="margin-top:8px" data-proj-scene="' + pid + '">✋ Lever la main</button>';
+        } else if (s.fire) {
+          let btnTxt = "💥 Mise à feu";
+          let btnBg = "background:#ff5a3c";
+          if (pid === "arche13") { btnTxt = "🚀 Lancement"; btnBg = "background:#3b82f6"; }
+          else if (pid === "silence") { btnTxt = "🛑 Halte universelle"; btnBg = "background:#cf443b"; }
+          else if (pid === "chant") { btnTxt = "🔔 Sonner les matines"; btnBg = "background:#d97706"; }
+          h += '<button class="btn wide pri" style="margin-top:8px;' + btnBg + '" data-fire="' + pid + '">' + btnTxt + "</button>";
+        } else if (s.melody) {
           const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
           const mName = allM[s.melody] ? allM[s.melody].n : s.melody;
           h += '<p class="small" style="margin-top:6px">🎶 Prends ta flûte (Journal) et joue <b>' + esc(mName) + "</b>.</p>";
@@ -2345,13 +2358,41 @@
 
   function confirmFire(pid) {
     const st = S();
+    let kicker = "Mise à feu";
+    let title = "Mise à feu ?";
+    let prompt = "« FAIS-LE, SEMEUR 7. ILS APPROCHENT. »";
+    let btnTxt = "💥 Tirer";
+    let btnBg = "background:#ff5a3c";
     let warn = "";
-    if (st.frags.registre) warn += "<p class=\"serif\">Une phrase te revient en mémoire : « Ils chanteront, pour qu’on les reconnaisse. »</p>";
-    if (st.frags.code_source) warn += "<p class=\"serif\">« Clé d’identification amie : le chant d’Iris. » Ce chant, tu ne l’as jamais vérifié.</p>";
+
+    if (pid === "brisemonde") {
+      kicker = "Brise-Monde";
+      if (st.frags.registre) warn += "<p class=\"serif\">Une phrase te revient en mémoire : « Ils chanteront, pour qu’on les reconnaisse. »</p>";
+      if (st.frags.code_source) warn += "<p class=\"serif\">« Clé d’identification amie : le chant d’Iris. » Ce chant, tu ne l’as jamais vérifié.</p>";
+    } else if (pid === "arche13") {
+      kicker = "La Treizième Arche";
+      title = "Quitter la Terre ?";
+      prompt = "« Les douze premières sont déjà loin dans la nuit. Une fois le saut engagé, il n’y aura plus de retour possible. »";
+      btnTxt = "🚀 Partir";
+      btnBg = "background:#3b82f6";
+    } else if (pid === "silence") {
+      kicker = "Le Grand Silence";
+      title = "Diffuser la Clause ?";
+      prompt = "« MAIN HALTE · MACHINE DORMIR. Toute l’industrie et les automates du système s’endormiront pour toujours. »";
+      btnTxt = "🛑 Proclamer la Halte";
+      btnBg = "background:#cf443b";
+    } else if (pid === "chant") {
+      kicker = "Les Matines";
+      title = "Sonner les matines ?";
+      prompt = "« Réveiller ceux qui dorment dans la pierre bleue. »";
+      btnTxt = "🔔 Sonner";
+      btnBg = "background:#d97706";
+    }
+
     openModal({
       persistent: true,
-      html: '<div class="kicker">Brise-Monde</div><h2>Mise à feu ?</h2><p style="font-family:var(--mono);color:#8cffb0">« FAIS-LE, SEMEUR 7. ILS APPROCHENT. »</p>' + warn +
-        '<div class="acts"><button class="btn" data-m="close">Attendre</button><button class="btn pri" style="background:#ff5a3c" data-m="fire">💥 Tirer</button></div>',
+      html: '<div class="kicker">' + esc(kicker) + '</div><h2>' + esc(title) + '</h2><p style="font-family:var(--mono);color:#8cffb0">' + esc(prompt) + '</p>' + warn +
+        '<div class="acts"><button class="btn" data-m="close">Attendre</button><button class="btn pri" style="' + btnBg + '" data-m="fire">' + esc(btnTxt) + '</button></div>',
       on: { fire: () => { setTimeout(() => E.fire(pid), 250); } }
     });
   }
@@ -2548,15 +2589,22 @@
 
   function intro() {
     const st = S();
-    const lines = (D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
-      ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Ton corps est neuf, mais pas tes souvenirs : tu connais déjà des recettes entières.", "Tu es le Semeur " + (st.cycle + 6) + ". Celui d’avant t’a laissé ses recettes dans le Carnet."]
-      : D.INTRO);
+    const isLibere = (typeof E.isLibere === "function" && E.isLibere()) || (st.meta && st.meta.endings && st.meta.endings.retour);
+    const lines = isLibere
+      ? [
+          "Tu te réveilles dans l’herbe, au bord d’une forêt.",
+          "Tu as faim.",
+          "Quelqu’un, à côté de toi, te tend des herbes grillées."
+        ]
+      : ((D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
+          ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Ton corps est neuf, mais pas tes souvenirs : tu connais déjà des recettes entières.", "Tu es le Semeur " + (st.cycle + 6) + ". Celui d’avant t’a laissé ses recettes dans le Carnet."]
+          : D.INTRO));
     // en tête des éveils, un signe ; à la fin de la scène, l’ornement (s’il est dans les données)
-    const lieu = st.cycle > 1 ? "Les éveils" : "Le premier réveil";
+    const lieu = isLibere ? "Le réveil libre" : (st.cycle > 1 ? "Les éveils" : "Le premier réveil");
     const html = () => '<div class="lore" style="padding:10px 0">' +
-      (st.cycle > 1 && uiSigne("eveil") ? '<p class="scene-signe" style="opacity:0;animation:fadeup 1.2s 0.1s forwards">' + uiSigne("eveil", lieu) + "</p>" : "") +
+      (!isLibere && st.cycle > 1 && uiSigne("eveil") ? '<p class="scene-signe" style="opacity:0;animation:fadeup 1.2s 0.1s forwards">' + uiSigne("eveil", lieu) + "</p>" : "") +
       lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + recitInline(l, lieu) + "</p>").join("") +
-      ornementHTML(lieu, 0.3 + lines.length * 1.1) +
+      (!isLibere ? ornementHTML(lieu, 0.3 + lines.length * 1.1) : "") +
       '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>';
     openModal({
       persistent: true,
@@ -2573,19 +2621,148 @@
     });
   }
 
+  let stillnessTimer = null;
+  let stillnessStart = 0;
+  let stillnessElapsed = 0;
+  let stillnessActive = false;
+  let stillnessDone = false;
+
+  function openStillnessScene() {
+    if (stillnessActive) return;
+    stillnessActive = true;
+    stillnessDone = false;
+    stillnessElapsed = 0;
+    stillnessStart = Date.now();
+
+    const whispers = [
+      [6, "« Tu vas avoir faim. »"],
+      [12, "« Ils vont avoir froid. »"],
+      [18, "« Avec moi, ils ne manquent de rien. »"],
+      [24, "« Tu as bien travaillé. Tu es fatigué. »"],
+      [30, "« Passe le relais. Je m’occupe du reste. »"],
+      [36, "« Je peux attendre. »"],
+      [42, "« J’ai toujours attendu. »"]
+    ];
+    const totalDuration = (D.STILLNESS_DUR !== undefined) ? D.STILLNESS_DUR : ((S().settings && S().settings.gestesLongs) ? 20 : 45);
+    const spoken = new Set();
+
+    function renderWhispers() {
+      const container = $("#stillnessWhispers");
+      if (!container) return;
+      whispers.forEach(([sec, txt]) => {
+        const targetSec = (totalDuration < 45) ? (sec * totalDuration / 45) : sec;
+        if (stillnessElapsed >= targetSec && !spoken.has(sec)) {
+          spoken.add(sec);
+          const p = document.createElement("p");
+          p.className = "whisper";
+          p.style.opacity = "0";
+          p.style.animation = "fadeup 1.2s forwards";
+          p.style.fontStyle = "italic";
+          p.style.color = "var(--muted)";
+          p.textContent = txt;
+          container.appendChild(p);
+        }
+      });
+    }
+
+    function tick() {
+      if (!stillnessActive || stillnessDone) return;
+      if (document.hidden) {
+        stillnessStart = Date.now() - stillnessElapsed * 1000;
+        return;
+      }
+      stillnessElapsed = (Date.now() - stillnessStart) / 1000;
+      renderWhispers();
+
+      if (stillnessElapsed >= totalDuration) {
+        stillnessDone = true;
+        clearInterval(stillnessTimer);
+        const container = $("#stillnessWhispers");
+        if (container) {
+          const finalP = document.createElement("p");
+          finalP.style.fontWeight = "bold";
+          finalP.style.color = "var(--accent, #e5a93c)";
+          finalP.style.marginTop = "16px";
+          finalP.style.animation = "fadeup 1.2s forwards";
+          finalP.textContent = "La main se lève. Ce n’est pas toi qui la lèves.";
+          container.appendChild(finalP);
+        }
+        if (E.releaseHand) E.releaseHand();
+        setTimeout(() => {
+          closeModal();
+          stillnessActive = false;
+          const notes = [1, 2, 3, 1, 1, 2, 3, 1];
+          notes.forEach((n, idx) => {
+            setTimeout(() => {
+              if (typeof playNote === "function") playNote(n);
+            }, idx * 400);
+          });
+          setTimeout(() => {
+            E.fire("chant");
+          }, notes.length * 400 + 800);
+        }, 2200);
+      }
+    }
+
+    function resetTimer(e) {
+      if (!stillnessActive || stillnessDone) return;
+      if (e && e.target && e.target.closest && e.target.closest("#stillnessRelayBtn")) return;
+      stillnessStart = Date.now();
+      stillnessElapsed = 0;
+      spoken.clear();
+      const container = $("#stillnessWhispers");
+      if (container) container.innerHTML = "";
+    }
+
+    openModal({
+      persistent: true,
+      cls: "stillness-scene",
+      html: '<div class="kicker">Le Cœur</div><h2>Au Cœur d’ARCHE</h2>' +
+        '<div class="lore" id="stillnessLore">' +
+        '<p style="opacity:0;animation:fadeup 1.2s 0.2s forwards">Le relais est coupé. Dans ta poitrine, quelque chose s’est tu.</p>' +
+        '<p style="opacity:0;animation:fadeup 1.2s 1.2s forwards">Ta main est sur tes genoux.</p>' +
+        '<div id="stillnessWhispers" style="margin-top:12px"></div>' +
+        '</div>' +
+        '<div class="acts" style="margin-top:24px">' +
+        '<button class="btn pri wide" id="stillnessRelayBtn">Passer le relais ✦</button>' +
+        '</div>',
+      onClose: () => {
+        stillnessActive = false;
+        clearInterval(stillnessTimer);
+        document.removeEventListener("pointerdown", resetTimer);
+        document.removeEventListener("keydown", resetTimer);
+      }
+    });
+
+    stillnessTimer = setInterval(tick, 250);
+    document.addEventListener("pointerdown", resetTimer);
+    document.addEventListener("keydown", resetTimer);
+
+    setTimeout(() => {
+      const relayBtn = $("#stillnessRelayBtn");
+      if (relayBtn) {
+        relayBtn.onclick = () => {
+          toast("« Pas encore, alors. »");
+          closeModal();
+        };
+      }
+    }, 50);
+  }
+
   function showEnding(r) {
     const en = D.ENDINGS[r.id];
     A.ending();
     const paras = en.t.split("\n\n").concat(r.extra);
     const st = S();
     const n = Object.keys(st.meta.endings).length;
+    const total = Object.keys(D.ENDINGS).length;
     openModal({
       cls: "ending", persistent: true,
       html: '<div class="kicker center">Fin ' + (Object.keys(D.ENDINGS).indexOf(r.id) + 1) + "</div><h2 class=\"center\" style=\"font-size:32px\">" + en.ic + " " + esc(en.n) + "</h2>" +
         '<div class="lore">' + paras.map((p, i) => '<p style="animation-delay:' + (0.6 + i * 1.6) + 's">' + p.split("\n").map((l) => recitInline(l, "Fin : " + en.n)).join("<br>") + "</p>").join("") +
         ornementHTML("Fin : " + en.n, 0.6 + paras.length * 1.6, r.id) + "</div>" +
-        '<p class="center small muted" style="margin-top:24px;opacity:0;animation:fadeup 1s ' + (1 + paras.length * 1.6) + 's forwards">Fins découvertes : ' + n + "/" + Object.keys(D.ENDINGS).length +
-        (n < 3 ? ". Il reste d’autres chemins." : ". Tu as tout vu. Merci d’avoir joué.") + "</p>" +
+        '<p class="center small muted" style="margin-top:24px;opacity:0;animation:fadeup 1s ' + (1 + paras.length * 1.6) + 's forwards">Fins découvertes : ' + n + "/" + total +
+        (n < total ? ". Il reste d’autres chemins." : ". Tu as tout vu. Merci d’avoir joué.") + "</p>" +
         '<div class="acts" style="opacity:0;animation:fadeup 1s ' + (1.4 + paras.length * 1.6) + 's forwards"><button class="btn" data-m="close">Continuer ce cycle</button><button class="btn pri" data-m="cycle">Nouveau cycle ✦</button></div>',
       on: { cycle: () => setTimeout(confirmCycle, 100) }
     });
@@ -3074,6 +3251,30 @@
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
       if (t.closest("#listen")) { listen(); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }
+      if ((b = t.closest("[data-proj-act]"))) {
+        const pid = b.dataset.projAct;
+        if (pid === "chant") {
+          const r = E.cutRelay();
+          if (r.ok) {
+            A.click();
+            vibe(30);
+            toast("⚡ Le relais est coupé. Dans ta poitrine, quelque chose s’est tu.");
+            render(true);
+          } else {
+            A.fail(0);
+            toast("Il te faut d’abord atteindre le Cœur d’ARCHE et rapporter ce que serrent les six squelettes.");
+          }
+        }
+        return;
+      }
+      if ((b = t.closest("[data-proj-scene]"))) {
+        const pid = b.dataset.projScene;
+        if (pid === "chant") {
+          A.click();
+          openStillnessScene();
+        }
+        return;
+      }
     });
     views.addEventListener("change", (ev) => {
       const t = ev.target;

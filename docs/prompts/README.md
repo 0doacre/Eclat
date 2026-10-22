@@ -53,3 +53,4 @@ puis la fusionne.
 - `flute-ciel-6-2.md` : moteur de la flûte (airs longs, effets nommés déclaratifs) et animations du Ciel pilotées par données (6.2.0).
 - `voix-6-3.md` : moteur du terminal piloté par données, deux modes (ARCHE et Registre), variables dynamiques, saisie libre de la capsule temporelle et moteur d'événements conditionnels (6.3.0).
 - `portes-6-4.md` : conditions d'exploration élargies, lieux cachés, 2 recettes secrètes, 6 derniers signes et page au Comptoir (6.4.0).
+- `fins-6-5.md` : les fins réécrites, le Grand Œuvre caché remanié, scènes de dénouement et deux fins cachées supplémentaires (6.5.0).

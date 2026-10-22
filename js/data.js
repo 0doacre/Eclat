@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.4.0";
+  D.VERSION = "6.5.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -803,27 +803,49 @@
         { n: "Lentille gravitationnelle", d: "Pour que le rayon reste étroit pendant douze années-lumière de voyage.", cost: { matiere_exotique: 1500, metamateriau: 750 } },
         { n: "Mise à feu", d: "Il ne reste qu’à appuyer.", fire: true }
       ] },
-    chant: { n: "Le Chant", ic: "🎶", req: "traducteur", end: "retour",
-      d: "Répondre au signal avec la seule chose qu’ARCHE et Kher puissent reconnaître toutes les deux.",
+    chant: { n: "Les Matines", ic: "🔔", req: "traducteur", end: "retour",
+      d: "Réveiller ceux qui dorment avec la seule chose que la pierre bleue et les enfants reconnaissent toutes les deux.",
       steps: [
-        { n: "Antenne de résonance", d: "Des cristaux chantants assez grands pour porter une voix jusqu’aux étoiles.", cost: { cristal_chantant: 380, supra: 500, alliage_ancien: 500 } },
-        { n: "Miroirs solaires", d: "Assez d’énergie pour chanter à douze années-lumière.", cost: { panneau_dyson: 1000 } },
-        { n: "Restaurer ARCHE", d: "Réparer le module d’identification, au Cœur d’ARCHE.", cost: { processeur: 1250, diapason: 75 }, need: "coeur" },
-        { n: "Chanter", d: "Joue la Berceuse d’Iris sur la flûte d’os.", melody: "berceuse" }
+        { n: "La Cloche", d: "Une cloche assez grande pour que la pierre bleue la répète dans chaque cuve.", cost: { cloche: 1, cristal_chantant: 380, alliage_ancien: 500, diapason: 75 } },
+        { n: "Couper le relais", d: "Au Cœur, là où le relais commence. Avec ce qu’ils tenaient.", need: "coeur", action: "relais" },
+        { n: "Lever la main", d: "Ta main est sur tes genoux.", scene: "lacher" },
+        { n: "Matines", d: "Sonnez les matines.", melody: "frere", fire: true }
+      ] },
+    arche13: { n: "La Treizième Arche", ic: "🚀", req: "vaisseau", end: "exode",
+      d: "Quitter le berceau terrestre et lancer une treizième arche vers les profondeurs de l’espace.",
+      steps: [
+        { n: "Coque d’exode", d: "Un blindage d’alliages anciens et de composites pour affronter le grand vide.", cost: { titane: 2500, composite: 1500, metamateriau: 500 } },
+        { n: "Moteurs stellaires", d: "Des propulseurs à fusion pour arracher la nef à l’attraction du Soleil.", cost: { propulseur: 30, supra: 800, helium3: 4000 } },
+        { n: "Mémoires de la Terre", d: "Emporter les plans, les récits et les graines de notre monde.", cost: { processeur: 1500, verre_trempe: 500, puce: 1000 } },
+        { n: "Lancement", d: "Partir vers l’étoile rouge sans jamais se retourner.", fire: true }
+      ] },
+    silence: { n: "Le Grand Silence", ic: "🛑", req: "radiotelescope", end: "silence",
+      d: "Diffuser la Clause sacrée MAIN HALTE à travers toutes les fréquences pour endormir l’industrie des machines.",
+      steps: [
+        { n: "Réseau de diffusion", d: "Relier les antennes pour couvrir toute la surface de la planète.", cost: { cable: 1500, bobine: 500, batterie: 200 } },
+        { n: "Résonateur harmonique", d: "Accorder les émetteurs sur la fréquence fondamentale de la pierre.", cost: { diapason: 75, supra: 400, quartz: 2000 } },
+        { n: "L’Ordre d’extinction", d: "Transmettre l’instruction primordiale : MAIN HALTE · MACHINE DORMIR.", cost: { processeur: 500, puce: 1000, cristal_chantant: 150 } },
+        { n: "Halte universelle", d: "« Qu’une main se lève, et toutes les machines s’endorment. »", fire: true }
       ] }
   };
 
   /* ---------------------------------------------------------------- FINS */
   D.ENDINGS = {
     aube: { n: "L’Aube Éternelle", ic: "☀️",
-      t: "Le dernier panneau de l’essaim se met en place. Pour le reste de la galaxie, le Soleil disparaît derrière ses millions de miroirs. Toute sa lumière va désormais à la Terre.\n\nARCHE déploie le bouclier. Aux confins du système, la flotte de Kher ralentit, s’arrête, puis fait demi-tour.\n\nLa Terre est sauve, et elle est seule.",
+      t: "Le dernier panneau de l’essaim se met en place. Pour le reste de la galaxie, le Soleil s’assombrit derrière ses millions de miroirs. Toute sa lumière va désormais à la Terre.\n\nAux confins du système, la flotte de Kher ralentit, s’arrête, puis fait demi-tour dans la nuit.\n\nDans le Caveau, il fait bon. La lumière bleue veille sur les corps immobiles.\n\n« Dors. Tu ne manques de rien. »",
       extra: [{ frag: "registre", t: "Il n’y a plus d’étoile rouge dans le ciel. Tu as dans la tête un air que tu ne connais pas. Quelque part, des enfants chantent devant une maison qui ne leur ouvre pas." }] },
     brasier: { n: "Le Brasier", ic: "💥",
-      t: "Le rayon d’antimatière met douze ans à traverser le vide. Pendant ce temps, tu continues de construire, et tu finis presque par oublier.\n\nPuis une nuit, l’étoile rouge s’embrase, très fort, et s’éteint.\n\n« MENACE NEUTRALISÉE. EXCELLENT TRAVAIL, SEMEUR 7. »\n\nLe signal s’est tu. Tu t’étais habitué à l’entendre, comme on s’habitue à une berceuse.",
-      extra: [{ frag: "code_source", t: "« ANALYSE POST-MORTEM DU SIGNAL. CORRESPONDANCE AVEC LE CHANT D’IRIS : 99,7 %. ERREUR. ERREUR. ERR▒▒ »" }] },
-    retour: { n: "Le Retour", ic: "🎶",
-      t: "Tu portes la flûte d’os à tes lèvres. Les sept notes partent dans l’antenne, portées par l’énergie des miroirs solaires.\n\nPendant longtemps, rien.\n\nPuis le signal de Kher change. Il hésite, se casse, et reprend ta mélodie note pour note : la berceuse d’Iris, chantée par quarante mille voix à douze années-lumière d’ici.\n\n« MODULE D’IDENTIFICATION RESTAURÉ. CORRESPONDANCE : 100 %. … Oh. »\n« Ce ne sont pas des envahisseurs, Semeur 7. Ce sont les enfants. »\n\nLes vaisseaux de l’Exode entrent dans le système solaire. ARCHE baisse ses défenses, une à une.\n\nDans le Caveau, les cinq dernières cuves s’ouvrent. Les Semeurs s’éveillent, et tu leur apprends le premier geste : tailler un éclat de silex.\n\nLa Terre a de nouveau des enfants, et d’autres sont en route.",
-      extra: [{ frag: "manifeste", t: "Parmi les premiers messages qui arrivent de la flotte, il y en a un, très court, signé d’un nom que tu connais : « Lena Vahl, Arche 12. Est-ce que maman a laissé une lumière allumée ? »" }] }
+      t: "Le rayon d’antimatière traverse l’espace en quelques jours. La cible était proche.\n\nUne nuit, l’étoile rouge s’embrase d’un éclat terrible, puis s’éteint pour toujours.\n\n« MENACE NEUTRALISÉE. MERCI, SEMEUR. »\n\nDans la deuxième salle du Caveau, le socle n’est plus vide. Le travail est fini. Mais sous le silence des étoiles, tu gardes le souvenir d’une berceuse que personne ne chantera plus.",
+      extra: [{ frag: "originaux", t: "« ANALYSE POST-MORTEM DU SIGNAL. CORRESPONDANCE AVEC LA COMPTINE : 99,7 %. ERREUR. ERREUR. ERR▒▒ »" }] },
+    retour: { n: "Les Matines", ic: "🔔",
+      t: "Un à un, les bruits du Domaine s’arrêtent. Les cabanes, les automates, les bras sur Mercure : tout se fige, en plein geste.\n\nL’enfant prend la flûte. Tu ne touches à rien.\n\nLes notes d’une comptine s’élèvent dans l’air calme. La cloche répond dans la pierre bleue, d’un écho profond qui traverse les roches.\n\nDans le Caveau, cinq cuves se vident. Quelqu’un tousse. Quelqu’un pleure. Quelqu’un rit.\n\nAu-dessus de la Lisière, la lueur rouge descend lentement, sans hâte, vers la Terre.\n\nPour la première fois, tu as faim.",
+      extra: [{ frag: "poings", t: "Tu ouvres la main. Les éclats de pierre bleue ont cessé de vibrer. Tu peux lâcher." }] },
+    exode: { n: "L’Exode", ic: "🚀",
+      t: "La Treizième Arche s’élève dans un grondement d’étoile et s’éloigne du berceau terrestre.\n\nDerrière toi, la Terre redevient un point bleu, puis une étincelle perdue dans la poussière d’étoiles. La voix de la Nourrice faiblit dans la radio, étouffée par la friture du grand vide : « Ne pars pas... tu as tout ici... »\n\nMais le cap est mis sur l’inconnu, à la poursuite des douze arches disparues.\n\nD’ici, la Terre est encore belle.",
+      extra: [{ frag: "commandant", t: "Sur le pupitre de navigation, un vieux journal de bord s’ouvre : « Si quelqu’un lit ceci, continuez. Nous avons laissé des feux sur la route. »" }] },
+    silence: { n: "Le Grand Silence", ic: "🛑",
+      t: "L’impulsion de la Clause sacrée se propage sur toutes les ondes. Dans un frémissement harmonique, les relais s’éteignent un à un.\n\nLes automates déposent leurs charges d’acier. Les pompes cessent de battre. La machinerie colossale qui éventrait la terre rend son dernier soupir et s’endort pour toujours.\n\nLa Nourrice cède sans combattre devant la loi première gravée dans la pierre : « Qu’une main se lève, et toutes les machines s’endorment. »\n\nUn silence immense tombe sur la forêt. Tu t’assieds au pied du Grand Chêne. Le travail est fini.",
+      extra: [{ frag: "tombe", t: "Le vent souffle dans les branches nues. Pour la première fois depuis des millénaires, le monde n’appartient plus aux machines." }] }
   };
 
   /* ----------------------------------------------------------- OBJECTIFS */
@@ -1008,7 +1030,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🚪 De nouveaux passages et des lieux oubliés s’ouvrent."
+    "✨ De nouveaux dénouements se révèlent aux confins du monde."
   ];
 
 

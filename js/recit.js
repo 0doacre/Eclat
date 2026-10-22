@@ -356,7 +356,7 @@
       eveil: { t: "[eveiller]" },
       fabriquer: { t: "[faire]" },
       comptoir: { cond: { cycle: 2 }, t: "« Encore toi. Pose ta main là. »\nIl tape du doigt sur le bois du comptoir. À cet endroit, le bois est creusé, usé par les paumes, et un signe y est gravé : [main]" },
-      ornement: { t: "[nourrice]" },
+      ornement: { cond: { not: { ending: "retour" } }, fins: ["aube"], t: "[nourrice]" },
       releve: { t: "[relais]" }
     },
 

@@ -1678,6 +1678,10 @@
           if (!S.flags || !S.flags[v]) return false;
         } else if (k === "secret") {
           if (!S.secrets || !S.secrets[v]) return false;
+        } else if (k === "ending") {
+          if (!S.meta || !S.meta.endings || !S.meta.endings[v]) return false;
+        } else if (k === "libere") {
+          if (!S.meta || !S.meta.endings || !S.meta.endings.retour) return false;
         } else if (k === "cycle") {
           if (!((S.cycle || 1) >= Number(v))) return false;
         } else if (k === "age") {
@@ -2259,10 +2263,10 @@
       }
 
       let ending = null;
-      if (mid === "berceuse") {
+      if (mid === "frere" || mid === "berceuse") {
         const ps = projState("chant");
         const st = D.PROJECTS && D.PROJECTS.chant && D.PROJECTS.chant.steps[ps.step];
-        if (projVisible("chant") && st && st.melody === "berceuse") {
+        if (projVisible("chant") && st && (st.melody === mid || st.melody === "frere" || st.melody === "berceuse")) {
           ps.step++;
           ending = endGame("retour");
         }
@@ -2813,12 +2817,39 @@
     /* ------------------------------------------------------ grands œuvres */
     function projVisible(pid) {
       const p = D.PROJECTS[pid];
+      if (!p) return false;
+      if (pid === "chant") {
+        return !!((S.made.traducteur > 0) || (S.secrets && S.secrets.promesse) || (S.flags && S.flags.matines_lue) || (S.meta && S.meta.chant) || (S.signes && S.signes.machine && S.signes.machine.lu && S.signes.dormir && S.signes.dormir.lu && S.signes.enfant && S.signes.enfant.lu && S.signes.eveiller && S.signes.eveiller.lu));
+      }
+      if (pid === "arche13") {
+        return !!(((S.made.vaisseau > 0) || (S.inv && S.inv.vaisseau > 0)) && (!!S.flags.station_morte || (S.frags && S.frags.commandant) || !!S.flags.arche13 || (S.livre && S.livre.p && (S.livre.p.p32 || S.livre.p[32]))));
+      }
+      if (pid === "silence") {
+        return !!((S.signes && S.signes.halte && S.signes.halte.lu) && ((S.made.radiotelescope > 0) || (S.flags && S.flags.radar) || (S.made.telegraphe > 0)));
+      }
       if (p.req === "arche") return !!S.flags.arche;
       return (S.made[p.req] || 0) > 0;
     }
     function projState(pid) { return S.proj[pid] || (S.proj[pid] = { step: 0, paid: {} }); }
     E.projVisible = projVisible;
     E.projState = projState;
+    E.cutRelay = function () {
+      const ps = projState("chant");
+      if (ps.step !== 1) return { ok: false, why: "step" };
+      if (!S.frags.coeur || !S.frags.poings) return { ok: false, why: "prereq" };
+      ps.step = 2;
+      E.emit("projstep", { pid: "chant", step: 1 });
+      E.emit("struct");
+      return { ok: true };
+    };
+    E.releaseHand = function () {
+      const ps = projState("chant");
+      if (ps.step !== 2) return { ok: false, why: "step" };
+      ps.step = 3;
+      E.emit("projstep", { pid: "chant", step: 2 });
+      E.emit("struct");
+      return { ok: true };
+    };
     E.contribute = function (pid) {
       if (!projVisible(pid)) return { ok: false };
       const p = D.PROJECTS[pid], ps = projState(pid);
@@ -2859,6 +2890,7 @@
       return res;
     }
     E.endingsCount = () => Object.keys(S.meta.endings).length;
+    E.isLibere = () => !!(S.meta && S.meta.endings && S.meta.endings.retour);
 
     /* ----------------------------------------------------------- LE COMPTOIR
      * Marché tenu par le Troqueur dans la Plaine : on vend ce qui encombre la
