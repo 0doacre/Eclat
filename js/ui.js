@@ -293,22 +293,55 @@
         kind = "info";
       }
     }
+
+    // Extraction ou attribution d’icône badge
+    let ic = "";
+    let bodyHtml = html;
+    const mEmoji = html.match(/^([\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]|[\u2300-\u23FF]|[\u2B50-\u2B55]|✓|⚠️|ℹ️|⚡|★|✦|✨)\s*/);
+    if (mEmoji) {
+      ic = mEmoji[1];
+      bodyHtml = html.slice(mEmoji[0].length);
+    } else {
+      ic = kind === "good" ? "✓" : kind === "warn" ? "⚠️" : kind === "gold" ? "✨" : "ℹ️";
+    }
+
     let t = Array.from(box.children).find((x) => x.dataset.k === key);
     if (t) {
       if (p < Number(t.dataset.p)) return;
       clearTimeout(t._tm);
-      t.style.animation = "none"; void t.offsetWidth; t.style.animation = ""; // repart de zéro
+      t.classList.remove("toast-out");
+      t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
     } else {
       t = document.createElement("div");
       t.dataset.k = key;
       box.appendChild(t);
-      while (box.children.length > 2) box.firstChild.remove();
+      while (box.children.length > 3) {
+        const old = box.firstElementChild;
+        if (old) old.remove();
+      }
     }
+
+    const dismiss = () => {
+      if (t._dismissed) return;
+      t._dismissed = true;
+      clearTimeout(t._tm);
+      t.classList.add("toast-out");
+      setTimeout(() => { if (t.isConnected) t.remove(); }, 220);
+    };
+
     t.className = "toast toast-" + kind;
     t.dataset.p = p;
-    t.innerHTML = html;
+    t.innerHTML = '<span class="toast-ic">' + ic + '</span><span class="toast-txt">' + bodyHtml + '</span><button class="toast-x" aria-label="Fermer" tabindex="-1">✕</button>';
     iconize(t);
-    t._tm = setTimeout(() => t.remove(), 3100);
+
+    t.onclick = (e) => {
+      e.stopPropagation();
+      dismiss();
+    };
+
+    const plainLen = html.replace(/<[^>]+>/g, "").length;
+    const duration = Math.min(4800, Math.max(2500, 2200 + plainLen * 30));
+    t._tm = setTimeout(dismiss, duration);
   }
   function vibe(ms) { if (S().settings.vibe && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* ignoré */ } }
   function elCenter(el) {
@@ -811,6 +844,17 @@
     $("#ageName").textContent = ag.n;
     const old = ep === "papyrus" || ep === "enluminure";
     $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
+    const ms = (E.milestones && E.milestones()[a]) || [];
+    const done = ms.filter((x) => x.done).length;
+    const total = ms.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const barEl = $("#ageBar");
+    if (barEl) barEl.style.width = pct + "%";
+    const badgeEl = $("#ageProgBadge");
+    if (badgeEl) {
+      badgeEl.textContent = done === total && total > 0 ? "✓" : done + "/" + total;
+      badgeEl.className = "age-badge" + (done === total && total > 0 ? " done" : "");
+    }
   }
 
   /* ------------------------------------------------------------- SIGNES (modale) */
@@ -1085,6 +1129,12 @@
     const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
     let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
       (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
+    if (ml.length) {
+      const pct = Math.round((md / ml.length) * 100);
+      h += '<div class="gprog-row" data-miles title="Progression de cet âge : ' + md + '/' + ml.length + ' étapes complétées">' +
+        '<div class="gprog-track"><i style="width:' + pct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></div>' +
+        '<span class="gprog-txt">' + (md === ml.length ? '★ Âge accompli' : 'Âge ' + esc(D.AGES[st.age].n) + ' · ' + md + '/' + ml.length + ' (' + pct + '%)') + '</span></div>';
+    }
     h += nextAction(g);
     if (!open) return h + "</div>";
     // le détail, à la demande
@@ -1125,7 +1175,7 @@
     if (!it) return "";
     if (!st.known[id]) {
       const lvl = st.hints[id] || 0;
-      return line('<div class="grow" data-goto="' + id + '"><div class="small">À découvrir : ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>une recette nouvelle</b>") + "</div>" +
+      return line('<div class="grow" data-goto="' + id + '"><div class="small"><span class="step-badge">✦ Étape clé</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Une recette nouvelle</b>") + "</div>" +
         (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
         '</div><button class="btn small pri" data-gotab="atelier">Chercher</button>');
@@ -1174,7 +1224,13 @@
   function openMilestones() {
     const st = S(), ms = E.milestones(), cur = E.objective();
     st.flags.milesSeen = true;
-    let h = '<div class="kicker">Les étapes</div><h2>' + esc(D.AGES[st.age].n) + '</h2><p class="small muted">Chaque âge a ses étapes. Fais-les toutes et l’âge est <b>accompli</b> : +' + D.AGE_DONE + " ✨ Intuition. Certaines sont facultatives : tu peux passer à l’âge suivant sans elles, et revenir les faire quand tu veux.</p>";
+    const curAgeList = ms[st.age] || [];
+    const curDone = curAgeList.filter((x) => x.done).length;
+    const curPct = curAgeList.length ? Math.round((curDone / curAgeList.length) * 100) : 0;
+    let h = '<div class="kicker">Les étapes de l’Âge</div><h2>' + esc(D.AGES[st.age].n) + '</h2>' +
+      '<div class="miles-top-bar"><div class="bar" style="margin:4px 0 6px"><i style="width:' + curPct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></div>' +
+      '<div class="row between tiny muted"><span>Progression de l’époque : <b>' + curDone + ' / ' + curAgeList.length + '</b></span><span>' + (curDone === curAgeList.length ? '★ Accompli' : curPct + ' %') + '</span></div></div>' +
+      '<p class="small muted">Chaque âge a ses étapes. Fais-les toutes et l’âge est <b>accompli</b> : +' + D.AGE_DONE + " ✨ Intuition. Certaines sont facultatives : tu peux passer à l’âge suivant sans elles, et revenir les faire quand tu veux.</p>";
     ms.forEach((list, a) => {
       if (!list || a > st.age + 1) return;
       const done = list.filter((x) => x.done).length, next = a === st.age + 1, full = done === list.length;
@@ -1182,7 +1238,7 @@
       if (!shown.length) return;
       const open = a === st.age || next || (!full && cur && list.some((x) => x.i === cur.i));
       h += '<details class="miles' + (full ? " full" : "") + '"' + (open ? " open" : "") + "><summary><b>" + (next ? "Vers l’âge suivant" : esc(D.AGES[a].n)) + '</b> <span class="tiny muted">' + (next ? esc(D.AGES[a].n) : full ? "✓ accompli" : done + " sur " + list.length) + "</span></summary>" +
-        shown.map((x) => '<div class="mile' + (x.done ? " done" : cur && cur.i === x.i ? " cur" : "") + '"><span class="mk">' + (x.done ? "✓" : cur && cur.i === x.i ? "➜" : "○") + "</span>" + mileName(x.ob) + "</div>").join("") + "</details>";
+        shown.map((x) => '<div class="mile' + (x.done ? " done" : cur && cur.i === x.i ? " cur" : "") + '"><span class="mk">' + (x.done ? "✓" : cur && cur.i === x.i ? "➜" : "○") + "</span>" + mileName(x.ob) + (cur && cur.i === x.i && !x.done ? ' <span class="badge" style="background:var(--acc);color:#fff">En cours</span>' : "") + "</div>").join("") + "</details>";
     });
     openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
@@ -3382,6 +3438,8 @@
       }
     }, { passive: false });
     $("#tabs").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-tab]"); if (b) { A.init(); A.click(); setTab(b.dataset.tab); } });
+    const ageEl = $("#ageBtn") || $(".age");
+    if (ageEl) ageEl.addEventListener("click", () => { A.init(); A.click(); openMilestones(); });
     $("#menuBtn").addEventListener("click", () => { A.init(); openMenu(); });
     $("#memBtn").addEventListener("click", () => { A.init(); A.click(); openMemoire(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
@@ -3746,7 +3804,7 @@
     setTimeout(cloudCheck, 1500);
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
-    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte };
+    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte, toast };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

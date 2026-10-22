@@ -2845,8 +2845,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 6.12.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "6.12.0");
+test("Version 6.13.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "6.13.0");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -2973,6 +2973,29 @@ test("Épuration des calques IA et naturel du texte", () => {
   assert.ok(passObjs.length >= 3);
   assert.strictEqual(passObjs.some((g) => /\bvers(e|er|ez|ent|é|ée|és|ées)?\b/i.test(g.txt)), false);
   assert.ok(passObjs.some((g) => g.txt.includes("apporte") || g.txt.includes("dépose")));
+});
+
+console.log("Ergonomie Visuelle : Notifications & Progression de l'Âge (6.13)");
+test("Progression de l'Âge et Jalons : calcul de complétion et level design", () => {
+  const E = createEngine();
+  const ms = E.milestones();
+  assert.ok(Array.isArray(ms));
+  assert.ok(ms[0] && ms[0].length >= 3);
+
+  // Âge 0 au départ : progression partielle ou 0
+  const age0 = ms[0];
+  const initialDone = age0.filter((x) => x.done).length;
+  assert.strictEqual(typeof initialDone, "number");
+
+  // Compléter une étape (ex: fabriquer un manche)
+  E.state.made.manche = 1;
+  const msAfter = E.milestones();
+  const doneAfter = msAfter[0].filter((x) => x.done).length;
+  assert.ok(doneAfter >= initialDone);
+
+  // Vérifier la conformité de D.CHANGES
+  assert.ok(D.CHANGES.some((c) => c.includes("Notifications")));
+  assert.ok(D.CHANGES.some((c) => c.includes("Progression d’âge") || c.includes("Progression d'âge")));
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

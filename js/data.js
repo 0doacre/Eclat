@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.12.0";
+  D.VERSION = "6.13.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1127,9 +1127,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "✍️ Épuration du style : remplacement des calques artificiels (« verser » du bois) par du français naturel (« apporter », « déposer »).",
-    "🌿 Interface allégée : suppression des répétitions mécaniques de « en réserve » au profit d'indications directes et fluides.",
-    "🔨 Nuances d'artisanat : réécriture des retours d'échecs de l'Atelier et affinage des descriptions d'objets."
+    "🔔 Notifications mobiles épurées : toasts interactifs fermables d’un tap, icônes sémantiques et timing adaptatif.",
+    "📈 Progression d’âge interactive : jauge de complétion dans l’en-tête ouvrant directement les étapes de l’âge.",
+    "🎯 Guidage de level design : carte d’objectif enrichie avec mise en valeur douce des étapes d’ouverture et complétion célébrée."
   ];
 
 

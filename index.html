@@ -21,7 +21,10 @@
   <div id="app">
     <header id="top">
       <div id="orn" aria-hidden="true"></div>
-      <div class="age"><span id="ageName">Âge du Bois</span><small id="ageNum">Âge 1/13</small></div>
+      <button class="age" id="ageBtn" aria-label="Progression de l’âge et étapes" title="Toucher pour voir les étapes de cet âge">
+        <span class="age-head"><span id="ageName">Âge du Bois</span><small id="ageNum">Âge 1/13</small><span id="ageProgBadge" class="age-badge">0/5</span></span>
+        <div class="age-bar-track"><i id="ageBar" class="age-bar-fill" style="width:0%"></i></div>
+      </button>
       <div class="top-right">
         <button id="tutoMini" class="exp-mini hidden" aria-label="Rouvrir le conseil">💭</button>
         <button id="expMini" class="exp-mini hidden" aria-label="Exploration en cours"></button>
