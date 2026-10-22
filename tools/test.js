@@ -2451,4 +2451,88 @@ test("événements narratifs conditionnels : déclenchement, once et interpolati
   assert.ok(E2.state.eventsSeen.test_ev_once);
 });
 
+console.log("Moteur des portes et explorations (6.4)");
+test("hasExpReq : chaîne, liste d’objets et conditions complexes", () => {
+  const E = createEngine();
+  // chaîne
+  assert.strictEqual(E.hasExpReq("pioche_pierre"), false);
+  E.state.inv.pioche_pierre = 1;
+  assert.strictEqual(E.hasExpReq("pioche_pierre"), true);
+
+  // tableau
+  assert.strictEqual(E.hasExpReq(["flute", "lunette"]), false);
+  E.state.made.flute = 1;
+  assert.strictEqual(E.hasExpReq(["flute", "lunette"]), false);
+  E.state.made.lunette = 1;
+  assert.strictEqual(E.hasExpReq(["flute", "lunette"]), true);
+
+  // objet condition
+  assert.strictEqual(E.hasExpReq({ flag: "test_flag" }), false);
+  E.state.flags.test_flag = true;
+  assert.strictEqual(E.hasExpReq({ flag: "test_flag" }), true);
+
+  // objet condition avec glyph et any
+  assert.strictEqual(E.hasExpReq({ glyph: "enfant", any: [{ flag: "a" }, { flag: "b" }] }), false);
+  E.state.signes = { enfant: { lu: true } };
+  assert.strictEqual(E.hasExpReq({ glyph: "enfant", any: [{ flag: "a" }, { flag: "b" }] }), false);
+  E.state.flags.b = true;
+  assert.strictEqual(E.hasExpReq({ glyph: "enfant", any: [{ flag: "a" }, { flag: "b" }] }), true);
+});
+
+test("canExplore et nextExp : apparition conditionnelle et verrouillage", () => {
+  const E = createEngine();
+  // Lisière : chene, grotte, cercle (need: cerf_volant), racines (show: trait7)
+  E.state.exp.done.lisiere = 2; // cercle
+  const nxCercle = E.nextExp("lisiere");
+  assert.ok(nxCercle && nxCercle.x.id === "cercle");
+  assert.strictEqual(nxCercle.locked, true);
+  assert.strictEqual(E.canExplore("lisiere", "cercle"), false);
+
+  E.state.made.cerf_volant = 1;
+  assert.strictEqual(E.nextExp("lisiere").locked, false);
+  assert.strictEqual(E.canExplore("lisiere", "cercle"), true);
+
+  // Fin du cercle -> racines a show: { any: [{ flag: "trait7" }, { flag: "septieme" }] }
+  E.state.exp.done.lisiere = 3;
+  assert.strictEqual(E.nextExp("lisiere"), null, "masqué tant que show n’est pas satisfait");
+  assert.strictEqual(E.canExplore("lisiere", "racines"), false);
+
+  E.state.flags.trait7 = true;
+  const nxRacines = E.nextExp("lisiere");
+  assert.ok(nxRacines && nxRacines.x.id === "racines");
+  assert.strictEqual(nxRacines.locked, false);
+  assert.strictEqual(E.canExplore("lisiere", "racines"), true);
+});
+
+test("recettes secrètes : cloche et pigment", () => {
+  const E = createEngine();
+  const cloche = D.ITEMS.cloche;
+  assert.ok(cloche && cloche.sec);
+  assert.strictEqual(cloche.a, 4);
+  assert.strictEqual(cloche.r[0], "chauffer");
+  assert.strictEqual(cloche.r[3].heat, 1100);
+
+  const pigment = D.ITEMS.pigment;
+  assert.ok(pigment && pigment.sec);
+  assert.strictEqual(pigment.a, 5);
+  assert.strictEqual(pigment.r[0], "tailler");
+
+  // Découverte des recettes secrètes
+  stations(E, ["feu", "bas_fourneau", "couteau"]);
+  E.add("lingot_bronze", 20); E.state.seen.lingot_bronze = true;
+  E.add("argile", 20); E.state.seen.argile = true;
+  const r1 = E.attempt("chauffer", ["lingot_bronze", "argile"]);
+  assert.strictEqual(r1.id, "cloche");
+  const c1 = E.craft("cloche");
+  assert.ok(c1.ok);
+  assert.strictEqual(E.count("cloche"), 1);
+  assert.ok(E.state.secrets.cloche);
+
+  E.add("charbon", 5); E.state.seen.charbon = true;
+  const r2 = E.attempt("tailler", ["argile", "charbon"]);
+  assert.strictEqual(r2.id, "pigment");
+  assert.strictEqual(E.count("pigment"), 1);
+  assert.ok(E.state.secrets.pigment);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

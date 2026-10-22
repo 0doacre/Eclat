@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.3.0";
+  D.VERSION = "6.4.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -247,6 +247,8 @@
   I.anticythere = { n: "Mécanisme d’Anticythère", ic: "🕰️", a: 4, t: "curio", sec: true,
     r: ["assembler", { engrenage: 20, plaque_bronze: 4, tablette: 1 }, 1], e: { intu: 1, sky: true },
     u: "Rapporte 1 ✨ par minute. Ouvre le Ciel, dans le Cosmos.", d: "Des dizaines de roues dentées qui calculent le ciel. Une aiguille suit une étoile que tu n’as jamais vue, marquée d’un nom : Kher." };
+  I.cloche = { n: "Cloche", ic: "🔔", a: 4, t: "curio", sec: true, r: ["chauffer", { lingot_bronze: 10, argile: 6 }, 1, { heat: 1100 }],
+    u: "Sonne dans le lointain.", d: "Tu la fais tinter du bout de l’ongle. Le son reste longtemps dans l’air, comme s’il cherchait quelqu’un." };
 
   /* Âge 5 — Fer */
   I.fer_min = { n: "Minerai de fer", sym: "◣", col: "#8e3b2c", a: 5, t: "res", u: "Sert à fabriquer la loupe de fer, d’où l’on tire le fer.", d: "Une roche rouge sang, lourde de métal." };
@@ -285,6 +287,8 @@
   I.boussole = { n: "Boussole", ic: "🧭", a: 5, t: "curio", sec: true, r: ["assembler", { aiguille: 1, lingot_fer: 1, argile: 2 }, 1],
     e: { once: { intu: 2 } },
     u: "Débloque une nouvelle exploration dans les Profondeurs.", d: "L’aiguille ferrée flotte sur l’argile humide. Elle ne cherche pas le nord : elle penche vers le sol, vers les Profondeurs." };
+  I.pigment = { n: "Pigment", ic: "🎨", a: 5, t: "curio", sec: true, r: ["tailler", { argile: 3, charbon: 2 }, 1],
+    u: "Une poudre fine et dense.", d: "De la terre ocre et de la cendre noire, broyées ensemble très fin." };
 
   /* Âge 6 — Acier */
   I.brique_refr = { n: "Brique réfractaire", sym: "▦", col: "#b5532f", a: 5, t: "comp", r: ["chauffer", { argile: 2, sable: 2 }, 1, { heat: 1100 }],
@@ -567,25 +571,30 @@
       exps: [
         { id: "chene", n: "Le Grand Chêne", dur: 15, rw: { inv: { bois: 15, fibre: 10 }, frag: "chene" } },
         { id: "grotte", n: "La Grotte aux Mains", dur: 40, cost: { torche: 1 }, rw: { frag: "grotte", intu: 2 } },
-        { id: "cercle", n: "Le Cercle de Pierres", dur: 60, need: "cerf_volant", hidden: "Un lieu qu’on ne voit que d’en haut, porté par le vent.", rw: { frag: "cercle", intu: 2 } }
+        { id: "cercle", n: "Le Cercle de Pierres", dur: 60, need: "cerf_volant", hidden: "Un lieu qu’on ne voit que d’en haut, porté par le vent.", rw: { frag: "cercle", intu: 2 } },
+        { id: "racines", n: "Sous les Racines", dur: 90, show: { any: [{ flag: "trait7" }, { flag: "septieme" }] }, hidden: "Sous les racines du vieux chêne, la terre sonne creux.", rw: { frag: "racines", intu: 2 } }
       ] },
     { id: "plaine", n: "La Plaine des Hautes Herbes", ic: "🌾", res: ["os", "cuir"], req: "epieu",
       d: "Des herbes plus hautes que toi, et des bêtes qui ne te craignent pas encore.",
       exps: [
         { id: "champ_os", n: "Le Champ des Os", dur: 25, rw: { inv: { os: 20 }, frag: "ossements" } },
-        { id: "tumulus", n: "Le Tumulus", dur: 50, cost: { torche: 1 }, rw: { frag: "tumulus", intu: 2 } }
+        { id: "tumulus", n: "Le Tumulus", dur: 50, cost: { torche: 1 }, rw: { frag: "tumulus", intu: 2 } },
+        { id: "tombe", n: "L’Arbre Seul", dur: 75, need: "pioche_pierre", show: { any: [{ frag: "carcasse2" }, { frag: "carcasse" }] }, hidden: "Un arbre seul au milieu des herbes. Il faut de quoi creuser.", rw: { frag: "tombe", intu: 2 } },
+        { id: "poings", n: "Les Six Poings", dur: 100, need: { any: [{ frag: "cuves2" }, { frag: "cuves" }], glyph: "enfant" }, hidden: "Six poings fermés dans la poussière.", rw: { frag: "poings", intu: 3 } }
       ] },
     { id: "riviere", n: "La Rivière Lente", ic: "🏞️", res: ["argile", "silex", "sable"], req: "outre",
       d: "Une eau large et paresseuse, qui roule des galets noirs.",
       exps: [
         { id: "gue", n: "Le Gué", dur: 30, rw: { inv: { silex: 15, argile: 10 }, frag: "galet" } },
-        { id: "carcasse", n: "La Carcasse", dur: 60, need: "hache_pierre", rw: { frag: "carcasse", intu: 2 } }
+        { id: "carcasse", n: "La Carcasse", dur: 60, need: "hache_pierre", rw: { frag: "carcasse", intu: 2 } },
+        { id: "escalier", n: "L’Escalier Noyé", dur: 90, need: "cloche", show: { any: [{ frag: "gue2" }, { frag: "galet" }] }, hidden: "Des marches de pierre qui s’enfoncent sous l’eau sombre.", rw: { frag: "escalier", intu: 2 } }
       ] },
     { id: "collines", n: "Les Collines Vertes", ic: "⛰️", res: ["malachite", "cassiterite", "caillou"], req: "pioche_pierre",
       d: "Des collines rondes, striées de veines vertes et sombres.",
       exps: [
         { id: "rails", n: "Les Rails Rouillés", dur: 40, rw: { inv: { malachite: 15 }, frag: "rails" } },
-        { id: "sommet", n: "Le Sommet", dur: 75, rw: { item: { tablette: 1 }, frag: "vue", intu: 2 } }
+        { id: "sommet", n: "Le Sommet", dur: 75, rw: { item: { tablette: 1 }, frag: "vue", intu: 2 } },
+        { id: "nid", n: "Le Replat", dur: 100, need: ["flute", "lunette"], show: { any: [{ frag: "vue2" }, { frag: "vue" }] }, hidden: "Un replat rocheux abrité du vent, tourné vers le ciel.", rw: { frag: "nid", intu: 2 } }
       ] },
     { id: "mine", n: "Les Profondeurs", ic: "🦇", res: ["fer_min", "charbon"], req: "pioche_bronze",
       d: "Des galeries naturelles qui s’enfoncent sous les collines. Il y fait tiède. À cette profondeur, il devrait faire froid.",
@@ -597,7 +606,8 @@
       d: "Des dunes à perte de vue. Par endroits, le sable a fondu en dalles de verre.",
       exps: [
         { id: "ville", n: "La Ville Ensevelie", dur: 90, rw: { inv: { quartz: 20 }, frag: "journal" } },
-        { id: "observatoire", n: "L’Observatoire", dur: 120, need: "lunette", rw: { frag: "registre", intu: 3 } }
+        { id: "observatoire", n: "L’Observatoire", dur: 120, need: "lunette", rw: { frag: "registre", intu: 3 } },
+        { id: "quai", n: "Le Quai", dur: 140, need: { glyph: "revenir" }, show: { frag: "journal" }, hidden: "Une longue jetée de béton au milieu des sables.", rw: { frag: "quai", intu: 3 } }
       ] },
     { id: "gisement", n: "Le Gisement Noir", ic: "🛢️", res: ["petrole"], req: "foreuse",
       d: "Une plaine de bitume où l’huile suinte du sol.",
@@ -618,7 +628,8 @@
       d: "Grise, silencieuse, et pas tout à fait vide.",
       exps: [
         { id: "tranquillite", n: "La Mer de la Tranquillité", dur: 240, rw: { frag: "plaque", intu: 2 } },
-        { id: "base_vahl", n: "La Base Vahl", dur: 300, rw: { frag: "iris_lune", intu: 3 } }
+        { id: "base_vahl", n: "La Base Vahl", dur: 300, rw: { frag: "iris_lune", intu: 3 } },
+        { id: "salle_registre", n: "La Lumière", dur: 300, show: { secret: "lune7" }, hidden: "Un éclat régulier qui pulse dans l’ombre d’un cratère.", rw: { frag: "salle_registre", intu: 3 } }
       ] },
     { id: "mercure", n: "Mercure", ic: "☀️", res: ["metal_mercure"], req: "vaisseau",
       d: "La plus petite planète, si près du Soleil que le métal y coule.",
@@ -628,7 +639,8 @@
       exps: [
         { id: "cuves", n: "Les Cuves", dur: 60, rw: { frag: "cuves", intu: 3 } },
         { id: "chambre", n: "La Chambre d’Iris", dur: 90, cost: { torche: 3 }, rw: { frag: "berceuse", item: { partition: 1 }, intu: 3 } },
-        { id: "coeur", n: "Le Cœur d’ARCHE", dur: 120, need: "ordinateur", rw: { frag: "coeur", intu: 4 } }
+        { id: "coeur", n: "Le Cœur d’ARCHE", dur: 120, need: "ordinateur", rw: { frag: "coeur", intu: 4 } },
+        { id: "originaux", n: "La Deuxième Salle", dur: 150, need: { glyph: "dabord", any: [{ flag: "registre" }, { page: 27 }, { page: "p27" }] }, hidden: "Une porte scellée dans la roche bleue.", rw: { frag: "originaux", intu: 3 } }
       ] }
   ];
 
@@ -685,7 +697,15 @@
     promethee: { n: "Protocole Prométhée", z: "terminal",
       t: "« Faire renaître une civilisation en reproduisant son apprentissage. Le Semeur s’éveille sans mémoire. Il découvre seul le feu, la pierre, le métal. Ce qu’il apprend de ses mains, il ne l’oublie jamais. En cas d’échec, réinitialiser avec le Semeur suivant. Lots disponibles : 12. »\n\nAnnotation manuscrite, signée I.V. : « Ce ne sont pas des lots. Ce sont des enfants. »" },
     signal: { n: "Le Signal Décodé", z: "cosmos",
-      t: "Le traducteur ronronne un moment, puis le signal de Kher devient clair : une chanson, chantée par des milliers de voix (4 · 3 · 1 · 3 · 4 · 5 · 4), et par-dessus, un message répété depuis trois siècles :\n\n« Nous sommes les enfants des Arches. Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" }
+      t: "Le traducteur ronronne un moment, puis le signal de Kher devient clair : une chanson, chantée par des milliers de voix (4 · 3 · 1 · 3 · 4 · 5 · 4), et par-dessus, un message répété depuis trois siècles :\n\n« Nous sommes les enfants des Arches. Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" },
+    racines: { n: "Sous les Racines", z: "lisiere", t: "Entre les racines du vieux chêne, une cavité creusée à la main. Au fond, une boîte d’écorce fermée par des éclats d’os : deux feuillets et deux pages pliées du Livre des Semeurs." },
+    tombe: { n: "L’Arbre Seul", z: "plaine", t: "Au milieu des hautes herbes, un saule noir se dresse seul. À ses pieds, une petite motte de terre fraîchement remuée, bordée de cailloux blancs. Au fond, la fosse est vide." },
+    poings: { n: "Les Six Poings", z: "plaine", t: "Sous les herbes jaunies, six squelettes reposent côte à côte. Leurs mains croisées serrent six fragments de pierre bleue qui vibrent sourdement. Ils ont ton âge." },
+    escalier: { n: "L’Escalier Noyé", z: "riviere", t: "Sous la cloche, l’eau s’écarte au bas des marches de pierre. Dans une anfractuosité sèche, une paillasse d’herbes et des feuillets pliés. Un boîtier de métal est pris dans la résine." },
+    nid: { n: "Le Replat", z: "collines", t: "Sous la corniche du sommet, une vire rocheuse abritée du vent. Des pierres plates pour s’asseoir face au couchant, et des galets alignés par groupes avec patience." },
+    quai: { n: "Le Quai", z: "desert", t: "Une digue de béton gris qui s’avance dans le sable vitrifié. Sur le haut mur, des centaines de feuillets collés par la poix portent des noms et des numéros de lit." },
+    salle_registre: { n: "La Lumière", z: "lune", t: "Au fond d’un cratère sombre, une ouverture mène à une voûte blanche. Sous un dôme de verre, un ruban de métal gravé cliquète et avance d’un cran précis à chacun de tes gestes." },
+    originaux: { n: "La Deuxième Salle", z: "caveau", t: "Derrière la porte scellée, une salle immense bordée de socles de pierre bleue. Sur chacun, le premier exemplaire de chaque objet façonné de tes mains est conservé, étiqueté et daté." }
   };
 
   /* ------------------------------------------------------ RÉMINISCENCES
@@ -756,7 +776,7 @@
     { id: "cerf_volant", k: "recette" }, { id: "miroir", k: "recette" }, { id: "anticythere", k: "recette" },
     { id: "boussole", k: "recette" }, { id: "feu_artifice", k: "recette" }, { id: "pip", k: "recette" },
     { id: "capsule", k: "recette" }, { id: "diamant", k: "recette" }, { id: "bague", k: "recette" },
-    { id: "philosophale", k: "recette" },
+    { id: "philosophale", k: "recette" }, { id: "cloche", k: "recette" }, { id: "pigment", k: "recette" },
     { id: "appel", k: "mélodie" }, { id: "berceuse", k: "mélodie" }, { id: "frere", k: "mélodie" },
     { id: "caveau", k: "lieu", n: "Le Caveau des Semeurs" },
     { id: "lune7", k: "ciel", n: "La Lumière sur la Lune" },
@@ -988,7 +1008,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "📻 Le terminal s’ouvre à de nouvelles voix."
+    "🚪 De nouveaux passages et des lieux oubliés s’ouvrent."
   ];
 
 

@@ -98,6 +98,16 @@
         ],
         src: [{ k: "buy", ecus: 300 }]
       },
+      p08: {
+        n: 8,
+        titre: "La flûte",
+        imprime: "Un os percé de cinq trous. À côté, cinq lignes horizontales, et un trait qui monte et descend de l’une à l’autre. Des pointillés relient chaque trou à une ligne.\n\n[enfant]",
+        notes: [
+          { t: "Cinq trous, cinq lignes. Les signes des murs ne se lisent pas : ils se chantent. J’ai chanté celui des tombes. Il est court, et il monte un peu, comme quelqu’un de petit.", sig: "IIII" },
+          { t: "Ne chante pas la plaque du Tumulus. Elle n’aime pas ça.", sig: "IIIII", cond: { cycle: 2 } }
+        ],
+        src: [{ k: "buy", ecus: 450 }]
+      },
       p10: {
         n: 10,
         titre: "La paume levée",
@@ -203,6 +213,62 @@
         revisit: [
           { cond: { cycle: 2 }, t: "D’ici, tu vois toute la Lisière, et le Grand Chêne, tout petit.\n\nEntre l’arbre et les collines, deux lignes plus pâles traversent l’herbe, bien droites." }
         ]
+      },
+      racines: {
+        n: "Sous les Racines", z: "lisiere",
+        t: "La cache d’Anouk. Entre les racines noueuses du vieux chêne, une cavité creusée à la main. Au fond, une boîte d’écorce fermée par des éclats d’os : deux feuillets couverts de petits traits réguliers, et deux pages pliées du Livre des Semeurs.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "La boîte d’écorce est vide. L’empreinte de tes doigts dans la poussière n’a pas bougé." }
+        ]
+      },
+      tombe: {
+        n: "L’Arbre Seul", z: "plaine",
+        t: "Au milieu des hautes herbes, un saule noir se dresse seul. À ses pieds, une petite motte de terre fraîchement remuée, bordée de cailloux blancs. La terre a été creusée avec une pioche de pierre. Au fond du trou, il n’y a rien : la fosse est vide.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "La terre est tassée par la pluie. Les cailloux blancs entourent toujours la petite fosse vide." }
+        ]
+      },
+      poings: {
+        n: "Les Six Poings", z: "plaine",
+        t: "Sous les herbes jaunies, les six squelettes reposent côte à côte sous le signe [enfant]. Leurs mains croisées sur la poitrine serrent six éclats taillés dans la roche du ciel, réunis sous [nous]. Ils ont ton âge.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Les six poings serrent toujours leurs éclats sombres contre leurs côtes creuses." }
+        ]
+      },
+      escalier: {
+        n: "L’Escalier Noyé", z: "riviere",
+        t: "Sous la cloche, l’air tiède te permet de respirer au bas des marches de pierre. Dans une anfractuosité sèche de la berge, une paillasse d’herbes et des feuillets pliés : « Il ne devait [manquer] de rien ». Un boîtier de métal argenté est scellé dans la résine, gravé d’un signe : [relais].",
+        revisit: [
+          { cond: { cycle: 2 }, t: "L’eau clapote doucement contre la marche où Faustine venait s’asseoir." }
+        ]
+      },
+      nid: {
+        n: "Le Replat", z: "collines",
+        t: "Sous la corniche du sommet, une vire rocheuse abritée du vent. Des pierres plates pour s’asseoir face au couchant. Alignés avec patience sur la dalle, des galets par groupes : trois cinq trois, cinq cinq cinq, trois trois trois, cinq un cinq, deux trois deux.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Les cailloux n’ont pas bougé. Le vent souffle entre les pierres sans déranger leur ordre." }
+        ]
+      },
+      quai: {
+        n: "Le Quai", z: "desert",
+        t: "Une longue digue de béton gris qui s’avance dans la mer de sable vitrifié. Sur le haut mur, des centaines de feuillets collés par la poix portent des noms et des numéros de lit. Partout, des silhouettes de mains ouvertes levées vers le ciel, sous le signe [revenir].",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Les petits papiers frémissent sous la brise brûlante du désert." }
+        ]
+      },
+      salle_registre: {
+        n: "La Lumière", z: "lune",
+        t: "Au fond d’un cratère sombre, une ouverture dans la poussière grise mène à une voûte blanche. Sous un dôme de verre, un ruban de métal gravé cliquète et avance d’un cran précis chaque fois que tes doigts s’agitent.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Le ruban continue de cliqueter doucement dans le silence de la voûte blanche." }
+        ]
+      },
+      originaux: {
+        n: "La Deuxième Salle", z: "caveau",
+        t: "Derrière la lourde porte ornée de [dabord], une salle immense bordée de socles de pierre bleue. Sur chacun, le premier exemplaire de chaque objet façonné de tes mains est conservé sous cloche, étiqueté et daté, sous l’œil de la [nourrice]. Tout au bout, un socle plus large demeure vide.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Tous les premiers objets sont là, immobiles et intacts sous leur cloche de verre." }
+        ]
       }
     },
 
@@ -262,26 +328,36 @@
       nepas: { h: [4, 4, 1], mot: "ne pas", ok: ["2fb1a5fc", "9c3f2b4c", "64560ffb", "e75d20eb", "f0452a17", "fcbe6b42"] },
       dormir: { h: [5, 3, 1], mot: "dormir", ok: ["d1e9849a", "25c1e212", "05421d02", "b780af11", "883fc275"] },
       eveiller: { h: [1, 3, 5], mot: "éveiller", ok: ["524e118b", "beef7b9b", "f432ff78", "75a2b188", "1867a541"] },
-      enfant: { h: [2, 3, 2], mot: "enfant", ok: ["8abf1c15", "d0d9b492", "b9f8ac53", "e276f660"] }
+      enfant: { h: [2, 3, 2], mot: "enfant", ok: ["8abf1c15", "d0d9b492", "b9f8ac53", "e276f660"] },
+      revenir: { h: [5, 1, 5], mot: "revenir", ok: ["bc3dec9e", "324b25a2", "0d3f2f7f", "8e9496a2"] },
+      halte: { h: [5, 5, 5], mot: "halte", ok: ["0381e64d", "876335c9", "b49ce582", "cb532ae5"] },
+      manquer: { h: [3, 1, 3], mot: "manquer", ok: ["b654a5ae", "dd4a8828", "1d5385da", "b0191cdd"] },
+      nourrice: { h: [4, 2, 5], mot: "nourrice", ok: ["d9877c58", "0d0cd2a5"] },
+      relais: { h: [2, 5, 1], mot: "relais", ok: ["6f011a33", "cfa11f94"] },
+      nous: { h: [3, 3, 3], mot: "nous", ok: ["a39c672a", "cf9f7e5a", "3683eed0"] }
     },
 
     /* Lectures : la phrase en français sous une ligne de signes, affichée seulement quand
      * tous les signes de la ligne sont compris. fr est brouillé (base64) : un coup d’œil au
-     * fichier ne donne pas le sens des signes. Seulement les lignes faites de signes de la 6.1. */
+     * fichier ne donne pas le sens des signes. */
     lectures: [
       { l: "[machine] [nepas] [faire] · [main] [faire] [dabord]", fr: "QXVjdW5lIG1hY2hpbmUgbmUgZmFpdCBwb3VyIHVuZSBtYWluIGNlIHF1ZSBjZXR0ZSBtYWluIG7igJlhIHBhcyBmYWl0IGTigJlhYm9yZC4=" },
+      { l: "[main] [halte] · [machine] [dormir]", fr: "UXXigJl1bmUgbWFpbiBzZSBsw6h2ZSwgZXQgdG91dGVzIGxlcyBtYWNoaW5lcyBz4oCZZW5kb3JtZW50Lg==" },
+      { l: "[nous] [revenir] [enfant]", fr: "Tm91cyByZXZpZW5kcm9ucyBjaGVyY2hlciBsZXMgZW5mYW50cy4=" },
       { l: "[machine] · [enfant] [dormir]", fr: "Q2VsbGUgcXVpIGNvdWNoZSBsZXMgZW5mYW50cy4=" },
       { l: "[enfant] [eveiller]", fr: "UG91ciBs4oCZZW5mYW50IHF1aSBz4oCZw6l2ZWlsbGUu" }
     ],
 
     /* Les signes de l’interface et des scènes (rendus par ui.js et domaine.js) :
      * eveil, en tête de chaque éveil (cycle 2 et suivants) ; fabriquer, sur le gros bouton
-     * de l’Atelier ; comptoir, à l’ouverture du Comptoir. L’ornement des scènes racontées
-     * (clé « ornement », avec « fins ») et le signe près de la relève arrivent en 6.4. */
+     * de l’Atelier ; comptoir, à l’ouverture du Comptoir ; ornement des scènes racontées ;
+     * et releve près de la relève. */
     interface: {
       eveil: { t: "[eveiller]" },
       fabriquer: { t: "[faire]" },
-      comptoir: { cond: { cycle: 2 }, t: "« Encore toi. Pose ta main là. »\nIl tape du doigt sur le bois du comptoir. À cet endroit, le bois est creusé, usé par les paumes, et un signe y est gravé : [main]" }
+      comptoir: { cond: { cycle: 2 }, t: "« Encore toi. Pose ta main là. »\nIl tape du doigt sur le bois du comptoir. À cet endroit, le bois est creusé, usé par les paumes, et un signe y est gravé : [main]" },
+      ornement: { t: "[nourrice]" },
+      releve: { t: "[relais]" }
     },
 
     /* ------------------------------------------------- MÉLODIES (6.2)

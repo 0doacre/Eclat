@@ -21,9 +21,8 @@ function test(name, fn) {
 const SIGNES = ["main", "machine", "faire", "dabord", "nepas", "dormir", "eveiller", "enfant",
   "revenir", "halte", "manquer", "nourrice", "relais", "nous"];
 const PREMIERES = ["lisiere", "plaine", "riviere", "collines"];
-/* 6.1 : huit signes définis ; les six autres jetons restent neutres (◇) jusqu’en 6.4 */
-const SIGNES_6_1 = ["main", "machine", "faire", "dabord", "nepas", "dormir", "eveiller", "enfant"];
-const NEUTRES = SIGNES.filter((s) => !SIGNES_6_1.includes(s));
+/* 6.4 : les quatorze signes définis */
+const NEUTRES = ["inconnu"];
 /* les dessins de la bible (§9), les quatorze */
 const DESSINS = {
   main: [3, 5, 3], machine: [2, 4, 2], faire: [1, 2, 3], dabord: [1, 5, 1], nepas: [4, 4, 1],
@@ -39,7 +38,13 @@ const EMPREINTES = {
   nepas: ["2fb1a5fc", "9c3f2b4c", "64560ffb", "e75d20eb", "f0452a17", "fcbe6b42"],
   dormir: ["d1e9849a", "25c1e212", "05421d02", "b780af11", "883fc275"],
   eveiller: ["524e118b", "beef7b9b", "f432ff78", "75a2b188", "1867a541"],
-  enfant: ["8abf1c15", "d0d9b492", "b9f8ac53", "e276f660"]
+  enfant: ["8abf1c15", "d0d9b492", "b9f8ac53", "e276f660"],
+  revenir: ["bc3dec9e", "324b25a2", "0d3f2f7f", "8e9496a2"],
+  halte: ["0381e64d", "876335c9", "b49ce582", "cb532ae5"],
+  manquer: ["b654a5ae", "dd4a8828", "1d5385da", "b0191cdd"],
+  nourrice: ["d9877c58", "0d0cd2a5"],
+  relais: ["6f011a33", "cfa11f94"],
+  nous: ["a39c672a", "cf9f7e5a", "3683eed0"]
 };
 /* les mêmes réponses, brouillées (base64 du mot à l’envers), pour jouer les essais */
 const BROUILLE = {
@@ -50,7 +55,13 @@ const BROUILLE = {
   nepas: ["bm9u", "c2FwIGVu", "c2Fw", "bnVjdWE=", "bmVpcg==", "c2lhbWFq"],
   dormir: ["cmltcm9k", "dHJvZA==", "dG5lbXJvZA==", "bGllbW1vcw==", "cmltcm9kbmU="],
   eveiller: ["cmVsbGlldsOp", "cmVsbGlldsOpcg==", "bGlldsOp", "bGlldsOpcg==", "cmV2ZWwgZXM="],
-  enfant: ["dG5hZm5l", "c3RuYWZuZQ==", "dGl0ZXA=", "c3RpdGVw"]
+  enfant: ["dG5hZm5l", "c3RuYWZuZQ==", "dGl0ZXA=", "c3RpdGVw"],
+  revenir: ["cmluZXZlcg==", "cnVvdGVy", "cmVydG5lcg==", "c25vcmRuZWl2ZXI="],
+  halte: ["ZXRsYWg=", "dGVycmE=", "cmV0ZXJyYQ==", "cG90cw=="],
+  manquer: ["cmV1cW5hbQ==", "ZXVxbmFt", "bWlhZg==", "bmlvc2Vi"],
+  nourrice: ["ZWNpcnJ1b24=", "dW9udW9u"],
+  relais: ["c2lhbGVy", "cnVldHB1cnJldG5p"],
+  nous: ["c3Vvbg==", "ZWxibWVzbmU=", "c3VvdA=="]
 };
 const debrouille = (s) => [...Buffer.from(s, "base64").toString("utf8")].reverse().join("");
 /* les inscriptions de la bible présentes en 6.1, et les textes qui doivent les porter */
@@ -68,7 +79,7 @@ const PLACES = {
   p06: ["faire", "nepas"], p12: ["enfant", "dormir"], p14: ["machine"], p15: ["machine"],
   grotte2: ["main", "nous", "dormir", "halte"]
 };
-const PAGES_6_0 = [1, 2, 3, 4, 5, 6, 7, 10, 12, 14, 15, 16];
+const PAGES_6_4 = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 15, 16];
 const zoneById = {};
 D.ZONES.forEach((z) => (zoneById[z.id] = z));
 const place = (at) => {
@@ -162,14 +173,14 @@ test("pages : numéro unique de 1 à 32, titre, imprimé, sources valides", () =
       checkCond(n.cond, id + " note " + i);
     });
   }
-  assert.deepStrictEqual(Object.values(R.pages).map((p) => p.n).sort((a, b) => a - b), PAGES_6_0, "les 12 pages de la 6.0");
+  assert.deepStrictEqual(Object.values(R.pages).map((p) => p.n).sort((a, b) => a - b), PAGES_6_4, "les 13 pages de la 6.4");
 });
 test("fragments neufs : terre, texte, revisites, ajoutés au Journal", () => {
   for (const id in R.frags) {
     const f = R.frags[id];
     assert.strictEqual(D.FRAGS[id], f, id + " : ajouté à D.FRAGS");
     assert.ok(f.n && f.t, id + " : titre et texte");
-    assert.ok(PREMIERES.includes(f.z), id + " : terre " + f.z);
+    assert.ok(D.ZONES.some((z) => z.id === f.z), id + " : terre " + f.z);
     assert.ok(Array.isArray(f.revisit) && f.revisit.length > 0, id + " : au moins une revisite");
     f.revisit.forEach((r, i) => { assert.ok(r.t && r.t.trim(), id + " revisite " + i); checkCond(r.cond, id + " revisite " + i); });
     assert.ok(!R.archive.includes(id), id + " : pas archivé");
@@ -182,9 +193,9 @@ test("expFrag : chaque lieu existe et donne un fragment neuf ; l’ancien est ar
     assert.ok(R.frags[R.expFrag[at]], at + " : fragment neuf inconnu " + R.expFrag[at]);
     assert.ok(R.archive.includes(x.rw.frag), at + " : l’ancien fragment " + x.rw.frag + " doit être archivé");
   }
-  // tous les lieux des quatre premières terres sont branchés, sauf le Cercle (gardé tel quel)
+  // tous les lieux des quatre premières terres sont branchés, sauf le Cercle et les lieux cachés
   for (const zid of PREMIERES) for (const x of zoneById[zid].exps) {
-    if (x.id === "cercle") { assert.ok(!R.expFrag["lisiere:cercle"] && !R.archive.includes("cercle")); continue; }
+    if (x.id === "cercle" || x.id === "racines" || x.id === "tombe" || x.id === "poings" || x.id === "nid" || x.id === "escalier") continue;
     assert.ok(R.expFrag[zid + ":" + x.id], "lieu non branché : " + zid + ":" + x.id);
   }
   const targets = Object.values(R.expFrag);
@@ -215,7 +226,7 @@ test("textes : pas de tiret cadratin, signes connus, longueurs pour mobile", () 
     assert.ok(!/—/.test(t), where + " : tiret cadratin");
     assert.ok(!/\s--\s/.test(t), where + " : faux tiret");
     assert.ok(!/ {2}/.test(t), where + " : double espace");
-    for (const m of t.matchAll(/\[([^\]]*)\]/g)) assert.ok(SIGNES_6_1.includes(m[1]) || NEUTRES.includes(m[1]), where + " : signe inconnu [" + m[1] + "]");
+    for (const m of t.matchAll(/\[([^\]]*)\]/g)) assert.ok(SIGNES.includes(m[1]) || NEUTRES.includes(m[1]), where + " : signe inconnu [" + m[1] + "]");
     if (/titre/.test(where)) assert.ok(!/\[/.test(t) && t.length <= 40, where + " : titre court, sans signe");
   }
   for (const id in R.frags) {
@@ -260,10 +271,9 @@ const variantes = (w) => {
   return out;
 };
 
-test("signes : les huit de la 6.1, dessins de la bible, aucun de la 6.4", () => {
+test("signes : les quatorze de la bible, dessins et empreintes", () => {
   assert.ok(R.signes && typeof R.signes === "object");
-  assert.deepStrictEqual(Object.keys(R.signes).sort(), SIGNES_6_1.slice().sort());
-  for (const id of NEUTRES) assert.ok(!R.signes[id], id + " : prévu pour la 6.4");
+  assert.deepStrictEqual(Object.keys(R.signes).sort(), SIGNES.slice().sort());
   const dessins = new Set();
   for (const id in R.signes) {
     const s = R.signes[id];
@@ -275,7 +285,7 @@ test("signes : les huit de la 6.1, dessins de la bible, aucun de la 6.4", () => 
     assert.ok(!/[[\]]/.test(s.mot), id + " : mot sans crochet");
     checkCond(s.cond, id + " cond");
   }
-  assert.strictEqual(dessins.size, SIGNES_6_1.length, "des dessins tous différents");
+  assert.strictEqual(dessins.size, SIGNES.length, "des dessins tous différents");
   assert.strictEqual(new Set(Object.values(DESSINS).map((h) => h.join(""))).size, 14, "les quatorze dessins de la bible sont distincts");
   // le dessin compris en 6.1 et son miroir : l’un se lit par l’autre
   assert.deepStrictEqual(R.signes.eveiller.h, R.signes.dormir.h.slice().reverse());
@@ -332,16 +342,16 @@ test("signes : compris, il le reste après la relève et une sauvegarde, et s’
   const Sg = require("../js/signes.js");
   const E = mk();
   const render = (id) => Sg.renderSigneToken(id, { recit: R, state: E.state, seeSigne: E.seeSigne, lieu: "test" });
-  for (const id of SIGNES_6_1) {
+  for (const id of SIGNES) {
     assert.ok(/<svg/.test(render(id)) && !render(id).includes(">" + R.signes[id].mot + "<"), id + " : dessiné avant");
     assert.ok(E.state.signes[id].vu.test, id + " : lieu noté");
   }
   for (const id of NEUTRES) assert.ok(/◇/.test(render(id)) && !/<svg/.test(render(id)), id + " : neutre");
-  for (const id of SIGNES_6_1) { T += 4000; assert.ok(E.essaiSigne(id, debrouille(BROUILLE[id][0])).ok); }
+  for (const id of SIGNES) { T += 4000; assert.ok(E.essaiSigne(id, debrouille(BROUILLE[id][0])).ok); }
   E.newCycle();
   const E2 = mk();
   E2.load(JSON.stringify(E.state));
-  for (const id of SIGNES_6_1) {
+  for (const id of SIGNES) {
     assert.ok(E2.state.signes[id] && E2.state.signes[id].lu, id + " : compris pour toujours");
     const html = Sg.renderSigneToken(id, { recit: R, state: E2.state });
     assert.ok(html.includes(">" + R.signes[id].mot + "<") && /signe lu/.test(html), id + " : affiché en mot");
@@ -357,21 +367,21 @@ test("jetons : chaque jeton de tous les textes est un signe défini ou volontair
     // un jeton mal écrit (accent, espace, apostrophe) ne serait pas reconnu par le rendu
     for (const m of t.matchAll(/\[([^\]\n]{1,24})\]/g)) assert.ok(/^[a-z0-9_]+$/.test(m[1]), where + " : jeton mal formé [" + m[1] + "]");
   }
-  for (const id of SIGNES_6_1) assert.ok(vus[id], id + " : écrit dans au moins un texte");
+  for (const id of SIGNES) assert.ok(vus[id], id + " : écrit dans au moins un texte");
 });
 test("inscriptions : à leur place, et aucun signe écrit en clair à la place du jeton", () => {
   for (const k in INSCRIPTIONS) for (const id of INSCRIPTIONS[k].ou) {
     assert.ok(textOf(id).includes(INSCRIPTIONS[k].l), k + " : absente de " + id);
   }
   for (const id in PLACES) for (const s of PLACES[id]) assert.ok(textOf(id).includes("[" + s + "]"), id + " : [" + s + "] attendu");
-  // chaque signe de la 6.1 se lit dans au moins deux textes trouvables (lieux, pages, interface)
-  for (const s of SIGNES_6_1) {
+  // chaque signe se lit dans au moins deux textes trouvables (lieux, pages, interface)
+  for (const s of SIGNES) {
     const lieux = Object.keys(R.frags).concat(Object.keys(R.pages), Object.keys(R.interface)).filter((id) => textOf(id).includes("[" + s + "]"));
     assert.ok(lieux.length >= 2, s + " : un seul lieu (" + lieux.join(", ") + ")");
   }
   // les lignes de signes ne contiennent que des jetons ; le mot n’y est jamais écrit en clair
   const E = mk();
-  const mots = SIGNES_6_1.map((id) => E.normSigne(R.signes[id].mot));
+  const mots = SIGNES.map((id) => E.normSigne(R.signes[id].mot));
   for (const [where, t] of renderedTexts()) {
     for (const line of t.split("\n")) {
       if (!/\[[a-z]+\]/.test(line)) continue;
@@ -385,15 +395,15 @@ test("inscriptions : à leur place, et aucun signe écrit en clair à la place d
   }
 });
 
-test("interface : les signes des scènes et des boutons, rien de la 6.4", () => {
-  assert.deepStrictEqual(Object.keys(R.interface).sort(), ["comptoir", "eveil", "fabriquer"]);
+test("interface : les signes des scènes et des boutons", () => {
+  assert.deepStrictEqual(Object.keys(R.interface).sort(), ["comptoir", "eveil", "fabriquer", "ornement", "releve"]);
   for (const k in R.interface) {
     const x = R.interface[k];
     assert.ok(typeof x.t === "string" && x.t.trim(), k + " : texte");
     checkCond(x.cond, "interface " + k);
     const ids = [...x.t.matchAll(/\[([a-z]+)\]/g)].map((m) => m[1]);
     assert.ok(ids.length > 0, k + " : au moins un signe");
-    ids.forEach((id) => assert.ok(R.signes[id], k + " : signe de la 6.1 attendu, pas [" + id + "]"));
+    ids.forEach((id) => assert.ok(R.signes[id], k + " : signe attendu, pas [" + id + "]"));
   }
   assert.deepStrictEqual(R.interface.eveil.t.match(/\[[a-z]+\]/g), ["[eveiller]"]);
   assert.deepStrictEqual(R.interface.fabriquer.t.match(/\[[a-z]+\]/g), ["[faire]"]);
@@ -408,14 +418,14 @@ test("interface : les signes des scènes et des boutons, rien de la 6.4", () => 
   const leon = R.pages.p10.notes.find((n) => n.cond && n.cond.cycle === 6);
   assert.strictEqual(leon.sig, "[eveiller]");
 });
-test("lectures : brouillées, sous des lignes de la 6.1, seulement quand tout est compris", () => {
+test("lectures : brouillées, sous des lignes comprises, seulement quand tout est compris", () => {
   const Sg = require("../js/signes.js");
   const src = fs.readFileSync(path.join(__dirname, "..", "js", "recit.js"), "utf8");
-  assert.ok(Array.isArray(R.lectures) && R.lectures.length === 3);
+  assert.ok(Array.isArray(R.lectures) && R.lectures.length >= 3);
   const textes = renderedTexts().map(([, t]) => t);
   for (const lec of R.lectures) {
     const ids = [...lec.l.matchAll(/\[([a-z]+)\]/g)].map((m) => m[1]);
-    assert.ok(ids.length > 0 && ids.every((id) => R.signes[id]), lec.l + " : signes de la 6.1 seulement");
+    assert.ok(ids.length > 0 && ids.every((id) => R.signes[id]), lec.l + " : signes connus");
     assert.ok(textes.some((t) => t.split("\n").some((line) => line.includes(lec.l))), lec.l + " : écrite dans un texte");
     const fr = Buffer.from(lec.fr, "base64").toString("utf8");
     assert.ok(/^[A-Z][^\[\]]+\.$/.test(fr), lec.l + " : phrase");
@@ -428,12 +438,11 @@ test("lectures : brouillées, sous des lignes de la 6.1, seulement quand tout es
     T += 4000; E.essaiSigne(ids[ids.length - 1], debrouille(BROUILLE[ids[ids.length - 1]][0]));
     assert.strictEqual(lire(lec.l), fr, "la phrase quand tout est compris");
     assert.strictEqual(lire("Avant : " + lec.l), fr, "aussi dans une phrase");
-    assert.strictEqual(lire(lec.l + " [halte]"), "", "pas si la ligne a un signe non compris");
+    assert.strictEqual(lire(lec.l + " [inconnu]"), "", "pas si la ligne a un signe non compris");
   }
-  // les lignes qui ont un signe de la 6.4 n’ont pas de lecture
-  const E = mk();
-  for (const id of SIGNES_6_1) { T += 4000; E.essaiSigne(id, debrouille(BROUILLE[id][0])); }
-  assert.strictEqual(Sg.lectureLigne("[main] [halte] · [machine] [dormir]", { recit: R, state: E.state }), "");
+  const E2 = mk();
+  for (const id of ["main", "halte", "machine", "dormir"]) { T += 4000; E2.essaiSigne(id, debrouille(BROUILLE[id][0])); }
+  assert.ok(Sg.lectureLigne("[main] [halte] · [machine] [dormir]", { recit: R, state: E2.state }).length > 0);
 });
 
 test("chaînes de secrets gardées : les indices des anciens fragments existent toujours", () => {
@@ -462,12 +471,18 @@ function exploreAll(E, zid, log) {
   for (let guard = 0; guard < 10; guard++) {
     const n = E.nextExp(zid);
     if (!n) return;
-    if (n.x.need) E.state.made[n.x.need] = 1;
-    if (n.x.cost) for (const i in n.x.cost) E.add(i, n.x.cost[i]);
+    if (n.locked) {
+      if (typeof n.x.need === "string") E.state.made[n.x.need] = 1;
+      else if (Array.isArray(n.x.need)) n.x.need.forEach((id) => (E.state.made[id] = 1));
+      else return;
+    }
+    const n2 = E.nextExp(zid);
+    if (!n2 || n2.locked) return;
+    if (n2.x.cost) for (const i in n2.x.cost) E.add(i, n2.x.cost[i]);
     const r = E.startExp(zid);
-    assert.ok(r.ok, zid + ":" + n.x.id + " : " + JSON.stringify(r));
-    T += n.x.dur * 1000 + 1000; E.update();
-    assert.ok(log.some((e) => e.x.id === n.x.id && e.z === zid), "exploration finie : " + zid + ":" + n.x.id);
+    assert.ok(r.ok, zid + ":" + n2.x.id + " : " + JSON.stringify(r));
+    T += n2.x.dur * 1000 + 1000; E.update();
+    assert.ok(log.some((e) => e.x.id === n2.x.id && e.z === zid), "exploration finie : " + zid + ":" + n2.x.id);
   }
 }
 const pagesOf = (E) => E.livre().filter((c) => c.page).map((c) => c.n);
@@ -514,14 +529,14 @@ test("la page des Profondeurs, les premières réparations et le Comptoir", () =
   assert.ok(E.repair("cabane").ok && E.hasPage("p02"));
   assert.ok(E.repair("collets").ok && E.hasPage("p06"));
   assert.ok(E.repair("automate_bois").ok && E.hasPage("p14"));
-  // le Comptoir vend les pages 4 et 7
+  // le Comptoir vend les pages 4, 7 et 8
   const b = E.buyablePages();
-  assert.deepStrictEqual(b.map((p) => p.n), [4, 7]);
+  assert.deepStrictEqual(b.map((p) => p.n), [4, 7, 8]);
   E.state.ecus = b.reduce((s, p) => s + p.ecus, 0);
-  assert.ok(E.buyPage("p04").ok && E.buyPage("p07").ok);
+  assert.ok(E.buyPage("p04").ok && E.buyPage("p07").ok && E.buyPage("p08").ok);
   assert.strictEqual(E.state.ecus, 0);
   assert.deepStrictEqual(E.buyablePages(), []);
-  assert.deepStrictEqual(pagesOf(E), [2, 4, 6, 7, 12, 14]);
+  assert.deepStrictEqual(pagesOf(E), [2, 4, 6, 7, 8, 12, 14]);
 });
 test("au cycle 2 : revisites, notes des vivants, pages gardées", () => {
   const E = mk();

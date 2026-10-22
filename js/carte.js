@@ -164,7 +164,8 @@
         h += '<p class="small">En route… <b data-xl>' + (p ? fmtTime(p.left) : "") + '</b></p><div class="bar"><i data-xp style="width:' + (p ? (p.p * 100).toFixed(1) : 0) + '%"></i></div>';
       } else if (stt === "locked") {
         const n = E.nextExp(z);
-        h += '<p class="small">' + (x.hidden ? esc(x.hidden) : "Il te faut : " + esc(I[n.x.need].n) + ".") + "</p>";
+        const reqStr = x.hidden ? x.hidden : (typeof n.x.need === "string" && I[n.x.need] ? "Il te faut : " + I[n.x.need].n + "." : Array.isArray(n.x.need) ? "Il te faut : " + n.x.need.map((id) => (I[id] ? I[id].n : id)).join(", ") + "." : "Ce lieu garde son secret pour l’instant.");
+        h += '<p class="small">' + esc(reqStr) + "</p>";
       } else {
         const lack = x.cost ? Object.keys(x.cost).filter((k) => (st.inv[k] || 0) < x.cost[k]) : [];
         h += '<p class="small">' + fmtTime(x.dur / E.expMult()) + " de marche" + (x.cost ? ", et il faut " + Object.keys(x.cost).map((k) => x.cost[k] + " " + esc(I[k].n.toLowerCase())).join(", ") : "") + ".</p>";

@@ -1595,12 +1595,46 @@
     };
 
     /* ------------------------------------------------------ explorations */
+    function hasExpReq(need) {
+      if (!need) return true;
+      if (typeof need === "string") {
+        return ((S.made && S.made[need]) > 0) || ((S.inv && S.inv[need]) > 0);
+      }
+      if (Array.isArray(need)) {
+        return need.every((id) => ((S.made && S.made[id]) > 0) || ((S.inv && S.inv[id]) > 0));
+      }
+      if (typeof need === "object") {
+        return cond(need);
+      }
+      return true;
+    }
+    E.hasExpReq = hasExpReq;
+
+    function canExplore(zid, xid) {
+      const z = ZONES[zid];
+      if (!z || !z.exps) return false;
+      let x;
+      if (xid !== undefined) {
+        x = typeof xid === "number" ? z.exps[xid] : z.exps.find((e) => e.id === xid);
+      } else {
+        const n = E.nextExp(zid);
+        if (!n) return false;
+        x = n.x;
+      }
+      if (!x) return false;
+      if (x.show && !cond(x.show)) return false;
+      if (x.need && !hasExpReq(x.need)) return false;
+      return true;
+    }
+    E.canExplore = canExplore;
+
     E.nextExp = function (zid) {
       const z = ZONES[zid];
       const i = S.exp.done[zid] || 0;
       if (!z.exps || i >= z.exps.length) return null;
       const x = z.exps[i];
-      const locked = x.need && !(S.made[x.need] > 0);
+      if (x.show && !cond(x.show)) return null;
+      const locked = x.need ? !hasExpReq(x.need) : false;
       return { x, i, locked };
     };
     E.expMult = () => E.cache().exp;
@@ -1632,7 +1666,8 @@
         if (k === "frag") {
           if (!S.frags || !S.frags[v]) return false;
         } else if (k === "page") {
-          if (!S.livre || !S.livre.p || !S.livre.p[v]) return false;
+          const pKey = typeof v === "number" ? (v < 10 ? "p0" + v : "p" + v) : v;
+          if (!S.livre || !S.livre.p || (!S.livre.p[v] && !S.livre.p[pKey])) return false;
         } else if (k === "signe" || k === "glyph") {
           if (!S.signes || !S.signes[v] || !S.signes[v].lu) return false;
         } else if (k === "made") {
