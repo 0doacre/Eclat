@@ -86,7 +86,7 @@
       proj: {}, endings: {},
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
-      stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
+      stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
@@ -519,9 +519,12 @@
       S.stats.taps++;
       gainXp("recolte", SK.tapXp);
       // curiosités (easter eggs)
-      if (res === "caillou" && rand() < 1 / 8000) {
-        add("poudre_rouge", 1);
-        addCurio("poudre_rouge");
+      if (res === "caillou" && !E.hasCurio("poudre_rouge")) {
+        S.stats.caillouMined = (S.stats.caillouMined || 0) + n;
+        if (S.stats.caillouMined >= 20000 || rand() < (n / 20000)) {
+          add("poudre_rouge", 1);
+          addCurio("poudre_rouge");
+        }
       }
       if ((res === "fibre" || res === "os" || res === "sable" || res === "regolithe") && rand() < 1 / 15000) {
         add("quart_coeur", 1);
@@ -2903,6 +2906,13 @@
       if (!(rate > 0)) return done("idle");
       made = rate * dt;
       add(e.res, made);
+      if (e.res === "caillou" && !E.hasCurio("poudre_rouge")) {
+        S.stats.caillouMined = (S.stats.caillouMined || 0) + made;
+        if (S.stats.caillouMined >= 20000) {
+          add("poudre_rouge", 1);
+          addCurio("poudre_rouge");
+        }
+      }
       if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
       return done("ok");
     }
@@ -3810,7 +3820,7 @@
       }
       o.settings = Object.assign({ sound: true, vibe: true, theme: "auto", largeText: false }, o.settings);
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
-      o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
+      o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
       if (!o.tried || typeof o.tried !== "object") o.tried = {};
       const ec = Number(o.ecus);

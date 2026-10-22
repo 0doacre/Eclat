@@ -3164,4 +3164,18 @@ test("Résumé des quêtes et Scénario fil rouge", () => {
   assert.strictEqual(typeof qsum.readyScenario, "boolean");
 });
 
+test("Curiosités : déblocage de la poudre rouge au palier de 20 000 cailloux minés", () => {
+  const E = createEngine();
+  E.state.zones.lisiere = true;
+  assert.strictEqual(E.hasCurio("poudre_rouge"), false);
+  assert.strictEqual(E.count("poudre_rouge"), 0);
+
+  // Simuler 19 999 cailloux minés
+  E.state.stats.caillouMined = 19999;
+  E.tap("caillou");
+  assert.ok(E.state.stats.caillouMined >= 20000);
+  assert.strictEqual(E.hasCurio("poudre_rouge"), true);
+  assert.strictEqual(E.count("poudre_rouge"), 1);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
