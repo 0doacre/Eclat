@@ -146,13 +146,14 @@
   /* ce que fait chaque sorte d’objet, en une phrase, sur sa fiche */
   const TYPE_HINT = {
     res: "Une ressource : elle se récolte sur un gisement.",
-    comp: "Une pièce : elle sert à fabriquer autre chose.",
-    tool: "Un outil : il agit dès que tu l’as, rien à poser.",
+    comp: "Une pièce : elle sert à fabriquer d’autres objets.",
+    tool: "Un outil : renforce tes récoltes à la main ou ouvre de nouveaux chemins.",
     stat: "Une station : elle reste à l’Atelier et débloque une action ou une chaleur.",
     ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même quand le jeu est fermé.",
-    upg: "Une amélioration : elle agit dès que tu l’as, rien à poser.",
+    upg: "Une amélioration : son effet est permanent dès son obtention.",
     mach: "Une machine : elle reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire.",
-    curio: "Une curiosité : elle n’a pas d’usage pratique.", relic: "Une relique, trouvée en explorant."
+    curio: "Une curiosité : vestige insolite consigné dans ton Journal.",
+    relic: "Une relique : mémoire préservée du monde ancien, découverte lors de tes explorations."
   };
   const zoneName = (z) => (E.ZONES[z] ? E.ZONES[z].n : z);
   /* « de » + nom de terre, contracté : du Désert de Verre, des Profondeurs, de la Lisière */
@@ -572,7 +573,7 @@
         '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
         (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles attendent au repos et aident tes commandes. Les ressources qu’elles utilisaient sont revenues dans ta Réserve.</p>' : "") +
         (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Les tapis disparaissent : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils récoltent autant qu’avant, et ce qui se trouvait sur les tapis est revenu dans ta Réserve.</p>' : "") +
-        (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as versé est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
+        (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as fourni est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
         (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
         '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
       on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
@@ -1186,17 +1187,17 @@
     openModal({ html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
   }
   const WHY_STEP = { station: "Il te faut d’abord :", zone: "Il te faut d’abord atteindre une nouvelle terre. Elle s’ouvre avec :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
-  /* un passage vers une terre : ce qu’il coûte, ce qui est déjà versé, et le bouton pour verser */
+  /* un passage vers une terre : ce qu’il coûte, ce qui est déjà déposé, et le bouton pour déposer */
   function passHTML(z) {
     const p = E.passInfo(z), st = S();
     if (!p || !p.ready) return "";
     return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
       '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
-      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Verser</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
+      (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Déposer</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
       '<div class="passcost small">' +
       Object.keys(p.cost).map((i) => {
         const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
-        return '<div class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + "<b>" + esc(I[i].n) + "</b> " + fmt(got) + " / " + fmt(p.cost[i]) + " versés" +
+        return '<div class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + "<b>" + esc(I[i].n) + "</b> " + fmt(got) + " / " + fmt(p.cost[i]) + " déposés" +
           (ok ? " ✓" : ' <span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? " : de quoi finir" : eta ? " · encore " + eta : "") + "</span>") + "</div>";
       }).join("") + "</div></div>";
   }
@@ -1211,7 +1212,7 @@
     const r = E.passPour(z), p = E.passInfo(z);
     if (!r.ok) {
       A.fail(0);
-      toast("Rien à verser pour l’instant. Il manque " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
+      toast("Ressources manquantes : tu n’as rien à déposer pour l’instant. Il faut encore " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
       return;
     }
     A.click(); vibe(10);
@@ -1330,7 +1331,7 @@
     const totalStock = Object.keys(st.inv).reduce((acc, k) => acc + (st.inv[k] || 0), 0);
     const inv = invItems();
     h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3>' +
-      (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + " · " + fmt(totalStock) + " en réserve</span>" : "") +
+      (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + " · " + fmt(totalStock) + " au total</span>" : "") +
       "</div>" +
       (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
       (U.iq ? '<button class="search-clear" data-clear-search="iq" aria-label="Effacer">✕</button>' : "") + '</div>' +
@@ -1476,12 +1477,12 @@
     }).sort((a, b) => (o.sort !== "age" ? (fv[b] ? 1 : 0) - (fv[a] ? 1 : 0) : 0) || (sorts[o.sort] || byAge)(a, b));
   }
   const WHY = {
-    froid: "Rien à tirer de ce mélange pour l’instant.",
-    frais: "Une de ces ressources sert dans une autre recette, avec une autre action ou d’autres ressources.",
-    tiede: "Bonne action pour ces ressources. Cherche encore.",
-    manque: "Bonne action, mais il manque une ressource.",
-    trop: "Bonne action, mais une de ces ressources est en trop.",
-    geste: "Les bonnes ressources, mais pas la bonne action."
+    froid: "Rien à façonner avec cette combinaison pour l’instant.",
+    frais: "L’une de ces matières s’emploie ailleurs, avec une autre action ou d’autres matières.",
+    tiede: "Cette action et ces matières s’accordent bien. Cherche encore.",
+    manque: "Bonne action, mais il manque une matière.",
+    trop: "Bonne action, mais l’une de ces matières est superflue.",
+    geste: "Les bonnes matières, mais pas la bonne action."
   };
   function thermo(t) {
     const T = D.TEMPS[t];
@@ -1887,7 +1888,7 @@
             h += '<div class="cost-row" data-goto="' + k + '">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny">' + fmt(paid) + "/" + fmt(s.cost[k]) + '</span><div class="bar"><i style="width:' + (100 * paid / s.cost[k]).toFixed(1) + '%"></i></div></div>';
           }
           if (s.need && !st.frags[s.need]) h += '<div class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[s.need].n) + ".</div>";
-          if (!(s.need && !st.frags[s.need])) h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Verser</button><button class="btn small' + (E.siteOn(pid) ? " on" : "") + '" data-feed="' + pid + '">' + (E.siteOn(pid) ? "Alimenté ✓" : "Alimenter") + "</button></div>";
+          if (!(s.need && !st.frags[s.need])) h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Fournir</button><button class="btn small' + (E.siteOn(pid) ? " on" : "") + '" data-feed="' + pid + '">' + (E.siteOn(pid) ? "Alimenté ✓" : "Alimenter") + "</button></div>";
         } else if (s.action === "relais") {
           if (st.frags.coeur && st.frags.poings) h += '<button class="btn wide pri" style="margin-top:8px" data-proj-act="' + pid + '">⚡ Couper le relais</button>';
           else h += '<div class="why">Il te faut d’abord atteindre le Cœur d’ARCHE et rapporter ce que serrent les six squelettes.</div>';
@@ -2305,7 +2306,7 @@
       on: {
         hc: (b) => {
           const i = Number(b.dataset.i), j = S().hand.q[i];
-          if (j && E.cancelJob(i)) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Les ressources sont revenues dans ta Réserve."); }
+          if (j && E.cancelJob(i)) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Matières restituées."); }
           const box = $("#modal .modal-box");
           box.innerHTML = handsSheet(); iconize(box);
           render(true);
@@ -2439,7 +2440,7 @@
         flowInfo = ' · Solde : <b style="color:' + color + '">' + netStr + "</b>" +
           (inR > 1e-4 && outR > 1e-4 ? ' <span class="tiny muted">(+' + perMin(inR) + " / -" + perMin(outR) + ")</span>" : "");
       }
-      h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "En réserve : <b>" + fmt(st.inv[id] || 0) + "</b>" + flowInfo) + "</p>";
+      h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "Disponible : <b>" + fmt(st.inv[id] || 0) + "</b>" + flowInfo) + "</p>";
       const zid = E.RES_ZONE[id];
       if (zid) h += '<div class="row wrap small">Se récolte dans : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
         (E.zoneOpen(zid) ? "" : ' <span class="tiny muted">(terre pas encore atteinte)</span>') + "</div>";
@@ -2747,7 +2748,7 @@
       "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce fabriquée à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
       "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les ressources sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
       "<dt>Tes mains</dt><dd>Tout ce que tu fabriques passe par la file des commandes (barre ✋ au-dessus des onglets). Tes machines t’y aident.</dd>" +
-      "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis verser ce que le passage demande.</dd>" +
+      "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis apporter ce que le passage demande.</dd>" +
       "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource (pour savoir avec quelles actions elle cache des recettes) et à déchiffrer une recette inconnue étape par étape.</dd>" +
       "<dt>Déchiffrer</dt><dd>Révéler une recette inconnue contre de l’Intuition : d’abord l’action, puis une des ressources, puis la recette entière.</dd>" +
       "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde en gardant tes recettes. Les Traces servent à acheter des améliorations dans la Mémoire des mains.</dd>" +
@@ -3072,7 +3073,7 @@
     if (n("ext")) parts.push(n("ext") + " extracteur" + (n("ext") > 1 ? "s" : ""));
     if (n("mach")) parts.push(n("mach") + " machine" + (n("mach") > 1 ? "s" : ""));
     if (top.length) parts.push("ta Réserve (" + top.map((i) => fmt(st.inv[i]) + " " + esc(I[i].n.toLowerCase())).join(", ") + "…)");
-    if (paid.length) parts.push("ce que tu as versé dans " + paid.map((z) => esc(D.PASSAGES[z].n)).join(", "));
+    if (paid.length) parts.push("ce que tu as apporté pour " + paid.map((z) => esc(D.PASSAGES[z].n)).join(", "));
     return parts.length ? '<p class="small muted">Tu laisses : ' + parts.join(", ") + ".</p>" : "";
   }
   /* un aperçu concret de la prochaine amélioration */
@@ -3181,7 +3182,7 @@
     /* un passage devient possible, puis il est franchi */
     E.on("passage", (z) => {
       badge("domaine");
-      setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", verse ce qu’il faut depuis la Réserve (dans le Domaine, ou sur la Carte).", { key: "pass:" + z, p: 2 }), 900);
+      setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", apporte les matières nécessaires (dans le Domaine ou sur la Carte).", { key: "pass:" + z, p: 2 }), 900);
     });
     E.on("passdone", (o) => {
       const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
@@ -3481,7 +3482,7 @@
       if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
       if ((b = t.closest("[data-hcancel]"))) {
         const j = S().hand.q[Number(b.dataset.hcancel)];
-        if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Les ressources sont revenues dans ta Réserve."); render(true); }
+        if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Matières restituées."); render(true); }
         return;
       }
       if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }

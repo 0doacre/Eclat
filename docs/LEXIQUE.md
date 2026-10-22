@@ -16,14 +16,14 @@ Avant d’écrire un texte affiché, vérifier ici le mot à employer, et lire `
 | Tailler, Tresser, Chauffer… | une **action** | geste (le mot reste permis dans le récit) |
 | Mettre un extracteur sur un gisement | **poser** | installer, placer |
 | Lancer une fabrication en lot au Carnet | **commander** | |
-| Payer un passage ou un Grand Œuvre | **verser** | donner, payer |
+| Approvisionner un passage ou un Grand Œuvre | **déposer, apporter, fournir** | verser (sauf liquide), donner, payer |
 | Laisser un Grand Œuvre puiser seul | **alimenter** | |
 
 ## Lieux et écrans
 
 | Mot | Sens |
 |---|---|
-| **Réserve** | Tout ce que le joueur possède. « en réserve » (jamais « stock »). |
+| **Réserve** | Tout ce que le joueur possède. Éviter de répéter mécaniquement « en réserve » à chaque quantité : le chiffre direct ou « disponible » / « en poche » suffit. Jamais « stock » à l’écran. |
 | **Terre** | Un lieu du monde : la Lisière, la Plaine… (jamais « zone » à l’écran). |
 | **Gisement** | Une ressource dans une terre. Se récolte à la main, ou par extracteur. |
 | **Domaine** | L’écran de ce qui produit. |

@@ -116,7 +116,7 @@
       const info = E.machInfo(key), rate = depRate(z, res);
       const used = e ? Object.keys(e.u).map((t) => many(t, e.u[t])).join(", ") : "";
       let sub = fmt(st.inv[res] || 0);
-      sub = '<span data-c="' + res + '">' + sub + "</span> en réserve" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
+      sub = '<span data-c="' + res + '">' + sub + "</span> disponibles" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
       const right = e && info.s === "off" ? '<span class="dom-rate off">⏸ en pause</span>'
         : rate > 0 ? '<span class="dom-rate" data-rate="' + key + '">+' + perTime(rate) + "</span>"
         : d.hand ? '<span class="dom-rate hand">🖐️ à la main</span>' : "";
@@ -257,7 +257,7 @@
         '<p class="small muted">' + esc(phrase) + '</p>' +
         '<div class="small" style="margin-top:6px"><b>' + esc(askLine) + '</b></div>' +
         '<div class="row wrap between" style="align-items:center;margin-top:8px">' +
-        '<span class="small"><b>' + fmt(st.ecus || 0) + '</b> écus en réserve</span>' +
+        '<span class="small"><b>' + fmt(st.ecus || 0) + '</b> écus</span>' +
         '<button class="btn small pri" data-comptoir>Ouvrir le Comptoir</button>' +
         '</div></section>';
     }
@@ -277,7 +277,7 @@
         const qAll = nAll > 0 ? E.sellQuote(id, nAll) : 0;
         return '<div class="comptoir-row" data-sline="' + id + '">' +
           '<div class="comptoir-head">' + icon(id, "sm") +
-          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> en réserve</span></div>' +
+          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> disponibles</span></div>' +
           '<span class="tiny muted">' + fmtNum(p) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n10 + '" title="Vendre 10 %"><b>10 %</b> <small>+' + fmtNum(q10) + '</small></button>' +
@@ -294,7 +294,7 @@
         const ecus = S().ecus || 0;
         return '<div class="comptoir-row" data-bline="' + id + '">' +
           '<div class="comptoir-head">' + icon(id, "sm") +
-          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> en réserve</span></div>' +
+          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> disponibles</span></div>' +
           '<span class="tiny muted">' + fmtNum(c1) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini" data-m="buyres" data-id="' + id + '" data-n="100"' + (ecus < c100 ? ' disabled' : '') + '>+100 <small>' + fmt(c100) + ' écus</small></button>' +
@@ -326,7 +326,7 @@
         const can = have >= ask.n;
         return '<div class="comptoir-row" data-aline="' + i + '">' +
           '<div class="comptoir-head">' + icon(ask.id, "sm") +
-          '<div class="grow"><b>' + esc(I[ask.id].n) + '</b><span class="tiny muted"> · <span data-c="' + ask.id + '">' + fmt(have) + '</span> / ' + fmt(ask.n) + ' en réserve</span></div>' +
+          '<div class="grow"><b>' + esc(I[ask.id].n) + '</b><span class="tiny muted"> · <span data-c="' + ask.id + '">' + fmt(have) + '</span> / ' + fmt(ask.n) + ' en stock</span></div>' +
           '<span class="small" style="font-weight:700">+' + ask.tr + ' ✦</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini' + (can ? ' pri' : '') + '" data-m="deliver" data-idx="' + i + '"' + (can ? '' : ' disabled') + '>' +
@@ -336,7 +336,7 @@
 
       function comptoirModalHTML() {
         const st = S();
-        let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus en réserve</div></div></div>';
+        let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus</div></div></div>';
         // à l’ouverture, ce que le Troqueur dit et ce que porte le bois du comptoir (données du récit)
         const parole = uiSigne("comptoir", "Le Comptoir");
         if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
@@ -452,7 +452,7 @@
               return redraw();
             }
             A.click(); vibe(8);
-            toast("+" + fmt(n) + " " + esc(I[id].n) + " en réserve", { key: "comptoir" });
+            toast("+" + fmt(n) + " " + esc(I[id].n) + " reçus", { key: "comptoir" });
             return redraw();
           },
           buypage: (b) => {
@@ -481,7 +481,7 @@
             '</span><div class="bar"><i style="width:' + (100 * paid / step.cost[k]).toFixed(1) + '%"></i></div></div>';
         }).join("");
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
-        else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Verser</button>' +
+        else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Fournir</button>' +
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
           '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve : au plus " + perMin(E.siteRate()) + " pour chaque ressource." : "Une fois alimenté, il se sert seul dans la Réserve.") + "</span></div>";
       } else if (step.action === "relais") {
@@ -673,7 +673,7 @@
       }
       if ((b = t.closest("[data-contrib]"))) {
         const r = E.contribute(b.dataset.contrib);
-        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Rien à verser pour l’instant : la Réserve n’a aucune des ressources demandées.", { key: "contrib" }); }
+        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Ressources manquantes : tu n’as rien à déposer pour ce chantier.", { key: "contrib" }); }
         render(true);
         return true;
       }

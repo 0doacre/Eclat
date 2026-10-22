@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.11.0";
+  D.VERSION = "6.12.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -957,17 +957,17 @@
     ["cabane", "Tu ne peux pas tout récolter toi-même. Fabrique une cabane : posée sur un gisement, elle récolte à ta place."],
     { k: "ext", n: "Poser ta cabane", txt: "Dans le Domaine, touche « + cabane » sur le bois ou les fibres de la Lisière. Ta cabane récolte à ta place, même quand le jeu est fermé." },
     ["epieu", "La Plaine est pleine de bêtes. Il te faut une arme : l’épieu ouvre le chemin vers la Plaine."],
-    { k: "pass", z: "plaine", n: "Vers la Plaine", txt: "Avec ton épieu, tu peux affronter la Plaine. Il reste à te frayer un chemin dans les hautes herbes : verse ce qu’il faut depuis la Réserve." },
+    { k: "pass", z: "plaine", n: "Vers la Plaine", txt: "Avec ton épieu, tu peux affronter la Plaine. Il reste à te frayer un chemin dans les hautes herbes : apporte les matériaux nécessaires." },
     ["laniere", "Les bêtes de la plaine laissent leur peau derrière elles. Découpée en bandes, elle lie mieux que l’herbe."],
     { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Au milieu de la Plaine, des os blanchissent au soleil. Lance une exploration pour en rapporter." },
     ["aiguille", "Pour coudre une peau, il faut une pointe percée."],
     ["collets", "Des pièges posés dans la Plaine récolteraient os et peaux à ta place. Pose-les dans le Domaine, comme ta cabane."],
     ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
-    { k: "pass", z: "riviere", n: "Vers la Rivière", txt: "La Rivière est large et lente. Pour la franchir, construis une passerelle : verse ce qu’il faut depuis la Réserve." },
+    { k: "pass", z: "riviere", n: "Vers la Rivière", txt: "La Rivière est large et lente. Pour la franchir, construis une passerelle : dépose les matériaux nécessaires." },
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
     ["hache_pierre", "Avec un tranchant de pierre, tu abattrais bien plus de bois. Les outils multiplient tes récoltes."],
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer : la pioche ouvre le chemin vers les Collines."],
-    { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les Collines sont raides. Pour y monter, taille des marches : verse ce qu’il faut depuis la Réserve." },
+    { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les Collines sont raides. Pour y monter, taille des marches : dépose les pierres taillées pour ouvrir la voie." },
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Un automate les referait à ta place."],
     { k: "line", n: "Faire tourner ton automate", txt: "Lance une commande d’une recette à une ressource, déjà fabriquée à la main (des manches, des cordes, des éclats…) : ton automate s’y met tout seul." },
     ["four", "Le feu de camp ne chauffe plus assez. Le four en argile monte jusqu’à 1 100 °C."],
@@ -1127,9 +1127,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "📡 Réactivité d’ARCHE aux cycles : dialogues évolutifs et reconnaissance du Semeur selon le cycle réel.",
-    "🧬 Mémoire des Semeurs : scènes d’éveil étendues, cuves dynamiques et terminal synchronisé.",
-    "🌌 Vertige des boucles : réactions singulières de l’IA aux cycles avancés (cycles 2, 7 et 14+)."
+    "✍️ Épuration du style : remplacement des calques artificiels (« verser » du bois) par du français naturel (« apporter », « déposer »).",
+    "🌿 Interface allégée : suppression des répétitions mécaniques de « en réserve » au profit d'indications directes et fluides.",
+    "🔨 Nuances d'artisanat : réécriture des retours d'échecs de l'Atelier et affinage des descriptions d'objets."
   ];
 
 
@@ -1140,8 +1140,8 @@
    * une seule matière au singulier, b sinon (« {reste|restent} »). Une même tentative
    * donne toujours la même phrase ; deux tentatives différentes, rarement. */
   D.FAIL = {
-    assembler: ["Tu tentes d’assembler {x}. Rien ne tient.", "Tu tournes {x} dans tous les sens. Rien ne s’emboîte.", "Tu ficelles {x} comme tu peux. Le tout s’écroule au premier souffle.",
-      "Tu poses {x} côte à côte et tu attends. Rien ne se passe, évidemment.", "Tu cales {x} ensemble. L’assemblage tient trois secondes."],
+    assembler: ["Tu tentes d’assembler {x}. Les pièces refusent de s’emboîter.", "Tu cherches un moyen d’unir {x}. Rien ne s’ajuste proprement.", "Tu ligatures {x} comme tu peux. Le premier geste défait tout.",
+      "Tu disposes {x} sur l’établi. L’idée s’effondre avant de naître.", "Tu cales {x} ensemble. L’équilibre est bien trop fragile."],
     tresser: ["Tu tentes de tresser {x}. Tes doigts s’emmêlent.", "Tresser {x} ? Tu obtiens un nœud informe.", "Tu tresses {x}. On dirait vaguement un nid. Un nid raté.",
       "Tu croises et recroises {x}. Le tout se défait dès que tu lâches.", "Tu passes {x} dessus, dessous, dessus… et tu perds le fil."],
     tailler: ["Tu tailles {x}. Il n’en reste que des miettes.", "Ta lame glisse sur {x} sans rien en tirer d’utile.", "Tu entailles {x} longtemps. Le résultat ne ressemble à rien.",

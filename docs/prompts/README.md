@@ -60,3 +60,4 @@ puis la fusionne.
 - `ergonomie-6-9.md` : Lisibilité générale, ergonomie et feedbacks visuels (6.9.0).
 - `reserve-filtres-6-10.md` : Ergonomie de la Réserve, filtres par catégorie, tris intelligents et flux en direct (6.10.0).
 - `arche-cycles-6-11.md` : Réactivité narrative d'ARCHE, mémoire des cycles et dialogues dynamiques (6.11.0).
+- `langage-naturel-6-12.md` : Épuration des textes, chasse aux scories IA et calques de traduction (6.12.0).

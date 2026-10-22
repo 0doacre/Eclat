@@ -2845,8 +2845,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 6.11.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "6.11.0");
+test("Version 6.12.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "6.12.0");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -2959,6 +2959,20 @@ test("Terminal : whoami et statut synchronisés avec le cycle", () => {
   // Vérification de la commande statut
   const stat = E.terminal("statut");
   assert.ok(stat.some((l) => l.includes("CYCLE 14 · LOT 20")));
+});
+
+console.log("Langage Naturel et Épuration des Textes (6.12)");
+test("Épuration des calques IA et naturel du texte", () => {
+  // D.FAIL.assembler épuré
+  assert.strictEqual(D.FAIL.assembler.some((t) => t.includes("trois secondes")), false);
+  assert.strictEqual(D.FAIL.assembler.some((t) => t.includes("rien ne tient")), false);
+  assert.ok(D.FAIL.assembler.some((t) => t.includes("s’emboîter") || t.includes("s'emboîter")));
+
+  // D.OBJECTIVES épuré de « verse » (hors traverser) pour les passages
+  const passObjs = D.OBJECTIVES.filter((g) => g && g.k === "pass");
+  assert.ok(passObjs.length >= 3);
+  assert.strictEqual(passObjs.some((g) => /\bvers(e|er|ez|ent|é|ée|és|ées)?\b/i.test(g.txt)), false);
+  assert.ok(passObjs.some((g) => g.txt.includes("apporte") || g.txt.includes("dépose")));
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

@@ -84,9 +84,9 @@
         still: () => E.passPending().length > 0,
         steps: [
           { tab: "domaine", at: () => (document.querySelector(".goal-card [data-pour]") ? ".goal-card [data-pour]" : ".dom-pass [data-pour]"),
-            text: "🚧 Une nouvelle terre se trouve derrière ce passage. Pour l’ouvrir, verse les ressources demandées. Tu peux verser en plusieurs fois, rien n’est perdu.",
+            text: "🚧 Une nouvelle terre se trouve derrière ce passage. Pour l’ouvrir, apporte les ressources demandées. Tu peux les déposer en plusieurs fois, rien n’est perdu.",
             done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
-          { tab: "domaine", text: "Récolte, fabrique, puis reviens verser. Chaque passage franchi te donne des ✦ Traces. Elles serviront au prochain Semeur.", next: true }
+          { tab: "domaine", text: "Récolte, fabrique, puis reviens déposer les pièces. Chaque passage franchi te donne des ✦ Traces. Elles serviront au prochain Semeur.", next: true }
         ] },
       { id: "mains", n: "Tes mains",
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "domaine"),
@@ -158,7 +158,7 @@
         still: () => !!lone(),
         end: () => { S().flags.tip_site = true; },
         steps: [
-          { tab: "domaine", at: ".dom-oeuvre [data-feed]", text: "Un Grand Œuvre demande d’énormes quantités. Touche « Alimenter » : il prendra seul ce qu’il lui faut dans ta Réserve. Tu peux aussi tout verser d’un coup.",
+          { tab: "domaine", at: ".dom-oeuvre [data-feed]", text: "Un Grand Œuvre demande d’énormes quantités. Touche « Alimenter » : il prendra seul ce qu’il lui faut dans ta Réserve. Tu peux aussi tout apporter d’un coup.",
             done: () => !lone() }
         ] }
     ];
