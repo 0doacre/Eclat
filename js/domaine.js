@@ -561,6 +561,13 @@
         }).join("") + "</div>";
       } else h += '<p class="small muted">Tu ne connais encore aucun extracteur pour ce gisement. Il faut d’abord le découvrir à l’Atelier, comme toute recette.</p>';
       if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans le Domaine, ou garde le doigt dessus.</p>';
+      if (z === "mine") {
+        const total = e ? Object.values(e.u).reduce((a, b) => a + b, 0) : 0;
+        if (total >= 8 && E.addCurio) E.addCurio("tuyau");
+        if (E.hasCurio && E.hasCurio("tuyau")) {
+          h += '<p class="small" style="color:var(--good)">🟩 Un tuyau vert dépasse de la roche. Tu n’y descends pas.</p>';
+        }
+      }
       h += '<div class="acts">' + (e ? '<button class="btn" data-m="toggle">' + (e.on ? "Pause" : "Reprendre") + '</button><button class="btn ghost" data-m="clear">Tout retirer</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div>';
       return h;
     }

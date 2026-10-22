@@ -1598,6 +1598,7 @@
     if (E.hasSignes && E.hasSignes()) tabs.push(["signes", "Signes"]);
     tabs.push(["secrets", "Secrets"]);
     if (E.has("flute")) tabs.push(["flute", "Flûte"]);
+    if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Curiosités"]);
     tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
     if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
     let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
@@ -1701,6 +1702,18 @@
         h += '<h3 class="sub">Mélodies connues</h3><p class="tiny muted">Touche une mélodie pour la rejouer sur ta flûte.</p>';
         known.forEach((m) => { h += '<button class="frag" data-play="' + m.id + '"><span class="fi">🎶</span><div class="grow"><b>' + esc(m.n) + '</b><div class="tiny muted">' + m.notes.join(" · ") + "</div></div></button>"; });
       } else h += '<p class="small muted">Tu ne connais encore aucune mélodie. Le monde t’en a peut-être déjà appris une sans que tu y fasses attention.</p>';
+    } else if (U.journalTab === "curios") {
+      h += '<p class="small muted">D’étranges souvenirs et clins d’œil trouvés au fil de tes voyages.</p><div class="curio-grid">';
+      for (const id in D.EASTER) {
+        const item = D.EASTER[id];
+        const found = E.hasCurio && E.hasCurio(id);
+        if (found) {
+          h += '<div class="frag"><span class="fi">' + (item.ic || "✨") + '</span><div class="grow"><b>' + esc(item.n) + '</b><div class="tiny muted">' + esc(item.desc) + '</div></div></div>';
+        } else {
+          h += '<div class="frag unk"><span class="fi">❔</span><div class="grow"><b>?</b><div class="tiny muted">Un souvenir encore caché.</div></div></div>';
+        }
+      }
+      h += '</div>';
     } else if (U.journalTab === "fins") {
       // le prestige, dit simplement : ce qu’on garde, ce qu’on gagne
       const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
@@ -2237,6 +2250,35 @@
    * et sa station sont cliquables. ← revient à la fiche précédente. */
   function goto(id) {
     if (!I[id]) return;
+    // Curiosité : Anneau sans fard
+    if (id === "anneau_lourd" && E.count("anneau_lourd") > 0) {
+      E.take("anneau_lourd", E.count("anneau_lourd"));
+      E.addCurio("anneau");
+      toast("Il est très lourd pour sa taille. Tu le reposes.");
+      render(true);
+      return;
+    }
+    // Curiosité : Dé à vingt faces
+    if (id === "de_vingt") {
+      const st = S();
+      st.meta = st.meta || {};
+      st.meta.d20Rolls = (st.meta.d20Rolls || 0) + 1;
+      const roll = st.meta.d20Rolls === 1 ? 20 : (Math.floor(Math.random() * 20) + 1);
+      toast("🎲 Tu le lances : " + roll + ".");
+    }
+    // Curiosité : WTC (Antoine Daniel) - 10 ouvertures en moins de 20s
+    const now = Date.now();
+    if (U.inspectHist && U.inspectHist.id === id) {
+      U.inspectHist.times = U.inspectHist.times.filter((t) => now - t <= 20000);
+      U.inspectHist.times.push(now);
+      if (U.inspectHist.times.length >= 10) {
+        if (E.addCurio("wtc")) {
+          U.wtcItalic = true;
+        }
+      }
+    } else {
+      U.inspectHist = { id, times: [now] };
+    }
     U.rstack = [id];
     swapModal(recipeModal());
   }
@@ -2252,7 +2294,9 @@
     const known = !!st.known[id], visible = known || visibleRecipes().includes(id) || !it.r;
     const uniq = E.isUnique(it), owned = uniq && (st.made[id] || 0) > 0;
     const nav = (k, extra) => '<button class="ing link" data-m="nav" data-id="' + k + '">' + (st.seen[k] || st.known[k] ? icon(k, "sm") : '<span class="ic sm unk">?</span>') + esc(I[k].n) + (extra || "") + "</button>";
-    let h = '<div class="rwin"><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
+    const isWtcItalic = U.wtcItalic;
+    if (isWtcItalic) U.wtcItalic = false;
+    let h = '<div class="rwin"' + (isWtcItalic ? ' style="font-style:italic"' : "") + '><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
       '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + (nameShown(id) ? esc(it.n) : "Recette inconnue") + "</h2>" +
       (E.stars(id) ? '<div class="stars" title="Maîtrise : fabriqué ' + fmt(st.made[id] || 0) + ' fois">' + "★".repeat(E.stars(id)) + ' <span class="tiny muted">maîtrise</span></div>' : "") + "</div>" +
       (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Ressource favorite" title="Ressource favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
@@ -2324,6 +2368,9 @@
           (unk ? '<span class="tiny muted">' + (ku.length ? "et d’autres recettes encore inconnues : " : "Recettes encore inconnues : ") + unkTxt + "</span>" : "") + "</div>";
         if (unk && st.seen[id]) h += studyHTML(id);
       }
+    }
+    if (E.hasCurio && E.hasCurio("wtc")) {
+      h += '<p class="small muted center" style="font-style:italic">« On coupe ? »</p>';
     }
     const back = U.rstack.length > 1;
     h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : "") +
@@ -3154,6 +3201,13 @@
     E.on("ending", (r) => { setTimeout(() => showEnding(r), 600); save(); });
     E.on("capsulePrompt", () => { setTimeout(promptCapsuleText, 400); });
     E.on("toast", (msg) => { if (typeof msg === "string") toast(msg); });
+    E.on("curio", (id) => {
+      const c = D.EASTER && D.EASTER[id];
+      if (c) {
+        A.secret && A.secret();
+        toast((c.ic ? c.ic + " " : "") + "<b>Curiosité :</b> " + esc(c.desc || c.n));
+      }
+    });
     E.on("offline", (o) => {
       if (o.dt < 60) return;
       const top = Object.keys(o.gains).filter((k) => I[k]).sort((a, b) => o.gains[b] - o.gains[a]).slice(0, 10);
@@ -3164,6 +3218,28 @@
 
   /* ============================================================ ÉCOUTEURS DOM */
   function bindDom() {
+    const KONAMI = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight"];
+    let kIdx = 0;
+    function triggerKonami() {
+      if (E.addCurio("konami")) {
+        A.secret && A.secret();
+      }
+      if (root.EclatSky && root.EclatSky.boostStars) {
+        root.EclatSky.boostStars(60000);
+      }
+      toast("⭐ Trente étoiles de plus brillent dans la nuit.");
+    }
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === KONAMI[kIdx]) {
+        kIdx++;
+        if (kIdx === KONAMI.length) {
+          kIdx = 0;
+          triggerKonami();
+        }
+      } else {
+        kIdx = (ev.key === KONAMI[0]) ? 1 : 0;
+      }
+    });
     document.addEventListener("pointerdown", (ev) => { U.pointer = { x: ev.clientX, y: ev.clientY }; }, true);
     document.addEventListener("wheel", (ev) => {
       const el = ev.target.closest(".ztabs, .filters, .u-tools, .u-free");
@@ -3365,8 +3441,39 @@
     views.addEventListener("submit", (ev) => {
       if (ev.target.id === "termForm") { ev.preventDefault(); runTerminal($("#termIn").value); }
     });
+    let skyTouch = null;
+    views.addEventListener("pointerdown", (ev) => {
+      if (ev.target.id === "skyCanvas") {
+        skyTouch = { x: ev.clientX, y: ev.clientY, t: Date.now() };
+      }
+    });
     views.addEventListener("pointerup", (ev) => {
-      if (ev.target.id === "skyCanvas") skyTap(ev);
+      if (ev.target.id === "skyCanvas") {
+        if (skyTouch) {
+          const dx = ev.clientX - skyTouch.x;
+          const dy = ev.clientY - skyTouch.y;
+          const dt = Date.now() - skyTouch.t;
+          skyTouch = null;
+          if (dt < 1500 && (Math.abs(dx) > 25 || Math.abs(dy) > 25)) {
+            let dir = null;
+            if (Math.abs(dy) > Math.abs(dx)) dir = dy < 0 ? "ArrowUp" : "ArrowDown";
+            else dir = dx < 0 ? "ArrowLeft" : "ArrowRight";
+            if (dir) {
+              if (dir === KONAMI[kIdx]) {
+                kIdx++;
+                if (kIdx === KONAMI.length) {
+                  kIdx = 0;
+                  triggerKonami();
+                }
+              } else {
+                kIdx = (dir === KONAMI[0]) ? 1 : 0;
+              }
+            }
+            return;
+          }
+        }
+        skyTap(ev);
+      }
       const d = U.fdown;
       U.fdown = null;
       // un signe posé sur le bouton ouvre sa fiche au lieu de fabriquer

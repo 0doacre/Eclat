@@ -87,7 +87,7 @@
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0 },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -470,6 +470,20 @@
       add(res, n);
       S.stats.taps++;
       gainXp("recolte", SK.tapXp);
+      // curiosités (easter eggs)
+      if (res === "caillou" && rand() < 1 / 8000) {
+        add("poudre_rouge", 1);
+        addCurio("poudre_rouge");
+      }
+      if ((res === "fibre" || res === "os" || res === "sable" || res === "regolithe") && rand() < 1 / 15000) {
+        add("quart_coeur", 1);
+        S.meta.curioHearts = (S.meta.curioHearts || 0) + 1;
+        if (S.meta.curioHearts >= 4) {
+          addCurio("coeur");
+        } else {
+          E.emit("toast", "❤️ Un quart de cœur.");
+        }
+      }
       return n;
     };
     E.tapYieldOf = (res) => { const z = RES_ZONE[res]; return z && zoneOpen(z) ? tapYield(res, z) : 0; };
@@ -621,6 +635,19 @@
       } else add(id, out);
       if (!S.known[id]) learn(id, true);
       if (first) onFirstCraft(id);
+      if (id === "corde") {
+        const hr = new Date().getHours();
+        if (hr >= 0 && hr < 4 && rand() < (1 / 3000) * Math.min(times, 10)) {
+          add("fouet_cuir", 1);
+          addCurio("fouet");
+        }
+      }
+      if (id === "statuette") {
+        if (rand() < (1 / 20000) * Math.min(times, 10)) {
+          add("de_vingt", 1);
+          addCurio("d20");
+        }
+      }
       if (isUnique(it) || isScaled(it)) { recalc(); E.emit("struct"); }
       if (S.track && S.track.id === id) { S.track = null; E.emit("tracked", id); E.emit("struct"); }
       if (!quiet) E.emit("crafted", id, { n: out, bonus: bonus * it.r[2], first });
@@ -688,6 +715,17 @@
       if (!ids.length) return { kind: "empty" };
       if (!gesteOK(g)) return { kind: "nogeste" };
       S.stats.tries++;
+      if (g === "tailler" && ids.includes("os") && (ids.includes("eclat") || ids.includes("silex")) && rand() < 1 / 20000) {
+        add("de_vingt", 1);
+        addCurio("d20");
+      }
+      if (g === "tresser" && (ids.includes("fibre") || ids.includes("cuir") || ids.includes("laniere"))) {
+        const hr = new Date().getHours();
+        if (hr >= 0 && hr < 4 && rand() < 1 / 3000) {
+          add("fouet_cuir", 1);
+          addCurio("fouet");
+        }
+      }
       const id = RECIPES[keyOf(g, ids)];
       if (id) {
         const b = blocker(id);
@@ -1394,6 +1432,12 @@
       if (!a) return;
       if (a.k === "harv") {
         if (!zoneOpen(a.z)) { E.stopAct("zone"); return; }
+        if (!offline) {
+          a.durOnline = (a.durOnline || 0) + dt;
+          if (a.durOnline >= 1800) {
+            addCurio("survivant");
+          }
+        }
         a.p += dt * skillSpeed("recolte") / SK.harvest;
         while (a.p >= 1) { a.p -= 1; a.got += E.tap(a.res, a.z); }
         return;
@@ -2067,6 +2111,10 @@
       if (rw.flag) S.flags[rw.flag] = true;
       if (rw.flag === "caveau") unlockZone("caveau");
       if (rw.secret) addSecret(rw.secret);
+      if (a.z === "riviere" && S.cycle === 9 && !E.hasCurio("anneau") && count("anneau_lourd") === 0) {
+        add("anneau_lourd", 1);
+        E.emit("toast", "💍 Au fond du gué, un anneau tout simple.");
+      }
       let fragId = rw.frag;
       if (RECIT.expFrag && RECIT.expFrag[locKey]) {
         fragId = RECIT.expFrag[locKey];
@@ -2323,6 +2371,18 @@
       if (normCmd === "effacer" || normCmd === "clear" || normCmd === "cls") {
         S.term = [];
         return [];
+      }
+
+      // Curiosité : ZeratoR
+      const zeraTerms = ["zera", "zerator", "zlan", "zplace", "mandat", "zeldathon", "zevent", "z event"];
+      if (zeraTerms.includes(normCmd)) {
+        addCurio("zera");
+        const isReg = S.termMode === "reg" || (!S.termMode && S.flags.registre);
+        const lines = [(isReg ? "REG > " : "ARCHE > ") + rawStr, "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE."];
+        S.term.push(...lines);
+        if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
+        E.emit("struct");
+        return lines;
       }
 
       // Clause recognition (works in any mode)
@@ -2601,6 +2661,10 @@
       if (!(k >= 1)) return 0;
       const key = extKey(z, res), e = S.dom.ext[key] || (S.dom.ext[key] = { z, res, u: {}, on: true });
       e.u[t] = (e.u[t] || 0) + k;
+      if (z === "mine") {
+        const tot = Object.values(e.u).reduce((a, b) => a + b, 0);
+        if (tot >= 8) addCurio("tuyau");
+      }
       domChanged();
       return k;
     }
@@ -2628,6 +2692,10 @@
         e = S.dom.ext[key] = { z, res, u: {}, on: true };
       }
       if (v) e.u[t] = v; else delete e.u[t];
+      if (z === "mine" && e) {
+        const tot = Object.values(e.u).reduce((a, b) => a + b, 0);
+        if (tot >= 8) addCurio("tuyau");
+      }
       if (!Object.keys(e.u).length) { delete S.dom.ext[key]; delete machStat[key]; }
       domChanged();
       return S.dom.ext[key] || null;
@@ -2891,6 +2959,19 @@
     }
     E.endingsCount = () => Object.keys(S.meta.endings).length;
     E.isLibere = () => !!(S.meta && S.meta.endings && S.meta.endings.retour);
+    function addCurio(id) {
+      if (!D.EASTER || !D.EASTER[id]) return false;
+      S.meta = S.meta || {};
+      S.meta.curios = S.meta.curios || {};
+      if (S.meta.curios[id]) return false;
+      S.meta.curios[id] = now();
+      E.emit("curio", id);
+      return true;
+    }
+    E.addCurio = addCurio;
+    E.hasCurio = (id) => !!(S.meta && S.meta.curios && S.meta.curios[id]);
+    E.curiosCount = () => Object.keys((S.meta && S.meta.curios) || {}).length;
+    E.curios = () => Object.assign({}, (S.meta && S.meta.curios) || {});
 
     /* ----------------------------------------------------------- LE COMPTOIR
      * Marché tenu par le Troqueur dans la Plaine : on vend ce qui encombre la
@@ -2950,6 +3031,11 @@
       S.comptoir = S.comptoir || { sold: {}, traces: 0 };
       S.comptoir.sold = S.comptoir.sold || {};
       S.comptoir.sold[id] = (S.comptoir.sold[id] || 0) + n;
+      if (S.comptoir.sold[id] >= 1000000) {
+        if (addCurio("squeeze")) {
+          E.emit("toast", "« Un million. Quelqu’un, quelque part, a dû appuyer très fort sur un bouton. »");
+        }
+      }
       E.emit("sold", { id, n, ecus });
       E.emit("struct");
       return { ok: true, n, ecus };
@@ -3456,7 +3542,9 @@
       const hadPass = !!o.pass && typeof o.pass === "object";
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
-      o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0 }, o.meta);
+      o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0 }, o.meta);
+      if (!o.meta.curios || typeof o.meta.curios !== "object" || Array.isArray(o.meta.curios)) o.meta.curios = {};
+      o.meta.curioHearts = Math.max(0, Math.floor(Number(o.meta.curioHearts)) || 0);
       o.meta.capsuleText = typeof o.meta.capsuleText === "string" ? o.meta.capsuleText.slice(0, 140) : "";
       if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};
       if (o.termMode !== "reg" && o.termMode !== "arche") o.termMode = (o.flags && o.flags.registre) ? "reg" : "arche";

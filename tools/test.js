@@ -2746,4 +2746,102 @@ test("Migration d'anciennes sauvegardes sans les clés theme et largeText", () =
   assert.strictEqual(E.state.settings.vibe, true);
 });
 
+console.log("Curiosités et clins d’œil (6.8)");
+test("Curiosités : D.EASTER contient les 11 curiosités conformes", () => {
+  const expected = ["poudre_rouge", "coeur", "anneau", "d20", "fouet", "tuyau", "survivant", "zera", "squeeze", "wtc", "konami"];
+  assert.ok(D.EASTER, "D.EASTER défini");
+  expected.forEach((k) => {
+    assert.ok(D.EASTER[k], "Curiosité présente : " + k);
+    assert.ok(D.EASTER[k].n, "Nom présent pour " + k);
+    assert.ok(D.EASTER[k].desc, "Description présente pour " + k);
+    assert.ok(D.EASTER[k].ic, "Icône présente pour " + k);
+  });
+  // Règle secrète : pas de nom de marque ou streamer en clair dans les descriptions
+  const forbidden = ["Minecraft", "Zelda", "Castlevania", "Mario", "ZeratoR", "Squeezie", "Antoine Daniel"];
+  for (const k in D.EASTER) {
+    const txt = D.EASTER[k].n + " " + D.EASTER[k].desc;
+    forbidden.forEach((f) => {
+      assert.strictEqual(txt.includes(f), false, "Ne doit pas citer " + f + " en clair dans " + k);
+    });
+  }
+});
+
+test("Curiosités : addCurio, hasCurio, curiosCount, curios et émission", () => {
+  const E = createEngine();
+  let emitted = null;
+  E.on("curio", (id) => { emitted = id; });
+  assert.strictEqual(E.curiosCount(), 0);
+  assert.strictEqual(E.hasCurio("poudre_rouge"), false);
+
+  assert.strictEqual(E.addCurio("poudre_rouge"), true);
+  assert.strictEqual(emitted, "poudre_rouge");
+  assert.strictEqual(E.hasCurio("poudre_rouge"), true);
+  assert.strictEqual(E.curiosCount(), 1);
+
+  // Pas de doublon
+  assert.strictEqual(E.addCurio("poudre_rouge"), false);
+  assert.strictEqual(E.curiosCount(), 1);
+});
+
+test("Curiosités : persistance lors de la relève (newCycle) et sauvegarde", () => {
+  const E = createEngine();
+  E.addCurio("zera");
+  E.addCurio("konami");
+  E.state.meta.curioHearts = 3;
+  assert.strictEqual(E.curiosCount(), 2);
+
+  // Sauvegarde et chargement
+  const ser = E.serialize();
+  const loaded = createEngine();
+  loaded.load(ser);
+  assert.strictEqual(loaded.curiosCount(), 2);
+  assert.strictEqual(loaded.hasCurio("zera"), true);
+  assert.strictEqual(loaded.hasCurio("konami"), true);
+  assert.strictEqual(loaded.state.meta.curioHearts, 3);
+
+  // Relève
+  loaded.newCycle();
+  assert.strictEqual(loaded.curiosCount(), 2);
+  assert.strictEqual(loaded.hasCurio("zera"), true);
+  assert.strictEqual(loaded.hasCurio("konami"), true);
+  assert.strictEqual(loaded.state.meta.curioHearts, 3);
+});
+
+test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire Survivors 1800s, ZeratoR terminal, Squeezie comptoir)", () => {
+  const E = createEngine();
+
+  // Zelda : 4 quarts de cœur
+  E.state.zones.lisiere = true;
+  for (let i = 0; i < 3; i++) {
+    E.state.meta.curioHearts = i;
+    // simulation récolte de fibre avec quart_coeur
+    E.state.meta.curioHearts++;
+  }
+  assert.strictEqual(E.hasCurio("coeur"), false);
+  E.state.meta.curioHearts++;
+  E.addCurio("coeur");
+  assert.strictEqual(E.hasCurio("coeur"), true);
+
+  // Mario : 8 extracteurs dans les Profondeurs
+  E.state.zones.mine = true;
+  E.add("galerie", 8);
+  E.domExtSet("mine", "fer_min", "galerie", 8);
+  assert.strictEqual(E.hasCurio("tuyau"), true);
+
+  // ZeratoR : mot-clé au terminal
+  E.terminal("zlan");
+  assert.strictEqual(E.hasCurio("zera"), true);
+
+  // Squeezie : 1 000 000 d'une ressource vendue au comptoir
+  E.state.zones.plaine = true;
+  E.add("bois", 1000000);
+  E.sell("bois", 1000000);
+  assert.strictEqual(E.hasCurio("squeeze"), true);
+
+  // Vampire Survivors : 1800s de récolte continue (jeu ouvert)
+  E.startAct({ k: "harv", z: "lisiere", res: "bois" });
+  E.step(1800, false);
+  assert.strictEqual(E.hasCurio("survivant"), true);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

@@ -32,6 +32,15 @@
     }
   }
 
+  let extraStars = [];
+  function genExtra() {
+    const R = rng(2026);
+    extraStars = [];
+    for (let i = 0; i < 30; i++) {
+      extraStars.push({ x: R(), y: R() * 0.75, m: 1.3 + R() * 1.5, tw: R() * 6.28, sp: 1.5 + R() * 3 });
+    }
+  }
+
   const moonPos = () => ({ x: W * 0.8, y: H * 0.2, r: Math.max(16, Math.min(W, H) * 0.075) });
   const kherPos = () => ({ x: W * 0.16, y: H * 0.5 });
 
@@ -83,6 +92,14 @@
       const a = 0.45 + 0.55 * Math.abs(Math.sin(t * s.sp + s.tw));
       cx.fillStyle = "rgba(235,240,255," + a.toFixed(3) + ")";
       cx.fillRect(s.x * W, s.y * H, s.m, s.m);
+    }
+    if (Date.now() < (opts.extraStarsUntil || 0)) {
+      if (!extraStars.length) genExtra();
+      for (const s of extraStars) {
+        const a = 0.6 + 0.4 * Math.abs(Math.sin(t * s.sp + s.tw));
+        cx.fillStyle = "rgba(255,230,150," + a.toFixed(3) + ")";
+        cx.fillRect(s.x * W, s.y * H, s.m, s.m);
+      }
     }
     for (const s of NAMED) {
       cx.fillStyle = "#fff";
@@ -311,6 +328,11 @@
   Sky.trigger = (animId) => Sky.playAnim(animId);
   Sky.anims = () => anims;
   Sky.clearAnims = () => { anims = []; };
+  Sky.boostStars = function (durationMs) {
+    opts.extraStarsUntil = Date.now() + (durationMs || 60000);
+    if (!extraStars.length) genExtra();
+  };
+  Sky.isBoosted = () => Date.now() < (opts.extraStarsUntil || 0);
 
   Sky.mount = function (canvas, o) {
     Sky.unmount();

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.7.0";
+  D.VERSION = "6.8.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -549,6 +549,28 @@
     e: { tap: { "*": 2 } },
     u: "Double ta récolte à la main dans toutes les terres.", d: "Ce que cherchaient les alchimistes, tiré du plus banal des cailloux. Elle ne change rien en or." };
 
+  /* Curiosités (easter eggs) */
+  I.poudre_rouge = { n: "Poudre rouge", ic: "✨", col: "#e74c3c", sym: "✦", a: 2, t: "res", curio: true,
+    d: "Une poudre fine et écarlate qui crépite doucement entre tes doigts.",
+    u: "Sert à confectionner une torche rouge." };
+  I.torche_rouge = { n: "Torche rouge", ic: "🏮", col: "#e74c3c", sym: "🔥", a: 2, t: "curio", curio: true,
+    r: ["assembler", { manche: 1, poudre_rouge: 1 }, 1],
+    d: "Une torche qui brille d’une lueur rouge sans jamais chauffer.",
+    h: "Un manche de bois et cette poudre rouge qui crépite.",
+    u: "Une flamme froide et mystérieuse." };
+  I.quart_coeur = { n: "Quart de cœur", ic: "❤️", a: 0, t: "curio", curio: true,
+    d: "Un éclat écarlate en forme de cœur. Réunis-en quatre pour te sentir plus solide.",
+    u: "Un fragment précieux venu d’un autre monde." };
+  I.anneau_lourd = { n: "Anneau sans fard", ic: "💍", a: 0, t: "curio", curio: true,
+    d: "Un anneau doré tout simple. Il est très lourd pour sa taille.",
+    u: "Il semble vouloir retourner au courant de la rivière." };
+  I.de_vingt = { n: "Dé à vingt faces", ic: "🎲", a: 1, t: "curio", curio: true,
+    d: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20.",
+    u: "Le hasard sourit aux audacieux." };
+  I.fouet_cuir = { n: "Fouet de cuir", ic: "🪢", a: 1, t: "curio", curio: true,
+    d: "Une corde de cuir tressée, lestée au bout. Elle claque toute seule quand tu passes près d’une chandelle.",
+    u: "Pour affronter les créatures de la nuit." };
+
   /* Chemin caché — la Résonance */
   I.resonite = { b: 0.5, n: "Résonite", sym: "◊", col: "#b36bff", a: 5, t: "res", d: "Un cristal violet qui vibre quand on chante près de lui." };
   I.diapason = { n: "Diapason", sym: "Ψ", col: "#c9a0ff", a: 5, t: "comp", path: true, r: ["accorder", { resonite: 5, lingot_bronze: 2 }, 1],
@@ -784,6 +806,21 @@
     { id: "cpromethee", k: "code", n: "Protocole Prométhée" },
     { id: "cregistre", k: "code", n: "Main d’abord" }, { id: "ccapsule", k: "code", n: "Le message" }
   ];
+
+  /* ---------------------------------------------------- CURIOSITÉS (EASTER EGGS) */
+  D.EASTER = {
+    poudre_rouge: { n: "Poudre rouge", ic: "✨", desc: "Une poudre rouge, qui crépite entre tes doigts." },
+    coeur: { n: "Quart de cœur", ic: "❤️", desc: "Un fragment de réceptacle. Tu te sens un peu plus solide." },
+    anneau: { n: "Anneau sans fard", ic: "💍", desc: "Au fond du gué, un anneau très lourd pour sa taille." },
+    d20: { n: "Dé à vingt faces", ic: "🎲", desc: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20." },
+    fouet: { n: "Fouet de cuir", ic: "🪢", desc: "Une corde tressée la nuit, qui claque toute seule près des chandelles." },
+    tuyau: { n: "Tuyau vert", ic: "🟩", desc: "Un tuyau vert dépasse de la roche dans les Profondeurs." },
+    survivant: { n: "La demi-heure", ic: "⏱️", desc: "Tes mains tournent toutes seules depuis une demi-heure. Efficace et solitaire." },
+    zera: { n: "Événement", ic: "🎙️", desc: "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE." },
+    squeeze: { n: "Le million", ic: "📦", desc: "Un million. Quelqu’un, quelque part, a dû appuyer très fort sur un bouton." },
+    wtc: { n: "On coupe ?", ic: "✂️", desc: "Une transition sèche. On coupe ?" },
+    konami: { n: "Code des anciens", ic: "⭐", desc: "Trente étoiles de plus brillent dans la nuit." }
+  };
 
   /* ------------------------------------------------------- GRANDS ŒUVRES */
   D.PROJECTS = {
@@ -1030,9 +1067,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🌙 Mode Veillée : un thème sombre chaud et reposant pour jouer la nuit.",
-    "📱 Ergonomie tactile : touches plus larges, sans gestes parasites.",
-    "👁️ Confort visuel : option grand texte et contrastes renforcés."
+    "🎁 Les Curiosités : d'étranges clins d'œil et souvenirs secrets cachés dans le monde.",
+    "📖 Un onglet discret dans le Journal pour consigner vos trouvailles."
   ];
 
 

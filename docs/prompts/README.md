@@ -56,3 +56,4 @@ puis la fusionne.
 - `fins-6-5.md` : les fins réécrites, le Grand Œuvre caché remanié, scènes de dénouement et deux fins cachées supplémentaires (6.5.0).
 - `postgame-6-6.md` : synthèse sonore dédiée des 5 fins, galerie des dénouements dans la Mémoire et relève humaine post-Matines (6.6.0).
 - `mobile-6-7.md` : mode Veillée (thème sombre), cibles tactiles agrandies, haptique affinée et grand texte (6.7.0).
+- `curios-6-8.md` : Curiosités et clins d'œil pop culture (6.8.0).

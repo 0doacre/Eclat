@@ -37,7 +37,7 @@ for (const id in I) {
       }
       if (!(ing[i] > 0)) err(id + " : quantité invalide pour " + i);
     }
-    if (!it.sec && !it.path && !it.h) warn(id + " : pas d’indice (h)");
+    if (!it.sec && !it.curio && !it.path && !it.h) warn(id + " : pas d’indice (h)");
   }
   if (it.t === "mach" && !(it.spd > 0)) err(id + " : machine sans vitesse (spd)");
   if (it.t === "ext") {
@@ -105,7 +105,7 @@ D.SECRETS.forEach((s) => {
   if (s.k === "recette" && !(I[s.id] && I[s.id].sec)) err("secret " + s.id + " : pas une recette secrète");
   if (s.k === "mélodie" && !D.MELODIES[s.id]) err("secret " + s.id + " : mélodie inconnue");
 });
-for (const id in I) if (I[id].sec && !D.SECRETS.find((s) => s.id === id)) err(id + " : recette secrète absente de la liste des secrets");
+for (const id in I) if (I[id].sec && !I[id].curio && !D.SECRETS.find((s) => s.id === id)) err(id + " : recette secrète absente de la liste des secrets");
 for (const id in D.EVENTS) if (!I[id]) err("événement pour objet inconnu " + id);
 
 /* ---------------------------------------------------------- atteignabilité */
@@ -152,7 +152,7 @@ while (changed) {
     });
   }
 }
-for (const id in I) if (!have.has(id)) err("inatteignable : " + id);
+for (const id in I) if (!have.has(id) && !I[id].curio) err("inatteignable : " + id);
 for (const pid in D.PROJECTS) D.PROJECTS[pid].steps.forEach((s) => { if (s.cost) for (const i in s.cost) if (!have.has(i)) err("œuvre " + pid + " : " + i + " inatteignable"); });
 
 /* l’âge d’une recette ne doit pas être inférieur à celui de ses ingrédients */
