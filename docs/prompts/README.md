@@ -55,3 +55,4 @@ puis la fusionne.
 - `portes-6-4.md` : conditions d'exploration élargies, lieux cachés, 2 recettes secrètes, 6 derniers signes et page au Comptoir (6.4.0).
 - `fins-6-5.md` : les fins réécrites, le Grand Œuvre caché remanié, scènes de dénouement et deux fins cachées supplémentaires (6.5.0).
 - `postgame-6-6.md` : synthèse sonore dédiée des 5 fins, galerie des dénouements dans la Mémoire et relève humaine post-Matines (6.6.0).
+- `mobile-6-7.md` : mode Veillée (thème sombre), cibles tactiles agrandies, haptique affinée et grand texte (6.7.0).

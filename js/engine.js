@@ -90,7 +90,7 @@
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
-      settings: { sound: true, vibe: true },
+      settings: { sound: true, vibe: true, theme: "auto", largeText: false },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
   }
@@ -3481,7 +3481,7 @@
         o.pass = {};
         for (const z in o.zones || {}) if (o.zones[z] && D.PASSAGES[z]) o.pass[z] = { paid: {}, done: true };
       }
-      o.settings = Object.assign({ sound: true, vibe: true }, o.settings);
+      o.settings = Object.assign({ sound: true, vibe: true, theme: "auto", largeText: false }, o.settings);
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };

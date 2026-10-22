@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.6.0";
+  D.VERSION = "6.7.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1030,8 +1030,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🎶 Les dénouements du monde s’accompagnent de paysages sonores dédiés.",
-    "✦ Une galerie des dénouements éclaire la Mémoire des mains."
+    "🌙 Mode Veillée : un thème sombre chaud et reposant pour jouer la nuit.",
+    "📱 Ergonomie tactile : touches plus larges, sans gestes parasites.",
+    "👁️ Confort visuel : option grand texte et contrastes renforcés."
   ];
 
 

@@ -1985,7 +1985,10 @@
     } else if (r.kind === "learn" || r.kind === "blocked") {
       A.fail(4); if (r.fresh) setTimeout(() => A.discover(), 150);
       // trouver la recette, c’est déjà découvrir : la fabriquer viendra après
-      if (r.fresh && !I[r.id].sec) fete({ id: r.id, kick: "Recette trouvée", title: I[r.id].n, sub: r.kind === "blocked" ? "Inscrite dans ton Carnet. " + cap1(needText(r.id, r.info)) + "." : "Inscrite dans ton Carnet, à fabriquer quand tu veux." });
+      if (r.fresh && !I[r.id].sec) {
+        vibe([10, 40, 20]);
+        fete({ id: r.id, kick: "Recette trouvée", title: I[r.id].n, sub: r.kind === "blocked" ? "Inscrite dans ton Carnet. " + cap1(needText(r.id, r.info)) + "." : "Inscrite dans ton Carnet, à fabriquer quand tu veux." });
+      }
     } else {
       A.fail(r.temp || 0);
       vibe(20);
@@ -2460,10 +2463,38 @@
   }
 
   /* ------------------------------------------------------------ menus */
+  function applyTheme() {
+    if (typeof document === "undefined") return;
+    const st = S();
+    const pref = (st.settings && st.settings.theme) || "auto";
+    let dark = false;
+    if (pref === "dark") dark = true;
+    else if (pref === "light") dark = false;
+    else if (typeof window !== "undefined" && window.matchMedia) {
+      dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    document.body.classList.toggle("theme-dark", dark);
+    document.body.setAttribute("data-theme", dark ? "dark" : "light");
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", dark ? "#151311" : "#f2eada");
+  }
+
+  function applyLargeText() {
+    if (typeof document === "undefined") return;
+    const st = S();
+    const lt = !!(st.settings && st.settings.largeText);
+    document.body.classList.toggle("large-text", lt);
+  }
+
   function openMenu() {
     const st = S();
+    const thMode = (st.settings && st.settings.theme) || "auto";
+    const thLabels = { auto: "Auto", light: "Jour", dark: "Veillée" };
+    const nextTh = { auto: "light", light: "dark", dark: "auto" };
     openModal({
       html: "<h2>Menu</h2>" +
+        '<div class="toggle"><span>Thème</span><button class="btn small" data-m="theme">' + thLabels[thMode] + "</button></div>" +
+        '<div class="toggle"><span>Grand texte</span><button class="btn small" data-m="largeText">' + (st.settings.largeText ? "Activé" : "Désactivé") + "</button></div>" +
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
@@ -2482,6 +2513,20 @@
         });
       },
       on: {
+        theme: (b) => {
+          st.settings.theme = nextTh[st.settings.theme || "auto"];
+          applyTheme();
+          b.textContent = thLabels[st.settings.theme];
+          save();
+          return true;
+        },
+        largeText: (b) => {
+          st.settings.largeText = !st.settings.largeText;
+          applyLargeText();
+          b.textContent = st.settings.largeText ? "Activé" : "Désactivé";
+          save();
+          return true;
+        },
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
         tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
@@ -3400,6 +3445,13 @@
     loadSprite();
     bindEngine();
     const status = loadSave();
+    applyTheme();
+    applyLargeText();
+    if (typeof window !== "undefined" && window.matchMedia) {
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+        if ((S().settings.theme || "auto") === "auto") applyTheme();
+      });
+    }
     A.setEnabled(S().settings.sound);
     A.setVolumes(volumes());
     if (status === "ok" || status === "migrated") E.update();
@@ -3428,6 +3480,8 @@
     setupSW();
     cloudTimers();
     setTimeout(cloudCheck, 1500);
+    U.applyTheme = applyTheme;
+    U.applyLargeText = applyLargeText;
     window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte };
   }
 

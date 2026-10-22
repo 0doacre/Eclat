@@ -36,6 +36,11 @@ body {
   -webkit-touch-callout: none;
 }
 button { font: inherit; color: inherit; touch-action: manipulation; cursor: pointer; }
+input, select, .gis, .gis-ic, .frag, .rec, .tab-btn, .mini, .chip, .geste {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
 input { font: inherit; }
 .hidden { display: none !important; }
 b, strong { font-weight: 650; }
@@ -487,7 +492,7 @@ textarea.save { width: 100%; min-height: 110px; background: var(--bg2); color: v
 /* arbre de fabrication */
 .tsteps { display: flex; flex-direction: column; gap: 4px; }
 .tstep { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 10px; background: var(--bg2); border: 1px solid var(--line); font-size: 13.5px; }
-.mini { min-width: 34px; height: 32px; border-radius: 9px; border: 1px solid var(--line2); background: var(--panel2); font-weight: 700; padding: 0 8px; }
+.mini { min-width: 38px; min-height: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--line2); background: var(--panel2); font-weight: 700; padding: 0 8px; }
 .mini:disabled { opacity: .35; }
 .mini:active { transform: scale(.94); }
 ul.news { padding-left: 18px; margin: 6px 0; }
@@ -525,8 +530,8 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .gis-l2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dom-rate { font-weight: 700; color: var(--good); font-variant-numeric: tabular-nums; font-size: 14.5px; }
 .dom-rate.hand, .dom-rate.off { font-weight: 400; color: var(--muted); font-style: italic; font-size: 13px; }
-.gis-b { flex: 0 0 auto; display: flex; gap: 4px; }
-.gis-b .mini { min-width: 42px; height: 34px; }
+.gis-b { flex: 0 0 auto; display: flex; gap: 6px; align-items: center; }
+.gis-b .mini { min-width: 44px; min-height: 40px; height: 40px; }
 .mini.nope { opacity: .45; }
 .gis-b .mini.lbl { font-size: 12.5px; font-weight: 700; max-width: 112px; line-height: 1.05; white-space: normal; padding: 0 7px; }
 .dom-free i { font-style: normal; min-width: 0; }

@@ -2717,4 +2717,33 @@ test("Dénouements et Échos dans la Mémoire des mains : données conformes", (
   });
 });
 
+console.log("Optimisation mobile et accessibilité (6.7)");
+test("Réglages : initialisation, thème 'auto', 'light', 'dark' et grand texte", () => {
+  const E = createEngine();
+  assert.strictEqual(E.state.settings.theme, "auto");
+  assert.strictEqual(E.state.settings.largeText, false);
+  assert.strictEqual(E.state.settings.sound, true);
+  assert.strictEqual(E.state.settings.vibe, true);
+
+  // Modification et persistance
+  E.state.settings.theme = "dark";
+  E.state.settings.largeText = true;
+  const ser = E.serialize();
+  const loaded = createEngine();
+  loaded.load(ser);
+  assert.strictEqual(loaded.state.settings.theme, "dark");
+  assert.strictEqual(loaded.state.settings.largeText, true);
+});
+
+test("Migration d'anciennes sauvegardes sans les clés theme et largeText", () => {
+  const legacy = JSON.parse(fixture("save-v5-age8-usine.json"));
+  delete legacy.settings;
+  const E = createEngine();
+  E.load(legacy);
+  assert.strictEqual(E.state.settings.theme, "auto");
+  assert.strictEqual(E.state.settings.largeText, false);
+  assert.strictEqual(E.state.settings.sound, true);
+  assert.strictEqual(E.state.settings.vibe, true);
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

@@ -210,3 +210,67 @@ body.has-act .view { padding-bottom: calc(var(--nav) + var(--safe-b) + 84px); }
 .skill .bar { height: 6px; margin: 3px 0; }
 .sk-l { font-variant-numeric: tabular-nums; color: var(--acc); font-weight: 700; }
 .gact .btn.gmake { flex: 1 1 auto; width: auto; }
+
+/* ---------------------------------------------------------------- THÈME SOMBRE : VEILLÉE */
+body.theme-dark {
+  --bg: #151311; --bg2: #1e1b17; --panel: #221d19; --panel2: #2b2520;
+  --text: #e8ded0; --muted: #a69986; --dim: #7a6e5d;
+  --line: rgba(232, 222, 208, 0.12); --line2: rgba(232, 222, 208, 0.26);
+  --paper: radial-gradient(rgba(232, 222, 208, 0.04) 1px, transparent 1px) 0 0 / 14px 14px;
+  color-scheme: dark;
+}
+body.theme-dark[data-ep="pigments"] { --acc-base: #e06040; --good: #62aa48; --bad: #e25438; --intu: #e2a832; }
+body.theme-dark[data-ep="papyrus"] {
+  --acc-base: #4db3a2; --good: #6cb33b; --bad: #e05c3c; --intu: #e0a32d;
+  --paper: repeating-linear-gradient(90deg, rgba(232, 222, 208, 0.03) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(0deg, rgba(232, 222, 208, 0.02) 0 2px, transparent 2px 23px);
+}
+body.theme-dark[data-ep="enluminure"] { --acc-base: #e24d4d; --good: #507cc4; --bad: #e24d4d; --intu: #deb035; }
+body.theme-dark[data-ep="registre"] { --acc-base: #e25c48; --good: #5292d2; --bad: #e25c48; --intu: #dba63b; }
+body.theme-dark[data-ep="quadrille"] {
+  --acc-base: #38c278; --good: #38c278; --bad: #e25442; --intu: #e2b22e;
+  --paper: linear-gradient(rgba(232, 222, 208, 0.04) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, rgba(232, 222, 208, 0.04) 1px, transparent 1px) 0 0 / 16px 16px;
+}
+body.theme-dark[data-ep="bord"] {
+  --acc-base: #ff682e; --good: #5f7bf5; --bad: #e25442; --intu: #e89f38;
+  --paper: radial-gradient(rgba(232, 222, 208, 0.05) 1px, transparent 1.3px) 0 0 / 12px 12px;
+}
+
+body.theme-dark .card.acc, body.theme-dark .goal-card { border-color: var(--line2); }
+body.theme-dark .modal { background: rgba(0, 0, 0, 0.72); }
+body.theme-dark .modal-box { border-color: var(--line2); background: var(--bg); }
+body.theme-dark #toasts > * { background: var(--bg2); border-color: var(--line2); color: var(--text); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); }
+body.theme-dark .btn { border-color: var(--line2); }
+body.theme-dark .btn.pri { border-color: var(--acc); color: #151311; }
+body.theme-dark .forge-btn { color: #151311; font-weight: 700; }
+body.theme-dark .filters button.on { color: #151311; }
+body.theme-dark #tabs { border-top-color: var(--line2); }
+body.theme-dark #top { border-bottom-color: var(--line2); }
+body.theme-dark .actbar { border-color: var(--line2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
+body.theme-dark input, body.theme-dark select, body.theme-dark .fld input, body.theme-dark .search input { border-color: var(--line2); background: var(--panel); color: var(--text); }
+body.theme-dark [data-ep="quadrille"] .goal-card { background: #26241e; box-shadow: none; border: 1px dashed var(--line2); }
+
+/* ---------------------------------------------------------------- CONFORT VISUEL (GRAND TEXTE) */
+body.large-text {
+  font-size: 17px;
+  --title-size: 1.15;
+  --dim: var(--muted);
+}
+body.large-text .small { font-size: 14.5px; }
+body.large-text .tiny { font-size: 12.5px; }
+body.large-text .gis-l1 b { font-size: 17px; }
+body.large-text #top .age { font-size: 15px; }
+body.large-text #tabs button span { font-size: 12px; }
+body.large-text .btn { min-height: 44px; font-size: 15px; }
+body.large-text .btn.small { min-height: 38px; font-size: 13.5px; }
+
+/* ---------------------------------------------------------------- RÉDUCTION DES MOUVEMENTS */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
