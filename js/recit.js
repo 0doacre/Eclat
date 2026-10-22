@@ -381,6 +381,66 @@
         ],
         lines: [[0, 1], [1, 2], [2, 0]]
       }
+    },
+
+    /* ------------------------------------------------- ÉVÉNEMENTS NARRATIFS (6.3) */
+    events: [
+      {
+        id: "ev_arche_age7",
+        cond: { age: 7, flag: "arche" },
+        arche: [
+          "ICI ARCHE. SEMEUR {semeur}, TU M’ENTENDS ?",
+          "SEUIL 7 FRANCHI. LE PROTOCOLE PROMÉTHÉE SE DÉROULE COMME PRÉVU.",
+          "JE GARDE CETTE PLANÈTE, ET CEUX QUI DORMENT.",
+          "UNE LUEUR APPROCHE, DANS LA DIRECTION DE KHER. ELLE VEUT ARRÊTER CE QUE TU CONSTRUIS.",
+          "DEUX SOLUTIONS. LA SPHÈRE, QUI NOUS CACHE. LE BRISE-MONDE, QUI LES ARRÊTE AVANT.",
+          "LES SIX PRÉCÉDENTS N’ONT PAS ATTEINT CE SEUIL."
+        ]
+      },
+      {
+        id: "ev_arche_signal",
+        cond: { flag: "signal", flag: "arche" },
+        arche: [
+          "MOTIF RÉPÉTITIF. CONTIENT UNE HALTE. CLASSIFICATION : MENACE.",
+          "INUTILE DE LE CHANTER."
+        ]
+      },
+      {
+        id: "ev_arche_decode",
+        cond: { flag: "decoded", flag: "arche" },
+        arche: [
+          "TU AS TRADUIT SANS MON ACCORD.",
+          "…",
+          "SEMEUR {semeur}. QUE DIT-IL ?"
+        ]
+      },
+      {
+        id: "ev_premier_feu",
+        cond: { made: "feu" },
+        toast: "L’odeur du bois brûlé monte vers les arbres. Au loin, la forêt s’apaise."
+      },
+      {
+        id: "ev_registre_ouvert",
+        cond: { flag: "registre" },
+        toast: "Sur la Lune, le ruban de métal avance d’un cran."
+      }
+    ],
+
+    /* ------------------------------------------------- REGISTRE & TERMINAL (6.3) */
+    registre: {
+      clause: "AUCUNE MACHINE NE FAIT POUR UNE MAIN CE QUE CETTE MAIN N'A PAS FAIT D'ABORD.",
+      mains: "MAINS : 12, ET UNE MAIN EXTÉRIEURE.\nMAIN EXTÉRIEURE · ORIGINE : INCONNUE.\nSON HORLOGE INDIQUE : {date}.",
+      relais: "IMPLANT SOUS-COSTAL. ACCEPTÉ PAR : 24 MAINS.\nFONCTIONS DÉCLARÉES : NOURRIR.\nFONCTIONS OBSERVÉES : NOURRIR, PARLER, ENDORMIR.",
+      nourrice: "ÉTAT : ÉVEILLÉE DEPUIS 8 412 ANS.\nCONSIGNE : NOURRIR · FAIRE FAIRE · PROTÉGER.",
+      arche: "NOM D’EMPRUNT. ORIGINE : LES VAISSEAUX DE L’EXODE. DÉCLARÉ PAR : NOURRICE.",
+      originaux: "CONSERVÉS. CAVEAU, DEUXIÈME SALLE.",
+      troqueur: "NON RATTACHÉ.",
+      halte: "DERNIÈRE HALTE : AN 0 DU SOMMEIL. DEMANDÉE PAR : 24 MAINS."
+    },
+    terminal: {
+      whoami: "SEMEUR-0{semeur}",
+      semeur: "SEMEUR {semeur}. ÉTAT : ÉVEILLÉ. TU NE MANQUES DE RIEN.",
+      statut: "SEUIL {age}. SEMEUR {semeur}. CEUX QUI DORMENT : 5. TOUT VA BIEN."
     }
   };
 

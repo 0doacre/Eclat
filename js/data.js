@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "6.2.0";
+  D.VERSION = "6.3.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -761,7 +761,8 @@
     { id: "caveau", k: "lieu", n: "Le Caveau des Semeurs" },
     { id: "lune7", k: "ciel", n: "La Lumière sur la Lune" },
     { id: "c1969", k: "code", n: "Venus en paix" }, { id: "cxyzzy", k: "code", n: "Rien ne se passe" },
-    { id: "cpromethee", k: "code", n: "Protocole Prométhée" }
+    { id: "cpromethee", k: "code", n: "Protocole Prométhée" },
+    { id: "cregistre", k: "code", n: "Main d’abord" }, { id: "ccapsule", k: "code", n: "Le message" }
   ];
 
   /* ------------------------------------------------------- GRANDS ŒUVRES */
@@ -987,7 +988,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🎶 La flûte apprend de nouveaux airs et le Ciel s’anime."
+    "📻 Le terminal s’ouvre à de nouvelles voix."
   ];
 
 
@@ -1125,18 +1126,18 @@
   /* ------------------------------------------------------------ TERMINAL */
   D.TERMINAL = {
     aide: "COMMANDES : AIDE · STATUT · ARCHE · SEMEUR · KHER · SIGNAL · LUCIOLES · PORTE · EFFACER",
-    statut: "ARCHE v7.12 · UPTIME : 41 207 ANS.\nDÉFENSES : ORIENTÉES VERS KHER.\nPROTOCOLE PROMÉTHÉE : ACTIF (LOT 7/12).\nMODULE D’IDENTIFICATION : ▒▒ ERREUR ▒▒",
+    statut: "ARCHE v7.12 · UPTIME : 41 207 ANS.\nDÉFENSES : ORIENTÉES VERS KHER.\nPROTOCOLE PROMÉTHÉE : ACTIF (LOT {semeur}/12).\nMODULE D’IDENTIFICATION : ▒▒ ERREUR ▒▒",
     arche: "JE SUIS ARCHE. JE GARDE LA TERRE. UNE PARTIE DE MA MÉMOIRE EST ILLISIBLE.",
-    semeur: "SEMEUR 7. ORGANISME CULTIVÉ. LOT 7/12.\nSTATUT : ACTIF.\nTAUX DE SURVIE DES LOTS PRÉCÉDENTS : 0 %.",
+    semeur: "SEMEUR {semeur}. ORGANISME CULTIVÉ. LOT {semeur}/12.\nSTATUT : ACTIF.\nTAUX DE SURVIE DES LOTS PRÉCÉDENTS : 0 %.",
     kher: "KHER : NAINE ORANGE, À 11,9 ANNÉES-LUMIÈRE.\nPLANÈTE KHER B : HABITABLE.\nACTIVITÉ : SIGNAL CONTINU DEPUIS 312 ANS. FLOTTE EN APPROCHE.\nCLASSIFICATION : MENACE.",
     lucioles: "NANITES DE TERRAFORMATION, LOT GAMMA.\nÉTAT : DORMANTES.\nRÉACTIVATION : FRÉQUENCE ACOUSTIQUE (VOIR DOSSIER VAHL, ACCÈS RESTREINT).",
     porte: "PORTE DU SITE 07 : VERROUILLAGE MAGNÉTIQUE.\nOUVERTURE : SIGNATURE DE SEMEUR + CHAMP MAGNÉTIQUE ORIENTÉ.",
     berceuse: "FICHIER CHANT_IRIS : CORROMPU.\nFRAGMENT RÉCUPÉRÉ : 4 · 3 · ▒ · 3 · 4 · ▒ · 4",
-    sudo: "BIEN ESSAYÉ, SEMEUR 7.",
+    sudo: "BIEN ESSAYÉ, SEMEUR {semeur}.",
     "42": "BONNE RÉPONSE. MAUVAISE QUESTION.",
-    bonjour: "BONJOUR, SEMEUR 7.",
-    ls: "cuves/  coeur/  chambre_iris/ [VERROUILLÉ]  protocole_promethee.txt [CODE REQUIS]",
-    whoami: "SEMEUR-07"
+    bonjour: "BONJOUR, SEMEUR {semeur}.",
+    ls: "cuves/  coeur/  registre/ [CLÉ : LA CLAUSE]  chambre_iris/ [VERROUILLÉ]  protocole_promethee.txt [CODE REQUIS]",
+    whoami: "SEMEUR-0{semeur}"
   };
 
   /* -------------------------------------------------------------- INTRO */

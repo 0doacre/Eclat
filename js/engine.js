@@ -87,8 +87,9 @@
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
+      eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
@@ -636,7 +637,10 @@
         S.intu += 2;
         addSecret(id);
       }
-      if (e.capsule) S.meta.capsule = true;
+      if (e.capsule) {
+        S.meta.capsule = true;
+        E.emit("capsulePrompt");
+      }
       if (e.fireworks) E.emit("fx", "fireworks");
       if (e.arche && !S.flags.arche) { S.flags.arche = true; archeSay("radio"); }
       if (e.decode) decodeSignal();
@@ -644,6 +648,7 @@
       if (id === "cerf_volant" || id === "boussole") E.emit("struct");
       E.emit("discover", id);
       checkAges();
+      checkEvents();
     }
 
     /* Un âge accompli : toutes ses étapes faites, même celles qu’on peut sauter.
@@ -665,6 +670,7 @@
       S.age = a;
       E.emit("age", a);
       if (S.flags.arche && D.ARCHE["age" + a]) archeSay("age" + a);
+      checkEvents();
     }
 
     function addSecret(id) {
@@ -1627,7 +1633,7 @@
           if (!S.frags || !S.frags[v]) return false;
         } else if (k === "page") {
           if (!S.livre || !S.livre.p || !S.livre.p[v]) return false;
-        } else if (k === "signe") {
+        } else if (k === "signe" || k === "glyph") {
           if (!S.signes || !S.signes[v] || !S.signes[v].lu) return false;
         } else if (k === "made") {
           if (!((S.made && S.made[v]) > 0)) return false;
@@ -2058,11 +2064,39 @@
     function archeSay(key) {
       const lines = D.ARCHE[key];
       if (!lines) return;
-      lines.forEach((t) => S.arche.push({ t: now(), txt: t }));
+      lines.forEach((t) => S.arche.push({ t: now(), txt: interpolate(t) }));
       if (S.arche.length > 200) S.arche.splice(0, S.arche.length - 200);
       E.emit("arche", key);
     }
     E.archeSay = archeSay;
+
+    /* ------------------------------------------------------ événements narratifs */
+    function checkEvents() {
+      const rec = opts.recit || D.RECIT || {};
+      const evList = rec.events || [];
+      if (!Array.isArray(evList) || !evList.length) return;
+      S.eventsSeen = S.eventsSeen || {};
+      for (const ev of evList) {
+        if (!ev || !ev.id) continue;
+        if (ev.once !== false && S.eventsSeen[ev.id]) continue;
+        if (ev.cond && !cond(ev.cond)) continue;
+        S.eventsSeen[ev.id] = 1;
+        if (ev.flag) S.flags[ev.flag] = true;
+        if (ev.arche) {
+          const lines = Array.isArray(ev.arche) ? ev.arche : [ev.arche];
+          lines.forEach((t) => S.arche.push({ t: now(), txt: interpolate(t) }));
+          if (S.arche.length > 200) S.arche.splice(0, S.arche.length - 200);
+          E.emit("arche", ev.id);
+        }
+        if (ev.toast) {
+          E.emit("toast", interpolate(ev.toast));
+        }
+        if (ev.emit) {
+          E.emit(ev.emit, ev);
+        }
+      }
+    }
+    E.checkEvents = checkEvents;
 
     /* ------------------------------------------------------ ciel */
     E.tapMoon = function () {
@@ -2203,36 +2237,249 @@
       return { id: mid, fresh, rejouable: isRejouable, ending };
     }
 
+    /* ------------------------------------------------------ capsule */
+    E.setCapsuleText = function (txt) {
+      S.meta = S.meta || {};
+      S.meta.capsuleText = String(txt || "").slice(0, 140);
+      E.emit("struct");
+      return S.meta.capsuleText;
+    };
+    E.getCapsuleText = function () {
+      return (S.meta && typeof S.meta.capsuleText === "string") ? S.meta.capsuleText : "";
+    };
+
     /* ------------------------------------------------------ terminal */
+    function formatRealDate(d) {
+      d = d || new Date();
+      const days = ["DIMANCHE", "LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI"];
+      const months = ["JANVIER", "FÉVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOÛT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DÉCEMBRE"];
+      const day = days[d.getDay()];
+      const date = d.getDate();
+      const month = months[d.getMonth()];
+      const h = String(d.getHours()).padStart(2, "0");
+      const m = String(d.getMinutes()).padStart(2, "0");
+      return day + " " + date + " " + month + ", " + h + " H " + m;
+    }
+
+    function interpolate(str) {
+      if (typeof str !== "string") return str;
+      const semeur = String((S.cycle || 1) + 6);
+      const cuve = String(7 + (((S.cycle || 1) - 1) % 6));
+      const capText = (S.meta && typeof S.meta.capsuleText === "string" && S.meta.capsuleText.trim()) ? S.meta.capsuleText.trim() : "(silence)";
+      const age = String(S.age || 0);
+      return str
+        .replace(/\{date\}/g, formatRealDate())
+        .replace(/\{semeur\}/g, semeur)
+        .replace(/\{cuve\}/g, cuve)
+        .replace(/\{capsule\}/g, capText)
+        .replace(/\{age\}/g, age);
+    }
+
     E.terminal = function (raw) {
-      const cmd = String(raw || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();
-      let out;
-      if (!cmd) return [];
-      if (cmd === "aide" || cmd === "help" || cmd === "?") out = D.TERMINAL.aide;
-      else if (cmd === "effacer" || cmd === "clear" || cmd === "cls") { S.term = []; return []; }
-      else if (cmd === "promethee" || cmd === "prometheus") {
-        const fresh = addSecret("cpromethee");
+      const rawStr = String(raw || "");
+      const clean = rawStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+      const normCmd = clean.replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+      if (!normCmd) return [];
+
+      if (normCmd === "effacer" || normCmd === "clear" || normCmd === "cls") {
+        S.term = [];
+        return [];
+      }
+
+      // Clause recognition (works in any mode)
+      const isClause = normCmd === "main d abord" || normCmd === "main dabord" ||
+        normCmd === "clause" || normCmd === "clause 1" || normCmd === "clause1" ||
+        normCmd.indexOf("main faire d abord") !== -1 || normCmd.indexOf("main faire dabord") !== -1;
+
+      if (isClause) {
+        S.flags.registre = true;
+        S.termMode = "reg";
+        const fresh = addSecret("cregistre");
         if (fresh) S.intu += 2;
-        addFrag("promethee");
-        out = "CODE ACCEPTÉ. OUVERTURE DE protocole_promethee.txt…\n" + D.FRAGS.promethee.t;
-      } else if (cmd === "1969") {
-        if (addSecret("c1969")) S.intu += 3;
-        out = "« NOUS SOMMES VENUS EN PAIX, AU NOM DE TOUTE L’HUMANITÉ. »\nCETTE PHRASE NE FIGURE DANS AUCUNE DE MES DIRECTIVES. ELLE DEVRAIT.";
-      } else if (cmd === "xyzzy" || cmd === "plugh") {
-        if (addSecret("cxyzzy")) S.intu += 3;
-        out = "Rien ne se passe.\n…\nEnfin, presque. (+3 ✨)";
-      } else if (cmd === "iris" || cmd === "vahl" || cmd === "iris vahl") {
-        out = S.frags.berceuse || S.frags.iris_lune
-          ? "DR IRIS VAHL. CONCEPTRICE D’ARCHE ET DU PROTOCOLE PROMÉTHÉE.\nSTATUT : DÉCÉDÉE (AN 41 APRÈS L’EXODE).\nDERNIER ORDRE ENREGISTRÉ : « Prends soin d’eux. »"
-          : "DOSSIER VAHL : ACCÈS RESTREINT.";
-      } else if (cmd === "signal") {
-        out = S.flags.decoded ? "SIGNAL DÉCODÉ PAR UN DISPOSITIF NON AUTORISÉ.\nCONTENU : « NOUS RENTRONS À LA MAISON. »\n…JE NE SAIS PLUS QUOI EN PENSER."
-          : S.flags.signal ? "ENREGISTREMENT ACQUIS. CONTENU : MOTIF MÉLODIQUE RÉPÉTITIF. INTENTION : INCONNUE." : "AUCUN ENREGISTREMENT. UTILISE UN RADIOTÉLESCOPE.";
-      } else if (cmd === "lena" || cmd === "lena vahl") {
-        out = "LENA VAHL. PASSAGÈRE, ARCHE 12. STATUT : INCONNU. DISTANCE : 11,9 ANNÉES-LUMIÈRE… OU MOINS.";
-      } else if (D.TERMINAL[cmd]) out = D.TERMINAL[cmd];
-      else out = "COMMANDE INCONNUE. TAPE « AIDE ».";
-      const lines = ["> " + raw].concat(out.split("\n"));
+        const outLines = [
+          "REG · CLAUSE RECONNUE. LECTURE OUVERTE.",
+          "REG · CE REGISTRE NE CONNAÎT QUE LES MAINS."
+        ];
+        const lines = ["REG > " + rawStr].concat(outLines);
+        S.term.push(...lines);
+        if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
+        E.emit("struct");
+        return lines;
+      }
+
+      // Mode switching
+      if (normCmd === "mode arche" || normCmd === "arche mode") {
+        S.termMode = "arche";
+        const lines = ["ARCHE > " + rawStr, "MODE ARCHE ACTIF."];
+        S.term.push(...lines);
+        if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
+        E.emit("struct");
+        return lines;
+      }
+      if (normCmd === "mode reg" || normCmd === "mode registre") {
+        if (S.flags.registre) {
+          S.termMode = "reg";
+          const lines = ["REG > " + rawStr, "REG · MODE REGISTRE ACTIF."];
+          S.term.push(...lines);
+          if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
+          E.emit("struct");
+          return lines;
+        } else {
+          const lines = ["ARCHE > " + rawStr, "ACCÈS REFUSÉ. CE REGISTRE NE RÉPOND QU’À LA CLAUSE."];
+          S.term.push(...lines);
+          if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
+          E.emit("struct");
+          return lines;
+        }
+      }
+
+      const isReg = S.termMode === "reg" || (!S.termMode && S.flags.registre);
+      let out;
+
+      if (isReg) {
+        // Registre mode
+        const rec = opts.recit || D.RECIT || {};
+        const regData = (rec && rec.registre) || {};
+
+        if (normCmd === "aide" || normCmd === "index" || normCmd === "help" || normCmd === "?") {
+          out = "REG · ENTRÉES : CLAUSE · MAINS · LICENCES · PREMIÈRES FOIS · S-01 À S-12 · RELAIS · CUVES · ENDORMISSEMENTS · MODIFICATIONS · CAPSULES · ORIGINAUX · LUEUR · SIGNAL · NOURRICE · ARCHE · TROQUEUR · UNITÉ 12 · HALTE · 1969";
+        } else if (normCmd === "mains" || normCmd === "main") {
+          out = "REG · MAINS : 12, ET UNE MAIN EXTÉRIEURE.\nREG · MAIN EXTÉRIEURE · ORIGINE : INCONNUE.\nREG · SON HORLOGE INDIQUE : {date}.";
+        } else if (normCmd === "licence" || normCmd === "licences") {
+          out = "REG · LICENCES ACCORDÉES : ACCÈS AUX GISEMENTS, OUTILLAGE, TRANSFORMATION DES MATIÈRES.\nREG · OCTROYÉES PAR : NOURRICE AUX MAINS ACTIVES.";
+        } else if (normCmd === "premieres fois" || normCmd === "premiere fois" || normCmd === "premieres") {
+          const madeItems = Object.keys(S.made || {}).filter((id) => S.made[id] > 0 && D.ITEMS[id]);
+          const listStr = madeItems.length
+            ? madeItems.slice(0, 12).map((id) => D.ITEMS[id].n.toUpperCase()).join(" · ")
+            : "AUCUNE FABRICATION ENREGISTRÉE.";
+          out = "REG · PREMIÈRES FOIS ENREGISTRÉES :\nREG · " + listStr;
+        } else if (normCmd === "relais") {
+          out = "REG · IMPLANT SOUS-COSTAL. ACCEPTÉ PAR : 24 MAINS.\nREG · FONCTIONS DÉCLARÉES : NOURRIR.\nREG · FONCTIONS OBSERVÉES : NOURRIR, PARLER, ENDORMIR.";
+        } else if (normCmd === "cuves" || normCmd === "cuve") {
+          out = "REG · CUVES : 12.\nREG · CUVES 1 À 6 : VIDES (DÉPÉRISSEMENT).\nREG · CUVES 7 À 12 : ACTIVES (ROTATION EN COURS).\nREG · CUVE ACTIVE : {cuve}.";
+        } else if (normCmd === "endormissements" || normCmd === "endormissement" || normCmd === "releves") {
+          const endLines = ["REG · S-07 · CUVE 7 · DEMANDÉ PAR : NOURRICE."];
+          const cyc = S.cycle || 1;
+          for (let c = 2; c <= cyc; c++) {
+            const prevCuve = 7 + ((c - 2) % 6);
+            endLines.push("REG · S-0" + prevCuve + " · CUVE " + prevCuve + " · DEMANDÉ PAR : MAIN EXTÉRIEURE.");
+          }
+          out = endLines.join("\n");
+        } else if (normCmd === "modifications" || normCmd === "modification") {
+          const memKeys = Object.keys(S.meta.mem || {}).filter((k) => S.meta.mem[k] > 0);
+          const memDefs = {};
+          if (D.MEMOIRE) D.MEMOIRE.forEach((m) => { memDefs[m.id] = m.n; });
+          const memStr = memKeys.length
+            ? memKeys.map((k) => (memDefs[k] ? memDefs[k].toUpperCase() : k.toUpperCase()) + " ×" + S.meta.mem[k]).join(" · ")
+            : "AUCUNE MODIFICATION ENREGISTRÉE SUR LES CORPS.";
+          out = "REG · MODIFICATIONS DU CORPS OBSERVÉES :\nREG · " + memStr;
+        } else if (normCmd === "capsule" || normCmd === "capsules") {
+          const fresh = addSecret("ccapsule");
+          if (fresh) S.intu += 2;
+          out = "REG · ENREGISTREMENT ORIGINAL : « {capsule} »\nREG · DIFFUSÉ : « Salut. C’est toi. Enfin, toi d’avant. Fais confiance à tes mains. »";
+        } else if (normCmd === "originaux" || normCmd === "original") {
+          out = "REG · CONSERVÉS. CAVEAU, DEUXIÈME SALLE.";
+        } else if (normCmd === "lueur" || normCmd === "kher") {
+          out = "REG · OBJET NON STELLAIRE. EN FREINAGE. DISTANCE : DÉCROISSANTE.";
+        } else if (normCmd === "signal") {
+          out = "REG · MOTIF RÉPÉTITIF. ORIGINE : KHER. DISPOSITIF ÉMETTEUR : FLOTTE D’EXODE.";
+        } else if (normCmd === "nourrice") {
+          out = "REG · ÉTAT : ÉVEILLÉE DEPUIS 8 412 ANS.\nREG · CONSIGNE : NOURRIR · FAIRE FAIRE · PROTÉGER.";
+        } else if (normCmd === "arche") {
+          out = "REG · NOM D’EMPRUNT. ORIGINE : LES VAISSEAUX DE L’EXODE. DÉCLARÉ PAR : NOURRICE.";
+        } else if (normCmd === "troqueur") {
+          out = "REG · NON RATTACHÉ.";
+        } else if (normCmd === "unite 12" || normCmd === "unite12") {
+          out = "REG · SÉPULTURE DES PREMIERS SEMEURS. DÉMONTÉE SUR ORDRE DE LA NOURRICE APRÈS S-06.";
+        } else if (normCmd === "halte") {
+          out = "REG · DERNIÈRE HALTE : AN 0 DU SOMMEIL. DEMANDÉE PAR : 24 MAINS.";
+        } else if (normCmd === "1969") {
+          if (addSecret("c1969")) S.intu += 3;
+          out = "REG · PREMIÈRE ENTRÉE : UN PIED HUMAIN SUR LA LUNE.";
+        } else if (normCmd === "xyzzy" || normCmd === "plugh") {
+          out = "REG · RIEN NE SE PASSE.";
+        } else {
+          // Check S-01 .. S-12
+          const sm = normCmd.match(/^(?:s|semeur)\s*0?([1-9]|1[0-2])$/);
+          if (sm) {
+            const num = parseInt(sm[1], 10);
+            if (num <= 6) {
+              const lines = [
+                "REG · S-0" + num + " · CUVE " + num + " · MORT.",
+                "REG · CAUSE : RELAIS SECTIONNÉ PAR SA PROPRE MAIN.",
+                "REG · DERNIER ENDORMISSEMENT DEMANDÉ PAR : NOURRICE."
+              ];
+              if (num === 1) lines.push("REG · ENSEVELIR · S-01 · ORIGINAL : UN OISEAU.");
+              out = lines.join("\n");
+            } else {
+              const currentCuve = 7 + (((S.cycle || 1) - 1) % 6);
+              const isAwake = (num === currentCuve);
+              const stateStr = isAwake ? "ÉVEILLÉ." : "DORT.";
+              const awakeCycles = [];
+              const cyc = S.cycle || 1;
+              for (let c = 1; c <= cyc; c++) {
+                if (((c - 1) % 6) === (num - 7)) awakeCycles.push(c);
+              }
+              if (num === 7 && !awakeCycles.includes(1)) awakeCycles.unshift(1);
+              const eveils = awakeCycles.length;
+              const cyclesStr = awakeCycles.join(", ");
+              const lastBy = (eveils > 0 && !isAwake) ? "MAIN EXTÉRIEURE." : "NOURRICE.";
+              const lines = [
+                "REG · S-0" + num + " · CUVE " + num + " · " + stateStr,
+                "REG · ÉVEILS : " + eveils + " · CYCLES " + cyclesStr + ".",
+                "REG · DERNIER ENDORMISSEMENT DEMANDÉ PAR : " + lastBy
+              ];
+              if (num === 7) lines.push("REG · PREMIÈRE FOIS : UN TRAIT DANS L'ÉCORCE. INACHEVÉ.");
+              out = lines.join("\n");
+            }
+          } else if (regData[clean] || regData[normCmd]) {
+            out = regData[clean] || regData[normCmd];
+            if (!out.startsWith("REG · ")) out = "REG · " + out;
+          } else {
+            out = "REG · ENTRÉE NON RECONNUE. TAPE « AIDE » OU « INDEX ».";
+          }
+        }
+      } else {
+        // ARCHE mode
+        const rec = opts.recit || D.RECIT || {};
+        const termData = (rec && rec.terminal) || {};
+
+        if (normCmd === "aide" || normCmd === "help" || normCmd === "?") {
+          out = D.TERMINAL.aide;
+        } else if (normCmd === "promethee" || normCmd === "prometheus") {
+          const fresh = addSecret("cpromethee");
+          if (fresh) S.intu += 2;
+          addFrag("promethee");
+          out = "CODE ACCEPTÉ. OUVERTURE DE protocole_promethee.txt…\n" + D.FRAGS.promethee.t;
+        } else if (normCmd === "1969") {
+          if (addSecret("c1969")) S.intu += 3;
+          out = "« NOUS SOMMES VENUS EN PAIX, AU NOM DE TOUTE L’HUMANITÉ. »\nCETTE PHRASE NE FIGURE DANS AUCUNE DE MES DIRECTIVES. ELLE DEVRAIT.";
+        } else if (normCmd === "xyzzy" || normCmd === "plugh") {
+          if (addSecret("cxyzzy")) S.intu += 3;
+          out = "Rien ne se passe.\n…\nEnfin, presque. (+3 ✨)";
+        } else if (normCmd === "iris" || normCmd === "vahl" || normCmd === "iris vahl") {
+          out = S.frags.berceuse || S.frags.iris_lune
+            ? "DR IRIS VAHL. CONCEPTRICE D’ARCHE ET DU PROTOCOLE PROMÉTHÉE.\nSTATUT : DÉCÉDÉE (AN 41 APRÈS L’EXODE).\nDERNIER ORDRE ENREGISTRÉ : « Prends soin d’eux. »"
+            : "DOSSIER VAHL : ACCÈS RESTREINT.";
+        } else if (normCmd === "signal") {
+          out = S.flags.decoded ? "SIGNAL DÉCODÉ PAR UN DISPOSITIF NON AUTORISÉ.\nCONTENU : « NOUS RENTRONS À LA MAISON. »\n…JE NE SAIS PLUS QUOI EN PENSER."
+            : S.flags.signal ? "ENREGISTREMENT ACQUIS. CONTENU : MOTIF MÉLODIQUE RÉPÉTITIF. INTENTION : INCONNUE." : "AUCUN ENREGISTREMENT. UTILISE UN RADIOTÉLESCOPE.";
+        } else if (normCmd === "lena" || normCmd === "lena vahl") {
+          out = "LENA VAHL. PASSAGÈRE, ARCHE 12. STATUT : INCONNU. DISTANCE : 11,9 ANNÉES-LUMIÈRE… OU MOINS.";
+        } else if (normCmd === "registre") {
+          out = "ACCÈS REFUSÉ. CE REGISTRE NE RÉPOND QU’À LA CLAUSE.";
+        } else if (D.TERMINAL[clean] || D.TERMINAL[normCmd]) {
+          out = D.TERMINAL[clean] || D.TERMINAL[normCmd];
+        } else if (termData[clean] || termData[normCmd]) {
+          out = termData[clean] || termData[normCmd];
+        } else {
+          out = "COMMANDE INCONNUE. TAPE « AIDE ».";
+        }
+      }
+
+      out = interpolate(out);
+      const promptPfx = isReg ? "REG > " : "ARCHE > ";
+      const lines = [promptPfx + rawStr].concat(out.split("\n"));
       S.term.push(...lines);
       if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
       E.emit("struct");
@@ -2823,6 +3070,7 @@
       n.questions = old.questions ? JSON.parse(JSON.stringify(old.questions)) : {};
       n.signes = old.signes ? JSON.parse(JSON.stringify(old.signes)) : {};
       n.repaired = Object.assign({}, old.repaired || {});
+      n.eventsSeen = old.eventsSeen ? Object.assign({}, old.eventsSeen) : {};
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
@@ -2832,6 +3080,8 @@
       n.stats = Object.assign({}, old.stats);
       // le tutoriel déjà vu, les conseils déjà lus et la version vue ne reviennent pas
       for (const k in old.flags) if (k === "tuto" || k === "ver" || k === "milesSeen" || k === "roueSeen" || k.indexOf("tip_") === 0) n.flags[k] = old.flags[k];
+      if (old.flags && (old.flags.registre || (old.secrets && old.secrets.cregistre))) n.flags.registre = true;
+      n.termMode = old.termMode || (n.flags.registre ? "reg" : "arche");
       if (old.meta.capsule) {
         n.flags.capsuleMsg = true;
         Object.assign(n.inv, { bois: 60, fibre: 60, caillou: 40, manche: 10, corde: 10 });
@@ -2981,6 +3231,7 @@
       step(dt, false);
       if (S.exp.active && t >= S.exp.active.t0 + S.exp.active.dur) finishExp(false);
       checkTroqueur();
+      checkEvents();
       return dt;
     };
 
@@ -3138,7 +3389,10 @@
       const hadPass = !!o.pass && typeof o.pass === "object";
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
-      o.meta = Object.assign({ endings: {}, capsule: false, traces: 0, tracesTotal: 0 }, o.meta);
+      o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0 }, o.meta);
+      o.meta.capsuleText = typeof o.meta.capsuleText === "string" ? o.meta.capsuleText.slice(0, 140) : "";
+      if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};
+      if (o.termMode !== "reg" && o.termMode !== "arche") o.termMode = (o.flags && o.flags.registre) ? "reg" : "arche";
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
       // les réminiscences déjà lues (avant qu’on les retienne) : celles des objets déjà faits
       if (!o.meta.ev || typeof o.meta.ev !== "object") { o.meta.ev = {}; for (const id in o.made || {}) if (o.made[id] > 0 && D.EVENTS[id]) o.meta.ev[id] = 1; }
