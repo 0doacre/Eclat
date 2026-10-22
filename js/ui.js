@@ -336,6 +336,8 @@
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { closeModal(); setTimeout(() => goto(gb.dataset.goto), 80); return; }
+      const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
+      if (sb && U.mcur && !fresh()) { A.click(); openSigneModal(sb.dataset.s); return; }
       const b = ev.target.closest("[data-m]");
       if (!b || !U.mcur || fresh()) return;
       const k = b.dataset.m;
@@ -363,7 +365,7 @@
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
   const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Dom, save: () => save() });
-  function recitHTML(t) {
+  function recitHTML(t, lieu) {
     if (!t) return "";
     const st = S();
     const cycle = (st && st.cycle) || 1;
@@ -373,10 +375,15 @@
     s = s.replace(/\{cycle\}/g, cycle)
          .replace(/\{semeur\}/g, semeur)
          .replace(/\{age\}/g, age)
-         .replace(/\[([a-zA-Z0-9_\u00C0-\u017F-]+)\]/g, '<span class="signe" data-s="$1">◇</span>');
+         .replace(/\[([a-zA-Z0-9_\u00C0-\u017F-]+)\]/g, (m, id) => {
+           if (typeof renderSigneToken === "function") {
+             return renderSigneToken(id, { recit: E.RECIT, state: st, seeSigne: (i, l) => E.seeSigne && E.seeSigne(i, l), esc, lieu });
+           }
+           return '<span class="signe" data-s="' + esc(id) + '">◇</span>';
+         });
     return s.split(/\n\n+/).map((p) => "<p>" + p.replace(/\n/g, "<br>") + "</p>").join("");
   }
-  const loreHTML = (t) => '<div class="lore">' + recitHTML(t) + '</div>';
+  const loreHTML = (t, lieu) => '<div class="lore">' + recitHTML(t, lieu) + '</div>';
 
   /* ============================================================ SAUVEGARDES
    * Règles : on ne réécrit jamais une sauvegarde qu’on n’a pas su lire ; avant
@@ -768,6 +775,129 @@
     $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
   }
 
+  /* ------------------------------------------------------------- SIGNES (modale) */
+  function openSigneModal(id) {
+    const rec = E.RECIT || D.RECIT || {};
+    const sDef = rec.signes && rec.signes[id];
+    if (!sDef) return;
+    const st = S();
+    st.signes = st.signes || {};
+    st.signes[id] = st.signes[id] || { vu: {} };
+    const stSigne = st.signes[id];
+
+    const parentModal = (U.mcur && U.mcur.signeId !== id) ? U.mcur : null;
+
+    const renderContent = (feedbackText, feedbackCls) => {
+      const places = (stSigne && stSigne.vu && typeof stSigne.vu === "object") ? Object.keys(stSigne.vu) : [];
+      let h = '<div class="kicker">Écriture des Anciens</div>';
+      h += '<h2>' + (stSigne.lu ? "Signe déchiffré" : "Signe inconnu") + '</h2>';
+      h += '<div class="signe-hero">' + (window.signeSVG ? window.signeSVG(sDef.h, 72) : "") + '</div>';
+
+      if (stSigne.lu) {
+        h += '<div class="signe-mot-decouvert">' + esc(sDef.mot) + '</div>';
+      }
+
+      if (places.length > 0) {
+        h += '<div class="signe-lieux"><span class="dim">Aperçu à :</span> ' + places.map(esc).join(", ") + '</div>';
+      } else {
+        h += '<div class="signe-lieux dim">Pas encore aperçu ailleurs.</div>';
+      }
+
+      if (stSigne.lu) {
+        h += '<p class="small muted center">Tu as compris ce signe.</p>';
+        h += '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>';
+      } else if (sDef.cond && !E.cond(sDef.cond)) {
+        h += '<p class="small muted center">Quelque chose t’échappe encore pour percer ce signe.</p>';
+        h += '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>';
+      } else {
+        h += '<form id="signeForm" class="signe-form">' +
+          '<div class="signe-input-row">' +
+          '<input type="text" id="signeInput" class="input" placeholder="Ce qu’il veut dire…" autocomplete="off" autocapitalize="off" spellcheck="false" />' +
+          '<button type="submit" id="signeBtn" class="btn pri">Proposer</button>' +
+          '</div>' +
+          '<div id="signeFeedback" class="signe-feedback ' + (feedbackCls || "") + '" aria-live="polite">' + (feedbackText ? esc(feedbackText) : "") + '</div>' +
+          '</form>' +
+          '<div class="acts"><button class="btn" data-m="close">Refermer</button></div>';
+      }
+      return h;
+    };
+
+    const bindEvents = (box) => {
+      const form = box.querySelector("#signeForm");
+      if (!form) return;
+      const input = box.querySelector("#signeInput");
+      const fb = box.querySelector("#signeFeedback");
+      const btn = box.querySelector("#signeBtn");
+      if (input) setTimeout(() => { try { input.focus(); } catch (e) {} }, 100);
+
+      const submitAttempt = () => {
+        const val = (input.value || "").trim();
+        if (!val) return;
+        const res = E.essaiSigne(id, val);
+        if (res.delai) {
+          A.err();
+          vibe(40);
+          fb.className = "signe-feedback delai";
+          fb.textContent = "Attends " + res.left + " s avant de retenter.";
+          return;
+        }
+        if (res.ok) {
+          A.secret();
+          save();
+          render(true);
+          box.innerHTML = renderContent();
+          iconize(box);
+          return;
+        }
+        if (res.proche) {
+          A.err();
+          vibe(40);
+          fb.className = "signe-feedback proche";
+          fb.textContent = "« Presque. »";
+          input.select();
+          return;
+        }
+        A.err();
+        vibe(40);
+        fb.className = "signe-feedback non";
+        fb.textContent = "« Non. »";
+        input.select();
+      };
+
+      form.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        submitAttempt();
+      });
+      if (btn) {
+        btn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          submitAttempt();
+        });
+      }
+    };
+
+    const modalObj = {
+      signeId: id,
+      cls: "modal-signe",
+      html: renderContent(),
+      onOpen: bindEvents,
+      onClose: () => {
+        if (parentModal) {
+          setTimeout(() => {
+            if (parentModal.refresh) parentModal.html = parentModal.refresh();
+            openModal(parentModal);
+          }, 80);
+        }
+      }
+    };
+
+    if (parentModal) {
+      swapModal(modalObj);
+    } else {
+      openModal(modalObj);
+    }
+  }
+
   /* ============================================================ VUES */
   /* les onglets arrivent quand ils ont quelque chose à montrer : le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
@@ -779,7 +909,7 @@
     if (t === "journal" && E.cache().sky) return true;
     if (t === "carnet") return Object.keys(st.known).length > 0;
     if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
-    if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions());
+    if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions()) || (E.hasSignes && E.hasSignes());
     return true;
   }
   function setTab(t) {
@@ -1437,6 +1567,7 @@
     const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
     if (E.hasLivre && E.hasLivre()) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
     if (E.hasQuestions && E.hasQuestions()) tabs.push(["questions", "Questions"]);
+    if (E.hasSignes && E.hasSignes()) tabs.push(["signes", "Signes"]);
     tabs.push(["secrets", "Secrets"]);
     if (E.has("flute")) tabs.push(["flute", "Flûte"]);
     tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
@@ -1488,7 +1619,7 @@
           if (q.aides && q.aides.length) {
             h += '<div class="question-aides">';
             q.aides.forEach((aide, idx) => {
-              h += '<div class="question-aide"><span class="aide-num">Piste ' + (idx + 1) + ' :</span> ' + recitHTML(aide) + '</div>';
+              h += '<div class="question-aide"><span class="aide-num">Piste ' + (idx + 1) + ' :</span> ' + recitHTML(aide, q.titre || "Question") + '</div>';
             });
             h += '</div>';
           }
@@ -1501,6 +1632,26 @@
             h += '</button></div>';
           }
           h += '</div>';
+        });
+        h += '</div>';
+      }
+    } else if (U.journalTab === "signes") {
+      const seen = E.seenSignes ? E.seenSignes() : [];
+      const compris = seen.filter((s) => s.lu).length;
+      h += '<p class="small muted">' + compris + "/" + seen.length + " signes compris.</p>";
+      if (!seen.length) {
+        h += '<p class="small muted center" style="padding:20px 0">Aucun signe aperçu pour l’instant.</p>';
+      } else {
+        h += '<div class="signes-grid">';
+        seen.forEach((s) => {
+          const count = s.count || 0;
+          const countTxt = count === 1 ? "1 endroit" : count + " endroits";
+          h += '<button class="signe-card' + (s.lu ? ' lu' : '') + '" data-s="' + esc(s.id) + '">' +
+            (s.lu
+              ? '<div class="signe-card-mot">' + esc(s.def.mot) + '</div>'
+              : '<div class="signe-card-dessin">' + (window.signeSVG ? window.signeSVG(s.def.h, 36) : '') + '</div>') +
+            '<div class="signe-card-lieux">' + countTxt + '</div>' +
+            '</button>';
         });
         h += '</div>';
       }
@@ -2296,6 +2447,7 @@
       "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus restants deviennent des Traces à la relève.</dd>" +
       "<dt>Demande du Troqueur</dt><dd>Le Troqueur demande des objets fabriqués contre des Traces. Livrer prend les objets dans la Réserve et donne les Traces tout de suite. Les demandes se renouvellent régulièrement.</dd>" +
       "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
+      "<dt>Signe</dt><dd>Un mot de l’écriture des Anciens. Tant que tu ne l’as pas compris, il s’affiche dessiné. Touche-le pour proposer ce qu’il veut dire.</dd>" +
       "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Tu y verses des ressources de la Réserve, ou tu l’alimentes pour qu’il s’y serve seul.</dd></dl>" +
       '<h3 class="sub">Les écrans</h3>' +
       "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
@@ -2568,7 +2720,7 @@
     E.on("secret", (id) => {
       badge("journal");
       const it = I[id];
-      if (it && it.sec) setTimeout(() => { A.secret(); simpleModal("Secret découvert", esc(it.n), '<div class="row" style="margin-bottom:8px">' + icon(id, "lg") + "</div>" + loreHTML(it.d) + (fxText(id) ? '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>" : "")); }, 450);
+      if (it && it.sec) setTimeout(() => { A.secret(); simpleModal("Secret découvert", esc(it.n), '<div class="row" style="margin-bottom:8px">' + icon(id, "lg") + "</div>" + loreHTML(it.d, it.n) + (fxText(id) ? '<p class="small" style="color:var(--good)">' + esc(fxText(id)) + "</p>" : "")); }, 450);
       else if (id === "caveau" || id === "lune7" || id[0] === "c") setTimeout(() => A.secret(), 300);
     });
     E.on("frag", () => badge("journal"));
@@ -2590,14 +2742,14 @@
       if (r.revisit) {
         openModal({
           html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" +
-            loreHTML(r.revisit.t) +
+            loreHTML(r.revisit.t, zoneName(r.z)) +
             (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") +
             '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>'
         });
         return;
       }
       if (F && !r.fragNew) { toast("🧭 " + esc(r.x.n) + " : déjà raconté dans ton Journal." + (gains.length ? " Tu rapportes : " + esc(gains.join(", ")) + "." : ""), { key: "exp" }); return; }
-      openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" + (F ? loreHTML(F.t) : "") +
+      openModal({ html: '<div class="kicker">Exploration · ' + esc(zoneName(r.z)) + "</div><h2>" + esc(F ? (F.n || F.titre) : r.x.n) + "</h2>" + (F ? loreHTML(F.t, (F ? (F.n || F.titre) : r.x.n) || zoneName(r.z)) : "") +
         (gains.length ? '<p class="small muted">Tu rapportes : ' + esc(gains.join(", ")) + "</p>" : "") + '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
     });
     E.on("arche", (key) => {
@@ -2759,25 +2911,31 @@
       if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
       if ((b = t.closest("[data-goto]"))) { goto(b.dataset.goto); return; }
       if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
+      if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
       if ((b = t.closest("[data-page]"))) {
         const pid = b.dataset.page;
         const c = E.livre ? E.livre().find((x) => x.id === pid) : null;
         if (c && c.page) {
           E.readPage(pid);
           render(true);
-          const p = c.page;
-          const notesHTML = (c.notes && c.notes.length) ?
-            '<div class="livre-notes">' + c.notes.map((n) =>
-              '<div class="livre-note">' + recitHTML(n.t) +
-              (n.sig ? '<div class="livre-sig">' + esc(n.sig) + '</div>' : '') +
-              '</div>'
-            ).join("") + '</div>' : '';
-          openModal({
-            html: '<div class="kicker">Le Livre des Semeurs · n° ' + c.n + '</div>' +
-              '<h2>' + esc(p.titre || ("Page " + c.n)) + '</h2>' +
-              '<div class="livre-imprime lore">' + recitHTML(p.imprime) + '</div>' +
+          const makeHTML = () => {
+            const curC = E.livre ? E.livre().find((x) => x.id === pid) : c;
+            const p = curC.page;
+            const notesHTML = (curC.notes && curC.notes.length) ?
+              '<div class="livre-notes">' + curC.notes.map((n) =>
+                '<div class="livre-note">' + recitHTML(n.t, "Page " + curC.n) +
+                (n.sig ? '<div class="livre-sig">' + esc(n.sig) + '</div>' : '') +
+                '</div>'
+              ).join("") + '</div>' : '';
+            return '<div class="kicker">Le Livre des Semeurs · n° ' + curC.n + '</div>' +
+              '<h2>' + esc(p.titre || ("Page " + curC.n)) + '</h2>' +
+              '<div class="livre-imprime lore">' + recitHTML(p.imprime, "Page " + curC.n) + '</div>' +
               notesHTML +
-              '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>'
+              '<div class="acts"><button class="btn pri" data-m="close">Refermer</button></div>';
+          };
+          openModal({
+            html: makeHTML(),
+            refresh: makeHTML
           });
         }
         return;
@@ -2791,7 +2949,7 @@
         }
         return;
       }
-      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(F.t || F.lore), "Refermer"); return; }
+      if ((b = t.closest("[data-frag]"))) { const F = D.FRAGS[b.dataset.frag]; simpleModal("Fragment", esc(F.n || F.titre), loreHTML(F.t || F.lore, F.n || F.titre || "Fragment"), "Refermer"); return; }
       if ((b = t.closest("[data-note]"))) { playNote(Number(b.dataset.note), b); return; }
       if ((b = t.closest("[data-play]"))) { A.init(); D.MELODIES[b.dataset.play].notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420)); return; } // la jouer pour de bon
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }

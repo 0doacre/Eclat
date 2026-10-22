@@ -60,6 +60,7 @@ Chaque fiche affiche la sorte d’objet et une phrase qui dit à quoi elle sert 
 | **Relève** | Recommencer le monde en gardant ses recettes. Le bouton dit « Passer le relais ». |
 | **Ruine** | Ce qu’un Semeur a construit attend le suivant. Se répare sur place pour une fraction de son coût d’origine. |
 | **Grand Œuvre** | Chantier final qui mène à une fin. |
+| **Signe** | Un mot de l’écriture des Anciens. S’affiche dessiné tant qu’il n’est pas compris, puis comme le mot. Se déchiffre en proposant son sens sur sa fiche. |
 
 ## Chiffres
 

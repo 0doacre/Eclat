@@ -88,7 +88,7 @@
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0 },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {} },
-      livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {},
+      livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {},
       settings: { sound: true, vibe: true },
       pipAcc: 0, intuAcc: 0, moon: 0, introSeen: false
     };
@@ -1616,6 +1616,8 @@
           if (!S.frags || !S.frags[v]) return false;
         } else if (k === "page") {
           if (!S.livre || !S.livre.p || !S.livre.p[v]) return false;
+        } else if (k === "signe") {
+          if (!S.signes || !S.signes[v] || !S.signes[v].lu) return false;
         } else if (k === "made") {
           if (!((S.made && S.made[v]) > 0)) return false;
         } else if (k === "has") {
@@ -1827,6 +1829,160 @@
       S.questions[id].lvl = curLvl + 1;
       E.emit("struct");
       return { ok: true, lvl: S.questions[id].lvl };
+    };
+
+    /* ------------------------------------------------------------- SIGNES */
+    const LEADING_ARTICLES = new Set(["le", "la", "les", "l", "un", "une", "des", "du", "de", "d"]);
+    const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+
+    function normSigne(txt) {
+      if (txt === null || txt === undefined) return "";
+      let s = String(txt).toLowerCase();
+      s = s.replace(/œ/g, "oe").replace(/æ/g, "ae");
+      s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+      s = s.replace(/['’`´]/g, " ");
+      s = s.replace(/[^a-z0-9\s]/g, " ");
+      let words = s.trim().split(/\s+/).filter(Boolean);
+      while (words.length > 1 && LEADING_ARTICLES.has(words[0])) {
+        words.shift();
+      }
+      return words.join(" ");
+    }
+
+    function fnv1a32(str) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return (h >>> 0).toString(16).padStart(8, "0");
+    }
+
+    function isProche(norm, okSet) {
+      if (!norm || !okSet || okSet.size === 0) return false;
+      const len = norm.length;
+      if (len > 1) {
+        for (let i = 0; i < len; i++) {
+          const v = norm.slice(0, i) + norm.slice(i + 1);
+          if (okSet.has(fnv1a32(v))) return true;
+        }
+      }
+      for (let i = 0; i < len; i++) {
+        const cur = norm[i];
+        const prefix = norm.slice(0, i);
+        const suffix = norm.slice(i + 1);
+        for (let c = 0; c < 26; c++) {
+          const ch = ALPHABET[c];
+          if (ch !== cur) {
+            const v = prefix + ch + suffix;
+            if (okSet.has(fnv1a32(v))) return true;
+          }
+        }
+      }
+      for (let i = 0; i <= len; i++) {
+        const prefix = norm.slice(0, i);
+        const suffix = norm.slice(i);
+        for (let c = 0; c < 26; c++) {
+          const ch = ALPHABET[c];
+          const v = prefix + ch + suffix;
+          if (okSet.has(fnv1a32(v))) return true;
+        }
+      }
+      return false;
+    }
+
+    E.normSigne = normSigne;
+    E.fnv1a32 = fnv1a32;
+    E.empreinte = (txt) => fnv1a32(normSigne(txt));
+
+    E.essaiSigne = function (id, txt) {
+      const rec = opts.recit || D.RECIT || {};
+      if (!rec.signes || !rec.signes[id]) {
+        return { ok: false, proche: false, why: "nosign" };
+      }
+      const sDef = rec.signes[id];
+      if (sDef.cond && !cond(sDef.cond)) {
+        return { ok: false, proche: false, why: "cond" };
+      }
+      S.signes = S.signes || {};
+      if (!S.signes[id]) S.signes[id] = { vu: {} };
+      const st = S.signes[id];
+      st.vu = st.vu || {};
+
+      if (st.lu) {
+        return { ok: true, proche: false, mot: sDef.mot, deja: true };
+      }
+
+      const curTime = now();
+      const delaiSec = (typeof rec.signeDelai === "number") ? rec.signeDelai : 3;
+      const delaiMs = delaiSec * 1000;
+      if (st.last && (curTime - st.last < delaiMs)) {
+        const left = Math.max(1, Math.ceil((delaiMs - (curTime - st.last)) / 1000));
+        return { ok: false, proche: false, delai: true, left, why: "delai" };
+      }
+      st.last = curTime;
+      st.essais = (st.essais || 0) + 1;
+
+      const norm = normSigne(txt);
+      if (!norm) {
+        return { ok: false, proche: false, why: "empty" };
+      }
+      const h = fnv1a32(norm);
+      const okSet = new Set(sDef.ok || []);
+
+      if (okSet.has(h)) {
+        st.lu = 1;
+        E.emit("signe", { id, mot: sDef.mot });
+        return { ok: true, proche: false, mot: sDef.mot };
+      }
+
+      const proche = isProche(norm, okSet);
+      return { ok: false, proche };
+    };
+
+    E.seeSigne = function (id, lieu) {
+      const rec = opts.recit || D.RECIT || {};
+      if (!rec.signes || !rec.signes[id]) return;
+      S.signes = S.signes || {};
+      if (!S.signes[id]) S.signes[id] = { vu: {} };
+      S.signes[id].vu = S.signes[id].vu || {};
+      if (lieu) {
+        S.signes[id].vu[String(lieu)] = 1;
+      }
+    };
+
+    E.seenSignes = function () {
+      const rec = opts.recit || D.RECIT || {};
+      if (!S.signes || !rec.signes) return [];
+      const list = [];
+      for (const id in rec.signes) {
+        const st = S.signes[id];
+        if (!st) continue;
+        const places = (st.vu && typeof st.vu === "object") ? Object.keys(st.vu) : [];
+        if (places.length > 0 || st.lu) {
+          list.push({
+            id,
+            def: rec.signes[id],
+            lu: !!st.lu,
+            lieux: places,
+            count: places.length
+          });
+        }
+      }
+      return list;
+    };
+
+    E.hasSignes = function () {
+      const rec = opts.recit || D.RECIT || {};
+      if (!S.signes || !rec.signes) return false;
+      for (const id in S.signes) {
+        if (!rec.signes[id]) continue;
+        const st = S.signes[id];
+        if (!st) continue;
+        if (st.lu) return true;
+        if (st.vu && Object.keys(st.vu).length > 0) return true;
+      }
+      return false;
     };
 
     function finishExp(silent) {
@@ -2577,6 +2733,7 @@
       n.livre = old.livre ? JSON.parse(JSON.stringify(old.livre)) : { p: {}, vu: {} };
       n.revus = Object.assign({}, old.revus || {});
       n.questions = old.questions ? JSON.parse(JSON.stringify(old.questions)) : {};
+      n.signes = old.signes ? JSON.parse(JSON.stringify(old.signes)) : {};
       n.repaired = Object.assign({}, old.repaired || {});
       n.cycle = (old.cycle || 1) + 1;
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
@@ -3036,6 +3193,40 @@
           if (Number.isFinite(v) && v > 0) rep[id] = v;
         }
         o.repaired = rep;
+      }
+
+      if (!o.signes || typeof o.signes !== "object" || Array.isArray(o.signes)) {
+        o.signes = {};
+      } else {
+        const slist = {};
+        const rec = opts.recit || D.RECIT || {};
+        for (const id in o.signes) {
+          if (rec.signes && !rec.signes[id]) {
+            o.orphans = o.orphans || {};
+            (o.orphans.signes = o.orphans.signes || {})[id] = o.signes[id];
+          } else {
+            const item = o.signes[id];
+            if (item && typeof item === "object" && !Array.isArray(item)) {
+              const cleaned = {};
+              if (item.lu) cleaned.lu = 1;
+              if (item.vu && typeof item.vu === "object" && !Array.isArray(item.vu)) {
+                const cleanVu = {};
+                for (const place in item.vu) {
+                  if (typeof place === "string" && item.vu[place]) cleanVu[place] = 1;
+                }
+                cleaned.vu = cleanVu;
+              } else {
+                cleaned.vu = {};
+              }
+              const essais = Math.floor(Number(item.essais));
+              if (Number.isFinite(essais) && essais > 0) cleaned.essais = essais;
+              const last = Number(item.last);
+              if (Number.isFinite(last) && last > 0) cleaned.last = last;
+              slist[id] = cleaned;
+            }
+          }
+        }
+        o.signes = slist;
       }
       return o;
     }
