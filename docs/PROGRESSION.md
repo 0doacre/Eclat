@@ -1,7 +1,7 @@
 # Progression : Passages, Relève et Mémoire des mains
 
-Document de conception de la version 4.5 (phase 1). Il sert de référence au code
-(`js/data.js`, `js/engine.js`, `js/ui.js`, `js/usine.js`) et peut être donné tel quel
+Document de conception de la partie Passages, Relève et Mémoire (écrit pour la 4.5, tenu à jour depuis). Il sert de référence au code
+(`js/data.js`, `js/engine.js`, `js/ui.js`) et peut être donné tel quel
 à un assistant (Sonnet, Gemini…) pour une tâche précise : voir « Tâches à déléguer »
 en fin de document.
 
@@ -23,7 +23,7 @@ par la main ne se perd pas ».
   qu’il rapporte une fois franchi.
 - L’objet qui ouvrait la terre (épieu, outre, pioche…) **rend le passage possible** ;
   la terre ne s’ouvre que quand le passage est **payé en entier**.
-- On paie en **versant** depuis la Réserve (bouton « Verser ») : autant qu’on peut de
+- On paie en **versant** depuis la Réserve (bouton « Déposer ») : autant qu’on peut de
   chaque matière, en plusieurs fois si besoin. Ce qui est versé est acquis (une
   Réserve limitée en usine avancée n’empêche donc pas de payer un gros passage).
 - Le coût est multiplié par 4 à 6 d’une terre à la suivante : c’est le mur.
@@ -95,8 +95,8 @@ par 2,3 à 2,5 à chaque niveau.
 
 ## 6. Interface
 
-- **Carte** : brume 🚧 + avancement ; fiche du passage (coût, déjà versé, Verser).
-- **Objectif** : étape « 🚧 Ouvrir le passage vers … » avec Verser.
+- **Carte** : brume 🚧 + avancement ; fiche du passage (coût, déjà versé, Déposer).
+- **Objectif** : étape « 🚧 Ouvrir le passage vers … » avec Déposer.
 - **En-tête** : pastille ✦ (Traces) dès qu’une relève est possible ou que des Traces
   sont disponibles ; elle ouvre la Mémoire des mains.
 - **Mémoire des mains** (fenêtre) : ce que rapporterait une relève maintenant, ce qu’on

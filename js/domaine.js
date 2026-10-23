@@ -328,7 +328,7 @@
         const can = have >= ask.n;
         return '<div class="comptoir-row" data-aline="' + i + '">' +
           '<div class="comptoir-head" data-goto="' + ask.id + '" role="button" tabindex="0" title="' + esc(I[ask.id].n) + ' (toucher pour inspecter)">' + icon(ask.id, "sm") +
-          '<div class="grow"><b>' + esc(I[ask.id].n) + '</b><span class="tiny muted"> · <span data-c="' + ask.id + '">' + fmt(have) + '</span> / ' + fmt(ask.n) + ' en stock</span></div>' +
+          '<div class="grow"><b>' + esc(I[ask.id].n) + '</b><span class="tiny muted"> · <span data-c="' + ask.id + '">' + fmt(have) + '</span> / ' + fmt(ask.n) + ' en poche</span></div>' +
           '<span class="small" style="font-weight:700">+' + ask.tr + ' ✦</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini' + (can ? ' pri' : '') + '" data-m="deliver" data-idx="' + i + '"' + (can ? '' : ' disabled') + '>' +
