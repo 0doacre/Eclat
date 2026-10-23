@@ -504,12 +504,19 @@
         need += cost[i]; got += g;
         if (g < cost[i]) left[i] = cost[i] - g;
       }
-      return { z: zid, P, cost, paid, left, ready: !!p, done: !!(p && p.done), frac: need ? got / need : 1, can: Object.keys(left).some((i) => (S.inv[i] || 0) >= 1) };
+      return { z: zid, P, cost, paid, left, ready: !!p && passAtteignable(zid), done: !!(p && p.done), frac: need ? got / need : 1, can: Object.keys(left).some((i) => (S.inv[i] || 0) >= 1) };
     };
-    E.passPending = () => Object.keys(PASS).filter((z) => S.pass[z] && !S.pass[z].done);
+    /* un passage n’apparaît que lorsque la terre d’avant est ouverte : l’objet-clé fabriqué en avance
+     * (une pioche, un chariot…) le garde en réserve, sans le montrer ni le laisser payer */
+    function passAtteignable(zid) {
+      const i = D.ZONES.findIndex((z) => z.id === zid);
+      return i <= 0 || zoneOpen(D.ZONES[i - 1].id);
+    }
+    E.passAtteignable = passAtteignable;
+    E.passPending = () => Object.keys(PASS).filter((z) => S.pass[z] && !S.pass[z].done && passAtteignable(z));
     E.passPour = function (zid) {
       const p = S.pass[zid];
-      if (!p || p.done) return { ok: false };
+      if (!p || p.done || !passAtteignable(zid)) return { ok: false };
       const cost = E.passCost(zid), gave = {};
       for (const i in cost) {
         const g = Math.min(Math.floor(S.inv[i] || 0), cost[i] - (p.paid[i] || 0));

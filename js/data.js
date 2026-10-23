@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.1";
+  D.VERSION = "0.9.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,8 +1071,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🗺️ Trois terres de plus ont leur règle : les vapeurs du Gisement Noir, l’air mince des Pics Fracturés, la chaleur de Mercure. Chacune demande un objet à porter sur soi : le masque filtrant, la bouteille d’air, le bouclier thermique.",
-    "🧭 Le tutoriel explique maintenant les dons, les visiteurs, les fouilles, les figures du Cosmos et les paliers d’un gisement."
+    "🚧 Un passage n’apparaît plus avant que la terre d’avant soit ouverte : les Collines ne réclament plus d’argile et de briques quand tu es encore à la Lisière.",
+    "🧭 Le tutoriel des passages attend lui aussi la bonne terre."
   ];
 
 

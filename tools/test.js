@@ -839,6 +839,22 @@ test("Règles par terre, suite : vapeurs, air mince, chaleur", () => {
   assert.ok(near(E.extOut(e), chaud / 0.6));
   assert.ok(D.ITEMS.masque.r && D.ITEMS.bouteille.r, "les deux objets se fabriquent");
 });
+test("Un passage n’apparaît que lorsque la terre d’avant est ouverte", () => {
+  const E = mk();
+  // l’objet-clé des Collines fabriqué en avance, alors qu’on est encore à la Lisière
+  E.add("pioche_pierre", 1);
+  E.state.made.pioche_pierre = 1;
+  E.state.pass.collines = { paid: {}, done: false };
+  assert.ok(!E.passPending().includes("collines"), "pas de passage vers les Collines depuis la Lisière");
+  assert.strictEqual(E.passInfo("collines").ready, false);
+  E.add("argile", 1000); E.add("brique", 1000); E.add("caillou", 100000);
+  assert.strictEqual(E.passPour("collines").ok, false, "rien ne se dépose dans un passage qu’on ne voit pas");
+  assert.strictEqual(E.state.inv.argile, 1000);
+  // la Rivière ouverte, il apparaît
+  E.state.zones.plaine = true; E.state.zones.riviere = true;
+  assert.ok(E.passPending().includes("collines"));
+  assert.strictEqual(E.passInfo("collines").ready, true);
+});
 test("Étudier tout : toutes les ressources vues d’un coup, ou rien", () => {
   const E = mk();
   ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));
@@ -2949,8 +2965,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.9.1 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.9.1");
+test("Version 0.9.2 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.2");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3153,7 +3169,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.9.1");
+  assert.strictEqual(D.VERSION, "0.9.2");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
