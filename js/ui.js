@@ -1422,7 +1422,7 @@
     const inv = invItems();
     h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3>' +
       (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + " · " + fmt(totalStock) + " au total</span>" : "") +
-      "</div>" +
+      "</div>" + studyAllHTML() +
       (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
       (U.iq ? '<button class="search-clear" data-clear-search="iq" aria-label="Effacer">✕</button>' : "") + '</div>' +
       '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
@@ -1433,14 +1433,15 @@
     const flows = E.flows();
     const tile = (id) => {
       const sel = U.slots.includes(id), fav = favs()[id];
-      const rx = st.studied[id] && E.reactions(id)[U.geste];
+      const rxs = st.studied[id] && E.reactions(id), rx = rxs && rxs[U.geste];
+      const spent = rxs && !Object.keys(rxs).length;
       const inR = E.rate(id) + (flows.prod[id] || 0);
       const outR = flows.cons[id] || 0;
       const net = inR - outR;
       const hasFlow = Math.abs(net) >= 1e-4;
       const flowCls = net > 1e-4 ? " pos" : net < -1e-4 ? " neg" : "";
       const flowTxt = net > 1e-4 ? "+" + perMin(net) : net < -1e-4 ? "-" + perMin(-net) : "";
-      return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' +
+      return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + (spent ? " spent" : "") + '" data-inv="' + id + '"' + (spent ? ' title="Plus rien à trouver avec cette ressource, pour l’instant"' : "") + ">" +
         (fav ? '<i class="fav">♥</i>' : "") +
         (rx ? '<i class="rx" title="Réagit avec cette action">✦' + (rx > 1 ? rx : "") + "</i>" : "") +
         icon(id) +
@@ -1462,8 +1463,16 @@
         : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
         : (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.");
       h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
-    } else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</p>';
+    } else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie, et pâlit quand elle n’a plus rien à donner.</p>';
     return h;
+  }
+  /* Étudier tout : une ligne au-dessus des ressources tant qu’il en reste deux à étudier. */
+  function studyAllHTML() {
+    const st = S(), sa = E.studyAllCost();
+    if (sa.n < 2 || Object.keys(st.studied).length < 1) return "";
+    const lack = st.intu < sa.c;
+    return '<div class="study-all"><button class="btn small" data-study-all' + (lack ? " disabled" : "") + '>🔍 Étudier tout · ✨' + fmt(sa.c) + '</button><span class="tiny muted">' +
+      (lack ? "Il te manque " + fmt(sa.c - st.intu) + " ✨ pour étudier les " + sa.n + " ressources." : sa.n + " ressources pas encore étudiées. Ensuite, le filtre 🔍 À tenter montre celles qui servent encore.") + "</span></div>";
   }
   const INV_SORTS = [
     ["age", "Par âge"],
@@ -1480,7 +1489,8 @@
     ["comp", "Pièces", "⚙️"],
     ["geste", "Action", "✦"],
     ["fav", "Favoris", "♥"],
-    ["new", "Inutilisées", "✨"]
+    ["new", "Inutilisées", "✨"],
+    ["try", "À tenter", "🔍"]
   ];
   function invCounts() {
     const st = S(), fv = favs(), flows = E.flows();
@@ -1494,7 +1504,7 @@
       const it = I[id];
       return it && (st.inv[id] >= 1 || st.seen[id]) && !E.isUnique(it) && !E.isScaled(it);
     });
-    const c = { tout: all.length, flow: 0, res: 0, comp: 0, geste: 0, fav: 0, new: 0 };
+    const c = { tout: all.length, flow: 0, res: 0, comp: 0, geste: 0, fav: 0, new: 0, try: 0 };
     for (const id of all) {
       const it = I[id];
       const hasFlow = (E.rate(id) + (flows.prod[id] || 0) > 1e-4) || ((flows.cons[id] || 0) > 1e-4);
@@ -1504,6 +1514,7 @@
       if (forG[id]) c.geste++;
       if (fv[id]) c.fav++;
       if (!used[id]) c.new++;
+      if (st.studied[id] && E.usesLeft(id)) c.try++;
     }
     return c;
   }
@@ -1563,6 +1574,7 @@
       if (o.filter === "res") return it.t === "res";
       if (o.filter === "comp") return it.t !== "res";
       if (o.filter === "new") return !used[id];
+      if (o.filter === "try") return !!st.studied[id] && E.usesLeft(id) > 0;
       return true;
     }).sort((a, b) => (o.sort !== "age" ? (fv[b] ? 1 : 0) - (fv[a] ? 1 : 0) : 0) || (sorts[o.sort] || byAge)(a, b));
   }
@@ -3653,6 +3665,7 @@
         return;
       }
       if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
+      if ((b = t.closest("[data-study-all]"))) { const n = E.studyAll(); if (n) { toast("🔍 " + n + " ressources étudiées."); A.discover(); } render(true); return; }
       if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
       if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
       if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }

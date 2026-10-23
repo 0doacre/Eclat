@@ -783,6 +783,23 @@ test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
   assert.ok(!E.study("manche"), "une seule fois");
   assert.ok(!E.study("os"), "pas une matière jamais vue");
 });
+test("Étudier tout : toutes les ressources vues d’un coup, ou rien", () => {
+  const E = mk();
+  ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));
+  E.state.intu = 0;
+  const sa = E.studyAllCost();
+  assert.ok(sa.n >= 3 && sa.c >= sa.n);
+  assert.strictEqual(E.studyAll(), 0, "pas assez d’Intuition : rien ne change");
+  assert.ok(!E.state.studied.bois);
+  E.state.intu = sa.c + 2;
+  assert.strictEqual(E.studyAll(), sa.n);
+  assert.strictEqual(E.state.intu, 2);
+  assert.ok(E.state.studied.bois && E.state.studied.caillou);
+  assert.strictEqual(E.studyAllCost().n, 0);
+  assert.strictEqual(E.usesLeft("bois"), 1, "le manche reste à trouver");
+  E.learn("manche");
+  assert.strictEqual(E.usesLeft("bois"), 0);
+});
 
 test("Grand Œuvre alimenté : il se sert dans la Réserve, au débit de l’âge", () => {
   const E = mk();

@@ -1509,6 +1509,22 @@
       E.emit("struct");
       return true;
     };
+    /* Étudier tout : toutes les ressources vues et pas encore étudiées, d’un coup. */
+    const studiable = () => Object.keys(S.seen).filter((id) => item(id) && !S.studied[id] && !isUnique(item(id)) && !isScaled(item(id)));
+    E.studyAllCost = function () {
+      const ids = studiable();
+      return { n: ids.length, c: ids.reduce((t, id) => t + E.studyCost(id), 0) };
+    };
+    E.studyAll = function () {
+      const ids = studiable(), c = ids.reduce((t, id) => t + E.studyCost(id), 0);
+      if (!ids.length || S.intu < c) return 0;
+      S.intu -= c;
+      for (const id of ids) S.studied[id] = 1;
+      E.emit("struct");
+      return ids.length;
+    };
+    /* Nombre de recettes encore à trouver avec cette ressource, toutes actions confondues. */
+    E.usesLeft = (id) => { const r = E.reactions(id); let n = 0; for (const g in r) n += r[g]; return n; };
     E.reactions = function (id) {
       const out = {};
       for (const k in RECIPES) {

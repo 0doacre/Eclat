@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.7.1";
+  D.VERSION = "0.7.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -979,10 +979,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🕯️ Le Journal note quand tu as trouvé chaque fragment, chaque page, chaque signe et chaque question.",
-    "🏷️ Dans les objectifs et les messages « il faut », touche un objet pour ouvrir sa fiche.",
-    "👁️ Ce qui ouvre une fiche s’éclaire quand tu le touches, et répond aussi au clavier.",
-    "🌱 Le jeu change de numéro : voici la 0.7. La 1.0 sera la version complète."
+    "🔍 À l’Atelier, « Étudier tout » étudie d’un coup toutes tes ressources. Le filtre « À tenter » garde celles qui servent encore, et les autres pâlissent.",
+    "🗺️ Les lieux cachés se laissent mieux deviner : chacun est annoncé ailleurs, au moins deux fois.",
+    "🔧 Plusieurs défauts corrigés dans le Domaine, le Ciel et le Registre."
   ];
 
 
