@@ -70,10 +70,10 @@
       const st = S(), it = I[id];
       const cost = E.ruinCost(id);
       const can = Object.keys(cost).every((k) => (st.inv[k] || 0) >= cost[k]);
-      const costTxt = Object.keys(cost).map((k) => I[k].n.toLowerCase() + " ×" + cost[k]).join(", ");
+      const costTxt = Object.keys(cost).map((k) => itemPill(k, { qty: cost[k], lack: (st.inv[k] || 0) < cost[k] })).join(" ");
       const name = E.ruinName(id);
       return '<div class="dom-ruine" data-druin="' + id + '">' +
-        '<div class="grow"><div class="small"><b>' + esc(name) + "</b> · réparer (" + esc(costTxt) + ")</div>" +
+        '<div class="grow"><div class="small"><b>' + esc(name) + "</b> · réparer : " + costTxt + "</div>" +
         (count > 1 ? '<div class="tiny muted">' + count + " ruines à cet endroit</div>" : "") +
         "</div>" +
         '<button class="btn small' + (can ? " pri" : " nope") + '" data-repair="' + id + '">Réparer</button>' +

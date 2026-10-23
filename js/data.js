@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.6";
+  D.VERSION = "0.8.7";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1011,6 +1011,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🧭 Le tutoriel couvre mieux trois moments : réparer une ruine quand il te manque des pièces (il te montre quoi fabriquer), parler au Troqueur, et lire la règle d’une terre.",
+    "🔨 Dans une ruine, ce qu’il faut pour la réparer s’affiche en pastilles : touche celle qui est en rouge pour ouvrir sa fiche.",
     "💬 Au Comptoir, un onglet « Parler » : le Troqueur répond, une réplique à la fois, sur ce que tu lui demandes. Il en sait plus qu’il n’en vend.",
     "🗺️ Chaque terre a maintenant sa règle, écrite sur sa fiche du Domaine : le courant de la Rivière, la nuit des Profondeurs, le verre du Désert, le vide de l’Orbite, la pesanteur de la Lune, les marches des Collines.",
     "🧤 Nouveau : les gants de peau, pour récolter à la main dans le Désert.",

@@ -22,6 +22,8 @@
       const ok = tiles.find((t) => Object.keys(D.ITEMS).some((k) => D.ITEMS[k].r && D.ITEMS[k].r[1][t.dataset.inv] !== undefined && !S().known[k]));
       return ok || null;
     }
+    /* le joueur a déjà entendu le Troqueur */
+    const heardTroc = () => { const t = S().meta && S().meta.troc; return !!(t && t.vus && Object.keys(t.vus).length); };
     /* un signe des Anciens déjà compris */
     const anyLu = () => Object.values(S().signes || {}).some((x) => x && x.lu);
     const lone = () => Object.keys(D.PROJECTS).find((p) => E.projVisible(p) && !E.siteOn(p) && E.projState(p).step < D.PROJECTS[p].steps.length);
@@ -76,7 +78,11 @@
         when: () => (U.tab === "domaine" || U.tab === "machines") && Object.keys(E.ruins()).length > 0 && !!document.querySelector("[data-repair]"),
         still: () => Object.keys(E.ruins()).length > 0,
         steps: [
-          { at: "[data-repair]", text: "Ton prédécesseur a construit quelque chose ici. Une ruine se répare pour presque rien : touche « Réparer ».",
+          // il manque des pièces : la bulle montre la première, dont la fiche explique comment la fabriquer
+          { at: () => (document.querySelector(".dom-ruine .item-pill.lack") ? ".dom-ruine .item-pill.lack" : "[data-repair]"),
+            text: () => (document.querySelector(".dom-ruine .item-pill.lack")
+              ? "Ton prédécesseur a construit ici. Une ruine se répare pour presque rien, mais il te manque des pièces. Touche ce qui est en rouge : sa fiche te dit comment le fabriquer."
+              : "Tu as tout ce qu’il faut. Touche « Réparer »."),
             done: () => !document.querySelector("[data-repair]") }
         ] },
       { id: "passage", n: "Un passage",
@@ -112,6 +118,20 @@
             text: "Vends ce qui encombre ta Réserve contre des écus. Plus tu vends d’une même ressource, plus son prix baisse.",
             done: () => Object.keys((S().comptoir && S().comptoir.sold) || {}).length > 0 }
         ] },
+      { id: "troqueur", n: "Parler au Troqueur", modal: true,
+        when: () => !heardTroc() && Object.keys((S().comptoir && S().comptoir.sold) || {}).length > 0 && !!document.querySelector('.modal:not(.hidden) [data-t="parler"]'),
+        still: () => !heardTroc(),
+        steps: [
+          { modal: true, at: '.modal:not(.hidden) [data-t="parler"]', back: 0,
+            text: "Touche « Parler ». Le Troqueur répond à ce qu’on lui demande, et il en sait plus qu’il n’en vend.",
+            done: () => !!document.querySelector('.modal:not(.hidden) [data-t="parler"].on') || heardTroc() },
+          { modal: true, at: () => document.querySelector('.modal:not(.hidden) [data-m="parler"]:not(.nope)'), back: 0,
+            text: "Choisis un thème. Il dit une réplique à la fois, et certaines cachent un conseil.",
+            done: heardTroc },
+          { modal: true, at: '.modal:not(.hidden) [data-t="demandes"]', back: 0,
+            text: "Dans « Demandes », il réclame des objets contre des Traces ✦. Chaque livraison lui donne un peu plus confiance en toi.",
+            next: true }
+        ] },
       { id: "signe", n: "Un signe", modal: true,
         when: () => !anyLu() && !!document.querySelector(".modal:not(.hidden) .comptoir-signe .signe"),
         still: () => !anyLu(),
@@ -146,6 +166,11 @@
           { modal: true, at: '.modal:not(.hidden) [data-m="decipher"]', back: 0,
             text: "Touche « Déchiffrer » pour révéler un indice contre de l’Intuition ✨ : l’action, une ressource, puis la recette entière.",
             next: true, done: () => !decipherGoal() }
+        ] },
+      { id: "regle", n: "La règle d’une terre",
+        when: () => U.tab === "domaine" && !!document.querySelector(".dom-regle.gene"),
+        steps: [
+          { tab: "domaine", at: ".dom-regle.gene", text: "Chaque terre a sa règle, écrite ici. Celle-ci te ralentit : lis-la, et fabrique ce qu’elle demande.", next: true }
         ] },
       { id: "jalons", n: "Les étapes",
         when: () => U.tab === "domaine" && S().age >= 1 && !S().flags.milesSeen && !!document.querySelector("[data-miles]"),
