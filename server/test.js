@@ -2,6 +2,8 @@
  *   node --no-warnings server/test.js */
 import assert from "node:assert";
 import { createRequire } from "node:module";
+import { readFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
 import worker from "./worker.js";
 import { localD1 } from "./d1-local.js";
 
@@ -120,5 +122,99 @@ await test("sauvegarde trop lourde ou jeton invalide", async () => {
   assert.strictEqual(big.status, 400);
   const bad = await fetchTo("https://comptes.example/api/save", { method: "GET", headers: { authorization: "Bearer " + "0".repeat(64) } });
   assert.strictEqual(bad.status, 401);
+});
+await test("trois emplacements par compte, indépendants", async () => {
+  ip = "7.7.7.7";
+  const a = device();
+  await a.register("Trois", "mot de passe");
+  assert.ok((await a.push(SAVE)).ok, "sans précision, l’emplacement 1");
+  const r2 = await a.push(SAVE + "2", { slot: 2 });
+  assert.ok(r2.ok && r2.slot === 2 && r2.rev === 1);
+  assert.ok((await a.push(SAVE + "3", { slot: 3 })).ok);
+  const list = await a.slots();
+  assert.deepStrictEqual(list.map((x) => x.slot), [1, 2, 3]);
+  assert.strictEqual(list[0].rev, 1, "l’emplacement 2 ne touche pas au 1");
+  assert.strictEqual((await a.pull()).text, SAVE, "pull() lit l’emplacement actif");
+  assert.strictEqual((await a.pull(2)).text, SAVE + "2");
+  assert.strictEqual((await a.pull(3)).text, SAVE + "3");
+  const anon = await fetchTo("https://comptes.example/api/saves", { method: "GET" });
+  assert.strictEqual(anon.status, 401, "la liste demande une session");
+  await rejects(a.push(SAVE, { slot: 4 }), 400);
+  await rejects(a.push(SAVE, { slot: 0 }), 400);
+  const b = device();
+  await b.login("Trois", "mot de passe");
+  assert.deepStrictEqual((await b.slots()).map((x) => x.slot), [1, 2, 3], "un autre appareil voit les trois");
+  assert.strictEqual((await b.pull(3)).text, SAVE + "3");
+  await a.erase(3);
+  assert.deepStrictEqual((await a.slots()).map((x) => x.slot), [1, 2]);
+  assert.strictEqual(await a.pull(3), null);
+  assert.ok((await a.push(SAVE + "3 bis", { slot: 3 })).ok, "un emplacement vidé peut resservir");
+});
+await test("l’emplacement actif reçoit les envois", async () => {
+  ip = "9.9.9.9";
+  const a = device();
+  await a.register("Actif", "mot de passe");
+  await a.push(SAVE);
+  a.useSlot(2);
+  const r = await a.push(SAVE + " actif");
+  assert.strictEqual(r.slot, 2);
+  assert.strictEqual((await a.pull(1)).text, SAVE);
+  assert.strictEqual((await a.pull(2)).text, SAVE + " actif");
+  assert.strictEqual((await a.pull()).text, SAVE + " actif", "pull() suit l’emplacement actif");
+});
+await test("changement de mot de passe : les trois emplacements sont rechiffrés", async () => {
+  ip = "10.10.10.10";
+  const a = device();
+  await a.register("Triple", "premier secret");
+  await a.push(SAVE);
+  await a.push(SAVE + "2", { slot: 2 });
+  await a.push(SAVE + "3", { slot: 3 });
+  await a.changePassword("premier secret", "second secret", SAVE + "!");
+  const b = device();
+  await b.login("Triple", "second secret");
+  assert.strictEqual((await b.pull(1)).text, SAVE + "!");
+  assert.strictEqual((await b.pull(2)).text, SAVE + "2");
+  assert.strictEqual((await b.pull(3)).text, SAVE + "3");
+  await rejects(device().login("Triple", "premier secret"), 401);
+});
+await test("serveur pas encore mis à jour : la connexion marche encore", async () => {
+  ip = "11.11.11.11";
+  // imitation d’un serveur d’avant les emplacements : pas de /api/saves, une seule sauvegarde
+  const oldFetch = async (url, o) => {
+    const u = new URL(url);
+    if (u.pathname === "/api/saves") return new Response(JSON.stringify({ error: "route" }), { status: 404 });
+    const opts = Object.assign({}, o);
+    if (o.body && (u.pathname === "/api/save" || u.pathname === "/api/password")) {
+      const b = JSON.parse(o.body);
+      delete b.slot;
+      if (u.pathname === "/api/password") delete b.saves;
+      opts.body = JSON.stringify(b);
+    }
+    return fetchTo(u.origin + u.pathname, opts);
+  };
+  const dev = () => Cloud.create({ server: () => "https://comptes.example", storage: memStore(), fetch: oldFetch });
+  const a = dev();
+  await a.register("Ancien", "mot de passe");
+  await a.push(SAVE);
+  assert.deepStrictEqual((await a.slots()).map((x) => x.slot), [1]);
+  assert.ok(a.account().legacy, "le jeu sait qu’il parle à l’ancien serveur");
+  await a.changePassword("mot de passe", "autre secret", SAVE + "!");
+  const b = dev();
+  await b.login("Ancien", "autre secret");
+  assert.strictEqual((await b.slots()).length, 1);
+  assert.strictEqual((await b.pull(1)).text, SAVE + "!", "la sauvegarde a bien été rechiffrée");
+});
+await test("migration d’une base à une seule sauvegarde", async () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec("CREATE TABLE users (id INTEGER PRIMARY KEY, pseudo TEXT, display TEXT, auth TEXT, salt TEXT, created INTEGER);" +
+    "CREATE TABLE saves (user INTEGER PRIMARY KEY, data TEXT NOT NULL, iv TEXT NOT NULL, rev INTEGER NOT NULL, updated INTEGER NOT NULL);");
+  db.exec("INSERT INTO users VALUES (1, 'vieux', 'Vieux', 'a', 's', 0)");
+  db.exec("INSERT INTO saves VALUES (1, 'z:ancien', 'iv0', 4, 123)");
+  db.exec(readFileSync(new URL("./migration-2.sql", import.meta.url), "utf8"));
+  const rows = db.prepare("SELECT user, slot, data, iv, rev, updated FROM saves").all().map((r) => Object.assign({}, r));
+  assert.deepStrictEqual(rows, [{ user: 1, slot: 1, data: "z:ancien", iv: "iv0", rev: 4, updated: 123 }], "la partie existante devient l’emplacement 1");
+  db.exec("INSERT INTO saves VALUES (1, 2, 'z:deux', 'iv1', 1, 456)");
+  assert.strictEqual(db.prepare("SELECT COUNT(*) AS n FROM saves WHERE user = 1").get().n, 2);
+  assert.throws(() => db.exec("INSERT INTO saves VALUES (1, 4, 'z:x', 'iv', 1, 1)"), "un quatrième emplacement est refusé");
 });
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

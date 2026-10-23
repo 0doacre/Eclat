@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.7.2";
+  D.VERSION = "0.8.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -553,7 +553,7 @@
   I.poudre_rouge = { n: "Poudre rouge", ic: "🔴", col: "#e74c3c", sym: "✦", a: 2, t: "res", curio: true,
     d: "Une poudre fine et écarlate qui crépite doucement entre tes doigts.",
     u: "Sert à confectionner une torche rouge." };
-  I.torche_rouge = { n: "Torche rouge", ic: "🏮", col: "#e74c3c", sym: "🔥", a: 2, t: "curio", curio: true,
+  I.torche_rouge = { n: "Torche rouge", ic: "🏮", col: "#e74c3c", sym: "🔥", a: 2, t: "curio", curio: true, sec: true,
     r: ["assembler", { manche: 1, poudre_rouge: 1 }, 1],
     d: "Une torche qui brille d’une lueur rouge sans jamais chauffer.",
     h: "Un manche de bois et cette poudre rouge qui crépite.",
@@ -981,7 +981,11 @@
   D.CHANGES = [
     "🔍 À l’Atelier, « Étudier tout » étudie d’un coup toutes tes ressources. Le filtre « À tenter » garde celles qui servent encore, et les autres pâlissent.",
     "🗺️ Les lieux cachés se laissent mieux deviner : chacun est annoncé ailleurs, au moins deux fois.",
-    "🔧 Plusieurs défauts corrigés dans le Domaine, le Ciel et le Registre."
+    "🔧 Plusieurs défauts corrigés dans le Domaine, le Ciel et le Registre.",
+    "📜 Registre de quêtes : scénario narratif par chapitres, rituels quotidiens des Semeurs et prestige commercial du Troqueur.",
+    "⚡ Codex d’artisanat & En stock : nouveau filtre rapide « En stock », pastille d’alerte et fabrication instantanée sans ouvrir la fiche.",
+    "🤝 Contrats du Troqueur : 5 rangs de réputation marchande avec bonus croissants en Traces et livraisons directes depuis le Registre.",
+    "🤏 Confort visuel : mode compact/dense pour le Domaine, animations tactiles et puces réactives d’alerte."
   ];
 
 

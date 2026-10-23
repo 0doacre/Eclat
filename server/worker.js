@@ -8,18 +8,23 @@
  *   POST   /api/register   { pseudo, auth }            → { token, pseudo }
  *   POST   /api/login      { pseudo, auth }            → { token, pseudo }
  *   POST   /api/logout                                 → { ok }
- *   GET    /api/save                                   → { data, iv, rev, updated } | 404
- *   PUT    /api/save       { data, iv, rev }           → { rev, updated } | 409 { rev, updated }
- *   POST   /api/password   { auth, newAuth, data, iv } → { token }
+ *   GET    /api/saves                                  → { slots: [{ slot, rev, updated }] }
+ *   GET    /api/save?slot=1                            → { slot, data, iv, rev, updated } | 404
+ *   PUT    /api/save       { slot, data, iv, rev }     → { slot, rev, updated } | 409 { rev, updated }
+ *   DELETE /api/save?slot=1                            → { ok }
+ *   POST   /api/password   { auth, newAuth,
+ *                            saves: [{ slot, data, iv }] } → { token }
  *   DELETE /api/account    { auth }                    → { ok }
  *   GET    /api/health                                 → { ok, version }
  * Les routes de sauvegarde demandent l’en-tête « Authorization: Bearer <jeton> ».
+ * Chaque compte a trois emplacements (slot 1 à 3) ; sans précision, c’est le 1.
  *
  * Variables : DB (base D1, obligatoire), ALLOWED_ORIGIN (adresse du jeu, par
  * exemple https://pseudo.github.io ; plusieurs adresses séparées par des virgules). */
 
-const VERSION = 1;
-const MAX_SAVE = 1024 * 1024; // 1 Mo de texte chiffré
+const VERSION = 2;
+const MAX_SAVE = 1024 * 1024; // 1 Mo de texte chiffré par emplacement
+const SLOTS = 3;
 const SESSION_DAYS = 60;
 const MAX_FAILS = 8; // essais ratés avant blocage
 const BLOCK_MIN = 15;
@@ -34,7 +39,12 @@ export default {
       for (const k in cors) res.headers.set(k, cors[k]);
       return res;
     } catch (e) {
-      const res = json({ error: e.code || "server", message: e.expose ? e.message : "Erreur du serveur." }, e.status || 500);
+      // base pas encore migrée : le message doit dire quoi faire au propriétaire
+      const stale = !e.expose && /no such (column|table)/i.test(String(e.message || ""));
+      const res = json({
+        error: stale ? "schema" : e.code || "server",
+        message: e.expose ? e.message : stale ? "La base des comptes doit être mise à jour : exécute server/migration-2.sql dans sa console." : "Erreur du serveur."
+      }, e.status || 500);
       for (const k in cors) res.headers.set(k, cors[k]);
       return res;
     }
@@ -73,8 +83,15 @@ function sameText(a, b) {
 }
 async function body(req) {
   const t = await req.text();
-  if (t.length > MAX_SAVE * 1.5) throw fail(413, "too_big", "Sauvegarde trop lourde.");
+  // un changement de mot de passe renvoie les trois emplacements d’un coup
+  if (t.length > MAX_SAVE * SLOTS + 65536) throw fail(413, "too_big", "Sauvegarde trop lourde.");
   try { return t ? JSON.parse(t) : {}; } catch (e) { throw fail(400, "bad_json", "Requête illisible."); }
+}
+/* l’emplacement demandé (1 à 3) ; par défaut le 1 */
+function slotOf(v) {
+  const n = v === undefined || v === null || v === "" ? 1 : Number(v);
+  if (!Number.isInteger(n) || n < 1 || n > SLOTS) throw fail(400, "slot", "Emplacement inconnu : 1, 2 ou 3.");
+  return n;
 }
 /* un pseudo : 3 à 24 lettres, chiffres, tirets, points ou soulignés ; la casse ne compte pas */
 function pseudoOf(p) {
@@ -175,36 +192,64 @@ async function route(req, env) {
     return json({ ok: true });
   }
 
+  if (p === "/api/saves" && M === "GET") {
+    const s = await sessionUser(req, env);
+    const r = await env.DB.prepare("SELECT slot, rev, updated FROM saves WHERE user = ? ORDER BY slot").bind(s.id).all();
+    return json({ slots: r.results || [] });
+  }
+
   if (p === "/api/save" && M === "GET") {
     const s = await sessionUser(req, env);
-    const r = await env.DB.prepare("SELECT data, iv, rev, updated FROM saves WHERE user = ?").bind(s.id).first();
-    if (!r) return json({ error: "none", message: "Aucune sauvegarde en ligne." }, 404);
+    const slot = slotOf(url.searchParams.get("slot"));
+    const r = await env.DB.prepare("SELECT slot, data, iv, rev, updated FROM saves WHERE user = ? AND slot = ?").bind(s.id, slot).first();
+    if (!r) return json({ error: "none", message: slot === 1 ? "Aucune sauvegarde en ligne." : "Cet emplacement est vide." }, 404);
     return json(r);
+  }
+
+  if (p === "/api/save" && M === "DELETE") {
+    const s = await sessionUser(req, env);
+    const slot = slotOf(url.searchParams.get("slot"));
+    await env.DB.prepare("DELETE FROM saves WHERE user = ? AND slot = ?").bind(s.id, slot).run();
+    return json({ ok: true, slot });
   }
 
   if (p === "/api/save" && M === "PUT") {
     const s = await sessionUser(req, env);
     const b = await body(req);
+    const slot = slotOf(b.slot);
     if (typeof b.data !== "string" || typeof b.iv !== "string" || b.data.length > MAX_SAVE || b.iv.length > 64) throw fail(400, "data", "Sauvegarde invalide.");
-    const cur = await env.DB.prepare("SELECT rev, updated FROM saves WHERE user = ?").bind(s.id).first();
+    const cur = await env.DB.prepare("SELECT rev, updated FROM saves WHERE user = ? AND slot = ?").bind(s.id, slot).first();
     const expect = Number(b.rev) || 0;
     // quelqu’un a envoyé une autre version entre-temps : on ne l’écrase pas
-    if ((cur ? cur.rev : 0) !== expect && !b.force) return json({ error: "conflict", message: "La sauvegarde en ligne a changé depuis.", rev: cur ? cur.rev : 0, updated: cur ? cur.updated : 0 }, 409);
+    if ((cur ? cur.rev : 0) !== expect && !b.force) return json({ error: "conflict", message: "La sauvegarde en ligne a changé depuis.", slot, rev: cur ? cur.rev : 0, updated: cur ? cur.updated : 0 }, 409);
     const rev = (cur ? cur.rev : 0) + 1, t = now();
-    await env.DB.prepare("INSERT OR REPLACE INTO saves (user, data, iv, rev, updated) VALUES (?, ?, ?, ?, ?)").bind(s.id, b.data, b.iv, rev, t).run();
-    return json({ rev, updated: t });
+    await env.DB.prepare("INSERT OR REPLACE INTO saves (user, slot, data, iv, rev, updated) VALUES (?, ?, ?, ?, ?, ?)").bind(s.id, slot, b.data, b.iv, rev, t).run();
+    return json({ slot, rev, updated: t });
   }
 
   if (p === "/api/password" && M === "POST") {
     const s = await sessionUser(req, env);
     const b = await body(req);
     await checkAuth(env, s.id, authOf(b.auth));
+    const newAuth = authOf(b.newAuth);
+    // le jeu renvoie les trois emplacements rechiffrés avec la nouvelle clé ;
+    // l’ancien format ({ data, iv } seuls) ne concerne que l’emplacement 1
+    const rows = Array.isArray(b.saves) ? b.saves : typeof b.data === "string" ? [{ slot: 1, data: b.data, iv: b.iv }] : [];
+    const seen = new Set();
+    for (const r of rows) {
+      const slot = slotOf(r && r.slot);
+      if (seen.has(slot) || typeof r.data !== "string" || typeof r.iv !== "string" || !r.data.length || r.data.length > MAX_SAVE || r.iv.length > 64) throw fail(400, "data", "Sauvegarde invalide.");
+      seen.add(slot);
+    }
     const salt = randomHex(16);
-    await env.DB.prepare("UPDATE users SET auth = ?, salt = ? WHERE id = ?").bind(await sha256(authOf(b.newAuth) + salt), salt, s.id).run();
-    // la sauvegarde, rechiffrée par le jeu avec la nouvelle clé
-    if (typeof b.data === "string" && typeof b.iv === "string" && b.data.length <= MAX_SAVE) {
-      const cur = await env.DB.prepare("SELECT rev FROM saves WHERE user = ?").bind(s.id).first();
-      await env.DB.prepare("INSERT OR REPLACE INTO saves (user, data, iv, rev, updated) VALUES (?, ?, ?, ?, ?)").bind(s.id, b.data, b.iv, (cur ? cur.rev : 0) + 1, now()).run();
+    await env.DB.prepare("UPDATE users SET auth = ?, salt = ? WHERE id = ?").bind(await sha256(newAuth + salt), salt, s.id).run();
+    if (rows.length) {
+      const cur = await env.DB.prepare("SELECT slot, rev FROM saves WHERE user = ?").bind(s.id).all();
+      const revs = {};
+      for (const x of cur.results || []) revs[x.slot] = x.rev;
+      const t = now();
+      await env.DB.batch(rows.map((r) => env.DB.prepare("INSERT OR REPLACE INTO saves (user, slot, data, iv, rev, updated) VALUES (?, ?, ?, ?, ?, ?)")
+        .bind(s.id, slotOf(r.slot), r.data, r.iv, (revs[slotOf(r.slot)] || 0) + 1, t)));
     }
     // les autres appareils devront se reconnecter
     await env.DB.prepare("DELETE FROM sessions WHERE user = ?").bind(s.id).run();

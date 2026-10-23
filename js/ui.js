@@ -414,6 +414,8 @@
       // un passage à verser, une matière à voir, depuis une fiche
       const pb = ev.target.closest("[data-pour]");
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
+      const qtb = ev.target.closest("[data-mqtab]");
+      if (qtb && U.mcur && !fresh()) { U.questTab = qtb.dataset.mqtab; A.click(); if (U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { const from = U.mcur.reopen || null; closeModal(); setTimeout(() => { U.rfrom = from; goto(gb.dataset.goto); }, 80); return; }
       const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
@@ -669,26 +671,28 @@
   const summary = (o) => esc(D.AGES[o.age] ? D.AGES[o.age].n : "?") + " · " + fmtTime((o.stats && o.stats.play) || 0) + " de jeu · " + Object.keys(o.known || {}).length + " recettes";
   const busy = (b, txt) => { if (b) { b.disabled = true; b.dataset.t = b.textContent; b.textContent = txt || "Un instant…"; } };
   const unbusy = (b) => { if (b && b.isConnected) { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; } };
-  function openAccount(msg) {
+  async function openAccount(msg) {
     if (!Cloud.configured()) {
       simpleModal("Compte", "Pas encore de comptes", "<p>Les comptes en ligne ne sont pas encore ouverts sur ce jeu. En attendant, ta partie reste enregistrée sur cet appareil, et tu peux la télécharger dans ☰ → Sauvegardes.</p>" +
         '<p class="tiny dim">Pour la personne qui publie le jeu : la marche à suivre est dans server/README.md.</p>');
       return;
     }
     const a = Cloud.account();
-    swapModal(a && a.token ? accountModal(msg) : loginModal(msg, a && a.pseudo));
+    if (!a || !a.token) { swapModal(loginModal(msg, a && a.pseudo)); return; }
+    try { await Cloud.slots(); U.sync.err = null; } catch (e) { U.sync.err = e.message; }
+    swapModal(accountModal(msg));
   }
   function loginModal(msg, pseudo) {
     const up = U.acMode === "up";
     return {
       html: '<div class="kicker">Compte</div><h2>' + (up ? "Créer un compte" : "Se connecter") + "</h2>" +
-        '<p class="small muted">Avec un compte, ta partie est aussi gardée en ligne, et tu peux la retrouver sur un autre appareil.</p>' +
+        '<p class="small muted">Avec un compte, ta partie est aussi gardée en ligne : trois emplacements par compte, à retrouver sur un autre appareil.</p>' +
         '<div class="seg"><button data-m="tin" class="' + (up ? "" : "on") + '">J’ai un compte</button><button data-m="tup" class="' + (up ? "on" : "") + '">Nouveau compte</button></div>' +
         '<label class="fld"><span>Pseudo</span><input id="acP" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="24" value="' + esc(pseudo || "") + '"></label>' +
         '<label class="fld"><span>Mot de passe</span><input id="acW" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '"></label>' +
         (up ? '<label class="fld"><span>Confirme le mot de passe</span><input id="acW2" type="password" autocomplete="new-password"></label>' : "") +
         '<p class="small err" id="acErr">' + esc(msg || "") + "</p>" +
-        '<p class="tiny dim">Ta partie est chiffrée sur ton appareil avant d’être envoyée : sans ton mot de passe, personne ne peut la lire, pas même le serveur. En contrepartie, si tu oublies ton mot de passe, la copie en ligne est perdue. Celle de cet appareil reste.</p>' +
+        '<p class="tiny dim">Ta partie est chiffrée sur ton appareil avant d’être envoyée : sans ton mot de passe, personne ne peut la lire, pas même le serveur. En contrepartie, si tu oublies ton mot de passe, les copies en ligne sont perdues. Celle de cet appareil reste.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">' + (up ? "Créer le compte" : "Se connecter") + "</button></div>",
       onOpen: (box) => { const f = $(pseudo ? "#acW" : "#acP", box); if (f) f.focus(); },
       on: {
@@ -714,15 +718,24 @@
     } catch (e) { unbusy(b); say(e.message); }
   }
   async function afterLogin(isNew) {
-    let cloud = null;
-    try { if (!isNew) cloud = await Cloud.pull(); } catch (e) { swapModal(accountModal(e.message)); return; }
-    if (!cloud) {
+    let list = [];
+    try { if (!isNew) list = await Cloud.slots(); } catch (e) { swapModal(accountModal(e.message)); return; }
+    if (!list.length) {
       await cloudPush({ force: true, quiet: true });
       swapModal(accountModal("Voilà : ta partie est maintenant gardée en ligne aussi."));
       updateCloudBtn();
       return;
     }
-    chooseVersion(cloud, "Il y a déjà une partie sur ce compte.");
+    const a = Cloud.account();
+    const slot = (a && a.slot) || 1;
+    if (!list.some((x) => x.slot === slot)) {
+      swapModal(accountModal("Ce compte a des parties en ligne. Ouvre un emplacement pour en reprendre une."));
+      updateCloudBtn();
+      return;
+    }
+    let cloud = null;
+    try { cloud = await Cloud.pull(slot); } catch (e) { swapModal(accountModal(e.message)); return; }
+    chooseVersion(cloud, "Il y a déjà une partie dans l’emplacement " + slot + ".");
   }
   /* deux versions de la partie : le joueur choisit, l’autre part dans les copies */
   function chooseVersion(cloud, intro) {
@@ -731,13 +744,13 @@
     swapModal({
       persistent: true,
       html: '<div class="kicker">Compte</div><h2>Quelle partie garder ?</h2><p class="small">' + esc(intro) + "</p>" +
-        '<div class="vs"><div class="card"><b>📱 Cet appareil</b><div class="small muted">' + summary(S()) + '</div></div><div class="card"><b>☁️ En ligne</b><div class="small muted">' + summary(o) +
+        '<div class="vs"><div class="card"><b>📱 Cet appareil</b><div class="small muted">' + summary(S()) + '</div></div><div class="card"><b>☁️ Emplacement ' + cloud.slot + '</b><div class="small muted">' + summary(o) +
         "<br>Envoyée le " + esc(fmtDate(cloud.updated)) + "</div></div></div>" +
         '<p class="tiny dim">Celle que tu ne gardes pas n’est pas perdue : elle va dans les copies de sécurité (☰ → Sauvegardes).</p>' +
         '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="cloud">Prendre la partie en ligne</button><button class="btn" data-m="local">Garder celle de cet appareil</button></div>',
       on: {
-        cloud: () => { if (replaceWith(cloud.text, "Avant de charger la partie du compte")) { Cloud.adopt(cloud.rev, cloud.updated); U.sync.conflict = null; updateCloudBtn(); } },
-        local: () => { pushBackup(cloud.text, "Partie du compte, remplacée par celle de l’appareil"); U.sync.conflict = null; cloudPush({ force: true, manual: true }); }
+        cloud: () => { if (replaceWith(cloud.text, "Avant de charger la partie du compte")) { Cloud.useSlot(cloud.slot); Cloud.adopt(cloud.rev, cloud.updated, cloud.slot); U.sync.conflict = null; updateCloudBtn(); } },
+        local: () => { pushBackup(cloud.text, "Partie du compte, remplacée par celle de l’appareil"); U.sync.conflict = null; cloudPush({ force: true, manual: true, slot: cloud.slot }); }
       }
     });
   }
@@ -747,10 +760,14 @@
     return {
       html: '<div class="kicker">Compte</div><h2>☁️ ' + esc(a.pseudo || "") + "</h2>" +
         (msg ? '<p class="small">' + esc(msg) + "</p>" : "") +
-        (c ? '<div class="card warnc"><b>Une autre version de ta partie est en ligne.</b><div class="small muted">Envoyée le ' + esc(fmtDate(c.updated)) + ', sans doute depuis un autre appareil.</div><button class="btn small pri" data-m="solve" style="margin-top:8px">Choisir la partie à garder</button></div>' : "") +
-        '<p class="small muted">' + (a.last ? "Dernier envoi : " + esc(fmtDate(a.last)) : "Rien n’a encore été envoyé.") + (U.sync.err ? '<br><span class="err">' + esc(U.sync.err) + "</span>" : "") + "</p>" +
+        (c ? '<div class="card warnc"><b>Une autre version de ta partie est en ligne (emplacement ' + (c.slot || a.slot || 1) + ').</b><div class="small muted">Envoyée le ' + esc(fmtDate(c.updated)) + ', sans doute depuis un autre appareil.</div><button class="btn small pri" data-m="solve" style="margin-top:8px">Choisir la partie à garder</button></div>' : "") +
+        '<p class="small muted">' + (a.last ? "Dernier envoi (emplacement " + (a.slot || 1) + ") : " + esc(fmtDate(a.last)) : "Rien n’a encore été envoyé.") + (U.sync.err ? '<br><span class="err">' + esc(U.sync.err) + "</span>" : "") + "</p>" +
+        '<h3 class="sub">Trois emplacements en ligne</h3>' +
+        '<p class="tiny dim">L’envoi automatique va dans l’emplacement actif. Les autres gardent une partie de côté.</p>' +
+        (a.legacy ? '<p class="tiny err">Le serveur des comptes n’est pas encore à jour : seule la première sauvegarde en ligne est disponible.</p>' : "") +
+        [1, 2, 3].map(slotLine).join("") +
         '<div class="toggle"><span>Envoi automatique<br><span class="tiny dim">régulièrement, et quand tu quittes le jeu</span></span><button class="btn small" data-m="auto">' + (a.auto ? "Activé" : "Coupé") + "</button></div>" +
-        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="push">⬆️ Envoyer maintenant</button><button class="btn" data-m="pull">⬇️ Récupérer la partie en ligne</button>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="push">⬆️ Envoyer maintenant (emplacement ' + (a.slot || 1) + ')</button><button class="btn" data-m="pull">⬇️ Récupérer la partie en ligne</button>' +
         '<button class="btn ghost" data-m="pw">🔑 Changer de mot de passe</button><button class="btn ghost" data-m="out">🚪 Se déconnecter</button><button class="btn ghost" data-m="del" style="color:var(--bad)">🗑️ Supprimer le compte</button>' +
         '<button class="btn" data-m="close">Fermer</button></div>',
       on: {
@@ -759,15 +776,98 @@
         pull: (b) => {
           busy(b, "Téléchargement…");
           Cloud.pull().then((cl) => {
-            if (!cl) swapModal(accountModal("Aucune partie en ligne pour l’instant."));
+            if (!cl) swapModal(accountModal("L’emplacement actif est vide. Ouvre un emplacement ci-dessus pour reprendre une partie."));
             else chooseVersion(cl, "Voici la partie enregistrée en ligne.");
           }).catch((e) => swapModal(accountModal(e.message)));
           return true;
         },
         solve: (b) => { busy(b); Cloud.pull().then((cl) => cl && chooseVersion(cl, "Ta partie a avancé sur un autre appareil.")).catch((e) => swapModal(accountModal(e.message))); return true; },
+        slot: (b) => { swapModal(slotModal(Number(b.dataset.i))); return true; },
         pw: () => { swapModal(passwordModal()); return true; },
         out: () => { Cloud.logout().then(updateCloudBtn); toast("Déconnecté. Ta partie reste sur cet appareil."); },
         del: () => { swapModal(deleteModal()); return true; }
+      }
+    };
+  }
+  /* une ligne par emplacement dans la fenêtre Compte */
+  function slotInfo(n) {
+    const a = Cloud.account() || {};
+    const m = (a.revs && a.revs[n]) || null;
+    const active = (a.slot || 1) === n;
+    return {
+      slot: n,
+      active,
+      rev: m ? m.rev : active ? a.rev || 0 : 0,
+      updated: m ? m.updated : active ? a.last || 0 : 0
+    };
+  }
+  function slotLine(n) {
+    const s = slotInfo(n);
+    const off = (Cloud.account() || {}).legacy && n > 1;
+    return '<div class="bk"><div class="grow"><b>Emplacement ' + n + (s.active ? ' <span class="tiny dim">actif</span>' : "") +
+      '</b><div class="tiny muted">' + (off ? "Serveur à mettre à jour" : s.rev ? "Envoyé le " + esc(fmtDate(s.updated)) : "Vide") + '</div></div>' +
+      (off ? "" : '<button class="btn small" data-m="slot" data-i="' + n + '">Gérer</button>') + '</div>';
+  }
+  function slotModal(n) {
+    const s = slotInfo(n);
+    return {
+      html: '<div class="kicker">Compte</div><h2>Emplacement ' + n + '</h2>' +
+        '<p class="small muted">' + (s.rev ? "Partie envoyée le " + esc(fmtDate(s.updated)) + "." : "Cet emplacement est vide.") +
+        (s.active ? " C’est l’emplacement actif : les envois automatiques de cet appareil vont ici." : "") + "</p>" +
+        '<p class="tiny dim">Prendre une partie la charge sur cet appareil et rend son emplacement actif. Déposer garde celle de cet appareil en ligne sans changer d’emplacement.</p>' +
+        '<div class="acts" style="flex-direction:column">' +
+        (s.rev ? '<button class="btn pri" data-m="pull">⬇️ Prendre cette partie</button>' : "") +
+        '<button class="btn' + (s.rev ? "" : " pri") + '" data-m="push">⬆️ Déposer la partie de cet appareil</button>' +
+        (s.active ? "" : '<button class="btn" data-m="use">Rendre cet emplacement actif</button>') +
+        (s.rev && !s.active ? '<button class="btn ghost" data-m="erase" style="color:var(--bad)">🗑️ Vider cet emplacement</button>' : "") +
+        '<button class="btn" data-m="back">Retour</button></div>',
+      on: {
+        use: () => { Cloud.useSlot(n); swapModal(slotModal(n)); return true; },
+        pull: (b) => {
+          busy(b, "Téléchargement…");
+          Cloud.pull(n).then((cl) => {
+            if (!cl) swapModal(slotModal(n));
+            else chooseVersion(cl, "Voici la partie de l’emplacement " + n + ".");
+          }).catch((e) => swapModal(accountModal(e.message)));
+          return true;
+        },
+        push: (b) => {
+          if (s.rev) { swapModal(slotOverwriteModal(n, s.updated)); return true; }
+          busy(b, "Envoi…");
+          cloudPush({ manual: true, slot: n, force: true }).then(() => swapModal(slotModal(n)));
+          return true;
+        },
+        erase: (b) => {
+          busy(b, "Suppression…");
+          Cloud.erase(n).then(() => { toast("Emplacement " + n + " vidé."); swapModal(slotModal(n)); })
+            .catch((e) => { unbusy(b); swapModal(accountModal(e.message)); });
+          return true;
+        },
+        back: () => { swapModal(accountModal()); return true; }
+      }
+    };
+  }
+  /* déposer sur un emplacement occupé : l’ancienne partie en ligne part dans les copies */
+  function slotOverwriteModal(n, updated) {
+    return {
+      html: '<div class="kicker">Compte</div><h2>Remplacer l’emplacement ' + n + ' ?</h2>' +
+        '<p class="small">La partie en ligne du ' + esc(fmtDate(updated)) + ' sera remplacée par celle de cet appareil.</p>' +
+        '<p class="tiny dim">Celle qui est en ligne n’est pas gardée telle quelle : elle sera téléchargée avant d’être remplacée, puis rangée dans les copies de sécurité de cet appareil (☰ → Sauvegardes).</p>' +
+        '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Remplacer</button></div>',
+      on: {
+        back: () => { swapModal(slotModal(n)); return true; },
+        go: (b) => {
+          busy(b, "Envoi…");
+          (async () => {
+            try {
+              const old = await Cloud.pull(n);
+              if (old) pushBackup(old.text, "Partie en ligne (emplacement " + n + ") remplacée");
+              await cloudPush({ manual: true, slot: n, force: true });
+              swapModal(slotModal(n));
+            } catch (e) { unbusy(b); swapModal(accountModal(e.message)); }
+          })();
+          return true;
+        }
       }
     };
   }
@@ -777,7 +877,7 @@
         '<label class="fld"><span>Mot de passe actuel</span><input id="pw0" type="password" autocomplete="current-password"></label>' +
         '<label class="fld"><span>Nouveau mot de passe</span><input id="pw1" type="password" autocomplete="new-password"></label>' +
         '<label class="fld"><span>Confirme le nouveau mot de passe</span><input id="pw2" type="password" autocomplete="new-password"></label>' +
-        '<p class="small err" id="pwErr"></p><p class="tiny dim">Ta partie en ligne est rechiffrée avec le nouveau mot de passe. Tes autres appareils devront se reconnecter.</p>' +
+        '<p class="small err" id="pwErr"></p><p class="tiny dim">Tes parties en ligne (les trois emplacements) sont rechiffrées avec le nouveau mot de passe. Tes autres appareils devront se reconnecter.</p>' +
         '<div class="acts"><button class="btn" data-m="back">Retour</button><button class="btn pri" data-m="go">Changer</button></div>',
       on: {
         back: () => { swapModal(accountModal()); return true; },
@@ -795,7 +895,7 @@
   }
   function deleteModal() {
     return {
-      html: '<div class="kicker">Compte</div><h2>Supprimer le compte ?</h2><p class="small">Le compte et la partie en ligne seront effacés du serveur. Ta partie reste sur cet appareil.</p>' +
+      html: '<div class="kicker">Compte</div><h2>Supprimer le compte ?</h2><p class="small">Le compte et les parties en ligne seront effacés du serveur. Ta partie reste sur cet appareil.</p>' +
         '<label class="fld"><span>Mot de passe</span><input id="dl0" type="password" autocomplete="current-password"></label><p class="small err" id="dlErr"></p>' +
         '<div class="acts"><button class="btn" data-m="back">Retour</button><button class="btn pri" style="background:var(--bad)" data-m="go">Supprimer</button></div>',
       on: {
@@ -817,7 +917,7 @@
     try {
       save();
       const r = await Cloud.push(E.serialize(), o);
-      if (r.conflict) { U.sync.conflict = r; if (!o.quiet) toast("☁️ Une autre version de ta partie est en ligne. Ouvre ☁️ pour choisir laquelle garder."); }
+      if (r.conflict) { U.sync.conflict = r; if (!o.quiet) toast("☁️ Une autre version de ta partie est en ligne (emplacement " + r.slot + "). Ouvre ☁️ pour choisir laquelle garder."); }
       else { U.sync.conflict = null; U.sync.err = null; if (o.manual && !U.mcur) toast("☁️ Partie envoyée."); }
       return r;
     } catch (e) {
@@ -842,8 +942,9 @@
     updateCloudBtn();
     if (!a || !a.token || U.saveLocked) return;
     try {
+      const known = a.rev || 0;
       const cl = await Cloud.pull();
-      if (!cl || cl.rev === a.rev) return;
+      if (!cl || cl.rev === known) return;
       const ask = () => { if (U.mcur) { setTimeout(ask, 1000); return; } chooseVersion(cl, "Ta partie en ligne a changé depuis ton dernier passage ici, sans doute sur un autre appareil."); };
       ask();
     } catch (e) { U.sync.err = e.message; updateCloudBtn(); }
@@ -1162,7 +1263,11 @@
     const title = ob.k === "craft" ? esc(I[ob.id].n) : esc(ob.n);
     // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
     const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
-    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">Objectif</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
+    const sum = E.questSummary ? E.questSummary() : { rituals: [], hasReady: false };
+    const rits = sum.rituals || [];
+    const doneRits = rits.filter((r) => r.claimed).length;
+    let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
+      '<button class="gmiles" data-open-quests title="Ouvrir le Registre de Quêtes">📜 Registre ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + '</button>' +
       (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
     if (ml.length) {
       const pct = Math.round((md / ml.length) * 100);
@@ -1674,7 +1779,7 @@
     h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
       (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
-    h += '<div class="filters">' + [["tout", "Tout"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+    h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ En stock"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     return h + '<div id="clist">' + carnetList() + "</div>";
   }
@@ -1752,6 +1857,7 @@
   function passFilter(id) {
     const st = S(), it = I[id];
     if (U.carnetFilter === "tout") return true;
+    if (U.carnetFilter === "pret") return st.known[id] && !E.missingFor(id, 1) && (!E.isUnique(it) || (st.made[id] || 0) === 0);
     if (U.carnetFilter === "unk") return !st.known[id];
     if (U.carnetFilter === "craft") return st.known[id] && (E.maxCraftable(id, 1) > 0 || E.plan(id, 1).ok);
     if (U.carnetFilter === "prod") return st.known[id] && ["ext", "upg", "mach", "tool", "stat"].includes(it.t);
@@ -1772,8 +1878,11 @@
     const uniq = E.isUnique(it);
     const owned = uniq && (st.made[id] || 0) > 0;
     const stars = E.stars(id);
-    let h = '<div class="rec' + (owned ? " owned" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + "</div>" +
-      (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div><div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
+    const readyCraft = st.known[id] && !owned && !E.missingFor(id, 1);
+    let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Prêt</span>' : '') + "</div>" +
+      (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div>' +
+      (readyCraft ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
+      '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
       '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
     if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
     const fx = fxText(id);
@@ -2054,6 +2163,7 @@
     stepWatch();
     $("#intu").textContent = Math.floor(st.intu);
     memChip();
+    questChip();
     const xp = E.expProgress();
     const mini = $("#expMini");
     if (xp) {
@@ -3282,6 +3392,133 @@
     if (traitT.off) traitT.off();
     traitT.off = null;
   }
+  function questChip() {
+    const qBtn = $("#questBtn");
+    if (!qBtn) return;
+    const sum = E.questSummary();
+    const qSub = $("#questSub");
+    const qDot = $("#questDot");
+    const rits = sum.rituals;
+    const doneRits = rits.filter((r) => r.claimed).length;
+    if (qSub) qSub.textContent = doneRits + "/3";
+    if (qDot) {
+      if (sum.hasReady) {
+        qDot.classList.remove("hidden");
+        qBtn.classList.add("ready");
+      } else {
+        qDot.classList.add("hidden");
+        qBtn.classList.remove("ready");
+      }
+    }
+  }
+
+  function openQuestsModal(initialTab) {
+    U.questTab = initialTab || U.questTab || "scenario";
+    const makeHTML = () => {
+      const sum = E.questSummary();
+      const sc = sum.scenario;
+      const rits = sum.rituals;
+      const tq = sum.troqueur;
+      const rep = E.troqueurRep();
+      const tab = U.questTab;
+
+      let h = '<div class="kicker">Livre de bord</div><h2>Registre de Quêtes</h2>';
+      h += '<div class="quest-tabs">' +
+        '<button class="' + (tab === "scenario" ? "on" : "") + '" data-mqtab="scenario">📜 Scénario' + (sc.ready ? ' <span class="qdot"></span>' : '') + '</button>' +
+        '<button class="' + (tab === "rituals" ? "on" : "") + '" data-mqtab="rituals">🕯️ Rituels' + (sum.readyRitual ? ' <span class="qdot"></span>' : '') + '</button>' +
+        '<button class="' + (tab === "troqueur" ? "on" : "") + '" data-mqtab="troqueur">⚖️ Contrats Troqueur' + (sum.payableAsk ? ' <span class="qdot"></span>' : '') + '</button>' +
+        '</div>';
+
+      if (tab === "scenario") {
+        h += '<div class="quest-hero">' +
+          '<div class="quest-chapter">' + esc(sc.chapter) + ' · ' + esc(sc.ageName) + '</div>' +
+          '<div class="quest-titre">' + (sc.ob && sc.ob.n ? esc(sc.ob.n) : sc.targetId ? esc(I[sc.targetId].n) : "Objectif en cours") + '</div>' +
+          (sc.txt ? '<div class="small muted" style="margin-bottom:8px"><i>« ' + esc(sc.txt) + ' »</i></div>' : '') +
+          (sc.targetId ? '<div style="margin:8px 0">' + itemPill(sc.targetId) + '</div>' : '') +
+          (sc.ready ? '<div class="small" style="color:var(--good);font-weight:600">✓ Prêt à fabriquer !</div><button class="btn pri" style="margin-top:8px;width:100%" data-m="qmake" data-id="' + sc.targetId + '">⚡ Fabriquer maintenant</button>'
+            : sc.missKeys && sc.missKeys.length ? '<div class="small" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px"><span class="muted">Il manque :</span> ' + sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '') +
+          '</div>';
+      } else if (tab === "rituals") {
+        h += '<div class="small muted" style="margin-bottom:8px">Trois rituels renouvelés chaque jour. Réclame tes récompenses une fois les objectifs atteints :</div>';
+        rits.forEach((r, idx) => {
+          const pct = Math.min(100, Math.floor((r.prog / r.target) * 100));
+          const rewTxt = r.reward.tr ? '+' + r.reward.tr + ' ✦ Traces' : r.reward.intu ? '+' + r.reward.intu + ' ✨ Intuition' : '+' + r.reward.ecus + ' écus';
+          h += '<div class="ritual-card' + (r.done ? ' done' : '') + (r.claimed ? ' claimed' : '') + '">' +
+            '<div class="ritual-head"><span class="ritual-ic">' + r.ic + '</span><div class="grow"><div class="ritual-title">' + esc(r.n) + '</div><div class="tiny muted">' + esc(r.d) + '</div></div>' +
+            '<span class="reward-tag">' + rewTxt + '</span></div>' +
+            '<div class="ritual-prog-bar"><i style="width:' + pct + '%"></i></div>' +
+            '<div class="ritual-foot"><span class="tiny muted">' + fmt(r.prog) + ' / ' + fmt(r.target) + ' (' + pct + ' %)</span>' +
+            (r.claimed ? '<span class="tiny" style="color:var(--good);font-weight:600">✓ Réclamé</span>'
+              : r.done ? '<button class="btn small pri ready-pulse" data-m="claimrit" data-idx="' + idx + '">🎁 Réclamer</button>'
+              : '<span class="tiny muted">En cours</span>') +
+            '</div></div>';
+        });
+      } else if (tab === "troqueur") {
+        h += '<div class="troqueur-rank">' +
+          '<div class="troqueur-rank-name">⚖️ ' + esc(rep.cur.n) + ' (Rang ' + rep.cur.lvl + ')</div>' +
+          '<div class="tiny muted">Contrats honorés : <b>' + rep.cnt + '</b>' + (rep.cur.bonus ? ' · +' + rep.cur.bonus + ' ✦ bonus par contrat' : '') + (rep.next ? ' · encore ' + (rep.next.req - rep.cnt) + ' pour ' + esc(rep.next.n) : ' · rang maximum') + '</div>' +
+          '</div>';
+        if (!E.comptoirOpen()) {
+          h += '<p class="small muted center" style="padding:15px 0">Le Comptoir du Troqueur s’ouvrira lorsque tu auras atteint sa terre.</p>';
+        } else if (!tq.length) {
+          h += '<p class="small muted center" style="padding:15px 0">Aucune commande pour l’instant. Le Troqueur prépare de nouvelles demandes.</p>';
+        } else {
+          tq.forEach((ask, idx) => {
+            if (!ask) return;
+            const have = S().inv[ask.id] || 0, can = have >= ask.n;
+            h += '<div class="contract-row">' +
+              '<div class="row between"><div style="display:flex;align-items:center;gap:6px">' + itemPill(ask.id, { qty: ask.n }) + '</div><span class="small" style="font-weight:700;color:#ffd36b">+' + (ask.tr + (rep.cur.bonus || 0)) + ' ✦</span></div>' +
+              '<div class="row between tiny" style="margin-top:4px"><span class="' + (can ? 'muted' : 'bad') + '">En réserve : ' + fmt(have) + ' / ' + fmt(ask.n) + '</span>' +
+              '<button class="btn mini' + (can ? ' pri' : '') + '" data-m="delivask" data-idx="' + idx + '"' + (can ? '' : ' disabled') + '>Livrer</button></div>' +
+              '</div>';
+          });
+        }
+      }
+
+      h += '<div class="acts" style="margin-top:12px"><button class="btn ghost" data-m="close">Fermer</button></div>';
+      return h;
+    };
+
+    const modalObj = {
+      html: makeHTML(),
+      refresh: makeHTML,
+      on: {
+        claimrit: (b) => {
+          const idx = Number(b.dataset.idx);
+          const res = E.claimRitual(idx);
+          if (res.ok) {
+            A.secret ? A.secret() : A.click();
+            vibe([20, 60, 20]);
+            toast("🎁 Récompense de rituel obtenue !", { key: "rit" });
+            save();
+            render(true);
+            swapModal(Object.assign(modalObj, { html: makeHTML() }));
+          }
+          return true;
+        },
+        delivask: (b) => {
+          const idx = Number(b.dataset.idx);
+          const res = E.deliverAsk(idx);
+          if (res.ok) {
+            A.click();
+            vibe(15);
+            toast("✦ +" + (res.ask.tr + (res.bonus || 0)) + " Traces !", { key: "troqueur" });
+            save();
+            render(true);
+            swapModal(Object.assign(modalObj, { html: makeHTML() }));
+          }
+          return true;
+        },
+        qmake: (b) => {
+          const id = b.dataset.id;
+          closeModal();
+          craftChain(id, 1);
+          return true;
+        }
+      }
+    };
+    openModal(modalObj);
+  }
 
   function openForcedReleve() {
     openModal({
@@ -3570,6 +3807,8 @@
     $("#tabs").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-tab]"); if (b) { A.init(); A.click(); setTab(b.dataset.tab); } });
     const ageEl = $("#ageBtn") || $(".age");
     if (ageEl) ageEl.addEventListener("click", () => { A.init(); A.click(); openMilestones(); });
+    const qEl = $("#questBtn");
+    if (qEl) qEl.addEventListener("click", () => { A.init(); A.click(); openQuestsModal(); });
     $("#menuBtn").addEventListener("click", () => { A.init(); openMenu(); });
     $("#memBtn").addEventListener("click", () => { A.init(); A.click(); openMemoire(); });
     $("#cloudBtn").addEventListener("click", () => { A.init(); openAccount(); });
@@ -3630,6 +3869,7 @@
       if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
       if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
       if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
+      if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
       if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }

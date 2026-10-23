@@ -99,7 +99,7 @@ Tout est synthétisé dans le navigateur, sans fichier audio : une musique gén�
 - Une sauvegarde illisible n’est **jamais écrasée** : le jeu propose de la télécharger.
 - Les sauvegardes des versions précédentes sont migrées sans perte (testé sur des parties réelles de la version 1, voir `tools/fixtures`).
 - Quand une nouvelle version est publiée, elle s’installe en arrière-plan puis **attend l’accord du joueur** : un bandeau propose de télécharger sa sauvegarde, puis de mettre à jour.
-- **Comptes joueurs** (facultatifs) : un pseudo et un mot de passe pour retrouver sa partie sur un autre appareil. La sauvegarde est chiffrée sur l’appareil avant d’être envoyée. Il faut installer un petit serveur gratuit chez Cloudflare : marche à suivre dans [`server/README.md`](server/README.md).
+- **Comptes joueurs** (facultatifs) : un pseudo et un mot de passe pour retrouver sa partie sur un autre appareil. Chaque compte garde **trois emplacements** de sauvegarde en ligne : l’emplacement actif reçoit les envois automatiques, et les deux autres permettent de garder une partie de côté (autre partie, partie d’avant une relève). Tout est chiffré sur l’appareil avant l’envoi. Il faut installer un petit serveur gratuit chez Cloudflare : marche à suivre dans [`server/README.md`](server/README.md).
 
 ## Publier avec GitHub Pages
 
