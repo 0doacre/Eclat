@@ -3338,5 +3338,6 @@ test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro san
 
 /* visiteurs de passage et constellations : fichiers à part */
 require("./test-visiteurs.js");
+require("./test-figures.js");
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

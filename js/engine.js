@@ -3800,6 +3800,43 @@
       }
     }
 
+    /* ===== FIGURES DU COSMOS (début) =====
+     * Les fragments du Journal et les signes, vus comme des étoiles. Ne donne jamais le texte d'un fragment,
+     * ni le nom d'un lieu pas encore exploré, ni le mot ou la réponse d'un signe pas encore compris.
+     *   stars : un fragment retrouvé (« allumee »), ou le lieu repéré qui le garde (« pale »)
+     *   rang  : la place du fragment dans sa terre, dans le catalogue entier (stable) */
+    E.figures = function () {
+      const vis = E.visibleFrags();
+      const rangs = {}, cpt = {};
+      vis.forEach((f) => { const z = D.FRAGS[f].z; rangs[f] = cpt[z] = (cpt[z] === undefined ? 0 : cpt[z] + 1); });
+      const stars = [], noms = {};
+      const pale = {};
+      for (const zid in ZONES) {
+        if (!zoneOpen(zid)) continue;
+        const n = E.nextExp(zid);
+        if (!n || n.x.hidden) continue; // un lieu qu'on ne voit pas encore ne se devine pas
+        const fid = (RECIT.expFrag && RECIT.expFrag[zid + ":" + n.x.id]) || (n.x.rw && n.x.rw.frag);
+        if (fid && rangs[fid] !== undefined && !S.frags[fid]) pale[fid] = zid;
+      }
+      const zones = Object.keys(ZONES);
+      vis.forEach((f) => { const z = D.FRAGS[f].z; if (zones.indexOf(z) < 0) zones.push(z); });
+      zones.forEach((z) => {
+        vis.forEach((f) => {
+          const F = D.FRAGS[f];
+          if (F.z !== z) return;
+          if (S.frags[f]) { stars.push({ id: f, z, etat: "allumee", rang: rangs[f], n: F.n || F.titre || "" }); noms[z] = true; }
+          else if (pale[f]) stars.push({ id: f, z, etat: "pale", rang: rangs[f] });
+        });
+      });
+      const signes = E.seenSignes().map((s) => {
+        const o = { id: s.id, h: s.def.h.slice(), lu: s.lu, lieux: s.lieux.slice() };
+        if (s.lu) o.mot = s.def.mot;
+        return o;
+      });
+      return { stars, signes, noms: Object.keys(noms).reduce((a, z) => { a[z] = z; return a; }, {}) };
+    };
+    /* ===== FIGURES DU COSMOS (fin) ===== */
+
     /* ===== VISITEURS DE PASSAGE (début) =====
      * Le calendrier compte le temps de jeu actif (S.stats.play) : une absence ne l'avance pas, et
      * rien n'est tiré pendant le rattrapage. L'écran dit si une fenêtre ou le tutoriel bloque (ctx.bloque) :
@@ -3843,7 +3880,7 @@
       v.next = play + visDelai();
       S.stats.visiteursVus = (S.stats.visiteursVus || 0) + 1;
       visCur = { id: def.id, zone };
-      return { id: def.id, ic: def.ic, css: def.css || "", n: def.n, aria: D.VISITEURS.txt.aria.replace("{n}", def.n), dur: D.VISITEURS.traversee };
+      return { id: def.id, ic: def.ic, css: def.css || "", n: def.n, aria: D.VISITEURS.txt.aria.replace("{n}", def.n.charAt(0).toUpperCase() + def.n.slice(1)), dur: D.VISITEURS.traversee };
     };
     E.visiteurEnCours = () => (visCur ? visCur.id : null);
     E.visiteurPartir = function () { visCur = null; };
