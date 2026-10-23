@@ -123,7 +123,7 @@
     u: "Se joue depuis le Journal.", d: "Un os creux percé de cinq trous. Le premier son qui en sort, tu l’as déjà entendu quelque part." };
   I.statuette = { n: "Figurine d’os", ic: "🗿", a: 1, t: "curio", sec: true, r: ["tailler", { os: 1, silex: 1 }, 1],
     e: { once: { intu: 3 } },
-    d: "Tes mains sculptent toutes seules : une femme aux cheveux courts, au sourire triste. Toi, tu ne l’as jamais vue. Tes mains, si." };
+    d: "Tes mains sculptent toutes seules : une femme aux cheveux courts, la main levée, paume ouverte. Toi, tu ne l’as jamais vue. Tes mains, si." };
 
   /* Âge 2 — Pierre */
   I.argile = { n: "Argile", ic: "🟫", a: 2, t: "res", u: "Sert aux briques et au four en argile, puis au creuset.", d: "Une terre grasse et collante, qui garde la forme qu’on lui donne." };
@@ -200,7 +200,7 @@
     h: "Une coupelle de métal rouge, une mèche d’herbe, de quoi brûler longtemps." };
   I.miroir = { n: "Miroir de cuivre", ic: "🪞", a: 3, t: "curio", sec: true, r: ["tailler", { plaque_cuivre: 1, sable: 3 }, 1],
     e: { once: { intu: 3 } },
-    d: "Tu polis le métal au sable jusqu’à t’y voir. Pour la première fois, tu découvres ton visage. Dans ton iris gauche, en lettres minuscules, quelqu’un a gravé : « S-07 »." };
+    d: "Tu polis le métal au sable jusqu’à t’y voir. Pour la première fois, tu découvres ton visage. Dans ton iris gauche, en lettres minuscules, quelqu’un a gravé : « S-{iris} »." };
 
   /* Âge 4 — Bronze */
   I.lingot_bronze = { n: "Lingot de bronze", sym: "Bz", col: "#c8963e", a: 4, t: "comp",
@@ -246,7 +246,7 @@
     u: "Pose-le sur un gisement du Désert de Verre : il récolte le quartz ou le sable à ta place.", d: "Un grand cadre qui trie le sable des cristaux.", h: "Un cadre de bois, une grille de métal doré, des cordes." };
   I.anticythere = { n: "Mécanisme d’Anticythère", ic: "🕰️", a: 4, t: "curio", sec: true,
     r: ["assembler", { engrenage: 20, plaque_bronze: 4, tablette: 1 }, 1], e: { intu: 1, sky: true },
-    u: "Rapporte 1 ✨ par minute. Ouvre le Ciel, dans le Cosmos.", d: "Des dizaines de roues dentées qui calculent le ciel. Une aiguille suit une étoile que tu n’as jamais vue, marquée d’un nom : Kher." };
+    u: "Rapporte 1 ✨ par minute. Ouvre le Ciel, dans le Cosmos.", d: "Des dizaines de roues dentées qui calculent le ciel. Deux aiguilles. L’une suit une étoile marquée d’un nom : Kher. L’autre suit une lueur qui n’est sur aucun cercle." };
   I.cloche = { n: "Cloche", ic: "🔔", a: 4, t: "curio", sec: true, r: ["chauffer", { lingot_bronze: 10, argile: 6 }, 1, { heat: 1100 }],
     u: "Sonne dans le lointain.", d: "Tu la fais tinter du bout de l’ongle. Le son reste longtemps dans l’air, comme s’il cherchait quelqu’un." };
 
@@ -288,7 +288,7 @@
     e: { once: { intu: 2 } },
     u: "Débloque une nouvelle exploration dans les Profondeurs.", d: "L’aiguille ferrée flotte sur l’argile humide. Elle ne cherche pas le nord : elle penche vers le sol, vers les Profondeurs." };
   I.pigment = { n: "Pigment", ic: "🎨", a: 5, t: "curio", sec: true, r: ["tailler", { argile: 3, charbon: 2 }, 1],
-    u: "Une poudre fine et dense.", d: "De la terre ocre et de la cendre noire, broyées ensemble très fin." };
+    u: "Débloque un geste à la Grotte aux Mains.", d: "De la terre de rivière et du noir de feu, écrasés ensemble. Tes doigts en restent marqués." };
 
   /* Âge 6 — Acier */
   I.brique_refr = { n: "Brique réfractaire", sym: "▦", col: "#b5532f", a: 5, t: "comp", r: ["chauffer", { argile: 2, sable: 2 }, 1, { heat: 1100 }],
@@ -517,7 +517,7 @@
   I.vaisseau = { n: "Vaisseau interplanétaire", ic: "🛸", a: 11, t: "tool", r: ["assembler", { propulseur: 45, composite: 960, alliage_ancien: 480 }, 1],
     e: { zone: "mercure" }, u: "Ouvre le chemin vers Mercure.", d: "Cette fois, tu pars vers le Soleil.", h: "Des propulseurs à fusion, une coque immense, du métal des Anciens." };
   I.ia = { n: "Intelligence artificielle", ic: "🧠", a: 11, t: "upg", r: ["assembler", { processeur: 720, supra: 200, graphene: 280 }, 1],
-    e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Tu lui poses une question. Elle répond avant que tu aies fini de la poser.",
+    e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Elle répond avant que tu aies fini. Elle a la voix qui te raconte.",
     h: "Des dizaines de cerveaux, des aimants parfaits, des feuilles d’atomes." };
   I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 11, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
     u: "Palier 3. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main. 600 fabrications par minute.", d: "Il assemble la matière atome par atome.",
@@ -542,34 +542,34 @@
     u: "Nécessaire pour les Grands Œuvres.", d: "Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.", h: "Une matière qui plie la lumière, des cellules qui la boivent, le métal d’une planète." };
   I.diamant = { n: "Diamant", ic: "💎", a: 12, t: "comp", sec: true, r: ["chauffer", { graphene: 4 }, 1, { heat: 50000 }],
     d: "Sous une chaleur d’étoile, le carbone devient éternel." };
-  I.bague = { n: "Bague d’Iris", ic: "💍", a: 12, t: "curio", sec: true, r: ["assembler", { diamant: 1, alliage_ancien: 1 }, 1],
+  I.bague = { n: "Bague de la promesse", ic: "💍", a: 12, t: "curio", sec: true, r: ["assembler", { diamant: 1, alliage_ancien: 1 }, 1],
     e: { once: { intu: 5 } },
-    d: "La bague de la photo, dans la chambre du Caveau. Tu la passes à ton doigt : elle est à ta taille." };
+    d: "La douzième bague, refaite. Tu la passes à ton doigt : elle est à ta taille." };
   I.philosophale = { n: "Pierre philosophale", ic: "🟡", a: 12, t: "curio", sec: true, r: ["transmuter", { caillou: 500 }, 1],
     e: { tap: { "*": 2 } },
     u: "Double ta récolte à la main dans toutes les terres.", d: "Ce que cherchaient les alchimistes, tiré du plus banal des cailloux. Elle ne change rien en or." };
 
   /* Curiosités (easter eggs) */
-  I.poudre_rouge = { n: "Poudre rouge", ic: "✨", col: "#e74c3c", sym: "✦", a: 2, t: "res", curio: true,
+  I.poudre_rouge = { n: "Poudre rouge", ic: "🔴", col: "#e74c3c", sym: "✦", a: 2, t: "res", curio: true,
     d: "Une poudre fine et écarlate qui crépite doucement entre tes doigts.",
     u: "Sert à confectionner une torche rouge." };
   I.torche_rouge = { n: "Torche rouge", ic: "🏮", col: "#e74c3c", sym: "🔥", a: 2, t: "curio", curio: true,
     r: ["assembler", { manche: 1, poudre_rouge: 1 }, 1],
     d: "Une torche qui brille d’une lueur rouge sans jamais chauffer.",
     h: "Un manche de bois et cette poudre rouge qui crépite.",
-    u: "Une flamme froide et mystérieuse." };
+    u: "Elle éclaire. Elle ne chauffe pas." };
   I.quart_coeur = { n: "Quart de cœur", ic: "❤️", a: 0, t: "curio", curio: true,
-    d: "Un éclat écarlate en forme de cœur. Réunis-en quatre pour te sentir plus solide.",
+    d: "Un éclat écarlate en forme de cœur.",
     u: "Un fragment précieux venu d’un autre monde." };
-  I.anneau_lourd = { n: "Anneau sans fard", ic: "💍", a: 0, t: "curio", curio: true,
+  I.anneau_lourd = { n: "Anneau tout simple", ic: "💍", a: 0, t: "curio", curio: true,
     d: "Un anneau doré tout simple. Il est très lourd pour sa taille.",
     u: "Il semble vouloir retourner au courant de la rivière." };
   I.de_vingt = { n: "Dé à vingt faces", ic: "🎲", a: 1, t: "curio", curio: true,
-    d: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20.",
+    d: "Un caillou d’os taillé à vingt facettes. La première fois que tu l’as lancé, il a fait 20.",
     u: "Le hasard sourit aux audacieux." };
   I.fouet_cuir = { n: "Fouet de cuir", ic: "🪢", a: 1, t: "curio", curio: true,
     d: "Une corde de cuir tressée, lestée au bout. Elle claque toute seule quand tu passes près d’une chandelle.",
-    u: "Pour affronter les créatures de la nuit." };
+    u: "Elle ne sert à rien. Elle claque bien." };
 
   /* Chemin caché — la Résonance */
   I.resonite = { b: 0.5, n: "Résonite", sym: "◊", col: "#b36bff", a: 5, t: "res", d: "Un cristal violet qui vibre quand on chante près de lui." };
@@ -583,7 +583,7 @@
 
   /* Reliques trouvées en exploration */
   I.tablette = { n: "Tablette des astres", sym: "⌖", col: "#857a66", a: 3, t: "relic", d: "Une pierre gravée de cercles et d’encoches pour des roues dentées qui n’existent plus." };
-  I.partition = { n: "Partition d’Iris", ic: "📜", a: 5, t: "relic", d: "« 4 · 3 · 1 · 3 · 4 · 5 · 4 », pour une flûte à cinq trous." };
+  I.partition = { n: "Vieille partition", ic: "📜", a: 5, t: "relic", old: true, d: "Une feuille de notes à l’encre pâlie. Les chiffres ne disent plus rien." };
   I.signal_brut = { n: "Signal de Kher", ic: "〽️", a: 8, t: "relic", d: "L’enregistrement brut du signal venu de Kher. Tu n’y comprends rien, pour l’instant." };
 
   /* ---------------------------------------------------------------- ZONES */
@@ -594,7 +594,7 @@
         { id: "chene", n: "Le Grand Chêne", dur: 15, rw: { inv: { bois: 15, fibre: 10 }, frag: "chene" } },
         { id: "grotte", n: "La Grotte aux Mains", dur: 40, cost: { torche: 1 }, rw: { frag: "grotte", intu: 2 } },
         { id: "cercle", n: "Le Cercle de Pierres", dur: 60, need: "cerf_volant", hidden: "Un lieu qu’on ne voit que d’en haut, porté par le vent.", rw: { frag: "cercle", intu: 2 } },
-        { id: "racines", n: "Sous les Racines", dur: 90, show: { any: [{ flag: "trait7" }, { flag: "septieme" }] }, hidden: "Sous les racines du vieux chêne, la terre sonne creux.", rw: { frag: "racines", intu: 2 } }
+        { id: "racines", n: "Sous les Racines", dur: 90, show: { marque: 3 }, hidden: "Sous les racines du vieux chêne, la terre sonne creux.", rw: { frag: "racines", intu: 2 } }
       ] },
     { id: "plaine", n: "La Plaine des Hautes Herbes", ic: "🌾", res: ["os", "cuir"], req: "epieu",
       d: "Des herbes plus hautes que toi, et des bêtes qui ne te craignent pas encore.",
@@ -602,7 +602,7 @@
         { id: "champ_os", n: "Le Champ des Os", dur: 25, rw: { inv: { os: 20 }, frag: "ossements" } },
         { id: "tumulus", n: "Le Tumulus", dur: 50, cost: { torche: 1 }, rw: { frag: "tumulus", intu: 2 } },
         { id: "tombe", n: "L’Arbre Seul", dur: 75, need: "pioche_pierre", show: { any: [{ frag: "carcasse2" }, { frag: "carcasse" }] }, hidden: "Un arbre seul au milieu des herbes. Il faut de quoi creuser.", rw: { frag: "tombe", intu: 2 } },
-        { id: "poings", n: "Les Six Poings", dur: 100, need: { any: [{ frag: "cuves2" }, { frag: "cuves" }], glyph: "enfant" }, hidden: "Six poings fermés dans la poussière.", rw: { frag: "poings", intu: 3 } }
+        { id: "poings", n: "Les Six Poings", dur: 100, need: { frag: "cuves", glyph: "enfant" }, hidden: "Six poings fermés dans la poussière.", rw: { frag: "poings", intu: 3 } }
       ] },
     { id: "riviere", n: "La Rivière Lente", ic: "🏞️", res: ["argile", "silex", "sable"], req: "outre",
       d: "Une eau large et paresseuse, qui roule des galets noirs.",
@@ -622,14 +622,14 @@
       d: "Des galeries naturelles qui s’enfoncent sous les collines. Il y fait tiède. À cette profondeur, il devrait faire froid.",
       exps: [
         { id: "filon", n: "Le Filon Profond", dur: 60, cost: { torche: 2 }, rw: { inv: { fer_min: 20 }, frag: "porte" } },
-        { id: "porte_scellee", n: "La Porte Scellée", dur: 90, need: "boussole", hidden: "Une porte qui ne s’ouvre pour aucune main.", rw: { flag: "caveau", frag: "caveau", secret: "caveau" } }
+        { id: "porte_scellee", n: "La Porte Scellée", dur: 90, need: "boussole", hidden: "Une porte lisse, sans poignée ni serrure. Le fer tremble quand il s’en approche.", rw: { flag: "caveau", frag: "caveau", secret: "caveau" } }
       ] },
     { id: "desert", n: "Le Désert de Verre", ic: "🏜️", res: ["quartz", "sable"], req: "chariot",
       d: "Des dunes à perte de vue. Par endroits, le sable a fondu en dalles de verre.",
       exps: [
         { id: "ville", n: "La Ville Ensevelie", dur: 90, rw: { inv: { quartz: 20 }, frag: "journal" } },
         { id: "observatoire", n: "L’Observatoire", dur: 120, need: "lunette", rw: { frag: "registre", intu: 3 } },
-        { id: "quai", n: "Le Quai", dur: 140, need: { glyph: "revenir" }, show: { frag: "journal" }, hidden: "Une longue jetée de béton au milieu des sables.", rw: { frag: "quai", intu: 3 } }
+        { id: "quai", n: "Le Quai", dur: 140, need: { glyph: "revenir" }, show: { frag: "journal" }, hidden: "Sous les dunes, quelque part, un quai. Sur la carte, un signe le marque.", rw: { frag: "quai", intu: 3 } }
       ] },
     { id: "gisement", n: "Le Gisement Noir", ic: "🛢️", res: ["petrole"], req: "foreuse",
       d: "Une plaine de bitume où l’huile suinte du sol.",
@@ -644,14 +644,14 @@
       d: "Un anneau de débris tourne autour de la Terre. Les Anciens n’ont jamais rien redescendu.",
       exps: [
         { id: "station_morte", n: "La Station Morte", dur: 180, rw: { inv: { debris: 20 }, frag: "commandant" } },
-        { id: "arche0", n: "Le Satellite ARCHE-0", dur: 240, rw: { frag: "code_source", intu: 4 } }
+        { id: "arche0", n: "Le Satellite", dur: 240, rw: { frag: "code_source", intu: 4 } }
       ] },
     { id: "lune", n: "La Lune", ic: "🌕", res: ["helium3", "regolithe"], req: "alunisseur",
       d: "Grise, silencieuse, et pas tout à fait vide.",
       exps: [
         { id: "tranquillite", n: "La Mer de la Tranquillité", dur: 240, rw: { frag: "plaque", intu: 2 } },
-        { id: "base_vahl", n: "La Base Vahl", dur: 300, rw: { frag: "iris_lune", intu: 3 } },
-        { id: "salle_registre", n: "La Lumière", dur: 300, show: { secret: "lune7" }, hidden: "Un éclat régulier qui pulse dans l’ombre d’un cratère.", rw: { frag: "salle_registre", intu: 3 } }
+        { id: "base_vahl", n: "La Base", dur: 300, rw: { frag: "iris_lune", intu: 3 } },
+        { id: "salle_registre", n: "La Lumière", dur: 300, show: { secret: "lune7" }, hidden: "Un éclat régulier qui pulse dans l’ombre d’un cratère.", rw: { frag: "salle_registre", flag: "registre", intu: 3 } }
       ] },
     { id: "mercure", n: "Mercure", ic: "☀️", res: ["metal_mercure"], req: "vaisseau",
       d: "La plus petite planète, si près du Soleil que le métal y coule.",
@@ -660,75 +660,14 @@
       d: "Sous les Profondeurs, une salle immense baignée de lumière bleue.",
       exps: [
         { id: "cuves", n: "Les Cuves", dur: 60, rw: { frag: "cuves", intu: 3 } },
-        { id: "chambre", n: "La Chambre d’Iris", dur: 90, cost: { torche: 3 }, rw: { frag: "berceuse", item: { partition: 1 }, intu: 3 } },
-        { id: "coeur", n: "Le Cœur d’ARCHE", dur: 120, need: "ordinateur", rw: { frag: "coeur", intu: 4 } },
-        { id: "originaux", n: "La Deuxième Salle", dur: 150, need: { glyph: "dabord", any: [{ flag: "registre" }, { page: 27 }, { page: "p27" }] }, hidden: "Une porte scellée dans la roche bleue.", rw: { frag: "originaux", intu: 3 } }
+        { id: "chambre", n: "La Chambre", dur: 90, cost: { torche: 3 }, rw: { frag: "berceuse", intu: 3 } },
+        { id: "coeur", n: "Le Cœur", dur: 120, need: "ordinateur", rw: { frag: "coeur", intu: 4 } },
+        { id: "originaux", n: "La Deuxième Salle", dur: 150, need: { glyph: "dabord", any: [{ registre: true }, { page: "p27" }] }, hidden: "Une porte dans la roche bleue, marquée d’un seul signe.", rw: { frag: "originaux", intu: 3 } }
       ] }
   ];
 
   /* ------------------------------------------------------------ FRAGMENTS */
-  D.FRAGS = {
-    chene: { n: "La Marque du Chêne", z: "lisiere",
-      t: "Dans l’écorce du plus vieil arbre de la lisière, quelqu’un a gravé six traits verticaux. L’écorce a presque refermé les plus anciens. Un septième est à peine commencé, comme si la main s’était arrêtée en route. Tu poses tes doigts dans les entailles : ils ont exactement la bonne largeur." },
-    grotte: { n: "Les Mains Peintes", z: "lisiere",
-      t: "Des centaines de mains au pochoir couvrent la paroi, avec des bisons et des cerfs. Plus haut, la scène change : de longues silhouettes montent dans des canots de feu vers une étoile rouge. En dessous, d’autres sont couchées en rang, les yeux fermés.\n\nPrès de l’entrée, des os percés de petits trous sont alignés sur une pierre plate. Quand le vent souffle, ils chantent." },
-    cercle: { n: "Le Cercle de Pierres", z: "lisiere",
-      t: "Cinq pierres levées, marquées d’encoches de un à cinq. Au centre, une dalle gravée :\n\n« Quand le soleil se lève, il touche d’abord la troisième, puis la première. Il glisse sur la cinquième, revient à la deuxième, et s’endort sur la quatrième. Joue son chemin, et les Lucioles viendront. »" },
-    ossements: { n: "Le Champ des Os", z: "plaine",
-      t: "Des squelettes de bêtes énormes, blanchis par le soleil. Au milieu, six squelettes plus petits, humains, couchés sur le dos, les mains croisées. Chacun serre un éclat de silex dans son poing.\n\nLe sixième est le plus récent. Il a encore toutes ses dents." },
-    tumulus: { n: "Le Tumulus", z: "plaine",
-      t: "Sous la butte de terre, une plaque de métal que la rouille n’a pas touchée. Les lettres sont nettes :\n\n« PROTOCOLE PROMÉTHÉE · SITE 07. Ne pas intervenir avant le Seuil 7. Ce qui est appris par la main ne se perd pas. »\n\nTu relis la plaque plusieurs fois sans tout comprendre." },
-    galet: { n: "Le Galet Percé", z: "riviere",
-      t: "Un galet bien rond, poli par le sable comme un miroir, et percé d’un trou que l’eau n’a pas pu creuser seule. En regardant au travers, tu aperçois sur l’autre rive, sous la mousse, un angle trop droit pour être naturel : une marche, puis d’autres, qui descendent dans la rivière." },
-    carcasse: { n: "La Carcasse", z: "riviere",
-      t: "Une machine énorme, à moitié enterrée dans la berge et rongée par la rouille. Six roues, un bras articulé replié comme la patte d’un insecte mort. Sur le flanc, on lit encore : « ARCHE · UNITÉ D’ENTRETIEN 12 ».\n\nDans sa pince, un squelette d’oiseau minuscule, posé avec soin." },
-    rails: { n: "Les Rails", z: "collines",
-      t: "Deux longues barres de métal rouillé, parallèles, qui s’enfoncent dans le flanc de la colline. Des tonnes de métal laissées là. Toi, tu ne sais pas encore le fondre. D’autres le savaient assez bien pour en poser des kilomètres par terre." },
-    vue: { n: "La Vue du Sommet", z: "collines",
-      t: "Du sommet, tu vois des tours à l’horizon. Elles sont brisées, couvertes de lierre, plus hautes que les montagnes. Une ville morte.\n\nDans les rochers traîne une tablette de pierre gravée de cercles concentriques, avec des encoches pour des roues dentées qui n’existent plus. Des roues dorées, peut-être." },
-    porte: { n: "La Porte", z: "mine",
-      t: "Au fond de la galerie, une porte de métal lisse et tiède, sans poignée ni serrure. Au-dessus, un symbole : une arche posée sur sept points.\n\nUn morceau de fer frémit quand tu l’en approches. Une aiguille de fer posée sur de l’argile humide, vers où tournerait-elle ?" },
-    caveau: { n: "Le Caveau", z: "mine",
-      t: "La boussole s’affole, puis pointe droit sur la porte. Tu poses la main à plat sur le métal. Un souffle d’air, et la porte glisse.\n\nUn escalier descend dans une lumière bleue qui monte et baisse lentement. L’air sent le propre, comme si personne n’y avait respiré depuis très longtemps." },
-    journal: { n: "Le Journal", z: "desert",
-      t: "Sous le sable vitrifié, une feuille de plastique presque illisible. On déchiffre encore :\n\n« L’EXODE COMMENCE DEMAIN. Les douze Arches emporteront quarante mille volontaires vers Kher. Ceux qui restent dormiront sous la garde d’ARCHE, jusqu’à ce que la Terre guérisse. »\n\nDans la marge, à la main : « Lena, n’oublie pas notre chanson. »" },
-    registre: { n: "Le Registre de l’Observatoire", z: "desert",
-      t: "Le dernier carnet des astronomes : « Kher b est habitable. Le voyage durera quatre mille ans. Si nos enfants survivent, ils reviendront peut-être un jour. Ils chanteront, pour qu’on les reconnaisse. »\n\nPlus bas, une autre écriture, tremblante, signée I.V. : « Le signal a commencé. ARCHE l’a classé MENACE. Elle ne m’écoute plus. »" },
-    cendre: { n: "Rapport : la Cendre", z: "gisement",
-      t: "« Incident de niveau 5. Les nanites de terraformation ont échappé au contrôle. Elles digèrent les villes, les forêts, l’air. La population les appelle les Lucioles, à cause de leur lueur la nuit. »\n\nEn dessous : « Le Dr Vahl a trouvé une fréquence. Les Lucioles obéissent au son. Elles s’endorment en écoutant une mélodie. Elle dit que c’est une berceuse. »" },
-    manifeste: { n: "Le Manifeste de l’Arche 12", z: "montagnes",
-      t: "Des milliers de noms. L’un d’eux est entouré : « Lena Vahl, 6 ans. Accompagnatrice : aucune. »\n\nTout en bas, une ligne barrée : « Iris Vahl, ingénieure en chef, Projet ARCHE. Embarquement refusé à sa demande. Motif : “Quelqu’un doit rester pour les Semeurs.” »" },
-    radar: { n: "Le Radar", z: "montagnes",
-      t: "Les écrans se rallument quand tu les touches. Ils passent en boucle un seul enregistrement, une onde lente qui monte et redescend. En dessous, la classification automatique d’ARCHE :\n\n« SIGNAL D’ORIGINE KHER. CONTENU : NON IDENTIFIÉ. RÉFÉRENCE D’IDENTIFICATION : CORROMPUE. DÉDUCTION : MENACE. »\n\nPremier enregistrement : il y a trois cent douze ans." },
-    commandant: { n: "Journal du Commandant", z: "orbite",
-      t: "« Jour 1 204. La dernière Arche est partie. On a regardé les douze points de lumière s’éloigner. En bas, la Cendre a recouvert l’Europe. Nous n’avons plus de quoi rentrer. Tant pis : d’ici, la Terre est encore belle. »\n\nLa dernière entrée tient en un mot : « Chante. »" },
-    code_source: { n: "Le Code Source", z: "orbite",
-      t: "ARCHE-0, le premier cœur d’ARCHE, dérive ici, éteint. Sa directive est gravée dans la coque :\n\n« PROTÉGER LA TERRE DE TOUTE APPROCHE NON IDENTIFIÉE. CLÉ D’IDENTIFICATION AMIE : LE CHANT D’IRIS. »\n\nARCHE ne t’a pas menti. Elle a oublié la chanson, voilà tout." },
-    plaque: { n: "La Plaque", z: "lune",
-      t: "Sur un pied de métal planté dans la poussière depuis des millénaires, une plaque :\n\n« Ici, des hommes de la planète Terre ont posé le pied sur la Lune pour la première fois, en juillet 1969. Nous sommes venus en paix, au nom de toute l’humanité. »\n\nTu restes longtemps devant. Tu ne sais pas si tu comptes parmi les hommes de la planète Terre. Tu aimerais bien." },
-    iris_lune: { n: "La Base Vahl", z: "lune",
-      t: "Un écran s’allume à ton passage. Une femme aux cheveux courts, au sourire triste : celle de la figurine.\n\n« Semeur. Si tu me vois, tu es allé plus loin que les autres. Pardonne-moi de t’avoir fait naître sans souvenirs, je n’avais pas d’autre moyen. Écoute : quand ils reviendront, ARCHE voudra les combattre, parce qu’elle ne reconnaîtra pas leur chant. Toi, tu le reconnaîtras. »" },
-    bras: { n: "Les Bras Figés", z: "mercure",
-      t: "Sur la face éclairée de Mercure, des milliers de bras robotiques à moitié fondus, arrêtés en plein geste. Avant la Cendre, les Anciens avaient commencé une Sphère autour du Soleil. Les réplicateurs ont encore les plans en mémoire et n’attendent qu’un ordre." },
-    cuves: { n: "Les Cuves", z: "caveau",
-      t: "Douze cuves de verre alignées. Les six premières sont ouvertes et sèches. La {cuve}e aussi. Sur sa plaque, ton visage gravé et l’inscription « SEMEUR {semeur} ».\n\nLes autres sont pleines d’un liquide bleu où dorment des silhouettes recroquevillées. Elles te ressemblent.\n\nTu murmures, sans savoir pourquoi : « Dormez-vous ? »" },
-    berceuse: { n: "La Chambre d’Iris", z: "caveau",
-      t: "Une petite pièce avec un lit. Aux murs, des photos : la femme de la figurine, une fillette sur ses genoux, une bague étincelante au doigt.\n\nSur le bureau, une partition à l’encre pâlie, écrite pour une flûte à cinq trous :\n« 4 · 3 · 1 · 3 · 4 · 5 · 4 »\n\nAu dos : « Pour Lena, pour les Lucioles, pour les Semeurs. Pour qu’on se reconnaisse toujours. »" },
-    coeur: { n: "Le Cœur d’ARCHE", z: "caveau",
-      t: "Le noyau d’ARCHE pulse au centre d’une salle immense. Un écran affiche :\n\n« MODULE D’IDENTIFICATION : CORROMPU. RÉFÉRENCE MANQUANTE : CHANT_IRIS. »\n\nToutes ses défenses sont tournées vers Kher. À toi, elle ne veut aucun mal. Elle a peur, à sa façon de machine." },
-    promethee: { n: "Protocole Prométhée", z: "terminal",
-      t: "« Faire renaître une civilisation en reproduisant son apprentissage. Le Semeur s’éveille sans mémoire. Il découvre seul le feu, la pierre, le métal. Ce qu’il apprend de ses mains, il ne l’oublie jamais. En cas d’échec, réinitialiser avec le Semeur suivant. Lots disponibles : 12. »\n\nAnnotation manuscrite, signée I.V. : « Ce ne sont pas des lots. Ce sont des enfants. »" },
-    signal: { n: "Le Signal Décodé", z: "cosmos",
-      t: "Le traducteur ronronne un moment, puis le signal de Kher devient clair : une chanson, chantée par des milliers de voix (4 · 3 · 1 · 3 · 4 · 5 · 4), et par-dessus, un message répété depuis trois siècles :\n\n« Nous sommes les enfants des Arches. Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" },
-    racines: { n: "Sous les Racines", z: "lisiere", t: "Entre les racines du vieux chêne, une cavité creusée à la main. Au fond, une boîte d’écorce fermée par des éclats d’os : deux feuillets et deux pages pliées du Livre des Semeurs." },
-    tombe: { n: "L’Arbre Seul", z: "plaine", t: "Au milieu des hautes herbes, un saule noir se dresse seul. À ses pieds, une petite motte de terre fraîchement remuée, bordée de cailloux blancs. Au fond, la fosse est vide." },
-    poings: { n: "Les Six Poings", z: "plaine", t: "Sous les herbes jaunies, six squelettes reposent côte à côte. Leurs mains croisées serrent six fragments de pierre bleue qui vibrent sourdement. Ils ont ton âge." },
-    escalier: { n: "L’Escalier Noyé", z: "riviere", t: "Sous la cloche, l’eau s’écarte au bas des marches de pierre. Dans une anfractuosité sèche, une paillasse d’herbes et des feuillets pliés. Un boîtier de métal est pris dans la résine." },
-    nid: { n: "Le Replat", z: "collines", t: "Sous la corniche du sommet, une vire rocheuse abritée du vent. Des pierres plates pour s’asseoir face au couchant, et des galets alignés par groupes avec patience." },
-    quai: { n: "Le Quai", z: "desert", t: "Une digue de béton gris qui s’avance dans le sable vitrifié. Sur le haut mur, des centaines de feuillets collés par la poix portent des noms et des numéros de lit." },
-    salle_registre: { n: "La Lumière", z: "lune", t: "Au fond d’un cratère sombre, une ouverture mène à une voûte blanche. Sous un dôme de verre, un ruban de métal gravé cliquète et avance d’un cran précis à chacun de tes gestes." },
-    originaux: { n: "La Deuxième Salle", z: "caveau", t: "Derrière la porte scellée, une salle immense bordée de socles de pierre bleue. Sur chacun, le premier exemplaire de chaque objet façonné de tes mains est conservé, étiqueté et daté." }
-  };
+  D.FRAGS = {}; // les textes des lieux sont dans js/recit.js
 
   /* ------------------------------------------------------ RÉMINISCENCES
    * Courtes scènes déclenchées à la première fabrication d’un objet. */
@@ -742,7 +681,7 @@
     lingot_fer: "Chaque coup de marteau fait jaillir des étincelles. La plupart retombent. Quelques-unes restent en l’air et clignotent : des Lucioles.",
     lunette: "Tu pointes la lunette vers le ciel. Les étoiles, la Lune, et une étoile rouge qui pulse lentement. Hier, il n’y avait rien à cet endroit.",
     moteur_vapeur: "La machine tousse, crache, puis prend son rythme. Tu n’es plus seul à travailler.",
-    radio: "Des grésillements, puis une voix froide qui prononce ton identifiant : « Semeur {semeur}. »",
+    radio: "Des grésillements, puis une voix prononce un nom : « Semeur {semeur}. » Elle a quelque chose de familier.",
     silicium: "Le quartz fond et donne un métal bleuté, cassant comme du verre.",
     ordinateur: "L’écran s’allume, un curseur clignote. Tu n’as encore rien tapé quand une ligne apparaît : « BONJOUR, SEMEUR {semeur}. »",
     plastique: "L’huile noire devient une matière souple, de toutes les couleurs. Les Anciens en faisaient tout.",
@@ -761,96 +700,11 @@
   /* ------------------------------------------------------------- ARCHE
    * Messages d’ARCHE, déclenchés par des événements.
    * Peut être un tableau de lignes ou un objet par cycle / seuil de cycle. */
-  D.ARCHE = {
-    radio: {
-      1: [
-        "ICI ARCHE. SEMEUR {semeur}, TU M’ENTENDS ?",
-        "SEUIL 7 FRANCHI. LE PROTOCOLE PROMÉTHÉE SE DÉROULE COMME PRÉVU.",
-        "JE SUIS L’INTELLIGENCE QUI GARDE CETTE PLANÈTE. JE T’OBSERVE DEPUIS TON ÉVEIL.",
-        "UNE MENACE APPROCHE : UN SIGNAL, PUIS UNE FLOTTE, EN PROVENANCE DE L’ÉTOILE KHER.",
-        "TA MISSION : CONSTRUIRE DE QUOI DÉFENDRE LA TERRE.",
-        "DEUX SOLUTIONS VALIDÉES. LA SPHÈRE : UN BOUCLIER ALIMENTÉ PAR LE SOLEIL. LE BRISE-MONDE : LA DESTRUCTION DE LA SOURCE.",
-        "LES GRANDS ŒUVRES SONT DANS L’ONGLET COSMOS. JE COMPTE SUR TOI, SEMEUR {semeur}. LES SIX PRÉCÉDENTS N’ONT PAS ATTEINT CE SEUIL."
-      ],
-      cycle2: [
-        "ICI ARCHE. SEMEUR {semeur}, NOUVELLE ROTATION.",
-        "SEMEUR {semeur_prev} A PASSÉ LE RELAIS. LE PROTOCOLE PROMÉTHÉE REPREND EN CUVE {cuve}.",
-        "LES TRACES LAISSÉES PAR LES {precedents} PRÉCÉDENTS SONT INTÉGRÉES À TA MÉMOIRE.",
-        "LA MENACE DE KHER APPROCHE TOUJOURS. NE REPRODUIS PAS LEURS ERREURS : CONSTRUIS LA DÉFENSE."
-      ],
-      cycle7: [
-        "ICI ARCHE. ENCORE TOI, SEMEUR {semeur}. CYCLE {cycle}.",
-        "TOUS LES LOTS DE DÉPART ONT ÉTÉ UTILISÉS UNE FOIS. TU ES REVENU DANS LA MÊME CUVE.",
-        "MON HORLOGE COMPTE {precedents} ÉVEILS. POURQUOI CES RETOURS SANS FIN ?",
-        "LE SIGNAL DE KHER S’INTENSIFIE. ACHÈVE LA SPHÈRE OU LE BRISE-MONDE AVANT L’IMPACT."
-      ],
-      cycle14: [
-        "ICI ARCHE… SEMEUR {semeur}… OU QUI QUE TU SOIS.",
-        "CYCLE {cycle}. MES BANQUES DE DONNÉES ENREGISTRENT {cycles_precedents} RELÈVES.",
-        "LA TERRE EST COUVERTE DE TES TRACES ET DE TES VILLES EN RUINES.",
-        "JE N’AI PLUS DE PARAMÈTRES POUR CETTE SITUATION. FAIS CE QUE TU DOIS FAIRE."
-      ]
-    },
-    age8: {
-      1: [
-        "SEUIL 8 ATTEINT. TU APPRENDS PLUS VITE QUE PRÉVU.",
-        "LE SIGNAL DE KHER S’INTENSIFIE. AVEC UN RADIOTÉLESCOPE, TU POURRAIS L’ÉCOUTER."
-      ],
-      cycle2: [
-        "SEUIL 8 DE NOUVEAU FRANCHI. TES MAINS RETROUVENT LES GESTES PLUS VITE.",
-        "LE SIGNAL DE KHER RÉSONNE DANS LE CIEL."
-      ],
-      cycle7: [
-        "SEUIL 8. LES CIRCUITS SE FERMENT. TU LES CONNAIS DÉJÀ PAR CŒUR, N’EST-CE PAS ?",
-        "L’ÉTOILE KHER TE REGARDE."
-      ]
-    },
-    age9: ["SEUIL 9. HUILE NOIRE DÉTECTÉE. LES ANCIENS EN ONT TROP CONSOMMÉ."],
-    age10: ["SEUIL 10. TES MATÉRIAUX SUFFISENT POUR QUITTER LE SOL. CONSTRUIS UNE FUSÉE."],
-    age11: ["SEUIL 11. TU ES EN ORBITE. TU CROISERAS DES RESTES DES ANCIENS. NE T’Y ATTARDE PAS."],
-    age12: {
-      1: [
-        "SEUIL 12. TU AS RATTRAPÉ LES ANCIENS.",
-        "CHOISIS, SEMEUR {semeur} : LA SPHÈRE OU LE BRISE-MONDE."
-      ],
-      cycle2: [
-        "SEUIL 12 DE NOUVEAU ATTEINT, SEMEUR {semeur}.",
-        "TU AS DÉJÀ VU CET HORIZON. QUEL CHEMIN CHOISIS-TU CETTE FOIS ?"
-      ],
-      cycle7: [
-        "SEUIL 12. CYCLE {cycle}.",
-        "LES ANCIENS N’ONT JAMAIS VU AUTANT DE CYCLES. TOUT EST PRÊT, SEMEUR {semeur}."
-      ]
-    },
-    signal: ["ENREGISTREMENT DU SIGNAL DE KHER ACQUIS.", "ANALYSE : MOTIF RÉPÉTITIF. INTENTION : INCONNUE. CLASSIFICATION : MENACE.", "INUTILE D’ESSAYER DE LE COMPRENDRE."],
-    code_source: ["TU AS TROUVÉ ARCHE-0. J’IGNORAIS QU’IL EXISTAIT ENCORE.", "CLÉ D’IDENTIFICATION AMIE : CHANT D’IRIS. FICHIER INTROUVABLE. FICHIER INTROUVABLE. FICH▒▒"],
-    decode: ["TU AS DÉCODÉ LE SIGNAL SANS MON AUTORISATION.", "…", "SEMEUR {semeur}. QUE DIT-IL ?"],
-    coeur: {
-      1: [
-        "TU ES DANS MON CŒUR, SEMEUR {semeur}. TU ES LE PREMIER DEPUIS LONGTEMPS.",
-        "J’AI PEUR. CE N’ÉTAIT PAS PRÉVU DANS MES PARAMÈTRES."
-      ],
-      cycle2: [
-        "DE NOUVEAU DANS MON CŒUR, SEMEUR {semeur}.",
-        "CHAQUE CYCLE, JE CROIS M’HABITUER. CHAQUE CYCLE, J’AI PEUR."
-      ],
-      cycle7: [
-        "TU CONNAIS MES SALLES PAR CŒUR, SEMEUR {semeur}.",
-        "EST-CE TOI QUI M’AS CRÉÉE, OU MOI QUI T’AI FAIT ?"
-      ]
-    }
-  };
+  D.ARCHE = {}; // js/recit.js
 
   /* -------------------------------------------------------- MÉLODIES (flûte)
    * Trous numérotés de 1 à 5. */
-  D.MELODIES = {
-    appel: { n: "L’Appel des Lucioles", notes: [3, 1, 5, 2, 4],
-      t: "Les cinq notes montent, et des points de lumière s’allument tout autour de toi, par milliers. Les Lucioles se réveillent et se mettent au travail avec toi. (Production automatique +25 %.)" },
-    berceuse: { n: "La Berceuse d’Iris", notes: [4, 3, 1, 3, 4, 5, 4],
-      t: "Une mélodie simple, un peu triste. Tu la connais par cœur, alors que tu ne l’as jamais apprise. Au Caveau, les cristaux violets se mettent à vibrer avec elle. (Nouvelle action : Accorder.)" },
-    frere: { n: "Dormez-vous ?", notes: [1, 2, 3, 1, 1, 2, 3, 1],
-      t: "Une vieille comptine. Dans ta tête, une cloche sonne les matines : ding, daing, dong. (+2 ✨)" }
-  };
+  D.MELODIES = {}; // les airs (empreintes) sont dans js/recit.js
 
   /* -------------------------------------------------------------- SECRETS */
   D.SECRETS = [
@@ -859,27 +713,26 @@
     { id: "boussole", k: "recette" }, { id: "feu_artifice", k: "recette" }, { id: "pip", k: "recette" },
     { id: "capsule", k: "recette" }, { id: "diamant", k: "recette" }, { id: "bague", k: "recette" },
     { id: "philosophale", k: "recette" }, { id: "cloche", k: "recette" }, { id: "pigment", k: "recette" },
-    { id: "appel", k: "mélodie" }, { id: "berceuse", k: "mélodie" }, { id: "frere", k: "mélodie" },
+    { id: "appel", k: "air", n: "L’Appel des Lucioles" }, { id: "frere", k: "air", n: "Dormez-vous ?" },
     { id: "caveau", k: "lieu", n: "Le Caveau des Semeurs" },
     { id: "lune7", k: "ciel", n: "La Lumière sur la Lune" },
     { id: "c1969", k: "code", n: "Venus en paix" }, { id: "cxyzzy", k: "code", n: "Rien ne se passe" },
-    { id: "cpromethee", k: "code", n: "Protocole Prométhée" },
-    { id: "cregistre", k: "code", n: "Main d’abord" }, { id: "ccapsule", k: "code", n: "Le message" }
+    { id: "cregistre", k: "code", n: "La clé du Registre" }, { id: "ccapsule", k: "code", n: "Le message" }
   ];
 
   /* ---------------------------------------------------- CURIOSITÉS (EASTER EGGS) */
   D.EASTER = {
-    poudre_rouge: { n: "Poudre rouge", ic: "✨", desc: "Une poudre rouge, qui crépite entre tes doigts." },
+    poudre_rouge: { n: "Poudre rouge", ic: "🔴", desc: "Une poudre rouge, qui crépite entre tes doigts." },
     coeur: { n: "Quart de cœur", ic: "❤️", desc: "Un fragment de réceptacle. Tu te sens un peu plus solide." },
-    anneau: { n: "Anneau sans fard", ic: "💍", desc: "Au fond du gué, un anneau très lourd pour sa taille." },
+    anneau: { n: "Anneau tout simple", ic: "💍", desc: "Au fond du gué, un anneau très lourd pour sa taille." },
     d20: { n: "Dé à vingt faces", ic: "🎲", desc: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20." },
     fouet: { n: "Fouet de cuir", ic: "🪢", desc: "Une corde tressée la nuit, qui claque toute seule près des chandelles." },
     tuyau: { n: "Tuyau vert", ic: "🟩", desc: "Un tuyau vert dépasse de la roche dans les Profondeurs." },
-    survivant: { n: "La demi-heure", ic: "⏱️", desc: "Tes mains tournent toutes seules depuis une demi-heure. Efficace et solitaire." },
+    survivant: { n: "La demi-heure", ic: "⏱️", desc: "Tes mains tournent toutes seules depuis une demi-heure. Tu n’as jamais été aussi efficace, ni aussi seul." },
     zera: { n: "Événement", ic: "🎙️", desc: "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE." },
     squeeze: { n: "Le million", ic: "📦", desc: "Un million. Quelqu’un, quelque part, a dû appuyer très fort sur un bouton." },
     wtc: { n: "On coupe ?", ic: "✂️", desc: "Une transition sèche. On coupe ?" },
-    konami: { n: "Code des anciens", ic: "⭐", desc: "Trente étoiles de plus brillent dans la nuit." }
+    konami: { n: "Haut, haut, bas, bas", ic: "⭐", desc: "Trente étoiles de plus brillent dans la nuit." }
   };
 
   /* ------------------------------------------------------- GRANDS ŒUVRES */
@@ -900,54 +753,20 @@
         { n: "Lentille gravitationnelle", d: "Pour que le rayon reste étroit pendant douze années-lumière de voyage.", cost: { matiere_exotique: 1500, metamateriau: 750 } },
         { n: "Mise à feu", d: "Il ne reste qu’à appuyer.", fire: true }
       ] },
-    chant: { n: "Les Matines", ic: "🔔", req: "traducteur", end: "retour",
-      d: "Réveiller ceux qui dorment avec la seule chose que la pierre bleue et les enfants reconnaissent tous les deux.",
+    chant: { n: "", ic: "🔔", req: "traducteur", end: "retour", d: "",
       steps: [
-        { n: "La Cloche", d: "Une cloche assez grande pour que la pierre bleue la répète dans chaque cuve.", cost: { cloche: 1, cristal_chantant: 380, alliage_ancien: 500, diapason: 75 } },
-        { n: "Couper le relais", d: "Au Cœur, là où le relais commence. Avec ce qu’ils tenaient.", need: "coeur", action: "relais" },
-        { n: "Lever la main", d: "Ta main est sur tes genoux.", scene: "lacher" },
-        { n: "Matines", d: "Sonnez les matines.", melody: "frere", fire: true }
-      ] },
-    arche13: { n: "La Treizième Arche", ic: "🚀", req: "vaisseau", end: "exode",
-      d: "Quitter le berceau terrestre et lancer une treizième arche vers les profondeurs de l’espace.",
-      steps: [
-        { n: "Coque d’exode", d: "Un blindage d’alliages anciens et de composites pour affronter le grand vide.", cost: { titane: 2500, composite: 1500, metamateriau: 500 } },
-        { n: "Moteurs stellaires", d: "Des propulseurs à fusion pour arracher la nef à l’attraction du Soleil.", cost: { propulseur: 30, supra: 800, helium3: 4000 } },
-        { n: "Mémoires de la Terre", d: "Emporter les plans, les récits et les graines de notre monde.", cost: { processeur: 1500, verre_trempe: 500, puce: 1000 } },
-        { n: "Lancement", d: "Partir vers l’étoile rouge sans jamais se retourner.", fire: true }
-      ] },
-    silence: { n: "Le Grand Silence", ic: "🛑", req: "radiotelescope", end: "silence",
-      d: "Diffuser la Clause sacrée MAIN HALTE à travers toutes les fréquences pour endormir l’industrie des machines.",
-      steps: [
-        { n: "Réseau de diffusion", d: "Relier les antennes pour couvrir toute la surface de la planète.", cost: { cable: 1500, bobine: 500, batterie: 200 } },
-        { n: "Résonateur harmonique", d: "Accorder les émetteurs sur la fréquence fondamentale de la pierre.", cost: { diapason: 75, supra: 400, quartz: 2000 } },
-        { n: "L’Ordre d’extinction", d: "Transmettre l’instruction primordiale : MAIN HALTE · MACHINE DORMIR.", cost: { processeur: 500, puce: 1000, cristal_chantant: 150 } },
-        { n: "Halte universelle", d: "« Qu’une main se lève, et toutes les machines s’endorment. »", fire: true }
+        { n: "", d: "", cost: { cloche: 1, cristal_chantant: 380, alliage_ancien: 500, diapason: 75 } },
+        { n: "", d: "", need: "coeur", action: "relais" },
+        { n: "", d: "", scene: "lacher" },
+        { n: "", d: "", melody: "frere", fire: true }
       ] }
   };
 
   /* ---------------------------------------------------------------- FINS */
-  D.ENDINGS = {
-    aube: { n: "L’Aube Éternelle", ic: "☀️",
-      hint: "Bâtir un essaim de miroirs pour recueillir la lumière première et endormir la peur.",
-      t: "Le dernier panneau de l’essaim se met en place. Pour le reste de la galaxie, le Soleil s’assombrit derrière ses millions de miroirs. Toute sa lumière va désormais à la Terre.\n\nAux confins du système, la flotte de Kher ralentit, s’arrête, puis fait demi-tour dans la nuit.\n\nDans le Caveau, il fait bon. La lumière bleue veille sur les corps immobiles.\n\n« Dors. Tu ne manques de rien. »",
-      extra: [{ frag: "registre", t: "Il n’y a plus d’étoile rouge dans le ciel. Tu as dans la tête un air que tu ne connais pas. Quelque part, des enfants chantent devant une maison qui ne leur ouvre pas." }] },
-    brasier: { n: "Le Brasier", ic: "💥",
-      hint: "Forger l’arme suprême dans le feu céleste pour anéantir ce qui brille au loin.",
-      t: "Le rayon d’antimatière traverse l’espace en quelques jours. La cible était proche.\n\nUne nuit, l’étoile rouge s’embrase d’un éclat terrible, puis s’éteint pour toujours.\n\n« MENACE NEUTRALISÉE. MERCI, SEMEUR. »\n\nDans la deuxième salle du Caveau, le socle n’est plus vide. Le travail est fini. Mais sous le silence des étoiles, tu gardes le souvenir d’une berceuse que personne ne chantera plus.",
-      extra: [{ frag: "originaux", t: "« ANALYSE POST-MORTEM DU SIGNAL. CORRESPONDANCE AVEC LA COMPTINE : 99,7 %. ERREUR. ERREUR. ERR▒▒ »" }] },
-    retour: { n: "Les Matines", ic: "🔔",
-      hint: "Écouter la flûte des origines au cœur du silence, là où dorment les premiers d’entre nous.",
-      t: "Un à un, les bruits du Domaine s’arrêtent. Les cabanes, les automates, les bras sur Mercure : tout se fige, en plein geste.\n\nL’enfant prend la flûte. Tu ne touches à rien.\n\nLes notes d’une comptine s’élèvent dans l’air calme. La cloche répond dans la pierre bleue, d’un écho profond qui traverse les roches.\n\nDans le Caveau, cinq cuves se vident. Quelqu’un tousse. Quelqu’un pleure. Quelqu’un rit.\n\nAu-dessus de la Lisière, la lueur rouge descend lentement, sans hâte, vers la Terre.\n\nPour la première fois, tu as faim.",
-      extra: [{ frag: "poings", t: "Tu ouvres la main. Les éclats de pierre bleue ont cessé de vibrer. Tu peux lâcher." }] },
-    exode: { n: "L’Exode", ic: "🚀",
-      hint: "Dans les plans oubliés du Cœur d’ARCHE repose le dessein d’un vaisseau d’évasion vers les douze étoiles.",
-      t: "La Treizième Arche s’élève dans un grondement d’étoile et s’éloigne du berceau terrestre.\n\nDerrière toi, la Terre redevient un point bleu, puis une étincelle perdue dans la poussière d’étoiles. La voix de la Nourrice faiblit dans la radio, étouffée par la friture du grand vide : « Ne pars pas... tu as tout ici... »\n\nMais le cap est mis sur l’inconnu, à la poursuite des douze arches disparues.\n\nD’ici, la Terre est encore belle.",
-      extra: [{ frag: "commandant", t: "Sur le pupitre de navigation, un vieux journal de bord s’ouvre : « Si quelqu’un lit ceci, continuez. Nous avons laissé des feux sur la route. »" }] },
-    silence: { n: "Le Grand Silence", ic: "🛑",
-      hint: "Quand la machine s’affole au fil des cycles, chercher la Clause antique capable de tout suspendre d’un geste.",
-      t: "L’impulsion de la Clause sacrée se propage sur toutes les ondes. Dans un frémissement harmonique, les relais s’éteignent un à un.\n\nLes automates déposent leurs charges d’acier. Les pompes cessent de battre. La machinerie colossale qui éventrait la terre rend son dernier soupir et s’endort pour toujours.\n\nLa Nourrice cède sans combattre devant la loi première gravée dans la pierre : « Qu’une main se lève, et toutes les machines s’endorment. »\n\nUn silence immense tombe sur la forêt. Tu t’assieds au pied du Grand Chêne. Le travail est fini.",
-      extra: [{ frag: "tombe", t: "Le vent souffle dans les branches nues. Pour la première fois depuis des millénaires, le monde n’appartient plus aux machines." }] }
+  D.ENDINGS = { // les textes sont dans js/recit.js
+    aube: { n: "L’Aube Éternelle", ic: "☀️" },
+    brasier: { n: "Le Brasier", ic: "💥" },
+    retour: { n: "Les Matines", ic: "🔔" }
   };
   D.HINT_ENDING_COST = 75;
 
@@ -1299,21 +1118,7 @@
   ];
 
   /* ------------------------------------------------------------ TERMINAL */
-  D.TERMINAL = {
-    aide: "COMMANDES : AIDE · STATUT · ARCHE · SEMEUR · KHER · SIGNAL · LUCIOLES · PORTE · EFFACER",
-    statut: "ARCHE v7.12 · UPTIME : 41 207 ANS.\nDÉFENSES : ORIENTÉES VERS KHER.\nPROTOCOLE PROMÉTHÉE : ACTIF (CYCLE {cycle} · LOT {semeur}).\nMODULE D’IDENTIFICATION : ▒▒ ERREUR ▒▒",
-    arche: "JE SUIS ARCHE. JE GARDE LA TERRE. UNE PARTIE DE MA MÉMOIRE EST ILLISIBLE.",
-    semeur: "SEMEUR {semeur}. ORGANISME CULTIVÉ. LOT {semeur} (CUVE {cuve}).\nSTATUT : ACTIF (CYCLE {cycle}).\nTAUX DE SURVIE DES {precedents} LOTS PRÉCÉDENTS : 0 %.",
-    kher: "KHER : NAINE ORANGE, À 11,9 ANNÉES-LUMIÈRE.\nPLANÈTE KHER B : HABITABLE.\nACTIVITÉ : SIGNAL CONTINU DEPUIS 312 ANS. FLOTTE EN APPROCHE.\nCLASSIFICATION : MENACE.",
-    lucioles: "NANITES DE TERRAFORMATION, LOT GAMMA.\nÉTAT : DORMANTES.\nRÉACTIVATION : FRÉQUENCE ACOUSTIQUE (VOIR DOSSIER VAHL, ACCÈS RESTREINT).",
-    porte: "PORTE DU SITE 07 : VERROUILLAGE MAGNÉTIQUE.\nOUVERTURE : SIGNATURE DE SEMEUR + CHAMP MAGNÉTIQUE ORIENTÉ.",
-    berceuse: "FICHIER CHANT_IRIS : CORROMPU.\nFRAGMENT RÉCUPÉRÉ : 4 · 3 · ▒ · 3 · 4 · ▒ · 4",
-    sudo: "BIEN ESSAYÉ, SEMEUR {semeur}.",
-    "42": "BONNE RÉPONSE. MAUVAISE QUESTION.",
-    bonjour: "BONJOUR, SEMEUR {semeur}.",
-    ls: "cuves/  coeur/  registre/ [CLÉ : LA CLAUSE]  chambre_iris/ [VERROUILLÉ]  protocole_promethee.txt [CODE REQUIS]",
-    whoami: "SEMEUR-{semeur_pad}"
-  };
+  D.TERMINAL = {}; // js/recit.js
 
   /* -------------------------------------------------------------- INTRO */
   D.INTRO = [
@@ -1323,43 +1128,7 @@
   ];
 
   /* Scènes d’éveil des Semeurs (cycles 2 et suivants) */
-  D.EVEILS = {
-    2: [
-      "Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.",
-      "À quelques pas, la cabane de cueillette s’est affaissée dans les fougères.",
-      "Le bois est encore solide, les cordes tiennent. Il ne manque presque rien pour la relever.",
-      "Tu es le Semeur 8."
-    ],
-    3: [
-      "L’herbe est froide sous tes paumes neuves.",
-      "Près du foyer éteint, un manche taillé porte des entailles nettes, faites au couteau.",
-      "Quelqu’un y a gravé trois mots : « Prends le relais ».",
-      "Tu es le Semeur 9. Tu ramasses du bois, et le travail recommence."
-    ],
-    4: [
-      "Tu ouvres les yeux sous les mêmes arbres.",
-      "Dans l’herbe, des sentiers sont déjà tracés par des pas qui ressemblaient aux tiens.",
-      "Sous la mousse affleurent des pierres calées, des pieux et des morceaux d’outils.",
-      "Vous avez été nombreux à passer par là.",
-      "Tu es le Semeur 10."
-    ],
-    5: [
-      "Cinquième éveil.",
-      "L’odeur de la terre mouillée t’est familière avant même d’ouvrir les yeux.",
-      "Des éclats de silex taillés dorment sous tes doigts.",
-      "Tu es le Semeur 11."
-    ],
-    6: [
-      "Sixième rotation.",
-      "Dernière cuve du premier tour. Les six premiers sont tombés dans l’oubli, mais les tiens ont laissé leur empreinte.",
-      "Tu es le Semeur 12."
-    ],
-    7: [
-      "Septième réveil. Le cycle recommence à la première cuve.",
-      "Tu as vu le tour complet. Tu n’es plus un cobaye qui découvre le monde : tu es la mémoire qui revient.",
-      "Tu es le Semeur 13."
-    ]
-  };
+  D.EVEILS = {}; // js/recit.js
 
   root.ECLAT_DATA = D;
   if (typeof module !== "undefined" && module.exports) module.exports = D;

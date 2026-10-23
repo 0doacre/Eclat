@@ -43,7 +43,7 @@ Ce document récapitule l'ensemble des développements menés aujourd'hui sur le
     3. *Souffle des Rouages* (`trans_mach`) : puissance et automatisation des machines.
   - Coûts exponentiels croissants en Traces, assurant un puits d'investissement sans fin pour les cycles avancés.
 - **Murmures du Temps** (`buyEndingHint`) :
-  - Possibilité d'échanger des Traces contre des échos prophétiques pour orienter la découverte des dénouements secrets sans spoiler leur solution.
+  - Échanger des Traces contre une piste vers une fin.
 - **Justesse du signal de relève** :
   - Correction de l'indicateur `#memBtn.ready` afin qu'il ne s'allume que lorsqu'une amélioration est réellement achetable.
 
@@ -97,20 +97,26 @@ Ce document récapitule l'ensemble des développements menés aujourd'hui sur le
 
 ---
 
-## 5. Prochaine Étape Majeure : v0.8.0 (Lot 2) — Le Registre de Quêtes & Expansion du Troqueur
+### C. 0.7.2 — Relecture du récit (en cours, non commitée)
+- Le récit est remis d'aplomb selon la bible (détails : voir le coffre). Les réponses ne sont plus en clair dans `js/` ; le texte du récit est rangé dans `js/recit.js`.
+- Les prompts qui racontaient l'intrigue sont rangés dans `docs/coffre/prompts/`.
+
+---
+
+## 5. Prochaine Étape Majeure : v0.8.0 (Lot 2) — Le Carnet de route & Expansion du Troqueur
 
 #### Contexte & Besoin
-La carte d'objectif unique actuellement située en haut du Domaine a atteint ses limites ergonomiques et narratives. L'utilisateur souhaite la transformer en un véritable **Registre de Quêtes** articulé en 3 piliers :
+La carte d'objectif unique actuellement située en haut du Domaine a atteint ses limites ergonomiques et narratives. L'utilisateur souhaite la transformer en un véritable **Carnet de route** articulé en 3 piliers (le mot « Registre » est déjà pris par le jeu : ne pas l'employer) :
 
 1. **Quête de Scénario (Fil Rouge)** :
-   - La grande traversée narrative : guide le joueur depuis les premiers émois du Bois jusqu'aux dénouements du Cosmos.
-   - Affiche les objectifs principaux, les grands paliers technologiques et les révélations de l'Arche.
+   - Le fil des objectifs : guide le joueur depuis le premier manche jusqu'aux Grands Œuvres.
+   - Affiche les objectifs principaux et les grands paliers. Il ne dit rien du récit (voir le coffre).
 2. **Rituels Quotidiens des Semeurs** :
    - 3 rituels renouvelés chaque jour (ou à chaque nouveau cycle).
    - Exemples de rituels :
      - *Patience des mains* : fabriquer 20 objets à la main sans l'aide des machines.
      - *Mémoire de la pierre* : récolter 500 unités d'une matière spécifique.
-     - *Écoute des étoiles* : jouer une mélodie particulière à la tombée de la nuit.
+     - *Écoute des étoiles* : regarder le Ciel à la tombée de la nuit.
    - Récompenses : Intuition (`✨`), Traces (`✦`), ou écus.
 3. **Contrats du Troqueur (Refonte et Expansion)** :
    - Le Troqueur est actuellement cantonné à quelques demandes statiques dans le Domaine.
@@ -129,6 +135,7 @@ La carte d'objectif unique actuellement située en haut du Domaine a atteint ses
 
 ## 6. Rappels des Directives et Secrets
 
+- **Règle du coffre** : tout ce qui touche au récit (textes, lieux cachés, voix, fins, clins d'œil, prompts de récit) vit dans `docs/coffre/` et `js/recit.js`. Un document public, un message de commit ou `D.CHANGES` n'en parle qu'en termes neutres (« le récit », « un lieu caché »).
 - **Règle des Secrets** : Ne jamais écrire en clair une combinaison secrète, un air de flûte caché, un code terminal ou l'emplacement d'un secret dans les commits, changelogs ou comptes-rendus. Toujours utiliser des formules neutres (« une recette secrète », « un lieu oublié »).
 - **Vérification navigateur obligatoire** : Tout lot modifiant `js/ui.js` ou `js/domaine.js` doit être validé dans un vrai navigateur (Chrome headless ou Playwright) pour vérifier l'absence totale d'erreurs console avant livraison.
 - **Style et Ton** : Respecter scrupuleusement [docs/LEXIQUE.md](file:///c:/projets/temporaire/docs/LEXIQUE.md) et [docs/STYLE.md](file:///c:/projets/temporaire/docs/STYLE.md) : tutoiement, français limpide, phrases d'action courtes, zéro calque IA.

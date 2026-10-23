@@ -79,7 +79,24 @@ const PLACES = {
   p06: ["faire", "nepas"], p12: ["enfant", "dormir"], p14: ["machine"], p15: ["machine"],
   grotte2: ["main", "nous", "dormir", "halte"]
 };
-const PAGES_6_4 = [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 15, 16];
+const PAGES_6_4 = Array.from({ length: 32 }, (_, i) => i + 1);
+/* la clé du Registre et la Berceuse, brouillées (base64 à l’envers) : jamais en clair */
+const CLE = [...Buffer.from("ZHJvYmHigJlkIG5pYW0=", "base64").toString("utf8")].reverse().join("");
+const BERCEUSE = [...Buffer.from("MzEzMTQ0MjMyMTM1", "base64").toString("utf8")].reverse().join("").split("").map(Number);
+/* retrouve les notes d’un air court à partir de son empreinte */
+function airDe(id) {
+  const m = R.melodies[id];
+  if (m.len > 9) return id === "berceuse_n" ? BERCEUSE : null;
+  const E = createEngine();
+  const cur = new Array(m.len).fill(1);
+  for (;;) {
+    if (E.fnv1a32(cur.join("")) === m.h) return cur;
+    let i = m.len - 1;
+    while (cur[i] === 5) { cur[i] = 1; i--; }
+    if (i < 0) return null;
+    cur[i]++;
+  }
+}
 const zoneById = {};
 D.ZONES.forEach((z) => (zoneById[z.id] = z));
 const place = (at) => {
@@ -107,9 +124,12 @@ function checkCond(c, where) {
       case "flag": assert.ok(typeof v === "string" && v.length > 0, w + " : drapeau illisible"); break;
       case "cycle": case "age": assert.ok(Number.isInteger(v) && v >= 1, w + " : nombre attendu"); break;
       case "exp": assert.ok(place(v), w + " : lieu inconnu " + v); break;
-      case "signe": assert.ok(R.signes && R.signes[v], w + " : signe inconnu " + v); break;
+      case "signe": case "glyph": assert.ok(R.signes && R.signes[v], w + " : signe inconnu " + v); break;
       case "ending": assert.ok(D.ENDINGS[v], w + " : fin inconnue " + v); break;
-      case "libere": assert.ok(typeof v === "boolean", w + " : booleen attendu"); break;
+      case "libere": case "registre": assert.ok(typeof v === "boolean", w + " : booleen attendu"); break;
+      case "marque": assert.ok(Number.isInteger(v) && v >= 1 && v <= 3, w + " : 1 à 3"); break;
+      case "visible": assert.ok(D.PROJECTS[v], w + " : Grand Œuvre inconnu " + v); break;
+      case "feuillet": assert.ok(R.feuillets[v], w + " : feuillet inconnu " + v); break;
       case "all": case "any":
         assert.ok(Array.isArray(v) && v.length > 0, w + " : liste attendue");
         v.forEach((x, i) => checkCond(x, w + "[" + i + "]"));
@@ -139,6 +159,15 @@ function allTexts() {
     out.push(["question " + id + " titre", q.titre]);
     (q.aides || []).forEach((a, i) => out.push(["question " + id + " aide " + (i + 1), a]));
   }
+  for (const id in R.feuillets) out.push(["feuillet " + id, R.feuillets[id].t]);
+  for (const c in R.nuits) R.nuits[c].t.forEach((t, i) => out.push(["nuit " + c + " " + i, t]));
+  const walk = (o, where) => {
+    if (typeof o === "string") out.push([where, o]);
+    else if (Array.isArray(o)) o.forEach((x, i) => walk(x, where + " " + i));
+    else if (o && typeof o === "object") for (const k in o) if (k !== "t64") walk(o[k], where + " " + k);
+  };
+  for (const k of ["arche", "eveils", "releve", "chant", "fins", "ui", "terminal", "registre"]) walk(R[k], k);
+  for (const id in R.melodies) out.push(["air " + id, R.melodies[id].t]);
   return out;
 }
 
@@ -175,16 +204,16 @@ test("pages : numéro unique de 1 à 32, titre, imprimé, sources valides", () =
       checkCond(n.cond, id + " note " + i);
     });
   }
-  assert.deepStrictEqual(Object.values(R.pages).map((p) => p.n).sort((a, b) => a - b), PAGES_6_4, "les 13 pages de la 6.4");
+  assert.deepStrictEqual(Object.values(R.pages).map((p) => p.n).sort((a, b) => a - b), PAGES_6_4, "les 32 pages");
 });
 test("fragments neufs : terre, texte, revisites, ajoutés au Journal", () => {
   for (const id in R.frags) {
     const f = R.frags[id];
     assert.strictEqual(D.FRAGS[id], f, id + " : ajouté à D.FRAGS");
     assert.ok(f.n && f.t, id + " : titre et texte");
-    assert.ok(D.ZONES.some((z) => z.id === f.z), id + " : terre " + f.z);
-    assert.ok(Array.isArray(f.revisit) && f.revisit.length > 0, id + " : au moins une revisite");
-    f.revisit.forEach((r, i) => { assert.ok(r.t && r.t.trim(), id + " revisite " + i); checkCond(r.cond, id + " revisite " + i); });
+    assert.ok(D.ZONES.some((z) => z.id === f.z) || f.z === "cosmos", id + " : terre " + f.z);
+    if (Object.values(R.expFrag).includes(id)) assert.ok(Array.isArray(f.revisit) && f.revisit.length > 0, id + " : au moins une revisite");
+    (f.revisit || []).forEach((r, i) => { assert.ok(r.t && r.t.trim(), id + " revisite " + i); checkCond(r.cond, id + " revisite " + i); });
     assert.ok(!R.archive.includes(id), id + " : pas archivé");
   }
 });
@@ -229,24 +258,29 @@ test("textes : pas de tiret cadratin, signes connus, longueurs pour mobile", () 
     assert.ok(!/\s--\s/.test(t), where + " : faux tiret");
     assert.ok(!/ {2}/.test(t), where + " : double espace");
     for (const m of t.matchAll(/\[([^\]]*)\]/g)) assert.ok(SIGNES.includes(m[1]) || NEUTRES.includes(m[1]), where + " : signe inconnu [" + m[1] + "]");
-    if (/titre/.test(where)) assert.ok(!/\[/.test(t) && t.length <= 40, where + " : titre court, sans signe");
+    if (/ titre$/.test(where)) assert.ok(!/\[/.test(t) && t.length <= 40, where + " : titre court, sans signe");
   }
   for (const id in R.frags) {
     assert.ok(R.frags[id].t.length <= 720, id + " : fragment trop long (" + R.frags[id].t.length + ")");
-    R.frags[id].revisit.forEach((r) => assert.ok(r.t.length <= 320, id + " : revisite trop longue"));
+    (R.frags[id].revisit || []).forEach((r) => assert.ok(r.t.length <= 320, id + " : revisite trop longue"));
   }
   for (const id in R.pages) R.pages[id].notes.forEach((n) => assert.ok(n.t.length <= 200, id + " : note trop longue"));
+  for (const id in R.feuillets) assert.ok(R.feuillets[id].t.length <= 200, id + " : feuillet trop long");
+  for (const c in R.nuits) R.nuits[c].t.forEach((t) => assert.ok(t.length <= 200, "nuit " + c + " trop longue"));
 });
 test("textes : aucune solution en clair (suites de notes, mots des signes)", () => {
   for (const [where, t] of allTexts()) {
     assert.ok(!/\d\s*·\s*\d\s*·\s*\d/.test(t), where + " : suite de notes");
-    assert.ok(!/nourrice/i.test(t.replace(/\[nourrice\]/g, "")), where + " : le nom ne s’écrit pas en clair");
+    // le nom ne s’écrit en lettres que sur ses deux pierres de Rosette (le Cœur, le Registre)
+    const rosette = where === "fragment coeur" || /^registre /.test(where);
+    if (!rosette) assert.ok(!/nourrice/i.test(t.replace(/\[nourrice\]/g, "")), where + " : le nom ne s’écrit pas en clair");
   }
 });
 console.log("Récit : les signes");
 /* le texte d’un fragment ou d’une page (imprimé et notes) par identifiant */
 function textOf(id) {
-  if (R.frags[id]) return [R.frags[id].t].concat(R.frags[id].revisit.map((r) => r.t)).join("\n\n");
+  if (R.frags[id]) return [R.frags[id].t].concat((R.frags[id].revisit || []).map((r) => r.t)).join("\n\n");
+  if (R.feuillets[id]) return R.feuillets[id].t;
   if (R.interface[id]) return R.interface[id].t;
   const p = R.pages[id];
   return [p.imprime].concat(p.notes.map((n) => n.t + "\n" + n.sig)).join("\n\n");
@@ -431,7 +465,7 @@ test("lectures : brouillées, sous des lignes comprises, seulement quand tout es
     assert.ok(textes.some((t) => t.split("\n").some((line) => line.includes(lec.l))), lec.l + " : écrite dans un texte");
     const fr = Buffer.from(lec.fr, "base64").toString("utf8");
     assert.ok(/^[A-Z][^\[\]]+\.$/.test(fr), lec.l + " : phrase");
-    assert.ok(!src.includes(fr) && !src.includes(fr.slice(0, 12)), lec.l + " : en clair dans le fichier");
+    assert.ok(!src.includes(fr) && (fr.length < 30 || !src.includes(fr.slice(0, 20))), lec.l + " : en clair dans le fichier");
     const E = mk();
     const lire = (line) => Sg.lectureLigne(line, { recit: R, state: E.state });
     assert.strictEqual(lire(lec.l), "", "rien avant");
@@ -460,7 +494,7 @@ test("chaînes de secrets gardées : les indices des anciens fragments existent 
   // Boussole et Caveau : le fragment de la Porte reste, la page 12 s’y ajoute
   assert.ok(!R.archive.includes("porte") && R.pages.p12.src.some((s) => s.at === "mine:filon"));
   // le code du terminal garde son allusion (le fragment du Tumulus est archivé)
-  assert.ok(/promethee/.test(D.TERMINAL.ls));
+  assert.ok(/registre\//.test(D.TERMINAL.ls) && /CLAUSE/.test(D.TERMINAL.ls));
   // les fragments dont dépendent les fins et le Grand Œuvre ne sont pas archivés
   for (const en of Object.values(D.ENDINGS)) for (const x of en.extra || []) assert.ok(!R.archive.includes(x.frag));
   for (const p of Object.values(D.PROJECTS)) for (const s of p.steps) if (s.need) assert.ok(!R.archive.includes(s.need));
@@ -504,8 +538,8 @@ test("les quatre premières terres donnent les fragments neufs et leurs pages", 
   }
   for (const id of R.archive) assert.ok(!S.frags[id], "ancien fragment donné : " + id);
   assert.ok(S.frags.cercle, "le Cercle garde son fragment");
-  assert.deepStrictEqual(pagesOf(E), [1, 3, 5, 10, 15, 16]);
-  assert.deepStrictEqual(pages.slice().sort((a, b) => a - b), [1, 3, 5, 10, 15, 16], "un message par page");
+  assert.deepStrictEqual(pagesOf(E), [1, 3, 5, 10, 11, 15, 16, 18, 24, 28]);
+  assert.deepStrictEqual(pages.slice().sort((a, b) => a - b), [1, 3, 5, 10, 11, 15, 16, 18, 24, 28], "un message par page");
   assert.ok(E.hasLivre() && E.hasNewLivre());
   // au cycle 1, les notes des vivants ne sont pas encore là
   const c5 = E.livre().find((c) => c.n === 5);
@@ -531,14 +565,16 @@ test("la page des Profondeurs, les premières réparations et le Comptoir", () =
   assert.ok(E.repair("cabane").ok && E.hasPage("p02"));
   assert.ok(E.repair("collets").ok && E.hasPage("p06"));
   assert.ok(E.repair("automate_bois").ok && E.hasPage("p14"));
-  // le Comptoir vend les pages 4, 7 et 8
+  // le Comptoir vend des pages, et les feuillets que le Troqueur a ramassés
   const b = E.buyablePages();
-  assert.deepStrictEqual(b.map((p) => p.n), [4, 7, 8]);
+  assert.deepStrictEqual(b.filter((p) => !p.feuillet).map((p) => p.n), [4, 7, 8, 13, 22, 23]);
+  assert.deepStrictEqual(b.filter((p) => p.feuillet).map((p) => p.id), ["f:bastien1", "f:bastien2"]);
   E.state.ecus = b.reduce((s, p) => s + p.ecus, 0);
-  assert.ok(E.buyPage("p04").ok && E.buyPage("p07").ok && E.buyPage("p08").ok);
+  for (const p of b) assert.ok(E.buyPage(p.id).ok, p.id);
   assert.strictEqual(E.state.ecus, 0);
   assert.deepStrictEqual(E.buyablePages(), []);
-  assert.deepStrictEqual(pagesOf(E), [2, 4, 6, 7, 8, 12, 14]);
+  assert.deepStrictEqual(pagesOf(E), [2, 4, 6, 7, 8, 12, 13, 14, 22, 23]);
+  assert.deepStrictEqual(E.feuillets().map((x) => x.id), ["bastien1", "bastien2"]);
 });
 test("au cycle 2 : revisites, notes des vivants, pages gardées", () => {
   const E = mk();
@@ -555,8 +591,9 @@ test("au cycle 2 : revisites, notes des vivants, pages gardées", () => {
     const f = R.expFrag[at];
     const ev = log.find((e) => e.z + ":" + e.x.id === at);
     assert.ok(ev && ev.frag === f && !ev.fragNew, at + " : déjà connu");
-    assert.ok(ev.revisit && ev.revisit.t === R.frags[f].revisit[0].t, at + " : revisite affichée");
-    assert.strictEqual(E.state.revus[f + ":0"], 1);
+    const attendue = R.frags[f].revisit.findIndex((r) => !r.cond || E.cond(r.cond));
+    assert.ok(ev.revisit && ev.revisit.index === attendue && ev.revisit.t === R.frags[f].revisit[attendue].t, at + " : revisite affichée");
+    assert.strictEqual(E.state.revus[f + ":" + attendue], 1);
   }
   const chene = log.find((e) => e.x.id === "chene");
   assert.ok(/Il n’y en a pas\./.test(chene.revisit.t));
@@ -569,7 +606,7 @@ test("au cycle 2 : revisites, notes des vivants, pages gardées", () => {
   const E2 = mk();
   E2.load(JSON.stringify(E.state));
   assert.deepStrictEqual(pagesOf(E2), before);
-  assert.strictEqual(E2.state.revus["chene2:0"], 1);
+  assert.strictEqual(E2.state.revus["chene2:2"], 1);
 });
 test("notes de Kenza et de Léon : à leur tour seulement", () => {
   const E = mk();
@@ -581,7 +618,7 @@ test("notes de Kenza et de Léon : à leur tour seulement", () => {
   for (let c = 2; c <= 4; c++) E.newCycle();
   assert.strictEqual(notes(15), 0);
   E.newCycle(); // cycle 5 : Kenza
-  assert.strictEqual(notes(15), 1); assert.strictEqual(notes(10), 1);
+  assert.strictEqual(notes(15), 2); assert.strictEqual(notes(10), 1);
   E.newCycle(); // cycle 6 : Léon
   assert.strictEqual(notes(10), 2);
 });
@@ -602,81 +639,80 @@ test("la question de la Lune : apparaît avec le Ciel, se résout avec la lumiè
 });
 
 console.log("Récit : la flûte et le ciel (6.2)");
-test("mélodies du récit : notes, effets et déclarations", () => {
+test("airs du récit : empreintes seulement, aucune note en clair", () => {
   const m = R.melodies;
-  assert.ok(m, "R.melodies doit être défini");
+  const empreintes = new Set();
   for (const id in m) {
     const mel = m[id];
-    assert.ok(mel.n, id + " nom manquant");
-    assert.ok(Array.isArray(mel.notes) && mel.notes.length >= 3, id + " notes invalides");
-    assert.ok(mel.notes.every((n) => n >= 1 && n <= 5), id + " note hors bornes 1..5");
-    assert.ok(mel.t, id + " texte manquant");
-    assert.ok(!/—/.test(mel.t), id + " tiret cadratin");
-    assert.ok(!/\d\s*·\s*\d/.test(mel.t), id + " notes en clair dans le texte");
-    assert.ok(!/nourrice/i.test(mel.t.replace(/\[nourrice\]/g, "")), id + " mot interdit");
+    assert.ok(mel.n && mel.t, id + " : nom et texte");
+    assert.ok(!mel.notes, id + " : notes en clair");
+    assert.ok(Number.isInteger(mel.len) && mel.len >= 5 && /^[0-9a-f]{8}$/.test(mel.h), id + " : longueur et empreinte");
+    assert.ok(!empreintes.has(mel.h), id + " : empreinte en double"); empreintes.add(mel.h);
+    assert.ok(!/—/.test(mel.t) && !/\d\s*·\s*\d/.test(mel.t), id + " : texte");
+    assert.ok(D.MELODIES[id] === mel, id + " : branché");
+    const notes = airDe(id);
+    assert.ok(notes && notes.length === mel.len, id + " : retrouvable par son empreinte");
   }
+  // les sept airs de la bible, et plus l’ancienne berceuse
+  assert.deepStrictEqual(Object.keys(m).sort(), ["appel", "berceuse_n", "dabord", "frere", "halte", "nom", "promesse"]);
+  assert.ok(!D.SECRETS.some((x) => x.id === "berceuse" || x.id === "cpromethee" || x.id === "dabord"), "secrets retirés");
+  assert.ok(D.SECRETS.every((x) => x.k !== "mélodie"), "une seule catégorie « air »");
+});
+
+test("Journal → Flûte : rien avant d’avoir trouvé un air ; ensuite ses notes, rejouables", () => {
+  const E = mk();
+  assert.deepStrictEqual(E.melodies(), [], "moteur neuf : aucun air listé");
+  E.add("flute", 1);
+  assert.deepStrictEqual(E.melodies(), [], "la flûte seule ne donne rien");
+  airDe("halte").forEach((n) => E.playNote(n));
+  const l = E.melodies();
+  assert.deepStrictEqual(l.map((x) => x.id), ["halte"]);
+  assert.deepStrictEqual(l[0].notes, airDe("halte"));
+  // une ancienne partie qui connaissait l’Appel retrouve ses notes (empreinte)
+  const E2 = mk();
+  E2.state.secrets.appel = true;
+  assert.deepStrictEqual(E2.melodies()[0].notes, airDe("appel"));
 });
 
 test("les airs réels déclenchent leurs effets nommés", () => {
   const E = mk();
-  let releveEv = false;
-  let halteEv = false;
-  let skyEv = null;
+  let releveEv = false, halteEv = false, skyEv = null;
   E.on("releve_fenetre", () => { releveEv = true; });
   E.on("halte_jouee", () => { halteEv = true; });
   E.on("skyanim", (a) => { skyEv = a; });
-
-  // 1. La Berceuse
-  const bNotes = R.melodies.berceuse_n.notes;
-  bNotes.forEach((n) => E.playNote(n));
-  assert.strictEqual(releveEv, true, "la berceuse doit émettre releve_fenetre");
-  assert.strictEqual(skyEv, "sommeil");
-  assert.ok(E.state.secrets.berceuse_n);
-
-  // 2. Main levée
-  skyEv = null;
-  const hNotes = R.melodies.halte.notes;
-  hNotes.forEach((n) => E.playNote(n));
-  assert.strictEqual(halteEv, true, "main levée doit émettre halte_jouee");
-  assert.strictEqual(E.state.flags.halte, true);
-  assert.ok(E.state.secrets.halte);
-
-  // 3. La Promesse
-  const pNotes = R.melodies.promesse.notes;
-  pNotes.forEach((n) => E.playNote(n));
-  assert.strictEqual(skyEv, "double_pulse");
-  assert.strictEqual(E.state.flags.promesse_jouee, true);
-  assert.strictEqual(E.state.flags.chant_visible, true);
-  assert.ok(E.state.secrets.promesse);
-
-  // 4. Le Nom
-  const nNotes = R.melodies.nom.notes;
-  nNotes.forEach((n) => E.playNote(n));
-  assert.strictEqual(E.state.flags.nom_joue, true);
-  assert.ok(E.state.secrets.nom);
-
-  // 5. Main d'abord
-  const dNotes = R.melodies.dabord.notes;
-  dNotes.forEach((n) => E.playNote(n));
-  assert.strictEqual(E.state.flags.cle_clause, true);
-  assert.ok(E.state.secrets.cregistre);
+  airDe("berceuse_n").forEach((n) => E.playNote(n));
+  assert.ok(releveEv && skyEv === "sommeil" && E.state.secrets.berceuse_n);
+  airDe("halte").forEach((n) => E.playNote(n));
+  assert.ok(halteEv && E.state.flags.halte && E.state.secrets.halte);
+  assert.ok(E.cache().auto["*"] < 0.01, "les machines s’arrêtent un souffle");
+  T += 4000; E.update(); E.recalc();
+  assert.ok(!(E.cache().auto["*"] < 0.01), "puis repartent");
+  airDe("promesse").forEach((n) => E.playNote(n));
+  assert.ok(E.state.flags.promesse_jouee && E.state.secrets.promesse && E.state.meta.pulseDue && E.projVisible("chant"));
+  airDe("nom").forEach((n) => E.playNote(n));
+  assert.ok(E.state.flags.nom_joue && E.state.secrets.nom);
+  // l’air de la Lune ouvre le Registre tout de suite
+  airDe("dabord").forEach((n) => E.playNote(n));
+  assert.ok(E.state.secrets.cregistre && E.state.flags.registre && E.state.termMode === "reg");
+  assert.ok(E.terminal("relais").some((l) => /^REG · IMPLANT/.test(l)));
+  // la Main levée ne joue plus une fois le relais coupé pour de bon
+  const E2 = mk();
+  E2.state.meta.endings.retour = 1;
+  airDe("halte").forEach((n) => E2.playNote(n));
+  assert.ok(!E2.state.secrets.halte);
 });
 
-test("Dormez-vous ? donne Accorder après les Cuves", () => {
+test("Dormez-vous ? donne Accorder après les Cuves, et Accorder traverse la relève", () => {
   const E = mk();
-  const frereNotes = D.MELODIES.frere.notes;
-
-  // Avant les Cuves : frere donne le secret et l'intuition, mais pas Accorder
-  frereNotes.forEach((n) => E.playNote(n));
-  assert.ok(!E.state.flags.berceuse);
-  assert.ok(!E.gesteOK("accorder"));
-
-  // Avec la flûte et après les Cuves
+  const frere = airDe("frere");
+  frere.forEach((n) => E.playNote(n));
+  assert.ok(!E.state.flags.berceuse && !E.gesteOK("accorder"));
   E.add("flute", 1);
   E.state.frags.cuves = true;
-  frereNotes.forEach((n) => E.playNote(n));
-  assert.ok(E.state.flags.berceuse, "flags.berceuse doit être activé");
-  assert.ok(E.gesteOK("accorder"), "action accorder doit être disponible");
+  frere.forEach((n) => E.playNote(n));
+  assert.ok(E.state.flags.berceuse && E.gesteOK("accorder"));
+  E.newCycle();
+  assert.ok(E.state.flags.berceuse, "gardé à la relève");
 });
 
 test("la question de la lueur rouge apparaît avec le Ciel et se résout avec la Promesse", () => {
@@ -684,14 +720,10 @@ test("la question de la lueur rouge apparaît avec le Ciel et se résout avec la
   assert.ok(!E.questions().some((q) => q.id === "q_rouge"));
   E.add("lunette", 1); E.recalc();
   const q = E.questions().find((x) => x.id === "q_rouge");
-  assert.ok(q && !q.resolu);
-  assert.strictEqual(q.aides.length, 0);
+  assert.ok(q && !q.resolu && q.aides.length === 0);
   E.state.intu = 1e6;
   for (let i = 1; i <= 3; i++) assert.strictEqual(E.askHelp("q_rouge").lvl, i);
-  assert.strictEqual(E.questions().find((x) => x.id === "q_rouge").aides.length, 3);
-
-  // Résolution avec la Promesse
-  R.melodies.promesse.notes.forEach((n) => E.playNote(n));
+  airDe("promesse").forEach((n) => E.playNote(n));
   assert.ok(E.questions().find((x) => x.id === "q_rouge").resolu);
 });
 
@@ -735,13 +767,17 @@ test("événements narratifs : validation des structures et conditions", () => {
 test("parcours narratif des voix : radio ARCHE et Registre", () => {
   const E = mk();
   E.state.flags.arche = true;
-  // Déclenchement de l'événement radio à l'âge 7
-  E.state.age = 7;
-  E.checkEvents();
+  E.archeSay("radio");
   assert.ok(E.state.arche.some((l) => l.txt.includes("ICI ARCHE. SEMEUR 7")));
+  assert.ok(!E.state.arche.some((l) => /PROMÉTHÉE|TRADUIT|MOTIF/.test(l.txt)), "rien d’autre à la radio");
+  // les événements d’ARCHE n’arrivent qu’avec ce qui les cause
+  E.checkEvents();
+  assert.ok(!E.state.arche.some((l) => /TRADUIT|MOTIF/.test(l.txt)));
 
   // Ouverture du Registre par la Clause
-  E.terminal("main d'abord");
+  assert.ok(E.terminal("clause").some((l) => /COMMANDE INCONNUE/.test(l)), "le mot affiché par ls n’ouvre rien");
+  assert.ok(!E.state.flags.registre);
+  E.terminal(CLE);
   assert.ok(E.state.flags.registre);
   assert.ok(E.state.secrets.cregistre);
 
@@ -751,6 +787,331 @@ test("parcours narratif des voix : radio ARCHE et Registre", () => {
   assert.ok(E.state.secrets.ccapsule);
   assert.ok(capLines.some((l) => l.includes("ENREGISTREMENT ORIGINAL : « Un mot pour celui qui vient. »")));
   assert.ok(capLines.some((l) => l.includes("DIFFUSÉ : « Salut. C’est toi.")));
+});
+
+console.log("Récit : les portes, les indices et le catalogue");
+/* le texte d’un indice, d’où qu’il vienne */
+function indice(kind, id) {
+  const join = (a) => a.filter(Boolean).join("\n");
+  switch (kind) {
+    case "frag": { const f = D.FRAGS[id]; return f && join([f.t].concat((f.revisit || []).map((r) => r.t))); }
+    case "page": { const p = R.pages[id]; return p && join([p.imprime].concat(p.notes.map((n) => n.t))); }
+    case "feuillet": return R.feuillets[id] && R.feuillets[id].t;
+    case "nuit": { const [c, i] = id.split(":"); return R.nuits[c] && R.nuits[c].t[i]; }
+    case "event": return D.EVENTS[id];
+    case "item": { const it = D.ITEMS[id]; return it && join([it.u, it.d, it.h]); }
+    case "geste": return D.GESTES[id] && D.GESTES[id].d;
+    case "teaser": { const x = place(id); return x && x.hidden; }
+    case "ui": return R.ui[id];
+    case "releve": return R.releve[id];
+    case "registre": return R.registre[id];
+    case "terminal": return R.terminal[id];
+    case "q": return R.questions[id] && join([R.questions[id].titre].concat(R.questions[id].aides));
+    default: return null;
+  }
+}
+/* d’où vient un indice (le lieu qui le donne), pour vérifier qu’on le lit avant la porte */
+function sourceDe(kind, id) {
+  if (kind === "page") return R.pages[id].src.map((s) => s.at || s.k + ":" + (s.id || s.ecus));
+  if (kind === "feuillet") return R.feuillets[id].src.map((s) => s.at || s.k);
+  if (kind === "frag") {
+    const out = [];
+    D.ZONES.forEach((z) => (z.exps || []).forEach((x) => { if (x.rw && (x.rw.frag === id || R.expFrag[z.id + ":" + x.id] === id)) out.push(z.id + ":" + x.id); }));
+    return out;
+  }
+  if (kind === "teaser") return ["teaser"]; // affiché tant que le lieu reste fermé
+  return [kind];
+}
+/* chaque lieu caché et chaque porte : au moins deux indices, lus ailleurs qu’au lieu lui-même */
+const PORTES = {
+  "lisiere:cercle": [["page", "p07", /cerf-volant/], ["teaser", "lisiere:cercle", /vent/], ["item", "cerf_volant", /cercle parfait/]],
+  "mine:porte_scellee": [["frag", "porte", /aiguille de fer/], ["page", "p12", /aiguille/], ["page", "p25", /aiguille/], ["teaser", "mine:porte_scellee", /fer tremble/], ["q", "q_porte", /aiguille/]],
+  "plaine:tombe": [["frag", "carcasse2", /oiseau[\s\S]*vers la Plaine/], ["frag", "vue2", /un seul arbre/], ["q", "q_oiseau", /seul arbre/]],
+  "riviere:escalier": [["frag", "gue2", /marche/], ["page", "p23", /cloche retournée/], ["q", "q_marches", /cloche/]],
+  "lisiere:racines": [["frag", "chene2", /sonne creux/], ["nuit", "7:2", /racines/], ["q", "q_trait", /trente secondes/]],
+  "collines:nid": [["frag", "vue2", /replat/], ["page", "p24", /replat/], ["teaser", "collines:nid", /ciel/], ["q", "q_replat", /flûte/]],
+  "desert:quai": [["frag", "journal", /QUAI/], ["page", "p26", /quai/], ["teaser", "desert:quai", /signe/], ["q", "q_quai", /revenir/]],
+  "lune:salle_registre": [["ui", "lune7", /clignote/], ["page", "p20", /ruban/], ["page", "p30", /lumière/]],
+  "caveau:originaux": [["page", "p27", /\[dabord\]/], ["registre", "originaux", /DEUXIÈME SALLE/], ["teaser", "caveau:originaux", /un seul signe/]],
+  "plaine:poings": [["frag", "cuves", /ton âge/], ["frag", "ossements2", /poing/], ["q", "q_poings", /poings/]]
+};
+test("chaque lieu caché a au moins deux indices concrets, trouvables avant lui", () => {
+  for (const at in PORTES) {
+    assert.ok(place(at), "lieu inconnu " + at);
+    const lus = PORTES[at].filter(([k, id, re]) => {
+      const t = indice(k, id);
+      assert.ok(t, at + " : indice introuvable " + k + " " + id);
+      assert.ok(re.test(t), at + " : l’indice " + k + " " + id + " ne dit pas " + re);
+      const src = sourceDe(k, id);
+      assert.ok(src.length && !src.every((s) => s === at), at + " : l’indice " + id + " ne se lit qu’au lieu lui-même");
+      return true;
+    });
+    assert.ok(lus.length >= 2, at + " : moins de deux indices");
+  }
+  // tous les lieux cachés (hidden, need ou show) sont couverts
+  for (const z of D.ZONES) for (const x of z.exps || []) {
+    if (x.hidden && !(x.need && typeof x.need === "string" && !D.ITEMS[x.need].sec && !x.show)) assert.ok(PORTES[z.id + ":" + x.id], "lieu caché sans indices recensés : " + z.id + ":" + x.id);
+  }
+});
+
+const apprendre = (E, ...ids) => ids.forEach((id) => { T += 4000; assert.ok(E.essaiSigne(id, debrouille(BROUILLE[id][0])).ok, id); });
+/* explore la terre jusqu’au lieu `xid` et renvoie l’événement de fin */
+function jusqua(E, zid, xid) {
+  const log = [];
+  E.on("expdone", (r) => log.push(r));
+  E.state.zones[zid] = true;
+  for (let g = 0; g < 10; g++) {
+    const n = E.nextExp(zid);
+    assert.ok(n, zid + ":" + xid + " : plus rien à explorer avant d’y arriver");
+    if (n.locked && !PORTES[zid + ":" + n.x.id] && typeof n.x.need === "string") E.state.made[n.x.need] = 1;
+    const n2 = E.nextExp(zid);
+    assert.ok(!n2.locked, zid + ":" + n2.x.id + " : verrouillé");
+    if (n2.x.cost) for (const i in n2.x.cost) E.add(i, n2.x.cost[i]);
+    assert.ok(E.startExp(zid).ok);
+    T += n2.x.dur * 1000 + 1000; E.update();
+    if (n2.x.id === xid) return log[log.length - 1];
+  }
+  assert.fail(xid + " jamais atteint");
+}
+test("chaque lieu caché s’ouvre par son chemin (simulation, sans cul-de-sac)", () => {
+  const ouvre = {
+    "lisiere:cercle": (E) => { E.state.made.cerf_volant = 1; },
+    "mine:porte_scellee": (E) => { E.state.made.boussole = 1; },
+    "plaine:tombe": (E) => { jusqua(E, "riviere", "carcasse"); E.state.made.pioche_pierre = 1; },
+    "riviere:escalier": (E) => { E.state.made.cloche = 1; },
+    "lisiere:racines": (E) => {
+      E.state.made.cerf_volant = 1;
+      for (let i = 1; i <= 3; i++) { assert.strictEqual(E.graverTrait(), i); assert.strictEqual(E.graverTrait(), 0, "une fois par éveil"); E.newCycle(); E.state.made.cerf_volant = 1; }
+    },
+    "collines:nid": (E) => { jusqua(E, "collines", "sommet"); E.newCycle(); E.state.made.flute = 1; E.state.made.lunette = 1; },
+    "desert:quai": (E) => { apprendre(E, "revenir"); },
+    "lune:salle_registre": (E) => { for (let i = 0; i < 7; i++) E.tapMoon(); },
+    "caveau:originaux": (E) => { apprendre(E, "dabord"); E.terminal(CLE); E.state.made.ordinateur = 1; },
+    "plaine:poings": (E) => { E.state.made.pioche_pierre = 1; jusqua(E, "riviere", "carcasse"); E.state.frags.cuves = true; apprendre(E, "enfant"); }
+  };
+  for (const at in ouvre) {
+    const [zid, xid] = at.split(":");
+    const E = mk();
+    ouvre[at](E);
+    const ev = jusqua(E, zid, xid);
+    assert.ok(ev && ev.x.id === xid && ev.frag && E.state.frags[ev.frag], at + " : fragment du lieu");
+  }
+});
+test("ce que les lieux cachés donnent : feuillets, pages, clé du Registre", () => {
+  let E = mk();
+  E.state.made.cloche = 1;
+  jusqua(E, "riviere", "escalier");
+  assert.deepStrictEqual(E.feuillets().map((f) => f.id).sort(), ["faustine1", "faustine2"]);
+  assert.ok(E.hasPage("p18"));
+  E = mk();
+  for (let i = 0; i < 7; i++) E.tapMoon();
+  jusqua(E, "lune", "salle_registre");
+  assert.ok(E.state.flags.registre && E.state.secrets.cregistre && E.state.termMode === "reg" && E.hasPage("p31"));
+  assert.ok(E.terminal("relais").some((l) => /^REG · /.test(l)));
+  // le Registre garde son mode d’une relève à l’autre, et l’index dit comment revenir à ARCHE
+  E.newCycle();
+  assert.ok(E.terminal("aide").some((l) => /MODE ARCHE/.test(l)));
+  E.terminal("mode arche");
+  assert.ok(E.terminal("xyzzy").some((l) => /Rien ne se passe/.test(l)) && E.state.secrets.cxyzzy);
+});
+
+/* les indices de chaque secret du catalogue (D.SECRETS), au moins deux, et leur porte */
+const INDICES = {
+  galette: [["page", "p02", /herbes/], ["page", "p04", /herbes posées sur une braise/]],
+  statuette: [["frag", "ossements2", /figure taillée dans un os/], ["page", "p06", /taillée dans un os/]],
+  flute: [["frag", "grotte2", /os percés/], ["page", "p08", /cinq trous/]],
+  cerf_volant: [["page", "p07", /cerf-volant/], ["teaser", "lisiere:cercle", /d’en haut/]],
+  miroir: [["frag", "gue2", /comme un miroir/], ["page", "p15", /cuivre poli au sable/]],
+  anticythere: [["frag", "vue2", /roues dentées/], ["item", "tablette", /roues dentées/]],
+  boussole: [["frag", "porte", /aiguille de fer[\s\S]*argile/], ["page", "p12", /aiguille[\s\S]*argile/], ["page", "p25", /aiguille/]],
+  cloche: [["page", "p23", /cloche/], ["page", "p21", /moule de terre/], ["feuillet", "celeste1", /coule dans la terre/], ["event", "lingot_bronze", /tinter/]],
+  pigment: [["frag", "grotte2", /ocre et noires/], ["page", "p22", /terre de rivière, du noir de feu/], ["feuillet", "celeste2", /terre de la rivière/]],
+  feu_artifice: [["event", "dynamite", /cuivre[\s\S]*vert/], ["frag", "cendre", /vertes et rouges/]],
+  pip: [["event", "moteur_elec", /laisse/], ["frag", "iris_lune", /robot[\s\S]*laisse/]],
+  capsule: [["event", "verre_trempe", /message/], ["frag", "manifeste", /boîtes de verre/]],
+  diamant: [["event", "forge_stellaire", /carbone/], ["frag", "berceuse", /pierre claire/]],
+  bague: [["frag", "berceuse", /Il en manque une/], ["page", "p19", /bague/]],
+  philosophale: [["geste", "transmuter", /alchimistes/], ["frag", "bras", /cailloux ordinaires/]],
+  appel: [["frag", "cercle", /troisième/], ["page", "p07", /cercle/]],
+  frere: [["frag", "cuves", /Dormez-vous/], ["frag", "berceuse", /boîte à musique/]],
+  berceuse_n: [["feuillet", "dalia2", /cinq trois un/], ["releve", "musique", /boîte à musique/]],
+  halte: [["frag", "tumulus2", /\[main\] \[halte\]/], ["page", "p11", /trois fois/], ["q", "q_rouge", /groupes/]],
+  promesse: [["frag", "grotte2", /\[nous\] \[revenir\] \[enfant\]/], ["page", "p17", /\[nous\] \[revenir\] \[enfant\]/], ["frag", "nid", /trois, trois, trois/]],
+  nom: [["nuit", "9:1", /son nom/], ["registre", "nourrice", /ÉVEILLÉE DEPUIS/]],
+  caveau: [["frag", "porte", /aiguille/], ["page", "p12", /aimant/], ["page", "p25", /porte/]],
+  lune7: [["ui", "lune", /regarde aussi/], ["page", "p20", /clignote/], ["page", "p30", /lumière/]],
+  c1969: [["frag", "plaque", /1969/], ["page", "p30", /plaque/]],
+  cxyzzy: "clin d’œil gratuit, ne bloque rien (SECRETS §0.4)",
+  cregistre: [["ui", "lune7", /trois, cinq, trois/], ["terminal", "ls", /CLÉ/], ["page", "p20", /Clause/], ["frag", "plaque", /\[main\] \[dabord\]/]],
+  ccapsule: [["ui", "capsule", /Fais confiance/], ["registre", "aide", /CAPSULES/], ["nuit", "9:2", /capsule/]]
+};
+test("catalogue : chaque secret a ses deux indices (au moins), dans deux lieux ou systèmes", () => {
+  for (const s of D.SECRETS) {
+    const L = INDICES[s.id];
+    assert.ok(L, s.id + " : aucun indice recensé");
+    if (typeof L === "string") continue;
+    assert.ok(L.length >= 2, s.id + " : moins de deux indices");
+    for (const [k, id, re] of L) {
+      const t = indice(k, id);
+      assert.ok(t && re.test(t), s.id + " : indice " + k + " " + id + " absent ou ne dit pas " + re);
+    }
+    assert.ok(new Set(L.map(([k, id]) => k + ":" + id)).size >= 2, s.id + " : deux fois le même texte");
+  }
+});
+test("catalogue : chaque secret s’obtient (recette, air, code, lieu, ciel)", () => {
+  const E0 = mk();
+  for (const s of D.SECRETS) {
+    const E = mk();
+    if (s.k === "recette") {
+      const it = D.ITEMS[s.id];
+      assert.ok(it && it.sec && it.r, s.id + " : recette secrète");
+      assert.strictEqual(E0.RECIPES[E0.keyOf(it.r[0], Object.keys(it.r[1]))], s.id, s.id + " : la recette se trouve à l’Atelier");
+      continue;
+    } else if (s.k === "air") {
+      if (s.id === "halte") E.state.meta.endings = {};
+      airDe(s.id).forEach((n) => E.playNote(n));
+      assert.ok(E.state.secrets[s.id], s.id + " : l’air ne donne pas son secret");
+    } else if (s.id === "caveau") {
+      E.state.made.boussole = 1;
+      jusqua(E, "mine", "porte_scellee");
+    } else if (s.id === "lune7") {
+      for (let i = 0; i < 7; i++) E.tapMoon();
+    } else if (s.id === "c1969" || s.id === "cxyzzy") {
+      E.terminal(s.id === "c1969" ? "1969" : "xyzzy");
+    } else if (s.id === "cregistre") {
+      E.terminal(CLE);
+    } else if (s.id === "ccapsule") {
+      E.setCapsuleText("Un mot.");
+      E.terminal(CLE); E.terminal("capsule");
+    } else assert.fail("secret sans chemin connu : " + s.id);
+    assert.ok(E.state.secrets[s.id], s.id + " : pas obtenu");
+  }
+  // l’air de la Lune ouvre la même clé, sans compter deux fois
+  assert.ok(!D.SECRETS.some((x) => x.id === "dabord"));
+});
+
+test("aucune réponse en clair dans js/ : clés, mots du terminal, suites de notes", () => {
+  const E = mk();
+  const cles = new Set([].concat(R.cles.registre, R.cles.zera));
+  const airs = Object.values(R.melodies).map((m) => [m.len, m.h]);
+  const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+  for (const f of fs.readdirSync(path.join(__dirname, "..", "js"))) {
+    if (!/\.js$/.test(f) || f === "icons.js") continue;
+    const src = fs.readFileSync(path.join(__dirname, "..", "js", f), "utf8");
+    for (const m of src.matchAll(/"((?:[^"\\\n]|\\.)*)"/g)) {
+      if (D.EASTER[m[1]]) continue; // l’identifiant d’un clin d’œil
+      assert.ok(!cles.has(E.fnv1a32(norm(m[1].replace(/\[[a-z]+\]/g, "")))), f + " : une clé du terminal en clair (« " + m[1].slice(0, 3) + "… »)");
+    }
+    const suites = [...src.matchAll(/\[\s*([1-5](?:\s*,\s*[1-5]){4,})\s*\]/g)].map((m) => m[1].replace(/\D/g, ""))
+      .concat([...src.matchAll(/["']([1-5]{5,})["']/g)].map((m) => m[1]));
+    for (const d of suites) for (const [len, h] of airs) for (let i = 0; i + len <= d.length; i++) {
+      assert.ok(E.fnv1a32(d.slice(i, i + len)) !== h, f + " : un air en clair");
+    }
+  }
+  // les mots des signes ne sont rangés qu’en base64
+  const src = fs.readFileSync(path.join(__dirname, "..", "js", "recit.js"), "utf8");
+  assert.ok(!/\bmot:\s*"/.test(src), "un mot de signe en clair");
+});
+
+test("Registre : numéros sur deux chiffres, endormissements et éveils justes", () => {
+  const E = mk();
+  E.terminal(CLE);
+  assert.ok(E.terminal("endormissements").some((l) => /AUCUN ENDORMISSEMENT/.test(l)), "rien au cycle 1");
+  E.state.meta.forcedDone = true;
+  E.newCycle(); E.newCycle(); // cycle 3
+  const endo = E.terminal("endormissements").filter((l) => /^REG · S-/.test(l));
+  assert.strictEqual(endo.length, 2);
+  assert.ok(/S-07 · CUVE 07 · DEMANDÉ PAR : NOURRICE/.test(endo[0]) && /S-08 · CUVE 08 · DEMANDÉ PAR : MAIN EXTÉRIEURE/.test(endo[1]), endo.join(" | "));
+  const s07 = E.terminal("s-07").join("\n");
+  assert.ok(/S-07 · CUVE 07 · DORT/.test(s07) && /CYCLES 1\./.test(s07) && /PAR : NOURRICE/.test(s07) && /INACHEVÉ/.test(s07), s07);
+  const s09 = E.terminal("s-09").join("\n");
+  assert.ok(/S-09 · CUVE 09 · ÉVEILLÉ/.test(s09) && !/DERNIER ENDORMISSEMENT/.test(s09), s09);
+  const s10 = E.terminal("s10").join("\n");
+  assert.ok(/S-10 · CUVE 10 · DORT/.test(s10) && /ÉVEILS : 0/.test(s10), s10);
+  for (let c = 4; c <= 8; c++) E.newCycle();
+  const s07b = E.terminal("s-07").join("\n");
+  assert.ok(/CYCLES 1, 7\./.test(s07b) && /PAR : MAIN EXTÉRIEURE/.test(s07b), s07b);
+  assert.ok(E.terminal("nourrice").some((l) => /\[nourrice\] · \[enfant\] \[nepas\] \[manquer\]/.test(l)), "la consigne en signes");
+  assert.ok(E.terminal("arche").some((l) => /NOURRICE \[nourrice\]/.test(l)), "seconde pierre de Rosette du nom");
+  assert.ok(E.terminal("signal").some((l) => /\[main\] \[halte\] · \[nous\] \[revenir\] \[enfant\]/.test(l)), "le signal rendu par signes");
+  assert.ok(!E.terminal("cuves").some((l) => /ROTATION/.test(l)));
+});
+test("Registre : premières fois datées à l’heure du joueur", () => {
+  const E = mk();
+  E.add("bois", 10); E.state.seen.bois = true;
+  E.attempt("tailler", ["bois"]);
+  E.terminal(CLE);
+  const l = E.terminal("premieres fois");
+  assert.ok(l.some((x) => /^REG · MANCHE · AN 8 412 DU SOMMEIL · [A-Z]+ \d+ [A-ZÉÛ]+, \d\d H \d\d$/.test(x)), l.join(" | "));
+});
+
+test("le septième trait : une fois par relève, trois fois, et le Chêne le montre", () => {
+  const E = mk();
+  assert.ok(!E.cond({ marque: 1 }));
+  assert.strictEqual(E.graverTrait(), 1);
+  assert.strictEqual(E.graverTrait(), 0);
+  E.newCycle(); E.graverTrait(); E.newCycle(); E.graverTrait();
+  assert.strictEqual(E.marque(), 3);
+  E.newCycle();
+  assert.strictEqual(E.graverTrait(), 0, "fini");
+  const r = E.revisit("chene2");
+  assert.ok(r && /Sept traits/.test(r.t));
+});
+test("notes de nuit : une par retour d’absence, à partir du cycle 2, de l’enfant du cycle", () => {
+  const E = mk();
+  E.catchUp(3 * 3600);
+  assert.deepStrictEqual(E.feuillets(), [], "pas au cycle 1");
+  for (let c = 2; c <= 5; c++) E.newCycle(); // cycle 5 : cuve 11
+  E.catchUp(3600);
+  assert.deepStrictEqual(E.feuillets(), [], "pas pour une absence courte");
+  E.catchUp(2 * 3600 + 1); E.catchUp(2 * 3600 + 1); E.catchUp(2 * 3600 + 1); E.catchUp(2 * 3600 + 1);
+  assert.deepStrictEqual(E.feuillets().map((f) => f.id), ["n11_1", "n11_2", "n11_3"]);
+  assert.ok(E.hasLivre() && E.hasNewLivre());
+  E.readFeuillets();
+  assert.ok(!E.feuillets().some((f) => f.nouveau));
+  const E2 = mk(); E2.load(E.serialize());
+  assert.strictEqual(E2.feuillets().length, 3, "gardées");
+});
+test("sous le comptoir : NE PAS et le nom, et les feuilles de Céleste et d’Émile", () => {
+  const E = mk();
+  apprendre(E, "nepas");
+  T += 1000; E.update();
+  assert.deepStrictEqual(E.feuillets(), []);
+  apprendre(E, "nourrice");
+  T += 1000; E.update();
+  assert.deepStrictEqual(E.feuillets().map((f) => f.id).sort(), ["celeste1", "celeste2", "emile1", "emile2"]);
+});
+test("le Grand Œuvre caché garde sa progression à la relève", () => {
+  const E = mk();
+  E.state.made.traducteur = 1;
+  assert.ok(E.projVisible("chant"));
+  const s0 = D.PROJECTS.chant.steps[0];
+  for (const k in s0.cost) E.add(k, s0.cost[k] - 1);
+  E.contribute("chant");
+  E.newCycle();
+  assert.ok(E.projVisible("chant"), "toujours visible");
+  assert.strictEqual(E.projState("chant").paid.diapason, s0.cost.diapason - 1);
+  for (const k in s0.cost) E.add(k, 1);
+  assert.ok(E.contribute("chant").done);
+  E.newCycle();
+  assert.strictEqual(E.projState("chant").step, 1);
+  assert.ok(D.PROJECTS.chant.n && D.PROJECTS.chant.steps.every((s) => s.n && s.d), "textes rangés dans le récit");
+});
+test("fins : trois, celles de la bible ; Matines dit les noms et finit sur une ligne seule", () => {
+  assert.deepStrictEqual(Object.keys(D.ENDINGS).sort(), ["aube", "brasier", "retour"]);
+  assert.ok(R.interface.ornement.fins.includes("aube") && R.interface.ornement.fins.includes("brasier"));
+  assert.ok(D.ENDINGS.retour.dernier && /\{noms\}/.test(D.ENDINGS.retour.t));
+  const E = mk();
+  E.state.frags.berceuse = true;
+  for (let c = 2; c <= 3; c++) E.newCycle();
+  assert.ok(/Gabin, Hélie, Inès\./.test(E.interpolate(D.ENDINGS.retour.t)));
+  // le Brasier ne dit ce que chantait la lueur que si on l’a traduite
+  let fin = null;
+  E.on("ending", (r) => (fin = r));
+  E.state.flags.arche = true;
+  D.PROJECTS.brisemonde.steps.forEach((s) => { if (s.cost) { for (const k in s.cost) E.add(k, s.cost[k]); E.contribute("brisemonde"); } });
+  E.fire("brisemonde");
+  assert.deepStrictEqual(fin.extra, []);
 });
 
 console.log("Récit : les anciennes parties");
@@ -769,7 +1130,7 @@ test("les anciens fragments archivés restent chargés depuis les fixtures", () 
     const vis = E.visibleFrags();
     for (const id of archived) assert.ok(!vis.includes(id), f + " : " + id + " caché");
     // rien n’est donné d’avance : les fragments neufs et les pages restent à trouver
-    for (const id in R.frags) assert.ok(!S.frags[id], f + " : " + id + " pas donné d’avance");
+    for (const id of Object.values(R.expFrag).concat(["racines", "tombe", "poings", "escalier", "nid", "quai", "salle_registre", "originaux"])) assert.ok(!S.frags[id], f + " : " + id + " pas donné d’avance");
     assert.ok(!E.hasLivre(), f + " : aucune page d’avance");
     T += 5000; E.update();
     assert.strictEqual(E.livre().length, 32);

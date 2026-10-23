@@ -86,7 +86,7 @@ Chaque terre cache des **explorations** qui rapportent des fragments d’histoir
 
 Trois fins. Deux sont proposées ouvertement par la voix qui te guide : **la Sphère de Dyson** et **le Brise-Monde**. La troisième ne se trouve qu’en suivant les secrets. Après une fin, on peut passer le relais comme après un passage (la relève, plus haut) ; chaque fin atteinte laisse en plus un **Écho** : +50 % de récolte et de production pour toujours. Journal → Fins explique tout cela.
 
-> Les solutions complètes (secrets, codes, chemin de la fin cachée) sont dans [`docs/SOLUTIONS.md`](docs/SOLUTIONS.md). **Spoilers.**
+> Les solutions et le récit sont rangés dans `docs/coffre/`. **Spoilers** : à ne pas ouvrir si tu joues.
 
 ## Son
 

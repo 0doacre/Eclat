@@ -559,8 +559,8 @@ test("recettes secrètes", () => {
 test("codes du terminal", () => {
   const E = mk();
   E.terminal("XYZZY"); E.terminal("1969"); E.terminal("Prométhée");
-  assert.ok(E.state.secrets.cxyzzy && E.state.secrets.c1969 && E.state.secrets.cpromethee);
-  assert.ok(E.state.frags.promethee);
+  assert.ok(E.state.secrets.cxyzzy && E.state.secrets.c1969);
+  assert.ok(!E.state.secrets.cpromethee && !E.state.frags.promethee, "l’ancien code ne fait plus rien");
   E.terminal("effacer"); assert.strictEqual(E.state.term.length, 0);
 });
 test("la Lune, sept fois", () => {
@@ -578,6 +578,18 @@ test("flûte : l’Appel des Lucioles augmente la production", () => {
   assert.ok(Math.abs(E.extOut(e) - r0 * 1.25) < 1e-9);
 });
 
+/* retrouve les notes d’un air à partir de son empreinte (aucune réponse en clair ici) */
+function airDe(id) {
+  const m = D.MELODIES[id];
+  const E = createEngine();
+  const cur = new Array(m.len).fill(1);
+  for (;;) {
+    if (E.fnv1a32(cur.join("")) === m.h) return cur;
+    let i = m.len - 1;
+    while (cur[i] === 5) { cur[i] = 1; i--; }
+    cur[i]++;
+  }
+}
 console.log("Chemin caché — Le Chant");
 test("de la boussole à la fin « Le Retour »", () => {
   const E = mk();
@@ -598,11 +610,10 @@ test("de la boussole à la fin « Le Retour »", () => {
     T += 300 * 1000; E.update();
   }
   assert.ok(E.state.frags.cuves && E.state.frags.berceuse && E.state.frags.coeur);
-  assert.strictEqual(E.count("partition"), 1);
-  // la berceuse sur la flûte débloque Accorder
+  // la comptine des cuves, jouée à la flûte, débloque Accorder
   force(E, "flute");
   assert.ok(!E.gesteOK("accorder"));
-  D.MELODIES.berceuse.notes.forEach((n) => E.playNote(n));
+  airDe("frere").forEach((n) => E.playNote(n));
   assert.ok(E.gesteOK("accorder"));
   // diapason, cristaux, signal, traducteur
   for (let i = 0; i < 400; i++) E.tap("resonite");
@@ -2319,13 +2330,14 @@ test("sauvegarde et nettoyage : notes plafonnées à 32 et boosts assainis", () 
 });
 
 console.log("Moteur des voix, du terminal et de la capsule (6.3)");
+const CLE = [...Buffer.from("ZHJvYmHigJlkIG5pYW0=", "base64").toString("utf8")].reverse().join("");
 test("terminal : normalisation et variables dynamiques en mode ARCHE", () => {
   const E = createEngine();
   // mode par défaut = arche
   assert.strictEqual(E.state.termMode, "arche");
   const lines = E.terminal("WHOAMI");
   assert.ok(lines[0].startsWith("ARCHE > "));
-  assert.strictEqual(lines[1], "SEMEUR-07");
+  assert.strictEqual(lines[1], "SEMEUR 7");
   // avec accents et casse
   const semLines = E.terminal("Sèmeur");
   assert.ok(semLines.some((l) => l.includes("SEMEUR 7")));
@@ -2336,7 +2348,7 @@ test("terminal : ouverture de la Clause et bascule en mode Registre", () => {
   const initIntu = E.state.intu;
   assert.strictEqual(E.state.flags.registre, undefined);
   // saisie de la Clause avec tolérance
-  const res = E.terminal("  Main   d'Abord  ");
+  const res = E.terminal("  " + CLE.toUpperCase().replace(" ", "   ") + "  ");
   assert.ok(E.state.flags.registre);
   assert.strictEqual(E.state.termMode, "reg");
   assert.ok(E.state.secrets.cregistre);
@@ -2348,7 +2360,7 @@ test("terminal : ouverture de la Clause et bascule en mode Registre", () => {
 
 test("terminal : navigation entre modes et entrées Registre", () => {
   const E = createEngine();
-  E.terminal("main d'abord");
+  E.terminal(CLE);
   // mode registre actif
   const aideLines = E.terminal("AIDE");
   assert.ok(aideLines.some((l) => l.includes("REG · ENTRÉES")));
@@ -2368,7 +2380,7 @@ test("terminal : navigation entre modes et entrées Registre", () => {
 
 test("terminal : semeurs S-01 à S-12 et rotation selon les cycles", () => {
   const E = createEngine();
-  E.terminal("main d'abord");
+  E.terminal(CLE);
   // S-01 est mort, relais sectionné, sépulture avec oiseau
   const s01 = E.terminal("s-01");
   assert.ok(s01.some((l) => l.includes("MORT")));
@@ -2412,7 +2424,7 @@ test("capsule : texte personnalisé, persistance et consultation au Registre", (
   assert.strictEqual(E2.getCapsuleText(), custom);
 
   // consultation au Registre
-  E2.terminal("main d'abord");
+  E2.terminal(CLE);
   const initIntu = E2.state.intu;
   const capLines = E2.terminal("capsule");
   assert.ok(E2.state.secrets.ccapsule);
@@ -2500,12 +2512,12 @@ test("canExplore et nextExp : apparition conditionnelle et verrouillage", () => 
   assert.strictEqual(E.nextExp("lisiere").locked, false);
   assert.strictEqual(E.canExplore("lisiere", "cercle"), true);
 
-  // Fin du cercle -> racines a show: { any: [{ flag: "trait7" }, { flag: "septieme" }] }
+  // Fin du cercle -> racines a show: { marque: 3 } (le septième trait fini)
   E.state.exp.done.lisiere = 3;
   assert.strictEqual(E.nextExp("lisiere"), null, "masqué tant que show n’est pas satisfait");
   assert.strictEqual(E.canExplore("lisiere", "racines"), false);
 
-  E.state.flags.trait7 = true;
+  E.state.meta.marque = 3;
   const nxRacines = E.nextExp("lisiere");
   assert.ok(nxRacines && nxRacines.x.id === "racines");
   assert.strictEqual(nxRacines.locked, false);
@@ -2544,9 +2556,9 @@ test("recettes secrètes : cloche et pigment", () => {
 });
 
 console.log("Moteur des fins et dénouements (6.5)");
-test("les cinq fins sont définies et conformes", () => {
+test("les trois fins sont définies et conformes", () => {
   const ends = Object.keys(D.ENDINGS);
-  assert.deepStrictEqual(ends.sort(), ["aube", "brasier", "exode", "retour", "silence"]);
+  assert.deepStrictEqual(ends.sort(), ["aube", "brasier", "retour"]);
   ends.forEach((eid) => {
     const en = D.ENDINGS[eid];
     assert.ok(en.n && typeof en.n === "string");
@@ -2555,50 +2567,16 @@ test("les cinq fins sont définies et conformes", () => {
   });
 });
 
-test("La Treizième Arche : étapes, lancement et fin « exode »", () => {
+test("les Grands Œuvres hors récit ont disparu ; une partie qui avait leur fin garde ses Échos", () => {
+  assert.ok(!D.PROJECTS.arche13 && !D.PROJECTS.silence);
   const E = createEngine();
-  assert.strictEqual(E.projVisible("arche13"), false);
-  E.state.made.vaisseau = 1;
-  E.state.flags.station_morte = true;
-  assert.strictEqual(E.projVisible("arche13"), true);
-
-  let ending = null;
-  E.on("ending", (r) => (ending = r));
-
-  const p = D.PROJECTS.arche13;
-  assert.strictEqual(p.steps.length, 4);
-  for (let i = 0; i < 3; i++) {
-    const s = p.steps[i];
-    for (const k in s.cost) E.add(k, s.cost[k]);
-    assert.ok(E.contribute("arche13").done);
-  }
-  assert.strictEqual(E.projState("arche13").step, 3);
-  E.fire("arche13");
-  assert.ok(ending && ending.id === "exode");
-  assert.ok(E.state.endings.exode);
-});
-
-test("Le Grand Silence : étapes, proclamation et fin « silence »", () => {
-  const E = createEngine();
-  assert.strictEqual(E.projVisible("silence"), false);
-  E.state.signes = { halte: { lu: true } };
-  E.state.made.radiotelescope = 1;
-  assert.strictEqual(E.projVisible("silence"), true);
-
-  let ending = null;
-  E.on("ending", (r) => (ending = r));
-
-  const p = D.PROJECTS.silence;
-  assert.strictEqual(p.steps.length, 4);
-  for (let i = 0; i < 3; i++) {
-    const s = p.steps[i];
-    for (const k in s.cost) E.add(k, s.cost[k]);
-    assert.ok(E.contribute("silence").done);
-  }
-  assert.strictEqual(E.projState("silence").step, 3);
-  E.fire("silence");
-  assert.ok(ending && ending.id === "silence");
-  assert.ok(E.state.endings.silence);
+  const old = JSON.parse(E.serialize());
+  old.meta.endings = { exode: 1, aube: 1 };
+  old.endings = { exode: true };
+  E.load(JSON.stringify(old));
+  assert.strictEqual(E.endingsCount(), 2);
+  E.newCycle();
+  assert.strictEqual(E.state.echoes, 2);
 });
 
 test("Cycle post-Matines : E.isLibere() et préservation après la relève", () => {
@@ -2709,7 +2687,7 @@ test("Audio : synthèse sonore dédiée pour chaque fin", () => {
 
 test("Dénouements et Échos dans la Mémoire des mains : données conformes", () => {
   const endings = Object.keys(D.ENDINGS);
-  assert.strictEqual(endings.length, 5);
+  assert.strictEqual(endings.length, 3);
   endings.forEach((k) => {
     assert.ok(D.ENDINGS[k].ic, "Icone présente pour " + k);
     assert.ok(D.ENDINGS[k].n, "Nom présent pour " + k);
@@ -2901,64 +2879,48 @@ test("Réserve : calcul des flux nets et débits actifs", () => {
 });
 
 console.log("Réactivité d'ARCHE et Mémoire des Cycles (6.11)");
-test("ARCHE : dialogues évolutifs et interpolation du Semeur selon le cycle", () => {
+test("ARCHE : la radio interpole le Semeur selon le cycle", () => {
   const E = mk();
-
-  // Cycle 1 : Semeur 7 (protocole initial)
   E.state.cycle = 1;
   E.archeSay("radio");
   assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 7, TU M’ENTENDS ?")));
-  assert.ok(E.state.arche.some((l) => l.txt.includes("LES SIX PRÉCÉDENTS")));
-
-  // Cycle 2 : Semeur 8 (relais passé, cuve 8)
-  E.state.arche = [];
-  E.state.cycle = 2;
-  E.archeSay("radio");
-  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 8, NOUVELLE ROTATION")));
-  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 7 A PASSÉ LE RELAIS")));
-  assert.ok(E.state.arche.some((l) => l.txt.includes("CUVE 8")));
-
-  // Cycle 7 : Semeur 13 (saturation du premier tour de 6 cuves)
-  E.state.arche = [];
-  E.state.cycle = 7;
-  E.archeSay("radio");
-  assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 13. CYCLE 7")));
-  assert.ok(E.state.arche.some((l) => l.txt.includes("TOUS LES LOTS DE DÉPART ONT ÉTÉ UTILISÉS")));
-
-  // Cycle 14 : Semeur 20 (vertige de la boucle)
   E.state.arche = [];
   E.state.cycle = 14;
   E.archeSay("radio");
   assert.ok(E.state.arche.some((l) => l.txt.includes("SEMEUR 20")));
-  assert.ok(E.state.arche.some((l) => l.txt.includes("13 RELÈVES")));
+  // après Matines, plus d’ARCHE
+  E.state.arche = [];
+  E.state.meta.endings.retour = 1;
+  E.archeSay("radio");
+  assert.strictEqual(E.state.arche.length, 0);
 });
 
 test("Terminal : whoami et statut synchronisés avec le cycle", () => {
   const E = createEngine();
 
-  // Cycle 1 : SEMEUR-07
+  // Cycle 1 : SEMEUR 7
   E.state.cycle = 1;
   let lines = E.terminal("whoami");
-  assert.strictEqual(lines[1], "SEMEUR-07");
+  assert.strictEqual(lines[1], "SEMEUR 7");
 
-  // Cycle 2 : SEMEUR-08
+  // Cycle 2 : SEMEUR 8
   E.state.cycle = 2;
   lines = E.terminal("whoami");
-  assert.strictEqual(lines[1], "SEMEUR-08");
+  assert.strictEqual(lines[1], "SEMEUR 8");
 
-  // Cycle 7 : SEMEUR-13
+  // Cycle 7 : SEMEUR 13
   E.state.cycle = 7;
   lines = E.terminal("whoami");
-  assert.strictEqual(lines[1], "SEMEUR-13");
+  assert.strictEqual(lines[1], "SEMEUR 13");
 
-  // Cycle 14 : SEMEUR-20
+  // Cycle 14 : SEMEUR 20
   E.state.cycle = 14;
   lines = E.terminal("whoami");
-  assert.strictEqual(lines[1], "SEMEUR-20");
+  assert.strictEqual(lines[1], "SEMEUR 20");
 
   // Vérification de la commande statut
   const stat = E.terminal("statut");
-  assert.ok(stat.some((l) => l.includes("CYCLE 14 · LOT 20")));
+  assert.ok(stat.some((l) => l.includes("SEMEUR 20")));
 });
 
 console.log("Langage Naturel et Épuration des Textes (6.12)");
@@ -3041,26 +3003,26 @@ test("Résonances Stellaires : paliers infinis, coûts exponentiels et multiplic
 
 test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
   const E = createEngine();
-  assert.strictEqual(E.hasEndingHint("exode"), false);
+  assert.strictEqual(E.hasEndingHint("retour"), false);
 
   // Sans assez de Traces
   E.state.meta.traces = 40;
-  assert.strictEqual(E.buyEndingHint("exode"), false);
-  assert.strictEqual(E.hasEndingHint("exode"), false);
+  assert.strictEqual(E.buyEndingHint("retour"), false);
+  assert.strictEqual(E.hasEndingHint("retour"), false);
 
   // Avec assez de Traces (75)
   E.state.meta.traces = 150;
-  assert.strictEqual(E.buyEndingHint("exode"), true);
+  assert.strictEqual(E.buyEndingHint("retour"), true);
   assert.strictEqual(E.state.meta.traces, 75);
-  assert.strictEqual(E.hasEndingHint("exode"), true);
+  assert.strictEqual(E.hasEndingHint("retour"), true);
 
   // Impossible de racheter un murmure déjà acquis
-  assert.strictEqual(E.buyEndingHint("exode"), false);
+  assert.strictEqual(E.buyEndingHint("retour"), false);
   assert.strictEqual(E.state.meta.traces, 75);
 
   // Persistance à la relève
   E.newCycle();
-  assert.strictEqual(E.hasEndingHint("exode"), true);
+  assert.strictEqual(E.hasEndingHint("retour"), true);
 });
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");

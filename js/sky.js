@@ -44,30 +44,31 @@
   const moonPos = () => ({ x: W * 0.8, y: H * 0.2, r: Math.max(16, Math.min(W, H) * 0.075) });
   const kherPos = () => ({ x: W * 0.16, y: H * 0.5 });
 
-  function patternBlink(tSec, groups, stepDuration, groupPauseDuration, endPauseDuration) {
-    stepDuration = stepDuration || 0.4;
-    groupPauseDuration = groupPauseDuration || 0.9;
-    endPauseDuration = endPauseDuration || 3.2;
-    let total = 0;
-    for (let i = 0; i < groups.length; i++) {
-      total += groups[i] * stepDuration;
-      if (i < groups.length - 1) total += groupPauseDuration;
-    }
-    total += endPauseDuration;
+  /* clignotement par phrases : des groupes d’éclats, une courte pause entre deux groupes,
+   * une longue entre deux phrases, puis une pause avant de recommencer */
+  function phraseBlink(tSec, phrases, step, groupPause, phrasePause) {
+    const seq = [];
+    phrases.forEach((ph, p) => ph.forEach((n, i) => {
+      seq.push({ on: n * step, n });
+      seq.push({ off: i < ph.length - 1 ? groupPause : (p < phrases.length - 1 ? phrasePause : phrasePause * 1.4) });
+    }));
+    const total = seq.reduce((a, x) => a + (x.on || x.off), 0);
     let cur = tSec % total;
-    for (let i = 0; i < groups.length; i++) {
-      const gTime = groups[i] * stepDuration;
-      if (cur < gTime) {
-        const inFlash = cur % stepDuration;
-        return inFlash < stepDuration * 0.6 ? 1 : 0;
-      }
-      cur -= gTime;
-      if (i < groups.length - 1) {
-        if (cur < groupPauseDuration) return 0;
-        cur -= groupPauseDuration;
-      }
+    for (const x of seq) {
+      const d = x.on || x.off;
+      if (cur < d) return x.on ? ((cur % step) < step * 0.6 ? 1 : 0) : 0;
+      cur -= d;
     }
     return 0;
+  }
+  /* les suites du ciel sont rangées, brouillées, avec le récit */
+  function ciel(k) {
+    const D = root.ECLAT_DATA;
+    const R = D && D.RECIT;
+    if (!R || !R.ciel || !R.ciel[k] || !R.deb64) return [];
+    if (!ciel.cache) ciel.cache = {};
+    if (!ciel.cache[k]) ciel.cache[k] = R.deb64(R.ciel[k]).split("-").map((ph) => ph.split("").map(Number));
+    return ciel.cache[k];
   }
 
   function draw(ts) {
@@ -116,15 +117,15 @@
     [[-0.3, -0.2, 0.22], [0.25, 0.1, 0.16], [-0.05, 0.35, 0.12], [0.35, -0.35, 0.09]].forEach(([dx, dy, rr]) => {
       cx.beginPath(); cx.arc(m.x + dx * m.r, m.y + dy * m.r, rr * m.r, 0, 7); cx.fill();
     });
-    // la lumière de la Base Vahl (clignote par groupes : 3, 5, 3 · 1, 5, 1)
-    if (patternBlink(t, [3, 5, 3, 1, 5, 1], 0.38, 0.85, 3.2)) {
+    // la petite lumière sur la Lune
+    if (phraseBlink(t, ciel("lune"), 0.38, 0.85, 2.2)) {
       cx.fillStyle = "rgba(255,240,180,0.95)";
       cx.beginPath(); cx.arc(m.x + m.r * 0.18, m.y - m.r * 0.05, 1.3, 0, 7); cx.fill();
     }
 
     // Kher (clignote par groupes selon le signal avant d'être décodée)
     const k = kherPos();
-    const kherFlash = patternBlink(t, [3, 5, 3, 5, 5, 5, 3, 3, 3, 5, 1, 5, 2, 3, 2], 0.38, 0.85, 3.5);
+    const kherFlash = phraseBlink(t, ciel("lueur"), 0.38, 0.85, 2.6);
     const pulse = opts.decoded ? (0.6 + 0.4 * Math.sin(t * 1.3)) : (0.25 + 0.75 * kherFlash);
     const size = 2 + opts.age * 0.35;
     const kg = cx.createRadialGradient(k.x, k.y, 0, k.x, k.y, size * 7);
