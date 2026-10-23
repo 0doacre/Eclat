@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.3";
+  D.VERSION = "0.8.4";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -995,12 +995,14 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📱 Sur petit écran, l’en-tête garde le nom de l’âge, et la carte d’objectif passe ses boutons sous le titre.",
+    "⌨️ Les fenêtres se ferment avec Échap, ont une croix toujours visible, et le clavier ne sort plus de la fenêtre ouverte.",
     "🏛️ Les deux Grands Œuvres disparus en 0.8.1 reviennent. Si tu en avais commencé un, tu reprends où tu en étais.",
     "📜 En haut de l’écran, le bouton Quêtes : l’objectif en cours, trois rituels par jour et les demandes du Troqueur.",
     "🤝 Plus tu livres au Troqueur, plus il te fait confiance. À chaque rang, ses livraisons rapportent plus de Traces.",
     "✦ La Mémoire des mains a de nouveaux niveaux, plus chers : de quoi dépenser tes Traces en fin de partie.",
     "🔍 À l’Atelier, « Étudier tout » étudie d’un coup toutes tes ressources. Le filtre « À tenter » garde celles qui servent encore, et les autres pâlissent.",
-    "⚡ Dans le Carnet, le filtre « En stock » montre ce que tu peux fabriquer tout de suite.",
+    "⚡ Dans le Carnet, le filtre « Prêtes » montre ce que tu peux fabriquer tout de suite.",
     "🤏 Le Domaine a une vue serrée, pour voir plus de lignes d’un coup.",
     "🗺️ Les lieux cachés se laissent mieux deviner.",
     "🔧 Plusieurs défauts corrigés."

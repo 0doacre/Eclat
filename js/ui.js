@@ -261,7 +261,7 @@
     const f = document.createElement("div");
     f.className = "float";
     f.textContent = txt;
-    f.style.left = x + "px"; f.style.top = y + "px";
+    f.style.left = x + "px"; f.style.top = (y - 30) + "px";
     if (color) f.style.color = color;
     $("#fx").appendChild(f);
     setTimeout(() => f.remove(), 900);
@@ -385,7 +385,12 @@
   }
 
   /* ------------------------------------------------------------ modales */
-  function openModal(o) { U.mq.push(o); if (!U.mcur) nextModal(); }
+  function openModal(o) {
+    // le focus clavier revient sur ce qui a ouvert la fenêtre, quand la dernière se ferme
+    if (!U.mcur && !U.mq.length) U.mOpener = document.activeElement;
+    U.mq.push(o);
+    if (!U.mcur) nextModal();
+  }
   function nextModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     const o = U.mq.shift();
@@ -393,9 +398,14 @@
     U.mcur = o;
     U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
-    box.innerHTML = o.html;
+    box.innerHTML = (o.persistent ? "" : '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>') + o.html;
+    const ttl = $("h2", box);
+    if (ttl) { ttl.id = "modalTitle"; box.setAttribute("aria-labelledby", "modalTitle"); box.removeAttribute("aria-label"); }
+    else { box.removeAttribute("aria-labelledby"); box.setAttribute("aria-label", "Fenêtre"); }
     iconize(box);
     box.scrollTop = 0;
+    box.tabIndex = -1;
+    box.focus({ preventScroll: true });
     if (o.onOpen) o.onOpen(box);
   }
   function closeModal() {
@@ -404,7 +414,14 @@
     U.mcur = null;
     if (o && o.onClose) o.onClose();
     // une fenêtre ouverte entre-temps (une liste ouverte depuis une fiche) reste ouverte
-    setTimeout(() => { if (!U.mcur) nextModal(); }, 60);
+    setTimeout(() => {
+      if (!U.mcur) nextModal();
+      if (!U.mcur) {
+        const b = U.mOpener;
+        U.mOpener = null;
+        if (b && b.isConnected && b !== document.body && typeof b.focus === "function") b.focus({ preventScroll: true });
+      }
+    }, 60);
   }
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
   const fresh = () => Date.now() - (U.mAt || 0) < 450;
@@ -1173,7 +1190,7 @@
     U.tab = t;
     $$(".view").forEach((v) => { v.classList.toggle("on", v.id === "v-" + t); delete v.dataset.sig; });
     document.body.dataset.tab = t;
-    $$("#tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === (PARENT[t] || t)));
+    $$("#tabs button").forEach((b) => { const on = b.dataset.tab === (PARENT[t] || t); b.classList.toggle("on", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     if (U.badges[t]) { U.badges[t] = false; updateBadges(); }
     if (t === "journal" || t === "carnet") A.page();
     $("#views").scrollTop = 0;
@@ -1815,7 +1832,7 @@
     h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
     h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
       (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
-    h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ En stock"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+    h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
       '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
     return h + '<div id="clist">' + carnetList() + "</div>";
   }
@@ -3829,6 +3846,16 @@
       toast("⭐ Trente étoiles de plus brillent dans la nuit.");
     }
     document.addEventListener("keydown", (ev) => {
+      if (U.mcur && ev.key === "Escape" && !U.mcur.persistent && !fresh()) { ev.preventDefault(); closeModal(); return; }
+      if (U.mcur && ev.key === "Tab") {
+        // le focus reste dans la fenêtre ouverte
+        const box = $("#modal .modal-box");
+        const list = [...box.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter((x) => !x.disabled && x.offsetParent !== null);
+        if (!list.length) { ev.preventDefault(); box.focus(); return; }
+        const first = list[0], last = list[list.length - 1], cur = document.activeElement;
+        if (ev.shiftKey && (cur === first || cur === box || !box.contains(cur))) { ev.preventDefault(); last.focus(); return; }
+        if (!ev.shiftKey && (cur === last || !box.contains(cur))) { ev.preventDefault(); first.focus(); return; }
+      }
       if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("[data-goto]")) {
         ev.preventDefault();
         goto(document.activeElement.dataset.goto);
