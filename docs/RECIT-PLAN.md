@@ -83,7 +83,7 @@ Le plus gros risque de ce chantier : que tu te spoiles en relisant une branche.
   tests qui vérifient le vrai contenu vivent dans `tools/test-recit.js`, à ne pas ouvrir.
 - **Messages de commit, titres de branche, `D.CHANGES`** : neutres (« Livre : 12 pages »,
   pas le contenu).
-- `docs/SOLUTIONS.md` deviendra un simple renvoi vers le coffre en 6.0 (il décrit l’ancien récit).
+- L’ancien `docs/SOLUTIONS.md` (l’ancien récit) est rangé dans le coffre.
 
 ## 6. Les risques
 

@@ -27,6 +27,11 @@ travailler dans un dossier à part, sur ton ordinateur, et rien n’arrive sur G
 > commit ou `D.CHANGES`. Écris « une recette secrète », « un lieu caché », pas leur contenu.
 > N’ouvre pas `docs/coffre/` sauf si le prompt le demande.
 
+## La règle du coffre
+
+Un prompt qui touche au récit (textes, lieux, voix, fins, secrets, clins d’œil) va dans
+`docs/coffre/prompts/`, pas ici. Ici, il n’en reste qu’une ligne neutre : « voir le coffre ».
+
 ## Ensuite
 
 Dis à Claude le nom de la branche : il la relit, la teste dans le jeu, retouche si besoin,
@@ -51,15 +56,15 @@ puis la fusionne.
 - `signes-6-1.md` : moteur des signes (dessin, saisie, empreintes, fiche, onglet Signes), sans
   aucun signe réel (6.1.0).
 - `flute-ciel-6-2.md` : moteur de la flûte (airs longs, effets nommés déclaratifs) et animations du Ciel pilotées par données (6.2.0).
-- `voix-6-3.md` : moteur du terminal piloté par données, deux modes (ARCHE et Registre), variables dynamiques, saisie libre de la capsule temporelle et moteur d'événements conditionnels (6.3.0).
-- `portes-6-4.md` : conditions d'exploration élargies, lieux cachés, 2 recettes secrètes, 6 derniers signes et page au Comptoir (6.4.0).
-- `fins-6-5.md` : les fins réécrites, le Grand Œuvre caché remanié, scènes de dénouement et deux fins cachées supplémentaires (6.5.0).
-- `postgame-6-6.md` : synthèse sonore dédiée des 5 fins, galerie des dénouements dans la Mémoire et relève humaine post-Matines (6.6.0).
+- 6.3.0, le terminal : voir le coffre.
+- 6.4.0, les lieux : voir le coffre.
+- 6.5.0, les fins : voir le coffre.
+- 6.6.0, après la fin : voir le coffre.
 - `mobile-6-7.md` : mode Veillée (thème sombre), cibles tactiles agrandies, haptique affinée et grand texte (6.7.0).
-- `curios-6-8.md` : Curiosités et clins d'œil pop culture (6.8.0).
+- 6.8.0, les clins d’œil : voir le coffre.
 - `ergonomie-6-9.md` : Lisibilité générale, ergonomie et feedbacks visuels (6.9.0).
 - `reserve-filtres-6-10.md` : Ergonomie de la Réserve, filtres par catégorie, tris intelligents et flux en direct (6.10.0).
-- `arche-cycles-6-11.md` : Réactivité narrative d'ARCHE, mémoire des cycles et dialogues dynamiques (6.11.0).
+- 6.11.0, une voix du jeu : voir le coffre.
 - [v6.12.0 — Langage naturel & épuration des textes](langage-naturel-6-12.md)
 - [v6.13.0 — Ergonomie visuelle : notifications mobiles & progression de l'âge](ergonomie-visuelle-6-13.md)
 - [v6.14.0 — Profondeur late-game : résonance stellaire & murmures du temps](lategame-traces-6-14.md)

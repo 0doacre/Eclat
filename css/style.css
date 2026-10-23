@@ -132,6 +132,9 @@ h3.sub { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; colo
 .inv.zero { opacity: .45; }
 .inv.zero.sel { opacity: .8; }
 .inv.zero .c { color: var(--bad); }
+.inv.spent { filter: grayscale(.85); border-style: dashed; }
+.inv.spent .n { opacity: .7; }
+.study-all { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
 .muted { color: var(--muted); }
 .dim { color: var(--dim); }
 .small { font-size: 13px; }

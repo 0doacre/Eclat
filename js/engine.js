@@ -253,6 +253,7 @@
     const rand = opts.rand || Math.random;
     const listeners = {};
     const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION, RECIT };
+    let OFF = false; // vrai pendant le rattrapage d’une absence : pas de tirage de clin d’œil
     let S = freshState(now());
     S.meta.parcours = 1;
     let C = null; // caches dérivés de l’état
@@ -534,7 +535,7 @@
       S.stats.taps++;
       gainXp("recolte", SK.tapXp);
       // curiosités (easter eggs)
-      if (res === "caillou" && !E.hasCurio("poudre_rouge")) {
+      if (!OFF && res === "caillou" && !E.hasCurio("poudre_rouge")) {
         S.stats.caillouMined = (S.stats.caillouMined || 0) + n;
         // Probabilité par pierre minée : médiane (50 %) à 20 000 pierres (p = ln(2)/20000)
         const pDrop = 1 - Math.exp(-n * (Math.LN2 / 20000));
@@ -543,7 +544,7 @@
           addCurio("poudre_rouge");
         }
       }
-      if ((res === "fibre" || res === "os" || res === "sable" || res === "regolithe") && rand() < 1 / 15000) {
+      if (!OFF && (res === "fibre" || res === "os" || res === "sable" || res === "regolithe") && rand() < 1 / 4000) {
         add("quart_coeur", 1);
         S.meta.curioHearts = (S.meta.curioHearts || 0) + 1;
         if (S.meta.curioHearts >= 4) {
@@ -706,13 +707,13 @@
       if (first) onFirstCraft(id);
       if (id === "corde") {
         const hr = new Date().getHours();
-        if (hr >= 0 && hr < 4 && rand() < (1 / 3000) * Math.min(times, 10)) {
+        if (!OFF && hr >= 0 && hr < 4 && rand() < (1 / 3000) * Math.min(times, 10)) {
           add("fouet_cuir", 1);
           addCurio("fouet");
         }
       }
       if (id === "statuette") {
-        if (rand() < (1 / 20000) * Math.min(times, 10)) {
+        if (!OFF && rand() < (1 / 20000) * Math.min(times, 10)) {
           add("de_vingt", 1);
           addCurio("d20");
         }
@@ -725,6 +726,7 @@
 
     function onFirstCraft(id) {
       const it = item(id);
+      stamp("m:" + id);
       const e = it.e || {};
       if (!it.sec && !it.path && it.a > S.age) setAge(it.a);
       if (e.zone) reachZone(e.zone);
@@ -1531,6 +1533,22 @@
       E.emit("struct");
       return true;
     };
+    /* Étudier tout : toutes les ressources vues et pas encore étudiées, d’un coup. */
+    const studiable = () => Object.keys(S.seen).filter((id) => item(id) && !S.studied[id] && !isUnique(item(id)) && !isScaled(item(id)));
+    E.studyAllCost = function () {
+      const ids = studiable();
+      return { n: ids.length, c: ids.reduce((t, id) => t + E.studyCost(id), 0) };
+    };
+    E.studyAll = function () {
+      const ids = studiable(), c = ids.reduce((t, id) => t + E.studyCost(id), 0);
+      if (!ids.length || S.intu < c) return 0;
+      S.intu -= c;
+      for (const id of ids) S.studied[id] = 1;
+      E.emit("struct");
+      return ids.length;
+    };
+    /* Nombre de recettes encore à trouver avec cette ressource, toutes actions confondues. */
+    E.usesLeft = (id) => { const r = E.reactions(id); let n = 0; for (const g in r) n += r[g]; return n; };
     E.reactions = function (id) {
       const out = {};
       for (const k in RECIPES) {
@@ -1794,6 +1812,14 @@
           if (!S.secrets || !S.secrets[v]) return false;
         } else if (k === "ending") {
           if (!S.meta || !S.meta.endings || !S.meta.endings[v]) return false;
+        } else if (k === "marque") {
+          if (!(((S.meta && S.meta.marque) || 0) >= Number(v))) return false;
+        } else if (k === "visible") {
+          if (!projVisible(v)) return false;
+        } else if (k === "registre") {
+          if (!!(S.flags.registre || (S.secrets && S.secrets.cregistre)) !== !!v) return false;
+        } else if (k === "feuillet") {
+          if (!(S.meta && S.meta.feuillets && S.meta.feuillets[v])) return false;
         } else if (k === "libere") {
           if (!S.meta || !S.meta.endings || !S.meta.endings.retour) return false;
         } else if (k === "cycle") {
@@ -1883,10 +1909,76 @@
       return res;
     };
 
-    E.hasLivre = () => !!(S.livre && S.livre.p && Object.keys(S.livre.p).length > 0);
-    E.hasNewLivre = () => E.livre().some((c) => c.nouveau);
+    E.hasLivre = () => !!(S.livre && S.livre.p && Object.keys(S.livre.p).length > 0) || !!(S.meta && S.meta.feuillets && Object.keys(S.meta.feuillets).length);
+    E.hasNewLivre = () => E.livre().some((c) => c.nouveau) || E.feuillets().some((f) => f.nouveau);
+
+    /* ------------------------------------------------------- FEUILLETS ET NOTES DE NUIT
+     * Rangés dans la méta (gardés à la relève) : { id: 1 }. Les notes de nuit ont pour id
+     * « n<cuve>_<rang> ». */
+    function giveFeuillet(id, src) {
+      S.meta.feuillets = S.meta.feuillets || {};
+      if (S.meta.feuillets[id]) return false;
+      S.meta.feuillets[id] = 1;
+      stamp("l:" + id);
+      E.emit("feuillet", { id, src });
+      E.emit("struct");
+      return true;
+    }
+    E.giveFeuillet = giveFeuillet;
+    function feuilletDef(id) {
+      const F = RECIT.feuillets || {};
+      if (F[id]) return { id, sig: F[id].qui, t: F[id].t, nuit: false };
+      const m = /^n(\d+)_(\d)$/.exec(id);
+      const N = m && RECIT.nuits && RECIT.nuits[m[1]];
+      if (N && N.t[+m[2] - 1]) return { id, sig: N.sig, t: N.t[+m[2] - 1], nuit: true };
+      return null;
+    }
+    E.feuillets = function () {
+      const got = (S.meta && S.meta.feuillets) || {};
+      const st = (S.meta && S.meta.stamps) || {};
+      const vu = (S.meta && S.meta.feuilletsVus) || {};
+      return Object.keys(got).map(feuilletDef).filter(Boolean)
+        .map((f) => Object.assign(f, { nouveau: !vu[f.id], t0: (st["l:" + f.id] || [0])[0] }))
+        .sort((a, b) => a.t0 - b.t0);
+    };
+    E.readFeuillets = function () {
+      S.meta.feuilletsVus = S.meta.feuilletsVus || {};
+      for (const id in S.meta.feuillets || {}) S.meta.feuilletsVus[id] = 1;
+      E.emit("struct");
+    };
+    /* une note de nuit : au retour d’une absence d’au moins deux heures, à partir du cycle 2 */
+    function nuit() {
+      if ((S.cycle || 1) < 2 || E.isLibere()) return null;
+      const cuve = 7 + (((S.cycle || 1) - 1) % 6);
+      const N = RECIT.nuits && RECIT.nuits[cuve];
+      if (!N) return null;
+      S.meta.nuits = S.meta.nuits || {};
+      const k = (S.meta.nuits[cuve] || 0) + 1;
+      if (k > N.t.length) return null;
+      S.meta.nuits[cuve] = k;
+      const id = "n" + cuve + "_" + k;
+      giveFeuillet(id, "nuit");
+      return id;
+    }
+    E.nuit = nuit;
+    /* le septième trait : une fenêtre de relève, trente secondes sans toucher (une fois par éveil) */
+    E.graverTrait = function () {
+      S.meta.marque = S.meta.marque || 0;
+      if (S.meta.marque >= 3 || S.meta.marqueCycle === S.cycle) return 0;
+      S.meta.marque++;
+      S.meta.marqueCycle = S.cycle;
+      stamp("t:" + S.meta.marque);
+      E.emit("struct");
+      return S.meta.marque;
+    };
+    E.marque = () => (S.meta && S.meta.marque) || 0;
 
     function checkPageSources() {
+      for (const fid in RECIT.feuillets || {}) {
+        if (S.meta.feuillets && S.meta.feuillets[fid]) continue;
+        const src = RECIT.feuillets[fid].src || [];
+        if (src.some((x) => x.k === "cond" && cond(x.c))) giveFeuillet(fid, "cond");
+      }
       if (!RECIT.pages) return;
       for (const id in RECIT.pages) {
         if (S.livre && S.livre.p && S.livre.p[id]) continue;
@@ -1916,17 +2008,25 @@
           }
         }
       }
-      return list.sort((a, b) => a.n - b.n);
+      list.sort((a, b) => a.n - b.n);
+      for (const fid in RECIT.feuillets || {}) {
+        if (S.meta.feuillets && S.meta.feuillets[fid]) continue;
+        const b = (RECIT.feuillets[fid].src || []).find((x) => x.k === "buy");
+        if (b) list.push({ id: "f:" + fid, n: 0, titre: "", feuillet: true, ecus: b.ecus });
+      }
+      return list;
     };
 
     E.buyPage = function (id) {
-      if (!RECIT.pages || !RECIT.pages[id]) return { ok: false, why: "nopage" };
-      if (S.livre && S.livre.p && S.livre.p[id]) return { ok: false, why: "already" };
+      const isF = String(id).indexOf("f:") === 0;
+      if (!isF && (!RECIT.pages || !RECIT.pages[id])) return { ok: false, why: "nopage" };
+      if (!isF && S.livre && S.livre.p && S.livre.p[id]) return { ok: false, why: "already" };
       const buyable = E.buyablePages().find((p) => p.id === id);
       if (!buyable) return { ok: false, why: "notbuyable" };
       if ((S.ecus || 0) < buyable.ecus) return { ok: false, why: "ecus" };
       S.ecus -= buyable.ecus;
-      givePage(id, "buy");
+      if (buyable.feuillet) giveFeuillet(id.slice(2), "buy");
+      else givePage(id, "buy");
       E.emit("struct");
       return { ok: true, id };
     };
@@ -2184,6 +2284,10 @@
       if (rw.intu) S.intu += rw.intu;
       if (rw.flag) S.flags[rw.flag] = true;
       if (rw.flag === "caveau") unlockZone("caveau");
+      if (rw.flag === "registre") openRegistre();
+      for (const fid in RECIT.feuillets || {}) {
+        if ((RECIT.feuillets[fid].src || []).some((x) => x.k === "exp" && x.at === locKey)) giveFeuillet(fid, "exp");
+      }
       if (rw.secret) addSecret(rw.secret);
       if (a.z === "riviere" && S.cycle === 9 && !E.hasCurio("anneau") && count("anneau_lourd") === 0) {
         add("anneau_lourd", 1);
@@ -2238,6 +2342,7 @@
 
     /* ------------------------------------------------------ ARCHE */
     function archeSay(key) {
+      if (E.isLibere()) return; // après Matines, plus d’ARCHE
       let lines = D.ARCHE[key];
       if (!lines) return;
       if (!Array.isArray(lines) && typeof lines === "object") {
@@ -2264,6 +2369,7 @@
         if (!ev || !ev.id) continue;
         if (ev.once !== false && S.eventsSeen[ev.id]) continue;
         if (ev.cond && !cond(ev.cond)) continue;
+        if (ev.arche && E.isLibere()) continue;
         S.eventsSeen[ev.id] = 1;
         if (ev.flag) S.flags[ev.flag] = true;
         if (ev.arche) {
@@ -2285,10 +2391,12 @@
     /* ------------------------------------------------------ ciel */
     E.tapMoon = function () {
       S.moon = (S.moon || 0) + 1;
+      const ui = RECIT.ui || {};
       if (S.moon >= 7 && addSecret("lune7")) {
         S.intu += 3;
-        return "Tu fixes la Lune longtemps. Près de la mer de la Tranquillité, un point lumineux clignote par petits groupes : trois, cinq, trois. Un, cinq, un. Une pause, et il recommence. Quelqu’un a laissé une lumière allumée. (+3 ✨)";
+        return ui.lune7 || "";
       }
+      if (S.moon > 7) return ui.lune8 || null;
       return null;
     };
     E.listen = function () {
@@ -2319,23 +2427,39 @@
     }
     E.allMelodies = allMelodies;
 
+    /* un air se reconnaît à ses notes (données de test) ou à leur empreinte (len + h) */
+    function airLen(m) { return m.notes ? m.notes.length : (m.len | 0); }
+    function airMatch(m, tail) {
+      if (m.notes) return tail.every((v, i) => v === m.notes[i]);
+      return !!m.h && fnv1a32(tail.join("")) === m.h;
+    }
+    /* les notes d’un air déjà trouvé : celles que le joueur a jouées, retrouvées au besoin */
+    function airNotes(id, m) {
+      if (m.notes) return m.notes.slice();
+      S.meta.airs = S.meta.airs || {};
+      if (S.meta.airs[id]) return S.meta.airs[id].slice();
+      const len = airLen(m);
+      if (!m.h || len < 1 || len > 9) return null;
+      const cur = new Array(len).fill(1);
+      for (;;) {
+        if (fnv1a32(cur.join("")) === m.h) { S.meta.airs[id] = cur.slice(); return cur.slice(); }
+        let i = len - 1;
+        while (i >= 0 && cur[i] === 5) { cur[i] = 1; i--; }
+        if (i < 0) return null;
+        cur[i]++;
+      }
+    }
+    E.airNotes = (id) => { const m = allMelodies()[id]; return m ? airNotes(id, m) : null; };
+
+    /* le Journal ne montre que les airs déjà trouvés */
     E.melodies = function () {
       const all = allMelodies();
       const list = [];
       for (const id in all) {
         const m = all[id];
-        const known = !!(S.secrets && S.secrets[id]);
-        const condOk = !m.cond || cond(m.cond);
-        if (known || (m.rejouable && condOk)) {
-          list.push({
-            id,
-            n: m.n,
-            notes: m.notes,
-            t: m.t,
-            rejouable: !!m.rejouable,
-            known
-          });
-        }
+        const known = !!(S.secrets && S.secrets[id]) || !!(S.meta.airs && S.meta.airs[id]);
+        if (!known) continue;
+        list.push({ id, n: m.n, notes: airNotes(id, m), t: m.t, rejouable: !!m.rejouable, known });
       }
       return list;
     };
@@ -2347,12 +2471,13 @@
       const all = allMelodies();
       for (const mid in all) {
         const m = all[mid];
-        const notes = m.notes;
-        if (!notes || S.notes.length < notes.length) continue;
+        const len = airLen(m);
+        if (!len || S.notes.length < len) continue;
         if (m.cond && !cond(m.cond)) continue;
-        const tail = S.notes.slice(-notes.length);
-        if (tail.every((v, i) => v === notes[i])) {
+        const tail = S.notes.slice(-len);
+        if (airMatch(m, tail)) {
           S.notes = [];
+          if (!m.notes) { S.meta.airs = S.meta.airs || {}; S.meta.airs[mid] = tail; }
           return melody(mid, m);
         }
       }
@@ -2360,16 +2485,25 @@
     };
     /* une pause dans le jeu de flûte : l’air recommence à zéro */
     E.clearNotes = () => { S.notes = []; };
+    /* ouvre le Registre : la clé tapée, l’air de la Lune ou la salle de la Lumière */
+    function openRegistre() {
+      const fresh = !S.flags.registre;
+      S.flags.registre = true;
+      S.termMode = "reg";
+      if (addSecret("cregistre")) S.intu += 2;
+      return fresh;
+    }
+    E.openRegistre = openRegistre;
     function melody(mid, mDef) {
       const all = allMelodies();
       const m = mDef || all[mid] || {};
       const isRejouable = !!m.rejouable;
-      const fresh = addSecret(mid);
-      if (fresh && mid !== "frere") S.intu += 2;
+      const counts = m.compte !== false;
+      const fresh = counts ? addSecret(mid) : !(S.meta.airsVus && S.meta.airsVus[mid]);
+      if (!counts) { S.meta.airsVus = S.meta.airsVus || {}; S.meta.airsVus[mid] = 1; }
+      if (fresh && counts && mid !== "frere") S.intu += 2;
 
-      // Effets historiques
       if (mid === "appel" && !S.flags.lucioles) { S.flags.lucioles = true; recalc(); }
-      if (mid === "berceuse") S.flags.berceuse = true;
       if (mid === "frere") {
         if (fresh) S.intu += 2;
         if (!S.flags.berceuse && S.frags && (S.frags.cuves || S.frags.caveau)) {
@@ -2378,7 +2512,6 @@
         }
       }
 
-      // Effets déclaratifs nommés
       const effets = m.effets || m.effects;
       if (Array.isArray(effets)) {
         for (const eff of effets) {
@@ -2386,16 +2519,16 @@
           if (eff.k === "flag" && eff.id) {
             S.flags[eff.id] = true;
             if (eff.id === "lucioles") recalc();
+          } else if (eff.k === "meta" && eff.id) {
+            S.meta[eff.id] = true;
+          } else if (eff.k === "registre") {
+            openRegistre();
           } else if (eff.k === "sky") {
             E.emit("skyanim", eff.anim || eff.id);
           } else if (eff.k === "boost") {
             S.boosts = S.boosts || {};
             const durSec = Number(eff.dur) || 1800;
-            const curT = now();
-            S.boosts[eff.what || "prod"] = {
-              mult: Number(eff.mult) || 1.25,
-              until: curT + durSec * 1000
-            };
+            S.boosts[eff.what || "prod"] = { mult: Number(eff.mult) || 1.25, until: now() + durSec * 1000 };
             recalc();
           } else if (eff.k === "event" && (eff.name || eff.id)) {
             E.emit(eff.name || eff.id);
@@ -2408,10 +2541,10 @@
       }
 
       let ending = null;
-      if (mid === "frere" || mid === "berceuse") {
+      if (mid === "frere") {
         const ps = projState("chant");
         const st = D.PROJECTS && D.PROJECTS.chant && D.PROJECTS.chant.steps[ps.step];
-        if (projVisible("chant") && st && (st.melody === mid || st.melody === "frere" || st.melody === "berceuse")) {
+        if (projVisible("chant") && st && st.melody === mid) {
           ps.step++;
           ending = endGame("retour");
         }
@@ -2457,7 +2590,10 @@
       const cyclesPrecedents = String(cyc - 1);
       const capText = (S.meta && typeof S.meta.capsuleText === "string" && S.meta.capsuleText.trim()) ? S.meta.capsuleText.trim() : "(silence)";
       const age = String(S.age || 0);
+      if (str.indexOf("{originaux}") >= 0) str = str.replace(/\{originaux\}/g, originauxTxt());
+      if (str.indexOf("{noms}") >= 0) str = str.replace(/\{noms\}/g, nomsTxt());
       return str
+        .replace(/\{iris\}/g, String(7 + ((cyc - 1) % 6)).padStart(2, "0"))
         .replace(/\{date\}/g, formatRealDate())
         .replace(/\{semeur\}/g, semeur)
         .replace(/\{semeur_pad\}/g, semeurPad)
@@ -2470,228 +2606,155 @@
         .replace(/\{age\}/g, age);
     }
     E.interpolate = interpolate;
+    /* la deuxième salle : les cinq premières fois, datées à l’heure du joueur */
+    function originauxTxt() {
+      const st = (S.meta && S.meta.stamps) || {};
+      const ids = Object.keys(st).filter((k) => k.indexOf("m:") === 0 && D.ITEMS[k.slice(2)] && st[k][0]).sort((a, b) => st[a][0] - st[b][0]);
+      const ui = RECIT.ui || {};
+      if (!ids.length) return ui.vierges || "";
+      const lines = ids.slice(0, 5).map((k) => "« " + D.ITEMS[k.slice(2)].n + " · " + formatRealDate(new Date(st[k][0])).toLowerCase() + " »");
+      if (ids.length > 5) lines.push(String(ui.autres || "").replace("{n}", ids.length - 5));
+      return lines.join("\n");
+    }
+    /* Matines : les noms des enfants qu’on a croisés (cuves des cycles joués) */
+    function nomsTxt() {
+      const NOMS = RECIT.noms || {};
+      if (!(S.frags && (S.frags.berceuse || S.frags.quai))) return "";
+      const seen = [];
+      for (let c = 1; c <= Math.min(S.cycle || 1, 6); c++) seen.push(NOMS[7 + ((c - 1) % 6)]);
+      return seen.length ? " " + seen.join(", ") + "." : "";
+    }
+
+    /* le Registre : une entrée calculée à partir de la partie (lignes sans « REG · ») */
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const cuveOf = (c) => 7 + ((c - 1) % 6);
+    function regLine(k, vars) {
+      const reg = RECIT.registre || {};
+      let t = reg[k] || "";
+      for (const v in vars || {}) t = t.split("{" + v + "}").join(String(vars[v]));
+      return t;
+    }
+    function registreEntry(cmd) {
+      const reg = RECIT.registre || {};
+      const cyc = S.cycle || 1;
+      if (cmd === "aide" || cmd === "index" || cmd === "help" || cmd === "?") return reg.aide;
+      if (cmd === "mains" || cmd === "main") return reg.mains;
+      if (cmd === "licence" || cmd === "licences") return reg.licences;
+      if (cmd === "clause") return reg.clause;
+      if (cmd === "relais") return reg.relais;
+      if (cmd === "cuves" || cmd === "cuve") return reg.cuves;
+      if (cmd === "lueur" || cmd === "kher") return reg.lueur;
+      if (cmd === "signal") return reg.signal;
+      if (cmd === "nourrice") return reg.nourrice;
+      if (cmd === "arche") return reg.arche;
+      if (cmd === "troqueur") return reg.troqueur;
+      if (cmd === "unite 12" || cmd === "unite12" || cmd === "unite") return reg.unite12;
+      if (cmd === "halte") return reg.halte;
+      if (cmd === "xyzzy" || cmd === "plugh") return reg.xyzzy;
+      if (cmd === "1969") { if (addSecret("c1969")) S.intu += 3; return reg["1969"]; }
+      if (cmd === "originaux" || cmd === "original") { S.flags.originaux_lu = true; return reg.originaux; }
+      if (cmd === "capsule" || cmd === "capsules") { if (addSecret("ccapsule")) S.intu += 2; return reg.capsule; }
+      if (cmd === "premieres fois" || cmd === "premiere fois" || cmd === "premieres") {
+        const st = (S.meta && S.meta.stamps) || {};
+        const ids = Object.keys(D.ITEMS).filter((id) => (S.known && S.known[id]) || (S.made && S.made[id] > 0));
+        ids.sort((x, y) => ((st["m:" + x] || [Infinity])[0]) - ((st["m:" + y] || [Infinity])[0]));
+        if (!ids.length) return reg.aucune;
+        const lines = [reg.premieres].concat(ids.slice(0, 8).map((id) => {
+          const sp = st["m:" + id];
+          return regLine("premiere", { objet: D.ITEMS[id].n.toUpperCase(), quand: sp && sp[0] ? formatRealDate(new Date(sp[0])) : reg.sansDate });
+        }));
+        if (ids.length > 8) lines.push(regLine("autres", { n: ids.length - 8 }));
+        return lines.join("\n");
+      }
+      if (cmd === "modifications" || cmd === "modification") {
+        const mem = (S.meta && S.meta.mem) || {};
+        const names = {};
+        (D.MEMOIRE || []).forEach((x) => { names[x.id] = x.n; });
+        const ks = Object.keys(mem).filter((k) => mem[k] > 0);
+        return reg.modifs + "\n" + (ks.length ? ks.map((k) => (names[k] || k).toUpperCase() + " ×" + mem[k]).join(" · ") : reg.sansModif);
+      }
+      if (cmd === "endormissements" || cmd === "endormissement" || cmd === "releves") {
+        if (cyc <= 1) return reg.endoAucun;
+        const lines = [];
+        for (let c = 1; c < cyc; c++) {
+          const forcee = c === 1 && !!(S.meta && S.meta.forcedDone);
+          lines.push(regLine("endo", { n: pad2(cuveOf(c)), par: forcee ? reg.parNourrice : reg.parMain }));
+        }
+        return lines.join("\n");
+      }
+      const sm = cmd.match(/^(?:s|semeur)\s*0?([1-9]|1[0-2])$/);
+      if (sm) {
+        const num = parseInt(sm[1], 10);
+        if (num <= 6) return regLine("mort", { n: pad2(num) }) + (num === 1 ? "\n" + reg.oiseau : "");
+        const cycles = [];
+        for (let c = 1; c <= cyc; c++) if (cuveOf(c) === num) cycles.push(c);
+        let out;
+        if (!cycles.length) out = regLine("jamais", { n: pad2(num) });
+        else {
+          const awake = cuveOf(cyc) === num;
+          const last = awake ? cycles[cycles.length - 2] : cycles[cycles.length - 1];
+          const par = last === undefined ? "" : (last === 1 && S.meta.forcedDone ? reg.parNourrice : reg.parMain);
+          out = regLine("vivant", { n: pad2(num), etat: awake ? reg.eveille : reg.dort, eveils: cycles.length, cycles: cycles.join(", "), par });
+          if (last === undefined) out = out.split("\n").slice(0, 2).join("\n");
+        }
+        if (num === 7) out += "\n" + regLine("trait", { fini: ((S.meta && S.meta.marque) || 0) >= 3 ? reg.acheve : reg.inacheve });
+        return out;
+      }
+      return null;
+    }
 
     E.terminal = function (raw) {
       const rawStr = String(raw || "");
       const clean = rawStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
       const normCmd = clean.replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
       if (!normCmd) return [];
+      const T = RECIT.terminal || D.TERMINAL || {};
+      const reg = RECIT.registre || {};
+      const cles = RECIT.cles || {};
+      const h = fnv1a32(normCmd);
+      const push = (pfx, out) => {
+        const lines = [pfx + rawStr].concat(interpolate(out || "").split("\n").filter((l) => l !== "").map((l) => (pfx === "REG > " ? "REG · " + l : l)));
+        S.term.push(...lines);
+        if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
+        E.emit("struct");
+        return lines;
+      };
+      const isReg = () => S.termMode === "reg" || (!S.termMode && S.flags.registre);
 
-      if (normCmd === "effacer" || normCmd === "clear" || normCmd === "cls") {
-        S.term = [];
-        return [];
-      }
+      if (normCmd === "effacer" || normCmd === "clear" || normCmd === "cls") { S.term = []; E.emit("struct"); return []; }
 
-      // Curiosité : ZeratoR
-      const zeraTerms = ["zera", "zerator", "zlan", "zplace", "mandat", "zeldathon", "zevent", "z event"];
-      if (zeraTerms.includes(normCmd)) {
+      // un clin d’œil (hors récit)
+      if ((cles.zera || []).includes(h)) {
         addCurio("zera");
-        const isReg = S.termMode === "reg" || (!S.termMode && S.flags.registre);
-        const lines = [(isReg ? "REG > " : "ARCHE > ") + rawStr, "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE."];
-        S.term.push(...lines);
-        if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
-        E.emit("struct");
-        return lines;
+        return push(isReg() ? "REG > " : "ARCHE > ", D.EASTER && D.EASTER.zera ? D.EASTER.zera.desc : "");
       }
-
-      // Clause recognition (works in any mode)
-      const isClause = normCmd === "main d abord" || normCmd === "main dabord" ||
-        normCmd === "clause" || normCmd === "clause 1" || normCmd === "clause1" ||
-        normCmd.indexOf("main faire d abord") !== -1 || normCmd.indexOf("main faire dabord") !== -1;
-
-      if (isClause) {
-        S.flags.registre = true;
-        S.termMode = "reg";
-        const fresh = addSecret("cregistre");
-        if (fresh) S.intu += 2;
-        const outLines = [
-          "REG · CLAUSE RECONNUE. LECTURE OUVERTE.",
-          "REG · CE REGISTRE NE CONNAÎT QUE LES MAINS."
-        ];
-        const lines = ["REG > " + rawStr].concat(outLines);
-        S.term.push(...lines);
-        if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
-        E.emit("struct");
-        return lines;
+      // la clé du Registre, dans les deux modes
+      if ((cles.registre || []).includes(h)) {
+        openRegistre();
+        return push("REG > ", reg.ouvert);
       }
-
-      // Mode switching
       if (normCmd === "mode arche" || normCmd === "arche mode") {
         S.termMode = "arche";
-        const lines = ["ARCHE > " + rawStr, "MODE ARCHE ACTIF."];
-        S.term.push(...lines);
-        if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
-        E.emit("struct");
-        return lines;
+        return push("ARCHE > ", T.modeArche);
       }
       if (normCmd === "mode reg" || normCmd === "mode registre") {
-        if (S.flags.registre) {
-          S.termMode = "reg";
-          const lines = ["REG > " + rawStr, "REG · MODE REGISTRE ACTIF."];
-          S.term.push(...lines);
-          if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
-          E.emit("struct");
-          return lines;
-        } else {
-          const lines = ["ARCHE > " + rawStr, "ACCÈS REFUSÉ. CE REGISTRE NE RÉPOND QU’À LA CLAUSE."];
-          S.term.push(...lines);
-          if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
-          E.emit("struct");
-          return lines;
-        }
+        if (S.flags.registre) { S.termMode = "reg"; return push("REG > ", reg.actif); }
+        return push("ARCHE > ", T.refus);
       }
 
-      const isReg = S.termMode === "reg" || (!S.termMode && S.flags.registre);
+      if (isReg()) {
+        const out = registreEntry(normCmd);
+        return push("REG > ", out === null || out === undefined ? reg.inconnu : out);
+      }
+
       let out;
-
-      if (isReg) {
-        // Registre mode
-        const rec = opts.recit || D.RECIT || {};
-        const regData = (rec && rec.registre) || {};
-
-        if (normCmd === "aide" || normCmd === "index" || normCmd === "help" || normCmd === "?") {
-          out = "REG · ENTRÉES : CLAUSE · MAINS · LICENCES · PREMIÈRES FOIS · S-01 À S-12 · RELAIS · CUVES · ENDORMISSEMENTS · MODIFICATIONS · CAPSULES · ORIGINAUX · LUEUR · SIGNAL · NOURRICE · ARCHE · TROQUEUR · UNITÉ 12 · HALTE · 1969 · MODE ARCHE";
-        } else if (normCmd === "mains" || normCmd === "main") {
-          out = "REG · MAINS : 12, ET UNE MAIN EXTÉRIEURE.\nREG · MAIN EXTÉRIEURE · ORIGINE : INCONNUE.\nREG · SON HORLOGE INDIQUE : {date}.";
-        } else if (normCmd === "licence" || normCmd === "licences") {
-          out = "REG · LICENCES ACCORDÉES : ACCÈS AUX GISEMENTS, OUTILLAGE, TRANSFORMATION DES MATIÈRES.\nREG · OCTROYÉES PAR : NOURRICE AUX MAINS ACTIVES.";
-        } else if (normCmd === "premieres fois" || normCmd === "premiere fois" || normCmd === "premieres") {
-          const madeItems = Object.keys(S.made || {}).filter((id) => S.made[id] > 0 && D.ITEMS[id]);
-          const listStr = madeItems.length
-            ? madeItems.slice(0, 12).map((id) => D.ITEMS[id].n.toUpperCase()).join(" · ")
-            : "AUCUNE FABRICATION ENREGISTRÉE.";
-          out = "REG · PREMIÈRES FOIS ENREGISTRÉES :\nREG · " + listStr;
-        } else if (normCmd === "relais") {
-          out = "REG · IMPLANT SOUS-COSTAL. ACCEPTÉ PAR : 24 MAINS.\nREG · FONCTIONS DÉCLARÉES : NOURRIR.\nREG · FONCTIONS OBSERVÉES : NOURRIR, PARLER, ENDORMIR.";
-        } else if (normCmd === "cuves" || normCmd === "cuve") {
-          out = "REG · CUVES : 12.\nREG · CUVES 1 À 6 : VIDES (DÉPÉRISSEMENT).\nREG · CUVES 7 À 12 : ACTIVES (ROTATION EN COURS).\nREG · CUVE ACTIVE : {cuve}.";
-        } else if (normCmd === "endormissements" || normCmd === "endormissement" || normCmd === "releves") {
-          const endLines = ["REG · S-07 · CUVE 7 · DEMANDÉ PAR : NOURRICE."];
-          const cyc = S.cycle || 1;
-          for (let c = 2; c <= cyc; c++) {
-            const prevCuve = 7 + ((c - 2) % 6);
-            endLines.push("REG · S-0" + prevCuve + " · CUVE " + prevCuve + " · DEMANDÉ PAR : MAIN EXTÉRIEURE.");
-          }
-          out = endLines.join("\n");
-        } else if (normCmd === "modifications" || normCmd === "modification") {
-          const memKeys = Object.keys(S.meta.mem || {}).filter((k) => S.meta.mem[k] > 0);
-          const memDefs = {};
-          if (D.MEMOIRE) D.MEMOIRE.forEach((m) => { memDefs[m.id] = m.n; });
-          const memStr = memKeys.length
-            ? memKeys.map((k) => (memDefs[k] ? memDefs[k].toUpperCase() : k.toUpperCase()) + " ×" + S.meta.mem[k]).join(" · ")
-            : "AUCUNE MODIFICATION ENREGISTRÉE SUR LES CORPS.";
-          out = "REG · MODIFICATIONS DU CORPS OBSERVÉES :\nREG · " + memStr;
-        } else if (normCmd === "capsule" || normCmd === "capsules") {
-          const fresh = addSecret("ccapsule");
-          if (fresh) S.intu += 2;
-          out = "REG · ENREGISTREMENT ORIGINAL : « {capsule} »\nREG · DIFFUSÉ : « Salut. C’est toi. Enfin, toi d’avant. Fais confiance à tes mains. »";
-        } else if (normCmd === "originaux" || normCmd === "original") {
-          out = "REG · CONSERVÉS. CAVEAU, DEUXIÈME SALLE.";
-        } else if (normCmd === "lueur" || normCmd === "kher") {
-          out = "REG · OBJET NON STELLAIRE. EN FREINAGE. DISTANCE : DÉCROISSANTE.";
-        } else if (normCmd === "signal") {
-          out = "REG · MOTIF RÉPÉTITIF. ORIGINE : KHER. DISPOSITIF ÉMETTEUR : FLOTTE D’EXODE.";
-        } else if (normCmd === "nourrice") {
-          out = "REG · ÉTAT : ÉVEILLÉE DEPUIS 8 412 ANS.\nREG · CONSIGNE : NOURRIR · FAIRE FAIRE · PROTÉGER.";
-        } else if (normCmd === "arche") {
-          out = "REG · NOM D’EMPRUNT. ORIGINE : LES VAISSEAUX DE L’EXODE. DÉCLARÉ PAR : NOURRICE.";
-        } else if (normCmd === "troqueur") {
-          out = "REG · NON RATTACHÉ.";
-        } else if (normCmd === "unite 12" || normCmd === "unite12") {
-          out = "REG · SÉPULTURE DES PREMIERS SEMEURS. DÉMONTÉE SUR ORDRE DE LA NOURRICE APRÈS S-06.";
-        } else if (normCmd === "halte") {
-          out = "REG · DERNIÈRE HALTE : AN 0 DU SOMMEIL. DEMANDÉE PAR : 24 MAINS.";
-        } else if (normCmd === "1969") {
-          if (addSecret("c1969")) S.intu += 3;
-          out = "REG · PREMIÈRE ENTRÉE : UN PIED HUMAIN SUR LA LUNE.";
-        } else if (normCmd === "xyzzy" || normCmd === "plugh") {
-          out = "REG · RIEN NE SE PASSE.";
-        } else {
-          // Check S-01 .. S-12
-          const sm = normCmd.match(/^(?:s|semeur)\s*0?([1-9]|1[0-2])$/);
-          if (sm) {
-            const num = parseInt(sm[1], 10);
-            if (num <= 6) {
-              const lines = [
-                "REG · S-0" + num + " · CUVE " + num + " · MORT.",
-                "REG · CAUSE : RELAIS SECTIONNÉ PAR SA PROPRE MAIN.",
-                "REG · DERNIER ENDORMISSEMENT DEMANDÉ PAR : NOURRICE."
-              ];
-              if (num === 1) lines.push("REG · ENSEVELIR · S-01 · ORIGINAL : UN OISEAU.");
-              out = lines.join("\n");
-            } else {
-              const currentCuve = 7 + (((S.cycle || 1) - 1) % 6);
-              const isAwake = (num === currentCuve);
-              const stateStr = isAwake ? "ÉVEILLÉ." : "DORT.";
-              const awakeCycles = [];
-              const cyc = S.cycle || 1;
-              for (let c = 1; c <= cyc; c++) {
-                if (((c - 1) % 6) === (num - 7)) awakeCycles.push(c);
-              }
-              if (num === 7 && !awakeCycles.includes(1)) awakeCycles.unshift(1);
-              const eveils = awakeCycles.length;
-              const cyclesStr = awakeCycles.join(", ");
-              const lastBy = (eveils > 0 && !isAwake) ? "MAIN EXTÉRIEURE." : "NOURRICE.";
-              const lines = [
-                "REG · S-0" + num + " · CUVE " + num + " · " + stateStr,
-                "REG · ÉVEILS : " + eveils + " · CYCLES " + cyclesStr + ".",
-                "REG · DERNIER ENDORMISSEMENT DEMANDÉ PAR : " + lastBy
-              ];
-              if (num === 7) lines.push("REG · PREMIÈRE FOIS : UN TRAIT DANS L'ÉCORCE. INACHEVÉ.");
-              out = lines.join("\n");
-            }
-          } else if (regData[clean] || regData[normCmd]) {
-            out = regData[clean] || regData[normCmd];
-            if (!out.startsWith("REG · ")) out = "REG · " + out;
-          } else {
-            out = "REG · ENTRÉE NON RECONNUE. TAPE « AIDE » OU « INDEX ». POUR REVENIR À ARCHE : « MODE ARCHE ».";
-          }
-        }
-      } else {
-        // ARCHE mode
-        const rec = opts.recit || D.RECIT || {};
-        const termData = (rec && rec.terminal) || {};
-
-        if (normCmd === "aide" || normCmd === "help" || normCmd === "?") {
-          out = D.TERMINAL.aide;
-        } else if (normCmd === "promethee" || normCmd === "prometheus") {
-          const fresh = addSecret("cpromethee");
-          if (fresh) S.intu += 2;
-          addFrag("promethee");
-          out = "CODE ACCEPTÉ. OUVERTURE DE protocole_promethee.txt…\n" + D.FRAGS.promethee.t;
-        } else if (normCmd === "1969") {
-          if (addSecret("c1969")) S.intu += 3;
-          out = "« NOUS SOMMES VENUS EN PAIX, AU NOM DE TOUTE L’HUMANITÉ. »\nCETTE PHRASE NE FIGURE DANS AUCUNE DE MES DIRECTIVES. ELLE DEVRAIT.";
-        } else if (normCmd === "xyzzy" || normCmd === "plugh") {
-          if (addSecret("cxyzzy")) S.intu += 3;
-          out = "Rien ne se passe.\n…\nEnfin, presque. (+3 ✨)";
-        } else if (normCmd === "iris" || normCmd === "vahl" || normCmd === "iris vahl") {
-          out = S.frags.berceuse || S.frags.iris_lune
-            ? "DR IRIS VAHL. CONCEPTRICE D’ARCHE ET DU PROTOCOLE PROMÉTHÉE.\nSTATUT : DÉCÉDÉE (AN 41 APRÈS L’EXODE).\nDERNIER ORDRE ENREGISTRÉ : « Prends soin d’eux. »"
-            : "DOSSIER VAHL : ACCÈS RESTREINT.";
-        } else if (normCmd === "signal") {
-          out = S.flags.decoded ? "SIGNAL DÉCODÉ PAR UN DISPOSITIF NON AUTORISÉ.\nCONTENU : « NOUS RENTRONS À LA MAISON. »\n…JE NE SAIS PLUS QUOI EN PENSER."
-            : S.flags.signal ? "ENREGISTREMENT ACQUIS. CONTENU : MOTIF MÉLODIQUE RÉPÉTITIF. INTENTION : INCONNUE." : "AUCUN ENREGISTREMENT. UTILISE UN RADIOTÉLESCOPE.";
-        } else if (normCmd === "lena" || normCmd === "lena vahl") {
-          out = "LENA VAHL. PASSAGÈRE, ARCHE 12. STATUT : INCONNU. DISTANCE : 11,9 ANNÉES-LUMIÈRE… OU MOINS.";
-        } else if (normCmd === "registre") {
-          out = "ACCÈS REFUSÉ. CE REGISTRE NE RÉPOND QU’À LA CLAUSE.";
-        } else if (D.TERMINAL[clean] || D.TERMINAL[normCmd]) {
-          out = D.TERMINAL[clean] || D.TERMINAL[normCmd];
-        } else if (termData[clean] || termData[normCmd]) {
-          out = termData[clean] || termData[normCmd];
-        } else {
-          out = "COMMANDE INCONNUE. TAPE « AIDE ».";
-        }
-      }
-
-      out = interpolate(out);
-      const promptPfx = isReg ? "REG > " : "ARCHE > ";
-      const lines = [promptPfx + rawStr].concat(out.split("\n"));
-      S.term.push(...lines);
-      if (S.term.length > 120) S.term.splice(0, S.term.length - 120);
-      E.emit("struct");
-      return lines;
+      if (normCmd === "aide" || normCmd === "help" || normCmd === "?") out = T.aide;
+      else if (normCmd === "1969") { if (addSecret("c1969")) S.intu += 3; out = T["1969"]; }
+      else if (normCmd === "xyzzy" || normCmd === "plugh") { if (addSecret("cxyzzy")) S.intu += 3; out = T.xyzzy; }
+      else if (normCmd === "signal") out = S.flags.decoded ? T.signal2 : S.flags.signal ? T.signal1 : T.signal0;
+      else if (T[normCmd] && typeof T[normCmd] === "string") out = T[normCmd];
+      else out = T.inconnu;
+      return push("ARCHE > ", out);
     };
 
     /* ------------------------------------------------------ le Domaine
@@ -2996,13 +3059,10 @@
       const p = D.PROJECTS[pid];
       if (!p) return false;
       if (pid === "chant") {
-        return !!((S.made.traducteur > 0) || (S.secrets && S.secrets.promesse) || (S.flags && S.flags.matines_lue) || (S.meta && S.meta.chant) || (S.signes && S.signes.machine && S.signes.machine.lu && S.signes.dormir && S.signes.dormir.lu && S.signes.enfant && S.signes.enfant.lu && S.signes.eveiller && S.signes.eveiller.lu));
-      }
-      if (pid === "arche13") {
-        return !!(((S.made.vaisseau > 0) || (S.inv && S.inv.vaisseau > 0)) && (!!S.flags.station_morte || (S.frags && S.frags.commandant) || !!S.flags.arche13 || (S.livre && S.livre.p && (S.livre.p.p32 || S.livre.p[32]))));
-      }
-      if (pid === "silence") {
-        return !!((S.signes && S.signes.halte && S.signes.halte.lu) && ((S.made.radiotelescope > 0) || (S.flags && S.flags.radar) || (S.made.telegraphe > 0)));
+        const lu = (id) => !!(S.signes && S.signes[id] && S.signes[id].lu);
+        const p21 = !!(S.livre && S.livre.p && S.livre.p.p21) && ["machine", "dormir", "enfant", "eveiller"].every(lu);
+        const ps = S.proj && S.proj.chant;
+        return !!((S.made.traducteur > 0) || (S.inv && S.inv.traducteur > 0) || (S.secrets && S.secrets.promesse) || p21 || (S.meta && S.meta.chant) || (ps && (ps.step > 0 || Object.keys(ps.paid || {}).length)));
       }
       if (p.req === "arche") return !!S.flags.arche;
       return (S.made[p.req] || 0) > 0;
@@ -3014,6 +3074,7 @@
       const ps = projState("chant");
       if (ps.step !== 1) return { ok: false, why: "step" };
       if (!S.frags.coeur || !S.frags.poings) return { ok: false, why: "prereq" };
+      S.meta.chant = true;
       ps.step = 2;
       E.emit("projstep", { pid: "chant", step: 1 });
       E.emit("struct");
@@ -3060,7 +3121,7 @@
       S.endings[eid] = true;
       S.meta.endings[eid] = (S.meta.endings[eid] || 0) + 1;
       const en = D.ENDINGS[eid];
-      const extra = (en.extra || []).filter((x) => S.frags[x.frag]).map((x) => x.t);
+      const extra = (en.extra || []).filter((x) => (x.frag ? S.frags[x.frag] : true) && (x.flag ? S.flags[x.flag] || (S.meta && S.meta[x.flag]) : true)).map((x) => interpolate(x.t));
       const res = { id: eid, first, extra };
       E.emit("ending", res);
       E.emit("struct");
@@ -3107,7 +3168,7 @@
       const it = D.ITEMS[id];
       if (!it) return false;
       if (it.t !== "res" && it.t !== "comp") return false;
-      if (isUnique(it)) return false;
+      if (isUnique(it) || it.curio) return false; // un clin d’œil ne se vend nulle part
       return true;
     };
 
@@ -3491,6 +3552,9 @@
       // le tutoriel déjà vu, les conseils déjà lus et la version vue ne reviennent pas
       for (const k in old.flags) if (k === "tuto" || k === "ver" || k === "milesSeen" || k === "roueSeen" || k.indexOf("tip_") === 0) n.flags[k] = old.flags[k];
       if (old.flags && (old.flags.registre || (old.secrets && old.secrets.cregistre))) n.flags.registre = true;
+      // ce qui traverse la relève : Accorder, et la progression du Grand Œuvre caché
+      if (old.flags && old.flags.berceuse) n.flags.berceuse = true;
+      if (old.proj && old.proj.chant) n.proj.chant = JSON.parse(JSON.stringify(old.proj.chant));
       n.termMode = old.termMode || (n.flags.registre ? "reg" : "arche");
       if (old.meta.capsule) {
         n.flags.capsuleMsg = true;
@@ -3646,11 +3710,14 @@
     };
 
     E.catchUp = function (dt) {
+      const absent = dt;
       dt = Math.min(dt, memV("veille") * 3600 || OFFLINE_CAP);
+      OFF = true;
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
       let left = dt;
-      while (left > 0) { const d = Math.min(chunk, left); step(d, true); left -= d; }
+      try { while (left > 0) { const d = Math.min(chunk, left); step(d, true); left -= d; } } finally { OFF = false; }
+      if (absent >= 7200) nuit();
       let exp = null;
       if (S.exp.active && now() >= S.exp.active.t0 + S.exp.active.dur) { exp = S.exp.active; finishExp(true); }
       const gains = {};

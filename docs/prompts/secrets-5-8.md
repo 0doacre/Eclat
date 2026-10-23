@@ -4,7 +4,7 @@ Tu travailles sur **Éclat**, un jeu incrémental de craft en français, pour mo
 JavaScript sans framework ni dépendance). Dépôt GitHub : `0doacre/craftgame`.
 
 Lis d’abord, en entier : `docs/STYLE.md` (comment écrire un texte affiché : **obligatoire**),
-`docs/LEXIQUE.md` (les mots : action, ressource, recette, tentative…), et `docs/SOLUTIONS.md`
+`docs/LEXIQUE.md` (les mots : action, ressource, recette, tentative…), et `docs/coffre/SOLUTIONS-ancienne-histoire.md`
 (les solutions des secrets : **ne recopie jamais une solution dans un texte affiché**).
 Puis, dans `js/engine.js` : `remember`, `E.memory`, `S.hints`, `learn`, `temperature`,
 `E.attempt`, `E.studyCost` et `E.study` ; dans `js/ui.js` : les endroits qui lisent

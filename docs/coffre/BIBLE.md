@@ -4,7 +4,7 @@
 > solutions. Qui écrit un texte affiché, câble un secret ou relit une branche qui touche au récit
 > le lit en entier, avec `docs/coffre/SECRETS.md` (les solutions) et `docs/coffre/TEXTES.md` (le ton).
 > Ce document remplace l’ancienne histoire (ARCHE gardienne, Iris, Lena, les Lucioles-fléau,
-> le chant-mot de passe) et rend `docs/SOLUTIONS.md` caduc.
+> le chant-mot de passe) et rend caduc l’ancien `docs/SOLUTIONS.md` (rangé dans `docs/coffre/SOLUTIONS-ancienne-histoire.md`).
 
 ## 1. En une phrase
 

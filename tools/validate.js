@@ -152,7 +152,7 @@ while (changed) {
     });
   }
 }
-for (const id in I) if (!have.has(id) && !I[id].curio) err("inatteignable : " + id);
+for (const id in I) if (!have.has(id) && !I[id].curio && !I[id].old) err("inatteignable : " + id);
 for (const pid in D.PROJECTS) D.PROJECTS[pid].steps.forEach((s) => { if (s.cost) for (const i in s.cost) if (!have.has(i)) err("œuvre " + pid + " : " + i + " inatteignable"); });
 
 /* l’âge d’une recette ne doit pas être inférieur à celui de ses ingrédients */

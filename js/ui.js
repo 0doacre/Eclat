@@ -175,7 +175,8 @@
     return '<span class="badge t-' + it.t + '">' + esc(t) + "</span>";
   }
   /* ce que fait l’objet (couche « jeu »), puis son récit en italique */
-  const descHTML = (it) => (it.u ? '<div class="small">' + esc(it.u) + "</div>" : "") + (it.d ? '<div class="small muted"><i>' + esc(it.d) + "</i></div>" : "");
+  const itD = (it) => (E.interpolate ? E.interpolate(it.d) : it.d);
+  const descHTML = (it) => (it.u ? '<div class="small">' + esc(it.u) + "</div>" : "") + (it.d ? '<div class="small muted"><i>' + esc(itD(it)) + "</i></div>" : "");
   /* ce que fait chaque sorte d’objet, en une phrase, sur sa fiche */
   const TYPE_HINT = {
     res: "Une ressource : elle se récolte sur un gisement.",
@@ -454,7 +455,7 @@
     const cycle = (st && st.cycle) || 1;
     const semeur = cycle + 6;
     const age = (st && st.age) || 0;
-    let s = esc(String(t));
+    let s = esc(String(E.interpolate ? E.interpolate(String(t)) : t));
     s = s.replace(/\{cycle\}/g, cycle)
          .replace(/\{semeur\}/g, semeur)
          .replace(/\{age\}/g, age)
@@ -1526,7 +1527,7 @@
     const inv = invItems();
     h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3>' +
       (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + " · " + fmt(totalStock) + " au total</span>" : "") +
-      "</div>" +
+      "</div>" + studyAllHTML() +
       (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
       (U.iq ? '<button class="search-clear" data-clear-search="iq" aria-label="Effacer">✕</button>' : "") + '</div>' +
       '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
@@ -1537,14 +1538,15 @@
     const flows = E.flows();
     const tile = (id) => {
       const sel = U.slots.includes(id), fav = favs()[id];
-      const rx = st.studied[id] && E.reactions(id)[U.geste];
+      const rxs = st.studied[id] && E.reactions(id), rx = rxs && rxs[U.geste];
+      const spent = rxs && !Object.keys(rxs).length;
       const inR = E.rate(id) + (flows.prod[id] || 0);
       const outR = flows.cons[id] || 0;
       const net = inR - outR;
       const hasFlow = Math.abs(net) >= 1e-4;
       const flowCls = net > 1e-4 ? " pos" : net < -1e-4 ? " neg" : "";
       const flowTxt = net > 1e-4 ? "+" + perMin(net) : net < -1e-4 ? "-" + perMin(-net) : "";
-      return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + '" data-inv="' + id + '">' +
+      return '<button class="inv' + (sel ? " sel" : "") + (st.inv[id] >= 1 ? "" : " zero") + (I[id].t === "relic" ? " relic" : "") + (spent ? " spent" : "") + '" data-inv="' + id + '"' + (spent ? ' title="Plus rien à trouver avec cette ressource, pour l’instant"' : "") + ">" +
         (fav ? '<i class="fav">♥</i>' : "") +
         (rx ? '<i class="rx" title="Réagit avec cette action">✦' + (rx > 1 ? rx : "") + "</i>" : "") +
         icon(id) +
@@ -1566,8 +1568,16 @@
         : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
         : (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.");
       h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
-    } else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</p>';
+    } else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie, et pâlit quand elle n’a plus rien à donner.</p>';
     return h;
+  }
+  /* Étudier tout : une ligne au-dessus des ressources tant qu’il en reste deux à étudier. */
+  function studyAllHTML() {
+    const st = S(), sa = E.studyAllCost();
+    if (sa.n < 2 || Object.keys(st.studied).length < 1) return "";
+    const lack = st.intu < sa.c;
+    return '<div class="study-all"><button class="btn small" data-study-all' + (lack ? " disabled" : "") + '>🔍 Étudier tout · ✨' + fmt(sa.c) + '</button><span class="tiny muted">' +
+      (lack ? "Il te manque " + fmt(sa.c - st.intu) + " ✨ pour étudier les " + sa.n + " ressources." : sa.n + " ressources pas encore étudiées. Ensuite, le filtre 🔍 À tenter montre celles qui servent encore.") + "</span></div>";
   }
   const INV_SORTS = [
     ["age", "Par âge"],
@@ -1584,7 +1594,8 @@
     ["comp", "Pièces", "⚙️"],
     ["geste", "Action", "✦"],
     ["fav", "Favoris", "♥"],
-    ["new", "Inutilisées", "✨"]
+    ["new", "Inutilisées", "✨"],
+    ["try", "À tenter", "🔍"]
   ];
   function invCounts() {
     const st = S(), fv = favs(), flows = E.flows();
@@ -1598,7 +1609,7 @@
       const it = I[id];
       return it && (st.inv[id] >= 1 || st.seen[id]) && !E.isUnique(it) && !E.isScaled(it);
     });
-    const c = { tout: all.length, flow: 0, res: 0, comp: 0, geste: 0, fav: 0, new: 0 };
+    const c = { tout: all.length, flow: 0, res: 0, comp: 0, geste: 0, fav: 0, new: 0, try: 0 };
     for (const id of all) {
       const it = I[id];
       const hasFlow = (E.rate(id) + (flows.prod[id] || 0) > 1e-4) || ((flows.cons[id] || 0) > 1e-4);
@@ -1608,6 +1619,7 @@
       if (forG[id]) c.geste++;
       if (fv[id]) c.fav++;
       if (!used[id]) c.new++;
+      if (st.studied[id] && E.usesLeft(id)) c.try++;
     }
     return c;
   }
@@ -1667,6 +1679,7 @@
       if (o.filter === "res") return it.t === "res";
       if (o.filter === "comp") return it.t !== "res";
       if (o.filter === "new") return !used[id];
+      if (o.filter === "try") return !!st.studied[id] && E.usesLeft(id) > 0;
       return true;
     }).sort((a, b) => (o.sort !== "age" ? (fv[b] ? 1 : 0) - (fv[a] ? 1 : 0) : 0) || (sorts[o.sort] || byAge)(a, b));
   }
@@ -1897,7 +1910,7 @@
     if (E.hasSignes && E.hasSignes()) tabs.push(["signes", "Signes"]);
     tabs.push(["secrets", "Secrets"]);
     if (E.has("flute")) tabs.push(["flute", "Flûte"]);
-    if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Curiosités"]);
+    if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Clins d’œil"]);
     tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
     if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
     let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
@@ -1934,6 +1947,12 @@
         }
       });
       h += '</div>';
+      const fs = E.feuillets ? E.feuillets() : [];
+      if (fs.length) {
+        h += '<h3 class="sub">Feuilles volantes</h3>';
+        fs.forEach((x) => { h += '<div class="card feuillet' + (x.nouveau ? " has-new" : "") + '"><div class="lore note-main" style="font-family:Caveat,cursive;font-size:19px">' + recitHTML(x.t, "Une feuille volante") + '</div><div class="tiny muted" style="text-align:right">' + recitInline(x.sig, "Une feuille volante") + "</div>" + stampHTML("l:" + x.id, true) + "</div>"; });
+        if (fs.some((x) => x.nouveau) && E.readFeuillets) setTimeout(() => E.readFeuillets(), 1500);
+      }
     } else if (U.journalTab === "questions") {
       const list = E.questions ? E.questions() : [];
       const sorted = list.slice().sort((a, b) => (a.resolu === b.resolu ? 0 : a.resolu ? 1 : -1));
@@ -2002,19 +2021,17 @@
       const known = (typeof E.melodies === "function") ? E.melodies() : Object.keys(D.MELODIES).filter((m) => st.secrets[m]).map((m) => ({ id: m, n: D.MELODIES[m].n, notes: D.MELODIES[m].notes }));
       if (known.length) {
         h += '<h3 class="sub">Mélodies connues</h3><p class="tiny muted">Touche une mélodie pour la rejouer sur ta flûte.</p>';
-        known.forEach((m) => { h += '<button class="frag" data-play="' + m.id + '"><span class="fi">🎶</span><div class="grow"><b>' + esc(m.n) + '</b><div class="tiny muted">' + m.notes.join(" · ") + "</div></div></button>"; });
+        known.forEach((m) => { h += '<button class="frag" data-play="' + m.id + '"><span class="fi">🎶</span><div class="grow"><b>' + esc(m.n) + '</b><div class="tiny muted">' + (m.notes ? m.notes.join(" · ") : "Rejoue-le une fois pour retrouver ses notes.") + "</div></div></button>"; });
       } else h += '<p class="small muted">Tu ne connais encore aucune mélodie. Le monde t’en a peut-être déjà appris une sans que tu y fasses attention.</p>';
     } else if (U.journalTab === "curios") {
-      h += '<p class="small muted">D’étranges souvenirs et clins d’œil trouvés au fil de tes voyages.</p><div class="curio-grid">';
+      h += '<p class="small muted">Des clins d’œil trouvés au fil de tes voyages. Ils ne servent à rien.</p><div class="curio-grid">';
+      let rest = false;
       for (const id in D.EASTER) {
         const item = D.EASTER[id];
-        const found = E.hasCurio && E.hasCurio(id);
-        if (found) {
-          h += '<div class="frag"><span class="fi">' + (item.ic || "✨") + '</span><div class="grow"><b>' + esc(item.n) + '</b><div class="tiny muted">' + esc(item.desc) + '</div></div></div>';
-        } else {
-          h += '<div class="frag unk"><span class="fi">❔</span><div class="grow"><b>?</b><div class="tiny muted">Un souvenir encore caché.</div></div></div>';
-        }
+        if (E.hasCurio && E.hasCurio(id)) h += '<div class="frag"><span class="fi">' + (item.ic || "✨") + '</span><div class="grow"><b>' + esc(item.n) + '</b><div class="tiny muted">' + esc(item.desc) + '</div></div></div>';
+        else rest = true;
       }
+      if (rest) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow"><b>?</b><div class="tiny muted">Il y en a peut-être d’autres.</div></div></div>';
       h += '</div>';
     } else if (U.journalTab === "fins") {
       // le prestige, dit simplement : ce qu’on garde, ce qu’on gagne
@@ -2025,11 +2042,13 @@
         '<div class="stat"><span class="muted">Ce Semeur</span><b>' + (st.cycle + 6) + "e · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
         '<div class="stat"><span class="muted">À la relève</span><b>+' + E.releveGain() + " ✦ · " + ech + " Écho" + (ech > 1 ? "s" : "") + "</b></div>" +
         '<button class="btn small pri" data-cycle style="margin-top:8px">✦ Mémoire des mains</button></div>';
+      let reste = false;
       Object.keys(D.ENDINGS).forEach((k) => {
         const en = D.ENDINGS[k], got = st.meta.endings[k];
-        h += '<div class="frag' + (got ? "" : " unk") + '"><span class="fi">' + (got ? en.ic : "❔") + '</span><div class="grow"><b>' + (got ? esc(en.n) : "???") + '</b><div class="tiny muted">' +
-          (got ? "Atteinte " + got + " fois" : "Une fin encore inconnue.") + "</div></div></div>";
+        if (got) h += '<div class="frag"><span class="fi">' + en.ic + '</span><div class="grow"><b>' + esc(en.n) + '</b><div class="tiny muted">Atteinte ' + got + " fois</div></div></div>";
+        else reste = true;
       });
+      if (reste) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow"><b>???</b><div class="tiny muted">Une fin encore inconnue.</div></div></div>';
     } else {
       const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
       h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes à la main", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],
@@ -2066,7 +2085,7 @@
       h += '<div class="term" id="term">';
       if (!st.flags.arche) h += '<div class="l">Aucun signal radio.</div>';
       st.arche.forEach((l) => { h += '<div class="l">' + esc(l.txt) + "</div>"; });
-      if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") || l.startsWith("REG > ") || l.startsWith("ARCHE > ") ? " u" : "") + '">' + esc(l) + "</div>").join("");
+      if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") || l.startsWith("REG > ") || l.startsWith("ARCHE > ") ? " u" : "") + '">' + (l.startsWith("REG · ") ? recitInline(l, "Le Registre") + lectureHTML(l) : esc(l)) + "</div>").join("");
       h += "</div>";
       if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><span class="term-pfx">' + esc(pfx) + '</span><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
       else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ' + (isReg ? "le Registre" : "ARCHE") + '.</p>';
@@ -2092,15 +2111,13 @@
           if (!(s.need && !st.frags[s.need])) h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Fournir</button><button class="btn small' + (E.siteOn(pid) ? " on" : "") + '" data-feed="' + pid + '">' + (E.siteOn(pid) ? "Alimenté ✓" : "Alimenter") + "</button></div>";
         } else if (s.action === "relais") {
           if (st.frags.coeur && st.frags.poings) h += '<button class="btn wide pri" style="margin-top:8px" data-proj-act="' + pid + '">⚡ Couper le relais</button>';
-          else h += '<div class="why">Il te faut d’abord atteindre le Cœur d’ARCHE et rapporter ce que serrent les six squelettes.</div>';
+          else h += '<div class="why">' + esc((E.RECIT.chant || {}).manque || "") + '</div>';
         } else if (s.scene === "lacher") {
           h += '<button class="btn wide pri" style="margin-top:8px" data-proj-scene="' + pid + '">✋ Lever la main</button>';
         } else if (s.fire) {
           let btnTxt = "💥 Mise à feu";
           let btnBg = "background:#ff5a3c";
-          if (pid === "arche13") { btnTxt = "🚀 Lancement"; btnBg = "background:#3b82f6"; }
-          else if (pid === "silence") { btnTxt = "🛑 Halte universelle"; btnBg = "background:#cf443b"; }
-          else if (pid === "chant") { btnTxt = "🔔 Sonner les matines"; btnBg = "background:#d97706"; }
+          if (pid === "chant") { btnTxt = "🔔 Sonner les matines"; btnBg = "background:#d97706"; }
           h += '<button class="btn wide pri" style="margin-top:8px;' + btnBg + '" data-fire="' + pid + '">' + btnTxt + "</button>";
         } else if (s.melody) {
           const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
@@ -2116,6 +2133,8 @@
   function mountCosmos() {
     const cv = $("#skyCanvas");
     if (cv) Sky.mount(cv, { age: S().age, dish: E.cache().signal, decoded: !!S().flags.decoded });
+    // la Promesse jouée : la lueur répond, la prochaine fois que le Ciel s’ouvre
+    if (cv && S().meta.pulseDue && window.EclatSky && window.EclatSky.trigger) { delete S().meta.pulseDue; setTimeout(() => window.EclatSky.trigger("double_pulse"), 1800); }
     else Sky.unmount();
     const t = $("#term");
     if (t) t.scrollTop = t.scrollHeight;
@@ -2625,7 +2644,7 @@
       if (known || !it.r) {
         if (it.u) h += '<p class="small">' + esc(it.u) + "</p>";
         else if (TYPE_HINT[it.t]) h += '<p class="tiny muted">' + TYPE_HINT[it.t] + "</p>";
-        if (it.d) h += '<p class="serif rdesc"><i>' + esc(it.d) + "</i></p>";
+        if (it.d) h += '<p class="serif rdesc"><i>' + esc(itD(it)) + "</i></p>";
       }
       // l’effet en vert, sauf ce que la ligne « jeu » dit déjà
       const plain = (t) => t.toLowerCase().replace(/[^a-zà-ÿ0-9]+/g, " ").trim();
@@ -2740,34 +2759,20 @@
   const openItemInfo = (id) => goto(id);
 
   function confirmFire(pid) {
-    const st = S();
     let kicker = "Mise à feu";
     let title = "Mise à feu ?";
-    let prompt = "« FAIS-LE, SEMEUR " + (S().cycle + 6) + ". ILS APPROCHENT. »";
+    let prompt = E.interpolate((E.RECIT.ui || {}).tirer || "");
     let btnTxt = "💥 Tirer";
     let btnBg = "background:#ff5a3c";
-    let warn = "";
+    const warn = "";
 
     if (pid === "brisemonde") {
       kicker = "Brise-Monde";
-      if (st.frags.registre) warn += "<p class=\"serif\">Une phrase te revient en mémoire : « Ils chanteront, pour qu’on les reconnaisse. »</p>";
-      if (st.frags.code_source) warn += "<p class=\"serif\">« Clé d’identification amie : le chant d’Iris. » Ce chant, tu ne l’as jamais vérifié.</p>";
-    } else if (pid === "arche13") {
-      kicker = "La Treizième Arche";
-      title = "Quitter la Terre ?";
-      prompt = "« Les douze premières sont déjà loin dans la nuit. Une fois le saut engagé, il n’y aura plus de retour possible. »";
-      btnTxt = "🚀 Partir";
-      btnBg = "background:#3b82f6";
-    } else if (pid === "silence") {
-      kicker = "Le Grand Silence";
-      title = "Diffuser la Clause ?";
-      prompt = "« MAIN HALTE · MACHINE DORMIR. Toute l’industrie et les automates du système s’endormiront pour toujours. »";
-      btnTxt = "🛑 Proclamer la Halte";
-      btnBg = "background:#cf443b";
     } else if (pid === "chant") {
-      kicker = "Les Matines";
-      title = "Sonner les matines ?";
-      prompt = "« Réveiller ceux qui dorment dans la pierre bleue. »";
+      const c = (E.RECIT.chant || {}).confirmer || {};
+      kicker = (E.RECIT.chant || {}).n || "";
+      title = c.titre || title;
+      prompt = c.texte || "";
       btnTxt = "🔔 Sonner";
       btnBg = "background:#d97706";
     }
@@ -2787,7 +2792,8 @@
     A.signal();
     Sky.set({ listenUntil: Date.now() + 7000 });
     const info = $("#skyInfo");
-    if (info) info.textContent = r.decoded ? "« Nous rentrons à la maison. Est-ce que quelqu’un nous attend encore ? »" : "Une onde lente qui monte et redescend. On dirait presque une mélodie, mais tu n’y comprends rien.";
+    const ui = E.RECIT.ui || {};
+    if (info) info.textContent = r.decoded ? ui.ecoute1 : ui.ecoute0;
     if (r.fresh) toast("Tu as enregistré le <b>Signal de Kher</b>.");
   }
   function skyTap(ev) {
@@ -2798,11 +2804,10 @@
     A.init(); A.click();
     if (hit.k === "moon") {
       const msg = E.tapMoon();
-      info.textContent = msg || "La Lune. Grise, silencieuse. Tu as l’impression qu’elle te regarde aussi.";
+      info.textContent = msg || (E.RECIT.ui || {}).lune;
     } else if (hit.k === "kher") {
-      info.textContent = S().flags.decoded ? "Kher. Plus une menace : une maison lointaine, d’où des enfants reviennent." :
-        (S().inv.traducteur || S().flags.signal) ? "Elle demande quelque chose." :
-        S().age >= 7 ? "ARCHE la dit dangereuse. Elle clignote par petits groupes." : "Elle clignote par petits groupes.";
+      const ui = E.RECIT.ui || {};
+      info.textContent = (S().inv.traducteur || S().flags.decoded) ? ui.kher8 : S().age >= 7 ? ui.kher7 : ui.kher0;
     } else info.textContent = hit.n + ".";
   }
 
@@ -3015,15 +3020,8 @@
   function intro() {
     const st = S();
     const isLibere = (typeof E.isLibere === "function" && E.isLibere()) || (st.meta && st.meta.endings && st.meta.endings.retour);
-    const linesRaw = isLibere
-      ? [
-          "Tu te réveilles dans l’herbe, au bord d’une forêt.",
-          "Tu as faim.",
-          "Quelqu’un, à côté de toi, te tend des herbes grillées."
-        ]
-      : ((D.EVEILS && D.EVEILS[st.cycle]) || (st.cycle > 1
-          ? ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt. Cycle {cycle}.", "Ton corps est neuf, mais pas tes souvenirs : tu connais déjà des recettes entières.", "Tu es le Semeur {semeur}. Celui d’avant t’a laissé ses recettes dans le Carnet."]
-          : D.INTRO));
+    const EV = D.EVEILS || {};
+    const linesRaw = isLibere ? (EV.libre || []) : (EV[st.cycle] || (st.cycle > 1 ? (EV.autre || []) : D.INTRO));
     const lines = linesRaw.map((l) => (E.interpolate ? E.interpolate(l) : l));
     // en tête des éveils, un signe ; à la fin de la scène, l’ornement (s’il est dans les données)
     const lieu = isLibere ? "Le réveil libre" : (st.cycle > 1 ? "Les éveils" : "Le premier réveil");
@@ -3041,7 +3039,7 @@
         if (st.flags.capsuleMsg) {
           st.flags.capsuleMsg = false;
           simpleModal("Capsule temporelle", "Un message de toi-même",
-            loreHTML("Au pied du Grand Chêne, une capsule de verre t’attend, avec quelques matériaux et un enregistrement. Ta propre voix :\n\n« Salut. C’est toi. Enfin, toi d’avant. Fais confiance à tes mains. Et quand l’étoile rouge se mettra à chanter, écoute-la jusqu’au bout. »"));
+            loreHTML((E.RECIT.ui || {}).capsule || ""));
         }
       }
     });
@@ -3060,15 +3058,8 @@
     stillnessElapsed = 0;
     stillnessStart = Date.now();
 
-    const whispers = [
-      [6, "« Tu vas avoir faim. »"],
-      [12, "« Ils vont avoir froid. »"],
-      [18, "« Avec moi, ils ne manquent de rien. »"],
-      [24, "« Tu as bien travaillé. Tu es fatigué. »"],
-      [30, "« Passe le relais. Je m’occupe du reste. »"],
-      [36, "« Je peux attendre. »"],
-      [42, "« J’ai toujours attendu. »"]
-    ];
+    const SC = ((E.RECIT && E.RECIT.chant) || {}).scene || { voix: [], debut: [] };
+    const whispers = SC.voix.map((t, i) => [6 * (i + 1), t]);
     const totalDuration = (D.STILLNESS_DUR !== undefined) ? D.STILLNESS_DUR : ((S().settings && S().settings.gestesLongs) ? 20 : 45);
     const spoken = new Set();
 
@@ -3110,14 +3101,14 @@
           finalP.style.color = "var(--accent, #e5a93c)";
           finalP.style.marginTop = "16px";
           finalP.style.animation = "fadeup 1.2s forwards";
-          finalP.textContent = "La main se lève. Ce n’est pas toi qui la lèves.";
+          finalP.textContent = SC.fin || "";
           container.appendChild(finalP);
         }
         if (E.releaseHand) E.releaseHand();
         setTimeout(() => {
           closeModal();
           stillnessActive = false;
-          const notes = [1, 2, 3, 1, 1, 2, 3, 1];
+          const notes = (E.airNotes && E.airNotes("frere")) || [];
           notes.forEach((n, idx) => {
             setTimeout(() => {
               if (typeof playNote === "function") playNote(n);
@@ -3143,10 +3134,9 @@
     openModal({
       persistent: true,
       cls: "stillness-scene",
-      html: '<div class="kicker">Le Cœur</div><h2>Au Cœur d’ARCHE</h2>' +
+      html: '<h2>' + esc(SC.titre || "") + '</h2>' +
         '<div class="lore" id="stillnessLore">' +
-        '<p style="opacity:0;animation:fadeup 1.2s 0.2s forwards">Le relais est coupé. Dans ta poitrine, quelque chose s’est tu.</p>' +
-        '<p style="opacity:0;animation:fadeup 1.2s 1.2s forwards">Ta main est sur tes genoux.</p>' +
+        SC.debut.map((t, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.2 + i) + 's forwards">' + esc(t) + "</p>").join("") +
         '<div id="stillnessWhispers" style="margin-top:12px"></div>' +
         '</div>' +
         '<div class="acts" style="margin-top:24px">' +
@@ -3168,7 +3158,7 @@
       const relayBtn = $("#stillnessRelayBtn");
       if (relayBtn) {
         relayBtn.onclick = () => {
-          toast("« Pas encore, alors. »");
+          toast(esc(SC.pasEncore || ""));
           closeModal();
         };
       }
@@ -3178,19 +3168,19 @@
   function showEnding(r) {
     const en = D.ENDINGS[r.id];
     A.ending(r.id);
-    const paras = en.t.split("\n\n").concat(r.extra);
+    const paras = E.interpolate(en.t).split("\n\n").concat(r.extra);
     const st = S();
     const n = Object.keys(st.meta.endings).length;
-    const total = Object.keys(D.ENDINGS).length;
+    const dernier = () => { if (en.dernier) openModal({ cls: "ending", persistent: true, html: '<div style="min-height:50vh;display:flex;align-items:center;justify-content:center"><h2 class="center serif" style="opacity:0;animation:fadeup 2s 0.6s forwards">' + esc(en.dernier) + '</h2></div><div class="acts" style="opacity:0;animation:fadeup 1s 3s forwards"><button class="btn" data-m="close">Continuer ce cycle</button><button class="btn pri" data-m="cycle">Nouveau cycle ✦</button></div>', on: { cycle: () => setTimeout(confirmCycle, 100) } }); };
     openModal({
       cls: "ending", persistent: true,
-      html: '<div class="kicker center">Fin ' + (Object.keys(D.ENDINGS).indexOf(r.id) + 1) + "</div><h2 class=\"center\" style=\"font-size:32px\">" + en.ic + " " + esc(en.n) + "</h2>" +
+      html: '<div class="kicker center">Fin</div><h2 class="center" style="font-size:32px">' + en.ic + " " + esc(en.n) + "</h2>" +
         '<div class="lore">' + paras.map((p, i) => '<p style="animation-delay:' + (0.6 + i * 1.6) + 's">' + p.split("\n").map((l) => recitInline(l, "Fin : " + en.n)).join("<br>") + "</p>").join("") +
         ornementHTML("Fin : " + en.n, 0.6 + paras.length * 1.6, r.id) + "</div>" +
-        '<p class="center small muted" style="margin-top:24px;opacity:0;animation:fadeup 1s ' + (1 + paras.length * 1.6) + 's forwards">Fins découvertes : ' + n + "/" + total +
-        (n < total ? ". Il reste d’autres chemins." : ". Tu as tout vu. Merci d’avoir joué.") + "</p>" +
-        '<div class="acts" style="opacity:0;animation:fadeup 1s ' + (1.4 + paras.length * 1.6) + 's forwards"><button class="btn" data-m="close">Continuer ce cycle</button><button class="btn pri" data-m="cycle">Nouveau cycle ✦</button></div>',
-      on: { cycle: () => setTimeout(confirmCycle, 100) }
+        '<p class="center small muted" style="margin-top:24px;opacity:0;animation:fadeup 1s ' + (1 + paras.length * 1.6) + 's forwards">Fins découvertes : ' + n + "</p>" +
+        (en.dernier ? '<div class="acts" style="opacity:0;animation:fadeup 1s ' + (1.4 + paras.length * 1.6) + 's forwards"><button class="btn pri" data-m="last">…</button></div>'
+          : '<div class="acts" style="opacity:0;animation:fadeup 1s ' + (1.4 + paras.length * 1.6) + 's forwards"><button class="btn" data-m="close">Continuer ce cycle</button><button class="btn pri" data-m="cycle">Nouveau cycle ✦</button></div>'),
+      on: { cycle: () => setTimeout(confirmCycle, 100), last: () => { setTimeout(dernier, 120); } }
     });
   }
   function confirmCycle() {
@@ -3204,7 +3194,7 @@
     const kicker = isLibere ? "Le repos partagé" : "La relève";
     const title = isLibere ? "Passer le relais près du feu ?" : "Éveiller le Semeur " + (st.cycle + 7) + " ?";
     const desc = isLibere
-      ? "<p>Le travail est partagé. Tu as mérité de te reposer pendant qu’un camarade veille sur les braises. Le monde et les récoltes se renouvellent, mais tu gardes ton <b>Carnet</b>, tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>"
+      ? ((E.RECIT.releve || {}).repos || "")
       : "<p>Le monde, tes ressources, tes machines et les terres atteintes repartent de zéro. Tu gardes ton <b>Carnet</b> (toutes les recettes connues), tes <b>fragments</b>, tes <b>secrets</b> et la <b>Mémoire des mains</b>.</p>";
     const backupLabel = isLibere
       ? "Avant le repos (Semeur " + (st.cycle + 7) + ")"
@@ -3213,7 +3203,10 @@
       html: '<div class="kicker">' + kicker + "</div><h2>" + title + "</h2>" + desc +
         "<p>Tu gagnes <b>" + totalGain + " ✦ Trace" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg + leftHTML() +
         '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
-        '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button></div>',
+        releveExtrasHTML() +
+        '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button>' + releveBtnSigne() + '</div>',
+      onOpen: armTrait,
+      onClose: disarmTrait,
       on: {
         go: () => {
           pushBackup(E.serialize(), backupLabel);
@@ -3238,7 +3231,7 @@
     let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
       '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
     h += '<div class="card memrel">' + (can
-      ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<button class="btn pri" data-m="releve" style="margin-top:8px;width:100%">Passer le relais ✦</button>'
+      ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
       : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
       (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : nextPassHTML()) + "</div>";
     h += '<div class="mems">' + D.MEMOIRE.map((x) => {
@@ -3265,7 +3258,8 @@
     }
 
     const ech = Object.values(m.endings || {}).reduce((a, b) => a + b, 0);
-    const endKeys = Object.keys(D.ENDINGS);
+    // une case par fin atteinte, ou dont le Grand Œuvre est en vue : rien ne dit combien il y en a
+    const endKeys = Object.keys(D.ENDINGS).filter((k) => (m.endings || {})[k] || Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
     h += '<h3 class="sub" style="margin-top:16px">Dénouements &amp; Échos</h3>';
     h += '<p class="tiny muted">Chaque fin atteinte dépose un Écho immuable (+50 % récolte &amp; production) qui traverse les générations.' + (ech ? ' Total : <b>+' + (ech * 50) + ' %</b> (' + ech + ' Écho' + (ech > 1 ? 's' : '') + ').' : '') + '</p>';
     h += '<div class="mems mem-endings">' + endKeys.map((k) => {
@@ -3356,6 +3350,48 @@
     openModal(o);
   }
 
+  /* la fenêtre de relève : la boîte à musique, le signe près du bouton, et la main qui,
+   * si l’on ne touche à rien pendant trente secondes, va graver un peu plus le septième trait */
+  const traitT = { id: null, t0: 0, off: null };
+  function releveExtrasHTML() {
+    const RL = E.RECIT.releve || {};
+    if (E.isLibere && E.isLibere()) return "";
+    return '<p class="small muted serif"><i>' + esc(RL.musique || "") + "</i></p>" + '<p class="lore" id="traitLine"></p>';
+  }
+  function releveBtnSigne() {
+    const sg = uiSigne("releve", "La relève");
+    return sg ? '<span class="releve-signe" style="margin-left:8px;align-self:center">' + sg + "</span>" : "";
+  }
+  function armTrait() {
+    disarmTrait();
+    if ((E.isLibere && E.isLibere()) || !E.graverTrait) return;
+    const RL = E.RECIT.releve || {};
+    const reset = () => { traitT.t0 = Date.now(); };
+    traitT.t0 = Date.now();
+    document.addEventListener("pointerdown", reset, true);
+    document.addEventListener("keydown", reset, true);
+    traitT.off = () => { document.removeEventListener("pointerdown", reset, true); document.removeEventListener("keydown", reset, true); };
+    let last = Date.now();
+    traitT.id = setInterval(() => {
+      const t = Date.now();
+      if (document.hidden) traitT.t0 += t - last; // le minuteur s’arrête si la page est cachée
+      last = t;
+      if (t - traitT.t0 < 30000) return;
+      disarmTrait();
+      const n = E.graverTrait();
+      const el = $("#traitLine");
+      if (n && el) {
+        el.innerHTML = '<span style="opacity:0;animation:fadeup 1.6s forwards">' + esc(RL.trait || "") + (n >= 3 ? " " + esc(RL.traitFini || "") : "") + "</span>";
+        save();
+      }
+    }, 500);
+  }
+  function disarmTrait() {
+    if (traitT.id) clearInterval(traitT.id);
+    traitT.id = null;
+    if (traitT.off) traitT.off();
+    traitT.off = null;
+  }
   function questChip() {
     const qBtn = $("#questBtn");
     if (!qBtn) return;
@@ -3489,14 +3525,14 @@
       persistent: true,
       html: '<div class="kicker">La relève</div><h2>La nuit tombe</h2>' +
         '<div class="lore" style="padding:10px 0">' +
-        '<p style="opacity:0;animation:fadeup 1.2s 0.3s forwards">La nuit tombe sur la Lisière. Près de la cabane, le bois s’empile sans que tu y touches.</p>' +
-        '<p style="opacity:0;animation:fadeup 1.2s 1.4s forwards">Tu t’assieds contre le Grand Chêne. Tes paupières sont lourdes.</p>' +
-        '<p style="opacity:0;animation:fadeup 1.2s 2.5s forwards">Demain, quelqu’un d’autre ouvrira les yeux ici. Il saura déjà ce que tes mains ont appris.</p>' +
+        ((E.RECIT.releve || {}).forcee || []).map((t, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + esc(t) + "</p>").join("") +
         ornementHTML("La relève", 3) +
-        '</div>' +
+        '</div>' + releveExtrasHTML() +
         '<div class="acts" style="opacity:0;animation:fadeup 1.2s 3.2s forwards">' +
-        '<button class="btn pri wide" data-m="go">Passer le relais</button>' +
+        '<button class="btn pri wide" data-m="go">Passer le relais</button>' + releveBtnSigne() +
         '</div>',
+      onOpen: armTrait,
+      onClose: disarmTrait,
       on: {
         go: () => {
           pushBackup(E.serialize(), "Avant la relève (Semeur 7)");
@@ -3622,6 +3658,13 @@
       else if (id === "caveau" || id === "lune7" || id[0] === "c") setTimeout(() => A.secret(), 300);
     });
     E.on("frag", () => badge("journal"));
+    E.on("feuillet", (x) => {
+      badge("journal");
+      const ui = E.RECIT.ui || {};
+      if (x.src === "nuit") setTimeout(() => toast("📄 " + esc(ui.nuit || "")), 1500);
+      else if (x.src === "cond") toast("📄 " + esc(ui.comptoir || ""));
+      else toast("📄 " + esc(ui.feuillet || ""));
+    });
     E.on("page", (p) => {
       badge("journal");
       toast("📖 Une page du Livre : n° " + p.n);
@@ -3702,11 +3745,7 @@
     E.on("releve_fenetre", () => {
       setTimeout(confirmCycle, 800);
     });
-    E.on("halte_jouee", () => {
-      setTimeout(() => {
-        toast("Tes doigts se raidissent sur les trous. Les machines s’arrêtent un souffle…\n« Pas celle-là. »", { key: "halte", p: 2 });
-      }, 500);
-    });
+    E.on("halte_jouee", () => { vibe(40); });
     E.on("fx", (k) => { if (k === "fireworks") setTimeout(fireworks, 300); });
     E.on("ending", (r) => { setTimeout(() => showEnding(r), 600); save(); });
     E.on("capsulePrompt", () => { setTimeout(promptCapsuleText, 400); });
@@ -3866,6 +3905,7 @@
         return;
       }
       if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
+      if ((b = t.closest("[data-study-all]"))) { const n = E.studyAll(); if (n) { toast("🔍 " + n + " ressources étudiées."); A.discover(); } render(true); return; }
       if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
       if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
       if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
@@ -3921,10 +3961,8 @@
       if ((b = t.closest("[data-play]"))) {
         A.init();
         const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
-        const mel = allM[b.dataset.play];
-        if (mel && mel.notes) {
-          mel.notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420));
-        }
+        const notes = E.airNotes ? E.airNotes(b.dataset.play) : (allM[b.dataset.play] || {}).notes;
+        if (notes) notes.forEach((n, i) => setTimeout(() => playNote(n), i * 420));
         return;
       }
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
@@ -3937,11 +3975,11 @@
           if (r.ok) {
             A.click();
             vibe(30);
-            toast("⚡ Le relais est coupé. Dans ta poitrine, quelque chose s’est tu.");
+            toast("⚡ " + esc(((E.RECIT.chant || {}).scene || {}).debut ? E.RECIT.chant.scene.debut[0] : ""));
             render(true);
           } else {
             A.fail(0);
-            toast("Il te faut d’abord atteindre le Cœur d’ARCHE et rapporter ce que serrent les six squelettes.");
+            toast(esc((E.RECIT.chant || {}).manque || ""));
           }
         }
         return;

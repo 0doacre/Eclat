@@ -309,7 +309,7 @@
         const can = ecus >= p.ecus;
         return '<div class="comptoir-row" data-bpage="' + esc(p.id) + '">' +
           '<div class="comptoir-head"><span class="sheet-ic" style="font-size:20px">📖</span>' +
-          '<div class="grow"><b>Page n° ' + p.n + '</b>' +
+          '<div class="grow"><b>' + (p.feuillet ? "Une feuille pliée" : "Page n° " + p.n) + '</b>' +
           (p.titre ? '<span class="tiny muted"> · ' + esc(p.titre) + '</span>' : '') +
           '</div>' +
           '<span class="tiny muted">' + fmt(p.ecus) + ' écus</span></div>' +
@@ -488,10 +488,11 @@
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
           '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve : au plus " + perMin(E.siteRate()) + " pour chaque ressource." : "Une fois alimenté, il se sert seul dans la Réserve.") + "</span></div>";
       } else if (step.action === "relais") {
-        if (st.frags.coeur && st.frags.poings) h += '<p class="small">Tout est prêt au Cœur d’ARCHE. La suite se passe dans le Cosmos.</p>';
-        else h += '<p class="why">Il te faut atteindre le Cœur d’ARCHE et rapporter ce que serrent les six squelettes.</p>';
+        const CH = (E.RECIT && E.RECIT.chant) || {};
+        if (st.frags.coeur && st.frags.poings) h += '<p class="small">' + esc(CH.pret || "") + '</p>';
+        else h += '<p class="why">' + esc(CH.manque || "") + '</p>';
       } else if (step.scene === "lacher") {
-        h += '<p class="small">Ta main est sur tes genoux. Entre au Cœur d’ARCHE depuis le Cosmos.</p>';
+        h += '<p class="small">' + esc(((E.RECIT && E.RECIT.chant) || {}).lacher || "") + '</p>';
       } else if (step.fire) h += '<p class="small">Tout est prêt. La décision se prend dans le Cosmos.</p>';
       else if (step.melody) {
         const m = (D.MELODIES && D.MELODIES[step.melody]) || (E.allMelodies && E.allMelodies()[step.melody]);
@@ -686,7 +687,7 @@
         if (pid === "chant") {
           const r = E.cutRelay();
           if (r.ok) { A.click(); vibe(30); toast("⚡ Le relais est coupé. Dans ta poitrine, quelque chose s’est tu."); render(true); }
-          else { A.fail(0); toast("Il te faut d’abord atteindre le Cœur d’ARCHE et les six poings."); }
+          else { A.fail(0); toast(esc(((E.RECIT && E.RECIT.chant) || {}).manque || "")); }
         }
         return true;
       }

@@ -43,7 +43,7 @@ Ce document récapitule l'ensemble des développements menés aujourd'hui sur le
     3. *Souffle des Rouages* (`trans_mach`) : puissance et automatisation des machines.
   - Coûts exponentiels croissants en Traces, assurant un puits d'investissement sans fin pour les cycles avancés.
 - **Murmures du Temps** (`buyEndingHint`) :
-  - Possibilité d'échanger des Traces contre des échos prophétiques pour orienter la découverte des dénouements secrets sans spoiler leur solution.
+  - Échanger des Traces contre une piste vers une fin.
 - **Justesse du signal de relève** :
   - Correction de l'indicateur `#memBtn.ready` afin qu'il ne s'allume que lorsqu'une amélioration est réellement achetable.
 
@@ -97,6 +97,12 @@ Ce document récapitule l'ensemble des développements menés aujourd'hui sur le
 
 ---
 
+### C. 0.7.2 — Relecture du récit (livrée)
+- Le récit est remis d'aplomb selon la bible (détails : voir le coffre). Les réponses ne sont plus en clair dans `js/` ; le texte du récit est rangé dans `js/recit.js`.
+- Les prompts qui racontaient l'intrigue sont rangés dans `docs/coffre/prompts/`.
+
+---
+
 ## 5. Livré : v0.8.0 (Lot Majeur Ergonomie & Quêtes)
 
 La version majeure **v0.8.0** a été entièrement implémentée, testée et validée dans Chrome headless :
@@ -134,6 +140,7 @@ Un dossier complet d'analyse comparative et de propositions de level design insp
 
 ## 7. Rappels des Directives et Secrets
 
+- **Règle du coffre** : tout ce qui touche au récit (textes, lieux cachés, voix, fins, clins d'œil, prompts de récit) vit dans `docs/coffre/` et `js/recit.js`. Un document public, un message de commit ou `D.CHANGES` n'en parle qu'en termes neutres (« le récit », « un lieu caché »).
 - **Règle des Secrets** : Ne jamais écrire en clair une combinaison secrète, un air de flûte caché, un code terminal ou l'emplacement d'un secret dans les commits, changelogs ou comptes-rendus. Toujours utiliser des formules neutres (« une recette secrète », « un lieu oublié »).
 - **Vérification navigateur obligatoire** : Tout lot modifiant `js/ui.js` ou `js/domaine.js` doit être validé dans un vrai navigateur (Chrome headless ou Playwright) pour vérifier l'absence totale d'erreurs console avant livraison.
 - **Style et Ton** : Respecter scrupuleusement [docs/LEXIQUE.md](file:///c:/projets/temporaire/docs/LEXIQUE.md) et [docs/STYLE.md](file:///c:/projets/temporaire/docs/STYLE.md) : tutoiement, français limpide, phrases d'action courtes, zéro calque IA.
