@@ -998,6 +998,79 @@
       }
     },
 
+    /* ------------------------------------------------- LE TROQUEUR PARLE (Comptoir, onglet « Parler »)
+     * Il ne dit que ce qu’on lui demande : un thème, une réplique, jamais deux fois la même
+     * (S.meta.troc). rang : le rang de confiance (E.troqueurRep) ; cond : voir E.cond ;
+     * renouv : un conseil qui revient à chaque relève ; apres : à dire après telle réplique.
+     * Rien ici ne donne une solution : un lieu caché n’y est jamais nommé.
+     * Les clins d’œil (clients) ne comptent pas dans les Curiosités : ils restent des paroles. */
+    troc: {
+      intro: "Il pose une main sur sa balance et attend.",
+      consigne: "Il ne dit que ce qu’on lui demande.",
+      themes: [
+        { id: "comptoir", n: "Ton comptoir" },
+        { id: "marchandises", n: "Ce que tu vends" },
+        { id: "terres", n: "Les terres" },
+        { id: "mains", n: "Mes mains" },
+        { id: "ciel", n: "Là-haut" },
+        { id: "avant", n: "Les Anciens" },
+        { id: "clients", n: "Tes clients" }
+      ],
+      refus: [
+        "« J’ai dit ce que j’avais à dire là-dessus. »",
+        "« Là-dessus, je n’ai plus rien en rayon. »",
+        "« Reviens quand tu auras vu autre chose. Je parle de ce que je vois passer. »",
+        "« Pas aujourd’hui. »"
+      ],
+      lignes: [
+        /* le comptoir */
+        { id: "c1", th: "comptoir", rang: 0, t: "« Regarde le bois, au milieu. Il est creusé. Il a fallu beaucoup de paumes. Aucune n’était la mienne. »" },
+        { id: "c2", th: "comptoir", rang: 0, t: "« Je pèse, je compte, je rends la monnaie. Mes balances n’ont pas bougé depuis les Anciens. »" },
+        { id: "c3", th: "comptoir", rang: 1, renouv: true, t: "« Quand tu passes le relais, je change tes écus restants en Traces. Ce qui traîne chez moi ne rapporte rien. »" },
+        { id: "c4", th: "comptoir", rang: 2, cond: { cycle: 2 }, t: "« Je dis « encore toi » à tout le monde. Je regarde les mains, pas les yeux. Les yeux changent. »" },
+        { id: "c5", th: "comptoir", rang: 3, cond: { not: { feuillet: "celeste1" } }, t: "« Sur ma poitrine, il y a un signe. Les clients le lisent d’abord, ou jamais. Après, ils me parlent autrement. »" },
+        /* la marchandise */
+        { id: "m1", th: "marchandises", rang: 0, t: "« Des cordes, des pierres, des pages. Ce que les gens laissent derrière eux, je le ramasse. Quelqu’un finit toujours par le chercher. »" },
+        { id: "m2", th: "marchandises", rang: 0, cond: { page: "p01" }, t: "« Les pages de ton Livre, je ne les ai pas écrites. Je les ai ramassées, comme le reste. Elles ne sont à personne. »" },
+        { id: "m3", th: "marchandises", rang: 0, renouv: true, t: "« Je rachète tout, mais jamais au prix où je vends. Vends ce qui t’encombre. Garde ce qui te manque. »" },
+        { id: "m4", th: "marchandises", rang: 0, renouv: true, t: "« Si tu me vends cent fois la même chose, mon prix baisse. Mes plateaux se fatiguent. À ta prochaine relève, il remonte. »" },
+        { id: "m5", th: "marchandises", rang: 1, renouv: true, t: "« Je ne te demande que ce que tu sais déjà fabriquer, de ton âge ou du précédent. Ma liste change avec l’heure. »" },
+        /* les terres */
+        { id: "t1", th: "terres", rang: 0, t: "« J’ai posé mon comptoir ici parce que des routes se croisent. Il y en a encore, sous l’herbe. »" },
+        { id: "t2", th: "terres", rang: 0, renouv: true, t: "« Un passage garde ce que tu y déposes. Tu peux revenir le finir en plusieurs fois. »" },
+        { id: "t3", th: "terres", rang: 1, cond: { frag: "gue2" }, t: "« Sur l’autre rive du gué, des marches descendent sous l’eau. Je ne les ai jamais descendues. Il me faudrait de quoi garder l’air. »" },
+        { id: "t4", th: "terres", rang: 1, cond: { frag: "porte" }, t: "« Au fond de la galerie, la porte n’a pas de serrure. Mes clients essaient leurs clés, puis leurs épaules. Elle n’aime ni l’un ni l’autre. »" },
+        { id: "t5", th: "terres", rang: 1, cond: { frag: "journal" }, t: "« Au Désert, on vendait des billets pour un seul trajet. Personne n’est revenu les faire rembourser. »" },
+        { id: "t6", th: "terres", rang: 2, renouv: true, cond: { age: 2 }, t: "« Quand un lieu te dit ce qui lui manque, écoute-le. Il n’a pas d’autre moyen de te le demander. »" },
+        /* les mains du joueur : des conseils */
+        { id: "h1", th: "mains", rang: 0, renouv: true, t: "« Mes automates font comme toi, mais seulement ce que tu leur as montré. Montre-leur le geste une fois. Après, ils le refont sans toi. »" },
+        { id: "h2", th: "mains", rang: 0, renouv: true, cond: { age: 1 }, t: "« Une ressource que tu n’as pas étudiée, tu ne sais pas ce qu’elle cache. L’Atelier te laisse étudier toutes les tiennes d’un coup, contre de l’Intuition. »" },
+        { id: "h3", th: "mains", rang: 1, renouv: true, t: "« Une recette inconnue, tu peux la déchiffrer pas à pas, contre de l’Intuition. Ne l’use pas sur ce que tu trouveras seul à l’Atelier. »" },
+        { id: "h4", th: "mains", rang: 1, renouv: true, t: "« Quand tu passes le relais, tu gardes tes recettes et ce que tes Traces ont acheté. Les ruines que tu laisses se réparent pour bien moins cher que l’original. »" },
+        { id: "h5", th: "mains", rang: 0, cond: { cycle: 2 }, t: "« Tes paumes sont déjà dures. Je regarde, c’est tout. Je ne demande pas pourquoi. »" },
+        /* le ciel */
+        { id: "s1", th: "ciel", rang: 0, cond: { has: "lunette" }, t: "« J’ai vu l’étoile rouge, l’autre soir. Elle clignotait. Je lui ai demandé ce qu’elle vendait. Elle n’a pas répondu. »" },
+        { id: "s2", th: "ciel", rang: 1, cond: { has: "lunette" }, t: "« La Lune ressemble à une pièce. J’ai voulu payer avec, une fois. Elle n’a jamais rendu la monnaie. »" },
+        { id: "s3", th: "ciel", rang: 2, cond: { has: "lunette" }, t: "« Une lumière qui clignote toujours de la même façon, ce n’est pas un hasard. Je la regarde depuis des années, quand je n’ai rien à peser. »" },
+        /* les Anciens */
+        { id: "a1", th: "avant", rang: 0, t: "« Les Anciens achetaient. Je ne sais rien d’autre d’eux. Ils achetaient tout, et ils en voulaient plus. »" },
+        { id: "a2", th: "avant", rang: 1, t: "« Un jour, tout s’est arrêté, moi aussi. Je pesais une pomme. Quand j’ai repris, il n’y avait plus de pomme. »" },
+        { id: "a3", th: "avant", rang: 1, cond: { cycle: 2 }, apres: "a2", t: "« Quelqu’un a posé un caillou sur mon plateau et m’a demandé une corde. La balance a bougé. Je me suis réveillé. »" },
+        { id: "a4", th: "avant", rang: 3, cond: { signe: "nourrice" }, t: "« [nourrice] vient aussi, parfois. Je lui vends comme à toi. Je ne lui dois rien. »" },
+        /* les clients : des clins d’œil, et ce que le joueur a en poche */
+        { id: "k1", th: "clients", rang: 1, t: "« Un client est passé avec une serviette autour du cou. Il m’a dit de ne pas paniquer. Je ne panique jamais. »" },
+        { id: "k2", th: "clients", rang: 1, t: "« Un garçon en vert a cassé trois de mes pots pour regarder dedans. Il m’a laissé quelques sous. Il ne dit rien, il ramasse. »" },
+        { id: "k3", th: "clients", rang: 2, cond: { age: 3 }, t: "« Un client a troqué une idole en or contre un sac de sable, au même poids. Il est parti en courant. Une grosse pierre roulait derrière lui. »" },
+        { id: "k4", th: "clients", rang: 2, t: "« Un client a laissé un gâteau sur mon comptoir en jurant qu’il était vrai. Je ne l’ai pas goûté. »" },
+        { id: "k5", th: "clients", rang: 2, t: "« Un client répète toujours « c’est pas faux ». Il ne dit jamais à quoi. »" },
+        { id: "p1", th: "clients", rang: 0, cond: { has: "poudre_rouge" }, t: "« Ta poudre rouge crépite. Pose-la loin de mes balances. Je ne rachète pas les comptoirs brûlés. »" },
+        { id: "p2", th: "clients", rang: 0, cond: { has: "anneau_lourd" }, t: "« Cet anneau tout simple. Ne le mets pas à ton doigt. Il pèse plus que son poids, et il connaît le chemin du retour. »" },
+        { id: "p3", th: "clients", rang: 0, cond: { has: "quart_coeur" }, t: "« Un petit cœur rouge, en morceaux. J’en ai déjà vu un dans la poche d’un aventurier. Il en manquait toujours un. »" },
+        { id: "p4", th: "clients", rang: 0, cond: { has: "de_vingt" }, t: "« Un dé à vingt faces. Je ne joue pas contre. La première fois, il tombe toujours juste. »" },
+        { id: "p5", th: "clients", rang: 0, cond: { has: "fouet_cuir" }, t: "« Un fouet. Passe tes nuits ailleurs que chez moi. Mes chandelles ont peur. »" }
+      ]
+    },
+
     /* ------------------------------------------------- PHRASES DE L’INTERFACE */
     ui: {
       capsule: "Au pied du Grand Chêne, une capsule de verre t’attend, avec quelques matériaux et un enregistrement. Ta propre voix :\n\n« Salut. C’est toi. Enfin, toi d’avant. Fais confiance à tes mains. »",

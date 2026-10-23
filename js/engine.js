@@ -3389,6 +3389,65 @@
       return { cnt, cur, next };
     };
 
+    /* ---------------------------------------------------- LE TROQUEUR PARLE
+     * Une réplique à la fois, tirée parmi celles que le rang de confiance, le cycle, l’âge et
+     * ce que le joueur a trouvé ou porte permettent. Rien ne se redit à l’identique : les
+     * répliques entendues sont gardées dans S.meta.troc (jamais effacées à la relève), sauf les
+     * conseils marqués « renouv », qui reviennent une fois par relève. */
+    function trocState() {
+      const m = S.meta;
+      if (!m.troc || typeof m.troc !== "object" || Array.isArray(m.troc)) m.troc = { vus: {}, dernier: null, refus: 0 };
+      return m.troc;
+    }
+    const trocData = () => RECIT.troc || {};
+    function trocDispo(l) {
+      const T = trocState();
+      const v = T.vus[l.id];
+      if (v && !(l.renouv && v < (S.cycle || 1))) return false;
+      if (l.apres && !T.vus[l.apres]) return false;
+      if ((l.rang || 0) > E.troqueurRep().cur.lvl) return false;
+      return !l.cond || cond(l.cond);
+    }
+    E.troqueurThemes = function () {
+      const T = trocData();
+      return (T.themes || []).map((th) => ({ id: th.id, n: th.n, dispo: (T.lignes || []).filter((l) => l.th === th.id && trocDispo(l)).length }));
+    };
+    E.troqueurParle = function (th) {
+      if (!E.comptoirOpen()) return { ok: false, why: "closed" };
+      const T = trocData(), st = trocState();
+      if (!(T.themes || []).some((x) => x.id === th)) return { ok: false, why: "theme" };
+      const pool = (T.lignes || []).filter((l) => l.th === th && trocDispo(l));
+      let out;
+      if (pool.length) {
+        const l = pool[Math.min(pool.length - 1, Math.floor(rand() * pool.length))];
+        st.vus[l.id] = S.cycle || 1;
+        st.dernier = { id: l.id, th };
+        out = { ok: true, id: l.id, th, vide: false, t: interpolate(l.t) };
+      } else {
+        const R = T.refus || [];
+        const i = st.refus | 0;
+        st.refus = i + 1;
+        st.dernier = { id: null, th, refus: i };
+        out = { ok: true, th, vide: true, t: R.length ? interpolate(R[i % R.length]) : "" };
+      }
+      E.emit("troc", out);
+      E.emit("struct");
+      return out;
+    };
+    /* la dernière parole, qui reste affichée tant qu’il n’en dit pas une autre */
+    E.troqueurDernier = function () {
+      const d = S.meta && S.meta.troc && S.meta.troc.dernier;
+      if (!d) return null;
+      const T = trocData();
+      if (d.id) {
+        const l = (T.lignes || []).find((x) => x.id === d.id);
+        return l ? { th: d.th, vide: false, t: interpolate(l.t) } : null;
+      }
+      const R = T.refus || [];
+      return R.length ? { th: d.th, vide: true, t: interpolate(R[(d.refus | 0) % R.length]) } : null;
+    };
+    E.troqueurDispo = () => E.troqueurThemes().reduce((a, x) => a + x.dispo, 0);
+
     /* Livrer une demande du Troqueur */
     E.deliverAsk = function (idx) {
       if (!S.comptoir || !S.comptoir.asks) return { ok: false, why: "no_asks" };
@@ -3938,6 +3997,20 @@
       if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};
       if (o.termMode !== "reg" && o.termMode !== "arche") o.termMode = (o.flags && o.flags.registre) ? "reg" : "arche";
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
+      // ce que le Troqueur a déjà dit : un champ par défaut, des numéros de cycle, jamais plus
+      {
+        const t = o.meta.troc, ok = t && typeof t === "object" && !Array.isArray(t);
+        const vus = {};
+        if (ok && t.vus && typeof t.vus === "object" && !Array.isArray(t.vus)) {
+          for (const id in t.vus) { const c = Math.floor(Number(t.vus[id])); if (c >= 1) vus[id] = c; }
+        }
+        const d = ok && t.dernier && typeof t.dernier === "object" ? t.dernier : null;
+        o.meta.troc = {
+          vus,
+          dernier: d && typeof d.th === "string" ? { id: typeof d.id === "string" ? d.id : null, th: d.th, refus: Math.max(0, Math.floor(Number(d.refus)) || 0) } : null,
+          refus: Math.max(0, Math.floor(ok ? Number(t.refus) : 0) || 0)
+        };
+      }
       // les réminiscences déjà lues (avant qu’on les retienne) : celles des objets déjà faits
       if (!o.meta.ev || typeof o.meta.ev !== "object") { o.meta.ev = {}; for (const id in o.made || {}) if (o.made[id] > 0 && D.EVENTS[id]) o.meta.ev[id] = 1; }
       if (!o.meta.ruins || typeof o.meta.ruins !== "object" || Array.isArray(o.meta.ruins)) {

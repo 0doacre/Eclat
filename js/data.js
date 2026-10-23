@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.5";
+  D.VERSION = "0.8.6";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1011,6 +1011,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "💬 Au Comptoir, un onglet « Parler » : le Troqueur répond, une réplique à la fois, sur ce que tu lui demandes. Il en sait plus qu’il n’en vend.",
     "🗺️ Chaque terre a maintenant sa règle, écrite sur sa fiche du Domaine : le courant de la Rivière, la nuit des Profondeurs, le verre du Désert, le vide de l’Orbite, la pesanteur de la Lune, les marches des Collines.",
     "🧤 Nouveau : les gants de peau, pour récolter à la main dans le Désert.",
     "🔎 Sur la carte d’objectif, le bouton « Chercher » s’appelle « Tenter ».",

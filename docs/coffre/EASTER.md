@@ -43,3 +43,22 @@ Une version à part, faite par Claude (pas par Gemini, pour garder la surprise),
 `D.EASTER` dans `js/recit.js`, une petite fonction de tirage branchée dans `E.tap`, `E.attempt`,
 `finishExp`, le Comptoir et le terminal ; l’onglet « Curiosités » ; des tests dans
 `tools/test-recit.js`.
+
+## Clins d’œil du Troqueur (Comptoir → Parler → Tes clients)
+
+Des paroles, pas des objets : elles ne comptent pas dans l’onglet des clins d’œil. Aucun nom réel.
+Certaines demandent une chose précise en poche (`has`). Complices, jamais moqueuses.
+
+| Réplique | Clin d’œil à | Condition |
+|---|---|---|
+| k1 | Le Guide du voyageur galactique (la serviette, « ne pas paniquer ») | rang 1 |
+| k2 | Zelda (les pots cassés) | rang 1 |
+| k3 | Indiana Jones (l’idole et le sable) | rang 2, âge 3 |
+| k4 | Portal (le gâteau) | rang 2 |
+| k5 | Kaamelott (« c’est pas faux ») | rang 2 |
+| p1 | Minecraft, la poudre rouge | poudre rouge en poche |
+| p2 | Le Seigneur des anneaux | anneau en poche |
+| p3 | Zelda, les quarts de cœur | quart de cœur en poche |
+| p4 | Donjons et Dragons | dé en poche |
+| p5 | Castlevania | fouet en poche |
+

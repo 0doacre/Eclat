@@ -2670,7 +2670,7 @@ test("Le Grand Silence : étapes, proclamation et fin « silence »", () => {
 test("une sauvegarde 0.8.2 retrouve la Treizième Arche entamée, et son chantier", () => {
   const E = createEngine();
   const o = JSON.parse(E.serialize());
-  o.flags.ver = "0.8.5";
+  o.flags.ver = "0.8.6";
   o.made.vaisseau = 1; o.inv.vaisseau = 1; o.flags.station_morte = true;
   o.proj.arche13 = { step: 1, paid: { propulseur: 12, supra: 300 } };
   // un chantier mis de côté par une 0.8.x qui ne connaissait plus ce Grand Œuvre
@@ -2930,8 +2930,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.8.5 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.8.5");
+test("Version 0.8.6 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.8.6");
   assert.ok(D.CHANGES.length >= 4);
 });
 
@@ -3134,7 +3134,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.8.5");
+  assert.strictEqual(D.VERSION, "0.8.6");
   assert.ok(D.CHANGES.length >= 4);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
@@ -3249,6 +3249,91 @@ test("Curiosités : probabilité de la poudre rouge par pierre minée à la main
   // À 40k pierres, 75 % de chance cumulée
   const p40k = 1 - Math.exp(-40000 * (Math.LN2 / 20000));
   assert.strictEqual(Math.round(p40k * 100), 75);
+});
+
+console.log("Le Troqueur parle (0.8.5)");
+const trocOuvert = (rand) => { const E = createEngine({ now: () => T, rand: rand || (() => 0.99) }); E.state.zones.plaine = true; return E; };
+const dire = (E, th) => E.troqueurParle(th);
+test("Parler : le Comptoir fermé, il ne dit rien ; un thème inconnu non plus", () => {
+  const E = mk();
+  assert.strictEqual(E.troqueurParle("comptoir").ok, false);
+  const E2 = trocOuvert();
+  assert.strictEqual(E2.troqueurParle("inconnu").ok, false);
+});
+test("Parler : les répliques s’ouvrent avec le rang de confiance", () => {
+  const E = trocOuvert();
+  const id0 = [];
+  for (let i = 0; i < 10; i++) { const r = dire(E, "comptoir"); if (!r.vide) id0.push(r.id); }
+  assert.deepStrictEqual(id0.sort(), ["c1", "c2"], "rang 0 : seulement ses deux premières");
+  E.state.meta.troqueurDelivered = 3; // client régulier
+  assert.strictEqual(dire(E, "comptoir").id, "c3");
+  assert.ok(dire(E, "comptoir").vide, "rien de plus au cycle 1 : le reste demande le cycle 2 et un rang plus haut");
+  E.state.meta.troqueurDelivered = 18;
+  E.state.cycle = 2;
+  const ids = []; for (let i = 0; i < 6; i++) { const r = dire(E, "comptoir"); if (!r.vide) ids.push(r.id); }
+  assert.ok(ids.includes("c4") && ids.includes("c5"), ids.join());
+  assert.ok(ids.includes("c3"), "le conseil de la relève revient au cycle suivant");
+});
+test("Parler : jamais deux fois la même réplique, puis il répond qu’il n’a plus rien", () => {
+  const E = trocOuvert(() => 0);
+  E.state.meta.troqueurDelivered = 35; E.state.cycle = 2; E.state.age = 4;
+  const vus = new Set();
+  for (const th of E.troqueurThemes().map((x) => x.id)) {
+    for (let i = 0; i < 20; i++) {
+      const r = dire(E, th);
+      if (r.vide) break;
+      assert.ok(!vus.has(r.id), r.id + " dite deux fois");
+      vus.add(r.id);
+    }
+  }
+  assert.ok(vus.size >= 20, "assez de répliques à ce stade : " + vus.size);
+  assert.strictEqual(E.troqueurDispo() >= 0, true);
+  const r1 = dire(E, "comptoir"), r2 = dire(E, "comptoir");
+  assert.ok(r1.vide && r2.vide && r1.t && r2.t && r1.t !== r2.t, "les refus ne se répètent pas de suite");
+  assert.strictEqual(E.troqueurDernier().t, r2.t);
+});
+test("Parler : ce que le joueur a en poche ouvre des répliques précises", () => {
+  const E = trocOuvert(() => 0);
+  assert.ok(dire(E, "clients").vide, "rien à dire sans rien en poche, au rang 0");
+  E.add("poudre_rouge", 1);
+  const r = dire(E, "clients");
+  assert.strictEqual(r.id, "p1");
+  assert.ok(dire(E, "clients").vide);
+});
+test("Parler : les conseils reviennent à chaque relève, le reste non", () => {
+  const E = trocOuvert(() => 0);
+  E.state.meta.troqueurDelivered = 3; E.state.age = 1;
+  const dites = () => { const o = []; for (let i = 0; i < 30; i++) { const r = dire(E, "marchandises"); if (r.vide) break; o.push(r.id); } return o; };
+  const premiere = dites();
+  assert.ok(premiere.includes("m1") && premiere.includes("m3"));
+  E.newCycle();
+  E.state.zones.plaine = true;
+  const seconde = dites();
+  assert.ok(seconde.includes("m3") && seconde.includes("m5") && !seconde.includes("m1"), seconde.join());
+  assert.ok(E.state.meta.troc.vus.m1, "gardé à la relève");
+});
+test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro sans rien casser", () => {
+  const E = trocOuvert(() => 0);
+  dire(E, "comptoir");
+  const E2 = createEngine({ now: () => T, rand: () => 0 });
+  E2.load(E.serialize());
+  assert.ok(E2.state.meta.troc.vus.c1 && E2.troqueurDernier().t === E.troqueurDernier().t);
+  for (const mauvais of ["x", 7, [], { vus: "x", dernier: 3, refus: "y" }, { vus: { c1: -4, z: "q", c2: 2.7 }, dernier: { th: 4 }, refus: -3 }]) {
+    const o = JSON.parse(E.serialize());
+    o.meta.troc = mauvais;
+    const E3 = createEngine({ now: () => T, rand: () => 0 });
+    E3.load(JSON.stringify(o));
+    const t = E3.state.meta.troc;
+    assert.ok(t && typeof t.vus === "object" && !Array.isArray(t.vus) && Number.isInteger(t.refus) && t.refus >= 0);
+    assert.ok(Object.values(t.vus).every((c) => c >= 1));
+    assert.ok(t.dernier === null || typeof t.dernier.th === "string");
+    E3.state.zones.plaine = true;
+    assert.ok(E3.troqueurParle("comptoir").ok);
+  }
+  // une ancienne partie, sans le champ
+  const o = JSON.parse(E.serialize()); delete o.meta.troc;
+  const E4 = createEngine({ now: () => T }); E4.load(JSON.stringify(o));
+  assert.deepStrictEqual(E4.state.meta.troc, { vus: {}, dernier: null, refus: 0 });
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
