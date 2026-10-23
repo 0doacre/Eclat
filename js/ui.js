@@ -818,6 +818,7 @@
         '<div class="acts" style="flex-direction:column">' +
         (s.rev ? '<button class="btn pri" data-m="pull">⬇️ Prendre cette partie</button>' : "") +
         '<button class="btn' + (s.rev ? "" : " pri") + '" data-m="push">⬆️ Déposer la partie de cet appareil</button>' +
+        '<button class="btn" data-m="fresh">🆕 Nouvelle partie dans cet emplacement</button>' +
         (s.active ? "" : '<button class="btn" data-m="use">Rendre cet emplacement actif</button>') +
         (s.rev && !s.active ? '<button class="btn ghost" data-m="erase" style="color:var(--bad)">🗑️ Vider cet emplacement</button>' : "") +
         '<button class="btn" data-m="back">Retour</button></div>',
@@ -837,6 +838,7 @@
           cloudPush({ manual: true, slot: n, force: true }).then(() => swapModal(slotModal(n)));
           return true;
         },
+        fresh: () => { swapModal(newGameModal(n)); return true; },
         erase: (b) => {
           busy(b, "Suppression…");
           Cloud.erase(n).then(() => { toast("Emplacement " + n + " vidé."); swapModal(slotModal(n)); })
@@ -844,6 +846,40 @@
           return true;
         },
         back: () => { swapModal(accountModal()); return true; }
+      }
+    };
+  }
+  /* repartir de zéro dans un emplacement : la partie de l’appareil reste dans son emplacement actuel,
+   * celle qui occupait l’emplacement choisi part dans les copies de sécurité */
+  function newGameModal(n) {
+    const s = slotInfo(n);
+    const prev = (Cloud.account() || {}).slot || 1;
+    return {
+      html: '<div class="kicker">Compte</div><h2>Nouvelle partie dans l’emplacement ' + n + ' ?</h2>' +
+        (prev !== n ? '<p class="small">La partie de cet appareil est d’abord envoyée dans l’emplacement ' + prev + ', où tu pourras la retrouver.</p>' : "") +
+        (s.rev ? '<p class="small err">La partie en ligne de l’emplacement ' + n + ' (envoyée le ' + esc(fmtDate(s.updated)) + ') sera remplacée. Elle est d’abord rangée dans les copies de sécurité de cet appareil (☰ → Sauvegardes).</p>' : "") +
+        '<p class="tiny dim">L’emplacement ' + n + ' devient l’emplacement actif. Une copie de la partie de cet appareil est aussi gardée dans ☰ → Sauvegardes.</p>' +
+        '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Commencer</button></div>',
+      on: {
+        back: () => { swapModal(slotModal(n)); return true; },
+        go: (b) => {
+          busy(b, "Préparation…");
+          (async () => {
+            try {
+              if (prev !== n) await cloudPush({ quiet: true, slot: prev });
+              if (s.rev) {
+                const old = await Cloud.pull(n);
+                if (old) pushBackup(old.text, "Partie en ligne (emplacement " + n + ") remplacée par une nouvelle partie");
+              }
+              pushBackup(E.serialize(), "Avant une nouvelle partie");
+              Cloud.useSlot(n);
+              E.reset(); save(); U.slots = [null, null, null]; U.last = null;
+              closeModal(); setTab("carte"); intro(); updateCloudBtn();
+              cloudPush({ quiet: true, slot: n, force: true });
+            } catch (e) { unbusy(b); swapModal(accountModal(e.message)); }
+          })();
+          return true;
+        }
       }
     };
   }
