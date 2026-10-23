@@ -3336,4 +3336,7 @@ test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro san
   assert.deepStrictEqual(E4.state.meta.troc, { vus: {}, dernier: null, refus: 0 });
 });
 
+/* visiteurs de passage et constellations : fichiers à part */
+require("./test-visiteurs.js");
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

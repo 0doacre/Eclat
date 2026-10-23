@@ -86,7 +86,8 @@
       proj: {}, endings: {},
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
-      stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 },
+      stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
+      visiteur: { next: 0, clins: {} },
       cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
@@ -3799,6 +3800,89 @@
       }
     }
 
+    /* ===== VISITEURS DE PASSAGE (début) =====
+     * Le calendrier compte le temps de jeu actif (S.stats.play) : une absence ne l'avance pas, et
+     * rien n'est tiré pendant le rattrapage. L'écran dit si une fenêtre ou le tutoriel bloque (ctx.bloque) :
+     * le visiteur attend alors un moment libre. Données : D.VISITEURS. */
+    let visCur = null; // le visiteur qui traverse en ce moment
+    const VIS_SANS = { orbite: 1, lune: 1, mercure: 1, mine: 1, caveau: 1 }; // pas de ciel, pas de passant
+    function visSt() {
+      const v = S.visiteur && typeof S.visiteur === "object" ? S.visiteur : (S.visiteur = { next: 0, clins: {} });
+      if (!(v.next >= 0)) v.next = 0;
+      if (!v.clins || typeof v.clins !== "object") v.clins = {};
+      return v;
+    }
+    function visDelai() { const d = D.VISITEURS.delai; return d[0] + rand() * (d[1] - d[0]); }
+    function partJour(h) { return h < 6 || h >= 21 ? "night" : h < 8 ? "dawn" : h >= 18 ? "dusk" : "day"; }
+    E.visiteurActif = () => !S.settings || S.settings.visiteurs !== false;
+    E.setVisiteurs = function (on) {
+      S.settings.visiteurs = !!on;
+      visCur = null;
+      visSt().next = (S.stats.play || 0) + visDelai(); // rallumés, ils ne tombent pas tout de suite
+    };
+    E.visiteursPossibles = function (zone, hour) {
+      if (!zone || VIS_SANS[zone]) return [];
+      const part = partJour(hour);
+      return D.VISITEURS.liste.filter((x) => x.tps.includes(part) && (!x.terres || x.terres.includes(zone)));
+    };
+    /* un coup d'œil de l'écran, une fois tous les dixièmes de seconde : renvoie le visiteur qui arrive, ou null */
+    E.visiteurPoll = function (ctx) {
+      ctx = ctx || {};
+      if (OFF || !E.visiteurActif()) return null;
+      const v = visSt(), play = S.stats.play || 0;
+      if (!(v.next > 0)) { v.next = play + visDelai(); return null; }
+      if (visCur || play < v.next || ctx.bloque) return null;
+      const zone = ctx.zone && zoneOpen(ctx.zone) ? ctx.zone : null;
+      const hour = ctx.hour !== undefined ? ctx.hour : new Date().getHours();
+      const poss = E.visiteursPossibles(zone, hour);
+      if (!poss.length) return null; // pas le bon endroit ou la bonne heure : il attend
+      let tot = 0;
+      poss.forEach((x) => { tot += x.w || 1; });
+      let r = rand() * tot, def = poss[poss.length - 1];
+      for (const x of poss) { r -= x.w || 1; if (r < 0) { def = x; break; } }
+      v.next = play + visDelai();
+      S.stats.visiteursVus = (S.stats.visiteursVus || 0) + 1;
+      visCur = { id: def.id, zone };
+      return { id: def.id, ic: def.ic, css: def.css || "", n: def.n, aria: D.VISITEURS.txt.aria.replace("{n}", def.n), dur: D.VISITEURS.traversee };
+    };
+    E.visiteurEnCours = () => (visCur ? visCur.id : null);
+    E.visiteurPartir = function () { visCur = null; };
+    /* le lot : une matière de la terre (≈ 90 s de récolte à la main), un peu d'Intuition, et rarement le reste */
+    E.visiteurToucher = function (id) {
+      if (OFF || !visCur || visCur.id !== id) return null;
+      const def = D.VISITEURS.liste.find((x) => x.id === id), L = D.VISITEURS.lot, zone = visCur.zone;
+      visCur = null;
+      if (!def) return null;
+      const cand = ZONES[zone].res.filter((r) => tapYield(r, zone) > 0);
+      const lot = { id, zone, res: null, qty: 0, intu: L.intu, objet: null, page: null, clin: null };
+      if (cand.length) {
+        lot.res = cand[Math.min(cand.length - 1, Math.floor(rand() * cand.length))];
+        lot.qty = Math.max(1, Math.round(L.secondes * (skillSpeed("recolte") / SK.harvest) * tapYield(lot.res, zone)));
+        add(lot.res, lot.qty);
+      }
+      S.intu += L.intu;
+      const v = visSt();
+      const r = rand();
+      let seuil = 0;
+      const pages = def.pg && E.comptoirOpen() ? Object.keys(RECIT.pages || {}).filter((p) => !(S.livre && S.livre.p && S.livre.p[p]) && (RECIT.pages[p].src || []).some((s) => s.k === "buy")) : [];
+      if (pages.length) {
+        seuil += L.page;
+        if (r < seuil) { lot.page = pages[Math.min(pages.length - 1, Math.floor(rand() * pages.length))]; givePage(lot.page, "visiteur"); }
+      }
+      if (!lot.page && def.clin && !v.clins[id]) {
+        seuil += L.clin;
+        if (r < seuil) { v.clins[id] = 1; lot.clin = def.clin; S.stats.visiteursClins = (S.stats.visiteursClins || 0) + 1; }
+      }
+      if (!lot.page && !lot.clin && r >= seuil && r < seuil + L.objet) {
+        const pieces = Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].t === "comp" && (S.made[k] || 0) > 0 && (D.ITEMS[k].a || 0) <= S.age);
+        if (pieces.length) { lot.objet = pieces[Math.min(pieces.length - 1, Math.floor(rand() * pieces.length))]; add(lot.objet, 1); }
+      }
+      S.stats.visiteurs = (S.stats.visiteurs || 0) + 1;
+      E.emit("struct");
+      return lot;
+    };
+    /* ===== VISITEURS DE PASSAGE (fin) ===== */
+
     /* Avance le temps jusqu’à maintenant. Gère aussi le hors-ligne. */
     E.update = function () {
       const t = now();
@@ -4032,6 +4116,9 @@
         for (const z in o.zones || {}) if (o.zones[z] && D.PASSAGES[z]) o.pass[z] = { paid: {}, done: true };
       }
       o.settings = Object.assign({ sound: true, vibe: true, theme: "auto", largeText: false }, o.settings);
+      if (typeof o.settings.visiteurs !== "boolean") o.settings.visiteurs = true;
+      if (!o.visiteur || typeof o.visiteur !== "object") o.visiteur = { next: 0, clins: {} };
+      o.stats = Object.assign({ visiteurs: 0, visiteursVus: 0, visiteursClins: 0 }, o.stats);
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };

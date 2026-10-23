@@ -1172,6 +1172,43 @@
     "Un sourire naît au coin de tes lèvres : oui, ça, tu t’en souviens."
   ];
 
+  /* ===== VISITEURS DE PASSAGE (début) =====
+   * Quelqu'un ou quelque chose traverse le Domaine, de loin en loin. On le touche : un petit lot.
+   * Calendrier en secondes de jeu actif (S.stats.play), jamais hors ligne.
+   * lot.secondes : secondes de récolte à la main que vaut la matière ; objet, page, clin : chances.
+   * tps : parties de la journée (nuit avant 6 h ou dès 21 h, aube avant 8 h, crépuscule dès 18 h, sinon jour).
+   * terres : liste de terres, ou absent pour toutes (le Domaine seulement, jamais les lieux sans ciel).
+   * pg : peut donner une page du Livre que le Comptoir vend (très rare).
+   * clin : phrase complice, sans nom propre réel (voir docs/coffre/EASTER.md). */
+  D.VISITEURS = {
+    delai: [480, 1200],
+    traversee: 12,
+    lot: { secondes: 90, intu: 1, objet: 0.08, page: 0.02, clin: 0.03 },
+    liste: [
+      { id: "oiseau", ic: "🐦", n: "un oiseau", tps: ["day", "dawn", "dusk"], w: 3,
+        t: "Un oiseau laisse tomber quelque chose." },
+      { id: "papillon", ic: "🦋", n: "un papillon", tps: ["day"], terres: ["lisiere", "plaine", "riviere", "collines"], w: 2,
+        t: "Un papillon se pose sur ta main, puis repart." },
+      { id: "luciole", ic: "", css: "luciole", n: "une luciole", tps: ["night"], terres: ["lisiere", "plaine", "riviere", "collines", "desert"], w: 3,
+        t: "La luciole tourne autour de ta main.",
+        clin: "La luciole crie « Hé ! Écoute ! » d’une toute petite voix, puis repart, très contente d’elle." },
+      { id: "colporteur", ic: "🎒", n: "un colporteur", tps: ["day", "dusk"], terres: ["plaine", "riviere", "collines", "desert", "montagnes"], w: 2, pg: true,
+        t: "Le colporteur te tend un petit paquet et repart sans rien demander.",
+        clin: "Le colporteur te tend un bâton : « C’est dangereux d’y aller seul. » Puis il le reprend : « Non, il est pour le suivant. »" },
+      { id: "renard", ic: "🦊", n: "un renard", tps: ["dawn", "dusk", "night"], terres: ["lisiere", "plaine", "collines", "montagnes"], w: 2,
+        t: "Un renard file entre tes pieds.",
+        clin: "Un renard s’enroule en boule et file. Quelque part, des anneaux tintent." },
+      { id: "chauve", ic: "🦇", n: "une chauve-souris", tps: ["dusk", "dawn"], w: 2,
+        t: "Une chauve-souris te frôle la tête.",
+        clin: "La chauve-souris passe devant la lune. Un instant, tu entends un orgue, très loin." }
+    ],
+    txt: {
+      aria: "{n} passe. Touche pour voir.",
+      page: "Il te laisse aussi une page du Livre."
+    }
+  };
+  /* ===== VISITEURS DE PASSAGE (fin) ===== */
+
   /* Scènes d’éveil des Semeurs (cycles 2 et suivants) */
   D.EVEILS = {}; // js/recit.js
 
