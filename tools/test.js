@@ -2670,7 +2670,7 @@ test("Le Grand Silence : étapes, proclamation et fin « silence »", () => {
 test("une sauvegarde 0.8.2 retrouve la Treizième Arche entamée, et son chantier", () => {
   const E = createEngine();
   const o = JSON.parse(E.serialize());
-  o.flags.ver = "0.8.6";
+  o.flags.ver = "0.8.7";
   o.made.vaisseau = 1; o.inv.vaisseau = 1; o.flags.station_morte = true;
   o.proj.arche13 = { step: 1, paid: { propulseur: 12, supra: 300 } };
   // un chantier mis de côté par une 0.8.x qui ne connaissait plus ce Grand Œuvre
@@ -2930,8 +2930,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.8.6 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.8.6");
+test("Version 0.8.7 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.8.7");
   assert.ok(D.CHANGES.length >= 4);
 });
 
@@ -3134,7 +3134,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.8.6");
+  assert.strictEqual(D.VERSION, "0.8.7");
   assert.ok(D.CHANGES.length >= 4);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
