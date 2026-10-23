@@ -668,26 +668,28 @@
   const summary = (o) => esc(D.AGES[o.age] ? D.AGES[o.age].n : "?") + " · " + fmtTime((o.stats && o.stats.play) || 0) + " de jeu · " + Object.keys(o.known || {}).length + " recettes";
   const busy = (b, txt) => { if (b) { b.disabled = true; b.dataset.t = b.textContent; b.textContent = txt || "Un instant…"; } };
   const unbusy = (b) => { if (b && b.isConnected) { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; } };
-  function openAccount(msg) {
+  async function openAccount(msg) {
     if (!Cloud.configured()) {
       simpleModal("Compte", "Pas encore de comptes", "<p>Les comptes en ligne ne sont pas encore ouverts sur ce jeu. En attendant, ta partie reste enregistrée sur cet appareil, et tu peux la télécharger dans ☰ → Sauvegardes.</p>" +
         '<p class="tiny dim">Pour la personne qui publie le jeu : la marche à suivre est dans server/README.md.</p>');
       return;
     }
     const a = Cloud.account();
-    swapModal(a && a.token ? accountModal(msg) : loginModal(msg, a && a.pseudo));
+    if (!a || !a.token) { swapModal(loginModal(msg, a && a.pseudo)); return; }
+    try { await Cloud.slots(); U.sync.err = null; } catch (e) { U.sync.err = e.message; }
+    swapModal(accountModal(msg));
   }
   function loginModal(msg, pseudo) {
     const up = U.acMode === "up";
     return {
       html: '<div class="kicker">Compte</div><h2>' + (up ? "Créer un compte" : "Se connecter") + "</h2>" +
-        '<p class="small muted">Avec un compte, ta partie est aussi gardée en ligne, et tu peux la retrouver sur un autre appareil.</p>' +
+        '<p class="small muted">Avec un compte, ta partie est aussi gardée en ligne : trois emplacements par compte, à retrouver sur un autre appareil.</p>' +
         '<div class="seg"><button data-m="tin" class="' + (up ? "" : "on") + '">J’ai un compte</button><button data-m="tup" class="' + (up ? "on" : "") + '">Nouveau compte</button></div>' +
         '<label class="fld"><span>Pseudo</span><input id="acP" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="24" value="' + esc(pseudo || "") + '"></label>' +
         '<label class="fld"><span>Mot de passe</span><input id="acW" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '"></label>' +
         (up ? '<label class="fld"><span>Confirme le mot de passe</span><input id="acW2" type="password" autocomplete="new-password"></label>' : "") +
         '<p class="small err" id="acErr">' + esc(msg || "") + "</p>" +
-        '<p class="tiny dim">Ta partie est chiffrée sur ton appareil avant d’être envoyée : sans ton mot de passe, personne ne peut la lire, pas même le serveur. En contrepartie, si tu oublies ton mot de passe, la copie en ligne est perdue. Celle de cet appareil reste.</p>' +
+        '<p class="tiny dim">Ta partie est chiffrée sur ton appareil avant d’être envoyée : sans ton mot de passe, personne ne peut la lire, pas même le serveur. En contrepartie, si tu oublies ton mot de passe, les copies en ligne sont perdues. Celle de cet appareil reste.</p>' +
         '<div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">' + (up ? "Créer le compte" : "Se connecter") + "</button></div>",
       onOpen: (box) => { const f = $(pseudo ? "#acW" : "#acP", box); if (f) f.focus(); },
       on: {
@@ -713,15 +715,24 @@
     } catch (e) { unbusy(b); say(e.message); }
   }
   async function afterLogin(isNew) {
-    let cloud = null;
-    try { if (!isNew) cloud = await Cloud.pull(); } catch (e) { swapModal(accountModal(e.message)); return; }
-    if (!cloud) {
+    let list = [];
+    try { if (!isNew) list = await Cloud.slots(); } catch (e) { swapModal(accountModal(e.message)); return; }
+    if (!list.length) {
       await cloudPush({ force: true, quiet: true });
       swapModal(accountModal("Voilà : ta partie est maintenant gardée en ligne aussi."));
       updateCloudBtn();
       return;
     }
-    chooseVersion(cloud, "Il y a déjà une partie sur ce compte.");
+    const a = Cloud.account();
+    const slot = (a && a.slot) || 1;
+    if (!list.some((x) => x.slot === slot)) {
+      swapModal(accountModal("Ce compte a des parties en ligne. Ouvre un emplacement pour en reprendre une."));
+      updateCloudBtn();
+      return;
+    }
+    let cloud = null;
+    try { cloud = await Cloud.pull(slot); } catch (e) { swapModal(accountModal(e.message)); return; }
+    chooseVersion(cloud, "Il y a déjà une partie dans l’emplacement " + slot + ".");
   }
   /* deux versions de la partie : le joueur choisit, l’autre part dans les copies */
   function chooseVersion(cloud, intro) {
@@ -730,13 +741,13 @@
     swapModal({
       persistent: true,
       html: '<div class="kicker">Compte</div><h2>Quelle partie garder ?</h2><p class="small">' + esc(intro) + "</p>" +
-        '<div class="vs"><div class="card"><b>📱 Cet appareil</b><div class="small muted">' + summary(S()) + '</div></div><div class="card"><b>☁️ En ligne</b><div class="small muted">' + summary(o) +
+        '<div class="vs"><div class="card"><b>📱 Cet appareil</b><div class="small muted">' + summary(S()) + '</div></div><div class="card"><b>☁️ Emplacement ' + cloud.slot + '</b><div class="small muted">' + summary(o) +
         "<br>Envoyée le " + esc(fmtDate(cloud.updated)) + "</div></div></div>" +
         '<p class="tiny dim">Celle que tu ne gardes pas n’est pas perdue : elle va dans les copies de sécurité (☰ → Sauvegardes).</p>' +
         '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="cloud">Prendre la partie en ligne</button><button class="btn" data-m="local">Garder celle de cet appareil</button></div>',
       on: {
-        cloud: () => { if (replaceWith(cloud.text, "Avant de charger la partie du compte")) { Cloud.adopt(cloud.rev, cloud.updated); U.sync.conflict = null; updateCloudBtn(); } },
-        local: () => { pushBackup(cloud.text, "Partie du compte, remplacée par celle de l’appareil"); U.sync.conflict = null; cloudPush({ force: true, manual: true }); }
+        cloud: () => { if (replaceWith(cloud.text, "Avant de charger la partie du compte")) { Cloud.useSlot(cloud.slot); Cloud.adopt(cloud.rev, cloud.updated, cloud.slot); U.sync.conflict = null; updateCloudBtn(); } },
+        local: () => { pushBackup(cloud.text, "Partie du compte, remplacée par celle de l’appareil"); U.sync.conflict = null; cloudPush({ force: true, manual: true, slot: cloud.slot }); }
       }
     });
   }
@@ -746,10 +757,14 @@
     return {
       html: '<div class="kicker">Compte</div><h2>☁️ ' + esc(a.pseudo || "") + "</h2>" +
         (msg ? '<p class="small">' + esc(msg) + "</p>" : "") +
-        (c ? '<div class="card warnc"><b>Une autre version de ta partie est en ligne.</b><div class="small muted">Envoyée le ' + esc(fmtDate(c.updated)) + ', sans doute depuis un autre appareil.</div><button class="btn small pri" data-m="solve" style="margin-top:8px">Choisir la partie à garder</button></div>' : "") +
-        '<p class="small muted">' + (a.last ? "Dernier envoi : " + esc(fmtDate(a.last)) : "Rien n’a encore été envoyé.") + (U.sync.err ? '<br><span class="err">' + esc(U.sync.err) + "</span>" : "") + "</p>" +
+        (c ? '<div class="card warnc"><b>Une autre version de ta partie est en ligne (emplacement ' + (c.slot || a.slot || 1) + ').</b><div class="small muted">Envoyée le ' + esc(fmtDate(c.updated)) + ', sans doute depuis un autre appareil.</div><button class="btn small pri" data-m="solve" style="margin-top:8px">Choisir la partie à garder</button></div>' : "") +
+        '<p class="small muted">' + (a.last ? "Dernier envoi (emplacement " + (a.slot || 1) + ") : " + esc(fmtDate(a.last)) : "Rien n’a encore été envoyé.") + (U.sync.err ? '<br><span class="err">' + esc(U.sync.err) + "</span>" : "") + "</p>" +
+        '<h3 class="sub">Trois emplacements en ligne</h3>' +
+        '<p class="tiny dim">L’envoi automatique va dans l’emplacement actif. Les autres gardent une partie de côté.</p>' +
+        (a.legacy ? '<p class="tiny err">Le serveur des comptes n’est pas encore à jour : seule la première sauvegarde en ligne est disponible.</p>' : "") +
+        [1, 2, 3].map(slotLine).join("") +
         '<div class="toggle"><span>Envoi automatique<br><span class="tiny dim">régulièrement, et quand tu quittes le jeu</span></span><button class="btn small" data-m="auto">' + (a.auto ? "Activé" : "Coupé") + "</button></div>" +
-        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="push">⬆️ Envoyer maintenant</button><button class="btn" data-m="pull">⬇️ Récupérer la partie en ligne</button>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="push">⬆️ Envoyer maintenant (emplacement ' + (a.slot || 1) + ')</button><button class="btn" data-m="pull">⬇️ Récupérer la partie en ligne</button>' +
         '<button class="btn ghost" data-m="pw">🔑 Changer de mot de passe</button><button class="btn ghost" data-m="out">🚪 Se déconnecter</button><button class="btn ghost" data-m="del" style="color:var(--bad)">🗑️ Supprimer le compte</button>' +
         '<button class="btn" data-m="close">Fermer</button></div>',
       on: {
@@ -758,15 +773,98 @@
         pull: (b) => {
           busy(b, "Téléchargement…");
           Cloud.pull().then((cl) => {
-            if (!cl) swapModal(accountModal("Aucune partie en ligne pour l’instant."));
+            if (!cl) swapModal(accountModal("L’emplacement actif est vide. Ouvre un emplacement ci-dessus pour reprendre une partie."));
             else chooseVersion(cl, "Voici la partie enregistrée en ligne.");
           }).catch((e) => swapModal(accountModal(e.message)));
           return true;
         },
         solve: (b) => { busy(b); Cloud.pull().then((cl) => cl && chooseVersion(cl, "Ta partie a avancé sur un autre appareil.")).catch((e) => swapModal(accountModal(e.message))); return true; },
+        slot: (b) => { swapModal(slotModal(Number(b.dataset.i))); return true; },
         pw: () => { swapModal(passwordModal()); return true; },
         out: () => { Cloud.logout().then(updateCloudBtn); toast("Déconnecté. Ta partie reste sur cet appareil."); },
         del: () => { swapModal(deleteModal()); return true; }
+      }
+    };
+  }
+  /* une ligne par emplacement dans la fenêtre Compte */
+  function slotInfo(n) {
+    const a = Cloud.account() || {};
+    const m = (a.revs && a.revs[n]) || null;
+    const active = (a.slot || 1) === n;
+    return {
+      slot: n,
+      active,
+      rev: m ? m.rev : active ? a.rev || 0 : 0,
+      updated: m ? m.updated : active ? a.last || 0 : 0
+    };
+  }
+  function slotLine(n) {
+    const s = slotInfo(n);
+    const off = (Cloud.account() || {}).legacy && n > 1;
+    return '<div class="bk"><div class="grow"><b>Emplacement ' + n + (s.active ? ' <span class="tiny dim">actif</span>' : "") +
+      '</b><div class="tiny muted">' + (off ? "Serveur à mettre à jour" : s.rev ? "Envoyé le " + esc(fmtDate(s.updated)) : "Vide") + '</div></div>' +
+      (off ? "" : '<button class="btn small" data-m="slot" data-i="' + n + '">Gérer</button>') + '</div>';
+  }
+  function slotModal(n) {
+    const s = slotInfo(n);
+    return {
+      html: '<div class="kicker">Compte</div><h2>Emplacement ' + n + '</h2>' +
+        '<p class="small muted">' + (s.rev ? "Partie envoyée le " + esc(fmtDate(s.updated)) + "." : "Cet emplacement est vide.") +
+        (s.active ? " C’est l’emplacement actif : les envois automatiques de cet appareil vont ici." : "") + "</p>" +
+        '<p class="tiny dim">Prendre une partie la charge sur cet appareil et rend son emplacement actif. Déposer garde celle de cet appareil en ligne sans changer d’emplacement.</p>' +
+        '<div class="acts" style="flex-direction:column">' +
+        (s.rev ? '<button class="btn pri" data-m="pull">⬇️ Prendre cette partie</button>' : "") +
+        '<button class="btn' + (s.rev ? "" : " pri") + '" data-m="push">⬆️ Déposer la partie de cet appareil</button>' +
+        (s.active ? "" : '<button class="btn" data-m="use">Rendre cet emplacement actif</button>') +
+        (s.rev && !s.active ? '<button class="btn ghost" data-m="erase" style="color:var(--bad)">🗑️ Vider cet emplacement</button>' : "") +
+        '<button class="btn" data-m="back">Retour</button></div>',
+      on: {
+        use: () => { Cloud.useSlot(n); swapModal(slotModal(n)); return true; },
+        pull: (b) => {
+          busy(b, "Téléchargement…");
+          Cloud.pull(n).then((cl) => {
+            if (!cl) swapModal(slotModal(n));
+            else chooseVersion(cl, "Voici la partie de l’emplacement " + n + ".");
+          }).catch((e) => swapModal(accountModal(e.message)));
+          return true;
+        },
+        push: (b) => {
+          if (s.rev) { swapModal(slotOverwriteModal(n, s.updated)); return true; }
+          busy(b, "Envoi…");
+          cloudPush({ manual: true, slot: n, force: true }).then(() => swapModal(slotModal(n)));
+          return true;
+        },
+        erase: (b) => {
+          busy(b, "Suppression…");
+          Cloud.erase(n).then(() => { toast("Emplacement " + n + " vidé."); swapModal(slotModal(n)); })
+            .catch((e) => { unbusy(b); swapModal(accountModal(e.message)); });
+          return true;
+        },
+        back: () => { swapModal(accountModal()); return true; }
+      }
+    };
+  }
+  /* déposer sur un emplacement occupé : l’ancienne partie en ligne part dans les copies */
+  function slotOverwriteModal(n, updated) {
+    return {
+      html: '<div class="kicker">Compte</div><h2>Remplacer l’emplacement ' + n + ' ?</h2>' +
+        '<p class="small">La partie en ligne du ' + esc(fmtDate(updated)) + ' sera remplacée par celle de cet appareil.</p>' +
+        '<p class="tiny dim">Celle qui est en ligne n’est pas gardée telle quelle : elle sera téléchargée avant d’être remplacée, puis rangée dans les copies de sécurité de cet appareil (☰ → Sauvegardes).</p>' +
+        '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Remplacer</button></div>',
+      on: {
+        back: () => { swapModal(slotModal(n)); return true; },
+        go: (b) => {
+          busy(b, "Envoi…");
+          (async () => {
+            try {
+              const old = await Cloud.pull(n);
+              if (old) pushBackup(old.text, "Partie en ligne (emplacement " + n + ") remplacée");
+              await cloudPush({ manual: true, slot: n, force: true });
+              swapModal(slotModal(n));
+            } catch (e) { unbusy(b); swapModal(accountModal(e.message)); }
+          })();
+          return true;
+        }
       }
     };
   }
@@ -776,7 +874,7 @@
         '<label class="fld"><span>Mot de passe actuel</span><input id="pw0" type="password" autocomplete="current-password"></label>' +
         '<label class="fld"><span>Nouveau mot de passe</span><input id="pw1" type="password" autocomplete="new-password"></label>' +
         '<label class="fld"><span>Confirme le nouveau mot de passe</span><input id="pw2" type="password" autocomplete="new-password"></label>' +
-        '<p class="small err" id="pwErr"></p><p class="tiny dim">Ta partie en ligne est rechiffrée avec le nouveau mot de passe. Tes autres appareils devront se reconnecter.</p>' +
+        '<p class="small err" id="pwErr"></p><p class="tiny dim">Tes parties en ligne (les trois emplacements) sont rechiffrées avec le nouveau mot de passe. Tes autres appareils devront se reconnecter.</p>' +
         '<div class="acts"><button class="btn" data-m="back">Retour</button><button class="btn pri" data-m="go">Changer</button></div>',
       on: {
         back: () => { swapModal(accountModal()); return true; },
@@ -794,7 +892,7 @@
   }
   function deleteModal() {
     return {
-      html: '<div class="kicker">Compte</div><h2>Supprimer le compte ?</h2><p class="small">Le compte et la partie en ligne seront effacés du serveur. Ta partie reste sur cet appareil.</p>' +
+      html: '<div class="kicker">Compte</div><h2>Supprimer le compte ?</h2><p class="small">Le compte et les parties en ligne seront effacés du serveur. Ta partie reste sur cet appareil.</p>' +
         '<label class="fld"><span>Mot de passe</span><input id="dl0" type="password" autocomplete="current-password"></label><p class="small err" id="dlErr"></p>' +
         '<div class="acts"><button class="btn" data-m="back">Retour</button><button class="btn pri" style="background:var(--bad)" data-m="go">Supprimer</button></div>',
       on: {
@@ -816,7 +914,7 @@
     try {
       save();
       const r = await Cloud.push(E.serialize(), o);
-      if (r.conflict) { U.sync.conflict = r; if (!o.quiet) toast("☁️ Une autre version de ta partie est en ligne. Ouvre ☁️ pour choisir laquelle garder."); }
+      if (r.conflict) { U.sync.conflict = r; if (!o.quiet) toast("☁️ Une autre version de ta partie est en ligne (emplacement " + r.slot + "). Ouvre ☁️ pour choisir laquelle garder."); }
       else { U.sync.conflict = null; U.sync.err = null; if (o.manual && !U.mcur) toast("☁️ Partie envoyée."); }
       return r;
     } catch (e) {
@@ -841,8 +939,9 @@
     updateCloudBtn();
     if (!a || !a.token || U.saveLocked) return;
     try {
+      const known = a.rev || 0;
       const cl = await Cloud.pull();
-      if (!cl || cl.rev === a.rev) return;
+      if (!cl || cl.rev === known) return;
       const ask = () => { if (U.mcur) { setTimeout(ask, 1000); return; } chooseVersion(cl, "Ta partie en ligne a changé depuis ton dernier passage ici, sans doute sur un autre appareil."); };
       ask();
     } catch (e) { U.sync.err = e.message; updateCloudBtn(); }

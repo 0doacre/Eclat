@@ -10,8 +10,9 @@ Tant que le serveur n’est pas installé, le jeu marche comme avant : le menu �
 
 - Le mot de passe ne quitte jamais l’appareil du joueur. Le jeu en tire deux clés : une pour se connecter (le serveur n’en garde qu’une empreinte), une pour chiffrer la sauvegarde.
 - La sauvegarde est chiffrée sur l’appareil avant l’envoi. Le serveur ne stocke que du texte illisible, il ne peut pas la lire.
-- Revers de la médaille : **un mot de passe oublié ne se récupère pas**. La copie en ligne est alors perdue, mais celle de l’appareil reste intacte. Le jeu le dit au moment de créer le compte.
+- Revers de la médaille : **un mot de passe oublié ne se récupère pas**. Les copies en ligne sont alors perdues, mais celle de l’appareil reste intacte. Le jeu le dit au moment de créer le compte.
 - Les tentatives de connexion ratées sont limitées (blocage d’un quart d’heure après 8 échecs), comme la création de comptes en rafale.
+- Chaque compte a **trois emplacements de sauvegarde** en ligne. L’un est l’emplacement actif : c’est lui que remplissent les envois automatiques. Les autres gardent une partie de côté (une autre partie, une partie d’avant une relève) et se gèrent depuis ☰ → Compte en ligne. Chaque emplacement est chiffré séparément, et **changer le mot de passe les rechiffre tous les trois**.
 - Si deux appareils envoient chacun leur version, rien n’est écrasé en silence : le jeu demande laquelle garder, et l’autre part dans les copies de sécurité.
 
 ## Installation, pas à pas
@@ -25,6 +26,8 @@ Sur [dash.cloudflare.com](https://dash.cloudflare.com), inscris-toi (gratuit). �
 1. Ouvre la page **D1 SQL database** (menu de gauche, rubrique *Storage & Databases*), puis **Create Database**.
 2. Nom : `eclat-comptes`. Laisse le reste par défaut et valide avec **Create**.
 3. Ouvre la base, onglet **Console**. Copie tout le contenu du fichier [`schema.sql`](schema.sql), colle-le, puis **Execute**. Dans l’onglet **Tables**, quatre tables apparaissent : `users`, `sessions`, `saves`, `attempts`.
+
+> **La base existe déjà ?** Si tu as installé le serveur avec l’ancienne version (une seule sauvegarde par compte), n’exécute pas `schema.sql` : copie plutôt tout le contenu de [`migration-2.sql`](migration-2.sql) dans la même console, puis **Execute**. La partie déjà en ligne est conservée et devient l’emplacement 1 ; les deux autres sont vides.
 
 ### 3. Créer le serveur (le « Worker »)
 
@@ -44,7 +47,7 @@ Toujours dans la page du Worker :
 2. Onglet **Settings** → **Variables and Secrets** → **Add** : type *Text*, nom `ALLOWED_ORIGIN`, valeur : l’adresse de ton jeu **sans** le chemin, par exemple `https://mon-pseudo.github.io`. Enregistre (**Deploy**).
 3. Si le Worker ne prend pas les changements, onglet **Deployments** → dans **Version History**, **Deploy version** sur la dernière version → **Deploy**.
 
-Pour vérifier : ouvre `https://eclat-comptes.TON-SOUS-DOMAINE.workers.dev/api/health` dans le navigateur. Tu dois voir `{"ok":true,"version":1}`. Si tu vois une erreur qui parle de « liaison DB », reprends l’étape 4.1. L’adresse exacte du Worker est affichée en haut de sa page (elle finit par `.workers.dev`).
+Pour vérifier : ouvre `https://eclat-comptes.TON-SOUS-DOMAINE.workers.dev/api/health` dans le navigateur. Tu dois voir `{"ok":true,"version":2}`. Si tu vois une erreur qui parle de « liaison DB », reprends l’étape 4.1 ; si elle parle de migration, exécute `migration-2.sql` comme expliqué plus haut. L’adresse exacte du Worker est affichée en haut de sa page (elle finit par `.workers.dev`).
 
 Les intitulés de Cloudflare changent de temps en temps ; s’ils ne correspondent plus, la documentation officielle de D1 (« Get started », version tableau de bord) suit le même chemin : [developers.cloudflare.com/d1/get-started](https://developers.cloudflare.com/d1/get-started/).
 
@@ -72,6 +75,8 @@ npx wrangler login
 npx wrangler d1 create eclat-comptes          # note l’identifiant affiché
 # colle-le dans wrangler.toml (database_id) et règle ALLOWED_ORIGIN
 npx wrangler d1 execute eclat-comptes --remote --file=schema.sql
+# base déjà installée avec l’ancienne version, une seule sauvegarde :
+# npx wrangler d1 execute eclat-comptes --remote --file=migration-2.sql
 npx wrangler deploy
 ```
 
