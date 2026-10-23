@@ -820,6 +820,25 @@ test("Règles par terre : lumière, gants, courant, marches, orbite, Lune", () =
   const e6 = { z: "riviere", res: "argile", u: { cabane: 6 } }, e8 = { z: "riviere", res: "argile", u: { cabane: 8 } };
   assert.ok(near(E.extOut(e8), E.extOut(e6) * (6 + 2 * 0.5) / 6));
 });
+test("Règles par terre, suite : vapeurs, air mince, chaleur", () => {
+  const E = mk();
+  const near = (x, y) => Math.abs(x - y) < 1e-9 * Math.max(1, Math.abs(y));
+  const pet = E.tapYield("petrole", "gisement");
+  assert.strictEqual(E.regle("gisement").etat, "gene");
+  E.add("masque", 1);
+  assert.strictEqual(E.regle("gisement").etat, "ok");
+  assert.ok(near(E.tapYield("petrole", "gisement"), pet / 0.6));
+  const ba = E.tapYield("bauxite", "montagnes");
+  E.add("bouteille", 1);
+  assert.ok(near(E.tapYield("bauxite", "montagnes"), ba / 0.6));
+  const e = { z: "mercure", res: "metal_mercure", u: { cabane: 3 } };
+  assert.strictEqual(E.regle("mercure").etat, "gene");
+  const chaud = E.extOut(e);
+  E.add("bouclier_th", 1);
+  assert.strictEqual(E.regle("mercure").etat, "ok");
+  assert.ok(near(E.extOut(e), chaud / 0.6));
+  assert.ok(D.ITEMS.masque.r && D.ITEMS.bouteille.r, "les deux objets se fabriquent");
+});
 test("Étudier tout : toutes les ressources vues d’un coup, ou rien", () => {
   const E = mk();
   ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));
@@ -2930,9 +2949,9 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.9.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.9.0");
-  assert.ok(D.CHANGES.length >= 4);
+test("Version 0.9.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.1");
+  assert.ok(D.CHANGES.length >= 2);
 });
 
 test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
@@ -3134,8 +3153,8 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.9.0");
-  assert.ok(D.CHANGES.length >= 4);
+  assert.strictEqual(D.VERSION, "0.9.1");
+  assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");

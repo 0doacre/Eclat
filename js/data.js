@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.0";
+  D.VERSION = "0.9.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -90,6 +90,12 @@
   I.gants = { n: "Gants de peau", ic: "🧤", a: 4, t: "comp", r: ["assembler", { cuir: 2, fibre: 4 }, 1],
     u: "Aux mains, ils protègent du verre du Désert : sans eux, la récolte à la main rapporte moins là-bas.", d: "Deux peaux cousues à la forme de tes mains.",
     h: "Du cuir, de la fibre, et la forme de tes mains." };
+  I.masque = { n: "Masque filtrant", ic: "😷", a: 9, t: "comp", r: ["assembler", { caoutchouc: 2, plastique: 1 }, 1],
+    u: "Sur le visage, il retient les vapeurs du Gisement Noir : sans lui, la récolte à la main rapporte moins là-bas.", d: "Une coque de plastique, un joint de caoutchouc.",
+    h: "Une coque rigide, et de quoi la serrer sur le visage." };
+  I.bouteille = { n: "Bouteille d’air", ic: "💨", a: 9, t: "comp", r: ["assembler", { aluminium: 2, caoutchouc: 1 }, 1],
+    u: "Elle te donne de quoi respirer là-haut : sans elle, la récolte à la main rapporte moins aux Pics Fracturés.", d: "Un cylindre d’aluminium, un tuyau de caoutchouc.",
+    h: "Un cylindre léger, et un tuyau souple." };
   I.galette = { n: "Herbes grillées", ic: "🌾", a: 0, t: "curio", sec: true, r: ["chauffer", { fibre: 5 }, 1, { heat: 600 }],
     e: { once: { intu: 2 } },
     d: "Ça sent bon. Tu en mâches une bouchée, puis tu t’arrêtes : tu n’as jamais eu faim. Ni soif, d’ailleurs." };
@@ -876,6 +882,7 @@
   /* Une règle par terre, à l’essai : ce qui change ici par rapport aux autres terres.
    * tap : la récolte à la main × mult, sauf si l’on a sur soi un des objets de « sans » ;
    * ext : au-delà de max extracteurs sur un même gisement, chacun rend mult ;
+   * chaleur : les extracteurs de la terre rendent mult, sauf si l’on a sur soi un des objets de « sans » ;
    * remise : chaque lieu exploré ici retire par au prix du passage « vers », jusqu’à max fois. */
   D.REGLES = {
     riviere: { n: "Le courant", t: "L’eau emporte ce qui s’entasse. Au-delà de 6 extracteurs sur un même gisement, les suivants rendent moitié moins.", ext: { max: 6, mult: 0.5 } },
@@ -883,6 +890,9 @@
     mine: { n: "Il fait noir", t: "Sans torche ni lampe sur toi, tes mains rapportent 40 % de moins.", ok: "Ta lumière tient : tes mains rapportent tout.", tap: { sans: ["torche", "lampe"], mult: 0.6 } },
     desert: { n: "Le verre coupe", t: "Sans gants de peau, tes mains rapportent 40 % de moins.", ok: "Tes gants tiennent : tes mains rapportent tout.", tap: { sans: ["gants"], mult: 0.6 } },
     orbite: { n: "Le vide", t: "Ici, tes mains ne rapportent que le quart. Ce sont les extracteurs qui travaillent.", tap: { mult: 0.25 } },
+    gisement: { n: "Les vapeurs", t: "Le pétrole sent fort. Sans masque filtrant sur toi, tes mains rapportent 40 % de moins.", ok: "Ton masque tient : tes mains rapportent tout.", tap: { sans: ["masque"], mult: 0.6 } },
+    montagnes: { n: "L’air est mince", t: "Sans bouteille d’air sur toi, tes mains rapportent 40 % de moins.", ok: "Ta bouteille tient : tes mains rapportent tout.", tap: { sans: ["bouteille"], mult: 0.6 } },
+    mercure: { n: "La chaleur", t: "Sans bouclier thermique sur toi, tes extracteurs rendent 40 % de moins.", ok: "Ton bouclier tient : tes extracteurs rendent tout.", chaleur: { sans: ["bouclier_th"], mult: 0.6 } },
     lune: { n: "Tout est léger", t: "La pesanteur est faible : tes mains rapportent 50 % de plus.", tap: { mult: 1.5 } }
   };
 
@@ -1061,12 +1071,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🎁 À chaque relève, trois dons t’attendent : tu en gardes un pour ce cycle.",
-    "🕊️ Un oiseau, une luciole ou un colporteur passe de temps en temps. Touche-le : il laisse quelque chose.",
-    "✨ Dans le Cosmos, l’onglet Figures montre tes fragments et tes signes comme des étoiles.",
-    "🧭 Sur la Carte, un lieu déjà exploré se fouille de nouveau : un tour, une fouille, ou tout retourner. Ça continue jeu fermé.",
-    "⛏️ Un gisement rend plus quand il porte 10, 25, 50 puis 100 extracteurs.",
-    "📅 Un petit cadeau t’attend chaque jour où tu reviens. Manquer des jours n’enlève rien."
+    "🗺️ Trois terres de plus ont leur règle : les vapeurs du Gisement Noir, l’air mince des Pics Fracturés, la chaleur de Mercure. Chacune demande un objet à porter sur soi : le masque filtrant, la bouteille d’air, le bouclier thermique.",
+    "🧭 Le tutoriel explique maintenant les dons, les visiteurs, les fouilles, les figures du Cosmos et les paliers d’un gisement."
   ];
 
 
