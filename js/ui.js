@@ -464,7 +464,7 @@
     goDomaine: (z) => { U.zone = z; setTab("domaine"); Dom.focusZone(z); }
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
-  const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Dom, save: () => save() });
+  const Tuto = window.EclatTuto.create({ E, D, A, U, esc, fmtNum, Dom, save: () => save(), toast: (t) => toast(t) });
   /* un texte sur une ligne : valeurs calculées et signes, sans paragraphes */
   function recitInline(t, lieu) {
     if (!t) return "";

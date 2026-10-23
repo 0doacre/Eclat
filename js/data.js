@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.2";
+  D.VERSION = "0.9.3";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,8 +1071,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🚧 Un passage n’apparaît plus avant que la terre d’avant soit ouverte : les Collines ne réclament plus d’argile et de briques quand tu es encore à la Lisière.",
-    "🧭 Le tutoriel des passages attend lui aussi la bonne terre."
+    "💭 Le tout premier message du guide te laisse le couper tout de suite : « Je me débrouille ». Il se relance dans le menu.",
+    "📖 Après ta première lecture d’un morceau d’histoire, le guide te dit où il est rangé et que tu n’as pas à tout comprendre tout de suite.",
+    "🌍 Le guide présente aussi ta première nouvelle terre et l’Intuition, en une phrase chacun."
   ];
 
 
