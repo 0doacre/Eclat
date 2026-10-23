@@ -2840,8 +2840,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.7.1 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.7.1");
+test("Version 0.7.2 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.7.2");
   assert.ok(D.CHANGES.length >= 3);
 });
 
@@ -3044,13 +3044,13 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.7.1");
+  assert.strictEqual(D.VERSION, "0.7.2");
   assert.ok(D.CHANGES.length >= 3);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
   assert.strictEqual(parts[1], 7, "Mineure pour le lot courant");
-  assert.strictEqual(parts[2], 1, "0.7.1 : itération mineure");
+  assert.strictEqual(parts[2], 2, "0.7.2 : itération mineure");
 });
 
 console.log("Horodatage du Journal (0.7.1)");
