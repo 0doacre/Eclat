@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.7";
+  D.VERSION = "0.9.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -928,6 +928,56 @@
   /* ce que contient le paquetage, niveau par niveau (cumulé) */
   D.PAQUETAGE = [{ bois: 60, fibre: 60, caillou: 30, manche: 4, corde: 4 }, { cabane: 1 }, { cabane: 2, feu: 1 }];
 
+  /* ===== LES DONS DE LA RELÈVE (0.9) =====
+   * À chaque relève (dès le cycle 2), le Semeur trouve trois dons tirés au hasard ; il en garde un
+   * pour ce cycle seulement. Ils s’ajoutent à la Mémoire des mains.
+   * e : { tap: { r: [ressources] | "*", v }, ext: { z: [terres] | "*", v }, mach, mains, pass, crit, intu, veille, vente, paq }
+   *   tap   récolte à la main × v pour ces ressources ; ext : extracteurs × v dans ces terres ;
+   *   mach  vitesse des machines × ; mains : durée des fabrications à la main × ; pass : prix des passages × ;
+   *   crit  points de chance de récolte double en plus ; intu : Intuition gagnée × ; veille : temps d’absence compté × ;
+   *   vente prix de vente au Troqueur × ; paq : matières en plus au réveil.
+   * d : la phrase affichée, avec le chiffre. */
+  D.DONS = [
+    { id: "hache", n: "La hache usée", ic: "🪓", d: "À la main, le bois, les fibres, les os et le cuir rapportent 30 % de plus.", e: { tap: { r: ["bois", "fibre", "os", "cuir"], v: 1.3 } } },
+    { id: "pierre", n: "La pierre tiède", ic: "🪨", d: "À la main, les cailloux, le silex, l’argile, le sable et le quartz rapportent 30 % de plus.", e: { tap: { r: ["caillou", "silex", "argile", "sable", "quartz"], v: 1.3 } } },
+    { id: "pic", n: "Le pic cabossé", ic: "⛏️", d: "À la main, les minerais et le charbon rapportent 30 % de plus.", e: { tap: { r: ["malachite", "cassiterite", "fer_min", "charbon", "bauxite", "ilmenite", "terres_rares"], v: 1.3 } } },
+    { id: "scaphandre", n: "Le scaphandre rapiécé", ic: "🧑‍🚀", d: "À la main, le pétrole, les débris, l’hélium 3, le régolithe et le métal de Mercure rapportent 40 % de plus.", e: { tap: { r: ["petrole", "debris", "helium3", "regolithe", "metal_mercure"], v: 1.4 } } },
+    { id: "mains_pleines", n: "Les mains pleines", ic: "🤲", d: "Tout ce que tu récoltes à la main rapporte 12 % de plus.", e: { tap: { r: "*", v: 1.12 } } },
+    { id: "sac_lourd", n: "Le sac lourd", ic: "🎒", d: "Tu te réveilles avec 40 bois, 40 fibres, 25 cailloux et 4 cordes de plus.", e: { paq: { bois: 40, fibre: 40, caillou: 25, corde: 4 } } },
+    { id: "bras", n: "Les bras de la terre", ic: "🦾", d: "Tous tes extracteurs produisent 15 % de plus.", e: { ext: { z: "*", v: 1.15 } } },
+    { id: "rigoles", n: "Les rigoles", ic: "💧", d: "Dans la Lisière, la Plaine, la Rivière, les Collines et le Désert, les extracteurs produisent 30 % de plus.", e: { ext: { z: ["lisiere", "plaine", "riviere", "collines", "desert"], v: 1.3 } } },
+    { id: "puits_noir", n: "Le puits noir", ic: "🕳️", d: "Dans les Profondeurs, le Gisement Noir et les Pics Fracturés, les extracteurs produisent 30 % de plus.", e: { ext: { z: ["mine", "gisement", "montagnes"], v: 1.3 } } },
+    { id: "ciel_clair", n: "Le ciel clair", ic: "🌌", d: "En Orbite, sur la Lune et sur Mercure, les extracteurs produisent 40 % de plus.", e: { ext: { z: ["orbite", "lune", "mercure"], v: 1.4 } } },
+    { id: "burette", n: "La burette", ic: "🛢️", d: "Les machines vont 20 % plus vite.", e: { mach: 1.2 } },
+    { id: "doigts", n: "Les doigts souples", ic: "🧵", d: "Les fabrications à la main durent 20 % de moins.", e: { mains: 0.8 } },
+    { id: "route", n: "La route battue", ic: "🛤️", d: "Les passages coûtent 15 % de moins.", e: { pass: 0.85 } },
+    { id: "main_heureuse", n: "La main heureuse", ic: "🍀", d: "Tes récoltes à la main ont 12 % de chances de plus de rapporter le double.", e: { crit: 0.12 } },
+    { id: "carnet_cornu", n: "Le carnet cornu", ic: "📓", d: "Tu gagnes 30 % d’Intuition en plus.", e: { intu: 1.3 } },
+    { id: "sommeil", n: "Le sommeil lourd", ic: "🛌", d: "Quand tu es absent, le temps compte 25 % plus longtemps.", e: { veille: 1.25 } },
+    { id: "bourse", n: "La bourse du Troqueur", ic: "👛", d: "Le Troqueur te paie 25 % de plus pour ce que tu lui vends.", e: { vente: 1.25 } }
+  ];
+  D.DONS_OFFRE = 3; // combien de dons sont proposés à chaque relève
+
+  /* ===== LES SEUILS PAR GISEMENT (0.9) =====
+   * Quand un même gisement porte 10, 25, 50, 100 extracteurs, sa production est multipliée par mult à
+   * chaque seuil. Pas de seuils là où une règle de terre limite déjà les extracteurs (la Rivière). */
+  D.SEUILS = { paliers: [10, 25, 50, 100], mult: 1.25 };
+
+  /* ===== LES JOURS DE PRÉSENCE (0.9) =====
+   * Un compteur de jours où tu es venu. Jamais une série : rater un jour ne retire rien.
+   * base : le petit cadeau de chaque jour ; paliers : un cadeau plus gros au jour n (t : une phrase en plus). */
+  D.JOURS = {
+    base: { intu: 2, tr: 1 },
+    paliers: {
+      3: { intu: 4, tr: 2 },
+      7: { intu: 6, tr: 3, t: "Il est dangereux d’y aller seul. Prends ceci." },
+      14: { intu: 8, tr: 5 },
+      30: { intu: 12, tr: 8 },
+      60: { intu: 16, tr: 12 },
+      100: { intu: 25, tr: 20 }
+    }
+  };
+
   /* Coup de chance : de temps en temps, un appui récolte double (6 % au départ, +4 % par
    * niveau de « Coup d’œil » dans la Mémoire des mains). */
   D.CRIT = { chance: 0.06, up: 0.04, mult: 2 };
@@ -1011,23 +1061,12 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🧭 Le tutoriel couvre mieux trois moments : réparer une ruine quand il te manque des pièces (il te montre quoi fabriquer), parler au Troqueur, et lire la règle d’une terre.",
-    "🔨 Dans une ruine, ce qu’il faut pour la réparer s’affiche en pastilles : touche celle qui est en rouge pour ouvrir sa fiche.",
-    "💬 Au Comptoir, un onglet « Parler » : le Troqueur répond, une réplique à la fois, sur ce que tu lui demandes. Il en sait plus qu’il n’en vend.",
-    "🗺️ Chaque terre a maintenant sa règle, écrite sur sa fiche du Domaine : le courant de la Rivière, la nuit des Profondeurs, le verre du Désert, le vide de l’Orbite, la pesanteur de la Lune, les marches des Collines.",
-    "🧤 Nouveau : les gants de peau, pour récolter à la main dans le Désert.",
-    "🔎 Sur la carte d’objectif, le bouton « Chercher » s’appelle « Tenter ».",
-    "📱 Sur petit écran, l’en-tête garde le nom de l’âge, et la carte d’objectif passe ses boutons sous le titre.",
-    "⌨️ Les fenêtres se ferment avec Échap, ont une croix toujours visible, et le clavier ne sort plus de la fenêtre ouverte.",
-    "🏛️ Les deux Grands Œuvres disparus en 0.8.1 reviennent. Si tu en avais commencé un, tu reprends où tu en étais.",
-    "📜 En haut de l’écran, le bouton Quêtes : l’objectif en cours, trois rituels par jour et les demandes du Troqueur.",
-    "🤝 Plus tu livres au Troqueur, plus il te fait confiance. À chaque rang, ses livraisons rapportent plus de Traces.",
-    "✦ La Mémoire des mains a de nouveaux niveaux, plus chers : de quoi dépenser tes Traces en fin de partie.",
-    "🔍 À l’Atelier, « Étudier tout » étudie d’un coup toutes tes ressources. Le filtre « À tenter » garde celles qui servent encore, et les autres pâlissent.",
-    "⚡ Dans le Carnet, le filtre « Prêtes » montre ce que tu peux fabriquer tout de suite.",
-    "🤏 Le Domaine a une vue serrée, pour voir plus de lignes d’un coup.",
-    "🗺️ Les lieux cachés se laissent mieux deviner.",
-    "🔧 Plusieurs défauts corrigés."
+    "🎁 À chaque relève, trois dons t’attendent : tu en gardes un pour ce cycle.",
+    "🕊️ Un oiseau, une luciole ou un colporteur passe de temps en temps. Touche-le : il laisse quelque chose.",
+    "✨ Dans le Cosmos, l’onglet Figures montre tes fragments et tes signes comme des étoiles.",
+    "🧭 Sur la Carte, un lieu déjà exploré se fouille de nouveau : un tour, une fouille, ou tout retourner. Ça continue jeu fermé.",
+    "⛏️ Un gisement rend plus quand il porte 10, 25, 50 puis 100 extracteurs.",
+    "📅 Un petit cadeau t’attend chaque jour où tu reviens. Manquer des jours n’enlève rien."
   ];
 
 
@@ -1172,8 +1211,58 @@
     "Un sourire naît au coin de tes lèvres : oui, ça, tu t’en souviens."
   ];
 
+  /* ===== VISITEURS DE PASSAGE (début) =====
+   * Quelqu'un ou quelque chose traverse le Domaine, de loin en loin. On le touche : un petit lot.
+   * Calendrier en secondes de jeu actif (S.stats.play), jamais hors ligne.
+   * lot.secondes : secondes de récolte à la main que vaut la matière ; objet, page, clin : chances.
+   * tps : parties de la journée (nuit avant 6 h ou dès 21 h, aube avant 8 h, crépuscule dès 18 h, sinon jour).
+   * terres : liste de terres, ou absent pour toutes (le Domaine seulement, jamais les lieux sans ciel).
+   * pg : peut donner une page du Livre que le Comptoir vend (très rare).
+   * clin : phrase complice, sans nom propre réel (voir docs/coffre/EASTER.md). */
+  D.VISITEURS = {
+    delai: [480, 1200],
+    traversee: 12,
+    lot: { secondes: 90, intu: 1, objet: 0.08, page: 0.02, clin: 0.03 },
+    liste: [
+      { id: "oiseau", ic: "🐦", n: "un oiseau", tps: ["day", "dawn", "dusk"], w: 3,
+        t: "Un oiseau laisse tomber quelque chose." },
+      { id: "papillon", ic: "🦋", n: "un papillon", tps: ["day"], terres: ["lisiere", "plaine", "riviere", "collines"], w: 2,
+        t: "Un papillon se pose sur ta main, puis repart." },
+      { id: "luciole", ic: "", css: "luciole", n: "une luciole", tps: ["night"], terres: ["lisiere", "plaine", "riviere", "collines", "desert"], w: 3,
+        t: "La luciole tourne autour de ta main.",
+        clin: "La luciole crie « Hé ! Écoute ! » d’une toute petite voix, puis repart, très contente d’elle." },
+      { id: "colporteur", ic: "🎒", n: "un colporteur", tps: ["day", "dusk"], terres: ["plaine", "riviere", "collines", "desert", "montagnes"], w: 2, pg: true,
+        t: "Le colporteur te tend un petit paquet et repart sans rien demander.",
+        clin: "Le colporteur te tend un bâton : « C’est dangereux d’y aller seul. » Puis il le reprend : « Non, il est pour le suivant. »" },
+      { id: "renard", ic: "🦊", n: "un renard", tps: ["dawn", "dusk", "night"], terres: ["lisiere", "plaine", "collines", "montagnes"], w: 2,
+        t: "Un renard file entre tes pieds.",
+        clin: "Un renard s’enroule en boule et file. Quelque part, des anneaux tintent." },
+      { id: "chauve", ic: "🦇", n: "une chauve-souris", tps: ["dusk", "dawn"], w: 2,
+        t: "Une chauve-souris te frôle la tête.",
+        clin: "La chauve-souris passe devant la lune. Un instant, tu entends un orgue, très loin." }
+    ],
+    txt: {
+      aria: "{n} passe. Touche pour voir.",
+      page: "Il te laisse aussi une page du Livre."
+    }
+  };
+  /* ===== VISITEURS DE PASSAGE (fin) ===== */
+
   /* Scènes d’éveil des Semeurs (cycles 2 et suivants) */
   D.EVEILS = {}; // js/recit.js
+
+  /* ------------------------------------------------ EXPÉDITIONS LONGUES (fouilles)
+   * Un lieu déjà exploré se fouille de nouveau, en trois niveaux de plus en plus longs, hors ligne.
+   * s : durée en secondes ; taps : le butin vaut autant d’appuis de récolte à la main (qui suivent la
+   * puissance du joueur : l’outil, la Mémoire, la règle de la terre) pour chaque ressource de la terre ;
+   * intu : l’Intuition de la première fois. Le niveau n+1 demande d’avoir fini le niveau n. */
+  D.FOUILLE = {
+    niveaux: [
+      { n: "Un tour", s: 1800, taps: 120, intu: 1 },
+      { n: "Une fouille", s: 7200, taps: 600, intu: 2 },
+      { n: "Tout retourner", s: 28800, taps: 2400, intu: 4 }
+    ]
+  };
 
   root.ECLAT_DATA = D;
   if (typeof module !== "undefined" && module.exports) module.exports = D;

@@ -456,11 +456,11 @@
     E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
-    top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
-    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
+    top: () => donsRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
+    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length
   });
   const Carte = window.EclatCarte.create({
-    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, expWhy: (z) => expWhy(z), explore: (z) => explore(z), goto: (id) => goto(id),
+    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
     goDomaine: (z) => { U.zone = z; setTab("domaine"); Dom.focusZone(z); }
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
@@ -1213,6 +1213,10 @@
     if (on && jb.classList.contains("hidden") && U.tabsSeen) jb.classList.add("born"); // il vient d’apparaître
     jb.classList.toggle("hidden", !on);
     U.tabsSeen = true;
+    // un don de la relève attend d’être pris : une pastille sur le bouton Menu
+    const mb = $("#menuBtn"), dd = $(".dot", mb), dpend = E.donsOffre().length > 0;
+    if (dpend && !dd) { const d = document.createElement("i"); d.className = "dot dot-don"; mb.appendChild(d); }
+    if (!dpend && dd) dd.remove();
     // l’Intuition se montre quand elle commence à servir
     $("#intuBtn").classList.toggle("hidden", Object.keys(S().known).length < 3 && !Object.keys(S().studied).length);
   }
@@ -1251,7 +1255,10 @@
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
-    else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
+    else if (U.tab === "cosmos") {
+      if (U.cosmosTab === "figures") { const g = figuresSig(); if (el.dataset.sig !== g) { el.innerHTML = viewCosmos(); el.dataset.sig = g; mountCosmos(); } } // sans rien de vivant : on ne redessine que si quelque chose change
+      else { delete el.dataset.sig; el.innerHTML = viewCosmos(); mountCosmos(); }
+    }
     iconize(el);
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
@@ -2125,16 +2132,53 @@
     return E.zoneOpen(z) ? zoneName(z) : "Une terre que tu n’as pas encore foulée";
   }
 
+  /* ===== FIGURES DU COSMOS (début) ===== */
+  const FIG_TXT = {
+    intro: "Chaque fragment du Journal est une étoile. Une étoile pâle est un lieu repéré, pas encore exploré.",
+    signes: "Un signe compris s’allume et donne son mot. Ceux que tu as vus au même endroit se tiennent près l’un de l’autre.",
+    vide: "Le ciel est vide pour l’instant. Un fragment retrouvé ou un signe aperçu y laisse une étoile.",
+    pale: "Un lieu repéré, pas encore exploré. Touche pour le voir sur la Carte.",
+    compris: "Signe compris : {mot}",
+    inconnu: "Signe pas encore compris"
+  };
+  function figuresSig() {
+    const fg = E.figures(), st = S();
+    return JSON.stringify([fg.stars.map((s) => s.id + s.etat), fg.signes.map((s) => s.id + (s.lu ? 1 : 0) + s.lieux.length), !!st.flags.arche, !!E.cache().term, Object.keys(D.PROJECTS).some(E.projVisible), st.termMode]);
+  }
+  function figuresHTML() {
+    const fg = E.figures();
+    Object.keys(fg.noms).forEach((z) => { fg.noms[z] = fragPlace(z); });
+    const lay = window.EclatFigures.layout(fg);
+    const rendu = window.EclatFigures.render(lay, { esc, signeSVG: window.signeSVG, txt: FIG_TXT });
+    if (!fg.stars.length && !fg.signes.length) return '<p class="small muted center" style="padding:20px 0">' + esc(FIG_TXT.vide) + "</p>";
+    const on = fg.stars.filter((s) => s.etat === "allumee").length, pale = fg.stars.length - on;
+    let h = "";
+    if (fg.stars.length) {
+      h += '<h3 class="sub">Les fragments</h3><p class="small muted">' + esc(FIG_TXT.intro) + " " + on + (on > 1 ? " étoiles allumées" : " étoile allumée") + (pale ? ", " + pale + (pale > 1 ? " pâles" : " pâle") : "") + ".</p>";
+    }
+    const cut = rendu.indexOf('<div class="fig-sky fig-sig"');
+    if (fg.stars.length) h += '<div class="fig-wrap">' + (cut < 0 ? rendu : rendu.slice(0, cut)) + "</div>";
+    if (fg.signes.length) {
+      h += '<h3 class="sub">Les signes</h3><p class="small muted">' + esc(FIG_TXT.signes) + "</p>";
+      h += '<div class="fig-wrap">' + (cut < 0 ? rendu : rendu.slice(cut)) + "</div>";
+    }
+    return h;
+  }
+  /* ===== FIGURES DU COSMOS (fin) ===== */
+
   /* ------------------------------------------------------------ COSMOS */
   function viewCosmos() {
     const st = S();
     const isReg = !!(st.flags.registre && st.termMode !== "arche");
     const tabs = [["ciel", "Ciel"]];
+    { const fg = E.figures(); if (fg.stars.length || fg.signes.length) tabs.push(["figures", "Figures"]); }
     if (st.flags.arche || E.cache().term) tabs.push(["arche", isReg ? "REGISTRE" : "ARCHE"]);
     if (Object.keys(D.PROJECTS).some(E.projVisible)) tabs.push(["oeuvres", "Grands Œuvres"]);
     if (!tabs.find((t) => t[0] === U.cosmosTab)) U.cosmosTab = "ciel";
     let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
-    if (U.cosmosTab === "ciel") {
+    if (U.cosmosTab === "figures") {
+      h += figuresHTML();
+    } else if (U.cosmosTab === "ciel") {
       h += '<div class="sky-wrap"><canvas id="skyCanvas"></canvas><div class="sky-info" id="skyInfo">Touche le ciel.</div></div>';
       if (E.cache().signal) h += '<button class="btn wide pri" id="listen">📡 Écouter Kher</button>';
       else h += '<p class="small muted">Avec une oreille assez grande, tu pourrais peut-être entendre ce que dit l’étoile rouge.</p>';
@@ -2950,6 +2994,7 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
+        '<div class="toggle"><span>Visiteurs</span><button class="btn small" data-m="visiteurs">' + (E.visiteurActif() ? "Oui" : "Non") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">Nouveautés</button><button class="btn" data-m="credits">Crédits</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
@@ -2981,6 +3026,7 @@
         },
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
+        visiteurs: (b) => { E.setVisiteurs(!E.visiteurActif()); if (!E.visiteurActif()) visiteurFin(); b.textContent = E.visiteurActif() ? "Oui" : "Non"; save(); return true; },
         tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
         tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre réapparaît au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
@@ -3000,12 +3046,25 @@
     });
   }
   /* lancer l’exploration du prochain lieu d’une terre */
-  function explore(z) {
-    const why = expWhy(z);
+  function explore(z, xid) {
+    const why = xid ? (S().exp.active ? "Tu explores déjà ailleurs : une exploration à la fois." : "") : expWhy(z);
     if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
-    const r = E.startExp(z);
+    const r = E.startExp(z, xid);
     if (r.ok) { A.init(); A.explore(); toast("🧭 Exploration lancée : elle avance toute seule."); }
     render(true);
+  }
+  /* ------------------------------------------------------ fouilles (expéditions longues) */
+  const FOU = () => ((E.RECIT || {}).fouille || {}).ui || {};
+  function fouiller(z, i, lvl) {
+    const r = E.fouilleLancer(z, i, lvl);
+    if (!r.ok) { A.fail(0); toast(r.why === "busy" ? FOU().busy : r.why === "palier" ? (lvl === 2 ? FOU().avant1 : FOU().avant2) : "", { key: "nope" }); return; }
+    A.init(); A.explore();
+    toast("🧭 " + esc(FOU().parti || ""));
+    render(true);
+  }
+  function recolterFouille() {
+    const r = E.fouilleRecolter();
+    if (!r.ok) { A.fail(0); if (r.why === "pas_fini") toast(esc(FOU().pasFini || ""), { key: "nope" }); }
   }
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
@@ -3286,10 +3345,52 @@
           U.domAll = false;
           U.domOpen = null;
           setTab("domaine");
-          openMemoire(() => { setTimeout(intro, 200); });
+          openMemoire(() => { setTimeout(() => { intro(); if (E.donsOffre().length) openDons(); }, 200); });
         }
       }
     });
+  }
+  /* ------------------------------------------------------------ LES DONS DE LA RELÈVE
+   * Trois dons à l’éveil du nouveau cycle, on en prend un. Fermer sans choisir ne bloque rien :
+   * une pastille sur le Menu et une ligne en haut du Domaine permettent d’y revenir. */
+  function donsHTML() {
+    const ids = E.donsOffre();
+    return '<div class="kicker">Ce que le Semeur d’avant a laissé</div><h2>Trois dons</h2>' +
+      '<p class="small">Tu en prends un, pour ce cycle seulement. Le Semeur suivant en trouvera d’autres.</p>' +
+      '<div class="dons">' + ids.map((id) => {
+        const d = E.donDef(id);
+        return '<div class="don"><span class="mic">' + d.ic + '</span><div class="grow"><div class="small"><b>' + esc(d.n) + '</b></div><div class="tiny muted">' + esc(d.d) + "</div></div>" +
+          '<button class="btn small pri" data-m="don" data-id="' + id + '">Prendre</button></div>';
+      }).join("") + "</div>" +
+      '<div class="acts"><button class="btn" data-m="close">Plus tard</button></div>' +
+      '<p class="tiny dim center">Tu peux y revenir depuis le Domaine ou la Mémoire des mains.</p>';
+  }
+  function openDons(onClose) {
+    if (!E.donsOffre().length) { if (onClose) onClose(); return; }
+    openModal({
+      html: donsHTML(),
+      onClose,
+      on: {
+        don: (b) => {
+          const id = b.dataset.id;
+          if (!E.donChoose(id)) return false;
+          A.secret ? A.secret() : A.click(); vibe([10, 30, 10]);
+          toast("Tu prends : " + esc(E.donDef(id).n) + ".", { key: "don" });
+          save(); render(true);
+        }
+      }
+    });
+  }
+  /* la ligne du Domaine tant qu’aucun don n’est pris */
+  function donsRepere() {
+    return E.donsOffre().length ? '<button class="dom-tip dom-don" data-dons>🎁 Le Semeur d’avant a laissé trois dons. Tu en prends un. <span>voir ▸</span></button>' : "";
+  }
+  /* le don du cycle, dans la Mémoire des mains */
+  function donCycleHTML() {
+    const d = E.don();
+    if (d) return '<div class="card memdon"><div class="tiny muted">Le don de ce cycle</div><div class="small"><span class="mic">' + d.ic + "</span> <b>" + esc(d.n) + '</b></div><div class="tiny muted">' + esc(d.d) + "</div></div>";
+    if (E.donsOffre().length) return '<div class="card memdon"><div class="row between"><span class="small">Trois dons t’attendent.</span><button class="btn small pri" data-m="dons">Choisir</button></div></div>';
+    return "";
   }
   /* ------------------------------------------------------------ MÉMOIRE DES MAINS
    * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
@@ -3297,6 +3398,7 @@
     const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
     let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
       '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
+    h += donCycleHTML();
     h += '<div class="card memrel">' + (can
       ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
       : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
@@ -3411,6 +3513,7 @@
           swapModal(Object.assign(o, { html: memHTML() }));
           return true;
         },
+        dons: () => { setTimeout(() => openDons(), 80); },
         releve: () => { setTimeout(confirmCycle, 80); }
       }
     };
@@ -3479,6 +3582,16 @@
     }
   }
 
+  /* les jours de présence : un compteur discret, jamais une série */
+  function joursHTML() {
+    const J = E.jours();
+    if (!(J.n > 0)) return "";
+    const c = J.cadeau, nx = E.jourProchain();
+    const gift = c ? [c.intu ? c.intu + " ✨" : "", c.tr ? c.tr + " ✦" : ""].filter(Boolean).join(" et ") : "";
+    return '<div class="jours"><b>Jour ' + J.n + "</b>" + (gift ? ' <span class="tiny muted">· ton cadeau : ' + gift + "</span>" : "") +
+      (c && c.t ? '<div class="tiny muted"><i>' + esc(c.t) + "</i></div>" : "") +
+      (nx ? '<div class="tiny dim">Un cadeau plus gros au jour ' + nx + ".</div>" : "") + "</div>";
+  }
   function openQuestsModal(initialTab) {
     U.questTab = initialTab || U.questTab || "scenario";
     const makeHTML = () => {
@@ -3506,6 +3619,7 @@
             : sc.missKeys && sc.missKeys.length ? '<div class="small" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px"><span class="muted">Il manque :</span> ' + sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '') +
           '</div>';
       } else if (tab === "rituals") {
+        h += joursHTML();
         h += '<div class="small muted" style="margin-bottom:8px">Trois rituels renouvelés chaque jour. Réclame tes récompenses une fois les objectifs atteints :</div>';
         rits.forEach((r, idx) => {
           const pct = Math.min(100, Math.floor((r.prog / r.target) * 100));
@@ -3611,7 +3725,7 @@
           U.domAll = false;
           U.domOpen = null;
           setTab("domaine");
-          openMemoire(() => { setTimeout(intro, 200); });
+          openMemoire(() => { setTimeout(() => { intro(); if (E.donsOffre().length) openDons(); }, 200); });
         }
       }
     });
@@ -3735,6 +3849,20 @@
     E.on("page", (p) => {
       badge("journal");
       toast("📖 Une page du Livre : n° " + p.n);
+    });
+    // une fouille finie : un mot, une pastille sur la Carte ; on la reçoit en la touchant
+    E.on("fouillePrete", () => { badge("carte"); if (U.live) toast("🧭 " + esc(FOU().prete || ""), { key: "fouille" }); });
+    E.on("fouille", (r) => {
+      A.found(); badge("journal");
+      const U_ = FOU(), gains = Object.keys(r.butin).map((k) => "+" + fmt(r.butin[k]) + " " + I[k].n.toLowerCase()).concat(r.intu ? ["+" + r.intu + " ✨"] : []);
+      openModal({
+        html: '<div class="kicker">' + esc(U_.kicker || "") + " · " + esc(zoneName(r.z)) + "</div><h2>" + esc(r.x.n) + '</h2><p class="small muted">' + esc(r.niv.n) + "</p>" +
+          loreHTML(r.phrase, zoneName(r.z)) +
+          '<p class="small">' + esc(U_.rapporte || "") + " : " + esc(gains.join(", ")) + ".</p>" +
+          (r.cote ? '<p class="small" style="color:var(--good)">' + esc(U_.nouveau || "") + " : <b>" + esc(r.cote.n) + "</b>.</p>" : "") +
+          '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>'
+      });
+      render(true);
     });
     E.on("expdone", (r) => {
       A.found();
@@ -3949,6 +4077,7 @@
       if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
+      if (t.closest("[data-dons]")) { A.click(); openDons(); return; }
       if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }
       if ((b = t.closest("[data-gotab]"))) { A.click(); setTab(b.dataset.gotab); return; }
       if ((b = t.closest("[data-hloop]"))) { startHarvest(b.dataset.hloop); return; }
@@ -4043,6 +4172,7 @@
         return;
       }
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
+      if ((b = t.closest("[data-fgz]"))) { A.click(); U.zone = b.dataset.fgz; setTab("carte"); return; } // une étoile pâle : le lieu, sur la Carte
       if (t.closest("#listen")) { listen(); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }
       if ((b = t.closest("[data-proj-act]"))) {
@@ -4211,8 +4341,70 @@
   }
 
   /* ============================================================ BOUCLE */
+  /* ===== VISITEURS DE PASSAGE (début) =====
+   * Une petite silhouette traverse le Domaine. C'est un bouton : on le touche, ou on l'atteint au clavier.
+   * Il s'arrête quand le doigt, la souris ou le focus est dessus. Avec « réduire les animations »,
+   * il apparaît sans glisser et reste quelques secondes. Manqué, il disparaît sans un mot. */
+  function visiteurFin() {
+    const v = U.vis;
+    if (!v) return;
+    clearTimeout(v.to);
+    if (v.el && v.el.parentNode) v.el.remove();
+    U.vis = null;
+    E.visiteurPartir();
+  }
+  function visiteurPhrase(lot, def) {
+    const parts = [];
+    if (lot.res) parts.push(fmt(lot.qty) + " " + I[lot.res].n);
+    if (lot.intu) parts.push(lot.intu + " Intuition");
+    if (lot.objet) parts.push("1 " + I[lot.objet].n);
+    let h = esc(def.t) + (parts.length ? " Tu reçois : <b>" + esc(parts.join(", ")) + "</b>." : "");
+    if (lot.page) h += " " + esc(D.VISITEURS.txt.page);
+    if (lot.clin) h += "<br><i>" + esc(lot.clin) + "</i>";
+    return h;
+  }
+  function visiteurToucher() {
+    const v = U.vis;
+    if (!v) return;
+    const lot = E.visiteurToucher(v.id);
+    visiteurFin();
+    if (!lot) return;
+    A.click();
+    const def = D.VISITEURS.liste.find((x) => x.id === lot.id);
+    toast(visiteurPhrase(lot, def), { key: "visiteur", p: 1 });
+    U.dirty = true;
+  }
+  function visiteurTick() {
+    if (U.vis) {
+      // une fenêtre s'ouvre ou l'on change d'écran : il s'en va
+      if (U.mcur || U.tab !== "domaine" || document.hidden) visiteurFin();
+      return;
+    }
+    const bloque = !U.live || performance.now() < 6000 || !S().introSeen || !!U.offline || !!U.mcur || document.hidden || U.tab !== "domaine" ||
+      !!Tuto.active() || !!$(".cele") || !!$("#modal:not(.hidden)") || !!$(".tuto:not(.hidden)");
+    const z = U.zone && E.zoneOpen(U.zone) ? U.zone : "lisiere";
+    const v = E.visiteurPoll({ bloque, zone: z });
+    if (!v) return;
+    let layer = $("#visiteurs");
+    if (!layer) { layer = document.createElement("div"); layer.id = "visiteurs"; document.body.appendChild(layer); }
+    const calme = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "visiteur" + (calme ? " fixe" : "");
+    b.setAttribute("aria-label", v.aria);
+    b.innerHTML = v.css ? '<span class="vis-' + v.css + '" aria-hidden="true"></span>' : '<span class="vis-ic" aria-hidden="true">' + v.ic + "</span>";
+    b.style.setProperty("--dur", v.dur + "s");
+    b.style.setProperty("--y", (22 + Math.random() * 30).toFixed(1) + "%");
+    b.style.setProperty("--x", (20 + Math.random() * 55).toFixed(1) + "%");
+    b.addEventListener("click", (ev) => { ev.stopPropagation(); visiteurToucher(); });
+    layer.appendChild(b);
+    U.vis = { id: v.id, el: b, to: setTimeout(visiteurFin, (calme ? 10 : v.dur) * 1000 + 300) };
+  }
+  /* ===== VISITEURS DE PASSAGE (fin) ===== */
+
   function loop() {
     E.update();
+    visiteurTick();
     if (U.offline && !U.mcur) showOffline();
     if (U.dirty && !U.holding && !pressing()) render();
   }

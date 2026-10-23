@@ -160,6 +160,12 @@ function allTexts() {
     (q.aides || []).forEach((a, i) => out.push(["question " + id + " aide " + (i + 1), a]));
   }
   for (const id in R.feuillets) out.push(["feuillet " + id, R.feuillets[id].t]);
+  // les fouilles : les paroles des lieux, les phrases d’usage, les libellés
+  for (const k in R.fouille.lignes) R.fouille.lignes[k].forEach((t, i) => { if (t) out.push(["fouille " + k + " " + (i + 1), t]); });
+  R.fouille.generiques.forEach((g, i) => g.forEach((t, j) => out.push(["fouille usage " + (i + 1) + "." + j, t])));
+  R.fouille.refaite.forEach((t, i) => out.push(["fouille refaite " + i, t]));
+  for (const k in R.fouille.ui) out.push(["fouille ui " + k, R.fouille.ui[k]]);
+  R.fouille.cotes.forEach((c) => out.push(["lieu d’à côté " + c.id + " nom", c.n]));
   // ce que dit le Troqueur : chaque réplique, ses thèmes, ses refus
   R.troc.lignes.forEach((l) => out.push(["troc " + l.id, l.t]));
   R.troc.themes.forEach((x) => out.push(["troc thème " + x.id, x.n]));
@@ -230,7 +236,7 @@ test("expFrag : chaque lieu existe et donne un fragment neuf ; l’ancien est ar
   }
   // tous les lieux des quatre premières terres sont branchés, sauf le Cercle et les lieux cachés
   for (const zid of PREMIERES) for (const x of zoneById[zid].exps) {
-    if (x.id === "cercle" || x.id === "racines" || x.id === "tombe" || x.id === "poings" || x.id === "nid" || x.id === "escalier") continue;
+    if (x.cote || x.id === "cercle" || x.id === "racines" || x.id === "tombe" || x.id === "poings" || x.id === "nid" || x.id === "escalier") continue;
     assert.ok(R.expFrag[zid + ":" + x.id], "lieu non branché : " + zid + ":" + x.id);
   }
   const targets = Object.values(R.expFrag);
@@ -1275,6 +1281,108 @@ test("Troqueur : toutes les répliques se disent un jour, et jamais deux fois", 
 test("Troqueur : le tirage ne dépend que du hasard du moteur, pas d’un ordre fixe", () => {
   const prem = (r) => { const E = createEngine({ now: () => T, rand: () => r }); E.state.zones.plaine = true; E.state.meta.troqueurDelivered = 8; E.add("poudre_rouge", 1); return E.troqueurParle("marchandises").id; };
   assert.notStrictEqual(prem(0), prem(0.99));
+});
+
+console.log("Récit : les fouilles et les lieux d’à côté");
+test("fouilles : des paroles courtes et dites, des lieux qui existent, rien de traduit", () => {
+  const F = R.fouille;
+  assert.strictEqual(F.generiques.length, 3);
+  assert.ok(F.generiques.every((g) => g.length >= 2) && F.refaite.length >= 2);
+  const textes = [];
+  for (const k in F.lignes) {
+    assert.ok(place(k), k + " : lieu inconnu");
+    assert.strictEqual(F.lignes[k].length, 3, k + " : trois niveaux");
+    F.lignes[k].forEach((t, i) => { if (t) textes.push([k + " niveau " + (i + 1), t]); });
+  }
+  assert.ok(textes.length >= 15 && textes.length <= 40, "quelques paroles seulement : " + textes.length);
+  F.generiques.forEach((g, i) => g.forEach((t, j) => textes.push(["usage " + (i + 1) + "." + j, t])));
+  F.refaite.forEach((t, i) => textes.push(["refaite " + i, t]));
+  Object.keys(F.ui).forEach((k) => textes.push(["ui " + k, F.ui[k]]));
+  for (const [w, t] of textes) {
+    assert.ok(t.length <= 190, w + " : trop long (" + t.length + ")");
+    assert.ok(!/—|--/.test(t), w + " : tiret cadratin");
+    assert.ok(!/\b(loot|quest|level|boss|craft|farm|stock|xp|bonus)\b/i.test(t), w + " : un mot de jeu anglais");
+    assert.ok(!/\bverser\b|\bzone\b|mystérieu|étrange|sinistre/i.test(t), w + " : un mot à éviter");
+    assert.ok((t.match(/\b(c’est|ça|ce sont)\b/gi) || []).length <= 1, w + " : « c’est / ça » en série");
+    assert.ok(t.split(/(?<=[.?!])\s+/).length <= 3, w + " : trop de phrases");
+    assert.ok(!/ [,;]|\.\.\./.test(t), w + " : ponctuation");
+  }
+  // trois niveaux, de plus en plus longs, et les durées de la demande (30 min, 2 h, 8 h)
+  assert.deepStrictEqual(D.FOUILLE.niveaux.map((n) => n.s / 60), [30, 120, 480]);
+  // les libellés se lisent sur un téléphone
+  assert.ok(D.FOUILLE.niveaux.every((n) => n.n.length <= 16));
+});
+test("lieux d’à côté : de quatre à six, hors file, cachés, deux indices ailleurs avant d’y arriver", () => {
+  const C = R.fouille.cotes;
+  assert.ok(C.length >= 4 && C.length <= 6, "4 à 6 lieux : " + C.length);
+  for (const c of C) {
+    const P = place(c.z + ":" + c.parent), X = place(c.z + ":" + c.id);
+    assert.ok(P && !P.cote, c.id + " : lieu d’origine " + c.parent);
+    assert.ok(X && X.cote === c.parent && X.dur > 0 && X.rw.frag === c.id, c.id + " : lieu d’à côté branché");
+    assert.ok(D.ZONES.find((z) => z.id === c.z).exps.indexOf(X) >= D.ZONES.find((z) => z.id === c.z).exps.filter((q) => !q.cote).length, c.id + " : après la file");
+    const f = D.FRAGS[c.id];
+    assert.ok(f && f.z === c.z && f.t.length <= 720 && f.revisit && f.revisit.length >= 1, c.id + " : fragment et revisite");
+    // les indices : la parole du niveau 1 et celle du niveau 2 du lieu d’origine, avant l’ouverture au niveau 3
+    const L = R.fouille.lignes[c.z + ":" + c.parent];
+    assert.ok(L && L[0] && L[1] && L[2] && L[0] !== L[1], c.id + " : trois paroles au lieu d’origine");
+    assert.ok(!L[0].includes(c.n) && !L[1].includes(c.n), c.id + " : les indices ne nomment pas le lieu");
+  }
+  assert.strictEqual(new Set(C.map((c) => c.id)).size, C.length);
+});
+test("lieux d’à côté : chacun s’atteint (explorer, fouiller trois fois, entrer), puis se fouille", () => {
+  for (const c of R.fouille.cotes) {
+    const E = mk();
+    E.state.exp.done = {};
+    const log = [];
+    E.on("expdone", (r) => log.push(r));
+    jusqua(E, c.z, c.parent);
+    const zi = D.ZONES.findIndex((z) => z.id === c.z), pi = D.ZONES[zi].exps.findIndex((x) => x.id === c.parent);
+    assert.strictEqual(E.coteEtat(c.z, c.id), 0, c.id + " : caché au départ");
+    assert.strictEqual(E.startExp(c.z, c.id).why, "none");
+    for (let lvl = 1; lvl <= 3; lvl++) {
+      assert.ok(E.fouilleLancer(c.z, pi, lvl).ok, c.id + " niveau " + lvl);
+      T += D.FOUILLE.niveaux[lvl - 1].s * 1000 + 1000; E.update();
+      const r = E.fouilleRecolter();
+      assert.ok(r.ok && r.phrase === R.fouille.lignes[c.z + ":" + c.parent][lvl - 1], c.id + " : la parole du niveau " + lvl);
+      assert.strictEqual(!!r.cote, lvl === 3, c.id + " : s’ouvre au dernier niveau seulement");
+    }
+    assert.strictEqual(E.coteEtat(c.z, c.id), 1);
+    log.length = 0;
+    assert.ok(E.startExp(c.z, c.id).ok, c.id + " : on y va");
+    T += (D.ZONES[zi].exps.find((x) => x.id === c.id).dur + 5) * 1000; E.update();
+    const ev = log.find((e) => e.x.id === c.id);
+    assert.ok(ev && ev.fragNew && E.state.frags[c.id], c.id + " : son fragment");
+    assert.strictEqual(E.coteEtat(c.z, c.id), 2);
+    const ci = D.ZONES[zi].exps.findIndex((x) => x.id === c.id);
+    assert.ok(E.fouilleLancer(c.z, ci, 1).ok, c.id + " : il se fouille à son tour");
+  }
+});
+test("fouilles : la première fois le lieu parle, ensuite une phrase d’usage ; les lieux muets aussi", () => {
+  const E = mk();
+  jusqua(E, "lisiere", "chene");
+  const dit = [];
+  for (let lvl = 1; lvl <= 3; lvl++) { E.fouilleLancer("lisiere", 0, lvl); T += 9 * 3600e3; E.update(); dit.push(E.fouilleRecolter().phrase); }
+  assert.deepStrictEqual(dit, R.fouille.lignes["lisiere:chene"]);
+  assert.deepStrictEqual(E.fouillePhrases("lisiere", "chene").map((p) => p.t), dit);
+  E.fouilleLancer("lisiere", 0, 1); T += 9 * 3600e3; E.update();
+  assert.ok(R.fouille.refaite.includes(E.fouilleRecolter().phrase), "refaite : phrase d’usage");
+  // un lieu sans parole au niveau 2 : une phrase d’usage, pas un blanc
+  const E2 = mk();
+  jusqua(E2, "riviere", "gue");
+  E2.state.meta.fouilles["riviere:gue"] = 1;
+  E2.fouilleLancer("riviere", 0, 2); T += 9 * 3600e3; E2.update();
+  assert.ok(R.fouille.generiques[1].includes(E2.fouilleRecolter().phrase));
+});
+test("fouilles : le butin reste modeste (au plus une grosse récolte à la main, quel que soit le niveau)", () => {
+  const E = mk();
+  jusqua(E, "lisiere", "chene");
+  E.fouilleLancer("lisiere", 0, 1); T += 3600e3; E.update();
+  const r = E.fouilleRecolter();
+  for (const res in r.butin) assert.ok(r.butin[res] <= 400, res + " : " + r.butin[res]);
+  // et il grandit avec la main : un meilleur outil, un meilleur butin
+  const E2 = mk(); jusqua(E2, "lisiere", "chene"); E2.state.meta.mem = { recolte: 3 };
+  E2.fouilleLancer("lisiere", 0, 1); T += 3600e3; E2.update();
+  assert.ok(E2.fouilleRecolter().butin.bois > r.butin.bois, "le butin suit la récolte à la main");
 });
 
 console.log("Récit : les anciennes parties");

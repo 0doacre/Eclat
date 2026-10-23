@@ -86,8 +86,10 @@
       proj: {}, endings: {},
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
-      stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} },
+      stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
+      visiteur: { next: 0, clins: {} },
+      don: null, donsOffre: [],
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null } },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -386,6 +388,59 @@
       return true;
     };
 
+
+    /* ------------------------------------------------------ Les dons de la relève (voir D.DONS)
+     * Trois dons tirés au hasard à chaque relève, on en garde un pour ce cycle. Le tirage ne dépend que
+     * du numéro de cycle et d’une graine sauvegardée : le rouvrir ou recharger donne les mêmes trois. */
+    const DON = {};
+    D.DONS.forEach((d) => (DON[d.id] = d));
+    const NODON = {};
+    const donE = () => (S.don && DON[S.don.id] ? DON[S.don.id].e : NODON);
+    E.donDef = (id) => DON[id] || null;
+    /* graine et mélange : le même (graine, cycle) rend toujours les mêmes dons */
+    function prng(a) {
+      return function () {
+        a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    E.donsTirage = function (cycle, graine) {
+      graine = graine === undefined ? (S.meta && S.meta.graine) || 0 : graine;
+      const r = prng((Math.imul(graine | 0, 2654435761) ^ Math.imul((cycle | 0) + 1, 40503)) | 0);
+      r(); r();
+      const pool = D.DONS.map((d) => d.id);
+      const out = [];
+      for (let i = 0; i < D.DONS_OFFRE && pool.length; i++) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
+      return out;
+    };
+    /* les dons proposés en ce moment : vide au cycle 1, ou une fois le choix fait */
+    E.donsOffre = () => (S.don ? [] : (S.donsOffre || []).filter((id) => DON[id]));
+    E.don = () => (S.don && DON[S.don.id] ? DON[S.don.id] : null);
+    E.donChoose = function (id) {
+      if (S.don || !E.donsOffre().includes(id)) return false;
+      S.don = { id, cycle: S.cycle };
+      S.donsOffre = [];
+      const paq = DON[id].e.paq;
+      if (paq) for (const i in paq) { add(i, paq[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); }
+      recalc();
+      E.emit("struct");
+      return true;
+    };
+    /* ce que le don change, pour les autres parties du moteur (1 : rien) */
+    const donTap = (res) => { const t = donE().tap; return t && (t.r === "*" || t.r.includes(res)) ? t.v : 1; };
+    const donExt = (z) => { const t = donE().ext; return t && (t.z === "*" || t.z.includes(z)) ? t.v : 1; };
+    const donMul = (k) => donE()[k] || 1;
+    function donIntu(n) { // l’Intuition en plus : la part qui n’est pas entière attend dans intuAcc
+      const v = donE().intu;
+      if (!v || !(n > 0)) return;
+      S.intuAcc += n * (v - 1);
+      const k = Math.floor(S.intuAcc);
+      if (k >= 1) { S.intu += k; S.intuAcc -= k; }
+    }
+    E.donMul = donMul;
+
     /* ------------------------------------------------------ Résonances Stellaires (Transcendance) */
     const TRANS = {};
     (D.TRANSCENDANCE || []).forEach((t) => (TRANS[t.id] = t));
@@ -429,7 +484,7 @@
       E.emit("struct");
     }
     E.passCost = function (zid) {
-      let k = memV("chemins");
+      let k = memV("chemins") * donMul("pass");
       for (const z in REG) {
         const m = REG[z].remise;
         if (m && m.vers === zid) k *= 1 - m.par * Math.min(m.max, (S.exp && S.exp.done && S.exp.done[z]) || 0);
@@ -508,7 +563,7 @@
     E.xpOf = xpOf;
 
     function dayKey() {
-      const d = new Date();
+      const d = new Date(now());
       return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
     }
 
@@ -534,7 +589,7 @@
     };
     function tapYield(res, zid) {
       const c = E.cache();
-      return regleTap(zid) * (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
+      return regleTap(zid) * (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte") * donTap(res);
     }
     E.tapYield = tapYield;
     E.tap = function (res, zid) {
@@ -543,7 +598,7 @@
       let n = tapYield(res, zid);
       if (!(n > 0)) return 0;
       // coup de chance : la récolte double, et l’interface fait des étincelles
-      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil");
+      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil") + (donE().crit || 0);
       if (E.lastCrit) { n *= D.CRIT.mult; S.stats.crits = (S.stats.crits || 0) + 1; }
       add(res, n);
       advanceRitual(1, n);
@@ -670,7 +725,7 @@
       if (S.known[id]) return false;
       S.known[id] = true;
       const it = item(id);
-      if (!silent && !it.sec) S.intu += 1;
+      if (!silent && !it.sec) { S.intu += 1; donIntu(1); }
       E.emit("learn", id);
       E.emit("struct");
       return true;
@@ -773,7 +828,7 @@
         if (!l || got[a] || !l.every((x) => x.done)) return;
         got[a] = 1;
         if (silent) return;
-        S.intu += D.AGE_DONE;
+        S.intu += D.AGE_DONE; donIntu(D.AGE_DONE);
         E.emit("ageDone", { a, intu: D.AGE_DONE });
       });
     }
@@ -1006,7 +1061,7 @@
       const it = item(id);
       const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
       const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
-      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") / (it.r ? skillSpeed(it.r[0]) : 1);
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / (it.r ? skillSpeed(it.r[0]) : 1);
     }
     E.handTime = handTime;
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
@@ -1043,7 +1098,7 @@
 
     function machUnitRate(m, c) {
       const M = item(m);
-      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") : 0;
+      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") : 0;
     }
     function machReadyFor(m, rec) {
       if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
@@ -1780,14 +1835,19 @@
       const i = S.exp.done[zid] || 0;
       if (!z.exps || i >= z.exps.length) return null;
       const x = z.exps[i];
+      if (x.cote) return null; // un lieu d’à côté ne fait pas partie de la file : il s’ouvre par une fouille
       if (x.show && !cond(x.show)) return null;
       const locked = x.need ? !hasExpReq(x.need) : false;
       return { x, i, locked };
     };
     E.expMult = () => E.cache().exp;
-    E.startExp = function (zid) {
+    E.startExp = function (zid, xid) {
       if (S.exp.active) return { ok: false, why: "busy" };
-      const n = E.nextExp(zid);
+      let n = E.nextExp(zid);
+      if (xid) { // un lieu d’à côté, déjà trouvé et pas encore exploré
+        const i = ZONES[zid].exps.findIndex((e) => e.id === xid && e.cote);
+        n = i >= 0 && E.coteEtat(zid, xid) === 1 ? { x: ZONES[zid].exps[i], i, locked: ZONES[zid].exps[i].need ? !hasExpReq(ZONES[zid].exps[i].need) : false, cote: true } : null;
+      }
       if (!n || n.locked) return { ok: false, why: "none" };
       const x = n.x;
       if (x.cost) {
@@ -1795,6 +1855,7 @@
         for (const i in x.cost) add(i, -x.cost[i]);
       }
       S.exp.active = { z: zid, i: n.i, t0: now(), dur: (x.dur * 1000) / E.expMult() };
+      if (n.cote) S.exp.active.cote = true;
       E.emit("struct");
       return { ok: true };
     };
@@ -1849,6 +1910,7 @@
           if (!z || !z.exps) return false;
           const idx = z.exps.findIndex((x) => x.id === xid);
           if (idx < 0) return false;
+          if (z.exps[idx].cote) return !!(S.meta && S.meta.cotes && S.meta.cotes[zid + ":" + xid] === 2);
           if (!((S.exp && S.exp.done && S.exp.done[zid]) > idx)) return false;
         } else if (k === "all") {
           if (!Array.isArray(v) || !v.every(cond)) return false;
@@ -2305,7 +2367,8 @@
       const a = S.exp.active;
       const x = ZONES[a.z].exps[a.i];
       S.exp.active = null;
-      S.exp.done[a.z] = (S.exp.done[a.z] || 0) + 1;
+      if (x.cote) { S.meta.cotes = S.meta.cotes || {}; S.meta.cotes[a.z + ":" + x.id] = 2; } // un lieu d’à côté ne compte pas dans la file
+      else S.exp.done[a.z] = (S.exp.done[a.z] || 0) + 1;
       const locKey = a.z + ":" + x.id;
       if (RECIT.pages) {
         for (const pid in RECIT.pages) {
@@ -2323,7 +2386,7 @@
       const rw = x.rw || {};
       if (rw.inv) for (const i in rw.inv) add(i, rw.inv[i]);
       if (rw.item) for (const i in rw.item) add(i, rw.item[i]);
-      if (rw.intu) S.intu += rw.intu;
+      if (rw.intu) { S.intu += rw.intu; donIntu(rw.intu); }
       if (rw.flag) S.flags[rw.flag] = true;
       if (rw.flag === "caveau") unlockZone("caveau");
       if (rw.flag === "registre") openRegistre();
@@ -2856,9 +2919,19 @@
         const it = item(t);
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
-      return r * f;
+      return r * f * donExt(e.z) * seuilMult(e);
     }
     E.extOut = (e) => extOut(e, E.cache());
+    /* ---- Les seuils par gisement (D.SEUILS) : 10, 25, 50, 100 extracteurs, chacun ×1,25 ---- */
+    const extCount = (e) => { let n = 0; for (const t in e.u) n += e.u[t]; return n; };
+    const seuilMult = (e) => (REG[e.z] && REG[e.z].ext ? 1 : Math.pow(D.SEUILS.mult, D.SEUILS.paliers.filter((p) => extCount(e) >= p).length));
+    /* l’état des seuils d’un gisement, pour la fiche : n extracteurs, le prochain seuil, le multiplicateur déjà gagné */
+    E.seuil = function (e) {
+      const n = e ? extCount(e) : 0, P = D.SEUILS.paliers;
+      if (e && REG[e.z] && REG[e.z].ext) return { n, sans: true };
+      const k = P.filter((p) => n >= p).length;
+      return { n, k, prochain: P.find((p) => n < p) || 0, mult: Math.pow(D.SEUILS.mult, k), pas: D.SEUILS.mult };
+    };
     E.domExt = (z, res) => S.dom.ext[extKey(z, res)] || null;
     /* le type d’extracteur que pose le bouton « + cabane » : le plus productif parmi
      * ceux qui attendent d’être posés, sinon le plus productif qu’on peut fabriquer
@@ -3233,7 +3306,7 @@
       const v = valueOf(id);
       if (!(v > 0)) return 0;
       const q = E.soldCount(id), sat = D.COMPTOIR.sat;
-      return v / (1 + q / sat);
+      return v * donMul("vente") / (1 + q / sat);
     };
 
     E.sellQuote = function (id, n) {
@@ -3242,7 +3315,7 @@
       const v = valueOf(id);
       if (!(v > 0)) return 0;
       const q = E.soldCount(id), sat = D.COMPTOIR.sat;
-      return v * sat * Math.log((sat + q + n) / (sat + q));
+      return v * donMul("vente") * sat * Math.log((sat + q + n) / (sat + q));
     };
 
     E.sell = function (id, n) {
@@ -3631,6 +3704,26 @@
 
     E.comptoirOpen = () => zoneOpen(D.COMPTOIR.zone);
 
+    /* ------------------------------------------------------ Les jours de présence (D.JOURS)
+     * Un compteur de jours où le joueur est venu. Jamais une série : rien ne se remet à zéro. Le premier
+     * lancement de chaque journée (jour local) compte un jour et laisse un petit cadeau. */
+    E.jours = () => S.meta.jours;
+    E.jourVenu = function () {
+      const J = S.meta.jours, dk = dayKey();
+      if (!(dk > J.dernier)) return null; // déjà compté aujourd'hui (ou l’horloge a reculé : on ne retire rien)
+      J.n++; J.dernier = dk;
+      const pal = D.JOURS.paliers[J.n], g = pal || D.JOURS.base;
+      S.intu += g.intu;
+      S.meta.traces = (S.meta.traces || 0) + g.tr;
+      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + g.tr;
+      J.cadeau = { n: J.n, intu: g.intu, tr: g.tr, t: (pal && pal.t) || "" };
+      E.emit("struct");
+      return J.cadeau;
+    };
+    /* le prochain jour qui rapporte plus (pour la ligne discrète des Rituels) */
+    E.jourProchain = () => { const J = S.meta.jours; return Object.keys(D.JOURS.paliers).map(Number).sort((x, y) => x - y).find((p) => p > J.n) || 0; };
+    let jourVu = 0;
+
     /* Nouveau cycle : le Semeur suivant s’éveille. On garde le savoir. */
     E.newCycle = function () {
       const old = S;
@@ -3685,6 +3778,10 @@
         S.pass[z] = { paid: {}, done: true, free: true };
         S.zones[z] = true;
       });
+      // les dons de la relève : trois dons tirés pour ce cycle, aucun gardé du précédent
+      if (!(n.meta.graine >= 1)) n.meta.graine = 1 + Math.floor(rand() * 2147483000);
+      n.don = null;
+      n.donsOffre = n.cycle >= 2 ? E.donsTirage(n.cycle, n.meta.graine) : [];
       forgetDom();
       recalc();
       E.emit("cycle", n.cycle);
@@ -3799,6 +3896,126 @@
       }
     }
 
+    /* ===== FIGURES DU COSMOS (début) =====
+     * Les fragments du Journal et les signes, vus comme des étoiles. Ne donne jamais le texte d'un fragment,
+     * ni le nom d'un lieu pas encore exploré, ni le mot ou la réponse d'un signe pas encore compris.
+     *   stars : un fragment retrouvé (« allumee »), ou le lieu repéré qui le garde (« pale »)
+     *   rang  : la place du fragment dans sa terre, dans le catalogue entier (stable) */
+    E.figures = function () {
+      const vis = E.visibleFrags();
+      const rangs = {}, cpt = {};
+      vis.forEach((f) => { const z = D.FRAGS[f].z; rangs[f] = cpt[z] = (cpt[z] === undefined ? 0 : cpt[z] + 1); });
+      const stars = [], noms = {};
+      const pale = {};
+      for (const zid in ZONES) {
+        if (!zoneOpen(zid)) continue;
+        const n = E.nextExp(zid);
+        if (!n || n.x.hidden) continue; // un lieu qu'on ne voit pas encore ne se devine pas
+        const fid = (RECIT.expFrag && RECIT.expFrag[zid + ":" + n.x.id]) || (n.x.rw && n.x.rw.frag);
+        if (fid && rangs[fid] !== undefined && !S.frags[fid]) pale[fid] = zid;
+      }
+      const zones = Object.keys(ZONES);
+      vis.forEach((f) => { const z = D.FRAGS[f].z; if (zones.indexOf(z) < 0) zones.push(z); });
+      zones.forEach((z) => {
+        vis.forEach((f) => {
+          const F = D.FRAGS[f];
+          if (F.z !== z) return;
+          if (S.frags[f]) { stars.push({ id: f, z, etat: "allumee", rang: rangs[f], n: F.n || F.titre || "" }); noms[z] = true; }
+          else if (pale[f]) stars.push({ id: f, z, etat: "pale", rang: rangs[f] });
+        });
+      });
+      const signes = E.seenSignes().map((s) => {
+        const o = { id: s.id, h: s.def.h.slice(), lu: s.lu, lieux: s.lieux.slice() };
+        if (s.lu) o.mot = s.def.mot;
+        return o;
+      });
+      return { stars, signes, noms: Object.keys(noms).reduce((a, z) => { a[z] = z; return a; }, {}) };
+    };
+    /* ===== FIGURES DU COSMOS (fin) ===== */
+
+    /* ===== VISITEURS DE PASSAGE (début) =====
+     * Le calendrier compte le temps de jeu actif (S.stats.play) : une absence ne l'avance pas, et
+     * rien n'est tiré pendant le rattrapage. L'écran dit si une fenêtre ou le tutoriel bloque (ctx.bloque) :
+     * le visiteur attend alors un moment libre. Données : D.VISITEURS. */
+    let visCur = null; // le visiteur qui traverse en ce moment
+    const VIS_SANS = { orbite: 1, lune: 1, mercure: 1, mine: 1, caveau: 1 }; // pas de ciel, pas de passant
+    function visSt() {
+      const v = S.visiteur && typeof S.visiteur === "object" ? S.visiteur : (S.visiteur = { next: 0, clins: {} });
+      if (!(v.next >= 0)) v.next = 0;
+      if (!v.clins || typeof v.clins !== "object") v.clins = {};
+      return v;
+    }
+    function visDelai() { const d = D.VISITEURS.delai; return d[0] + rand() * (d[1] - d[0]); }
+    function partJour(h) { return h < 6 || h >= 21 ? "night" : h < 8 ? "dawn" : h >= 18 ? "dusk" : "day"; }
+    E.visiteurActif = () => !S.settings || S.settings.visiteurs !== false;
+    E.setVisiteurs = function (on) {
+      S.settings.visiteurs = !!on;
+      visCur = null;
+      visSt().next = (S.stats.play || 0) + visDelai(); // rallumés, ils ne tombent pas tout de suite
+    };
+    E.visiteursPossibles = function (zone, hour) {
+      if (!zone || VIS_SANS[zone]) return [];
+      const part = partJour(hour);
+      return D.VISITEURS.liste.filter((x) => x.tps.includes(part) && (!x.terres || x.terres.includes(zone)));
+    };
+    /* un coup d'œil de l'écran, une fois tous les dixièmes de seconde : renvoie le visiteur qui arrive, ou null */
+    E.visiteurPoll = function (ctx) {
+      ctx = ctx || {};
+      if (OFF || !E.visiteurActif()) return null;
+      const v = visSt(), play = S.stats.play || 0;
+      if (!(v.next > 0)) { v.next = play + visDelai(); return null; }
+      if (visCur || play < v.next || ctx.bloque) return null;
+      const zone = ctx.zone && zoneOpen(ctx.zone) ? ctx.zone : null;
+      const hour = ctx.hour !== undefined ? ctx.hour : new Date().getHours();
+      const poss = E.visiteursPossibles(zone, hour);
+      if (!poss.length) return null; // pas le bon endroit ou la bonne heure : il attend
+      let tot = 0;
+      poss.forEach((x) => { tot += x.w || 1; });
+      let r = rand() * tot, def = poss[poss.length - 1];
+      for (const x of poss) { r -= x.w || 1; if (r < 0) { def = x; break; } }
+      v.next = play + visDelai();
+      S.stats.visiteursVus = (S.stats.visiteursVus || 0) + 1;
+      visCur = { id: def.id, zone };
+      return { id: def.id, ic: def.ic, css: def.css || "", n: def.n, aria: D.VISITEURS.txt.aria.replace("{n}", def.n.charAt(0).toUpperCase() + def.n.slice(1)), dur: D.VISITEURS.traversee };
+    };
+    E.visiteurEnCours = () => (visCur ? visCur.id : null);
+    E.visiteurPartir = function () { visCur = null; };
+    /* le lot : une matière de la terre (≈ 90 s de récolte à la main), un peu d'Intuition, et rarement le reste */
+    E.visiteurToucher = function (id) {
+      if (OFF || !visCur || visCur.id !== id) return null;
+      const def = D.VISITEURS.liste.find((x) => x.id === id), L = D.VISITEURS.lot, zone = visCur.zone;
+      visCur = null;
+      if (!def) return null;
+      const cand = ZONES[zone].res.filter((r) => tapYield(r, zone) > 0);
+      const lot = { id, zone, res: null, qty: 0, intu: L.intu, objet: null, page: null, clin: null };
+      if (cand.length) {
+        lot.res = cand[Math.min(cand.length - 1, Math.floor(rand() * cand.length))];
+        lot.qty = Math.max(1, Math.round(L.secondes * (skillSpeed("recolte") / SK.harvest) * tapYield(lot.res, zone)));
+        add(lot.res, lot.qty);
+      }
+      S.intu += L.intu;
+      const v = visSt();
+      const r = rand();
+      let seuil = 0;
+      const pages = def.pg && E.comptoirOpen() ? Object.keys(RECIT.pages || {}).filter((p) => !(S.livre && S.livre.p && S.livre.p[p]) && (RECIT.pages[p].src || []).some((s) => s.k === "buy")) : [];
+      if (pages.length) {
+        seuil += L.page;
+        if (r < seuil) { lot.page = pages[Math.min(pages.length - 1, Math.floor(rand() * pages.length))]; givePage(lot.page, "visiteur"); }
+      }
+      if (!lot.page && def.clin && !v.clins[id]) {
+        seuil += L.clin;
+        if (r < seuil) { v.clins[id] = 1; lot.clin = def.clin; S.stats.visiteursClins = (S.stats.visiteursClins || 0) + 1; }
+      }
+      if (!lot.page && !lot.clin && r >= seuil && r < seuil + L.objet) {
+        const pieces = Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].t === "comp" && (S.made[k] || 0) > 0 && (D.ITEMS[k].a || 0) <= S.age);
+        if (pieces.length) { lot.objet = pieces[Math.min(pieces.length - 1, Math.floor(rand() * pieces.length))]; add(lot.objet, 1); }
+      }
+      S.stats.visiteurs = (S.stats.visiteurs || 0) + 1;
+      E.emit("struct");
+      return lot;
+    };
+    /* ===== VISITEURS DE PASSAGE (fin) ===== */
+
     /* Avance le temps jusqu’à maintenant. Gère aussi le hors-ligne. */
     E.update = function () {
       const t = now();
@@ -3814,6 +4031,7 @@
         }
         if (boostExpired) recalc();
       }
+      if (t - jourVu > 30000 || t < jourVu) { jourVu = t; E.jourVenu(); } // un nouveau jour ? (au plus toutes les 30 s)
       if (!(dt > 0)) return 0;
       if (dt > 5) return E.catchUp(dt);
       step(dt, false);
@@ -3825,7 +4043,7 @@
 
     E.catchUp = function (dt) {
       const absent = dt;
-      dt = Math.min(dt, memV("veille") * 3600 || OFFLINE_CAP);
+      dt = Math.min(dt, memV("veille") * donMul("veille") * 3600 || OFFLINE_CAP);
       OFF = true;
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
@@ -3843,6 +4061,107 @@
       checkTroqueur();
       return dt;
     };
+
+    /* ------------------------------------------------------ EXPÉDITIONS LONGUES (fouilles)
+     * Un lieu déjà exploré (dans cet éveil, ou un lieu d’à côté) se fouille de nouveau : trois niveaux
+     * (D.FOUILLE), de plus en plus longs, un seul à la fois, hors ligne. L’état est dans la méta (S.meta.exlong,
+     * S.meta.fouilles, S.meta.cotes) : il traverse la relève, et rien n’expire. Le temps passé se lit sur
+     * l’horloge, pas sur la simulation : une absence de douze heures termine une fouille de huit. Le butin
+     * attend qu’on le reçoive (E.fouilleRecolter) : ressources de la terre, Intuition la première fois,
+     * une parole du lieu, et parfois un lieu d’à côté. */
+    const FOU = () => (D.FOUILLE && D.FOUILLE.niveaux) || [];
+    const fouKey = (z, x) => z + ":" + x;
+    E.fouilleNiveau = (z, xid) => (S.meta && S.meta.fouilles && S.meta.fouilles[fouKey(z, xid)]) || 0;
+    /* un lieu d’à côté : 0 inconnu, 1 trouvé, 2 exploré */
+    E.coteEtat = (z, xid) => (S.meta && S.meta.cotes && S.meta.cotes[fouKey(z, xid)]) || 0;
+    E.fouilleLieuOk = function (z, i) {
+      const Z = ZONES[z], x = Z && Z.exps[i];
+      if (!x || !zoneOpen(z)) return false;
+      return x.cote ? E.coteEtat(z, x.id) === 2 : i < (S.exp.done[z] || 0);
+    };
+    E.fouilleLancer = function (z, i, lvl) {
+      lvl = Math.floor(Number(lvl));
+      if (!(lvl >= 1 && lvl <= FOU().length)) return { ok: false, why: "niveau" };
+      if (S.meta.exlong) return { ok: false, why: "busy" };
+      if (!E.fouilleLieuOk(z, i)) return { ok: false, why: "lieu" };
+      const x = ZONES[z].exps[i];
+      if (lvl > E.fouilleNiveau(z, x.id) + 1) return { ok: false, why: "palier" };
+      S.meta.exlong = { z, x: x.id, lvl, t0: now(), dur: FOU()[lvl - 1].s * 1000, pret: false };
+      E.emit("struct");
+      return { ok: true };
+    };
+    E.fouilleEnCours = function () {
+      const a = S.meta && S.meta.exlong;
+      if (!a) return null;
+      const x = ZONES[a.z] && ZONES[a.z].exps.find((e) => e.id === a.x);
+      if (!x) return null;
+      const el = Math.max(0, now() - a.t0);
+      return { z: a.z, x, lvl: a.lvl, niv: FOU()[a.lvl - 1], p: Math.min(1, el / a.dur), left: Math.max(0, (a.dur - el) / 1000), pret: el >= a.dur };
+    };
+    function fouilleCheck() {
+      const a = S.meta && S.meta.exlong;
+      if (!a) return;
+      if (a.t0 > now()) a.t0 = now(); // l’horloge a reculé : la fouille repart de maintenant, elle ne se bloque pas
+      if (!a.pret && now() >= a.t0 + a.dur) {
+        a.pret = true;
+        E.emit("fouillePrete", E.fouilleEnCours());
+        E.emit("struct");
+      }
+    }
+    E.fouilleCheck = fouilleCheck;
+    /* ce que le lieu dit : sa parole du niveau la première fois, sinon une phrase d’usage */
+    function fouillePhrase(key, lvl, prem) {
+      const F = RECIT.fouille || {};
+      const own = F.lignes && F.lignes[key] && F.lignes[key][lvl - 1];
+      if (prem && own) return own;
+      const g = (F.generiques && F.generiques[lvl - 1]) || [];
+      const list = prem ? g : (F.refaite || g);
+      if (!list.length) return "";
+      let h = 0;
+      for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 9973;
+      return list[(h + lvl) % list.length];
+    }
+    E.fouillePhrases = function (z, xid) { // ce qu’on a déjà entendu à ce lieu, niveau par niveau
+      const key = fouKey(z, xid), niv = E.fouilleNiveau(z, xid), own = (RECIT.fouille && RECIT.fouille.lignes && RECIT.fouille.lignes[key]) || [];
+      const out = [];
+      for (let l = 1; l <= niv; l++) if (own[l - 1]) out.push({ lvl: l, t: interpolate(own[l - 1]) });
+      return out;
+    };
+    E.fouilleRecolter = function () {
+      const en = E.fouilleEnCours();
+      if (!en) { if (S.meta.exlong) S.meta.exlong = null; return { ok: false, why: "none" }; }
+      if (!en.pret) return { ok: false, why: "pas_fini", left: en.left };
+      const N = FOU()[en.lvl - 1], z = en.z, x = en.x, key = fouKey(z, x.id);
+      const butin = {};
+      for (const r of ZONES[z].res) { const n = Math.max(1, Math.ceil(tapYield(r, z) * N.taps)); butin[r] = n; add(r, n); }
+      const prem = en.lvl > E.fouilleNiveau(z, x.id);
+      let intu = 0, cote = null;
+      if (prem) {
+        intu = N.intu; S.intu += intu;
+        S.meta.fouilles = S.meta.fouilles || {};
+        S.meta.fouilles[key] = en.lvl;
+        stamp("x:" + key + ":" + en.lvl);
+        if (en.lvl === FOU().length) {
+          const c = ((RECIT.fouille && RECIT.fouille.cotes) || []).find((q) => q.z === z && q.parent === x.id);
+          S.meta.cotes = S.meta.cotes || {};
+          if (c && !S.meta.cotes[fouKey(z, c.id)]) { S.meta.cotes[fouKey(z, c.id)] = 1; cote = { id: c.id, n: c.n }; stamp("x:" + fouKey(z, c.id)); }
+        }
+      }
+      const phrase = interpolate(fouillePhrase(key, en.lvl, prem));
+      S.meta.exlong = null;
+      S.meta.fouillesFaites = (S.meta.fouillesFaites || 0) + 1;
+      const res = { ok: true, z, x, lvl: en.lvl, niv: N, butin, intu, phrase, cote, prem };
+      E.emit("fouille", res);
+      checkAges();
+      E.emit("struct");
+      return res;
+    };
+    // la fouille se termine d’elle-même, jeu ouvert ou après une absence : on enveloppe update et catchUp
+    {
+      const upd = E.update, cu = E.catchUp;
+      E.update = function () { const r = upd.apply(this, arguments); fouilleCheck(); return r; };
+      E.catchUp = function () { const r = cu.apply(this, arguments); fouilleCheck(); return r; };
+    }
 
     /* ------------------------------------------------------ sauvegarde */
     E.serialize = () => JSON.stringify(S);
@@ -3997,6 +4316,37 @@
       if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};
       if (o.termMode !== "reg" && o.termMode !== "arche") o.termMode = (o.flags && o.flags.registre) ? "reg" : "arche";
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
+      // les fouilles : niveaux atteints, lieux d’à côté trouvés, expédition en cours (rien n’expire, rien ne se perd)
+      {
+        const m = o.meta, isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
+        const fo = {}, co = {};
+        if (isObj(m.fouilles)) for (const k in m.fouilles) { const v = Math.floor(Number(m.fouilles[k])); if (v >= 1 && v <= 9) fo[k] = v; }
+        if (isObj(m.cotes)) for (const k in m.cotes) { const v = Math.floor(Number(m.cotes[k])); if (v === 1 || v === 2) co[k] = v; }
+        m.fouilles = fo; m.cotes = co;
+        const a = m.exlong, nv = (D.FOUILLE && D.FOUILLE.niveaux) || [];
+        m.exlong = (isObj(a) && ZONES[a.z] && ZONES[a.z].exps.some((e) => e.id === a.x) && Math.floor(a.lvl) >= 1 && Math.floor(a.lvl) <= nv.length && Number(a.t0) > 0 && Number(a.dur) > 0)
+          ? { z: a.z, x: a.x, lvl: Math.floor(a.lvl), t0: Number(a.t0), dur: Number(a.dur), pret: !!a.pret } : null;
+        m.fouillesFaites = Math.max(0, Math.floor(Number(m.fouillesFaites)) || 0);
+      }
+      // les dons de la relève : illisible, remis à zéro (jamais une erreur)
+      o.meta.graine = Number.isInteger(o.meta.graine) && o.meta.graine >= 1 ? o.meta.graine : 0;
+      {
+        const dn = o.don, okId = (id) => typeof id === "string" && !!DON[id];
+        const cyc = Math.floor(Number(o.cycle)) || 1;
+        o.don = dn && typeof dn === "object" && !Array.isArray(dn) && okId(dn.id) && Math.floor(Number(dn.cycle)) === cyc ? { id: dn.id, cycle: cyc } : null;
+        const of = Array.isArray(o.donsOffre) ? o.donsOffre.filter((id, i, a) => okId(id) && a.indexOf(id) === i).slice(0, D.DONS_OFFRE) : [];
+        o.donsOffre = o.don ? [] : of;
+      }
+      // les jours de présence : un compteur, jamais une série
+      {
+        const j = o.meta.jours, ok = j && typeof j === "object" && !Array.isArray(j), cd = ok && j.cadeau;
+        const nj = ok ? Math.floor(Number(j.n)) : 0;
+        o.meta.jours = {
+          n: nj >= 0 && Number.isFinite(nj) ? nj : 0,
+          dernier: ok && typeof j.dernier === "string" && /^\d{4}-\d{2}-\d{2}$/.test(j.dernier) ? j.dernier : "",
+          cadeau: cd && typeof cd === "object" && !Array.isArray(cd) ? { n: Math.max(0, Math.floor(Number(cd.n)) || 0), intu: Math.max(0, Math.floor(Number(cd.intu)) || 0), tr: Math.max(0, Math.floor(Number(cd.tr)) || 0), t: typeof cd.t === "string" ? cd.t.slice(0, 200) : "" } : null
+        };
+      }
       // ce que le Troqueur a déjà dit : un champ par défaut, des numéros de cycle, jamais plus
       {
         const t = o.meta.troc, ok = t && typeof t === "object" && !Array.isArray(t);
@@ -4032,6 +4382,9 @@
         for (const z in o.zones || {}) if (o.zones[z] && D.PASSAGES[z]) o.pass[z] = { paid: {}, done: true };
       }
       o.settings = Object.assign({ sound: true, vibe: true, theme: "auto", largeText: false }, o.settings);
+      if (typeof o.settings.visiteurs !== "boolean") o.settings.visiteurs = true;
+      if (!o.visiteur || typeof o.visiteur !== "object") o.visiteur = { next: 0, clins: {} };
+      o.stats = Object.assign({ visiteurs: 0, visiteursVus: 0, visiteursClins: 0 }, o.stats);
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
       o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 }, o.stats);
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };

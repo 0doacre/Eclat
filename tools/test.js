@@ -2930,8 +2930,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.8.7 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.8.7");
+test("Version 0.9.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.0");
   assert.ok(D.CHANGES.length >= 4);
 });
 
@@ -3134,12 +3134,12 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.8.7");
+  assert.strictEqual(D.VERSION, "0.9.0");
   assert.ok(D.CHANGES.length >= 4);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 8, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 9, "Mineure pour le lot courant");
 });
 
 console.log("Horodatage du Journal (0.7.1)");
@@ -3335,5 +3335,403 @@ test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro san
   const E4 = createEngine({ now: () => T }); E4.load(JSON.stringify(o));
   assert.deepStrictEqual(E4.state.meta.troc, { vus: {}, dernier: null, refus: 0 });
 });
+
+console.log("Les fouilles : expéditions longues");
+const H = 3600 * 1000;
+const fouilleur = () => { const E = mk(); E.state.zones.lisiere = true; E.state.exp.done.lisiere = 1; return E; }; // le Chêne est exploré
+test("Fouille : trois niveaux de plus en plus longs, un par un, un seul emplacement", () => {
+  const N = D.FOUILLE.niveaux;
+  assert.deepStrictEqual(N.map((n) => n.s), [1800, 7200, 28800]);
+  assert.ok(N[0].taps < N[1].taps && N[1].taps < N[2].taps && N[0].intu < N[2].intu);
+  const E = fouilleur();
+  assert.strictEqual(E.fouilleLancer("lisiere", 0, 2).why, "palier", "pas de niveau 2 sans le niveau 1");
+  assert.strictEqual(E.fouilleLancer("lisiere", 1, 1).why, "lieu", "un lieu pas encore exploré ne se fouille pas");
+  assert.strictEqual(E.fouilleLancer("lisiere", 0, 4).why, "niveau");
+  assert.ok(E.fouilleLancer("lisiere", 0, 1).ok);
+  assert.strictEqual(E.fouilleLancer("lisiere", 0, 1).why, "busy", "un seul emplacement");
+  assert.strictEqual(E.fouilleRecolter().why, "pas_fini");
+  const en = E.fouilleEnCours();
+  assert.ok(en && !en.pret && en.left > 1790 && en.left <= 1800 && en.x.id === "chene");
+  // l’exploration courte reste libre pendant ce temps
+  assert.strictEqual(E.state.exp.active, null);
+  E.state.exp.done.lisiere = 1; E.add("torche", 1);
+  assert.ok(E.startExp("lisiere").ok, "la grotte part pendant la fouille");
+});
+test("Fouille : le butin suit la terre, l’Intuition ne vaut que la première fois, rien n’expire", () => {
+  const E = fouilleur();
+  E.update(); // le cadeau du jour (jours de présence) tombe ici, pas dans la fouille
+  const intu0 = E.state.intu;
+  E.fouilleLancer("lisiere", 0, 1);
+  T += 31 * 60 * 1000;
+  let prete = 0; E.on("fouillePrete", () => prete++);
+  E.update();
+  assert.strictEqual(prete, 1);
+  E.update(); assert.strictEqual(prete, 1, "annoncée une seule fois");
+  const bois0 = E.count("bois");
+  const r = E.fouilleRecolter();
+  assert.ok(r.ok && r.prem && r.lvl === 1 && r.intu === 1);
+  assert.deepStrictEqual(Object.keys(r.butin).sort(), D.ZONES[0].res.slice().sort());
+  assert.strictEqual(E.count("bois") - bois0, Math.ceil(E.tapYield("bois", "lisiere") * D.FOUILLE.niveaux[0].taps));
+  assert.strictEqual(E.state.intu - intu0, 1);
+  assert.strictEqual(E.fouilleNiveau("lisiere", "chene"), 1);
+  assert.strictEqual(E.fouilleEnCours(), null);
+  // la refaire : le butin revient, pas l’Intuition, une phrase d’usage
+  E.fouilleLancer("lisiere", 0, 1); T += 31 * 60 * 1000; E.update();
+  const i1 = E.state.intu, r2 = E.fouilleRecolter();
+  assert.ok(r2.ok && !r2.prem && r2.intu === 0 && E.state.intu === i1);
+  // et rien n’expire : un an plus tard, le butin attend
+  E.fouilleLancer("lisiere", 0, 2); T += 365 * 24 * H; E.update();
+  assert.ok(E.fouilleEnCours().pret);
+  assert.ok(E.fouilleRecolter().ok);
+});
+test("Fouille : une absence de douze heures termine une fouille de huit, par le rattrapage", () => {
+  const E = fouilleur();
+  E.state.meta.fouilles["lisiere:chene"] = 2;
+  assert.ok(E.fouilleLancer("lisiere", 0, 3).ok);
+  T += 12 * H;
+  let prete = 0; E.on("fouillePrete", () => prete++);
+  let off = null; E.on("offline", (o) => (off = o));
+  E.update(); // plus de 5 s d’écart : E.catchUp
+  assert.ok(off && off.dt >= 3600, "le rattrapage a eu lieu");
+  assert.strictEqual(prete, 1);
+  const r = E.fouilleRecolter();
+  assert.ok(r.ok && r.lvl === 3 && r.prem && r.intu === D.FOUILLE.niveaux[2].intu);
+  assert.ok(r.cote && r.cote.id === "ronds", "le Chêne, à fond, ouvre un lieu d’à côté");
+  // rattrapage direct, sans passer par update
+  const E2 = fouilleur(); E2.fouilleLancer("lisiere", 0, 1); T += 3 * H; E2.catchUp(3 * H);
+  assert.ok(E2.fouilleEnCours().pret);
+  // l’horloge qui recule ne bloque rien
+  const E3 = fouilleur(); E3.fouilleLancer("lisiere", 0, 1); T -= 5 * H; E3.update();
+  assert.ok(E3.fouilleEnCours().left <= 1800);
+  T += 5 * H;
+});
+test("Fouille : seul un lieu d’origine ouvre un lieu d’à côté, une seule fois, et on s’y rend à part", () => {
+  const E = fouilleur();
+  E.state.meta.fouilles["lisiere:chene"] = 2;
+  E.state.exp.done.lisiere = 2; E.state.meta.fouilles["lisiere:grotte"] = 2;
+  E.fouilleLancer("lisiere", 1, 3); T += 9 * H; E.update();
+  assert.strictEqual(E.fouilleRecolter().cote, null, "la Grotte n’ouvre rien");
+  assert.strictEqual(E.startExp("lisiere", "ronds").why, "none", "pas avant de l’avoir trouvé");
+  E.fouilleLancer("lisiere", 0, 3); T += 9 * H; E.update();
+  assert.strictEqual(E.fouilleRecolter().cote.id, "ronds");
+  assert.strictEqual(E.coteEtat("lisiere", "ronds"), 1);
+  E.fouilleLancer("lisiere", 0, 3); T += 9 * H; E.update();
+  assert.strictEqual(E.fouilleRecolter().cote, null, "il ne s’ouvre qu’une fois");
+  // la file des explorations ne bouge pas, et le lieu d’à côté s’explore avec son frag
+  const done0 = E.state.exp.done.lisiere;
+  assert.strictEqual(E.nextExp("lisiere").x.id, "cercle");
+  assert.ok(E.startExp("lisiere", "ronds").ok);
+  T += 120 * 1000; E.update();
+  assert.strictEqual(E.state.exp.done.lisiere, done0, "hors file");
+  assert.strictEqual(E.coteEtat("lisiere", "ronds"), 2);
+  assert.ok(E.state.frags.ronds && E.cond({ exp: "lisiere:ronds" }));
+  // et il se fouille à son tour
+  const ic = D.ZONES[0].exps.findIndex((x) => x.id === "ronds");
+  assert.ok(E.fouilleLancer("lisiere", ic, 1).ok);
+});
+test("Fouille : l’état se sauvegarde, traverse la relève, et un champ abîmé est écarté sans rien casser", () => {
+  const E = fouilleur();
+  E.fouilleLancer("lisiere", 0, 1);
+  const E2 = mk(); E2.load(E.serialize());
+  assert.deepStrictEqual(E2.state.meta.exlong, E.state.meta.exlong);
+  E2.newCycle();
+  assert.ok(E2.fouilleEnCours(), "la fouille traverse la relève");
+  T += H; E2.update();
+  assert.ok(E2.fouilleRecolter().ok, "et se reçoit dans l’éveil suivant");
+  assert.strictEqual(E2.fouilleNiveau("lisiere", "chene"), 1, "le niveau atteint reste");
+  for (const mauvais of ["x", 4, [], { z: "nulle part", x: "chene", lvl: 1, t0: 5, dur: 5 }, { z: "lisiere", x: "chene", lvl: 9, t0: 5, dur: 5 }, { z: "lisiere", x: "chene", lvl: 1, t0: "a", dur: 5 }]) {
+    const o = JSON.parse(E.serialize()); o.meta.exlong = mauvais; o.meta.fouilles = [1]; o.meta.cotes = { "lisiere:ronds": 7, "lisiere:ronds2": 1 };
+    const E3 = mk(); E3.load(JSON.stringify(o));
+    assert.strictEqual(E3.state.meta.exlong, null);
+    assert.deepStrictEqual(E3.state.meta.fouilles, {});
+    assert.deepStrictEqual(E3.state.meta.cotes, { "lisiere:ronds2": 1 });
+  }
+  // une sauvegarde d’avant les fouilles
+  const o = JSON.parse(E.serialize()); delete o.meta.exlong; delete o.meta.fouilles; delete o.meta.cotes;
+  const E4 = mk(); E4.load(JSON.stringify(o));
+  assert.strictEqual(E4.state.meta.exlong, null);
+  assert.deepStrictEqual([E4.state.meta.fouilles, E4.state.meta.cotes], [{}, {}]);
+  E4.state.exp.done.lisiere = 0;
+  assert.strictEqual(E4.fouilleLancer("lisiere", 0, 1).why, "lieu", "rien d’exploré dans cet éveil : rien à fouiller");
+});
+
+/* ---------------------------------------------------------------- les dons de la relève (0.9) */
+console.log("Dons, jours de présence, seuils");
+/* une partie qui vient d’être relevée : cycle 2, trois dons proposés */
+const releve = (rand) => { const E = createEngine({ now: () => T, rand: rand || (() => 0.37) }); E.newCycle(); return E; };
+const lire = (E) => { const F = createEngine({ now: () => T, rand: () => 0.37 }); F.load(E.serialize()); return F; };
+test("dons : pas de don au cycle 1, trois dons distincts dès la première relève", () => {
+  const E = mk();
+  assert.deepStrictEqual(E.donsOffre(), []);
+  E.newCycle();
+  const o = E.donsOffre();
+  assert.strictEqual(o.length, 3);
+  assert.strictEqual(new Set(o).size, 3, "trois dons distincts");
+  assert.ok(o.every((id) => D.DONS.some((d) => d.id === id)));
+  assert.strictEqual(E.don(), null, "rien n’est pris tant qu’on n’a pas choisi");
+});
+test("dons : le tirage ne dépend que du cycle et de la graine", () => {
+  const E = releve();
+  const g = E.state.meta.graine;
+  assert.ok(g >= 1);
+  assert.deepStrictEqual(E.donsTirage(2, g), E.donsOffre(), "ce qui est offert est le tirage du cycle");
+  assert.deepStrictEqual(E.donsTirage(5, g), E.donsTirage(5, g));
+  assert.deepStrictEqual(lire(E).donsOffre(), E.donsOffre(), "recharger donne les mêmes trois");
+  // une autre graine ou un autre cycle : en général d’autres dons
+  const vus = new Set();
+  for (let c = 2; c < 30; c++) vus.add(E.donsTirage(c, g).join());
+  assert.ok(vus.size > 10, "les cycles ne tirent pas tous la même chose");
+  assert.notDeepStrictEqual(E.donsTirage(2, g), E.donsTirage(2, g + 1));
+  // tous les dons sortent un jour
+  const sortis = new Set();
+  for (let s = 1; s < 200; s++) E.donsTirage(2, s).forEach((id) => sortis.add(id));
+  assert.strictEqual(sortis.size, D.DONS.length);
+});
+test("dons : on en garde un seul, et il faut qu’il soit offert", () => {
+  const E = releve();
+  const [a, b] = E.donsOffre();
+  const hors = D.DONS.map((d) => d.id).find((id) => !E.donsOffre().includes(id));
+  assert.strictEqual(E.donChoose(hors), false, "un don non offert est refusé");
+  assert.strictEqual(E.donChoose("n’existe pas"), false);
+  assert.strictEqual(E.donChoose(a), true);
+  assert.deepStrictEqual(E.state.don, { id: a, cycle: 2 });
+  assert.strictEqual(E.donChoose(b), false, "un seul don par cycle");
+  assert.deepStrictEqual(E.donsOffre(), []);
+  assert.strictEqual(E.don().id, a);
+});
+/* donne un don précis à une partie au cycle 2 */
+const avecDon = (id) => { const E = releve(); E.state.donsOffre = [id]; assert.ok(E.donChoose(id)); return E; };
+test("dons : chaque don a une phrase chiffrée et un effet connu", () => {
+  const ids = new Set();
+  D.DONS.forEach((d) => {
+    assert.ok(!ids.has(d.id)); ids.add(d.id);
+    assert.ok(d.n && d.ic && /\d/.test(d.d), d.id + " : nom, icône, phrase avec un chiffre");
+    assert.ok(Object.keys(d.e).length === 1, d.id + " : un seul effet");
+    assert.ok(!/[—–]/.test(d.d + d.n), d.id + " : pas de tiret cadratin");
+  });
+  assert.ok(D.DONS.length >= 15 && D.DONS.length <= 20);
+  // le pourcentage de la phrase est celui de l’effet
+  D.DONS.forEach((d) => {
+    const e = d.e, v = (e.tap && e.tap.v) || (e.ext && e.ext.v) || e.mach || e.intu || e.veille || e.vente || (e.mains && 2 - e.mains) || (e.pass && 2 - e.pass) || (e.crit && 1 + e.crit);
+    if (!v) return;
+    const pc = Math.round((v - 1) * 100);
+    assert.ok(new RegExp("\\b" + pc + " %").test(d.d), d.id + " : " + pc + " % dans « " + d.d + " »");
+    assert.ok(pc >= 12 && pc <= 40, d.id + " : un effet de 12 à 40 %");
+  });
+});
+test("dons : la récolte à la main d’un groupe de ressources, terre par terre", () => {
+  const E = mk();
+  E.state.zones.plaine = true; E.state.zones.riviere = true;
+  const base = { bois: E.tapYield("bois", "lisiere"), caillou: E.tapYield("caillou", "lisiere"), os: E.tapYield("os", "plaine"), argile: E.tapYield("argile", "riviere") };
+  const F = createEngine({ now: () => T, rand: () => 0.99 });
+  F.load(E.serialize()); F.newCycle(); F.state.zones.plaine = true; F.state.zones.riviere = true;
+  F.state.donsOffre = ["hache"]; F.donChoose("hache");
+  assert.ok(Math.abs(F.tapYield("bois", "lisiere") - base.bois * 1.3) < 1e-9);
+  assert.ok(Math.abs(F.tapYield("os", "plaine") - base.os * 1.3) < 1e-9);
+  assert.strictEqual(F.tapYield("caillou", "lisiere"), base.caillou, "le caillou n’est pas dans le groupe");
+  assert.strictEqual(F.tapYield("argile", "riviere"), base.argile);
+  F.state.don = null; F.state.donsOffre = ["pierre"]; F.donChoose("pierre");
+  assert.ok(Math.abs(F.tapYield("caillou", "lisiere") - base.caillou * 1.3) < 1e-9);
+  assert.strictEqual(F.tapYield("bois", "lisiere"), base.bois);
+  F.state.don = null; F.state.donsOffre = ["mains_pleines"]; F.donChoose("mains_pleines");
+  assert.ok(Math.abs(F.tapYield("bois", "lisiere") - base.bois * D.DONS.find((d) => d.id === "mains_pleines").e.tap.v) < 1e-9);
+});
+test("dons : extracteurs d’une terre ou de toutes", () => {
+  const mise = (don) => {
+    const E = don ? avecDon(don) : releve();
+    E.state.zones.plaine = true; E.state.zones.riviere = true; E.state.zones.mine = true;
+    E.add("cabane", 3); E.add("nasse", 3);
+    E.domExtSet("lisiere", "bois", "cabane", 3); E.domExtSet("riviere", "argile", "nasse", 3);
+    return [E.extOut(E.domExt("lisiere", "bois")), E.extOut(E.domExt("riviere", "argile"))];
+  };
+  const [l0, r0] = mise(null);
+  const [l1, r1] = mise("rigoles");
+  assert.ok(Math.abs(l1 / l0 - 1.3) < 1e-9 && Math.abs(r1 / r0 - 1.3) < 1e-9, "les rigoles : Lisière et Rivière");
+  const [l2, r2] = mise("puits_noir");
+  assert.ok(l2 === l0 && r2 === r0, "le puits noir ne touche ni la Lisière ni la Rivière");
+  const [l3, r3] = mise("bras");
+  assert.ok(Math.abs(l3 / l0 - 1.15) < 1e-9 && Math.abs(r3 / r0 - 1.15) < 1e-9, "les bras : partout");
+});
+test("dons : prix des passages, durée des mains, chance de coup double, vente", () => {
+  const E0 = releve(), E1 = avecDon("route");
+  assert.strictEqual(E1.passCost("plaine").bois, Math.ceil(E0.passCost("plaine").bois * 0.85) , "passages −15 %");
+  const H0 = E0.handTime("manche"), H1 = avecDon("doigts").handTime("manche");
+  assert.ok(Math.abs(H1 / H0 - 0.8) < 1e-9, "fabrications à la main −20 %");
+  // coup double : un tirage de 0,15 rate sans don (6 %) et réussit avec le don (6 + 12 = 18 %)
+  const R = (id) => { const E = createEngine({ now: () => T, rand: () => 0.15 }); E.newCycle(); if (id) { E.state.donsOffre = [id]; E.donChoose(id); } E.tap("bois"); return E.lastCrit; };
+  assert.strictEqual(R(null), false); assert.strictEqual(R("main_heureuse"), true);
+  // vente au Troqueur
+  const V = (id) => { const E = id ? avecDon(id) : releve(); E.add("bois", 100); return E.sellQuote("bois", 100); };
+  assert.ok(Math.abs(V("bourse") / V(null) - 1.25) < 1e-9, "vente +25 %");
+  assert.strictEqual(avecDon("sommeil").donMul("veille"), 1.25);
+  assert.strictEqual(avecDon("burette").donMul("mach"), 1.2);
+});
+test("dons : l’Intuition en plus, et le sac lourd", () => {
+  const E = avecDon("carnet_cornu"), i0 = E.state.intu;
+  ["tailler", "tresser", "chauffer", "assembler"].forEach(() => {});
+  // quatre recettes apprises : 4 + 30 % de 4 = 5,2 → 5
+  const ids = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].r && !D.ITEMS[id].sec && !E.state.known[id]).slice(0, 10);
+  ids.forEach((id) => E.learn(id));
+  assert.strictEqual(E.state.intu - i0, 13, "10 recettes : 10 + 3 en plus");
+  const S = avecDon("sac_lourd");
+  assert.strictEqual(S.count("bois") - releve().count("bois"), 40);
+  assert.strictEqual(S.count("corde") - releve().count("corde"), 4);
+});
+test("dons : sauvegarde, aller-retour et sauvegarde ancienne", () => {
+  const E = releve(), offre = E.donsOffre().slice();
+  const F = lire(E);
+  assert.deepStrictEqual(F.donsOffre(), offre); assert.strictEqual(F.state.meta.graine, E.state.meta.graine);
+  E.donChoose(offre[1]);
+  const G = lire(E);
+  assert.deepStrictEqual(G.state.don, { id: offre[1], cycle: 2 }); assert.deepStrictEqual(G.donsOffre(), []);
+  assert.ok(Math.abs(G.donMul("x") - 1) < 1e-9);
+  // une ancienne partie : aucun don offert avant la prochaine relève
+  const o = JSON.parse(mk().serialize());
+  delete o.don; delete o.donsOffre; delete o.meta.graine; o.cycle = 3;
+  const H = createEngine({ now: () => T, rand: () => 0.37 }); H.load(JSON.stringify(o));
+  assert.strictEqual(H.state.don, null); assert.deepStrictEqual(H.donsOffre(), []);
+  H.newCycle();
+  assert.strictEqual(H.donsOffre().length, 3, "la prochaine relève en offre");
+  assert.ok(H.state.meta.graine >= 1);
+  // des valeurs illisibles : remises à zéro, jamais une erreur
+  for (const [d, of, g] of [["x", "y", "z"], [7, 7, -1], [{ id: "nope", cycle: 2 }, ["a", "b"], 1.5], [{ id: "hache", cycle: 9 }, [], 3], [[], { 0: "hache" }, null]]) {
+    const p = JSON.parse(E.serialize()); p.don = d; p.donsOffre = of; p.meta.graine = g;
+    const X = createEngine({ now: () => T, rand: () => 0.37 }); X.load(JSON.stringify(p));
+    assert.strictEqual(X.state.don, null); assert.deepStrictEqual(X.donsOffre(), []);
+    assert.ok(Number.isInteger(X.state.meta.graine) && X.state.meta.graine >= 0);
+  }
+  // les identifiants inconnus sont écartés, les bons gardés, sans doublon
+  const p = JSON.parse(F.serialize()); p.donsOffre = [offre[0], "inconnu", offre[0], offre[2]];
+  const Y = createEngine({ now: () => T, rand: () => 0.37 }); Y.load(JSON.stringify(p));
+  assert.deepStrictEqual(Y.donsOffre(), [offre[0], offre[2]]);
+});
+test("dons : le don n’est pas reconduit à la relève suivante", () => {
+  const E = releve(), a = E.donsOffre()[0];
+  E.donChoose(a);
+  E.add("bois", 5);
+  E.newCycle();
+  assert.strictEqual(E.state.cycle, 3);
+  assert.strictEqual(E.don(), null, "le don du cycle 2 s’arrête là");
+  assert.strictEqual(E.donMul("mach"), 1);
+  assert.deepStrictEqual(E.donsOffre(), E.donsTirage(3, E.state.meta.graine));
+  assert.ok(E.state.meta.graine >= 1, "la graine, elle, est gardée");
+  // un don pris puis oublié ne change plus rien aux chiffres
+  const F = releve(); F.donChoose("hache"); F.newCycle();
+  assert.strictEqual(F.tapYield("bois", "lisiere"), mk().tapYield("bois", "lisiere"));
+});
+
+/* ---------------------------------------------------------------- les jours de présence (0.9) */
+const jour = (y, m, d, h, mi) => new Date(y, m - 1, d, h || 12, mi || 0).getTime();
+const Tsave = T;
+test("jours : deux jours d’affilée, un cadeau chacun, une seule fois par jour", () => {
+  T = jour(2026, 3, 10, 9);
+  const E = mk(), i0 = E.state.intu;
+  const g1 = E.jourVenu();
+  assert.deepStrictEqual([E.jours().n, g1.intu, g1.tr], [1, D.JOURS.base.intu, D.JOURS.base.tr]);
+  assert.strictEqual(E.state.intu - i0, D.JOURS.base.intu);
+  assert.strictEqual(E.state.meta.traces, D.JOURS.base.tr);
+  T = jour(2026, 3, 10, 22);
+  assert.strictEqual(E.jourVenu(), null, "même jour : rien");
+  E.update(); assert.strictEqual(E.jours().n, 1);
+  T = jour(2026, 3, 11, 7);
+  E.jourVenu();
+  assert.strictEqual(E.jours().n, 2); assert.strictEqual(E.state.meta.traces, 2 * D.JOURS.base.tr);
+});
+test("jours : trois jours manqués ne retirent rien", () => {
+  T = jour(2026, 5, 1);
+  const E = mk(); E.jourVenu(); E.jourVenu();
+  T = jour(2026, 5, 5);
+  const t0 = E.state.meta.traces;
+  E.jourVenu();
+  assert.strictEqual(E.jours().n, 2, "jours 1 et 5 : deux jours de présence");
+  assert.strictEqual(E.state.meta.traces, t0 + D.JOURS.base.tr, "pas de rattrapage, pas de retrait");
+  T = jour(2026, 5, 6); E.jourVenu();
+  assert.strictEqual(E.jours().n, 3);
+  assert.strictEqual(E.jours().cadeau.intu, D.JOURS.paliers[3].intu, "le troisième jour est un palier");
+});
+test("jours : le changement d’heure ne compte ni jour de plus ni jour de moins", () => {
+  // nuit du passage à l’heure d’été (29 mars 2026) puis à l’heure d’hiver (25 octobre 2026)
+  T = jour(2026, 3, 28, 23, 30);
+  const E = mk(); E.jourVenu();
+  T = jour(2026, 3, 29, 0, 10); E.jourVenu();       // 40 minutes plus tard : un autre jour
+  assert.strictEqual(E.jours().n, 2);
+  T = jour(2026, 3, 29, 23, 50); E.jourVenu();      // la journée de 23 h : toujours le même jour
+  assert.strictEqual(E.jours().n, 2);
+  T = jour(2026, 10, 25, 0, 30); E.jourVenu();
+  T = jour(2026, 10, 25, 23, 0); E.jourVenu();      // la journée de 25 h : un seul jour
+  assert.strictEqual(E.jours().n, 3);
+  T = jour(2026, 10, 26, 0, 5); E.jourVenu();
+  assert.strictEqual(E.jours().n, 4);
+  // une horloge qui recule ne retire rien
+  T = jour(2026, 10, 20); assert.strictEqual(E.jourVenu(), null);
+  assert.strictEqual(E.jours().n, 4);
+});
+test("jours : les paliers donnent plus, et la relève ne touche pas au compteur", () => {
+  T = jour(2026, 6, 1);
+  const E = mk(); const gifts = {};
+  for (let i = 1; i <= 100; i++) { T = jour(2026, 6, i); const g = E.jourVenu(); gifts[i] = g; }
+  assert.strictEqual(E.jours().n, 100);
+  Object.keys(D.JOURS.paliers).forEach((n) => {
+    assert.ok(gifts[n].intu > D.JOURS.base.intu && gifts[n].tr > D.JOURS.base.tr, "jour " + n + " : plus généreux");
+    assert.deepStrictEqual([gifts[n].intu, gifts[n].tr], [D.JOURS.paliers[n].intu, D.JOURS.paliers[n].tr]);
+  });
+  assert.strictEqual(gifts[4].intu, D.JOURS.base.intu);
+  assert.ok(gifts[7].t, "un clin d’œil au septième jour");
+  assert.strictEqual(E.jourProchain(), 0);
+  E.newCycle();
+  assert.strictEqual(E.jours().n, 100, "gardé à la relève");
+  assert.strictEqual(lire(E).jours().n, 100, "gardé dans la sauvegarde");
+});
+test("jours : sauvegarde ancienne ou abîmée, remise à zéro sans erreur", () => {
+  T = jour(2026, 7, 1);
+  const E = mk(); E.jourVenu();
+  const o = JSON.parse(E.serialize()); delete o.meta.jours;
+  const F = createEngine({ now: () => T }); F.load(JSON.stringify(o));
+  assert.deepStrictEqual(F.jours(), { n: 0, dernier: "", cadeau: null }, "une ancienne partie repart de zéro");
+  F.jourVenu(); assert.strictEqual(F.jours().n, 1);
+  for (const m of ["x", 4, [], { n: "a", dernier: 5, cadeau: 3 }, { n: -2, dernier: "hier", cadeau: [] }, { n: 3.7, dernier: "2026-07-01", cadeau: { intu: "x" } }]) {
+    const p = JSON.parse(E.serialize()); p.meta.jours = m;
+    const X = createEngine({ now: () => T }); X.load(JSON.stringify(p));
+    const j = X.jours();
+    assert.ok(Number.isInteger(j.n) && j.n >= 0 && typeof j.dernier === "string" && (j.dernier === "" || /^\d{4}-\d{2}-\d{2}$/.test(j.dernier)));
+    assert.ok(j.cadeau === null || (Number.isInteger(j.cadeau.intu) && Number.isInteger(j.cadeau.tr)));
+  }
+  assert.strictEqual(lire(E).jours().n, 1, "aller-retour");
+  assert.strictEqual(lire(E).jourVenu(), null, "relancer le même jour ne redonne rien");
+});
+T = Tsave;
+
+/* ---------------------------------------------------------------- les seuils par gisement (0.9) */
+test("seuils : 10, 25, 50, 100 extracteurs, ×1,25 à chaque seuil", () => {
+  const E = mk();
+  E.add("cabane", 120);
+  const sortie = (n) => { E.domExtSet("lisiere", "bois", "cabane", n); return E.extOut(E.domExt("lisiere", "bois")) / n; };
+  const u = sortie(1);
+  assert.deepStrictEqual(D.SEUILS.paliers, [10, 25, 50, 100]);
+  [[9, 1], [10, 1.25], [24, 1.25], [25, 1.5625], [49, 1.5625], [50, 1.953125], [99, 1.953125], [100, 2.44140625], [120, 2.44140625]].forEach(([n, k]) => {
+    assert.ok(Math.abs(sortie(n) / u - k) < 1e-9, n + " extracteurs : ×" + k);
+  });
+  assert.deepStrictEqual(E.seuil(E.domExt("lisiere", "bois")), { n: 120, k: 4, prochain: 0, mult: 2.44140625, pas: 1.25 });
+  E.domExtSet("lisiere", "bois", "cabane", 7);
+  const s = E.seuil(E.domExt("lisiere", "bois"));
+  assert.deepStrictEqual([s.n, s.prochain, s.k], [7, 10, 0]);
+  assert.strictEqual(E.seuil(null).n, 0);
+});
+test("seuils : la Rivière Lente n’en a pas, et chaque gisement compte à part", () => {
+  const E = mk();
+  E.state.zones.plaine = true; E.state.zones.riviere = true;
+  E.add("nasse", 40); E.add("cabane", 40);
+  E.domExtSet("riviere", "argile", "nasse", 12);
+  const r = E.domExt("riviere", "argile");
+  assert.deepStrictEqual(E.seuil(r), { n: 12, sans: true });
+  const un = E.extRate("nasse", "argile");
+  assert.ok(Math.abs(E.extOut(r) - (6 + 6 * 0.5) * un) < 1e-9, "seulement le courant : 6 pleins, 6 à moitié");
+  E.domExtSet("lisiere", "bois", "cabane", 10); E.domExtSet("lisiere", "fibre", "cabane", 9);
+  const bois = E.extOut(E.domExt("lisiere", "bois")) / 10, fibre = E.extOut(E.domExt("lisiere", "fibre")) / 9;
+  assert.ok(Math.abs(bois / fibre - 1.25 * E.extRate("cabane", "bois") / E.extRate("cabane", "fibre")) < 1e-9, "le seuil du bois ne profite pas à la fibre");
+});
+/* visiteurs de passage et constellations : fichiers à part */
+require("./test-visiteurs.js");
+require("./test-figures.js");
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

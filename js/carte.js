@@ -28,7 +28,7 @@
     montagnes: "des pics brisés", orbite: "plus haut que le ciel", lune: "la Lune", mercure: "tout près du Soleil"
   };
   /* où poser les lieux d’une terre, autour de son centre (en fraction des rayons) */
-  const SPOTS = [[-0.55, -0.35], [0.5, -0.4], [0.05, 0.42], [-0.2, 0.05]];
+  const SPOTS = [[-0.55, -0.35], [0.5, -0.4], [0.05, 0.42], [-0.2, 0.05], [-0.72, 0.28], [0.68, 0.2]];
   const DECO = { lisiere: 5, plaine: 4, riviere: 0, collines: 3, mine: 2, desert: 3, gisement: 2, montagnes: 3, caveau: 1 };
 
   function create(api) {
@@ -61,6 +61,14 @@
     /* l’état d’un lieu : fait, en cours, possible, bloqué ou à venir */
     function lieuState(z, i) {
       const st = S(), done = st.exp.done[z] || 0, act = st.exp.active;
+      const xc = E.ZONES[z].exps[i];
+      if (xc && xc.cote) { // un lieu d’à côté : invisible tant qu’une fouille ne l’a pas ouvert
+        const c = E.coteEtat(z, xc.id);
+        if (act && act.z === z && act.i === i) return "active";
+        if (c === 2) return "done";
+        if (c !== 1) return "later";
+        return xc.need && !E.hasExpReq(xc.need) ? "locked" : "next";
+      }
       if (i < done) return "done";
       if (act && act.z === z && act.i === i) return "active";
       if (i > done) return "later";
@@ -74,7 +82,7 @@
       const { open, ahead } = state();
       const seen = open.concat(ahead);
       const top = Math.min.apply(null, seen.map((z) => GEO[z].y - GEO[z].ry - 60));
-      let s = '<div class="carte"><svg class="carte-svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Carte du monde">' +
+      let s = '<div class="carte">' + chip() + '<svg class="carte-svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Carte du monde">' +
         "<defs>" +
         '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" class="c-hatch"/></pattern>' +
         '<linearGradient id="fogEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0.75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
@@ -96,6 +104,14 @@
       E.passPending().forEach((z) => { s += passArt(z); });
       s += "</svg></div>";
       return s;
+    }
+    /* l’expédition longue en cours : une ligne en haut de la Carte (se touche pour recevoir ou pour voir) */
+    function chip() {
+      const f = E.fouilleEnCours && E.fouilleEnCours();
+      if (!f) return "";
+      const U_ = ((E.RECIT || {}).fouille || {}).ui || {};
+      return '<button class="carte-fouille' + (f.pret ? " pret" : "") + '" data-fouille>🧭 ' + esc(U_.chip || "") + " · " + esc(f.x.n) + " · " +
+        (f.pret ? esc(U_.chipPret || "") : esc(U_.chipReste || "") + ' <b data-fl>' + fmtTime(f.left) + "</b>") + "</button>";
     }
     function road(a, b) {
       const A = GEO[a], B = GEO[b], mx = (A.x + B.x) / 2 + (A.x < B.x ? -30 : 30), my = (A.y + B.y) / 2;
@@ -156,9 +172,12 @@
       const st = S(), Z = E.ZONES[z], x = Z.exps[i], stt = lieuState(z, i);
       const hidden = x.hidden && stt !== "done" && stt !== "active";
       let h = '<div class="kicker">' + esc(Z.n) + "</div><h2>" + (hidden ? "???" : esc(x.n)) + "</h2>";
+      let fouille = null;
       if (stt === "done") {
         const f = x.rw && x.rw.frag && D.FRAGS[x.rw.frag];
         h += '<p class="small">Exploré.' + (f ? " Tu en as rapporté « " + esc(f.n) + " » (Journal)." : "") + "</p>";
+        fouille = fouilleHTML(z, i, x);
+        h += fouille;
       } else if (stt === "active") {
         const p = E.expProgress();
         h += '<p class="small">En route… <b data-xl>' + (p ? fmtTime(p.left) : "") + '</b></p><div class="bar"><i data-xp style="width:' + (p ? (p.p * 100).toFixed(1) : 0) + '%"></i></div>';
@@ -173,9 +192,29 @@
       }
       openModal({
         html: h + '<div class="acts">' + (stt === "next" ? '<button class="btn pri' + (expWhy(z) ? " nope" : "") + '" data-m="go">Explorer</button>' : "") + '<button class="btn" data-m="close">Fermer</button></div>',
-        on: { go: () => { api.explore(z); } }
+        on: {
+          go: () => { api.explore(z, x.cote ? x.id : undefined); },
+          fouille: (b) => { api.fouiller(z, i, Number(b.dataset.lvl)); }
+        }
       });
     }
+    /* « Fouiller de nouveau » : les trois durées, le niveau où l’on en est, ce qu’on y a entendu */
+    function fouilleHTML(z, i, x) {
+      const F = ((E.RECIT || {}).fouille) || {}, U_ = F.ui || {}, N = D.FOUILLE.niveaux, niv = E.fouilleNiveau(z, x.id);
+      const en = E.fouilleEnCours();
+      let h = '<h3 class="sub" style="margin-top:12px">' + esc(U_.titre || "") + "</h3><p class=\"small muted\">" + esc(U_.aide || "") + "</p>";
+      h += '<div class="fouille-niv">' + N.map((n, k) => {
+        const lvl = k + 1, ouvert = lvl <= niv + 1, fait = lvl <= niv, occupe = !!en;
+        return '<button class="btn small' + (ouvert && !occupe ? " pri" : " nope") + '" data-m="fouille" data-lvl="' + lvl + '">' + esc(n.n) + " · " + fmtDuree(n.s) + (fait ? " ✓" : "") + "</button>";
+      }).join("") + "</div>";
+      if (en) h += '<p class="small why">' + esc(U_.busy || "") + "</p>";
+      else if (niv === 0) h += '<p class="tiny muted">' + esc(U_.avant1 || "") + "</p>";
+      else if (niv === 1) h += '<p class="tiny muted">' + esc(U_.avant2 || "") + "</p>";
+      const heard = E.fouillePhrases(z, x.id);
+      if (heard.length) h += '<h3 class="sub" style="margin-top:10px">' + esc(U_.entendu || "") + "</h3>" + heard.map((p) => '<p class="small serif">' + esc(p.t) + "</p>").join("");
+      return h;
+    }
+    const fmtDuree = (s) => (s >= 3600 ? Math.round(s / 3600) + " h" : Math.round(s / 60) + " min");
     function passSheet(z) {
       const html = () => '<div class="kicker">Passage</div><h2>Vers ' + esc(E.ZONES[z].n) + "</h2>" + passHTML(z) + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
       openModal({ html: html(), refresh: html });
@@ -196,6 +235,13 @@
     /* ------------------------------------------------------------ gestes */
     function click(t) {
       let b;
+      if ((b = t.closest("[data-fouille]"))) {
+        api.A.click();
+        const f = E.fouilleEnCours();
+        if (f && f.pret) api.recolter();
+        else if (f) { const i = E.ZONES[f.z].exps.findIndex((e) => e.id === f.x.id); lieuSheet(f.z, i); }
+        return true;
+      }
       if ((b = t.closest("[data-cl]"))) { const [z, i] = b.dataset.cl.split(":"); api.A.click(); lieuSheet(z, Number(i)); return true; }
       if ((b = t.closest("[data-cp]"))) { api.A.click(); passSheet(b.dataset.cp); return true; }
       if ((b = t.closest("[data-cf]"))) { api.A.click(); fogSheet(b.dataset.cf); return true; }
@@ -205,11 +251,15 @@
     }
     function live(root) {
       if (!root) return;
+      const fl = root.querySelector("[data-fl]"), f = E.fouilleEnCours && E.fouilleEnCours();
+      if (fl && f) fl.textContent = fmtTime(f.left);
       root.querySelectorAll("[data-cpl]").forEach((el) => { const p = E.passInfo(el.dataset.cpl); if (p) el.textContent = "Passage · " + Math.floor(p.frac * 100) + " %"; });
     }
     function sig() {
       const st = S();
+      const fe = E.fouilleEnCours ? E.fouilleEnCours() : null;
       return [D.ZONES.filter((z) => E.zoneOpen(z.id)).map((z) => z.id).join(), JSON.stringify(st.exp.done), st.exp.active ? st.exp.active.z + st.exp.active.i : "",
+        JSON.stringify(st.meta.cotes || {}), fe ? fe.z + fe.x.id + fe.lvl + (fe.pret ? "!" : "") : "",
         E.passPending().map((z) => { const p = E.passInfo(z); return z + (p && p.ready ? 1 : 0); }).join(), D.ZONES.map((z) => { const n = E.nextExp(z.id); return n && n.locked ? 1 : 0; }).join("")].join("|");
     }
     /* la terre à montrer en arrivant : celle qu’on demande, sinon la dernière ouverte */

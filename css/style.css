@@ -1361,3 +1361,68 @@ h2 + .stamp { margin: -4px 0 8px; }
 .troc-parole { margin: 6px 0 8px; padding: 12px 14px; min-height: 92px; border-left: 3px solid var(--acc); background: var(--panel2); border-radius: 6px; line-height: 1.5; }
 .troc-parole p { margin: 0; }
 .troc-themes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; }
+
+/* les fouilles : la ligne de l’expédition en cours, au-dessus de la Carte, et les trois durées */
+.carte-fouille { display: block; position: sticky; top: 6px; z-index: 4; margin: 6px auto 0; padding: 8px 14px; max-width: 94%; border: 1px solid var(--line2); border-radius: 999px; background: var(--panel); color: var(--text); font: inherit; font-size: 13px; text-align: center; cursor: pointer; }
+.carte-fouille.pret { border-color: var(--acc); box-shadow: 0 0 0 2px rgba(197, 141, 78, 0.35); }
+.fouille-niv { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+/* les dons de la relève, les jours de présence et les seuils (0.9) */
+.dons { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.don { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg2); border: 1px solid var(--line); }
+.don .mic { font-size: 22px; width: 28px; text-align: center; }
+.don .btn { flex: 0 0 auto; }
+.card.memdon { margin-bottom: 8px; }
+.card.memdon .mic { font-size: 18px; }
+.dom-don { display: block; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; margin-bottom: 8px; }
+.dom-don span { float: right; opacity: 0.7; }
+.icon-btn { position: relative; }
+.icon-btn .dot-don { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--intu); box-shadow: 0 0 0 2px var(--panel); }
+.jours { padding: 8px 12px; margin-bottom: 8px; border-radius: 12px; border: 1px dashed var(--line); }
+.seuil { margin: 6px 0 8px; }
+.seuil .bar { margin-top: 4px; height: 6px; }
+/* ===== VISITEURS DE PASSAGE (début) ===== */
+#visiteurs { position: fixed; inset: 0; z-index: 40; pointer-events: none; overflow: hidden; }
+.visiteur {
+  position: absolute; top: var(--y, 30%); left: -64px; width: 56px; height: 56px; padding: 0;
+  display: flex; align-items: center; justify-content: center; border: 0; border-radius: 50%;
+  background: transparent; color: inherit; font: inherit; cursor: pointer; pointer-events: auto;
+  animation: vis-trav var(--dur, 12s) linear forwards;
+}
+.visiteur:hover, .visiteur:focus-visible, .visiteur:active { animation-play-state: paused; }
+.visiteur:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; background: color-mix(in srgb, var(--panel) 60%, transparent); }
+.visiteur .vis-ic { font-size: 34px; line-height: 1; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); animation: vis-bob 1.6s ease-in-out infinite; }
+.visiteur .vis-luciole { width: 12px; height: 12px; border-radius: 50%; background: #fff6a8; box-shadow: 0 0 10px 4px rgba(255, 240, 140, .75); animation: vis-bob 1.2s ease-in-out infinite; }
+@keyframes vis-trav { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 128px)); } }
+@keyframes vis-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes vis-fond { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .visiteur, .visiteur.fixe { left: var(--x, 50%); animation: vis-fond .3s ease-out both !important; }
+  .visiteur .vis-ic, .visiteur .vis-luciole { animation: none !important; }
+}
+.visiteur.fixe { left: var(--x, 50%); animation: vis-fond .3s ease-out both; }
+.visiteur.fixe .vis-ic, .visiteur.fixe .vis-luciole { animation: none; }
+/* ===== VISITEURS DE PASSAGE (fin) ===== */
+
+/* ===== FIGURES DU COSMOS (début) ===== */
+.fig-wrap { margin: 6px 0 14px; border-radius: 14px; overflow: hidden; background: linear-gradient(#03040c, #0a1026 60%, #1a1530); border: 1px solid var(--line); }
+.fig-sky { position: relative; width: 100%; }
+.fig-in { position: absolute; inset: 0; }
+.fig-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.fig-lines line { stroke-width: 1; vector-effect: non-scaling-stroke; }
+.fig-lines line.on { stroke: rgba(255, 233, 168, .55); }
+.fig-lines line.pale { stroke: rgba(190, 205, 255, .22); stroke-dasharray: 3 4; }
+.fig-lines line.lien { stroke: rgba(190, 205, 255, .25); stroke-dasharray: 2 5; }
+.fig-star, .fig-signe { position: absolute; transform: translate(-50%, -50%); border: 0; background: transparent; color: #dfe6ff; padding: 0; cursor: pointer; font: inherit; }
+.fig-star { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.fig-star i { display: block; width: 9px; height: 9px; border-radius: 50%; }
+.fig-star.on i { background: #ffeeb8; box-shadow: 0 0 8px 3px rgba(255, 224, 140, .75); }
+.fig-star.pale i { width: 8px; height: 8px; border: 1px solid rgba(190, 205, 255, .6); background: rgba(190, 205, 255, .12); }
+.fig-signe { width: 92px; min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px; border-radius: 12px; }
+.fig-signe .signe-svg { width: 40px; height: 40px; }
+.fig-signe.on { color: #ffeeb8; }
+.fig-signe.on .signe-svg { filter: drop-shadow(0 0 4px rgba(255, 224, 140, .7)); }
+.fig-signe.pale { color: rgba(190, 205, 255, .5); }
+.fig-mot { font-family: var(--serif, inherit); font-size: 14px; line-height: 1.1; color: #ffeeb8; }
+.fig-nom { position: absolute; transform: translate(-50%, -50%); font-size: 11px; letter-spacing: .02em; color: rgba(210, 220, 255, .6); pointer-events: none; white-space: nowrap; }
+.fig-star:focus-visible, .fig-signe:focus-visible { outline: 2px solid #ffeeb8; outline-offset: 0; }
+/* ===== FIGURES DU COSMOS (fin) ===== */
