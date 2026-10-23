@@ -6,7 +6,10 @@
   "use strict";
 
   function create(api) {
-    const { E, A, D, U, Sky, esc, fmt, fmtTime, icon, iconize, zoneName, toast, vibe, openModal, swapModal, render, save, subTabs, tabAvailable, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML } = api;
+    const {
+      E, A, D, U, Sky, esc, fmt, fmtTime, icon, iconize, zoneName, toast, vibe, openModal, swapModal, render, save,
+      subTabs, tabAvailable, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML
+    } = api;
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);

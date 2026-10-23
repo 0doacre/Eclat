@@ -1,4 +1,7 @@
-/* ÉCLAT — interface. */
+/* ÉCLAT — interface : le noyau.
+ * L’état de l’interface (U), les petits outils (formats, icônes, pastilles, toasts, fêtes),
+ * les fenêtres, les vues et leur rafraîchissement, la sauvegarde, la boucle, le démarrage
+ * et le service worker. Le reste vit dans des modules créés plus bas (MODULES). */
 (function () {
   "use strict";
   const D = window.ECLAT_DATA;
@@ -511,7 +514,8 @@
 
   /* ============================================================ SAUVEGARDES
    * Règles : on ne réécrit jamais une sauvegarde qu’on n’a pas su lire ; avant
-   * toute migration, import ou restauration, une copie brute est mise de côté. */
+   * toute migration, import ou restauration, une copie brute est mise de côté.
+   * (Les fenêtres des sauvegardes sont dans js/compte.js.) */
   const verOf = (raw) => { try { return JSON.parse(raw).v || 1; } catch (e) { return 0; } };
   function backups() {
     try { const l = JSON.parse(localStorage.getItem(BACKUP_KEY) || "[]"); return Array.isArray(l) ? l : []; } catch (e) { return []; }
@@ -548,7 +552,8 @@
       return "error";
     }
   }
-  /* ------------------------------------------------------------ compte en ligne */
+  /* ------------------------------------------------------------ compte en ligne
+   * le client (js/cloud.js) ; ses fenêtres sont dans js/compte.js */
   const safeStore = {
     getItem: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } },
     setItem: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* stockage bloqué */ } },
@@ -877,7 +882,7 @@
       (st.known[i] ? " (voir le Carnet)" : I[i].h ? " : « " + esc(I[i].h) + " »" : "")).join(", ") + ".";
   }
 
-  /* ------------------------------------------------------------ menus */
+  /* ------------------------------------------------------------ thème et taille du texte */
   function applyTheme() {
     if (typeof document === "undefined") return;
     const st = S();
@@ -972,28 +977,74 @@
     });
   }
 
+  /* ============================================================ MODULES
+   * créés après tout le noyau : chacun reçoit ce dont il a besoin, et rend ce que
+   * le noyau et les modules suivants appellent (js/visiteurs.js, js/journal.js…) */
   /* les visiteurs de passage */
   const Vis = window.EclatVisiteurs.create({ E, A, D, U, esc, fmt, toast, Tuto });
   const { visiteurTick, visiteurFin } = Vis;
 
   /* le Journal et le Cosmos */
-  const Jnl = window.EclatJournal.create({ E, A, D, U, Sky, esc, fmt, fmtTime, icon, iconize, zoneName, toast, vibe, openModal, swapModal, render, save, subTabs, tabAvailable, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML });
-  const { openSigneModal, viewJournal, figuresSig, viewCosmos, mountCosmos, confirmFire, listen, skyTap, playNote, runTerminal } = Jnl;
+  const Jnl = window.EclatJournal.create({
+    E, A, D, U, Sky, esc, fmt, fmtTime, icon, iconize, zoneName, toast, vibe, openModal, swapModal, render, save,
+    subTabs, tabAvailable, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML
+  });
+  const {
+    openSigneModal, viewJournal, figuresSig, viewCosmos, mountCosmos, confirmFire, listen, skyTap, playNote,
+    runTerminal
+  } = Jnl;
+
   /* l’objectif, le suivi et les Quêtes */
-  const Qst = window.EclatQuetes.create({ E, A, D, U, esc, fmt, fmtTime, cap1, needText, icon, itemPill, ingHTML, gesteChip, mainIngredient, isRawGather, zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save });
-  const { goalCard, goalSig, goalOpen, openMilestones, passHTML, pour, memoryHTML, trackerHTML, questChip, openQuestsModal } = Qst;
+  const Qst = window.EclatQuetes.create({
+    E, A, D, U, esc, fmt, fmtTime, cap1, needText, icon, itemPill, ingHTML, gesteChip, mainIngredient, isRawGather,
+    zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save
+  });
+  const {
+    goalCard, goalSig, goalOpen, openMilestones, passHTML, pour, memoryHTML, trackerHTML, questChip, openQuestsModal
+  } = Qst;
+
   /* la relève, les dons et la Mémoire des mains */
-  const Mem = window.EclatMemoire.create({ E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote });
-  const { intro, openStillnessScene, showEnding, confirmCycle, donsRepere, openDons, openMemoire, openForcedReleve, memChip } = Mem;
+  const Mem = window.EclatMemoire.create({
+    E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render,
+    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+  });
+  const {
+    intro, openStillnessScene, showEnding, confirmCycle, donsRepere, openDons, openMemoire, openForcedReleve, memChip
+  } = Mem;
+
   /* le menu, les sauvegardes et le compte en ligne */
-  const Cpt = window.EclatCompte.create({ E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin });
-  const { openMenu, openAccount, downloadSave, showBadSave, showNews, cloudTimers, cloudCheck, promptCapsuleText } = Cpt;
+  const Cpt = window.EclatCompte.create({
+    E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
+    backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin
+  });
+  const {
+    openMenu, openAccount, downloadSave, showBadSave, showNews, cloudTimers, cloudCheck, promptCapsuleText
+  } = Cpt;
+
   /* l’Atelier et le Carnet */
-  const Atl = window.EclatAtelier.create({ E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, zoneName, GI, gi, gIc, icon, iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient, floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs, uiSigne, memoryHTML });
-  const { viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo } = Atl;
+  const Atl = window.EclatAtelier.create({
+    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, zoneName, GI, gi, gIc, icon,
+    iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
+    floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
+    uiSigne, memoryHTML
+  });
+  const {
+    viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML,
+    handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo
+  } = Atl;
+
   /* les écouteurs : le moteur et les gestes du joueur */
-  const Ecu = window.EclatEcouteurs.create({ E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete, fireworks, elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge, updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML, FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap, playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene, openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree });
+  const Ecu = window.EclatEcouteurs.create({
+    E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete, fireworks,
+    elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge,
+    updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML,
+    FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
+    playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene,
+    openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge,
+    craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree
+  });
   const { bindEngine, bindDom, checkForcedReleve } = Ecu;
+
   /* ============================================================ BOUCLE */
   function loop() {
     E.update();

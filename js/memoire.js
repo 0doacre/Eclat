@@ -5,7 +5,10 @@
   "use strict";
 
   function create(api) {
-    const { E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote } = api;
+    const {
+      E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal,
+      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+    } = api;
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
