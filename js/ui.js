@@ -460,7 +460,7 @@
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
   });
   const Carte = window.EclatCarte.create({
-    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, expWhy: (z) => expWhy(z), explore: (z) => explore(z), goto: (id) => goto(id),
+    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
     goDomaine: (z) => { U.zone = z; setTab("domaine"); Dom.focusZone(z); }
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
@@ -3000,12 +3000,25 @@
     });
   }
   /* lancer l’exploration du prochain lieu d’une terre */
-  function explore(z) {
-    const why = expWhy(z);
+  function explore(z, xid) {
+    const why = xid ? (S().exp.active ? "Tu explores déjà ailleurs : une exploration à la fois." : "") : expWhy(z);
     if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
-    const r = E.startExp(z);
+    const r = E.startExp(z, xid);
     if (r.ok) { A.init(); A.explore(); toast("🧭 Exploration lancée : elle avance toute seule."); }
     render(true);
+  }
+  /* ------------------------------------------------------ fouilles (expéditions longues) */
+  const FOU = () => ((E.RECIT || {}).fouille || {}).ui || {};
+  function fouiller(z, i, lvl) {
+    const r = E.fouilleLancer(z, i, lvl);
+    if (!r.ok) { A.fail(0); toast(r.why === "busy" ? FOU().busy : r.why === "palier" ? (lvl === 2 ? FOU().avant1 : FOU().avant2) : "", { key: "nope" }); return; }
+    A.init(); A.explore();
+    toast("🧭 " + esc(FOU().parti || ""));
+    render(true);
+  }
+  function recolterFouille() {
+    const r = E.fouilleRecolter();
+    if (!r.ok) { A.fail(0); if (r.why === "pas_fini") toast(esc(FOU().pasFini || ""), { key: "nope" }); }
   }
   function openHelp() {
     simpleModal("Aide", "Comment jouer",
@@ -3735,6 +3748,20 @@
     E.on("page", (p) => {
       badge("journal");
       toast("📖 Une page du Livre : n° " + p.n);
+    });
+    // une fouille finie : un mot, une pastille sur la Carte ; on la reçoit en la touchant
+    E.on("fouillePrete", () => { badge("carte"); if (U.live) toast("🧭 " + esc(FOU().prete || ""), { key: "fouille" }); });
+    E.on("fouille", (r) => {
+      A.found(); badge("journal");
+      const U_ = FOU(), gains = Object.keys(r.butin).map((k) => "+" + fmt(r.butin[k]) + " " + I[k].n.toLowerCase()).concat(r.intu ? ["+" + r.intu + " ✨"] : []);
+      openModal({
+        html: '<div class="kicker">' + esc(U_.kicker || "") + " · " + esc(zoneName(r.z)) + "</div><h2>" + esc(r.x.n) + '</h2><p class="small muted">' + esc(r.niv.n) + "</p>" +
+          loreHTML(r.phrase, zoneName(r.z)) +
+          '<p class="small">' + esc(U_.rapporte || "") + " : " + esc(gains.join(", ")) + ".</p>" +
+          (r.cote ? '<p class="small" style="color:var(--good)">' + esc(U_.nouveau || "") + " : <b>" + esc(r.cote.n) + "</b>.</p>" : "") +
+          '<div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>'
+      });
+      render(true);
     });
     E.on("expdone", (r) => {
       A.found();

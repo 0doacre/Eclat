@@ -54,7 +54,7 @@ const ACHATS = ["recolte", "mains", "recolte", "paquetage", "extr", "mains", "ra
 
 /* ------------------------------------------------------------------ options */
 function lire(argv) {
-  const o = { minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1 };
+  const o = { minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, fouilles: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], val = () => argv[++i];
     if (a === "--minutes") o.minutes = +val();
@@ -66,6 +66,7 @@ function lire(argv) {
       });
     }
     else if (a === "--offline") o.offline = +val();
+    else if (a === "--fouilles") o.fouilles = true;
     else if (a === "--compare") o.compare = true;
     else if (a === "--reflexion") o.reflexion = +val();
     else if (a === "--carnet") o.carnet = +val();
@@ -293,6 +294,17 @@ function play(o) {
 
   /* ---- la boucle : pas de 100 ms, 4 appuis par seconde ---- */
   const cycles = [];
+  /* --fouilles : la plus haute terre où un lieu déjà exploré a un niveau de fouille à faire qui tient dans l’absence */
+  function lancerFouille() {
+    for (let k = D.ZONES.length - 1; k >= 0; k--) {
+      const z = D.ZONES[k];
+      for (let i = 0; i < z.exps.length; i++) {
+        if (!E.fouilleLieuOk(z.id, i)) continue;
+        const lvl = E.fouilleNiveau(z.id, z.exps[i].id) + 1;
+        if (lvl <= D.FOUILLE.niveaux.length && D.FOUILLE.niveaux[lvl - 1].s <= o.offline * 3600 && E.fouilleLancer(z.id, i, lvl).ok) return;
+      }
+    }
+  }
   let objPrec = -1;
   for (let c = 1; ; c++) {
     for (let step = 0; cyc() < o.minutes; step++) {
@@ -302,7 +314,12 @@ function play(o) {
         const ob = E.objective();
         if (ob && ob.i !== objPrec) { objPrec = ob.i; console.log("  " + mm(cyc()) + " min  objectif " + String(ob.i).padStart(2) + " : " + (ob.id || ob.n)); }
       }
-      if (partir) { partir = false; T += o.offline * 3600e3; absent += o.offline * 3600e3; E.update(); } // absence : E.catchUp
+      if (partir) { // absence : E.catchUp ; avec --fouilles, il part fouiller (le meilleur niveau qui tient dans l’absence) et reçoit le butin au retour
+        partir = false;
+        if (o.fouilles) lancerFouille();
+        T += o.offline * 3600e3; absent += o.offline * 3600e3; E.update();
+        if (o.fouilles) E.fouilleRecolter();
+      }
       if (pense > 0) { pense -= 0.1; continue; } // il réfléchit à l’Atelier : ni décision ni récolte
       if (step % 5 === 0) brain();
       tapAcc += o.taps / 10;

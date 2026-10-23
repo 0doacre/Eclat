@@ -1175,6 +1175,19 @@
   /* Scènes d’éveil des Semeurs (cycles 2 et suivants) */
   D.EVEILS = {}; // js/recit.js
 
+  /* ------------------------------------------------ EXPÉDITIONS LONGUES (fouilles)
+   * Un lieu déjà exploré se fouille de nouveau, en trois niveaux de plus en plus longs, hors ligne.
+   * s : durée en secondes ; taps : le butin vaut autant d’appuis de récolte à la main (qui suivent la
+   * puissance du joueur : l’outil, la Mémoire, la règle de la terre) pour chaque ressource de la terre ;
+   * intu : l’Intuition de la première fois. Le niveau n+1 demande d’avoir fini le niveau n. */
+  D.FOUILLE = {
+    niveaux: [
+      { n: "Un tour", s: 1800, taps: 120, intu: 1 },
+      { n: "Une fouille", s: 7200, taps: 600, intu: 2 },
+      { n: "Tout retourner", s: 28800, taps: 2400, intu: 4 }
+    ]
+  };
+
   root.ECLAT_DATA = D;
   if (typeof module !== "undefined" && module.exports) module.exports = D;
   if (typeof require !== "undefined") {

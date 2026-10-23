@@ -87,7 +87,7 @@
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -1780,14 +1780,19 @@
       const i = S.exp.done[zid] || 0;
       if (!z.exps || i >= z.exps.length) return null;
       const x = z.exps[i];
+      if (x.cote) return null; // un lieu d’à côté ne fait pas partie de la file : il s’ouvre par une fouille
       if (x.show && !cond(x.show)) return null;
       const locked = x.need ? !hasExpReq(x.need) : false;
       return { x, i, locked };
     };
     E.expMult = () => E.cache().exp;
-    E.startExp = function (zid) {
+    E.startExp = function (zid, xid) {
       if (S.exp.active) return { ok: false, why: "busy" };
-      const n = E.nextExp(zid);
+      let n = E.nextExp(zid);
+      if (xid) { // un lieu d’à côté, déjà trouvé et pas encore exploré
+        const i = ZONES[zid].exps.findIndex((e) => e.id === xid && e.cote);
+        n = i >= 0 && E.coteEtat(zid, xid) === 1 ? { x: ZONES[zid].exps[i], i, locked: ZONES[zid].exps[i].need ? !hasExpReq(ZONES[zid].exps[i].need) : false, cote: true } : null;
+      }
       if (!n || n.locked) return { ok: false, why: "none" };
       const x = n.x;
       if (x.cost) {
@@ -1795,6 +1800,7 @@
         for (const i in x.cost) add(i, -x.cost[i]);
       }
       S.exp.active = { z: zid, i: n.i, t0: now(), dur: (x.dur * 1000) / E.expMult() };
+      if (n.cote) S.exp.active.cote = true;
       E.emit("struct");
       return { ok: true };
     };
@@ -1849,6 +1855,7 @@
           if (!z || !z.exps) return false;
           const idx = z.exps.findIndex((x) => x.id === xid);
           if (idx < 0) return false;
+          if (z.exps[idx].cote) return !!(S.meta && S.meta.cotes && S.meta.cotes[zid + ":" + xid] === 2);
           if (!((S.exp && S.exp.done && S.exp.done[zid]) > idx)) return false;
         } else if (k === "all") {
           if (!Array.isArray(v) || !v.every(cond)) return false;
@@ -2305,7 +2312,8 @@
       const a = S.exp.active;
       const x = ZONES[a.z].exps[a.i];
       S.exp.active = null;
-      S.exp.done[a.z] = (S.exp.done[a.z] || 0) + 1;
+      if (x.cote) { S.meta.cotes = S.meta.cotes || {}; S.meta.cotes[a.z + ":" + x.id] = 2; } // un lieu d’à côté ne compte pas dans la file
+      else S.exp.done[a.z] = (S.exp.done[a.z] || 0) + 1;
       const locKey = a.z + ":" + x.id;
       if (RECIT.pages) {
         for (const pid in RECIT.pages) {
@@ -3844,6 +3852,107 @@
       return dt;
     };
 
+    /* ------------------------------------------------------ EXPÉDITIONS LONGUES (fouilles)
+     * Un lieu déjà exploré (dans cet éveil, ou un lieu d’à côté) se fouille de nouveau : trois niveaux
+     * (D.FOUILLE), de plus en plus longs, un seul à la fois, hors ligne. L’état est dans la méta (S.meta.exlong,
+     * S.meta.fouilles, S.meta.cotes) : il traverse la relève, et rien n’expire. Le temps passé se lit sur
+     * l’horloge, pas sur la simulation : une absence de douze heures termine une fouille de huit. Le butin
+     * attend qu’on le reçoive (E.fouilleRecolter) : ressources de la terre, Intuition la première fois,
+     * une parole du lieu, et parfois un lieu d’à côté. */
+    const FOU = () => (D.FOUILLE && D.FOUILLE.niveaux) || [];
+    const fouKey = (z, x) => z + ":" + x;
+    E.fouilleNiveau = (z, xid) => (S.meta && S.meta.fouilles && S.meta.fouilles[fouKey(z, xid)]) || 0;
+    /* un lieu d’à côté : 0 inconnu, 1 trouvé, 2 exploré */
+    E.coteEtat = (z, xid) => (S.meta && S.meta.cotes && S.meta.cotes[fouKey(z, xid)]) || 0;
+    E.fouilleLieuOk = function (z, i) {
+      const Z = ZONES[z], x = Z && Z.exps[i];
+      if (!x || !zoneOpen(z)) return false;
+      return x.cote ? E.coteEtat(z, x.id) === 2 : i < (S.exp.done[z] || 0);
+    };
+    E.fouilleLancer = function (z, i, lvl) {
+      lvl = Math.floor(Number(lvl));
+      if (!(lvl >= 1 && lvl <= FOU().length)) return { ok: false, why: "niveau" };
+      if (S.meta.exlong) return { ok: false, why: "busy" };
+      if (!E.fouilleLieuOk(z, i)) return { ok: false, why: "lieu" };
+      const x = ZONES[z].exps[i];
+      if (lvl > E.fouilleNiveau(z, x.id) + 1) return { ok: false, why: "palier" };
+      S.meta.exlong = { z, x: x.id, lvl, t0: now(), dur: FOU()[lvl - 1].s * 1000, pret: false };
+      E.emit("struct");
+      return { ok: true };
+    };
+    E.fouilleEnCours = function () {
+      const a = S.meta && S.meta.exlong;
+      if (!a) return null;
+      const x = ZONES[a.z] && ZONES[a.z].exps.find((e) => e.id === a.x);
+      if (!x) return null;
+      const el = Math.max(0, now() - a.t0);
+      return { z: a.z, x, lvl: a.lvl, niv: FOU()[a.lvl - 1], p: Math.min(1, el / a.dur), left: Math.max(0, (a.dur - el) / 1000), pret: el >= a.dur };
+    };
+    function fouilleCheck() {
+      const a = S.meta && S.meta.exlong;
+      if (!a) return;
+      if (a.t0 > now()) a.t0 = now(); // l’horloge a reculé : la fouille repart de maintenant, elle ne se bloque pas
+      if (!a.pret && now() >= a.t0 + a.dur) {
+        a.pret = true;
+        E.emit("fouillePrete", E.fouilleEnCours());
+        E.emit("struct");
+      }
+    }
+    E.fouilleCheck = fouilleCheck;
+    /* ce que le lieu dit : sa parole du niveau la première fois, sinon une phrase d’usage */
+    function fouillePhrase(key, lvl, prem) {
+      const F = RECIT.fouille || {};
+      const own = F.lignes && F.lignes[key] && F.lignes[key][lvl - 1];
+      if (prem && own) return own;
+      const g = (F.generiques && F.generiques[lvl - 1]) || [];
+      const list = prem ? g : (F.refaite || g);
+      if (!list.length) return "";
+      let h = 0;
+      for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) % 9973;
+      return list[(h + lvl) % list.length];
+    }
+    E.fouillePhrases = function (z, xid) { // ce qu’on a déjà entendu à ce lieu, niveau par niveau
+      const key = fouKey(z, xid), niv = E.fouilleNiveau(z, xid), own = (RECIT.fouille && RECIT.fouille.lignes && RECIT.fouille.lignes[key]) || [];
+      const out = [];
+      for (let l = 1; l <= niv; l++) if (own[l - 1]) out.push({ lvl: l, t: interpolate(own[l - 1]) });
+      return out;
+    };
+    E.fouilleRecolter = function () {
+      const en = E.fouilleEnCours();
+      if (!en) { if (S.meta.exlong) S.meta.exlong = null; return { ok: false, why: "none" }; }
+      if (!en.pret) return { ok: false, why: "pas_fini", left: en.left };
+      const N = FOU()[en.lvl - 1], z = en.z, x = en.x, key = fouKey(z, x.id);
+      const butin = {};
+      for (const r of ZONES[z].res) { const n = Math.max(1, Math.ceil(tapYield(r, z) * N.taps)); butin[r] = n; add(r, n); }
+      const prem = en.lvl > E.fouilleNiveau(z, x.id);
+      let intu = 0, cote = null;
+      if (prem) {
+        intu = N.intu; S.intu += intu;
+        S.meta.fouilles = S.meta.fouilles || {};
+        S.meta.fouilles[key] = en.lvl;
+        stamp("x:" + key + ":" + en.lvl);
+        if (en.lvl === FOU().length) {
+          const c = ((RECIT.fouille && RECIT.fouille.cotes) || []).find((q) => q.z === z && q.parent === x.id);
+          S.meta.cotes = S.meta.cotes || {};
+          if (c && !S.meta.cotes[fouKey(z, c.id)]) { S.meta.cotes[fouKey(z, c.id)] = 1; cote = { id: c.id, n: c.n }; stamp("x:" + fouKey(z, c.id)); }
+        }
+      }
+      const phrase = interpolate(fouillePhrase(key, en.lvl, prem));
+      S.meta.exlong = null;
+      S.meta.fouillesFaites = (S.meta.fouillesFaites || 0) + 1;
+      const res = { ok: true, z, x, lvl: en.lvl, niv: N, butin, intu, phrase, cote, prem };
+      E.emit("fouille", res);
+      checkAges();
+      E.emit("struct");
+      return res;
+    };
+    // la fouille se termine d’elle-même, jeu ouvert ou après une absence : on enveloppe update et catchUp
+    {
+      const upd = E.update, cu = E.catchUp;
+      E.update = function () { const r = upd.apply(this, arguments); fouilleCheck(); return r; };
+      E.catchUp = function () { const r = cu.apply(this, arguments); fouilleCheck(); return r; };
+    }
+
     /* ------------------------------------------------------ sauvegarde */
     E.serialize = () => JSON.stringify(S);
     /* Lit une sauvegarde (chaîne JSON ou objet), la migre et la valide.
@@ -3997,6 +4106,18 @@
       if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};
       if (o.termMode !== "reg" && o.termMode !== "arche") o.termMode = (o.flags && o.flags.registre) ? "reg" : "arche";
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
+      // les fouilles : niveaux atteints, lieux d’à côté trouvés, expédition en cours (rien n’expire, rien ne se perd)
+      {
+        const m = o.meta, isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
+        const fo = {}, co = {};
+        if (isObj(m.fouilles)) for (const k in m.fouilles) { const v = Math.floor(Number(m.fouilles[k])); if (v >= 1 && v <= 9) fo[k] = v; }
+        if (isObj(m.cotes)) for (const k in m.cotes) { const v = Math.floor(Number(m.cotes[k])); if (v === 1 || v === 2) co[k] = v; }
+        m.fouilles = fo; m.cotes = co;
+        const a = m.exlong, nv = (D.FOUILLE && D.FOUILLE.niveaux) || [];
+        m.exlong = (isObj(a) && ZONES[a.z] && ZONES[a.z].exps.some((e) => e.id === a.x) && Math.floor(a.lvl) >= 1 && Math.floor(a.lvl) <= nv.length && Number(a.t0) > 0 && Number(a.dur) > 0)
+          ? { z: a.z, x: a.x, lvl: Math.floor(a.lvl), t0: Number(a.t0), dur: Number(a.dur), pret: !!a.pret } : null;
+        m.fouillesFaites = Math.max(0, Math.floor(Number(m.fouillesFaites)) || 0);
+      }
       // ce que le Troqueur a déjà dit : un champ par défaut, des numéros de cycle, jamais plus
       {
         const t = o.meta.troc, ok = t && typeof t === "object" && !Array.isArray(t);

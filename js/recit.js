@@ -521,6 +521,41 @@
         n: "Les Bras Figés", z: "mercure",
         t: "Sur la face éclairée de Mercure, des milliers de bras de métal, arrêtés en plein geste. Certains tiennent encore une plaque au-dessus de leur tête. Aucun n’est tombé.\n\nAu pied du plus proche, un tas de cailloux ordinaires, triés avec soin, comme s’il allait en faire autre chose."
       },
+      ronds: {
+        n: "Les Ronds d’herbe", z: "lisiere",
+        t: "Dans la clairière, l’herbe pousse en ronds plus clairs, de la taille d’un dos. Ils sont alignés, à deux pas l’un de l’autre. Tu les comptes : {semeur}.\n\nLes premiers sont presque rendus à la forêt. Le dernier est net.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Tu recomptes les ronds : {semeur}. Il y en a un de plus que la dernière fois. Le précédent commence à verdir." }
+        ]
+      },
+      puits: {
+        n: "Le Puits", z: "plaine",
+        t: "Une margelle de pierre au milieu de l’herbe, un seau au bout de sa corde. Tu tires. Le seau est plein d’une eau claire et froide.\n\nQuelqu’un l’a remonté et ne l’a pas bu.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Le seau est de nouveau plein. L’eau est aussi fraîche que la première fois." }
+        ]
+      },
+      bac: {
+        n: "Le Bac", z: "riviere",
+        t: "Un bac plat, amarré à un câble qui traverse la rivière. Pas de passeur.\n\nSur le plancher, des empreintes de pieds nus, toutes petites, toutes dans le même sens. Vers l’autre rive.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Les empreintes sont les mêmes. Elles vont toujours vers l’autre rive. Tu cherches celles qui reviennent." }
+        ]
+      },
+      attente: {
+        n: "La Salle d’attente", z: "desert",
+        t: "Un long bâtiment aux fenêtres cassées. Des bancs de pierre en rangs, tournés vers un mur. Sur le mur, un tableau d’horaires.\n\nDouze lignes de départs, bien remplies. La colonne des retours est blanche. Personne n’y a jamais rien écrit.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Tu t’assieds sur le banc du fond. De là, le tableau semble plus grand, et la colonne blanche aussi." }
+        ]
+      },
+      hublot: {
+        n: "Le Hublot", z: "orbite",
+        t: "Derrière la plaque, une vitre épaisse, et la Terre en bas, verte et bleue.\n\nSur la vitre, des traces de paumes, grandes, ouvertes, alignées. Quelqu’un a salué la Terre, et tous les autres ont fait pareil.",
+        revisit: [
+          { cond: { cycle: 2 }, t: "Tu poses ta paume sur l’une des traces. Elle est un peu plus large que la tienne." }
+        ]
+      },
       signal: {
         n: "Le Signal", z: "cosmos",
         t: "Le traducteur ronronne, puis écrit, ligne après ligne, la même phrase en signes :\n\n[main] [halte] · [nous] [revenir] [enfant]\n\nDes milliers de voix la chantent, depuis trois cents ans. Elles se rapprochent."
@@ -1071,6 +1106,108 @@
       ]
     },
 
+    /* ------------------------------------------------- LES FOUILLES (expéditions longues)
+     * Un lieu déjà exploré se fouille de nouveau en trois niveaux (D.FOUILLE). À chaque niveau, une
+     * parole du lieu quand il en a une (lignes), sinon une phrase d’usage (generiques). Au dernier
+     * niveau, quelques lieux en ouvrent un autre à côté (cotes). Rien ne s’y dit en clair. */
+    fouille: {
+      lignes: {
+        "lisiere:chene": [
+          "Tu fais le tour de l’arbre, lentement. Dans l’herbe, une trace large, comme celle d’un traîneau, part vers la clairière et s’efface.",
+          "Entre les racines, la terre est tassée en petits ronds, alignés. On y a posé quelque chose de lourd, plusieurs fois, un peu plus loin à chaque fois.",
+          "Tu suis les ronds jusqu’à la clairière. Ils s’arrêtent là, au bord de l’herbe haute."
+        ],
+        "lisiere:grotte": [
+          "Tu comptes les petites mains, une à une. Les plus usées sont les plus basses : on les touchait souvent, à hauteur d’enfant.",
+          "Couché contre la paroi, tu vois la fresque à l’envers. Les canots ne montent plus. Ils descendent.",
+          null
+        ],
+        "plaine:champ_os": [
+          "Tu retournes les os un par un. Aucune bête n’est brisée. Un sentier à peine marqué s’éloigne vers l’est, droit comme un trait.",
+          "Entre les côtes d’une bête énorme, une gourde de peau, bouchée, pleine. L’eau est claire. Personne n’y a touché.",
+          "Le sentier mène à une margelle de pierre, à demi cachée dans l’herbe."
+        ],
+        "plaine:tumulus": [
+          "Tu frottes la plaque du revers de la main. Pas une trace de rouille, pas une rayure.",
+          "Au pied de la butte, la terre est creuse par endroits. Des machines couchées dorment dessous, enterrées jusqu’aux roues.",
+          null
+        ],
+        "riviere:gue": [
+          "Tu comptes les marches qui descendent dans l’eau. Elles sont lisses, usées au milieu comme celles d’une maison.",
+          null,
+          null
+        ],
+        "riviere:carcasse": [
+          "Dans la pince, l’oiseau n’a pas bougé. Les roues ont tracé un second sillon, qui longe la rive vers l’aval.",
+          "Le second sillon descend jusqu’à l’eau. Il ne ressort pas de l’autre côté.",
+          "Tu suis le sillon jusqu’au bout. Un câble sort de l’eau et traverse la rivière. Au bout, quelque chose de plat flotte."
+        ],
+        "collines:rails": [
+          "Tu t’allonges sous le wagonnet. Le sol est sec. Il est arrêté depuis des siècles, et il n’est pas abîmé.",
+          null,
+          null
+        ],
+        "mine:filon": [
+          "Tu poses la paume sur la roche. Elle est tiède. Plus bas dans la galerie, elle l’est davantage.",
+          null,
+          null
+        ],
+        "desert:ville": [
+          "Tu soulèves des tôles. Dessous, des valises rangées par taille, étiquetées d’un numéro de ligne, de 1 à 12. Aucune n’est ouverte.",
+          "Au bout d’une rue, un long bâtiment aux fenêtres alignées. Des flèches peintes au sol y mènent toutes.",
+          "Tu pousses la porte du long bâtiment. Des bancs, en rangs, tournés vers le même mur."
+        ],
+        "orbite:station_morte": [
+          "Tu flottes d’une cabine à l’autre. Les lits sont faits. Dans le couloir, une plaque est vissée de l’intérieur sur ce qui devait être un hublot.",
+          "Autour des vis, des traces de doigts, nombreuses. Beaucoup de gens ont voulu ouvrir cette plaque. Aucun n’y est arrivé.",
+          "La plaque cède à la quatrième vis. Derrière, une vitre, et la Terre en bas."
+        ],
+        "lune:tranquillite": [
+          "La poussière garde des empreintes de bottes, tout autour de la plaque. Rien ne les a effacées.",
+          null,
+          null
+        ],
+        "mercure:bras": [
+          "Un bras, tout près de toi, tient encore une poignée de gravier. Pas un grain ne s’est détaché.",
+          null,
+          null
+        ]
+      },
+      /* pour un lieu sans parole : une phrase d’usage par niveau, deux au choix ; la seconde sert aussi aux fouilles refaites */
+      generiques: [
+        ["Tu reviens les mains pleines de poussière.", "Tu as fait le tour du lieu. Rien n’a bougé, sauf ce que tu rapportes."],
+        ["Tu es resté longtemps. Le lieu t’a montré ses coins.", "Tu as creusé là où tu ne regardais pas la première fois."],
+        ["Tu as soulevé chaque pierre. Il ne reste dessous que de la terre.", "Tu as tout retourné, même ce qui pesait trop. Tu rentres à la nuit."]
+      ],
+      refaite: ["Tu connais le lieu par cœur. Tu rapportes ce que tu trouves.", "Rien de neuf, mais tes poches ne sont pas vides."],
+      /* les lieux qui s’ouvrent à côté : de la terre, du lieu qu’il faut avoir retourné à fond, et le lieu lui-même */
+      cotes: [
+        { z: "lisiere", parent: "chene", id: "ronds", n: "Les Ronds d’herbe", dur: 60 },
+        { z: "plaine", parent: "champ_os", id: "puits", n: "Le Puits", dur: 75 },
+        { z: "riviere", parent: "carcasse", id: "bac", n: "Le Bac", dur: 90 },
+        { z: "desert", parent: "ville", id: "attente", n: "La Salle d’attente", dur: 110 },
+        { z: "orbite", parent: "station_morte", id: "hublot", n: "Le Hublot", dur: 120 }
+      ],
+      ui: {
+        titre: "Fouiller de nouveau",
+        aide: "Tu pars, tu fermes le jeu si tu veux. Le butin t’attend à ton retour.",
+        busy: "Tu fouilles déjà ailleurs.",
+        avant1: "Il faut d’abord avoir fini un tour.",
+        avant2: "Il faut d’abord avoir fini une fouille.",
+        fait: "Déjà fait",
+        parti: "Tu pars fouiller. Le butin t’attendra, même jeu fermé.",
+        chip: "Fouille",
+        chipReste: "reste",
+        chipPret: "finie : touche pour recevoir",
+        prete: "Ta fouille est finie. Touche-la sur la Carte.",
+        kicker: "Fouille",
+        rapporte: "Tu rapportes",
+        nouveau: "Un nouveau lieu sur la Carte",
+        entendu: "Ce que tu y as entendu",
+        pasFini: "Pas encore finie."
+      }
+    },
+
     /* ------------------------------------------------- PHRASES DE L’INTERFACE */
     ui: {
       capsule: "Au pied du Grand Chêne, une capsule de verre t’attend, avec quelques matériaux et un enregistrement. Ta propre voix :\n\n« Salut. C’est toi. Enfin, toi d’avant. Fais confiance à tes mains. »",
@@ -1134,6 +1271,12 @@
   for (const id in R.melodies) {
     if (!exist.has(id) && R.melodies[id].compte !== false) D.SECRETS.push({ id, k: "air", n: R.melodies[id].n });
   }
+  /* les lieux d’à côté rejoignent la fin de la liste de leur terre : la file des explorations
+   * s’arrête devant eux (nextExp), ils s’ouvrent par une fouille à fond de leur lieu d’origine */
+  (R.fouille.cotes || []).forEach((c) => {
+    const Z = D.ZONES.find((z) => z.id === c.z);
+    if (Z && !Z.exps.some((x) => x.id === c.id)) Z.exps.push({ id: c.id, n: c.n, dur: c.dur, cote: c.parent, rw: { frag: c.id, intu: 2 } });
+  });
   /* les secrets « méta » : leur catégorie ne dit rien */
   [["signature", "La signature"], ["noms", "Les noms"], ["visage", "Le même visage"]].forEach(([id, n]) => {
     if (!exist.has(id)) D.SECRETS.push({ id, k: "?", n });

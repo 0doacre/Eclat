@@ -3336,4 +3336,122 @@ test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro san
   assert.deepStrictEqual(E4.state.meta.troc, { vus: {}, dernier: null, refus: 0 });
 });
 
+console.log("Les fouilles : expéditions longues");
+const H = 3600 * 1000;
+const fouilleur = () => { const E = mk(); E.state.zones.lisiere = true; E.state.exp.done.lisiere = 1; return E; }; // le Chêne est exploré
+test("Fouille : trois niveaux de plus en plus longs, un par un, un seul emplacement", () => {
+  const N = D.FOUILLE.niveaux;
+  assert.deepStrictEqual(N.map((n) => n.s), [1800, 7200, 28800]);
+  assert.ok(N[0].taps < N[1].taps && N[1].taps < N[2].taps && N[0].intu < N[2].intu);
+  const E = fouilleur();
+  assert.strictEqual(E.fouilleLancer("lisiere", 0, 2).why, "palier", "pas de niveau 2 sans le niveau 1");
+  assert.strictEqual(E.fouilleLancer("lisiere", 1, 1).why, "lieu", "un lieu pas encore exploré ne se fouille pas");
+  assert.strictEqual(E.fouilleLancer("lisiere", 0, 4).why, "niveau");
+  assert.ok(E.fouilleLancer("lisiere", 0, 1).ok);
+  assert.strictEqual(E.fouilleLancer("lisiere", 0, 1).why, "busy", "un seul emplacement");
+  assert.strictEqual(E.fouilleRecolter().why, "pas_fini");
+  const en = E.fouilleEnCours();
+  assert.ok(en && !en.pret && en.left > 1790 && en.left <= 1800 && en.x.id === "chene");
+  // l’exploration courte reste libre pendant ce temps
+  assert.strictEqual(E.state.exp.active, null);
+  E.state.exp.done.lisiere = 1; E.add("torche", 1);
+  assert.ok(E.startExp("lisiere").ok, "la grotte part pendant la fouille");
+});
+test("Fouille : le butin suit la terre, l’Intuition ne vaut que la première fois, rien n’expire", () => {
+  const E = fouilleur();
+  const intu0 = E.state.intu;
+  E.fouilleLancer("lisiere", 0, 1);
+  T += 31 * 60 * 1000;
+  let prete = 0; E.on("fouillePrete", () => prete++);
+  E.update();
+  assert.strictEqual(prete, 1);
+  E.update(); assert.strictEqual(prete, 1, "annoncée une seule fois");
+  const bois0 = E.count("bois");
+  const r = E.fouilleRecolter();
+  assert.ok(r.ok && r.prem && r.lvl === 1 && r.intu === 1);
+  assert.deepStrictEqual(Object.keys(r.butin).sort(), D.ZONES[0].res.slice().sort());
+  assert.strictEqual(E.count("bois") - bois0, Math.ceil(E.tapYield("bois", "lisiere") * D.FOUILLE.niveaux[0].taps));
+  assert.strictEqual(E.state.intu - intu0, 1);
+  assert.strictEqual(E.fouilleNiveau("lisiere", "chene"), 1);
+  assert.strictEqual(E.fouilleEnCours(), null);
+  // la refaire : le butin revient, pas l’Intuition, une phrase d’usage
+  E.fouilleLancer("lisiere", 0, 1); T += 31 * 60 * 1000; E.update();
+  const i1 = E.state.intu, r2 = E.fouilleRecolter();
+  assert.ok(r2.ok && !r2.prem && r2.intu === 0 && E.state.intu === i1);
+  // et rien n’expire : un an plus tard, le butin attend
+  E.fouilleLancer("lisiere", 0, 2); T += 365 * 24 * H; E.update();
+  assert.ok(E.fouilleEnCours().pret);
+  assert.ok(E.fouilleRecolter().ok);
+});
+test("Fouille : une absence de douze heures termine une fouille de huit, par le rattrapage", () => {
+  const E = fouilleur();
+  E.state.meta.fouilles["lisiere:chene"] = 2;
+  assert.ok(E.fouilleLancer("lisiere", 0, 3).ok);
+  T += 12 * H;
+  let prete = 0; E.on("fouillePrete", () => prete++);
+  let off = null; E.on("offline", (o) => (off = o));
+  E.update(); // plus de 5 s d’écart : E.catchUp
+  assert.ok(off && off.dt >= 3600, "le rattrapage a eu lieu");
+  assert.strictEqual(prete, 1);
+  const r = E.fouilleRecolter();
+  assert.ok(r.ok && r.lvl === 3 && r.prem && r.intu === D.FOUILLE.niveaux[2].intu);
+  assert.ok(r.cote && r.cote.id === "ronds", "le Chêne, à fond, ouvre un lieu d’à côté");
+  // rattrapage direct, sans passer par update
+  const E2 = fouilleur(); E2.fouilleLancer("lisiere", 0, 1); T += 3 * H; E2.catchUp(3 * H);
+  assert.ok(E2.fouilleEnCours().pret);
+  // l’horloge qui recule ne bloque rien
+  const E3 = fouilleur(); E3.fouilleLancer("lisiere", 0, 1); T -= 5 * H; E3.update();
+  assert.ok(E3.fouilleEnCours().left <= 1800);
+  T += 5 * H;
+});
+test("Fouille : seul un lieu d’origine ouvre un lieu d’à côté, une seule fois, et on s’y rend à part", () => {
+  const E = fouilleur();
+  E.state.meta.fouilles["lisiere:chene"] = 2;
+  E.state.exp.done.lisiere = 2; E.state.meta.fouilles["lisiere:grotte"] = 2;
+  E.fouilleLancer("lisiere", 1, 3); T += 9 * H; E.update();
+  assert.strictEqual(E.fouilleRecolter().cote, null, "la Grotte n’ouvre rien");
+  assert.strictEqual(E.startExp("lisiere", "ronds").why, "none", "pas avant de l’avoir trouvé");
+  E.fouilleLancer("lisiere", 0, 3); T += 9 * H; E.update();
+  assert.strictEqual(E.fouilleRecolter().cote.id, "ronds");
+  assert.strictEqual(E.coteEtat("lisiere", "ronds"), 1);
+  E.fouilleLancer("lisiere", 0, 3); T += 9 * H; E.update();
+  assert.strictEqual(E.fouilleRecolter().cote, null, "il ne s’ouvre qu’une fois");
+  // la file des explorations ne bouge pas, et le lieu d’à côté s’explore avec son frag
+  const done0 = E.state.exp.done.lisiere;
+  assert.strictEqual(E.nextExp("lisiere").x.id, "cercle");
+  assert.ok(E.startExp("lisiere", "ronds").ok);
+  T += 120 * 1000; E.update();
+  assert.strictEqual(E.state.exp.done.lisiere, done0, "hors file");
+  assert.strictEqual(E.coteEtat("lisiere", "ronds"), 2);
+  assert.ok(E.state.frags.ronds && E.cond({ exp: "lisiere:ronds" }));
+  // et il se fouille à son tour
+  const ic = D.ZONES[0].exps.findIndex((x) => x.id === "ronds");
+  assert.ok(E.fouilleLancer("lisiere", ic, 1).ok);
+});
+test("Fouille : l’état se sauvegarde, traverse la relève, et un champ abîmé est écarté sans rien casser", () => {
+  const E = fouilleur();
+  E.fouilleLancer("lisiere", 0, 1);
+  const E2 = mk(); E2.load(E.serialize());
+  assert.deepStrictEqual(E2.state.meta.exlong, E.state.meta.exlong);
+  E2.newCycle();
+  assert.ok(E2.fouilleEnCours(), "la fouille traverse la relève");
+  T += H; E2.update();
+  assert.ok(E2.fouilleRecolter().ok, "et se reçoit dans l’éveil suivant");
+  assert.strictEqual(E2.fouilleNiveau("lisiere", "chene"), 1, "le niveau atteint reste");
+  for (const mauvais of ["x", 4, [], { z: "nulle part", x: "chene", lvl: 1, t0: 5, dur: 5 }, { z: "lisiere", x: "chene", lvl: 9, t0: 5, dur: 5 }, { z: "lisiere", x: "chene", lvl: 1, t0: "a", dur: 5 }]) {
+    const o = JSON.parse(E.serialize()); o.meta.exlong = mauvais; o.meta.fouilles = [1]; o.meta.cotes = { "lisiere:ronds": 7, "lisiere:ronds2": 1 };
+    const E3 = mk(); E3.load(JSON.stringify(o));
+    assert.strictEqual(E3.state.meta.exlong, null);
+    assert.deepStrictEqual(E3.state.meta.fouilles, {});
+    assert.deepStrictEqual(E3.state.meta.cotes, { "lisiere:ronds2": 1 });
+  }
+  // une sauvegarde d’avant les fouilles
+  const o = JSON.parse(E.serialize()); delete o.meta.exlong; delete o.meta.fouilles; delete o.meta.cotes;
+  const E4 = mk(); E4.load(JSON.stringify(o));
+  assert.strictEqual(E4.state.meta.exlong, null);
+  assert.deepStrictEqual([E4.state.meta.fouilles, E4.state.meta.cotes], [{}, {}]);
+  E4.state.exp.done.lisiere = 0;
+  assert.strictEqual(E4.fouilleLancer("lisiere", 0, 1).why, "lieu", "rien d’exploré dans cet éveil : rien à fouiller");
+});
+
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

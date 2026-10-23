@@ -1361,3 +1361,8 @@ h2 + .stamp { margin: -4px 0 8px; }
 .troc-parole { margin: 6px 0 8px; padding: 12px 14px; min-height: 92px; border-left: 3px solid var(--acc); background: var(--panel2); border-radius: 6px; line-height: 1.5; }
 .troc-parole p { margin: 0; }
 .troc-themes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; }
+
+/* les fouilles : la ligne de l’expédition en cours, au-dessus de la Carte, et les trois durées */
+.carte-fouille { display: block; position: sticky; top: 6px; z-index: 4; margin: 6px auto 0; padding: 8px 14px; max-width: 94%; border: 1px solid var(--line2); border-radius: 999px; background: var(--panel); color: var(--text); font: inherit; font-size: 13px; text-align: center; cursor: pointer; }
+.carte-fouille.pret { border-color: var(--acc); box-shadow: 0 0 0 2px rgba(197, 141, 78, 0.35); }
+.fouille-niv { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
