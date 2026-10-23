@@ -76,6 +76,15 @@ Les premiers niveaux gardent leurs prix d’origine. Au-delà, les prix montent 
 (`D.TRANSCENDANCE`, à partir du cycle 2) n’ont pas de plafond ; leur prix est multiplié
 par 2,3 à 2,5 à chaque niveau.
 
+### Les dons de la relève, les jours de présence, les seuils
+
+- **Dons** (`D.DONS`, `S.don = { id, cycle }`, `S.donsOffre`, graine `S.meta.graine`) : dès le cycle 2, la relève propose trois dons
+  tirés de façon reproductible (cycle + graine) ; on en garde un, pour ce cycle seulement. Ils s’ajoutent à la Mémoire des mains.
+  Réglage : `node tools/sim-passages.js --dons` compare chaque don au jeu sans don ; les temps de passage restent dans −15 % à 0.
+- **Jours de présence** (`D.JOURS`, `S.meta.jours = { n, dernier, cadeau }`) : un jour compté au premier lancement de la journée
+  locale, un petit cadeau, des paliers à 3, 7, 14, 30, 60, 100. Jamais une série : rien ne se retire ni ne se remet à zéro.
+- **Seuils** (`D.SEUILS`) : 10, 25, 50, 100 extracteurs sur un même gisement, chacun ×1,25 ; pas sur la Rivière (règle « le courant »).
+
 ## 4. Rythme visé
 
 - Première partie : mur vers la Rivière ou les Collines, vers 25–35 minutes de jeu
