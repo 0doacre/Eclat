@@ -2585,9 +2585,9 @@ test("recettes secrètes : cloche et pigment", () => {
 });
 
 console.log("Moteur des fins et dénouements (6.5)");
-test("les trois fins sont définies et conformes", () => {
+test("les cinq fins sont définies et conformes", () => {
   const ends = Object.keys(D.ENDINGS);
-  assert.deepStrictEqual(ends.sort(), ["aube", "brasier", "retour"]);
+  assert.deepStrictEqual(ends.sort(), ["aube", "brasier", "exode", "retour", "silence"]);
   ends.forEach((eid) => {
     const en = D.ENDINGS[eid];
     assert.ok(en.n && typeof en.n === "string");
@@ -2596,16 +2596,69 @@ test("les trois fins sont définies et conformes", () => {
   });
 });
 
-test("les Grands Œuvres hors récit ont disparu ; une partie qui avait leur fin garde ses Échos", () => {
-  assert.ok(!D.PROJECTS.arche13 && !D.PROJECTS.silence);
+test("La Treizième Arche : étapes, lancement et fin « exode »", () => {
   const E = createEngine();
-  const old = JSON.parse(E.serialize());
-  old.meta.endings = { exode: 1, aube: 1 };
-  old.endings = { exode: true };
-  E.load(JSON.stringify(old));
-  assert.strictEqual(E.endingsCount(), 2);
-  E.newCycle();
-  assert.strictEqual(E.state.echoes, 2);
+  assert.strictEqual(E.projVisible("arche13"), false);
+  E.state.made.vaisseau = 1;
+  E.state.flags.station_morte = true;
+  assert.strictEqual(E.projVisible("arche13"), true);
+
+  let ending = null;
+  E.on("ending", (r) => (ending = r));
+
+  const p = D.PROJECTS.arche13;
+  assert.strictEqual(p.steps.length, 4);
+  for (let i = 0; i < 3; i++) {
+    const s = p.steps[i];
+    for (const k in s.cost) E.add(k, s.cost[k]);
+    assert.ok(E.contribute("arche13").done);
+  }
+  assert.strictEqual(E.projState("arche13").step, 3);
+  E.fire("arche13");
+  assert.ok(ending && ending.id === "exode");
+  assert.ok(E.state.endings.exode);
+});
+
+test("Le Grand Silence : étapes, proclamation et fin « silence »", () => {
+  const E = createEngine();
+  assert.strictEqual(E.projVisible("silence"), false);
+  E.state.signes = { halte: { lu: true } };
+  E.state.made.radiotelescope = 1;
+  assert.strictEqual(E.projVisible("silence"), true);
+
+  let ending = null;
+  E.on("ending", (r) => (ending = r));
+
+  const p = D.PROJECTS.silence;
+  assert.strictEqual(p.steps.length, 4);
+  for (let i = 0; i < 3; i++) {
+    const s = p.steps[i];
+    for (const k in s.cost) E.add(k, s.cost[k]);
+    assert.ok(E.contribute("silence").done);
+  }
+  assert.strictEqual(E.projState("silence").step, 3);
+  E.fire("silence");
+  assert.ok(ending && ending.id === "silence");
+  assert.ok(E.state.endings.silence);
+});
+
+test("une sauvegarde 0.8.2 retrouve la Treizième Arche entamée, et son chantier", () => {
+  const E = createEngine();
+  const o = JSON.parse(E.serialize());
+  o.flags.ver = "0.8.3";
+  o.made.vaisseau = 1; o.inv.vaisseau = 1; o.flags.station_morte = true;
+  o.proj.arche13 = { step: 1, paid: { propulseur: 12, supra: 300 } };
+  // un chantier mis de côté par une 0.8.x qui ne connaissait plus ce Grand Œuvre
+  o.orphans = { dom: { "site:arche13": { on: true } } };
+  const E2 = createEngine();
+  E2.load(JSON.stringify(o));
+  assert.ok(E2.projVisible("arche13"));
+  assert.deepStrictEqual(E2.projState("arche13"), { step: 1, paid: { propulseur: 12, supra: 300 } });
+  assert.ok(E2.state.dom.site.arche13 && E2.state.dom.site.arche13.on, "chantier rendu");
+  assert.ok(!E2.state.orphans.dom["site:arche13"]);
+  // et une fin d’avant garde ses Échos
+  E2.state.meta.endings.exode = 1;
+  assert.strictEqual(E2.endingsCount(), 1);
 });
 
 test("Cycle post-Matines : E.isLibere() et préservation après la relève", () => {
@@ -2716,7 +2769,7 @@ test("Audio : synthèse sonore dédiée pour chaque fin", () => {
 
 test("Dénouements et Échos dans la Mémoire des mains : données conformes", () => {
   const endings = Object.keys(D.ENDINGS);
-  assert.strictEqual(endings.length, 3);
+  assert.strictEqual(endings.length, 5);
   endings.forEach((k) => {
     assert.ok(D.ENDINGS[k].ic, "Icone présente pour " + k);
     assert.ok(D.ENDINGS[k].n, "Nom présent pour " + k);
@@ -2852,8 +2905,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.8.2 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.8.2");
+test("Version 0.8.3 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.8.3");
   assert.ok(D.CHANGES.length >= 4);
 });
 
@@ -3056,7 +3109,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.8.2");
+  assert.strictEqual(D.VERSION, "0.8.3");
   assert.ok(D.CHANGES.length >= 4);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

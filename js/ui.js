@@ -2123,6 +2123,8 @@
           let btnTxt = "💥 Mise à feu";
           let btnBg = "background:#ff5a3c";
           if (pid === "chant") { btnTxt = "🔔 Sonner les matines"; btnBg = "background:#d97706"; }
+          const PC = ((E.RECIT.projets || {})[pid] || {}).confirmer;
+          if (PC) { btnTxt = PC.bouton; btnBg = "background:" + PC.fond; }
           h += '<button class="btn wide pri" style="margin-top:8px;' + btnBg + '" data-fire="' + pid + '">' + btnTxt + "</button>";
         } else if (s.melody) {
           const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
@@ -2771,8 +2773,15 @@
     let btnBg = "background:#ff5a3c";
     const warn = "";
 
+    const PC = ((E.RECIT.projets || {})[pid] || {}).confirmer;
     if (pid === "brisemonde") {
       kicker = "Brise-Monde";
+    } else if (PC) {
+      kicker = D.PROJECTS[pid].n;
+      title = PC.titre;
+      prompt = PC.texte;
+      btnTxt = PC.btn;
+      btnBg = "background:" + PC.fond;
     } else if (pid === "chant") {
       const c = (E.RECIT.chant || {}).confirmer || {};
       kicker = (E.RECIT.chant || {}).n || "";
@@ -3575,7 +3584,7 @@
     const pot = can && gain ? m.traces + gain : m.traces;
     const canBuyBase = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && pot >= c; });
     const canBuyTrans = (D.TRANSCENDANCE || []).some((x) => pot >= E.transCost(x.id));
-    const canBuyHint = Object.keys(D.ENDINGS || {}).some((k) => !((m.endings || {})[k]) && !E.hasEndingHint(k) && pot >= (D.HINT_ENDING_COST || 75));
+    const canBuyHint = Object.keys(D.ENDINGS || {}).some((k) => !((m.endings || {})[k]) && !E.hasEndingHint(k) && pot >= (D.HINT_ENDING_COST || 75) && Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
     const hasPurchase = canBuyBase || canBuyTrans || canBuyHint;
 
     b.classList.toggle("ready", hasPurchase && (can && gain > 0 || m.traces >= 2));

@@ -308,6 +308,14 @@ pas lever sa main à sa place. Toi non plus. » 2 « Ce n’est pas un geste à 
 **Accessibilité** : la durée se règle dans les données ; un réglage « gestes longs » la ramène à
 20 secondes. Aucune perte possible.
 
+## 10 bis. Les deux autres Grands Œuvres (gardés à la demande de l’auteur)
+
+Cinq fins en tout. Textes et conditions : `js/recit.js` (`projets`, `fins`), `projVisible`.
+
+- **La Treizième Arche** (`arche13`, fin `exode`) : un vaisseau, plus le journal de la Station morte, ou la p.32. Indices : le journal du Commandant (« La dernière Arche est partie ») ; la Liste du Silo (des noms par milliers). Murmure : « Le journal d’une station, là-haut, et un vaisseau qui pourrait aller plus loin. »
+- **Le Grand Silence** (`silence`, fin `silence`) : le signe HALTE compris, plus un radiotélescope, le Radar ou un télégraphe. Indices : la plaque du Tumulus ; le Radar (« CONTIENT UNE HALTE ») ; la p.11. Les textes ne donnent jamais la lecture en clair (« la seconde ligne de la plaque »).
+- Une partie qui les avait entamés les retrouve telles quelles (`S.proj`), et son chantier du Domaine mis de côté en 0.8.1 revient au chargement.
+
 ## 11. Ce qui change dans les secrets existants
 
 | Secret actuel | Devient |

@@ -399,7 +399,10 @@ restent dans les sauvegardes, cachés). Une ligne par lieu ; le texte montre, n�
 | 💥 Le Brasier (`brasier`) | Brise-Monde | Le rayon met quelques jours, pas douze ans : la cible était proche. La lueur s’embrase et s’éteint. « MENACE NEUTRALISÉE. MERCI, SEMEUR. » Le socle de la deuxième salle n’est plus vide. Si le signal a été lu : on sait ce qu’il disait. |
 | 🔔 Matines (`retour`) | Les Matines (caché, id `chant`) | 1. La Cloche. 2. Couper le relais (les six éclats, au Cœur). 3. Lever la main (le joueur lâche). 4. Matines (l’enfant joue la comptine, seul). Les machines s’endorment en plein geste, la cloche répond dans la pierre bleue, cinq cuves se vident, les noms connus sont dits. La lueur descend. « Pour la première fois, tu as faim. » Dernier écran : « Tu peux lâcher. » |
 
-Après Aube ou Brasier, la boucle continue, la narratrice aussi. Après Matines, un nouveau cycle
+| 🚀 L’Exode (`exode`) | La Treizième Arche (cachée, id `arche13`) | Gardée à la demande de l’auteur. Visible avec un vaisseau et le journal de la Station morte (ou la p.32). L’enfant part au-devant de la lueur rouge ; la voix, à la radio : « REVIENS. TU NE MANQUES DE RIEN, ICI. » Cinq cuves restent pleines. Rien ne contredit la vérité : on va vers la flotte, sans réveiller personne. |
+| 🛑 Le Grand Silence (`silence`) | Le Grand Silence (caché, id `silence`) | Gardée à la demande de l’auteur. Visible avec le signe HALTE compris et un radiotélescope (ou le Radar, ou un télégraphe). La seconde ligne du Tumulus part sur toutes les ondes : les machines s’arrêtent, mais aucune main ne s’est levée (Clause II) et la Nourrice n’est pas touchée. « Pas celle-là. » Puis les machines repartent. Une fin amère qui confirme la loi. |
+
+Après Aube, Brasier, Exode ou Silence, la boucle continue, la narratrice aussi. Après Matines, un nouveau cycle
 s’ouvre sur une autre voix : « Tu te réveilles dans l’herbe, au bord d’une forêt. Tu as faim.
 Quelqu’un, à côté de toi, te tend des herbes grillées. » Plus d’ornement, plus d’ARCHE. Passer
 le relais veut enfin dire ce qu’il dit : un autre prend le travail pendant que tu te reposes.

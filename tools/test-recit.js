@@ -166,7 +166,7 @@ function allTexts() {
     else if (Array.isArray(o)) o.forEach((x, i) => walk(x, where + " " + i));
     else if (o && typeof o === "object") for (const k in o) if (k !== "t64") walk(o[k], where + " " + k);
   };
-  for (const k of ["arche", "eveils", "releve", "chant", "fins", "ui", "terminal", "registre"]) walk(R[k], k);
+  for (const k of ["arche", "eveils", "releve", "chant", "projets", "fins", "ui", "terminal", "registre"]) walk(R[k], k);
   for (const id in R.melodies) out.push(["air " + id, R.melodies[id].t]);
   return out;
 }
@@ -988,6 +988,28 @@ test("la signature : le signe de l’ornement compris", () => {
 test("seize questions, chacune avec son déclencheur et sa résolution", () => {
   assert.strictEqual(Object.keys(R.questions).length, 16);
 });
+test("les deux autres Grands Œuvres : cachés, deux indices chacun, rien en clair", () => {
+  const PROJ = {
+    arche13: { ouvre: (E) => { E.state.made.vaisseau = 1; E.state.frags.commandant = true; }, ind: [["frag", "commandant", /dernière Arche/], ["frag", "manifeste", /noms par milliers/], ["page", "p32", /mains/]] },
+    silence: { ouvre: (E) => { apprendre(E, "halte"); E.state.made.radiotelescope = 1; }, ind: [["frag", "tumulus2", /\[main\] \[halte\]/], ["frag", "radar", /CONTIENT UNE HALTE/], ["page", "p11", /\[main\] \[halte\]/]] }
+  };
+  for (const pid in PROJ) {
+    const P = D.PROJECTS[pid];
+    assert.ok(P && P.n && P.d && P.steps.every((x) => x.n && x.d), pid + " : textes rangés dans le récit");
+    const txt = [P.n, P.d].concat(P.steps.map((x) => x.n + " " + x.d)).join(" ");
+    assert.ok(!/MAIN HALTE|MACHINE DORMIR|s’endorment/.test(txt), pid + " : une lecture de signes en clair");
+    const E = mk();
+    assert.ok(!E.projVisible(pid), pid + " : caché au départ");
+    PROJ[pid].ouvre(E);
+    assert.ok(E.projVisible(pid), pid + " : visible par son chemin");
+    assert.ok(PROJ[pid].ind.filter(([k, id, re]) => re.test(indice(k, id) || "")).length >= 2, pid + " : deux indices");
+    let fin = null;
+    E.on("ending", (r) => (fin = r));
+    P.steps.forEach((x) => { if (x.cost) { for (const k in x.cost) E.add(k, x.cost[k]); assert.ok(E.contribute(pid).done); } });
+    E.fire(pid);
+    assert.ok(fin && fin.id === P.end);
+  }
+});
 test("catalogue : chaque secret a ses deux indices (au moins), dans deux lieux ou systèmes", () => {
   for (const s of D.SECRETS) {
     const L = INDICES[s.id];
@@ -1145,8 +1167,9 @@ test("le Grand Œuvre caché garde sa progression à la relève", () => {
   assert.strictEqual(E.projState("chant").step, 1);
   assert.ok(D.PROJECTS.chant.n && D.PROJECTS.chant.steps.every((s) => s.n && s.d), "textes rangés dans le récit");
 });
-test("fins : trois, celles de la bible ; Matines dit les noms et finit sur une ligne seule", () => {
-  assert.deepStrictEqual(Object.keys(D.ENDINGS).sort(), ["aube", "brasier", "retour"]);
+test("fins : cinq ; Matines dit les noms et finit sur une ligne seule", () => {
+  assert.deepStrictEqual(Object.keys(D.ENDINGS).sort(), ["aube", "brasier", "exode", "retour", "silence"]);
+  for (const k in D.ENDINGS) assert.ok(D.ENDINGS[k].t && D.ENDINGS[k].hint, k + " : texte et murmure rangés dans le récit");
   assert.ok(R.interface.ornement.fins.includes("aube") && R.interface.ornement.fins.includes("brasier"));
   assert.ok(D.ENDINGS.retour.dernier && /\{noms\}/.test(D.ENDINGS.retour.t));
   const E = mk();

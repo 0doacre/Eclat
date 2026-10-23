@@ -3094,6 +3094,14 @@
         const ps = S.proj && S.proj.chant;
         return !!((S.made.traducteur > 0) || (S.inv && S.inv.traducteur > 0) || (S.secrets && S.secrets.promesse) || p21 || (S.meta && S.meta.chant) || (ps && (ps.step > 0 || Object.keys(ps.paid || {}).length)));
       }
+      // la Treizième Arche : un vaisseau, et le journal de la station (ou la dernière page du Livre)
+      if (pid === "arche13") {
+        return !!(((S.made.vaisseau > 0) || (S.inv && S.inv.vaisseau > 0)) && (!!S.flags.station_morte || (S.frags && S.frags.commandant) || !!S.flags.arche13 || (S.livre && S.livre.p && S.livre.p.p32)));
+      }
+      // le Grand Silence : le signe de la paume levée compris, et de quoi émettre au loin
+      if (pid === "silence") {
+        return !!((S.signes && S.signes.halte && S.signes.halte.lu) && ((S.made.radiotelescope > 0) || (S.flags && S.flags.radar) || (S.made.telegraphe > 0)));
+      }
       if (p.req === "arche") return !!S.flags.arche;
       return (S.made[p.req] || 0) > 0;
     }
@@ -3822,6 +3830,12 @@
       }
       d.mach = [];
       d.ms = {};
+      // un chantier mis de côté quand son Grand Œuvre avait disparu (0.8.1) revient
+      const od = o.orphans && o.orphans.dom;
+      if (od) for (const k of Object.keys(od)) {
+        const p = k.indexOf("site:") === 0 ? k.slice(5) : null;
+        if (p && D.PROJECTS[p] && !d.site[p]) { d.site[p] = od[k]; delete od[k]; }
+      }
       for (const p in d.site) {
         if (!D.PROJECTS[p]) { aside("site:" + p, d.site[p]); delete d.site[p]; } else d.site[p] = { on: !!d.site[p] && d.site[p].on !== false };
       }
