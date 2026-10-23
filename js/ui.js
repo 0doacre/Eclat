@@ -1251,7 +1251,10 @@
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
-    else if (U.tab === "cosmos") { el.innerHTML = viewCosmos(); mountCosmos(); }
+    else if (U.tab === "cosmos") {
+      if (U.cosmosTab === "figures") { const g = figuresSig(); if (el.dataset.sig !== g) { el.innerHTML = viewCosmos(); el.dataset.sig = g; mountCosmos(); } } // sans rien de vivant : on ne redessine que si quelque chose change
+      else { delete el.dataset.sig; el.innerHTML = viewCosmos(); mountCosmos(); }
+    }
     iconize(el);
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
@@ -2125,16 +2128,53 @@
     return E.zoneOpen(z) ? zoneName(z) : "Une terre que tu n’as pas encore foulée";
   }
 
+  /* ===== FIGURES DU COSMOS (début) ===== */
+  const FIG_TXT = {
+    intro: "Chaque fragment du Journal est une étoile. Une étoile pâle est un lieu repéré, pas encore exploré.",
+    signes: "Un signe compris s’allume et donne son mot. Ceux que tu as vus au même endroit se tiennent près l’un de l’autre.",
+    vide: "Le ciel est vide pour l’instant. Un fragment retrouvé ou un signe aperçu y laisse une étoile.",
+    pale: "Un lieu repéré, pas encore exploré. Touche pour le voir sur la Carte.",
+    compris: "Signe compris : {mot}",
+    inconnu: "Signe pas encore compris"
+  };
+  function figuresSig() {
+    const fg = E.figures(), st = S();
+    return JSON.stringify([fg.stars.map((s) => s.id + s.etat), fg.signes.map((s) => s.id + (s.lu ? 1 : 0) + s.lieux.length), !!st.flags.arche, !!E.cache().term, Object.keys(D.PROJECTS).some(E.projVisible), st.termMode]);
+  }
+  function figuresHTML() {
+    const fg = E.figures();
+    Object.keys(fg.noms).forEach((z) => { fg.noms[z] = fragPlace(z); });
+    const lay = window.EclatFigures.layout(fg);
+    const rendu = window.EclatFigures.render(lay, { esc, signeSVG: window.signeSVG, txt: FIG_TXT });
+    if (!fg.stars.length && !fg.signes.length) return '<p class="small muted center" style="padding:20px 0">' + esc(FIG_TXT.vide) + "</p>";
+    const on = fg.stars.filter((s) => s.etat === "allumee").length, pale = fg.stars.length - on;
+    let h = "";
+    if (fg.stars.length) {
+      h += '<h3 class="sub">Les fragments</h3><p class="small muted">' + esc(FIG_TXT.intro) + " " + on + (on > 1 ? " étoiles allumées" : " étoile allumée") + (pale ? ", " + pale + (pale > 1 ? " pâles" : " pâle") : "") + ".</p>";
+    }
+    const cut = rendu.indexOf('<div class="fig-sky fig-sig"');
+    if (fg.stars.length) h += '<div class="fig-wrap">' + (cut < 0 ? rendu : rendu.slice(0, cut)) + "</div>";
+    if (fg.signes.length) {
+      h += '<h3 class="sub">Les signes</h3><p class="small muted">' + esc(FIG_TXT.signes) + "</p>";
+      h += '<div class="fig-wrap">' + (cut < 0 ? rendu : rendu.slice(cut)) + "</div>";
+    }
+    return h;
+  }
+  /* ===== FIGURES DU COSMOS (fin) ===== */
+
   /* ------------------------------------------------------------ COSMOS */
   function viewCosmos() {
     const st = S();
     const isReg = !!(st.flags.registre && st.termMode !== "arche");
     const tabs = [["ciel", "Ciel"]];
+    { const fg = E.figures(); if (fg.stars.length || fg.signes.length) tabs.push(["figures", "Figures"]); }
     if (st.flags.arche || E.cache().term) tabs.push(["arche", isReg ? "REGISTRE" : "ARCHE"]);
     if (Object.keys(D.PROJECTS).some(E.projVisible)) tabs.push(["oeuvres", "Grands Œuvres"]);
     if (!tabs.find((t) => t[0] === U.cosmosTab)) U.cosmosTab = "ciel";
     let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
-    if (U.cosmosTab === "ciel") {
+    if (U.cosmosTab === "figures") {
+      h += figuresHTML();
+    } else if (U.cosmosTab === "ciel") {
       h += '<div class="sky-wrap"><canvas id="skyCanvas"></canvas><div class="sky-info" id="skyInfo">Touche le ciel.</div></div>';
       if (E.cache().signal) h += '<button class="btn wide pri" id="listen">📡 Écouter Kher</button>';
       else h += '<p class="small muted">Avec une oreille assez grande, tu pourrais peut-être entendre ce que dit l’étoile rouge.</p>';
@@ -2950,6 +2990,7 @@
         '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
         [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
         '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
+        '<div class="toggle"><span>Visiteurs</span><button class="btn small" data-m="visiteurs">' + (E.visiteurActif() ? "Oui" : "Non") + "</button></div>" +
         '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
         '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">Nouveautés</button><button class="btn" data-m="credits">Crédits</button>' +
         '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
@@ -2981,6 +3022,7 @@
         },
         sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
         vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
+        visiteurs: (b) => { E.setVisiteurs(!E.visiteurActif()); if (!E.visiteurActif()) visiteurFin(); b.textContent = E.visiteurActif() ? "Oui" : "Non"; save(); return true; },
         tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
         tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre réapparaît au moment où il sert."); },
         saves: () => setTimeout(openSaves, 80),
@@ -4043,6 +4085,7 @@
         return;
       }
       if ((b = t.closest("[data-ct]"))) { U.cosmosTab = b.dataset.ct; render(true); return; }
+      if ((b = t.closest("[data-fgz]"))) { A.click(); U.zone = b.dataset.fgz; setTab("carte"); return; } // une étoile pâle : le lieu, sur la Carte
       if (t.closest("#listen")) { listen(); return; }
       if ((b = t.closest("[data-fire]"))) { confirmFire(b.dataset.fire); return; }
       if ((b = t.closest("[data-proj-act]"))) {
@@ -4211,8 +4254,70 @@
   }
 
   /* ============================================================ BOUCLE */
+  /* ===== VISITEURS DE PASSAGE (début) =====
+   * Une petite silhouette traverse le Domaine. C'est un bouton : on le touche, ou on l'atteint au clavier.
+   * Il s'arrête quand le doigt, la souris ou le focus est dessus. Avec « réduire les animations »,
+   * il apparaît sans glisser et reste quelques secondes. Manqué, il disparaît sans un mot. */
+  function visiteurFin() {
+    const v = U.vis;
+    if (!v) return;
+    clearTimeout(v.to);
+    if (v.el && v.el.parentNode) v.el.remove();
+    U.vis = null;
+    E.visiteurPartir();
+  }
+  function visiteurPhrase(lot, def) {
+    const parts = [];
+    if (lot.res) parts.push(fmt(lot.qty) + " " + I[lot.res].n);
+    if (lot.intu) parts.push(lot.intu + " Intuition");
+    if (lot.objet) parts.push("1 " + I[lot.objet].n);
+    let h = esc(def.t) + (parts.length ? " Tu reçois : <b>" + esc(parts.join(", ")) + "</b>." : "");
+    if (lot.page) h += " " + esc(D.VISITEURS.txt.page);
+    if (lot.clin) h += "<br><i>" + esc(lot.clin) + "</i>";
+    return h;
+  }
+  function visiteurToucher() {
+    const v = U.vis;
+    if (!v) return;
+    const lot = E.visiteurToucher(v.id);
+    visiteurFin();
+    if (!lot) return;
+    A.click();
+    const def = D.VISITEURS.liste.find((x) => x.id === lot.id);
+    toast(visiteurPhrase(lot, def), { key: "visiteur", p: 1 });
+    U.dirty = true;
+  }
+  function visiteurTick() {
+    if (U.vis) {
+      // une fenêtre s'ouvre ou l'on change d'écran : il s'en va
+      if (U.mcur || U.tab !== "domaine" || document.hidden) visiteurFin();
+      return;
+    }
+    const bloque = !U.live || performance.now() < 6000 || !S().introSeen || !!U.offline || !!U.mcur || document.hidden || U.tab !== "domaine" ||
+      !!Tuto.active() || !!$(".cele") || !!$("#modal:not(.hidden)") || !!$(".tuto:not(.hidden)");
+    const z = U.zone && E.zoneOpen(U.zone) ? U.zone : "lisiere";
+    const v = E.visiteurPoll({ bloque, zone: z });
+    if (!v) return;
+    let layer = $("#visiteurs");
+    if (!layer) { layer = document.createElement("div"); layer.id = "visiteurs"; document.body.appendChild(layer); }
+    const calme = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "visiteur" + (calme ? " fixe" : "");
+    b.setAttribute("aria-label", v.aria);
+    b.innerHTML = v.css ? '<span class="vis-' + v.css + '" aria-hidden="true"></span>' : '<span class="vis-ic" aria-hidden="true">' + v.ic + "</span>";
+    b.style.setProperty("--dur", v.dur + "s");
+    b.style.setProperty("--y", (22 + Math.random() * 30).toFixed(1) + "%");
+    b.style.setProperty("--x", (20 + Math.random() * 55).toFixed(1) + "%");
+    b.addEventListener("click", (ev) => { ev.stopPropagation(); visiteurToucher(); });
+    layer.appendChild(b);
+    U.vis = { id: v.id, el: b, to: setTimeout(visiteurFin, (calme ? 10 : v.dur) * 1000 + 300) };
+  }
+  /* ===== VISITEURS DE PASSAGE (fin) ===== */
+
   function loop() {
     E.update();
+    visiteurTick();
     if (U.offline && !U.mcur) showOffline();
     if (U.dirty && !U.holding && !pressing()) render();
   }
