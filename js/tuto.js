@@ -7,7 +7,7 @@
   "use strict";
 
   function create(api) {
-    const { E, D, A, U, esc, save } = api;
+    const { E, D, A, U, esc, save, toast } = api;
     const S = () => E.state;
     const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
     const GAP = 8000; // entre deux chapitres
@@ -41,6 +41,13 @@
      * dim (assombrir autour, oui par défaut s’il y a une cible), modal (elle se
      * passe dans une fenêtre). */
     const CH = [
+      // le tout premier message : on propose de couper le guide avant de commencer
+      { id: "bienvenue", n: "Bienvenue", quick: true,
+        when: () => !S().known.manche && S().age === 0 && !S().stats.crafts && !S().stats.taps,
+        steps: [
+          { text: "Je peux te guider pas à pas pour tes premiers objets. Tu pourras couper ce guide quand tu veux, dans le menu.",
+            choices: [{ l: "Guide-moi", a: "next" }, { l: "Je me débrouille", a: "off" }] }
+        ] },
       { id: "debut", n: "Premiers pas",
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts,
         steps: [
@@ -73,6 +80,24 @@
         steps: [
           { tab: "domaine", at: '[data-xadd="lisiere:bois"]', text: "Ta cabane récolte à ta place, même quand le jeu est fermé. Touche « + cabane » sur le bois pour la poser.", done: anyExt },
           { tab: "domaine", text: "Sa récolte va directement dans ta Réserve. Le même bouton pose les cabanes suivantes. S’il ne t’en reste plus, tes mains en fabriquent une, puis la posent.", next: true }
+        ] },
+      // la première lecture d’un morceau d’histoire : la joueuse ne sait pas qu’il est fait pour intriguer
+      { id: "enigme", n: "Un morceau d’histoire",
+        when: () => Object.keys(S().frags || {}).length > 0 && !modalOpen(),
+        steps: [
+          { at: '#tabs [data-tab="journal"]', dim: false, text: "Ce que tu viens de lire est un morceau d’histoire. Il est rangé dans le Journal. Tu n’as pas à tout comprendre tout de suite.",
+            next: true, done: () => U.tab === "journal" },
+          { tab: "journal", go: "Ouvre le Journal.", text: "Les points d’interrogation sont des morceaux qu’il te reste à trouver, en explorant. Prends ton temps.", next: true }
+        ] },
+      { id: "terre", n: "Une nouvelle terre",
+        when: () => U.tab === "domaine" && !!S().zones.plaine && !!document.querySelector("#dt-plaine .dom-th"),
+        steps: [
+          { tab: "domaine", at: "#dt-plaine .dom-th", text: "Une nouvelle terre : d’autres ressources à récolter, et un lieu à explorer.", next: true }
+        ] },
+      { id: "intuition", n: "L’Intuition",
+        when: () => (U.tab === "domaine" || U.tab === "atelier") && S().intu >= 2 && !modalOpen(),
+        steps: [
+          { at: "#intuBtn", dim: false, text: "L’Intuition ✨ vient quand tu découvres quelque chose. Plus tard, elle servira à étudier les ressources et à déchiffrer les recettes.", next: true }
         ] },
       { id: "ruine", n: "Une ruine",
         when: () => (U.tab === "domaine" || U.tab === "machines") && Object.keys(E.ruins()).length > 0 && !!document.querySelector("[data-repair]"),
@@ -243,7 +268,7 @@
       T.done[ch.id] = true;
       T.c = null; T.i = 0;
       if (ch.end) ch.end();
-      lastEnd = Date.now();
+      lastEnd = ch.quick ? 0 : Date.now();
       if (!quietly) A.click();
       hide();
       save();
@@ -274,6 +299,7 @@
         if (!b) return;
         if (b.dataset.t === "next") advance();
         else if (b.dataset.t === "skip") { const ch = chapter(); if (ch) finish(ch); }
+        else if (b.dataset.t === "off") { const ch = chapter(); if (ch) finish(ch, true); setEnabled(false); if (toast) toast("💭 Le guide est coupé. Tu peux le relancer dans le menu."); }
         else if (b.dataset.t === "min") { mini = true; shownKey = ""; }
       });
     }
@@ -360,8 +386,10 @@
         const n = ch.steps.filter(fits).length, at = ch.steps.slice(0, T.i + 1).filter(fits).length;
         el.querySelector(".tu-k").textContent = "💭 " + ch.n + (n > 1 ? " · " + at + "/" + n : "");
         el.querySelector(".tu-t").innerHTML = esc(view.text);
-        el.querySelector(".tu-acts").innerHTML = '<button class="tu-b" data-t="skip">Passer</button>' +
-          (view.free ? '<button class="tu-b" data-t="min">Réduire</button>' : "") + (view.next ? '<button class="tu-b pri" data-t="next">Suivant</button>' : "");
+        el.querySelector(".tu-acts").innerHTML = view.choices
+          ? view.choices.map((c, k) => '<button class="tu-b' + (k === 0 ? " pri" : "") + '" data-t="' + c.a + '">' + esc(c.l) + "</button>").join("")
+          : '<button class="tu-b" data-t="skip">Passer</button>' +
+            (view.free ? '<button class="tu-b" data-t="min">Réduire</button>' : "") + (view.next ? '<button class="tu-b pri" data-t="next">Suivant</button>' : "");
         el.classList.remove("hidden");
         bub.classList.remove("pop"); void bub.offsetWidth; bub.classList.add("pop");
       }
@@ -407,7 +435,7 @@
       } else {
         const target = resolve(s.at);
         const text = typeof s.text === "function" ? s.text() : s.text;
-        view = { target, text: !target && s.alt ? s.alt : text, next: s.next, free: s.free, dim: s.free ? false : s.dim };
+        view = { target, text: !target && s.alt ? s.alt : text, next: s.next, free: s.free, dim: s.free ? false : s.dim, choices: s.choices };
         // on amène la cible à l’écran : une fois en douceur, puis on insiste un court moment
         // (la page peut s’être redessinée entre-temps) tant qu’elle n’y est pas
         const key = ch.id + ":" + T.i;

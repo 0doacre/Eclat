@@ -2965,8 +2965,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.9.2 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.9.2");
+test("Version 0.9.3 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.3");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3169,7 +3169,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.9.2");
+  assert.strictEqual(D.VERSION, "0.9.3");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
