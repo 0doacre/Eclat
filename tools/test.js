@@ -795,6 +795,31 @@ test("Mémoire des mains : premiers prix inchangés, niveaux en plus, prix qui m
   assert.ok(!E.memBuy("recolte"), "au maximum");
   assert.strictEqual(E.memV("recolte"), 1 + M.recolte.cost.length);
 });
+test("Règles par terre : lumière, gants, courant, marches, orbite, Lune", () => {
+  const E = mk();
+  const near = (a, b) => Math.abs(a - b) < 1e-9 * Math.max(1, Math.abs(b));
+  const noir = E.tapYield("charbon", "mine");
+  assert.strictEqual(E.regle("mine").etat, "gene");
+  E.add("torche", 1);
+  assert.strictEqual(E.regle("mine").etat, "ok");
+  assert.ok(near(E.tapYield("charbon", "mine"), noir / 0.6), "avec la torche : plein rendement");
+  assert.strictEqual(E.regle("lisiere"), null);
+  assert.strictEqual(E.regle("desert").etat, "gene");
+  E.add("gants", 1);
+  assert.strictEqual(E.regle("desert").etat, "ok");
+  const base = E.tapYield("debris", "orbite") / 0.25;      // rendement sans règle
+  assert.ok(near(E.tapYield("regolithe", "lune"), E.tapYield("regolithe", "lune")) && E.tapYield("debris", "orbite") < base);
+  assert.ok(near(E.tapYield("helium3", "lune") * 2, E.tapYield("helium3", "lune") / 1.5 * 3), "Lune : une fois et demie");
+  // marches : deux lieux explorés aux Collines retirent 16 % au passage vers les Profondeurs, pas aux autres
+  const avant = E.passCost("mine"), ailleurs = E.passCost("desert");
+  E.state.exp.done.collines = 5;
+  const apres = E.passCost("mine");
+  for (const i in avant) assert.ok(apres[i] < avant[i] && apres[i] >= Math.floor(avant[i] * 0.84), i);
+  assert.deepStrictEqual(E.passCost("desert"), ailleurs);
+  // courant : au-delà de 6 extracteurs sur un gisement, chacun rend moitié moins
+  const e6 = { z: "riviere", res: "argile", u: { cabane: 6 } }, e8 = { z: "riviere", res: "argile", u: { cabane: 8 } };
+  assert.ok(near(E.extOut(e8), E.extOut(e6) * (6 + 2 * 0.5) / 6));
+});
 test("Étudier tout : toutes les ressources vues d’un coup, ou rien", () => {
   const E = mk();
   ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));
@@ -2645,7 +2670,7 @@ test("Le Grand Silence : étapes, proclamation et fin « silence »", () => {
 test("une sauvegarde 0.8.2 retrouve la Treizième Arche entamée, et son chantier", () => {
   const E = createEngine();
   const o = JSON.parse(E.serialize());
-  o.flags.ver = "0.8.4";
+  o.flags.ver = "0.8.5";
   o.made.vaisseau = 1; o.inv.vaisseau = 1; o.flags.station_morte = true;
   o.proj.arche13 = { step: 1, paid: { propulseur: 12, supra: 300 } };
   // un chantier mis de côté par une 0.8.x qui ne connaissait plus ce Grand Œuvre
@@ -2905,8 +2930,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.8.4 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.8.4");
+test("Version 0.8.5 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.8.5");
   assert.ok(D.CHANGES.length >= 4);
 });
 
@@ -3109,7 +3134,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.8.4");
+  assert.strictEqual(D.VERSION, "0.8.5");
   assert.ok(D.CHANGES.length >= 4);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

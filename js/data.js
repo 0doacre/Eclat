@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.4";
+  D.VERSION = "0.8.5";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -87,6 +87,9 @@
   I.torche = { n: "Torche", ic: "🕯️", a: 0, t: "comp", r: ["assembler", { manche: 1, fibre: 2, charbon: 1 }, 1],
     u: "Nécessaire pour explorer les lieux sombres, comme la Grotte aux Mains ou le Tumulus.", d: "Une flamme que tu peux emporter là où il fait noir.",
     h: "Un manche, de l’herbe sèche, et ce qui brûle longtemps." };
+  I.gants = { n: "Gants de peau", ic: "🧤", a: 4, t: "comp", r: ["assembler", { cuir: 2, fibre: 4 }, 1],
+    u: "Aux mains, ils protègent du verre du Désert : sans eux, la récolte à la main rapporte moins là-bas.", d: "Deux peaux cousues à la forme de tes mains.",
+    h: "Du cuir, de la fibre, et la forme de tes mains." };
   I.galette = { n: "Herbes grillées", ic: "🌾", a: 0, t: "curio", sec: true, r: ["chauffer", { fibre: 5 }, 1, { heat: 600 }],
     e: { once: { intu: 2 } },
     d: "Ça sent bon. Tu en mâches une bouchée, puis tu t’arrêtes : tu n’as jamais eu faim. Ni soif, d’ailleurs." };
@@ -870,6 +873,19 @@
     lune: { n: "La Base avancée", t: "Pour rester sur la Lune, il faut de quoi s’y abriter.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
     mercure: { n: "Le Bouclier solaire", t: "Si près du soleil, rien ne tient sans bouclier.", cost: { regolithe: 18000, helium3: 4500, composite: 6000 }, tr: 90 }
   };
+  /* Une règle par terre, à l’essai : ce qui change ici par rapport aux autres terres.
+   * tap : la récolte à la main × mult, sauf si l’on a sur soi un des objets de « sans » ;
+   * ext : au-delà de max extracteurs sur un même gisement, chacun rend mult ;
+   * remise : chaque lieu exploré ici retire par au prix du passage « vers », jusqu’à max fois. */
+  D.REGLES = {
+    riviere: { n: "Le courant", t: "L’eau emporte ce qui s’entasse. Au-delà de 6 extracteurs sur un même gisement, les suivants rendent moitié moins.", ext: { max: 6, mult: 0.5 } },
+    collines: { n: "Les marches", t: "Chaque lieu exploré ici retire 8 % au prix du passage vers les Profondeurs, deux fois au plus.", remise: { vers: "mine", par: 0.08, max: 2 } },
+    mine: { n: "Il fait noir", t: "Sans torche ni lampe sur toi, tes mains rapportent 40 % de moins.", ok: "Ta lumière tient : tes mains rapportent tout.", tap: { sans: ["torche", "lampe"], mult: 0.6 } },
+    desert: { n: "Le verre coupe", t: "Sans gants de peau, tes mains rapportent 40 % de moins.", ok: "Tes gants tiennent : tes mains rapportent tout.", tap: { sans: ["gants"], mult: 0.6 } },
+    orbite: { n: "Le vide", t: "Ici, tes mains ne rapportent que le quart. Ce sont les extracteurs qui travaillent.", tap: { mult: 0.25 } },
+    lune: { n: "Tout est léger", t: "La pesanteur est faible : tes mains rapportent 50 % de plus.", tap: { mult: 1.5 } }
+  };
+
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
   D.MEMOIRE = [
     { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 18, 36, 70, 130, 240, 440, 800] },
@@ -995,6 +1011,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗺️ Chaque terre a maintenant sa règle, écrite sur sa fiche du Domaine : le courant de la Rivière, la nuit des Profondeurs, le verre du Désert, le vide de l’Orbite, la pesanteur de la Lune, les marches des Collines.",
+    "🧤 Nouveau : les gants de peau, pour récolter à la main dans le Désert.",
+    "🔎 Sur la carte d’objectif, le bouton « Chercher » s’appelle « Tenter ».",
     "📱 Sur petit écran, l’en-tête garde le nom de l’âge, et la carte d’objectif passe ses boutons sous le titre.",
     "⌨️ Les fenêtres se ferment avec Échap, ont une croix toujours visible, et le clavier ne sort plus de la fenêtre ouverte.",
     "🏛️ Les deux Grands Œuvres disparus en 0.8.1 reviennent. Si tu en avais commencé un, tu reprends où tu en étais.",

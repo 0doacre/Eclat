@@ -79,6 +79,13 @@
         "</div>";
     }
 
+    /* la règle de la terre, en une ligne : ce qui la distingue des autres */
+    function regleHTML(z) {
+      const r = E.regle(z);
+      if (!r) return "";
+      const ok = r.etat === "ok";
+      return '<p class="dom-regle' + (ok ? " ok" : r.etat === "gene" ? " gene" : "") + '"><b>' + esc(r.n) + "</b> · " + esc(ok && r.ok ? r.ok : r.t) + "</p>";
+    }
     function terreHTML(z) {
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
@@ -88,6 +95,7 @@
         const it = I[id];
         if (it && it.t === "ext" && it.z === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
       }
+      h += regleHTML(z);
       deps.forEach((d) => { h += gisHTML(z, d); });
       if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ici, rien ne se récolte à la main : pose des extracteurs.</p>';
       void st;

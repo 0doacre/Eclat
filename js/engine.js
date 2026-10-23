@@ -267,6 +267,7 @@
     const item = (id) => D.ITEMS[id];
     const has = (id) => (S.inv[id] || 0) > 0;
     const count = (id) => S.inv[id] || 0;
+    const REG = D.REGLES || {}; // une règle par terre (voir data.js)
     const isUnique = (it) => !!UNIQUE[it.t] || (it.t === "relic" && !!it.r);
     const isScaled = (it) => !!SCALED[it.t];
     E.item = item; E.has = has; E.count = count; E.isUnique = isUnique; E.isScaled = isScaled;
@@ -428,7 +429,12 @@
       E.emit("struct");
     }
     E.passCost = function (zid) {
-      const k = memV("chemins"), out = {};
+      let k = memV("chemins");
+      for (const z in REG) {
+        const m = REG[z].remise;
+        if (m && m.vers === zid) k *= 1 - m.par * Math.min(m.max, (S.exp && S.exp.done && S.exp.done[z]) || 0);
+      }
+      const out = {};
       for (const i in PASS[zid].cost) out[i] = Math.max(1, Math.ceil(PASS[zid].cost[i] * k));
       return out;
     };
@@ -517,9 +523,18 @@
     }
     E.advanceRitual = advanceRitual;
 
+    /* Une règle par terre (D.REGLES) : ce qu’elle change à la récolte à la main */
+    const regleSans = (r) => !!(r && r.sans && r.sans.some((i) => count(i) >= 1));
+    const regleTap = (zid) => { const r = REG[zid] && REG[zid].tap; return !r || regleSans(r) ? 1 : r.mult; };
+    E.regle = function (zid) {
+      const R = REG[zid];
+      if (!R) return null;
+      const bonus = R.tap && !R.tap.sans && R.tap.mult > 1;
+      return { n: R.n, t: R.t, ok: R.ok || "", etat: R.tap && R.tap.sans ? (regleSans(R.tap) ? "ok" : "gene") : "neutre", bonus };
+    };
     function tapYield(res, zid) {
       const c = E.cache();
-      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
+      return regleTap(zid) * (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
     }
     E.tapYield = tapYield;
     E.tap = function (res, zid) {
@@ -2834,12 +2849,14 @@
     E.freeExt = freeExt;
     /* production d’une exploitation, par seconde */
     function extOut(e, c) {
-      let r = 0;
+      let r = 0, n = 0, f = 1;
+      const rg = REG[e.z] && REG[e.z].ext;
+      if (rg) { for (const t in e.u) n += e.u[t]; if (n > rg.max) f = (rg.max + (n - rg.max) * rg.mult) / n; }
       for (const t in e.u) {
         const it = item(t);
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
-      return r;
+      return r * f;
     }
     E.extOut = (e) => extOut(e, E.cache());
     E.domExt = (z, res) => S.dom.ext[extKey(z, res)] || null;
