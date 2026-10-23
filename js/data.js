@@ -928,6 +928,56 @@
   /* ce que contient le paquetage, niveau par niveau (cumulé) */
   D.PAQUETAGE = [{ bois: 60, fibre: 60, caillou: 30, manche: 4, corde: 4 }, { cabane: 1 }, { cabane: 2, feu: 1 }];
 
+  /* ===== LES DONS DE LA RELÈVE (0.9) =====
+   * À chaque relève (dès le cycle 2), le Semeur trouve trois dons tirés au hasard ; il en garde un
+   * pour ce cycle seulement. Ils s’ajoutent à la Mémoire des mains.
+   * e : { tap: { r: [ressources] | "*", v }, ext: { z: [terres] | "*", v }, mach, mains, pass, crit, intu, veille, vente, paq }
+   *   tap   récolte à la main × v pour ces ressources ; ext : extracteurs × v dans ces terres ;
+   *   mach  vitesse des machines × ; mains : durée des fabrications à la main × ; pass : prix des passages × ;
+   *   crit  points de chance de récolte double en plus ; intu : Intuition gagnée × ; veille : temps d’absence compté × ;
+   *   vente prix de vente au Troqueur × ; paq : matières en plus au réveil.
+   * d : la phrase affichée, avec le chiffre. */
+  D.DONS = [
+    { id: "hache", n: "La hache usée", ic: "🪓", d: "À la main, le bois, les fibres, les os et le cuir rapportent 30 % de plus.", e: { tap: { r: ["bois", "fibre", "os", "cuir"], v: 1.3 } } },
+    { id: "pierre", n: "La pierre tiède", ic: "🪨", d: "À la main, les cailloux, le silex, l’argile, le sable et le quartz rapportent 30 % de plus.", e: { tap: { r: ["caillou", "silex", "argile", "sable", "quartz"], v: 1.3 } } },
+    { id: "pic", n: "Le pic cabossé", ic: "⛏️", d: "À la main, les minerais et le charbon rapportent 30 % de plus.", e: { tap: { r: ["malachite", "cassiterite", "fer_min", "charbon", "bauxite", "ilmenite", "terres_rares"], v: 1.3 } } },
+    { id: "scaphandre", n: "Le scaphandre rapiécé", ic: "🧑‍🚀", d: "À la main, le pétrole, les débris, l’hélium 3, le régolithe et le métal de Mercure rapportent 40 % de plus.", e: { tap: { r: ["petrole", "debris", "helium3", "regolithe", "metal_mercure"], v: 1.4 } } },
+    { id: "mains_pleines", n: "Les mains pleines", ic: "🤲", d: "Tout ce que tu récoltes à la main rapporte 12 % de plus.", e: { tap: { r: "*", v: 1.12 } } },
+    { id: "sac_lourd", n: "Le sac lourd", ic: "🎒", d: "Tu te réveilles avec 40 bois, 40 fibres, 25 cailloux et 4 cordes de plus.", e: { paq: { bois: 40, fibre: 40, caillou: 25, corde: 4 } } },
+    { id: "bras", n: "Les bras de la terre", ic: "🦾", d: "Tous tes extracteurs produisent 15 % de plus.", e: { ext: { z: "*", v: 1.15 } } },
+    { id: "rigoles", n: "Les rigoles", ic: "💧", d: "Dans la Lisière, la Plaine, la Rivière, les Collines et le Désert, les extracteurs produisent 30 % de plus.", e: { ext: { z: ["lisiere", "plaine", "riviere", "collines", "desert"], v: 1.3 } } },
+    { id: "puits_noir", n: "Le puits noir", ic: "🕳️", d: "Dans les Profondeurs, le Gisement Noir et les Pics Fracturés, les extracteurs produisent 30 % de plus.", e: { ext: { z: ["mine", "gisement", "montagnes"], v: 1.3 } } },
+    { id: "ciel_clair", n: "Le ciel clair", ic: "🌌", d: "En Orbite, sur la Lune et sur Mercure, les extracteurs produisent 40 % de plus.", e: { ext: { z: ["orbite", "lune", "mercure"], v: 1.4 } } },
+    { id: "burette", n: "La burette", ic: "🛢️", d: "Les machines vont 20 % plus vite.", e: { mach: 1.2 } },
+    { id: "doigts", n: "Les doigts souples", ic: "🧵", d: "Les fabrications à la main durent 20 % de moins.", e: { mains: 0.8 } },
+    { id: "route", n: "La route battue", ic: "🛤️", d: "Les passages coûtent 15 % de moins.", e: { pass: 0.85 } },
+    { id: "main_heureuse", n: "La main heureuse", ic: "🍀", d: "Tes récoltes à la main ont 12 % de chances de plus de rapporter le double.", e: { crit: 0.12 } },
+    { id: "carnet_cornu", n: "Le carnet cornu", ic: "📓", d: "Tu gagnes 30 % d’Intuition en plus.", e: { intu: 1.3 } },
+    { id: "sommeil", n: "Le sommeil lourd", ic: "🛌", d: "Quand tu es absent, le temps compte 25 % plus longtemps.", e: { veille: 1.25 } },
+    { id: "bourse", n: "La bourse du Troqueur", ic: "👛", d: "Le Troqueur te paie 25 % de plus pour ce que tu lui vends.", e: { vente: 1.25 } }
+  ];
+  D.DONS_OFFRE = 3; // combien de dons sont proposés à chaque relève
+
+  /* ===== LES SEUILS PAR GISEMENT (0.9) =====
+   * Quand un même gisement porte 10, 25, 50, 100 extracteurs, sa production est multipliée par mult à
+   * chaque seuil. Pas de seuils là où une règle de terre limite déjà les extracteurs (la Rivière). */
+  D.SEUILS = { paliers: [10, 25, 50, 100], mult: 1.25 };
+
+  /* ===== LES JOURS DE PRÉSENCE (0.9) =====
+   * Un compteur de jours où tu es venu. Jamais une série : rater un jour ne retire rien.
+   * base : le petit cadeau de chaque jour ; paliers : un cadeau plus gros au jour n (t : une phrase en plus). */
+  D.JOURS = {
+    base: { intu: 2, tr: 1 },
+    paliers: {
+      3: { intu: 4, tr: 2 },
+      7: { intu: 6, tr: 3, t: "Il est dangereux d’y aller seul. Prends ceci." },
+      14: { intu: 8, tr: 5 },
+      30: { intu: 12, tr: 8 },
+      60: { intu: 16, tr: 12 },
+      100: { intu: 25, tr: 20 }
+    }
+  };
+
   /* Coup de chance : de temps en temps, un appui récolte double (6 % au départ, +4 % par
    * niveau de « Coup d’œil » dans la Mémoire des mains). */
   D.CRIT = { chance: 0.06, up: 0.04, mult: 2 };

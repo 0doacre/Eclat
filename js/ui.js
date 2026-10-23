@@ -456,8 +456,8 @@
     E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
-    top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
-    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "")
+    top: () => donsRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
+    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length
   });
   const Carte = window.EclatCarte.create({
     E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
@@ -1213,6 +1213,10 @@
     if (on && jb.classList.contains("hidden") && U.tabsSeen) jb.classList.add("born"); // il vient d’apparaître
     jb.classList.toggle("hidden", !on);
     U.tabsSeen = true;
+    // un don de la relève attend d’être pris : une pastille sur le bouton Menu
+    const mb = $("#menuBtn"), dd = $(".dot", mb), dpend = E.donsOffre().length > 0;
+    if (dpend && !dd) { const d = document.createElement("i"); d.className = "dot dot-don"; mb.appendChild(d); }
+    if (!dpend && dd) dd.remove();
     // l’Intuition se montre quand elle commence à servir
     $("#intuBtn").classList.toggle("hidden", Object.keys(S().known).length < 3 && !Object.keys(S().studied).length);
   }
@@ -3299,10 +3303,52 @@
           U.domAll = false;
           U.domOpen = null;
           setTab("domaine");
-          openMemoire(() => { setTimeout(intro, 200); });
+          openMemoire(() => { setTimeout(() => { intro(); if (E.donsOffre().length) openDons(); }, 200); });
         }
       }
     });
+  }
+  /* ------------------------------------------------------------ LES DONS DE LA RELÈVE
+   * Trois dons à l’éveil du nouveau cycle, on en prend un. Fermer sans choisir ne bloque rien :
+   * une pastille sur le Menu et une ligne en haut du Domaine permettent d’y revenir. */
+  function donsHTML() {
+    const ids = E.donsOffre();
+    return '<div class="kicker">Ce que le Semeur d’avant a laissé</div><h2>Trois dons</h2>' +
+      '<p class="small">Tu en prends un, pour ce cycle seulement. Le Semeur suivant en trouvera d’autres.</p>' +
+      '<div class="dons">' + ids.map((id) => {
+        const d = E.donDef(id);
+        return '<div class="don"><span class="mic">' + d.ic + '</span><div class="grow"><div class="small"><b>' + esc(d.n) + '</b></div><div class="tiny muted">' + esc(d.d) + "</div></div>" +
+          '<button class="btn small pri" data-m="don" data-id="' + id + '">Prendre</button></div>';
+      }).join("") + "</div>" +
+      '<div class="acts"><button class="btn" data-m="close">Plus tard</button></div>' +
+      '<p class="tiny dim center">Tu peux y revenir depuis le Domaine ou la Mémoire des mains.</p>';
+  }
+  function openDons(onClose) {
+    if (!E.donsOffre().length) { if (onClose) onClose(); return; }
+    openModal({
+      html: donsHTML(),
+      onClose,
+      on: {
+        don: (b) => {
+          const id = b.dataset.id;
+          if (!E.donChoose(id)) return false;
+          A.secret ? A.secret() : A.click(); vibe([10, 30, 10]);
+          toast("Tu prends : " + esc(E.donDef(id).n) + ".", { key: "don" });
+          save(); render(true);
+        }
+      }
+    });
+  }
+  /* la ligne du Domaine tant qu’aucun don n’est pris */
+  function donsRepere() {
+    return E.donsOffre().length ? '<button class="dom-tip dom-don" data-dons>🎁 Le Semeur d’avant a laissé trois dons. Tu en prends un. <span>voir ▸</span></button>' : "";
+  }
+  /* le don du cycle, dans la Mémoire des mains */
+  function donCycleHTML() {
+    const d = E.don();
+    if (d) return '<div class="card memdon"><div class="tiny muted">Le don de ce cycle</div><div class="small"><span class="mic">' + d.ic + "</span> <b>" + esc(d.n) + '</b></div><div class="tiny muted">' + esc(d.d) + "</div></div>";
+    if (E.donsOffre().length) return '<div class="card memdon"><div class="row between"><span class="small">Trois dons t’attendent.</span><button class="btn small pri" data-m="dons">Choisir</button></div></div>';
+    return "";
   }
   /* ------------------------------------------------------------ MÉMOIRE DES MAINS
    * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
@@ -3310,6 +3356,7 @@
     const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
     let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
       '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
+    h += donCycleHTML();
     h += '<div class="card memrel">' + (can
       ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
       : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
@@ -3424,6 +3471,7 @@
           swapModal(Object.assign(o, { html: memHTML() }));
           return true;
         },
+        dons: () => { setTimeout(() => openDons(), 80); },
         releve: () => { setTimeout(confirmCycle, 80); }
       }
     };
@@ -3492,6 +3540,16 @@
     }
   }
 
+  /* les jours de présence : un compteur discret, jamais une série */
+  function joursHTML() {
+    const J = E.jours();
+    if (!(J.n > 0)) return "";
+    const c = J.cadeau, nx = E.jourProchain();
+    const gift = c ? [c.intu ? c.intu + " ✨" : "", c.tr ? c.tr + " ✦" : ""].filter(Boolean).join(" et ") : "";
+    return '<div class="jours"><b>Jour ' + J.n + "</b>" + (gift ? ' <span class="tiny muted">· ton cadeau : ' + gift + "</span>" : "") +
+      (c && c.t ? '<div class="tiny muted"><i>' + esc(c.t) + "</i></div>" : "") +
+      (nx ? '<div class="tiny dim">Un cadeau plus gros au jour ' + nx + ".</div>" : "") + "</div>";
+  }
   function openQuestsModal(initialTab) {
     U.questTab = initialTab || U.questTab || "scenario";
     const makeHTML = () => {
@@ -3519,6 +3577,7 @@
             : sc.missKeys && sc.missKeys.length ? '<div class="small" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px"><span class="muted">Il manque :</span> ' + sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '') +
           '</div>';
       } else if (tab === "rituals") {
+        h += joursHTML();
         h += '<div class="small muted" style="margin-bottom:8px">Trois rituels renouvelés chaque jour. Réclame tes récompenses une fois les objectifs atteints :</div>';
         rits.forEach((r, idx) => {
           const pct = Math.min(100, Math.floor((r.prog / r.target) * 100));
@@ -3624,7 +3683,7 @@
           U.domAll = false;
           U.domOpen = null;
           setTab("domaine");
-          openMemoire(() => { setTimeout(intro, 200); });
+          openMemoire(() => { setTimeout(() => { intro(); if (E.donsOffre().length) openDons(); }, 200); });
         }
       }
     });
@@ -3976,6 +4035,7 @@
       if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
       if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
       if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
+      if (t.closest("[data-dons]")) { A.click(); openDons(); return; }
       if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }
       if ((b = t.closest("[data-gotab]"))) { A.click(); setTab(b.dataset.gotab); return; }
       if ((b = t.closest("[data-hloop]"))) { startHarvest(b.dataset.hloop); return; }

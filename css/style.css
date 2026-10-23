@@ -1366,3 +1366,17 @@ h2 + .stamp { margin: -4px 0 8px; }
 .carte-fouille { display: block; position: sticky; top: 6px; z-index: 4; margin: 6px auto 0; padding: 8px 14px; max-width: 94%; border: 1px solid var(--line2); border-radius: 999px; background: var(--panel); color: var(--text); font: inherit; font-size: 13px; text-align: center; cursor: pointer; }
 .carte-fouille.pret { border-color: var(--acc); box-shadow: 0 0 0 2px rgba(197, 141, 78, 0.35); }
 .fouille-niv { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+/* les dons de la relève, les jours de présence et les seuils (0.9) */
+.dons { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.don { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg2); border: 1px solid var(--line); }
+.don .mic { font-size: 22px; width: 28px; text-align: center; }
+.don .btn { flex: 0 0 auto; }
+.card.memdon { margin-bottom: 8px; }
+.card.memdon .mic { font-size: 18px; }
+.dom-don { display: block; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; margin-bottom: 8px; }
+.dom-don span { float: right; opacity: 0.7; }
+.icon-btn { position: relative; }
+.icon-btn .dot-don { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--intu); box-shadow: 0 0 0 2px var(--panel); }
+.jours { padding: 8px 12px; margin-bottom: 8px; border-radius: 12px; border: 1px dashed var(--line); }
+.seuil { margin: 6px 0 8px; }
+.seuil .bar { margin-top: 4px; height: 6px; }

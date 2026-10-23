@@ -572,6 +572,15 @@
         }
       });
     }
+    /* les seuils d’un gisement (D.SEUILS) : « 7 / 10 extracteurs, puis ×1,25 », ou pourquoi il n’y en a pas */
+    function seuilHTML(e) {
+      const q = E.seuil(e), x = (v) => "×" + String(Math.round(v * 100) / 100).replace(".", ",");
+      if (q.sans) return '<p class="tiny muted">Cette terre n’a pas de seuils : le courant emporte déjà ce qui s’entasse.</p>';
+      if (!q.prochain) return '<p class="tiny muted">Les quatre seuils sont passés : production ' + x(q.mult) + ".</p>";
+      const prev = D.SEUILS.paliers[q.k - 1] || 0;
+      return '<div class="seuil"><div class="tiny muted">' + q.n + " / " + q.prochain + " extracteurs, puis " + x(q.pas) + (q.k ? " · production déjà " + x(q.mult) : "") +
+        '</div><div class="bar"><i style="width:' + Math.min(100, Math.max(0, ((q.n - prev) / (q.prochain - prev)) * 100)).toFixed(0) + '%"></i></div></div>';
+    }
     function extHTML(key) {
       const i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
       const e = E.domExt(z, res), us = E.extUnits(), info = E.machInfo(key), dep = E.zoneDeps(z).find((d) => d.res === res);
@@ -579,6 +588,7 @@
       const rate = depRate(z, res);
       let h = '<div class="sheet-h">' + icon(res) + '<div class="grow"><h2>' + esc(I[res].n) + '</h2><div class="tiny muted">' + esc(E.ZONES[z].n) + "</div></div></div>";
       h += '<p class="small">' + (!e ? "Aucun extracteur ne travaille ici." : info.s === "off" ? "En pause." : rate > 0 ? "Les extracteurs posés ici récoltent " + perTime(rate) + ", même quand le jeu est fermé." : "Démarrage…") + "</p>";
+      h += seuilHTML(e);
       if (types.length) {
         h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + " : chacun récolte seulement le gisement où tu le poses.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
