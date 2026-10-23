@@ -5,8 +5,9 @@
  *   PW=$(npm root -g)/playwright node tools/golden-ui.js check <dossier>   compare à la référence
  *
  * Un serveur doit déjà servir le dépôt : setsid npx http-server -p 8768 -s -c-1 . (URL= pour changer).
- * Quatre parties (neuve ; tools/fixtures/save-v5-age8-usine.json ; une partie enrichie en Node : Livre,
- * signes, fouille en cours, fins, curiosités ; la même après une relève, dons proposés), l’heure et l’aléa
+ * Six parties (neuve ; tools/fixtures/save-v5-age8-usine.json ; une partie enrichie en Node : Livre,
+ * signes, fouille en cours, fins, curiosités ; la même après une relève, dons proposés ;
+ * une très ancienne, migrée ; une illisible), l’heure et l’aléa
  * figés. Le tour clique les onglets, sous-onglets et fenêtres, et écrit pour chaque écran le HTML de
  * #app, #modal, #toasts et #visiteurs. Les erreurs de la console sont écrites aussi : elles font partie de la référence.
  * Code de sortie 1 au premier écart (check) ou si une erreur de page survient. */
@@ -50,7 +51,9 @@ const PARTIES = [
   ["neuve", null],
   ["usine", fs.readFileSync(path.join(ROOT, "tools/fixtures/save-v5-age8-usine.json"), "utf8")],
   ["riche", partieRiche().serialize()],
-  ["releve", (() => { const E = partieRiche(); E.newCycle(); return E.serialize(); })()]
+  ["releve", (() => { const E = partieRiche(); E.newCycle(); return E.serialize(); })()],
+  ["ancienne", fs.readFileSync(path.join(ROOT, "tools/fixtures/save-v1-age7.json"), "utf8")],
+  ["illisible", "{\"v\": 5, pas du json"]
 ];
 
 /* ------------------------------------------------------------ le tour */
