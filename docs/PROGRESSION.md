@@ -61,14 +61,20 @@ Améliorations permanentes achetées avec les Traces (`D.MEMOIRE`), gardées d�
 
 | id | Nom | Effet par niveau | Niveaux | Coûts |
 |---|---|---|---|---|
-| recolte | Mains calleuses | récolte à la main ×(1 + niveau) | 5 | 2, 4, 8, 16, 32 |
-| mains | Gestes sûrs | fabrication à la main ×0,8 de durée | 5 | 2, 4, 7, 12, 20 |
-| extr | Mémoire des gisements | extracteurs +50 % | 8 | 3, 5, 8, 13, 21, 34, 55, 89 |
-| mach | Rouages huilés | machines +25 % | 8 | 5, 8, 13, 21, 34, 55, 89, 144 |
-| chemins | Chemins connus | passages −10 % | 5 | 4, 8, 16, 32, 64 |
+| recolte | Mains calleuses | récolte à la main ×(1 + niveau) | 10 | 2, 4, 8, 18, 36, 70, 130, 240, 440, 800 |
+| mains | Gestes sûrs | fabrication à la main ×0,8 de durée | 8 | 2, 4, 7, 13, 23, 45, 85, 160 |
+| extr | Mémoire des gisements | extracteurs +50 % | 12 | 3, 5, 8, 13, 23, 38, 62, 100, 180, 330, 600, 1100 |
+| mach | Rouages huilés | machines +25 % | 12 | 5, 8, 13, 21, 36, 60, 98, 160, 290, 530, 960, 1750 |
+| chemins | Chemins connus | passages −10 % | 8 | 4, 8, 16, 34, 70, 140, 270, 520 |
 | paquetage | Le paquetage | départ avec des matières, puis des cabanes | 3 | 2, 6, 15 |
 | raccourci | Raccourci | départ avec la Plaine (puis la Rivière) déjà ouverte | 2 | 6, 15 |
-| veille | Longues nuits | +6 h de temps hors ligne compté (12 h au départ) | 2 | 4, 10 |
+| veille | Longues nuits | +6 h de temps hors ligne compté (12 h au départ) | 4 | 4, 10, 30, 80 |
+| oeil | Coup d’œil | +4 % de chance de récolte double (6 % au départ) | 8 | 3, 6, 12, 26, 52, 100, 190, 360 |
+
+Les premiers niveaux gardent leurs prix d’origine. Au-delà, les prix montent d’environ
+×1,8 par niveau : de quoi dépenser les Traces en fin de partie. Les Résonances
+(`D.TRANSCENDANCE`, à partir du cycle 2) n’ont pas de plafond ; leur prix est multiplié
+par 2,3 à 2,5 à chaque niveau.
 
 ## 4. Rythme visé
 

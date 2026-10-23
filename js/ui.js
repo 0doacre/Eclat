@@ -979,7 +979,7 @@
     $("#ageName").textContent = ag.n.replace(/^Âge (du |de la |de l’|des |de )?/, "").replace(/^./, (c) => c.toUpperCase());
     $("#ageBtn").setAttribute("aria-label", ag.n + " : étapes de l’âge");
     const old = ep === "papyrus" || ep === "enluminure";
-    $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) : "");
+    $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) + (E.nomDuCycle && E.nomDuCycle() ? " · " + E.nomDuCycle() : "") : "");
     const ms = (E.milestones && E.milestones()[a]) || [];
     const done = ms.filter((x) => x.done).length;
     const total = ms.length;
@@ -2053,6 +2053,11 @@
       const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
       h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes à la main", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],
         ["Tentatives à l’Atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Semeur", st.cycle + 6 + "e"]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
+      // donner un nom au Semeur de cet éveil (un essai par éveil)
+      const NM = (E.RECIT && E.RECIT.nommer) || {};
+      const nom = E.nomDuCycle ? E.nomDuCycle() : null;
+      h += '<div class="card"><div class="stat"><span class="muted">Semeur ' + (st.cycle + 6) + "</span><b>" + (nom ? esc(nom) : "—") + "</b></div>" +
+        (E.peutNommer && E.peutNommer() ? '<form class="term-in" id="nomForm" autocomplete="off" style="margin-top:8px"><input id="nomIn" maxlength="24" placeholder="' + esc(NM.invite || "") + '" autocapitalize="words" spellcheck="false"><button class="btn" type="submit">⏎</button></form>' : "") + "</div>";
       if (evs.length) {
         h += '<h3 class="sub">Réminiscences</h3>';
         evs.forEach((id) => { h += '<div class="card small serif" style="font-size:15px">' + icon(id, "sm") + " " + esc(D.EVENTS[id]) + "</div>"; });
@@ -3696,7 +3701,7 @@
     E.on("arche", (key) => {
       badge("cosmos");
       if (key === "radio") setTimeout(() => {
-        openModal({ html: '<div class="kicker">Poste radio</div><h2>Une voix dans le grésillement</h2><div class="term">' + D.ARCHE.radio.map((l) => '<div class="l">' + esc(l) + "</div>").join("") +
+        openModal({ html: '<div class="kicker">Poste radio</div><h2>Une voix dans le grésillement</h2><div class="term">' + (D.ARCHE.radio || []).map((l) => '<div class="l">' + esc(E.interpolate(l)) + "</div>").join("") +
           '</div><div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
       }, 900);
     });
@@ -4024,6 +4029,15 @@
     }, true);
     views.addEventListener("submit", (ev) => {
       if (ev.target.id === "termForm") { ev.preventDefault(); runTerminal($("#termIn").value); }
+      if (ev.target.id === "nomForm") {
+        ev.preventDefault();
+        const v = $("#nomIn").value;
+        if (!v.trim()) return;
+        A.init(); A.click();
+        const r = E.nommer(v), NM = (E.RECIT && E.RECIT.nommer) || {};
+        toast(esc(r.ok ? (r.revoila ? NM.revoila : NM.oui) : r.why === "deja" ? NM.deja : NM.surnom || ""), { key: "nom" });
+        save(); render(true);
+      }
     });
     let skyTouch = null;
     views.addEventListener("pointerdown", (ev) => {

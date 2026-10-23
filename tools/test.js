@@ -783,6 +783,18 @@ test("étude des matières : ce qui réagit, contre de l’Intuition", () => {
   assert.ok(!E.study("manche"), "une seule fois");
   assert.ok(!E.study("os"), "pas une matière jamais vue");
 });
+test("Mémoire des mains : premiers prix inchangés, niveaux en plus, prix qui montent", () => {
+  const M = Object.fromEntries(D.MEMOIRE.map((m) => [m.id, m]));
+  assert.deepStrictEqual(M.recolte.cost.slice(0, 3), [2, 4, 8]);
+  assert.deepStrictEqual(M.extr.cost.slice(0, 4), [3, 5, 8, 13]);
+  for (const m of D.MEMOIRE) for (let i = 1; i < m.cost.length; i++) assert.ok(m.cost[i] > m.cost[i - 1], m.id + " : prix croissants");
+  assert.ok(M.mach.cost.length >= 12 && M.recolte.cost.length >= 10);
+  const E = mk();
+  E.state.meta.traces = 1e6;
+  for (let i = 0; i < M.recolte.cost.length; i++) assert.ok(E.memBuy("recolte"));
+  assert.ok(!E.memBuy("recolte"), "au maximum");
+  assert.strictEqual(E.memV("recolte"), 1 + M.recolte.cost.length);
+});
 test("Étudier tout : toutes les ressources vues d’un coup, ou rien", () => {
   const E = mk();
   ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));

@@ -1961,6 +1961,32 @@
       return id;
     }
     E.nuit = nuit;
+    /* Les noms : donner au Semeur de ce cycle le nom de l’enfant de sa cuve. Un essai par éveil ;
+     * un autre nom est gardé comme surnom. Le même enfant renommé un tour plus tard : le visage. */
+    E.nommer = function (txt) {
+      const norm = normSigne(txt);
+      if (!norm) return { ok: false, why: "empty" };
+      S.meta.nomCycle = S.meta.nomCycle || 0;
+      if (S.meta.nomCycle === S.cycle) return { ok: false, why: "deja" };
+      S.meta.nomCycle = S.cycle;
+      S.meta.nomsDonnes = S.meta.nomsDonnes || {};
+      S.meta.nomsDonnes[S.cycle] = String(txt).trim().slice(0, 24);
+      const cuve = 7 + (((S.cycle || 1) - 1) % 6);
+      const vrai = RECIT.noms && RECIT.noms[cuve];
+      if (!vrai || normSigne(vrai) !== norm) { E.emit("struct"); return { ok: false, surnom: true }; }
+      S.meta.nommes = S.meta.nommes || {};
+      const avant = (S.meta.nommes[cuve] || []).filter((c) => c < S.cycle);
+      (S.meta.nommes[cuve] = S.meta.nommes[cuve] || []).push(S.cycle);
+      S.meta.nomsDonnes[S.cycle] = vrai;
+      addSecret("noms");
+      const revoila = avant.length > 0;
+      if (revoila) addSecret("visage");
+      E.emit("struct");
+      return { ok: true, revoila };
+    };
+    E.nomDuCycle = () => (S.meta && S.meta.nomsDonnes && S.meta.nomsDonnes[S.cycle]) || null;
+    E.peutNommer = () => !!(S.meta && S.meta.nomCycle !== S.cycle) && !E.isLibere();
+
     /* le septième trait : une fenêtre de relève, trente secondes sans toucher (une fois par éveil) */
     E.graverTrait = function () {
       S.meta.marque = S.meta.marque || 0;
@@ -2205,6 +2231,7 @@
       if (okSet.has(h)) {
         st.lu = 1;
         stamp("s:" + id);
+        if (id === "nourrice") addSecret("signature"); // l’ornement des scènes devient une signature
         advanceRitual(2, 1);
         E.emit("signe", { id, mot: sDef.mot });
         return { ok: true, proche: false, mot: sDef.mot };
@@ -2592,6 +2619,7 @@
       const age = String(S.age || 0);
       if (str.indexOf("{originaux}") >= 0) str = str.replace(/\{originaux\}/g, originauxTxt());
       if (str.indexOf("{noms}") >= 0) str = str.replace(/\{noms\}/g, nomsTxt());
+      if (str.indexOf("{nom}") >= 0) str = str.replace(/\{nom\}/g, (RECIT.noms || {})[7 + ((cyc - 1) % 6)] || "");
       return str
         .replace(/\{iris\}/g, String(7 + ((cyc - 1) % 6)).padStart(2, "0"))
         .replace(/\{date\}/g, formatRealDate())
@@ -2619,6 +2647,8 @@
     /* Matines : les noms des enfants qu’on a croisés (cuves des cycles joués) */
     function nomsTxt() {
       const NOMS = RECIT.noms || {};
+      const nommes = Object.keys((S.meta && S.meta.nommes) || {});
+      if (nommes.length) return " " + nommes.map((c) => NOMS[c]).filter(Boolean).join(", ") + ".";
       if (!(S.frags && (S.frags.berceuse || S.frags.quai))) return "";
       const seen = [];
       for (let c = 1; c <= Math.min(S.cycle || 1, 6); c++) seen.push(NOMS[7 + ((c - 1) % 6)]);
@@ -3325,8 +3355,8 @@
         { lvl: 0, n: "Curieux de passage", req: 0, bonus: 0 },
         { lvl: 1, n: "Client régulier", req: 3, bonus: 1 },
         { lvl: 2, n: "Négociant estimé", req: 8, bonus: 2 },
-        { lvl: 3, n: "Partenaire de l’Arche", req: 18, bonus: 3 },
-        { lvl: 4, n: "Grand Marchand des Étoiles", req: 35, bonus: 5 }
+        { lvl: 3, n: "Vieille connaissance", req: 18, bonus: 3 },
+        { lvl: 4, n: "« Encore toi »", req: 35, bonus: 5 }
       ];
       let cur = ranks[0];
       for (const r of ranks) { if (cnt >= r.req) cur = r; }
@@ -3443,7 +3473,7 @@
         "Chapitre VII · L’Acier et la vapeur",
         "Chapitre VIII · L’Étincelle captive",
         "Chapitre IX · La Pensée du silicium",
-        "Chapitre X · La Matière noire",
+        "Chapitre X · L’Huile noire",
         "Chapitre XI · L’Étoffe des composites",
         "Chapitre XII · L’Envol spatial",
         "Chapitre XIII · La Lumière stellaire"
@@ -4110,6 +4140,7 @@
         delete S.flags.reExt;
       }
       if (!S.flags.ages) checkAges(true); // une partie d’avant les âges accomplis
+      if (S.signes && S.signes.nourrice && S.signes.nourrice.lu) S.secrets.signature = true;
       E.emit("struct");
       return true;
     };

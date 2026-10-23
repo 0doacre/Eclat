@@ -220,15 +220,26 @@
     noise({ f: f * 2, t: t || 0, d: 0.25, v: 0.025, q: 8, a: 0.03 });
   };
   A.melody = function (notes, gap) { notes.forEach((n, i) => A.note(n, i * (gap || 0.42))); };
-  /* Le signal de Kher : la berceuse, ralentie, désaccordée, lointaine. */
+  /* les suites du récit (brouillées dans js/recit.js) : « 353-151 » → [[3,5,3],[1,5,1]] */
+  function suite(k) {
+    const D = root.ECLAT_DATA, R = D && D.RECIT;
+    if (!R || !R.ciel || !R.ciel[k] || !R.deb64) return [];
+    return R.deb64(R.ciel[k]).split("-").map((ph) => ph.split("").map(Number));
+  }
+  /* Le signal de Kher : ce que clignote la lueur, ralenti, désaccordé, lointain. */
   A.signal = function () {
     if (!ready()) return;
     duck(9);
-    [4, 3, 1, 3, 4, 5, 4].forEach((n, i) => {
-      const f = PENTA[n - 1] / 2;
-      tone({ f, t: i * 0.9, d: 1.1, a: 0.25, v: 0.07, type: "sine", vib: 0.7, vibd: 18 });
-      tone({ f: f * 1.007, t: i * 0.9, d: 1.1, a: 0.25, v: 0.05, type: "triangle", det: 30 });
-      noise({ f: 900 + n * 120, t: i * 0.9, d: 1, v: 0.025, q: 0.6, a: 0.3 });
+    let t = 0;
+    suite("lueur").forEach((ph) => {
+      ph.forEach((n) => {
+        const f = PENTA[n - 1] / 2;
+        tone({ f, t, d: 0.9, a: 0.2, v: 0.07, type: "sine", vib: 0.7, vibd: 18 });
+        tone({ f: f * 1.007, t, d: 0.9, a: 0.2, v: 0.05, type: "triangle", det: 30 });
+        noise({ f: 900 + n * 120, t, d: 0.8, v: 0.025, q: 0.6, a: 0.3 });
+        t += 0.6;
+      });
+      t += 1.4; // la longue pause entre les deux phrases
     });
   };
   A.ending = function (eid) {
@@ -242,9 +253,13 @@
         tone({ f, t: i * 0.28, d: 6.5, a: 0.7, v: 0.06, type: "triangle", vib: 0.5, vibd: 4 }));
       noise({ ft: "lowpass", f: 220, t: 0.3, d: 3.5, v: 0.035, a: 0.8 });
     } else if (eid === "retour") {
+      // les quatre premières notes de la comptine, puis la cloche répond
+      const c = (suite("matines")[0] || []);
+      c.forEach((n, i) => tone({ f: PENTA[n - 1], t: i * 0.5, d: 0.6, a: 0.04, v: 0.12, vib: 5.2, vibd: 5 }));
+      const t0 = c.length * 0.5 + 0.4;
       [261.63, 329.63, 392.0, 523.25, 659.25].forEach((f, i) => {
-        bell(f, { t: i * 0.45, d: 4.5, v: 0.055 });
-        tone({ f: f / 2, t: i * 0.45, d: 5.5, a: 0.4, v: 0.035, type: "sine" });
+        bell(f, { t: t0 + i * 0.45, d: 4.5, v: 0.055 });
+        tone({ f: f / 2, t: t0 + i * 0.45, d: 5.5, a: 0.4, v: 0.035, type: "sine" });
       });
     } else if (eid === "exode") {
       [174.61, 261.63, 392.0, 587.33, 880.0].forEach((f, i) =>
