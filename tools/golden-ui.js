@@ -8,7 +8,7 @@
  * Quatre parties (neuve ; tools/fixtures/save-v5-age8-usine.json ; une partie enrichie en Node : Livre,
  * signes, fouille en cours, fins, curiosités ; la même après une relève, dons proposés), l’heure et l’aléa
  * figés. Le tour clique les onglets, sous-onglets et fenêtres, et écrit pour chaque écran le HTML de
- * #app, #modal et #toasts. Les erreurs de la console sont écrites aussi : elles font partie de la référence.
+ * #app, #modal, #toasts et #visiteurs. Les erreurs de la console sont écrites aussi : elles font partie de la référence.
  * Code de sortie 1 au premier écart (check) ou si une erreur de page survient. */
 "use strict";
 const fs = require("fs");
@@ -83,7 +83,7 @@ async function tour(b, nom, raw) {
   let n = 0;
   const wait = (ms) => p.waitForTimeout(ms || 550);
   const snap = async (name) => {
-    const html = await p.evaluate(() => ["#app", "#modal", "#toasts"].map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\n\n"));
+    const html = await p.evaluate(() => ["#app", "#modal", "#toasts", "#visiteurs"].map((s) => { const el = document.querySelector(s); return el ? el.outerHTML : ""; }).join("\n\n"));
     shots.push([String(n++).padStart(3, "0") + "-" + name, html]);
   };
   const absent = (name) => { shots.push([String(n++).padStart(3, "0") + "-" + name, "(absent)"]); };
@@ -215,6 +215,20 @@ async function tour(b, nom, raw) {
     await closeAll();
     await snap("domaine-don-pris");
   }
+  // un visiteur de passage : on avance le temps de jeu pour qu’il vienne, puis on le touche
+  // (le tutoriel coupé depuis le menu : sa bulle le retiendrait)
+  await tab("domaine");
+  await tap("#menuBtn");
+  await step("menu-tuto", '#modal [data-m="tuto"]');
+  await closeAll("apres-tuto");
+  await p.evaluate(() => { window.__eclat.E.state.stats.play = 1e9; });
+  await wait(500);
+  await p.evaluate(() => { window.__eclat.E.state.stats.play = 2e9; });
+  await wait(1000);
+  await snap("visiteur");
+  // (sans animation, il attend hors de l’écran : on le touche par le DOM)
+  if (await p.evaluate(() => { const v = document.querySelector("#visiteurs .visiteur"); if (v) v.click(); return !!v; })) { await wait(); await snap("visiteur-touche"); }
+  else absent("visiteur-touche");
   await ctx.close();
   return { shots, errs };
 }
