@@ -2930,8 +2930,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.8.7 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.8.7");
+test("Version 0.9.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.0");
   assert.ok(D.CHANGES.length >= 4);
 });
 
@@ -3134,12 +3134,12 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.8.7");
+  assert.strictEqual(D.VERSION, "0.9.0");
   assert.ok(D.CHANGES.length >= 4);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 8, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 9, "Mineure pour le lot courant");
 });
 
 console.log("Horodatage du Journal (0.7.1)");
@@ -3730,5 +3730,8 @@ test("seuils : la Rivière Lente n’en a pas, et chaque gisement compte à part
   const bois = E.extOut(E.domExt("lisiere", "bois")) / 10, fibre = E.extOut(E.domExt("lisiere", "fibre")) / 9;
   assert.ok(Math.abs(bois / fibre - 1.25 * E.extRate("cabane", "bois") / E.extRate("cabane", "fibre")) < 1e-9, "le seuil du bois ne profite pas à la fibre");
 });
+/* visiteurs de passage et constellations : fichiers à part */
+require("./test-visiteurs.js");
+require("./test-figures.js");
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

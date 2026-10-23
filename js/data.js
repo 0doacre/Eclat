@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.7";
+  D.VERSION = "0.9.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1061,23 +1061,12 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🧭 Le tutoriel couvre mieux trois moments : réparer une ruine quand il te manque des pièces (il te montre quoi fabriquer), parler au Troqueur, et lire la règle d’une terre.",
-    "🔨 Dans une ruine, ce qu’il faut pour la réparer s’affiche en pastilles : touche celle qui est en rouge pour ouvrir sa fiche.",
-    "💬 Au Comptoir, un onglet « Parler » : le Troqueur répond, une réplique à la fois, sur ce que tu lui demandes. Il en sait plus qu’il n’en vend.",
-    "🗺️ Chaque terre a maintenant sa règle, écrite sur sa fiche du Domaine : le courant de la Rivière, la nuit des Profondeurs, le verre du Désert, le vide de l’Orbite, la pesanteur de la Lune, les marches des Collines.",
-    "🧤 Nouveau : les gants de peau, pour récolter à la main dans le Désert.",
-    "🔎 Sur la carte d’objectif, le bouton « Chercher » s’appelle « Tenter ».",
-    "📱 Sur petit écran, l’en-tête garde le nom de l’âge, et la carte d’objectif passe ses boutons sous le titre.",
-    "⌨️ Les fenêtres se ferment avec Échap, ont une croix toujours visible, et le clavier ne sort plus de la fenêtre ouverte.",
-    "🏛️ Les deux Grands Œuvres disparus en 0.8.1 reviennent. Si tu en avais commencé un, tu reprends où tu en étais.",
-    "📜 En haut de l’écran, le bouton Quêtes : l’objectif en cours, trois rituels par jour et les demandes du Troqueur.",
-    "🤝 Plus tu livres au Troqueur, plus il te fait confiance. À chaque rang, ses livraisons rapportent plus de Traces.",
-    "✦ La Mémoire des mains a de nouveaux niveaux, plus chers : de quoi dépenser tes Traces en fin de partie.",
-    "🔍 À l’Atelier, « Étudier tout » étudie d’un coup toutes tes ressources. Le filtre « À tenter » garde celles qui servent encore, et les autres pâlissent.",
-    "⚡ Dans le Carnet, le filtre « Prêtes » montre ce que tu peux fabriquer tout de suite.",
-    "🤏 Le Domaine a une vue serrée, pour voir plus de lignes d’un coup.",
-    "🗺️ Les lieux cachés se laissent mieux deviner.",
-    "🔧 Plusieurs défauts corrigés."
+    "🎁 À chaque relève, trois dons t’attendent : tu en gardes un pour ce cycle.",
+    "🕊️ Un oiseau, une luciole ou un colporteur passe de temps en temps. Touche-le : il laisse quelque chose.",
+    "✨ Dans le Cosmos, l’onglet Figures montre tes fragments et tes signes comme des étoiles.",
+    "🧭 Sur la Carte, un lieu déjà exploré se fouille de nouveau : un tour, une fouille, ou tout retourner. Ça continue jeu fermé.",
+    "⛏️ Un gisement rend plus quand il porte 10, 25, 50 puis 100 extracteurs.",
+    "📅 Un petit cadeau t’attend chaque jour où tu reviens. Manquer des jours n’enlève rien."
   ];
 
 
@@ -1221,6 +1210,43 @@
     "Tu regardes autour de toi. Tu ramasses un morceau de bois par terre et commences à l’écorcer.",
     "Un sourire naît au coin de tes lèvres : oui, ça, tu t’en souviens."
   ];
+
+  /* ===== VISITEURS DE PASSAGE (début) =====
+   * Quelqu'un ou quelque chose traverse le Domaine, de loin en loin. On le touche : un petit lot.
+   * Calendrier en secondes de jeu actif (S.stats.play), jamais hors ligne.
+   * lot.secondes : secondes de récolte à la main que vaut la matière ; objet, page, clin : chances.
+   * tps : parties de la journée (nuit avant 6 h ou dès 21 h, aube avant 8 h, crépuscule dès 18 h, sinon jour).
+   * terres : liste de terres, ou absent pour toutes (le Domaine seulement, jamais les lieux sans ciel).
+   * pg : peut donner une page du Livre que le Comptoir vend (très rare).
+   * clin : phrase complice, sans nom propre réel (voir docs/coffre/EASTER.md). */
+  D.VISITEURS = {
+    delai: [480, 1200],
+    traversee: 12,
+    lot: { secondes: 90, intu: 1, objet: 0.08, page: 0.02, clin: 0.03 },
+    liste: [
+      { id: "oiseau", ic: "🐦", n: "un oiseau", tps: ["day", "dawn", "dusk"], w: 3,
+        t: "Un oiseau laisse tomber quelque chose." },
+      { id: "papillon", ic: "🦋", n: "un papillon", tps: ["day"], terres: ["lisiere", "plaine", "riviere", "collines"], w: 2,
+        t: "Un papillon se pose sur ta main, puis repart." },
+      { id: "luciole", ic: "", css: "luciole", n: "une luciole", tps: ["night"], terres: ["lisiere", "plaine", "riviere", "collines", "desert"], w: 3,
+        t: "La luciole tourne autour de ta main.",
+        clin: "La luciole crie « Hé ! Écoute ! » d’une toute petite voix, puis repart, très contente d’elle." },
+      { id: "colporteur", ic: "🎒", n: "un colporteur", tps: ["day", "dusk"], terres: ["plaine", "riviere", "collines", "desert", "montagnes"], w: 2, pg: true,
+        t: "Le colporteur te tend un petit paquet et repart sans rien demander.",
+        clin: "Le colporteur te tend un bâton : « C’est dangereux d’y aller seul. » Puis il le reprend : « Non, il est pour le suivant. »" },
+      { id: "renard", ic: "🦊", n: "un renard", tps: ["dawn", "dusk", "night"], terres: ["lisiere", "plaine", "collines", "montagnes"], w: 2,
+        t: "Un renard file entre tes pieds.",
+        clin: "Un renard s’enroule en boule et file. Quelque part, des anneaux tintent." },
+      { id: "chauve", ic: "🦇", n: "une chauve-souris", tps: ["dusk", "dawn"], w: 2,
+        t: "Une chauve-souris te frôle la tête.",
+        clin: "La chauve-souris passe devant la lune. Un instant, tu entends un orgue, très loin." }
+    ],
+    txt: {
+      aria: "{n} passe. Touche pour voir.",
+      page: "Il te laisse aussi une page du Livre."
+    }
+  };
+  /* ===== VISITEURS DE PASSAGE (fin) ===== */
 
   /* Scènes d’éveil des Semeurs (cycles 2 et suivants) */
   D.EVEILS = {}; // js/recit.js
