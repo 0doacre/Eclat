@@ -18,6 +18,8 @@
  *               relève a déjà eu lieu) ; --taps : appuis par seconde (4) ; --retour : voir ci-dessous
  *   --journal   affiche l’heure de chaque objectif atteint (pour voir où le joueur coince)
  *   --cout z=k  multiplie par k le prix du passage z (en mémoire seulement : data.js reste intact)
+ *   --don id    joue avec ce don de la relève (ids de D.DONS) ; --dons : un jeu par don, écart de chaque
+ *               passage au jeu sans don (avec la mémoire de --mem, ou r2 e2 m2 par défaut)
  *   --cycles N  enchaîne N cycles de --minutes chacun : relève (newCycle) puis achats de Mémoire
  *               automatiques dans l’ordre ACHATS, avec les Traces gagnées ; le Carnet reste acquis
  *
@@ -54,7 +56,7 @@ const ACHATS = ["recolte", "mains", "recolte", "paquetage", "extr", "mains", "ra
 
 /* ------------------------------------------------------------------ options */
 function lire(argv) {
-  const o = { minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1 };
+  const o = { minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, don: null, dons: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], val = () => argv[++i];
     if (a === "--minutes") o.minutes = +val();
@@ -65,6 +67,8 @@ function lire(argv) {
         if (+v > 0) o.mem[k] = +v;
       });
     }
+    else if (a === "--don") { o.don = val(); if (!D.DONS.some((d) => d.id === o.don)) throw new Error("--don : « " + o.don + " » inconnu (ids : " + D.DONS.map((d) => d.id).join(" ") + ")"); }
+    else if (a === "--dons") o.dons = true;
     else if (a === "--offline") o.offline = +val();
     else if (a === "--compare") o.compare = true;
     else if (a === "--reflexion") o.reflexion = +val();
@@ -90,6 +94,8 @@ function play(o) {
   for (const id in I) if (I[id].r && !I[id].sec && !I[id].path) E.learn(id, true); // il connaît tout
   const avecMem = Object.keys(o.mem).length > 0;
   if (avecMem) { S().meta.mem = Object.assign({}, o.mem); E.recalc(); E.newCycle(); } // paquetage, raccourci
+  const prendreDon = () => { if (o.don) { S().donsOffre = [o.don]; E.donChoose(o.don); } };
+  prendreDon();
   const carnet = o.carnet === null ? (avecMem ? 4 : -1) : o.carnet;
   const decouvert = new Set(Object.keys(I).filter((id) => I[id].r && I[id].a <= carnet)); // recettes déjà faites
 
@@ -286,6 +292,7 @@ function play(o) {
   /* la relève : Traces gagnées, puis achats de Mémoire dans l’ordre, tant que les Traces suffisent */
   function releve() {
     E.newCycle();
+    prendreDon();
     for (const id of ACHATS) if (!E.memBuy(id) && E.memCost(id) !== undefined) break;
     need = {}; urgent = {}; planned = {}; invest = null; evite = new Set(); rows = []; traces = 0; prete = {}; debut = minutes(); pense0 = penseTotal / 60;
     ouverts();
@@ -359,6 +366,22 @@ function afficherCycles(o, r) {
     console.log("    mur : " + murTxt(c));
   });
 }
+/* un jeu par don : le temps de chaque passage, et l’écart avec le jeu sans don (mêmes réglages) */
+function comparerDons(o) {
+  if (!Object.keys(o.mem).length) o.mem = { recolte: 2, extr: 2, mains: 2 };
+  const base = play(Object.assign({}, o, { don: null, cycles: 1 }));
+  const zs = Object.keys(D.PASSAGES).filter((z) => base.rows.some((x) => x.z === z && !x.offert));
+  const t = (r, z) => { const x = r.rows.find((y) => y.z === z); return x && !x.offert ? x.t : null; };
+  console.log("Dons, un par un (" + o.minutes + " min, mémoire : " + memTxt(o.mem) + "). Écart du temps de chaque passage avec le jeu sans don, en %.\n");
+  console.log("  " + "don".padEnd(15) + zs.map((z) => z.slice(0, 7).padStart(8)).join("") + "   moyenne  dernier");
+  console.log("  " + "(sans don, min)".padEnd(15) + zs.map((z) => mm(t(base, z)).padStart(8)).join(""));
+  D.DONS.forEach((d) => {
+    const r = play(Object.assign({}, o, { don: d.id, cycles: 1 }));
+    const ec = zs.map((z) => (t(r, z) === null ? null : (t(r, z) / t(base, z) - 1) * 100));
+    const ok = ec.filter((x) => x !== null), moy = ok.reduce((a, b) => a + b, 0) / (ok.length || 1);
+    console.log("  " + d.id.padEnd(15) + ec.map((x) => (x === null ? "—" : (x > 0 ? "+" : "") + x.toFixed(1)).padStart(8)).join("") + (moy > 0 ? "   +" : "   ") + moy.toFixed(1).padStart(6) + (ok.length ? (ec[ok.length - 1] > 0 ? "  +" : "  ") + ok[ok.length - 1].toFixed(1) : ""));
+  });
+}
 function comparer(o) {
   const res = PROFILS.map((p) => play(Object.assign({}, o, { mem: p.mem, cycles: 1 })));
   console.log("Comparaison (" + o.minutes + " min de jeu actif" + (o.offline ? " · absence " + o.offline + " h après chaque passage" : "") + " · réflexion " + o.reflexion + " s, carnet connu jusqu’à l’âge 4 avec une mémoire)\n");
@@ -380,7 +403,7 @@ if (require.main === module) {
   try {
     const o = lire(process.argv.slice(2));
     for (const z in o.cout) for (const i in D.PASSAGES[z].cost) D.PASSAGES[z].cost[i] = Math.max(1, Math.round(D.PASSAGES[z].cost[i] * o.cout[z]));
-    if (o.compare) comparer(o); else if (o.cycles > 1) afficherCycles(o, play(o)); else afficher(o, play(o));
+    if (o.dons) comparerDons(o); else if (o.compare) comparer(o); else if (o.cycles > 1) afficherCycles(o, play(o)); else afficher(o, play(o));
   } catch (e) { console.error(e.message); process.exitCode = 1; }
 }
 module.exports = { play, lire, PROFILS };

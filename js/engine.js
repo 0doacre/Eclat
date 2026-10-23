@@ -87,7 +87,8 @@
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 },
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} },
+      don: null, donsOffre: [],
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, jours: { n: 0, dernier: "", cadeau: null } },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -386,6 +387,59 @@
       return true;
     };
 
+
+    /* ------------------------------------------------------ Les dons de la relève (voir D.DONS)
+     * Trois dons tirés au hasard à chaque relève, on en garde un pour ce cycle. Le tirage ne dépend que
+     * du numéro de cycle et d’une graine sauvegardée : le rouvrir ou recharger donne les mêmes trois. */
+    const DON = {};
+    D.DONS.forEach((d) => (DON[d.id] = d));
+    const NODON = {};
+    const donE = () => (S.don && DON[S.don.id] ? DON[S.don.id].e : NODON);
+    E.donDef = (id) => DON[id] || null;
+    /* graine et mélange : le même (graine, cycle) rend toujours les mêmes dons */
+    function prng(a) {
+      return function () {
+        a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    E.donsTirage = function (cycle, graine) {
+      graine = graine === undefined ? (S.meta && S.meta.graine) || 0 : graine;
+      const r = prng((Math.imul(graine | 0, 2654435761) ^ Math.imul((cycle | 0) + 1, 40503)) | 0);
+      r(); r();
+      const pool = D.DONS.map((d) => d.id);
+      const out = [];
+      for (let i = 0; i < D.DONS_OFFRE && pool.length; i++) out.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
+      return out;
+    };
+    /* les dons proposés en ce moment : vide au cycle 1, ou une fois le choix fait */
+    E.donsOffre = () => (S.don ? [] : (S.donsOffre || []).filter((id) => DON[id]));
+    E.don = () => (S.don && DON[S.don.id] ? DON[S.don.id] : null);
+    E.donChoose = function (id) {
+      if (S.don || !E.donsOffre().includes(id)) return false;
+      S.don = { id, cycle: S.cycle };
+      S.donsOffre = [];
+      const paq = DON[id].e.paq;
+      if (paq) for (const i in paq) { add(i, paq[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); }
+      recalc();
+      E.emit("struct");
+      return true;
+    };
+    /* ce que le don change, pour les autres parties du moteur (1 : rien) */
+    const donTap = (res) => { const t = donE().tap; return t && (t.r === "*" || t.r.includes(res)) ? t.v : 1; };
+    const donExt = (z) => { const t = donE().ext; return t && (t.z === "*" || t.z.includes(z)) ? t.v : 1; };
+    const donMul = (k) => donE()[k] || 1;
+    function donIntu(n) { // l’Intuition en plus : la part qui n’est pas entière attend dans intuAcc
+      const v = donE().intu;
+      if (!v || !(n > 0)) return;
+      S.intuAcc += n * (v - 1);
+      const k = Math.floor(S.intuAcc);
+      if (k >= 1) { S.intu += k; S.intuAcc -= k; }
+    }
+    E.donMul = donMul;
+
     /* ------------------------------------------------------ Résonances Stellaires (Transcendance) */
     const TRANS = {};
     (D.TRANSCENDANCE || []).forEach((t) => (TRANS[t.id] = t));
@@ -429,7 +483,7 @@
       E.emit("struct");
     }
     E.passCost = function (zid) {
-      let k = memV("chemins");
+      let k = memV("chemins") * donMul("pass");
       for (const z in REG) {
         const m = REG[z].remise;
         if (m && m.vers === zid) k *= 1 - m.par * Math.min(m.max, (S.exp && S.exp.done && S.exp.done[z]) || 0);
@@ -508,7 +562,7 @@
     E.xpOf = xpOf;
 
     function dayKey() {
-      const d = new Date();
+      const d = new Date(now());
       return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
     }
 
@@ -534,7 +588,7 @@
     };
     function tapYield(res, zid) {
       const c = E.cache();
-      return regleTap(zid) * (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
+      return regleTap(zid) * (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte") * donTap(res);
     }
     E.tapYield = tapYield;
     E.tap = function (res, zid) {
@@ -543,7 +597,7 @@
       let n = tapYield(res, zid);
       if (!(n > 0)) return 0;
       // coup de chance : la récolte double, et l’interface fait des étincelles
-      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil");
+      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil") + (donE().crit || 0);
       if (E.lastCrit) { n *= D.CRIT.mult; S.stats.crits = (S.stats.crits || 0) + 1; }
       add(res, n);
       advanceRitual(1, n);
@@ -670,7 +724,7 @@
       if (S.known[id]) return false;
       S.known[id] = true;
       const it = item(id);
-      if (!silent && !it.sec) S.intu += 1;
+      if (!silent && !it.sec) { S.intu += 1; donIntu(1); }
       E.emit("learn", id);
       E.emit("struct");
       return true;
@@ -773,7 +827,7 @@
         if (!l || got[a] || !l.every((x) => x.done)) return;
         got[a] = 1;
         if (silent) return;
-        S.intu += D.AGE_DONE;
+        S.intu += D.AGE_DONE; donIntu(D.AGE_DONE);
         E.emit("ageDone", { a, intu: D.AGE_DONE });
       });
     }
@@ -1006,7 +1060,7 @@
       const it = item(id);
       const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
       const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
-      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") / (it.r ? skillSpeed(it.r[0]) : 1);
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / (it.r ? skillSpeed(it.r[0]) : 1);
     }
     E.handTime = handTime;
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
@@ -1043,7 +1097,7 @@
 
     function machUnitRate(m, c) {
       const M = item(m);
-      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") : 0;
+      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") : 0;
     }
     function machReadyFor(m, rec) {
       if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
@@ -2323,7 +2377,7 @@
       const rw = x.rw || {};
       if (rw.inv) for (const i in rw.inv) add(i, rw.inv[i]);
       if (rw.item) for (const i in rw.item) add(i, rw.item[i]);
-      if (rw.intu) S.intu += rw.intu;
+      if (rw.intu) { S.intu += rw.intu; donIntu(rw.intu); }
       if (rw.flag) S.flags[rw.flag] = true;
       if (rw.flag === "caveau") unlockZone("caveau");
       if (rw.flag === "registre") openRegistre();
@@ -2856,9 +2910,19 @@
         const it = item(t);
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
-      return r * f;
+      return r * f * donExt(e.z) * seuilMult(e);
     }
     E.extOut = (e) => extOut(e, E.cache());
+    /* ---- Les seuils par gisement (D.SEUILS) : 10, 25, 50, 100 extracteurs, chacun ×1,25 ---- */
+    const extCount = (e) => { let n = 0; for (const t in e.u) n += e.u[t]; return n; };
+    const seuilMult = (e) => (REG[e.z] && REG[e.z].ext ? 1 : Math.pow(D.SEUILS.mult, D.SEUILS.paliers.filter((p) => extCount(e) >= p).length));
+    /* l’état des seuils d’un gisement, pour la fiche : n extracteurs, le prochain seuil, le multiplicateur déjà gagné */
+    E.seuil = function (e) {
+      const n = e ? extCount(e) : 0, P = D.SEUILS.paliers;
+      if (e && REG[e.z] && REG[e.z].ext) return { n, sans: true };
+      const k = P.filter((p) => n >= p).length;
+      return { n, k, prochain: P.find((p) => n < p) || 0, mult: Math.pow(D.SEUILS.mult, k), pas: D.SEUILS.mult };
+    };
     E.domExt = (z, res) => S.dom.ext[extKey(z, res)] || null;
     /* le type d’extracteur que pose le bouton « + cabane » : le plus productif parmi
      * ceux qui attendent d’être posés, sinon le plus productif qu’on peut fabriquer
@@ -3233,7 +3297,7 @@
       const v = valueOf(id);
       if (!(v > 0)) return 0;
       const q = E.soldCount(id), sat = D.COMPTOIR.sat;
-      return v / (1 + q / sat);
+      return v * donMul("vente") / (1 + q / sat);
     };
 
     E.sellQuote = function (id, n) {
@@ -3242,7 +3306,7 @@
       const v = valueOf(id);
       if (!(v > 0)) return 0;
       const q = E.soldCount(id), sat = D.COMPTOIR.sat;
-      return v * sat * Math.log((sat + q + n) / (sat + q));
+      return v * donMul("vente") * sat * Math.log((sat + q + n) / (sat + q));
     };
 
     E.sell = function (id, n) {
@@ -3631,6 +3695,26 @@
 
     E.comptoirOpen = () => zoneOpen(D.COMPTOIR.zone);
 
+    /* ------------------------------------------------------ Les jours de présence (D.JOURS)
+     * Un compteur de jours où le joueur est venu. Jamais une série : rien ne se remet à zéro. Le premier
+     * lancement de chaque journée (jour local) compte un jour et laisse un petit cadeau. */
+    E.jours = () => S.meta.jours;
+    E.jourVenu = function () {
+      const J = S.meta.jours, dk = dayKey();
+      if (!(dk > J.dernier)) return null; // déjà compté aujourd'hui (ou l’horloge a reculé : on ne retire rien)
+      J.n++; J.dernier = dk;
+      const pal = D.JOURS.paliers[J.n], g = pal || D.JOURS.base;
+      S.intu += g.intu;
+      S.meta.traces = (S.meta.traces || 0) + g.tr;
+      S.meta.tracesTotal = (S.meta.tracesTotal || 0) + g.tr;
+      J.cadeau = { n: J.n, intu: g.intu, tr: g.tr, t: (pal && pal.t) || "" };
+      E.emit("struct");
+      return J.cadeau;
+    };
+    /* le prochain jour qui rapporte plus (pour la ligne discrète des Rituels) */
+    E.jourProchain = () => { const J = S.meta.jours; return Object.keys(D.JOURS.paliers).map(Number).sort((x, y) => x - y).find((p) => p > J.n) || 0; };
+    let jourVu = 0;
+
     /* Nouveau cycle : le Semeur suivant s’éveille. On garde le savoir. */
     E.newCycle = function () {
       const old = S;
@@ -3685,6 +3769,10 @@
         S.pass[z] = { paid: {}, done: true, free: true };
         S.zones[z] = true;
       });
+      // les dons de la relève : trois dons tirés pour ce cycle, aucun gardé du précédent
+      if (!(n.meta.graine >= 1)) n.meta.graine = 1 + Math.floor(rand() * 2147483000);
+      n.don = null;
+      n.donsOffre = n.cycle >= 2 ? E.donsTirage(n.cycle, n.meta.graine) : [];
       forgetDom();
       recalc();
       E.emit("cycle", n.cycle);
@@ -3814,6 +3902,7 @@
         }
         if (boostExpired) recalc();
       }
+      if (t - jourVu > 30000 || t < jourVu) { jourVu = t; E.jourVenu(); } // un nouveau jour ? (au plus toutes les 30 s)
       if (!(dt > 0)) return 0;
       if (dt > 5) return E.catchUp(dt);
       step(dt, false);
@@ -3825,7 +3914,7 @@
 
     E.catchUp = function (dt) {
       const absent = dt;
-      dt = Math.min(dt, memV("veille") * 3600 || OFFLINE_CAP);
+      dt = Math.min(dt, memV("veille") * donMul("veille") * 3600 || OFFLINE_CAP);
       OFF = true;
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
@@ -3997,6 +4086,25 @@
       if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};
       if (o.termMode !== "reg" && o.termMode !== "arche") o.termMode = (o.flags && o.flags.registre) ? "reg" : "arche";
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
+      // les dons de la relève : illisible, remis à zéro (jamais une erreur)
+      o.meta.graine = Number.isInteger(o.meta.graine) && o.meta.graine >= 1 ? o.meta.graine : 0;
+      {
+        const dn = o.don, okId = (id) => typeof id === "string" && !!DON[id];
+        const cyc = Math.floor(Number(o.cycle)) || 1;
+        o.don = dn && typeof dn === "object" && !Array.isArray(dn) && okId(dn.id) && Math.floor(Number(dn.cycle)) === cyc ? { id: dn.id, cycle: cyc } : null;
+        const of = Array.isArray(o.donsOffre) ? o.donsOffre.filter((id, i, a) => okId(id) && a.indexOf(id) === i).slice(0, D.DONS_OFFRE) : [];
+        o.donsOffre = o.don ? [] : of;
+      }
+      // les jours de présence : un compteur, jamais une série
+      {
+        const j = o.meta.jours, ok = j && typeof j === "object" && !Array.isArray(j), cd = ok && j.cadeau;
+        const nj = ok ? Math.floor(Number(j.n)) : 0;
+        o.meta.jours = {
+          n: nj >= 0 && Number.isFinite(nj) ? nj : 0,
+          dernier: ok && typeof j.dernier === "string" && /^\d{4}-\d{2}-\d{2}$/.test(j.dernier) ? j.dernier : "",
+          cadeau: cd && typeof cd === "object" && !Array.isArray(cd) ? { n: Math.max(0, Math.floor(Number(cd.n)) || 0), intu: Math.max(0, Math.floor(Number(cd.intu)) || 0), tr: Math.max(0, Math.floor(Number(cd.tr)) || 0), t: typeof cd.t === "string" ? cd.t.slice(0, 200) : "" } : null
+        };
+      }
       // ce que le Troqueur a déjà dit : un champ par défaut, des numéros de cycle, jamais plus
       {
         const t = o.meta.troc, ok = t && typeof t === "object" && !Array.isArray(t);
