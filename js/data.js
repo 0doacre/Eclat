@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.1";
+  D.VERSION = "0.8.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -856,15 +856,15 @@
   };
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
   D.MEMOIRE = [
-    { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 16, 32] },
-    { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Durée des fabrications à la main ×{v}.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 12, 20] },
-    { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Production des extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 21, 34, 55, 89] },
-    { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Vitesse des machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 34, 55, 89, 144] },
-    { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Prix des passages ×{v}.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 32, 64] },
+    { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 18, 36, 70, 130, 240, 440, 800] },
+    { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Durée des fabrications à la main ×{v}.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 13, 23, 45, 85, 160] },
+    { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Production des extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 23, 38, 62, 100, 180, 330, 600, 1100] },
+    { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Vitesse des machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 36, 60, 98, 160, 290, 530, 960, 1750] },
+    { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Prix des passages ×{v}.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 34, 70, 140, 270, 520] },
     { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "du bois, des fibres, des cailloux, 4 manches et 4 cordes", "la même chose, et une cabane", "la même chose, trois cabanes et un feu de camp"][l], cost: [2, 6, 15] },
     { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
-    { id: "oeil", n: "Coup d’œil", ic: "✨", d: "Récolte à la main : {v} de chances de récolter le double.", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 24, 48] },
-    { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps continue de compter jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10] }
+    { id: "oeil", n: "Coup d’œil", ic: "✨", d: "Récolte à la main : {v} de chances de récolter le double.", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 26, 52, 100, 190, 360] },
+    { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps continue de compter jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10, 30, 80] }
   ];
   /* Résonances Stellaires : améliorations infinies à coût exponentiel pour le late-game */
   D.TRANSCENDANCE = [
@@ -874,7 +874,7 @@
       ic: "⚡",
       d: "Récolte à la main ×{v}.",
       v: (l) => Math.pow(2, l),
-      cost: (l) => Math.round(50 * Math.pow(2.2, l))
+      cost: (l) => Math.round(50 * Math.pow(2.5, l))
     },
     {
       id: "trans_terre",
@@ -882,7 +882,7 @@
       ic: "🌋",
       d: "Récolte des extracteurs ×{v}.",
       v: (l) => Math.round(Math.pow(1.75, l) * 100) / 100,
-      cost: (l) => Math.round(70 * Math.pow(2.1, l))
+      cost: (l) => Math.round(70 * Math.pow(2.4, l))
     },
     {
       id: "trans_mach",
@@ -890,7 +890,7 @@
       ic: "⚙️",
       d: "Vitesse des machines et des commandes ×{v}.",
       v: (l) => Math.round(Math.pow(1.6, l) * 100) / 100,
-      cost: (l) => Math.round(85 * Math.pow(2.0, l))
+      cost: (l) => Math.round(85 * Math.pow(2.3, l))
     }
   ];
   /* ce que contient le paquetage, niveau par niveau (cumulé) */
@@ -979,13 +979,14 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📜 En haut de l’écran, le bouton Quêtes : l’objectif en cours, trois rituels par jour et les demandes du Troqueur.",
+    "🤝 Plus tu livres au Troqueur, plus il te fait confiance. À chaque rang, ses livraisons rapportent plus de Traces.",
+    "✦ La Mémoire des mains a de nouveaux niveaux, plus chers : de quoi dépenser tes Traces en fin de partie.",
     "🔍 À l’Atelier, « Étudier tout » étudie d’un coup toutes tes ressources. Le filtre « À tenter » garde celles qui servent encore, et les autres pâlissent.",
-    "🗺️ Les lieux cachés se laissent mieux deviner : chacun est annoncé ailleurs, au moins deux fois.",
-    "🔧 Plusieurs défauts corrigés dans le Domaine, le Ciel et le Registre.",
-    "📜 Registre de quêtes : scénario narratif par chapitres, rituels quotidiens des Semeurs et prestige commercial du Troqueur.",
-    "⚡ Codex d’artisanat & En stock : nouveau filtre rapide « En stock », pastille d’alerte et fabrication instantanée sans ouvrir la fiche.",
-    "🤝 Contrats du Troqueur : 5 rangs de réputation marchande avec bonus croissants en Traces et livraisons directes depuis le Registre.",
-    "🤏 Confort visuel : mode compact/dense pour le Domaine, animations tactiles et puces réactives d’alerte."
+    "⚡ Dans le Carnet, le filtre « En stock » montre ce que tu peux fabriquer tout de suite.",
+    "🤏 Le Domaine a une vue serrée, pour voir plus de lignes d’un coup.",
+    "🗺️ Les lieux cachés se laissent mieux deviner.",
+    "🔧 Plusieurs défauts corrigés."
   ];
 
 

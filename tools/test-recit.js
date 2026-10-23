@@ -806,6 +806,7 @@ function indice(kind, id) {
     case "releve": return R.releve[id];
     case "registre": return R.registre[id];
     case "terminal": return R.terminal[id];
+    case "interface": return R.interface[id] && R.interface[id].t;
     case "q": return R.questions[id] && join([R.questions[id].titre].concat(R.questions[id].aides));
     default: return null;
   }
@@ -943,8 +944,50 @@ const INDICES = {
   c1969: [["frag", "plaque", /1969/], ["page", "p30", /plaque/]],
   cxyzzy: "clin d’œil gratuit, ne bloque rien (SECRETS §0.4)",
   cregistre: [["ui", "lune7", /trois, cinq, trois/], ["terminal", "ls", /CLÉ/], ["page", "p20", /Clause/], ["frag", "plaque", /\[main\] \[dabord\]/]],
-  ccapsule: [["ui", "capsule", /Fais confiance/], ["registre", "aide", /CAPSULES/], ["nuit", "9:2", /capsule/]]
+  ccapsule: [["ui", "capsule", /Fais confiance/], ["registre", "aide", /CAPSULES/], ["nuit", "9:2", /capsule/]],
+  signature: [["frag", "coeur", /en lettres et en signe/], ["registre", "arche", /DÉCLARÉ PAR : \S+ \[nourrice\]/], ["interface", "ornement", /\[nourrice\]/]],
+  noms: [["frag", "berceuse", /un nom brûlé et un numéro/], ["frag", "quai", /lit 7/], ["item", "miroir", /iris/], ["registre", "vivant", /CUVE/], ["q", "q_noms", /des noms portent des chiffres/]],
+  visage: [["nuit", "8:2", /je la dessine toujours/], ["frag", "cuves", /de nouveau pleine/], ["registre", "vivant", /ÉVEILS/], ["q", "q_oeil", /six éveils/]]
 };
+/* le nom juste de l’enfant du cycle, retrouvé comme le joueur : le chiffre de l’iris, puis le lit de la Chambre */
+function nommerJuste(E) {
+  const cuve = Number(E.interpolate("{iris}"));
+  const m = D.FRAGS.berceuse.t.match(new RegExp("([A-ZÀ-Ü][a-zà-ÿ]+) " + cuve + "[,.]"));
+  assert.ok(m, "le lit " + cuve + " se lit dans la Chambre");
+  return E.nommer(m[1].toLowerCase());
+}
+test("les noms : un essai par éveil, le surnom gardé, le nom juste, puis le même visage", () => {
+  const E = mk();
+  const r0 = E.nommer("Caillou");
+  assert.ok(!r0.ok && r0.surnom && E.nomDuCycle() === "Caillou" && !E.state.secrets.noms);
+  assert.strictEqual(E.nommer("x").why, "deja", "un seul essai par éveil");
+  E.newCycle();
+  const r1 = nommerJuste(E);
+  assert.ok(r1.ok && !r1.revoila && E.state.secrets.noms && !E.state.secrets.visage);
+  assert.ok(E.nomDuCycle() && E.nomDuCycle() !== "Caillou");
+  for (let i = 0; i < 5; i++) { E.newCycle(); assert.ok(E.peutNommer()); }
+  E.newCycle(); // six éveils plus tard : la même cuve
+  const r2 = nommerJuste(E);
+  assert.ok(r2.ok && r2.revoila && E.state.secrets.visage);
+  // Matines dit les noms donnés
+  assert.ok(E.interpolate("{noms}").length > 3);
+  // les noms ne sont pas en clair dans le fichier du récit
+  const src = fs.readFileSync(path.join(__dirname, "..", "js", "recit.js"), "utf8");
+  for (const c in R.noms) assert.ok(!src.includes("\"" + R.noms[c] + "\""), "un nom de cuve en clair");
+});
+test("la signature : le signe de l’ornement compris", () => {
+  const E = mk();
+  apprendre(E, "nourrice");
+  assert.ok(E.state.secrets.signature);
+  // une ancienne partie qui l’avait déjà compris le reçoit au chargement
+  const old = JSON.parse(mk().serialize());
+  old.signes = { nourrice: { vu: {}, lu: 1 } };
+  const E2 = mk(); E2.load(JSON.stringify(old));
+  assert.ok(E2.state.secrets.signature);
+});
+test("seize questions, chacune avec son déclencheur et sa résolution", () => {
+  assert.strictEqual(Object.keys(R.questions).length, 16);
+});
 test("catalogue : chaque secret a ses deux indices (au moins), dans deux lieux ou systèmes", () => {
   for (const s of D.SECRETS) {
     const L = INDICES[s.id];
@@ -983,6 +1026,11 @@ test("catalogue : chaque secret s’obtient (recette, air, code, lieu, ciel)", (
     } else if (s.id === "ccapsule") {
       E.setCapsuleText("Un mot.");
       E.terminal(CLE); E.terminal("capsule");
+    } else if (s.id === "signature") {
+      apprendre(E, "nourrice");
+    } else if (s.id === "noms" || s.id === "visage") {
+      nommerJuste(E);
+      if (s.id === "visage") { for (let i = 0; i < 6; i++) E.newCycle(); nommerJuste(E); }
     } else assert.fail("secret sans chemin connu : " + s.id);
     assert.ok(E.state.secrets[s.id], s.id + " : pas obtenu");
   }

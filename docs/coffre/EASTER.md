@@ -24,7 +24,7 @@
 
 | Id | Clin d’œil à | Déclencheur | Ce qui se passe |
 |---|---|---|---|
-| poudre_rouge | Minecraft (redstone) | Récolter de la pierre à la main : 1/8 000 | « Une poudre rouge, qui crépite entre tes doigts. » Objet `poudre_rouge` ; posé sur l’établi avec un manche, l’action Assembler donne une « Torche rouge » qui ne chauffe pas. |
+| poudre_rouge | Minecraft (redstone) | Récolter du caillou à la main (ou avec l’action ▶, jeu ouvert) : chance cumulée par caillou récolté, médiane à 20 000 cailloux (p = 1 − e^(−n·ln2/20 000) par récolte de n cailloux). Une seule fois par partie ; jamais pendant le rattrapage d’une absence ni par les extracteurs. | « Une poudre rouge, qui crépite entre tes doigts. » Objet `poudre_rouge` ; posé sur l’établi avec un manche, l’action Assembler donne une « Torche rouge » qui ne chauffe pas. |
 | coeur | Zelda (réceptacle) | 4 morceaux trouvés : 1/15 000 en récoltant des fibres, de l’os, du sable, de la glace lunaire (régolithe) | « Un quart de cœur. » Au quatrième : « Tu te sens un peu plus solide. » (aucun effet) |
 | anneau | Seigneur des anneaux | Explorer la Rivière lente au cycle 9 (le « neuvième porteur ») | Au fond du gué, un anneau tout simple. Toucher sa fiche : « Il est très lourd pour sa taille. Tu le reposes. » Il disparaît de la Réserve. |
 | d20 | Donjons & Dragons | Tailler un éclat avec de l’os : 1/20 000 | « Un caillou taillé à vingt faces. Tu le lances : 20. » La 2e fois : un nombre au hasard. |

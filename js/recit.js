@@ -652,6 +652,30 @@
         aides: ["Le Caveau a une salle de plus.", "Sur sa porte, le signe qui veut dire « avant tout le reste ».", "Apprends ce signe, puis explore la deuxième salle."],
         resolu: { frag: "originaux" }
       },
+      q_oeil: {
+        titre: "Le chiffre dans l’œil",
+        quand: { any: [{ made: "miroir" }, { secret: "miroir" }] },
+        aides: ["Le chiffre de ton œil change d’un éveil à l’autre.", "Compte les éveils entre deux mêmes chiffres dans l’œil.", "Tous les six éveils, le même enfant revient. Donne-lui son nom, puis redonne-le six éveils plus tard."],
+        resolu: { secret: "visage" }
+      },
+      q_noms: {
+        titre: "Les noms",
+        quand: { any: [{ frag: "berceuse" }, { frag: "quai" }] },
+        aides: ["Ton iris porte un chiffre. Ailleurs, des noms portent des chiffres.", "Les lits de la Chambre, ou les petits papiers du Quai. Dans le Journal, à l’onglet Mémoire, tu peux donner un nom.", "Cet éveil, tu es {nom} (cuve {cuve})."],
+        resolu: { secret: "noms" }
+      },
+      q_message: {
+        titre: "Le message",
+        quand: { all: [{ secret: "capsule" }, { cycle: 2 }] },
+        aides: ["La capsule ne t’a pas rendu tes mots.", "Le Registre garde l’original de tout.", "Au Registre, tape « capsule »."],
+        resolu: { secret: "ccapsule" }
+      },
+      q_comptoir: {
+        titre: "Sous le comptoir",
+        quand: { page: "p13" },
+        aides: ["Le Troqueur porte une inscription sur la poitrine.", "Deux signes : « pas », et un nom.", "Apprends les deux signes de sa poitrine. Il te montrera ce qu’il garde sous le bois."],
+        resolu: { feuillet: "celeste1" }
+      },
       q_rouge: {
         titre: "La lueur rouge",
         quand: { any: [{ has: "anticythere" }, { has: "lunette" }, { has: "radiotelescope" }] },
@@ -759,7 +783,7 @@
     },
 
     /* les clignotements du ciel, phrases séparées par « - » (base64) */
-    ciel: { lune: "MzUzLTE1MQ==", lueur: "MzUzNTU1LTMzMzUxNTIzMg==" },
+    ciel: { lune: "MzUzLTE1MQ==", lueur: "MzUzNTU1LTMzMzUxNTIzMg==", matines: "MTIzMQ==" },
 
     /* ------------------------------------------------- ANIMATIONS CÉLESTES */
     skyAnims: {
@@ -956,10 +980,21 @@
       vierges: "Les étiquettes sont vierges.",
       autres: "Et {n} autres."
     },
-    noms: { 7: "Gabin", 8: "Hélie", 9: "Inès", 10: "Jules", 11: "Kenza", 12: "Léon" }
+    /* le nom de l’enfant de chaque cuve (base64) : la réponse du secret des noms */
+    noms64: { 7: "R2FiaW4=", 8: "SMOpbGll", 9: "SW7DqHM=", 10: "SnVsZXM=", 11: "S2VuemE=", 12: "TMOpb24=" },
+    nommer: {
+      oui: "Oui.",
+      revoila: "Te revoilà.",
+      surnom: "Tu le diras désormais comme ça.",
+      deja: "Tu as déjà donné un nom pendant cet éveil.",
+      invite: "Donner un nom"
+    }
   };
 
   const R = D.RECIT;
+  /* les noms, décodés au chargement (jamais en clair dans le fichier) */
+  R.noms = {};
+  for (const c in R.noms64) R.noms[c] = deb64(R.noms64[c]);
   /* les mots des signes, décodés au chargement */
   for (const id in R.signes) R.signes[id].mot = deb64(R.signes[id].m);
   R.deb64 = deb64;
@@ -984,6 +1019,10 @@
   for (const id in R.melodies) {
     if (!exist.has(id) && R.melodies[id].compte !== false) D.SECRETS.push({ id, k: "air", n: R.melodies[id].n });
   }
+  /* les secrets « méta » : leur catégorie ne dit rien */
+  [["signature", "La signature"], ["noms", "Les noms"], ["visage", "Le même visage"]].forEach(([id, n]) => {
+    if (!exist.has(id)) D.SECRETS.push({ id, k: "?", n });
+  });
 
   if (typeof module !== "undefined" && module.exports) module.exports = R;
 })(typeof window !== "undefined" ? window : globalThis);
