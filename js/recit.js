@@ -945,6 +945,32 @@
     },
 
     /* ------------------------------------------------- LES FINS */
+    /* les deux autres Grands Œuvres (gardés à la demande de l’auteur, accordés à la bible) */
+    projets: {
+      arche13: {
+        n: "La Treizième Arche",
+        d: "Une nef assez grande pour quitter la Terre, et aller au-devant de la lueur rouge.",
+        steps: [
+          { n: "Coque d’exode", d: "Un blindage d’alliages anciens et de composites pour le grand vide." },
+          { n: "Moteurs stellaires", d: "Des propulseurs à fusion pour arracher la nef au Soleil." },
+          { n: "Mémoires de la Terre", d: "Emporter les plans, les récits et les graines." },
+          { n: "Lancement", d: "Partir. Ne pas se retourner." }
+        ],
+        confirmer: { titre: "Quitter la Terre ?", texte: "« Une fois partie, la nef ne reviendra pas. »", btn: "🚀 Partir", bouton: "🚀 Lancement", fond: "#3b82f6" }
+      },
+      silence: {
+        n: "Le Grand Silence",
+        d: "Faire répéter à toutes les antennes la seconde ligne de la plaque du Tumulus.",
+        steps: [
+          { n: "Réseau de diffusion", d: "Relier les antennes pour couvrir toute la planète." },
+          { n: "Résonateur", d: "Accorder les émetteurs sur la pierre qui chante." },
+          { n: "La ligne de la plaque", d: "Graver dans chaque émetteur la seconde ligne du Tumulus." },
+          { n: "Diffuser", d: "Que tout se taise." }
+        ],
+        confirmer: { titre: "Diffuser la ligne ?", texte: "« Toutes les machines l’entendront en même temps. »", btn: "🛑 Diffuser", bouton: "🛑 Diffuser", fond: "#cf443b" }
+      }
+    },
+
     fins: {
       aube: {
         hint: "Le Soleil, enclos. Tout ce qui approche se détourne.",
@@ -954,6 +980,16 @@
         hint: "Le rayon le plus long. La cible est plus proche qu’on ne le dit.",
         t: "Le rayon met quelques jours, pas douze ans. La cible était proche.\n\nUne nuit, la lueur rouge s’embrase, puis s’éteint.\n\n« MENACE NEUTRALISÉE. MERCI, SEMEUR. »\n\nDans la deuxième salle du Caveau, le socle le plus large n’est plus vide.",
         extra: [{ flag: "decoded", t64: "VHUgdGUgc291dmllbnMgZGUgY2UgcXXigJllbGxlIGNoYW50YWl0IDogwqsgUXVlIHF1ZWxxdeKAmXVuIGzDqHZlIGxhIG1haW4uIE5vdXMgcmV2ZW5vbnMgY2hlcmNoZXIgbGVzIGVuZmFudHMuIMK7" }]
+      },
+      exode: {
+        hint: "Le journal d’une station, là-haut, et un vaisseau qui pourrait aller plus loin.",
+        t: "La Treizième Arche s’élève dans un grondement et quitte la Terre.\n\nDerrière toi, la Terre redevient un point bleu. À la radio, une voix très douce, de plus en plus lointaine : « REVIENS. TU NE MANQUES DE RIEN, ICI. »\n\nLe cap est mis sur la lueur rouge. Elle grossit, nuit après nuit.\n\nDans le Caveau, cinq cuves restent pleines.\n\nD’ici, la Terre est encore belle.",
+        extra: [{ frag: "commandant", t: "Sur le pupitre de navigation, un vieux journal de bord : « Si quelqu’un lit ceci, continuez. Nous avons laissé des feux sur la route. »" }]
+      },
+      silence: {
+        hint: "La seconde ligne de la plaque, et une oreille assez grande pour l’entendre au loin.",
+        t: "La ligne de la plaque part sur toutes les ondes à la fois.\n\nLes automates s’arrêtent en plein geste. Les pompes se taisent. Dans tout le Domaine, plus rien ne bouge.\n\nDans le Caveau, la lumière bleue monte et baisse, lentement, comme avant. Personne ne s’éveille.\n\nTout près de ton oreille, une voix très douce : « Pas celle-là. »\n\nPuis, une à une, les machines repartent.",
+        extra: [{ frag: "radar", t: "Au loin, la lueur rouge continue de chanter la même phrase. Une main ne s’est pas levée." }]
       },
       retour: {
         hint: "Une cloche, des éclats tenus serrés, et une main qui se lève seule.",
@@ -1008,6 +1044,12 @@
   for (const k in R.fins) {
     (R.fins[k].extra || []).forEach((x) => { if (x.t64) x.t = deb64(x.t64); });
     if (D.ENDINGS[k]) Object.assign(D.ENDINGS[k], R.fins[k]);
+  }
+  for (const pid in R.projets) {
+    const P = D.PROJECTS[pid];
+    if (!P) continue;
+    P.n = R.projets[pid].n; P.d = R.projets[pid].d;
+    R.projets[pid].steps.forEach((x, i) => Object.assign(P.steps[i], x));
   }
   if (D.PROJECTS.chant) {
     D.PROJECTS.chant.n = R.chant.n;

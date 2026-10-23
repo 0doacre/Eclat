@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.2";
+  D.VERSION = "0.8.3";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -759,6 +759,20 @@
         { n: "", d: "", need: "coeur", action: "relais" },
         { n: "", d: "", scene: "lacher" },
         { n: "", d: "", melody: "frere", fire: true }
+      ] },
+    arche13: { n: "", ic: "🚀", req: "vaisseau", end: "exode", d: "",
+      steps: [
+        { n: "", d: "", cost: { titane: 2500, composite: 1500, metamateriau: 500 } },
+        { n: "", d: "", cost: { propulseur: 30, supra: 800, helium3: 4000 } },
+        { n: "", d: "", cost: { processeur: 1500, verre_trempe: 500, puce: 1000 } },
+        { n: "", d: "", fire: true }
+      ] },
+    silence: { n: "", ic: "🛑", req: "radiotelescope", end: "silence", d: "",
+      steps: [
+        { n: "", d: "", cost: { cable: 1500, bobine: 500, batterie: 200 } },
+        { n: "", d: "", cost: { diapason: 75, supra: 400, quartz: 2000 } },
+        { n: "", d: "", cost: { processeur: 500, puce: 1000, cristal_chantant: 150 } },
+        { n: "", d: "", fire: true }
       ] }
   };
 
@@ -766,7 +780,9 @@
   D.ENDINGS = { // les textes sont dans js/recit.js
     aube: { n: "L’Aube Éternelle", ic: "☀️" },
     brasier: { n: "Le Brasier", ic: "💥" },
-    retour: { n: "Les Matines", ic: "🔔" }
+    retour: { n: "Les Matines", ic: "🔔" },
+    exode: { n: "L’Exode", ic: "🚀" },
+    silence: { n: "Le Grand Silence", ic: "🛑" }
   };
   D.HINT_ENDING_COST = 75;
 
@@ -979,6 +995,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🏛️ Les deux Grands Œuvres disparus en 0.8.1 reviennent. Si tu en avais commencé un, tu reprends où tu en étais.",
     "📜 En haut de l’écran, le bouton Quêtes : l’objectif en cours, trois rituels par jour et les demandes du Troqueur.",
     "🤝 Plus tu livres au Troqueur, plus il te fait confiance. À chaque rang, ses livraisons rapportent plus de Traces.",
     "✦ La Mémoire des mains a de nouveaux niveaux, plus chers : de quoi dépenser tes Traces en fin de partie.",
