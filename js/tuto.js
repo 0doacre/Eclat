@@ -185,6 +185,43 @@
         steps: [
           { tab: "domaine", at: ".dom-oeuvre [data-feed]", text: "Un Grand Œuvre demande d’énormes quantités. Touche « Alimenter » : il prendra seul ce qu’il lui faut dans ta Réserve. Tu peux aussi tout apporter d’un coup.",
             done: () => !lone() }
+        ] },
+      { id: "dons", n: "Les dons", modal: true,
+        when: () => E.donsOffre().length > 0 && (!!document.querySelector(".modal:not(.hidden) .don") || (U.tab === "domaine" && !!document.querySelector("[data-dons]"))),
+        still: () => E.donsOffre().length > 0,
+        steps: [
+          { tab: "domaine", at: "[data-dons]", text: "Le Semeur d’avant a laissé trois dons. Touche cette ligne pour les voir.",
+            done: () => !!document.querySelector(".modal:not(.hidden) .don") || !E.donsOffre().length },
+          { modal: true, at: ".modal:not(.hidden) .don", back: 0,
+            text: "Tu en gardes un, pour ce cycle seulement. Prends celui qui t’aide là où tu bloques.", done: () => !E.donsOffre().length }
+        ] },
+      { id: "visiteur", n: "Un visiteur",
+        when: () => U.tab === "domaine" && !!document.querySelector(".visiteur"),
+        still: () => !!document.querySelector(".visiteur"),
+        steps: [
+          { tab: "domaine", at: ".visiteur", dim: false, text: "Quelqu’un passe. Touche-le avant qu’il parte : il laisse quelque chose.", done: () => !document.querySelector(".visiteur") }
+        ] },
+      { id: "fouille", n: "Fouiller de nouveau", modal: true,
+        when: () => !!document.querySelector(".modal:not(.hidden) .fouille-niv"),
+        still: () => !!document.querySelector(".modal:not(.hidden) .fouille-niv"),
+        steps: [
+          { modal: true, at: ".modal:not(.hidden) .fouille-niv", back: 0,
+            text: "Un lieu déjà exploré se fouille de nouveau, en trois temps de plus en plus longs. Ça continue jeu fermé : tu reviens chercher ce qu’il a donné.", next: true }
+        ] },
+      { id: "figures", n: "Les figures du ciel",
+        when: () => U.tab === "cosmos" && !!document.querySelector('[data-ct="figures"]'),
+        still: () => U.tab === "cosmos",
+        steps: [
+          { tab: "cosmos", at: '[data-ct="figures"]', text: "Les figures : chaque fragment trouvé est une étoile, chaque signe une petite figure. Une étoile pâle est un lieu repéré, pas encore exploré.",
+            done: () => U.cosmosTab === "figures" },
+          { tab: "cosmos", text: "Touche une étoile ou une figure pour rouvrir sa fiche.", next: true }
+        ] },
+      { id: "seuil", n: "Les paliers d’un gisement", modal: true,
+        when: () => !!document.querySelector(".modal:not(.hidden) .seuil"),
+        still: () => !!document.querySelector(".modal:not(.hidden) .seuil"),
+        steps: [
+          { modal: true, at: ".modal:not(.hidden) .seuil", back: 0,
+            text: "Plus un gisement porte d’extracteurs, plus il rend : un palier à 10, puis à 25, 50 et 100.", next: true }
         ] }
     ];
 

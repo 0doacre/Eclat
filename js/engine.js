@@ -585,7 +585,8 @@
       const R = REG[zid];
       if (!R) return null;
       const bonus = R.tap && !R.tap.sans && R.tap.mult > 1;
-      return { n: R.n, t: R.t, ok: R.ok || "", etat: R.tap && R.tap.sans ? (regleSans(R.tap) ? "ok" : "gene") : "neutre", bonus };
+      const av = R.tap && R.tap.sans ? R.tap : R.chaleur;
+      return { n: R.n, t: R.t, ok: R.ok || "", etat: av && av.sans ? (regleSans(av) ? "ok" : "gene") : "neutre", bonus };
     };
     function tapYield(res, zid) {
       const c = E.cache();
@@ -2915,6 +2916,8 @@
       let r = 0, n = 0, f = 1;
       const rg = REG[e.z] && REG[e.z].ext;
       if (rg) { for (const t in e.u) n += e.u[t]; if (n > rg.max) f = (rg.max + (n - rg.max) * rg.mult) / n; }
+      const ch = REG[e.z] && REG[e.z].chaleur;
+      if (ch && !regleSans(ch)) f *= ch.mult;
       for (const t in e.u) {
         const it = item(t);
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
