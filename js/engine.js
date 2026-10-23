@@ -267,6 +267,7 @@
     const item = (id) => D.ITEMS[id];
     const has = (id) => (S.inv[id] || 0) > 0;
     const count = (id) => S.inv[id] || 0;
+    const REG = D.REGLES || {}; // une règle par terre (voir data.js)
     const isUnique = (it) => !!UNIQUE[it.t] || (it.t === "relic" && !!it.r);
     const isScaled = (it) => !!SCALED[it.t];
     E.item = item; E.has = has; E.count = count; E.isUnique = isUnique; E.isScaled = isScaled;
@@ -428,7 +429,12 @@
       E.emit("struct");
     }
     E.passCost = function (zid) {
-      const k = memV("chemins"), out = {};
+      let k = memV("chemins");
+      for (const z in REG) {
+        const m = REG[z].remise;
+        if (m && m.vers === zid) k *= 1 - m.par * Math.min(m.max, (S.exp && S.exp.done && S.exp.done[z]) || 0);
+      }
+      const out = {};
       for (const i in PASS[zid].cost) out[i] = Math.max(1, Math.ceil(PASS[zid].cost[i] * k));
       return out;
     };
@@ -517,9 +523,18 @@
     }
     E.advanceRitual = advanceRitual;
 
+    /* Une règle par terre (D.REGLES) : ce qu’elle change à la récolte à la main */
+    const regleSans = (r) => !!(r && r.sans && r.sans.some((i) => count(i) >= 1));
+    const regleTap = (zid) => { const r = REG[zid] && REG[zid].tap; return !r || regleSans(r) ? 1 : r.mult; };
+    E.regle = function (zid) {
+      const R = REG[zid];
+      if (!R) return null;
+      const bonus = R.tap && !R.tap.sans && R.tap.mult > 1;
+      return { n: R.n, t: R.t, ok: R.ok || "", etat: R.tap && R.tap.sans ? (regleSans(R.tap) ? "ok" : "gene") : "neutre", bonus };
+    };
     function tapYield(res, zid) {
       const c = E.cache();
-      return (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
+      return regleTap(zid) * (item(res).b || 1) * (c.tap[res] || 1) * (c.tap[zid] || 1) * (c.tap["*"] || 1) * c.echo * memV("recolte") * transV("trans_main") * skillSpeed("recolte");
     }
     E.tapYield = tapYield;
     E.tap = function (res, zid) {
@@ -2834,12 +2849,14 @@
     E.freeExt = freeExt;
     /* production d’une exploitation, par seconde */
     function extOut(e, c) {
-      let r = 0;
+      let r = 0, n = 0, f = 1;
+      const rg = REG[e.z] && REG[e.z].ext;
+      if (rg) { for (const t in e.u) n += e.u[t]; if (n > rg.max) f = (rg.max + (n - rg.max) * rg.mult) / n; }
       for (const t in e.u) {
         const it = item(t);
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
-      return r;
+      return r * f;
     }
     E.extOut = (e) => extOut(e, E.cache());
     E.domExt = (z, res) => S.dom.ext[extKey(z, res)] || null;
@@ -3371,6 +3388,65 @@
       const next = ranks.find((r) => r.req > cnt) || null;
       return { cnt, cur, next };
     };
+
+    /* ---------------------------------------------------- LE TROQUEUR PARLE
+     * Une réplique à la fois, tirée parmi celles que le rang de confiance, le cycle, l’âge et
+     * ce que le joueur a trouvé ou porte permettent. Rien ne se redit à l’identique : les
+     * répliques entendues sont gardées dans S.meta.troc (jamais effacées à la relève), sauf les
+     * conseils marqués « renouv », qui reviennent une fois par relève. */
+    function trocState() {
+      const m = S.meta;
+      if (!m.troc || typeof m.troc !== "object" || Array.isArray(m.troc)) m.troc = { vus: {}, dernier: null, refus: 0 };
+      return m.troc;
+    }
+    const trocData = () => RECIT.troc || {};
+    function trocDispo(l) {
+      const T = trocState();
+      const v = T.vus[l.id];
+      if (v && !(l.renouv && v < (S.cycle || 1))) return false;
+      if (l.apres && !T.vus[l.apres]) return false;
+      if ((l.rang || 0) > E.troqueurRep().cur.lvl) return false;
+      return !l.cond || cond(l.cond);
+    }
+    E.troqueurThemes = function () {
+      const T = trocData();
+      return (T.themes || []).map((th) => ({ id: th.id, n: th.n, dispo: (T.lignes || []).filter((l) => l.th === th.id && trocDispo(l)).length }));
+    };
+    E.troqueurParle = function (th) {
+      if (!E.comptoirOpen()) return { ok: false, why: "closed" };
+      const T = trocData(), st = trocState();
+      if (!(T.themes || []).some((x) => x.id === th)) return { ok: false, why: "theme" };
+      const pool = (T.lignes || []).filter((l) => l.th === th && trocDispo(l));
+      let out;
+      if (pool.length) {
+        const l = pool[Math.min(pool.length - 1, Math.floor(rand() * pool.length))];
+        st.vus[l.id] = S.cycle || 1;
+        st.dernier = { id: l.id, th };
+        out = { ok: true, id: l.id, th, vide: false, t: interpolate(l.t) };
+      } else {
+        const R = T.refus || [];
+        const i = st.refus | 0;
+        st.refus = i + 1;
+        st.dernier = { id: null, th, refus: i };
+        out = { ok: true, th, vide: true, t: R.length ? interpolate(R[i % R.length]) : "" };
+      }
+      E.emit("troc", out);
+      E.emit("struct");
+      return out;
+    };
+    /* la dernière parole, qui reste affichée tant qu’il n’en dit pas une autre */
+    E.troqueurDernier = function () {
+      const d = S.meta && S.meta.troc && S.meta.troc.dernier;
+      if (!d) return null;
+      const T = trocData();
+      if (d.id) {
+        const l = (T.lignes || []).find((x) => x.id === d.id);
+        return l ? { th: d.th, vide: false, t: interpolate(l.t) } : null;
+      }
+      const R = T.refus || [];
+      return R.length ? { th: d.th, vide: true, t: interpolate(R[(d.refus | 0) % R.length]) } : null;
+    };
+    E.troqueurDispo = () => E.troqueurThemes().reduce((a, x) => a + x.dispo, 0);
 
     /* Livrer une demande du Troqueur */
     E.deliverAsk = function (idx) {
@@ -3921,6 +3997,20 @@
       if (!o.eventsSeen || typeof o.eventsSeen !== "object" || Array.isArray(o.eventsSeen)) o.eventsSeen = {};
       if (o.termMode !== "reg" && o.termMode !== "arche") o.termMode = (o.flags && o.flags.registre) ? "reg" : "arche";
       if (!o.meta.mem || typeof o.meta.mem !== "object") o.meta.mem = {};
+      // ce que le Troqueur a déjà dit : un champ par défaut, des numéros de cycle, jamais plus
+      {
+        const t = o.meta.troc, ok = t && typeof t === "object" && !Array.isArray(t);
+        const vus = {};
+        if (ok && t.vus && typeof t.vus === "object" && !Array.isArray(t.vus)) {
+          for (const id in t.vus) { const c = Math.floor(Number(t.vus[id])); if (c >= 1) vus[id] = c; }
+        }
+        const d = ok && t.dernier && typeof t.dernier === "object" ? t.dernier : null;
+        o.meta.troc = {
+          vus,
+          dernier: d && typeof d.th === "string" ? { id: typeof d.id === "string" ? d.id : null, th: d.th, refus: Math.max(0, Math.floor(Number(d.refus)) || 0) } : null,
+          refus: Math.max(0, Math.floor(ok ? Number(t.refus) : 0) || 0)
+        };
+      }
       // les réminiscences déjà lues (avant qu’on les retienne) : celles des objets déjà faits
       if (!o.meta.ev || typeof o.meta.ev !== "object") { o.meta.ev = {}; for (const id in o.made || {}) if (o.made[id] > 0 && D.EVENTS[id]) o.meta.ev[id] = 1; }
       if (!o.meta.ruins || typeof o.meta.ruins !== "object" || Array.isArray(o.meta.ruins)) {

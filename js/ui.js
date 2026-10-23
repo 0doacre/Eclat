@@ -453,7 +453,7 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML, uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
@@ -1371,7 +1371,7 @@
       return line('<div class="grow" data-goto="' + id + '"><div class="small"><span class="step-badge">✦ Étape clé</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Une recette nouvelle</b>") + "</div>" +
         (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
-        '</div><button class="btn small pri" data-gotab="atelier">Chercher</button>');
+        '</div><button class="btn small pri" data-gotab="atelier">Tenter</button>');
     }
     if (E.queued(id) > 0) return line('<span class="small">✋ En cours de fabrication : ' + esc(it.n.toLowerCase()) + ".</span>");
     const b = E.blocker(id);

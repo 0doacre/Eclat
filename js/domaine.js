@@ -11,6 +11,7 @@
   function create(api) {
     const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
     const uiSigne = api.uiSigne || (() => "");
+    const recitInline = api.recitInline || ((t) => esc(t));
     const itemPill = api.itemPill || ((id) => esc(id));
     const I = D.ITEMS;
     const S = () => E.state;
@@ -79,6 +80,13 @@
         "</div>";
     }
 
+    /* la règle de la terre, en une ligne : ce qui la distingue des autres */
+    function regleHTML(z) {
+      const r = E.regle(z);
+      if (!r) return "";
+      const ok = r.etat === "ok";
+      return '<p class="dom-regle' + (ok ? " ok" : r.etat === "gene" ? " gene" : "") + '"><b>' + esc(r.n) + "</b> · " + esc(ok && r.ok ? r.ok : r.t) + "</p>";
+    }
     function terreHTML(z) {
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
@@ -88,6 +96,7 @@
         const it = I[id];
         if (it && it.t === "ext" && it.z === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
       }
+      h += regleHTML(z);
       deps.forEach((d) => { h += gisHTML(z, d); });
       if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ici, rien ne se récolte à la main : pose des extracteurs.</p>';
       void st;
@@ -346,6 +355,7 @@
           '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
           '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +
           '<button class="' + (curTab === "demandes" ? "on" : "") + '" data-m="ctab" data-t="demandes">Demandes</button>' +
+          '<button class="' + (curTab === "parler" ? "on" : "") + '" data-m="ctab" data-t="parler">Parler</button>' +
           '</div>';
 
         if (curTab === "vendre") {
@@ -369,6 +379,15 @@
             h += '<h3 class="sub" style="margin-top:16px">Pages</h3>';
             h += '<div class="comptoir-list">' + buyPages.map(buyPageRowHTML).join("") + '</div>';
           }
+        } else if (curTab === "parler") {
+          const TR = (E.RECIT && E.RECIT.troc) || {};
+          const last = E.troqueurDernier ? E.troqueurDernier() : null;
+          h += '<div class="troc-parole">' + (last
+            ? '<p class="serif">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + "</p>"
+            : '<p class="small muted"><i>' + esc(TR.intro || "") + "</i></p>") + "</div>";
+          h += '<p class="tiny muted center">' + esc(TR.consigne || "") + "</p>";
+          h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
+            '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + "</button>").join("") + "</div>";
         } else if (curTab === "demandes") {
           const asks = E.troqueurAsks ? E.troqueurAsks() : [];
           const next = (st.comptoir && st.comptoir.next) || 0;
@@ -402,6 +421,11 @@
           ctab: (b) => {
             curTab = b.dataset.t;
             A.click();
+            return redraw();
+          },
+          parler: (b) => {
+            const r = E.troqueurParle(b.dataset.th);
+            if (r.ok && !r.vide) A.page(); else A.click();
             return redraw();
           },
           sell: (b) => {

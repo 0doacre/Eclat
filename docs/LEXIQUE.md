@@ -57,6 +57,7 @@ Chaque fiche affiche la sorte d’objet et une phrase qui dit à quoi elle sert 
 | **Traces ✦** | Laissées par chaque passage franchi ; achètent la Mémoire des mains. |
 | **Comptoir, écus** | Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus deviennent des Traces à la relève. |
 | **Demande du Troqueur** | Marchandage proposé au Comptoir : livrer des objets fabriqués contre des Traces immédiates. |
+| **Parler** | Onglet du Comptoir : le Troqueur dit une réplique sur un thème choisi. Jamais deux fois la même (sauf les conseils, une fois par relève). Il ne dit que ce qu’on lui demande. |
 | **Relève** | Recommencer le monde en gardant ses recettes. Le bouton dit « Passer le relais ». |
 | **Ruine** | Ce qu’un Semeur a construit attend le suivant. Se répare sur place pour une fraction de son coût d’origine. |
 | **Grand Œuvre** | Chantier final qui mène à une fin. |

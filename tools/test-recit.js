@@ -160,6 +160,10 @@ function allTexts() {
     (q.aides || []).forEach((a, i) => out.push(["question " + id + " aide " + (i + 1), a]));
   }
   for (const id in R.feuillets) out.push(["feuillet " + id, R.feuillets[id].t]);
+  // ce que dit le Troqueur : chaque réplique, ses thèmes, ses refus
+  R.troc.lignes.forEach((l) => out.push(["troc " + l.id, l.t]));
+  R.troc.themes.forEach((x) => out.push(["troc thème " + x.id, x.n]));
+  R.troc.refus.concat([R.troc.intro, R.troc.consigne]).forEach((t, i) => out.push(["troc refus " + i, t]));
   for (const c in R.nuits) R.nuits[c].t.forEach((t, i) => out.push(["nuit " + c + " " + i, t]));
   const walk = (o, where) => {
     if (typeof o === "string") out.push([where, o]);
@@ -1183,6 +1187,94 @@ test("fins : cinq ; Matines dit les noms et finit sur une ligne seule", () => {
   D.PROJECTS.brisemonde.steps.forEach((s) => { if (s.cost) { for (const k in s.cost) E.add(k, s.cost[k]); E.contribute("brisemonde"); } });
   E.fire("brisemonde");
   assert.deepStrictEqual(fin.extra, []);
+});
+
+console.log("Récit : le Troqueur parle");
+const BANNIS_TROC = /minecraft|zelda|mario|\blink\b|zerator|squeezie|antoine daniel|castlevania|vampire survivors|donjons|dragons|anneaux|frodon|indiana|portal|glados|kaamelott|ast[ée]rix|ob[ée]lix|douglas adams|pok[ée]mon|konami/i;
+test("Troqueur : une trentaine de répliques, des thèmes, des conseils et des clins d’œil", () => {
+  const L = R.troc.lignes, ids = L.map((l) => l.id);
+  assert.strictEqual(new Set(ids).size, ids.length, "identifiants uniques");
+  assert.ok(L.length >= 30 && L.length <= 45, "une trentaine de répliques bien écrites : " + L.length);
+  const th = R.troc.themes.map((x) => x.id);
+  assert.ok(th.length >= 6 && new Set(th).size === th.length);
+  for (const t of th) assert.ok(L.filter((l) => l.th === t).length >= 3, t + " : au moins trois répliques");
+  assert.ok(R.troc.themes.every((x) => x.n.length <= 18), "libellés courts pour un téléphone");
+  assert.ok(R.troc.refus.length >= 3, "plusieurs refus");
+  assert.ok(L.filter((l) => l.renouv).length >= 8, "des conseils qui reviennent");
+  assert.ok(L.filter((l) => l.cond && l.cond.has).length >= 4, "des clins d’œil qui demandent une chose en poche");
+  assert.ok(L.filter((l) => l.th === "clients").length >= 8);
+  for (const l of L) {
+    assert.ok(Number.isInteger(l.rang) && l.rang >= 0 && l.rang <= 4, l.id + " : rang");
+    assert.ok(th.includes(l.th), l.id + " : thème");
+    if (l.cond) checkCond(l.cond, "troc " + l.id);
+    if (l.apres) assert.ok(ids.includes(l.apres) && l.apres !== l.id, l.id + " : après quoi ?");
+  }
+});
+test("Troqueur : écriture (lexique, style, aucun nom réel, aucune solution)", () => {
+  for (const l of R.troc.lignes) {
+    const t = l.t;
+    assert.ok(/^« .+ »$/.test(t), l.id + " : une parole entre guillemets");
+    assert.ok(t.length <= 175, l.id + " : trop long (" + t.length + ")");
+    assert.ok(!/\bverser\b|\bstocks?\b|\bjalons?\b|\bzone\b|\bmati[èe]re/i.test(t), l.id + " : un mot du lexique à éviter");
+    assert.ok(!/—|--/.test(t), l.id + " : tiret cadratin");
+    assert.ok((t.match(/\b(c’est|ça|ce sont)\b/gi) || []).length <= 1, l.id + " : « c’est / ça » en série");
+    assert.ok(!BANNIS_TROC.test(t), l.id + " : un nom réel");
+    assert.ok(!/clause|matines|berceuse|cuve|poings|halte|main d’abord|capsule|registre|seuil|\\barche\\b|kher/i.test(t.replace(/\[nourrice\]/g, "")), l.id + " : trop près de l’intrigue");
+    const phrases = t.replace(/^« | »$/g, "").split(/(?<=[.?!])\s+/);
+    assert.ok(phrases.length <= 5, l.id + " : trop de phrases");
+    assert.ok(phrases.every((p) => p.split(/\s+/).length <= 28), l.id + " : phrase trop longue");
+    assert.ok(!/ [,;]/.test(t) && !/\.\.\./.test(t), l.id + " : ponctuation");
+  }
+  // le Troqueur n’est « pas » à la Nourrice : il ne la nomme qu’en signe, et seulement une fois ce signe compris
+  const nomm = R.troc.lignes.filter((l) => /\[nourrice\]/.test(l.t));
+  assert.ok(nomm.length >= 1);
+  for (const l of nomm) {
+    assert.deepStrictEqual(l.cond, { signe: "nourrice" }, l.id + " : seulement quand le signe est compris");
+    assert.ok(/ne lui dois rien|comme à toi/.test(l.t), l.id + " : il n’est d’aucun camp");
+  }
+  assert.ok(!R.troc.lignes.some((l) => /\b(sers?|obéis|appartiens)\b/.test(l.t)), "il ne sert personne");
+  // un marchand parle de ce qu’il voit : chaque thème a au moins une réplique sans condition d’avancement
+  for (const t of R.troc.themes) assert.ok(R.troc.lignes.some((l) => l.th === t.id && !l.cond && l.rang === 0) || t.id === "ciel" || t.id === "clients", t.id + " : de quoi commencer");
+});
+test("Troqueur : le lieu caché ou le secret dont il parle a deux indices ailleurs", () => {
+  const AILLEURS = {
+    t3: [["frag", "gue2", /marches/], ["page", "p23", /cloche retournée/], ["q", "q_marches", /cloche/]],
+    t4: [["frag", "porte", /sans poignée ni serrure/], ["page", "p12", /aiguille/], ["teaser", "mine:porte_scellee", /fer tremble/]],
+    c5: [["page", "p13", /\[nepas\] \[nourrice\]/], ["q", "q_comptoir", /signes/], ["feuillet", "emile1", /Elle veille/]],
+    s3: [["q", "q_rouge", /groupes/], ["ui", "kher0", /petits groupes/], ["ui", "lune7", /petits groupes/]],
+    t6: [["teaser", "plaine:tombe", /creuser/], ["teaser", "lisiere:cercle", /vent/]]
+  };
+  for (const id in AILLEURS) {
+    const l = R.troc.lignes.find((x) => x.id === id);
+    assert.ok(l, id);
+    const bons = AILLEURS[id].filter(([k, i, re]) => re.test(indice(k, i) || ""));
+    assert.ok(bons.length >= 2, id + " : moins de deux indices ailleurs que chez le Troqueur");
+  }
+  // il ne nomme jamais un lieu caché ni sa solution
+  for (const l of R.troc.lignes) assert.ok(!/cercle de pierres|caveau|escalier noyé|replat|\\bquai\\b|poings|deuxième salle|cerf-volant|boussole|cloche\b/i.test(l.t.replace(/de quoi garder l’air/, "")), l.id + " : nomme une solution");
+});
+test("Troqueur : toutes les répliques se disent un jour, et jamais deux fois", () => {
+  const E = mk();
+  E.state.zones.plaine = true;
+  E.state.meta.troqueurDelivered = 35; E.state.cycle = 7; E.state.age = 12;
+  for (const id of ["poudre_rouge", "anneau_lourd", "quart_coeur", "de_vingt", "fouet_cuir", "lunette"]) E.add(id, 1);
+  E.state.frags.gue2 = true; E.state.frags.porte = true; E.state.frags.journal = true;
+  E.state.livre.p.p01 = 1;
+  apprendre(E, "nourrice");
+  const dit = [];
+  for (const t of R.troc.themes) for (let i = 0; i < 25; i++) { const r = E.troqueurParle(t.id); if (r.vide) break; dit.push(r.id); }
+  assert.strictEqual(new Set(dit).size, dit.length, "aucune répétition");
+  // tout, sauf ce qui n’a de sens qu’avant d’avoir lu ses feuilles
+  assert.deepStrictEqual(R.troc.lignes.map((l) => l.id).filter((i) => !dit.includes(i)).sort(), []);
+  // les signes de la réplique s’affichent comme des signes tant qu’on ne les a pas compris
+  const E2 = mk();
+  const Sg = require("../js/signes.js");
+  const html = Sg.renderSigneToken("nourrice", { recit: R, state: E2.state, seeSigne: E2.seeSigne, lieu: "Le Comptoir" });
+  assert.ok(/<svg/.test(html), "le signe est dessiné avant d’être compris");
+});
+test("Troqueur : le tirage ne dépend que du hasard du moteur, pas d’un ordre fixe", () => {
+  const prem = (r) => { const E = createEngine({ now: () => T, rand: () => r }); E.state.zones.plaine = true; E.state.meta.troqueurDelivered = 8; E.add("poudre_rouge", 1); return E.troqueurParle("marchandises").id; };
+  assert.notStrictEqual(prem(0), prem(0.99));
 });
 
 console.log("Récit : les anciennes parties");
