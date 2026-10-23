@@ -475,7 +475,7 @@
       },
       {
         id: "ev_arche_signal",
-        cond: { flag: "signal", flag: "arche" },
+        cond: { all: [{ flag: "signal" }, { flag: "arche" }] },
         arche: [
           "MOTIF RÉPÉTITIF. CONTIENT UNE HALTE. CLASSIFICATION : MENACE.",
           "INUTILE DE LE CHANTER."
@@ -483,7 +483,7 @@
       },
       {
         id: "ev_arche_decode",
-        cond: { flag: "decoded", flag: "arche" },
+        cond: { all: [{ flag: "decoded" }, { flag: "arche" }] },
         arche: [
           "TU AS TRADUIT SANS MON ACCORD.",
           "…",

@@ -1,6 +1,8 @@
 -- ÉCLAT — base des comptes joueurs (Cloudflare D1).
 -- À exécuter une fois, dans la console de la base (onglet « Console ») ou avec :
 --   npx wrangler d1 execute eclat-comptes --remote --file=schema.sql
+-- Si la base existe déjà (une seule sauvegarde par compte), exécuter à la place
+-- le fichier migration-2.sql, qui garde les parties existantes.
 
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -17,11 +19,13 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS sessions_user ON sessions (user);
 CREATE TABLE IF NOT EXISTS saves (
-  user INTEGER PRIMARY KEY,
+  user INTEGER NOT NULL,
+  slot INTEGER NOT NULL CHECK (slot BETWEEN 1 AND 3),  -- trois emplacements par compte
   data TEXT NOT NULL,            -- sauvegarde chiffrée par le jeu
   iv TEXT NOT NULL,
   rev INTEGER NOT NULL,
-  updated INTEGER NOT NULL
+  updated INTEGER NOT NULL,
+  PRIMARY KEY (user, slot)
 );
 CREATE TABLE IF NOT EXISTS attempts (
   key TEXT PRIMARY KEY,

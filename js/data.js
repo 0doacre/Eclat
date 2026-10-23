@@ -901,7 +901,7 @@
         { n: "Mise à feu", d: "Il ne reste qu’à appuyer.", fire: true }
       ] },
     chant: { n: "Les Matines", ic: "🔔", req: "traducteur", end: "retour",
-      d: "Réveiller ceux qui dorment avec la seule chose que la pierre bleue et les enfants reconnaissent toutes les deux.",
+      d: "Réveiller ceux qui dorment avec la seule chose que la pierre bleue et les enfants reconnaissent tous les deux.",
       steps: [
         { n: "La Cloche", d: "Une cloche assez grande pour que la pierre bleue la répète dans chaque cuve.", cost: { cloche: 1, cristal_chantant: 380, alliage_ancien: 500, diapason: 75 } },
         { n: "Couper le relais", d: "Au Cœur, là où le relais commence. Avec ce qu’ils tenaient.", need: "coeur", action: "relais" },
@@ -973,7 +973,7 @@
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
     ["hache_pierre", "Avec un tranchant de pierre, tu abattrais bien plus de bois. Les outils multiplient tes récoltes."],
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer : la pioche ouvre le chemin vers les Collines."],
-    { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les Collines sont raides. Pour y monter, taille des marches : dépose les pierres taillées pour ouvrir la voie." },
+    { k: "pass", z: "collines", n: "Vers les Collines", txt: "Les Collines sont raides. Pour y monter, il faut des marches : dépose les matériaux nécessaires." },
     ["automate_bois", "Tes mains se lassent de refaire les mêmes gestes. Un automate les referait à ta place."],
     { k: "line", n: "Faire tourner ton automate", txt: "Lance une commande d’une recette à une ressource, déjà fabriquée à la main (des manches, des cordes, des éclats…) : ton automate s’y met tout seul." },
     ["four", "Le feu de camp ne chauffe plus assez. Le four en argile monte jusqu’à 1 100 °C."],
@@ -1053,7 +1053,7 @@
       id: "trans_main",
       n: "Surmultiplication des mains",
       ic: "⚡",
-      d: "Multiplie la récolte manuelle par {v}.",
+      d: "Récolte à la main ×{v}.",
       v: (l) => Math.pow(2, l),
       cost: (l) => Math.round(50 * Math.pow(2.2, l))
     },
@@ -1061,7 +1061,7 @@
       id: "trans_terre",
       n: "Pulsion des gisements",
       ic: "🌋",
-      d: "Multiplie la récolte des extracteurs par {v}.",
+      d: "Récolte des extracteurs ×{v}.",
       v: (l) => Math.round(Math.pow(1.75, l) * 100) / 100,
       cost: (l) => Math.round(70 * Math.pow(2.1, l))
     },
@@ -1069,7 +1069,7 @@
       id: "trans_mach",
       n: "Surcadence des ateliers",
       ic: "⚙️",
-      d: "Multiplie la vitesse des machines et commandes par {v}.",
+      d: "Vitesse des machines et des commandes ×{v}.",
       v: (l) => Math.round(Math.pow(1.6, l) * 100) / 100,
       cost: (l) => Math.round(85 * Math.pow(2.0, l))
     }

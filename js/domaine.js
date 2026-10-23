@@ -118,7 +118,7 @@
       const info = E.machInfo(key), rate = depRate(z, res);
       const used = e ? Object.keys(e.u).map((t) => many(t, e.u[t])).join(", ") : "";
       let sub = fmt(st.inv[res] || 0);
-      sub = '<span data-c="' + res + '">' + sub + "</span> disponibles" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
+      sub = 'Disponible : <span data-c="' + res + '">' + sub + "</span>" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
       const right = e && info.s === "off" ? '<span class="dom-rate off">⏸ en pause</span>'
         : rate > 0 ? '<span class="dom-rate" data-rate="' + key + '">+' + perTime(rate) + "</span>"
         : d.hand ? '<span class="dom-rate hand">🖐️ à la main</span>' : "";
@@ -279,7 +279,7 @@
         const qAll = nAll > 0 ? E.sellQuote(id, nAll) : 0;
         return '<div class="comptoir-row" data-sline="' + id + '">' +
           '<div class="comptoir-head" data-goto="' + id + '" role="button" tabindex="0" title="' + esc(I[id].n) + ' (toucher pour inspecter)">' + icon(id, "sm") +
-          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> disponibles</span></div>' +
+          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · tu en as <span data-c="' + id + '">' + fmt(have) + '</span></span></div>' +
           '<span class="tiny muted">' + fmtNum(p) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini" data-m="sell" data-id="' + id + '" data-n="' + n10 + '" title="Vendre 10 %"><b>10 %</b> <small>+' + fmtNum(q10) + '</small></button>' +
@@ -296,7 +296,7 @@
         const ecus = S().ecus || 0;
         return '<div class="comptoir-row" data-bline="' + id + '">' +
           '<div class="comptoir-head" data-goto="' + id + '" role="button" tabindex="0" title="' + esc(I[id].n) + ' (toucher pour inspecter)">' + icon(id, "sm") +
-          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · <span data-c="' + id + '">' + fmt(have) + '</span> disponibles</span></div>' +
+          '<div class="grow"><b>' + esc(I[id].n) + '</b><span class="tiny muted"> · tu en as <span data-c="' + id + '">' + fmt(have) + '</span></span></div>' +
           '<span class="tiny muted">' + fmtNum(c1) + ' écu l’unité</span></div>' +
           '<div class="comptoir-btns">' +
           '<button class="btn mini" data-m="buyres" data-id="' + id + '" data-n="100"' + (ecus < c100 ? ' disabled' : '') + '>+100 <small>' + fmt(c100) + ' écus</small></button>' +
@@ -395,6 +395,7 @@
       }
 
       openModal({
+        reopen: () => comptoirSheet(curTab), // revenir ici depuis une fiche ouverte d’une pastille
         html: comptoirModalHTML(),
         refresh: () => comptoirModalHTML(),
         on: {
@@ -454,7 +455,7 @@
               return redraw();
             }
             A.click(); vibe(8);
-            toast("+" + fmt(n) + " " + esc(I[id].n) + " reçus", { key: "comptoir" });
+            toast("Acheté : " + fmt(n) + " " + esc(I[id].n) + ".", { key: "comptoir" });
             return redraw();
           },
           buypage: (b) => {
