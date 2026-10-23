@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.8.1";
+  D.VERSION = "0.8.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -979,13 +979,13 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📜 En haut de l’écran, le bouton Quêtes : l’objectif en cours, trois rituels par jour et les demandes du Troqueur.",
+    "🤝 Plus tu livres au Troqueur, plus il te fait confiance. À chaque rang, ses livraisons rapportent plus de Traces.",
     "🔍 À l’Atelier, « Étudier tout » étudie d’un coup toutes tes ressources. Le filtre « À tenter » garde celles qui servent encore, et les autres pâlissent.",
-    "🗺️ Les lieux cachés se laissent mieux deviner : chacun est annoncé ailleurs, au moins deux fois.",
-    "🔧 Plusieurs défauts corrigés dans le Domaine, le Ciel et le Registre.",
-    "📜 Registre de quêtes : scénario narratif par chapitres, rituels quotidiens des Semeurs et prestige commercial du Troqueur.",
-    "⚡ Codex d’artisanat & En stock : nouveau filtre rapide « En stock », pastille d’alerte et fabrication instantanée sans ouvrir la fiche.",
-    "🤝 Contrats du Troqueur : 5 rangs de réputation marchande avec bonus croissants en Traces et livraisons directes depuis le Registre.",
-    "🤏 Confort visuel : mode compact/dense pour le Domaine, animations tactiles et puces réactives d’alerte."
+    "⚡ Dans le Carnet, le filtre « En stock » montre ce que tu peux fabriquer tout de suite.",
+    "🤏 Le Domaine a une vue serrée, pour voir plus de lignes d’un coup.",
+    "🗺️ Les lieux cachés se laissent mieux deviner.",
+    "🔧 Plusieurs défauts corrigés."
   ];
 
 

@@ -1267,7 +1267,7 @@
     const rits = sum.rituals || [];
     const doneRits = rits.filter((r) => r.claimed).length;
     let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
-      '<button class="gmiles" data-open-quests title="Ouvrir le Registre de Quêtes">📜 Registre ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + '</button>' +
+      '<button class="gmiles" data-open-quests title="Ouvrir les quêtes">📜 Quêtes ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + '</button>' +
       (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
     if (ml.length) {
       const pct = Math.round((md / ml.length) * 100);
@@ -3422,11 +3422,11 @@
       const rep = E.troqueurRep();
       const tab = U.questTab;
 
-      let h = '<div class="kicker">Livre de bord</div><h2>Registre de Quêtes</h2>';
+      let h = '<h2>Quêtes</h2>';
       h += '<div class="quest-tabs">' +
         '<button class="' + (tab === "scenario" ? "on" : "") + '" data-mqtab="scenario">📜 Scénario' + (sc.ready ? ' <span class="qdot"></span>' : '') + '</button>' +
         '<button class="' + (tab === "rituals" ? "on" : "") + '" data-mqtab="rituals">🕯️ Rituels' + (sum.readyRitual ? ' <span class="qdot"></span>' : '') + '</button>' +
-        '<button class="' + (tab === "troqueur" ? "on" : "") + '" data-mqtab="troqueur">⚖️ Contrats Troqueur' + (sum.payableAsk ? ' <span class="qdot"></span>' : '') + '</button>' +
+        '<button class="' + (tab === "troqueur" ? "on" : "") + '" data-mqtab="troqueur">⚖️ Troqueur' + (sum.payableAsk ? ' <span class="qdot"></span>' : '') + '</button>' +
         '</div>';
 
       if (tab === "scenario") {
