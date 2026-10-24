@@ -802,11 +802,15 @@
       return { ok: true, n: out, bonus: bonus * it.r[2], first };
     }
 
+    /* Les âges se franchissent un par un. Un objet n’est à la portée de la joueuse que si son âge est atteint
+     * ou si c’est le suivant (la porte de l’âge d’après) ; les objets secrets et les airs n’ont pas d’âge. */
+    const ageOK = (id) => { const it = item(id); return !it || it.sec || it.path || it.t === "curio" || it.t === "relic" || it.a <= S.age + 1; };
+    E.ageOK = ageOK;
     function onFirstCraft(id) {
       const it = item(id);
       stamp("m:" + id);
       const e = it.e || {};
-      if (!it.sec && !it.path && it.a > S.age) setAge(it.a);
+      if (!it.sec && !it.path && it.a > S.age) setAge(Math.min(it.a, S.age + 1)); // jamais plus d’un âge d’un coup
       if (e.zone) reachZone(e.zone);
       if (e.once && e.once.intu) S.intu += e.once.intu;
       if (it.sec) {
@@ -875,7 +879,8 @@
           addCurio("fouet");
         }
       }
-      const id = RECIPES[keyOf(g, ids)];
+      let id = RECIPES[keyOf(g, ids)];
+      if (id && !ageOK(id)) id = null; // un objet d’un âge trop lointain ne se découvre pas : l’essai ne donne rien
       if (id) {
         const b = blocker(id);
         if (b && b.why === "owned") return { kind: "owned", id };
@@ -1304,6 +1309,7 @@
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
+      if (!ageOK(id)) return { ok: false, why: "age" };
       const b = blocker(id);
       if (b) return { ok: false, why: b.why, info: b };
       if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
@@ -1353,6 +1359,7 @@
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
+      if (!ageOK(id)) return { ok: false, why: "age" };
       if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
       if (isUnique(it)) {
         times = 1;
@@ -1670,12 +1677,15 @@
     /* ------------------------------------------------------ carnet */
     E.carnet = function () {
       const out = [];
+      const suivant = {}; // ce que l’objectif en cours demande, même s’il est de l’âge d’après
+      { const g = E.guide && E.guide(); if (g) { if (g.step) suivant[g.step] = true; if (g.ob && g.ob.id) suivant[g.ob.id] = true; } }
       for (let a = 0; a <= Math.min(S.age + 1, D.AGES.length - 1); a++) {
         const list = [];
         for (const id in D.ITEMS) {
           const it = D.ITEMS[id];
           if (!it.r || it.a !== a || it.path) continue;
           if (it.sec && !S.known[id]) continue;
+          if (a > S.age && !S.known[id] && !(S.made[id] > 0) && !suivant[id]) continue; // la porte de l’âge d’après : seulement l’objectif et ce qu’on a déjà trouvé
           list.push(id);
         }
         out.push({ age: a, ids: list });
@@ -4605,6 +4615,14 @@
       if (S.flags.reExt) {
         for (const t in S.flags.reExt) for (let i = 0; i < S.flags.reExt[t]; i++) if (!E.domAutoExt(t)) break;
         delete S.flags.reExt;
+      }
+      // les gants (Désert) se fabriquaient dès la Plaine et faisaient sauter l’âge : on remet l’âge qu’on avait vraiment atteint
+      if (S.made.gants && !S.flags.ageGants) {
+        S.flags.ageGants = 1;
+        let vrai = 0;
+        for (const id in S.made) { const it = item(id); if (id !== "gants" && it && S.made[id] > 0 && !it.sec && !it.path && it.t !== "curio" && it.t !== "relic") vrai = Math.max(vrai, it.a || 0); }
+        for (const z in S.zones) if (S.zones[z] && ZONES[z] && ZONES[z].req && item(ZONES[z].req)) vrai = Math.max(vrai, item(ZONES[z].req).a || 0);
+        if (vrai < S.age) S.age = vrai;
       }
       if (!S.flags.ages) checkAges(true); // une partie d’avant les âges accomplis
       if (S.signes && S.signes.nourrice && S.signes.nourrice.lu) S.secrets.signature = true;

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.4";
+  D.VERSION = "0.9.5";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,7 +1071,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🔧 Deux petits défauts corrigés : le code Konami (les étoiles du ciel) et le bouton « Fabriquer maintenant » des Quêtes."
+    "🪜 Les âges se franchissent un par un. Un objet d’un âge trop lointain ne se découvre plus, et le Carnet ne montre de l’âge suivant que l’objectif et ce que tu as déjà trouvé.",
+    "🧤 Les gants de peau ne peuvent plus faire sauter l’âge. Une partie qui avait sauté retrouve son vrai âge."
   ];
 
 
