@@ -239,8 +239,8 @@
         if (E.addCurio("konami")) {
           A.secret && A.secret();
         }
-        if (root.EclatSky && root.EclatSky.boostStars) {
-          root.EclatSky.boostStars(60000);
+        if (window.EclatSky && window.EclatSky.boostStars) {
+          window.EclatSky.boostStars(60000);
         }
         toast("⭐ Trente étoiles de plus brillent dans la nuit.");
       }

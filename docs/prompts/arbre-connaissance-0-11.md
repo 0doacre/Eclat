@@ -21,21 +21,37 @@ raconte (ici : les âges).
 ## Le principe, et la contrainte qui compte
 
 Éclat se joue par la **découverte** : la joueuse tente des gestes avec des ressources et trouve elle-même les
-recettes. L'arbre **ne doit pas spoiler** ces recettes. Règle d'or : **rien d'inconnu n'est montré**.
-- Un nœud **allumé** : une recette que la joueuse connaît (`S.known`). Icône, nom, lignes vers ses
-  ingrédients.
+recettes. L'arbre doit **donner envie de chercher sans dire quoi chercher**. Le modèle voulu par l'auteur est
+celui de *Cell to Singularity* : des cases dont l'icône est **invisible**, reliées par un trait **pointillé et
+translucide** à ce qu'on connaît. On voit qu'**il y a quelque chose**, mais **quoi ?**
+
+Ce qui s'affiche, de plus clair à plus flou :
+- Un nœud **allumé** : une recette connue (`S.known`). Icône, nom, traits pleins vers ses ingrédients.
 - Une **matière brute** (sans recette) déjà vue (`S.seen`) : nœud simple, point de départ des traits.
-- L'**objectif en cours** (celui de `E.guide()` / `E.objective()`) : un nœud pâle nommé comme l'objectif le
-  nomme déjà (ce nom est public), avec ses traits **vers les ingrédients que la joueuse connaît déjà** seulement.
-- Les ressources **étudiées** (`S.studied`) portent déjà le nombre de recettes encore à trouver
-  (`E.reactions(id)`) : affiche-le en pastille sur le nœud (« ✦ 3 »), sans montrer de quoi il s'agit.
-- **Tout le reste n'existe pas à l'écran** : ni nom, ni icône, ni point d'interrogation qui trahit une recette
-  cachée, ni trait. Les recettes secrètes (`sec: true`, objets `curio`) ne figurent jamais tant qu'elles ne sont
-  pas connues. Un test le vérifie (voir plus bas).
+- Un nœud **fantôme** : une recette **pas encore trouvée**. Une case vide, **sans icône, sans nom, sans silhouette
+  qui trahisse l'objet** (même gabarit pour tous : pas de forme propre à l'objet), à peine teintée de la couleur de
+  son âge, reliée par un **trait pointillé translucide** à l'ingrédient qui y mène. Le fantôme ne dit **ni ce que
+  c'est, ni quel geste, ni quelles autres matières** : seulement « une recette part d'ici ».
+- L'**objectif en cours** (`E.guide()` / `E.objective()`) : un fantôme **plus marqué** (liseré, légère pulsation),
+  relié à ce que la joueuse connaît déjà ; il reste sans nom (le nom n'apparaît qu'une fois la recette trouvée ;
+  l'objectif, lui, est déjà dit en haut de l'écran).
+
+**Quels fantômes ?** C'est le point sensible : montrer tous les fantômes reviendrait à offrir gratuitement ce que
+coûte l'**Intuition** (« Étudier » une ressource dit combien de recettes elle cache encore ; voir `E.reactions`,
+`E.study`, `E.studyAll`). Règle par défaut, réglable dans une constante de données `D.ARBRE = { fantomes: "etudies" }` :
+- `"etudies"` (défaut) : un fantôme n'apparaît que sur les ressources **étudiées** (`S.studied`), autant que
+  `E.reactions(id)` en compte, et pour l'objectif en cours. Étudier devient ainsi visible dans l'arbre : « j'ai
+  étudié cette ressource, trois traits pointillés en partent ».
+- `"tous"` : un fantôme pour chaque recette dont **tous les ingrédients sont déjà vus** (le cas où l'auteur veut
+  que ce soit gratuit). Dans les deux cas : **jamais** de fantôme pour un objet `sec` ni `curio` (les recettes
+  secrètes n'existent pas à l'écran tant qu'elles ne sont pas connues), ni pour une recette dont un ingrédient est
+  encore inconnu, ni au-delà des âges déjà atteints plus un.
+Aucun autre indice ne doit fuiter : l'ordre des fantômes ne dépend pas de l'objet (positions tirées d'un rang
+stable, pas d'un tri par nom), et leur nombre n'est jamais affiché.
+- Une ressource **étudiée** porte en plus sa pastille « ✦ 3 » (le nombre de fantômes qui en partent).
 - Le **fond** est l'arbre des âges : 13 bandes (`D.AGES`, avec leur couleur `c` et leur nom), de l'Âge du Bois en
   bas à l'Âge Stellaire en haut (ou de gauche à droite, à toi de choisir ce qui marche le mieux sur un
-  téléphone en portrait ; justifie-le). Les bandes d'âges pas encore atteints sont **grisées et vides** :
-  elles donnent le sentiment de chemin à faire sans rien dévoiler.
+  téléphone en portrait ; justifie-le). Les bandes d'âges pas encore atteints sont **grisées et vides**.
 
 ## Où le mettre, et ce qu'on y fait
 
@@ -44,8 +60,8 @@ recettes. L'arbre **ne doit pas spoiler** ces recettes. Règle d'or : **rien d'i
 - On **déplace** l'arbre au doigt (glisser), on **zoome** (pincer, et boutons + / − / « Centrer ») ; la vue
   s'ouvre **centrée sur l'objectif en cours**, ou sur la dernière découverte.
 - **Toucher un nœud** ouvre la fiche de l'objet, comme partout ailleurs dans le jeu (le mécanisme existant :
-  `data-goto` / `openRecipe`, voir `js/atelier.js`). Un nœud pâle d'objectif ouvre la fiche de l'objectif.
-- En haut : un compteur sobre (« 37 recettes trouvées ») **sans total** : on ne dit pas combien il en reste.
+  `data-goto` / `openRecipe`, voir `js/atelier.js`). Un fantôme, lui, n'ouvre rien (voir plus bas).
+- En haut : un compteur sobre (« 37 recettes trouvées ») **sans total** : on ne dit pas combien il en reste. Toucher un fantôme n'ouvre pas de fiche : un petit message dit seulement « Pas encore trouvée. Tente des gestes avec ce qui l'entoure. » (à reformuler court, dans le ton du jeu).
 - **Nouvelle découverte** : le nœud apparaît avec un petit éclat (une fois), le trait vers ses ingrédients se
   dessine. Respecte le réglage « réduire les animations » (alors : simple apparition). Pas de son nouveau.
 - Les nœuds sont de **vrais boutons** (`<button>`, `aria-label` = le nom, focus clavier visible), de 44 px au
@@ -96,11 +112,14 @@ récit.** N'ouvre pas `docs/coffre/` ni `js/recit.js`. Liste les textes que tu a
 - Tests (un fichier `tools/test-arbre.js`, lancé depuis `tools/test.js` comme `test-figures.js`), avec des états
   construits dans le test :
   - **aucune fuite** : pour une partie neuve, puis une partie avancée, ni le nom, ni l'icône, ni l'id d'un objet
-    inconnu n'apparaît dans les données de rendu ; aucun objet `sec` ni `curio` inconnu ; aucun trait vers un
-    nœud absent ;
-  - les nœuds d'objectif ne portent que les traits vers des ingrédients connus ;
+    inconnu n'apparaît dans les données de rendu (un fantôme a un identifiant anonyme qui ne se déduit pas de
+    l'objet : par exemple un numéro de série dans l'ordre d'apparition, pas l'id de l'objet) ; aucun objet `sec`
+    ni `curio` inconnu, même comme fantôme ; aucun trait vers un nœud absent ;
+  - en mode `"etudies"`, aucun fantôme sur une ressource non étudiée (hors objectif) ; en mode `"tous"`, un
+    fantôme par recette inconnue dont tous les ingrédients sont vus, rien d'autre ;
+  - un fantôme et un nœud allumé de même âge ont le même gabarit (pas de forme qui trahisse l'objet) ;
   - positions **stables** (un nouveau nœud ne déplace pas les autres) et **sans chevauchement** ;
-  - le nombre de nœuds = recettes connues + matières vues + l'objectif ;
+  
   - durée de la mise en page < 100 ms sur une partie qui connaît toutes les recettes ;
   - une sauvegarde ancienne (`tools/fixtures/`) se charge et produit un arbre.
 - `D.VERSION = "0.11.0"` ; `D.CHANGES` : 2 ou 3 lignes claires pour le joueur ; mets à jour les assertions de

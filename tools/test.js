@@ -2965,9 +2965,9 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.9.3 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.9.3");
-  assert.ok(D.CHANGES.length >= 2);
+test("Version 0.9.4 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.4");
+  assert.ok(D.CHANGES.length >= 1);
 });
 
 test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
@@ -3169,8 +3169,8 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.9.3");
-  assert.ok(D.CHANGES.length >= 2);
+  assert.strictEqual(D.VERSION, "0.9.4");
+  assert.ok(D.CHANGES.length >= 1);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");

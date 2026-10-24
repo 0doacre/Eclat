@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, A, D, U, esc, fmt, fmtTime, cap1, needText, icon, itemPill, ingHTML, gesteChip, mainIngredient, isRawGather,
-      zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save
+      zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, chainCraft
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -368,7 +368,7 @@
           qmake: (b) => {
             const id = b.dataset.id;
             closeModal();
-            craftChain(id, 1);
+            chainCraft(b, id, 1);
             return true;
           }
         }
