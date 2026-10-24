@@ -29,10 +29,12 @@
       const sum = E.questSummary ? E.questSummary() : { rituals: [], hasReady: false };
       const rits = sum.rituals || [];
       const doneRits = rits.filter((r) => r.claimed).length;
+      // le premier âge d’abord : les Quêtes et le compteur d’étapes n’ont rien à dire avant
+      const tard = st.age > 0 || md > 0;
       let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
-        '<button class="gmiles" data-open-quests title="Ouvrir les quêtes">📜 Quêtes ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + '</button>' +
-        (ml.length ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
-      if (ml.length) {
+        (tard || sum.hasReady ? '<button class="gmiles" data-open-quests title="Ouvrir les quêtes">📜 Quêtes ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + "</button>" : "") +
+        (ml.length && tard ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
+      if (ml.length && tard) {
         const pct = Math.round((md / ml.length) * 100);
         h += '<div class="gprog-row" data-miles title="Progression de cet âge : ' + md + '/' + ml.length + ' étapes faites">' +
           '<div class="gprog-track"><i style="width:' + pct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></div>' +
@@ -150,9 +152,20 @@
     function passHTML(z) {
       const p = E.passInfo(z), st = S();
       if (!p || !p.ready) return "";
+      // les lieux de la terre actuelle : le passage ne s’ouvre qu’une fois qu’on les connaît
+      const lieux = p.lieux && p.lieux.left.length ? p.lieux : null;
+      const explore = !p.done && lieux
+        ? '<div class="small">Il reste ' + lieux.left.length + " lieu" + (lieux.left.length > 1 ? "x" : "") + " à explorer dans " + esc(zoneName(lieux.z)) + ".</div>" +
+          '<div class="row wrap" style="margin:6px 0">' +
+          (st.exp.active
+            ? '<span class="tiny muted">🧭 En route…</span>'
+            : '<button class="btn small pri" data-exp="' + lieux.z + '">🧭 Explorer</button><span class="tiny muted">' + esc(lieux.left[0].n) + "</span>") +
+          '<span class="tiny muted">' + lieux.done + " sur " + lieux.total + "</span></div>"
+        : "";
       return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
         '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
-        (p.done ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Déposer</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
+        explore +
+        (p.done || lieux ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Déposer</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
         '<div class="passcost small">' +
         Object.keys(p.cost).map((i) => {
           const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
@@ -169,6 +182,12 @@
     }
     function pour(z, btn) {
       const r = E.passPour(z), p = E.passInfo(z);
+      if (!r.ok && r.why === "lieux") {
+        A.fail(0);
+        toast((r.lieux.left.length > 1 ? "Il reste " + r.lieux.left.length + " lieux" : "Il reste un lieu") + " à explorer dans " + esc(zoneName(r.lieux.z)) + " avant ce passage.", { key: "pour" });
+        render(true);
+        return;
+      }
       if (!r.ok) {
         A.fail(0);
         toast("Ressources manquantes : tu n’as rien à déposer pour l’instant. Il faut encore " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
@@ -241,6 +260,8 @@
       const qBtn = $("#questBtn");
       if (!qBtn) return;
       const sum = E.questSummary();
+      // la puce arrive avec le premier âge (ou dès qu’une quête est prête)
+      qBtn.classList.toggle("hidden", !(S().age > 0 || sum.hasReady));
       const qSub = $("#questSub");
       const qDot = $("#questDot");
       const rits = sum.rituals;

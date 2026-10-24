@@ -493,6 +493,20 @@
       for (const i in PASS[zid].cost) out[i] = Math.max(1, Math.ceil(PASS[zid].cost[i] * k));
       return out;
     };
+    /* Ce qu’il reste à explorer dans la terre d’avant pour franchir un passage :
+     * le chemin se connaît en marchant. Ne comptent pas les lieux cachés, ceux
+     * qu’ouvre un objet d’une terre plus lointaine (on ne peut pas les explorer avant),
+     * ni les lieux d’à côté (ils s’ouvrent par une fouille). */
+    E.passLieux = function (zid) {
+      // le premier Semeur cherche son chemin ; les suivants se souviennent de la route
+      if (S.cycle > 1) return null;
+      const i = D.ZONES.findIndex((z) => z.id === zid), z = i > 0 ? D.ZONES[i - 1] : null;
+      if (!z || !z.exps) return null;
+      const done = (S.exp && S.exp.done && S.exp.done[z.id]) || 0;
+      const req = z.exps.map((x, k) => ({ x, k })).filter((o) => !o.x.hidden && !o.x.need && !o.x.cote); // pas les lieux d’à côté, qui s’ouvrent par une fouille
+      const left = req.filter((o) => o.k >= done).map((o) => ({ id: o.x.id, n: o.x.n, dur: o.x.dur }));
+      return { z: z.id, n: z.n, done: req.length - left.length, total: req.length, left };
+    };
     /* où en est un passage : possible (l’objet est fait), payé, ce qui reste */
     E.passInfo = function (zid) {
       const P = PASS[zid], p = S.pass[zid];
@@ -504,7 +518,8 @@
         need += cost[i]; got += g;
         if (g < cost[i]) left[i] = cost[i] - g;
       }
-      return { z: zid, P, cost, paid, left, ready: !!p && passAtteignable(zid), done: !!(p && p.done), frac: need ? got / need : 1, can: Object.keys(left).some((i) => (S.inv[i] || 0) >= 1) };
+      const lieux = E.passLieux(zid);
+      return { z: zid, P, cost, paid, left, lieux, ready: !!p && passAtteignable(zid), done: !!(p && p.done), frac: need ? got / need : 1, can: Object.keys(left).some((i) => (S.inv[i] || 0) >= 1) };
     };
     /* un passage n’apparaît que lorsque la terre d’avant est ouverte : l’objet-clé fabriqué en avance
      * (une pioche, un chariot…) le garde en réserve, sans le montrer ni le laisser payer */
@@ -517,6 +532,9 @@
     E.passPour = function (zid) {
       const p = S.pass[zid];
       if (!p || p.done || !passAtteignable(zid)) return { ok: false };
+      // le passage ne s’ouvre qu’une fois les lieux de la terre actuelle explorés
+      const lieux = E.passLieux(zid);
+      if (lieux && lieux.left.length) { E.emit("struct"); return { ok: false, why: "lieux", lieux }; }
       const cost = E.passCost(zid), gave = {};
       for (const i in cost) {
         const g = Math.min(Math.floor(S.inv[i] || 0), cost[i] - (p.paid[i] || 0));
