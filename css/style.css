@@ -1473,3 +1473,12 @@ h2 + .stamp { margin: -4px 0 8px; }
 .rel-reset li::before { content: "↺"; }
 .rel-gain { font-size: 13px; margin: 8px 0 2px; }
 .rel-gain b { color: var(--intu); }
+
+/* les illustrations des terres : l’île sur la Carte, le décor derrière la fiche du Domaine */
+.c-art { pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); }
+.c-hit { fill: transparent; stroke: none; }
+.dom-terre.a-decor { position: relative; isolation: isolate; border-radius: 14px; overflow: hidden; padding: 6px 8px 8px; }
+.dom-terre.a-decor::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--decor) center top / cover no-repeat; opacity: .2;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 100%); }
+body.theme-dark .dom-terre.a-decor::before { opacity: .3; }
+@media (prefers-reduced-data: reduce) { .dom-terre.a-decor::before { display: none; } }

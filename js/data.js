@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.12.0";
+  D.VERSION = "0.13.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,6 +1071,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗺️ La Carte et le Domaine sont illustrés : chaque terre a son île dessinée, et son paysage en fond de fiche.",
+    "🔦 Les images se chargent au fur et à mesure ; le jeu reste jouable sans elles.",
     "🌱 Les premières terres prennent plus de temps : avant d’ouvrir un passage, il faut avoir exploré les lieux de la terre où tu es.",
     "🧭 La fenêtre d’un passage dit alors ce qu’il reste à explorer, avec un bouton pour lancer l’exploration.",
     "✨ Des retours discrets quand une chose réussit : une étincelle au thermomètre quand il passe à « brûlant », la nouvelle terre qui s’allume, la pastille d’Intuition qui apparaît.",
