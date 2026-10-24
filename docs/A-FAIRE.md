@@ -6,9 +6,8 @@ Liste tenue à la main, du plus proche au plus lointain. Rien ici n'est un secre
 
 - **Onboarding 0.10** (`docs/prompts/onboarding-0-10.md`) : premières terres plus lentes, moins d'information
   d'un coup, du juice, la relève expliquée. Branche attendue : `deepseek-onboarding-0-10`.
-- **Arbre de connaissance 0.11** (`docs/prompts/arbre-connaissance-0-11.md`) : arbre des recettes dans le
-  Carnet, fantômes pointillés seulement pour l'objectif et les ressources étudiées, puis la Mémoire en arbre.
-  À faire **après** l'onboarding (les deux touchent le Carnet).
+- **Arbre de connaissance** : fait en 0.11.0 (Carnet, interrupteur Liste / Arbre). Reste le **deuxième temps** :
+  la Mémoire des mains en arbre ramifié (`js/memoire.js`), seulement la présentation.
 
 ## Juste après
 
