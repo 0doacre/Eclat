@@ -28,7 +28,7 @@ Avant d’écrire un texte affiché, vérifier ici le mot à employer, et lire `
 | **Gisement** | Une ressource dans une terre. Se récolte à la main, ou par extracteur. |
 | **Domaine** | L’écran de ce qui produit. |
 | **Atelier** | L’écran où l’on découvre. L’**établi** y reçoit trois ressources. |
-| **Carnet** | Les recettes connues (deuxième page de l’Atelier). |
+| **Carnet** | Les recettes connues, en liste ou en arbre (un onglet à part, entre l’Atelier et le Journal). |
 
 ## Sortes d’objets
 

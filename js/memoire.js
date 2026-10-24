@@ -262,6 +262,48 @@
       if (E.donsOffre().length) return '<div class="card memdon"><div class="row between"><span class="small">Trois dons t’attendent.</span><button class="btn small pri" data-m="dons">Choisir</button></div></div>';
       return "";
     }
+    /* ===== ARBRE DE LA MÉMOIRE (0.11) =====
+     * Les mêmes améliorations, présentées en branches qui montent depuis le Semeur. Rien ne change des coûts
+     * ni des effets : on touche un nœud, sa fiche s’affiche dessous, avec le même bouton d’achat que la liste. */
+    const MEM_BRANCHES = [
+      { id: "mains", n: "Les mains", ids: ["recolte", "oeil", "mains"] },
+      { id: "terre", n: "La terre", ids: ["extr", "chemins"] },
+      { id: "machines", n: "Les machines", ids: ["mach"] },
+      { id: "depart", n: "Le départ", ids: ["paquetage", "raccourci", "veille"] }
+    ];
+    const memNode = (id) => D.MEMOIRE.find((x) => x.id === id) || (D.TRANSCENDANCE || []).find((x) => x.id === id) || null;
+    function memArbreHTML() {
+      const st = S(), m = st.meta, can = E.canReleve(), gain = E.releveGain();
+      const branches = MEM_BRANCHES.map((b) => ({ n: b.n, ids: b.ids.filter((id) => D.MEMOIRE.some((x) => x.id === id)) }));
+      if (D.TRANSCENDANCE && D.TRANSCENDANCE.length) branches.push({ n: "Les résonances", ids: D.TRANSCENDANCE.map((x) => x.id), inf: true });
+      if (!memNode(U.memSel)) U.memSel = null;
+      const info = (id) => {
+        const x = memNode(id), inf = (D.TRANSCENDANCE || []).some((t) => t.id === id);
+        const l = inf ? E.transLvl(id) : E.memLvl(id), c = inf ? E.transCost(id) : E.memCost(id), max = !inf && c === undefined;
+        return { x, inf, l, c, max, ok: !max && m.traces >= c, soon: !max && m.traces < c && can && m.traces + gain >= c };
+      };
+      let h = '<div class="mtree" role="group" aria-label="Arbre de la Mémoire des mains">';
+      for (const b of branches) {
+        h += '<div class="mbr' + (b.inf ? " inf" : "") + '"><div class="mbn">' + esc(b.n) + "</div>";
+        // le premier nœud est en bas, au plus près du tronc ; la colonne se lit de bas en haut
+        h += '<div class="mchain">' + b.ids.map((id) => {
+          const n = info(id), cur = U.memSel === id;
+          const pips = n.inf ? "" : '<span class="mbar"><i style="width:' + Math.round((n.l / n.x.cost.length) * 100) + '%"></i></span>';
+          return '<button class="mnode' + (n.l ? " on" : "") + (n.max ? " max" : "") + (n.ok ? " can" : "") + (n.soon ? " soon" : "") + (cur ? " sel" : "") + '" data-m="memsel" data-id="' + id + '" aria-label="' + esc(n.x.n) + (n.inf ? ", niveau " + n.l : ", niveau " + n.l + " sur " + n.x.cost.length) + '"><span class="mic">' + n.x.ic + "</span>" + pips + (n.inf ? '<span class="mpips">' + n.l + "</span>" : "") + "</button>";
+        }).join("") + "</div></div>";
+      }
+      h += '</div><div class="mroot"><span>✦ ' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + "</span></div>";
+      const id = U.memSel;
+      if (!id) return h + '<p class="tiny muted center">Touche un point de l’arbre pour le lire.</p>';
+      const n = info(id), x = n.x;
+      const sv = (v) => String(v).replace(".", ",");
+      const now = x.d.replace("{v}", sv(x.v(n.l))).replace(/\.$/, ""), next = n.max ? "" : x.d.replace("{v}", sv(x.v(n.l + 1))).replace(/\.$/, "");
+      h += '<div class="mem sel"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + (n.inf ? "Niveau " + n.l : n.l + "/" + x.cost.length) + "</span></div>" +
+        '<div class="tiny muted">' + (n.l ? esc(now) : "") + (n.l && !n.max ? " → " : "") + (n.max ? "" : esc(next)) + "</div>" +
+        (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : "") + "</div>" +
+        (n.max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (n.ok ? " pri" : " nope") + (n.soon ? " soon" : "") + '" data-m="' + (n.inf ? "buytrans" : "buy") + '" data-id="' + id + '">' + fmt(n.c) + " ✦" + (n.soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
+      return h;
+    }
     /* ------------------------------------------------------------ MÉMOIRE DES MAINS
      * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
     function memHTML() {
@@ -273,6 +315,8 @@
         ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
         : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
         (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : nextPassHTML()) + "</div>";
+      h += memArbreHTML();
+      h += '<details class="mem-liste"><summary>Voir en liste</summary>';
       h += '<div class="mems">' + D.MEMOIRE.map((x) => {
         const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
         const now = x.d.replace("{v}", String(x.v(l)).replace(".", ",")), next = max ? "" : x.d.replace("{v}", String(x.v(l + 1)).replace(".", ","));
@@ -296,6 +340,7 @@
         }).join("") + "</div>";
       }
 
+      h += "</details>";
       const ech = Object.values(m.endings || {}).reduce((a, b) => a + b, 0);
       // une case par fin atteinte, ou dont le Grand Œuvre est en vue : rien ne dit combien il y en a
       const endKeys = Object.keys(D.ENDINGS).filter((k) => (m.endings || {})[k] || Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
@@ -353,6 +398,7 @@
         html: memHTML(),
         onClose,
         on: {
+          memsel: (b) => { U.memSel = b.dataset.id; A.click(); swapModal(Object.assign(o, { html: memHTML() })); return true; },
           buy: (b) => {
             if (E.memBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([10, 30, 10]); save(); }
             else {
