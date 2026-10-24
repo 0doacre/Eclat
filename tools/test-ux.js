@@ -159,6 +159,8 @@ async function run() {
     ok(m.bar.every((b) => b.w >= 43.9 && b.h >= 43.9), nom + " : cibles de la barre < 44 px " + JSON.stringify(m.bar.filter((b) => b.w < 43.9 || b.h < 43.9)));
     ok(m.k === 1 && m.etiquettes > 3 && m.plusPetite >= 11, nom + " : étiquettes de " + m.plusPetite + " px à l’échelle " + m.k + " (" + m.etiquettes + " visibles)");
     ok(m.debord <= 0, nom + " : débordement horizontal " + m.debord);
+    const rail = await p.evaluate(() => [...document.querySelectorAll("#v-arbre .arb-rb")].map((b) => { const r = b.getBoundingClientRect(); return { w: r.width, h: r.height }; }));
+    ok(rail.length === 13 && rail.every((b) => b.w >= 43.9 && b.h >= 43.9), nom + " : les âges de la réglette font au moins 44 px " + JSON.stringify(rail.filter((b) => b.w < 43.9 || b.h < 43.9)));
     // le rail : toucher un âge y amène la vue, et le repère « au centre » suit
     await p.locator('#v-arbre [data-arbage="2"]').click();
     await p.waitForTimeout(450);
@@ -274,6 +276,21 @@ async function run() {
     }
     ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   }
+  // La première relève (cycle 1, premier parcours fini) : la fenêtre s’ouvre, le relais se passe, le savoir reste.
+  p = await page(390, false);
+  await p.evaluate(() => {
+    const st = window.__eclat.E.state;
+    st.meta.parcours = true; st.meta.forcedDone = false; st.cycle = 1; st.flags.extDone = true; st.exp.done.lisiere = 1;
+    st.known.manche = 1;
+    window.__eclat.E.emit("struct");
+  });
+  await p.waitForFunction(() => !document.querySelector("#modal").classList.contains("hidden") && /La nuit tombe/.test(document.querySelector("#modal").innerText), null, { timeout: 5000 });
+  ok(!p.errors.length, "Première relève : la fenêtre s’ouvre sans erreur " + p.errors.join(" | "));
+  await p.waitForTimeout(3400); // le bouton apparaît en fondu
+  await p.locator('#modal [data-m="go"]').click();
+  await p.waitForFunction(() => window.__eclat.E.state.cycle === 2, null, { timeout: 5000 });
+  ok(await p.evaluate(() => window.__eclat.E.state.known.manche > 0 && window.__eclat.E.state.meta.forcedDone), "Première relève : le cycle 2 commence, le savoir est conservé");
+  ok(!p.errors.length, "Première relève : aucune erreur après le relais " + p.errors.join(" | ")); await p.context().close();
   console.log("UX mobile : " + checks + " contrôles réussis.");
 }
 run().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); server.close(); });

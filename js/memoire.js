@@ -519,6 +519,7 @@
     }
 
     function openForcedReleve() {
+      const st = S();
       openModal({
         persistent: true,
         html: '<div class="kicker">La relève</div><h2>La nuit tombe</h2>' +

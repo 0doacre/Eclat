@@ -3088,8 +3088,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.15.1 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.15.1");
+test("Version 0.15.2 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.15.2");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3304,7 +3304,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.15.1");
+  assert.strictEqual(D.VERSION, "0.15.2");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

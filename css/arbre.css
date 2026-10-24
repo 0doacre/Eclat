@@ -116,13 +116,16 @@ body.has-act #v-arbre.on { padding-bottom: calc(var(--nav) + var(--safe-b) + 66p
 .arb-rail {
   position: absolute; right: 0; top: 0; bottom: 0; width: 44px; z-index: 5; display: flex; flex-direction: column;
   touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer;
+  overflow-y: auto; scrollbar-width: none; /* petit écran : 13 âges de 44 px ne tiennent pas, la réglette défile */
   background: linear-gradient(to left, color-mix(in srgb, var(--bg2) 82%, transparent), transparent);
 }
 .arb-rb {
-  flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent;
+  flex: 1 1 0; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent;
   font: 700 11px/1 var(--sans); color: var(--muted); position: relative;
 }
 .arb-rb span { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; border-radius: 11px; }
+.arb-rail::-webkit-scrollbar { display: none; }
+.arb-rail.defile { touch-action: pan-y; }
 .arb-rb.lointain { opacity: .45; }
 .arb-rb.ici span { background: var(--ac); color: #1a1208; }
 .arb-rb.centre span { box-shadow: 0 0 0 2px var(--acc); color: var(--text); }
