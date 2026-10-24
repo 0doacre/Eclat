@@ -55,6 +55,34 @@ async function layout(p, name) {
   ok(!r.small.length, name + " : cibles < 44 px " + r.small.join(", "));
   ok(r.age <= 0, name + " : nom de l’âge tronqué");
 }
+async function pageBrut(width, o) {
+  const ctx = await browser.newContext({ viewport: { width, height: width === 320 ? 568 : 844 }, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" });
+  const q = await ctx.newPage();
+  q.errors = []; q.on("pageerror", e => q.errors.push(e.message));
+  await q.addInitScript(raw => { localStorage.setItem("eclat.save.v1", raw); }, saveOpt(o));
+  await q.goto("http://127.0.0.1:" + server.address().port);
+  await q.waitForFunction(() => !!window.__eclat);
+  return q;
+}
+/* la partie avancée, avec une version d’origine, une absence (en secondes) et le guide à la demande */
+function saveOpt(o) {
+  const E = createEngine();
+  E.load(fs.readFileSync(path.join(ROOT, "tools/fixtures/save-v5-age8-usine.json"), "utf8"));
+  const st = E.state;
+  st.t = Date.now() - (o.absent || 0) * 1000; st.introSeen = true; st.flags.ver = o.ver || D.VERSION;
+  Object.assign(st.settings, { tuto: !!o.tuto, sound: false, visiteurs: false, largeText: false, theme: "light" });
+  return E.serialize();
+}
+const inter = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+async function etatFenetres(q) {
+  return q.evaluate(() => {
+    const m = document.querySelector("#modal"), visible = !m.classList.contains("hidden"), h = visible && m.querySelector("h2");
+    const tu = document.querySelector(".tuto:not(.hidden)"), bub = tu && tu.querySelector(".tu-bub");
+    const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }; };
+    return { visible, titre: h ? h.textContent : "", bulle: !!tu, rect: bub ? box(bub) : null,
+      onglets: box(document.getElementById("tabs")), entete: box(document.getElementById("top")), file: window.__eclat.U.fen.attente() };
+  });
+}
 async function run() {
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
@@ -138,6 +166,64 @@ async function run() {
   const restored = createEngine(); restored.load(exported);
   ok(restored.state.known.manche && restored.state.age === 7, "Export réimportable sans perte de recettes ni d’âge");
   ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
+  // 0.13.3 : les fenêtres du lancement et du retour d’absence
+  for (const width of [390, 320]) {
+    // une partie qui revient d’une version précédente, après 400 s, le guide actif : les fenêtres passent une à une, le guide attend
+    p = await pageBrut(width, { ver: "0.12.0", absent: 400, tuto: true });
+    const vus = [], rects = [];
+    for (let i = 0; i < 70; i++) {
+      await p.waitForTimeout(100);
+      const s = await etatFenetres(p);
+      if ((s.visible || s.file.length) && s.bulle) ok(false, width + " : une bulle de tutoriel pendant une fenêtre ou une file");
+      if (s.rect) rects.push(s);
+      if (s.visible && !vus.includes(s.titre)) { vus.push(s.titre); await p.waitForTimeout(450); await p.evaluate(() => window.__eclat.closeModal()); }
+    }
+    ok(vus.length === 2 && vus[0] === "Ta partie a été conservée" && vus[1] === "Bon retour !", width + " : les fenêtres passent dans l’ordre, une à une (" + vus.join(" ; ") + ")");
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+
+    // une absence de 90 s n’ouvre aucune fenêtre, un message discret suffit
+    p = await pageBrut(width, { absent: 90 });
+    let fenetre = false, message = false;
+    for (let i = 0; i < 30; i++) {
+      await p.waitForTimeout(100);
+      if (await p.evaluate(() => { const m = document.querySelector("#modal"); return !m.classList.contains("hidden") && /Bon retour/.test(m.innerText); })) fenetre = true;
+      if (await p.locator('#toasts [data-k="absence"]').count()) message = true;
+    }
+    ok(!fenetre, width + " : 90 s d’absence n’ouvrent pas « Bon retour »");
+    ok(message, width + " : 90 s d’absence disent ce qui a été récolté, sans fenêtre");
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+
+    // une absence de 400 s ouvre « Pendant ton absence »
+    p = await pageBrut(width, { absent: 400 });
+    let retour = false;
+    for (let i = 0; i < 60 && !retour; i++) {
+      await p.waitForTimeout(100);
+      const s = await etatFenetres(p);
+      if (s.visible && s.titre === "Bon retour !") retour = true;
+      else if (s.visible) { await p.waitForTimeout(450); await p.evaluate(() => window.__eclat.closeModal()); }
+    }
+    ok(retour, width + " : 400 s d’absence ouvrent « Bon retour »");
+    await p.context().close();
+
+    // pendant une bulle de tutoriel, chaque onglet répond, et la bulle ne couvre ni la barre d’onglets ni l’en-tête
+    p = await pageBrut(width, { tuto: true });
+    for (let i = 0; i < 20; i++) { // les nouveautés d’une partie migrée passent d’abord
+      await p.waitForTimeout(150);
+      if (await p.evaluate(() => !document.querySelector("#modal").classList.contains("hidden"))) { await p.waitForTimeout(450); await p.evaluate(() => window.__eclat.closeModal()); }
+      else if (!(await p.evaluate(() => window.__eclat.U.fen.attente().length))) break;
+    }
+    await p.waitForFunction(() => !!document.querySelector(".tuto:not(.hidden)"), null, { timeout: 8000 });
+    const s0 = await etatFenetres(p);
+    ok(s0.bulle && !inter(s0.rect, s0.onglets) && !inter(s0.rect, s0.entete), width + " : la bulle ne couvre ni les onglets ni l’en-tête");
+    for (const tab of ["carte", "atelier", "carnet", "journal", "domaine"]) {
+      await p.locator('#tabs [data-tab="' + tab + '"]').tap();
+      await p.waitForTimeout(250);
+      ok(await p.evaluate(x => window.__eclat.U.tab === x, tab), width + " : l’onglet " + tab + " répond pendant une bulle");
+      const s = await etatFenetres(p);
+      if (s.rect) ok(!inter(s.rect, s.onglets) && !inter(s.rect, s.entete), width + " : bulle hors de la barre et de l’en-tête sur " + tab);
+    }
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+  }
   console.log("UX mobile : " + checks + " contrôles réussis.");
 }
 run().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); server.close(); });

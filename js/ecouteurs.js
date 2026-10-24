@@ -18,6 +18,8 @@
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
+    /* le retour d’absence, en secondes : en dessous du premier seuil rien, jusqu’au second un message discret, au-delà une fenêtre */
+    const ABSENCE_MESSAGE = 60, ABSENCE_FENETRE = 300;
 
     /* la relève forcée s’ouvre une fois par cycle (sa fenêtre est dans js/memoire.js) */
     let forcedModalShown = false;
@@ -229,8 +231,14 @@
         }
       });
       E.on("offline", (o) => {
-        if (o.dt < 60) return;
+        if (o.dt < ABSENCE_MESSAGE) return;
         const top = Object.keys(o.gains).filter((k) => I[k]).sort((a, b) => o.gains[b] - o.gains[a]).slice(0, 10);
+        if (o.dt < ABSENCE_FENETRE) {
+          // une absence courte (une autre application, l’écran éteint) : un mot, pas une fenêtre qui bloque
+          if (top.length) toast("Pendant ton absence : " + top.slice(0, 2).map((k) => "+" + fmt(o.gains[k]) + " " + esc(I[k].n)).join(", "), { key: "absence" });
+          if (o.exp) toast("Ton exploration est terminée.", { key: "absence-exp" });
+          return;
+        }
         if (!top.length && !o.exp && o.dt < 600) return;
         U.offline = { dt: o.dt, top, gains: o.gains, exp: o.exp };
       });
