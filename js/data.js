@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.14.0";
+  D.VERSION = "0.14.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1076,6 +1076,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗣️ Le Troqueur dialogue vraiment : à chaque sujet, tu poses ta question et il répond, au lieu de réciter une phrase dans le vide.",
     "🌳 L’arbre prend tout l’écran : une barre fine en haut, et le reste pour l’arbre. Un bouton « Voir dans l’arbre » sur la fiche d’un objet, et « Dans l’arbre » sur ton objectif, t’y emmènent tout droit.",
     "📜 Une colonne d’âges sur le bord de l’écran : touche un âge, ou glisse le doigt dessus, et l’arbre s’y rend.",
     "🔍 De plus loin, l’arbre se lit par âge : le nom de chaque âge et le nombre de recettes que tu y as trouvées. De plus près, les noms et les traits sont plus gros.",

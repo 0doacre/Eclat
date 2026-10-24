@@ -3561,13 +3561,14 @@
         const l = pool[Math.min(pool.length - 1, Math.floor(rand() * pool.length))];
         st.vus[l.id] = S.cycle || 1;
         st.dernier = { id: l.id, th };
-        out = { ok: true, id: l.id, th, vide: false, t: interpolate(l.t) };
+        out = { ok: true, id: l.id, th, vide: false, q: l.q || "", t: interpolate(l.t) };
       } else {
         const R = T.refus || [];
         const i = st.refus | 0;
         st.refus = i + 1;
         st.dernier = { id: null, th, refus: i };
-        out = { ok: true, th, vide: true, t: R.length ? interpolate(R[i % R.length]) : "" };
+        const th0 = (T.themes || []).find((x) => x.id === th);
+        out = { ok: true, th, vide: true, q: (th0 && th0.q) || "", t: R.length ? interpolate(R[i % R.length]) : "" };
       }
       E.emit("troc", out);
       E.emit("struct");
@@ -3580,10 +3581,11 @@
       const T = trocData();
       if (d.id) {
         const l = (T.lignes || []).find((x) => x.id === d.id);
-        return l ? { th: d.th, vide: false, t: interpolate(l.t) } : null;
+        return l ? { th: d.th, vide: false, q: l.q || "", t: interpolate(l.t) } : null;
       }
       const R = T.refus || [];
-      return R.length ? { th: d.th, vide: true, t: interpolate(R[(d.refus | 0) % R.length]) } : null;
+      const th0 = (T.themes || []).find((x) => x.id === d.th);
+      return R.length ? { th: d.th, vide: true, q: (th0 && th0.q) || "", t: interpolate(R[(d.refus | 0) % R.length]) } : null;
     };
     E.troqueurDispo = () => E.troqueurThemes().reduce((a, x) => a + x.dispo, 0);
 

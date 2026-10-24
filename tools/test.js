@@ -3072,8 +3072,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.14.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.14.0");
+test("Version 0.14.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.14.1");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3288,7 +3288,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.14.0");
+  assert.strictEqual(D.VERSION, "0.14.1");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
@@ -3444,7 +3444,9 @@ test("Parler : jamais deux fois la même réplique, puis il répond qu’il n’
   assert.strictEqual(E.troqueurDispo() >= 0, true);
   const r1 = dire(E, "comptoir"), r2 = dire(E, "comptoir");
   assert.ok(r1.vide && r2.vide && r1.t && r2.t && r1.t !== r2.t, "les refus ne se répètent pas de suite");
+  assert.ok(r1.q && r2.q, "les refus répondent aussi à une question du joueur");
   assert.strictEqual(E.troqueurDernier().t, r2.t);
+  assert.strictEqual(E.troqueurDernier().q, r2.q, "la question reste affichée avec la réponse");
 });
 test("Parler : ce que le joueur a en poche ouvre des répliques précises", () => {
   const E = trocOuvert(() => 0);
@@ -3452,6 +3454,7 @@ test("Parler : ce que le joueur a en poche ouvre des répliques précises", () =
   E.add("poudre_rouge", 1);
   const r = dire(E, "clients");
   assert.strictEqual(r.id, "p1");
+  assert.ok(/^« .+ »$/.test(r.q), "il répond à une question précise");
   assert.ok(dire(E, "clients").vide);
 });
 test("Parler : les conseils reviennent à chaque relève, le reste non", () => {
@@ -3472,6 +3475,7 @@ test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro san
   const E2 = createEngine({ now: () => T, rand: () => 0 });
   E2.load(E.serialize());
   assert.ok(E2.state.meta.troc.vus.c1 && E2.troqueurDernier().t === E.troqueurDernier().t);
+  assert.strictEqual(E2.troqueurDernier().q, E.troqueurDernier().q, "la question est retrouvée après sauvegarde");
   for (const mauvais of ["x", 7, [], { vus: "x", dernier: 3, refus: "y" }, { vus: { c1: -4, z: "q", c2: 2.7 }, dernier: { th: 4 }, refus: -3 }]) {
     const o = JSON.parse(E.serialize());
     o.meta.troc = mauvais;
