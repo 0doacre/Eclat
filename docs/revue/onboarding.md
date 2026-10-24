@@ -115,11 +115,35 @@ Les textes du récit (fragments, Livre, signes, fins) ne sont pas ici.
 | Construits : 3 | Carnet, sous un extracteur ou une machine (avant : « Possédés : 3 »). |
 | Tes machines | Machines, titre de la liste des machines en ta possession. |
 | Tu n’as pas encore de machine. La première se découvre à l’Atelier : l’automate de bois. | Machines, tant qu’il n’y en a aucune. |
-| Tes mains sont pleines : 4 commandes au maximum. | Message en bas, si les commandes sont déjà au complet (avant : « File pleine : 4 commandes en attente au maximum »). |
+| Tes mains sont occupées : 4 commandes au maximum. | Message en bas, si les commandes sont déjà au complet (avant : « File pleine : 4 commandes en attente au maximum »). |
 | Tailler est déjà choisie. | Bulle du premier passage à l’Atelier (avant : « déjà sélectionnée »). |
 | Tu en as 12 | Fiche d’un objet : ce que tu as dans la Réserve (avant : « Disponible : 12 »). |
 | attend une main ou une machine | Fenêtre des commandes, pour une commande que personne ne peut encore faire (avant : « en attente »). |
 | … : au repos, jusqu’à ta prochaine commande. | Message en bas, quand une machine n’a plus de travail. |
+
+## 9. Le vocabulaire des commandes, partout
+
+Quatre mots, et rien d’autre à l’écran : **tes mains**, une **commande**, **en cours**, **au repos** (la règle est écrite dans `docs/LEXIQUE.md`, section « Tes mains et tes machines »).
+
+| Texte retenu | Où | Avant |
+|---|---|---|
+| Tes mains sont occupées. Attends la fin de la commande en cours. | Atelier et Domaine, quand une commande ne peut pas partir | « Tes mains sont déjà bien occupées. Attends qu’une fabrication se termine. » |
+| Tes mains sont occupées : 4 commandes au maximum. | Message en bas, commandes au complet | « Tes mains sont pleines : … » |
+| Déjà en cours. | Atelier, fiche d’un objet déjà lancé | « Déjà en cours de fabrication. » |
+| ✋ Tes mains s’y mettent. La recette est dans tes commandes. | Fiche d’un objet qu’on vient de lancer | « … La recette attend dans tes commandes. » : « attendre » veut maintenant dire que personne ne peut avancer |
+| ✋ En cours : planche · ✋ En cours… | Quêtes et Domaine, objet en cours | « ✋ En cours de fabrication » |
+| Tu en as 12 · 3 en cours | Domaine, ligne d’un gisement | « 3 en fabrication » |
+| attend une main ou une machine | Barre ✋ au-dessus des onglets, et carte d’une commande dans Machines | « il manque des ressources », faux quand une machine libre existe ; « En attente… » |
+| Commande · Manche ×30 · 4 automates de bois | Barre ✋ au-dessus des onglets, nom de la commande en tête | « Fabrication · … » |
+| fini dans ~4 s · Fini dans ~2 min | Fenêtre des commandes, une commande et le lot | « prête dans ~ » / « prêt dans » / « Fini dans ~ » |
+| Tes mains s’y mettent. Fini dans 4 s. | Résultat d’un essai à l’Atelier | « Prêt dans 4 s. » |
+| Tout ce que tu fabriques passe par tes commandes | Aide du compte | « la file des commandes » |
+| elles sont au repos et aident tes commandes | Aide du compte, machines | « elles attendent au repos » |
+| Elle est au repos, dans l’onglet Machines. | Réparation d’une machine | « Elle attend au repos » |
+| Machine : au repos, jusqu’à ta prochaine commande. | Machines, réglage d’une machine | inchangé (l’« au repos » y prend trois mots de plus) |
+| Aucune demande pour l’instant. Le Troqueur en prépare d’autres. | Quêtes du Troqueur | « Aucune commande… » : le mot « commande » pour une demande |
+| Établi : pose jusqu’à trois ressources | Bulle du guide | « trois matières » |
+| apporte les ressources du passage / nécessaires | Objectifs, guide, message de passage | « les matières », mot banni à l’écran par le lexique |
 
 ## Ce qui n’apparaît plus au début
 

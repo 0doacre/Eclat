@@ -54,7 +54,7 @@
           { tab: "domaine", at: '[data-harv="lisiere:bois"]', text: "Touche le bois pour le récolter. Garde le doigt appuyé pour récolter en continu.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
           { tab: "atelier", go: "Tu as de quoi tailler. Ouvre l’Atelier.", at: ".gestes",
-            text: "Chaque recette demande une action et des matières. Tu as trois actions au départ : Tailler, Tresser et Assembler. Tailler est déjà choisie.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
+            text: "Chaque recette demande une action et des ressources. Tu as trois actions au départ : Tailler, Tresser et Assembler. Tailler est déjà choisie.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
           { tab: "atelier", at: () => (U.slots.includes("bois") ? null : '[data-inv="bois"]'), text: "Pose du bois sur l’établi : touche-le.",
             done: () => U.slots.includes("bois") || S().known.manche },
           { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche le gros bouton pour fabriquer." : "Sélectionne l’action Tailler."),
@@ -115,9 +115,9 @@
         still: () => E.passPending().length > 0,
         steps: [
           { tab: "domaine", at: () => (document.querySelector(".goal-card [data-pour]") ? ".goal-card [data-pour]" : ".dom-pass [data-pour]"),
-            text: "🚧 Derrière ce passage, une autre terre. Avant de l’ouvrir, explore les lieux de celle où tu es ; ensuite, apporte les matières.",
+            text: "🚧 Derrière ce passage, une autre terre. Avant de l’ouvrir, explore les lieux de celle où tu es ; ensuite, apporte les ressources.",
             done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
-          { tab: "domaine", text: "Explore, récolte, fabrique, puis reviens déposer les matières. Chaque passage franchi te donne des ✦ Traces. Elles paieront la Mémoire des mains du prochain Semeur.", next: true }
+          { tab: "domaine", text: "Explore, récolte, fabrique, puis reviens déposer les ressources. Chaque passage franchi te donne des ✦ Traces. Elles paieront la Mémoire des mains du prochain Semeur.", next: true }
         ] },
       { id: "releve", n: "La relève",
         when: () => S().cycle === 1 && E.canReleve() && !!document.querySelector("#memBtn:not(.hidden)"),

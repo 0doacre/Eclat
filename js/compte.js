@@ -122,7 +122,7 @@
       openModal({
         html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
           '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
-          (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles attendent au repos et aident tes commandes. Les ressources qu’elles utilisaient sont revenues dans ta Réserve.</p>' : "") +
+          (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles sont au repos et aident tes commandes. Les ressources qu’elles utilisaient sont revenues dans ta Réserve.</p>' : "") +
           (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Les tapis disparaissent : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils récoltent autant qu’avant, et ce qui se trouvait sur les tapis est revenu dans ta Réserve.</p>' : "") +
           (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as fourni est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
           (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
@@ -540,7 +540,7 @@
         "<dt>Extracteur</dt><dd>Cabane, collets, puits… Il se pose sur un gisement <i>de sa terre</i> (bouton « + cabane ») et récolte seul, même quand le jeu est fermé.</dd>" +
         "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce fabriquée à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
         "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les ressources sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
-        "<dt>Tes mains</dt><dd>Tout ce que tu fabriques passe par la file des commandes (barre ✋ au-dessus des onglets). Tes machines t’y aident.</dd>" +
+        "<dt>Tes mains</dt><dd>Tout ce que tu fabriques passe par tes commandes (barre ✋ au-dessus des onglets). Tes machines t’y aident.</dd>" +
         "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis apporter ce que le passage demande.</dd>" +
         "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource (pour savoir avec quelles actions elle cache des recettes) et à déchiffrer une recette inconnue étape par étape.</dd>" +
         "<dt>Déchiffrer</dt><dd>Révéler une recette inconnue contre de l’Intuition : d’abord l’action, puis une des ressources, puis la recette entière.</dd>" +
