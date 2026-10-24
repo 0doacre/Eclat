@@ -503,7 +503,8 @@
     /* ------------------------------------------------------------ Grand Œuvre */
     function oeuvreHTML(pid) {
       const P = D.PROJECTS[pid], ps = E.projState(pid), step = P.steps[ps.step], st = S(), on = E.siteOn(pid);
-      let h = '<section class="dom-card dom-oeuvre"><h3>' + P.ic + " " + esc(P.n) + '</h3><div class="tiny muted">Étape ' + (ps.step + 1) + " sur " + P.steps.length + " · " + esc(step.n) + "</div>";
+      const art = (pid === "dyson" || pid === "brisemonde") ? pid + "-" + Math.min(ps.step + 1, 4) : pid;
+      let h = '<section class="dom-card dom-oeuvre"><h3>' + P.ic + " " + esc(P.n) + '</h3>' + '<img class="oeuvre-art oeuvre-art-compact" src="assets/oeuvres/' + art + '.webp" alt="" loading="lazy" decoding="async">' + '<div class="tiny muted">Étape ' + (ps.step + 1) + " sur " + P.steps.length + " · " + esc(step.n) + "</div>";
       if (step.cost) {
         h += Object.keys(step.cost).map((k) => {
           const paid = ps.paid[k] || 0;

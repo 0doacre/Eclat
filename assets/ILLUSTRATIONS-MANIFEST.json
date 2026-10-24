@@ -1,0 +1,192 @@
+[
+  {
+    "name": "dyson",
+    "source_index": 15,
+    "size": [
+      1200,
+      900
+    ],
+    "bytes": 108218,
+    "quality": 20
+  },
+  {
+    "name": "brisemonde",
+    "source_index": 19,
+    "size": [
+      1200,
+      900
+    ],
+    "bytes": 107204,
+    "quality": 40
+  },
+  {
+    "name": "chant",
+    "source_index": 20,
+    "size": [
+      1200,
+      900
+    ],
+    "bytes": 116600,
+    "quality": 20
+  },
+  {
+    "name": "arche13",
+    "source_index": 18,
+    "size": [
+      1200,
+      900
+    ],
+    "bytes": 102002,
+    "quality": 8
+  },
+  {
+    "name": "silence",
+    "source_index": 14,
+    "size": [
+      1200,
+      900
+    ],
+    "bytes": 94970,
+    "quality": 12
+  },
+  {
+    "name": "dyson-1",
+    "source_index": 27,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 104408,
+    "quality": 80
+  },
+  {
+    "name": "dyson-2",
+    "source_index": 28,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 101100,
+    "quality": 80
+  },
+  {
+    "name": "dyson-3",
+    "source_index": 26,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 80126,
+    "quality": 80
+  },
+  {
+    "name": "dyson-4",
+    "source_index": 6,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 74540,
+    "quality": 80
+  },
+  {
+    "name": "brisemonde-1",
+    "source_index": 24,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 80162,
+    "quality": 80
+  },
+  {
+    "name": "brisemonde-2",
+    "source_index": 5,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 97894,
+    "quality": 80
+  },
+  {
+    "name": "brisemonde-3",
+    "source_index": 21,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 98908,
+    "quality": 80
+  },
+  {
+    "name": "brisemonde-4",
+    "source_index": 0,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 82330,
+    "quality": 80
+  },
+  {
+    "name": "carnet",
+    "source_index": 11,
+    "size": [
+      1080,
+      1920
+    ],
+    "bytes": 118826,
+    "quality": 30
+  },
+  {
+    "name": "journal",
+    "source_index": 12,
+    "size": [
+      1080,
+      1920
+    ],
+    "bytes": 118832,
+    "quality": 40
+  },
+  {
+    "name": "domaine",
+    "source_index": 4,
+    "size": [
+      1080,
+      1920
+    ],
+    "bytes": 111374,
+    "quality": 8
+  },
+  {
+    "name": "atelier",
+    "source_index": 3,
+    "size": [
+      1080,
+      1920
+    ],
+    "bytes": 97850,
+    "quality": 12
+  },
+  {
+    "name": "memoire",
+    "source_index": 2,
+    "size": [
+      1080,
+      1920
+    ],
+    "bytes": 102370,
+    "quality": 20
+  },
+  {
+    "name": "veillee",
+    "source_index": 9,
+    "size": [
+      1080,
+      1920
+    ],
+    "bytes": 109668,
+    "quality": 40
+  }
+]

@@ -280,3 +280,15 @@ body.large-text .btn.small { min-height: 38px; font-size: 13.5px; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Illustrations : une vignette contextuelle, sans repousser les commandes. */
+.oeuvre-art-compact { display: block; width: 100%; height: clamp(116px, 26vw, 180px); object-fit: cover; object-position: center; border-radius: 9px; margin: 8px 0 10px; }
+.dom-oeuvre .oeuvre-art-compact { height: clamp(108px, 22vw, 156px); }
+/* Fonds subtils uniquement dans les pages de lecture / production. Le ciel reste vierge. */
+#views { background: var(--paper), var(--bg); background-attachment: local; }
+body[data-tab="domaine"] #views { --page-art: url("../assets/fonds/domaine.webp"); }
+body[data-tab="atelier"] #views, body[data-tab="machines"] #views { --page-art: url("../assets/fonds/atelier.webp"); }
+body[data-tab="carnet"] #views { --page-art: url("../assets/fonds/carnet.webp"); }
+body[data-tab="journal"] #views { --page-art: url("../assets/fonds/journal.webp"); }
+body[data-tab="domaine"] #views, body[data-tab="atelier"] #views, body[data-tab="machines"] #views, body[data-tab="carnet"] #views, body[data-tab="journal"] #views { background-image: linear-gradient(color-mix(in srgb, var(--bg) 91%, transparent), color-mix(in srgb, var(--bg) 91%, transparent)), var(--page-art); background-size: cover; background-position: center top; background-attachment: local; }
+body[data-tab="cosmos"] #views, body[data-tab="cosmos"] #v-cosmos { background: #0d1118; }
