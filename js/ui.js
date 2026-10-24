@@ -28,7 +28,8 @@
     q: "", showOwned: false,
     openAges: {}, dirty: true, lastRender: 0, mq: [], mcur: null,
     badges: { carnet: false, journal: false, cosmos: false, carte: false },
-    pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false
+    pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false,
+    toastQ: [], toastAt: 0, toastT: 0, intuShown: false
   };
 
   /* ------------------------------------------------------------ formats */
@@ -269,7 +270,10 @@
     $("#fx").appendChild(f);
     setTimeout(() => f.remove(), 900);
   }
+  /* ceux qui demandent moins de mouvement n’ont pas d’étincelles : la couleur et le message suffisent */
+  const motionOK = () => !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   function sparks(x, y, n, color) {
+    if (!motionOK()) return;
     const fx = $("#fx");
     for (let i = 0; i < (n || 14); i++) {
       const s = document.createElement("div");
@@ -307,6 +311,7 @@
     U.celeT = setTimeout(() => el.remove(), 1900);
   }
   function fireworks() {
+    if (!motionOK()) return;
     const cols = ["#4fd1c5", "#7fe08a", "#5aa0ff", "#ffd36b", "#ff7ad9"];
     for (let k = 0; k < 6; k++) setTimeout(() => {
       sparks(innerWidth * (0.2 + Math.random() * 0.6), innerHeight * (0.15 + Math.random() * 0.35), 26, cols[k % cols.length]);
@@ -317,6 +322,16 @@
    * s’affichent sous l’objectif, pour ne jamais le cacher. */
   function toast(html, o) {
     o = o || {};
+    // un message toutes les 800 ms : deux arrivent en rafale, le reste attend son tour
+    const t0 = performance.now();
+    if (t0 - (U.toastAt || 0) < 800) {
+      const k = o.key || html, i = (U.toastQ || []).findIndex((x) => (x[1].key || x[0]) === k);
+      if (i >= 0) U.toastQ[i] = [html, o];
+      else if ((U.toastQ || []).length < 2) U.toastQ.push([html, o]);
+      if (!U.toastT) U.toastT = setTimeout(() => { U.toastT = 0; const m = (U.toastQ || []).shift(); if (m) toast(m[0], m[1]); }, 800 - (t0 - (U.toastAt || 0)));
+      return;
+    }
+    U.toastAt = t0;
     const box = $("#toasts"), key = o.key || html, p = o.p || 0;
     let kind = o.kind || o.type;
     if (!kind) {
@@ -600,8 +615,9 @@
     if (barEl) barEl.style.width = pct + "%";
     const badgeEl = $("#ageProgBadge");
     if (badgeEl) {
+      // « 0/5 » ne dit rien tant qu’aucune étape n’est faite
       badgeEl.textContent = done === total && total > 0 ? "✓" : done + "/" + total;
-      badgeEl.className = "age-badge" + (done === total && total > 0 ? " done" : "");
+      badgeEl.className = "age-badge" + (done === total && total > 0 ? " done" : "") + (done || a > 0 ? "" : " hidden");
     }
   }
 
@@ -767,7 +783,10 @@
     iconize($("#top"));
     iconize(document.querySelector(".tu-bub"));
     stepWatch();
-    $("#intu").textContent = Math.floor(st.intu);
+    const intuNow = Math.floor(st.intu);
+    if (intuNow > 0 && !U.intuShown) { const ib = $("#intuBtn"); if (ib) { ib.classList.remove("born"); void ib.offsetWidth; ib.classList.add("born"); } }
+    U.intuShown = U.intuShown || intuNow > 0;
+    $("#intu").textContent = intuNow;
     memChip();
     questChip();
     const xp = E.expProgress();

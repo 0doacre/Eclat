@@ -10,7 +10,7 @@
     const { E, D, A, U, esc, save, toast } = api;
     const S = () => E.state;
     const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
-    const GAP = 8000; // entre deux chapitres
+    const GAP = 12000; // entre deux chapitres
 
     /* ------------------------------------------------------------ petits repères */
     const has = (id) => (S().inv[id] || 0) >= 1;
@@ -45,7 +45,7 @@
       { id: "bienvenue", n: "Bienvenue", quick: true,
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts && !S().stats.taps,
         steps: [
-          { text: "Je peux te guider pas à pas pour tes premiers objets. Tu pourras couper ce guide quand tu veux, dans le menu.",
+          { text: "Je peux te guider pour tes premiers objets. Le guide se coupe dans le menu, quand tu veux.",
             choices: [{ l: "Guide-moi", a: "next" }, { l: "Je me débrouille", a: "off" }] }
         ] },
       { id: "debut", n: "Premiers pas",
@@ -53,17 +53,17 @@
         steps: [
           { tab: "domaine", at: '[data-harv="lisiere:bois"]', text: "Touche le bois pour le récolter. Garde le doigt appuyé pour récolter en continu.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
-          { tab: "atelier", go: "Tu as assez de bois. Ouvre l’Atelier pour fabriquer ton premier objet.", at: ".gestes",
-            text: "Une recette associe une action à une ou plusieurs ressources. Tu as trois actions au départ : Tailler, Tresser et Assembler. Tailler est déjà sélectionnée.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
+          { tab: "atelier", go: "Tu as de quoi tailler. Ouvre l’Atelier.", at: ".gestes",
+            text: "Chaque recette demande une action et des matières. Tu as trois actions au départ : Tailler, Tresser et Assembler. Tailler est déjà choisie.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
           { tab: "atelier", at: () => (U.slots.includes("bois") ? null : '[data-inv="bois"]'), text: "Pose du bois sur l’établi : touche-le.",
             done: () => U.slots.includes("bois") || S().known.manche },
-          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche le gros bouton pour fabriquer !" : "Sélectionne l’action Tailler."),
+          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche le gros bouton pour fabriquer." : "Sélectionne l’action Tailler."),
             done: () => S().known.manche },
-          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Tu as fabriqué un manche ! Sa recette s’ajoute à ton Carnet. Tu ne peux fabriquer qu’un objet à la fois.", next: true },
-          { tab: "domaine", go: "Retourne au Domaine.", at: ".goal-card", text: "L’objectif, en haut, indique la prochaine recette à trouver. Le 🏁 liste toutes les étapes de cet âge.", next: true, done: () => S().known.corde },
-          { text: "Nouvel objectif : trouver de quoi attacher deux objets. Récolte des fibres, puis tente des actions à l’Atelier. Le thermomètre indique si tu t’approches. N’hésite pas à faire plusieurs tentatives, ce n’est jamais perdu.",
+          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Tu as fabriqué un manche. Sa recette s’ajoute à ton Carnet. Tu ne peux fabriquer qu’un objet à la fois.", next: true },
+          { tab: "domaine", go: "Retourne au Domaine.", at: ".goal-card", text: "L’objectif, en haut, dit quelle recette chercher. Le 🏁 montre les étapes de cet âge.", next: true, done: () => S().known.corde },
+          { text: "Nouvel objectif : trouver de quoi attacher deux objets. Récolte des fibres, puis tente des actions à l’Atelier. Le thermomètre dit si tu t’approches. N’hésite pas à faire plusieurs tentatives, ce n’est jamais perdu.",
             free: true, done: () => S().known.corde },
-          { text: "Bien joué ! L’objectif indique la suite, et le bouton ❓ explique le reste.", next: true }
+          { text: "Bien joué. L’objectif dit la suite ; le ❓ explique le reste.", next: true }
         ] },
       { id: "lieux", n: "Les lieux",
         when: () => { const ob = E.objective(); return (U.tab === "domaine" || U.tab === "carte") && ob && ob.k === "exp" && !S().exp.active && !Object.keys(S().exp.done).length; },
@@ -79,13 +79,13 @@
         still: () => !S().flags.extDone,
         steps: [
           { tab: "domaine", at: '[data-xadd="lisiere:bois"]', text: "Ta cabane récolte à ta place, même quand le jeu est fermé. Touche « + cabane » sur le bois pour la poser.", done: anyExt },
-          { tab: "domaine", text: "Sa récolte va directement dans ta Réserve. Le même bouton pose les cabanes suivantes. S’il ne t’en reste plus, tes mains en fabriquent une, puis la posent.", next: true }
+          { tab: "domaine", text: "Sa récolte va directement dans ta Réserve. Le bouton sert aussi pour les cabanes d’après. S’il ne t’en reste plus, tes mains en fabriquent une, puis la posent.", next: true }
         ] },
       // la première lecture d’un morceau d’histoire : la joueuse ne sait pas qu’il est fait pour intriguer
       { id: "enigme", n: "Un morceau d’histoire",
         when: () => Object.keys(S().frags || {}).length > 0 && !modalOpen(),
         steps: [
-          { at: '#tabs [data-tab="journal"]', dim: false, text: "Ce que tu viens de lire est un morceau d’histoire. Il est rangé dans le Journal. Tu n’as pas à tout comprendre tout de suite.",
+          { at: '#tabs [data-tab="journal"]', dim: false, text: "Ce que tu viens de lire rejoint le Journal. Tu n’as pas à tout comprendre tout de suite.",
             next: true, done: () => U.tab === "journal" },
           { tab: "journal", go: "Ouvre le Journal.", text: "Les points d’interrogation sont des morceaux qu’il te reste à trouver, en explorant. Prends ton temps.", next: true }
         ] },
@@ -97,7 +97,7 @@
       { id: "intuition", n: "L’Intuition",
         when: () => (U.tab === "domaine" || U.tab === "atelier") && S().intu >= 2 && !modalOpen(),
         steps: [
-          { at: "#intuBtn", dim: false, text: "L’Intuition ✨ vient quand tu découvres quelque chose. Plus tard, elle servira à étudier les ressources et à déchiffrer les recettes.", next: true }
+          { at: "#intuBtn", dim: false, text: "L’Intuition ✨ vient quand tu découvres quelque chose. Elle paie l’étude des ressources et le déchiffrage des recettes.", next: true }
         ] },
       { id: "ruine", n: "Une ruine",
         when: () => (U.tab === "domaine" || U.tab === "machines") && Object.keys(E.ruins()).length > 0 && !!document.querySelector("[data-repair]"),
@@ -115,15 +115,22 @@
         still: () => E.passPending().length > 0,
         steps: [
           { tab: "domaine", at: () => (document.querySelector(".goal-card [data-pour]") ? ".goal-card [data-pour]" : ".dom-pass [data-pour]"),
-            text: "🚧 Une nouvelle terre se trouve derrière ce passage. Pour l’ouvrir, apporte les ressources demandées. Tu peux les déposer en plusieurs fois, rien n’est perdu.",
+            text: "🚧 Derrière ce passage, une autre terre. Avant de l’ouvrir, explore les lieux de celle où tu es ; ensuite, apporte les matières.",
             done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
-          { tab: "domaine", text: "Récolte, fabrique, puis reviens déposer les pièces. Chaque passage franchi te donne des ✦ Traces. Elles serviront au prochain Semeur.", next: true }
+          { tab: "domaine", text: "Explore, récolte, fabrique, puis reviens déposer les matières. Chaque passage franchi te donne des ✦ Traces. Elles paieront la Mémoire des mains du prochain Semeur.", next: true }
+        ] },
+      { id: "releve", n: "La relève",
+        when: () => S().cycle === 1 && E.canReleve() && !!document.querySelector("#memBtn:not(.hidden)"),
+        still: () => E.canReleve(),
+        steps: [
+          { at: "#memBtn", dim: false, text: "La relève recommence le monde en gardant ce que tu sais. Touche ✦ pour voir les chiffres.",
+            done: () => modalOpen() }
         ] },
       { id: "mains", n: "Tes mains",
         when: () => Date.now() - lastQueue < 15000 && (U.tab === "atelier" || U.tab === "domaine"),
         steps: [
           { at: () => (document.querySelector("#actbar:not(.hidden)") ? "#actbar" : null),
-            text: "Tes commandes en cours s’affichent ici, au-dessus des onglets. Touche la barre pour les voir ou en annuler une.", next: true }
+            text: "Tes commandes en cours sont là, au-dessus des onglets. Touche la barre pour les voir ou en annuler une.", next: true }
         ] },
       { id: "automate", n: "Ton automate",
         when: () => (U.tab === "machines" || U.tab === "domaine" || U.tab === "carnet") && E.MACHINES.some(has) && !S().flags.lineDone,
@@ -169,7 +176,7 @@
             text: "Écris ce que tu crois qu’il veut dire, puis touche « Proposer ». Regarde où il est gravé, et ce que dit le Troqueur. Tu peux réessayer autant que tu veux.",
             done: anyLu },
           // hors des fenêtres : la bulle ne recouvre pas leurs boutons
-          { text: "Compris : partout où ce signe apparaît, il s’affiche désormais en mot. Les autres se trouvent dans le Journal, onglet Signes.", next: true }
+          { text: "Compris : partout où ce signe apparaît, il se lit désormais en mot. Les autres se trouvent dans le Journal, onglet Signes.", next: true }
         ] },
       { id: "etude", n: "Étudier une ressource",
         when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
@@ -179,7 +186,7 @@
             done: () => !!document.querySelector('.modal:not(.hidden) [data-m="study"]') || Object.keys(S().studied).length > 0 },
           { modal: true, at: '.modal:not(.hidden) [data-m="study"]', back: 0,
             text: "Étudie-la contre un peu d’Intuition ✨ : tu sauras avec quelles actions elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },
-          { tab: "atelier", text: "Une ressource étudiée affiche un ✦ quand elle réagit avec l’action sélectionnée. À toi de trouver la bonne combinaison.", next: true }
+          { tab: "atelier", text: "Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie. À toi de trouver la bonne combinaison.", next: true }
         ] },
       { id: "dechiffrer", n: "Déchiffrer une recette", modal: true,
         when: () => !!decipherGoal() && Object.keys(S().known).length >= 4 && (U.tab === "domaine" || U.tab === "carnet" || !!document.querySelector('.modal:not(.hidden) [data-m="decipher"]')),

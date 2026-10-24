@@ -60,6 +60,8 @@
       });
       E.on("zone", (z) => {
         U.zone = z;
+        // la nouvelle terre s’allume dans le Domaine
+        setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) { el.classList.add("born"); setTimeout(() => el.classList.remove("born"), 1800); } }, 320);
         // la découverte qui ouvre cette terre le dit déjà (« Débloque : … ») : pas de second message
         setTimeout(() => { if (Date.now() - (U.lastDiscover || 0) > 1500) toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans le Domaine."); }, 80);
         badge("carte");
@@ -138,6 +140,9 @@
       E.on("expdone", (r) => {
         A.found();
         checkForcedReleve();
+        // le lieu est rapporté : une étincelle sur la pastille d’exploration, puis l’histoire
+        const ex = $("#expMini");
+        if (ex && !ex.classList.contains("hidden")) { const q = elCenter(ex); sparks(q.x, q.y, 12, "#ffd36b"); }
         if (r.frag) badge("journal");
         if (r.silent) return;
         const F = r.frag && D.FRAGS[r.frag];

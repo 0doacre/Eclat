@@ -240,7 +240,7 @@
     }
     function resultHTML() {
       const r = U.last;
-      if (!r) return '<p class="small muted">Choisis une action, puis touche des ressources dans la liste plus bas pour les poser (trois au plus), et touche le gros bouton. Après chaque tentative, le <b>thermomètre</b> indique si tu t’approches d’une recette.</p>';
+      if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois matières, puis touche le gros bouton. Le <b>thermomètre</b> dit si tu t’approches d’une recette.</p>';
       if (r.kind === "craft") {
         const it = I[r.id];
         let h = '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow">' +
@@ -259,10 +259,10 @@
         if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultHTML(); }
         const miss = q ? null : E.missingFor(r.id, 1);
         const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
-        if (q) return head + '<div class="small">✋ Tes mains s’y mettent : la recette et ses pièces sont dans la file des commandes.</div></div></div>';
+        if (q) return head + '<div class="small">✋ Tes mains s’y mettent. La recette attend dans tes commandes.</div></div></div>';
         // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
         if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
-          '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tu as tout ce qu’il faut. Coût :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
+          '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tu as tout ce qu’il faut. Il te faut :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
           '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
         return head + '<div class="small">Tu connais la recette, mais il te manque :</div><div class="row wrap small" style="margin-top:4px;gap:4px">' +
           Object.keys(miss).map((i) => itemPill(i, { qty: miss[i], lack: true })).join("") + "</div>" +
@@ -315,7 +315,7 @@
       let known = 0, total = 0;
       book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
       let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
-      if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande : les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
+      if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande : les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> montre ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
       // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
       h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
@@ -393,7 +393,7 @@
       const secrets = Object.keys(I).filter((id) => I[id].sec && st.known[id] && I[id].r).filter(keep);
       if (secrets.length) h += '<details class="card age-sec"' + (U.carnetFilter !== "tout" ? " open" : "") + '><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recCard).join("") + "</div></details>";
       if (!h) h = '<p class="small muted center">Rien ici pour l’instant.</p>';
-      if (nHidden || U.showOwned) h += '<p class="center"><button class="btn small ghost" data-owned>' + (U.showOwned ? "Masquer les objets déjà possédés" : "Afficher les " + nHidden + " objets déjà possédés") + "</button></p>";
+      if (nHidden || U.showOwned) h += '<p class="center"><button class="btn small ghost" data-owned>' + (U.showOwned ? "Cacher les objets déjà possédés" : "Voir les " + nHidden + " objets déjà possédés") + "</button></p>";
       return h;
     }
     function passFilter(id) {
@@ -429,7 +429,7 @@
       if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
       const fx = fxText(id);
       if (fx) h += '<div class="fx">' + esc(fx) + "</div>";
-      if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:4px">Possédés : ' + Math.floor(st.inv[id] || 0) + "</div>";
+      if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:4px">Construits : ' + Math.floor(st.inv[id] || 0) + "</div>";
       if (!owned) {
         const b = E.blocker(id);
         if (b && b.why !== "owned") h += '<div class="why">' + cap1(needText(id, b, true)) + "</div>";
@@ -510,6 +510,12 @@
         A.fail(r.temp || 0);
         vibe(20);
         if (bench) { bench.classList.remove("shake"); void bench.offsetWidth; bench.classList.add("shake"); }
+        // « Brûlant » : la bonne combinaison, il ne manque que la chaleur
+        if (r.temp === 4) {
+          const th = $(".thermo .tmark") || bench;
+          if (th) { const q = elCenter(th); sparks(q.x, q.y, 10, "#ff4a3c"); }
+          vibe([8, 30, 8]);
+        }
       }
       render(true);
     }
@@ -565,7 +571,7 @@
       if (!r.ok) {
         if (r.why === "plan") { openTree(id, n); return false; }
         A.fail(0);
-        toast(r.why === "full" ? "File pleine : " + D.HAND.max + " commandes en attente au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours de fabrication." : whyNot(id, n, true));
+        toast(r.why === "full" ? "Tes mains sont pleines : " + D.HAND.max + " commandes au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours de fabrication." : whyNot(id, n, true));
         return false;
       }
       A.click();
@@ -681,7 +687,7 @@
           const sub = [];
           if (w) sub.push(w);
           if (miss) sub.push(miss);
-          else if (j.wait) sub.push("en attente");
+          else if (j.wait) sub.push("attend une main ou une machine");
           else sub.push("prête dans ~" + fmtTime(i ? j.at : j.left));
           return '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
             '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span></span>" +
@@ -829,7 +835,7 @@
           flowInfo = ' · Solde : <b style="color:' + color + '">' + netStr + "</b>" +
             (inR > 1e-4 && outR > 1e-4 ? ' <span class="tiny muted">(+' + perMin(inR) + " / -" + perMin(outR) + ")</span>" : "");
         }
-        h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "Disponible : <b>" + fmt(st.inv[id] || 0) + "</b>" + flowInfo) + "</p>";
+        h += '<p class="small muted">' + (uniq ? (owned ? "Tu le possèdes." : "Tu ne l’as pas encore.") : "Tu en as <b>" + fmt(st.inv[id] || 0) + "</b>" + flowInfo) + "</p>";
         const zid = E.RES_ZONE[id];
         if (zid) h += '<div class="row wrap small">Se récolte dans : <button class="ing link" data-m="zone" data-z="' + zid + '">' + (GI.zones && GI.zones[zid] ? gi(GI.zones[zid]) : E.ZONES[zid].ic) + " " + esc(zoneName(zid)) + "</button>" +
           (E.zoneOpen(zid) ? "" : ' <span class="tiny muted">(terre pas encore atteinte)</span>') + "</div>";

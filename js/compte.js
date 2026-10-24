@@ -549,12 +549,12 @@
         "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus restants deviennent des Traces à la relève.</dd>" +
         "<dt>Demande du Troqueur</dt><dd>Le Troqueur demande des objets fabriqués contre des Traces. Livrer prend les objets dans la Réserve et donne les Traces tout de suite. Les demandes se renouvellent régulièrement.</dd>" +
         "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
-        "<dt>Signe</dt><dd>Un mot de l’écriture des Anciens. Tant que tu ne l’as pas compris, il s’affiche dessiné. Touche-le pour proposer ce qu’il veut dire.</dd>" +
+        "<dt>Signe</dt><dd>Un mot de l’écriture des Anciens. Tant que tu ne l’as pas compris, il reste dessiné. Touche-le pour proposer ce qu’il veut dire.</dd>" +
         "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Tu y verses des ressources de la Réserve, ou tu l’alimentes pour qu’il s’y serve seul.</dd></dl>" +
         '<h3 class="sub">Les écrans</h3>' +
         "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
         "<p><b>🗺️ Carte.</b> Le monde, avec de la brume sur les terres que tu n’as pas encore atteintes. Touche un lieu 🧭 pour l’explorer : chaque lieu raconte un morceau de l’histoire.</p>" +
-        "<p><b>🔨 Atelier.</b> Choisis une action, pose jusqu’à trois ressources, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> affiche ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
+        "<p><b>🔨 Atelier.</b> Choisis une action, pose jusqu’à trois ressources, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> montre ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
         "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
         "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
         "<p><b>Jeu fermé.</b> Les extracteurs, les commandes et l’exploration continuent pendant 12 h au plus.</p>" +
