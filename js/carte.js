@@ -117,15 +117,24 @@
       const A = GEO[a], B = GEO[b], mx = (A.x + B.x) / 2 + (A.x < B.x ? -30 : 30), my = (A.y + B.y) / 2;
       return "M" + A.x + " " + (A.y - A.ry * 0.5) + " Q" + mx + " " + my + " " + B.x + " " + (B.y + B.ry * 0.5);
     }
+    /* Les illustrations des terres (assets/terres/<id>-carte.webp) : taille réelle de chaque image, pour la caler dans l’ellipse de la terre */
+    const ART = { lisiere: [745, 407], plaine: [715, 334], riviere: [443, 274], collines: [445, 305], mine: [417, 326], desert: [438, 299], gisement: [419, 304], montagnes: [477, 385], orbite: [272, 187], lune: [374, 275], mercure: [265, 199], caveau: [246, 185] };
+    function artImage(z, g) {
+      const a = ART[z];
+      if (!a) return "";
+      const k = Math.min((g.rx * 2 * 1.12) / a[0], (g.ry * 2 * 1.25) / a[1]), w = a[0] * k, h = a[1] * k;
+      return '<image class="c-art" href="assets/terres/' + z + '-carte.webp" x="' + (g.x - w / 2).toFixed(1) + '" y="' + (g.y - h / 2).toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true"/>';
+    }
     function zoneArt(z) {
       const g = GEO[z], Z = E.ZONES[z], i = D.ZONES.indexOf(Z);
       if (!g) return "";
       let s = '<g class="c-zone" data-cz="' + z + '">';
-      if (g.sky === "disc") s += '<circle class="c-land" cx="' + g.x + '" cy="' + g.y + '" r="' + g.rx + '" style="--zc:' + g.c + '"/>' + craters(g, i);
+      if (ART[z]) s += '<ellipse class="c-hit" cx="' + g.x + '" cy="' + g.y + '" rx="' + g.rx + '" ry="' + g.ry + '"/>' + artImage(z, g);
+      else if (g.sky === "disc") s += '<circle class="c-land" cx="' + g.x + '" cy="' + g.y + '" r="' + g.rx + '" style="--zc:' + g.c + '"/>' + craters(g, i);
       else if (g.sky === "ring") s += '<ellipse class="c-ring" cx="' + g.x + '" cy="' + g.y + '" rx="' + g.rx + '" ry="' + g.ry + '"/><circle class="c-land" cx="' + (g.x - g.rx * 0.9) + '" cy="' + (g.y + 30) + '" r="70" style="--zc:#9fc1d9"/>';
       else s += '<path class="c-land" d="' + blob(g, i + 1) + '" style="--zc:' + g.c + '"/>';
-      if (z === "riviere") s += '<path class="c-river" d="M' + (g.x - g.rx * 1.05) + " " + (g.y + 10) + " C " + (g.x - 40) + " " + (g.y - 40) + ", " + (g.x + 30) + " " + (g.y + 50) + ", " + (g.x + g.rx * 1.05) + " " + (g.y - 6) + '"/>';
-      const n = DECO[z] || 0, dz = GI.zones[z];
+      if (z === "riviere" && !ART[z]) s += '<path class="c-river" d="M' + (g.x - g.rx * 1.05) + " " + (g.y + 10) + " C " + (g.x - 40) + " " + (g.y - 40) + ", " + (g.x + 30) + " " + (g.y + 50) + ", " + (g.x + g.rx * 1.05) + " " + (g.y - 6) + '"/>';
+      const n = ART[z] ? 0 : DECO[z] || 0, dz = GI.zones[z];
       for (let k = 0; k < n; k++) {
         const a = (k / Math.max(1, n)) * Math.PI * 2 + i, r = 0.5 + 0.2 * ((k * 37) % 3) / 2;
         s += use(dz, g.x + Math.cos(a) * g.rx * r, g.y + Math.sin(a) * g.ry * r * 0.8, 16 + (k % 2) * 6, "c-deco");

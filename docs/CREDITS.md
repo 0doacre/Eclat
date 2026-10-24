@@ -29,3 +29,9 @@ Toutes sous licence [SIL Open Font License 1.1](https://openfontlicense.org), em
 - Caveat — Impallari Type
 - Space Grotesk — Florian Karsten
 - IBM Plex Mono — Mike Abbink, Bold Monday
+
+## Illustrations des terres
+
+`assets/terres/<id>-carte.webp` (île de la Carte) et `assets/terres/<id>-decor.webp` (fond de la fiche du Domaine),
+douze terres, un seul jeu de décors manquant : le Caveau. Images fournies par l'auteur.
+[à préciser : outil, modèle, date et licence d'usage commercial]

@@ -87,10 +87,13 @@
       const ok = r.etat === "ok";
       return '<p class="dom-regle' + (ok ? " ok" : r.etat === "gene" ? " gene" : "") + '"><b>' + esc(r.n) + "</b> · " + esc(ok && r.ok ? r.ok : r.t) + "</p>";
     }
+    /* les terres qui ont un décor illustré (assets/terres/<id>-decor.webp) */
+    const DECORS = { lisiere: 1, plaine: 1, riviere: 1, collines: 1, mine: 1, desert: 1, gisement: 1, montagnes: 1, orbite: 1, lune: 1, mercure: 1 };
     function terreHTML(z) {
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
-      let h = '<section class="dom-terre" id="dt-' + z + '"><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
+      const decor = DECORS[z] ? ' style="--decor:url(' + new URL('assets/terres/' + z + '-decor.webp', document.baseURI).href + ')"' : "";
+      let h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
       const ruins = E.ruins();
       for (const id in ruins) {
         const it = I[id];
