@@ -767,6 +767,19 @@
     const z = U.zone || "lisiere";
     A.setScene({ age: S().age, tab: U.tab, zone: z, night: !Scenes.isNightless(z) && Scenes.daypart(new Date().getHours()) === "night", machines: workingMachines() });
   }
+  /* l’atelier au travail : un bruit continu tant qu’une commande avance, choisi par le geste en cours (et l’âge), jamais un bruit par pièce */
+  let workAt = 0;
+  function workSound() {
+    const now = performance.now();
+    if (now - workAt < 500) return;
+    workAt = now;
+    let g = null;
+    if (S().hand.q.length) {
+      const j = E.handInfo().jobs.find((x) => !x.wait);
+      if (j && I[j.step] && I[j.step].r) g = I[j.step].r[0];
+    }
+    A.work(g);
+  }
   function workingMachines() {
     const ms = E.machines();
     return E.MACHINES.reduce((n, m) => n + ms[m].used, 0);
@@ -1084,6 +1097,7 @@
     if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
     U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();
+    workSound();
     if (U.tab === "arbre" && Date.now() - (U.arbreT || 0) > 400) { U.arbreT = Date.now(); Atl.arbreMaj(); } // l’arbre suit les découvertes
   }
 

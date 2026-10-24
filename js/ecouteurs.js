@@ -173,11 +173,8 @@
             '</div><div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
         }, 900);
       });
-      /* une pièce sort des mains : un petit bruit (pas trop souvent), et le compte qui monte */
-      let lastHand = 0;
+      /* une pièce sort des mains : le compte monte (le bruit, lui, est celui de l’atelier au travail : js/audio.js, A.work) */
       E.on("handdone", (d) => {
-        const now = Date.now();
-        if (now - lastHand > 350) { lastHand = now; A.craft(I[d.id].r[0]); }
         const el = U.tab === "atelier" ? $("#hands") : null;
         if (el && d.last) { const p = elCenter(el); floater("+" + fmt(d.n) + " " + I[d.id].n, p.x, p.y - 10, "var(--good)"); if (d.bonus) setTimeout(() => floater("★ +" + fmt(d.bonus), p.x, p.y - 26, "var(--intu)"), 200); }
       });
