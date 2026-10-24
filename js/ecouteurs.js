@@ -48,7 +48,7 @@
       /* un passage devient possible, puis il est franchi */
       E.on("passage", (z) => {
         badge("domaine");
-        setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", apporte les matières nécessaires (dans le Domaine ou sur la Carte).", { key: "pass:" + z, p: 2 }), 900);
+        setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", apporte les ressources nécessaires (dans le Domaine ou sur la Carte).", { key: "pass:" + z, p: 2 }), 900);
       });
       E.on("passdone", (o) => {
         const first = !S().meta.tracesTotal && E.releveGain() === o.tr;

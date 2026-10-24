@@ -118,7 +118,7 @@
           { tab: "domaine", at: () => (document.querySelector(".goal-card [data-pour]") ? ".goal-card [data-pour]" : ".dom-pass [data-pour]"),
             text: "🚧 Derrière ce passage, une autre terre. Avant de l’ouvrir, explore les lieux de celle où tu es ; ensuite, apporte les ressources.",
             done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
-          { tab: "domaine", text: "Explore, récolte, fabrique, puis reviens déposer les matières. Chaque passage franchi te donne des ✦ Traces. Elles paieront la Mémoire des mains du prochain Semeur.", next: true }
+          { tab: "domaine", text: "Explore, récolte, fabrique, puis reviens déposer les ressources. Chaque passage franchi te donne des ✦ Traces. Elles paieront la Mémoire des mains du prochain Semeur.", next: true }
         ] },
       { id: "releve", n: "La relève",
         when: () => S().cycle === 1 && E.canReleve() && !!document.querySelector("#memBtn:not(.hidden)"),
