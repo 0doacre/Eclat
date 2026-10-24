@@ -1,0 +1,73 @@
+/* ÉCLAT — l’arbre des connaissances (Carnet, vue « Arbre ») : js/arbre.js */
+.arb-bascule { display: flex; gap: 6px; margin: 0 0 10px; }
+.arb-bascule button {
+  flex: 1; min-height: 40px; border-radius: 999px; font: 600 14px var(--sans);
+  background: transparent; border: 1.5px solid var(--line2); color: var(--text);
+}
+.arb-bascule button.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+.arb-tete { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; }
+.arb-tete .grow { flex: 1; }
+.arb-tete .btn { min-width: 44px; min-height: 40px; }
+.arb-vue {
+  position: relative; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
+  height: max(300px, calc(100dvh - var(--top) - var(--nav) - var(--safe-b) - var(--safe-t) - 190px));
+  border-radius: var(--r); border: 1px solid var(--line2); background: var(--bg2); cursor: grab;
+}
+.arb-vue.tient { cursor: grabbing; }
+.arb-monde { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.arb-fond { position: absolute; left: 0; top: 0; overflow: visible; }
+.arb-bande { fill: color-mix(in srgb, var(--ac) 11%, transparent); }
+.arb-bande.suivant { fill: color-mix(in srgb, var(--ac) 5%, transparent); }
+.arb-bande.futur { fill: color-mix(in srgb, var(--muted) 6%, transparent); }
+.arb-sep { stroke: var(--line2); stroke-width: 1; }
+.arb-age {
+  position: absolute; left: 8px; font: 700 12px/1.2 var(--sans); letter-spacing: .02em; white-space: nowrap;
+  color: color-mix(in srgb, var(--ac) 70%, var(--text)); pointer-events: none;
+}
+.arb-age.bas { left: auto; right: 8px; opacity: .55; }
+.arb-age.suivant { opacity: .7; }
+.arb-age.futur { color: var(--dim); opacity: .7; }
+.arb-t { fill: none; stroke: color-mix(in srgb, var(--text) 26%, transparent); stroke-width: 1.6; }
+.arb-t.pointille { stroke: color-mix(in srgb, var(--text) 26%, transparent); stroke-dasharray: 4 5; }
+.arb-n {
+  position: absolute; width: 48px; height: 48px; padding: 0; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel); border: 1.5px solid color-mix(in srgb, var(--ac) 65%, var(--line2)); color: var(--text);
+  font: inherit; cursor: pointer;
+}
+.arb-n .ic { width: 38px; height: 38px; border-radius: 9px; font-size: 21px; border: 0; }
+.arb-n .ic.sym { font-size: 13px; }
+.arb-n.vu { border-style: solid; border-color: var(--line2); }
+.arb-n.obj { box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 55%, transparent); }
+.arb-n:focus-visible { outline: 3px solid var(--acc); outline-offset: 3px; }
+.arb-l {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 3px; width: 64px;
+  font: 600 10.5px/1.15 var(--sans); text-align: center; color: var(--text); pointer-events: none;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.arb-e {
+  position: absolute; top: -8px; right: -10px; padding: 1px 5px; border-radius: 999px; pointer-events: none;
+  background: var(--intu); color: #1a1208; font: 700 10px/1.3 var(--sans); white-space: nowrap;
+}
+.arb-n.fantome {
+  background: color-mix(in srgb, var(--ac) 7%, transparent);
+  border: 1.5px dashed color-mix(in srgb, var(--ac) 40%, var(--line2)); opacity: .75;
+}
+.arb-n.fantome.obj {
+  opacity: 1; border-style: solid; border-color: color-mix(in srgb, var(--acc) 80%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 30%, transparent);
+  animation: arbPouls 2.4s ease-in-out infinite;
+}
+@keyframes arbPouls { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--acc) 12%, transparent); } }
+.arb-n.neuf { animation: arbEclat .9s cubic-bezier(.2, .8, .3, 1.2) both; }
+@keyframes arbEclat {
+  0% { transform: scale(.4); opacity: 0; box-shadow: 0 0 0 0 color-mix(in srgb, var(--intu) 80%, transparent); }
+  60% { transform: scale(1.12); opacity: 1; box-shadow: 0 0 0 14px color-mix(in srgb, var(--intu) 0%, transparent); }
+  100% { transform: scale(1); }
+}
+.arb-t.neuf { stroke-dasharray: 400; stroke-dashoffset: 400; animation: arbTrait 1.1s .2s ease-out forwards; }
+@keyframes arbTrait { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .arb-n.fantome.obj, .arb-n.neuf { animation: none; }
+  .arb-t.neuf { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
+}

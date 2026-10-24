@@ -686,7 +686,7 @@
     const ae = document.activeElement;
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
-    else if (U.tab === "carnet") el.innerHTML = viewCarnet();
+    else if (U.tab === "carnet") { if (!Atl.carnetArbre(el)) el.innerHTML = viewCarnet(); } // la vue Arbre se redessine elle-même (js/arbre.js)
     else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }

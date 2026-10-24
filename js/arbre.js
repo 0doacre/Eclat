@@ -14,6 +14,7 @@
   const NODE = 48;           // côté d’un nœud (≥ 44 px au zoom normal)
   const M = 8;               // marge à gauche et à droite
   const HEAD = 30;           // hauteur de l’étiquette d’âge en haut de chaque bande
+  const FOOT = 22;           // et en bas (on lit le nom de l’âge des deux côtés d’une limite)
 
   /* FNV-1a, 32 bits (comme constellations.js) */
   function hash(s) {
@@ -86,7 +87,7 @@
     // la hauteur de chaque bande ne dépend que des données : rien ne bouge en cours de partie
     const y = [];
     let acc = 0;
-    for (let a = nA - 1; a >= 0; a--) { y[a] = acc; acc += HEAD + (rows[a] || 1) * PY; }
+    for (let a = nA - 1; a >= 0; a--) { y[a] = acc; acc += HEAD + (rows[a] || 1) * PY + FOOT; }
     const out = { place, rows, y, h: acc };
     if (CACHE) CACHE.set(D, out);
     return out;
@@ -207,7 +208,7 @@
       return { de: t.de, a: t.a, pointille: !!t.pointille,
         x1: p.x, y1: p.y + (haut ? -NODE / 2 : NODE / 2 + 18), x2: q.x, y2: q.y + (haut ? NODE / 2 + 18 : -NODE / 2) };
     });
-    const bandes = D.AGES.map((ag, a) => ({ age: a, y: yBande(a), h: HEAD + Rof(a) * PY, c: ag.c, nom: ag.n,
+    const bandes = D.AGES.map((ag, a) => ({ age: a, y: yBande(a), h: HEAD + Rof(a) * PY + FOOT, c: ag.c, nom: ag.n,
       etat: a <= g.age ? "atteint" : a <= g.max ? "suivant" : "futur" }));
     return { w: 2 * M + (maxCol + 1) * PX, h: cat.h, noeuds: out, traits, bandes, node: NODE };
   }
@@ -240,7 +241,7 @@
     lay.bandes.forEach((b) => {
       const nom = (b.age + 1) + (b.etat === "futur" ? "" : " · " + esc(b.nom));
       h += '<div class="arb-age ' + b.etat + '" style="top:' + (b.y + 6) + "px;--ac:" + esc(b.c) + '">' + nom + "</div>";
-      h += '<div class="arb-age bas ' + b.etat + '" style="top:' + (b.y + b.h - 20) + "px;--ac:" + esc(b.c) + '" aria-hidden="true">' + nom + "</div>";
+      h += '<div class="arb-age bas ' + b.etat + '" style="top:' + (b.y + b.h - 19) + "px;--ac:" + esc(b.c) + '" aria-hidden="true">' + nom + "</div>";
     });
     lay.noeuds.forEach((n) => {
       const st = "left:" + (n.x - n.w / 2) + "px;top:" + (n.y - n.h / 2) + "px;--ac:" + esc(lay.bandes[n.age].c);
