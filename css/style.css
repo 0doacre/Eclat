@@ -1478,7 +1478,8 @@ h2 + .stamp { margin: -4px 0 8px; }
 .c-art { pointer-events: none; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .45)); }
 .c-hit { fill: transparent; stroke: none; }
 .dom-terre.a-decor { position: relative; isolation: isolate; border-radius: 14px; overflow: hidden; padding: 6px 8px 8px; }
-.dom-terre.a-decor::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--decor) center top / cover no-repeat; opacity: .2;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, #000 35%, transparent 100%); }
-body.theme-dark .dom-terre.a-decor::before { opacity: .3; }
+/* le décor ne couvre que la bande du titre, et s’efface avant les lignes : le texte des ressources se lit sur le fond uni */
+.dom-terre.a-decor::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 84px; z-index: -1; background: var(--decor) center top / cover no-repeat; opacity: .16;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); }
+body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 @media (prefers-reduced-data: reduce) { .dom-terre.a-decor::before { display: none; } }
