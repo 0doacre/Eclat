@@ -280,3 +280,51 @@ body.large-text .btn.small { min-height: 38px; font-size: 13.5px; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Illustrations : une vignette contextuelle, sans repousser les commandes. */
+.oeuvre-art-compact { display: block; width: 100%; height: clamp(116px, 26vw, 180px); object-fit: cover; object-position: center; border-radius: 9px; margin: 8px 0 10px; }
+.dom-oeuvre .oeuvre-art-compact { height: clamp(108px, 22vw, 156px); }
+/* Fonds subtils uniquement dans les pages de lecture / production. Le ciel reste vierge. */
+#views { background: var(--paper), var(--bg); background-attachment: local; }
+body[data-tab="domaine"] #views { --page-art: url("../assets/fonds/domaine.webp"); }
+body[data-tab="atelier"] #views, body[data-tab="machines"] #views { --page-art: url("../assets/fonds/atelier.webp"); }
+body[data-tab="carnet"] #views { --page-art: url("../assets/fonds/carnet.webp"); }
+body[data-tab="journal"] #views { --page-art: url("../assets/fonds/journal.webp"); }
+body.theme-dark[data-tab] #views { --page-art: url("../assets/fonds/veillee.webp"); } /* la Veillée : un seul fond, partout */
+body[data-tab="domaine"] #views, body[data-tab="atelier"] #views, body[data-tab="machines"] #views, body[data-tab="carnet"] #views, body[data-tab="journal"] #views { background-image: linear-gradient(color-mix(in srgb, var(--bg) 86%, transparent), color-mix(in srgb, var(--bg) 86%, transparent)), var(--page-art); background-size: cover; background-position: center top; background-attachment: scroll; }
+/* 14 % de fond (le cahier des charges dit 12 à 20 %) ; « scroll » : le fond couvre la vue, il ne s’étire pas sur toute la longueur de la page */
+body[data-tab="cosmos"] #views, body[data-tab="cosmos"] #v-cosmos { background: #0d1118; }
+
+/* Confort tactile : mêmes cibles en vue normale, dense et grand texte. */
+.btn, .btn.small, body.large-text .btn.small, .mini, .gis-b .mini,
+.gmiles, .pinb, .hx, .hmore, .bench-clear, .search-clear,
+.filters button, .subtabs button, [data-jt], [data-ct], .dom-more, .exp-mini,
+.chip, .icon-btn, .modal-x, .ab-main, .ab-x {
+  min-height: 44px; min-width: 44px;
+}
+.mini, .gis-b .mini, .icon-btn, .modal-x { height: auto; }
+.icon-btn, .modal-x, .ab-x { width: 44px; }
+#top { height: auto; min-height: calc(var(--top) + var(--safe-t)); padding-bottom: 4px; }
+.age { min-height: 44px; min-width: 120px; flex: 1 0 120px; }
+.top-right { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; }
+.goal-card .ghead { min-height: 44px; align-items: center; }
+button:focus-visible, [role="button"]:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 3px solid var(--acc); outline-offset: 2px;
+}
+.gis-body { border: 0; background: none; padding: 0; text-align: left; color: inherit; min-height: 44px; }
+.gis-l2 { display: block; font-size: 13px; white-space: normal; }
+.gis { flex-wrap: wrap; }
+.gis-b { flex-wrap: wrap; }
+.gis-b .harvest { font-size: 13px; padding: 0 10px; }
+.starter-harvest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.inv .n { font-size: 12px; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
+.inv { min-height: 104px; }
+body.large-text .inv .n { font-size: 14px; }
+@media (max-width: 430px) {
+  .goal-card .ghead { flex: 1 1 100%; }
+  .gis:not(.gact) { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 8px; padding: 8px 0; }
+  .gis:not(.gact) .gis-ic { grid-column: 1; }
+  .gis:not(.gact) .gis-body { grid-column: 2; }
+  .gis:not(.gact) .gis-l1 { flex-wrap: wrap; gap: 2px 6px; }
+  .gis:not(.gact) .gis-b { grid-column: 3; flex-direction: column; align-items: stretch; max-width: 112px; }
+}

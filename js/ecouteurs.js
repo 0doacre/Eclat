@@ -302,6 +302,11 @@
         if (!b) return;
         A.init();
         if (b.dataset.ab === "stop") { E.stopAct(); A.click(); render(true); actBar(); return; }
+        if (b.dataset.ab === "harvest") {
+          const a = S().act;
+          if (a && a.k === "harv") { U.zone = a.z; setTab("domaine"); Dom.focusZone(a.z); }
+          return;
+        }
         openHands();
       });
       $("#updBar").addEventListener("click", (ev) => {
@@ -333,7 +338,7 @@
         let b;
         if (U.tab === "atelier") { U.anchor = anchorFor(t); U.anchorAt = performance.now(); }
         if (U.tab === "carte" && Carte.click(t)) return;
-        if (Dom.click(t)) return;
+        if (Dom.click(t, ev)) return;
         if ((b = t.closest(".inv"))) {
           if (U.lp) { cancelLp(); U.lp = null; putInSlot(b.dataset.inv); }
           return;

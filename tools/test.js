@@ -3056,8 +3056,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.13.1 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.13.1");
+test("Version 0.13.2 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.13.2");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3258,9 +3258,21 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
   assert.strictEqual(E.hasEndingHint("retour"), true);
 });
 
+test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fichier sert", () => {
+  const fs = require("fs"), path = require("path");
+  const dir = path.join(__dirname, "..", "assets", "oeuvres"), sert = {};
+  for (const pid in D.PROJECTS) {
+    sert[D.oeuvreArt(pid)] = 1;
+    D.PROJECTS[pid].steps.forEach((s, i) => { sert[D.oeuvreArt(pid, i)] = 1; });
+  }
+  for (const n in sert) assert.ok(fs.existsSync(path.join(dir, n + ".webp")), "image manquante : " + n);
+  for (const f of fs.readdirSync(dir)) assert.ok(sert[f.replace(/\.webp$/, "")], "image jamais montrée : " + f);
+  for (const pid in D.OEUVRE_ETAPES) assert.ok(D.PROJECTS[pid] && D.OEUVRE_ETAPES[pid].length === D.PROJECTS[pid].steps.length, pid);
+});
+
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.13.1");
+  assert.strictEqual(D.VERSION, "0.13.2");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

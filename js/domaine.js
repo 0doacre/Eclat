@@ -137,7 +137,7 @@
       let btns = "";
       if (d.hand) {
         const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;
-        btns += '<button class="mini' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-label="' + (on ? "Arrêter de récolter" : "Récolter en continu") + '" title="' + (on ? "Arrêter" : "Récolter en continu") + '">' + (on ? "■" : "▶") + "</button>";
+        btns += '<button class="mini harvest' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter de récolter : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■ Arrêter" : "▶ Récolter") + "</button>";
       }
       if (ch) {
         const free = E.freeExt(ch.t), can = free >= 1 || E.plan(ch.t, 1).ok;
@@ -145,8 +145,8 @@
       }
       return '<div class="gis" data-gis="' + key + '">' +
         '<button class="gis-ic' + (d.hand ? " hand" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + icon(res) + "</button>" +
-        '<div class="gis-body" data-gsheet="' + key + '"><div class="gis-l1"><b>' + esc(I[res].n) + "</b>" + right + "</div>" +
-        '<div class="gis-l2 tiny muted">' + sub + "</div></div>" +
+        '<button class="gis-body" data-gsheet="' + key + '" aria-label="Gisement : ' + esc(I[res].n) + '"><span class="gis-l1"><b>' + esc(I[res].n) + "</b>" + right + "</span>" +
+        '<span class="gis-l2 tiny muted">' + sub + "</span></button>" +
         (btns ? '<div class="gis-b">' + btns + "</div>" : "") + "</div>";
     }
 
@@ -503,7 +503,8 @@
     /* ------------------------------------------------------------ Grand Œuvre */
     function oeuvreHTML(pid) {
       const P = D.PROJECTS[pid], ps = E.projState(pid), step = P.steps[ps.step], st = S(), on = E.siteOn(pid);
-      let h = '<section class="dom-card dom-oeuvre"><h3>' + P.ic + " " + esc(P.n) + '</h3><div class="tiny muted">Étape ' + (ps.step + 1) + " sur " + P.steps.length + " · " + esc(step.n) + "</div>";
+      // le chantier montre l’étape en cours
+      let h = '<section class="dom-card dom-oeuvre"><h3>' + P.ic + " " + esc(P.n) + '</h3><img class="oeuvre-art oeuvre-art-compact" src="assets/oeuvres/' + D.oeuvreArt(pid, ps.step) + '.webp" alt="" loading="lazy" decoding="async"><div class="tiny muted">Étape ' + (ps.step + 1) + " sur " + P.steps.length + " · " + esc(step.n) + "</div>";
       if (step.cost) {
         h += Object.keys(step.cost).map((k) => {
           const paid = ps.paid[k] || 0;
@@ -685,9 +686,13 @@
     }
 
     /* ------------------------------------------------------------ clics */
-    function click(t) {
+    function click(t, ev) {
       let b;
-      if (t.closest("[data-harv]")) return true; // géré à l’appui
+      if ((b = t.closest("[data-harv]"))) {
+        // Le pointeur récolte à l’appui ; clavier et technologies d’assistance au clic.
+        if (ev && ev.detail === 0) { A.init(); harvest(b); }
+        return true;
+      }
       if ((b = t.closest("[data-xadd]"))) {
         const key = b.dataset.xadd, i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
         const ch = E.extChoice(res, z);

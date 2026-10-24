@@ -1,13 +1,13 @@
 /* ÉCLAT — l’arbre des connaissances (Carnet, vue « Arbre ») : js/arbre.js */
 .arb-bascule { display: flex; gap: 6px; margin: 0 0 10px; }
 .arb-bascule button {
-  flex: 1; min-height: 40px; border-radius: 999px; font: 600 14px var(--sans);
+  flex: 1; min-height: 44px; border-radius: 999px; font: 600 14px var(--sans);
   background: transparent; border: 1.5px solid var(--line2); color: var(--text);
 }
 .arb-bascule button.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
 .arb-tete { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; }
 .arb-tete .grow { flex: 1; }
-.arb-tete .btn { min-width: 44px; min-height: 40px; }
+.arb-tete .btn { min-width: 44px; min-height: 44px; }
 .arb-vue {
   position: relative; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
   height: max(300px, calc(100dvh - var(--top) - var(--nav) - var(--safe-b) - var(--safe-t) - 190px));
@@ -15,6 +15,7 @@
 }
 .arb-vue.tient { cursor: grabbing; }
 .arb-monde { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.arb-monde.glisse { transition: transform .3s ease-out; }
 .arb-fond { position: absolute; left: 0; top: 0; overflow: visible; }
 .arb-bande { fill: color-mix(in srgb, var(--ac) 11%, transparent); }
 .arb-bande.suivant { fill: color-mix(in srgb, var(--ac) 5%, transparent); }
@@ -24,13 +25,21 @@
   position: absolute; left: 8px; font: 700 12px/1.2 var(--sans); letter-spacing: .02em; white-space: nowrap;
   color: color-mix(in srgb, var(--ac) 70%, var(--text)); pointer-events: none;
 }
-.arb-age.bas { left: auto; right: 8px; opacity: .55; }
 .arb-age.suivant { opacity: .7; }
 .arb-age.futur { color: var(--dim); opacity: .7; }
-.arb-t { fill: none; stroke: color-mix(in srgb, var(--text) 26%, transparent); stroke-width: 1.6; }
-.arb-t.pointille { stroke: color-mix(in srgb, var(--text) 26%, transparent); stroke-dasharray: 4 5; }
+.arb-t { fill: none; stroke: color-mix(in srgb, var(--text) 30%, transparent); stroke-width: 1.6; transition: opacity .2s; }
+.arb-t.pointille { stroke-dasharray: 4 5; }
+.arb-t.loin { display: none; } /* saute plus d’un âge : ne se montre que si l’on touche l’un de ses bouts */
+/* un nœud choisi : ses traits s’allument (ingrédients en couleur, usages en clair), le reste s’efface */
+.arb-monde.focus .arb-t { opacity: .12; }
+.arb-monde.focus .arb-t.lie { display: inline; opacity: 1; stroke-width: 2.4; }
+.arb-monde.focus .arb-t.amont { stroke: var(--acc); }
+.arb-monde.focus .arb-t.aval { stroke: color-mix(in srgb, var(--text) 75%, transparent); }
+.arb-monde.focus .arb-n:not(.sel):not(.lie) { opacity: .3; }
+.arb-monde.focus .arb-n.sel { box-shadow: 0 0 0 3px var(--acc); z-index: 2; }
+.arb-monde.focus .arb-n.lie { z-index: 1; }
 .arb-n {
-  position: absolute; width: 48px; height: 48px; padding: 0; border-radius: 12px;
+  position: absolute; width: 48px; height: 48px; padding: 0; border-radius: 12px; transition: opacity .2s;
   display: flex; align-items: center; justify-content: center;
   background: var(--panel); border: 1.5px solid color-mix(in srgb, var(--ac) 65%, var(--line2)); color: var(--text);
   font: inherit; cursor: pointer;
@@ -44,7 +53,35 @@
   position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 3px; width: 64px;
   font: 600 10.5px/1.15 var(--sans); text-align: center; color: var(--text); pointer-events: none;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  text-shadow: 0 0 3px var(--bg2), 0 0 3px var(--bg2); /* lisible même quand un trait passe dessous */
 }
+/* l’âge où l’on se trouve, quand l’étiquette de sa bande est sortie de la vue */
+.arb-ici {
+  position: absolute; left: 8px; top: 6px; padding: 3px 9px; border-radius: 999px; pointer-events: none;
+  font: 700 12px/1.2 var(--sans); white-space: nowrap; color: color-mix(in srgb, var(--ac, var(--acc)) 70%, var(--text));
+  background: color-mix(in srgb, var(--bg2) 88%, transparent); border: 1px solid var(--line2);
+}
+.arb-ici[hidden] { display: none; }
+/* le bandeau du nœud choisi, posé en bas de la vue */
+.arb-fiche {
+  position: absolute; left: 6px; right: 6px; bottom: 6px; max-height: 45%; overflow-y: auto; cursor: auto;
+  padding: 8px 10px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line2);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .35); touch-action: pan-y; user-select: text; -webkit-user-select: text;
+}
+.arb-fiche[hidden] { display: none; }
+.arb-f-tete { display: flex; align-items: center; gap: 8px; }
+.arb-f-tete .grow { flex: 1; min-width: 0; font-size: 15px; }
+.arb-f-tete .btn { min-height: 36px; min-width: 40px; }
+.arb-f-l { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 6px 0 0; }
+.arb-f-k { font: 700 11px/1 var(--sans); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-right: 2px; display: inline-flex; align-items: center; gap: 4px; }
+.arb-f-k .gi { width: 14px; height: 14px; }
+.arb-puce {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 2px 9px 2px 3px; border-radius: 999px;
+  background: var(--panel2); border: 1px solid var(--line2); color: var(--text); font: 600 12.5px/1.1 var(--sans); cursor: pointer;
+}
+.arb-puce b { color: var(--acc); }
+.arb-puce.off, .arb-puce.fant { cursor: default; padding-left: 9px; color: var(--muted); }
+.arb-puce.fant { color: var(--intu); border-style: dashed; }
 .arb-e {
   position: absolute; top: -8px; right: -10px; padding: 1px 5px; border-radius: 999px; pointer-events: none;
   background: var(--intu); color: #1a1208; font: 700 10px/1.3 var(--sans); white-space: nowrap;

@@ -35,3 +35,11 @@ Toutes sous licence [SIL Open Font License 1.1](https://openfontlicense.org), em
 `assets/terres/<id>-carte.webp` (île de la Carte) et `assets/terres/<id>-decor.webp` (fond de la fiche du Domaine),
 douze terres, un seul jeu de décors manquant : le Caveau. Images fournies par l'auteur.
 [à préciser : outil, modèle, date et licence d'usage commercial]
+
+
+## Grands Œuvres et fonds d'écran
+
+19 images générées avec l’outil de génération d’images OpenAI dans ChatGPT (modèle de génération d’images non identifié), le 24 octobre 2026. Sélection et validation artistique par le commanditaire. Conversion et optimisation WebP : Pillow. Droits d’utilisation : soumis aux conditions OpenAI applicables aux images générées ; aucune licence tierce revendiquée.
+
+
+Fichiers : `assets/oeuvres/` (13 illustrations) et `assets/fonds/` (6 fonds). Inventaire : `assets/ILLUSTRATIONS-MANIFEST.json`.

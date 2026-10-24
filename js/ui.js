@@ -412,7 +412,7 @@
   function nextModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     const o = U.mq.shift();
-    if (!o) { U.mcur = null; m.classList.add("hidden"); return; }
+    if (!o) { U.mcur = null; m.classList.add("hidden"); $("#app").inert = false; return; }
     U.mcur = o;
     U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
@@ -424,6 +424,7 @@
     box.scrollTop = 0;
     box.tabIndex = -1;
     box.focus({ preventScroll: true });
+    $("#app").inert = true;
     if (o.onOpen) o.onOpen(box);
   }
   function closeModal() {
@@ -639,16 +640,19 @@
     if (!tabAvailable(t)) t = "domaine";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
     const was = U.tab;
+    const views = $("#views");
+    U.viewScroll = U.viewScroll || {};
+    if (was !== t) U.viewScroll[was] = views.scrollTop;
     U.tab = t;
     $$(".view").forEach((v) => { v.classList.toggle("on", v.id === "v-" + t); delete v.dataset.sig; });
     document.body.dataset.tab = t;
     $$("#tabs button").forEach((b) => { const on = b.dataset.tab === (PARENT[t] || t); b.classList.toggle("on", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     if (U.badges[t]) { U.badges[t] = false; updateBadges(); }
     if (t === "journal" || t === "carnet") A.page();
-    $("#views").scrollTop = 0;
     render(true);
+    views.scrollTop = was === t ? 0 : U.viewScroll[t] || 0;
     // la carte s’ouvre sur la terre où l’on est
-    if (t === "carte" && was !== "carte") {
+    if (t === "carte" && was !== "carte" && U.viewScroll[t] === undefined) {
       const v = $("#views"), svg = $("#v-carte svg");
       if (svg) v.scrollTop = Math.max(0, svg.getBoundingClientRect().height * Carte.focusY(U.zone) - v.clientHeight * 0.55);
     }

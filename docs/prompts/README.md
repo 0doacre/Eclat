@@ -75,3 +75,7 @@ puis la fusionne.
 - `arbre-connaissance-0-11.md` : arbre des connaissances (recettes connues, fantômes pointillés pour ce qui reste à trouver, âges en fond), Carnet liste/arbre, puis Mémoire en arbre (0.11.0).
 - `illustrations-terres.md` : prompts d image (vignette de carte et décor) pour chaque terre, avec le style commun, les tailles et le poids.
 - `sons-terres.md` : prompts de son (ambiance) et de musique pour chaque terre, avec le cahier des charges technique (boucles, poids, volume).
+- `arbre-mesures-t0.md` : état des lieux chiffré de l'arbre des connaissances (script de mesures, ligne de base), sans changement de version. À faire **avant** `arbre-lisible-t1-0-14-0.md`.
+- `fenetres-n1-0-13-3.md` : file d'attente des fenêtres automatiques, seuil du retour d'absence, appui sur les onglets pendant une bulle de tutoriel (0.13.3).
+- `arbre-lisible-t1-0-14-0.md` : arbre en plein écran, rail des âges, zoom à trois niveaux, entrées « Voir dans l'arbre » (0.14.0). Après `arbre-mesures-t0.md`.
+- `simulateur-profils-f.md` : le simulateur de passages joue plusieurs types de joueurs (séances, absences), sans changement de version. T0, N1 et F sont indépendants ; T1 attend la fusion de T0. Le plan : `docs/PLAN-ARBRE-ERGONOMIE-NIVEAUX.md`.

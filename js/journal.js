@@ -376,7 +376,8 @@
     }
     function projCard(pid) {
       const P = D.PROJECTS[pid], ps = E.projState(pid), st = S();
-      let h = '<div class="card proj"><div class="ph"><span class="pi">' + P.ic + '</span><div class="grow"><div class="pn">' + esc(P.n) + '</div><div class="small muted">' + esc(P.d) + "</div></div></div>";
+      // le Journal montre l’œuvre entière, le Domaine l’étape en cours
+      let h = '<div class="card proj"><div class="ph"><span class="pi">' + P.ic + '</span><div class="grow"><div class="pn">' + esc(P.n) + '</div><div class="small muted">' + esc(P.d) + '</div></div></div><img class="oeuvre-art oeuvre-art-compact" src="assets/oeuvres/' + D.oeuvreArt(pid) + '.webp" alt="" loading="lazy" decoding="async">';
       P.steps.forEach((s, i) => {
         const cls = i < ps.step ? " done" : i === ps.step ? " cur" : "";
         h += '<div class="step' + cls + '"><div class="sn">' + (i < ps.step ? "✓ " : i + 1 + ". ") + esc(s.n) + '</div><div class="tiny muted">' + esc(s.d || "") + "</div>";
