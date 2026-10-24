@@ -322,11 +322,7 @@
       const book = E.carnet();
       let known = 0, total = 0;
       book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
-      arbreVueChoisie();
       let h = '<h2 class="title">Carnet</h2>';
-      /* ARBRE (0.11) : l’interrupteur Liste / Arbre ; la vue Arbre est plus bas, bloc « ARBRE » */
-      h += arbreBascule();
-      /* fin ARBRE */
       if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande : les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> montre ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
       // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
@@ -339,12 +335,12 @@
     }
 
     /* ------------------------------------------------------------ ARBRE (0.11)
-     * La vue « Arbre » du Carnet : js/arbre.js décide de ce qui se voit et le place ;
+     * L’onglet « Arbre » : js/arbre.js décide de ce qui se voit et le place ;
      * ici, l’interrupteur, le cadre qu’on glisse et qu’on pince, et les touches. */
     const Arb = typeof window !== "undefined" ? window.EclatArbre : null;
     const ARB_TXT = { plein: "Arbre des connaissances", fantome: "Recette pas encore trouvée", toucher: "Pas encore trouvée. Essaie avec ce qui est autour.",
       futur: (de, a) => (de === a ? "Âge " + a : "Âges " + de + " à " + a) + " · encore loin",
-      fermer: "Fermer l’arbre", legende: "Légende", rail: "Aller à un âge", loin: "Éloigner", pres: "Rapprocher", centrer: "Centrer",
+      legende: "Légende", rail: "Aller à un âge", loin: "Éloigner", pres: "Rapprocher", centrer: "Centrer",
       trouvee: (n) => n + (n > 1 ? " recettes trouvées" : " recette trouvée"), aucune: "Aucune recette trouvée pour l’instant",
       lg: ["Une recette trouvée.", "Une matière que tu as déjà vue.", "Une recette pas encore trouvée.", "Ton objectif.", "Un trait qui saute des âges : touche une case pour le voir."] };
     /* l’échelle de la vue, et ses trois niveaux : loin (les âges et leur compte), milieu (les icônes), près (les noms) */
@@ -353,17 +349,11 @@
     const ARB_LOIN = 0.5, ARB_PRES = 1;                    // en dessous : loin ; jusqu’à 1 : milieu ; à partir de 1 : près
     const ARB_RAIL = 44;                                   // la largeur de la réglette des âges (la vue la laisse libre)
     const arbreNiveau0 = (k) => (k < ARB_LOIN ? "loin" : k < ARB_PRES - 0.001 ? "milieu" : "pres");
-    function arbreBascule() {
-      if (!Arb) return "";
-      return '<div class="arb-bascule" role="group" aria-label="Affichage du Carnet"><button type="button" data-cvue="liste" class="on" aria-pressed="true">Liste</button>' +
-        '<button type="button" data-cvue="arbre" aria-pressed="false" aria-haspopup="dialog">Arbre</button></div>';
-    }
-    /* la vue plein écran : une barre fine, la vue qu’on glisse, la réglette des âges, le niveau « loin », la légende, le bandeau du nœud choisi */
+    /* l’onglet Arbre : une barre fine, la vue qu’on glisse, la réglette des âges, le niveau « loin », la légende, le bandeau du nœud choisi */
     function arbreBarreHTML(g) {
       const n = g.compte;
       const txt = n ? ARB_TXT.trouvee(n) : ARB_TXT.aucune;
       return '<div class="arb-barre">' +
-        '<button type="button" class="btn small ghost" data-arb="fermer" aria-label="' + esc(ARB_TXT.fermer) + '">←</button>' +
         '<span class="arb-compte" aria-label="' + esc(txt) + '">' + (n ? "<b>" + n + '</b><span class="arb-cpt-t"> ' + esc(n > 1 ? "recettes trouvées" : "recette trouvée") + "</span>" : '<span class="arb-cpt-t">' + esc(ARB_TXT.aucune) + "</span>") + "</span>" +
         '<button type="button" class="btn small ghost" data-arb="moins" aria-label="' + esc(ARB_TXT.loin) + '">−</button><button type="button" class="btn small ghost" data-arb="plus" aria-label="' + esc(ARB_TXT.pres) + '">+</button>' +
         '<button type="button" class="btn small ghost" data-arb="centre">' + esc(ARB_TXT.centrer) + '</button>' +
@@ -393,26 +383,21 @@
       return '<div class="arb-vue" id="arbre">' + Arb.rendu(lay, { icon: (id) => icon(id), esc, neuf: U.arbreNeuf, txt: ARB_TXT, car: Arb.carrefours(D) }) +
         arbreLoinHTML(Arb.loin(g, D)) + '<div class="arb-ici" aria-hidden="true"></div>' + arbreRailHTML() + arbreLegendeHTML() + '<div class="arb-fiche" hidden></div></div>';
     }
-    const arbrePleinEl = () => document.getElementById("arbplein");
+    const arbreEl = () => document.getElementById("v-arbre");
     const arbreSig = (g) => Arb.sig(g) + "|" + (U.arbreNeuf || "");
-    /* ouvre la vue plein écran ; avec un id d’objet, elle s’ouvre sur lui (choisi), sinon sur l’objectif ou la dernière découverte */
+    /* va à l’onglet Arbre ; avec un id d’objet, il s’ouvre sur lui (choisi), sinon sur l’objectif ou la dernière découverte */
     function arbreOuvrir(id) {
       if (!Arb || typeof document === "undefined") return;
-      let el = arbrePleinEl();
-      const premiere = !el;
-      if (premiere) {
-        el = document.createElement("div");
-        el.id = "arbplein"; el.className = "arb-plein";
-        el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-label", ARB_TXT.plein);
-        document.body.appendChild(el);
-        document.addEventListener("keydown", arbreClavier, true); // sur le document : si le bouton touché disparaît, le focus tombe sur la page et Échap doit encore fermer
-        U.arbreOpener = document.activeElement;
-        U.arbreOuvert = true;
-        const app = document.getElementById("app");
-        if (app) app.inert = true;
-      }
-      arbreBati(el, id, true);
-      if (premiere) { const b = el.querySelector('[data-arb="fermer"]'); if (b) b.focus({ preventScroll: true }); }
+      U.arbreVoirId = id || null;
+      setTab("arbre");
+    }
+    /* appelé par render() quand l’onglet est à l’écran : on ne redessine que si l’arbre a changé, la vue (glissée, zoomée) reste où elle était */
+    function arbreRendre(el) {
+      if (!Arb) return;
+      const g = Arb.graphe(E, D), id = U.arbreVoirId;
+      U.arbreVoirId = null;
+      if (!id && el.firstElementChild && el.dataset.sig === arbreSig(g)) return;
+      arbreBati(el, id, !U.arbreVue);
     }
     function arbreBati(el, id, centrer) {
       const g = Arb.graphe(E, D), lay = Arb.mise_en_page(g, D);
@@ -429,31 +414,18 @@
       else U.arbreSel = null;
       if (actif && !centrer) { const b = el.querySelector('[data-arb="' + actif + '"]'); if (b) b.focus({ preventScroll: true }); }
     }
-    /* appelé régulièrement : si quelque chose a changé dans l’arbre (une découverte), on le redessine, la vue reste où elle était */
+    /* appelé régulièrement : si quelque chose a changé dans l’arbre (une découverte), on le redessine */
     function arbreMaj() {
-      const el = arbrePleinEl();
-      if (!el || !Arb) return;
-      const g = Arb.graphe(E, D);
-      if (el.dataset.sig === arbreSig(g)) return;
+      const el = arbreEl();
+      if (!el || !Arb || U.tab !== "arbre") return;
+      if (el.dataset.sig === arbreSig(Arb.graphe(E, D))) return;
       arbreBati(el, null, false);
     }
-    function arbreFermer() {
-      const el = arbrePleinEl();
-      if (!el) return;
-      el.remove();
-      document.removeEventListener("keydown", arbreClavier, true);
-      U.arbreOuvert = false; U.arbreSel = null;
-      const app = document.getElementById("app");
-      if (app && !U.mcur) app.inert = false;
-      const b = U.arbreOpener; U.arbreOpener = null;
-      if (b && b.isConnected && typeof b.focus === "function") b.focus({ preventScroll: true });
-    }
     function arbreClavier(e) {
-      if (e.key === "Escape" && !U.mcur) { e.stopPropagation(); e.preventDefault(); arbreFermer(); return; }
-      const rb = e.target.closest && e.target.closest(".arb-rb");
+      const rb = e.target.closest && e.target.closest("#v-arbre .arb-rb");
       if (rb && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
         e.preventDefault();
-        const bs = Array.from(document.querySelectorAll("#arbplein .arb-rb")), i = bs.indexOf(rb) + (e.key === "ArrowUp" ? -1 : 1);
+        const bs = Array.from(document.querySelectorAll("#v-arbre .arb-rb")), i = bs.indexOf(rb) + (e.key === "ArrowUp" ? -1 : 1);
         if (bs[i]) bs[i].focus({ preventScroll: true });
       }
     }
@@ -534,12 +506,6 @@
       if (m) { m.classList.add("glisse"); setTimeout(() => m.classList.remove("glisse"), 320); }
       arbrePoser(v);
     }
-    /* appelé par render() quand le Carnet est à l’écran : vrai si l’arbre s’en charge.
-     * On ne redessine que si l’arbre a changé ; la vue (glissée, zoomée) reste où elle était. */
-    // on retrouve la vue qu’on avait choisie (avant le premier rendu, sinon l’arbre s’affiche sans répondre au doigt)
-    // (0.14) l’arbre n’est plus une vue du Carnet : « Arbre » ouvre la vue plein écran (arbreOuvrir), le Carnet reste la liste
-    function arbreVueChoisie() { U.carnetVue = "liste"; }
-    function carnetArbre() { arbreVueChoisie(); return false; }
     function arbreCentrer(lay, g) {
       const v = document.getElementById("arbre"), c = Arb.centre(lay, g);
       const vw = v ? v.clientWidth : 360, vh = v ? v.clientHeight : 480, k = ARB_NIV.pres;
@@ -656,24 +622,19 @@
       });
     }
     if (typeof document !== "undefined") {
+      document.addEventListener("keydown", arbreClavier, true);
       // en capture : un doigt qui a glissé n’ouvre pas de fiche en relâchant
       document.addEventListener("click", (e) => {
-        const t = e.target, b = t.closest && t.closest("[data-cvue], [data-arb], [data-arbre-obj], .arb-vue");
+        const t = e.target, b = t.closest && t.closest("[data-arb], [data-arbre-obj], .arb-vue");
         if (!b) return;
-        if (b.dataset.cvue) {
-          e.stopPropagation(); A.click();
-          if (b.dataset.cvue === "arbre") arbreOuvrir(); // « Arbre » ouvre la vue plein écran ; « Liste » est le Carnet, déjà là
-          return;
-        }
         if (b.dataset.arbreObj !== undefined) { e.stopPropagation(); A.click(); arbreOuvrir(objectifCle()); return; }
         if (b.dataset.arb) {
           e.stopPropagation(); A.click();
           const a = b.dataset.arb;
-          if (a === "fermer") arbreFermer();
-          else if (a === "centre") { if (U.arbreLay) { arbreCentrer(U.arbreLay, Arb.graphe(E, D)); arbrePoser(); } }
+          if (a === "centre") { if (U.arbreLay) { arbreCentrer(U.arbreLay, Arb.graphe(E, D)); arbrePoser(); } }
           else if (a === "legende") {
             U.arbreLegende = !U.arbreLegende;
-            const lg = document.querySelector("#arbplein .arb-legende"); if (lg) lg.hidden = !U.arbreLegende;
+            const lg = document.querySelector("#v-arbre .arb-legende"); if (lg) lg.hidden = !U.arbreLegende;
             b.setAttribute("aria-expanded", U.arbreLegende ? "true" : "false");
           } else arbreNiveau(a === "plus" ? 1 : -1);
           return;
@@ -1319,7 +1280,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { arbreMaj, arbreOuvrir, carnetArbre, viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
+    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
   }
 
   window.EclatAtelier = { create };

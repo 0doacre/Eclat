@@ -47,8 +47,7 @@ async function mesurer(browser, largeur) {
     await p.evaluate(() => window.__eclat.closeModal());
   }
   await p.waitForFunction(() => !document.querySelector("#app").inert);
-  await p.locator('#tabs [data-tab="carnet"]').click();
-  await p.locator('[data-cvue="arbre"]').click();
+  await p.locator('#tabs [data-tab="arbre"]').click();
   await p.locator("#arbre").waitFor({ state: "visible" });
   await p.waitForTimeout(700); // la vue se centre
   const r = await p.evaluate(() => {

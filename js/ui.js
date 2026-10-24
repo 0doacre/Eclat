@@ -415,8 +415,7 @@
   function nextModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     const o = U.mq.shift();
-    const pl = document.getElementById("arbplein");
-    if (!o) { U.mcur = null; m.classList.add("hidden"); $("#app").inert = !!pl; if (pl) pl.inert = false; return; }
+    if (!o) { U.mcur = null; m.classList.add("hidden"); $("#app").inert = false; return; }
     U.mcur = o;
     U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
@@ -429,7 +428,6 @@
     box.tabIndex = -1;
     box.focus({ preventScroll: true });
     $("#app").inert = true;
-    if (pl) pl.inert = true; // l’arbre plein écran, sous la fenêtre, n’a plus le focus
     if (o.onOpen) o.onOpen(box);
     Tuto.tick(); // une bulle de tutoriel ne reste pas affichée sous une fenêtre qui s’ouvre
   }
@@ -630,15 +628,15 @@
   }
 
   /* ============================================================ VUES */
-  /* les onglets arrivent quand ils ont quelque chose à montrer : le Carnet à la première
+  /* les onglets arrivent quand ils ont quelque chose à montrer : l’Arbre et le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
-  /* cinq onglets : Domaine, Carte, Atelier, Carnet, Journal ; les Machines se rangent dans l’Atelier, le Cosmos dans le Journal */
+  /* six onglets : Domaine, Carte, Atelier, Arbre, Carnet, Journal ; les Machines se rangent dans l’Atelier, le Cosmos dans le Journal */
   const PARENT = { machines: "atelier", cosmos: "journal" };
   function tabAvailable(t) {
     const st = S();
     if (t === "cosmos") return E.cache().sky;
     if (t === "journal" && E.cache().sky) return true;
-    if (t === "carnet") return Object.keys(st.known).length > 0;
+    if (t === "carnet" || t === "arbre") return Object.keys(st.known).length > 0;
     if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
     if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions()) || (E.hasSignes && E.hasSignes());
     return true;
@@ -672,7 +670,7 @@
       if (on && !d) { d = document.createElement("i"); d.className = "dot"; b.appendChild(d); }
       if (!on && d) d.remove();
     });
-    for (const k of ["carnet", "journal"]) {
+    for (const k of ["arbre", "carnet", "journal"]) {
       const jb = $('#tabs [data-tab="' + k + '"]'), on = tabAvailable(k);
       if (on && jb.classList.contains("hidden") && U.tabsSeen) jb.classList.add("born"); // il vient d’apparaître
       jb.classList.toggle("hidden", !on);
@@ -715,7 +713,8 @@
     const ae = document.activeElement;
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
-    else if (U.tab === "carnet") { if (!Atl.carnetArbre(el)) el.innerHTML = viewCarnet(); } // la vue Arbre se redessine elle-même (js/arbre.js)
+    else if (U.tab === "carnet") el.innerHTML = viewCarnet();
+    else if (U.tab === "arbre") Atl.arbreRendre(el); // l’arbre se redessine lui-même (js/arbre.js), seulement s’il a changé
     else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
@@ -1085,7 +1084,7 @@
     if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
     U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();
-    if (U.arbreOuvert && Date.now() - (U.arbreT || 0) > 400) { U.arbreT = Date.now(); Atl.arbreMaj(); } // l’arbre plein écran suit les découvertes
+    if (U.tab === "arbre" && Date.now() - (U.arbreT || 0) > 400) { U.arbreT = Date.now(); Atl.arbreMaj(); } // l’arbre suit les découvertes
   }
 
   function boot() {
