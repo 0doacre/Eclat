@@ -73,3 +73,5 @@ puis la fusionne.
 - [v0.8.0 — Ergonomie majeure : Registre de quêtes, rituels des Semeurs, contrats du Troqueur & Codex d'artisanat](ergonomie-majeure-0-8-0.md)
 - `onboarding-0-10.md` : début de partie plus lent et plus clair, du juice, la relève expliquée (0.10.0). Consigne de livraison incluse par renvoi.
 - `arbre-connaissance-0-11.md` : arbre des connaissances (recettes connues, fantômes pointillés pour ce qui reste à trouver, âges en fond), Carnet liste/arbre, puis Mémoire en arbre (0.11.0).
+- `illustrations-terres.md` : prompts d image (vignette de carte et décor) pour chaque terre, avec le style commun, les tailles et le poids.
+- `sons-terres.md` : prompts de son (ambiance) et de musique pour chaque terre, avec le cahier des charges technique (boucles, poids, volume).
