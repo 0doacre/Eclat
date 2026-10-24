@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.5";
+  D.VERSION = "0.11.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,8 +1071,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🪜 Les âges se franchissent un par un. Un objet d’un âge trop lointain ne se découvre plus, et le Carnet ne montre de l’âge suivant que l’objectif et ce que tu as déjà trouvé.",
-    "🧤 Les gants de peau ne peuvent plus faire sauter l’âge. Une partie qui avait sauté retrouve son vrai âge."
+    "🌳 Le Carnet a maintenant un Arbre : touche « Arbre » en haut du Carnet. Tes recettes trouvées s’y relient à leurs ressources, âge par âge.",
+    "👆 Glisse pour te déplacer, pince ou touche + et − pour voir de plus près. Touche une case pour ouvrir sa fiche.",
+    "✦ Les cases vides en pointillé sont des recettes pas encore trouvées : celle de ton objectif, et celles que cachent les ressources que tu as étudiées."
   ];
 
 
