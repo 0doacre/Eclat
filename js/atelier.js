@@ -17,6 +17,16 @@
     const $ = (s, r) => (r || document).querySelector(s);
 
     /* ------------------------------------------------------------ ATELIER */
+    /* l’étape clé de l’objectif, quand sa recette reste à trouver : la piste déjà donnée dans le Domaine (rien de plus) reste sous les yeux à l’établi */
+    function goalHint() {
+      const g = E.guide();
+      if (!g || g.ob.k !== "craft") return "";
+      const id = g.step, it = I[id], lvl = S().hints[id] || 0;
+      if (!it || S().known[id]) return "";
+      return '<div class="card acc goal-hint"><div class="small"><span class="step-badge">✦ Étape clé</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Une recette nouvelle</b>") + "</div>" +
+        (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
+        (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") + "</div>";
+    }
     function viewAtelier() {
       const st = S();
       let h = subTabs("atelier", "machines", "Découvrir", "Machines");
@@ -30,14 +40,17 @@
           ? 'Le bois arrive : ' + fmt(E.count("bois")) + '/' + firstWood + '. Attends d’en avoir ' + firstWood + ', touche sa tuile ci-dessous, puis <b>Tailler</b>.'
           : '<span>Il te faut ' + firstWood + ' bois pour commencer.</span><button class="btn pri" data-hloop="lisiere:bois">▶ Récolter du bois</button>') + '</div>';
       }
-      if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
+      h += goalHint();
+      // l’explication des niveaux se lit une fois ; ensuite le bouton « Niveaux » rejoint l’établi et ne prend plus de ligne
+      const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;
+      if (niveauxTip) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button><button class="btn small ghost" data-tip="tip_niveaux">Compris</button></div>';
       h += pinsHTML();
       h += '<div class="gestes">';
       let locks = 0;
       for (const g of D.GESTE_ORDER) {
         const G = D.GESTES[g];
         if (!E.gesteOK(g)) {
-          if (G.secret || locks >= 2) continue;
+          if (G.secret || locks >= 1) continue; // une seule case « ??? » : assez pour annoncer la suite
           locks++;
           h += '<button class="geste lock" data-lock="' + g + '"><span class="gi">?</span><span class="gn">???</span></button>';
           continue;
@@ -51,6 +64,7 @@
       else if ((U.geste === "marteler" || U.geste === "electriser") && E.level(U.geste) > 1) heat = G.d + " (niveau " + E.level(U.geste) + ")";
       const mat = st.age >= 9 ? " m-labo" : st.age >= 6 ? " m-metal" : st.age >= 3 ? " m-pierre" : "";
       h += '<div class="card bench' + mat + '" id="bench"><div class="heat small"><span>' + esc(heat) + "</span>" +
+        (st.stats.crafts > 0 && !niveauxTip ? '<button class="bench-clear" data-skills>Niveaux</button>' : "") +
         (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") + '</div><div class="slots">';
       U.slots.forEach((id, i) => {
         if (i) h += '<span class="plus-sep">+</span>';
@@ -248,6 +262,7 @@
     }
     function resultHTML() {
       const r = U.last;
+      if (!r && S().stats.crafts >= 3) return ""; // déjà appris : la carte vide ne garde pas sa place (voir .result:empty)
       if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis touche le gros bouton. Le <b>thermomètre</b> dit si tu t’approches d’une recette.</p>';
       if (r.kind === "craft") {
         const it = I[r.id];

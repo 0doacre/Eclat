@@ -611,7 +611,7 @@
       if (!R) return null;
       const bonus = R.tap && !R.tap.sans && R.tap.mult > 1;
       const av = R.tap && R.tap.sans ? R.tap : R.chaleur;
-      return { n: R.n, t: R.t, ok: R.ok || "", etat: av && av.sans ? (regleSans(av) ? "ok" : "gene") : "neutre", bonus };
+      return { n: R.n, t: R.t, ok: R.ok || "", etat: av && av.sans ? (regleSans(av) ? "ok" : "gene") : "neutre", bonus, sans: av && av.sans ? av.sans.slice() : [] };
     };
     function tapYield(res, zid) {
       const c = E.cache();

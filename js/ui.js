@@ -979,11 +979,17 @@
     const list = o.top.map((k) => '<span class="ing">' + icon(k, "sm") + "+" + fmt(o.gains[k]) + " " + esc(I[k].n) + "</span>").join("");
     const auto = Object.keys(S().dom.ext).length > 0 || S().hand.q.length > 0;
     const full = [];
-    simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
+    // une sortie utile, sans compliquer la fermeture : lire la découverte, ou reprendre l’objectif
+    const suite = o.exp ? '<button class="btn" data-m="journal">📖 Lire la découverte</button>' : E.guide() ? '<button class="btn" data-m="goal">🎯 Reprendre l’objectif</button>' : "";
+    openModal({
+      on: { journal: () => { setTab("journal"); }, goal: () => { setTab("domaine"); } },
+      html: '<div class="kicker">Pendant ton absence · ' + fmtTime(o.dt) + "</div><h2>Bon retour !</h2>" +
       (list ? '<p class="small muted">Pendant ce temps, voici ce qui a été récolté et fabriqué :</p><div class="row wrap">' + list + "</div>"
         : '<p class="small">Rien n’a été récolté ni fabriqué pendant ton absence.' + (auto ? "" : " Pose une cabane sur un gisement : elle récolte même quand le jeu est fermé.") + "</p>") +
       (full.length ? '<p class="small">📦 La Réserve s’est remplie de ' + full.map((k) => esc(I[k].n.toLowerCase())).join(", ") + " : " + (full.length > 1 ? "leurs extracteurs se sont arrêtés" : "son extracteur s’est arrêté") + ". Une machine qui " + (full.length > 1 ? "les" : "le") + " transforme ferait de la place.</p>" : "") +
-      (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : ""));
+      (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : "") +
+        '<div class="acts">' + suite + '<button class="btn pri" data-m="close">Continuer</button></div>'
+    });
   }
 
   /* ============================================================ MISES À JOUR

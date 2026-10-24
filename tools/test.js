@@ -3088,8 +3088,15 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.15.2 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.15.2");
+test("Règle de terre : la gêne nomme les protections (le Domaine propose leur fiche)", () => {
+  const E0 = createEngine();
+  const r = E0.regle("mine");
+  assert.strictEqual(r.etat, "gene");
+  assert.deepStrictEqual(r.sans, ["torche", "lampe"]);
+  assert.deepStrictEqual(E0.regle("riviere").sans, []);
+});
+test("Version 0.15.3 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.15.3");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3304,12 +3311,13 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.15.2");
+  assert.strictEqual(D.VERSION, "0.15.3");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
   assert.strictEqual(parts[1], 15, "Mineure pour le lot courant");
+  assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
 console.log("Horodatage du Journal (0.7.1)");

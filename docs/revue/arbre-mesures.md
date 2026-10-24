@@ -1,8 +1,8 @@
 # L’arbre des connaissances : mesures
 
-État des lieux chiffré de la onglet « Arbre » (`node tools/arbre-mesures.js --ecrire`).
+État des lieux chiffré de l’onglet « Arbre » (`node tools/arbre-mesures.js --ecrire`).
 
-Version du jeu : 0.15.0 · commit : 5062204 · date : 2026-10-24.
+Version du jeu : 0.15.3 · commit : c8bbb2e · date : 2026-10-24.
 
 Les mesures sont celles de la mise en page à l’échelle 1, sans navigateur. « Nœuds par écran » compte les centres de nœuds dans une fenêtre glissée par pas de 20 px entre le premier et le dernier nœud. Les trois états : une partie neuve, `tools/fixtures/save-v5-age8-usine.json`, et une partie où toutes les recettes sont apprises (âge maximal).
 
@@ -21,7 +21,7 @@ Les mesures sont celles de la mise en page à l’échelle 1, sans navigateur. �
 | Traits droits (tous / visibles, %) | 0 / 0 | 31.7 / 34.5 | 30.9 / 33.5 |
 | Traits qui traversent une bande entière (tous / visibles, %) | 0 / 0 | 33.3 / 0 | 34.2 / 0 |
 | Croisements de traits visibles | 0 | 33 | 248 |
-| Mise en page : graphe, à froid, à chaud (ms) | 1 / 3.6 / 0.01 | 0.6 / 2 / 0.17 | 0.4 / 1.8 / 0.28 |
+| Mise en page : graphe, à froid, à chaud (ms) | 1.1 / 3.5 / 0.01 | 0.7 / 2 / 0.17 | 0.4 / 1.6 / 0.28 |
 
 Lu dans `css/arbre.css` et `js/arbre.js` :
 

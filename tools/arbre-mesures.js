@@ -218,7 +218,7 @@ function main() {
   const md = tableau(res, css, opt);
   if (arg.includes("--ecrire")) {
     const date = new Date().toISOString().slice(0, 10);
-    const tete = "# L’arbre des connaissances : mesures\n\nÉtat des lieux chiffré de la onglet « Arbre » (`node tools/arbre-mesures.js --ecrire`).\n\n" +
+    const tete = "# L’arbre des connaissances : mesures\n\nÉtat des lieux chiffré de l’onglet « Arbre » (`node tools/arbre-mesures.js --ecrire`).\n\n" +
       "Version du jeu : " + D.VERSION + " · commit : " + (commit() || "inconnu") + " · date : " + date + ".\n\n" +
       "Les mesures sont celles de la mise en page à l’échelle 1, sans navigateur. « Nœuds par écran » compte les centres de nœuds dans une fenêtre glissée par pas de 20 px entre le premier et le dernier nœud. " +
       "Les trois états : une partie neuve, `tools/fixtures/save-v5-age8-usine.json`, et une partie où toutes les recettes sont apprises (âge maximal).\n\n";
