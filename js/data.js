@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.6";
+  D.VERSION = "0.11.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,7 +1071,10 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🏁 Un âge ne s’ouvre plus que lorsque toutes les étapes de l’âge en cours sont faites. Fabriquer en avance l’objet de l’âge suivant ne suffit plus."
+    "🏁 Un âge ne s’ouvre plus que lorsque toutes les étapes de l’âge en cours sont faites. Fabriquer en avance l’objet de l’âge suivant ne suffit plus.",
+    "🌳 Le Carnet a maintenant un Arbre : touche « Arbre » en haut du Carnet. Tes recettes trouvées s’y relient à leurs ressources, âge par âge.",
+    "👆 Glisse pour te déplacer, pince ou touche + et − pour voir de plus près. Touche une case pour ouvrir sa fiche.",
+    "✦ Les cases vides en pointillé sont des recettes pas encore trouvées : celle de ton objectif, et celles que cachent les ressources que tu as étudiées."
   ];
 
 

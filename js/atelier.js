@@ -315,6 +315,10 @@
       let known = 0, total = 0;
       book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
       let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
+      /* ARBRE (0.11) : l’interrupteur Liste / Arbre ; la vue Arbre est plus bas, bloc « ARBRE » */
+      h += arbreBascule();
+      if (U.carnetVue === "arbre") return h + arbreHTML();
+      /* fin ARBRE */
       if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande : les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> affiche ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
       // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
@@ -325,6 +329,143 @@
         '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       return h + '<div id="clist">' + carnetList() + "</div>";
     }
+
+    /* ------------------------------------------------------------ ARBRE (0.11)
+     * La vue « Arbre » du Carnet : js/arbre.js décide de ce qui se voit et le place ;
+     * ici, l’interrupteur, le cadre qu’on glisse et qu’on pince, et les touches. */
+    const Arb = typeof window !== "undefined" ? window.EclatArbre : null;
+    const ARB_TXT = { fantome: "Recette pas encore trouvée", toucher: "Pas encore trouvée. Essaie avec ce qui est autour." };
+    const ARB_K = [0.3, 2];
+    function arbreBascule() {
+      if (!Arb) return "";
+      const on = U.carnetVue === "arbre";
+      return '<div class="arb-bascule" role="group" aria-label="Affichage du Carnet"><button type="button" data-cvue="liste" class="' + (on ? "" : "on") + '" aria-pressed="' + !on + '">Liste</button>' +
+        '<button type="button" data-cvue="arbre" class="' + (on ? "on" : "") + '" aria-pressed="' + on + '">Arbre</button></div>';
+    }
+    function arbreHTML() {
+      const g = U.arbreG || Arb.graphe(E, D);
+      const lay = U.arbreL || Arb.mise_en_page(g, D);
+      const n = g.compte;
+      return '<div class="arb-tete"><span class="grow small muted">' + (n ? n + (n > 1 ? " recettes trouvées" : " recette trouvée") : "Aucune recette trouvée pour l’instant") + "</span>" +
+        '<button type="button" class="btn small ghost" data-arb="moins" aria-label="Éloigner">−</button><button type="button" class="btn small ghost" data-arb="plus" aria-label="Rapprocher">+</button>' +
+        '<button type="button" class="btn small ghost" data-arb="centre">Centrer</button></div>' +
+        '<div class="arb-vue" id="arbre">' + Arb.rendu(lay, { icon: (id) => icon(id), esc, neuf: U.arbreNeuf, txt: ARB_TXT }) + "</div>";
+    }
+    /* appelé par render() quand le Carnet est à l’écran : vrai si l’arbre s’en charge.
+     * On ne redessine que si l’arbre a changé ; la vue (glissée, zoomée) reste où elle était. */
+    function carnetArbre(el) {
+      if (!Arb || U.carnetVue !== "arbre") return false;
+      const g = Arb.graphe(E, D);
+      const sig = Arb.sig(g) + "|" + JSON.stringify(U.badges) + "|" + (U.arbreNeuf || "");
+      const neuf = !el.dataset.sig; // le Carnet vient de s’ouvrir : la vue se recentre
+      if (!neuf && el.dataset.sig === sig && el.querySelector(".arb-vue")) return true;
+      const lay = Arb.mise_en_page(g, D);
+      U.arbreG = g; U.arbreL = lay;
+      el.innerHTML = viewCarnet();
+      U.arbreG = U.arbreL = null;
+      el.dataset.sig = sig;
+      U.arbreLay = lay;
+      if (neuf || !U.arbreVue) arbreCentrer(lay, g);
+      arbreMonter(el.querySelector(".arb-vue"));
+      U.arbreNeuf = null; // l’éclat d’une découverte ne se joue qu’une fois
+      return true;
+    }
+    function arbreCentrer(lay, g) {
+      const v = document.getElementById("arbre"), c = Arb.centre(lay, g);
+      const vw = v ? v.clientWidth : 360, vh = v ? v.clientHeight : 480, k = 1;
+      U.arbreVue = arbreBorne({ k, tx: vw / 2 - c.x * k, ty: vh / 2 - c.y * k }, vw, vh);
+    }
+    function arbreBorne(o, vw, vh) {
+      const lay = U.arbreLay;
+      if (!lay) return o;
+      const W = lay.w * o.k, H = lay.h * o.k, marge = 60;
+      o.tx = W <= vw ? (vw - W) / 2 : Math.min(8, Math.max(vw - W - 8, o.tx));
+      o.ty = H <= vh ? (vh - H) / 2 : Math.min(marge, Math.max(vh - H - marge, o.ty));
+      return o;
+    }
+    function arbrePoser(v) {
+      v = v || document.getElementById("arbre");
+      if (!v || !U.arbreVue) return;
+      const o = arbreBorne(U.arbreVue, v.clientWidth, v.clientHeight), m = v.firstElementChild;
+      if (m) m.style.transform = "translate(" + Math.round(o.tx) + "px," + Math.round(o.ty) + "px) scale(" + o.k + ")";
+    }
+    function arbreZoom(f, px, py) {
+      const v = document.getElementById("arbre"), o = U.arbreVue;
+      if (!v || !o) return;
+      if (px === undefined) { px = v.clientWidth / 2; py = v.clientHeight / 2; }
+      const k = Math.max(ARB_K[0], Math.min(ARB_K[1], o.k * f));
+      o.tx = px - (px - o.tx) * k / o.k; o.ty = py - (py - o.ty) * k / o.k; o.k = k;
+      arbrePoser(v);
+    }
+    function arbreMonter(v) {
+      if (!v) return;
+      arbrePoser(v);
+      const pts = new Map();
+      let base = null;
+      const rel = (e) => { const r = v.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+      const debut = () => {
+        const p = Array.from(pts.values()), o = U.arbreVue;
+        if (p.length === 1) base = { x: p[0].x, y: p[0].y, tx: o.tx, ty: o.ty, k: o.k };
+        else if (p.length >= 2) base = { mx: (p[0].x + p[1].x) / 2, my: (p[0].y + p[1].y) / 2, d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, tx: o.tx, ty: o.ty, k: o.k };
+      };
+      v.addEventListener("pointerdown", (e) => {
+        if (e.button > 0) return;
+        pts.set(e.pointerId, rel(e));
+        if (pts.size === 1) U.arbreGlisse = false;
+        debut();
+      });
+      v.addEventListener("pointermove", (e) => {
+        if (!pts.has(e.pointerId) || !base) return;
+        pts.set(e.pointerId, rel(e));
+        const p = Array.from(pts.values()), o = U.arbreVue;
+        if (p.length === 1) {
+          const dx = p[0].x - base.x, dy = p[0].y - base.y;
+          if (!U.arbreGlisse && Math.hypot(dx, dy) < 7) return;
+          if (!U.arbreGlisse) { U.arbreGlisse = true; v.classList.add("tient"); try { v.setPointerCapture(e.pointerId); } catch (er) { /* rien */ } }
+          o.tx = base.tx + dx; o.ty = base.ty + dy;
+        } else {
+          U.arbreGlisse = true;
+          const mx = (p[0].x + p[1].x) / 2, my = (p[0].y + p[1].y) / 2, d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1;
+          const k = Math.max(ARB_K[0], Math.min(ARB_K[1], base.k * d / base.d));
+          o.k = k; o.tx = mx - (base.mx - base.tx) * k / base.k; o.ty = my - (base.my - base.ty) * k / base.k;
+        }
+        arbrePoser(v);
+      });
+      const fin = (e) => { pts.delete(e.pointerId); v.classList.remove("tient"); debut(); };
+      v.addEventListener("pointerup", fin);
+      v.addEventListener("pointercancel", fin);
+      v.addEventListener("wheel", (e) => { e.preventDefault(); const p = rel(e); arbreZoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y); }, { passive: false });
+      // au clavier : le nœud qui prend le focus vient dans le cadre
+      v.addEventListener("focusin", (e) => {
+        const b = e.target.closest(".arb-n"), o = U.arbreVue;
+        if (!b || !o) return;
+        v.scrollLeft = 0; v.scrollTop = 0;
+        const x = (parseFloat(b.style.left) + 24) * o.k + o.tx, y = (parseFloat(b.style.top) + 24) * o.k + o.ty;
+        if (x < 30 || y < 30 || x > v.clientWidth - 30 || y > v.clientHeight - 30) { o.tx += v.clientWidth / 2 - x; o.ty += v.clientHeight / 2 - y; arbrePoser(v); }
+      });
+    }
+    if (typeof document !== "undefined") {
+      // en capture : un doigt qui a glissé n’ouvre pas de fiche en relâchant
+      document.addEventListener("click", (e) => {
+        const t = e.target, b = t.closest && t.closest("[data-cvue], [data-arb], .arb-vue");
+        if (!b) return;
+        if (b.dataset.cvue) {
+          e.stopPropagation();
+          if (U.carnetVue !== b.dataset.cvue) { U.carnetVue = b.dataset.cvue; A.click(); const el = document.getElementById("v-carnet"); if (el) delete el.dataset.sig; render(true); }
+          return;
+        }
+        if (b.dataset.arb) {
+          e.stopPropagation(); A.click();
+          if (b.dataset.arb === "centre") { if (U.arbreLay) { arbreCentrer(U.arbreLay, Arb.graphe(E, D)); arbrePoser(); } }
+          else arbreZoom(b.dataset.arb === "plus" ? 1.25 : 0.8);
+          return;
+        }
+        if (U.arbreGlisse) { U.arbreGlisse = false; e.stopPropagation(); e.preventDefault(); return; }
+        if (t.closest("[data-fantome]")) { e.stopPropagation(); toast(ARB_TXT.toucher); }
+      }, true);
+    }
+    E.on("learn", (id) => { if (I[id] && !I[id].path) U.arbreNeuf = id; });
+    /* fin ARBRE */
 
     function viewMachines() {
       let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
@@ -927,7 +1068,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
+    return { carnetArbre, viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
   }
 
   window.EclatAtelier = { create };
