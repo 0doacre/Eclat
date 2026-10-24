@@ -227,11 +227,11 @@
     }
     const WHY = {
       froid: "Rien à façonner avec cette combinaison pour l’instant.",
-      frais: "L’une de ces matières s’emploie ailleurs, avec une autre action ou d’autres matières.",
-      tiede: "Cette action et ces matières s’accordent bien. Cherche encore.",
-      manque: "Bonne action, mais il manque une matière.",
-      trop: "Bonne action, mais l’une de ces matières est superflue.",
-      geste: "Les bonnes matières, mais pas la bonne action."
+      frais: "L’une de ces ressources s’emploie ailleurs, avec une autre action ou d’autres ressources.",
+      tiede: "Cette action et ces ressources s’accordent bien. Cherche encore.",
+      manque: "Bonne action, mais il manque une ressource.",
+      trop: "Bonne action, mais l’une de ces ressources est superflue.",
+      geste: "Les bonnes ressources, mais pas la bonne action."
     };
     function thermo(t) {
       const T = D.TEMPS[t];

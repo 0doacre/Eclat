@@ -144,6 +144,8 @@ Quatre mots, et rien d’autre à l’écran : **tes mains**, une **commande**, 
 | Aucune demande pour l’instant. Le Troqueur en prépare d’autres. | Quêtes du Troqueur | « Aucune commande… » : le mot « commande » pour une demande |
 | Établi : pose jusqu’à trois ressources | Bulle du guide | « trois matières » |
 | apporte les ressources du passage / nécessaires | Objectifs, guide, message de passage | « les matières », mot banni à l’écran par le lexique |
+| L’une de ces ressources s’emploie ailleurs… · Les bonnes ressources, mais pas la bonne action. | Atelier, la note sous une tentative ratée (quatre notes) | « ces matières », « une matière » |
+| Récolter 120 ressources brutes. · Étudier une ressource ou percer un mystère. | Rituels du Domaine | « matières brutes », « une matière » |
 
 ## Ce qui n’apparaît plus au début
 
