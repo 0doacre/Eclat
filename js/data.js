@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.11.2";
+  D.VERSION = "0.12.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -600,31 +600,31 @@
     { id: "lisiere", n: "La Lisière", ic: "🌲", res: ["bois", "fibre", "caillou"],
       d: "L’orée d’une forêt immense. Tu t’es réveillé ici.",
       exps: [
-        { id: "chene", n: "Le Grand Chêne", dur: 15, rw: { inv: { bois: 15, fibre: 10 }, frag: "chene" } },
-        { id: "grotte", n: "La Grotte aux Mains", dur: 40, cost: { torche: 1 }, rw: { frag: "grotte", intu: 2 } },
+        { id: "chene", n: "Le Grand Chêne", dur: 30, rw: { inv: { bois: 15, fibre: 10 }, frag: "chene" } },
+        { id: "grotte", n: "La Grotte aux Mains", dur: 150, cost: { torche: 1 }, rw: { frag: "grotte", intu: 2 } },
         { id: "cercle", n: "Le Cercle de Pierres", dur: 60, need: "cerf_volant", hidden: "Un lieu qu’on ne voit que d’en haut, porté par le vent.", rw: { frag: "cercle", intu: 2 } },
         { id: "racines", n: "Sous les Racines", dur: 90, show: { marque: 3 }, hidden: "Sous les racines du vieux chêne, la terre sonne creux.", rw: { frag: "racines", intu: 2 } }
       ] },
     { id: "plaine", n: "La Plaine des Hautes Herbes", ic: "🌾", res: ["os", "cuir"], req: "epieu",
       d: "Des herbes plus hautes que toi, et des bêtes qui ne te craignent pas encore.",
       exps: [
-        { id: "champ_os", n: "Le Champ des Os", dur: 25, rw: { inv: { os: 20 }, frag: "ossements" } },
-        { id: "tumulus", n: "Le Tumulus", dur: 50, cost: { torche: 1 }, rw: { frag: "tumulus", intu: 2 } },
+        { id: "champ_os", n: "Le Champ des Os", dur: 60, rw: { inv: { os: 20 }, frag: "ossements" } },
+        { id: "tumulus", n: "Le Tumulus", dur: 180, cost: { torche: 1 }, rw: { frag: "tumulus", intu: 2 } },
         { id: "tombe", n: "L’Arbre Seul", dur: 75, need: "pioche_pierre", show: { any: [{ frag: "carcasse2" }, { frag: "carcasse" }] }, hidden: "Un arbre seul au milieu des herbes. Il faut de quoi creuser.", rw: { frag: "tombe", intu: 2 } },
         { id: "poings", n: "Les Six Poings", dur: 100, need: { frag: "cuves", glyph: "enfant" }, hidden: "Six poings fermés dans la poussière.", rw: { frag: "poings", intu: 3 } }
       ] },
     { id: "riviere", n: "La Rivière Lente", ic: "🏞️", res: ["argile", "silex", "sable"], req: "outre",
       d: "Une eau large et paresseuse, qui roule des galets noirs.",
       exps: [
-        { id: "gue", n: "Le Gué", dur: 30, rw: { inv: { silex: 15, argile: 10 }, frag: "galet" } },
+        { id: "gue", n: "Le Gué", dur: 300, rw: { inv: { silex: 15, argile: 10 }, frag: "galet" } },
         { id: "carcasse", n: "La Carcasse", dur: 60, need: "hache_pierre", rw: { frag: "carcasse", intu: 2 } },
         { id: "escalier", n: "L’Escalier Noyé", dur: 90, need: "cloche", show: { any: [{ frag: "gue2" }, { frag: "galet" }] }, hidden: "Des marches de pierre qui s’enfoncent sous l’eau sombre.", rw: { frag: "escalier", intu: 2 } }
       ] },
     { id: "collines", n: "Les Collines Vertes", ic: "⛰️", res: ["malachite", "cassiterite", "caillou"], req: "pioche_pierre",
       d: "Des collines rondes, striées de veines vertes et sombres.",
       exps: [
-        { id: "rails", n: "Les Rails Rouillés", dur: 40, rw: { inv: { malachite: 15 }, frag: "rails" } },
-        { id: "sommet", n: "Le Sommet", dur: 75, rw: { item: { tablette: 1 }, frag: "vue", intu: 2 } },
+        { id: "rails", n: "Les Rails Rouillés", dur: 300, rw: { inv: { malachite: 15 }, frag: "rails" } },
+        { id: "sommet", n: "Le Sommet", dur: 360, rw: { item: { tablette: 1 }, frag: "vue", intu: 2 } },
         { id: "nid", n: "Le Replat", dur: 100, need: ["flute", "lunette"], show: { any: [{ frag: "vue2" }, { frag: "vue" }] }, hidden: "Un replat rocheux abrité du vent, tourné vers le ciel.", rw: { frag: "nid", intu: 2 } }
       ] },
     { id: "mine", n: "Les Profondeurs", ic: "🦇", res: ["fer_min", "charbon"], req: "pioche_bronze",
@@ -800,20 +800,20 @@
    * { k: "exp", z: zone, x: exploration }, { k: "ext" } (poser et relier un extracteur)
    * ou { k: "line" } (faire tourner une machine). */
   D.OBJECTIVES = [
-    ["manche", "Récolte du bois dans la Lisière, puis taille-le à l’Atelier pour fabriquer un manche."],
-    ["corde", "Fabrique une corde, pour lier les choses entre elles."],
-    { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Lance une exploration du Grand Chêne depuis la Lisière. Elle avance toute seule pendant que tu fais autre chose." },
-    ["feu", "La nuit tombe vite. Construis un feu de camp : il débloque l’action Chauffer."],
-    ["cabane", "Tu ne peux pas tout récolter toi-même. Fabrique une cabane : posée sur un gisement, elle récolte à ta place."],
-    { k: "ext", n: "Poser ta cabane", txt: "Dans le Domaine, touche « + cabane » sur le bois ou les fibres de la Lisière. Ta cabane récolte à ta place, même quand le jeu est fermé." },
-    ["epieu", "La Plaine est pleine de bêtes. Il te faut une arme : l’épieu ouvre le chemin vers la Plaine."],
-    { k: "pass", z: "plaine", n: "Vers la Plaine", txt: "Avec ton épieu, tu peux affronter la Plaine. Il reste à te frayer un chemin dans les hautes herbes : apporte les matériaux nécessaires." },
-    ["laniere", "Les bêtes de la plaine laissent leur peau derrière elles. Découpée en bandes, elle lie mieux que l’herbe."],
-    { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Au milieu de la Plaine, des os blanchissent au soleil. Lance une exploration pour en rapporter." },
-    ["aiguille", "Pour coudre une peau, il faut une pointe percée."],
-    ["collets", "Des pièges posés dans la Plaine récolteraient os et peaux à ta place. Pose-les dans le Domaine, comme ta cabane."],
-    ["outre", "Au-delà de la plaine coule une rivière. Il te faut de quoi porter de l’eau."],
-    { k: "pass", z: "riviere", n: "Vers la Rivière", txt: "La Rivière est large et lente. Pour la franchir, construis une passerelle : dépose les matériaux nécessaires." },
+    ["manche", "Récolte du bois, puis taille un manche à l’Atelier."],
+    ["corde", "Tresse des fibres pour faire une corde."],
+    { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Explore le Grand Chêne depuis la Lisière. L’exploration avance seule." },
+    ["feu", "La nuit tombe. Construis un feu de camp : il débloque Chauffer."],
+    ["cabane", "Une cabane posée sur un gisement récolte à ta place."],
+    { k: "ext", n: "Poser ta cabane", txt: "Dans le Domaine, touche « + cabane » sur le bois : elle récolte même quand le jeu est fermé." },
+    ["epieu", "L’épieu ouvre le chemin vers la Plaine."],
+    { k: "pass", z: "plaine", n: "Vers la Plaine", txt: "Apporte les ressources du passage, en plusieurs fois si besoin." },
+    ["laniere", "Découpe une peau en bandes."],
+    { k: "exp", z: "plaine", x: "champ_os", n: "Explorer le Champ des Os", txt: "Explore le Champ des Os, au milieu de la Plaine." },
+    ["aiguille", "Pour coudre une peau, il faut une aiguille."],
+    ["collets", "Des collets dans la Plaine récoltent os et peaux sans toi."],
+    ["outre", "Une outre pour porter de l’eau jusqu’à la Rivière."],
+    { k: "pass", z: "riviere", n: "Vers la Rivière", txt: "Apporte les ressources de la passerelle." },
     ["eclat", "Les galets noirs de la rivière cachent un tranchant."],
     ["hache_pierre", "Avec un tranchant de pierre, tu abattrais bien plus de bois. Les outils multiplient tes récoltes."],
     ["pioche_pierre", "Les collines ont des veines colorées. Il te faut de quoi les entamer : la pioche ouvre le chemin vers les Collines."],
@@ -868,10 +868,10 @@
    * tr : les Traces qu’il rapporte à la relève. Prix réglés avec tools/sim-passages.js :
    * première partie arrêtée vers les Collines (~25 min), chaque relève va une terre plus loin. */
   D.PASSAGES = {
-    plaine: { n: "Le Sentier des Herbes", t: "Les herbes de la plaine sont plus hautes que toi. Il faut s’y frayer un chemin, et des pierres pour le marquer.", cost: { bois: 120, fibre: 80, caillou: 40 }, tr: 2 },
-    riviere: { n: "La Passerelle", t: "La rivière est large et lente. Une passerelle de bois, liée de cuir et d’os, te mènerait sur l’autre rive.", cost: { bois: 2400, cuir: 360, os: 480 }, tr: 3 },
-    collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 15000, argile: 600, brique: 150 }, tr: 5 },
-    mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 40000, plaque_cuivre: 1200, lingot_bronze: 800 }, tr: 8 },
+    plaine: { n: "Le Sentier des Herbes", t: "Les herbes de la plaine sont plus hautes que toi. Il faut s’y frayer un chemin, et des pierres pour le marquer.", cost: { bois: 360, fibre: 240, caillou: 120 }, tr: 2 },
+    riviere: { n: "La Passerelle", t: "La rivière est large et lente. Une passerelle de bois, liée de cuir et d’os, te mènerait sur l’autre rive.", cost: { bois: 10800, cuir: 1620, os: 2160 }, tr: 3 },
+    collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 48000, argile: 1920, brique: 480 }, tr: 5 },
+    mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 64000, plaque_cuivre: 1920, lingot_bronze: 1280 }, tr: 8 },
     desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 80000, plaque_bronze: 1500, roue: 200 }, tr: 12 },
     gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendrait.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
     montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 7500, plastique: 1200, moteur_elec: 180 }, tr: 27 },
@@ -1071,9 +1071,12 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🔍 Le guide ne te fait plus étudier une ressource qui n’a rien à offrir pour l’instant : il en choisit une qui réagit déjà avec tes actions."
+    "🌱 Les premières terres prennent plus de temps : avant d’ouvrir un passage, il faut avoir exploré les lieux de la terre où tu es.",
+    "🧭 La fenêtre d’un passage dit alors ce qu’il reste à explorer, avec un bouton pour lancer l’exploration.",
+    "✨ Des retours discrets quand une chose réussit : une étincelle au thermomètre quand il passe à « brûlant », la nouvelle terre qui s’allume, la pastille d’Intuition qui apparaît.",
+    "✦ Avant la relève, une liste dit ce qui est conservé et ce qui est remis à zéro, avec les Traces gagnées ; au réveil, la partie commence par ce que le Semeur retrouve.",
+    "🔇 Moins de choses d’un coup au début : les Quêtes et le compteur d’étapes arrivent avec le premier âge, et les messages s’espacent."
   ];
-
 
 
 

@@ -263,6 +263,17 @@ function play(o) {
     for (const r in urgent) need[r] = (need[r] || 0) + urgent[r];
     if (!Object.keys(need).length && !E.passPending().length) souhaits(b).forEach(([id, q]) => order(id, q)); // il prépare la suite
     if (a && a.k === "exp" && !S().exp.active) E.startExp(a.z);
+    // les lieux de la terre d’avant, à explorer avant de franchir un passage :
+    // il prépare ce qu’ils coûtent (une torche, par exemple), puis les lance
+    E.passPending().forEach((z) => {
+      const p = E.passInfo(z);
+      if (!p.lieux || !p.lieux.left.length) return;
+      const n = E.nextExp(p.lieux.z);
+      if (!n || n.locked) return;
+      const c = n.x.cost || {};
+      for (const i in c) order(i, Math.ceil(c[i]));
+      if (!S().exp.active && !Object.keys(c).some((i) => (S().inv[i] || 0) < c[i])) E.startExp(p.lieux.z);
+    });
     E.passPending().forEach((z) => E.passPour(z)); // il verse dès qu’il peut
     place();
     if (!invest) invest = chooseInvest();

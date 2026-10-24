@@ -2,12 +2,11 @@
 
 Liste tenue à la main, du plus proche au plus lointain. Rien ici n'est un secret du récit.
 
-## En cours chez un autre assistant (DeepSeek)
+## Fait récemment
 
-- **Onboarding 0.10** (`docs/prompts/onboarding-0-10.md`) : premières terres plus lentes, moins d'information
-  d'un coup, du juice, la relève expliquée. Branche attendue : `deepseek-onboarding-0-10`.
-- **Arbre de connaissance** : fait en 0.11.0 (Carnet, interrupteur Liste / Arbre). Reste le **deuxième temps** :
-  la Mémoire des mains en arbre ramifié (`js/memoire.js`), seulement la présentation.
+- **Onboarding 0.12.0** (DeepSeek, rebasé par Claude) : lieux à explorer avant un passage (premier cycle seulement),
+  moins d'écrans au début, relève expliquée en chiffres, retours discrets. Textes à relire : `docs/revue/onboarding.md`.
+- **Arbre de connaissance** (0.11.0), **Carnet en onglet** et **Mémoire en arbre** (0.11.1).
 
 ## Juste après
 

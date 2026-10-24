@@ -106,6 +106,8 @@ test("passages : on verse en plusieurs fois, la terre s’ouvre une fois tout pa
   stations(E, ["feu"]);
   assert.strictEqual(E.passPour("plaine").ok, false, "pas avant l’épieu");
   force(E, "epieu");
+  // 0.10 : le chemin se connaît en marchant, les lieux de la Lisière d’abord
+  E.state.exp.done.lisiere = 2;
   const cost = E.passCost("plaine");
   // le guidage mène au passage
   const ob = E.objective();
@@ -124,6 +126,46 @@ test("passages : on verse en plusieurs fois, la terre s’ouvre une fois tout pa
   const G = mk(); stations(G, ["feu"]); force(G, "epieu");
   assert.strictEqual(G.nextStep("argile").why, "pass");
 });
+test("passages : les lieux de la terre actuelle d’abord (0.10)", () => {
+  const E = mk();
+  stations(E, ["feu"]);
+  force(E, "epieu");
+  const l = E.passInfo("plaine").lieux;
+  assert.ok(l && l.z === "lisiere" && l.total === 2, "la Lisière a deux lieux à explorer");
+  assert.deepStrictEqual(l.left.map((x) => x.id), ["chene", "grotte"]);
+  for (const i in E.passCost("plaine")) E.add(i, E.passCost("plaine")[i]);
+  const r = E.passPour("plaine");
+  assert.strictEqual(r.ok, false);
+  assert.strictEqual(r.why, "lieux");
+  assert.ok(!E.zoneOpen("plaine") && !E.state.pass.plaine.paid.bois, "rien ne se dépose avant");
+  E.state.exp.done.lisiere = 1;
+  assert.deepStrictEqual(E.passInfo("plaine").lieux.left.map((x) => x.id), ["grotte"]);
+  E.state.exp.done.lisiere = 2;
+  assert.ok(E.passPour("plaine").done, "les lieux explorés, le passage s’ouvre");
+  assert.deepStrictEqual(E.passInfo("plaine").lieux.left, []);
+});
+test("passages : les lieux cachés, ceux d’une autre terre et ceux d’à côté ne bloquent pas (0.10)", () => {
+  const E = mk();
+  // Rivière : Le Gué, puis La Carcasse (qui demande la hache de pierre, une pièce du même âge)
+  const l = E.passLieux("riviere");
+  assert.strictEqual(l.z, "plaine");
+  assert.deepStrictEqual(l.left.map((x) => x.id), ["champ_os", "tumulus"]);
+  // Lisière : le Cercle (caché), les Racines (cachées), les Ronds (un lieu d’à côté)
+  assert.deepStrictEqual(E.passLieux("plaine").left.map((x) => x.id), ["chene", "grotte"]);
+  assert.deepStrictEqual(E.passLieux("mine").left.map((x) => x.id), ["rails", "sommet"]);
+  assert.strictEqual(E.passLieux("lisiere"), null, "rien avant la Lisière");
+});
+test("passages : dès le deuxième Semeur, la route est connue", () => {
+  const E = mk();
+  E.state.pass.plaine = { paid: {}, done: true };
+  E.newCycle();
+  assert.strictEqual(E.state.cycle, 2);
+  assert.strictEqual(E.passLieux("plaine"), null);
+  stations(E, ["feu"]);
+  force(E, "epieu");
+  for (const i in E.passCost("plaine")) E.add(i, E.passCost("plaine")[i]);
+  assert.ok(E.passPour("plaine").done);
+});
 test("plan : une pièce prise en partie au stock se fabrique avant celles qui s’en servent", () => {
   const E = mk();
   E.state.age = 12; // tous les âges atteints : ce test regarde l’ordre du plan
@@ -140,6 +182,7 @@ test("relève : on garde le savoir, on gagne des Traces ; la Mémoire des mains"
   const E = mk();
   stations(E, ["feu"]);
   force(E, "epieu");
+  E.state.exp.done.lisiere = 2;
   for (const i in E.passCost("plaine")) E.add(i, E.passCost("plaine")[i]);
   E.passPour("plaine");
   E.state.flags.tuto = { done: { debut: true }, c: null, i: 0 }; E.state.flags.tip_full = true; E.state.flags.extDone = true;
@@ -304,7 +347,7 @@ test("explorations : coût, durée, fragment", () => {
   const E = mk();
   assert.ok(E.startExp("lisiere").ok);
   assert.strictEqual(E.startExp("lisiere").why, "busy");
-  T += 16000; E.update();
+  T += E.ZONES.lisiere.exps[0].dur * 1000 + 1000; E.update();
   assert.ok(E.state.frags[(E.RECIT.expFrag || {})["lisiere:chene"] || "chene"], "le fragment du lieu");
   assert.strictEqual(E.startExp("lisiere").why, "cost", "la grotte demande une torche");
 });
@@ -1885,7 +1928,7 @@ test("une page s’obtient par exploration, par première réparation (pas la de
   let pageEvt = null;
   E.on("page", (p) => (pageEvt = p));
   E.startExp("lisiere");
-  T += 16000;
+  T += E.ZONES.lisiere.exps[0].dur * 1000 + 1000;
   E.update();
   assert.ok(E.hasPage("p_exp"));
   assert.strictEqual(pageEvt.id, "p_exp");
@@ -2034,7 +2077,7 @@ test("expFrag remplace le fragment donné ; une revisite s’affiche quand le fr
 
   // Première exploration : donne le fragment remplacé
   E.startExp("lisiere");
-  T += 16000;
+  T += E.ZONES.lisiere.exps[0].dur * 1000 + 1000;
   E.update();
   assert.strictEqual(lastExp.frag, "frag_remplace");
   assert.strictEqual(lastExp.fragNew, true);
@@ -3013,9 +3056,9 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.11.2 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.11.2");
-  assert.ok(D.CHANGES.length >= 1);
+test("Version 0.12.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.12.0");
+  assert.ok(D.CHANGES.length >= 2);
 });
 
 test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
@@ -3217,12 +3260,12 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.11.2");
-  assert.ok(D.CHANGES.length >= 1);
+  assert.strictEqual(D.VERSION, "0.12.0");
+  assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 11, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 12, "Mineure pour le lot courant");
 });
 
 console.log("Horodatage du Journal (0.7.1)");

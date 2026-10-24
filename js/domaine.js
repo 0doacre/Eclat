@@ -41,7 +41,7 @@
       const st = S(), zs = openZones().reverse();
       let h = '<div class="dom' + (U.domDense ? " dom-dense" : "") + '">';
       h += api.top();
-      h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense title="Basculer entre affichage compact et normal">' + (U.domDense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
+      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense title="Basculer entre affichage compact et normal">' + (U.domDense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -127,7 +127,7 @@
       const info = E.machInfo(key), rate = depRate(z, res);
       const used = e ? Object.keys(e.u).map((t) => many(t, e.u[t])).join(", ") : "";
       let sub = fmt(st.inv[res] || 0);
-      sub = 'Disponible : <span data-c="' + res + '">' + sub + "</span>" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
+      sub = 'Tu en as <span data-c="' + res + '">' + sub + "</span>" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
       const right = e && info.s === "off" ? '<span class="dom-rate off">⏸ en pause</span>'
         : rate > 0 ? '<span class="dom-rate" data-rate="' + key + '">+' + perTime(rate) + "</span>"
         : d.hand ? '<span class="dom-rate hand">🖐️ à la main</span>' : "";
@@ -226,7 +226,7 @@
         h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Tu peux en lancer une depuis l’Atelier ou le Carnet (×10, ×50, ×100, ×1000).</p>';
       }
 
-      h += '<h3 class="sub" style="margin-top:16px">Machines possédées</h3>';
+      h += '<h3 class="sub" style="margin-top:16px">Tes machines</h3>';
       if (owned.length) {
         owned.forEach((m) => {
           const info = ms[m], rest = Math.max(0, info.own - info.used);
@@ -246,7 +246,7 @@
             '</div></section>';
         });
       } else {
-        h += '<p class="small muted" style="padding:6px 0">Tu ne possèdes pas encore de machine. La première se découvre à l’Atelier : l’automate de bois.</p>';
+        h += '<p class="small muted" style="padding:6px 0">Tu n’as pas encore de machine. La première se découvre à l’Atelier : l’automate de bois.</p>';
       }
       h += '</div>';
       return h;
@@ -613,6 +613,7 @@
     function feedback(r, t, at) {
       if (r.placed || r.queued) {
         A.click(); vibe(8);
+        if (r.placed && at) sparks(at.x, at.y, 10, "#ffd36b");
         if (at) floater((r.placed ? "+" + r.placed + " " : "") + (r.queued ? "✋ " + r.queued : ""), at.x, at.y - 14, "var(--good)");
         if (r.queued) toast("✋ Tes mains fabriquent " + esc(many(t, r.queued)) + " pour ce gisement.", { key: "xq" });
         return;
@@ -788,7 +789,7 @@
       else toast(esc(I[t].n) + " : touche « + " + esc(nm(t, 1)) + " » sur un gisement " + esc(deZone(I[t].z)) + ".", { key: "xq" });
     }
     function placeMach(m) {
-      toast(esc(I[m].n) + " : au repos, en attente de tes prochaines commandes.", { key: "mq" });
+      toast(esc(I[m].n) + " : au repos, jusqu’à ta prochaine commande.", { key: "mq" });
     }
 
     function machSig() {
