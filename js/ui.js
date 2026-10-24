@@ -412,7 +412,8 @@
   function nextModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     const o = U.mq.shift();
-    if (!o) { U.mcur = null; m.classList.add("hidden"); $("#app").inert = false; return; }
+    const pl = document.getElementById("arbplein");
+    if (!o) { U.mcur = null; m.classList.add("hidden"); $("#app").inert = !!pl; if (pl) pl.inert = false; return; }
     U.mcur = o;
     U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
@@ -425,6 +426,7 @@
     box.tabIndex = -1;
     box.focus({ preventScroll: true });
     $("#app").inert = true;
+    if (pl) pl.inert = true; // l’arbre plein écran, sous la fenêtre, n’a plus le focus
     if (o.onOpen) o.onOpen(box);
   }
   function closeModal() {
@@ -1077,6 +1079,7 @@
     visiteurTick();
     if (U.offline && !U.mcur) showOffline();
     if (U.dirty && !U.holding && !pressing()) render();
+    if (U.arbreOuvert && Date.now() - (U.arbreT || 0) > 400) { U.arbreT = Date.now(); Atl.arbreMaj(); } // l’arbre plein écran suit les découvertes
   }
 
   function boot() {

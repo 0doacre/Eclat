@@ -410,6 +410,7 @@
     function tick() {
       // ce que le joueur a déjà fait seul n’a plus besoin d’être montré
       if (S().hand.q.length) lastQueue = Date.now();
+      if (U.arbreOuvert) { hide(); return; } // l’arbre en plein écran : le guide revient quand on le ferme
       if (!enabled() || !S().introSeen) { hide(); return; }
       const T = state();
       let ch = chapter();

@@ -57,11 +57,11 @@ async function mesurer(browser, largeur) {
     const m = getComputedStyle(monde).transform.match(/matrix\(([^)]+)\)/);
     const k = m ? Number(m[1].split(",")[0]) : 1;
     const dedans = (r) => r.left >= vr.left - 0.5 && r.right <= vr.right + 0.5 && r.top >= vr.top - 0.5 && r.bottom <= vr.bottom + 0.5;
-    const noeuds = [...vue.querySelectorAll(".arb-n")];
+    const noeuds = [...vue.querySelectorAll(".arb-monde .arb-n")];
     const visibles = noeuds.filter((n) => dedans(n.getBoundingClientRect())).length;
     const etiquettes = [...vue.querySelectorAll(".arb-l")].map((e) => parseFloat(getComputedStyle(e).fontSize) * k);
     const ages = [...vue.querySelectorAll(".arb-age")].map((e) => parseFloat(getComputedStyle(e).fontSize) * k);
-    const cibles = [...vue.querySelectorAll(".arb-n"), ...document.querySelectorAll(".arb-tete .btn, .arb-bascule button")]
+    const cibles = [...vue.querySelectorAll(".arb-monde .arb-n"), ...document.querySelectorAll(".arb-barre .btn")]
       .map((e) => { const r = e.getBoundingClientRect(); return { n: Math.round(Math.min(r.width, r.height) * 10) / 10, c: (e.className || e.tagName).toString().slice(0, 30), vu: r.width > 0 }; })
       .filter((c) => c.vu);
     const entete = document.getElementById("top").getBoundingClientRect().bottom;
@@ -74,7 +74,7 @@ async function mesurer(browser, largeur) {
       policeEtiquetteMin: Math.round(Math.min(...etiquettes) * 10) / 10, policeAgeMin: ages.length ? Math.round(Math.min(...ages) * 10) / 10 : null,
       cibleMin: Math.min(...cibles.map((c) => c.n)), cibleMinNom: cibles.sort((a, b) => a.n - b.n)[0].c,
       cibles44: cibles.filter((c) => c.n < 43.9).length,
-      bandeEcran: Math.round(barre - entete), hauteurEntete: Math.round(entete), hauteurTete: nb(".arb-tete"), hauteurBascule: nb(".arb-bascule")
+      bandeEcran: Math.round(barre - entete), hauteurEntete: Math.round(entete), hauteurTete: nb(".arb-barre"), hauteurBascule: 0
     };
   });
   if (process.env.ARBRE_SHOTS) {
@@ -99,7 +99,7 @@ async function mesurer(browser, largeur) {
   const ligne = (nom, f) => l.push("| " + nom + " | " + res.map(f).join(" | ") + " |");
   ligne("Surface utile de l’arbre (`.arb-vue`, px)", (r) => r.surfaceUtile + " sur " + r.ecran + " (" + r.partEcran + " %)");
   ligne("Bande libre entre l’en-tête et les onglets (px)", (r) => r.bandeEcran);
-  ligne("Titre, interrupteur et compteur au-dessus (px)", (r) => (r.hauteurBascule || 0) + " + " + (r.hauteurTete || 0));
+  ligne("Barre fine au-dessus de l’arbre (px)", (r) => r.hauteurTete);
   ligne("Échelle à l’ouverture", (r) => r.echelle);
   ligne("Nœuds entièrement dans la vue / dans l’arbre", (r) => r.noeudsDansLaVue + " / " + r.noeudsTotal);
   ligne("Plus petite police d’étiquette, à l’écran (px)", (r) => r.policeEtiquetteMin);

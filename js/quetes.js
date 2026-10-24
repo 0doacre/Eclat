@@ -33,7 +33,8 @@
       const tard = st.age > 0 || md > 0;
       let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
         (tard || sum.hasReady ? '<button class="gmiles" data-open-quests title="Ouvrir les quêtes">📜 Quêtes ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + "</button>" : "") +
-        (ml.length && tard ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
+        (ml.length && tard ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") +
+        (tard && ob.k === "craft" ? '<button class="gmiles" data-arbre-obj title="Voir ton objectif dans l’arbre">🌳 Dans l’arbre</button>' : "") + "</div>";
       if (ml.length && tard) {
         const pct = Math.round((md / ml.length) * 100);
         h += '<div class="gprog-row" data-miles title="Progression de cet âge : ' + md + '/' + ml.length + ' étapes faites">' +

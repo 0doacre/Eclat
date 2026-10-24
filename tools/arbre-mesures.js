@@ -53,7 +53,7 @@ function lireCss() {
     if (!m) throw new Error("police introuvable dans css/arbre.css : " + nom);
     return Number(m[1]);
   };
-  const lab = regle(".arb-l"), age = regle(".arb-age"), trait = regle(".arb-t"), tete = regle(".arb-tete .btn"), bas = regle(".arb-bascule button"), vue = regle(".arb-vue");
+  const lab = regle(".arb-l"), age = regle(".arb-age"), trait = regle(".arb-t"), tete = regle(".arb-barre .btn"), bas = regle(".arb-bascule button"), vue = regle(".arb-vue");
   const opac = trait.match(/color-mix\(.*?\s(\d+)%/);
   const marge = vue.match(/-\s*(\d+)px\)/);
   if (!opac) throw new Error("opacité des traits introuvable dans css/arbre.css");
@@ -63,7 +63,7 @@ function lireCss() {
     policeEtiquette: police(lab, ".arb-l"), largeurEtiquette: px(lab, "width", ".arb-l"),
     policeAge: police(age, ".arb-age"),
     traitEpaisseur: px(trait, "stroke-width", ".arb-t"), traitOpacite: Number(opac[1]),
-    cibleBoutonHaut: px(tete, "min-height", ".arb-tete .btn"), cibleBascule: px(bas, "min-height", ".arb-bascule button"),
+    cibleBoutonHaut: px(tete, "min-height", ".arb-barre .btn"), cibleBascule: px(bas, "min-height", ".arb-bascule button"),
     margeVue: Number(marge[1]), hauteurMiniVue: px(vue, "height", ".arb-vue")
   };
 }
@@ -179,9 +179,9 @@ function tableau(res, css, opt) {
     "| Police des étiquettes de nœud (`.arb-l`) | " + css.policeEtiquette + " px, sur " + css.largeurEtiquette + " px de large |",
     "| Police des noms d’âge (`.arb-age`) | " + css.policeAge + " px |",
     "| Traits (`.arb-t`) | " + css.traitEpaisseur + " px, " + css.traitOpacite + " % |",
-    "| Bouton du haut de l’arbre (`.arb-tete .btn`) | " + css.cibleBoutonHaut + " px de haut au moins |",
+    "| Bouton de la barre de l’arbre (`.arb-barre .btn`) | " + css.cibleBoutonHaut + " px de haut au moins |",
     "| Interrupteur Liste / Arbre | " + css.cibleBascule + " px de haut au moins |",
-    "| Hauteur de la vue (`.arb-vue`) | écran moins l’en-tête, la barre d’onglets et " + css.margeVue + " px de marges (300 px au moins : " + css.hauteurMiniVue + ") |"
+    "| Hauteur de la vue du Carnet (`.arb-vue`, repli : en plein écran, `.arb-plein .arb-vue` prend tout l’écran sauf la barre de 44 px) | écran moins l’en-tête, la barre d’onglets et " + css.margeVue + " px de marges (300 px au moins : " + css.hauteurMiniVue + ") |"
   ];
   return lignes.concat(styles).join("\n");
 }
