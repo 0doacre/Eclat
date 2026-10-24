@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.3";
+  D.VERSION = "0.9.4";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,9 +1071,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "💭 Le tout premier message du guide te laisse le couper tout de suite : « Je me débrouille ». Il se relance dans le menu.",
-    "📖 Après ta première lecture d’un morceau d’histoire, le guide te dit où il est rangé et que tu n’as pas à tout comprendre tout de suite.",
-    "🌍 Le guide présente aussi ta première nouvelle terre et l’Intuition, en une phrase chacun."
+    "🔧 Deux petits défauts corrigés : le code Konami (les étoiles du ciel) et le bouton « Fabriquer maintenant » des Quêtes."
   ];
 
 
