@@ -85,7 +85,7 @@
           (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
           '</div><button class="btn small pri" data-gotab="atelier">Tenter</button>');
       }
-      if (E.queued(id) > 0) return line('<span class="small">✋ En cours de fabrication : ' + esc(it.n.toLowerCase()) + ".</span>");
+      if (E.queued(id) > 0) return line('<span class="small">✋ En cours : ' + esc(it.n.toLowerCase()) + ".</span>");
       const b = E.blocker(id);
       if (b && b.why !== "owned") return line('<span class="small">' + cap1(needText(id, b, true)) + ".</span>");
       if (b && b.why === "owned") return "";
@@ -232,7 +232,7 @@
       const ready = p.ok;
       let h = '<div class="card track' + (ready ? " ready" : "") + '"><div class="row between"><div class="lbl">🎯 Suivi d’artisanat</div><button class="btn small ghost" data-untrack title="Arrêter le suivi">✕</button></div>' +
         '<div class="row" style="margin:4px 0 6px">' + itemPill(id) + "</div>";
-      if (E.queued(id) > 0) return h + '<div class="small">✋ En cours de fabrication…</div></div>';
+      if (E.queued(id) > 0) return h + '<div class="small">✋ En cours…</div></div>';
       if (ready) return h + '<div class="small" style="color:var(--good);font-weight:600">✓ Toutes les ressources sont réunies !</div><button class="btn small pri ready-pulse" style="margin-top:6px;width:100%" data-chain="' + id + '">⚡ Fabriquer ' + esc(I[id].n) + '</button></div>';
       const f = E.flows();
       const cost = I[id].r ? E.costFor(id) : {};
@@ -338,7 +338,7 @@
           if (!E.comptoirOpen()) {
             h += '<p class="small muted center" style="padding:15px 0">Le Comptoir du Troqueur s’ouvrira lorsque tu auras atteint sa terre.</p>';
           } else if (!tq.length) {
-            h += '<p class="small muted center" style="padding:15px 0">Aucune commande pour l’instant. Le Troqueur prépare de nouvelles demandes.</p>';
+            h += '<p class="small muted center" style="padding:15px 0">Aucune demande pour l’instant. Le Troqueur en prépare d’autres.</p>';
           } else {
             tq.forEach((ask, idx) => {
               if (!ask) return;

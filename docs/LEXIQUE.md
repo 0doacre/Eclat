@@ -43,7 +43,19 @@ Chaque fiche affiche la sorte d’objet et une phrase qui dit à quoi elle sert 
 | **Station** | Reste à l’Atelier, débloque une action ou une chaleur. Un message de blocage la **nomme toujours** : « il faut : Four en argile (1 100 °C) ». |
 | **Extracteur** | Se pose sur un gisement **de sa terre** et récolte seul. Son nom court (`sn`, `pl` dans `data.js`) sert aux boutons : « + cabane ». |
 | **Machine** | Reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire (une fois la pièce faite une fois à la main). Chaque palier limite le nombre d’ingrédients (1, 2 ou 3). Nom court : « 2 automates de bois ». |
-| **Commande** | Fabrication lancée depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Prend ses ressources au fur et à mesure dans la Réserve et ajoute d’abord les pièces manquantes. |
+| **Commande** | Fabrication lancée depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Prend ses ressources au fur et à mesure dans la Réserve et ajoute d’abord les pièces manquantes. Une commande ne s’appelle jamais « fabrication », « tâche » ni « job ». |
+
+## Tes mains et tes machines
+
+Quatre mots seulement, partout : **tes mains**, une **commande**, **en cours**, **au repos**.
+
+| Mot | Sens |
+|---|---|
+| **Tes mains** | La part du joueur : une seule commande à la fois, à la main. Toujours « tes mains » (jamais « file », « queue », « slot »). Libre : « Tes mains sont libres. » Sinon : « Tes mains sont occupées. » |
+| **en cours** | Ce que quelqu’un fait avancer : « Déjà en cours. », « 3 en cours », « Aucune commande en cours ». Jamais « en fabrication ». |
+| **attendre** | Une commande que personne ne peut avancer « attend une main ou une machine » : elle n’est pas « en attente », et il ne lui « manque » des ressources que si `miss` en signale. |
+| **au repos** | Une machine sans travail est **au repos** ; avec du travail, elle est **au travail**. Elle ne « attend » pas. |
+| **fini** | Une commande se termine : « Fini dans ~4 s » pour le lot, « fini dans ~4 s » pour une commande. Jamais « prêt dans ». |
 
 ## Progression
 

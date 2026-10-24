@@ -3621,7 +3621,7 @@
         {
           id: "terre",
           n: "Moisson de la terre",
-          d: "Récolter " + t2 + " matières brutes.",
+          d: "Récolter " + t2 + " ressources brutes.",
           ic: "🌾",
           target: t2,
           prog: Math.min(t2, p[1] || 0),
@@ -3632,7 +3632,7 @@
         {
           id: "esprit",
           n: "Éveil de l’esprit",
-          d: "Étudier une matière ou percer un mystère.",
+          d: "Étudier une ressource ou percer un mystère.",
           ic: "✨",
           target: t3,
           prog: Math.min(t3, p[2] || 0),
