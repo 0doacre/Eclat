@@ -36,16 +36,15 @@ Ce qui s'affiche, de plus clair à plus flou :
   relié à ce que la joueuse connaît déjà ; il reste sans nom (le nom n'apparaît qu'une fois la recette trouvée ;
   l'objectif, lui, est déjà dit en haut de l'écran).
 
-**Quels fantômes ?** C'est le point sensible : montrer tous les fantômes reviendrait à offrir gratuitement ce que
-coûte l'**Intuition** (« Étudier » une ressource dit combien de recettes elle cache encore ; voir `E.reactions`,
-`E.study`, `E.studyAll`). Règle par défaut, réglable dans une constante de données `D.ARBRE = { fantomes: "etudies" }` :
-- `"etudies"` (défaut) : un fantôme n'apparaît que sur les ressources **étudiées** (`S.studied`), autant que
-  `E.reactions(id)` en compte, et pour l'objectif en cours. Étudier devient ainsi visible dans l'arbre : « j'ai
-  étudié cette ressource, trois traits pointillés en partent ».
-- `"tous"` : un fantôme pour chaque recette dont **tous les ingrédients sont déjà vus** (le cas où l'auteur veut
-  que ce soit gratuit). Dans les deux cas : **jamais** de fantôme pour un objet `sec` ni `curio` (les recettes
-  secrètes n'existent pas à l'écran tant qu'elles ne sont pas connues), ni pour une recette dont un ingrédient est
-  encore inconnu, ni au-delà des âges déjà atteints plus un.
+**Quels fantômes ?** L'auteur ne veut **pas** voir tous les fantômes : seulement **le suivant**. Montrer tout
+reviendrait à offrir gratuitement ce que coûte l'**Intuition** (« Étudier » une ressource dit combien de
+recettes elle cache encore ; voir `E.reactions`, `E.study`, `E.studyAll`). Règle, sans réglage :
+- le fantôme de l'**objectif en cours** (le « suivant » de l'arbre), toujours ;
+- les fantômes des ressources **étudiées** (`S.studied`), autant que `E.reactions(id)` en compte : étudier une
+  ressource se voit dans l'arbre (« j'ai étudié celle-ci, deux traits pointillés en partent ») ;
+- **rien d'autre** : pas de fantôme pour une ressource non étudiée, ni pour une recette dont un ingrédient est
+  encore inconnu, ni pour un objet `sec` ou `curio` (les recettes secrètes n'existent pas à l'écran tant qu'elles
+  ne sont pas connues), ni au-delà des âges déjà atteints plus un.
 Aucun autre indice ne doit fuiter : l'ordre des fantômes ne dépend pas de l'objet (positions tirées d'un rang
 stable, pas d'un tri par nom), et leur nombre n'est jamais affiché.
 - Une ressource **étudiée** porte en plus sa pastille « ✦ 3 » (le nombre de fantômes qui en partent).
@@ -115,8 +114,7 @@ récit.** N'ouvre pas `docs/coffre/` ni `js/recit.js`. Liste les textes que tu a
     inconnu n'apparaît dans les données de rendu (un fantôme a un identifiant anonyme qui ne se déduit pas de
     l'objet : par exemple un numéro de série dans l'ordre d'apparition, pas l'id de l'objet) ; aucun objet `sec`
     ni `curio` inconnu, même comme fantôme ; aucun trait vers un nœud absent ;
-  - en mode `"etudies"`, aucun fantôme sur une ressource non étudiée (hors objectif) ; en mode `"tous"`, un
-    fantôme par recette inconnue dont tous les ingrédients sont vus, rien d'autre ;
+  - aucun fantôme sur une ressource non étudiée (hors objectif) ; jamais un fantôme par recette « possible » ;
   - un fantôme et un nœud allumé de même âge ont le même gabarit (pas de forme qui trahisse l'objet) ;
   - positions **stables** (un nouveau nœud ne déplace pas les autres) et **sans chevauchement** ;
   
