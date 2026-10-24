@@ -11,10 +11,9 @@ Illustrations sélectionnées et validées en conversation le 24 octobre 2026 (c
 - Tous les fichiers sont WebP, sans transparence, moins de 120 Ko. `ILLUSTRATIONS-MANIFEST.json` donne,
   pour chacun, son numéro dans la planche des sources (`source_index`).
 
-Manque encore (l’étape reprend l’œuvre entière en attendant) :
-- `dyson-2.webp` : « Premier anneau », les premiers panneaux autour du Soleil (source n° 28).
+Chaque étape de Dyson et du Brise-Monde a sa vignette ; une étape sans vignette reprendrait l’œuvre entière.
 
 Note (25 octobre 2026) : le premier export avait décalé d’un cran les sources à partir du n° 19
 (`chant` montrait le Brise-Monde, `brisemonde-3` la Cloche, les étapes de Dyson étaient mélangées).
-Les fichiers ont été remis à leur place ; `brisemonde-1` (n° 24) et `brisemonde-3` (n° 21) ont été refaits
+Les fichiers ont été remis à leur place ; `brisemonde-1` (n° 24), `brisemonde-3` (n° 21) et `dyson-2` (n° 28) ont été refaits
 depuis les originaux.
