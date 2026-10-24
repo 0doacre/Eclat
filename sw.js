@@ -3,7 +3,7 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "8ec0e76d5f";
+const BUILD = "37f8fa2e0e";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
