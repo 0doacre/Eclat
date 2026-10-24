@@ -53,8 +53,8 @@ function lireCss() {
     if (!m) throw new Error("police introuvable dans css/arbre.css : " + nom);
     return Number(m[1]);
   };
-  const lab = regle(".arb-l"), age = regle(".arb-age"), trait = regle(".arb-t"), tete = regle(".arb-barre .btn"), bas = regle(".arb-bascule button"), vue = regle(".arb-vue");
-  const opac = trait.match(/color-mix\(.*?\s(\d+)%/);
+  const lab = regle(".arb-l"), age = regle(".arb-age"), trait = regle(".arb-t"), tete = regle(".arb-barre .btn"), vue = regle(".arb-vue");
+  const opac = trait.match(/(?:^|[;\s])opacity:\s*([0-9.]+)/);
   const marge = vue.match(/-\s*(\d+)px\)/);
   if (!opac) throw new Error("opacité des traits introuvable dans css/arbre.css");
   if (!marge) throw new Error("marge de la vue introuvable dans css/arbre.css");
@@ -62,8 +62,8 @@ function lireCss() {
     noeud: Arb.NODE,
     policeEtiquette: police(lab, ".arb-l"), largeurEtiquette: px(lab, "width", ".arb-l"),
     policeAge: police(age, ".arb-age"),
-    traitEpaisseur: px(trait, "stroke-width", ".arb-t"), traitOpacite: Number(opac[1]),
-    cibleBoutonHaut: px(tete, "min-height", ".arb-barre .btn"), cibleBascule: px(bas, "min-height", ".arb-bascule button"),
+    traitEpaisseur: px(trait, "stroke-width", ".arb-t"), traitOpacite: Math.round(Number(opac[1]) * 100),
+    cibleBoutonHaut: px(tete, "min-height", ".arb-barre .btn"),
     margeVue: Number(marge[1]), hauteurMiniVue: px(vue, "height", ".arb-vue")
   };
 }
@@ -180,8 +180,7 @@ function tableau(res, css, opt) {
     "| Police des noms d’âge (`.arb-age`) | " + css.policeAge + " px |",
     "| Traits (`.arb-t`) | " + css.traitEpaisseur + " px, " + css.traitOpacite + " % |",
     "| Bouton de la barre de l’arbre (`.arb-barre .btn`) | " + css.cibleBoutonHaut + " px de haut au moins |",
-    "| Interrupteur Liste / Arbre | " + css.cibleBascule + " px de haut au moins |",
-    "| Hauteur de la vue du Carnet (`.arb-vue`, repli : en plein écran, `.arb-plein .arb-vue` prend tout l’écran sauf la barre de 44 px) | écran moins l’en-tête, la barre d’onglets et " + css.margeVue + " px de marges (300 px au moins : " + css.hauteurMiniVue + ") |"
+    "| Hauteur de la vue du Carnet (`.arb-vue`, repli : dans l’onglet, `#v-arbre .arb-vue` prend toute la zone sauf la barre de 44 px) | écran moins l’en-tête, la barre d’onglets et " + css.margeVue + " px de marges (300 px au moins : " + css.hauteurMiniVue + ") |"
   ];
   return lignes.concat(styles).join("\n");
 }
@@ -219,7 +218,7 @@ function main() {
   const md = tableau(res, css, opt);
   if (arg.includes("--ecrire")) {
     const date = new Date().toISOString().slice(0, 10);
-    const tete = "# L’arbre des connaissances : mesures\n\nÉtat des lieux chiffré de la vue « Arbre » du Carnet (`node tools/arbre-mesures.js --ecrire`).\n\n" +
+    const tete = "# L’arbre des connaissances : mesures\n\nÉtat des lieux chiffré de la onglet « Arbre » (`node tools/arbre-mesures.js --ecrire`).\n\n" +
       "Version du jeu : " + D.VERSION + " · commit : " + (commit() || "inconnu") + " · date : " + date + ".\n\n" +
       "Les mesures sont celles de la mise en page à l’échelle 1, sans navigateur. « Nœuds par écran » compte les centres de nœuds dans une fenêtre glissée par pas de 20 px entre le premier et le dernier nœud. " +
       "Les trois états : une partie neuve, `tools/fixtures/save-v5-age8-usine.json`, et une partie où toutes les recettes sont apprises (âge maximal).\n\n";

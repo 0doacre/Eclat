@@ -1,10 +1,4 @@
-/* ÉCLAT — l’arbre des connaissances (vue plein écran, ouverte depuis le Carnet) : js/arbre.js, js/atelier.js */
-.arb-bascule { display: flex; gap: 6px; margin: 0 0 10px; }
-.arb-bascule button {
-  flex: 1; min-height: 44px; border-radius: 999px; font: 600 14px var(--sans);
-  background: transparent; border: 1.5px solid var(--line2); color: var(--text);
-}
-.arb-bascule button.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+/* ÉCLAT — l’arbre des connaissances (onglet Arbre) : js/arbre.js, js/atelier.js */
 .arb-vue {
   position: relative; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
   height: max(300px, calc(100dvh - var(--top) - var(--nav) - var(--safe-b) - var(--safe-t) - 190px));
@@ -24,7 +18,7 @@
 }
 .arb-age.suivant { opacity: .7; }
 .arb-age.futur { color: var(--dim); opacity: .7; }
-.arb-t { fill: none; stroke: color-mix(in srgb, var(--text) 45%, transparent); stroke-width: 2; transition: opacity .2s; }
+.arb-t { fill: none; stroke: var(--text); opacity: .6; stroke-width: 2; transition: opacity .2s; }
 .arb-t.pointille { stroke-dasharray: 4 5; }
 .arb-t.loin { display: none; } /* saute plus d’un âge : ne se montre que si l’on touche l’un de ses bouts */
 /* un nœud choisi : ses traits s’allument (ingrédients en couleur, usages en clair), le reste s’efface */
@@ -109,17 +103,15 @@
   .arb-t.neuf { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
 }
 
-/* ---------------------------------------------------------------- la vue plein écran (0.14) */
-.arb-plein {
-  position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; background: var(--bg);
-  padding-top: var(--safe-t);
-}
+/* ---------------------------------------------------------------- l’onglet Arbre (0.15) : il remplit la zone entre l’en-tête et la barre d’onglets, à la largeur de l’appli */
+#v-arbre.on { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 0 0 calc(var(--nav) + var(--safe-b)); background: var(--bg); }
+body.has-act #v-arbre.on { padding-bottom: calc(var(--nav) + var(--safe-b) + 66px); }
 .arb-barre { display: flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 6px; border-bottom: 1px solid var(--line2); background: var(--bg); }
 .arb-barre .btn { min-width: 44px; min-height: 44px; padding: 0 8px; }
 .arb-barre .arb-compte { flex: 1; min-width: 0; font: 600 13px/1.2 var(--sans); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
 .arb-barre .arb-compte b { color: var(--text); }
 @media (max-width: 359px) { .arb-barre .arb-cpt-t { display: none; } .arb-barre .btn { padding: 0 4px; } }
-.arb-plein .arb-vue { flex: 1 1 auto; min-height: 0; height: auto; border: 0; border-radius: 0; margin-bottom: var(--safe-b); }
+#v-arbre .arb-vue { flex: 1 1 auto; min-height: 0; height: auto; border: 0; border-radius: 0; }
 /* la réglette des âges, sur le bord droit : le doigt la parcourt et la vue saute à l’âge touché */
 .arb-rail {
   position: absolute; right: 0; top: 0; bottom: 0; width: 44px; z-index: 5; display: flex; flex-direction: column;

@@ -1,8 +1,8 @@
 # L’arbre des connaissances : mesures
 
-État des lieux chiffré de la vue « Arbre » du Carnet (`node tools/arbre-mesures.js --ecrire`).
+État des lieux chiffré de la onglet « Arbre » (`node tools/arbre-mesures.js --ecrire`).
 
-Version du jeu : 0.13.2 · commit : c81b292 · date : 2026-10-24.
+Version du jeu : 0.15.0 · commit : 5062204 · date : 2026-10-24.
 
 Les mesures sont celles de la mise en page à l’échelle 1, sans navigateur. « Nœuds par écran » compte les centres de nœuds dans une fenêtre glissée par pas de 20 px entre le premier et le dernier nœud. Les trois états : une partie neuve, `tools/fixtures/save-v5-age8-usine.json`, et une partie où toutes les recettes sont apprises (âge maximal).
 
@@ -21,19 +21,18 @@ Les mesures sont celles de la mise en page à l’échelle 1, sans navigateur. �
 | Traits droits (tous / visibles, %) | 0 / 0 | 31.7 / 34.5 | 30.9 / 33.5 |
 | Traits qui traversent une bande entière (tous / visibles, %) | 0 / 0 | 33.3 / 0 | 34.2 / 0 |
 | Croisements de traits visibles | 0 | 33 | 248 |
-| Mise en page : graphe, à froid, à chaud (ms) | 0.5 / 1.6 / 0.01 | 0.3 / 1.2 / 0.1 | 0.3 / 0.8 / 0.13 |
+| Mise en page : graphe, à froid, à chaud (ms) | 1 / 3.6 / 0.01 | 0.6 / 2 / 0.17 | 0.4 / 1.8 / 0.28 |
 
 Lu dans `css/arbre.css` et `js/arbre.js` :
 
 | Valeur | Mesure |
 |---|---:|
 | Côté d’un nœud (`Arbre.NODE`) | 48 px |
-| Police des étiquettes de nœud (`.arb-l`) | 10.5 px, sur 64 px de large |
-| Police des noms d’âge (`.arb-age`) | 12 px |
-| Traits (`.arb-t`) | 1.6 px, 30 % |
-| Bouton du haut de l’arbre (`.arb-tete .btn`) | 44 px de haut au moins |
-| Interrupteur Liste / Arbre | 44 px de haut au moins |
-| Hauteur de la vue (`.arb-vue`) | écran moins l’en-tête, la barre d’onglets et 190 px de marges (300 px au moins : 300) |
+| Police des étiquettes de nœud (`.arb-l`) | 11.5 px, sur 64 px de large |
+| Police des noms d’âge (`.arb-age`) | 13 px |
+| Traits (`.arb-t`) | 2 px, 60 % |
+| Bouton de la barre de l’arbre (`.arb-barre .btn`) | 44 px de haut au moins |
+| Hauteur de la vue du Carnet (`.arb-vue`, repli : dans l’onglet, `#v-arbre .arb-vue` prend toute la zone sauf la barre de 44 px) | écran moins l’en-tête, la barre d’onglets et 190 px de marges (300 px au moins : 300) |
 <!-- mesures:fin -->
 
 ## Dans le navigateur
@@ -65,4 +64,3 @@ Chromium, sauvegarde `tools/fixtures/save-v5-age8-usine.json`, Carnet puis Arbre
 - Les étiquettes (10,5 px) et les traits (1,6 px à 30 %) sont faits pour l'échelle 1 : à l'échelle 0,6, une étiquette se lit à 6,3 px.
 - Au plus 159 recettes se montrent : 175 recettes au total, dont 16 secrètes que l'arbre ne dessine pas avant qu'elles soient connues.
 - La mise en page prend 1 à 2 ms à froid : la vitesse ne limite pas une autre structure.
-
