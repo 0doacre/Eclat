@@ -83,7 +83,7 @@ Protocole proposé : 5 à 8 joueurs peu familiers du genre, première session sa
 
 ## Vérification reproductible
 
-Résultat sur la version livrée : **184 contrôles UX réussis**, suite `npm test` réussie, `git diff --check` sans erreur. Les captures finales ont été relues visuellement. Empreinte du service worker : `f222f64b76`.
+Résultat : **184 contrôles UX réussis**, suite `npm test` réussie, `git diff --check` sans erreur. Les captures finales ont été relues visuellement. L’illustration Dyson étape 2 publiée entre-temps sur `main` (`a825dba`) a été intégrée ; la suite du projet a été relancée après cette intégration. Empreinte finale du service worker : `90c40311c2`.
 
 - `npm run build` puis `npm test` : syntaxe, contenu, moteur, migrations des sauvegardes, récit, comptes et empreinte du service worker.
 - `npm run test:ux` : Playwright requis ; `PW` peut désigner son installation, `CHROMIUM` un navigateur de test, `UX_SHOTS` un dossier de captures. Le script sert sa propre copie locale sur un port libre et utilise des profils jetables.
