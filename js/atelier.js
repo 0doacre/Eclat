@@ -22,6 +22,14 @@
       let h = subTabs("atelier", "machines", "Découvrir", "Machines");
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
       if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Touche des <b>ressources</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b>. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
+      // Le premier essai reste possible sans un aller-retour au Domaine.
+      const firstWood = I.manche.r[1].bois;
+      if (!(st.stats.crafts > 0) && E.count("bois") < firstWood) {
+        const gathering = st.act && st.act.k === "harv" && st.act.res === "bois";
+        h += '<div class="tip starter-harvest">' + (gathering
+          ? 'Le bois arrive : ' + fmt(E.count("bois")) + '/' + firstWood + '. Attends d’en avoir ' + firstWood + ', touche sa tuile ci-dessous, puis <b>Tailler</b>.'
+          : '<span>Il te faut ' + firstWood + ' bois pour commencer.</span><button class="btn pri" data-hloop="lisiere:bois">▶ Récolter du bois</button>') + '</div>';
+      }
       if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
       h += pinsHTML();
       h += '<div class="gestes">';
@@ -108,7 +116,7 @@
       if (!inv.length) {
         const emptyMsg = o.filter === "fav" ? "Aucune ressource favorite. Appui long sur une ressource pour la marquer d’un ♥."
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
-          : (U.iq || o.filter !== "tout" ? "Rien ne correspond." : "Rien ici. Va récolter dans le Domaine.");
+          : (U.iq || o.filter !== "tout" ? "Rien ne correspond." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Rien ici. Va récolter dans le Domaine.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
       } else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie, et pâlit quand elle n’a plus rien à donner.</p>';
       return h;
@@ -868,7 +876,7 @@
         frac = j.frac !== undefined ? j.frac : (j.tot ? 1 - j.left / j.tot : 0);
         line = E.isUnique(I[j.id]) ? fmtTime(j.left) : fmt(j.done) + "/" + fmt(j.n) + (miss ? " · " + miss : "");
       } else {
-        sig = "h:" + a.res; frac = a.frac; line = "+" + fmt(a.got);
+        sig = "h:" + a.z + ":" + a.res; frac = a.frac; line = "+" + fmt(a.got);
       }
       if (bar.dataset.sig !== sig) {
         bar.dataset.sig = sig;
@@ -883,8 +891,8 @@
           ic = icon(a.res, "sm");
           name = "Récolte · " + esc(I[a.res].n);
         }
-        bar.innerHTML = '<button class="ab-main" data-ab="hands">' + ic + '<span class="ab-t"><span class="ab-n">' + name + '</span><span class="ab-bar"><i></i></span></span><b class="ab-c"></b></button>' +
-          (a ? '<button class="ab-x" data-ab="stop" aria-label="Arrêter">■</button>' : "");
+        bar.innerHTML = '<button class="ab-main" data-ab="' + (hi.jobs.length ? "hands" : "harvest") + '" aria-label="' + (hi.jobs.length ? "Voir les commandes en cours" : "Voir le gisement : " + esc(I[a.res].n)) + '">' + ic + '<span class="ab-t"><span class="ab-n">' + name + '</span><span class="ab-bar"><i></i></span></span><b class="ab-c"></b></button>' +
+          (a ? '<button class="ab-x" data-ab="stop" aria-label="Arrêter la récolte : ' + esc(I[a.res].n) + '">■</button>' : "");
         iconize(bar);
       }
       bar.querySelector(".ab-bar i").style.width = (Math.max(0, Math.min(1, frac)) * 100).toFixed(1) + "%";

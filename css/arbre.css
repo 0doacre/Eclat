@@ -1,13 +1,13 @@
 /* ÉCLAT — l’arbre des connaissances (Carnet, vue « Arbre ») : js/arbre.js */
 .arb-bascule { display: flex; gap: 6px; margin: 0 0 10px; }
 .arb-bascule button {
-  flex: 1; min-height: 40px; border-radius: 999px; font: 600 14px var(--sans);
+  flex: 1; min-height: 44px; border-radius: 999px; font: 600 14px var(--sans);
   background: transparent; border: 1.5px solid var(--line2); color: var(--text);
 }
 .arb-bascule button.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
 .arb-tete { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; }
 .arb-tete .grow { flex: 1; }
-.arb-tete .btn { min-width: 44px; min-height: 40px; }
+.arb-tete .btn { min-width: 44px; min-height: 44px; }
 .arb-vue {
   position: relative; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none;
   height: max(300px, calc(100dvh - var(--top) - var(--nav) - var(--safe-b) - var(--safe-t) - 190px));

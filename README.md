@@ -149,6 +149,7 @@ tools/fixtures/       sauvegardes des versions 1 à 5, pour tester la compatibil
 
 ```sh
 npm test                       # contenu + moteur + serveur des comptes + empreinte du service worker
+npm run test:ux                # parcours mobiles (Playwright installé ; PW et CHROMIUM facultatifs)
 npm run serveur                # serveur des comptes en local (http://localhost:8787)
 npm run build                  # recalcule l’empreinte du service worker (à lancer avant chaque publication)
 npm run sim                    # partie simulée, temps d’arrivée à chaque âge
