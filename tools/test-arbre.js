@@ -185,4 +185,40 @@ test("l’empreinte change avec une découverte, pas sans", () => {
   assert.notStrictEqual(Arb.sig(Arb.graphe(E, D)), s1);
 });
 
+/* ---- 0.14.0 : le niveau « loin », les carrefours, la mise en page inchangée ---- */
+test("le niveau « loin » compte les recettes trouvées de chaque âge, sans rien dire d’inconnu", () => {
+  for (const E of [mk(), avancee(), charge("save-v5-age8-usine.json")]) {
+    const g = Arb.graphe(E, D), L = Arb.loin(g, D);
+    L.bandes.forEach((b) => {
+      const n = g.noeuds.filter((x) => x.age === b.age && x.etat === "allume").length;
+      assert.strictEqual(b.trouvees, n, "âge " + b.age);
+      assert.deepStrictEqual(Object.keys(b).sort(), ["age", "atteint", "c", "nom", "objectif", "trouvees"], "une bande ne porte que son âge, son nom, sa couleur et son compte");
+    });
+    const data = JSON.stringify(L);
+    for (const id in I) if (inconnu(E, id)) {
+      assert.ok(!data.includes('"' + id + '"') && !data.includes('"' + I[id].n + '"'), "un objet inconnu apparaît au niveau loin : " + id);
+    }
+    assert.strictEqual(L.bandes.length, g.max + 1, "les âges atteints plus un");
+    assert.strictEqual(L.bandes[0].age, g.max, "du plus récent au plus ancien");
+  }
+});
+test("les carrefours viennent des données seules, pas de la partie", () => {
+  const c = Arb.carrefours(D), s = JSON.stringify(Object.keys(c).sort());
+  assert.ok(Object.keys(c).length > 5 && Object.keys(c).length < 80, String(Object.keys(c).length));
+  assert.strictEqual(JSON.stringify(Object.keys(Arb.carrefours(D)).sort()), s, "déterministe");
+  charge("save-v5-age8-usine.json"); avancee();
+  assert.strictEqual(JSON.stringify(Object.keys(Arb.carrefours(D)).sort()), s, "indépendant de la partie");
+  for (const id in c) assert.ok(I[id] && !I[id].path, id);
+});
+test("la mise en page n’a pas changé depuis la 0.13.2 (empreinte des positions, trois états)", () => {
+  const crypto = require("crypto");
+  const { ETATS } = require("./arbre-mesures.js");
+  const attendu = { "neuve": "6c2188da81e5 n=1", "avancée": "fe0105eed22b n=74", "tout connu": "15c1571a5c65 n=181" };
+  for (const n of Object.keys(attendu)) {
+    const lay = Arb.mise_en_page(Arb.graphe(ETATS[n](), D), D);
+    const s = lay.noeuds.map((x) => [x.age, x.etat, x.x, x.y].join(",")).join(";");
+    assert.strictEqual(crypto.createHash("sha256").update(s).digest("hex").slice(0, 12) + " n=" + lay.noeuds.length, attendu[n], n);
+  }
+});
+
 console.log(passed + " tests de l’arbre réussis" + (process.exitCode ? ", des échecs." : "."));

@@ -413,6 +413,7 @@
     function tick() {
       // ce que le joueur a déjà fait seul n’a plus besoin d’être montré
       if (S().hand.q.length) lastQueue = Date.now();
+      if (U.arbreOuvert) { hide(); return; } // l’arbre en plein écran : le guide revient quand on le ferme
       if (!enabled() || !S().introSeen) { hide(); return; }
       // une fenêtre automatique attend son tour (js/fenetres.js) : le guide passe après, qu’il soit commencé ou non
       if (U.fen && U.fen.attente().length) { hide(); return; }

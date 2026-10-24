@@ -136,12 +136,62 @@ async function run() {
     await p.context().close();
   }
   // Les écrans avancés qui partagent les commandes et la pile de fenêtres.
+  // L’arbre en plein écran (0.14.0) : ouverture et fermeture, surface utile, rail des âges, étiquettes, cibles, entrée depuis une fiche.
+  for (const [width, large] of [[390, false], [390, true], [320, false], [320, true]]) {
+    p = await page(width, true, large);
+    const nom = width + " " + (large ? "Veillée + grand texte" : "Jour") + " arbre";
+    const surfaceMin = width === 320 ? 360 : 650;
+    await p.locator('#tabs [data-tab="carnet"]').click();
+    await p.locator('[data-cvue="arbre"]').click();
+    await p.locator("#arbplein").waitFor({ state: "visible" });
+    await p.waitForTimeout(300);
+    ok(await p.evaluate(() => document.activeElement && document.activeElement.dataset.arb === "fermer"), nom + " : le focus va sur le retour");
+    ok(await p.evaluate(() => document.querySelector("#app").inert), nom + " : l’arrière-plan est inerte");
+    const m = await p.evaluate(() => {
+      const v = document.getElementById("arbre"), vr = v.getBoundingClientRect();
+      const bar = [...document.querySelectorAll("#arbplein .arb-barre button")].map((b) => { const r = b.getBoundingClientRect(); return { t: b.getAttribute("aria-label") || b.textContent.trim(), w: r.width, h: r.height }; });
+      const vus = [...document.querySelectorAll("#arbre .arb-n .arb-l, #arbre .arb-l")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.bottom > vr.top && r.top < vr.bottom && r.right > vr.left && r.left < vr.right; });
+      const k = window.__eclat.U.arbreVue.k;
+      return { surface: v.clientHeight, k, bar, etiquettes: vus.length, plusPetite: Math.min(...vus.map((e) => parseFloat(getComputedStyle(e).fontSize) * k)), debord: document.documentElement.scrollWidth - innerWidth };
+    });
+    ok(m.surface >= surfaceMin, nom + " : surface utile " + m.surface + " px (au moins " + surfaceMin + ")");
+    ok(m.bar.every((b) => b.w >= 43.9 && b.h >= 43.9), nom + " : cibles de la barre < 44 px " + JSON.stringify(m.bar.filter((b) => b.w < 43.9 || b.h < 43.9)));
+    ok(m.k === 1 && m.etiquettes > 3 && m.plusPetite >= 11, nom + " : étiquettes de " + m.plusPetite + " px à l’échelle " + m.k + " (" + m.etiquettes + " visibles)");
+    ok(m.debord <= 0, nom + " : débordement horizontal " + m.debord);
+    // le rail : toucher un âge y amène la vue, et le repère « au centre » suit
+    await p.locator('#arbplein [data-arbage="2"]').click();
+    await p.waitForTimeout(450);
+    ok(await p.evaluate(() => { const b = document.querySelector("#arbplein .arb-rb.centre"); return !!b && b.dataset.arbage === "2"; }), nom + " : le rail amène la vue à l’âge touché");
+    await p.locator('#arbplein [data-arbage="2"]').focus(); await p.keyboard.press("ArrowUp");
+    ok(await p.evaluate(() => document.activeElement.dataset.arbage === "3"), nom + " : le rail se parcourt aux flèches");
+    // − puis + : les trois niveaux
+    await p.locator('#arbplein [data-arb="moins"]').click(); await p.locator('#arbplein [data-arb="moins"]').click(); await p.waitForTimeout(200);
+    ok(await p.evaluate(() => document.getElementById("arbre").dataset.niv === "loin" && !document.querySelector("#arbre .arb-loin").hidden), nom + " : niveau loin, les âges et leur compte");
+    const loin = await p.evaluate(() => [...document.querySelectorAll("#arbre .arb-lb:not(.futur)")].map((b) => ({ n: parseFloat(getComputedStyle(b.querySelector(".arb-lb-n")).fontSize), h: b.getBoundingClientRect().height })));
+    ok(loin.length >= 8 && loin.every((b) => b.n >= 12), nom + " : noms d’âge d’au moins 12 px au niveau loin");
+    ok(await p.evaluate(() => { const v = document.getElementById("arbre"), l = document.querySelector("#arbre .arb-loin"); return l.scrollHeight <= v.clientHeight + 1; }), nom + " : les âges tiennent sans défilement");
+    await p.locator('#arbplein [data-arbband="5"]').click(); await p.waitForTimeout(450);
+    ok(await p.evaluate(() => document.getElementById("arbre").dataset.niv !== "loin"), nom + " : toucher une bande vient dessus");
+    // Échap ferme et rend le focus au bouton qui a ouvert
+    await p.keyboard.press("Escape"); await p.waitForTimeout(100);
+    ok(await p.evaluate(() => !document.getElementById("arbplein") && !document.querySelector("#app").inert && document.activeElement.dataset.cvue === "arbre"), nom + " : Échap ferme et rend le focus");
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+  }
+  // Depuis la fiche d’un objet : « Voir dans l’arbre » ouvre la vue sur lui, choisi
+  p = await page(390, true);
+  await p.evaluate(() => { document.querySelector("#views").insertAdjacentHTML("beforeend", '<button id="essai-goto" data-goto="manche"></button>'); });
+  await p.locator("#essai-goto").evaluate((b) => b.click());
+  await p.locator('#modal [data-m="arbre"]').waitFor({ state: "visible" }); await p.waitForTimeout(500); // la fenêtre finit de s’ouvrir
+  await p.locator('#modal [data-m="arbre"]').click();
+  await p.locator("#arbplein").waitFor({ state: "visible" }); await p.waitForTimeout(500);
+  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-n.sel"); return !!s && s.dataset.arbn === "manche" && !document.querySelector("#arbre .arb-fiche").hidden; }), "Fiche → arbre : le nœud est choisi et son bandeau ouvert");
+  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-n.sel").getBoundingClientRect(), v = document.getElementById("arbre").getBoundingClientRect(), f = document.querySelector("#arbre .arb-fiche").getBoundingClientRect(); return s.top >= v.top && s.bottom <= f.top + 1; }), "Fiche → arbre : le bandeau ne recouvre pas le nœud");
+  ok(await p.evaluate(() => document.querySelector("#arbre .arb-fiche").getBoundingClientRect().height <= 140), "Le bandeau reste bas");
+  await p.keyboard.press("Escape"); await p.waitForTimeout(100);
+  ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   p = await page(390, true);
   await p.locator('#tabs [data-tab="carnet"]').click();
-  await p.locator('[data-cvue="arbre"]').click();
-  ok(await p.locator('#arbre').isVisible(), "Arbre du Carnet disponible");
-  await layout(p, "Carnet arbre"); await shot(p, "avance-arbre");
-  await p.locator('[data-cvue="liste"]').click();
+  await layout(p, "Carnet (liste)");
   await p.locator('#cq').fill('manche');
   const quantity = await p.evaluate(() => window.__eclat.E.state.made.manche || 0);
   await p.locator('[data-cr="manche"][data-n="10"]').click();
