@@ -2934,6 +2934,22 @@ test("Audio : synthèse sonore dédiée pour chaque fin", () => {
   Audio.setEnabled(false);
 });
 
+test("Audio : l’atelier au travail est un seul paysage continu, quel que soit le nombre de pièces", () => {
+  const Audio = require("../js/audio.js");
+  Audio.setEnabled(true);
+  Audio.work("marteler");
+  const k = Audio.debug().work;
+  assert.ok(/^enclume:/.test(k), "le geste choisit le paysage : " + k);
+  for (let i = 0; i < 1000; i++) Audio.work("marteler"); // mille pièces : toujours la même voix
+  assert.strictEqual(Audio.debug().work, k);
+  Audio.work("tailler"); // un autre geste ne change rien tout de suite
+  assert.strictEqual(Audio.debug().work, k);
+  Audio.work(null); // et la fin se fait en fondu, pas d’un coup
+  assert.strictEqual(Audio.debug().work, k);
+  Audio.setEnabled(false);
+  assert.strictEqual(Audio.debug().work, null);
+});
+
 test("Dénouements et Échos dans la Mémoire des mains : données conformes", () => {
   const endings = Object.keys(D.ENDINGS);
   assert.strictEqual(endings.length, 5);
@@ -3072,8 +3088,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.15.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.15.0");
+test("Version 0.15.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.15.1");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3288,7 +3304,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.15.0");
+  assert.strictEqual(D.VERSION, "0.15.1");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
