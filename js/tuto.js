@@ -52,7 +52,7 @@
       { id: "debut", n: "Premiers pas",
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts,
         steps: [
-          { tab: "domaine", at: '[data-harv="lisiere:bois"]', text: "Touche le bois pour le récolter. Garde le doigt appuyé pour récolter en continu.",
+          { tab: "domaine", at: '[data-hloop="lisiere:bois"]', text: "Touche « ▶ Récolter » : tes mains récoltent le bois en continu, sans rester appuyé. Retouche le bouton pour arrêter. (Toucher l’icône du bois donne un seul coup.)",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
           { tab: "atelier", go: "Tu as de quoi tailler. Ouvre l’Atelier.", at: ".gestes",
             text: "Chaque recette demande une action et des ressources. Tu as trois actions au départ : Tailler, Tresser et Assembler. Tailler est déjà choisie.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },

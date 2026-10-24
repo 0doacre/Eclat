@@ -29,7 +29,7 @@ Voir [`docs/PROGRESSION.md`](docs/PROGRESSION.md) pour la conception complète.
 
 - **Passages** : pour entrer dans une nouvelle terre, l’objet qui y mène (l’épieu pour la Plaine, l’outre pour la Rivière…) rend le passage possible ; on le franchit en y versant des matières depuis la Réserve, en plusieurs fois si besoin. Chaque passage coûte bien plus que le précédent : c’est le mur.
 - **Relève** : dès un passage franchi, on peut passer le relais. Un nouveau Semeur s’éveille : stocks, machines, terres et âges repartent de zéro ; le Carnet, les fragments, les secrets, les Échos et la Mémoire restent. Chaque passage franchi rapporte des **Traces** (2, 3, 5, 8, 12…).
-- **Mémoire des mains** : huit améliorations permanentes achetées avec les Traces (récolte, mains, extracteurs, machines, passages moins chers, paquetage de départ, terres déjà ouvertes, temps hors ligne).
+- **Mémoire des mains** : neuf améliorations permanentes achetées avec les Traces (récolte, mains, extracteurs, machines, passages moins chers, paquetage de départ, terres déjà ouvertes, temps hors ligne, et le Coup d’œil, qui augmente les coups de chance à la récolte).
 - Rythme visé (réglé avec `tools/sim-passages.js`) : la première partie bute vers les Collines au bout d’environ 25 minutes ; chaque relève va environ une terre plus loin.
 
 ### Le Domaine : terres, gisements, extracteurs et machines
@@ -80,11 +80,11 @@ Chaque âge change la couleur de l’interface et ouvre de nouvelles terres : la
 
 ### Exploration, lore et secrets
 
-Chaque terre cache des **explorations** qui rapportent des fragments d’histoire. Le jeu compte 26 fragments, 21 secrets (recettes cachées, mélodies, codes, lieux), une flûte en os qui se joue, un terminal où taper des commandes et un ciel nocturne à observer. Les textes sont à lire attentivement : beaucoup contiennent des indices.
+Chaque terre cache des **explorations** qui rapportent des fragments d’histoire. Le jeu déclare 47 fragments (dont du contenu plus ancien conservé) et 30 secrets (recettes cachées, mélodies, codes, lieux), une flûte en os qui se joue, un terminal où taper des commandes et un ciel nocturne à observer. Les textes sont à lire attentivement : beaucoup contiennent des indices.
 
 ### Les fins
 
-Trois fins. Deux sont proposées ouvertement par la voix qui te guide : **la Sphère de Dyson** et **le Brise-Monde**. La troisième ne se trouve qu’en suivant les secrets. Après une fin, on peut passer le relais comme après un passage (la relève, plus haut) ; chaque fin atteinte laisse en plus un **Écho** : +50 % de récolte et de production pour toujours. Journal → Fins explique tout cela.
+Cinq fins : L’Aube Éternelle, Le Brasier, Les Matines, L’Exode et Le Grand Silence. Deux Grands Œuvres sont proposés ouvertement par la voix qui te guide, **la Sphère de Dyson** et **le Brise-Monde** ; les autres fins ne se trouvent qu’en suivant les secrets. Après une fin, on peut passer le relais comme après un passage (la relève, plus haut) ; chaque fin atteinte laisse en plus un **Écho** : +50 % de récolte et de production pour toujours. Journal → Fins explique tout cela.
 
 > Les solutions et le récit sont rangés dans `docs/coffre/`. **Spoilers** : à ne pas ouvrir si tu joues.
 

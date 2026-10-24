@@ -85,7 +85,10 @@
       const r = E.regle(z);
       if (!r) return "";
       const ok = r.etat === "ok";
-      return '<p class="dom-regle' + (ok ? " ok" : r.etat === "gene" ? " gene" : "") + '"><b>' + esc(r.n) + "</b> · " + esc(ok && r.ok ? r.ok : r.t) + "</p>";
+      // la gêne a sa solution : un appui ouvre la fiche de la protection que l’on connaît déjà (rien de plus : sans recette connue, pas de bouton)
+      const prot = r.etat === "gene" ? r.sans.find((i) => I[i] && S().known[i]) : null;
+      return '<p class="dom-regle' + (ok ? " ok" : r.etat === "gene" ? " gene" : "") + '"><b>' + esc(r.n) + "</b> · " + esc(ok && r.ok ? r.ok : r.t) +
+        (prot ? ' <button class="btn small" data-goto="' + prot + '">Voir : ' + esc(I[prot].n) + "</button>" : "") + "</p>";
     }
     /* les terres qui ont un décor illustré (assets/terres/<id>-decor.webp) */
     const DECORS = { lisiere: 1, plaine: 1, riviere: 1, collines: 1, mine: 1, desert: 1, gisement: 1, montagnes: 1, orbite: 1, lune: 1, mercure: 1 };
