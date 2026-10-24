@@ -118,7 +118,14 @@ css/theme.css         le carnet par époque : papier, encre, polices, ornements
 css/fonts.css         polices embarquées (assets/fonts)
 js/data.js            tout le contenu : âges, gestes, recettes, zones, explorations, lore, fins
 js/engine.js          moteur de jeu, sans DOM (tourne aussi sous Node)
-js/ui.js              interface
+js/ui.js              interface, le noyau : état, petits outils, fenêtres, vues, sauvegarde, boucle, démarrage
+js/atelier.js         l’Atelier et le Carnet : établi, commandes, mains, fiches d’objets, arbre de fabrication
+js/journal.js         le Journal (fragments, Livre, Signes, Questions, Fins…) et le Cosmos (ciel, Figures)
+js/quetes.js          l’objectif, les étapes, le suivi et la fenêtre des Quêtes
+js/memoire.js         la relève, l’éveil, les dons, la Mémoire des mains, les fins
+js/compte.js          le menu et ses réglages, les sauvegardes, le compte en ligne
+js/ecouteurs.js       les écouteurs : événements du moteur, clics et clavier
+js/visiteurs.js       les visiteurs de passage du Domaine
 js/domaine.js         le Domaine : gisements, extracteurs, chaînes de machines, passage, Grand Œuvre
 js/carte.js           la Carte : le monde en SVG, brume, lieux, passages
 js/icons.js           correspondance objets → icônes (générée par tools/icons.js)
@@ -132,6 +139,7 @@ js/sky.js             le ciel nocturne (canvas)
 sw.js                 service worker (hors ligne)
 tools/validate.js     vérifie le contenu : références, recettes en double, atteignabilité de chaque objet
 tools/test.js         tests du moteur, dont le chemin secret complet jusqu’à la fin cachée
+tools/golden-ui.js    référence de rendu de l’interface (Playwright) : rien ne doit changer en remaniant ui.js
 tools/sim.js          bot qui joue une partie entière pour mesurer le rythme
 tools/sim-passages.js joueur simulé pour régler les passages, la relève et la Mémoire (--compare, --cycles, --cout)
 tools/build.js        empreinte de version du service worker (sans elle, les joueurs ne reçoivent pas la mise à jour)

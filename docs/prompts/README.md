@@ -71,3 +71,4 @@ puis la fusionne.
 - [v0.7.0 — Ergonomie : pastilles d'objets interactives & affordance unifiée](item-pills-0-7-0.md)
 - [v0.7.1 — Immersion : horodatage du Journal](horodatage-0-7-1.md)
 - [v0.8.0 — Ergonomie majeure : Registre de quêtes, rituels des Semeurs, contrats du Troqueur & Codex d'artisanat](ergonomie-majeure-0-8-0.md)
+- `onboarding-0-10.md` : début de partie plus lent et plus clair, du juice, la relève expliquée (0.10.0). Consigne de livraison incluse par renvoi.
