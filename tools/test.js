@@ -3799,5 +3799,6 @@ test("seuils : la Rivière Lente n’en a pas, et chaque gisement compte à part
 /* visiteurs de passage et constellations : fichiers à part */
 require("./test-visiteurs.js");
 require("./test-figures.js");
+require("./test-arbre.js");
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
