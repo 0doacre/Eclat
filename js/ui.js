@@ -608,8 +608,8 @@
   /* ============================================================ VUES */
   /* les onglets arrivent quand ils ont quelque chose à montrer : le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
-  /* quatre onglets : le Carnet se range dans l’Atelier, le Cosmos dans le Journal */
-  const PARENT = { carnet: "atelier", machines: "atelier", cosmos: "journal" };
+  /* cinq onglets : Domaine, Carte, Atelier, Carnet, Journal ; les Machines se rangent dans l’Atelier, le Cosmos dans le Journal */
+  const PARENT = { machines: "atelier", cosmos: "journal" };
   function tabAvailable(t) {
     const st = S();
     if (t === "cosmos") return E.cache().sky;
@@ -645,9 +645,11 @@
       if (on && !d) { d = document.createElement("i"); d.className = "dot"; b.appendChild(d); }
       if (!on && d) d.remove();
     });
-    const jb = $('#tabs [data-tab="journal"]'), on = tabAvailable("journal");
-    if (on && jb.classList.contains("hidden") && U.tabsSeen) jb.classList.add("born"); // il vient d’apparaître
-    jb.classList.toggle("hidden", !on);
+    for (const k of ["carnet", "journal"]) {
+      const jb = $('#tabs [data-tab="' + k + '"]'), on = tabAvailable(k);
+      if (on && jb.classList.contains("hidden") && U.tabsSeen) jb.classList.add("born"); // il vient d’apparaître
+      jb.classList.toggle("hidden", !on);
+    }
     U.tabsSeen = true;
     // un don de la relève attend d’être pris : une pastille sur le bouton Menu
     const mb = $("#menuBtn"), dd = $(".dot", mb), dpend = E.donsOffre().length > 0;

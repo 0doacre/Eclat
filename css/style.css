@@ -1426,3 +1426,33 @@ h2 + .stamp { margin: -4px 0 8px; }
 .fig-nom { position: absolute; transform: translate(-50%, -50%); font-size: 11px; letter-spacing: .02em; color: rgba(210, 220, 255, .6); pointer-events: none; white-space: nowrap; }
 .fig-star:focus-visible, .fig-signe:focus-visible { outline: 2px solid #ffeeb8; outline-offset: 0; }
 /* ===== FIGURES DU COSMOS (fin) ===== */
+
+/* l’arbre de la Mémoire des mains : des branches qui montent depuis le Semeur */
+.mtree { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; margin: 10px 0 0; padding: 4px 2px 0; min-height: 210px; }
+.mbr { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; }
+.mbn { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); text-align: center; line-height: 1.1; min-height: 22px; display: flex; align-items: flex-end; }
+.mchain { display: flex; flex-direction: column-reverse; align-items: center; gap: 12px; position: relative; padding-bottom: 6px; }
+.mchain::before { content: ""; position: absolute; left: 50%; top: 10px; bottom: -4px; width: 2px; transform: translateX(-1px); background: var(--line2); }
+.mnode { position: relative; z-index: 1; width: 52px; min-height: 52px; padding: 4px 2px 3px; border-radius: 16px; border: 1px solid var(--line2); background: var(--panel); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font: inherit; }
+.mnode .mic { font-size: 20px; line-height: 1.1; }
+.mnode .mpips { font-size: 7px; letter-spacing: -.5px; color: var(--muted); line-height: 1; }
+.mnode.on { border-color: var(--acc); }
+.mnode.on .mpips { color: var(--acc); }
+.mnode.max { background: color-mix(in srgb, var(--good) 22%, var(--panel)); border-color: var(--good); }
+.mnode.can { box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc) 45%, transparent); }
+.mnode.soon { border-style: dashed; }
+.mnode.sel { outline: 2px solid var(--text); outline-offset: 2px; }
+.mnode:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.mroot { position: relative; margin: 2px 0 10px; text-align: center; font-size: 12px; color: var(--muted); }
+.mroot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--line2); z-index: 0; }
+.mroot span { position: relative; z-index: 1; background: var(--bg2); padding: 0 10px; }
+.mem.sel { border-left-color: var(--acc); }
+.mem-liste { margin-top: 10px; }
+.mem-liste summary { cursor: pointer; font-size: 13px; color: var(--muted); padding: 6px 0; }
+@media (prefers-reduced-motion: no-preference) { .mnode { transition: transform .12s, box-shadow .2s; } .mnode:active { transform: scale(.94); } }
+@media (max-width: 350px) { .mtree { gap: 3px; } .mnode { width: 46px; } .mbn { font-size: 9px; } }
+.mnode .mbar { display: block; width: 70%; height: 4px; border-radius: 3px; background: color-mix(in srgb, var(--text) 14%, transparent); overflow: hidden; margin-top: 3px; }
+.mnode .mbar i { display: block; height: 100%; background: var(--acc); border-radius: 3px; }
+.mnode.max .mbar i { background: var(--good); }
+@media (max-width: 350px) { .mtree { padding: 4px 0 0; } }
+.mbn { max-width: 100%; overflow-wrap: anywhere; } .mchain { max-width: 100%; }

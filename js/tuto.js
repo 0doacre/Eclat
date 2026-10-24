@@ -9,7 +9,7 @@
   function create(api) {
     const { E, D, A, U, esc, save, toast } = api;
     const S = () => E.state;
-    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
+    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
     const GAP = 8000; // entre deux chapitres
 
     /* ------------------------------------------------------------ petits repères */
@@ -429,7 +429,7 @@
       let view;
       if (s.tab && U.tab !== s.tab && !s.modal) {
         // le Carnet et les Machines sont des pages de l’Atelier, le Cosmos une page du Journal
-        const par = { carnet: "atelier", machines: "atelier", cosmos: "journal" }[s.tab];
+        const par = { machines: "atelier", cosmos: "journal" }[s.tab];
         const sel = par && U.tab === par ? '[data-tab2="' + s.tab + '"]' : '#tabs [data-tab="' + (par || s.tab) + '"]';
         view = { target: resolve(sel), text: s.go || "Ouvre " + TABS[s.tab] + "." };
       } else {

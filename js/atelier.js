@@ -19,7 +19,7 @@
     /* ------------------------------------------------------------ ATELIER */
     function viewAtelier() {
       const st = S();
-      let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
+      let h = subTabs("atelier", "machines", "Découvrir", "Machines");
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
       if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Touche des <b>ressources</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b>. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       if (st.stats.crafts > 0) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button></div>';
@@ -314,7 +314,8 @@
       const book = E.carnet();
       let known = 0, total = 0;
       book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
-      let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
+      if (!U.carnetVue) U.carnetVue = S().settings.carnetVue === "arbre" ? "arbre" : "liste"; // on retrouve la vue qu’on avait choisie
+      let h = '<h2 class="title">Carnet</h2>';
       /* ARBRE (0.11) : l’interrupteur Liste / Arbre ; la vue Arbre est plus bas, bloc « ARBRE » */
       h += arbreBascule();
       if (U.carnetVue === "arbre") return h + arbreHTML();
@@ -451,7 +452,7 @@
         if (!b) return;
         if (b.dataset.cvue) {
           e.stopPropagation();
-          if (U.carnetVue !== b.dataset.cvue) { U.carnetVue = b.dataset.cvue; A.click(); const el = document.getElementById("v-carnet"); if (el) delete el.dataset.sig; render(true); }
+          if (U.carnetVue !== b.dataset.cvue) { U.carnetVue = b.dataset.cvue; S().settings.carnetVue = U.carnetVue; save(); A.click(); const el = document.getElementById("v-carnet"); if (el) delete el.dataset.sig; render(true); }
           return;
         }
         if (b.dataset.arb) {
@@ -468,7 +469,7 @@
     /* fin ARBRE */
 
     function viewMachines() {
-      let h = subTabs("atelier", "carnet", "machines", "Découvrir", "Carnet", "Machines");
+      let h = subTabs("atelier", "machines", "Découvrir", "Machines");
       h += Dom.machinesView ? Dom.machinesView() : "";
       return h;
     }
