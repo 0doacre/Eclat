@@ -130,7 +130,7 @@
       const info = E.machInfo(key), rate = depRate(z, res);
       const used = e ? Object.keys(e.u).map((t) => many(t, e.u[t])).join(", ") : "";
       let sub = fmt(st.inv[res] || 0);
-      sub = 'Tu en as <span data-c="' + res + '">' + sub + "</span>" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en fabrication" : "");
+      sub = 'Tu en as <span data-c="' + res + '">' + sub + "</span>" + (used ? " · " + esc(used) : "") + (q ? " · " + q + " en cours" : "");
       const right = e && info.s === "off" ? '<span class="dom-rate off">⏸ en pause</span>'
         : rate > 0 ? '<span class="dom-rate" data-rate="' + key + '">+' + perTime(rate) + "</span>"
         : d.hand ? '<span class="dom-rate hand">🖐️ à la main</span>' : "";
@@ -217,7 +217,7 @@
           h += '<div class="bar" style="margin:6px 0"><i data-opbar="' + idx + '" style="width:' + pct.toFixed(1) + '%"></i></div>';
           if (workTxt) h += '<div class="tiny good">' + esc(workTxt) + '</div>';
           if (missTxt) h += '<div class="tiny warn">' + esc(missTxt) + '</div>';
-          else if (j.wait && !workTxt) h += '<div class="tiny muted">En attente…</div>';
+          else if (j.wait && !workTxt) h += '<div class="tiny muted">attend une main ou une machine</div>';
           if (j.steps.length > 1) {
             h += '<div class="tiny muted" style="margin-top:4px">' +
               j.steps.map((s) => (s.done >= s.n ? "✓ " : s.hands || s.machs ? "▸ " : "") + esc(I[s.id].n.toLowerCase()) + " " + s.done + "/" + s.n).join(" → ") +
@@ -623,7 +623,7 @@
       }
       A.fail(0);
       const miss = r.missing ? Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n.toLowerCase())).join(", ") : "";
-      toast(r.why === "full" ? "Tes mains sont déjà bien occupées : attends qu’une fabrication se termine." :
+      toast(r.why === "full" ? "Tes mains sont occupées : attends la fin de la commande en cours." :
         r.why === "noext" ? "Tu ne connais encore aucun extracteur pour ce gisement." :
           "Pas de quoi fabriquer " + esc(I[t].n.toLowerCase()) + (miss ? " : il manque " + miss : "") + ".", { key: "xq" });
     }
@@ -740,7 +740,7 @@
           A.init(); A.click(); vibe([10, 30]);
           const it = I[id];
           if (it.t === "ext") toast("<b>" + esc(I[id].n) + "</b> : réparation faite, de nouveau au travail.", { key: "repair" });
-          else toast("<b>" + esc(I[id].n) + "</b> : réparation faite. Elle attend au repos, dans l’onglet Machines.", { key: "repair" });
+          else toast("<b>" + esc(I[id].n) + "</b> : réparation faite. Elle est au repos, dans l’onglet Machines.", { key: "repair" });
         } else {
           A.fail(0);
           if (r.missing) toast("Il manque encore : " + Object.keys(r.missing).map((m) => r.missing[m] + " " + esc(I[m].n.toLowerCase())).join(", ") + ".", { key: "repair" });

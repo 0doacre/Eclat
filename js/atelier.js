@@ -227,11 +227,11 @@
     }
     const WHY = {
       froid: "Rien à façonner avec cette combinaison pour l’instant.",
-      frais: "L’une de ces matières s’emploie ailleurs, avec une autre action ou d’autres matières.",
-      tiede: "Cette action et ces matières s’accordent bien. Cherche encore.",
-      manque: "Bonne action, mais il manque une matière.",
-      trop: "Bonne action, mais l’une de ces matières est superflue.",
-      geste: "Les bonnes matières, mais pas la bonne action."
+      frais: "L’une de ces ressources s’emploie ailleurs, avec une autre action ou d’autres ressources.",
+      tiede: "Cette action et ces ressources s’accordent bien. Cherche encore.",
+      manque: "Bonne action, mais il manque une ressource.",
+      trop: "Bonne action, mais l’une de ces ressources est superflue.",
+      geste: "Les bonnes ressources, mais pas la bonne action."
     };
     function thermo(t) {
       const T = D.TEMPS[t];
@@ -259,7 +259,7 @@
         if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultHTML(); }
         const miss = q ? null : E.missingFor(r.id, 1);
         const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
-        if (q) return head + '<div class="small">✋ Tes mains s’y mettent. La recette attend dans tes commandes.</div></div></div>';
+        if (q) return head + '<div class="small">✋ Tes mains s’y mettent. La recette est dans tes commandes.</div></div></div>';
         // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
         if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
           '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tu as tout ce qu’il faut. Il te faut :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
@@ -283,9 +283,9 @@
         const it = I[r.id];
         const done = r.kind === "queued" && !E.queued(r.id);
         const msg = done ? "✓ Fabriqué : la pièce est rangée dans ta Réserve."
-          : r.kind === "queued" ? "✋ Tes mains s’y mettent. Prêt dans " + fmtTime(r.time) + "."
-          : r.why === "full" ? "Tes mains sont déjà bien occupées. Attends qu’une fabrication se termine."
-          : r.why === "queued" ? "Déjà en cours de fabrication." : "Impossible pour l’instant.";
+          : r.kind === "queued" ? "✋ Tes mains s’y mettent. Fini dans " + fmtTime(r.time) + "."
+          : r.why === "full" ? "Tes mains sont occupées. Attends la fin de la commande en cours."
+          : r.why === "queued" ? "Déjà en cours." : "Impossible pour l’instant.";
         return '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + '</div><div class="small">' + msg + "</div>" +
           (E.isUnique(it) ? "" : '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div>") + "</div></div>";
       }
@@ -587,7 +587,7 @@
     /* pourquoi on ne peut pas fabriquer (n fois, en chaîne ou non), en une phrase */
     function whyNot(id, n, chain) {
       const it = I[id], b = E.blocker(id);
-      if (E.handInfo().full) return "Tes mains sont pleines : attends qu’une fabrication se termine.";
+      if (E.handInfo().full) return "Tes mains sont occupées : attends la fin de la commande en cours.";
       if (b && b.why === "owned") return "Tu possèdes déjà " + esc(it.n) + ".";
       if (!E.ageOK(id)) return esc(it.n) + " vient d’un âge que tu n’as pas encore atteint.";
       if (b) return esc(it.n) + " : " + esc(needText(id, b)) + ".";
@@ -667,11 +667,11 @@
     function resultLine(r) {
       const n = (id) => "<b>" + esc(I[id].n) + "</b>";
       if (r.kind === "craft") return r.fresh ? "✨ Nouvelle découverte : " + n(r.id) : "+" + fmt(r.n) + " " + n(r.id);
-      if (r.kind === "queued") return "✋ " + n(r.id) + " : prêt dans " + fmtTime(r.time) + ".";
+      if (r.kind === "queued") return "✋ " + n(r.id) + " : fini dans " + fmtTime(r.time) + ".";
       if (r.kind === "learn") return "📖 Recette trouvée : " + n(r.id) + (r.missing ? ". Il manque " + Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n)).join(", ") + "." : ". À fabriquer quand tu veux.");
       if (r.kind === "blocked") return "🔥 " + n(r.id) + " : " + needText(r.id, r.info, true) + ".";
       if (r.kind === "owned") return "Tu possèdes déjà " + n(r.id) + ".";
-      if (r.kind === "busy") return "Tes mains sont déjà bien occupées.";
+      if (r.kind === "busy") return "Tes mains sont occupées.";
       if (r.kind === "fail") return "<b>" + D.TEMPS[r.temp || 0].n + "</b> · " + esc(WHY[r.why] || "") + (r.sec ? " · Une chaleur étrange : ce mélange cache quelque chose." : "");
       return "";
     }
@@ -714,7 +714,7 @@
       if (!r.ok) {
         if (r.why === "plan") { openTree(id, n); return false; }
         A.fail(0);
-        toast(r.why === "full" ? "Tes mains sont pleines : " + D.HAND.max + " commandes au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours de fabrication." : whyNot(id, n, true));
+        toast(r.why === "full" ? "Tes mains sont occupées : " + D.HAND.max + " commandes au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours." : whyNot(id, n, true));
         return false;
       }
       A.click();
@@ -726,7 +726,7 @@
         const mTxt = missKeys.map((k) => fmt(Math.ceil(r.missing[k])) + " " + esc(I[k].n.toLowerCase())).join(", ");
         toast("✋ Commande lancée : <b>" + esc(I[id].n) + "</b>" + (n > 1 ? " ×" + fmt(n) : "") + " · il manque : " + mTxt + ".");
       } else if (sub > 0) {
-        toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à fabriquer avant : prêt dans " + fmtTime(r.time) + ".");
+        toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à fabriquer avant : fini dans " + fmtTime(r.time) + ".");
       }
       render(true);
       return true;
@@ -753,7 +753,7 @@
       const j = h.jobs[0], it = I[j.id];
       const missTxt = jobMissTag(j);
       const what = missTxt ? '<span style="color:var(--bad)">' + esc(missTxt) + "</span>"
-        : j.wait ? '<span style="color:var(--bad)">il manque des ressources</span>'
+        : j.wait ? '<span style="color:var(--bad)">attend une main ou une machine</span>'
         : j.steps.length > 1 ? "étape " + (j.i + 1) + "/" + j.steps.length + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.done) + "/" + fmt(j.n);
       const pct = Math.min(100, 100 * (j.frac || 0));
       return '<span class="hh">✋</span>' + icon(j.id, "sm") + '<div class="grow hmain" data-hopen><div class="small ell"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) +
@@ -792,7 +792,7 @@
         if (hi.jobs.length) {
           const j = hi.jobs[0], w = jobWorkersTag(j);
           ic = icon(j.id, "sm");
-          name = "Fabrication · " + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n)) +
+          name = "Commande · " + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n)) +
             (w ? " · " + esc(w) : "") +
             (hi.jobs.length > 1 ? ' <span class="tiny muted">+' + (hi.jobs.length - 1) + "</span>" : "");
         } else {
@@ -831,7 +831,7 @@
           if (w) sub.push(w);
           if (miss) sub.push(miss);
           else if (j.wait) sub.push("attend une main ou une machine");
-          else sub.push("prête dans ~" + fmtTime(i ? j.at : j.left));
+          else sub.push("fini dans ~" + fmtTime(i ? j.at : j.left));
           return '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
             '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span></span>" +
             '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
