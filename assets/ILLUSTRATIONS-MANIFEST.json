@@ -80,16 +80,6 @@
     "quality": 80
   },
   {
-    "name": "brisemonde-1",
-    "source_index": 23,
-    "size": [
-      600,
-      450
-    ],
-    "bytes": 80162,
-    "quality": 80
-  },
-  {
     "name": "brisemonde-2",
     "source_index": 5,
     "size": [
@@ -168,5 +158,25 @@
     ],
     "bytes": 109668,
     "quality": 40
+  },
+  {
+    "name": "brisemonde-1",
+    "source_index": 24,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 65022,
+    "quality": 80
+  },
+  {
+    "name": "brisemonde-3",
+    "source_index": 21,
+    "size": [
+      600,
+      450
+    ],
+    "bytes": 71866,
+    "quality": 80
   }
 ]

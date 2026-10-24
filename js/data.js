@@ -1070,7 +1070,7 @@
   /* Déchiffrer : révéler une recette inconnue étape par étape contre de l’Intuition */
   /* Illustrations des Grands Œuvres (assets/oeuvres/) : <id>.webp montre l’œuvre achevée ;
    * une étape qui a sa vignette la nomme ici, les autres reprennent l’œuvre entière. */
-  D.OEUVRE_ETAPES = { dyson: ["dyson-1", "", "dyson-3", "dyson-4"], brisemonde: ["brisemonde-1", "brisemonde-2", "", "brisemonde-4"] };
+  D.OEUVRE_ETAPES = { dyson: ["dyson-1", "", "dyson-3", "dyson-4"], brisemonde: ["brisemonde-1", "brisemonde-2", "brisemonde-3", "brisemonde-4"] };
   D.oeuvreArt = (pid, step) => ((D.OEUVRE_ETAPES[pid] || [])[step] || pid);
 
   D.DECHIFFRER = { cost: [3, 8, 20] };
