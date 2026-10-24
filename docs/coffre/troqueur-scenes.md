@@ -262,3 +262,136 @@ T: « Un client m’a laissé une dette, hier. »
 > C: « Je paie avant de partir. »
   T: « Toi, tu paies. Je le vois à la main. »
 fin
+
+## scene: comptoir-refus
+sujet: comptoir
+rang: 0
+cond: -
+cycle-min: 2
+
+T: « Là-dessus, j’ai tout dit. »
+  mise-en-scene: *Il range deux poids dans leur boîte.*
+> A: « Tout dit, ou tout vendu ? »
+  T: « Ce qui a un prix, je le vends. »
+  T: « Ce qui n’en a pas, je le tais. »
+> B: « Je peux attendre. »
+  T: « Attends. »
+  T: « Je n’ai rien de plus à peser aujourd’hui. »
+> C: « … »
+  T: « Tu insistes avec le silence. »
+  T: « Il ne pèse rien non plus. »
+fin
+
+## scene: marchandises-refus
+sujet: marchandises
+rang: 0
+cond: -
+cycle-min: 2
+
+T: « Mes plateaux sont vides. Reviens demain. »
+  mise-en-scene: *Il retourne une caisse et s’assoit dessus.*
+> A: « Tu n’as vraiment plus rien ? »
+  T: « Des clous, du sel. »
+  T: « Le sel, tu en as déjà. »
+> B: « Je voulais juste voir. »
+  T: « Regarde. Les caisses sont ouvertes. »
+  T: « Ouvertes, oui. Vides aussi. »
+> C: « Rien à vendre, alors. »
+  T: « Rien. »
+  T: « Les mains vides, ça se voit de loin. »
+fin
+
+## scene: terres-refus
+sujet: terres
+rang: 0
+cond: -
+cycle-min: 2
+
+T: « Les chemins, je te les ai donnés. »
+  mise-en-scene: *Il trace une ligne dans la poussière du plateau, puis l’efface.*
+> A: « Tu en connais d’autres. »
+  T: « Peut-être. »
+  T: « Reviens quand tu auras marché. »
+> B: « Dis-moi juste où. »
+  T: « Non. »
+  T: « Tu as des pieds. »
+> C: « … »
+  T: « Tu penses que je cède au silence. »
+  T: « Je cède au poids. »
+fin
+
+## scene: mains-refus
+sujet: mains
+rang: 0
+cond: -
+cycle-min: 2
+
+T: « Tes mains, je les ai vues. »
+  mise-en-scene: *Il repousse le plateau du plat de la main, comme pour le vider.*
+> A: « Elles changent tout le temps. »
+  T: « Elles changent. Je regarde. »
+  T: « Tu me le diras quand elles auront fini. »
+> B: « Tu as un conseil ? »
+  T: « Un seul. Use-les. »
+  T: « Les conseils s’usent aussi. »
+> C: « … »
+  T: « Rien à ajouter sur les mains. »
+  T: « Les tiennes parlent pour toi. »
+fin
+
+## scene: ciel-refus
+sujet: ciel
+rang: 0
+cond: -
+cycle-min: 2
+
+T: « Le ciel, ce soir, ne dit rien. »
+  mise-en-scene: *Il souffle sa chandelle et la rallume aussitôt.*
+> A: « Tu l’as déjà vu parler ? »
+  T: « Non. »
+  T: « Les clients demandent. Je réponds. »
+> B: « Et l’étoile rouge ? »
+  T: « Elle clignote. »
+  T: « Elle clignotait hier aussi. »
+> C: « … »
+  T: « Lève la tête. »
+  T: « Tu verras mieux que moi. »
+fin
+
+## scene: avant-refus
+sujet: avant
+rang: 0
+cond: -
+cycle-min: 2
+
+T: « Les Anciens. Encore eux. »
+  mise-en-scene: *Il compte des pièces qu’il a déjà comptées.*
+> A: « Tu ne veux pas en parler. »
+  T: « Je n’ai rien à vendre dessus. »
+  T: « Le vide ne se pèse pas. »
+> B: « Un nom. Rien qu’un. »
+  T: « Non. »
+  T: « Les noms que je donne, je les regrette. »
+> C: « … »
+  T: « Tu as raison. On se tait. »
+  T: « Les pièces, elles, ne se taisent pas. »
+fin
+
+## scene: clients-refus
+sujet: clients
+rang: 0
+cond: -
+cycle-min: 2
+
+T: « Il en passe. Pas aujourd’hui. »
+  mise-en-scene: *Il regarde la route, puis revient à ses poids.*
+> A: « Personne du tout ? »
+  T: « Un chien. »
+  T: « Il n’a rien acheté. »
+> B: « Tu retiens leurs visages ? »
+  T: « Quelques-uns. »
+  T: « Les visages ne me servent à rien. »
+> C: « … »
+  T: « Tu guettes quelqu’un. »
+  T: « Guette la route. Moi, je pèse. »
+fin
