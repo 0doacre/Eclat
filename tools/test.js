@@ -563,6 +563,22 @@ test("objectifs : un joueur avancé ne retombe pas sur le tutoriel", () => {
   const ob = E.objective();
   assert.ok(ob && ob.i > D.OBJECTIVES.findIndex((o) => Array.isArray(o) && o[0] === "moteur_vapeur"), JSON.stringify(ob));
 });
+test("objectifs : la porte de l’âge d’après construite en avance ne cache pas les étapes de l’âge en cours", () => {
+  const E = mk(), S = E.state;
+  const nom = (o) => (Array.isArray(o) ? o[0] : o.id);
+  const idx = (id) => D.OBJECTIVES.findIndex((o) => nom(o) === id);
+  for (let i = 0; i <= idx("pioche_pierre"); i++) {
+    const o = D.OBJECTIVES[i];
+    if (Array.isArray(o)) S.made[o[0]] = 1; else if (o.k === "ext") S.flags.extDone = 1; else if (o.k === "line") S.flags.lineDone = 1;
+    else if (o.k === "exp") S.exp.done[o.z] = 9; else if (o.k === "pass") S.pass[o.z] = { done: true };
+  }
+  S.age = D.ITEMS.pioche_pierre.a;
+  S.made.creuset = 1; // la porte de l’âge d’après, fabriquée avant les étapes de l’âge en cours
+  const ob = E.objective();
+  assert.ok(ob && ob.i < idx("creuset"), "l’objectif reste une étape de l’âge en cours : " + JSON.stringify(ob));
+  const age = (o) => { let a = 0; for (let j = 0; j <= o.i; j++) { const n = D.OBJECTIVES[j]; if (Array.isArray(n)) a = D.ITEMS[n[0]].a; else if (n.k === "craft") a = D.ITEMS[n.id].a; } return a; };
+  assert.strictEqual(age(ob), S.age, "même âge que celui qu’on a atteint");
+});
 test("réminiscences : on les gagne en cherchant, pas en attendant", () => {
   const E = mk();
   let hints = [];
