@@ -16,10 +16,11 @@
     const has = (id) => (S().inv[id] || 0) >= 1;
     const anyExt = () => Object.keys(S().dom.ext).length > 0;
     const modalOpen = () => !!document.querySelector(".modal:not(.hidden)");
-    /* une matière de l’Atelier qui cache encore des recettes : celle-là vaut la peine d’être étudiée */
+    /* une matière de l’Atelier qui cache encore des recettes à tenter dès maintenant : celle-là vaut la peine d’être étudiée */
     function studyTile() {
       const tiles = Array.from(document.querySelectorAll("[data-inv]"));
-      const ok = tiles.find((t) => Object.keys(D.ITEMS).some((k) => D.ITEMS[k].r && D.ITEMS[k].r[1][t.dataset.inv] !== undefined && !S().known[k]));
+      // une matière que la joueuse peut vraiment tenter maintenant : l’étude lui montrera au moins une action qui réagit
+      const ok = tiles.find((t) => !S().studied[t.dataset.inv] && E.usesLeft(t.dataset.inv) > 0);
       return ok || null;
     }
     /* le joueur a déjà entendu le Troqueur */

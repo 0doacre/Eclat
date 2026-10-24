@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.11.1";
+  D.VERSION = "0.11.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,8 +1071,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "📖 Le Carnet a son propre onglet, entre l’Atelier et le Journal : l’arbre et la liste sont à un seul toucher. L’Atelier garde Découvrir et Machines. Ton choix « Liste » ou « Arbre » est retenu.",
-    "🌿 La Mémoire des mains se lit en arbre : quatre branches (les mains, la terre, les machines, le départ) et celle des résonances. Touche un point pour le lire et l’acheter ; la liste reste dessous."
+    "🔍 Le guide ne te fait plus étudier une ressource qui n’a rien à offrir pour l’instant : il en choisit une qui réagit déjà avec tes actions."
   ];
 
 
