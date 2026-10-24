@@ -280,3 +280,18 @@ body.large-text .btn.small { min-height: 38px; font-size: 13.5px; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Illustrations validées — fonds sous le contenu, sans affecter les interactions. */
+#views { position: relative; isolation: isolate; }
+#views::before { content: ""; position: sticky; display: block; top: 0; height: 0; z-index: -1; pointer-events: none; }
+#views { --fond-url: url("../assets/fonds/domaine.webp"); background-image: linear-gradient(var(--fond-veil), var(--fond-veil)), var(--fond-url), var(--paper); background-size: auto, cover, auto; background-position: center, center, center; background-repeat: no-repeat, no-repeat, repeat; background-attachment: local; }
+body { --fond-veil: rgba(242,234,218,.86); }
+body[data-tab="domaine"] #views { --fond-url: url("../assets/fonds/domaine.webp"); }
+body[data-tab="atelier"] #views, body[data-tab="machines"] #views { --fond-url: url("../assets/fonds/atelier.webp"); }
+body[data-tab="carnet"] #views { --fond-url: url("../assets/fonds/carnet.webp"); }
+body[data-tab="journal"] #views, body[data-tab="cosmos"] #views { --fond-url: url("../assets/fonds/journal.webp"); }
+body[data-tab="cosmos"] #v-cosmos { background-image: linear-gradient(rgba(13,17,24,.88),rgba(13,17,24,.88)), url("../assets/fonds/journal.webp"); background-size: cover; }
+body:has(.mem-modal:not(.hidden)) { --fond-url: url("../assets/fonds/memoire.webp"); }
+body[data-theme="veillee"], body[data-mode="veillee"] { --fond-url: url("../assets/fonds/veillee.webp"); --fond-veil: rgba(7,6,5,.86); }
+.oeuvre-art { display:block; width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:10px; margin:8px 0 12px; }
+.oeuvre-step-art { display:block; width:min(100%,300px); aspect-ratio:4/3; object-fit:cover; border-radius:8px; margin:8px 0; }
