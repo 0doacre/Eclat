@@ -16,18 +16,18 @@
       1200,
       900
     ],
-    "bytes": 107204,
-    "quality": 40
+    "bytes": 116600,
+    "quality": 20
   },
   {
     "name": "chant",
     "source_index": 20,
     "size": [
-      1200,
-      900
+      600,
+      450
     ],
-    "bytes": 116600,
-    "quality": 20
+    "bytes": 98908,
+    "quality": 80
   },
   {
     "name": "arche13",
@@ -56,16 +56,6 @@
       600,
       450
     ],
-    "bytes": 104408,
-    "quality": 80
-  },
-  {
-    "name": "dyson-2",
-    "source_index": 28,
-    "size": [
-      600,
-      450
-    ],
     "bytes": 101100,
     "quality": 80
   },
@@ -76,7 +66,7 @@
       600,
       450
     ],
-    "bytes": 80126,
+    "bytes": 104408,
     "quality": 80
   },
   {
@@ -91,7 +81,7 @@
   },
   {
     "name": "brisemonde-1",
-    "source_index": 24,
+    "source_index": 23,
     "size": [
       600,
       450
@@ -107,16 +97,6 @@
       450
     ],
     "bytes": 97894,
-    "quality": 80
-  },
-  {
-    "name": "brisemonde-3",
-    "source_index": 21,
-    "size": [
-      600,
-      450
-    ],
-    "bytes": 98908,
     "quality": 80
   },
   {
