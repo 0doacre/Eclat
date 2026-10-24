@@ -447,6 +447,7 @@
       const it = I[id], b = E.blocker(id);
       if (E.handInfo().full) return "Tes mains sont pleines : attends qu’une fabrication se termine.";
       if (b && b.why === "owned") return "Tu possèdes déjà " + esc(it.n) + ".";
+      if (!E.ageOK(id)) return esc(it.n) + " vient d’un âge que tu n’as pas encore atteint.";
       if (b) return esc(it.n) + " : " + esc(needText(id, b)) + ".";
       const names = (m) => Object.keys(m).map((k) => fmt(m[k]) + " " + esc(I[k].n)).join(", ");
       if (chain) {

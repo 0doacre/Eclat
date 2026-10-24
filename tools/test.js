@@ -86,6 +86,7 @@ test("thermomètre : mauvais geste / ingrédient manquant", () => {
 });
 test("chaleur insuffisante = Brûlant, recette notée", () => {
   const E = mk();
+  E.state.age = 3; // l’âge du cuivre est atteint
   stations(E, ["feu"]);
   E.state.seen.malachite = E.state.seen.charbon = true;
   const r = E.attempt("chauffer", ["malachite", "charbon"]);
@@ -125,6 +126,7 @@ test("passages : on verse en plusieurs fois, la terre s’ouvre une fois tout pa
 });
 test("plan : une pièce prise en partie au stock se fabrique avant celles qui s’en servent", () => {
   const E = mk();
+  E.state.age = 12; // tous les âges atteints : ce test regarde l’ordre du plan
   for (const k in D.ITEMS) E.state.known[k] = true;
   stations(E, ["enclume_bronze", "creuset", "four", "feu", "enclume_pierre"]);
   E.add("lingot_bronze", 5); E.add("lingot_cuivre", 200); E.add("lingot_etain", 200); E.add("caillou", 5000); E.add("bois", 5000); E.add("corde", 500); E.add("manche", 500); E.add("charbon", 500);
@@ -854,6 +856,35 @@ test("Un passage n’apparaît que lorsque la terre d’avant est ouverte", () =
   E.state.zones.plaine = true; E.state.zones.riviere = true;
   assert.ok(E.passPending().includes("collines"));
   assert.strictEqual(E.passInfo("collines").ready, true);
+});
+test("Les âges se franchissent un par un, et rien ne se découvre au-delà de l’âge suivant", () => {
+  const E = mk();
+  assert.strictEqual(E.state.age, 0);
+  // les gants (âge 4) se font avec de la peau et de la fibre : impossible à l’âge du Bois
+  E.add("cuir", 5); E.add("fibre", 5);
+  assert.ok(!E.ageOK("gants"));
+  assert.strictEqual(E.attempt("assembler", ["cuir", "fibre"]).kind, "fail", "pas de découverte d’un objet trop lointain");
+  assert.ok(!E.state.known.gants && E.state.age === 0);
+  // même un objet d’un âge atteint par le « dernier moment » ne fait jamais sauter plus d’un âge
+  E.state.age = 1;
+  E.add("manche", 3); E.add("caillou", 5); E.add("corde", 3);
+  assert.ok(E.ageOK("pioche_pierre"), "l’âge suivant est à portée");
+  E.learn("lingot_bronze"); E.add("lingot_bronze", 1);
+  assert.ok(!E.ageOK("lingot_bronze") || E.state.age <= 1);
+  E.state.known.plaque_bronze = true;
+  assert.ok(!E.ageOK("plaque_bronze"));
+  assert.deepStrictEqual(E.queue("plaque_bronze", 1), { ok: false, why: "age" });
+  // le Carnet ne montre pas d’objet de l’âge d’après, hors objectif et objets trouvés
+  const dernier = E.carnet().map((s) => s.age).pop();
+  assert.ok(dernier <= E.state.age + 1);
+  for (const sec of E.carnet()) if (sec.age > E.state.age) for (const id of sec.ids) assert.ok(E.state.known[id] || E.state.made[id] > 0 || id === (E.guide().step || (E.guide().ob || {}).id), id + " ne devrait pas se voir");
+});
+test("Une partie dont l’âge a sauté à cause des gants retrouve son vrai âge", () => {
+  const E = mk();
+  const o = JSON.parse(E.serialize());
+  o.age = 4; o.made = { manche: 1, corde: 1, gants: 1 }; o.known = { manche: true, corde: true, gants: true };
+  E.load(JSON.stringify(o));
+  assert.ok(E.state.age <= 1, "l’âge revient à ce qu’on a vraiment atteint (" + E.state.age + ")");
 });
 test("Étudier tout : toutes les ressources vues d’un coup, ou rien", () => {
   const E = mk();
@@ -2965,8 +2996,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.9.4 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.9.4");
+test("Version 0.9.5 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.5");
   assert.ok(D.CHANGES.length >= 1);
 });
 
@@ -3169,7 +3200,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.9.4");
+  assert.strictEqual(D.VERSION, "0.9.5");
   assert.ok(D.CHANGES.length >= 1);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
