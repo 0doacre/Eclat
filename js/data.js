@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.15.1";
+  D.VERSION = "0.15.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1076,6 +1076,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🌙 La première relève s’ouvre de nouveau (une erreur l’empêchait d’apparaître). Sur petit écran, la réglette des âges de l’arbre garde des cases de 44 px et défile.",
     "🔨 Fini le bruit répété à chaque pièce : tant qu’une commande avance, l’atelier fait un seul bruit de fond, continu, que tu fabriques une pièce ou mille. Le geste en cours le colore (cailloux, bois, braises, enclume, machines…) et l’âge choisit la pièce : atelier de bois, forge, vapeur, usine, laboratoire.",
     "🌳 L’arbre a son onglet, entre l’Atelier et le Carnet. Il garde la largeur de l’écran et se déplace du doigt ; ses traits sont plus discrets tant que tu n’as rien touché. Le Carnet redevient la seule liste.",
     "🗣️ Le Troqueur dialogue vraiment : à chaque sujet, tu poses ta question et il répond, au lieu de réciter une phrase dans le vide.",

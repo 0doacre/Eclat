@@ -372,7 +372,7 @@
     function arbreRailHTML() {
       let h = '<div class="arb-rail" role="group" aria-label="' + esc(ARB_TXT.rail) + '">';
       for (let a = D.AGES.length - 1; a >= 0; a--) h += '<button type="button" class="arb-rb" data-arbage="' + a + '" aria-label="' + esc(D.AGES[a].n) + '" style="--ac:' + esc(D.AGES[a].c) + '"><span>' + (a + 1) + "</span></button>";
-      return h + '<div class="arb-rb-tip" hidden></div></div>';
+      return h + "</div>";
     }
     function arbreLegendeHTML() {
       const sym = ['<span class="arb-n allume" aria-hidden="true"></span>', '<span class="arb-n vu" aria-hidden="true"></span>', '<span class="arb-n fantome" aria-hidden="true"></span>',
@@ -381,7 +381,7 @@
     }
     function arbreVueHTML(g, lay) {
       return '<div class="arb-vue" id="arbre">' + Arb.rendu(lay, { icon: (id) => icon(id), esc, neuf: U.arbreNeuf, txt: ARB_TXT, car: Arb.carrefours(D) }) +
-        arbreLoinHTML(Arb.loin(g, D)) + '<div class="arb-ici" aria-hidden="true"></div>' + arbreRailHTML() + arbreLegendeHTML() + '<div class="arb-fiche" hidden></div></div>';
+        arbreLoinHTML(Arb.loin(g, D)) + '<div class="arb-ici" aria-hidden="true"></div>' + arbreRailHTML() + '<div class="arb-rb-tip" hidden></div>' + arbreLegendeHTML() + '<div class="arb-fiche" hidden></div></div>';
     }
     const arbreEl = () => document.getElementById("v-arbre");
     const arbreSig = (g) => Arb.sig(g) + "|" + (U.arbreNeuf || "");
@@ -532,6 +532,7 @@
       // la réglette : l’âge où l’on est (plein), l’âge au milieu de la vue (cerclé), les âges encore loin (estompés)
       const lay0 = U.arbreLay;
       if (lay0) {
+        const rail0 = v.querySelector(".arb-rail");
         const bc = niv === "loin" ? null : Arb.bandeA(lay0, (v.clientHeight / 2 - o.ty) / o.k);
         v.querySelectorAll(".arb-rb").forEach((b) => {
           const a = +b.dataset.arbage;
@@ -539,6 +540,13 @@
           b.classList.toggle("centre", !!bc && bc.age === a);
           b.classList.toggle("lointain", !lay0.bandes.some((x) => x.age === a));
         });
+        // réglette qui défile : l’âge au milieu de la vue (ou l’âge atteint) reste à l’écran
+        const defile0 = !!rail0 && rail0.scrollHeight > rail0.clientHeight + 1;
+        if (rail0) rail0.classList.toggle("defile", defile0);
+        if (defile0) {
+          const cb = v.querySelector(".arb-rb.centre") || v.querySelector(".arb-rb.ici");
+          if (cb) rail0.scrollTop = cb.offsetTop - (rail0.clientHeight - cb.offsetHeight) / 2;
+        }
       }
       // l’âge sous le haut de la vue reste écrit, même au milieu d’une longue bande
       const ici = v.querySelector(".arb-ici"), lay = U.arbreLay;
@@ -597,7 +605,9 @@
       // la réglette des âges : le doigt la parcourt, la vue saute à l’âge touché, une pastille dit lequel
       const rail = v.querySelector(".arb-rail");
       if (rail) {
-        const tip = rail.querySelector(".arb-rb-tip");
+        const tip = v.querySelector(".arb-rb-tip");
+        // petit écran : les âges gardent 44 px et la réglette défile ; on ne la parcourt plus d’un trait, on touche un âge
+        const defile = () => rail.scrollHeight > rail.clientHeight + 1;
         let actif = false;
         const ageAt = (e) => { const r = rail.getBoundingClientRect(), n = D.AGES.length; return n - 1 - Math.max(0, Math.min(n - 1, Math.floor((e.clientY - r.top) / r.height * n))); };
         const va = (e) => {
@@ -605,7 +615,7 @@
           arbreAller(a);
           tip.hidden = false; tip.textContent = (a + 1) + " · " + D.AGES[a].n; tip.style.top = Math.max(18, Math.min(r.height - 18, e.clientY - r.top)) + "px";
         };
-        rail.addEventListener("pointerdown", (e) => { if (e.button > 0) return; actif = true; U.arbreRail = true; try { rail.setPointerCapture(e.pointerId); } catch (er) { /* rien */ } va(e); e.preventDefault(); });
+        rail.addEventListener("pointerdown", (e) => { if (e.button > 0 || defile()) return; actif = true; U.arbreRail = true; try { rail.setPointerCapture(e.pointerId); } catch (er) { /* rien */ } va(e); e.preventDefault(); });
         rail.addEventListener("pointermove", (e) => { if (actif) va(e); });
         const finRail = () => { actif = false; tip.hidden = true; setTimeout(() => { U.arbreRail = false; }, 50); };
         rail.addEventListener("pointerup", finRail);
