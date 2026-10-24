@@ -3072,8 +3072,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.13.2 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.13.2");
+test("Version 0.13.3 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.13.3");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3288,7 +3288,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.13.2");
+  assert.strictEqual(D.VERSION, "0.13.3");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
@@ -3888,5 +3888,47 @@ test("seuils : la Rivière Lente n’en a pas, et chaque gisement compte à part
 require("./test-visiteurs.js");
 require("./test-figures.js");
 require("./test-arbre.js");
+
+console.log("La file des fenêtres automatiques (0.13.3)");
+const Fen = require("../js/fenetres.js");
+function fileFen(etat) { return Fen.create({ libre: () => !etat.ouvert, now: () => etat.t }); }
+test("une fenêtre automatique s’ouvre tout de suite si rien n’est ouvert", () => {
+  const etat = { t: 1000, ouvert: false }, vu = [];
+  const f = fileFen(etat);
+  f.demande(Fen.PRIO.retour, "retour", () => { vu.push("retour"); etat.ouvert = true; });
+  assert.deepStrictEqual(vu, ["retour"]);
+  assert.deepStrictEqual(f.attente(), []);
+});
+test("pas d’ouverture pendant qu’une fenêtre est ouverte ; l’ordre suit la priorité, pas la demande", () => {
+  const etat = { t: 1000, ouvert: true }, vu = [];
+  const f = fileFen(etat);
+  const ouvre = (nom) => () => { vu.push(nom); etat.ouvert = true; };
+  f.demande(Fen.PRIO.retour, "retour", ouvre("retour"));
+  f.demande(Fen.PRIO.nouveautes, "nouveautes", ouvre("nouveautes"));
+  f.demande(Fen.PRIO.sauvegarde, "sauvegarde", ouvre("sauvegarde"));
+  assert.deepStrictEqual(vu, [], "rien tant qu’une fenêtre est ouverte");
+  assert.deepStrictEqual(f.attente(), ["sauvegarde", "nouveautes", "retour"]);
+  const suivante = () => { etat.ouvert = false; f.ferme(); etat.t += Fen.PAUSE; f.pomper(); };
+  etat.ouvert = false; etat.t += Fen.PAUSE; f.pomper();
+  suivante(); suivante();
+  assert.deepStrictEqual(vu, ["sauvegarde", "nouveautes", "retour"]);
+});
+test("une pause sépare deux fenêtres ; une même fenêtre n’attend jamais deux fois", () => {
+  const etat = { t: 1000, ouvert: false }, vu = [];
+  const f = fileFen(etat);
+  const ouvre = (nom) => () => { vu.push(nom); etat.ouvert = true; };
+  f.demande(Fen.PRIO.nouveautes, "nouveautes", ouvre("nouveautes"));
+  assert.strictEqual(f.demande(Fen.PRIO.retour, "retour", ouvre("retour")), true);
+  assert.strictEqual(f.demande(Fen.PRIO.retour, "retour", ouvre("retour")), false, "doublon refusé");
+  etat.ouvert = false; f.ferme();
+  etat.t += Fen.PAUSE - 1; assert.strictEqual(f.pomper(), false, "trop tôt");
+  etat.t += 1; assert.strictEqual(f.pomper(), true);
+  assert.deepStrictEqual(vu, ["nouveautes", "retour"]);
+});
+test("le retour d’absence : le message discret et la fenêtre ont leurs seuils (60 s et 5 min)", () => {
+  const src = fs.readFileSync(path.join(__dirname, "../js/ecouteurs.js"), "utf8");
+  assert.ok(/const ABSENCE_MESSAGE = 60, ABSENCE_FENETRE = 300;/.test(src), "seuils nommés en tête des écouteurs");
+  assert.ok(/o\.dt < ABSENCE_MESSAGE/.test(src) && /o\.dt < ABSENCE_FENETRE/.test(src));
+});
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

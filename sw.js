@@ -3,12 +3,12 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "aa3dde84e9";
+const BUILD = "7ffe831c8e";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
   "./", "index.html", "manifest.webmanifest", "css/fonts.css", "css/style.css", "css/theme.css", "css/arbre.css",
-  "js/config.js", "js/data.js", "js/recit.js", "js/signes.js", "js/constellations.js", "js/engine.js", "js/audio.js", "js/sky.js", "js/scenes.js", "js/icons.js", "js/domaine.js", "js/carte.js", "js/tuto.js", "js/cloud.js", "js/visiteurs.js", "js/journal.js", "js/quetes.js", "js/memoire.js", "js/compte.js", "js/arbre.js", "js/atelier.js", "js/ecouteurs.js", "js/ui.js",
+  "js/config.js", "js/data.js", "js/recit.js", "js/signes.js", "js/constellations.js", "js/engine.js", "js/audio.js", "js/sky.js", "js/scenes.js", "js/icons.js", "js/domaine.js", "js/carte.js", "js/tuto.js", "js/cloud.js", "js/visiteurs.js", "js/journal.js", "js/quetes.js", "js/memoire.js", "js/compte.js", "js/arbre.js", "js/atelier.js", "js/ecouteurs.js", "js/fenetres.js", "js/ui.js",
   "assets/icons.svg", "assets/fonts/alegreya-sans-400.woff2", "assets/fonts/alegreya-sans-400i.woff2", "assets/fonts/alegreya-sans-500.woff2", "assets/fonts/alegreya-sans-700.woff2", "assets/fonts/caveat-700.woff2", "assets/fonts/cinzel-700.woff2", "assets/fonts/ibm-plex-mono-500.woff2", "assets/fonts/im-fell-english-400.woff2", "assets/fonts/im-fell-english-400i.woff2", "assets/fonts/playfair-display-700i.woff2", "assets/fonts/playfair-display-800.woff2", "assets/fonts/space-grotesk-700.woff2", "assets/fonts/special-elite-400.woff2",
   "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"
 ];
