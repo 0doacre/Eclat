@@ -1753,9 +1753,24 @@
     E.objective = function () {
       let last = -1;
       D.OBJECTIVES.forEach((o, i) => { if (objDone(o)) last = i; });
-      for (let i = last + 1; i < D.OBJECTIVES.length; i++) if (!objDone(D.OBJECTIVES[i])) return normObj(D.OBJECTIVES[i], i);
+      for (let i = last + 1; i < D.OBJECTIVES.length; i++) if (!objDone(D.OBJECTIVES[i])) {
+        const ob = normObj(D.OBJECTIVES[i], i);
+        // Fabriquer en avance la porte de l’âge d’après (le creuset, par exemple) fait « sauter » les étapes d’avant :
+        // mais l’âge n’avance que lorsque ses étapes sont faites. Tant qu’il en reste, l’objectif en est une, pas un objet d’un âge plus loin.
+        if (ageDeLEtape(i) > S.age) {
+          const reste = D.OBJECTIVES.findIndex((o, j) => j < i && ageDeLEtape(j) === S.age && !objDone(o));
+          if (reste >= 0) return normObj(D.OBJECTIVES[reste], reste);
+        }
+        return ob;
+      }
       return null;
     };
+    /* l’âge d’une étape : celui de l’objet qui la précède (comme dans milestones) */
+    function ageDeLEtape(i) {
+      let a = 0;
+      for (let j = 0; j <= i; j++) { const o = D.OBJECTIVES[j], n = normObj(o, j); if (n.k === "craft") a = item(n.id).a; }
+      return a;
+    }
     /* Les jalons : les objectifs rangés par âge (une action prend l’âge de l’objet qui la précède). */
     E.milestones = function () {
       const out = [];
