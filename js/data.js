@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.9.5";
+  D.VERSION = "0.9.6";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,8 +1071,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🪜 Les âges se franchissent un par un. Un objet d’un âge trop lointain ne se découvre plus, et le Carnet ne montre de l’âge suivant que l’objectif et ce que tu as déjà trouvé.",
-    "🧤 Les gants de peau ne peuvent plus faire sauter l’âge. Une partie qui avait sauté retrouve son vrai âge."
+    "🏁 Un âge ne s’ouvre plus que lorsque toutes les étapes de l’âge en cours sont faites. Fabriquer en avance l’objet de l’âge suivant ne suffit plus."
   ];
 
 

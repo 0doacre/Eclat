@@ -886,6 +886,23 @@ test("Une partie dont l’âge a sauté à cause des gants retrouve son vrai âg
   E.load(JSON.stringify(o));
   assert.ok(E.state.age <= 1, "l’âge revient à ce qu’on a vraiment atteint (" + E.state.age + ")");
 });
+test("L’âge suivant ne s’ouvre que lorsque les étapes de l’âge en cours sont faites", () => {
+  const E = mk();
+  const S = E.state;
+  // la porte de l’âge suivant (la lanière) fabriquée en avance, alors que les étapes de l’âge du Bois ne sont pas faites
+  S.made.laniere = 1;
+  E.avancerAge();
+  assert.strictEqual(S.age, 0, "l’âge reste le même tant que les étapes ne sont pas finies");
+  // toutes les étapes de l’âge 0 : manche, corde, exploration du Chêne, feu, cabane, extracteur, épieu, passage de la Plaine
+  for (const id of ["manche", "corde", "feu", "cabane", "epieu"]) S.made[id] = 1;
+  S.exp.done.lisiere = 1; S.flags.extDone = true; S.pass.plaine = { paid: {}, done: true };
+  E.avancerAge();
+  assert.strictEqual(S.age, 1, "les étapes faites, l’âge s’ouvre, d’un seul cran");
+  // un objet de l’âge d’après-après fabriqué ne fait pas avancer plus loin
+  S.made.lingot_cuivre = 1;
+  E.avancerAge();
+  assert.strictEqual(S.age, 1, "l’âge 2 n’est pas ouvert : les étapes de l’âge 1 ne sont pas faites");
+});
 test("Étudier tout : toutes les ressources vues d’un coup, ou rien", () => {
   const E = mk();
   ["bois", "fibre", "caillou"].forEach((i) => E.add(i, 1));
@@ -2996,8 +3013,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.9.5 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.9.5");
+test("Version 0.9.6 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.9.6");
   assert.ok(D.CHANGES.length >= 1);
 });
 
@@ -3200,7 +3217,7 @@ test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.9.5");
+  assert.strictEqual(D.VERSION, "0.9.6");
   assert.ok(D.CHANGES.length >= 1);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

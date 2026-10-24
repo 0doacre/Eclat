@@ -804,13 +804,26 @@
 
     /* Les âges se franchissent un par un. Un objet n’est à la portée de la joueuse que si son âge est atteint
      * ou si c’est le suivant (la porte de l’âge d’après) ; les objets secrets et les airs n’ont pas d’âge. */
+    /* L’âge suivant s’ouvre quand ses étapes de l’âge en cours sont toutes faites ET qu’on a fabriqué un de ses objets.
+     * On peut fabriquer en avance la porte de l’âge d’après : l’âge n’avance qu’une fois l’âge en cours accompli. */
+    function avancerAge(plus) {
+      const fin = D.AGES.length - 1;
+      while (S.age < fin) {
+        const etapes = E.milestones()[S.age];
+        if (etapes && !etapes.every((x) => x.done)) return;
+        const prochain = (id) => { const it = item(id); return it && !it.sec && !it.path && it.t !== "curio" && it.t !== "relic" && it.a === S.age + 1; };
+        if (!(plus && prochain(plus)) && !Object.keys(S.made).some((id) => S.made[id] > 0 && prochain(id))) return;
+        setAge(S.age + 1);
+      }
+    }
+    E.avancerAge = avancerAge;
     const ageOK = (id) => { const it = item(id); return !it || it.sec || it.path || it.t === "curio" || it.t === "relic" || it.a <= S.age + 1; };
     E.ageOK = ageOK;
     function onFirstCraft(id) {
       const it = item(id);
       stamp("m:" + id);
       const e = it.e || {};
-      if (!it.sec && !it.path && it.a > S.age) setAge(Math.min(it.a, S.age + 1)); // jamais plus d’un âge d’un coup
+      if (!it.sec && !it.path) avancerAge(id); // un âge à la fois, et seulement quand ses étapes sont faites
       if (e.zone) reachZone(e.zone);
       if (e.once && e.once.intu) S.intu += e.once.intu;
       if (it.sec) {
@@ -4037,10 +4050,12 @@
     /* ===== VISITEURS DE PASSAGE (fin) ===== */
 
     /* Avance le temps jusqu’à maintenant. Gère aussi le hors-ligne. */
+    let lastAgeCheck = 0;
     E.update = function () {
       const t = now();
       const dt = (t - S.t) / 1000;
       S.t = t;
+      if (t - lastAgeCheck > 1500) { lastAgeCheck = t; avancerAge(); } // une étape finie peut ouvrir l’âge suivant
       if (S.boosts) {
         let boostExpired = false;
         for (const bk in S.boosts) {
