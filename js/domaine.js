@@ -386,7 +386,8 @@
           const TR = (E.RECIT && E.RECIT.troc) || {};
           const last = E.troqueurDernier ? E.troqueurDernier() : null;
           h += '<div class="troc-parole">' + (last
-            ? '<p class="serif">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + "</p>"
+            ? (last.q ? '<p class="troc-moi">' + String(recitInline(last.q, "Le Comptoir")) + "</p>" : "") +
+              '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + "</p>"
             : '<p class="small muted"><i>' + esc(TR.intro || "") + "</i></p>") + "</div>";
           h += '<p class="tiny muted center">' + esc(TR.consigne || "") + "</p>";
           h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>

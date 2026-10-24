@@ -1205,11 +1205,13 @@ test("Troqueur : une trentaine de répliques, des thèmes, des conseils et des c
   assert.ok(th.length >= 6 && new Set(th).size === th.length);
   for (const t of th) assert.ok(L.filter((l) => l.th === t).length >= 3, t + " : au moins trois répliques");
   assert.ok(R.troc.themes.every((x) => x.n.length <= 18), "libellés courts pour un téléphone");
+  assert.ok(R.troc.themes.every((x) => /^« .+ »$/.test(x.q || "")), "chaque thème a sa question, pour les refus");
   assert.ok(R.troc.refus.length >= 3, "plusieurs refus");
   assert.ok(L.filter((l) => l.renouv).length >= 8, "des conseils qui reviennent");
   assert.ok(L.filter((l) => l.cond && l.cond.has).length >= 4, "des clins d’œil qui demandent une chose en poche");
   assert.ok(L.filter((l) => l.th === "clients").length >= 8);
   for (const l of L) {
+    assert.ok(/^« .+ »$/.test(l.q || ""), l.id + " : la question du joueur");
     assert.ok(Number.isInteger(l.rang) && l.rang >= 0 && l.rang <= 4, l.id + " : rang");
     assert.ok(th.includes(l.th), l.id + " : thème");
     if (l.cond) checkCond(l.cond, "troc " + l.id);
@@ -1230,6 +1232,16 @@ test("Troqueur : écriture (lexique, style, aucun nom réel, aucune solution)", 
     assert.ok(phrases.length <= 5, l.id + " : trop de phrases");
     assert.ok(phrases.every((p) => p.split(/\s+/).length <= 28), l.id + " : phrase trop longue");
     assert.ok(!/ [,;]/.test(t) && !/\.\.\./.test(t), l.id + " : ponctuation");
+  }
+  // la question du joueur : même tenue que la réponse
+  for (const l of R.troc.lignes) {
+    const q = l.q;
+    assert.strictEqual(typeof q, "string", l.id + " : question du joueur");
+    assert.ok(q.length <= 110, l.id + " : question trop longue (" + q.length + ")");
+    assert.ok(!/\bverser\b|\bstocks?\b|\bjalons?\b|\bzone\b|\bmati[èe]re/i.test(q), l.id + " : un mot du lexique à éviter dans la question");
+    assert.ok(!/—|--|\.\.\./.test(q) && !/ [,;]/.test(q), l.id + " : ponctuation de la question");
+    assert.ok((q.match(/\b(c’est|ça|ce sont)\b/gi) || []).length <= 1, l.id + " : « c’est / ça » en série dans la question");
+    assert.ok(!BANNIS_TROC.test(q), l.id + " : un nom réel dans la question");
   }
   // le Troqueur n’est « pas » à la Nourrice : il ne la nomme qu’en signe, et seulement une fois ce signe compris
   const nomm = R.troc.lignes.filter((l) => /\[nourrice\]/.test(l.t));

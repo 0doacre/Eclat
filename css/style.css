@@ -1358,8 +1358,10 @@ h2 + .stamp { margin: -4px 0 8px; }
 .dom-regle.ok { border-left-color: var(--good); }
 
 /* le Troqueur parle */
-.troc-parole { margin: 6px 0 8px; padding: 12px 14px; min-height: 92px; border-left: 3px solid var(--acc); background: var(--panel2); border-radius: 6px; line-height: 1.5; }
+.troc-parole { margin: 6px 0 8px; padding: 12px 14px; min-height: 92px; background: var(--panel2); border-radius: 6px; line-height: 1.5; }
 .troc-parole p { margin: 0; }
+.troc-parole p.troc-moi { margin: 0 0 10px auto; max-width: 86%; padding: 6px 10px; border-radius: 10px 10px 2px 10px; background: var(--panel); color: var(--muted); text-align: right; }
+.troc-parole p.troc-lui { padding-left: 10px; border-left: 3px solid var(--acc); }
 .troc-themes { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 6px; }
 
 /* les fouilles : la ligne de l’expédition en cours, au-dessus de la Carte, et les trois durées */

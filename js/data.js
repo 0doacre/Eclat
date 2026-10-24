@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.13.1";
+  D.VERSION = "0.13.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,6 +1071,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗣️ Le Troqueur dialogue vraiment : à chaque sujet, tu poses ta question et il répond, au lieu de réciter une phrase dans le vide.",
     "✋ Le vocabulaire des commandes est le même partout : tes mains, une commande, en cours, au repos. La barre dit « Commande · … », une commande sans personne pour la faire « attend une main ou une machine », et une machine sans travail est « au repos ».",
     "🗺️ La Carte et le Domaine sont illustrés : chaque terre a son île dessinée, et son paysage en fond de fiche.",
     "🔦 Les images se chargent au fur et à mesure ; le jeu reste jouable sans elles.",
