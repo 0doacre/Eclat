@@ -93,6 +93,8 @@ par 2,3 à 2,5 à chaque niveau.
   en quelques minutes.
 - Les chiffres (coûts des passages, Traces, effets) se règlent avec le simulateur
   `tools/sim.js`, pas à l’intuition.
+- Pour comparer plusieurs façons de jouer (sans interruption, par petites séances, avec de longues absences) :
+  `node tools/sim-passages.js --joueurs` donne, pour chaque passage, le temps de jeu actif et le temps écoulé de quatre types de joueur.
 
 ## 5. Parties existantes
 
