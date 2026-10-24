@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.13.1";
+  D.VERSION = "0.13.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1071,6 +1071,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🌳 L’arbre du Carnet est lisible : il ne garde de place que pour ce que tu as trouvé, les âges lointains tiennent en un bandeau, et les traits qui sautaient des âges ne s’allument plus que si tu touches l’un de leurs bouts. Touche un objet : ses liens s’éclairent, et un bandeau dit de quoi il est fait et à quoi il sert ; ses puces mènent d’un objet à l’autre. Touche-le encore pour sa fiche.",
     "✋ Le vocabulaire des commandes est le même partout : tes mains, une commande, en cours, au repos. La barre dit « Commande · … », une commande sans personne pour la faire « attend une main ou une machine », et une machine sans travail est « au repos ».",
     "🗺️ La Carte et le Domaine sont illustrés : chaque terre a son île dessinée, et son paysage en fond de fiche.",
     "🔦 Les images se chargent au fur et à mesure ; le jeu reste jouable sans elles.",

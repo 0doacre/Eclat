@@ -314,7 +314,7 @@
       const book = E.carnet();
       let known = 0, total = 0;
       book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
-      if (!U.carnetVue) U.carnetVue = S().settings.carnetVue === "arbre" ? "arbre" : "liste"; // on retrouve la vue qu’on avait choisie
+      arbreVueChoisie();
       let h = '<h2 class="title">Carnet</h2>';
       /* ARBRE (0.11) : l’interrupteur Liste / Arbre ; la vue Arbre est plus bas, bloc « ARBRE » */
       h += arbreBascule();
@@ -335,7 +335,8 @@
      * La vue « Arbre » du Carnet : js/arbre.js décide de ce qui se voit et le place ;
      * ici, l’interrupteur, le cadre qu’on glisse et qu’on pince, et les touches. */
     const Arb = typeof window !== "undefined" ? window.EclatArbre : null;
-    const ARB_TXT = { fantome: "Recette pas encore trouvée", toucher: "Pas encore trouvée. Essaie avec ce qui est autour." };
+    const ARB_TXT = { fantome: "Recette pas encore trouvée", toucher: "Pas encore trouvée. Essaie avec ce qui est autour.",
+      futur: (de, a) => (de === a ? "Âge " + a : "Âges " + de + " à " + a) + " · encore loin" };
     const ARB_K = [0.3, 2];
     function arbreBascule() {
       if (!Arb) return "";
@@ -350,11 +351,72 @@
       return '<div class="arb-tete"><span class="grow small muted">' + (n ? n + (n > 1 ? " recettes trouvées" : " recette trouvée") : "Aucune recette trouvée pour l’instant") + "</span>" +
         '<button type="button" class="btn small ghost" data-arb="moins" aria-label="Éloigner">−</button><button type="button" class="btn small ghost" data-arb="plus" aria-label="Rapprocher">+</button>' +
         '<button type="button" class="btn small ghost" data-arb="centre">Centrer</button></div>' +
-        '<div class="arb-vue" id="arbre">' + Arb.rendu(lay, { icon: (id) => icon(id), esc, neuf: U.arbreNeuf, txt: ARB_TXT }) + "</div>";
+        '<div class="arb-vue" id="arbre">' + Arb.rendu(lay, { icon: (id) => icon(id), esc, neuf: U.arbreNeuf, txt: ARB_TXT }) +
+        '<div class="arb-ici" aria-hidden="true"></div><div class="arb-fiche" hidden></div></div>';
+    }
+    /* Toucher un nœud le choisit : ses traits s’allument (même ceux qui sautent des âges), le reste
+     * s’efface, et un bandeau dit de quoi il est fait et à quoi il sert. Le toucher encore ouvre sa fiche. */
+    function arbreChoisir(cle, voir) {
+      const v = document.getElementById("arbre"), lay = U.arbreLay;
+      if (!v || !lay) return;
+      const m = v.querySelector(".arb-monde"), f = v.querySelector(".arb-fiche");
+      m.querySelectorAll(".sel, .lie").forEach((x) => x.classList.remove("sel", "lie", "amont", "aval"));
+      const n = cle && lay.noeuds.find((x) => x.cle === cle);
+      U.arbreSel = n ? cle : null;
+      m.classList.toggle("focus", !!n);
+      if (!n) { f.hidden = true; f.innerHTML = ""; return; }
+      const L = Arb.liens(lay, cle);
+      const el = (k) => m.querySelector('[data-arbn="' + k + '"]');
+      el(cle).classList.add("sel");
+      L.amont.forEach((k) => { const x = el(k); if (x) x.classList.add("lie"); });
+      L.aval.forEach((k) => { const x = el(k); if (x) x.classList.add("lie"); });
+      L.traits.forEach((i) => { const t = m.querySelector('[data-t="' + i + '"]'); if (t) t.classList.add("lie", lay.traits[i].a === cle ? "amont" : "aval"); });
+      f.innerHTML = arbreFiche(n, L);
+      f.hidden = false;
+      // le nœud reste visible au-dessus du bandeau ; venu d’une puce, il vient au milieu
+      const o = U.arbreVue, sy = n.y * o.k + o.ty, sx = n.x * o.k + o.tx;
+      if (voir || sy < 40 || sy > v.clientHeight - f.offsetHeight - 50 || sx < 20 || sx > v.clientWidth - 20) arbreVoir(n);
+    }
+    const arbPuce = (id, q) => '<button type="button" class="arb-puce" data-arbsel="' + esc(id) + '">' + icon(id, "sm") + (q > 1 ? "<b>" + fmt(q) + "</b> " : "") + esc(I[id].n) + "</button>";
+    function arbreFiche(n, L) {
+      if (n.etat === "fantome") {
+        const src = L.amont.filter((k) => I[k]);
+        return '<div class="arb-f-tete"><span class="ic sm unk">?</span><b class="grow">' + esc(ARB_TXT.fantome) + '</b><button type="button" class="btn small ghost" data-arbsel="" aria-label="Fermer">✕</button></div>' +
+          '<p class="arb-f-l small muted">' + (n.objectif ? "Ton objectif. " : "") + esc(ARB_TXT.toucher) + "</p>" +
+          (src.length ? '<div class="arb-f-l"><span class="arb-f-k">Part de</span>' + src.map((k) => arbPuce(k)).join("") + "</div>" : "");
+      }
+      const it = I[n.id], par = {};
+      U.arbreLay.noeuds.forEach((x) => { par[x.cle] = x; });
+      let h = '<div class="arb-f-tete">' + icon(n.id, "sm") + '<b class="grow">' + esc(it.n) + "</b>" +
+        '<button type="button" class="btn small" data-goto="' + esc(n.id) + '">Fiche</button><button type="button" class="btn small ghost" data-arbsel="" aria-label="Fermer">✕</button></div>';
+      if (it.r && n.etat === "allume") {
+        const G = D.GESTES[it.r[0]], ing = it.r[1];
+        h += '<div class="arb-f-l"><span class="arb-f-k">' + (G ? gIc(it.r[0]) + " " + esc(G.n) : "Fait de") + "</span>" +
+          Object.keys(ing).map((k) => (I[k] && par[k] ? arbPuce(k, ing[k]) : '<span class="arb-puce off">' + (I[k] && (S().seen[k] || S().known[k]) ? esc(I[k].n) : "?") + "</span>")).join("") + "</div>";
+      } else h += '<p class="arb-f-l small muted">Une ressource : elle se récolte, ou s’obtient sans recette connue.</p>';
+      const usages = L.aval.filter((k) => par[k] && par[k].etat !== "fantome");
+      const f = L.aval.length - usages.length;
+      if (usages.length || f) h += '<div class="arb-f-l"><span class="arb-f-k">Sert à</span>' + usages.map((k) => arbPuce(k)).join("") +
+        (f ? '<span class="arb-puce fant">✦ ' + f + (f > 1 ? " recettes à trouver" : " recette à trouver") + "</span>" : "") + "</div>";
+      else if (it.r) h += '<p class="arb-f-l small muted">Ne sert encore à aucune recette trouvée.</p>';
+      return h;
+    }
+    /* amène un nœud au milieu de la vue (au-dessus du bandeau) */
+    function arbreVoir(n) {
+      const v = document.getElementById("arbre"), o = U.arbreVue;
+      if (!v || !o) return;
+      const f = v.querySelector(".arb-fiche"), bas = f && !f.hidden ? f.offsetHeight : 0;
+      o.tx = v.clientWidth / 2 - n.x * o.k; o.ty = (v.clientHeight - bas) / 2 - n.y * o.k;
+      const m = v.firstElementChild;
+      if (m) { m.classList.add("glisse"); setTimeout(() => m.classList.remove("glisse"), 320); }
+      arbrePoser(v);
     }
     /* appelé par render() quand le Carnet est à l’écran : vrai si l’arbre s’en charge.
      * On ne redessine que si l’arbre a changé ; la vue (glissée, zoomée) reste où elle était. */
+    // on retrouve la vue qu’on avait choisie (avant le premier rendu, sinon l’arbre s’affiche sans répondre au doigt)
+    function arbreVueChoisie() { if (!U.carnetVue) U.carnetVue = S().settings.carnetVue === "arbre" ? "arbre" : "liste"; }
     function carnetArbre(el) {
+      arbreVueChoisie();
       if (!Arb || U.carnetVue !== "arbre") return false;
       const g = Arb.graphe(E, D);
       const sig = Arb.sig(g) + "|" + JSON.stringify(U.badges) + "|" + (U.arbreNeuf || "");
@@ -368,6 +430,7 @@
       U.arbreLay = lay;
       if (neuf || !U.arbreVue) arbreCentrer(lay, g);
       arbreMonter(el.querySelector(".arb-vue"));
+      if (U.arbreSel) arbreChoisir(U.arbreSel);
       U.arbreNeuf = null; // l’éclat d’une découverte ne se joue qu’une fois
       return true;
     }
@@ -380,8 +443,10 @@
       const lay = U.arbreLay;
       if (!lay) return o;
       const W = lay.w * o.k, H = lay.h * o.k, marge = 60;
+      // le bandeau du nœud choisi couvre le bas de la vue : on peut faire monter l’arbre au-dessus
+      const f = document.querySelector("#arbre .arb-fiche"), bas = f && !f.hidden ? f.offsetHeight : 0;
       o.tx = W <= vw ? (vw - W) / 2 : Math.min(8, Math.max(vw - W - 8, o.tx));
-      o.ty = H <= vh ? (vh - H) / 2 : Math.min(marge, Math.max(vh - H - marge, o.ty));
+      o.ty = H <= vh - bas ? (vh - bas - H) / 2 : Math.min(marge, Math.max(vh - H - marge - bas, o.ty));
       return o;
     }
     function arbrePoser(v) {
@@ -389,6 +454,14 @@
       if (!v || !U.arbreVue) return;
       const o = arbreBorne(U.arbreVue, v.clientWidth, v.clientHeight), m = v.firstElementChild;
       if (m) m.style.transform = "translate(" + Math.round(o.tx) + "px," + Math.round(o.ty) + "px) scale(" + o.k + ")";
+      // l’âge sous le haut de la vue reste écrit, même au milieu d’une longue bande
+      const ici = v.querySelector(".arb-ici"), lay = U.arbreLay;
+      if (ici && lay) {
+        const b = Arb.bandeA(lay, (24 - o.ty) / o.k);
+        const cache = !b || (b.y * o.k + o.ty > -4); // l’étiquette de la bande est déjà à l’écran
+        ici.hidden = cache;
+        if (b && !cache) { ici.textContent = (b.age + 1) + " · " + b.nom; ici.style.setProperty("--ac", b.c); }
+      }
     }
     function arbreZoom(f, px, py) {
       const v = document.getElementById("arbre"), o = U.arbreVue;
@@ -410,7 +483,7 @@
         else if (p.length >= 2) base = { mx: (p[0].x + p[1].x) / 2, my: (p[0].y + p[1].y) / 2, d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, tx: o.tx, ty: o.ty, k: o.k };
       };
       v.addEventListener("pointerdown", (e) => {
-        if (e.button > 0) return;
+        if (e.button > 0 || e.target.closest(".arb-fiche")) return;
         pts.set(e.pointerId, rel(e));
         if (pts.size === 1) U.arbreGlisse = false;
         debut();
@@ -435,7 +508,7 @@
       const fin = (e) => { pts.delete(e.pointerId); v.classList.remove("tient"); debut(); };
       v.addEventListener("pointerup", fin);
       v.addEventListener("pointercancel", fin);
-      v.addEventListener("wheel", (e) => { e.preventDefault(); const p = rel(e); arbreZoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y); }, { passive: false });
+      v.addEventListener("wheel", (e) => { if (e.target.closest(".arb-fiche")) return; e.preventDefault(); const p = rel(e); arbreZoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y); }, { passive: false });
       // au clavier : le nœud qui prend le focus vient dans le cadre
       v.addEventListener("focusin", (e) => {
         const b = e.target.closest(".arb-n"), o = U.arbreVue;
@@ -462,7 +535,18 @@
           return;
         }
         if (U.arbreGlisse) { U.arbreGlisse = false; e.stopPropagation(); e.preventDefault(); return; }
-        if (t.closest("[data-fantome]")) { e.stopPropagation(); toast(ARB_TXT.toucher); }
+        const sel = t.closest("[data-arbsel]");
+        if (sel) { e.stopPropagation(); A.click(); arbreChoisir(sel.dataset.arbsel || null, !!sel.dataset.arbsel); return; }
+        if (t.closest(".arb-fiche")) return; // « Fiche » : l’écouteur commun ouvre la fiche de l’objet
+        const nb = t.closest("[data-arbn]");
+        if (nb) {
+          e.stopPropagation();
+          const n = U.arbreLay && U.arbreLay.noeuds.find((x) => x.cle === nb.dataset.arbn);
+          if (n && n.id && U.arbreSel === n.cle) { goto(n.id); return; } // deuxième toucher : la fiche
+          A.click(); arbreChoisir(nb.dataset.arbn);
+          return;
+        }
+        if (U.arbreSel) { e.stopPropagation(); arbreChoisir(null); } // toucher le vide : on lâche
       }, true);
     }
     E.on("learn", (id) => { if (I[id] && !I[id].path) U.arbreNeuf = id; });

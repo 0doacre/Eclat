@@ -104,7 +104,7 @@ test("un fantôme et un nœud allumé du même âge ont le même gabarit", () =>
   const styles = html.match(/<button[^>]*class="arb-n[^"]*"[^>]*style="([^"]*)"/g).map((s) => s.match(/style="([^"]*)"/)[1].replace(/[-\d.]+px/g, "N").replace(/#[0-9a-f]+/i, "C"));
   assert.strictEqual(new Set(styles).size, 1, "même style pour tous les nœuds, à la position et à la couleur d’âge près");
 });
-test("positions stables (un nouveau nœud ne déplace pas les autres) et sans chevauchement", () => {
+test("positions stables (un nouveau nœud garde les colonnes et l’ordre des autres) et sans chevauchement", () => {
   const E = charge("save-v5-age8-usine.json");
   const L1 = Arb.mise_en_page(Arb.graphe(E, D), D);
   const cible = Object.keys(I).find((id) => I[id].r && !I[id].path && !I[id].sec && !E.state.known[id] && I[id].a <= E.state.age);
@@ -113,7 +113,10 @@ test("positions stables (un nouveau nœud ne déplace pas les autres) et sans ch
   const L2 = Arb.mise_en_page(Arb.graphe(E, D), D);
   const p2 = {};
   L2.noeuds.forEach((n) => { if (n.id) p2[n.id] = n; });
-  L1.noeuds.filter((n) => n.id).forEach((n) => { assert.strictEqual(p2[n.id].x, n.x, n.id); assert.strictEqual(p2[n.id].y, n.y, n.id); });
+  // une rangée qui se remplit peut pousser une bande vers le haut, mais rien ne change de colonne ni d’ordre
+  const vieux = L1.noeuds.filter((n) => n.id);
+  vieux.forEach((n) => assert.strictEqual(p2[n.id].x, n.x, n.id));
+  for (const a of vieux) for (const b of vieux) if (a.y < b.y) assert.ok(p2[a.id].y < p2[b.id].y, a.id + " passe sous " + b.id);
   assert.ok(p2[cible], "la nouvelle recette apparaît");
   for (const L of [L2, Arb.mise_en_page(Arb.graphe(avancee(), D), D)]) {
     for (let i = 0; i < L.noeuds.length; i++) for (let j = i + 1; j < L.noeuds.length; j++) {
@@ -122,6 +125,39 @@ test("positions stables (un nouveau nœud ne déplace pas les autres) et sans ch
     }
     L.noeuds.forEach((n) => { const b = L.bandes[n.age]; assert.ok(n.y - n.h / 2 >= b.y && n.y + n.h / 2 <= b.y + b.h, "dans sa bande d’âge"); });
   }
+});
+test("lisible : pas de place pour l’invisible, les âges lointains en un bandeau", () => {
+  const E = charge("save-v5-age8-usine.json");
+  const g = Arb.graphe(E, D), lay = Arb.mise_en_page(g, D);
+  assert.strictEqual(lay.bandes.length, g.max + 1, "une bande par âge visible, pas plus");
+  assert.ok(lay.futur && lay.futur.de === g.max + 2 && lay.futur.a === D.AGES.length);
+  // aucune rangée vide : chaque rangée d’une bande porte au moins un nœud
+  lay.bandes.forEach((b) => {
+    const ys = new Set(lay.noeuds.filter((n) => n.age === b.age).map((n) => n.y));
+    const rangees = Math.round((b.h - 36) / Arb.PY);
+    assert.ok(ys.size >= rangees, "rangée vide dans l’âge " + (b.age + 1));
+  });
+  assert.ok(lay.h < 3600, "l’arbre d’une partie à l’âge 8 tient en " + lay.h + " px");
+  // au dernier âge, plus de bandeau
+  const E2 = mk();
+  E2.state.age = D.AGES.length - 1;
+  assert.strictEqual(Arb.mise_en_page(Arb.graphe(E2, D), D).futur, null);
+});
+test("un trait qui saute plus d’un âge est caché ; toucher un bout l’allume", () => {
+  const E = avancee();
+  const g = Arb.graphe(E, D), lay = Arb.mise_en_page(g, D), par = {};
+  lay.noeuds.forEach((n) => { par[n.cle] = n; });
+  lay.traits.forEach((t) => {
+    const saut = Math.abs(par[t.a].age - par[t.de].age);
+    assert.strictEqual(t.loin, saut > 1 && !par[t.a].objectif, t.de + " → " + t.a);
+  });
+  const t = lay.traits.find((x) => x.loin);
+  assert.ok(t, "une partie avancée a des traits lointains");
+  const L = Arb.liens(lay, t.a);
+  assert.ok(L.amont.includes(t.de) && L.traits.includes(lay.traits.indexOf(t)));
+  assert.ok(Arb.liens(lay, t.de).aval.includes(t.a));
+  const html = Arb.rendu(lay, { esc: String });
+  assert.ok(html.includes('class="arb-t loin" data-t="' + lay.traits.indexOf(t) + '"') || html.includes('class="arb-t pointille loin" data-t="' + lay.traits.indexOf(t) + '"'));
 });
 test("mise en page en moins de 100 ms quand toutes les recettes sont connues", () => {
   const E = mk();
