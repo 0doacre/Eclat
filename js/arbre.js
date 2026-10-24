@@ -2,7 +2,11 @@
  * Module sans état, sur le modèle de js/constellations.js :
  *   graphe(E, D)          ce qui se voit, et rien d’autre (la seule fonction qui en décide) ;
  *   mise_en_page(g, D)    des positions déterministes, sans DOM ;
- *   rendu(lay, o)         le code HTML (SVG pour le fond et les traits, boutons pour les nœuds).
+ *   rendu(lay, o)         le code HTML (SVG pour le fond et les traits, boutons pour les nœuds) ;
+ *   liens(lay, cle)       ce qu’un nœud touché met en lumière (ses ingrédients, ses usages).
+ * Lisibilité (0.13.2) : une bande d’âge ne prend que les rangées où quelque chose se voit,
+ * les âges lointains tiennent en un bandeau, et un trait qui saute plus d’un âge reste caché
+ * tant qu’on ne touche pas l’un de ses deux bouts.
  * Un fantôme (recette pas encore trouvée) n’a ni nom, ni icône, ni identifiant d’objet :
  * seulement un numéro d’ordre, son âge, et le trait pointillé qui y mène.
  * Fantômes montrés : celui de l’objectif en cours, et ceux des ressources étudiées. */
@@ -10,11 +14,12 @@
   "use strict";
 
   const COLS = 5;            // colonnes d’une bande d’âge (tient en largeur sur un téléphone)
-  const PX = 66, PY = 84;    // pas horizontal et vertical d’une case
+  const PX = 66, PY = 80;    // pas horizontal et vertical d’une case
   const NODE = 48;           // côté d’un nœud (≥ 44 px au zoom normal)
   const M = 8;               // marge à gauche et à droite
-  const HEAD = 30;           // hauteur de l’étiquette d’âge en haut de chaque bande
-  const FOOT = 22;           // et en bas (on lit le nom de l’âge des deux côtés d’une limite)
+  const HEAD = 28;           // hauteur de l’étiquette d’âge en haut de chaque bande
+  const PAD = 8;             // et un peu d’air en bas
+  const FUTUR = 40;          // le bandeau des âges encore lointains
 
   /* FNV-1a, 32 bits (comme constellations.js) */
   function hash(s) {
@@ -27,8 +32,9 @@
   const RARE = { curio: 1, relic: 1 };
 
   /* ------------------------------------------------------------ le catalogue
-   * Une place fixe pour chaque objet du jeu, calculée sur les données seules :
-   * un nœud ne bouge jamais quand un autre apparaît. Dans une bande, les objets qui
+   * Une place pour chaque objet du jeu, calculée sur les données seules : la colonne d’un nœud
+   * ne change jamais, et l’ordre des rangées non plus (seules les rangées vides se replient,
+   * voir mise_en_page). Dans une bande, les objets qui
    * dépendent d’un autre du même âge montent d’un cran ; dans un cran, l’ordre des
    * colonnes suit la moyenne des colonnes des ingrédients (moins de croisements). */
   const CACHE = typeof WeakMap !== "undefined" ? new WeakMap() : null;
@@ -82,13 +88,9 @@
           col[id] = c;
         });
       }
-      rows[a] = haut + 1; // une rangée de plus, pour les fantômes
+      rows[a] = haut;
     }
-    // la hauteur de chaque bande ne dépend que des données : rien ne bouge en cours de partie
-    const y = [];
-    let acc = 0;
-    for (let a = nA - 1; a >= 0; a--) { y[a] = acc; acc += HEAD + (rows[a] || 1) * PY + FOOT; }
-    const out = { place, rows, y, h: acc };
+    const out = { place, rows };
     if (CACHE) CACHE.set(D, out);
     return out;
   }
@@ -164,53 +166,91 @@
     return g.age + "|" + g.compte + "|" + g.noeuds.map((n) => n.cle + (n.etat[0]) + (n.objectif ? "!" : "") + (n.etude || "") + ":" + n.age).join(",") + "|" + g.traits.length;
   }
 
-  /* ------------------------------------------------------------ les positions */
+  /* ------------------------------------------------------------ les positions
+   * Les colonnes et l’ordre des rangées viennent du catalogue ; une bande ne garde que les rangées
+   * où un nœud se voit (plus ce qu’il faut pour ses fantômes). De bas en haut : l’Âge du Bois,
+   * puis chaque âge jusqu’au suivant, puis un bandeau pour tous ceux qui restent loin. */
   function mise_en_page(g, D) {
     const cat = catalogue(D), nA = D.AGES.length;
-    const Rof = (a) => cat.rows[a] || 1;
-    const yBande = (a) => cat.y[a];                       // l’Âge du Bois en bas, l’Âge Stellaire en haut
     const cx = (c) => M + c * PX + PX / 2;
-    const cy = (a, r) => yBande(a) + HEAD + (Rof(a) - 1 - r) * PY + NODE / 2 + 6;
-    const pris = {}, pos = {};
-    let maxCol = COLS - 1;
-    const out = [];
+    // les rangées du catalogue où quelque chose se voit, dans leur ordre
+    const vus = {}, fant = {};
     g.noeuds.forEach((n) => {
+      if (n.etat === "fantome") { fant[n.age] = (fant[n.age] || 0) + 1; return; }
+      const p = cat.place[n.id];
+      if (p) (vus[p.a] = vus[p.a] || {})[p.row] = 1;
+    });
+    const rang = [], nR = [];
+    for (let a = 0; a <= g.max; a++) {
+      const lignes = Object.keys(vus[a] || {}).map(Number).sort((x, y) => x - y);
+      rang[a] = {};
+      lignes.forEach((r, i) => { rang[a][r] = i; });
+      const libres = lignes.length * COLS - g.noeuds.filter((n) => n.etat !== "fantome" && n.age === a).length;
+      nR[a] = lignes.length + Math.ceil(Math.max(0, (fant[a] || 0) - libres) / COLS);
+    }
+    const hBande = (a) => HEAD + nR[a] * PY + PAD + (nR[a] ? 0 : 6); // un âge où rien ne se voit encore : sa seule étiquette
+    const yB = [];
+    let acc = g.max < nA - 1 ? FUTUR : 0;
+    for (let a = g.max; a >= 0; a--) { yB[a] = acc; acc += hBande(a); }
+    const H = acc;
+    const cy = (a, i) => yB[a] + HEAD + (nR[a] - 1 - i) * PY + NODE / 2 + 4;
+    const pris = {}, pos = {}, ageDe = {};
+    g.noeuds.forEach((n) => {
+      ageDe[n.cle] = n.age;
       if (n.etat === "fantome") return;
       const p = cat.place[n.id];
-      if (!p) return;
-      pris[p.a + ":" + p.row + ":" + p.col] = 1;
-      pos[n.cle] = { x: cx(p.col), y: cy(p.a, p.row) };
+      if (!p || n.age > g.max) return;
+      const i = rang[p.a][p.row];
+      pris[p.a + ":" + i + ":" + p.col] = 1;
+      pos[n.cle] = { x: cx(p.col), y: cy(p.a, i) };
     });
     // les fantômes : la case libre la plus proche de la ressource d’où part leur trait
     const source = {};
     g.traits.forEach((t) => { if (t.pointille && source[t.a] === undefined) source[t.a] = t.de; });
-    const parBande = {};
-    g.noeuds.forEach((n) => { if (n.etat === "fantome") parBande[n.age] = (parBande[n.age] || 0) + 1; });
     g.noeuds.forEach((n) => {
-      if (n.etat !== "fantome") return;
+      if (n.etat !== "fantome" || n.age > g.max) return;
       const a = n.age, s = pos[source[n.cle]];
       const tx = s ? s.x : cx((COLS - 1) / 2), ty = s ? s.y : cy(a, 0);
-      const R = Rof(a), extra = Math.ceil((parBande[a] || 0) / R);
       let best = null, bd = Infinity;
-      for (let c = 0; c < COLS + extra; c++) for (let r = 0; r < R; r++) {
+      for (let c = 0; c < COLS; c++) for (let r = 0; r < nR[a]; r++) {
         if (pris[a + ":" + r + ":" + c]) continue;
-        const d = Math.hypot(cx(c) - tx, cy(a, r) - ty) + (c >= COLS ? 4 * PX : 0);
+        const d = Math.hypot(cx(c) - tx, cy(a, r) - ty);
         if (d < bd - 1e-6) { bd = d; best = [r, c]; }
       }
+      if (!best) return;
       pris[a + ":" + best[0] + ":" + best[1]] = 1;
-      maxCol = Math.max(maxCol, best[1]);
       pos[n.cle] = { x: cx(best[1]), y: cy(a, best[0]) };
     });
+    const out = [];
     g.noeuds.forEach((n) => { if (pos[n.cle]) out.push(Object.assign({}, n, pos[n.cle], { w: NODE, h: NODE })); });
+    const obj = {};
+    g.noeuds.forEach((n) => { if (n.objectif) obj[n.cle] = 1; });
     const traits = g.traits.filter((t) => pos[t.de] && pos[t.a]).map((t) => {
       const p = pos[t.de], q = pos[t.a];
       const haut = q.y < p.y;
-      return { de: t.de, a: t.a, pointille: !!t.pointille,
+      // un trait qui saute plus d’un âge traverserait tout l’arbre : caché tant qu’on ne touche pas l’un de ses bouts
+      const loin = Math.abs(ageDe[t.a] - ageDe[t.de]) > 1 && !obj[t.a];
+      return { de: t.de, a: t.a, pointille: !!t.pointille, loin,
         x1: p.x, y1: p.y + (haut ? -NODE / 2 : NODE / 2 + 18), x2: q.x, y2: q.y + (haut ? NODE / 2 + 18 : -NODE / 2) };
     });
-    const bandes = D.AGES.map((ag, a) => ({ age: a, y: yBande(a), h: HEAD + Rof(a) * PY + FOOT, c: ag.c, nom: ag.n,
-      etat: a <= g.age ? "atteint" : a <= g.max ? "suivant" : "futur" }));
-    return { w: 2 * M + (maxCol + 1) * PX, h: cat.h, noeuds: out, traits, bandes, node: NODE };
+    const bandes = [];
+    for (let a = 0; a <= g.max; a++) {
+      const ag = D.AGES[a];
+      bandes.push({ age: a, y: yB[a], h: hBande(a), c: ag.c, nom: ag.n, etat: a <= g.age ? "atteint" : "suivant" });
+    }
+    const futur = g.max < nA - 1 ? { y: 0, h: FUTUR, de: g.max + 2, a: nA } : null;
+    return { w: 2 * M + COLS * PX, h: H, noeuds: out, traits, bandes, futur, node: NODE };
+  }
+
+  /* ce qu’un nœud touché met en lumière : les traits qui y arrivent (ses ingrédients)
+   * et ceux qui en partent (ce qu’il sert à faire, et ses fantômes) */
+  function liens(lay, cle) {
+    const amont = [], aval = [], traits = [];
+    lay.traits.forEach((t, i) => {
+      if (t.a === cle) { amont.push(t.de); traits.push(i); }
+      else if (t.de === cle) { aval.push(t.a); traits.push(i); }
+    });
+    return { amont, aval, traits };
   }
 
   /* le point où la vue s’ouvre : l’objectif, sinon la dernière découverte */
@@ -228,34 +268,45 @@
     const r1 = (v) => Math.round(v * 10) / 10;
     let h = '<div class="arb-monde" style="width:' + lay.w + "px;height:" + lay.h + 'px">';
     h += '<svg class="arb-fond" width="' + lay.w + '" height="' + lay.h + '" viewBox="0 0 ' + lay.w + " " + lay.h + '" aria-hidden="true">';
+    // les bandes débordent à gauche et à droite : elles remplissent la vue, même éloignée
+    const bx = -2000, bw = lay.w + 4000;
+    if (lay.futur) h += '<rect class="arb-bande futur" x="' + bx + '" y="0" width="' + bw + '" height="' + lay.futur.h + '"/>';
     lay.bandes.forEach((b) => {
-      h += '<rect class="arb-bande ' + b.etat + '" x="0" y="' + b.y + '" width="' + lay.w + '" height="' + b.h + '" style="--ac:' + esc(b.c) + '"/>';
-      h += '<line class="arb-sep" x1="0" y1="' + b.y + '" x2="' + lay.w + '" y2="' + b.y + '"/>';
+      h += '<rect class="arb-bande ' + b.etat + '" x="' + bx + '" y="' + b.y + '" width="' + bw + '" height="' + b.h + '" style="--ac:' + esc(b.c) + '"/>';
+      h += '<line class="arb-sep" x1="' + bx + '" y1="' + b.y + '" x2="' + (bx + bw) + '" y2="' + b.y + '"/>';
     });
-    lay.traits.forEach((t) => {
+    // les traits lointains d’abord : allumés, ils passent sous les autres sans les cacher
+    const ordre = lay.traits.map((t, i) => i).sort((x, y) => (lay.traits[y].loin ? 1 : 0) - (lay.traits[x].loin ? 1 : 0) || x - y);
+    ordre.forEach((i) => {
+      const t = lay.traits[i];
       const my = r1((t.y1 + t.y2) / 2);
-      h += '<path class="arb-t' + (t.pointille ? " pointille" : "") + (o.neuf && t.a === o.neuf ? " neuf" : "") + '" d="M' + r1(t.x1) + " " + r1(t.y1) + " C" + r1(t.x1) + " " + my + " " + r1(t.x2) + " " + my + " " + r1(t.x2) + " " + r1(t.y2) + '"/>';
+      h += '<path class="arb-t' + (t.pointille ? " pointille" : "") + (t.loin ? " loin" : "") + (o.neuf && t.a === o.neuf ? " neuf" : "") + '" data-t="' + i + '" d="M' + r1(t.x1) + " " + r1(t.y1) + " C" + r1(t.x1) + " " + my + " " + r1(t.x2) + " " + my + " " + r1(t.x2) + " " + r1(t.y2) + '"/>';
     });
     h += "</svg>";
     // les étiquettes d’âge, en HTML pour rester nettes ; rien sur un âge encore lointain
+    if (lay.futur) h += '<div class="arb-age futur" style="top:12px">' + esc(txt.futur ? txt.futur(lay.futur.de, lay.futur.a) : lay.futur.de + "–" + lay.futur.a) + "</div>";
     lay.bandes.forEach((b) => {
-      const nom = (b.age + 1) + (b.etat === "futur" ? "" : " · " + esc(b.nom));
-      h += '<div class="arb-age ' + b.etat + '" style="top:' + (b.y + 6) + "px;--ac:" + esc(b.c) + '">' + nom + "</div>";
-      h += '<div class="arb-age bas ' + b.etat + '" style="top:' + (b.y + b.h - 19) + "px;--ac:" + esc(b.c) + '" aria-hidden="true">' + nom + "</div>";
+      h += '<div class="arb-age ' + b.etat + '" style="top:' + (b.y + 7) + "px;--ac:" + esc(b.c) + '">' + (b.age + 1) + " · " + esc(b.nom) + "</div>";
     });
     lay.noeuds.forEach((n) => {
       const st = "left:" + (n.x - n.w / 2) + "px;top:" + (n.y - n.h / 2) + "px;--ac:" + esc(lay.bandes[n.age].c);
       if (n.etat === "fantome") {
-        h += '<button type="button" class="arb-n fantome' + (n.objectif ? " obj" : "") + '" data-fantome="' + n.cle + '" style="' + st + '" aria-label="' + esc(txt.fantome || "") + '"></button>';
+        h += '<button type="button" class="arb-n fantome' + (n.objectif ? " obj" : "") + '" data-fantome="' + n.cle + '" data-arbn="' + n.cle + '" style="' + st + '" aria-label="' + esc(txt.fantome || "") + '"></button>';
         return;
       }
-      h += '<button type="button" class="arb-n ' + n.etat + (n.objectif ? " obj" : "") + (o.neuf === n.cle ? " neuf" : "") + '" data-goto="' + esc(n.id) + '" style="' + st + '" aria-label="' + esc(n.n) + '">' +
+      h += '<button type="button" class="arb-n ' + n.etat + (n.objectif ? " obj" : "") + (o.neuf === n.cle ? " neuf" : "") + '" data-arbn="' + esc(n.cle) + '" style="' + st + '" aria-label="' + esc(n.n) + '">' +
         (o.icon ? o.icon(n.id) : "") + '<span class="arb-l">' + esc(n.n) + "</span>" + (n.etude ? '<span class="arb-e">✦ ' + n.etude + "</span>" : "") + "</button>";
     });
     return h + "</div>";
   }
 
-  const Arbre = { graphe, mise_en_page, rendu, centre, sig, catalogue, hash, NODE, COLS, PX, PY };
+  /* la bande d’âge sous une hauteur du monde (pour l’étiquette qui suit la vue) */
+  function bandeA(lay, y) {
+    for (const b of lay.bandes) if (y >= b.y && y < b.y + b.h) return b;
+    return null;
+  }
+
+  const Arbre = { graphe, mise_en_page, rendu, liens, bandeA, centre, sig, catalogue, hash, NODE, COLS, PX, PY };
   if (typeof module !== "undefined" && module.exports) module.exports = Arbre;
   root.EclatArbre = Arbre;
 })(typeof globalThis !== "undefined" ? globalThis : this);
