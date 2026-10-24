@@ -158,6 +158,9 @@ OBJ=1 node tools/sim.js        # détail des objectifs
 MAINS=1 node tools/sim.js      # avec la file des mains (les machines possédées aident)
 node tools/sim-passages.js --compare        # minute de chaque passage, sans et avec Mémoire
 node tools/sim-passages.js --cycles 5 --minutes 30   # cinq relèves enchaînées
+node tools/sim-passages.js --joueurs         # quatre types de joueur côte à côte : temps de jeu actif et temps écoulé de chaque passage
+node tools/sim-passages.js --joueur veilleur --minutes 60   # un seul type de joueur (tapeur, veilleur, explorateur, paresseux)
+node tools/sim-passages.js --sessions 5/4 --minutes 60      # 5 minutes de jeu, puis 4 heures d’absence, et ainsi de suite
 ```
 
 Avant de publier une nouvelle version : `npm run build` puis `npm test`. Si le format de sauvegarde change, augmente `SAVE_VERSION` dans `js/engine.js` et ajoute une étape à `migrate()` ; le test de compatibilité recharge les sauvegardes de `tools/fixtures`.

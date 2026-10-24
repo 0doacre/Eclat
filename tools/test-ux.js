@@ -55,6 +55,34 @@ async function layout(p, name) {
   ok(!r.small.length, name + " : cibles < 44 px " + r.small.join(", "));
   ok(r.age <= 0, name + " : nom de l’âge tronqué");
 }
+async function pageBrut(width, o) {
+  const ctx = await browser.newContext({ viewport: { width, height: width === 320 ? 568 : 844 }, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" });
+  const q = await ctx.newPage();
+  q.errors = []; q.on("pageerror", e => q.errors.push(e.message));
+  await q.addInitScript(raw => { localStorage.setItem("eclat.save.v1", raw); }, saveOpt(o));
+  await q.goto("http://127.0.0.1:" + server.address().port);
+  await q.waitForFunction(() => !!window.__eclat);
+  return q;
+}
+/* la partie avancée, avec une version d’origine, une absence (en secondes) et le guide à la demande */
+function saveOpt(o) {
+  const E = createEngine();
+  E.load(fs.readFileSync(path.join(ROOT, "tools/fixtures/save-v5-age8-usine.json"), "utf8"));
+  const st = E.state;
+  st.t = Date.now() - (o.absent || 0) * 1000; st.introSeen = true; st.flags.ver = o.ver || D.VERSION;
+  Object.assign(st.settings, { tuto: !!o.tuto, sound: false, visiteurs: false, largeText: false, theme: "light" });
+  return E.serialize();
+}
+const inter = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+async function etatFenetres(q) {
+  return q.evaluate(() => {
+    const m = document.querySelector("#modal"), visible = !m.classList.contains("hidden"), h = visible && m.querySelector("h2");
+    const tu = document.querySelector(".tuto:not(.hidden)"), bub = tu && tu.querySelector(".tu-bub");
+    const box = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, top: r.top, right: r.right, bottom: r.bottom }; };
+    return { visible, titre: h ? h.textContent : "", bulle: !!tu, rect: bub ? box(bub) : null,
+      onglets: box(document.getElementById("tabs")), entete: box(document.getElementById("top")), file: window.__eclat.U.fen.attente() };
+  });
+}
 async function run() {
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
@@ -108,12 +136,62 @@ async function run() {
     await p.context().close();
   }
   // Les écrans avancés qui partagent les commandes et la pile de fenêtres.
+  // L’arbre en plein écran (0.14.0) : ouverture et fermeture, surface utile, rail des âges, étiquettes, cibles, entrée depuis une fiche.
+  for (const [width, large] of [[390, false], [390, true], [320, false], [320, true]]) {
+    p = await page(width, true, large);
+    const nom = width + " " + (large ? "Veillée + grand texte" : "Jour") + " arbre";
+    const surfaceMin = width === 320 ? 360 : 650;
+    await p.locator('#tabs [data-tab="carnet"]').click();
+    await p.locator('[data-cvue="arbre"]').click();
+    await p.locator("#arbplein").waitFor({ state: "visible" });
+    await p.waitForTimeout(300);
+    ok(await p.evaluate(() => document.activeElement && document.activeElement.dataset.arb === "fermer"), nom + " : le focus va sur le retour");
+    ok(await p.evaluate(() => document.querySelector("#app").inert), nom + " : l’arrière-plan est inerte");
+    const m = await p.evaluate(() => {
+      const v = document.getElementById("arbre"), vr = v.getBoundingClientRect();
+      const bar = [...document.querySelectorAll("#arbplein .arb-barre button")].map((b) => { const r = b.getBoundingClientRect(); return { t: b.getAttribute("aria-label") || b.textContent.trim(), w: r.width, h: r.height }; });
+      const vus = [...document.querySelectorAll("#arbre .arb-n .arb-l, #arbre .arb-l")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.bottom > vr.top && r.top < vr.bottom && r.right > vr.left && r.left < vr.right; });
+      const k = window.__eclat.U.arbreVue.k;
+      return { surface: v.clientHeight, k, bar, etiquettes: vus.length, plusPetite: Math.min(...vus.map((e) => parseFloat(getComputedStyle(e).fontSize) * k)), debord: document.documentElement.scrollWidth - innerWidth };
+    });
+    ok(m.surface >= surfaceMin, nom + " : surface utile " + m.surface + " px (au moins " + surfaceMin + ")");
+    ok(m.bar.every((b) => b.w >= 43.9 && b.h >= 43.9), nom + " : cibles de la barre < 44 px " + JSON.stringify(m.bar.filter((b) => b.w < 43.9 || b.h < 43.9)));
+    ok(m.k === 1 && m.etiquettes > 3 && m.plusPetite >= 11, nom + " : étiquettes de " + m.plusPetite + " px à l’échelle " + m.k + " (" + m.etiquettes + " visibles)");
+    ok(m.debord <= 0, nom + " : débordement horizontal " + m.debord);
+    // le rail : toucher un âge y amène la vue, et le repère « au centre » suit
+    await p.locator('#arbplein [data-arbage="2"]').click();
+    await p.waitForTimeout(450);
+    ok(await p.evaluate(() => { const b = document.querySelector("#arbplein .arb-rb.centre"); return !!b && b.dataset.arbage === "2"; }), nom + " : le rail amène la vue à l’âge touché");
+    await p.locator('#arbplein [data-arbage="2"]').focus(); await p.keyboard.press("ArrowUp");
+    ok(await p.evaluate(() => document.activeElement.dataset.arbage === "3"), nom + " : le rail se parcourt aux flèches");
+    // − puis + : les trois niveaux
+    await p.locator('#arbplein [data-arb="moins"]').click(); await p.locator('#arbplein [data-arb="moins"]').click(); await p.waitForTimeout(200);
+    ok(await p.evaluate(() => document.getElementById("arbre").dataset.niv === "loin" && !document.querySelector("#arbre .arb-loin").hidden), nom + " : niveau loin, les âges et leur compte");
+    const loin = await p.evaluate(() => [...document.querySelectorAll("#arbre .arb-lb:not(.futur)")].map((b) => ({ n: parseFloat(getComputedStyle(b.querySelector(".arb-lb-n")).fontSize), h: b.getBoundingClientRect().height })));
+    ok(loin.length >= 8 && loin.every((b) => b.n >= 12), nom + " : noms d’âge d’au moins 12 px au niveau loin");
+    ok(await p.evaluate(() => { const v = document.getElementById("arbre"), l = document.querySelector("#arbre .arb-loin"); return l.scrollHeight <= v.clientHeight + 1; }), nom + " : les âges tiennent sans défilement");
+    await p.locator('#arbplein [data-arbband="5"]').click(); await p.waitForTimeout(450);
+    ok(await p.evaluate(() => document.getElementById("arbre").dataset.niv !== "loin"), nom + " : toucher une bande vient dessus");
+    // Échap ferme et rend le focus au bouton qui a ouvert
+    await p.keyboard.press("Escape"); await p.waitForTimeout(100);
+    ok(await p.evaluate(() => !document.getElementById("arbplein") && !document.querySelector("#app").inert && document.activeElement.dataset.cvue === "arbre"), nom + " : Échap ferme et rend le focus");
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+  }
+  // Depuis la fiche d’un objet : « Voir dans l’arbre » ouvre la vue sur lui, choisi
+  p = await page(390, true);
+  await p.evaluate(() => { document.querySelector("#views").insertAdjacentHTML("beforeend", '<button id="essai-goto" data-goto="manche"></button>'); });
+  await p.locator("#essai-goto").evaluate((b) => b.click());
+  await p.locator('#modal [data-m="arbre"]').waitFor({ state: "visible" }); await p.waitForTimeout(500); // la fenêtre finit de s’ouvrir
+  await p.locator('#modal [data-m="arbre"]').click();
+  await p.locator("#arbplein").waitFor({ state: "visible" }); await p.waitForTimeout(500);
+  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-n.sel"); return !!s && s.dataset.arbn === "manche" && !document.querySelector("#arbre .arb-fiche").hidden; }), "Fiche → arbre : le nœud est choisi et son bandeau ouvert");
+  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-n.sel").getBoundingClientRect(), v = document.getElementById("arbre").getBoundingClientRect(), f = document.querySelector("#arbre .arb-fiche").getBoundingClientRect(); return s.top >= v.top && s.bottom <= f.top + 1; }), "Fiche → arbre : le bandeau ne recouvre pas le nœud");
+  ok(await p.evaluate(() => document.querySelector("#arbre .arb-fiche").getBoundingClientRect().height <= 140), "Le bandeau reste bas");
+  await p.keyboard.press("Escape"); await p.waitForTimeout(100);
+  ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   p = await page(390, true);
   await p.locator('#tabs [data-tab="carnet"]').click();
-  await p.locator('[data-cvue="arbre"]').click();
-  ok(await p.locator('#arbre').isVisible(), "Arbre du Carnet disponible");
-  await layout(p, "Carnet arbre"); await shot(p, "avance-arbre");
-  await p.locator('[data-cvue="liste"]').click();
+  await layout(p, "Carnet (liste)");
   await p.locator('#cq').fill('manche');
   const quantity = await p.evaluate(() => window.__eclat.E.state.made.manche || 0);
   await p.locator('[data-cr="manche"][data-n="10"]').click();
@@ -138,6 +216,64 @@ async function run() {
   const restored = createEngine(); restored.load(exported);
   ok(restored.state.known.manche && restored.state.age === 7, "Export réimportable sans perte de recettes ni d’âge");
   ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
+  // 0.13.3 : les fenêtres du lancement et du retour d’absence
+  for (const width of [390, 320]) {
+    // une partie qui revient d’une version précédente, après 400 s, le guide actif : les fenêtres passent une à une, le guide attend
+    p = await pageBrut(width, { ver: "0.12.0", absent: 400, tuto: true });
+    const vus = [], rects = [];
+    for (let i = 0; i < 70; i++) {
+      await p.waitForTimeout(100);
+      const s = await etatFenetres(p);
+      if ((s.visible || s.file.length) && s.bulle) ok(false, width + " : une bulle de tutoriel pendant une fenêtre ou une file");
+      if (s.rect) rects.push(s);
+      if (s.visible && !vus.includes(s.titre)) { vus.push(s.titre); await p.waitForTimeout(450); await p.evaluate(() => window.__eclat.closeModal()); }
+    }
+    ok(vus.length === 2 && vus[0] === "Ta partie a été conservée" && vus[1] === "Bon retour !", width + " : les fenêtres passent dans l’ordre, une à une (" + vus.join(" ; ") + ")");
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+
+    // une absence de 90 s n’ouvre aucune fenêtre, un message discret suffit
+    p = await pageBrut(width, { absent: 90 });
+    let fenetre = false, message = false;
+    for (let i = 0; i < 30; i++) {
+      await p.waitForTimeout(100);
+      if (await p.evaluate(() => { const m = document.querySelector("#modal"); return !m.classList.contains("hidden") && /Bon retour/.test(m.innerText); })) fenetre = true;
+      if (await p.locator('#toasts [data-k="absence"]').count()) message = true;
+    }
+    ok(!fenetre, width + " : 90 s d’absence n’ouvrent pas « Bon retour »");
+    ok(message, width + " : 90 s d’absence disent ce qui a été récolté, sans fenêtre");
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+
+    // une absence de 400 s ouvre « Pendant ton absence »
+    p = await pageBrut(width, { absent: 400 });
+    let retour = false;
+    for (let i = 0; i < 60 && !retour; i++) {
+      await p.waitForTimeout(100);
+      const s = await etatFenetres(p);
+      if (s.visible && s.titre === "Bon retour !") retour = true;
+      else if (s.visible) { await p.waitForTimeout(450); await p.evaluate(() => window.__eclat.closeModal()); }
+    }
+    ok(retour, width + " : 400 s d’absence ouvrent « Bon retour »");
+    await p.context().close();
+
+    // pendant une bulle de tutoriel, chaque onglet répond, et la bulle ne couvre ni la barre d’onglets ni l’en-tête
+    p = await pageBrut(width, { tuto: true });
+    for (let i = 0; i < 20; i++) { // les nouveautés d’une partie migrée passent d’abord
+      await p.waitForTimeout(150);
+      if (await p.evaluate(() => !document.querySelector("#modal").classList.contains("hidden"))) { await p.waitForTimeout(450); await p.evaluate(() => window.__eclat.closeModal()); }
+      else if (!(await p.evaluate(() => window.__eclat.U.fen.attente().length))) break;
+    }
+    await p.waitForFunction(() => !!document.querySelector(".tuto:not(.hidden)"), null, { timeout: 8000 });
+    const s0 = await etatFenetres(p);
+    ok(s0.bulle && !inter(s0.rect, s0.onglets) && !inter(s0.rect, s0.entete), width + " : la bulle ne couvre ni les onglets ni l’en-tête");
+    for (const tab of ["carte", "atelier", "carnet", "journal", "domaine"]) {
+      await p.locator('#tabs [data-tab="' + tab + '"]').tap();
+      await p.waitForTimeout(250);
+      ok(await p.evaluate(x => window.__eclat.U.tab === x, tab), width + " : l’onglet " + tab + " répond pendant une bulle");
+      const s = await etatFenetres(p);
+      if (s.rect) ok(!inter(s.rect, s.onglets) && !inter(s.rect, s.entete), width + " : bulle hors de la barre et de l’en-tête sur " + tab);
+    }
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+  }
   console.log("UX mobile : " + checks + " contrôles réussis.");
 }
 run().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); server.close(); });

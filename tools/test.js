@@ -563,6 +563,22 @@ test("objectifs : un joueur avancé ne retombe pas sur le tutoriel", () => {
   const ob = E.objective();
   assert.ok(ob && ob.i > D.OBJECTIVES.findIndex((o) => Array.isArray(o) && o[0] === "moteur_vapeur"), JSON.stringify(ob));
 });
+test("objectifs : la porte de l’âge d’après construite en avance ne cache pas les étapes de l’âge en cours", () => {
+  const E = mk(), S = E.state;
+  const nom = (o) => (Array.isArray(o) ? o[0] : o.id);
+  const idx = (id) => D.OBJECTIVES.findIndex((o) => nom(o) === id);
+  for (let i = 0; i <= idx("pioche_pierre"); i++) {
+    const o = D.OBJECTIVES[i];
+    if (Array.isArray(o)) S.made[o[0]] = 1; else if (o.k === "ext") S.flags.extDone = 1; else if (o.k === "line") S.flags.lineDone = 1;
+    else if (o.k === "exp") S.exp.done[o.z] = 9; else if (o.k === "pass") S.pass[o.z] = { done: true };
+  }
+  S.age = D.ITEMS.pioche_pierre.a;
+  S.made.creuset = 1; // la porte de l’âge d’après, fabriquée avant les étapes de l’âge en cours
+  const ob = E.objective();
+  assert.ok(ob && ob.i < idx("creuset"), "l’objectif reste une étape de l’âge en cours : " + JSON.stringify(ob));
+  const age = (o) => { let a = 0; for (let j = 0; j <= o.i; j++) { const n = D.OBJECTIVES[j]; if (Array.isArray(n)) a = D.ITEMS[n[0]].a; else if (n.k === "craft") a = D.ITEMS[n.id].a; } return a; };
+  assert.strictEqual(age(ob), S.age, "même âge que celui qu’on a atteint");
+});
 test("réminiscences : on les gagne en cherchant, pas en attendant", () => {
   const E = mk();
   let hints = [];
@@ -3056,8 +3072,8 @@ test("Curiosités : déclencheurs (Zelda 4 cœurs, Mario 8 extracteurs, Vampire 
 });
 
 console.log("Lisibilité et Ergonomie (6.9)");
-test("Version 0.13.2 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.13.2");
+test("Version 0.14.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.14.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3272,12 +3288,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.13.2");
+  assert.strictEqual(D.VERSION, "0.14.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 13, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 14, "Mineure pour le lot courant");
 });
 
 console.log("Horodatage du Journal (0.7.1)");
@@ -3872,5 +3888,47 @@ test("seuils : la Rivière Lente n’en a pas, et chaque gisement compte à part
 require("./test-visiteurs.js");
 require("./test-figures.js");
 require("./test-arbre.js");
+
+console.log("La file des fenêtres automatiques (0.13.3)");
+const Fen = require("../js/fenetres.js");
+function fileFen(etat) { return Fen.create({ libre: () => !etat.ouvert, now: () => etat.t }); }
+test("une fenêtre automatique s’ouvre tout de suite si rien n’est ouvert", () => {
+  const etat = { t: 1000, ouvert: false }, vu = [];
+  const f = fileFen(etat);
+  f.demande(Fen.PRIO.retour, "retour", () => { vu.push("retour"); etat.ouvert = true; });
+  assert.deepStrictEqual(vu, ["retour"]);
+  assert.deepStrictEqual(f.attente(), []);
+});
+test("pas d’ouverture pendant qu’une fenêtre est ouverte ; l’ordre suit la priorité, pas la demande", () => {
+  const etat = { t: 1000, ouvert: true }, vu = [];
+  const f = fileFen(etat);
+  const ouvre = (nom) => () => { vu.push(nom); etat.ouvert = true; };
+  f.demande(Fen.PRIO.retour, "retour", ouvre("retour"));
+  f.demande(Fen.PRIO.nouveautes, "nouveautes", ouvre("nouveautes"));
+  f.demande(Fen.PRIO.sauvegarde, "sauvegarde", ouvre("sauvegarde"));
+  assert.deepStrictEqual(vu, [], "rien tant qu’une fenêtre est ouverte");
+  assert.deepStrictEqual(f.attente(), ["sauvegarde", "nouveautes", "retour"]);
+  const suivante = () => { etat.ouvert = false; f.ferme(); etat.t += Fen.PAUSE; f.pomper(); };
+  etat.ouvert = false; etat.t += Fen.PAUSE; f.pomper();
+  suivante(); suivante();
+  assert.deepStrictEqual(vu, ["sauvegarde", "nouveautes", "retour"]);
+});
+test("une pause sépare deux fenêtres ; une même fenêtre n’attend jamais deux fois", () => {
+  const etat = { t: 1000, ouvert: false }, vu = [];
+  const f = fileFen(etat);
+  const ouvre = (nom) => () => { vu.push(nom); etat.ouvert = true; };
+  f.demande(Fen.PRIO.nouveautes, "nouveautes", ouvre("nouveautes"));
+  assert.strictEqual(f.demande(Fen.PRIO.retour, "retour", ouvre("retour")), true);
+  assert.strictEqual(f.demande(Fen.PRIO.retour, "retour", ouvre("retour")), false, "doublon refusé");
+  etat.ouvert = false; f.ferme();
+  etat.t += Fen.PAUSE - 1; assert.strictEqual(f.pomper(), false, "trop tôt");
+  etat.t += 1; assert.strictEqual(f.pomper(), true);
+  assert.deepStrictEqual(vu, ["nouveautes", "retour"]);
+});
+test("le retour d’absence : le message discret et la fenêtre ont leurs seuils (60 s et 5 min)", () => {
+  const src = fs.readFileSync(path.join(__dirname, "../js/ecouteurs.js"), "utf8");
+  assert.ok(/const ABSENCE_MESSAGE = 60, ABSENCE_FENETRE = 300;/.test(src), "seuils nommés en tête des écouteurs");
+  assert.ok(/o\.dt < ABSENCE_MESSAGE/.test(src) && /o\.dt < ABSENCE_FENETRE/.test(src));
+});
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));

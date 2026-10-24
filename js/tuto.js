@@ -373,7 +373,10 @@
       const box = view.target.el && view.target.el.closest(".u-sheet, .modal-box");
       const over = box ? box.getBoundingClientRect().top : r.top - pad;
       const room = box && over - 12 - bh >= band().lo + 4 ? over : r.top - pad;
-      bub.style.top = (below ? Math.min(H - bh - 8, r.bottom + pad + 12) : Math.max(8, room - 12 - bh)) + "px";
+      const bande = band();
+      const top = below ? Math.min(H - bh - 8, r.bottom + pad + 12) : Math.max(8, room - 12 - bh);
+      // jamais sur la barre d’onglets ni sur l’en-tête, quand la bande libre peut la contenir
+      bub.style.top = (bande.hi - bande.lo >= bh + 8 ? Math.max(bande.lo + 4, Math.min(top, bande.hi - bh - 4)) : top) + "px";
       bub.classList.toggle("up", !below);
       bub.style.setProperty("--ax", Math.max(16, Math.min(bw - 16, cx - left)) + "px");
     }
@@ -410,7 +413,10 @@
     function tick() {
       // ce que le joueur a déjà fait seul n’a plus besoin d’être montré
       if (S().hand.q.length) lastQueue = Date.now();
+      if (U.arbreOuvert) { hide(); return; } // l’arbre en plein écran : le guide revient quand on le ferme
       if (!enabled() || !S().introSeen) { hide(); return; }
+      // une fenêtre automatique attend son tour (js/fenetres.js) : le guide passe après, qu’il soit commencé ou non
+      if (U.fen && U.fen.attente().length) { hide(); return; }
       const T = state();
       let ch = chapter();
       if (!ch) {

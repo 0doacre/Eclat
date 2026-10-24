@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.13.2";
+  D.VERSION = "0.14.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1076,6 +1076,10 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🌳 L’arbre prend tout l’écran : une barre fine en haut, et le reste pour l’arbre. Un bouton « Voir dans l’arbre » sur la fiche d’un objet, et « Dans l’arbre » sur ton objectif, t’y emmènent tout droit.",
+    "📜 Une colonne d’âges sur le bord de l’écran : touche un âge, ou glisse le doigt dessus, et l’arbre s’y rend.",
+    "🔍 De plus loin, l’arbre se lit par âge : le nom de chaque âge et le nombre de recettes que tu y as trouvées. De plus près, les noms et les traits sont plus gros.",
+    "⏳ Revenir après moins de cinq minutes n’ouvre plus de fenêtre : un petit message dit ce qui a été récolté. Au lancement, les fenêtres passent une à une, et le guide attend qu’elles soient fermées.",
     "🖼️ Les Grands Œuvres ont leur image : l’œuvre entière dans le Journal, l’étape en cours sur le chantier du Domaine. Les pages ont un fond discret, et la Veillée le sien.",
     "🌳 L’arbre du Carnet est lisible : il ne garde de place que pour ce que tu as trouvé, les âges lointains tiennent en un bandeau, et les traits qui sautaient des âges ne s’allument plus que si tu touches l’un de leurs bouts. Touche un objet : ses liens s’éclairent, et un bandeau dit de quoi il est fait et à quoi il sert ; ses puces mènent d’un objet à l’autre. Touche-le encore pour sa fiche.",
     "✋ Le vocabulaire des commandes est le même partout : tes mains, une commande, en cours, au repos. La barre dit « Commande · … », une commande sans personne pour la faire « attend une main ou une machine », et une machine sans travail est « au repos ».",

@@ -31,6 +31,9 @@
     pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false,
     toastQ: [], toastAt: 0, toastT: 0, intuShown: false
   };
+  /* les fenêtres que le jeu ouvre tout seul (voir js/fenetres.js) : une à la fois, par ordre de priorité */
+  const Fen = window.EclatFenetres, FP = Fen.PRIO;
+  U.fen = Fen.create({ libre: () => !U.mcur && !U.mq.length, now: () => Date.now() });
 
   /* ------------------------------------------------------------ formats */
   const UNITS = ["k", "M", "G", "T", "P", "E", "Z"];
@@ -412,7 +415,8 @@
   function nextModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     const o = U.mq.shift();
-    if (!o) { U.mcur = null; m.classList.add("hidden"); $("#app").inert = false; return; }
+    const pl = document.getElementById("arbplein");
+    if (!o) { U.mcur = null; m.classList.add("hidden"); $("#app").inert = !!pl; if (pl) pl.inert = false; return; }
     U.mcur = o;
     U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
@@ -425,10 +429,13 @@
     box.tabIndex = -1;
     box.focus({ preventScroll: true });
     $("#app").inert = true;
+    if (pl) pl.inert = true; // l’arbre plein écran, sous la fenêtre, n’a plus le focus
     if (o.onOpen) o.onOpen(box);
+    Tuto.tick(); // une bulle de tutoriel ne reste pas affichée sous une fenêtre qui s’ouvre
   }
   function closeModal() {
     const o = U.mcur;
+    U.fen.ferme();
     $("#modal").classList.add("hidden");
     U.mcur = null;
     if (o && o.onClose) o.onClose();
@@ -1075,8 +1082,10 @@
   function loop() {
     E.update();
     visiteurTick();
-    if (U.offline && !U.mcur) showOffline();
+    if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
+    U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();
+    if (U.arbreOuvert && Date.now() - (U.arbreT || 0) > 400) { U.arbreT = Date.now(); Atl.arbreMaj(); } // l’arbre plein écran suit les découvertes
   }
 
   function boot() {
@@ -1102,15 +1111,15 @@
       if (D.GESTES[bk.g] && E.gesteOK(bk.g)) U.geste = bk.g;
       U.slots = [0, 1, 2].map((i) => (bk.s[i] && I[bk.s[i]] && S().seen[bk.s[i]] ? bk.s[i] : null));
     }
-    if (status === "error") showBadSave();
-    else if (!S().introSeen) intro();
+    if (status === "error") U.fen.demande(FP.sauvegarde, "sauvegarde", showBadSave);
+    else if (!S().introSeen) U.fen.demande(FP.intro, "intro", () => intro());
     else {
       // une partie qui revient d’une version précédente voit une fois ce qui a changé
       // une correction (4.5.0 → 4.5.1) ne rouvre pas la fenêtre ; une nouvelle version (4.4 → 4.5), si
       const minor = (v) => String(v || "").split(".").slice(0, 2).join(".");
-      if (S().flags.news || minor(S().flags.ver) !== minor(D.VERSION)) showNews();
+      if (S().flags.news || minor(S().flags.ver) !== minor(D.VERSION)) U.fen.demande(FP.nouveautes, "nouveautes", showNews);
       else S().flags.ver = D.VERSION;
-      showOffline();
+      U.fen.demande(FP.retour, "retour", showOffline);
     }
     setTimeout(() => { U.live = true; }, 1500);
     setInterval(loop, 100);
