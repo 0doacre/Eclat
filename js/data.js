@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.22.0";
+  D.VERSION = "0.22.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1280,6 +1280,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔤 Les cartes de signes du Journal, les deux formulaires à ⏎ et les questions à réfléchir ont un nom pour le lecteur d’écran.",
     "💬 Les boutons qui ne disaient rien s’expliquent : une info-bulle dit ce que font Suivre, Épingler, Détail, ×10, Max, les filtres et les tris.",
     "💭 Le guide ralentit : une seule explication à la fois, et au plus une toutes les deux ou trois minutes.",
     "⭐ Trois chapitres nouveaux, au moment où ils servent : Suivre, Épingler, et commander d’un coup (×10, Max).",

@@ -1,6 +1,134 @@
 [
  {
   "partie": "neuve",
+  "ecran": "Aide",
+  "label": "✕",
+  "repere": "button[data-m=\"close\"].modal-x",
+  "explique": "lecteur d’écran : Fermer",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Auto",
+  "repere": "button[data-m=\"theme\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"largeText\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"sound\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Activées",
+  "repere": "button[data-m=\"vibe\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Oui",
+  "repere": "button[data-m=\"visiteurs\"].btn",
+  "explique": "info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Revoir",
+  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"tuto\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "✦ Mémoire des mains",
+  "repere": "button[data-m=\"mem\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Sauvegardes",
+  "repere": "button[data-m=\"saves\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Compte en ligne",
+  "repere": "button[data-m=\"account\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Comment jouer",
+  "repere": "button[data-m=\"help\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "📰 Nouveautés",
+  "repere": "button[data-m=\"news\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Crédits",
+  "repere": "button[data-m=\"credits\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Tout recommencer",
+  "repere": "button[data-m=\"reset\"].btn.ghost",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Fermer",
+  "repere": "button[data-m=\"close\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
   "ecran": "Domaine",
   "label": "Bois ÂGE 1/15",
   "repere": "button#ageBtn.age",
@@ -154,25 +282,9 @@
  {
   "partie": "neuve",
   "ecran": "Lieu",
-  "label": "✕",
-  "repere": "button[data-m=\"close\"].modal-x",
-  "explique": "lecteur d’écran : Fermer",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Lieu",
   "label": "Explorer",
   "repere": "button[data-m=\"go\"].btn",
   "explique": "guide (.modal:not(.hidden) [data-m=\"go\"])",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Lieu",
-  "label": "Fermer",
-  "repere": "button[data-m=\"close\"].btn",
-  "explique": "fiche Aide",
   "tag": "button"
  },
  {
@@ -297,113 +409,153 @@
  },
  {
   "partie": "neuve",
-  "ecran": "Menu ☰",
+  "ecran": "Journal · signes",
+  "label": "1 endroit",
+  "repere": "button[data-s=\"faire\"].signe-card",
+  "explique": "info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal · fins",
+  "label": "✦ Mémoire des mains",
+  "repere": "button[data-cycle=\"\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal · stats",
+  "label": "⏎",
+  "repere": "button.btn",
+  "explique": "info-bulle : Envoyer ce nom ; lecteur d’écran : Envoyer ce nom",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "✕",
+  "repere": "button[data-m=\"close\"].modal-x",
+  "explique": "lecteur d’écran : Fermer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Auto",
   "repere": "button[data-m=\"theme\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Désactivé",
   "repere": "button[data-m=\"largeText\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Activé",
   "repere": "button[data-m=\"sound\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Activées",
   "repere": "button[data-m=\"vibe\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Oui",
   "repere": "button[data-m=\"visiteurs\"].btn",
   "explique": "info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Revoir",
   "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
-  "label": "Activé",
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Coupé",
   "repere": "button[data-m=\"tuto\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "✦ Mémoire des mains",
   "repere": "button[data-m=\"mem\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Sauvegardes",
   "repere": "button[data-m=\"saves\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Compte en ligne",
   "repere": "button[data-m=\"account\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Comment jouer",
   "repere": "button[data-m=\"help\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "📰 Nouveautés",
   "repere": "button[data-m=\"news\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Crédits",
   "repere": "button[data-m=\"credits\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Tout recommencer",
   "repere": "button[data-m=\"reset\"].btn.ghost",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Fermer",
+  "repere": "button[data-m=\"close\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
@@ -522,7 +674,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Minerai de fer +48/min Tu en as 35,1 k · 1 mine de fer",
+  "label": "Minerai de fer +48/min Tu en as 543 · 1 mine de fer",
   "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
   "explique": "lecteur d’écran : Gisement : Minerai de fer",
   "tag": "button"
@@ -602,7 +754,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+810/min591 k",
+  "label": "Bois+19/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -658,14 +810,6 @@
  {
   "partie": "avancée",
   "ecran": "Comptoir",
-  "label": "✕",
-  "repere": "button[data-m=\"close\"].modal-x",
-  "explique": "lecteur d’écran : Fermer",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
   "label": "Vendre",
   "repere": "button[data-m=\"ctab\"][data-t=\"vendre\"]",
   "explique": "info-bulle : Vendre ce qui encombre ta Réserve",
@@ -698,7 +842,7 @@
  {
   "partie": "avancée",
   "ecran": "Comptoir",
-  "label": "Minerai de fer · tu en as 35,1 k 9,8 écu l’unité",
+  "label": "Minerai de fer · tu en as 544 9,8 écu l’unité",
   "repere": "div[data-goto=\"fer_min\"].comptoir-head",
   "explique": "info-bulle : Minerai de fer (toucher pour inspecter)",
   "tag": "div"
@@ -706,289 +850,9 @@
  {
   "partie": "avancée",
   "ecran": "Comptoir",
-  "label": "10 % +19,7 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"3510\"].btn.mini",
+  "label": "10 % +520",
+  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"54\"].btn.mini",
   "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +44,5 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"17552\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +56,9 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"35004.844000000085\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +3,17 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"malachite\"][data-n=\"3521\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +7,13 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"malachite\"][data-n=\"17609\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +9,12 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"malachite\"][data-n=\"35118.94400000009\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +1,97 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cassiterite\"][data-n=\"1766\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +5,27 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cassiterite\"][data-n=\"8833\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +7,12 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cassiterite\"][data-n=\"17566.972000000045\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +2,00 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"silex\"][data-n=\"7943\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +3,79 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"silex\"][data-n=\"39716\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +4,63 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"silex\"][data-n=\"79333.47399999987\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +1,72 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"sable\"][data-n=\"5955\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +3,45 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"sable\"][data-n=\"29779\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +4,28 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"sable\"][data-n=\"59459.08050000006\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +1,72 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"argile\"][data-n=\"5941\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +3,45 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"argile\"][data-n=\"29708\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +4,27 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"argile\"][data-n=\"59316.08050000008\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +1,64 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"charbon\"][data-n=\"8342\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +3,08 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"charbon\"][data-n=\"41711\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +3,75 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"charbon\"][data-n=\"83323.41699999984\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +1,01 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"os\"][data-n=\"13244\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +1,76 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"os\"][data-n=\"66221\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +2,10 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"os\"][data-n=\"132342.28999999995\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +936",
-  "repere": "button[data-m=\"sell\"][data-id=\"cuir\"][data-n=\"11015\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +1,67 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cuir\"][data-n=\"55078\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +2,01 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cuir\"][data-n=\"110056.57500000003\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +684",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"59194\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +1,00 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"295974\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +1,13 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"591849.1049999989\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +565",
-  "repere": "button[data-m=\"sell\"][data-id=\"fibre\"][data-n=\"31744\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +877",
-  "repere": "button[data-m=\"sell\"][data-id=\"fibre\"][data-n=\"158722\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +1,01 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fibre\"][data-n=\"317344.2959999995\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +478",
-  "repere": "button[data-m=\"sell\"][data-id=\"caillou\"][data-n=\"19859\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +784",
-  "repere": "button[data-m=\"sell\"][data-id=\"caillou\"][data-n=\"99299\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +921",
-  "repere": "button[data-m=\"sell\"][data-id=\"caillou\"][data-n=\"198499.33500000017\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
  {
@@ -1002,73 +866,9 @@
  {
   "partie": "avancée",
   "ecran": "Comptoir",
-  "label": "La moitié +403",
-  "repere": "button[data-m=\"sell\"][data-id=\"aimant\"][data-n=\"2\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 −",
-  "repere": "button[data-m=\"sell\"][data-id=\"aimant\"][data-n=\"0\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
   "label": "La moitié +126",
   "repere": "button[data-m=\"sell\"][data-id=\"bobine\"][data-n=\"10\"].btn.mini",
   "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +88",
-  "repere": "button[data-m=\"sell\"][data-id=\"plaque_fer\"][data-n=\"3\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +23",
-  "repere": "button[data-m=\"sell\"][data-id=\"clous\"][data-n=\"4\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "10 % +4,9",
-  "repere": "button[data-m=\"sell\"][data-id=\"manche\"][data-n=\"13\"].btn.mini",
-  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "La moitié +24",
-  "repere": "button[data-m=\"sell\"][data-id=\"manche\"][data-n=\"67\"].btn.mini",
-  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Tout sauf 100 +12",
-  "repere": "button[data-m=\"sell\"][data-id=\"manche\"][data-n=\"34\"].btn.mini",
-  "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Fermer",
-  "repere": "button[data-m=\"close\"].btn",
-  "explique": "fiche Aide",
   "tag": "button"
  },
  {
@@ -1282,7 +1082,7 @@
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "592 k +810/min Bois",
+  "label": "8,80 k +810/min Bois",
   "repere": "button[data-inv=\"bois\"].inv",
   "explique": "info-bulle : Bois : ouvrir sa fiche ; lecteur d’écran : Bois : ouvrir sa fiche ; guide ([data-inv=\"bois\"])",
   "tag": "button"
@@ -1673,6 +1473,38 @@
  },
  {
   "partie": "avancée",
+  "ecran": "Journal · questions",
+  "label": "Réfléchir : 45 (manque d’Intuition)",
+  "repere": "button[data-askhelp=\"q_porte\"].btn.dis",
+  "explique": "info-bulle : Il te manque de l’Intuition : elle vient des recettes, des fragments et des secrets",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal · signes",
+  "label": "1 endroit",
+  "repere": "button[data-s=\"faire\"].signe-card",
+  "explique": "info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal · fins",
+  "label": "✦ Mémoire des mains",
+  "repere": "button[data-cycle=\"\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal · stats",
+  "label": "⏎",
+  "repere": "button.btn",
+  "explique": "info-bulle : Envoyer ce nom ; lecteur d’écran : Envoyer ce nom",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
   "ecran": "Cosmos",
   "label": "Ciel",
   "repere": "button[data-ct=\"ciel\"]",
@@ -1821,118 +1653,6 @@
   "label": "Voir dans l’arbre",
   "repere": "button[data-m=\"arbre\"].btn.ghost",
   "explique": "info-bulle : Voir ses ingrédients et ses usages dans l’arbre",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Auto",
-  "repere": "button[data-m=\"theme\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Désactivé",
-  "repere": "button[data-m=\"largeText\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Activé",
-  "repere": "button[data-m=\"sound\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Activées",
-  "repere": "button[data-m=\"vibe\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Oui",
-  "repere": "button[data-m=\"visiteurs\"].btn",
-  "explique": "info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Revoir",
-  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Coupé",
-  "repere": "button[data-m=\"tuto\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "✦ Mémoire des mains",
-  "repere": "button[data-m=\"mem\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Sauvegardes",
-  "repere": "button[data-m=\"saves\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Compte en ligne",
-  "repere": "button[data-m=\"account\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Comment jouer",
-  "repere": "button[data-m=\"help\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "📰 Nouveautés",
-  "repere": "button[data-m=\"news\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Crédits",
-  "repere": "button[data-m=\"credits\"].btn",
-  "explique": "fiche Aide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Tout recommencer",
-  "repere": "button[data-m=\"reset\"].btn.ghost",
-  "explique": "fiche Aide",
   "tag": "button"
  }
 ]

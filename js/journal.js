@@ -215,7 +215,7 @@
               const canAfford = (st.intu || 0) >= q.cost;
               const whyText = canAfford ? "" : " (manque d’Intuition)";
               h += '<div class="acts" style="margin-top:8px">';
-              h += '<button class="btn' + (canAfford ? ' pri' : ' dis') + '" data-askhelp="' + esc(q.id) + '"' + (canAfford ? '' : ' disabled') + '>';
+              h += '<button class="btn' + (canAfford ? ' pri' : ' dis') + '" data-askhelp="' + esc(q.id) + '"' + (canAfford ? '' : ' disabled title="Il te manque de l’Intuition : elle vient des recettes, des fragments et des secrets"') + '>';
               h += '💭 Réfléchir : ' + q.cost + ' ✨' + (canAfford ? '' : ' <span class="tiny muted">' + whyText + '</span>');
               h += '</button></div>';
             }
@@ -234,7 +234,7 @@
           seen.forEach((s) => {
             const count = s.count || 0;
             const countTxt = count === 1 ? "1 endroit" : count + " endroits";
-            h += '<button class="signe-card' + (s.lu ? ' lu' : '') + '" data-s="' + esc(s.id) + '">' +
+            h += '<button class="signe-card' + (s.lu ? ' lu' : '') + '" data-s="' + esc(s.id) + '" title="Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais">' +
               (s.lu
                 ? '<div class="signe-card-mot">' + esc(s.def.mot) + '</div>'
                 : '<div class="signe-card-dessin">' + (window.signeSVG ? window.signeSVG(s.def.h, 36) : '') + '</div>') +
@@ -295,7 +295,7 @@
         const NM = (E.RECIT && E.RECIT.nommer) || {};
         const nom = E.nomDuCycle ? E.nomDuCycle() : null;
         h += '<div class="card"><div class="stat"><span class="muted">Semeur ' + (st.cycle + 6) + "</span><b>" + (nom ? esc(nom) : "—") + "</b></div>" +
-          (E.peutNommer && E.peutNommer() ? '<form class="term-in" id="nomForm" autocomplete="off" style="margin-top:8px"><input id="nomIn" maxlength="24" placeholder="' + esc(NM.invite || "") + '" autocapitalize="words" spellcheck="false"><button class="btn" type="submit">⏎</button></form>' : "") + "</div>";
+          (E.peutNommer && E.peutNommer() ? '<form class="term-in" id="nomForm" autocomplete="off" style="margin-top:8px"><input id="nomIn" maxlength="24" placeholder="' + esc(NM.invite || "") + '" autocapitalize="words" spellcheck="false"><button class="btn" type="submit" title="Envoyer ce nom" aria-label="Envoyer ce nom">⏎</button></form>' : "") + "</div>";
         if (evs.length) {
           h += '<h3 class="sub">Réminiscences</h3>';
           evs.forEach((id) => { h += '<div class="card small serif" style="font-size:15px">' + icon(id, "sm") + " " + esc(D.EVENTS[id]) + "</div>"; });
@@ -368,7 +368,7 @@
         st.arche.forEach((l) => { h += '<div class="l">' + esc(l.txt) + "</div>"; });
         if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") || l.startsWith("REG > ") || l.startsWith("ARCHE > ") ? " u" : "") + '">' + (l.startsWith("REG · ") ? recitInline(l, "Le Registre") + lectureHTML(l) : esc(l)) + "</div>").join("");
         h += "</div>";
-        if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><span class="term-pfx">' + esc(pfx) + '</span><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
+        if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><span class="term-pfx">' + esc(pfx) + '</span><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit" title="Envoyer la commande" aria-label="Envoyer la commande">⏎</button></form>';
         else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ' + (isReg ? "le Registre" : "ARCHE") + '.</p>';
       } else {
         h += '<p class="small muted">Un Grand Œuvre se bâtit avec ce que tu verses depuis la Réserve, ou ce qu’il y prend seul quand tu l’alimentes. Il en demande des quantités énormes.</p>';
