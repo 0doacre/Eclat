@@ -68,14 +68,39 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 ## Exemples validés
 
 Pour les indices de recettes, un premier lot de travail est présenté dans
-`docs/ENIGMES-LOT-PILOTE.md`. Ses formulations sont des propositions à éprouver,
-pas encore un modèle à généraliser.
+`docs/ENIGMES-LOT-PILOTE.md`. L’auteur a retenu sa direction et demandé son extension
+aux autres énigmes. Le périmètre de cette passe est décrit dans `docs/ENIGMES-PASSE-LANGUE.md`.
 
 Un indice peut partir d’une propriété, d’un besoin ou du rapport entre des objets.
 Le nom d’une ressource déjà connue reste disponible : nul besoin de le remplacer
 systématiquement par une image. Le rythme suit l’idée ; une phrase développée ou
 une question peut convenir aussi bien qu’une formule brève. Vérifier ce qu’il reste
 à comprendre et ce que les aides ajouteront, puis relire à l’écran.
+
+## Énigmes, documents et personnages
+
+- **Donner une prise au raisonnement.** Partir de ce qu’on observe et de ce qu’on cherche
+  à obtenir. Un matériau déjà connu peut être nommé. « Métal rouge » n’est pas préférable
+  à « cuivre » par principe ; une périphrase doit avoir une raison dans le document ou le savoir
+  de celui qui parle. Ne pas remplacer les noms par une série de devinettes de vocabulaire.
+- **Ne pas confondre mystère et imprécision.** Une porte qui réagit au fer donne une piste ;
+  une porte qui « attend » quelque chose sans autre repère n’en donne pas. Les mains, le sommeil
+  et les souvenirs ont une place précise dans Éclat. Leur répétition doit apporter un fait,
+  établir un lien ou caractériser une voix.
+- **Construire les aides par étapes.** La première attire l’attention sur un détail, la
+  suivante rapproche les indices, la dernière indique une action réalisable. Conserver le bon
+  déclencheur, le bon objet et, lorsqu’il compte, le bon nombre de gestes ou la bonne durée.
+- **Respecter le support.** Une carte décrit des positions et des dessins ; elle n’a pas à
+  expliquer leur sens. Une note raconte ce que son auteur a vu, tenté ou cru comprendre.
+  Un dialogue répond à la question posée. Ne pas transformer tous ces textes en commentaires
+  d’un même narrateur ou en tutoriels.
+- **Garder les voix.** Une syntaxe enfantine, une colère en capitales, un comptage ou un relevé
+  technique peuvent justifier des phrases courtes. Leur rôle vient du personnage et de la scène,
+  pas d’une règle qui imposerait partout un français haché. Le Troqueur parle de ses échanges
+  et de ce qu’il observe ; il ne conclut pas chaque réplique par une maxime.
+- **Relire les liens entre les textes.** Une image, un mot répété, une inscription ou un rythme
+  peuvent être des indices. Vérifier les documents associés avant de les changer, sans livrer
+  prématurément leur interprétation. Les éléments du coffre restent dans le coffre.
 
 | Texte | Version retenue |
 |---|---|

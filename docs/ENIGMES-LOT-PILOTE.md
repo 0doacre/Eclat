@@ -17,9 +17,11 @@ manière de l’utiliser. Le rappel d’un ancien geste garde sa place quand il 
 le nouveau. Le tutoiement apparaît quand il donne une place au joueur ; il n’est pas
 obligatoire à chaque ligne. La longueur dépend de ce que l’indice cherche à faire comprendre.
 
-Ce sont des propositions à relire et à essayer avec des joueurs. Le lot ne fixe pas
-encore la voix de toutes les énigmes. Les passages narratifs, secrets et révélations
-restent hors de cette passe.
+La direction de ce lot a été retenue par l’auteur, qui a demandé de l’étendre au-delà
+des recettes. Ce document conserve le détail du pilote ; la passe suivante est décrite
+dans [Énigmes : passe sur la langue](ENIGMES-PASSE-LANGUE.md). Les passages narratifs
+étaient hors du pilote, puis ont été inclus dans cette extension. Une lecture par des
+joueurs reste utile pour éprouver la difficulté des indices.
 
 ## Comparaison des textes
 
