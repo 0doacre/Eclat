@@ -443,7 +443,7 @@ test("les sauvegardes v1 à v5 se chargent sans rien perdre", () => {
     for (const k in old.inv) assert.ok((D.ITEMS[k] && D.ITEMS[k].t === "ext" ? famille(k) : S.inv[k]) >= old.inv[k] - 1e-9, f + " : stock de " + k);
     for (const k in old.known) assert.ok(S.known[k], f + " : recette " + k);
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
-    assert.strictEqual(S.age, old.age); assert.strictEqual(S.intu, old.intu);
+    assert.strictEqual(S.age, old.age >= 7 ? old.age + 1 : old.age, "l’âge avance d’un rang après l’Acier (la Vapeur est insérée)"); assert.strictEqual(S.intu, old.intu);
     assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
     assert.strictEqual(S.flags.news, "6", "annonce des nouveautés");
     assert.ok(S.dom && !S.fab && !S.settings.usine);
@@ -1698,6 +1698,50 @@ test("récolte à la main : coup de chance ×2, plus fréquent avec « Coup d’
 });
 
 console.log("Mains sûres");
+test("Âge de la Vapeur : inséré entre l’Acier et l’Électricité, ses objets et ses étapes", () => {
+  const ids = D.AGES.map((a) => a.id);
+  assert.deepStrictEqual(ids.slice(5, 9), ["fer", "acier", "vapeur", "elec"]);
+  assert.strictEqual(D.AGES.length, 14);
+  assert.strictEqual(D.SITE_RATE.length, 14, "une vitesse de chantier par âge");
+  const par = {}; Object.values(D.ITEMS).forEach((x) => (par[x.a] = (par[x.a] || 0) + 1));
+  assert.ok(par[6] >= 10 && par[6] <= 18 && par[7] >= 10 && par[7] <= 22, "l’Acier et la Vapeur se partagent ce qu’un seul âge portait : " + par[6] + " / " + par[7]);
+  ["moteur_vapeur", "chaudiere", "piston", "presse_vapeur", "pompe", "locomotive", "scierie", "regulateur", "marteau_pilon", "chaudiere_tubulaire"].forEach((i) => assert.strictEqual(D.ITEMS[i].a, 7, i));
+  ["haut_fourneau", "lingot_acier", "acier_trempe", "tour", "outils_acier", "engrenage_acier"].forEach((i) => assert.strictEqual(D.ITEMS[i].a, 6, i));
+  assert.strictEqual(D.ITEMS.dynamo.a, 8, "l’Électricité est avancée d’un rang");
+  // les étapes : chaque âge en a, la Vapeur aussi
+  const E = createEngine();
+  const m = E.milestones();
+  assert.ok(m[6].length >= 3 && m[7].length >= 3 && m[8].length >= 3, "des étapes pour l’Acier, la Vapeur et l’Électricité");
+  assert.ok(m[7].some((x) => x.ob.id === "moteur_vapeur") && m[7].some((x) => x.ob.id === "regulateur"));
+  // rien n’est avant ses ingrédients : chaque pièce de la Vapeur ne demande que des objets d’âge égal ou antérieur
+  Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].a === 7 && D.ITEMS[i].r).forEach((i) => { for (const g in D.ITEMS[i].r[1]) assert.ok(D.ITEMS[g].a <= 7, i + " demande " + g); });
+  // avancer d’un âge : l’Acier accompli et un objet de la Vapeur fabriqué
+  const F = createEngine();
+  F.state.age = 6;
+  F.milestones()[6].forEach((x) => { if (x.ob.k === "craft") F.state.made[x.ob.id] = 1; });
+  F.state.made.moteur_vapeur = 1;
+  F.avancerAge();
+  assert.strictEqual(F.state.age, 7, "l’âge de la Vapeur s’ouvre après l’Acier");
+});
+test("sauvegarde v8 : les âges après l’Acier avancent d’un rang, la Vapeur est marquée accomplie sans récompense", () => {
+  const E = createEngine();
+  const o = JSON.parse(E.serialize());
+  o.v = 8; o.age = 8; o.flags.ages = { 0: 1, 6: 1, 7: 1 }; o.intu = 12;
+  o.meta.stamps = { "m:dynamo": [1, 1, 7], "m:manche": [1, 1, 0] };
+  const F = createEngine();
+  F.load(JSON.stringify(o));
+  assert.strictEqual(F.state.v, SAVE_VERSION);
+  assert.strictEqual(F.state.age, 9, "le Silicium est maintenant le 10e âge");
+  assert.ok(F.state.flags.ages[8] && F.state.flags.ages[7] && F.state.flags.ages[6], "Électricité, Vapeur et Acier restent accomplis");
+  assert.ok(!F.state.flags.ages[9], "rien n’est accompli en trop");
+  assert.deepStrictEqual([F.state.meta.stamps["m:dynamo"][2], F.state.meta.stamps["m:manche"][2]], [8, 0]);
+  assert.strictEqual(F.state.intu, 12, "aucune récompense d’âge");
+  // une partie à l’Acier ou avant garde son âge
+  const G = createEngine(); const p = JSON.parse(G.serialize()); p.v = 8; p.age = 6;
+  const H = createEngine(); H.load(JSON.stringify(p));
+  assert.strictEqual(H.state.age, 6);
+});
+
 test("Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur", () => {
   const E = createEngine();
   E.state.meta.traces = 500;
@@ -1872,13 +1916,13 @@ test("déchiffrer : le prix suit la formule (âge, nombre de ressources, niveau)
   assert.strictEqual(E.decipherCost("manche"), 8);
   E.state.hints.manche = 2;
   assert.strictEqual(E.decipherCost("manche"), 20);
-  // ordinateur : âge 8, 3 ressources -> 81, 216, 540
-  E.state.age = 8;
-  assert.strictEqual(E.decipherCost("ordinateur"), 81);
+  // ordinateur : âge 9 (depuis l’Âge de la Vapeur), 3 ressources -> 90, 240, 600
+  E.state.age = 9;
+  assert.strictEqual(E.decipherCost("ordinateur"), 90);
   E.state.hints.ordinateur = 1;
-  assert.strictEqual(E.decipherCost("ordinateur"), 216);
+  assert.strictEqual(E.decipherCost("ordinateur"), 240);
   E.state.hints.ordinateur = 2;
-  assert.strictEqual(E.decipherCost("ordinateur"), 540);
+  assert.strictEqual(E.decipherCost("ordinateur"), 600);
 });
 
 test("déchiffrer : monte S.hints de 1, retire l’Intuition, et apprend la recette au niveau 3", () => {
@@ -3207,8 +3251,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.18.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.18.0");
+test("Version 0.19.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.19.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3423,12 +3467,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.18.0");
+  assert.strictEqual(D.VERSION, "0.19.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 18, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 19, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
