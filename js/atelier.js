@@ -45,7 +45,9 @@
       const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;
       if (niveauxTip) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills>Niveaux</button><button class="btn small ghost" data-tip="tip_niveaux">Compris</button></div>';
       h += pinsHTML();
-      h += '<div class="gestes">';
+      // une seule rangée, qu’on fait glisser : le haut de l’Atelier laisse la place aux ressources
+      const nG = D.GESTE_ORDER.filter((g) => E.gesteOK(g)).length + 1, wG = ($("#views") && $("#views").clientWidth || 360) - 24;
+      h += '<div class="gestes' + (nG * 74 > wG ? " more" : "") + '">';
       let locks = 0;
       for (const g of D.GESTE_ORDER) {
         const G = D.GESTES[g];
@@ -261,7 +263,11 @@
         (6 + t * 22) + '%"></i></div></div>';
     }
     function resultHTML() {
-      const r = U.last;
+      const body = resultBody(U.last);
+      // le résultat se garde après un essai, et se réduit d’un appui
+      return body && U.last && S().stats.crafts >= 3 ? body + '<button class="btn small ghost result-x" data-resclose aria-label="Réduire le résultat">▴ Réduire</button>' : body;
+    }
+    function resultBody(r) {
       if (!r && S().stats.crafts >= 3) return ""; // déjà appris : la carte vide ne garde pas sa place (voir .result:empty)
       if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis touche le gros bouton. Le <b>thermomètre</b> dit si tu t’approches d’une recette.</p>';
       if (r.kind === "craft") {
@@ -279,7 +285,7 @@
       if (r.kind === "learn") {
         // la carte suit ce qui se passe ensuite : en route dans tes mains, fabriqué, ou ce qui manque encore
         const made = (S().made[r.id] || 0) - (r.made0 || 0), q = E.queued(r.id);
-        if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultHTML(); }
+        if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultBody(U.last); }
         const miss = q ? null : E.missingFor(r.id, 1);
         const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
         if (q) return head + '<div class="small">✋ Tes mains s’y mettent. La recette est dans tes commandes.</div></div></div>';

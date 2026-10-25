@@ -458,6 +458,7 @@
       }
     }, 60);
   }
+  document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("gestes")) U.gScroll = e.target.scrollLeft; }, true);
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
   const fresh = () => Date.now() - (U.mAt || 0) < 450;
   function setupModal() {
@@ -738,6 +739,10 @@
       else { delete el.dataset.sig; el.innerHTML = viewCosmos(); mountCosmos(); }
     }
     iconize(el);
+    if (U.tab === "atelier") { // la rangée des actions garde sa place d’un rendu à l’autre, et l’action choisie reste visible
+      const gs = $(".gestes", el);
+      if (gs) { gs.scrollLeft = U.gScroll || 0; const on = $(".geste.on", gs); if (on && (on.offsetLeft < gs.scrollLeft || on.offsetLeft + on.offsetWidth > gs.scrollLeft + gs.clientWidth)) gs.scrollLeft = Math.max(0, on.offsetLeft - 12); }
+    }
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }

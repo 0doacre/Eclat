@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.15.4";
+  D.VERSION = "0.15.5";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1076,6 +1076,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🛠️ L’Atelier est plus court : les actions tiennent sur une seule rangée qu’on fait glisser, l’établi est plus compact, et tes ressources se voient dès l’ouverture. Après un essai, le résultat se garde, et un bouton « Réduire » le range.",
     "🧱 Quand une commande ou un Grand Œuvre attend une ressource, le jeu dit laquelle, d’où elle vient, ce que tes extracteurs en produisent et le temps qu’il faudrait. Un bouton « Aller au gisement » mène à la bonne terre.",
     "🧭 Étape clé : sa piste (l’énigme et les indices déjà acquis) reste affichée à l’Atelier. Dans le Domaine, la gêne d’une terre (sans torche, sans gants…) propose la fiche de la protection que tu connais. Le bilan d’absence offre une suite utile, et le premier conseil montre le bouton « Récolter » en continu. L’Atelier se libère de ses rappels une fois appris.",
     "🌙 La première relève s’ouvre de nouveau (une erreur l’empêchait d’apparaître). Sur petit écran, la réglette des âges de l’arbre garde des cases de 44 px et défile.",

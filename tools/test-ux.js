@@ -291,6 +291,30 @@ async function run() {
   await p.waitForFunction(() => window.__eclat.E.state.cycle === 2, null, { timeout: 5000 });
   ok(await p.evaluate(() => window.__eclat.E.state.known.manche > 0 && window.__eclat.E.state.meta.forcedDone), "Première relève : le cycle 2 commence, le savoir est conservé");
   ok(!p.errors.length, "Première relève : aucune erreur après le relais " + p.errors.join(" | ")); await p.context().close();
+  // L’Atelier court (0.15.5) : les actions tiennent sur une rangée, la première rangée de ressources et le gros bouton sont dans la première vue ;
+  // sur très petit écran, une ressource touchée fait venir le petit établi, avec son bouton, sans remonter.
+  for (const [width, haut] of [[390, 844], [320, 568]]) {
+    p = await page(width, true);
+    await p.locator('#tabs [data-tab="atelier"]').click();
+    await p.evaluate(() => { const s = window.__eclat.E.state; s.flags.tip_niveaux = true; window.__eclat.U.last = null; window.__eclat.render(true); });
+    await p.waitForTimeout(300);
+    const m = await p.evaluate(() => {
+      const nav = document.querySelector("#tabs").getBoundingClientRect().top, r = (s) => { const e = document.querySelector(s); return e ? e.getBoundingClientRect() : null; };
+      const g = r(".gestes"), f = r("#forge"), t = r("#v-atelier [data-inv]");
+      return { nav, gestes: g && g.height, forge: f && f.bottom, tuile: t && t.bottom };
+    });
+    ok(m.gestes <= 90, width + " : les actions tiennent sur une rangée (" + m.gestes + " px)");
+    if (width === 390) {
+      ok(m.forge <= m.nav && m.tuile <= m.nav + 1, width + " : le gros bouton (" + Math.round(m.forge) + ") et une rangée de ressources (" + Math.round(m.tuile) + ") tiennent au-dessus des onglets (" + Math.round(m.nav) + ")");
+    } else {
+      await p.locator("#v-atelier [data-inv]").first().scrollIntoViewIfNeeded();
+      await p.locator("#v-atelier [data-inv]").first().tap();
+      await p.waitForTimeout(300);
+      const mb = await p.evaluate(() => { const e = document.querySelector("#mbench"), b = document.querySelector("#mbench [data-forge]"); if (!e || e.classList.contains("hidden") || !b) return null; const r = b.getBoundingClientRect(); return { top: r.top, h: r.height, w: r.width }; });
+      ok(mb && mb.h >= 43.9 && mb.top >= 0, width + " : une ressource touchée fait venir le petit établi et son bouton " + JSON.stringify(mb));
+    }
+    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+  }
   // Une commande qui attend une ressource : la feuille des commandes dit d’où elle vient et mène à son gisement.
   p = await page(390, true);
   await p.locator('#tabs [data-tab="atelier"]').click();
