@@ -302,8 +302,8 @@ body[data-tab="cosmos"] #views, body[data-tab="cosmos"] #v-cosmos { background: 
 /* Confort tactile : mêmes cibles en vue normale, dense et grand texte. */
 .btn, .btn.small, body.large-text .btn.small, .mini, .gis-b .mini,
 .gmiles, .pinb, .hx, .hmore, .bench-clear, .search-clear,
-.filters button, .subtabs button, [data-jt], [data-ct], .dom-more, .exp-mini,
-.chip, .icon-btn, .modal-x, .ab-main, .ab-x {
+.filters button, .subtabs button, [data-jt], [data-ct], [data-cvue], .dom-more, .exp-mini,
+.chip, .chipq, .icon-btn, .modal-x, .ab-main, .ab-x, .age-pill, .pin-make, .icon-act {
   min-height: 44px; min-width: 44px;
 }
 .mini, .gis-b .mini, .icon-btn, .modal-x { height: auto; }
@@ -322,7 +322,8 @@ button:focus-visible, [role="button"]:focus-visible, select:focus-visible, input
 .gis-b .harvest { font-size: 13px; padding: 0 10px; }
 .starter-harvest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .inv .n { font-size: 12px; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
-.inv { min-height: 104px; }
+.inv { min-height: 88px; }
+body.large-text .inv { min-height: 96px; }
 body.large-text .inv .n { font-size: 14px; }
 @media (max-width: 430px) {
   .goal-card .ghead { flex: 1 1 100%; }

@@ -26,20 +26,15 @@
       const title = ob.k === "craft" ? esc(I[ob.id].n) : esc(ob.n);
       // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
       const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
-      const sum = E.questSummary ? E.questSummary() : { rituals: [], hasReady: false };
-      const rits = sum.rituals || [];
-      const doneRits = rits.filter((r) => r.claimed).length;
-      // le premier âge d’abord : les Quêtes et le compteur d’étapes n’ont rien à dire avant
+      // le premier âge d’abord : le compteur d’étapes n’a rien à dire avant
       const tard = st.age > 0 || md > 0;
       let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
-        (tard || sum.hasReady ? '<button class="gmiles" data-open-quests title="Ouvrir les quêtes">📜 Quêtes ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + "</button>" : "") +
-        (ml.length && tard ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") +
-        (tard && ob.k === "craft" ? '<button class="gmiles" data-arbre-obj title="Voir ton objectif dans l’arbre">🌳 Dans l’arbre</button>' : "") + "</div>";
+        (tard && ob.k === "craft" ? '<button class="gmiles" data-arbre-obj title="Voir ton objectif dans l’arbre">🌳 Arbre</button>' : "") + "</div>";
       if (ml.length && tard) {
         const pct = Math.round((md / ml.length) * 100);
-        h += '<div class="gprog-row" data-miles title="Progression de cet âge : ' + md + '/' + ml.length + ' étapes faites">' +
-          '<div class="gprog-track"><i style="width:' + pct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></div>' +
-          '<span class="gprog-txt">' + (md === ml.length ? '★ Âge accompli' : esc(D.AGES[st.age].n) + ' · ' + md + '/' + ml.length + ' étapes') + '</span></div>';
+        h += '<button type="button" class="gprog-row" data-miles title="Les étapes de cet âge : ' + md + '/' + ml.length + ' faites">' +
+          '<span class="gprog-track"><i style="width:' + pct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></span>' +
+          '<span class="gprog-txt">🏁 ' + (md === ml.length ? '★ Âge accompli' : esc(D.AGES[st.age].n) + ' · ' + md + '/' + ml.length + ' étapes') + '</span></button>';
       }
       h += nextAction(g);
       if (!open) return h + "</div>";
