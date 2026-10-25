@@ -221,4 +221,25 @@ test("la mise en page n’a pas changé depuis la 0.13.2 (empreinte des position
   }
 });
 
+test("voisinage : ingrédients au-dessus, usages en dessous, sans relations indirectes", () => {
+  const E = avancee(), g = Arb.graphe(E, D);
+  for (const n of g.noeuds) {
+    const v = Arb.voisinage(g, n.cle);
+    assert.strictEqual(v.centre, n);
+    assert.deepStrictEqual(v.amont.map((x) => x.cle).sort(), [...new Set(g.traits.filter((t) => t.a === n.cle).map((t) => t.de))].sort());
+    assert.deepStrictEqual(v.aval.map((x) => x.cle).sort(), [...new Set(g.traits.filter((t) => t.de === n.cle).map((t) => t.a))].sort());
+  }
+  assert.strictEqual(Arb.voisinage(g, "absent"), null);
+});
+test("voisinage : une piste garde son anonymat, même dans une partie avancée", () => {
+  const g = Arb.graphe(avancee(), D), ns = g.noeuds.filter((n) => n.etat === "fantome");
+  assert.ok(ns.length);
+  for (const n of ns) {
+    const v = Arb.voisinage(g, n.cle);
+    assert.strictEqual(v.centre.id, undefined);
+    assert.strictEqual(v.centre.n, undefined);
+    assert.ok(v.amont.every((p) => g.noeuds.includes(p)));
+    assert.ok(v.aval.every((p) => g.noeuds.includes(p)));
+  }
+});
 console.log(passed + " tests de l’arbre réussis" + (process.exitCode ? ", des échecs." : "."));
