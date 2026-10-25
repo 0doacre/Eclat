@@ -3728,6 +3728,25 @@ test("Parler RPG : arbre de dialogue interactif à 3 choix", () => {
   // E.troqueurFin() permet de revenir au menu
   assert.strictEqual(E.troqueurFin().ok, true);
   assert.strictEqual(E.troqueurDernier(), null);
+
+  // Sauvegarde pendant que le joueur réfléchit (attente de choix) :
+  const E3 = trocOuvert(() => 0);
+  E3.troqueurParle("comptoir");
+  const E4 = createEngine({ now: () => T, rand: () => 0 });
+  E4.load(E3.serialize());
+  assert.strictEqual(E4.troqueurDernier().rep, null);
+  const repE4 = E4.troqueurChoix("c");
+  assert.strictEqual(repE4.ok, true);
+  assert.strictEqual(E4.troqueurDernier().rep, "c");
+
+  // Choix dans une scène de refus après sauvegarde :
+  for (let i = 0; i < 10; i++) E4.troqueurParle("avant");
+  assert.ok(E4.troqueurDernier().vide);
+  const E5 = createEngine({ now: () => T, rand: () => 0 });
+  E5.load(E4.serialize());
+  const repE5 = E5.troqueurChoix("a");
+  assert.strictEqual(repE5.ok, true);
+  assert.strictEqual(E5.troqueurDernier().rep, "a");
 });
 
 console.log("Les fouilles : expéditions longues");

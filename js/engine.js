@@ -3758,6 +3758,16 @@
       if ((l.rang || 0) > E.troqueurRep().cur.lvl) return false;
       return !l.cond || cond(l.cond);
     }
+    function trocSceneChoix(d) {
+      if (!d) return null;
+      const T = trocData();
+      if (d.id) {
+        const l = (T.lignes || []).find((x) => x.id === d.id);
+        return (l && l.choix) || d.choix || null;
+      }
+      const RS = T.refusScenes && T.refusScenes[d.th];
+      return (RS && RS.choix) || d.choix || null;
+    }
     E.troqueurThemes = function () {
       const T = trocData();
       return (T.themes || []).map((th) => ({ id: th.id, n: th.n, dispo: (T.lignes || []).filter((l) => l.th === th.id && trocDispo(l)).length }));
@@ -3769,10 +3779,12 @@
 
       // Choix de réplique dans la scène en cours :
       if (choixKey) {
-        if (!st.dernier || st.dernier.th !== th || !st.dernier.choix || st.dernier.rep) {
+        if (!st.dernier || st.dernier.th !== th || st.dernier.rep) {
           return { ok: false, why: "choix" };
         }
-        const c = st.dernier.choix.find((x) => x.k === choixKey);
+        const choix = trocSceneChoix(st.dernier);
+        if (!choix || !choix.length) return { ok: false, why: "choix" };
+        const c = choix.find((x) => x.k === choixKey);
         if (!c) return { ok: false, why: "choix" };
         st.dernier.rep = choixKey;
         st.dernier.q = c.q;
@@ -3805,8 +3817,8 @@
         st.refus = i + 1;
         const th0 = (T.themes || []).find((x) => x.id === th);
         const q = (th0 && th0.q) || "";
-        const t = R.length ? interpolate(R[i % R.length]) : "";
         const RS = T.refusScenes && T.refusScenes[th];
+        const t = R.length ? interpolate(R[i % R.length]) : "";
         st.dernier = {
           id: null,
           th,
@@ -3825,7 +3837,9 @@
     };
     E.troqueurChoix = function (k) {
       const st = trocState();
-      if (!st || !st.dernier || !st.dernier.choix || st.dernier.rep) return { ok: false };
+      if (!st || !st.dernier || st.dernier.rep) return { ok: false };
+      const choix = trocSceneChoix(st.dernier);
+      if (!choix || !choix.length) return { ok: false };
       return E.troqueurParle(st.dernier.th, k);
     };
     E.troqueurFin = function () {
@@ -4729,7 +4743,8 @@
             rep: typeof d.rep === "string" ? d.rep : null,
             q: typeof d.q === "string" ? d.q : "",
             t: typeof d.t === "string" ? d.t : "",
-            stage: typeof d.stage === "string" ? d.stage : ""
+            stage: typeof d.stage === "string" ? d.stage : "",
+            choix: Array.isArray(d.choix) ? d.choix : null
           } : null,
           refus: Math.max(0, Math.floor(ok ? Number(t.refus) : 0) || 0)
         };
