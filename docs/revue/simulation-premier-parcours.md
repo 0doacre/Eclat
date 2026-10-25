@@ -22,9 +22,9 @@ Le nombre d’essais vient du moteur (thermomètre, souvenirs du guide) ; seule 
 
 | Hypothèse | Relève à (min) | Essais | Réflexion (min) | Recettes connues |
 |---|---:|---:|---:|---:|
-| énigme résolue d’emblée | 5.8 [5.5–5.8] | 8 [8–8] | 2.7 [2.7–2.7] | 10 [10–10] |
-| thermomètre et indices | 12.3 [9.9–13.1] | 69 [51–77] | 9.2 [6.8–10.3] | 11 [11–12] |
-| au hasard | 12.6 [9.6–15.4] | 73 [49–92] | 9.7 [6.5–12.3] | 10 [10–11] |
+| énigme résolue d’emblée | 5.8 [5.5–5.8] | 8 [8–8] | 2.7 [2.7–2.7] | 8 [8–8] |
+| thermomètre et indices | 12.3 [9.9–13.1] | 69 [51–77] | 9.2 [6.8–10.3] | 9 [9–10] |
+| au hasard | 12.6 [9.6–15.4] | 73 [49–92] | 9.7 [6.5–12.3] | 8 [8–9] |
 
 Le cycle 1 ne dépend pas de l’achat : c’est avant la relève.
 
@@ -102,10 +102,11 @@ Par défaut le joueur simulé ne suit que le guide et n’utilise que les recett
 
 ## Comment lire
 
+- **Depuis la 0.17 (un extracteur par ressource)**, le joueur simulé choisit lui-même quel bâtiment construire pour chaque ressource. Ses temps ont bougé de quelques pour cent (la Rivière en énigme : environ 10 % plus tard) : c’est surtout son choix de bâtiments, pas un prix qui a changé, car chaque niveau garde la recette et le taux de l’ancien extracteur.
 - **Mains sûres** (les fabrications à la main : 20 % plus rapides et 10 % de chances d’une pièce en plus par niveau) ne change presque rien avant la Rivière, même avec un bonus de 90 % (mesuré une fois : 34,7 contre 30,8 min). Les murs du début se règlent à la récolte, pas aux pièces fabriquées. Mains calleuses (récolte ×2) est le seul achat qui compte au premier relève.
 - « — » : la Rivière n’est pas franchie dans la durée simulée ; « (6/9) » : seules 6 graines sur 9 y arrivent.
 - Regarder d’abord l’**écart entre les hypothèses** : si les trois donnent à peu près la même durée, la découverte ne fait pas la différence ; sinon, c’est ce qu’il faut observer chez de vrais joueurs.
 - Regarder ensuite l’**écart entre les achats** : il dit si le premier choix de Mémoire change vraiment le cycle 2, et ce que coûte de ne rien acheter.
 - Pour les seuils de rythme : voir seulement après des essais avec de vrais joueurs ; ce rapport ne fixe aucune cible.
 
-_Mesuré au commit f68249f._
+_Mesuré au commit 047ba2f._
