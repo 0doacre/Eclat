@@ -1511,3 +1511,17 @@ h2 + .stamp { margin: -4px 0 8px; }
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); }
 body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 @media (prefers-reduced-data: reduce) { .dom-terre.a-decor::before { display: none; } }
+
+/* Le Carnet prépare le lot sélectionné ; l’Arbre garde les relations entre découvertes. */
+.carnet-lot { padding: 8px 0; border-block: 1px solid var(--line2); margin: 8px 0; }
+.lot-titre { margin: 0 0 6px; font-size: 14px; }
+.lot-cout, .lot-manques { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.lot-manques { margin-top: 6px; }
+.carnet-lot p.tiny { margin: 5px 0 0; }
+.carnet-situer { margin-top: 8px; }
+.carnet-lot .ing { max-width: 100%; margin-right: 0; white-space: normal; overflow-wrap: anywhere; }
+.carnet-acts { flex-wrap: wrap; }
+@media (max-width: 359px) {
+  .qtybar { gap: 4px; }
+  .qtybar .tiny { display: none; }
+}

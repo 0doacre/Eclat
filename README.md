@@ -1,6 +1,6 @@
 # ✦ Éclat — du silex aux étoiles
 
-Un jeu de craft pour navigateur, pensé d’abord pour le smartphone. Tu t’éveilles sans mémoire à l’orée d’une forêt ; tes mains, elles, savent quoi faire. De ton premier éclat de silex jusqu’à une sphère de Dyson autour du Soleil, tu traverses treize âges de la technique. En chemin, tu découvres pourquoi tu es seul, ce que cache l’étoile rouge qui pulse dans le ciel, et ce que la voix qui te guide ne te dit pas.
+Un jeu de craft pour navigateur, pensé d’abord pour le smartphone. Tu t’éveilles sans mémoire à l’orée d’une forêt ; tes mains, elles, savent quoi faire. De ton premier éclat de silex jusqu’à une sphère de Dyson autour du Soleil, tu traverses quinze âges de la technique. En chemin, tu découvres pourquoi tu es seul, ce que cache l’étoile rouge qui pulse dans le ciel, et ce que la voix qui te guide ne te dit pas.
 
 Le jeu fonctionne sans serveur et sans dépendance. Il est installable comme une application (PWA), fonctionne hors ligne et sauvegarde automatiquement sur l’appareil. Des comptes joueurs facultatifs permettent de retrouver sa partie sur un autre appareil (voir plus bas).
 
@@ -72,9 +72,11 @@ Un mot par idée, partout dans le jeu : voir `docs/LEXIQUE.md`. Les messages de 
 - **Fiches** : toucher un objet ouvre sa fiche (recette, stock, station, ce qu’il sert à fabriquer) ; tout y est cliquable pour passer de recette en recette, avec un retour arrière.
 - **Matières** : recherche, tri (âge, nom, quantité, dernières trouvées), filtres (dont « utiles pour ce geste ») et favorites à l’Atelier.
 
-### Les treize âges
+### Les quinze âges
 
-Bois · Os · Pierre · Cuivre · Bronze · Fer · Acier · Électricité · Silicium · Polymères · Composites · Spatial · Stellaire.
+Bois · Os · Pierre · Cuivre · Bronze · Fer · Acier · Vapeur · Électricité · Atome · Silicium · Polymères · Composites · Spatial · Stellaire.
+
+La Vapeur fait de l’eau de la Rivière une ressource de chantier : pompe, conduites, chaudière et condenseur. Aux Polymères, le pétrole se raffine en naphta ; le soufre des Collines entre dans le caoutchouc. Joints et tuyaux souples permettent ensuite de refroidir les machines. Le premier lot de densité est décrit dans `docs/revue/densite-ressources.md`.
 
 Chaque âge change la couleur de l’interface et ouvre de nouvelles terres : la Plaine, la Rivière, les Collines, les Profondeurs, le Désert de Verre, le Gisement Noir, les Pics Fracturés, l’orbite, la Lune, Mercure.
 

@@ -617,12 +617,12 @@
 
   /* ------------------------------------------------------------ thème */
   /* le carnet change d’habit avec l’époque (css/theme.css) ; la page tourne quand elle change */
-  const EPOCH = ["pigments", "pigments", "pigments", "papyrus", "papyrus", "enluminure", "registre", "registre", "quadrille", "quadrille", "quadrille", "bord", "bord"];
+  const EPOCH = ["pigments", "pigments", "pigments", "papyrus", "papyrus", "enluminure", "registre", "registre", "registre", "quadrille", "quadrille", "quadrille", "quadrille", "bord", "bord"];
   const ROMAN = (n) => [["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1]].reduce((o, [r, v]) => { while (n >= v) { o += r; n -= v; } return o; }, "");
   function applyAge() {
     const a = S().age, ag = D.AGES[a], ep = EPOCH[a] || "pigments", body = document.body;
     document.documentElement.style.setProperty("--age", ag.c);
-    const ok = ep + (a === 12 ? ":stellaire" : "");
+    const ok = ep + (a === D.AGES.length - 1 ? ":stellaire" : "");
     if (body.dataset.orn !== ok) {
       const first = !body.dataset.ep;
       body.dataset.ep = ep;
@@ -667,6 +667,7 @@
     if (!tabAvailable(t)) t = "domaine";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
     const was = U.tab;
+    if (t === 'arbre' && was !== 'arbre' && !U.arbreVoirId) { U.arbreSel = null; U.arbreHistorique = []; }
     const views = $("#views");
     U.viewScroll = U.viewScroll || {};
     if (was !== t) U.viewScroll[was] = views.scrollTop;
@@ -921,6 +922,7 @@
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
     }
+    if (U.tab === 'carnet') Atl.carnetLive();
   }
 
   /* ------------------------------------------------------------ ambiance */

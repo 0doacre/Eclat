@@ -310,7 +310,7 @@
     { root: 110.0, mode: "aeolian", prog: [0, 3, 4, 0], beat: 0.46, lead: "synth", pad: "string", perc: "tick", dens: 0.62 },
     { root: 174.61, mode: "lydian", prog: [0, 1, 0, 4], beat: 0.95, lead: "glass", pad: "space", perc: null, dens: 0.3 }
   ];
-  const palette = (age) => (age <= 2 ? 0 : age <= 5 ? 1 : age <= 7 ? 2 : age <= 10 ? 3 : 4);
+  const palette = (age) => (age <= 2 ? 0 : age <= 5 ? 1 : age <= 8 ? 2 : age <= 12 ? 3 : 4);
   let musicTimer = null, nextT = 0, beat = 0, barsLeft = 0, resting = 0, motif = null, melPos = 2, barOn = false;
   const semi = (f, s) => f * Math.pow(2, s / 12);
   function noteOf(P, deg, oct) {
@@ -492,7 +492,7 @@
    * vapeur, usine, laboratoire). Il entre et sort en fondu, et ne change de geste qu’après un moment de calme. */
   const WORK_GESTE = { assembler: "bois", tresser: "fibre", tailler: "pierre", stratifier: "pierre", chauffer: "feu", allier: "feu", tremper: "feu",
     marteler: "enclume", usiner: "machine", electriser: "machine", graver: "machine", synthetiser: "machine", transmuter: "cristal", accorder: "cristal" };
-  const workRoom = (age) => (age <= 1 ? "bois" : age <= 4 ? "forge" : age <= 7 ? "vapeur" : age <= 10 ? "usine" : "labo");
+  const workRoom = (age) => (age <= 1 ? "bois" : age <= 4 ? "forge" : age <= 8 ? "vapeur" : age <= 12 ? "usine" : "labo");
   const ROOM = {
     bois: (o) => [bed({ ft: "bandpass", f: 900, q: 0.5, v: 0.025, rate: 0.1, out: o })],
     forge: (o) => [bed({ f: 260, v: 0.07, rate: 0.15, out: o }), bed({ ft: "highpass", f: 3500, v: 0.01, q: 0.5, out: o })],

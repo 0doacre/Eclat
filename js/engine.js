@@ -11,7 +11,12 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 8;
+  const SAVE_VERSION = 11;
+  // Les commandes préparées avant la 0.21 terminent au prix de leur recette d’origine.
+  const INPUTS_020 = {
+    moteur_vapeur: { chaudiere: 1, piston: 2, engrenage_acier: 4 },
+    plastique: { petrole: 3 }, resine: { petrole: 2, bois: 6 }, caoutchouc: { petrole: 2, charbon: 1 }
+  };
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -44,6 +49,13 @@
     const list = z.res.slice();
     EXTS.forEach((id) => { if (extZones(id).includes(z.id)) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
     ZONE_DEPS[z.id] = list.map((r) => ({ res: r, hand: z.res.includes(r) }));
+  });
+  /* une ressource qui ne se récolte qu’avec un extracteur (l’uranium, la galène) : sa terre est celle de son extracteur, et le jeu
+   * sait lequel la produit (le moins avancé) pour guider vers lui */
+  const HAND = {}, EXT_OF = {};
+  D.ZONES.forEach((z) => z.res.forEach((r) => (HAND[r] = true)));
+  EXTS.slice().sort((a, b) => (D.ITEMS[a].a || 0) - (D.ITEMS[b].a || 0)).forEach((id) => {
+    for (const r in D.ITEMS[id].p) { if (!EXT_OF[r]) EXT_OF[r] = id; if (!RES_ZONE[r]) RES_ZONE[r] = extZones(id)[0]; }
   });
   const extKey = (z, res) => z + ":" + res;
   /* avant la 0.17, un extracteur récoltait plusieurs ressources : le niveau qui descend de lui (champ de) et récolte celle-ci */
@@ -186,6 +198,44 @@
       // v8 : un extracteur par ressource (voir D.LIGNES). Le passage des exemplaires posés sur une autre ressource que celle
       // de leur objet vers le niveau frère se fait au chargement (checkDom), pour toutes les vieilles sauvegardes.
       o.v = 8;
+    }
+    if (from < 9) {
+      // v9 : un âge de plus, la Vapeur, entre l’Acier (6) et l’Électricité. Tout âge d’avant 7 reste, les autres avancent d’un rang.
+      // Qui a dépassé l’Acier a dépassé la Vapeur : son âge est marqué accompli, sans récompense.
+      const apres = (a) => (Number(a) >= 7 ? Number(a) + 1 : Number(a));
+      if (typeof o.age === "number") o.age = apres(o.age);
+      o.flags = o.flags || {};
+      if (o.flags.ages && typeof o.flags.ages === "object") {
+        const ages = {};
+        for (const k in o.flags.ages) ages[apres(k)] = o.flags.ages[k];
+        if (ages[8] || o.age >= 8) ages[7] = 1;
+        o.flags.ages = ages;
+      }
+      const st = o.meta && o.meta.stamps;
+      if (st && typeof st === "object") for (const k in st) if (Array.isArray(st[k]) && st[k].length > 2) st[k][2] = apres(st[k][2]);
+      o.v = 9;
+    }
+    if (from < 10) {
+      // v10 : un âge de plus, l’Atome, entre l’Électricité (8) et le Silicium. Les âges d’avant 9 restent, les autres avancent d’un rang.
+      const apres = (a) => (Number(a) >= 9 ? Number(a) + 1 : Number(a));
+      if (typeof o.age === "number") o.age = apres(o.age);
+      o.flags = o.flags || {};
+      if (o.flags.ages && typeof o.flags.ages === "object") {
+        const ages = {};
+        for (const k in o.flags.ages) ages[apres(k)] = o.flags.ages[k];
+        if (ages[10] || o.age >= 10) ages[9] = 1;
+        o.flags.ages = ages;
+      }
+      const st = o.meta && o.meta.stamps;
+      if (st && typeof st === "object") for (const k in st) if (Array.isArray(st[k]) && st[k].length > 2) st[k][2] = apres(st[k][2]);
+      o.v = 10;
+    }
+    if (from < 11) {
+      const q = o.hand && o.hand.q;
+      if (Array.isArray(q)) q.forEach((j) => {
+        if (j && Array.isArray(j.s) && j.s.some((s) => Array.isArray(s) && INPUTS_020[s[0]])) j.recettes020 = true;
+      });
+      o.v = 11;
     }
     return o;
   }
@@ -1281,11 +1331,14 @@
     }
     /* combien d’unités de l’étape (j, sIdx) peuvent être alimentées par l’établi (après
      * ce qui est déjà réservé par d’autres étapes en cours sur j) */
+    function jobInputs(j, rec) {
+      return (j.recettes020 && INPUTS_020[rec]) || item(rec).r[1];
+    }
     function affordableUnits(j, sIdx, reserved) {
       const rec = j.s[sIdx][0], it = item(rec);
       const b = blocker(rec);
       if (b && b.why !== "owned") return 0;
-      const cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+      const cost = isScaled(it) ? costFor(rec, count(rec)) : jobInputs(j, rec);
       let maxU = j.s[sIdx][1] - j.done[sIdx];
       if (maxU <= 0) return 0;
       if (isScaled(it) || isUnique(it)) maxU = Math.min(maxU, 1);
@@ -1320,7 +1373,7 @@
             w.job = j; w.sIdx = sIdx; w.rec = rec;
             idle[w.m] = false;
             stepMachs[jIdx][sIdx]++;
-            const cost = item(rec).r[1];
+            const cost = jobInputs(j, rec);
             for (const i in cost) resv[i] = (resv[i] || 0) + cost[i];
             return;
           }
@@ -1341,7 +1394,7 @@
             if (aff < 1) continue;
             hWork = { job: j, sIdx, rec };
             if (stepMachs[jIdx][sIdx] === 0) {
-              const it = item(rec), cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+              const it = item(rec), cost = isScaled(it) ? costFor(rec, count(rec)) : jobInputs(j, rec);
               for (const i in cost) resv[i] = (resv[i] || 0) + cost[i];
             }
             break;
@@ -1384,7 +1437,7 @@
       const miss = {};
       for (const i in p.missing) if (p.missing[i] > 0) miss[i] = p.missing[i];
       const last = S.hand.q[S.hand.q.length - 1];
-      if (p.steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (p.steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         last.miss = last.miss || {};
@@ -1438,7 +1491,7 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         assignWorkers();
@@ -1585,10 +1638,11 @@
             const it = item(rec);
             const one = isScaled(it) || isUnique(it);
             let k = Math.min(Math.floor(j.sp[sIdx] + 1e-9), j.s[sIdx][1] - j.done[sIdx], one ? 1 : Infinity);
-            const unit = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+            const unit = isScaled(it) ? costFor(rec, count(rec)) : jobInputs(j, rec);
             for (const i in unit) k = Math.min(k, Math.floor(((j.b[i] || 0) + (S.inv[i] || 0) + 1e-9) / unit[i]));
             j.sp[sIdx] = Math.min(1, Math.max(0, j.sp[sIdx] - Math.max(k, 1)));
-            if (!(k >= 1) || !take(isScaled(it) ? unit : totalCost(rec, k), j.b)) { j.w = 1; continue; }
+            const cost = isScaled(it) ? unit : Object.fromEntries(Object.entries(unit).map(([id, n]) => [id, n * k]));
+            if (!(k >= 1) || !take(cost, j.b)) { j.w = 1; continue; }
             const last = sIdx === j.s.length - 1;
             // les pièces payées par l’avance des machines sont à elles, le reste aux mains
             const km = mCnt > 0 ? (hOn ? Math.min(k, Math.floor(j.mAcc[sIdx] + 1e-9)) : k) : 0, kh = k - km;
@@ -1815,7 +1869,11 @@
         const it = item(id);
         if (!it) return null;
         const zid = RES_ZONE[id];
-        if (zid && zoneOpen(zid)) return null; // se récolte
+        if (zid && zoneOpen(zid)) {
+          // une ressource que seul un extracteur récolte : il faut d’abord celui-là
+          if (!HAND[id] && EXT_OF[id] && !(count(EXT_OF[id]) > 0)) return walk(EXT_OF[id], d + 1) || { id: EXT_OF[id], why: "known" };
+          return null; // se récolte
+        }
         if (!it.r) {
           // matière première d’une zone fermée : il faut la clé de la zone
           const req = zid && ZONES[zid].req;
@@ -3759,13 +3817,15 @@
         "Chapitre IV · La Flamme et le cuivre",
         "Chapitre V · L’Alliage du bronze",
         "Chapitre VI · Le Marteau et le fer",
-        "Chapitre VII · L’Acier et la vapeur",
-        "Chapitre VIII · L’Étincelle captive",
-        "Chapitre IX · La Pensée du silicium",
-        "Chapitre X · L’Huile noire",
-        "Chapitre XI · L’Étoffe des composites",
-        "Chapitre XII · L’Envol spatial",
-        "Chapitre XIII · La Lumière stellaire"
+        "Chapitre VII · L’Acier",
+        "Chapitre VIII · La Vapeur au travail",
+        "Chapitre IX · L’Étincelle captive",
+        "Chapitre X · Le Cœur de l’atome",
+        "Chapitre XI · La Pensée du silicium",
+        "Chapitre XII · L’Huile noire",
+        "Chapitre XIII · L’Étoffe des composites",
+        "Chapitre XIV · L’Envol spatial",
+        "Chapitre XV · La Lumière stellaire"
       ];
       const chapter = chapterTitles[S.age] || ("Chapitre " + (S.age + 1));
       return {
@@ -4406,6 +4466,7 @@
         if (!ok || keep.length >= D.HAND.max) { refund(j && j.b); return; }
         for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
         j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
+        j.recettes020 = j.recettes020 === true && j.s.some((s) => !!INPUTS_020[s[0]]);
         if (Array.isArray(j.done) && j.done.length === j.s.length) {
           j.done = j.done.map((d, idx) => Math.max(0, Math.min(j.s[idx][1], Math.floor(Number(d)) || 0)));
         } else {

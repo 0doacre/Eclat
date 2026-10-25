@@ -27,8 +27,6 @@ button.arb-card { cursor: pointer; }
 .arb-card-corps { display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; }
 .arb-l { display: block; font: 650 14px/1.35 var(--sans); overflow-wrap: anywhere; }
 .arb-status { font: 500 12px/1.35 var(--sans); color: var(--muted); overflow-wrap: anywhere; }
-.arb-card.pret { border-color: #2f9e5b; }
-.arb-card.pret .arb-status::before { content: "● "; color: #2f9e5b; }
 .arb-card.fantome { border-style: dashed; }
 .arb-inconnu { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 1px dashed var(--line2); border-radius: 8px; font-weight: 700; }
 .arb-objectif { font: 700 12px/1.3 var(--sans); color: var(--text); }
@@ -41,7 +39,13 @@ button.arb-card { cursor: pointer; }
 .arb-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .arb-actions .btn { min-height: 44px; }
 .arb-selection .small { margin: 8px 0 0; }
-.arb-pistes, .arb-filtre { padding: 10px; border-radius: 8px; background: var(--panel2); }
+.arb-pistes { padding: 10px; border-radius: 8px; background: var(--panel2); }
+.arb-progression { padding: 12px; margin-bottom: 20px; border: 1px solid var(--acc); border-radius: 12px; background: var(--panel2); }
+.arb-progression h3 { margin: 0 0 8px; font-size: 17px; }
+.arb-progression h3:not(:first-child) { margin-top: 16px; }
+.arb-progression progress { width: 100%; accent-color: var(--acc); }
+.arb-progression > .arb-card { margin-top: 8px; }
+.arb-parcours-titre { font-size: 17px; }
 .arb-etape > .btn { margin-top: 10px; }
 .arb-chercher { flex: 0 0 auto; max-height: 45%; overflow-y: auto; overflow-x: hidden; padding: 10px 12px; box-sizing: border-box; border-bottom: 1px solid var(--line2); background: var(--panel); }
 .arb-chercher[hidden] { display: none; }

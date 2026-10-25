@@ -224,15 +224,12 @@ async function run() {
   }, D.AGES.map((a) => a.c));
   ok(!faibles.length, "Contrastes : textes sous 4,5:1 " + JSON.stringify(faibles.slice(0, 6)));
   ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
-  // Retrouver dans l’arbre : la recherche mène au nœud, et « prêtes » montre ce qu’on peut fabriquer (sans jamais nommer un fantôme).
+  // L’Arbre retrouve une découverte et passe au Carnet pour sa fabrication.
   p = await page(390, true);
   await p.locator('#tabs [data-tab="arbre"]').click();
   await p.waitForTimeout(500);
   await p.locator('[data-arb="ensemble"]').click();
-  ok(await p.evaluate(() => document.querySelectorAll(".arb-card.pret").length > 0 && document.querySelectorAll(".arb-card.pret").length < document.querySelectorAll(".arb-card.allume").length), "Arbre : des recettes prêtes sont marquées, pas toutes");
-  await p.locator('[data-arb="prets"]').click(); await p.waitForTimeout(500);
-  ok(await p.evaluate(() => document.querySelectorAll(".arb-card").length > 0 && [...document.querySelectorAll("#arbre .arb-card")].every(c => c.classList.contains("pret"))), "Arbre : Fabricables ne montre que les recettes disponibles");
-  await p.locator('[data-arb="prets"]').click();
+  ok(await p.evaluate(() => !document.querySelector('[data-arb="prets"]') && !document.querySelector('#arbre [data-cr]') && !!document.querySelector('.arb-progression progress')), "Arbre : progression sans commandes ni filtre de production");
   await p.locator('[data-arb="chercher"]').click();
   await p.locator("#arbq").fill("bobine");
   ok(await p.evaluate(() => [...document.querySelectorAll("#arbres button")].map((b) => b.dataset.arbsel).join() === "bobine"), "Arbre : la recherche trouve la recette connue");
@@ -253,11 +250,59 @@ async function run() {
   ok(await p.locator('[aria-labelledby="arb-usages"] .arb-card').count() === nbUsages, 'Arbre : tous les usages connus restent accessibles');
   await p.evaluate(() => { const b=document.createElement('button'); b.dataset.arbreObj=''; document.querySelector('#views').appendChild(b);b.click(); });
   ok(await p.evaluate(() => { const n=window.__eclat.U.arbreG.noeuds.find(n=>n.objectif);return !!n&&document.querySelector('.arb-card.sel').dataset.arbn===n.cle; }), 'Objectif → arbre : la bonne carte est sélectionnée');
-  await p.locator('[data-arb="prets"]').click();
-  await p.evaluate(() => { const s=window.__eclat.E.state; for(const x of Object.values(s.dom.ext))x.on=false; s.act=null; s.inv={}; });
-  await p.waitForFunction(() => !document.querySelector('#arbre .arb-card'),null,{timeout:4000});
-  ok((await p.locator('#arbre').innerText()).includes('Aucune recette fabricable'), 'Arbre : le filtre suit une Réserve qui se vide');
+  await p.locator('[data-arb="chercher"]').click(); await p.locator('#arbq').fill('manche'); await p.locator('#arbres [data-arbsel="manche"]').click();
+  await p.locator('[data-carnet-rec="manche"]').click();
+  ok(await p.evaluate(() => window.__eclat.U.tab==='carnet' && !!document.querySelector('[data-rec="manche"]')), 'Arbre → Carnet : la recette apprise est retrouvée');
+  await p.locator('[data-situer="manche"]').click();
+  ok(await p.evaluate(() => window.__eclat.U.tab==='arbre' && document.querySelector('.sel').dataset.arbn==='manche'), 'Carnet → Arbre : la recette est située dans sa branche');
   ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+  // Les rôles : l’Arbre situe, le Carnet mémorise et prépare les lots.
+  for (const [width, large] of [[320, false], [320, true], [390, false], [390, true]]) {
+    p = await page(width, true, large);
+    await p.evaluate(() => { const s=window.__eclat.E.state; s.cycle=2; s.flags.tip_carnet=true; for(const x of Object.values(s.dom.ext))x.on=false; s.act=null; s.hand.q=[]; });
+    await p.locator('#tabs [data-tab="arbre"]').click();
+    ok(await p.locator('.arb-progression').count()===1 && await p.locator('.arb-selection').count()===0,width+'/'+large+' : ouverture sur la progression');
+    ok(await p.locator('[data-arb="prets"]').count()===0 && await p.locator('#arbre [data-cr]').count()===0,width+' : aucune production dans l’Arbre');
+    await p.locator('#tabs [data-tab="carnet"]').click();
+    ok(await p.locator('#clist .unknown').count()===0,width+' : recettes apprises par défaut');
+    await p.locator('[data-cf="unk"]').click();
+    ok(await p.locator('#clist .unknown').count()>0 && await p.locator('.qtybar').count()===0,width+' : indices conservés séparément');
+    await p.locator('[data-cf="tout"]').click();await p.locator('#cq').fill('manche');
+    await p.evaluate(() => { window.__eclat.E.state.inv.bois=300; });
+    await p.locator('[data-qty="10"]').click();
+    let lot=p.locator('[data-carnet-lot="manche"]');
+    ok(await lot.locator('[data-need="bois"]').getAttribute('data-q')==='30' && (await lot.innerText()).includes('10 pièces'),width+' : coût et rendement du lot');
+    ok(await p.evaluate(()=>{const v=document.getElementById('views');return document.documentElement.scrollWidth<=innerWidth&&v.scrollWidth===v.clientWidth&&v.scrollLeft===0;}),width+' : le lot tient dans la largeur sans déplacement latéral');
+    const made=await p.evaluate(()=>window.__eclat.E.state.made.manche||0);
+    await p.locator('[data-cr="manche"][data-n="10"]').click();
+    await p.waitForFunction(n=>window.__eclat.E.state.made.manche>=n+10,made);
+    ok(await p.evaluate(()=>window.__eclat.E.state.inv.bois===270),width+' : la commande dépense le coût annoncé');
+    await p.locator('[data-qty="100"]').click();await p.locator('[data-situer="manche"]').click();
+    ok(await p.locator('.arb-selection .lot-cout').count()===0 && await p.locator('.arb-selection [data-need]').count()===0,width+' : les dosages restent dans le Carnet');
+    await p.locator('[data-carnet-rec="manche"]').click();
+    ok(await p.evaluate(()=>window.__eclat.E.state.flags.carnetQty===100 && document.querySelector('.chipq.on').dataset.qty==='100'),width+' : quantité conservée entre les deux vues');
+    await p.locator('#cq').fill('fil de cuivre');await p.locator('[data-qty="10"]').click();
+    ok((await p.locator('[data-carnet-lot="fil_cuivre"]').innerText()).includes('30 pièces'),width+' : rendement de trois pièces par fabrication');
+    await p.locator('#cq').fill('manche');await p.evaluate(()=>{window.__eclat.E.state.inv.bois=24;});await p.locator('[data-qty="max"]').click();
+    await p.waitForFunction(()=>document.querySelector('[data-carnet-lot="manche"]').textContent.includes('8 pièces'));
+    await p.evaluate(()=>{window.__eclat.E.state.inv.bois=15;});
+    await p.waitForFunction(()=>document.querySelector('[data-carnet-lot="manche"]').textContent.includes('5 pièces'));
+    ok(true,width+' : Max se met à jour avec la Réserve');
+    await p.evaluate(()=>{window.__eclat.E.state.inv.bois=0;});
+    await p.waitForFunction(()=>document.querySelector('[data-carnet-lot="manche"]').textContent.includes('aucun lot disponible'));
+    const commandes = await p.evaluate(()=>window.__eclat.E.state.hand.q.length);
+    await p.locator('[data-cr="manche"][data-n="max"]').click();
+    ok(await p.evaluate(n=>window.__eclat.E.state.hand.q.length===n,commandes),width+' : Max vide ne lance aucune commande');
+    await p.locator('[data-qty="10"]').click();
+    if (process.env.UX_SHOTS) { await p.waitForTimeout(600); await shot(p,'roles-carnet-'+width+'-'+large); }
+    await p.evaluate(()=>{const {E,render,U}=window.__eclat; E.state.age=0;E.state.known.moteur_fusee=true;U.q='moteur-fusée';U.carnetFilter='tout';render(true);});
+    ok(await p.locator('[data-rec="moteur_fusee"]').count()===1 && await p.locator('[data-rec="moteur_fusee"] [data-cr]').count()===0,width+' : mémoire conservée sans contourner les âges');
+    await p.evaluate(()=>{const {E,render,U}=window.__eclat;E.state.known.cristal_chantant=true;E.state.flags.berceuse=false;E.state.inv.flute=0;U.q='cristal';render(true);});
+    ok(await p.locator('[data-rec="cristal_chantant"]').count()===1,width+' : une recette du parcours réservé reste mémorisée');
+    await p.evaluate(()=>{const {U,render}=window.__eclat;U.q='';U.carnetFilter='unk';render(true);});
+    ok(await p.locator('[data-rec="traducteur"]').count()===0,width+' : aucun indice réservé supplémentaire sans son prérequis');
+    ok(!p.errors.length,p.errors.join('\n'));await p.context().close();
+  }
   // Depuis la fiche d’un objet : « Voir dans l’arbre » ouvre la vue sur lui, choisi
   p = await page(390, true);
   await p.evaluate(() => { document.querySelector("#views").insertAdjacentHTML("beforeend", '<button id="essai-goto" data-goto="manche"></button>'); });
@@ -278,7 +323,7 @@ async function run() {
   // la quantité se choisit une fois, se mémorise, et « Fabriquer » la lance en un appui
   await p.locator('.qtybar [data-qty="10"]').click();
   ok(await p.evaluate(() => window.__eclat.E.state.flags.carnetQty === 10 && document.querySelector('[data-cr="manche"].make').textContent.trim() === "Fabriquer ×10"), "Carnet : la quantité choisie est mémorisée et lue sur le bouton");
-  ok(await p.evaluate(() => { const q = document.querySelector(".qtybar").getBoundingClientRect(), r = document.querySelector('[data-cr="manche"].make').closest(".rec").getBoundingClientRect(); return q.height >= 44 && r.height < 200; }), "Carnet : sélecteur de quantité de 44 px, carte de recette sur une seule rangée d’actions");
+  ok(await p.evaluate(() => { const q = document.querySelector(".qtybar").getBoundingClientRect(), r = document.querySelector('[data-carnet-lot="manche"]'); return q.height >= 44 && r.querySelector('[data-need="bois"]').dataset.q==='30' && r.textContent.includes('10 pièces'); }), "Carnet : le lot ×10 affiche trente bois et dix pièces");
   await p.locator('[data-cr="manche"][data-n="10"]').click();
   ok(await p.evaluate(n => window.__eclat.E.queued('manche') > 0 || window.__eclat.E.state.made.manche > n, quantity), "Commande ×10 depuis le Carnet");
   await p.locator('#actbar [data-ab="hands"]').click(); await p.waitForTimeout(500);
@@ -301,7 +346,7 @@ async function run() {
   ok(download.suggestedFilename().endsWith('.json'), "Export au format JSON");
   const exported = fs.readFileSync(await download.path(), 'utf8');
   const restored = createEngine(); restored.load(exported);
-  ok(restored.state.known.manche && restored.state.age === 7, "Export réimportable sans perte de recettes ni d’âge");
+  ok(restored.state.known.manche && restored.state.age === 8, "Export réimportable sans perte de recettes ni d’âge");
   ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
   // 0.13.3 : les fenêtres du lancement et du retour d’absence
   for (const width of [390, 320]) {
@@ -462,6 +507,31 @@ async function run() {
   await p.locator("#modal [data-gz]").first().click();
   await p.waitForFunction(() => document.body.dataset.tab === "domaine" && document.querySelector("#modal").classList.contains("hidden"), null, { timeout: 3000 });
   ok(!p.errors.length, "Commande bloquée : « Aller au gisement » mène au Domaine sans erreur " + p.errors.join(" | ")); await p.context().close();
+  // Les nouvelles chaînes restent lisibles sur téléphone, sans axe horizontal.
+  for (const width of [320, 390]) for (const large of [false, true]) {
+    p = await page(width, true, large);
+    await p.evaluate(() => {
+      const { E, render } = window.__eclat;
+      E.state.age = 11; E.state.cycle = 2; E.state.act = null; E.state.hand.q = [];
+      E.state.flags.tip_carnet = true;
+      for (const id of ['eau_1','circuit_vapeur','recuperation_vapeur','soufre_1','naphta','refroidissement']) E.learn(id, true);
+      E.add('eau', 1000); E.add('soufre', 100); E.recalc(); render(true);
+    });
+    await p.locator('#tabs [data-tab="carnet"]').click();
+    for (const nom of ['Circuit de vapeur', 'Refroidissement des machines']) {
+      await p.locator('#cq').fill(nom);
+      ok((await p.locator('#clist').innerText()).includes(nom), width+'/'+large+' : recette '+nom);
+      await layout(p, width+'/'+large+'/'+nom);
+    }
+    await p.locator('#tabs [data-tab="arbre"]').click();
+    await p.locator('[data-arb="chercher"]').click();
+    await p.locator('#arbq').fill('circuit de vapeur');
+    await p.locator('#arbres [data-arbsel="circuit_vapeur"]').click();
+    ok(await p.locator('[data-arbsel="eau"]').count()>0, width+' : la branche montre son eau');
+    ok(await p.evaluate(()=>{const v=document.getElementById('arbre');return v.scrollWidth===v.clientWidth && document.documentElement.scrollWidth===innerWidth;}), width+' : branche contenue dans l’écran');
+    if (width===390&&!large) await shot(p,'densite-circuit-vapeur');
+    ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
+  }
   console.log("UX mobile : " + checks + " contrôles réussis.");
 }
 run().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); server.close(); });
