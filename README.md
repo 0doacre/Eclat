@@ -76,6 +76,8 @@ Un mot par idée, partout dans le jeu : voir `docs/LEXIQUE.md`. Les messages de 
 
 Bois · Os · Pierre · Cuivre · Bronze · Fer · Acier · Vapeur · Électricité · Atome · Silicium · Polymères · Composites · Spatial · Stellaire.
 
+La Vapeur fait de l’eau de la Rivière une ressource de chantier : pompe, conduites, chaudière et condenseur. Aux Polymères, le pétrole se raffine en naphta ; le soufre des Collines entre dans le caoutchouc. Joints et tuyaux souples permettent ensuite de refroidir les machines. Le premier lot de densité est décrit dans `docs/revue/densite-ressources.md`.
+
 Chaque âge change la couleur de l’interface et ouvre de nouvelles terres : la Plaine, la Rivière, les Collines, les Profondeurs, le Désert de Verre, le Gisement Noir, les Pics Fracturés, l’orbite, la Lune, Mercure.
 
 ### Exploration, lore et secrets

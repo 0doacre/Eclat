@@ -462,6 +462,31 @@ async function run() {
   await p.locator("#modal [data-gz]").first().click();
   await p.waitForFunction(() => document.body.dataset.tab === "domaine" && document.querySelector("#modal").classList.contains("hidden"), null, { timeout: 3000 });
   ok(!p.errors.length, "Commande bloquée : « Aller au gisement » mène au Domaine sans erreur " + p.errors.join(" | ")); await p.context().close();
+  // Les nouvelles chaînes restent lisibles sur téléphone, sans axe horizontal.
+  for (const width of [320, 390]) for (const large of [false, true]) {
+    p = await page(width, true, large);
+    await p.evaluate(() => {
+      const { E, render } = window.__eclat;
+      E.state.age = 11; E.state.cycle = 2; E.state.act = null; E.state.hand.q = [];
+      E.state.flags.tip_carnet = true;
+      for (const id of ['eau_1','circuit_vapeur','recuperation_vapeur','soufre_1','naphta','refroidissement']) E.learn(id, true);
+      E.add('eau', 1000); E.add('soufre', 100); E.recalc(); render(true);
+    });
+    await p.locator('#tabs [data-tab="carnet"]').click();
+    for (const nom of ['Circuit de vapeur', 'Refroidissement des machines']) {
+      await p.locator('#cq').fill(nom);
+      ok((await p.locator('#clist').innerText()).includes(nom), width+'/'+large+' : recette '+nom);
+      await layout(p, width+'/'+large+'/'+nom);
+    }
+    await p.locator('#tabs [data-tab="arbre"]').click();
+    await p.locator('[data-arb="chercher"]').click();
+    await p.locator('#arbq').fill('circuit de vapeur');
+    await p.locator('#arbres [data-arbsel="circuit_vapeur"]').click();
+    ok(await p.locator('[data-arbsel="eau"]').count()>0, width+' : la branche montre son eau');
+    ok(await p.evaluate(()=>{const v=document.getElementById('arbre');return v.scrollWidth===v.clientWidth && document.documentElement.scrollWidth===innerWidth;}), width+' : branche contenue dans l’écran');
+    if (width===390&&!large) await shot(p,'densite-circuit-vapeur');
+    ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
+  }
   console.log("UX mobile : " + checks + " contrôles réussis.");
 }
 run().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); server.close(); });

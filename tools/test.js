@@ -311,7 +311,7 @@ test("un extracteur ne travaille que sur sa terre ; une ancienne pose ailleurs r
 test("un extracteur par ressource : chaque ressource récoltable a sa ligne, ses niveaux et sa recette", () => {
   const E = mk();
   const exts = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
-  assert.strictEqual(exts.length, 46);
+  assert.strictEqual(exts.length, 48);
   const res = new Set(D.LIGNES.map((L) => L.res));
   assert.strictEqual(res.size, D.LIGNES.length, "une seule ligne par ressource");
   exts.forEach((id) => {
@@ -1704,7 +1704,7 @@ test("Âge de la Vapeur : inséré entre l’Acier et l’Électricité, ses obj
   assert.strictEqual(D.AGES.length, 15);
   assert.strictEqual(D.SITE_RATE.length, 15, "une vitesse de chantier par âge");
   const par = {}; Object.values(D.ITEMS).forEach((x) => (par[x.a] = (par[x.a] || 0) + 1));
-  assert.ok(par[6] >= 10 && par[6] <= 18 && par[7] >= 10 && par[7] <= 22, "l’Acier et la Vapeur se partagent ce qu’un seul âge portait : " + par[6] + " / " + par[7]);
+  assert.ok(par[6] >= 10 && par[6] <= 18 && par[7] >= 10 && par[7] <= 28, "l’Acier garde sa chaîne et la Vapeur ajoute celle de l’eau : " + par[6] + " / " + par[7]);
   ["moteur_vapeur", "chaudiere", "piston", "presse_vapeur", "pompe", "locomotive", "scierie", "regulateur", "marteau_pilon", "chaudiere_tubulaire"].forEach((i) => assert.strictEqual(D.ITEMS[i].a, 7, i));
   ["haut_fourneau", "lingot_acier", "acier_trempe", "tour", "outils_acier", "engrenage_acier"].forEach((i) => assert.strictEqual(D.ITEMS[i].a, 6, i));
   assert.strictEqual(D.ITEMS.dynamo.a, 8, "l’Électricité est avancée d’un rang");
@@ -3298,8 +3298,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.20.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.20.0");
+test("Version 0.21.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.21.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3514,12 +3514,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.20.0");
+  assert.strictEqual(D.VERSION, "0.21.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 20, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 21, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
@@ -4119,6 +4119,7 @@ test("seuils : la Rivière Lente n’en a pas, et chaque gisement compte à part
 require("./test-visiteurs.js");
 require("./test-figures.js");
 require("./test-arbre.js");
+require("./test-densite.js");
 
 console.log("La file des fenêtres automatiques (0.13.3)");
 const Fen = require("../js/fenetres.js");

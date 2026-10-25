@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.20.0";
+  D.VERSION = "0.21.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -332,8 +332,8 @@
     u: "Sert dans la presse à vapeur.", d: "Il fait tourner les machines sans effort.", h: "Des billes d’acier trempé font rouler la charge au lieu de la laisser frotter. Des vis maintiennent leur cage." };
   I.chaudiere = { n: "Chaudière", ic: "♨️", a: 7, t: "comp", r: ["marteler", { plaque_fer: 8, clous: 30 }, 1, { lvl: 2 }],
     u: "Sert dans le moteur à vapeur.", d: "Un ventre de fer. L’eau y bout sous pression.", h: "La vapeur pousse sur les parois. Il faut battre les plaques de fer et les riveter avec des clous pour fermer la cuve." };
-  I.moteur_vapeur = { n: "Moteur à vapeur", ic: "🚂", a: 7, t: "comp", r: ["assembler", { chaudiere: 1, piston: 2, engrenage_acier: 4 }, 1],
-    u: "Sert dans tout ce qui marche à la vapeur : presse, pompe, scierie, drague, treuil, chemin de fer. Et dans la dynamo.", d: "La première machine qui travaille sans toi.", h: "La chaudière fournit la vapeur, mais il faut encore la faire travailler : pousser les pistons, puis entraîner les engrenages d’acier." };
+  I.moteur_vapeur = { n: "Moteur à vapeur", ic: "🚂", a: 7, t: "comp", r: ["assembler", { circuit_vapeur: 1, piston: 2, engrenage_acier: 4 }, 1],
+    u: "Sert dans tout ce qui marche à la vapeur : presse, pompe, scierie, drague, treuil, chemin de fer. Et dans la dynamo.", d: "À chaque poussée du piston, les engrenages font un tour de plus.", h: "Le circuit amène la vapeur jusqu’aux pistons ; les engrenages d’acier transmettent leur mouvement." };
   I.presse_vapeur = { n: "Presse à vapeur", sn: "presse", pl: "presses", ic: "📠", a: 7, t: "mach", s: 1.25, spd: 40, ing: 3, prof: 0, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
     u: "Palier 3, 40 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Elle siffle et cogne toute la journée.",
     h: "Les roulements guident le mouvement du moteur à vapeur dans un bâti de plaques de fer." };
@@ -357,6 +357,16 @@
 
   /* Âge 7 — Vapeur : la chaudière, le piston, le moteur et ce qui en descend (presse, pompe, chemin de fer, extracteurs à vapeur)
    * sont rangés plus haut, avec l’acier dont ils sont faits ; voici ce que l’âge ajoute. */
+  I.eau = { n: "Eau", sym: "≈", col: "#4c9ec4", a: 7, t: "res",
+    u: "La pompe à bras la récolte à la Rivière. Sert dans le circuit de vapeur, les condenseurs et le refroidissement.", d: "Sous le tuyau de la pompe, un réservoir se remplit sans déborder." };
+  I.tuyau_cuivre = { n: "Tuyau de cuivre", sym: "⊏", col: "#c7713b", a: 7, t: "comp", r: ["usiner", { plaque_cuivre: 2 }, 3],
+    u: "Sert dans le circuit de vapeur, les condenseurs et les échangeurs thermiques.", d: "Un tube coudé qui se glisse entre les pièces du moteur.", h: "Une plaque de cuivre roulée puis ajustée sur le tour peut conduire l’eau sans fuir." };
+  I.circuit_vapeur = { n: "Circuit de vapeur", sym: "♨", col: "#90aab8", a: 7, t: "comp", r: ["assembler", { chaudiere: 1, tuyau_cuivre: 3, eau: 12 }, 1],
+    u: "Sert dans le moteur à vapeur.", d: "L’eau bout dans la chaudière ; les tuyaux sifflent quand la pression monte.", h: "Remplis la chaudière d’eau et raccorde les tuyaux de cuivre pour conduire la vapeur jusqu’au moteur." };
+  I.condenseur = { n: "Condenseur", sym: "▤", col: "#70a4b5", a: 7, t: "comp", r: ["assembler", { tuyau_cuivre: 6, eau: 24, plaque_fer: 8 }, 1],
+    u: "Sert dans la récupération de vapeur.", d: "Le tuyau serpente dans une cuve froide. À la sortie, la vapeur est redevenue de l’eau.", h: "Plonge un long tuyau de cuivre dans l’eau d’une cuve de fer pour refroidir la vapeur qui le traverse." };
+  I.recuperation_vapeur = { n: "Récupération de vapeur", ic: "♨️", a: 7, t: "upg", r: ["assembler", { condenseur: 4, moteur_vapeur: 2, regulateur: 2 }, 1],
+    e: { aspd: 1.25 }, u: "Augmente de 25 % la vitesse de toutes tes machines.", d: "Des conduites ramènent l’eau encore chaude vers les chaudières.", h: "Raccorde les condenseurs aux moteurs à vapeur ; les régulateurs maintiendront leur cadence." };
   I.soupape = { n: "Soupape de sûreté", sym: "◍", col: "#b9c2cc", a: 7, t: "comp", r: ["usiner", { ressort: 2, vis: 4 }, 1],
     u: "Sert dans le régulateur et dans la chaudière tubulaire.", d: "Elle s’ouvre toute seule quand la pression devient dangereuse.",
     h: "Le ressort retient le clapet, et les vis le règlent au bon seuil." };
@@ -474,22 +484,34 @@
     e: { capsule: true, once: { intu: 2 } }, u: "Agit à ta prochaine Relève.", d: "Tu y enregistres un message pour celui ou celle qui viendra après toi." };
 
   /* Âge 11 — Polymères */
-  I.petrole = { b: 0.5, n: "Pétrole", sym: "●", col: "#17120e", a: 11, t: "res", u: "Sert à synthétiser : plastique, résine époxy, caoutchouc, dynamite.", d: "Des forêts mortes il y a cent millions d’années." };
+  I.petrole = { b: 0.5, n: "Pétrole", sym: "●", col: "#17120e", a: 11, t: "res", u: "Se raffine en naphta pour les plastiques et le caoutchouc. Sert aussi dans la dynamite.", d: "Une huile sombre qui colle aux parois du seau." };
+  I.soufre = { n: "Soufre", sym: "S", col: "#d4b348", a: 11, t: "res",
+    u: "La soufrière le récolte dans les Collines. Sert à fabriquer le caoutchouc.", d: "Des cristaux jaunes se détachent de la roche friable." };
+  I.naphta = { n: "Naphta", sym: "∽", col: "#cdb275", a: 11, t: "comp", r: ["chauffer", { petrole: 4 }, 3, { heat: 400 }],
+    u: "Sert à synthétiser le plastique, la résine époxy et le caoutchouc.", d: "Un liquide clair recueilli à part pendant la chauffe du pétrole.", h: "En chauffant doucement le pétrole, on peut séparer une fraction plus légère pour la chimie." };
   I.bauxite = { b: 0.5, n: "Bauxite", sym: "◒", col: "#b8612f", a: 11, t: "res", u: "Sert à fabriquer l’aluminium.", d: "Une terre rouge qui cache un métal léger." };
   I.ilmenite = { b: 0.5, n: "Ilménite", sym: "◓", col: "#4a4a5c", a: 11, t: "res", u: "Sert à fabriquer le titane.", d: "Un sable noir et lourd." };
   I.terres_rares = { b: 0.2, n: "Terres rares", sym: "✳", col: "#8a6bbe", a: 11, t: "res", u: "Sert dans les aimants néodyme et les supraconducteurs.", d: "Pas si rares, mais si dispersées." };
   I.reacteur = { n: "Réacteur chimique", ic: "🧪", a: 11, t: "stat", r: ["assembler", { acier_trempe: 240, verre_trempe: 120, processeur: 40 }, 1],
     e: { st: [{ g: "synthetiser" }] }, u: "Débloque l’action Synthétiser.", d: "Des cuves, et des tuyaux partout.",
     h: "Les réactions demandent une cuve d’acier trempé. À travers le verre trempé, les processeurs pourront suivre ce qui s’y passe." };
-  I.plastique = { n: "Plastique", ic: "🧴", a: 11, t: "comp", r: ["synthetiser", { petrole: 3 }, 2],
-    u: "Sert dans l’outillage électrique, la fibre de carbone et le graphène. Il en faut aussi pour le passage vers les Pics Fracturés.", d: "Tu peux lui donner toutes les formes et toutes les couleurs.", h: "Les molécules du pétrole peuvent se recomposer en une matière qui garde la forme qu’on lui donne." };
-  I.resine = { n: "Résine époxy", ic: "🍯", a: 11, t: "comp", r: ["synthetiser", { petrole: 2, bois: 6 }, 1],
-    u: "Sert à fabriquer le composite carbone.", d: "Une colle qui durcit comme de la pierre.", h: "Le pétrole et le bois peuvent se recomposer en une colle qui durcit après l’application." };
+  I.plastique = { n: "Plastique", ic: "🧴", a: 11, t: "comp", r: ["synthetiser", { naphta: 3 }, 2],
+    u: "Sert dans l’outillage électrique, la fibre de carbone et le graphène. Il en faut aussi pour le passage vers les Pics Fracturés.", d: "Tu peux lui donner toutes les formes et toutes les couleurs.", h: "Le naphta raffiné peut donner de longues chaînes de molécules qui gardent la forme du moule." };
+  I.resine = { n: "Résine époxy", ic: "🍯", a: 11, t: "comp", r: ["synthetiser", { naphta: 2, bois: 6 }, 1],
+    u: "Sert à fabriquer le composite carbone.", d: "Une colle qui durcit comme de la pierre.", h: "Le naphta et le bois peuvent se recomposer en une colle qui durcit après l’application." };
   I.dynamite = { n: "Dynamite", ic: "🧨", a: 11, t: "comp", r: ["synthetiser", { petrole: 2, argile: 3 }, 3],
     e: { zone: "montagnes" }, u: "Ouvre le chemin vers les Pics Fracturés. Sert aussi dans la carrière et l’excavateur géant.", d: "Tu allumes la mèche, et tu cours.",
     h: "L’argile peut absorber la préparation explosive tirée du pétrole, pour qu’on puisse la transporter." };
-  I.caoutchouc = { n: "Caoutchouc", sym: "◖", col: "#3b3b3b", a: 11, t: "comp", r: ["synthetiser", { petrole: 2, charbon: 1 }, 2],
-    u: "Sert dans les tapis convoyeurs.", d: "Il rebondit, et il isole.", h: "Avec du charbon, le pétrole peut se transformer en une matière souple qui reprend sa forme après un choc." };
+  I.caoutchouc = { n: "Caoutchouc", sym: "◖", col: "#3b3b3b", a: 11, t: "comp", r: ["synthetiser", { naphta: 2, soufre: 1 }, 2],
+    u: "Sert dans les tapis convoyeurs, les joints, les tuyaux souples et les protections.", d: "Tu l’étires entre les doigts ; dès que tu lâches, il reprend sa forme.", h: "Le soufre lie les chaînes issues du naphta : le caoutchouc reste souple sans se déformer pour de bon." };
+  I.joint_souple = { n: "Joint d’étanchéité", sym: "◯", col: "#4b4b4b", a: 11, t: "comp", r: ["tailler", { caoutchouc: 1 }, 4],
+    u: "Sert dans les échangeurs thermiques.", d: "Une rondelle qui s’écrase juste assez pour boucher le passage à l’eau.", h: "Une rondelle découpée dans le caoutchouc épouserait les bords d’un raccord." };
+  I.tuyau_souple = { n: "Tuyau souple", sym: "〰", col: "#454753", a: 11, t: "comp", r: ["tresser", { caoutchouc: 2, fibre: 4 }, 2],
+    u: "Sert dans les échangeurs thermiques.", d: "La gaine de fibres empêche le tuyau de gonfler sous la pression.", h: "Des fibres tressées autour du caoutchouc le renforcent sans l’empêcher de plier." };
+  I.echangeur = { n: "Échangeur thermique", sym: "▥", col: "#91abb4", a: 11, t: "comp", r: ["assembler", { tuyau_cuivre: 8, tuyau_souple: 4, joint_souple: 6 }, 1],
+    u: "Sert dans le refroidissement des machines.", d: "L’eau froide longe les conduites chaudes sans jamais s’y mélanger.", h: "Les tuyaux de cuivre cèdent leur chaleur à l’eau ; les raccords souples et leurs joints ferment le circuit." };
+  I.refroidissement = { n: "Refroidissement des machines", ic: "❄️", a: 11, t: "upg", r: ["assembler", { echangeur: 6, eau: 120, moteur_elec: 6 }, 1],
+    e: { aspd: 1.5 }, u: "Augmente de 50 % la vitesse de toutes tes machines.", d: "Tu poses la main sur un carter qui était brûlant : il est à peine tiède.", h: "Des moteurs électriques font circuler l’eau dans les échangeurs autour des machines." };
   I.convoyeurs = { n: "Tapis convoyeurs", ic: "📦", a: 11, t: "upg", r: ["assembler", { caoutchouc: 80, moteur_elec: 12, lingot_acier: 80 }, 1],
     e: { aspd: 1.5 }, u: "Tes machines fabriquent 50 % plus vite.", d: "Des bras chargent les pièces tout seuls, et les courroies défilent plus vite.",
     h: "Les moteurs électriques entraînent les bandes de caoutchouc sur une structure d’acier." };
@@ -728,6 +750,12 @@
     { id: "regolitier", res: "regolithe", n: "Terrassier lunaire", ic: "🌑", ph: "le régolithe", zs: ["lune"], niv: [
       { id: "regolithe_1", n: "Excavatrice lunaire", sn: "excavatrice lunaire", pl: "excavatrices lunaires", ic: "🏗️", de: "base_lunaire", r: ["assembler", { alliage_ancien: 120, moteur_fusee: 6, supra: 60 }, 1],
         d: "Des pelles automatiques raclent la poussière grise du sol lunaire.", h: "Un alliage ancien pour la structure, un moteur-fusée pour se poser, un supraconducteur qui ne chauffe jamais." }] },
+    { id: "eau", res: "eau", n: "Pompe à eau", ic: "💧", ph: "l’eau", zs: ["riviere"], niv: [
+      { id: "eau_1", n: "Pompe à bras", sn: "pompe à bras", pl: "pompes à bras", ic: "💧", a: 7, s: 1.25, taux: 3, r: ["assembler", { piston: 2, plaque_cuivre: 6, manche: 4 }, 1],
+        d: "Un levier remonte l’eau de la rivière dans un réservoir.", h: "Un manche actionne les pistons dans un corps de cuivre pour remonter l’eau." }] },
+    { id: "soufre", res: "soufre", n: "Récolteur de soufre", ic: "🟡", ph: "le soufre", zs: ["collines"], niv: [
+      { id: "soufre_1", n: "Soufrière", sn: "soufrière", pl: "soufrières", ic: "🟡", a: 11, s: 1.25, taux: 1.5, r: ["assembler", { acier_trempe: 20, vis: 40, roue: 10 }, 1],
+        d: "Des racloirs détachent les croûtes jaunes ; les chariots les descendent de la colline.", h: "Des racloirs d’acier trempé, vissés sur des chariots à roues, peuvent récolter les cristaux de soufre." }] },
     { id: "uranium", res: "uranium", n: "Mineur d’uranium", ic: "☢️", ph: "l’uranium", zs: ["mine"], niv: [
       { id: "uranium_1", n: "Mine d’uranium", sn: "mine d’uranium", pl: "mines d’uranium", ic: "☢️", a: 9, s: 1.25, taux: 0.8, r: ["assembler", { moteur_elec: 5, acier_trempe: 25, ampoule: 30 }, 1],
         d: "Un puits étroit, éclairé en continu. On n’y reste jamais longtemps.", h: "Un moteur électrique remonte le minerai, l’acier trempé tient les parois et les ampoules éclairent le puits." }] },
@@ -1001,9 +1029,12 @@
     ["lingot_acier", "Fer et carbone, à très haute température."],
     ["acier_trempe", "Plonge l’acier brûlant dans l’eau froide : il devient dur comme jamais."],
     ["tour", "La tour d’usinage débloque l’action Usiner, pour travailler le métal avec la précision d’une machine."],
+    ["eau_1", "Pour alimenter une chaudière, il faut un débit régulier d’eau. Construis une pompe à bras pour la Rivière."],
+    ["circuit_vapeur", "De l’eau dans la chaudière, des tuyaux pour conduire la vapeur : le moteur peut prendre forme."],
     ["moteur_vapeur", "Fais travailler la vapeur à ta place."],
     ["regulateur", "Un moteur à vapeur qui s’emballe se brise. Quelque chose doit le retenir."],
     ["presse_vapeur", "Une machine-outil à vapeur ferait tourner tes machines bien plus vite."],
+    ["recuperation_vapeur", "La vapeur peut redevenir de l’eau dans un condenseur. Raccorde-le aux moteurs pour accélérer tes machines."],
     ["dynamo", "Capture l’étincelle. La dynamo débloque l’action Électriser."],
     ["radio", "Quelqu’un émet peut-être encore, quelque part."],
     ["four_arc", "Un éclair permanent, pour fondre ce que rien d’autre ne fond. Le four à arc monte jusqu’à 3 500 °C."],
@@ -1016,6 +1047,10 @@
     ["foreuse", "L’huile noire dort sous le Gisement Noir. Il te faut une sonde pour l’atteindre."],
     { k: "pass", z: "gisement", n: "Vers le Gisement Noir", txt: "L’huile dort loin sous la croûte. Il faut y creuser une tranchée." },
     ["reacteur", "Le réacteur chimique débloque l’action Synthétiser : il recompose les molécules."],
+    ["naphta", "Le pétrole contient plusieurs produits. Chauffe-le pour en séparer le naphta."],
+    ["plastique", "Le naphta peut devenir une pièce moulée : essaie de le synthétiser."],
+    ["soufre_1", "Le soufre des Collines donne de l’élasticité au caoutchouc. Construis une soufrière pour le récolter."],
+    ["refroidissement", "Des tuyaux souples et des joints étanches permettent de faire circuler l’eau autour des machines."],
     ["dynamite", "Les Pics Fracturés ne s’ouvriront qu’à l’explosif."],
     { k: "pass", z: "montagnes", n: "Vers les Pics Fracturés", txt: "Les Pics n’ont qu’un col. Il faut l’ouvrir, puis le tenir." },
     ["titane", "Le métal le plus noble des montagnes."],
@@ -1245,6 +1280,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "💧 La Vapeur commence à la Rivière : une pompe à bras récolte l’eau, les tuyaux la conduisent à la chaudière et les condenseurs la récupèrent. Aux Polymères, raffine le pétrole en naphta et récolte le soufre des Collines pour fabriquer le caoutchouc. Les joints et les tuyaux souples servent au refroidissement des machines. Treize nouveaux objets, sans décaler les âges ni retirer tes découvertes.",
     "☢️ Un âge de plus : l’Âge de l’Atome, entre l’Électricité et le Silicium. Deux ressources que seul un extracteur récolte, jamais tes mains : l’uranium (Profondeurs) et la galène (Collines). Onze nouveautés : mines d’uranium et de plomb, lingot et plaque de plomb, pastille d’uranium, graphite, barre de combustible, compteur Geiger (explorations ×1,25) et centrale à fission (extracteurs +25 %). Tes parties en cours sont conservées : chaque âge après l’Électricité avance d’un rang. « Chauffer du charbon » n’est plus un essai sans suite : à très haute température, il donne du graphite.",
     "🚂 Un âge de plus : l’Âge de la Vapeur, entre l’Acier et l’Électricité. L’Acier garde le haut-fourneau, l’acier trempé, les lames et les outils d’acier ; la Vapeur reçoit la chaudière, le piston, le moteur, la presse, la pompe, le chemin de fer et les extracteurs à vapeur, plus cinq nouveautés : soupape, manomètre, régulateur à boules, chaudière tubulaire et marteau-pilon. Tes parties en cours sont conservées : chaque âge après l’Acier avance d’un rang, et la Vapeur est comptée comme accomplie si tu l’as dépassée.",
     "🏗️ Chaque bâtiment a sa propre recette à découvrir, avec un nom qui lui ressemble : Claie de séchage et Rouissoir pour la fibre, Carrière à coins pour la pierre, Fosse de tannage et Tannerie pour la peau, Argilière, Gravière, Sablière, et des mines (cuivre, étain, charbon, fer, bauxite…). Dans le Carnet, trois nouveaux filtres : « Extracteurs » (rangés par bâtiment et par niveau), « Outils » et « Machines ».",
