@@ -35,6 +35,7 @@
     function replaceWith(raw, why) {
       let txt;
       try { txt = E.decodeSave(raw); E.parseSave(txt); } catch (e) { toast("Fichier illisible : " + esc(e.message)); return false; }
+      if (!U.peutEcrire()) { toast("Cette page n’enregistre pas la partie pour l’instant : l’import est annulé."); return false; }
       if (!U.saveLocked) pushBackup(E.serialize(), why);
       E.load(txt);
       U.saveLocked = false; U.badSave = null;
@@ -61,6 +62,7 @@
       const list = backups();
       openModal({
         html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Sauvegarde automatique sur cet appareil. Télécharge une copie pour la conserver ou la transférer.</p>" +
+          ({ accordee: '<p class="small">🔒 Le navigateur s’est engagé à garder cette partie.</p>', refusee: '<p class="small">⚠️ Le navigateur ne garantit pas la conservation de cette partie : télécharge une copie de temps en temps.</p>', absente: '<p class="small">⚠️ Ce navigateur ne permet pas de protéger la partie : télécharge une copie de temps en temps.</p>', inconnue: '<p class="small">⚠️ La protection de la partie n’a pas pu être vérifiée : télécharge une copie de temps en temps.</p>' }[U.persist] || "") +
           '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="dl">⬇️ Télécharger ma sauvegarde</button><button class="btn" data-m="up">⬆️ Charger un fichier de sauvegarde</button>' +
           '<button class="btn ghost" data-m="code">📋 Code texte (ancien format)</button></div>' +
           (list.length ? '<h3 class="sub">Copies de sécurité automatiques</h3>' + list.map((b, i) =>
@@ -413,7 +415,7 @@
     async function cloudPush(o) {
       o = o || {};
       const a = Cloud.account();
-      if (!a || !a.token || U.sync.busy || U.saveLocked) return null;
+      if (!a || !a.token || U.sync.busy || U.saveLocked || !U.peutEcrire()) return null;
       U.sync.busy = true;
       try {
         save();
@@ -441,7 +443,7 @@
     async function cloudCheck() {
       const a = Cloud.account();
       updateCloudBtn();
-      if (!a || !a.token || U.saveLocked) return;
+      if (!a || !a.token || U.saveLocked || !U.peutEcrire()) return;
       try {
         const known = a.rev || 0;
         const cl = await Cloud.pull();

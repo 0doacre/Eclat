@@ -10,6 +10,7 @@
     "sim:parcours": "node tools/sim-parcours.js",
     "sim:joueurs": "node tools/sim-passages.js --joueurs",
     "test:ux": "node tools/test-ux.js",
+    "test:stockage": "node tools/test-stockage-ui.js",
     "build": "node tools/build.js",
     "serveur": "node --no-warnings server/dev.js"
   }

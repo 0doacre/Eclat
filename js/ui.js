@@ -576,13 +576,29 @@
       }
     }
   }
+  /* une copie de secours de moins : de la place pour la partie quand le stockage est plein */
+  function libererBackups() {
+    const l = backups();
+    if (!l.length) return false;
+    l.pop();
+    try { if (l.length) localStorage.setItem(BACKUP_KEY, JSON.stringify(l)); else localStorage.removeItem(BACKUP_KEY); } catch (e) { return false; }
+    return true;
+  }
+  /* L’écriture de la partie passe par js/stockage.js : un seul onglet enregistre (verrou), une page périmée
+   * n’écrase rien, et un échec d’écriture laisse la partie en mémoire en le disant (barre #saveBar). */
+  const Stk = window.EclatStockage.create({
+    storage: { getItem: (k) => localStorage.getItem(k), setItem: (k, v) => localStorage.setItem(k, v) },
+    key: SAVE_KEY, liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
+  });
+  U.peutEcrire = () => Stk.peutEcrire();
   function save() {
-    if (U.saveLocked) return;
-    try { localStorage.setItem(SAVE_KEY, E.serialize()); } catch (e) { /* stockage indisponible */ }
+    if (U.saveLocked || !Stk.peutEcrire()) return false;
+    return Stk.ecrire(E.serialize()).ok;
   }
   function loadSave() {
     let raw = null;
-    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { return "none"; }
+    try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { Stk.lire(null); return "none"; }
+    Stk.lire(raw);
     if (!raw) return "none";
     const v = verOf(raw);
     if (v > 0 && v < ENGINE.SAVE_VERSION) pushBackup(raw, "Avant la mise à jour " + D.VERSION);
@@ -595,6 +611,81 @@
       return "error";
     }
   }
+  /* ------------------------------------------------------------ sauvegarde : pages concurrentes et échecs d’écriture */
+  /* une fenêtre qui passe devant toutes les autres : on ne peut pas jouer sur une partie qui n’enregistre pas */
+  function modalUrgente(o) { U.mq.unshift(o); U.mcur = null; nextModal(); }
+  function barreSauvegarde() {
+    const b = $("#saveBar");
+    if (!b) return;
+    const e = Stk.echec();
+    b.classList.toggle("hidden", !e);
+    if (e) b.innerHTML = '<span class="grow">⚠️ Ta partie n’est pas enregistrée sur cet appareil (stockage plein ou bloqué). Elle reste en mémoire tant que cette page est ouverte.</span>' +
+      '<button class="btn small pri" data-u="export">💾 Télécharger</button><button class="btn small" data-u="retry">Réessayer</button>';
+  }
+  function modalAutrePage() {
+    modalUrgente({
+      persistent: true,
+      html: '<div class="kicker">Sauvegarde</div><h2>Partie ouverte ailleurs</h2>' +
+        "<p>Éclat est déjà ouvert dans un autre onglet ou une autre fenêtre. Une seule page à la fois peut enregistrer la partie ; sinon l’une effacerait les progrès de l’autre.</p>" +
+        '<p class="small muted">Ferme l’autre page : celle-ci reprendra toute seule.</p>' +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="reload">Recharger</button><button class="btn ghost" data-m="dl">⬇️ Télécharger la partie</button></div>',
+      on: { reload: () => { location.reload(); return true; }, dl: () => { downloadSave(); return true; } }
+    });
+  }
+  function modalPerimee() {
+    modalUrgente({
+      persistent: true,
+      html: '<div class="kicker">Sauvegarde</div><h2>Cette page n’est plus à jour</h2>' +
+        "<p>Ta partie a avancé dans un autre onglet ou une autre fenêtre. Cette page n’enregistre plus, pour ne pas effacer ces progrès.</p>" +
+        '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="reload">Recharger la partie enregistrée</button>' +
+        '<button class="btn" data-m="dl">⬇️ Télécharger celle de cette page</button>' +
+        '<button class="btn ghost" data-m="keep">Garder celle de cette page…</button></div>',
+      on: { reload: () => { location.reload(); return true; }, dl: () => { downloadSave(); return true; }, keep: () => { modalRemplacer(); return true; } }
+    });
+  }
+  function modalRemplacer() {
+    modalUrgente({
+      persistent: true,
+      html: '<div class="kicker">Sauvegarde</div><h2>Remplacer la partie enregistrée ?</h2>' +
+        "<p>La partie de cette page prendra la place de celle de l’autre onglet, qui sera perdue pour le jeu. Elle est d’abord mise de côté dans les copies de secours (☰ → Sauvegardes).</p>" +
+        '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Remplacer</button></div>',
+      on: {
+        back: () => { modalPerimee(); return true; },
+        go: () => {
+          let stocke = null;
+          try { stocke = localStorage.getItem(SAVE_KEY); } catch (e) { /* illisible */ }
+          if (stocke) pushBackup(stocke, "Partie d’un autre onglet, remplacée par celle d’une page périmée");
+          if (!Stk.reprendreCettePage()) { modalAutrePage(); return true; }
+          save();
+          toast("Partie de cette page enregistrée.");
+        }
+      }
+    });
+  }
+  function surStockage(evt) {
+    if (evt === "attente") modalAutrePage();
+    else if (evt === "repris") location.reload(); // la partie a changé pendant l’attente : on repart de ce qui est enregistré
+    else if (evt === "perime") modalPerimee();
+    else if (evt === "echec") { barreSauvegarde(); toast("⚠️ Ta partie n’est pas enregistrée : stockage plein ou bloqué.", { key: "saveFail", p: 2 }); }
+    else if (evt === "retabli") { barreSauvegarde(); toast("💾 Partie de nouveau enregistrée."); }
+  }
+  /* Le navigateur peut effacer le stockage d’un site : on lui demande de s’en abstenir, puis on lit sa réponse.
+   * Une réponse autre que « accordée » n’est qu’un état à dire au joueur : l’export reste la vraie copie. */
+  async function demanderPersistance() {
+    let mem = null;
+    try { mem = JSON.parse(safeStore.getItem("eclat.persist") || "null"); } catch (e) { mem = null; }
+    // refusé récemment : on ne redemande pas tout de suite (certains navigateurs affichent une demande au joueur)
+    if (mem && mem.etat === "refusee" && Date.now() - (mem.t || 0) < 7 * 86400000) { U.persist = "refusee"; return U.persist; }
+    const etat = await window.EclatStockage.proteger(navigator);
+    U.persist = etat;
+    safeStore.setItem("eclat.persist", JSON.stringify({ etat, t: Date.now() }));
+    if (etat !== "accordee" && !S().flags.tip_persist) {
+      S().flags.tip_persist = 1;
+      toast("Ton navigateur ne garantit pas la conservation de ta partie. Télécharge une copie de temps en temps (☰ → Sauvegardes).", { key: "persist", p: 2 });
+    }
+    return etat;
+  }
+
   /* ------------------------------------------------------------ compte en ligne
    * le client (js/cloud.js) ; ses fenêtres sont dans js/compte.js */
   const safeStore = {
@@ -1042,7 +1133,7 @@
   function applyUpdate() {
     const reg = U.updReg;
     save();
-    pushBackup(E.serialize(), "Avant la mise à jour suivante");
+    if (U.peutEcrire()) pushBackup(E.serialize(), "Avant la mise à jour suivante");
     if (!reg || !reg.waiting) { location.reload(); return; }
     U.wantReload = true;
     reg.waiting.postMessage({ type: "SKIP_WAITING" });
@@ -1150,6 +1241,14 @@
     loadSprite();
     bindEngine();
     const status = loadSave();
+    Stk.demanderVerrou();
+    window.addEventListener("storage", Stk.surStorage);
+    $("#saveBar").addEventListener("click", (ev) => {
+      const b = ev.target.closest("[data-u]");
+      if (!b) return;
+      if (b.dataset.u === "export") downloadSave();
+      if (b.dataset.u === "retry") { if (!save()) toast("Toujours impossible d’enregistrer. Télécharge ta partie pour la garder."); }
+    });
     applyTheme();
     applyLargeText();
     if (typeof window !== "undefined" && window.matchMedia) {
@@ -1181,14 +1280,17 @@
     setTimeout(() => { U.live = true; }, 1500);
     setInterval(loop, 100);
     setInterval(refresh, 250);
-    setInterval(save, 10000);
+    setInterval(() => {
+      save();
+      if (!U.persistAsked && S().stats.play >= 600) { U.persistAsked = true; demanderPersistance(); } // après dix minutes de jeu, pas dès l’arrivée
+    }, 10000);
     setupSW();
     cloudTimers();
     setTimeout(cloudCheck, 1500);
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
     U.itemPill = itemPill;
-    window.__eclat = { E, U, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal, itemPill };
+    window.__eclat = { E, U, Stk, demanderPersistance, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal, itemPill };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
