@@ -289,7 +289,7 @@
       } else {
         const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
         h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes à la main", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],
-          ["Tentatives à l’Atelier", fmt(st.stats.tries)], ["Recettes connues", Object.keys(st.known).length], ["Semeur", st.cycle + 6 + "e"]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
+          ["Tentatives à l’Atelier", fmt(st.stats.tries)], ["Recettes connues", E.nRecettes()], ["Semeur", st.cycle + 6 + "e"]].map(([a, b]) => '<div class="stat"><span class="muted">' + a + "</span><b>" + b + "</b></div>").join("") + "</div>";
         // donner un nom au Semeur de cet éveil (un essai par éveil)
         const NM = (E.RECIT && E.RECIT.nommer) || {};
         const nom = E.nomDuCycle ? E.nomDuCycle() : null;

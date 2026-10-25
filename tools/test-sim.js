@@ -16,23 +16,24 @@ const jouer = (...args) => play(lire(args));
 
 console.log("Simulateur de passages : types de joueur et séances");
 
-/* Les valeurs ci-dessous ont été relevées sur `main` avant les séances et les types de joueur :
+/* Les valeurs ci-dessous ont été relevées sur `main` avant les séances et les types de joueur (puis recalées à la 0.17.0, un extracteur par ressource :
+ * les temps bougent de moins de 1 %) :
  * sans --sessions, --joueur ni --joueurs, rien ne change d’un chiffre (le moteur est déterministe). */
 test("non-régression : 30 min sans option", () => {
-  assert.deepStrictEqual(lignes(jouer("--minutes", "30")), [["plaine", 5.835, 2, 0], ["riviere", 17.352, 5, 0]]);
+  assert.deepStrictEqual(lignes(jouer("--minutes", "30")), [["plaine", 5.835, 2, 0], ["riviere", 17.493, 5, 0]]);
 });
 test("non-régression : 30 min avec une mémoire", () => {
   assert.deepStrictEqual(lignes(jouer("--minutes", "30", "--mem", "recolte=2,extr=2,mains=2")),
-    [["plaine", 0.785, 2, 0], ["riviere", 6.743, 5, 0], ["collines", 13.06, 10, 0], ["mine", 21.277, 18, 0]]);
+    [["plaine", 0.785, 2, 0], ["riviere", 6.743, 5, 0], ["collines", 13.018, 10, 0], ["mine", 21.235, 18, 0]]);
 });
 test("non-régression : --offline 2 après chaque passage", () => {
   const r = jouer("--minutes", "40", "--offline", "2");
-  assert.deepStrictEqual(lignes(r), [["plaine", 5.835, 2, 0], ["riviere", 11.018, 5, 0], ["collines", 27.877, 10, 0]]);
+  assert.deepStrictEqual(lignes(r), [["plaine", 5.835, 2, 0], ["riviere", 11.035, 5, 0], ["collines", 27.635, 10, 0]]);
   assert.strictEqual(Math.round(r.absent), 6, "trois passages, deux heures chacun : six heures d’absence");
 });
 test("non-régression : deux cycles", () => {
   const r = jouer("--minutes", "20", "--cycles", "2");
-  assert.deepStrictEqual(r.cycles.map((c) => c.rows.map((x) => [x.z, r3(x.t)])), [[["plaine", 5.835], ["riviere", 17.352]], [["plaine", 1.427], ["riviere", 14.46]]]);
+  assert.deepStrictEqual(r.cycles.map((c) => c.rows.map((x) => [x.z, r3(x.t)])), [[["plaine", 5.835], ["riviere", 17.493]], [["plaine", 1.427], ["riviere", 14.46]]]);
 });
 
 test("les types de joueur sont bien formés", () => {
