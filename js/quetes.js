@@ -26,19 +26,15 @@
       const title = ob.k === "craft" ? esc(I[ob.id].n) : esc(ob.n);
       // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
       const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
-      const sum = E.questSummary ? E.questSummary() : { rituals: [], hasReady: false };
-      const rits = sum.rituals || [];
-      const doneRits = rits.filter((r) => r.claimed).length;
-      // le premier âge d’abord : les Quêtes et le compteur d’étapes n’ont rien à dire avant
+      // le premier âge d’abord : le compteur d’étapes n’a rien à dire avant
       const tard = st.age > 0 || md > 0;
       let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
-        (tard || sum.hasReady ? '<button class="gmiles" data-open-quests title="Ouvrir les quêtes">📜 Quêtes ' + (doneRits < 3 ? '<span class="qdot' + (sum.hasReady ? '' : ' hidden') + '">●</span>' : '✓') + "</button>" : "") +
-        (ml.length && tard ? '<button class="gmiles' + (md === ml.length ? " ok" : "") + '" data-miles title="Les étapes de cet âge">🏁 ' + (md === ml.length ? "✓" : "étapes " + md + "/" + ml.length) + "</button>" : "") + "</div>";
+        (tard && ob.k === "craft" ? '<button class="gmiles" data-arbre-obj title="Voir ton objectif dans l’arbre">🌳 Arbre</button>' : "") + "</div>";
       if (ml.length && tard) {
         const pct = Math.round((md / ml.length) * 100);
-        h += '<div class="gprog-row" data-miles title="Progression de cet âge : ' + md + '/' + ml.length + ' étapes faites">' +
-          '<div class="gprog-track"><i style="width:' + pct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></div>' +
-          '<span class="gprog-txt">' + (md === ml.length ? '★ Âge accompli' : esc(D.AGES[st.age].n) + ' · ' + md + '/' + ml.length + ' étapes') + '</span></div>';
+        h += '<button type="button" class="gprog-row" data-miles title="Les étapes de cet âge : ' + md + '/' + ml.length + ' faites">' +
+          '<span class="gprog-track"><i style="width:' + pct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></span>' +
+          '<span class="gprog-txt">🏁 ' + (md === ml.length ? '★ Âge accompli' : esc(D.AGES[st.age].n) + ' · ' + md + '/' + ml.length + ' étapes') + '</span></button>';
       }
       h += nextAction(g);
       if (!open) return h + "</div>";
@@ -67,7 +63,20 @@
         if (st.exp.active) return line('<span class="small">🧭 En route… <b data-xl></b></span>');
         return line('<button class="btn small pri" data-exp="' + ob.z + '">🧭 Explorer</button><span class="tiny muted">' + esc(E.ZONES[ob.z].n) + "</span>");
       }
-      if (ob.k === "pass") return passHTML(ob.z);
+      if (ob.k === "pass") {
+        // un lieu de la terre actuelle demande un objet dont on ne connaît pas la recette (la torche) : le guide la montre avant le passage
+        const un = (id) => (D.GENRE.p.split(" ").includes(id) ? "des " : D.GENRE.f.split(" ").includes(id) ? "une " : "un ") + I[id].n.toLowerCase();
+        const manque = g.step && !st.known[g.step] && g.pour && I[g.pour] ? un(g.pour) : null;
+        if (manque) {
+          const lvl = st.hints[g.step] || 0, it0 = I[g.step];
+          return line('<div class="grow" data-goto="' + g.step + '"><div class="small">🧭 Pour explorer le prochain lieu, il te faut <b>' + esc(manque) + "</b>. " +
+            (g.step === g.pour ? "" : "Une des recettes qui y mènent reste à trouver. ") + (it0.h ? "<i>« " + esc(it0.h) + " »</i>" : "") + "</div>" +
+            (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(g.step) + "</div>" : "") +
+            (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(g.step), "sm") + " " + esc(I[mainIngredient(g.step)].n) + "</div>" : "") +
+            '</div><button class="btn small pri" data-gotab="atelier">Tenter</button>') + passHTML(ob.z);
+        }
+        return passHTML(ob.z);
+      }
       if (ob.k === "ext") {
         const d = E.deposits().find((x) => { const c = E.extChoice(x.res, x.z); return c && (c.free > 0 || E.plan(c.t, 1).ok); });
         return d ? line('<button class="btn small pri" data-xadd="' + d.key + '" data-n="1">Poser ' + esc(I[E.extChoice(d.res, d.z).t].n.toLowerCase()) + " sur " + esc(I[d.res].n.toLowerCase()) + "</button>") : line('<span class="small">' + esc(ob.txt) + "</span>");
@@ -190,7 +199,7 @@
       }
       if (!r.ok) {
         A.fail(0);
-        toast("Ressources manquantes : tu n’as rien à déposer pour l’instant. Il faut encore " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
+        toast("Dépôt impossible. Ressources manquantes : " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
         return;
       }
       A.click(); vibe(10);

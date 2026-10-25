@@ -41,7 +41,7 @@ Chaque fiche affiche la sorte d’objet et une phrase qui dit à quoi elle sert 
 | **Outil** | Agit dès qu’on l’a : récolte à la main plus forte, ou chemin vers une terre. |
 | **Amélioration** | Agit dès qu’on l’a : extracteurs ou machines plus rapides. |
 | **Station** | Reste à l’Atelier, débloque une action ou une chaleur. Un message de blocage la **nomme toujours** : « il faut : Four en argile (1 100 °C) ». |
-| **Extracteur** | Se pose sur un gisement **de sa terre** et récolte seul. Son nom court (`sn`, `pl` dans `data.js`) sert aux boutons : « + cabane ». |
+| **Extracteur** | Un bâtiment **par ressource** (0.17) : Bûcheron (bois), Carrier (pierre), Tanneur (peau), Charbonnier, Sablier, mineurs… Il se pose sur un gisement de sa ressource, dans toute terre qui l’a (le sable : Rivière et Désert), et récolte seul. Il monte de **niveaux** avec les âges (Cabane, Hutte, Scierie à vapeur pour le bois) : « Améliorer » remplace un exemplaire par le niveau d’après. Données : `D.LIGNES` dans `data.js` ; chaque niveau a sa recette, son indice et son nom (`Argilière`, `Mine d’étain`… : « mine » seulement pour un minerai, jamais « fosse à X » pour deux ressources). Le Carnet les classe par bâtiment (filtre « Extracteurs »). Son nom court (`sn`, `pl`) sert aux boutons : « + cabane ». |
 | **Machine** | Reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire (une fois la pièce faite une fois à la main). Chaque palier limite le nombre d’ingrédients (1, 2 ou 3). Nom court : « 2 automates de bois ». |
 | **Commande** | Fabrication lancée depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Prend ses ressources au fur et à mesure dans la Réserve et ajoute d’abord les pièces manquantes. Une commande ne s’appelle jamais « fabrication », « tâche » ni « job ». |
 
@@ -51,11 +51,11 @@ Quatre mots seulement, partout : **tes mains**, une **commande**, **en cours**, 
 
 | Mot | Sens |
 |---|---|
-| **Tes mains** | La part du joueur : une seule commande à la fois, à la main. Toujours « tes mains » (jamais « file », « queue », « slot »). Libre : « Tes mains sont libres. » Sinon : « Tes mains sont occupées. » |
+| **Tes mains** | La part du joueur : une seule commande à la fois, à la main. Garder ce nom quand on désigne le travail manuel. Les statuts parlent de commandes : « Aucune commande en cours », « Commande ajoutée ». Une limite de capacité se dit « La liste des commandes est pleine ». Ne pas confondre mains occupées et liste pleine. Jamais « queue » ni « slot » à l’écran. |
 | **en cours** | Ce que quelqu’un fait avancer : « Déjà en cours. », « 3 en cours », « Aucune commande en cours ». Jamais « en fabrication ». |
-| **attendre** | Une commande que personne ne peut avancer « attend une main ou une machine » : elle n’est pas « en attente », et il ne lui « manque » des ressources que si `miss` en signale. |
+| **attendre** | Une commande que personne ne peut avancer est « en attente de mains ou de machines ». Elle ne manque de ressources que si `miss` en signale. |
 | **au repos** | Une machine sans travail est **au repos** ; avec du travail, elle est **au travail**. Elle ne « attend » pas. |
-| **fini** | Une commande se termine : « Fini dans ~4 s » pour le lot, « fini dans ~4 s » pour une commande. Jamais « prêt dans ». |
+| **fin estimée** | Une commande se termine : « Fin estimée dans ~4 s » pour le lot, « fin estimée dans ~4 s » pour une commande. Ne pas annoncer un délai garanti. |
 
 ## Progression
 

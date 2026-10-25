@@ -9,7 +9,7 @@
   const SHOWN = 2; // terres dépliées d’office ; les plus anciennes se replient
 
   function create(api) {
-    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
+    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
     const uiSigne = api.uiSigne || (() => "");
     const recitInline = api.recitInline || ((t) => esc(t));
     const itemPill = api.itemPill || ((id) => esc(id));
@@ -39,9 +39,11 @@
     /* ------------------------------------------------------------ la page */
     function view() {
       const st = S(), zs = openZones().reverse();
-      let h = '<div class="dom' + (U.domDense ? " dom-dense" : "") + '">';
+      const dense = !!(U.domDense !== undefined ? U.domDense : st.settings && st.settings.domDense);
+      U.domDense = dense;
+      let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
       h += api.top();
-      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense title="Basculer entre affichage compact et normal">' + (U.domDense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
+      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense aria-pressed="' + dense + '" title="Basculer entre affichage compact et normal">' + (dense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -85,7 +87,10 @@
       const r = E.regle(z);
       if (!r) return "";
       const ok = r.etat === "ok";
-      return '<p class="dom-regle' + (ok ? " ok" : r.etat === "gene" ? " gene" : "") + '"><b>' + esc(r.n) + "</b> · " + esc(ok && r.ok ? r.ok : r.t) + "</p>";
+      // la gêne a sa solution : un appui ouvre la fiche de la protection que l’on connaît déjà (rien de plus : sans recette connue, pas de bouton)
+      const prot = r.etat === "gene" ? r.sans.find((i) => I[i] && S().known[i]) : null;
+      return '<p class="dom-regle' + (ok ? " ok" : r.etat === "gene" ? " gene" : "") + '"><b>' + esc(r.n) + "</b> · " + esc(ok && r.ok ? r.ok : r.t) +
+        (prot ? ' <button class="btn small" data-goto="' + prot + '">Voir : ' + esc(I[prot].n) + "</button>" : "") + "</p>";
     }
     /* les terres qui ont un décor illustré (assets/terres/<id>-decor.webp) */
     const DECORS = { lisiere: 1, plaine: 1, riviere: 1, collines: 1, mine: 1, desert: 1, gisement: 1, montagnes: 1, orbite: 1, lune: 1, mercure: 1 };
@@ -97,11 +102,11 @@
       const ruins = E.ruins();
       for (const id in ruins) {
         const it = I[id];
-        if (it && it.t === "ext" && it.z === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
+        if (it && it.t === "ext" && E.extZones(id)[0] === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
       }
       h += regleHTML(z);
       deps.forEach((d) => { h += gisHTML(z, d); });
-      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ici, rien ne se récolte à la main : pose des extracteurs.</p>';
+      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ces ressources nécessitent des extracteurs pour être récoltées.</p>';
       void st;
       return h + "</section>";
     }
@@ -193,7 +198,7 @@
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
-      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Tes mains et tes machines travaillent ensemble sur les commandes lancées depuis l’Atelier.</p>';
+      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Commandes compatibles accélérées par les machines, en complément des mains.</p>';
       const ruins = E.ruins();
       for (const id in ruins) {
         const it = I[id];
@@ -217,7 +222,7 @@
           h += '<div class="bar" style="margin:6px 0"><i data-opbar="' + idx + '" style="width:' + pct.toFixed(1) + '%"></i></div>';
           if (workTxt) h += '<div class="tiny good">' + esc(workTxt) + '</div>';
           if (missTxt) h += '<div class="tiny warn">' + esc(missTxt) + '</div>';
-          else if (j.wait && !workTxt) h += '<div class="tiny muted">attend une main ou une machine</div>';
+          else if (j.wait && !workTxt) h += '<div class="tiny muted">en attente de mains ou de machines</div>';
           if (j.steps.length > 1) {
             h += '<div class="tiny muted" style="margin-top:4px">' +
               j.steps.map((s) => (s.done >= s.n ? "✓ " : s.hands || s.machs ? "▸ " : "") + esc(I[s.id].n.toLowerCase()) + " " + s.done + "/" + s.n).join(" → ") +
@@ -226,7 +231,7 @@
           h += '</section>';
         });
       } else {
-        h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Tu peux en lancer une depuis l’Atelier ou le Carnet (×10, ×50, ×100, ×1000).</p>';
+        h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Commandes disponibles dans l’Atelier ou le Carnet (×10, ×50, ×100, ×1000).</p>';
       }
 
       h += '<h3 class="sub" style="margin-top:16px">Tes machines</h3>';
@@ -354,7 +359,7 @@
         // à l’ouverture, ce que le Troqueur dit et ce que porte le bois du comptoir (données du récit)
         const parole = uiSigne("comptoir", "Le Comptoir");
         if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
-        h += '<div class="subtabs">' +
+        h += '<div class="subtabs comptoir-tabs">' +
           '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
           '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +
           '<button class="' + (curTab === "demandes" ? "on" : "") + '" data-m="ctab" data-t="demandes">Demandes</button>' +
@@ -386,7 +391,8 @@
           const TR = (E.RECIT && E.RECIT.troc) || {};
           const last = E.troqueurDernier ? E.troqueurDernier() : null;
           h += '<div class="troc-parole">' + (last
-            ? '<p class="serif">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + "</p>"
+            ? (last.q ? '<p class="troc-moi">' + String(recitInline(last.q, "Le Comptoir")) + "</p>" : "") +
+              '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + "</p>"
             : '<p class="small muted"><i>' + esc(TR.intro || "") + "</i></p>") + "</div>";
           h += '<p class="tiny muted center">' + esc(TR.consigne || "") + "</p>";
           h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
@@ -511,6 +517,10 @@
           return '<div class="cost-row" data-goto="' + k + '" role="button" tabindex="0" title="' + esc(I[k].n) + ' (toucher pour inspecter)">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny" data-sp="' + pid + ":" + k + '">' + fmt(paid) + " / " + fmt(step.cost[k]) +
             '</span><div class="bar"><i style="width:' + (100 * paid / step.cost[k]).toFixed(1) + '%"></i></div></div>';
         }).join("");
+        // la ressource qui limite : celle qui demande le plus de temps (ou que rien ne produit), avec d’où elle vient
+        const lim = Object.keys(step.cost).map((k) => ({ k, rem: step.cost[k] - (ps.paid[k] || 0) - E.count(k) })).filter((x) => x.rem > 0 && E.isRawRes(x.k))
+          .map((x) => ({ k: x.k, rem: x.rem, t: E.limiting(x.k, x.rem).eta })).sort((a, b) => (b.t === null) - (a.t === null) || b.t - a.t)[0];
+        if (lim && !(step.need && !st.frags[step.need])) h += limitHTML(lim.k, lim.rem);
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
         else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Fournir</button>' +
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
@@ -553,7 +563,7 @@
           '<button class="btn small ghost" data-tip="tip_freeExt">Compris</button>';
       }
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOn(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
-      if (lone && !st.flags.tip_site) return "Ton Grand Œuvre peut se servir seul dans la Réserve : touche <b>Alimenter</b>. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
+      if (lone && !st.flags.tip_site) return "Active <b>Alimenter</b> pour approvisionner automatiquement ton Grand Œuvre depuis la Réserve. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
       return null;
     }
 
@@ -569,6 +579,17 @@
           eu: (b) => {
             const t = b.dataset.t, v = Number(b.dataset.v), cur = ((E.domExt(z, res) || { u: {} }).u[t]) || 0;
             if (v > 0 && E.freeExt(t) < v) feedback(E.domExtAdd(z, res, v, t), t); else { E.domExtSet(z, res, t, cur + v); A.click(); }
+            return redraw();
+          },
+          eup: (b) => {
+            const t = b.dataset.t, r = E.domExtUp(z, res, t);
+            if (r.ok && r.queued) { A.click(); vibe(8); toast("✋ Amélioration commandée : " + esc(I[r.t].n) + ". Elle remplace un « " + esc(I[t].n.toLowerCase()) + " » dès qu’elle est finie.", { key: "xq" }); }
+            else if (r.ok) { A.click(); vibe(8); }
+            else {
+              A.fail(0);
+              const miss = r.missing ? Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n.toLowerCase())).join(", ") : "";
+              toast("Pas de quoi améliorer : " + esc(I[r.t || t].n.toLowerCase()) + (miss ? " : il manque " + miss : "") + ".", { key: "xq" });
+            }
             return redraw();
           },
           toggle: () => { E.domExtToggle(z, res); A.click(); return redraw(); },
@@ -591,17 +612,19 @@
       const types = E.extFor(res, z).filter((t) => us[t].own > 0 || (e && e.u[t]) || S().known[t]);
       const rate = depRate(z, res);
       let h = '<div class="sheet-h">' + icon(res) + '<div class="grow"><h2>' + esc(I[res].n) + '</h2><div class="tiny muted">' + esc(E.ZONES[z].n) + "</div></div></div>";
-      h += '<p class="small">' + (!e ? "Aucun extracteur ne travaille ici." : info.s === "off" ? "En pause." : rate > 0 ? "Les extracteurs posés ici récoltent " + perTime(rate) + ", même quand le jeu est fermé." : "Démarrage…") + "</p>";
+      h += '<p class="small">' + (!e ? "Aucun extracteur actif." : info.s === "off" ? "En pause." : rate > 0 ? "Récolte : " + perTime(rate) + " (active hors ligne)." : "Démarrage…") + "</p>";
       h += seuilHTML(e);
       if (types.length) {
-        h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + " : chacun récolte seulement le gisement où tu le poses.</p>";
+        const L = E.ligneDe(res);
+        h += '<p class="tiny muted">' + (L ? "<b>" + esc(L.n) + "</b> : " : "") + "un bâtiment par ressource, qui monte de niveau. Chaque exemplaire récolte seulement ce gisement ; « Améliorer » en remplace un par le niveau d’après.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
-          const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0;
-          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par extracteur · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span></span>" +
+          const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0, nx = E.extNext(t);
+          const up = cur && nx && S().known[nx] && I[nx].a <= S().age ? '<button class="mini lbl" data-m="eup" data-t="' + t + '" aria-label="Améliorer un exemplaire : ' + esc(I[nx].n) + '" style="margin-top:6px">↑ Niveau ' + I[nx].lv + "</button>" : "";
+          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small"><span class="tiny muted">Niveau ' + I[t].lv + "</span> " + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par exemplaire · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span>" + (up ? "<br>" + up : "") + "</span>" +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
-      } else h += '<p class="small muted">Tu ne connais encore aucun extracteur pour ce gisement. Il faut d’abord le découvrir à l’Atelier, comme toute recette.</p>';
+      } else h += '<p class="small muted">Extracteur non découvert. Recette à chercher à l’Atelier.</p>';
       if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans le Domaine, ou garde le doigt dessus.</p>';
       if (z === "mine") {
         const total = e ? Object.values(e.u).reduce((a, b) => a + b, 0) : 0;
@@ -619,12 +642,12 @@
         A.click(); vibe(8);
         if (r.placed && at) sparks(at.x, at.y, 10, "#ffd36b");
         if (at) floater((r.placed ? "+" + r.placed + " " : "") + (r.queued ? "✋ " + r.queued : ""), at.x, at.y - 14, "var(--good)");
-        if (r.queued) toast("✋ Tes mains fabriquent " + esc(many(t, r.queued)) + " pour ce gisement.", { key: "xq" });
+        if (r.queued) toast("✋ Commande ajoutée : " + esc(many(t, r.queued)) + " (pose automatique sur ce gisement).", { key: "xq" });
         return;
       }
       A.fail(0);
       const miss = r.missing ? Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n.toLowerCase())).join(", ") : "";
-      toast(r.why === "full" ? "Tes mains sont occupées : attends la fin de la commande en cours." :
+      toast(r.why === "full" ? "Commandes au maximum. Une place se libère à la fin d’une commande." :
         r.why === "noext" ? "Tu ne connais encore aucun extracteur pour ce gisement." :
           "Pas de quoi fabriquer " + esc(I[t].n.toLowerCase()) + (miss ? " : il manque " + miss : "") + ".", { key: "xq" });
     }
@@ -712,7 +735,7 @@
       }
       if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
-      if (t.closest("[data-dom-dense]")) { U.domDense = !U.domDense; A.click(); vibe(8); render(true); return true; }
+      if (t.closest("[data-dom-dense]")) { const next = !(U.domDense !== undefined ? U.domDense : S().settings.domDense); U.domDense = next; S().settings.domDense = next; A.click(); vibe(8); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
         E.domSite(pid, !E.siteOn(pid));
@@ -721,7 +744,7 @@
       }
       if ((b = t.closest("[data-contrib]"))) {
         const r = E.contribute(b.dataset.contrib);
-        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Ressources manquantes : tu n’as rien à déposer pour ce chantier.", { key: "contrib" }); }
+        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Dépôt impossible : ressources manquantes.", { key: "contrib" }); }
         render(true);
         return true;
       }
@@ -780,7 +803,7 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join(),
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.domDense, Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
     }
 

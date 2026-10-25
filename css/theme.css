@@ -67,7 +67,7 @@ body[data-ep="bord"] {
 }
 :root, body {
   --sans: "Alegreya Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --acc: color-mix(in srgb, var(--acc-base) 78%, var(--age, var(--acc-base)));
+  --acc: color-mix(in srgb, color-mix(in srgb, var(--acc-base) 78%, var(--age, var(--acc-base))) calc(100% - var(--acc-dark, 0%)), var(--text));
   --acc-ink: var(--bg);
 }
 
@@ -183,6 +183,10 @@ body[data-tab="cosmos"] #views { background: #0d1118; }
 .subtabs button.on { color: var(--text); }
 .subtabs button.on::after { content: ""; position: absolute; left: 20%; right: 20%; bottom: -2px; height: 3px; background: var(--acc); }
 .subtabs .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--acc); vertical-align: middle; }
+@media (max-width: 430px) {
+  .comptoir-tabs { flex-wrap: wrap; }
+  .comptoir-tabs button { flex-basis: 45%; }
+}
 .goal-card .ghead-row { display: flex; align-items: center; gap: 8px; }
 .goal-card .ghead { flex: 1 1 auto; display: flex; align-items: baseline; gap: 8px; min-width: 0; border: 0; background: none; padding: 0; text-align: left; color: var(--text); }
 .goal-card .gname { font-family: var(--serif); font-size: calc(19px * var(--title-size)); line-height: 1.15; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; flex: 1 1 auto; text-align: left; }
@@ -298,8 +302,8 @@ body[data-tab="cosmos"] #views, body[data-tab="cosmos"] #v-cosmos { background: 
 /* Confort tactile : mêmes cibles en vue normale, dense et grand texte. */
 .btn, .btn.small, body.large-text .btn.small, .mini, .gis-b .mini,
 .gmiles, .pinb, .hx, .hmore, .bench-clear, .search-clear,
-.filters button, .subtabs button, [data-jt], [data-ct], .dom-more, .exp-mini,
-.chip, .icon-btn, .modal-x, .ab-main, .ab-x {
+.filters button, .subtabs button, [data-jt], [data-ct], [data-cvue], .dom-more, .exp-mini,
+.chip, .chipq, .icon-btn, .modal-x, .ab-main, .ab-x, .age-pill, .pin-make, .icon-act {
   min-height: 44px; min-width: 44px;
 }
 .mini, .gis-b .mini, .icon-btn, .modal-x { height: auto; }
@@ -318,7 +322,8 @@ button:focus-visible, [role="button"]:focus-visible, select:focus-visible, input
 .gis-b .harvest { font-size: 13px; padding: 0 10px; }
 .starter-harvest { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .inv .n { font-size: 12px; white-space: normal; overflow-wrap: anywhere; line-height: 1.25; }
-.inv { min-height: 104px; }
+.inv { min-height: 88px; }
+body.large-text .inv { min-height: 96px; }
 body.large-text .inv .n { font-size: 14px; }
 @media (max-width: 430px) {
   .goal-card .ghead { flex: 1 1 100%; }
@@ -328,3 +333,21 @@ body.large-text .inv .n { font-size: 14px; }
   .gis:not(.gact) .gis-l1 { flex-wrap: wrap; gap: 2px 6px; }
   .gis:not(.gact) .gis-b { grid-column: 3; flex-direction: column; align-items: stretch; max-width: 112px; }
 }
+
+/* ---------------------------------------------------------------- contraste (0.15.8)
+ * Mesuré dans le navigateur, époque par époque, sur toutes les couleurs d’âge : chaque texte au moins à 4,5:1 sur le fond,
+ * le second fond et les panneaux ; l’encre des boutons pleins au moins à 4,5:1 sur l’accent (--acc-dark l’assombrit au besoin).
+ * Le test de contraste de tools/test-ux.js refait cette mesure. */
+body:not(.theme-dark)[data-ep="pigments"] { --dim: #6b5f4e; --intu: #815912; --good: #3e6b2d; --acc-dark: 16%; }
+body:not(.theme-dark)[data-ep="papyrus"] { --muted: #6d573a; --dim: #6b573c; --intu: #7b5210; --good: #47631e; --bad: #9f391c; --acc-dark: 34%; }
+body:not(.theme-dark)[data-ep="enluminure"] { --dim: #6f6052; --intu: #7d5e14; }
+body:not(.theme-dark)[data-ep="registre"] { --muted: #5b6472; --dim: #5b6473; --intu: #796024; --bad: #b13a2a; --acc-dark: 19%; }
+body:not(.theme-dark)[data-ep="quadrille"] { --dim: #5a699b; --intu: #80682f; --acc-dark: 22%; }
+body:not(.theme-dark)[data-ep="bord"] { --dim: #5f666f; --intu: #875d1f; --bad: #b8372a; --acc-dark: 32%; }
+body.theme-dark { --dim: #998e7e; --acc-dark: 0%; }
+body.theme-dark[data-ep="pigments"] { --bad: #e36c52; }
+body.theme-dark[data-ep="papyrus"] { --bad: #e16e50; }
+body.theme-dark[data-ep="enluminure"] { --good: #7091c7; --bad: #e36a68; }
+body.theme-dark[data-ep="registre"] { --good: #5594d2; --bad: #e36c58; }
+body.theme-dark[data-ep="quadrille"] { --bad: #e36c5a; }
+body.theme-dark[data-ep="bord"] { --good: #7289f0; --bad: #e36c5a; }

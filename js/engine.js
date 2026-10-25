@@ -11,7 +11,12 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 7;
+  const SAVE_VERSION = 11;
+  // Les commandes préparées avant la 0.21 terminent au prix de leur recette d’origine.
+  const INPUTS_020 = {
+    moteur_vapeur: { chaudiere: 1, piston: 2, engrenage_acier: 4 },
+    plastique: { petrole: 3 }, resine: { petrole: 2, bois: 6 }, caoutchouc: { petrole: 2, charbon: 1 }
+  };
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -37,17 +42,28 @@
   /* Les gisements de chaque terre : ce qu’on y récolte à la main, puis ce que
    * produisent les extracteurs de la terre. */
   const EXTS = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
+  /* les terres où se pose un extracteur : celles de sa ressource (le sable est à la Rivière et au Désert) */
+  const extZones = (id) => { const it = D.ITEMS[id]; return (it && (it.zs || (it.z ? [it.z] : []))) || []; };
   const ZONE_DEPS = {}; // zone → [{ res, hand }]
   D.ZONES.forEach((z) => {
     const list = z.res.slice();
-    EXTS.forEach((id) => { if (D.ITEMS[id].z === z.id) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
+    EXTS.forEach((id) => { if (extZones(id).includes(z.id)) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
     ZONE_DEPS[z.id] = list.map((r) => ({ res: r, hand: z.res.includes(r) }));
   });
+  /* une ressource qui ne se récolte qu’avec un extracteur (l’uranium, la galène) : sa terre est celle de son extracteur, et le jeu
+   * sait lequel la produit (le moins avancé) pour guider vers lui */
+  const HAND = {}, EXT_OF = {};
+  D.ZONES.forEach((z) => z.res.forEach((r) => (HAND[r] = true)));
+  EXTS.slice().sort((a, b) => (D.ITEMS[a].a || 0) - (D.ITEMS[b].a || 0)).forEach((id) => {
+    for (const r in D.ITEMS[id].p) { if (!EXT_OF[r]) EXT_OF[r] = id; if (!RES_ZONE[r]) RES_ZONE[r] = extZones(id)[0]; }
+  });
   const extKey = (z, res) => z + ":" + res;
+  /* avant la 0.17, un extracteur récoltait plusieurs ressources : le niveau qui descend de lui (champ de) et récolte celle-ci */
+  const extFrere = (id, res) => { const g = D.ITEMS[id].de || id; return Object.keys(D.ITEMS).find((k) => (k === g || D.ITEMS[k].de === g) && D.ITEMS[k].t === "ext" && D.ITEMS[k].p && D.ITEMS[k].p[res]) || null; };
   /* un extracteur posé met tout son effort sur la matière de son gisement */
   const extRate = (id, r) => { const p = D.ITEMS[id] && D.ITEMS[id].p; return p && p[r] ? p[r] * Object.keys(p).length : 0; };
   /* un extracteur ne travaille que sur les gisements de sa propre terre */
-  const extOk = (id, z, r) => !!(D.ITEMS[id] && D.ITEMS[id].z === z && extRate(id, r) > 0);
+  const extOk = (id, z, r) => !!(D.ITEMS[id] && extZones(id).includes(z) && extRate(id, r) > 0);
   /* Où étaient ces gisements sur la grille de l’ancienne usine (sauvegardes v4 et
    * v5) : ne sert plus qu’à la migration, pour savoir ce qu’exploitait chaque case. */
   const OLD_PATCH = {
@@ -177,6 +193,49 @@
         o.proj.chant = { step: 0, paid: {} };
       }
       o.v = 7;
+    }
+    if (from < 8) {
+      // v8 : un extracteur par ressource (voir D.LIGNES). Le passage des exemplaires posés sur une autre ressource que celle
+      // de leur objet vers le niveau frère se fait au chargement (checkDom), pour toutes les vieilles sauvegardes.
+      o.v = 8;
+    }
+    if (from < 9) {
+      // v9 : un âge de plus, la Vapeur, entre l’Acier (6) et l’Électricité. Tout âge d’avant 7 reste, les autres avancent d’un rang.
+      // Qui a dépassé l’Acier a dépassé la Vapeur : son âge est marqué accompli, sans récompense.
+      const apres = (a) => (Number(a) >= 7 ? Number(a) + 1 : Number(a));
+      if (typeof o.age === "number") o.age = apres(o.age);
+      o.flags = o.flags || {};
+      if (o.flags.ages && typeof o.flags.ages === "object") {
+        const ages = {};
+        for (const k in o.flags.ages) ages[apres(k)] = o.flags.ages[k];
+        if (ages[8] || o.age >= 8) ages[7] = 1;
+        o.flags.ages = ages;
+      }
+      const st = o.meta && o.meta.stamps;
+      if (st && typeof st === "object") for (const k in st) if (Array.isArray(st[k]) && st[k].length > 2) st[k][2] = apres(st[k][2]);
+      o.v = 9;
+    }
+    if (from < 10) {
+      // v10 : un âge de plus, l’Atome, entre l’Électricité (8) et le Silicium. Les âges d’avant 9 restent, les autres avancent d’un rang.
+      const apres = (a) => (Number(a) >= 9 ? Number(a) + 1 : Number(a));
+      if (typeof o.age === "number") o.age = apres(o.age);
+      o.flags = o.flags || {};
+      if (o.flags.ages && typeof o.flags.ages === "object") {
+        const ages = {};
+        for (const k in o.flags.ages) ages[apres(k)] = o.flags.ages[k];
+        if (ages[10] || o.age >= 10) ages[9] = 1;
+        o.flags.ages = ages;
+      }
+      const st = o.meta && o.meta.stamps;
+      if (st && typeof st === "object") for (const k in st) if (Array.isArray(st[k]) && st[k].length > 2) st[k][2] = apres(st[k][2]);
+      o.v = 10;
+    }
+    if (from < 11) {
+      const q = o.hand && o.hand.q;
+      if (Array.isArray(q)) q.forEach((j) => {
+        if (j && Array.isArray(j.s) && j.s.some((s) => Array.isArray(s) && INPUTS_020[s[0]])) j.recettes020 = true;
+      });
+      o.v = 11;
     }
     return o;
   }
@@ -378,9 +437,12 @@
     E.memLvl = memLvl;
     E.memV = memV;
     E.memCost = (id) => MEM[id].cost[memLvl(id)]; // undefined : au maximum
+    /* Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur : la fenêtre s’ouvre à la relève et se ferme au bouton « Terminé » ou au premier passage franchi */
+    E.achatsOuverts = () => !!(S.meta && S.meta.achats);
+    E.fermerAchats = () => { if (S.meta && S.meta.achats) { S.meta.achats = false; E.emit("struct"); } };
     E.memBuy = function (id) {
       const m = MEM[id], c = m && m.cost[memLvl(id)];
-      if (c === undefined || S.meta.traces < c) return false;
+      if (!E.achatsOuverts() || c === undefined || S.meta.traces < c) return false;
       S.meta.traces -= c;
       S.meta.mem[id] = memLvl(id) + 1;
       recalc();
@@ -451,7 +513,7 @@
     E.transCost = (id) => (TRANS[id] ? TRANS[id].cost(transLvl(id)) : Infinity);
     E.transBuy = function (id) {
       const t = TRANS[id], c = t && t.cost(transLvl(id));
-      if (!t || c === undefined || S.meta.traces < c) return false;
+      if (!E.achatsOuverts() || !t || c === undefined || S.meta.traces < c) return false;
       S.meta.traces -= c;
       S.meta.trans = S.meta.trans || {};
       S.meta.trans[id] = transLvl(id) + 1;
@@ -464,7 +526,7 @@
     E.hasEndingHint = (k) => !!(S.meta && S.meta.hints_endings && S.meta.hints_endings[k]);
     E.buyEndingHint = function (k) {
       const cost = D.HINT_ENDING_COST || 75;
-      if (E.hasEndingHint(k) || !D.ENDINGS || !D.ENDINGS[k] || S.meta.traces < cost) return false;
+      if (!E.achatsOuverts() || E.hasEndingHint(k) || !D.ENDINGS || !D.ENDINGS[k] || S.meta.traces < cost) return false;
       S.meta.traces -= cost;
       S.meta.hints_endings = S.meta.hints_endings || {};
       S.meta.hints_endings[k] = true;
@@ -543,6 +605,7 @@
       const done = Object.keys(cost).every((i) => (p.paid[i] || 0) >= cost[i]);
       if (done) {
         p.done = true;
+        if (S.meta.achats) S.meta.achats = false; // le premier passage du cycle ferme les achats
         E.emit("passdone", { z: zid, tr: PASS[zid].tr });
         unlockZone(zid);
         checkAges();
@@ -611,7 +674,7 @@
       if (!R) return null;
       const bonus = R.tap && !R.tap.sans && R.tap.mult > 1;
       const av = R.tap && R.tap.sans ? R.tap : R.chaleur;
-      return { n: R.n, t: R.t, ok: R.ok || "", etat: av && av.sans ? (regleSans(av) ? "ok" : "gene") : "neutre", bonus };
+      return { n: R.n, t: R.t, ok: R.ok || "", etat: av && av.sans ? (regleSans(av) ? "ok" : "gene") : "neutre", bonus, sans: av && av.sans ? av.sans.slice() : [] };
     };
     function tapYield(res, zid) {
       const c = E.cache();
@@ -661,6 +724,14 @@
         if (e.res === res && machStat[k] && machStat[k].s === "ok") r += extOut(e, c);
       }
       return r;
+    };
+
+    /* d’où vient une ressource qui manque : sa terre, ce que les extracteurs en donnent (par seconde) et le temps qu’il faudrait pour q */
+    E.isRawRes = (res) => { const it = item(res); return !!(it && it.t === "res" && RES_ZONE[res]); };
+    E.limiting = (res, q) => {
+      const it = item(res), z = RES_ZONE[res], raw = !!(it && it.t === "res" && z);
+      const rate = raw ? E.rate(res) : 0;
+      return { res, q, raw, z: raw ? z : null, open: raw ? zoneOpen(z) : true, rate, eta: rate > 0 ? q / rate : null, hand: raw && zoneOpen(z) ? E.tapYieldOf(res) > 0 : false };
     };
 
     /* ------------------------------------------------------ coûts */
@@ -759,10 +830,12 @@
     E.learn = learn;
 
     /* chefs-d’œuvre : chance de lot bonus selon la maîtrise */
-    function bonusFor(it, times) {
+    function bonusFor(it, times, main) {
       let bonus = 0;
       if (it.t !== "comp" && it.t !== "res") return 0;
-      const ch = 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0);
+      // « Mains sûres » : une chance de pièce en plus pour ce que les mains fabriquent (pas les machines)
+      const mem = main && MEM.mains.bonus ? MEM.mains.bonus(memLvl("mains")) : 0;
+      const ch = Math.min(0.95, 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0) + mem);
       if (ch > 0) {
         if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
         else bonus = Math.floor(times * ch + rand());
@@ -788,7 +861,7 @@
      * l’établi (sous-composant d’une fabrication en chaîne) au lieu d’aller au stock. */
     function makeIt(id, times, quiet, bench) {
       const it = item(id);
-      const bonus = bonusFor(it, times);
+      const bonus = bonusFor(it, times, true);
       const out = it.r[2] * (times + bonus);
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
@@ -1258,11 +1331,14 @@
     }
     /* combien d’unités de l’étape (j, sIdx) peuvent être alimentées par l’établi (après
      * ce qui est déjà réservé par d’autres étapes en cours sur j) */
+    function jobInputs(j, rec) {
+      return (j.recettes020 && INPUTS_020[rec]) || item(rec).r[1];
+    }
     function affordableUnits(j, sIdx, reserved) {
       const rec = j.s[sIdx][0], it = item(rec);
       const b = blocker(rec);
       if (b && b.why !== "owned") return 0;
-      const cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+      const cost = isScaled(it) ? costFor(rec, count(rec)) : jobInputs(j, rec);
       let maxU = j.s[sIdx][1] - j.done[sIdx];
       if (maxU <= 0) return 0;
       if (isScaled(it) || isUnique(it)) maxU = Math.min(maxU, 1);
@@ -1297,7 +1373,7 @@
             w.job = j; w.sIdx = sIdx; w.rec = rec;
             idle[w.m] = false;
             stepMachs[jIdx][sIdx]++;
-            const cost = item(rec).r[1];
+            const cost = jobInputs(j, rec);
             for (const i in cost) resv[i] = (resv[i] || 0) + cost[i];
             return;
           }
@@ -1318,7 +1394,7 @@
             if (aff < 1) continue;
             hWork = { job: j, sIdx, rec };
             if (stepMachs[jIdx][sIdx] === 0) {
-              const it = item(rec), cost = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+              const it = item(rec), cost = isScaled(it) ? costFor(rec, count(rec)) : jobInputs(j, rec);
               for (const i in cost) resv[i] = (resv[i] || 0) + cost[i];
             }
             break;
@@ -1361,7 +1437,7 @@
       const miss = {};
       for (const i in p.missing) if (p.missing[i] > 0) miss[i] = p.missing[i];
       const last = S.hand.q[S.hand.q.length - 1];
-      if (p.steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (p.steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         last.miss = last.miss || {};
@@ -1415,7 +1491,7 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         assignWorkers();
@@ -1562,10 +1638,11 @@
             const it = item(rec);
             const one = isScaled(it) || isUnique(it);
             let k = Math.min(Math.floor(j.sp[sIdx] + 1e-9), j.s[sIdx][1] - j.done[sIdx], one ? 1 : Infinity);
-            const unit = isScaled(it) ? costFor(rec, count(rec)) : it.r[1];
+            const unit = isScaled(it) ? costFor(rec, count(rec)) : jobInputs(j, rec);
             for (const i in unit) k = Math.min(k, Math.floor(((j.b[i] || 0) + (S.inv[i] || 0) + 1e-9) / unit[i]));
             j.sp[sIdx] = Math.min(1, Math.max(0, j.sp[sIdx] - Math.max(k, 1)));
-            if (!(k >= 1) || !take(isScaled(it) ? unit : totalCost(rec, k), j.b)) { j.w = 1; continue; }
+            const cost = isScaled(it) ? unit : Object.fromEntries(Object.entries(unit).map(([id, n]) => [id, n * k]));
+            if (!(k >= 1) || !take(cost, j.b)) { j.w = 1; continue; }
             const last = sIdx === j.s.length - 1;
             // les pièces payées par l’avance des machines sont à elles, le reste aux mains
             const km = mCnt > 0 ? (hOn ? Math.min(k, Math.floor(j.mAcc[sIdx] + 1e-9)) : k) : 0, kh = k - km;
@@ -1792,7 +1869,11 @@
         const it = item(id);
         if (!it) return null;
         const zid = RES_ZONE[id];
-        if (zid && zoneOpen(zid)) return null; // se récolte
+        if (zid && zoneOpen(zid)) {
+          // une ressource que seul un extracteur récolte : il faut d’abord celui-là
+          if (!HAND[id] && EXT_OF[id] && !(count(EXT_OF[id]) > 0)) return walk(EXT_OF[id], d + 1) || { id: EXT_OF[id], why: "known" };
+          return null; // se récolte
+        }
         if (!it.r) {
           // matière première d’une zone fermée : il faut la clé de la zone
           const req = zid && ZONES[zid].req;
@@ -1819,6 +1900,16 @@
     E.guide = function () {
       const ob = E.objective();
       if (!ob) return null;
+      if (ob.k === "pass") {
+        // le passage ne s’ouvre qu’une fois les lieux de la terre explorés, et un lieu peut demander un objet (la torche de la grotte) : le guide y mène
+        const l = ob.z && E.passLieux(ob.z), nx = l && l.left.length ? E.nextExp(l.z) : null, cost = (nx && !nx.locked && nx.x.cost) || {};
+        for (const i of Object.keys(cost)) {
+          if (!item(i) || !item(i).r || (S.inv[i] || 0) >= cost[i]) continue;
+          const s = nextStep(i);
+          if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i };
+        }
+        return { ob, step: null };
+      }
       if (ob.k !== "craft") return { ob, step: null };
       const s = nextStep(ob.id);
       return { ob, step: s.id, why: s.why };
@@ -2956,6 +3047,7 @@
 
     /* --- gisements et extracteurs */
     E.EXTS = EXTS;
+    E.extZones = extZones;
     E.extRate = extRate;
     E.extKey = extKey;
     E.zoneDeps = (z) => ZONE_DEPS[z] || [];
@@ -2983,7 +3075,7 @@
       if (ch && !regleSans(ch)) f *= ch.mult;
       for (const t in e.u) {
         const it = item(t);
-        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
+        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[e.z || it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
       return r * f * donExt(e.z) * seuilMult(e);
     }
@@ -3039,6 +3131,32 @@
       if (!q.ok) return { ok: placed > 0, placed, queued: 0, t, why: q.why, missing: q.missing || (q.plan && q.plan.missing) };
       return { ok: true, placed, queued: n - placed, t };
     };
+    /* ---- Les lignes : un bâtiment par ressource, qui monte de niveau en niveau ---- */
+    const LIGNE = {}; // ressource → ligne
+    (D.LIGNES || []).forEach((L) => (LIGNE[L.res] = L));
+    E.ligneDe = (res) => LIGNE[res] || null;
+    E.ligneOf = (id) => { const it = item(id); return it && it.lg ? D.LIGNES.find((L) => L.id === it.lg) : null; };
+    /* le niveau d’après (l’objet), ou null au dernier niveau */
+    E.extNext = (id) => { const L = E.ligneOf(id), it = item(id); return L && it ? (L.niv[it.lv] ? L.niv[it.lv].id : null) : null; };
+    E.extNiveaux = (res) => (LIGNE[res] ? LIGNE[res].niv.map((v) => v.id) : []);
+    /* Améliorer un exemplaire posé : on fabrique le niveau d’après, il prend la place de l’ancien,
+     * qui est retiré. Si un exemplaire du niveau d’après attend déjà, l’échange est immédiat. */
+    E.domExtUp = function (z, res, from) {
+      const e = S.dom.ext[extKey(z, res)], nx = E.extNext(from);
+      if (!e || !(e.u[from] >= 1) || !nx || !S.known[nx]) return { ok: false, why: "niveau" };
+      if (freeExt(nx) >= 1) { swapUp(z, res, from, nx); return { ok: true, placed: 1, queued: 0, t: nx }; }
+      const q = E.queue(nx, 1, true, "u:" + z + ":" + res + ":" + from);
+      if (!q.ok) return { ok: false, why: q.why, missing: q.missing || (q.plan && q.plan.missing), t: nx };
+      return { ok: true, placed: 0, queued: 1, t: nx };
+    };
+    function swapUp(z, res, from, nx) {
+      const key = extKey(z, res), e = S.dom.ext[key];
+      if (e && e.u[from] >= 1 && count(from) >= 1) {
+        e.u[from]--; if (!e.u[from]) delete e.u[from];
+        add(from, -1);
+      }
+      assignExt(z, res, nx, 1);
+    }
     /* nombre exact d’extracteurs d’un type sur un gisement (0 les retire) */
     E.domExtSet = function (z, res, t, n) {
       if (!zoneOpen(z) || !extOk(t, z, res) || !(ZONE_DEPS[z] || []).some((d) => d.res === res)) return null;
@@ -3070,8 +3188,9 @@
      * ne travaillaient sur aucun gisement. */
     E.domAutoExt = function (t) {
       const it = item(t);
-      if (!it || it.t !== "ext" || freeExt(t) < 1 || !zoneOpen(it.z)) return null;
-      const spots = ZONE_DEPS[it.z].filter((d) => extRate(t, d.res) > 0).map((d) => ({ r: d.res }));
+      if (!it || it.t !== "ext" || freeExt(t) < 1) return null;
+      const spots = [];
+      extZones(t).filter(zoneOpen).forEach((z) => ZONE_DEPS[z].forEach((d) => { if (extRate(t, d.res) > 0) spots.push({ z, r: d.res }); }));
       if (!spots.length) return null;
       // viser ce que donneraient tous les extracteurs s’ils travaillaient partout,
       // en couvrant d’abord les matières qui ne sont pas encore extraites
@@ -3083,7 +3202,7 @@
         sp.score = (cur[sp.r] ? 0 : 1000) + Math.abs(d) - Math.abs(d - extRate(t, sp.r));
       });
       spots.sort((a, b) => b.score - a.score);
-      return assignExt(it.z, spots[0].r, t, 1) ? { z: it.z, res: spots[0].r } : null;
+      return assignExt(spots[0].z, spots[0].r, t, 1) ? { z: spots[0].z, res: spots[0].r } : null;
     };
     function placeOldExtractors() {
       let placed = 0;
@@ -3125,6 +3244,9 @@
       if (to.slice(0, 2) === "x:" && it.t === "ext") {
         const i = to.indexOf(":", 2);
         assignExt(to.slice(2, i), to.slice(i + 1), id, n);
+      } else if (to.slice(0, 2) === "u:" && it.t === "ext") { // une amélioration : zone:ressource:ancien niveau
+        const [z, res, from] = to.slice(2).split(":");
+        if (z && res && from) swapUp(z, res, from, id); else E.domAutoExt(id);
       }
     }
     /* pièces encore attendues pour un gisement ("x:zone:res") */
@@ -3561,13 +3683,14 @@
         const l = pool[Math.min(pool.length - 1, Math.floor(rand() * pool.length))];
         st.vus[l.id] = S.cycle || 1;
         st.dernier = { id: l.id, th };
-        out = { ok: true, id: l.id, th, vide: false, t: interpolate(l.t) };
+        out = { ok: true, id: l.id, th, vide: false, q: l.q || "", t: interpolate(l.t) };
       } else {
         const R = T.refus || [];
         const i = st.refus | 0;
         st.refus = i + 1;
         st.dernier = { id: null, th, refus: i };
-        out = { ok: true, th, vide: true, t: R.length ? interpolate(R[i % R.length]) : "" };
+        const th0 = (T.themes || []).find((x) => x.id === th);
+        out = { ok: true, th, vide: true, q: (th0 && th0.q) || "", t: R.length ? interpolate(R[i % R.length]) : "" };
       }
       E.emit("troc", out);
       E.emit("struct");
@@ -3580,10 +3703,11 @@
       const T = trocData();
       if (d.id) {
         const l = (T.lignes || []).find((x) => x.id === d.id);
-        return l ? { th: d.th, vide: false, t: interpolate(l.t) } : null;
+        return l ? { th: d.th, vide: false, q: l.q || "", t: interpolate(l.t) } : null;
       }
       const R = T.refus || [];
-      return R.length ? { th: d.th, vide: true, t: interpolate(R[(d.refus | 0) % R.length]) } : null;
+      const th0 = (T.themes || []).find((x) => x.id === d.th);
+      return R.length ? { th: d.th, vide: true, q: (th0 && th0.q) || "", t: interpolate(R[(d.refus | 0) % R.length]) } : null;
     };
     E.troqueurDispo = () => E.troqueurThemes().reduce((a, x) => a + x.dispo, 0);
 
@@ -3693,13 +3817,15 @@
         "Chapitre IV · La Flamme et le cuivre",
         "Chapitre V · L’Alliage du bronze",
         "Chapitre VI · Le Marteau et le fer",
-        "Chapitre VII · L’Acier et la vapeur",
-        "Chapitre VIII · L’Étincelle captive",
-        "Chapitre IX · La Pensée du silicium",
-        "Chapitre X · L’Huile noire",
-        "Chapitre XI · L’Étoffe des composites",
-        "Chapitre XII · L’Envol spatial",
-        "Chapitre XIII · La Lumière stellaire"
+        "Chapitre VII · L’Acier",
+        "Chapitre VIII · La Vapeur au travail",
+        "Chapitre IX · L’Étincelle captive",
+        "Chapitre X · Le Cœur de l’atome",
+        "Chapitre XI · La Pensée du silicium",
+        "Chapitre XII · L’Huile noire",
+        "Chapitre XIII · L’Étoffe des composites",
+        "Chapitre XIV · L’Envol spatial",
+        "Chapitre XV · La Lumière stellaire"
       ];
       const chapter = chapterTitles[S.age] || ("Chapitre " + (S.age + 1));
       return {
@@ -3834,6 +3960,7 @@
         Object.assign(n.inv, { bois: 60, fibre: 60, caillou: 40, manche: 10, corde: 10 });
       }
       S = n;
+      S.meta.achats = true; // les Traces se dépensent maintenant, au réveil du nouveau Semeur
       // la Mémoire des mains : le paquetage, et les terres déjà connues
       // ce que le paquetage donne compte comme déjà fait (les étapes « manche », « corde »… passent)
       D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); } });
@@ -3855,10 +3982,12 @@
     };
 
     /* Première renaissance obligatoire (fin du tutoriel) */
-    E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.flags && S.flags.extDone && S.exp && S.exp.done && S.exp.done.lisiere >= 1);
+    /* la relève obligatoire : une fois, au cycle 1, quand le premier passage (la Plaine) est franchi : le joueur a déjà gagné ses premières Traces et sait ce que coûte un passage */
+    E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.pass && S.pass.plaine && S.pass.plaine.done);
     E.forcedReleve = function () {
       if (S.meta.forcedDone || S.cycle !== 1) return false;
       S.meta.forcedDone = true;
+      S.meta.reveilAt = now(); // le rappel du Domaine (« Un autre Semeur a pris le relais ») ne reste que quelques minutes
       const gift = (D.PARCOURS && D.PARCOURS.gift) || 3;
       S.meta.traces = (S.meta.traces || 0) + gift;
       S.meta.tracesTotal = (S.meta.tracesTotal || 0) + gift;
@@ -4252,9 +4381,21 @@
         e.z = z; e.res = res; e.on = e.on !== false;
         for (const t in e.u) {
           const n = Math.max(0, Math.floor(e.u[t]) || 0);
+          // v8 : un extracteur à plusieurs ressources est devenu une ligne par ressource ; ceux qui travaillaient une autre ressource que celle de leur objet passent au niveau frère de cette ressource
+          const frere = D.ITEMS[t] && D.ITEMS[t].t === "ext" && n && !extRate(t, res) ? extFrere(t, res) : null;
+          if (frere) {
+            o.inv = o.inv || {};
+            o.inv[t] = Math.max(0, (Number(o.inv[t]) || 0) - n);
+            o.inv[frere] = (Number(o.inv[frere]) || 0) + n;
+            if (o.made && o.made[t]) o.made[frere] = Math.max(o.made[frere] || 0, 1);
+            delete e.u[t];
+            e.u[frere] = (e.u[frere] || 0) + n;
+            if (o.known && o.known[t]) o.known[frere] = true;
+            continue;
+          }
           if (!D.ITEMS[t] || D.ITEMS[t].t !== "ext" || !extRate(t, res) || !n) { if (n) aside("ext:" + k + ":" + t, n); delete e.u[t]; }
           // posé sur une autre terre que la sienne (permis avant la 5.3) : il rentre chez lui au chargement
-          else if (D.ITEMS[t].z !== z) { const m = (o.flags.reExt = o.flags.reExt || {}); m[t] = (m[t] || 0) + n; delete e.u[t]; }
+          else if (!extZones(t).includes(z)) { const m = (o.flags.reExt = o.flags.reExt || {}); m[t] = (m[t] || 0) + n; delete e.u[t]; }
           else e.u[t] = n;
         }
         if (!Object.keys(e.u).length) delete d.ext[k];
@@ -4325,6 +4466,7 @@
         if (!ok || keep.length >= D.HAND.max) { refund(j && j.b); return; }
         for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
         j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
+        j.recettes020 = j.recettes020 === true && j.s.some((s) => !!INPUTS_020[s[0]]);
         if (Array.isArray(j.done) && j.done.length === j.s.length) {
           j.done = j.done.map((d, idx) => Math.max(0, Math.min(j.s[idx][1], Math.floor(Number(d)) || 0)));
         } else {

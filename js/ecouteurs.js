@@ -18,6 +18,8 @@
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
+    /* le retour d’absence, en secondes : en dessous du premier seuil rien, jusqu’au second un message discret, au-delà une fenêtre */
+    const ABSENCE_MESSAGE = 60, ABSENCE_FENETRE = 300;
 
     /* la relève forcée s’ouvre une fois par cycle (sa fenêtre est dans js/memoire.js) */
     let forcedModalShown = false;
@@ -171,11 +173,8 @@
             '</div><div class="acts"><button class="btn pri" data-m="close">Continuer</button></div>' });
         }, 900);
       });
-      /* une pièce sort des mains : un petit bruit (pas trop souvent), et le compte qui monte */
-      let lastHand = 0;
+      /* une pièce sort des mains : le compte monte (le bruit, lui, est celui de l’atelier au travail : js/audio.js, A.work) */
       E.on("handdone", (d) => {
-        const now = Date.now();
-        if (now - lastHand > 350) { lastHand = now; A.craft(I[d.id].r[0]); }
         const el = U.tab === "atelier" ? $("#hands") : null;
         if (el && d.last) { const p = elCenter(el); floater("+" + fmt(d.n) + " " + I[d.id].n, p.x, p.y - 10, "var(--good)"); if (d.bonus) setTimeout(() => floater("★ +" + fmt(d.bonus), p.x, p.y - 26, "var(--intu)"), 200); }
       });
@@ -229,8 +228,14 @@
         }
       });
       E.on("offline", (o) => {
-        if (o.dt < 60) return;
+        if (o.dt < ABSENCE_MESSAGE) return;
         const top = Object.keys(o.gains).filter((k) => I[k]).sort((a, b) => o.gains[b] - o.gains[a]).slice(0, 10);
+        if (o.dt < ABSENCE_FENETRE) {
+          // une absence courte (une autre application, l’écran éteint) : un mot, pas une fenêtre qui bloque
+          if (top.length) toast("Pendant ton absence : " + top.slice(0, 2).map((k) => "+" + fmt(o.gains[k]) + " " + esc(I[k].n)).join(", "), { key: "absence" });
+          if (o.exp) toast("Exploration terminée.", { key: "absence-exp" });
+          return;
+        }
         if (!top.length && !o.exp && o.dt < 600) return;
         U.offline = { dt: o.dt, top, gains: o.gains, exp: o.exp };
       });
@@ -260,6 +265,18 @@
           if (ev.shiftKey && (cur === first || cur === box || !box.contains(cur))) { ev.preventDefault(); last.focus(); return; }
           if (!ev.shiftKey && (cur === last || !box.contains(cur))) { ev.preventDefault(); first.focus(); return; }
         }
+        // la Carte au clavier : un lieu, un passage, une terre ou le camp se touchent d’Entrée ou d’Espace
+        if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("#v-carte svg [tabindex]")) {
+          ev.preventDefault();
+          Carte.click(document.activeElement);
+          return;
+        }
+        // une ressource au clavier : Entrée pose sur l’établi (voir le clic), « i » ou Maj + Entrée ouvre sa fiche, sans appui long
+        if (document.activeElement && document.activeElement.matches(".inv") && (ev.key === "i" || (ev.key === "Enter" && ev.shiftKey))) {
+          ev.preventDefault();
+          openItemInfo(document.activeElement.dataset.inv);
+          return;
+        }
         if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("[data-goto]")) {
           ev.preventDefault();
           goto(document.activeElement.dataset.goto);
@@ -277,7 +294,7 @@
       });
       document.addEventListener("pointerdown", (ev) => { U.pointer = { x: ev.clientX, y: ev.clientY }; }, true);
       document.addEventListener("wheel", (ev) => {
-        const el = ev.target.closest(".ztabs, .filters, .u-tools, .u-free");
+        const el = ev.target.closest(".ztabs, .filters, .age-nav, .u-tools, .u-free");
         if (el && !ev.shiftKey && Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
           if (el.scrollWidth > el.clientWidth) {
             el.scrollLeft += ev.deltaY;
@@ -331,7 +348,11 @@
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, (ev) => Dom.up(ev)));
       views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } updMini(); }, { passive: true });
-      views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".inv, .slot, [data-harv]")) ev.preventDefault(); });
+      views.addEventListener("contextmenu", (ev) => {
+        const iv = ev.target.closest(".inv");
+        if (iv) { ev.preventDefault(); openItemInfo(iv.dataset.inv); return; } // clic droit ou touche Menu : la fiche
+        if (ev.target.closest(".slot, [data-harv]")) ev.preventDefault();
+      });
 
       views.addEventListener("click", (ev) => {
         const t = ev.target;
@@ -340,9 +361,12 @@
         if (U.tab === "carte" && Carte.click(t)) return;
         if (Dom.click(t, ev)) return;
         if ((b = t.closest(".inv"))) {
-          if (U.lp) { cancelLp(); U.lp = null; putInSlot(b.dataset.inv); }
+          // « Fiches » : un appui ouvre la fiche (l’alternative à l’appui long) ; sinon un appui pose sur l’établi
+          if (U.lp) { cancelLp(); U.lp = null; if (U.invFiche) openItemInfo(b.dataset.inv); else putInSlot(b.dataset.inv); }
+          else if (ev.detail === 0) { if (U.invFiche) openItemInfo(b.dataset.inv); else putInSlot(b.dataset.inv); } // au clavier : pas d’appui, donc pas de minuteur
           return;
         }
+        if (t.closest("[data-fichemode]")) { U.invFiche = !U.invFiche; A.click(); render(true); return; }
         if ((b = t.closest("[data-pin]"))) { const on = E.togglePin(b.dataset.pin); A.click(); toast(on ? "★ Épinglée : visible en haut de l’Atelier." : "Recette désépinglée."); render(true); return; }
         if ((b = t.closest(".nope[data-chain], .nope[data-cr]"))) {
           A.fail(0);
@@ -351,9 +375,13 @@
         }
         if ((b = t.closest("[data-hopen]"))) { A.init(); openHands(); return; }
         if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
-        if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
+        if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
         if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
         if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
+        if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans le Domaine
+          const z = b.dataset.gz; A.click(); U.zone = z; if (U.mcur) closeModal();
+          setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return;
+        }
         if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
         if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
         if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
@@ -370,8 +398,10 @@
           A.click(); render(true); return;
         }
         if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
-        if ((b = t.closest("[data-lock]"))) { toast("Action encore inconnue. Elle se débloque avec sa station : feu, enclume, creuset…"); return; }
+        if ((b = t.closest("[data-lock]"))) { toast("Action verrouillée. Station nécessaire : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
+        if ((b = t.closest("[data-qty]"))) { S().flags.carnetQty = b.dataset.qty === "max" ? "max" : Number(b.dataset.qty); A.click(); render(true); return; }
+        if (t.closest("[data-resclose]")) { U.last = null; A.click(); render(true); return; }
         if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
         if (t.closest("#forge, [data-forge]") && !t.closest("[data-s]")) {
           if (performance.now() - (U.forgeUp || 0) < 600) return; // déjà fait au relâcher
@@ -393,12 +423,47 @@
         }
         if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
         if ((b = t.closest("[data-study-all]"))) { const n = E.studyAll(); if (n) { toast("🔍 " + n + " ressources étudiées."); A.discover(); } render(true); return; }
-        if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
+        if (t.closest("[data-filtres]")) { U.invPanel = !U.invPanel; A.click(); render(true); return; }
+        if ((b = t.closest("[data-if]"))) { // un filtre choisi : il s’applique et le panneau se replie ; le focus revient sur « Filtres »
+          U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter });
+          U.invPanel = false; A.click(); render(true);
+          const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true });
+          return;
+        }
+        if (t.closest("[data-fclear]")) { U.invFilter = "tout"; S().settings.inv = Object.assign({}, S().settings.inv, { filter: "tout", sort: "age" }); U.invPanel = false; A.click(); render(true); const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true }); return; }
         if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
+        if ((b = t.closest("[data-cvue]"))) {
+          const st = S();
+          if (b.dataset.cvue === "cols") st.settings.carnet1Col = !st.settings.carnet1Col;
+          else if (b.dataset.cvue === "dense") st.settings.carnetDense = !st.settings.carnetDense;
+          A.click(); save(); render(true);
+          return;
+        }
+        if ((b = t.closest("[data-age-jump]"))) {
+          const a = Number(b.dataset.ageJump);
+          U.openAges[a] = true; A.click(); render(true);
+          const sec = document.querySelector('#v-carnet details[data-age="' + a + '"]');
+          if (sec) {
+            sec.open = true;
+            const views = $("#views"), qb = $("#v-carnet .qtybar");
+            const off = qb ? qb.getBoundingClientRect().height + 8 : 8;
+            views.scrollTo({ top: Math.max(0, views.scrollTop + sec.getBoundingClientRect().top - views.getBoundingClientRect().top - off), behavior: "smooth" });
+          }
+          return;
+        }
+        if (t.closest("[data-age-all]")) {
+          const st = S();
+          const book = E.carnet();
+          const anyOpen = book.some((s) => U.carnetFilter !== "tout" || (U.openAges[s.age] !== undefined ? U.openAges[s.age] : s.age >= st.age));
+          if (U.carnetFilter !== "tout") U.carnetFilter = "tout";
+          book.forEach((s) => { U.openAges[s.age] = !anyOpen; });
+          A.click(); render(true);
+          return;
+        }
         if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
         if ((b = t.closest("[data-hcancel]"))) {
           const j = S().hand.q[Number(b.dataset.hcancel)];
-          if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Matières restituées."); render(true); }
+          if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Commande annulée : " + esc(I[j.id].n) + ". Ressources restituées."); render(true); }
           return;
         }
         if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }

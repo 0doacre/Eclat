@@ -19,6 +19,7 @@ let T = 0;
 const E = createEngine({ now: () => T, rand: rnd });
 const S = () => E.state;
 const I = D.ITEMS;
+const HAND = new Set(D.ZONES.flatMap((z) => z.res));
 const MAX_T = 12 * 3600;
 const log = [];
 const ageAt = {};
@@ -63,7 +64,15 @@ function plan(targets, fromEmpty) {
     const d = qty - have;
     const it = I[id];
     const zid = E.RES_ZONE[id];
-    if (zid && E.zoneOpen(zid)) { raw[id] = (raw[id] || 0) + d; return; }
+    if (zid && E.zoneOpen(zid)) {
+      // Une ressource sans récolte à la main demande d’abord son extracteur.
+      // Sinon un investissement (scierie, par exemple) peut attendre indéfiniment de l’eau.
+      if (!HAND.has(id) && E.rate(id) <= 0) {
+        const ext = E.extFor(id, zid).sort((a, b) => I[a].a - I[b].a)[0];
+        if (ext) { blockers.push(ext); return; }
+      }
+      raw[id] = (raw[id] || 0) + d; return;
+    }
     if (it.r) {
       const [g, ing, out, o = {}] = it.r;
       if (!E.gesteOK(g) || (o.heat && E.heat() < o.heat) || (o.lvl && E.level(g) < o.lvl)) {
@@ -274,13 +283,17 @@ if (process.env.DUMP) {
   require("fs").writeFileSync(process.env.DUMP, E.serialize());
 }
 console.log("Simulation : " + TAPS + " tapes/s, projet " + PROJECT);
-for (let a = 1; a < D.AGES.length; a++) {
-  const prev = a === 1 ? 0 : ageAt[a - 1] || 0;
-  if (ageAt[a] !== undefined) console.log("  " + D.AGES[a].n.padEnd(24) + fmtT(ageAt[a]).padStart(10) + "   (+" + fmtT(ageAt[a] - prev) + ")");
+console.log("  Âge                            Entrée   Temps dans cet âge");
+for (let a = 0; a < D.AGES.length; a++) {
+  const entree = a === 0 ? 0 : ageAt[a], sortie = ageAt[a + 1];
+  if (entree === undefined) continue;
+  const duree = fmtT((sortie === undefined ? (endT === null ? T / 1000 : endT) : sortie) - entree);
+  console.log("  " + D.AGES[a].n.padEnd(24) + fmtT(entree).padStart(10) + "   " + duree + (sortie === undefined && !projDone ? " (en cours)" : ""));
 }
 if (process.env.OBJ) { let prev = 0; objAt.forEach(([id, t]) => { console.log("    · " + id.padEnd(18) + fmtT(t).padStart(10) + "  (+" + fmtT(t - prev) + ")"); prev = t; }); }
 log.forEach((l) => console.log("  " + l));
 if (!projDone) {
+  if (!stopNow) process.exitCode = 1;
   console.log("  ✗ pas de fin après " + fmtT(T / 1000) + ". Objectif : " + JSON.stringify(E.objective()) + " intérim : " + interim);
   const ps = E.projState(PROJECT);
   console.log("  étape projet : " + ps.step + " payé " + JSON.stringify(ps.paid));

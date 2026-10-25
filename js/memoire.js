@@ -262,6 +262,15 @@
     function donsRepere() {
       return E.donsOffre().length ? '<button class="dom-tip dom-don" data-dons>🎁 Le Semeur d’avant a laissé trois dons. Tu en prends un. <span>voir ▸</span></button>' : "";
     }
+    /* après la relève obligatoire : un rappel en haut du Domaine, qui s’efface quand les Traces sont dépensées (ou au bout de quinze minutes) */
+    const REVEIL_MIN = 15;
+    function reveilRepere() {
+      const st = S(), m = st.meta;
+      if (!m.forcedDone || st.cycle !== 2 || !(m.traces > 0) || !E.achatsOuverts() || !m.reveilAt || Date.now() - m.reveilAt > REVEIL_MIN * 60000) return "";
+      const rec = Object.keys(st.known).length;
+      return '<button class="dom-tip dom-reveil" data-cycle>🌅 Un autre Semeur a pris le relais. Il a gardé tes ' + rec + " recette" + (rec > 1 ? "s" : "") +
+        " et dispose de <b>" + fmt(m.traces) + " ✦ Traces</b> à dépenser dans la Mémoire des mains. <span>dépenser ▸</span></button>";
+    }
     /* le don du cycle, dans la Mémoire des mains */
     function donCycleHTML() {
       const d = E.don();
@@ -287,7 +296,7 @@
       const info = (id) => {
         const x = memNode(id), inf = (D.TRANSCENDANCE || []).some((t) => t.id === id);
         const l = inf ? E.transLvl(id) : E.memLvl(id), c = inf ? E.transCost(id) : E.memCost(id), max = !inf && c === undefined;
-        return { x, inf, l, c, max, ok: !max && m.traces >= c, soon: !max && m.traces < c && can && m.traces + gain >= c };
+        return { x, inf, l, c, max, ok: !max && E.achatsOuverts() && m.traces >= c, soon: !max && can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c) };
       };
       let h = '<div class="mtree" role="group" aria-label="Arbre de la Mémoire des mains">';
       for (const b of branches) {
@@ -301,10 +310,9 @@
       }
       h += '</div><div class="mroot"><span>✦ ' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + "</span></div>";
       const id = U.memSel;
-      if (!id) return h + '<p class="tiny muted center">Touche un point de l’arbre pour le lire.</p>';
+      if (!id) return h + '<p class="tiny muted center">Sélectionne une amélioration pour consulter ses effets.</p>';
       const n = info(id), x = n.x;
-      const sv = (v) => String(v).replace(".", ",");
-      const now = x.d.replace("{v}", sv(x.v(n.l))).replace(/\.$/, ""), next = n.max ? "" : x.d.replace("{v}", sv(x.v(n.l + 1))).replace(/\.$/, "");
+      const now = memDesc(x, n.l).replace(/\.$/, ""), next = n.max ? "" : memDesc(x, n.l + 1).replace(/\.$/, "");
       h += '<div class="mem sel"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + (n.inf ? "Niveau " + n.l : n.l + "/" + x.cost.length) + "</span></div>" +
         '<div class="tiny muted">' + (n.l ? esc(now) : "") + (n.l && !n.max ? " → " : "") + (n.max ? "" : esc(next)) + "</div>" +
         (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : "") + "</div>" +
@@ -313,11 +321,15 @@
     }
     /* ------------------------------------------------------------ MÉMOIRE DES MAINS
      * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
+    const ACHATS_FERMES = "Les Traces se dépensent au réveil d’un nouveau Semeur : passe le relais, puis achète ici.";
     function memHTML() {
       const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
       let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
         '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
       h += donCycleHTML();
+      h += E.achatsOuverts()
+        ? '<p class="small mem-achats">C’est le moment de dépenser tes Traces. Les achats se ferment quand tu touches « Terminé », ou au premier passage franchi. Les Traces non dépensées attendent la prochaine relève.</p>'
+        : '<p class="small muted mem-achats">Les achats sont fermés en cours de partie. Ils rouvrent au réveil du prochain Semeur, après la relève. Tu peux consulter tes améliorations ici.</p>';
       h += '<div class="card memrel">' + (can
         ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
         : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
@@ -326,12 +338,12 @@
       h += '<details class="mem-liste"><summary>Voir en liste</summary>';
       h += '<div class="mems">' + D.MEMOIRE.map((x) => {
         const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
-        const now = x.d.replace("{v}", String(x.v(l)).replace(".", ",")), next = max ? "" : x.d.replace("{v}", String(x.v(l + 1)).replace(".", ","));
-        const soon = !max && m.traces < c && can && m.traces + gain >= c; // possible juste après la relève
+        const now = memDesc(x, l), next = max ? "" : memDesc(x, l + 1);
+        const soon = !max && can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c); // possible juste après la relève
         return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
           '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
           (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
-          (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
+          (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (E.achatsOuverts() && m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
       }).join("") + "</div>";
 
       if (D.TRANSCENDANCE && D.TRANSCENDANCE.length) {
@@ -340,10 +352,10 @@
         h += '<div class="mems">' + D.TRANSCENDANCE.map((x) => {
           const l = E.transLvl(x.id), c = E.transCost(x.id);
           const curV = x.v(l), nextV = x.v(l + 1);
-          const soon = m.traces < c && can && m.traces + gain >= c;
+          const soon = can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c);
           return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">Niveau ' + l + "</span></div>" +
             '<div class="tiny muted">' + esc(x.d.replace("{v}", String(curV).replace(".", ",")).replace(/\.$/, "")) + ' → <b style="color:var(--good)">×' + String(nextV).replace(".", ",") + '</b></div></div>' +
-            '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buytrans" data-id="' + x.id + '">' + fmt(c) + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button></div>";
+            '<button class="btn small' + (E.achatsOuverts() && m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buytrans" data-id="' + x.id + '">' + fmt(c) + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button></div>";
         }).join("") + "</div>";
       }
 
@@ -363,19 +375,20 @@
           return '<div class="mem on" style="border-left-color:var(--intu)"><span class="mic">✨</span><div class="grow"><div class="small"><b>Dénouement secret · Murmure céleste</b></div><div class="tiny" style="color:var(--text);font-style:italic">« ' + esc(en.hint || "Le destin attend.") + ' »</div></div><span class="tiny muted" style="color:var(--intu)">Murmure acquis</span></div>';
         }
         const hintCost = D.HINT_ENDING_COST || 75;
-        const canHint = m.traces >= hintCost;
-        const soonHint = !canHint && can && m.traces + gain >= hintCost;
+        const canHint = E.achatsOuverts() && m.traces >= hintCost;
+        const soonHint = can && m.traces + gain >= hintCost && (!E.achatsOuverts() || m.traces < hintCost);
         return '<div class="mem dim" style="opacity:0.85"><span class="mic" style="filter:grayscale(1)">❔</span><div class="grow"><div class="small"><b>Dénouement inconnu</b></div><div class="tiny muted">Écouter un murmure du destin…</div></div><button class="btn small' + (canHint ? " pri" : " nope") + (soonHint ? " soon" : "") + '" data-m="buyhint" data-k="' + k + '">Murmure · ' + hintCost + ' ✦' + (soonHint ? '<small class="tiny">après la relève</small>' : "") + '</button></div>';
       }).join("") + "</div>";
 
-      return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
+      return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button>' + (E.achatsOuverts() ? '<button class="btn pri" data-m="fin">Terminé : commencer le cycle</button>' : "") + "</div>";
     }
     U.memHTML = memHTML;
     /* deux colonnes de chiffres : ce qui est conservé, ce qui est remis à zéro */
-    function leftHTML(gain, ecus, ecusTr) {
+    /* ce qui est conservé et ce qui repart de zéro, en listes (la relève libre et la relève obligatoire les montrent) */
+    function releveListes(gain) {
       const st = S(), n = (k) => (k === "ext" ? Object.values(st.dom.ext).reduce((a, e) => a + Object.values(e.u).reduce((x, y) => x + y, 0), 0) : E.MACHINES.reduce((a, m) => a + Math.floor(st.inv[m] || 0), 0));
       const paid = Object.keys(st.pass).filter((z) => !st.pass[z].done && D.PASSAGES[z]);
-      const m = st.meta, next = st.cycle + 7;
+      const m = st.meta;
       const rec = Object.keys(st.known).length;
       const pages = Object.keys((st.livre && st.livre.p) || {}).length;
       const frags = Object.keys(st.frags || {}).length;
@@ -385,27 +398,47 @@
       const traces = m.traces + (gain || 0);
       const keep = [];
       if (rec) keep.push("<b>" + rec + "</b> recette" + (rec > 1 ? "s" : "") + " au Carnet");
-      if (traces > 0) keep.push("<b>" + fmt(traces) + " ✦</b> Traces à dépenser dans la Mémoire des mains");
       if (pages || frags) keep.push("Le Journal" + (pages ? " : <b>" + pages + "</b> page" + (pages > 1 ? "s" : "") : "") + (frags ? (pages ? ", " : " : ") + "<b>" + frags + "</b> morceau" + (frags > 1 ? "x" : "") + " d’histoire" : ""));
       if (signes) keep.push("<b>" + signes + "</b> signe" + (signes > 1 ? "s" : "") + " compris");
       if (memLv) keep.push("<b>" + memLv + "</b> niveau" + (memLv > 1 ? "x" : "") + " de la Mémoire des mains");
       if (ech) keep.push("<b>" + ech + "</b> Écho" + (ech > 1 ? "s" : "") + " : +" + ech * 50 + " % de récolte et de production");
-      const reset = [];
-      reset.push("La Réserve" + (n("ext") ? ", ses " + n("ext") + " extracteur" + (n("ext") > 1 ? "s" : "") : "") + (n("mach") ? " et " + n("mach") + " machine" + (n("mach") > 1 ? "s" : "") : ""));
-      reset.push("Les terres : retour à la Lisière");
+      const reset = ["Ta Réserve"];
+      if (n("ext")) reset.push("Tes <b>" + n("ext") + "</b> extracteur" + (n("ext") > 1 ? "s" : "") + " : ils restent en ruine, à réparer pour une fraction de leur coût");
+      if (n("mach")) reset.push("Tes <b>" + n("mach") + "</b> machine" + (n("mach") > 1 ? "s" : ""));
+      reset.push("Tes terres : tu repars de la Lisière");
       if (paid.length) reset.push("Le passage vers " + paid.map((z) => esc(zoneName(z))).join(" et ") + ", payé à " + Math.floor((E.passInfo(paid[0]).frac || 0) * 100) + " %");
-      if (st.hand.q.length) reset.push("Les " + st.hand.q.length + " commande" + (st.hand.q.length > 1 ? "s" : "") + " en cours");
-      return '<div class="rel-cols"><div class="rel-h">Conservé</div><ul class="rel-list rel-keep">' + keep.map((x) => "<li>" + x + "</li>").join("") + "</ul>" +
-        '<div class="rel-h">Remis à zéro</div><ul class="rel-list rel-reset">' + reset.map((x) => "<li>" + x + "</li>").join("") + "</ul></div>" +
-        '<p class="rel-gain">La relève donne <b>+' + fmt(gain || 0) + " ✦</b> Trace" + ((gain || 0) > 1 ? "s" : "") + (ecusTr ? " (" + fmt(ecus) + " écus en font " + ecusTr + ")" : "") + ", à dépenser dans la Mémoire des mains.</p>" +
-        (rec ? '<p class="small">Aucune recette à retrouver : le Carnet est complet.</p>' : "");
+      if (st.hand.q.length) reset.push("Tes <b>" + st.hand.q.length + "</b> commande" + (st.hand.q.length > 1 ? "s" : "") + " en cours");
+      return { keep, reset, traces, rec };
+    }
+    const listeHTML = (cls, items) => '<ul class="rel-list ' + cls + '">' + items.map((x) => "<li>" + x + "</li>").join("") + "</ul>";
+    /* deux colonnes de chiffres : ce qui est conservé, ce qui est remis à zéro */
+    function leftHTML(gain, ecus, ecusTr) {
+      const { keep, reset, traces, rec } = releveListes(gain);
+      if (traces > 0) keep.splice(rec ? 1 : 0, 0, "<b>" + fmt(traces) + " ✦</b> Traces à dépenser dans la Mémoire des mains");
+      return '<div class="rel-cols"><div class="rel-h">Conservé</div>' + listeHTML("rel-keep", keep) +
+        '<div class="rel-h">Remis à zéro</div>' + listeHTML("rel-reset", reset) + "</div>" +
+        '<p class="rel-gain">La relève donne <b>+' + fmt(gain || 0) + " ✦</b> Trace" + ((gain || 0) > 1 ? "s" : "") + (ecusTr ? " (" + fmt(ecus) + " écus en font " + ecusTr + ")" : "") + ", à dépenser dans la Mémoire des mains.</p>";
+    }
+    /* la fenêtre de la première relève : ce qu’on gagne, ce qu’on garde, ce qui repart de zéro, pourquoi. Le langage d’une interface de jeu, sans récit. */
+    function forcedReleveHTML() {
+      const gift = (D.PARCOURS && D.PARCOURS.gift) || 3, pass = E.releveGain(), { keep, reset } = releveListes(0);
+      const total = gift + pass;
+      return '<div class="kicker">Relève</div><h2>Fin du premier cycle</h2>' +
+        '<p class="small">Tu as franchi ton premier passage. C’est le moment de la relève : le monde recommence de zéro, mais tu gardes tes recettes.</p>' +
+        '<div class="rel-cols"><div class="rel-h">Tu gagnes</div>' +
+        listeHTML("rel-gagne", ["<b>" + fmt(total) + " ✦ Traces</b> (" + gift + " offertes" + (pass ? ", " + pass + " pour le passage" : "") + ")", "À dépenser tout de suite dans la Mémoire des mains : ce sont des améliorations permanentes"]) +
+        '<div class="rel-h">Tu gardes</div>' + listeHTML("rel-keep", keep) +
+        '<div class="rel-h">Repart de zéro</div>' + listeHTML("rel-reset", reset) + "</div>" +
+        '<p class="small">À chaque relève, tu repars plus vite : tu connais déjà tes recettes, et la Mémoire des mains garde tes améliorations.</p>' +
+        releveExtrasHTML() +
+        '<div class="acts"><button class="btn pri wide" data-m="go">Passer le relais</button>' + releveBtnSigne() + "</div>";
     }
     /* la carte de l’éveil : trois faits, un bouton */
     function accueil(onClose) {
       const st = S(), m = st.meta, rec = Object.keys(st.known).length;
       const rows = [];
       if (rec) rows.push("Le Carnet garde tes <b>" + rec + "</b> recettes.");
-      if (Object.keys(E.ruins()).length) rows.push("Des ruines t’attendent : les réparer coûte presque rien.");
+      if (Object.keys(E.ruins()).length) rows.push("Des ruines peuvent être réparées pour une fraction de leur coût de construction.");
       if (m.traces > 0) rows.push("Tes <b>" + fmt(m.traces) + " ✦</b> Traces sont dans la Mémoire des mains.");
       if (!rows.length) { if (onClose) onClose(); return; }
       openModal({
@@ -415,6 +448,10 @@
         onClose
       });
     }
+    /* l’effet d’un niveau, en toutes lettres : {v} la valeur, {p} la chance de pièce en plus (Mains sûres) */
+    function memDesc(x, l) {
+      return x.d.replace("{v}", String(x.v(l)).replace(".", ",")).replace("{p}", x.bonus ? Math.round(x.bonus(l) * 100) + " %" : "");
+    }
     /* un aperçu concret de la prochaine amélioration */
     function memPreview(x) {
       const l = E.memLvl(x.id), a = x.v(l), b = x.v(l + 1);
@@ -422,6 +459,7 @@
       if (x.id === "extr") { const r = E.production().reduce((s, p) => s + (I[p.id] && I[p.id].t === "res" ? p.in : 0), 0); return r > 0 ? "Tes extracteurs : " + perMin(r) + " → " + perMin(r * b / a) : ""; }
       if (x.id === "recolte") return "Un appui sur le bois : " + fmtNum(E.tapYieldOf("bois") || a) + " → " + fmtNum((E.tapYieldOf("bois") || a) * b / a);
       if (x.id === "chemins") { const z = D.ZONES.map((y) => y.id).find((id) => D.PASSAGES[id] && !E.zoneOpen(id)); if (!z) return ""; const c = E.passCost(z), k = Object.keys(c)[0]; return esc(D.PASSAGES[z].n) + " : " + fmt(c[k]) + " → " + fmt(Math.ceil(c[k] * b / a)) + " " + esc(I[k].n.toLowerCase()); }
+      if (x.id === "mains") return "100 fabrications à la main : environ " + Math.round(100 * (1 + x.bonus(l + 1))) + " pièces" + (l ? " (" + Math.round(100 * (1 + x.bonus(l))) + " aujourd’hui)" : "") + ", " + Math.round((1 - b / a) * 100) + " % plus vite.";
       if (x.id === "mach") { const n = E.MACHINES.reduce((acc, m) => acc + Math.floor(S().inv[m] || 0), 0); return n ? "Tes " + n + " machine" + (n > 1 ? "s" : "") + " : +" + Math.round((b / a - 1) * 100) + " %" : ""; }
       return "";
     }
@@ -440,6 +478,7 @@
           memsel: (b) => { U.memSel = b.dataset.id; A.click(); swapModal(Object.assign(o, { html: memHTML() })); return true; },
           buy: (b) => {
             if (E.memBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([10, 30, 10]); save(); }
+            else if (!E.achatsOuverts()) { A.fail(0); toast(ACHATS_FERMES, { key: "mem" }); }
             else {
               A.fail(0);
               const c = E.memCost(b.dataset.id), m = S().meta;
@@ -450,6 +489,7 @@
           },
           buytrans: (b) => {
             if (E.transBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([15, 40, 15]); save(); }
+            else if (!E.achatsOuverts()) { A.fail(0); toast(ACHATS_FERMES, { key: "trans" }); }
             else {
               A.fail(0);
               const c = E.transCost(b.dataset.id), m = S().meta;
@@ -460,6 +500,7 @@
           },
           buyhint: (b) => {
             if (E.buyEndingHint(b.dataset.k)) { A.secret ? A.secret() : A.click(); vibe([20, 50, 20]); save(); toast("✨ Un murmure du destin résonne dans ta mémoire…", { key: "hint" }); }
+            else if (!E.achatsOuverts()) { A.fail(0); toast(ACHATS_FERMES, { key: "hint" }); }
             else {
               A.fail(0);
               const cost = D.HINT_ENDING_COST || 75, m = S().meta;
@@ -468,6 +509,7 @@
             swapModal(Object.assign(o, { html: memHTML() }));
             return true;
           },
+          fin: () => { E.fermerAchats(); save(); return false; },
           dons: () => { setTimeout(() => openDons(), 80); },
           releve: () => { setTimeout(confirmCycle, 80); }
         }
@@ -521,14 +563,7 @@
     function openForcedReleve() {
       openModal({
         persistent: true,
-        html: '<div class="kicker">La relève</div><h2>La nuit tombe</h2>' +
-          '<div class="lore" style="padding:10px 0">' +
-          ((E.RECIT.releve || {}).forcee || []).map((t, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + esc(t) + "</p>").join("") +
-          ornementHTML("La relève", 3) +
-          "</div>" + leftHTML(E.releveGain(), Math.floor(st.ecus || 0), E.ecusToTraces ? E.ecusToTraces(Math.floor(st.ecus || 0)) : 0) + releveExtrasHTML() +
-          '<div class="acts" style="opacity:0;animation:fadeup 1.2s 3.2s forwards">' +
-          '<button class="btn pri wide" data-m="go">Passer le relais</button>' + releveBtnSigne() +
-          '</div>',
+        html: forcedReleveHTML(),
         onOpen: armTrait,
         onClose: disarmTrait,
         on: {
@@ -559,7 +594,7 @@
       if (n.textContent !== txt) n.textContent = txt;
 
       // Calcul si un achat réel est possible (maintenant ou après la relève)
-      const pot = can && gain ? m.traces + gain : m.traces;
+      const pot = E.achatsOuverts() ? m.traces : can && gain ? m.traces + gain : 0;
       const canBuyBase = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && pot >= c; });
       const canBuyTrans = (D.TRANSCENDANCE || []).some((x) => pot >= E.transCost(x.id));
       const canBuyHint = Object.keys(D.ENDINGS || {}).some((k) => !((m.endings || {})[k]) && !E.hasEndingHint(k) && pot >= (D.HINT_ENDING_COST || 75) && Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
@@ -568,7 +603,7 @@
       b.classList.toggle("ready", hasPurchase && (can && gain > 0 || m.traces >= 2));
     }
 
-    return { intro, openStillnessScene, showEnding, confirmCycle, donsRepere, openDons, openMemoire, openForcedReleve, memChip };
+    return { intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip };
   }
 
   window.EclatMemoire = { create };

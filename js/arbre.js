@@ -1,4 +1,6 @@
-/* ÉCLAT — l’arbre des connaissances (Carnet, vue « Arbre »).
+/* ÉCLAT — l’arbre des connaissances.
+ * L’interface verticale utilise graphe() et voisinage() dans js/atelier.js.
+ * Le catalogue et le rendu géométrique restent disponibles pour les comparaisons historiques.
  * Module sans état, sur le modèle de js/constellations.js :
  *   graphe(E, D)          ce qui se voit, et rien d’autre (la seule fonction qui en décide) ;
  *   mise_en_page(g, D)    des positions déterministes, sans DOM ;
@@ -7,6 +9,8 @@
  * Lisibilité (0.13.2) : une bande d’âge ne prend que les rangées où quelque chose se voit,
  * les âges lointains tiennent en un bandeau, et un trait qui saute plus d’un âge reste caché
  * tant qu’on ne touche pas l’un de ses deux bouts.
+ * 0.14 : carrefours(D) (les objets qui servent à au moins 4 recettes : leurs noms restent écrits quand on
+ * s’éloigne) et loin(g, D) (un compte de recettes trouvées par âge, pour le niveau « loin » du zoom).
  * Un fantôme (recette pas encore trouvée) n’a ni nom, ni icône, ni identifiant d’objet :
  * seulement un numéro d’ordre, son âge, et le trait pointillé qui y mène.
  * Fantômes montrés : celui de l’objectif en cours, et ceux des ressources étudiées. */
@@ -104,6 +108,28 @@
     return u;
   }
   const mainIngredient = (it) => { const ing = it.r[1]; return Object.keys(ing).sort((a, b) => ing[b] - ing[a])[0]; };
+
+  /* les carrefours : un objet qui entre dans au moins CARREFOUR recettes. Calculé sur les données seules : il ne dépend
+   * pas de la partie, donc ne dit rien de ce que la joueuse ne sait pas. */
+  const CARREFOUR = 4;
+  const CAR = typeof WeakMap !== "undefined" ? new WeakMap() : null;
+  function carrefours(D) {
+    if (CAR && CAR.has(D)) return CAR.get(D);
+    const u = usages(D), out = {};
+    for (const id in u) if (D.ITEMS[id] && !D.ITEMS[id].path && u[id].length >= CARREFOUR) out[id] = 1;
+    if (CAR) CAR.set(D, out);
+    return out;
+  }
+  /* le niveau « loin » : pour chaque âge à portée, du plus récent au plus ancien, son nom et le nombre de recettes
+   * TROUVÉES (jamais un total, jamais ce qui reste). Ne porte ni identifiant ni nom d’objet. */
+  function loin(g, D) {
+    const compte = {};
+    g.noeuds.forEach((n) => { if (n.etat === "allume") compte[n.age] = (compte[n.age] || 0) + 1; });
+    const obj = g.noeuds.find((n) => n.objectif);
+    const bandes = [];
+    for (let a = g.max; a >= 0; a--) bandes.push({ age: a, nom: D.AGES[a].n, c: D.AGES[a].c, trouvees: compte[a] || 0, atteint: a <= g.age, objectif: !!obj && obj.age === a });
+    return { bandes, futur: g.max < D.AGES.length - 1 ? { de: g.max + 2, a: D.AGES.length } : null };
+  }
 
   /* ------------------------------------------------------------ ce qui se voit */
   function graphe(E, D) {
@@ -294,7 +320,7 @@
         h += '<button type="button" class="arb-n fantome' + (n.objectif ? " obj" : "") + '" data-fantome="' + n.cle + '" data-arbn="' + n.cle + '" style="' + st + '" aria-label="' + esc(txt.fantome || "") + '"></button>';
         return;
       }
-      h += '<button type="button" class="arb-n ' + n.etat + (n.objectif ? " obj" : "") + (o.neuf === n.cle ? " neuf" : "") + '" data-arbn="' + esc(n.cle) + '" style="' + st + '" aria-label="' + esc(n.n) + '">' +
+      h += '<button type="button" class="arb-n ' + n.etat + (n.objectif ? " obj" : "") + (o.car && o.car[n.id] ? " car" : "") + (o.neuf === n.cle ? " neuf" : "") + '" data-arbn="' + esc(n.cle) + '" style="' + st + '" aria-label="' + esc(n.n) + '">' +
         (o.icon ? o.icon(n.id) : "") + '<span class="arb-l">' + esc(n.n) + "</span>" + (n.etude ? '<span class="arb-e">✦ ' + n.etude + "</span>" : "") + "</button>";
     });
     return h + "</div>";
@@ -306,7 +332,17 @@
     return null;
   }
 
-  const Arbre = { graphe, mise_en_page, rendu, liens, bandeA, centre, sig, catalogue, hash, NODE, COLS, PX, PY };
+  /* La vue de lecture ne reçoit que le graphe visible : elle ne peut pas révéler une recette cachée. */
+  function voisinage(g, cle) {
+    const par = new Map(g.noeuds.map((n) => [n.cle, n]));
+    const n = par.get(cle);
+    if (!n) return null;
+    const L = liens(g, cle);
+    const nodes = (ids) => [...new Set(ids)].map((id) => par.get(id)).filter(Boolean);
+    return { centre: n, amont: nodes(L.amont), aval: nodes(L.aval) };
+  }
+
+  const Arbre = { graphe, mise_en_page, rendu, liens, voisinage, bandeA, centre, sig, catalogue, carrefours, loin, hash, NODE, COLS, PX, PY, CARREFOUR };
   if (typeof module !== "undefined" && module.exports) module.exports = Arbre;
   root.EclatArbre = Arbre;
 })(typeof globalThis !== "undefined" ? globalThis : this);

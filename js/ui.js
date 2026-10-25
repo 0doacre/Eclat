@@ -31,6 +31,9 @@
     pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false,
     toastQ: [], toastAt: 0, toastT: 0, intuShown: false
   };
+  /* les fenêtres que le jeu ouvre tout seul (voir js/fenetres.js) : une à la fois, par ordre de priorité */
+  const Fen = window.EclatFenetres, FP = Fen.PRIO;
+  U.fen = Fen.create({ libre: () => !U.mcur && !U.mq.length, now: () => Date.now() });
 
   /* ------------------------------------------------------------ formats */
   const UNITS = ["k", "M", "G", "T", "P", "E", "Z"];
@@ -111,7 +114,14 @@
   const glyphAlt = Object.keys(GLYPH).sort((a, b) => b.length - a.length).map((k) => k.replace(/\uFE0F/g, "")).join("|");
   const GLYPH_RE = new RegExp("(" + glyphAlt + ")\uFE0F?", "g"), GLYPH_T = new RegExp("(" + glyphAlt + ")");
   const glyphOf = (k) => GLYPH[k] || GLYPH[k + "\uFE0F"];
+  /* ce qui se touche doit aussi se focaliser et se nommer : un lien vers une fiche devient un bouton au clavier, un champ sans libellé prend son texte d’aide */
+  function a11y(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll("[data-goto]:not(button):not([tabindex])").forEach((e) => { e.setAttribute("role", "button"); e.setAttribute("tabindex", "0"); });
+    root.querySelectorAll("input[placeholder]:not([aria-label])").forEach((e) => { if (!(e.labels && e.labels.length)) e.setAttribute("aria-label", e.getAttribute("placeholder")); });
+  }
   function iconize(root) {
+    a11y(root);
     if (!root || !glyphAlt) return;
     const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (GLYPH_T.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
     const list = [];
@@ -174,7 +184,7 @@
   function badgeHTML(id) {
     const it = I[id];
     let t = TYPE[it.t];
-    if (it.t === "ext" && it.z && E.ZONES[it.z]) t += " · " + E.ZONES[it.z].n.replace(/^(Le |La |Les |L’)/, "");
+    if (it.t === "ext" && it.lg) { const L = E.ligneOf(id); t = (L ? L.n : t) + " · niveau " + it.lv; }
     else if (it.t === "mach" && it.ing) t += " · palier " + it.ing;
     return '<span class="badge t-' + it.t + '">' + esc(t) + "</span>";
   }
@@ -187,7 +197,7 @@
     comp: "Une pièce : elle sert à fabriquer d’autres objets.",
     tool: "Un outil : renforce tes récoltes à la main ou ouvre de nouveaux chemins.",
     stat: "Une station : elle reste à l’Atelier et débloque une action ou une chaleur.",
-    ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même quand le jeu est fermé.",
+    ext: "Récolte automatique (active hors ligne). À poser sur un gisement de la terre indiquée.",
     upg: "Une amélioration : son effet est permanent dès son obtention.",
     mach: "Une machine : elle reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire.",
     curio: "Une curiosité : vestige insolite consigné dans ton Journal.",
@@ -201,6 +211,17 @@
   };
   const targetName = (k) => (k === "*" ? "toutes les terres" : E.ZONES[k] ? E.ZONES[k].n : I[k] ? I[k].n : k);
   const isRawGather = (id) => I[id] && I[id].t === "res" && E.RES_ZONE[id];
+  /* ce qui limite : une ressource qui manque, d’où elle vient, ce qui la produit, et de quoi y aller (rien pour une pièce fabriquée : la commande la prend en charge) */
+  function limitHTML(res, q) {
+    const L = E.limiting(res, q);
+    if (!L.raw || !(q > 0)) return "";
+    const nm = I[res].n.toLowerCase();
+    let t;
+    if (!L.open) t = "vient " + deZone(L.z) + ", pas encore atteinte.";
+    else if (L.rate > 0) t = "tes extracteurs en donnent " + perMin(L.rate) + " : environ " + fmtTime(L.eta) + " pour les " + fmt(Math.ceil(q)) + " qui manquent.";
+    else t = "aucun extracteur n’en produit" + (L.hand ? " ; tes mains en récoltent." : ".");
+    return '<div class="tiny limit"><b>' + cap1(nm) + "</b> : " + t + (L.open ? ' <button class="mini" data-gz="' + L.z + '">Aller au gisement</button>' : "") + "</div>";
+  }
 
   function fxList(id) {
     const it = I[id], e = it.e || {}, out = [];
@@ -215,7 +236,7 @@
     if (e.auto) for (const k in e.auto) out.push("Extracteurs " + (k === "*" ? "de toutes les terres" : deZone(k)) + " " + fmtMul(e.auto[k]));
     if (it.p) {
       const c = E.cache(), m = (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
-      if (it.t === "ext") out.push("Se pose sur un gisement " + deZone(it.z) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
+      if (it.t === "ext") out.push("Se pose sur un gisement " + (it.zs && it.zs.length > 1 ? it.zs.map(deZone).join(" ou ") : deZone(it.z)) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
       else out.push("Chacun : " + Object.keys(it.p).map((r) => fmtRate(it.p[r] * m) + " " + I[r].n).join(", "));
     }
     if (it.t === "mach") {
@@ -426,9 +447,11 @@
     box.focus({ preventScroll: true });
     $("#app").inert = true;
     if (o.onOpen) o.onOpen(box);
+    Tuto.tick(); // une bulle de tutoriel ne reste pas affichée sous une fenêtre qui s’ouvre
   }
   function closeModal() {
     const o = U.mcur;
+    U.fen.ferme();
     $("#modal").classList.add("hidden");
     U.mcur = null;
     if (o && o.onClose) o.onClose();
@@ -442,6 +465,7 @@
       }
     }, 60);
   }
+  document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("gestes")) U.gScroll = e.target.scrollLeft; }, true);
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
   const fresh = () => Date.now() - (U.mAt || 0) < 450;
   function setupModal() {
@@ -452,6 +476,9 @@
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
       const qtb = ev.target.closest("[data-mqtab]");
       if (qtb && U.mcur && !fresh()) { U.questTab = qtb.dataset.mqtab; A.click(); if (U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
+      // « Aller au gisement » (une ressource qui manque) : la terre, dans le Domaine
+      const zb = ev.target.closest("[data-gz]");
+      if (zb && U.mcur && !fresh()) { const z = zb.dataset.gz; A.click(); U.zone = z; closeModal(); setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { const from = U.mcur.reopen || null; closeModal(); setTimeout(() => { U.rfrom = from; goto(gb.dataset.goto); }, 80); return; }
       const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
@@ -472,11 +499,11 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z) => passHTML(z), uiSigne, recitInline,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z) => passHTML(z), uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
-    top: () => donsRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
-    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length
+    top: () => donsRepere() + reveilRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
+    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length + "|" + (reveilRepere() ? "r" : "")
   });
   const Carte = window.EclatCarte.create({
     E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML: (z) => passHTML(z), expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
@@ -590,12 +617,12 @@
 
   /* ------------------------------------------------------------ thème */
   /* le carnet change d’habit avec l’époque (css/theme.css) ; la page tourne quand elle change */
-  const EPOCH = ["pigments", "pigments", "pigments", "papyrus", "papyrus", "enluminure", "registre", "registre", "quadrille", "quadrille", "quadrille", "bord", "bord"];
+  const EPOCH = ["pigments", "pigments", "pigments", "papyrus", "papyrus", "enluminure", "registre", "registre", "registre", "quadrille", "quadrille", "quadrille", "quadrille", "bord", "bord"];
   const ROMAN = (n) => [["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1]].reduce((o, [r, v]) => { while (n >= v) { o += r; n -= v; } return o; }, "");
   function applyAge() {
     const a = S().age, ag = D.AGES[a], ep = EPOCH[a] || "pigments", body = document.body;
     document.documentElement.style.setProperty("--age", ag.c);
-    const ok = ep + (a === 12 ? ":stellaire" : "");
+    const ok = ep + (a === D.AGES.length - 1 ? ":stellaire" : "");
     if (body.dataset.orn !== ok) {
       const first = !body.dataset.ep;
       body.dataset.ep = ep;
@@ -623,15 +650,15 @@
   }
 
   /* ============================================================ VUES */
-  /* les onglets arrivent quand ils ont quelque chose à montrer : le Carnet à la première
+  /* les onglets arrivent quand ils ont quelque chose à montrer : l’Arbre et le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
-  /* cinq onglets : Domaine, Carte, Atelier, Carnet, Journal ; les Machines se rangent dans l’Atelier, le Cosmos dans le Journal */
+  /* six onglets : Domaine, Carte, Atelier, Arbre, Carnet, Journal ; les Machines se rangent dans l’Atelier, le Cosmos dans le Journal */
   const PARENT = { machines: "atelier", cosmos: "journal" };
   function tabAvailable(t) {
     const st = S();
     if (t === "cosmos") return E.cache().sky;
     if (t === "journal" && E.cache().sky) return true;
-    if (t === "carnet") return Object.keys(st.known).length > 0;
+    if (t === "carnet" || t === "arbre") return Object.keys(st.known).length > 0;
     if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
     if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions()) || (E.hasSignes && E.hasSignes());
     return true;
@@ -640,6 +667,7 @@
     if (!tabAvailable(t)) t = "domaine";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
     const was = U.tab;
+    if (t === 'arbre' && was !== 'arbre' && !U.arbreVoirId) { U.arbreSel = null; U.arbreHistorique = []; }
     const views = $("#views");
     U.viewScroll = U.viewScroll || {};
     if (was !== t) U.viewScroll[was] = views.scrollTop;
@@ -665,7 +693,7 @@
       if (on && !d) { d = document.createElement("i"); d.className = "dot"; b.appendChild(d); }
       if (!on && d) d.remove();
     });
-    for (const k of ["carnet", "journal"]) {
+    for (const k of ["arbre", "carnet", "journal"]) {
       const jb = $('#tabs [data-tab="' + k + '"]'), on = tabAvailable(k);
       if (on && jb.classList.contains("hidden") && U.tabsSeen) jb.classList.add("born"); // il vient d’apparaître
       jb.classList.toggle("hidden", !on);
@@ -707,8 +735,17 @@
     // garder le focus d’un champ de saisie pendant le rendu
     const ae = document.activeElement;
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
+    // un bouton sans identifiant (un lieu de la Carte, un lien de fiche) : on le retrouve à son nom après le redessin, pour que le clavier ne perde pas sa place
+    // un bouton de liste (une ressource, une action, une quantité…) : même chose, retrouvé à son attribut de données
+    let fsel = null;
+    if (!focus && ae && ae !== document.body && el.contains(ae) && ae.dataset) {
+      const k = ["inv", "g", "slot", "qty", "if", "cf", "cvue", "jt", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
+      if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
+    }
+    const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
-    else if (U.tab === "carnet") { if (!Atl.carnetArbre(el)) el.innerHTML = viewCarnet(); } // la vue Arbre se redessine elle-même (js/arbre.js)
+    else if (U.tab === "carnet") el.innerHTML = viewCarnet();
+    else if (U.tab === "arbre") Atl.arbreRendre(el); // l’arbre se redessine lui-même (js/arbre.js), seulement s’il a changé
     else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
@@ -718,11 +755,24 @@
       else { delete el.dataset.sig; el.innerHTML = viewCosmos(); mountCosmos(); }
     }
     iconize(el);
+    if (U.tab === "atelier") { // la rangée des actions garde sa place d’un rendu à l’autre, et l’action choisie reste visible
+      const gs = $(".gestes", el);
+      if (gs) { gs.scrollLeft = U.gScroll || 0; const on = $(".geste.on", gs); if (on && (on.offsetLeft < gs.scrollLeft || on.offsetLeft + on.offsetWidth > gs.scrollLeft + gs.clientWidth)) gs.scrollLeft = Math.max(0, on.offsetLeft - 12); }
+    }
+    $$(".filters, .age-nav", el).forEach((bar) => {
+      bar.classList.toggle("more", bar.scrollWidth > bar.clientWidth + 4);
+      const on = $(".on, .cur", bar);
+      if (on && (on.offsetLeft < bar.scrollLeft || on.offsetLeft + on.offsetWidth > bar.scrollLeft + bar.clientWidth)) {
+        bar.scrollLeft = Math.max(0, on.offsetLeft - Math.round((bar.clientWidth - on.offsetWidth) / 2));
+      }
+    });
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
     U.anchor = null;
     if (U.tab === "atelier") { S().flags.bench = { g: U.geste, s: U.slots.slice() }; updMini(); }
+    if (fsel) { const f = el.querySelector(fsel); if (f && f !== document.activeElement) f.focus({ preventScroll: true }); }
+    if (fnom) { const f = Array.from(el.querySelectorAll('[role="button"]')).find((x) => x.getAttribute("aria-label") === fnom); if (f) f.focus({ preventScroll: true }); }
     if (focus) { const f = document.getElementById(focus.id); if (f) { f.focus(); try { f.setSelectionRange(focus.s, focus.e); } catch (e) { /* champ sans sélection */ } } }
     refresh();
     ambient();
@@ -760,6 +810,19 @@
   function soundScene() {
     const z = U.zone || "lisiere";
     A.setScene({ age: S().age, tab: U.tab, zone: z, night: !Scenes.isNightless(z) && Scenes.daypart(new Date().getHours()) === "night", machines: workingMachines() });
+  }
+  /* l’atelier au travail : un bruit continu tant qu’une commande avance, choisi par le geste en cours (et l’âge), jamais un bruit par pièce */
+  let workAt = 0;
+  function workSound() {
+    const now = performance.now();
+    if (now - workAt < 500) return;
+    workAt = now;
+    let g = null;
+    if (S().hand.q.length) {
+      const j = E.handInfo().jobs.find((x) => !x.wait);
+      if (j && I[j.step] && I[j.step].r) g = I[j.step].r[0];
+    }
+    A.work(g);
   }
   function workingMachines() {
     const ms = E.machines();
@@ -845,7 +908,7 @@
       if (n === "max") {
         const max = E.maxPlan(id);
         b.classList.toggle("nope", max < 1);
-        b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
+        b.textContent = (b.dataset.lbl ? b.dataset.lbl + " " : "") + "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
       } else {
         const p = E.plan(id, 1);
         const ok = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length;
@@ -865,6 +928,7 @@
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
     }
+    if (U.tab === 'carnet') Atl.carnetLive();
   }
 
   /* ------------------------------------------------------------ ambiance */
@@ -893,8 +957,8 @@
   /* pourquoi on ne peut pas explorer ce lieu tout de suite (rien si on peut) */
   function expWhy(z) {
     const st = S(), n = E.nextExp(z);
-    if (!n) return "Plus rien à explorer ici pour l’instant.";
-    if (st.exp.active) return "Tu explores déjà ailleurs : une exploration à la fois.";
+    if (!n) return "Tous les lieux disponibles sont explorés.";
+    if (st.exp.active) return "Exploration déjà active. Prochain départ à la fin de l’exploration.";
     if (n.locked) {
       if (n.x.hidden) return n.x.hidden;
       if (typeof n.x.need === "string" && I[n.x.need]) return "Il te faut d’abord : " + esc(I[n.x.need].n) + ".";
@@ -933,10 +997,10 @@
 
   /* lancer l’exploration du prochain lieu d’une terre */
   function explore(z, xid) {
-    const why = xid ? (S().exp.active ? "Tu explores déjà ailleurs : une exploration à la fois." : "") : expWhy(z);
+    const why = xid ? (S().exp.active ? "Exploration déjà active. Prochain départ à la fin de l’exploration." : "") : expWhy(z);
     if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
     const r = E.startExp(z, xid);
-    if (r.ok) { A.init(); A.explore(); toast("🧭 Exploration lancée : elle avance toute seule."); }
+    if (r.ok) { A.init(); A.explore(); toast("🧭 Exploration lancée (autres actions disponibles)."); }
     render(true);
   }
   /* ------------------------------------------------------ fouilles (expéditions longues) */
@@ -960,11 +1024,17 @@
     const list = o.top.map((k) => '<span class="ing">' + icon(k, "sm") + "+" + fmt(o.gains[k]) + " " + esc(I[k].n) + "</span>").join("");
     const auto = Object.keys(S().dom.ext).length > 0 || S().hand.q.length > 0;
     const full = [];
-    simpleModal("Pendant ton absence · " + fmtTime(o.dt), "Bon retour !",
-      (list ? '<p class="small muted">Pendant ce temps, voici ce qui a été récolté et fabriqué :</p><div class="row wrap">' + list + "</div>"
+    // une sortie utile, sans compliquer la fermeture : lire la découverte, ou reprendre l’objectif
+    const suite = o.exp ? '<button class="btn" data-m="journal">📖 Lire la découverte</button>' : E.guide() ? '<button class="btn" data-m="goal">🎯 Reprendre l’objectif</button>' : "";
+    openModal({
+      on: { journal: () => { setTab("journal"); }, goal: () => { setTab("domaine"); } },
+      html: '<div class="kicker">Pendant ton absence · ' + fmtTime(o.dt) + "</div><h2>Bon retour !</h2>" +
+      (list ? '<p class="small muted">Ressources récoltées et objets fabriqués :</p><div class="row wrap">' + list + "</div>"
         : '<p class="small">Rien n’a été récolté ni fabriqué pendant ton absence.' + (auto ? "" : " Pose une cabane sur un gisement : elle récolte même quand le jeu est fermé.") + "</p>") +
       (full.length ? '<p class="small">📦 La Réserve s’est remplie de ' + full.map((k) => esc(I[k].n.toLowerCase())).join(", ") + " : " + (full.length > 1 ? "leurs extracteurs se sont arrêtés" : "son extracteur s’est arrêté") + ". Une machine qui " + (full.length > 1 ? "les" : "le") + " transforme ferait de la place.</p>" : "") +
-      (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : ""));
+      (o.exp ? '<p class="small">🧭 Exploration terminée. Consulte le Journal.</p>' : "") +
+        '<div class="acts">' + suite + '<button class="btn pri" data-m="close">Continuer</button></div>'
+    });
   }
 
   /* ============================================================ MISES À JOUR
@@ -1035,7 +1105,7 @@
     save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
   });
   const {
-    intro, openStillnessScene, showEnding, confirmCycle, donsRepere, openDons, openMemoire, openForcedReleve, memChip
+    intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip
   } = Mem;
 
   /* le menu, les sauvegardes et le compte en ligne */
@@ -1049,7 +1119,7 @@
 
   /* l’Atelier et le Carnet */
   const Atl = window.EclatAtelier.create({
-    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, zoneName, GI, gi, gIc, icon,
+    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
     iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
     floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
     uiSigne, memoryHTML
@@ -1075,8 +1145,11 @@
   function loop() {
     E.update();
     visiteurTick();
-    if (U.offline && !U.mcur) showOffline();
+    if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
+    U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();
+    workSound();
+    if (U.tab === "arbre" && Date.now() - (U.arbreT || 0) > 400) { U.arbreT = Date.now(); Atl.arbreMaj(); } // l’arbre suit les découvertes
   }
 
   function boot() {
@@ -1102,15 +1175,15 @@
       if (D.GESTES[bk.g] && E.gesteOK(bk.g)) U.geste = bk.g;
       U.slots = [0, 1, 2].map((i) => (bk.s[i] && I[bk.s[i]] && S().seen[bk.s[i]] ? bk.s[i] : null));
     }
-    if (status === "error") showBadSave();
-    else if (!S().introSeen) intro();
+    if (status === "error") U.fen.demande(FP.sauvegarde, "sauvegarde", showBadSave);
+    else if (!S().introSeen) U.fen.demande(FP.intro, "intro", () => intro());
     else {
       // une partie qui revient d’une version précédente voit une fois ce qui a changé
       // une correction (4.5.0 → 4.5.1) ne rouvre pas la fenêtre ; une nouvelle version (4.4 → 4.5), si
       const minor = (v) => String(v || "").split(".").slice(0, 2).join(".");
-      if (S().flags.news || minor(S().flags.ver) !== minor(D.VERSION)) showNews();
+      if (S().flags.news || minor(S().flags.ver) !== minor(D.VERSION)) U.fen.demande(FP.nouveautes, "nouveautes", showNews);
       else S().flags.ver = D.VERSION;
-      showOffline();
+      U.fen.demande(FP.retour, "retour", showOffline);
     }
     setTimeout(() => { U.live = true; }, 1500);
     setInterval(loop, 100);

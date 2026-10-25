@@ -1,6 +1,6 @@
 # ✦ Éclat — du silex aux étoiles
 
-Un jeu de craft pour navigateur, pensé d’abord pour le smartphone. Tu t’éveilles sans mémoire à l’orée d’une forêt ; tes mains, elles, savent quoi faire. De ton premier éclat de silex jusqu’à une sphère de Dyson autour du Soleil, tu traverses treize âges de la technique. En chemin, tu découvres pourquoi tu es seul, ce que cache l’étoile rouge qui pulse dans le ciel, et ce que la voix qui te guide ne te dit pas.
+Un jeu de craft pour navigateur, pensé d’abord pour le smartphone. Tu t’éveilles sans mémoire à l’orée d’une forêt ; tes mains, elles, savent quoi faire. De ton premier éclat de silex jusqu’à une sphère de Dyson autour du Soleil, tu traverses quinze âges de la technique. En chemin, tu découvres pourquoi tu es seul, ce que cache l’étoile rouge qui pulse dans le ciel, et ce que la voix qui te guide ne te dit pas.
 
 Le jeu fonctionne sans serveur et sans dépendance. Il est installable comme une application (PWA), fonctionne hors ligne et sauvegarde automatiquement sur l’appareil. Des comptes joueurs facultatifs permettent de retrouver sa partie sur un autre appareil (voir plus bas).
 
@@ -29,7 +29,7 @@ Voir [`docs/PROGRESSION.md`](docs/PROGRESSION.md) pour la conception complète.
 
 - **Passages** : pour entrer dans une nouvelle terre, l’objet qui y mène (l’épieu pour la Plaine, l’outre pour la Rivière…) rend le passage possible ; on le franchit en y versant des matières depuis la Réserve, en plusieurs fois si besoin. Chaque passage coûte bien plus que le précédent : c’est le mur.
 - **Relève** : dès un passage franchi, on peut passer le relais. Un nouveau Semeur s’éveille : stocks, machines, terres et âges repartent de zéro ; le Carnet, les fragments, les secrets, les Échos et la Mémoire restent. Chaque passage franchi rapporte des **Traces** (2, 3, 5, 8, 12…).
-- **Mémoire des mains** : huit améliorations permanentes achetées avec les Traces (récolte, mains, extracteurs, machines, passages moins chers, paquetage de départ, terres déjà ouvertes, temps hors ligne).
+- **Mémoire des mains** : neuf améliorations permanentes achetées avec les Traces (récolte, mains, extracteurs, machines, passages moins chers, paquetage de départ, terres déjà ouvertes, temps hors ligne, et le Coup d’œil, qui augmente les coups de chance à la récolte).
 - Rythme visé (réglé avec `tools/sim-passages.js`) : la première partie bute vers les Collines au bout d’environ 25 minutes ; chaque relève va environ une terre plus loin.
 
 ### Le Domaine : terres, gisements, extracteurs et machines
@@ -72,19 +72,21 @@ Un mot par idée, partout dans le jeu : voir `docs/LEXIQUE.md`. Les messages de 
 - **Fiches** : toucher un objet ouvre sa fiche (recette, stock, station, ce qu’il sert à fabriquer) ; tout y est cliquable pour passer de recette en recette, avec un retour arrière.
 - **Matières** : recherche, tri (âge, nom, quantité, dernières trouvées), filtres (dont « utiles pour ce geste ») et favorites à l’Atelier.
 
-### Les treize âges
+### Les quinze âges
 
-Bois · Os · Pierre · Cuivre · Bronze · Fer · Acier · Électricité · Silicium · Polymères · Composites · Spatial · Stellaire.
+Bois · Os · Pierre · Cuivre · Bronze · Fer · Acier · Vapeur · Électricité · Atome · Silicium · Polymères · Composites · Spatial · Stellaire.
+
+La Vapeur fait de l’eau de la Rivière une ressource de chantier : pompe, conduites, chaudière et condenseur. Aux Polymères, le pétrole se raffine en naphta ; le soufre des Collines entre dans le caoutchouc. Joints et tuyaux souples permettent ensuite de refroidir les machines. Le premier lot de densité est décrit dans `docs/revue/densite-ressources.md`.
 
 Chaque âge change la couleur de l’interface et ouvre de nouvelles terres : la Plaine, la Rivière, les Collines, les Profondeurs, le Désert de Verre, le Gisement Noir, les Pics Fracturés, l’orbite, la Lune, Mercure.
 
 ### Exploration, lore et secrets
 
-Chaque terre cache des **explorations** qui rapportent des fragments d’histoire. Le jeu compte 26 fragments, 21 secrets (recettes cachées, mélodies, codes, lieux), une flûte en os qui se joue, un terminal où taper des commandes et un ciel nocturne à observer. Les textes sont à lire attentivement : beaucoup contiennent des indices.
+Chaque terre cache des **explorations** qui rapportent des fragments d’histoire. Le jeu déclare 47 fragments (dont du contenu plus ancien conservé) et 30 secrets (recettes cachées, mélodies, codes, lieux), une flûte en os qui se joue, un terminal où taper des commandes et un ciel nocturne à observer. Les textes sont à lire attentivement : beaucoup contiennent des indices.
 
 ### Les fins
 
-Trois fins. Deux sont proposées ouvertement par la voix qui te guide : **la Sphère de Dyson** et **le Brise-Monde**. La troisième ne se trouve qu’en suivant les secrets. Après une fin, on peut passer le relais comme après un passage (la relève, plus haut) ; chaque fin atteinte laisse en plus un **Écho** : +50 % de récolte et de production pour toujours. Journal → Fins explique tout cela.
+Cinq fins : L’Aube Éternelle, Le Brasier, Les Matines, L’Exode et Le Grand Silence. Deux Grands Œuvres sont proposés ouvertement par la voix qui te guide, **la Sphère de Dyson** et **le Brise-Monde** ; les autres fins ne se trouvent qu’en suivant les secrets. Après une fin, on peut passer le relais comme après un passage (la relève, plus haut) ; chaque fin atteinte laisse en plus un **Écho** : +50 % de récolte et de production pour toujours. Journal → Fins explique tout cela.
 
 > Les solutions et le récit sont rangés dans `docs/coffre/`. **Spoilers** : à ne pas ouvrir si tu joues.
 
@@ -142,6 +144,7 @@ tools/test.js         tests du moteur, dont le chemin secret complet jusqu’à 
 tools/golden-ui.js    référence de rendu de l’interface (Playwright) : rien ne doit changer en remaniant ui.js
 tools/sim.js          bot qui joue une partie entière pour mesurer le rythme
 tools/sim-passages.js joueur simulé pour régler les passages, la relève et la Mémoire (--compare, --cycles, --cout)
+tools/sim-parcours.js  le vrai premier parcours d’un nouveau joueur (découverte par essais, relève obligatoire, premier achat) : docs/revue/simulation-premier-parcours.md
 tools/build.js        empreinte de version du service worker (sans elle, les joueurs ne reçoivent pas la mise à jour)
 tools/icons.js        sprite assets/icons.svg et js/icons.js à partir de tools/icons.json
 tools/fixtures/       sauvegardes des versions 1 à 5, pour tester la compatibilité
@@ -158,6 +161,9 @@ OBJ=1 node tools/sim.js        # détail des objectifs
 MAINS=1 node tools/sim.js      # avec la file des mains (les machines possédées aident)
 node tools/sim-passages.js --compare        # minute de chaque passage, sans et avec Mémoire
 node tools/sim-passages.js --cycles 5 --minutes 30   # cinq relèves enchaînées
+node tools/sim-passages.js --joueurs         # quatre types de joueur côte à côte : temps de jeu actif et temps écoulé de chaque passage
+node tools/sim-passages.js --joueur veilleur --minutes 60   # un seul type de joueur (tapeur, veilleur, explorateur, paresseux)
+node tools/sim-passages.js --sessions 5/4 --minutes 60      # 5 minutes de jeu, puis 4 heures d’absence, et ainsi de suite
 ```
 
 Avant de publier une nouvelle version : `npm run build` puis `npm test`. Si le format de sauvegarde change, augmente `SAVE_VERSION` dans `js/engine.js` et ajoute une étape à `migrate()` ; le test de compatibilité recharge les sauvegardes de `tools/fixtures`.

@@ -71,7 +71,7 @@
     if (!ctx) return;
     ramp(master.gain, enabled ? 0.9 : 0, 0.15);
     if (enabled) { if (ctx.state === "suspended") ctx.resume(); startMusic(); ambience(); }
-    else { stopMusic(); stopAmb(); }
+    else { stopMusic(); stopAmb(); workStop(); }
   };
   A.setVolumes = (o) => {
     Object.assign(vol, o || {});
@@ -87,6 +87,8 @@
     if (palette(before) !== palette(scene.age)) { barsLeft = 0; }
     ambience();
   };
+  /* le geste de la commande en cours (ou rien) : l’atelier au travail */
+  A.work = (g) => workUpdate(g);
 
   /* ------------------------------------------------------------ briques */
   function tone(o) {
@@ -308,7 +310,7 @@
     { root: 110.0, mode: "aeolian", prog: [0, 3, 4, 0], beat: 0.46, lead: "synth", pad: "string", perc: "tick", dens: 0.62 },
     { root: 174.61, mode: "lydian", prog: [0, 1, 0, 4], beat: 0.95, lead: "glass", pad: "space", perc: null, dens: 0.3 }
   ];
-  const palette = (age) => (age <= 2 ? 0 : age <= 5 ? 1 : age <= 7 ? 2 : age <= 10 ? 3 : 4);
+  const palette = (age) => (age <= 2 ? 0 : age <= 5 ? 1 : age <= 8 ? 2 : age <= 12 ? 3 : 4);
   let musicTimer = null, nextT = 0, beat = 0, barsLeft = 0, resting = 0, motif = null, melPos = 2, barOn = false;
   const semi = (f, s) => f * Math.pow(2, s / 12);
   function noteOf(P, deg, oct) {
@@ -400,16 +402,16 @@
     const lfo = ctx.createOscillator(), lg = ctx.createGain();
     lfo.frequency.value = o.rate || 0.08; lg.gain.value = o.sweep || o.f * 0.4;
     lfo.connect(lg); lg.connect(f.frequency);
-    src.connect(f); f.connect(g); g.connect(ambBus);
+    src.connect(f); f.connect(g); g.connect(o.out || ambBus);
     src.start(0, Math.random() * 1.5); lfo.start();
     g.gain.setTargetAtTime(o.v, ctx.currentTime, 1.2);
     return { stop() { g.gain.setTargetAtTime(0, ctx.currentTime, 0.6); setTimeout(() => { try { src.stop(); lfo.stop(); } catch (e) { /* déjà arrêté */ } }, 3000); } };
   }
-  function hum(f, v) {
+  function hum(f, v, dest) {
     const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain();
     o1.frequency.value = f; o2.frequency.value = f * 2.01; o2.type = "triangle";
     g.gain.value = 0;
-    o1.connect(g); o2.connect(g); g.connect(ambBus);
+    o1.connect(g); o2.connect(g); g.connect(dest || ambBus);
     o1.start(); o2.start();
     g.gain.setTargetAtTime(v, ctx.currentTime, 1.5);
     return { stop() { g.gain.setTargetAtTime(0, ctx.currentTime, 0.6); setTimeout(() => { try { o1.stop(); o2.stop(); } catch (e) { /* déjà arrêté */ } }, 3000); } };
@@ -483,7 +485,74 @@
     amb = null;
   }
 
-  A.debug = () => ({ state: ctx && ctx.state, music: !!musicTimer, playing: barOn, amb: amb && amb.k, palette: palette(scene.age) });
+  /* ------------------------------------------------------------ l’atelier au travail
+   * Quand les mains ou les machines avancent sur une commande, un seul paysage sonore continu, le même pour une pièce
+   * ou pour mille : il n’y a plus un bruit par pièce. Le geste en cours choisit ce qu’on entend (cailloux, bois,
+   * fibres, braises, enclume, machines, cristal) et l’âge choisit la pièce où l’on est (atelier de bois, forge,
+   * vapeur, usine, laboratoire). Il entre et sort en fondu, et ne change de geste qu’après un moment de calme. */
+  const WORK_GESTE = { assembler: "bois", tresser: "fibre", tailler: "pierre", stratifier: "pierre", chauffer: "feu", allier: "feu", tremper: "feu",
+    marteler: "enclume", usiner: "machine", electriser: "machine", graver: "machine", synthetiser: "machine", transmuter: "cristal", accorder: "cristal" };
+  const workRoom = (age) => (age <= 1 ? "bois" : age <= 4 ? "forge" : age <= 8 ? "vapeur" : age <= 12 ? "usine" : "labo");
+  const ROOM = {
+    bois: (o) => [bed({ ft: "bandpass", f: 900, q: 0.5, v: 0.025, rate: 0.1, out: o })],
+    forge: (o) => [bed({ f: 260, v: 0.07, rate: 0.15, out: o }), bed({ ft: "highpass", f: 3500, v: 0.01, q: 0.5, out: o })],
+    vapeur: (o) => [bed({ f: 220, v: 0.06, rate: 0.12, out: o }), bed({ ft: "highpass", f: 5000, v: 0.014, q: 0.5, rate: 0.2, sweep: 1500, out: o })],
+    usine: (o) => [hum(55, 0.035, o), bed({ f: 400, v: 0.025, rate: 0.1, out: o })],
+    labo: (o) => [hum(110, 0.02, o), hum(165, 0.012, o)]
+  };
+  /* ce qu’on entend de temps en temps, à son rythme (en secondes, au hasard entre la moitié et une fois et demie) */
+  const WORK_EV = {
+    pierre: [0.9, (o) => { noise({ f: 3000, d: 0.04, v: 0.045, q: 3, out: o, pan: Math.random() - 0.5 }); if (Math.random() < 0.4) noise({ f: 2400, t: 0.11, d: 0.04, v: 0.03, q: 3, out: o }); }],
+    bois: [1.0, (o) => { tone({ f: 150, f2: 105, type: "triangle", d: 0.1, v: 0.05, out: o }); noise({ f: 700, d: 0.05, v: 0.02, out: o }); }],
+    fibre: [1.6, (o) => noise({ f: 2200, f2: 900, d: 0.3, v: 0.03, q: 2, a: 0.06, out: o, pan: Math.random() - 0.5 })],
+    feu: [0.5, (o) => { for (let i = 0; i < 2 + Math.floor(Math.random() * 3); i++) noise({ f: 3000 + Math.random() * 3000, t: i * 0.05 + Math.random() * 0.1, d: 0.02, v: 0.03, q: 6, out: o, pan: Math.random() - 0.5 }); }],
+    enclume: [0.85, (o) => { bell(320 + Math.random() * 40, { d: 0.55, v: 0.04, out: o }); noise({ f: 4000, d: 0.025, v: 0.03, out: o }); if (Math.random() < 0.35) bell(330, { t: 0.2, d: 0.4, v: 0.025, out: o }); }],
+    machine: [0.6, (o) => tone({ f: 1100 + Math.random() * 300, type: "square", d: 0.02, v: 0.012, lp: 3000, out: o, pan: Math.random() - 0.5 })],
+    cristal: [2.4, (o) => bell([880, 1100, 1320][Math.floor(Math.random() * 3)], { d: 1.6, v: 0.022, out: o, pan: Math.random() - 0.5 })]
+  };
+  let work = null, workPending = null, workGrace = null;
+  function workStart(k) {
+    const [fam, room] = k.split(":");
+    const bus = ctx.createGain();
+    bus.gain.value = 0; bus.connect(ambBus);
+    bus.gain.setTargetAtTime(1, ctx.currentTime, 1.2);
+    const nodes = ROOM[room](bus), ev = WORK_EV[fam];
+    let next = ctx.currentTime + 0.4 + Math.random() * ev[0];
+    const timer = setInterval(() => {
+      if (!ready()) return;
+      const t = ctx.currentTime;
+      if (t >= next) { ev[1](bus); next = t + ev[0] * (0.5 + Math.random()); }
+    }, 120);
+    work = { k, bus, nodes, timer };
+  }
+  function workStop() {
+    clearTimeout(workGrace); workGrace = null;
+    if (!work) return;
+    const w = work; work = null;
+    clearInterval(w.timer);
+    try { w.bus.gain.setTargetAtTime(0, ctx.currentTime, 0.6); } catch (e) { /* contexte fermé */ }
+    w.nodes.forEach((n) => n.stop());
+    setTimeout(() => { try { w.bus.disconnect(); } catch (e) { /* déjà détaché */ } }, 3500);
+  }
+  /* g : le geste en cours (ou rien) ; appelé à chaque pas de temps de l’interface */
+  function workUpdate(g) {
+    if (!ready() || vol.amb <= 0) { workStop(); workPending = null; return; }
+    if (!g) {
+      workPending = null;
+      if (work && !workGrace) workGrace = setTimeout(() => { workGrace = null; workStop(); }, 2500);
+      return;
+    }
+    clearTimeout(workGrace); workGrace = null;
+    const k = (WORK_GESTE[g] || "bois") + ":" + workRoom(scene.age);
+    if (work && work.k === k) { workPending = null; return; }
+    if (!work) { workStart(k); return; }
+    // un autre geste : on attend trois secondes avant de changer, pour ne pas sautiller d’une pièce à l’autre
+    const now = Date.now();
+    if (!workPending || workPending.k !== k) workPending = { k, at: now };
+    else if (now - workPending.at > 3000) { workStop(); workStart(k); workPending = null; }
+  }
+
+  A.debug = () => ({ state: ctx && ctx.state, music: !!musicTimer, playing: barOn, amb: amb && amb.k, work: work && work.k, palette: palette(scene.age) });
   if (root) root.EclatAudio = A;
   if (typeof module !== "undefined" && module.exports) module.exports = A;
 })(typeof window !== "undefined" ? window : global);
