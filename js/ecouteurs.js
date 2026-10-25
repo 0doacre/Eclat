@@ -359,6 +359,10 @@
         if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
         if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
         if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
+        if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans le Domaine
+          const z = b.dataset.gz; A.click(); U.zone = z; if (U.mcur) closeModal();
+          setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return;
+        }
         if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
         if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
         if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
@@ -377,6 +381,7 @@
         if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
         if ((b = t.closest("[data-lock]"))) { toast("Action verrouillée. Station nécessaire : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
+        if (t.closest("[data-resclose]")) { U.last = null; A.click(); render(true); return; }
         if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
         if (t.closest("#forge, [data-forge]") && !t.closest("[data-s]")) {
           if (performance.now() - (U.forgeUp || 0) < 600) return; // déjà fait au relâcher

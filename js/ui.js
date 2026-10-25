@@ -204,6 +204,17 @@
   };
   const targetName = (k) => (k === "*" ? "toutes les terres" : E.ZONES[k] ? E.ZONES[k].n : I[k] ? I[k].n : k);
   const isRawGather = (id) => I[id] && I[id].t === "res" && E.RES_ZONE[id];
+  /* ce qui limite : une ressource qui manque, d’où elle vient, ce qui la produit, et de quoi y aller (rien pour une pièce fabriquée : la commande la prend en charge) */
+  function limitHTML(res, q) {
+    const L = E.limiting(res, q);
+    if (!L.raw || !(q > 0)) return "";
+    const nm = I[res].n.toLowerCase();
+    let t;
+    if (!L.open) t = "vient " + deZone(L.z) + ", pas encore atteinte.";
+    else if (L.rate > 0) t = "tes extracteurs en donnent " + perMin(L.rate) + " : environ " + fmtTime(L.eta) + " pour les " + fmt(Math.ceil(q)) + " qui manquent.";
+    else t = "aucun extracteur n’en produit" + (L.hand ? " ; tes mains en récoltent." : ".");
+    return '<div class="tiny limit"><b>' + cap1(nm) + "</b> : " + t + (L.open ? ' <button class="mini" data-gz="' + L.z + '">Aller au gisement</button>' : "") + "</div>";
+  }
 
   function fxList(id) {
     const it = I[id], e = it.e || {}, out = [];
@@ -447,6 +458,7 @@
       }
     }, 60);
   }
+  document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("gestes")) U.gScroll = e.target.scrollLeft; }, true);
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
   const fresh = () => Date.now() - (U.mAt || 0) < 450;
   function setupModal() {
@@ -457,6 +469,9 @@
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
       const qtb = ev.target.closest("[data-mqtab]");
       if (qtb && U.mcur && !fresh()) { U.questTab = qtb.dataset.mqtab; A.click(); if (U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
+      // « Aller au gisement » (une ressource qui manque) : la terre, dans le Domaine
+      const zb = ev.target.closest("[data-gz]");
+      if (zb && U.mcur && !fresh()) { const z = zb.dataset.gz; A.click(); U.zone = z; closeModal(); setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
       if (gb && U.mcur && !fresh()) { const from = U.mcur.reopen || null; closeModal(); setTimeout(() => { U.rfrom = from; goto(gb.dataset.goto); }, 80); return; }
       const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
@@ -477,7 +492,7 @@
   const Scenes = window.EclatScenes;
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z) => passHTML(z), uiSigne, recitInline,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z) => passHTML(z), uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => donsRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
@@ -724,6 +739,10 @@
       else { delete el.dataset.sig; el.innerHTML = viewCosmos(); mountCosmos(); }
     }
     iconize(el);
+    if (U.tab === "atelier") { // la rangée des actions garde sa place d’un rendu à l’autre, et l’action choisie reste visible
+      const gs = $(".gestes", el);
+      if (gs) { gs.scrollLeft = U.gScroll || 0; const on = $(".geste.on", gs); if (on && (on.offsetLeft < gs.scrollLeft || on.offsetLeft + on.offsetWidth > gs.scrollLeft + gs.clientWidth)) gs.scrollLeft = Math.max(0, on.offsetLeft - 12); }
+    }
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
@@ -1074,7 +1093,7 @@
 
   /* l’Atelier et le Carnet */
   const Atl = window.EclatAtelier.create({
-    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, zoneName, GI, gi, gIc, icon,
+    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
     iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
     floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
     uiSigne, memoryHTML
