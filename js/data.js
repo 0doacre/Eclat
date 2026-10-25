@@ -134,7 +134,7 @@
     u: "Se joue depuis le Journal.", d: "Un os creux percé de cinq trous. Le premier son qui en sort, tu l’as déjà entendu quelque part." };
   I.statuette = { n: "Figurine d’os", ic: "🗿", a: 1, t: "curio", sec: true, r: ["tailler", { os: 1, silex: 1 }, 1],
     e: { once: { intu: 3 } },
-    d: "Tes mains sculptent toutes seules : une femme aux cheveux courts, la main levée, paume ouverte. Toi, tu ne l’as jamais vue. Tes mains, si." };
+    d: "Tu sculptes une femme aux cheveux courts, une main levée, paume ouverte. Tu ne reconnais pas son visage, mais tu n’as pas eu besoin de modèle." };
 
   /* Âge 2 — Pierre */
   I.argile = { n: "Argile", ic: "🟫", a: 2, t: "res", u: "Sert aux briques et au four en argile, puis au creuset.", d: "Une terre grasse et collante, qui garde la forme qu’on lui donne." };
@@ -587,7 +587,7 @@
   I.vaisseau = { n: "Vaisseau interplanétaire", ic: "🛸", a: 13, t: "tool", r: ["assembler", { propulseur: 45, composite: 960, alliage_ancien: 480 }, 1],
     e: { zone: "mercure" }, u: "Ouvre le chemin vers Mercure.", d: "Cette fois, tu pars vers le Soleil.", h: "Une coque de composite renforcée du métal des Anciens peut porter les propulseurs à fusion jusqu’aux autres planètes." };
   I.ia = { n: "Intelligence artificielle", ic: "🧠", a: 13, t: "upg", r: ["assembler", { processeur: 720, supra: 200, graphene: 280 }, 1],
-    e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Elle répond avant que tu aies fini. Elle a la voix qui te raconte.",
+    e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.",
     h: "Les processeurs peuvent travailler ensemble si le graphène et les supraconducteurs les relient assez vite." };
   I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 13, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
     u: "Palier 3. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main. 600 fabrications par minute.", d: "Il assemble la matière atome par atome.",
@@ -874,7 +874,7 @@
   D.EVENTS = {
     feu: "Le feu prend. Tu le regardes longtemps. Quelque part au fond de ta tête, une voix sans timbre dit : « Seuil 1. »",
     epieu: "La pointe noircit et durcit. Au loin, dans la plaine, une bête lève la tête vers la fumée.",
-    eclat: "Le silex se fend net. Tes mains savaient où frapper, comme si elles l’avaient déjà fait. Six fois, peut-être.",
+    eclat: "Le silex se fend net. Tu as frappé au bon endroit sans hésiter, alors que tu ne te souviens pas de l’avoir appris.",
     four: "La chaleur monte, les briques rougeoient. Quelque part sous la terre, quelque chose enregistre : « Seuil 3. »",
     lingot_cuivre: "Le métal coule, rouge vif. Tu sens qu’on te regarde faire, et que quelqu’un, quelque part, est content de toi.",
     lingot_bronze: "Deux métaux tendres, et ce qui sort du creuset est dur. Tu fais tinter le lingot contre une pierre, juste pour l’entendre.",
@@ -1222,19 +1222,19 @@
   D.SKILL_RECOLTE = { n: "Récolte", ic: "🧺", d: "Récolter à la main, sur les gisements." };
 
   /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
-   * l’Atelier), les mains des Semeurs précédents guident les siennes. */
+   * l’Atelier), la narratrice présente les pistes comme des souvenirs. */
   D.GUIDE = {
     tries: [6, 14, 26], // souvenirs à réunir pour le geste, une matière, puis la recette
     lines: [
-      ["Tes mains frémissent, comme si elles se souvenaient d’un autre corps. L’action qu’il te faut : {g}.",
+      ["Tu retrouves le geste sans savoir où tu l’as appris : {g}.",
         "Tes doigts esquissent un mouvement tout seuls, avant que tu y penses : {g}.",
         "Un geste te revient, comme si tu l’avais fait mille fois : {g}."],
-      ["Une image te traverse : d’autres mains, avant les tiennes, qui tiennent {i}.",
-        "Tu revois une main abîmée poser {i} sur une pierre plate. Ce n’était pas la tienne.",
+      ["Tu te souviens d’avoir vu quelqu’un tenir {i}, avant ton arrivée.",
+        "Tu revois quelqu’un poser {i} sur une pierre plate. Tu ne reconnais pas son visage.",
         "Un souvenir qui n’est pas à toi remonte : une odeur, un bruit, et au milieu, nettement, {i}."],
       ["Tout te revient d’un coup. La recette s’inscrit dans ton Carnet.",
         "Tout se remet en place, comme si tu l’avais toujours su. La recette s’inscrit dans ton Carnet.",
-        "Les autres mains ont fini de te montrer. La recette s’inscrit dans ton Carnet."]
+        "Tu retrouves la suite des gestes. La recette s’inscrit dans ton Carnet."]
     ]
   };
 

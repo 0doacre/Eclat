@@ -5,7 +5,9 @@
 
 ## 0. Les règles
 
-1. **Un indice est un objet ou un détail**, jamais une explication.
+1. **Un indice apporte un fait utilisable.** Un objet, un détail observé, une note ou une
+   explication locale peuvent servir d’indice. Ne pas donner une solution avant son emplacement
+   prévu ; ne pas rendre un témoignage obscur pour préserver artificiellement le mystère.
 2. **Deux chemins d’indices au moins** pour chaque secret, dans deux lieux ou deux systèmes différents.
 3. **Rien par force brute raisonnable** : saisie libre (signes, noms, codes), suites d’au moins
    six notes, conditions de connaissance. Là où une liste courte existe (douze noms), un seul

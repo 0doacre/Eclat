@@ -493,7 +493,7 @@ test("lectures : brouillées, sous des lignes comprises, seulement quand tout es
 
 test("chaînes de secrets gardées : les indices des anciens fragments existent toujours", () => {
   // Flûte en os : les os percés de la Grotte
-  assert.ok(/os percés/.test(R.frags.grotte2.t) && /chantent/.test(R.frags.grotte2.t));
+  assert.ok(/os percés/.test(R.frags.grotte2.t) && /résonner quelques notes/.test(R.frags.grotte2.t));
   // Miroir de cuivre : le galet poli comme un miroir
   assert.ok(/comme un miroir/.test(R.frags.gue2.t));
   // Anticythère : la tablette du Sommet, ses roues dentées, toujours rapportée
@@ -606,7 +606,7 @@ test("au cycle 2 : revisites, notes des vivants, pages gardées", () => {
     assert.strictEqual(E.state.revus[f + ":" + attendue], 1);
   }
   const chene = log.find((e) => e.x.id === "chene");
-  assert.ok(/Il n’y en a pas\./.test(chene.revisit.t));
+  assert.ok(/Il n’y a personne au pied de l’arbre\./.test(chene.revisit.t));
   // la note d’Hélie apparaît en marge de la page 5, et la page a du nouveau
   const c5 = E.livre().find((c) => c.n === 5);
   assert.strictEqual(c5.notes.length, 1);
@@ -937,7 +937,7 @@ const INDICES = {
   boussole: [["frag", "porte", /aiguille de fer[\s\S]*argile/], ["page", "p12", /aiguille[\s\S]*argile/], ["page", "p25", /aiguille/]],
   cloche: [["page", "p23", /cloche/], ["page", "p21", /moule de terre/], ["feuillet", "celeste1", /coule dans la terre/], ["event", "lingot_bronze", /tinter/]],
   pigment: [["frag", "grotte2", /ocre et noires/], ["page", "p22", /terre de rivière, du noir de feu/], ["feuillet", "celeste2", /terre de la rivière/]],
-  feu_artifice: [["event", "dynamite", /cuivre[\s\S]*vert/], ["frag", "cendre", /vertes et rouges/]],
+  feu_artifice: [["event", "dynamite", /cuivre[\s\S]*vert/], ["frag", "cendre", /feu d’artifice vert et rouge/]],
   pip: [["event", "moteur_elec", /laisse/], ["frag", "iris_lune", /robot[\s\S]*laisse/]],
   capsule: [["event", "verre_trempe", /message/], ["frag", "manifeste", /boîtes de verre/]],
   diamant: [["event", "forge_stellaire", /carbone/], ["frag", "berceuse", /pierre claire/]],
@@ -948,16 +948,16 @@ const INDICES = {
   berceuse_n: [["feuillet", "dalia2", /cinq trois un/], ["releve", "musique", /boîte à musique/]],
   halte: [["frag", "tumulus2", /\[main\] \[halte\]/], ["page", "p11", /trois fois/], ["q", "q_rouge", /groupes/]],
   promesse: [["frag", "grotte2", /\[nous\] \[revenir\] \[enfant\]/], ["page", "p17", /\[nous\] \[revenir\] \[enfant\]/], ["frag", "nid", /trois, trois, trois/]],
-  nom: [["nuit", "9:1", /son nom/], ["registre", "nourrice", /ÉVEILLÉE DEPUIS/]],
+  nom: [["nuit", "9:1", /le nom de celle qui nous parle/], ["registre", "nourrice", /ÉVEILLÉE DEPUIS/]],
   caveau: [["frag", "porte", /aiguille/], ["page", "p12", /aimant/], ["page", "p25", /porte/]],
   lune7: [["ui", "lune", /regarde aussi/], ["page", "p20", /clignote/], ["page", "p30", /lumière/]],
   c1969: [["frag", "plaque", /1969/], ["page", "p30", /plaque/]],
   cxyzzy: "clin d’œil gratuit, ne bloque rien (SECRETS §0.4)",
   cregistre: [["ui", "lune7", /trois, cinq, trois/], ["terminal", "ls", /CLÉ/], ["page", "p20", /Clause/], ["frag", "plaque", /\[main\] \[dabord\]/]],
   ccapsule: [["ui", "capsule", /Fais confiance/], ["registre", "aide", /CAPSULES/], ["nuit", "9:2", /capsule/]],
-  signature: [["frag", "coeur", /en lettres et en signe/], ["registre", "arche", /DÉCLARÉ PAR : \S+ \[nourrice\]/], ["interface", "ornement", /\[nourrice\]/]],
+  signature: [["frag", "coeur", /en lettres et en signe/], ["registre", "arche", /NOM UTILISÉ PAR LA NOURRICE \[nourrice\]/], ["interface", "ornement", /\[nourrice\]/]],
   noms: [["frag", "berceuse", /un nom brûlé et un numéro/], ["frag", "quai", /lit 7/], ["item", "miroir", /iris/], ["registre", "vivant", /CUVE/], ["q", "q_noms", /numéro de ton iris.*nom/]],
-  visage: [["nuit", "8:2", /je la dessine toujours/], ["frag", "cuves", /de nouveau pleine/], ["registre", "vivant", /ÉVEILS/], ["q", "q_oeil", /six éveils/]]
+  visage: [["nuit", "8:2", /je la dessine toujours/], ["frag", "cuves", /de nouveau remplie de liquide/], ["registre", "vivant", /ÉVEILS/], ["q", "q_oeil", /six éveils/]]
 };
 /* le nom juste de l’enfant du cycle, retrouvé comme le joueur : le chiffre de l’iris, puis le lit de la Chambre */
 function nommerJuste(E) {
