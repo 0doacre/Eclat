@@ -2,7 +2,11 @@
 
 > **COFFRE. Révélations. L’auteur ne lit pas ce dossier.**
 
-Base : `3ff771b` (main). Le retour de l’auteur autorise une passe de langue sur tout le récit,
+Base initiale : `3ff771b` (main). Les correctifs de main jusqu’à `c9fddc0` ont ensuite été
+intégrés ; la comparaison des données avec cette base retrouve les mêmes 80 champs affichés,
+sans changement de règle ni de jeton d’indice.
+
+Le retour de l’auteur autorise une passe de langue sur tout le récit,
 en conservant l’intrigue et les découvertes. Sources lues : BIBLE, SECRETS, TEXTES,
 `js/recit.js` et les descriptions et réminiscences associées de `js/data.js`.
 
