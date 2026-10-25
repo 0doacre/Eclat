@@ -1,0 +1,13 @@
+# Fins de ligne : le dépôt et les fichiers servis sont en LF, même extraits sous Windows
+# (l’empreinte du service worker, tools/build.js, compte déjà CRLF comme LF pour les fichiers texte).
+* text=auto
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+*.webmanifest text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.woff2 binary
+*.png binary
+*.webp binary

@@ -1,0 +1,21 @@
+# npm test sous Linux et sous Windows : l'empreinte du service worker (tools/build.js) ne doit pas
+# dépendre des fins de ligne du poste. Les tests de navigateur (tools/test-ux.js, tools/test-stockage-ui.js)
+# demandent Playwright et se lancent à la main.
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  npm-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test

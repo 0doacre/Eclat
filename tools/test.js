@@ -4093,6 +4093,7 @@ require("./test-arbre.js");
 require("./test-densite.js");
 require("./test-carnet.js");
 require("./test-comptoir.js");
+require("./test-stockage.js");
 
 console.log("La file des fenêtres automatiques (0.13.3)");
 const Fen = require("../js/fenetres.js");
