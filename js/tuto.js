@@ -10,7 +10,7 @@
     const { E, D, A, U, esc, save, toast } = api;
     const S = () => E.state;
     const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
-    const GAP = 12000; // entre deux chapitres
+    const GAP = 150000; // entre deux chapitres : une explication toutes les deux ou trois minutes, jamais en rafale
 
     /* ------------------------------------------------------------ petits repères */
     const has = (id) => (S().inv[id] || 0) >= 1;
@@ -189,6 +189,29 @@
             text: "Étudie-la contre un peu d’Intuition ✨ : tu sauras avec quelles actions elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },
           { tab: "atelier", text: "Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie. À toi de trouver la bonne combinaison.", next: true }
         ] },
+      { id: "suivre", n: "Suivre une recette",
+        when: () => !S().track && U.tab === "carnet" && S().stats.crafts <= 80 && S().age <= 4 && Object.keys(S().known).length >= 5 && !!document.querySelector("[data-track]"),
+        still: () => !S().track,
+        steps: [
+          { tab: "carnet", at: "[data-track]", dim: false,
+            text: "Suivre : la carte d’objectif te montre ce qu’il manque pour cette recette, en haut du Domaine.",
+            done: () => !!S().track }
+        ] },
+      { id: "epingle", n: "Épingler une recette",
+        when: () => !Object.keys(S().pins || {}).length && U.tab === "carnet" && S().stats.crafts >= 15 && S().stats.crafts <= 120 && S().age <= 4 && !!document.querySelector("[data-pin]"),
+        still: () => !Object.keys(S().pins || {}).length,
+        steps: [
+          { tab: "carnet", at: "[data-pin]", dim: false,
+            text: "L’étoile épingle la recette en haut de l’Atelier : tu la commandes sans la chercher dans la liste.",
+            done: () => Object.keys(S().pins || {}).length > 0 }
+        ] },
+      { id: "lots", n: "Commander d’un coup",
+        when: () => !S().flags.cmdBig && U.tab === "carnet" && S().stats.crafts >= 10 && S().stats.crafts <= 120 && S().age <= 4 && !!document.querySelector('[data-qty="10"]'),
+        steps: [
+          { tab: "carnet", at: '[data-qty="10"]', dim: false,
+            text: "Choisis ×10 pour commander dix exemplaires d’un coup, pièces comprises ; Max prend tout ce que ta Réserve permet.",
+            done: () => !!S().flags.cmdBig }
+        ] },
       { id: "dechiffrer", n: "Déchiffrer une recette", modal: true,
         when: () => !!decipherGoal() && Object.keys(S().known).length >= 4 && (U.tab === "domaine" || U.tab === "carnet" || !!document.querySelector('.modal:not(.hidden) [data-m="decipher"]')),
         still: () => !!decipherGoal(),
@@ -365,7 +388,7 @@
       spot.style.top = r.top - pad + "px";
       spot.style.width = r.width + pad * 2 + "px";
       spot.style.height = r.height + pad * 2 + "px";
-      const cx = r.left + r.width / 2, below = r.top + r.height / 2 < H * 0.5;
+      const cx = r.left + r.width / 2;
       const left = Math.max(12, Math.min(W - bw - 12, cx - bw / 2));
       bub.style.left = left + "px";
       bub.style.bottom = "auto";
@@ -374,10 +397,15 @@
       const over = box ? box.getBoundingClientRect().top : r.top - pad;
       const room = box && over - 12 - bh >= band().lo + 4 ? over : r.top - pad;
       const bande = band();
-      const top = below ? Math.min(H - bh - 8, r.bottom + pad + 12) : Math.max(8, room - 12 - bh);
       // jamais sur la barre d’onglets ni sur l’en-tête, quand la bande libre peut la contenir
-      bub.style.top = (bande.hi - bande.lo >= bh + 8 ? Math.max(bande.lo + 4, Math.min(top, bande.hi - bh - 4)) : top) + "px";
-      bub.classList.toggle("up", !below);
+      const dansBande = (v) => (bande.hi - bande.lo >= bh + 8 ? Math.max(bande.lo + 4, Math.min(v, bande.hi - bh - 4)) : v);
+      // deux places possibles : sous la cible, ou au-dessus ; on prend celle qui ne la recouvre pas
+      const bas = dansBande(Math.min(H - bh - 8, r.bottom + pad + 12));
+      const haut = dansBande(Math.max(8, room - 12 - bh));
+      const croise = (t) => !(left + bw <= r.left || r.left + r.width <= left || t + bh <= r.top || r.top + r.height <= t);
+      const top = croise(bas) && !croise(haut) ? haut : bas;
+      bub.style.top = top + "px";
+      bub.classList.toggle("up", top < r.top);
       bub.style.setProperty("--ax", Math.max(16, Math.min(bw - 16, cx - left)) + "px");
     }
     function show(view, key) {

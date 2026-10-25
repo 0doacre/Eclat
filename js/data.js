@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.18.0";
+  D.VERSION = "0.19.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1192,6 +1192,10 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "💬 Les boutons qui ne disaient rien s’expliquent : une info-bulle dit ce que font Suivre, Épingler, Détail, ×10, Max, les filtres et les tris.",
+    "💭 Le guide ralentit : une seule explication à la fois, et au plus une toutes les deux ou trois minutes.",
+    "⭐ Trois chapitres nouveaux, au moment où ils servent : Suivre, Épingler, et commander d’un coup (×10, Max).",
+    "📖 Qui a déjà pris l’habitude ne revoit rien : ces chapitres s’effacent si tu as déjà suivi une recette, épinglé ou commandé en lot.",
     "🏗️ Chaque bâtiment a sa propre recette à découvrir, avec un nom qui lui ressemble : Claie de séchage et Rouissoir pour la fibre, Carrière à coins pour la pierre, Fosse de tannage et Tannerie pour la peau, Argilière, Gravière, Sablière, et des mines (cuivre, étain, charbon, fer, bauxite…). Dans le Carnet, trois nouveaux filtres : « Extracteurs » (rangés par bâtiment et par niveau), « Outils » et « Machines ».",
     "🏗️ Un extracteur par ressource : le Bûcheron pour le bois, le Carrier pour la pierre, le Tanneur pour la peau, le Charbonnier, le Sablier, les mineurs… Chaque bâtiment ne récolte que sa ressource et monte de niveau avec les âges (Cabane, Hutte, Scierie…). Dans la fiche d’un gisement, « ↑ Niveau 2 » remplace un exemplaire par le niveau d’après. Le sable et le charbon se récoltent avec le même bâtiment dans toutes leurs terres. Tes parties en cours sont converties : rien n’est perdu, chaque extracteur reste où il était.",
     "✦ Les Traces ne se dépensent plus en pleine partie : la Mémoire des mains se consulte toujours, mais les achats ne s’ouvrent qu’au réveil d’un nouveau Semeur, après la relève. Ils se ferment avec le bouton « Terminé : commencer le cycle » ou au premier passage franchi, et les Traces non dépensées attendent la relève suivante.",

@@ -265,7 +265,7 @@
       const q = ing[i];
       const lack = (S().inv[i] || 0) + 1e-9 < q;
       return '<span class="ing' + (lack && opts.check ? " lack" : "") + (opts.link ? " link" : "") + '"' +
-        (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + (opts.link ? ' data-goto="' + i + '"' : "") + ">" +
+        (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + (opts.link ? ' data-goto="' + i + '" title="Ouvrir sa fiche"' : "") + ">" +
         icon(i, "sm") + '<span class="q">' + fmt(q) + "</span> " + esc(I[i].n) + "</span>";
     }).join("");
   }
@@ -706,6 +706,7 @@
     $("#intuBtn").classList.toggle("hidden", Object.keys(S().known).length < 3 && !Object.keys(S().studied).length);
   }
   /* les onglets d’un même groupe (2 ou 3 pages) */
+  const SUBT = { atelier: "Fabriquer et découvrir", machines: "Tes machines et ce qu’elles fabriquent", journal: "Ce que tu as trouvé et compris", cosmos: "Le ciel, les signes et les Grands Œuvres" };
   function subTabs(...args) {
     let list;
     if (args.length === 6) list = [[args[0], args[3]], [args[1], args[4]], [args[2], args[5]]];
@@ -713,7 +714,7 @@
     const avail = list.filter(([t]) => tabAvailable(t));
     if (avail.length <= 1) return "";
     return '<div class="subtabs">' + avail.map(([t, lbl]) =>
-      '<button data-tab2="' + t + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
+      '<button data-tab2="' + t + '" title="' + (SUBT[t] || "") + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
     ).join("") + "</div>";
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); if (PARENT[t] === U.tab) render(true); } }
