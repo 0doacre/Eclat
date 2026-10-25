@@ -46,11 +46,22 @@
  *    les matières de cet achat passent avant le gros besoin, et un achat trop long est abandonné ;
  *  - une fabrication en chaîne que le moteur fige (voir brain) est annulée puis refaite pièce par pièce ;
  *  - il joue sans interruption (hors --offline). La « minute » des tableaux est du jeu actif.
+ *   --parcours  le VRAI premier parcours (voir tools/sim-parcours.js) : partie neuve, aucune recette connue d’avance ; le joueur
+ *               DÉCOUVRE chaque recette par des essais (E.attempt, avec le thermomètre et les souvenirs du guide), la relève
+ *               obligatoire du cycle 1 est prise dès qu’elle se déclenche (+3 Traces), il fait un premier achat de Mémoire (--achat),
+ *               puis joue le cycle 2 (--minutes, ici la durée du cycle 2) en ne connaissant que ce qu’il a appris
+ *   --chasse N  au cycle 2, le joueur cherche aussi les recettes HORS objectif qui l’intéressent (extracteurs…), avec au plus N essais
+ *               chacune (0 par défaut : il ne suit que le guide et n’utilise que les recettes qu’il connaît)
+ *   --decouverte enigme (il résout l’énigme d’un coup : 1 essai de --reflexion s) · guide (il suit le thermomètre et les indices,
+ *               --essai s par essai) · hasard (il essaie au hasard) ; --graine N : le hasard du joueur (le moteur, lui, est fixe)
  * Le moteur n’est jamais modifié. Le fichier s’importe aussi : { play, lire, PROFILS, JOUEURS }. */
 "use strict";
 const D = require("../js/data.js");
 const { createEngine } = require("../js/engine.js");
 const I = D.ITEMS;
+
+/* le hasard du joueur : mulberry32, reproductible */
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 const PROFILS = [
   { nom: "aucune", mem: {} },
@@ -77,7 +88,7 @@ const ACHATS = ["recolte", "mains", "recolte", "paquetage", "extr", "mains", "ra
 /* ------------------------------------------------------------------ options */
 function lire(argv) {
   const donne = {}; // les options données à la main : elles l’emportent sur un profil
-  const o = { minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, fouilles: false, sessions: null, joueur: null, joueurs: false, json: false, don: null, dons: false };
+  const o = { parcours: false, decouverte: "guide", essai: 8, achat: "recolte", graine: 1, chasse: 0, minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, fouilles: false, sessions: null, joueur: null, joueurs: false, json: false, don: null, dons: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], val = () => argv[++i];
     if (a === "--minutes") o.minutes = +val();
@@ -106,6 +117,12 @@ function lire(argv) {
     else if (a === "--taps") { o.taps = +val(); donne.taps = true; }
     else if (a === "--retour") { o.retour = +val(); donne.retour = true; }
     else if (a === "--journal") o.journal = true;
+    else if (a === "--parcours") o.parcours = true;
+    else if (a === "--decouverte") { o.decouverte = val(); if (!["enigme", "guide", "hasard"].includes(o.decouverte)) throw new Error("--decouverte : enigme, guide ou hasard"); }
+    else if (a === "--essai") { o.essai = +val(); if (!(o.essai > 0)) throw new Error("--essai : des secondes par essai (8)"); }
+    else if (a === "--achat") { o.achat = val(); if (o.achat !== "aucun" && !D.MEMOIRE.some((m) => m.id === o.achat)) throw new Error("--achat : aucun ou un id de la Mémoire"); }
+    else if (a === "--graine") o.graine = +val();
+    else if (a === "--chasse") { o.chasse = Math.max(0, Math.floor(+val())); }
     else if (a === "--cycles") o.cycles = Math.max(1, Math.floor(+val()));
     else if (a === "--cout") val().split(",").filter(Boolean).forEach((p) => { // --cout riviere=2,collines=3
       const [z, v] = p.split("=");
@@ -131,9 +148,12 @@ function appliquerJoueur(o, nom, donne) {
 function play(o) {
   let T = 1e12;
   const T0 = T, E = createEngine({ now: () => T, rand: () => 0.5 }), S = () => E.state;
-  for (const id in I) if (I[id].r && !I[id].sec && !I[id].path) E.learn(id, true); // il connaît tout
+  const parc = !!o.parcours; // le vrai premier parcours : partie neuve, il découvre tout par des essais
+  if (!parc) for (const id in I) if (I[id].r && !I[id].sec && !I[id].path) E.learn(id, true); // il connaît tout
   const avecMem = Object.keys(o.mem).length > 0;
   if (avecMem) { S().meta.mem = Object.assign({}, o.mem); E.recalc(); E.newCycle(); } // paquetage, raccourci
+  const R = rng(o.graine || 1); // le hasard du joueur (reproductible) ; le moteur garde son rand fixe
+  const pioche = (a) => a[Math.floor(R() * a.length)];
   const prendreDon = () => { if (o.don) { S().donsOffre = [o.don]; E.donChoose(o.don); } };
   prendreDon();
   const carnet = o.carnet === null ? (avecMem ? 4 : -1) : o.carnet;
@@ -194,8 +214,78 @@ function play(o) {
     const frais = (chaine === false ? [id] : E.plan(id, k).steps.map((s) => s[0])).filter((x) => !decouvert.has(x));
     if (!E.queue(id, k, chaine !== false).ok) return;
     frais.forEach((x) => decouvert.add(x));
+    if (parc) return; // le vrai parcours compte la découverte à part (decouvrir) ; fabriquer ensuite ne demande plus de réfléchir
     pense += frais.length * o.reflexion; penseTotal += frais.length * o.reflexion;
   }
+
+  /* ---- le vrai parcours : voir chaque matière, puis découvrir la recette de l’étape en cours par des essais ---- */
+  let essais = 0, essaisPar = {};
+  function voirTout() { // un joueur touche chaque tuile de la terre : la matière est « vue » (le thermomètre et l’étude en ont besoin)
+    for (const z of E.openZones()) for (const r of z.res) if (!S().seen[r] && gathered(r)) E.tap(r, z.id);
+  }
+  /* un essai de plus : quoi essayer, selon l’hypothèse sur le joueur.
+   *  enigme : la bonne combinaison d’emblée (il a résolu l’énigme) ;
+   *  hasard : une action et une à trois matières vues, tirées au sort, jamais deux fois la même ;
+   *  guide  : il lit le thermomètre comme le moteur le donne (« why ») : « geste » = les bonnes matières, mauvaise action, donc il change d’action ;
+   *           « manque » = il lui faut une matière de plus ; « trop » = une de trop ; « tiède » = bonne action, il varie les matières ;
+   *           « frais » = une matière sert ailleurs, il change d’action ; « froid » = il tire au sort. Il suit aussi les indices du guide (l’action). */
+  function prochainEssai(cible, tried, best) {
+    const T0 = I[cible], vues = Object.keys(S().seen).filter((i) => I[i] && !I[i].sec);
+    if (o.decouverte === "enigme") return { ge: T0.r[0], ids: Object.keys(T0.r[1]) };
+    const gestes = (S().hints[cible] >= 1 && D.GESTE_ORDER.includes(T0.r[0]) ? [T0.r[0]] : D.GESTE_ORDER).filter((g) => E.gesteOK(g));
+    // une combinaison déjà essayée dans la partie ne rapporte plus de souvenirs au guide (S.tried) : un joueur ne la refait pas
+    const cle = (ge, ids) => E.keyOf(ge, ids);
+    const deja = (ge, ids) => tried.has(cle(ge, ids)) || !!S().tried[cle(ge, ids)];
+    const alea = () => { // deux matières le plus souvent, parfois une ou trois
+      const pool = vues.slice(), ids = [], r = R();
+      for (let n = r < 0.2 ? 1 : r < 0.75 ? 2 : 3; n > 0 && pool.length; n--) ids.push(pool.splice(Math.floor(R() * pool.length), 1)[0]);
+      return { ge: pioche(gestes), ids };
+    };
+    const voisins = () => {
+      const { ge, ids, why } = best, autres = vues.filter((x) => !ids.includes(x)), out = [];
+      const autreGeste = gestes.filter((g) => g !== ge).map((g) => ({ ge: g, ids }));
+      const ajoute = ids.length < 3 ? autres.map((x) => ({ ge, ids: ids.concat(x) })) : [];
+      const retire = ids.length > 1 ? ids.map((x) => ({ ge, ids: ids.filter((y) => y !== x) })) : [];
+      const echange = ids.flatMap((x) => autres.map((y) => ({ ge, ids: ids.map((z) => (z === x ? y : z)) })));
+      if (why === "geste" || why === "frais") out.push(...autreGeste, ...echange);
+      else if (why === "manque") out.push(...ajoute, ...echange);
+      else if (why === "trop") out.push(...retire, ...echange);
+      else out.push(...echange, ...ajoute, ...retire); // tiède
+      return out.filter((c) => !deja(c.ge, c.ids));
+    };
+    let c = null;
+    if (o.decouverte === "guide" && best.ids && best.t >= 1) { const v = voisins(); if (v.length) c = v[Math.floor(R() * Math.min(v.length, 6))]; }
+    for (let tr = 0; !c && tr < 200; tr++) { const x = alea(); if (!deja(x.ge, x.ids)) c = x; }
+    c = c || alea();
+    tried.add(cle(c.ge, c.ids));
+    return c;
+  }
+  /* découvrir la recette de « cible » par des essais ; renvoie vrai si trouvée. Le temps des essais est du temps de réflexion (pas de récolte). */
+  function decouvrirId(cible, plafond) {
+    const tried = new Set(), best = { t: -1 };
+    let n = 0;
+    while (!S().known[cible] && n < plafond) {
+      const c = prochainEssai(cible, tried, best), r = E.attempt(c.ge, c.ids);
+      n++;
+      if (r.kind === "fail" && r.temp >= best.t) { best.t = r.temp; best.ge = c.ge; best.ids = c.ids; best.why = r.why; }
+    }
+    const sec = n * (o.decouverte === "enigme" ? o.reflexion : o.essai);
+    pense += sec; penseTotal += sec; essais += n; essaisPar[cible] = (essaisPar[cible] || 0) + n;
+    return !!S().known[cible];
+  }
+  /* l’étape en cours de l’objectif : le guide la souffle (souvenirs), donc elle finit toujours par se trouver */
+  function decouvrir() {
+    const g = E.guide(), step = g && g.step;
+    if (!step || !I[step] || !I[step].r || S().known[step] || I[step].sec || I[step].path) return;
+    const inconnues = Object.keys(I[step].r[1]).filter((i) => !S().seen[i]);
+    if (inconnues.length) { // il lui manque encore de voir une matière : il la récolte, ou fabrique la pièce qu’il connaît déjà (l’archet pour le feu)
+      inconnues.forEach((i) => { if (I[i].r && S().known[i] && !E.queued(i)) order(i, 1); });
+      return;
+    }
+    decouvrirId(step, 80);
+  }
+
+  /* ---- ordres : ce qu’il faut avoir (id, qty) → récolte à faire, ou mise en file ---- */
   function order(id, qty, depth) {
     const it = I[id], d = Math.ceil(qty - E.count(id) - E.queued(id) - 1e-9);
     if (d <= 0) return;
@@ -263,6 +353,13 @@ function play(o) {
       if (pb <= o.retour && total >= pb && (!best || pb < best.pb)) best = { id, pb, base: E.count(id), t0: minutes() };
       if (best && best.id === id) planned[id] = g.res;
     }
+    // un joueur lit son Carnet : une recette inconnue dont l’effet l’intéresse, il la cherche (sans l’aide du guide, qui ne souffle que l’étape en cours)
+    // (au cycle 1, il ne fait que suivre le guide : il n’a pas encore compris que le Carnet lui montre les recettes à chercher)
+    if (parc && best && !S().known[best.id] && (!rel || !(o.chasse > 0))) { evite.add(best.id); return chooseInvest(); } // par défaut (--chasse 0) : seulement les recettes qu’il connaît
+    if (parc && best && !S().known[best.id]) {
+      const vues = Object.keys(I[best.id].r[1]).every((i) => S().seen[i]);
+      if (!vues || !decouvrirId(best.id, o.chasse)) { evite.add(best.id); return chooseInvest(); }
+    }
     return best;
   }
   /* un extracteur fabriqué se pose sur le gisement de la matière demandée */
@@ -280,6 +377,7 @@ function play(o) {
   /* ---- la tête du joueur : une fois par demi-seconde ---- */
   function brain() {
     need = {};
+    if (parc) { voirTout(); decouvrir(); }
     /* défaut du moteur : une fabrication en chaîne peut se figer (étape placée avant sa sous-pièce).
      * Comme un joueur, il l’annule au bout de 5 s et la refait pièce par pièce. */
     const j0 = S().hand.q[0];
@@ -349,6 +447,16 @@ function play(o) {
     ouverts();
   }
 
+  /* la relève obligatoire du premier parcours : +3 Traces, un premier achat de Mémoire, et le cycle 2 repart */
+  let rel = null;
+  function releveForcee() {
+    rel = { t: minutes(), pense: penseTotal / 60, essais, essaisPar: Object.assign({}, essaisPar), connues: Object.keys(S().known).length };
+    E.forcedReleve();
+    if (o.achat && o.achat !== "aucun") E.memBuy(o.achat);
+    need = {}; urgent = {}; planned = {}; invest = null; evite = new Set(); rows = []; traces = 0; prete = {}; debut = minutes(); pense0 = penseTotal / 60; absDebut = absent; sesDebut = minutes();
+    ouverts();
+  }
+
   /* ---- la boucle : pas de 100 ms, 4 appuis par seconde ---- */
   const cycles = [];
   /* --fouilles : la plus haute terre où un lieu déjà exploré a un niveau de fouille à faire qui tient dans l’absence */
@@ -367,6 +475,7 @@ function play(o) {
     for (let step = 0; cyc() < o.minutes; step++) {
       T += 100;
       E.update();
+      if (parc && !rel && step % 5 === 0 && E.canForcedReleve()) releveForcee();
       if (o.journal && step % 10 === 0) { // --journal : l’heure de chaque objectif franchi
         const ob = E.objective();
         if (ob && ob.i !== objPrec) { objPrec = ob.i; console.log("  " + mm(cyc()) + " min  objectif " + String(ob.i).padStart(2) + " : " + (ob.id || ob.n)); }
@@ -398,7 +507,7 @@ function play(o) {
   const rend = ["bois", "fibre", "caillou", "os", "cuir", "argile", "silex", "sable", "malachite", "fer_min"].filter((i) => gathered(i) && bestZone(i))
     .map((i) => i + " " + Math.round(handRate(i)) + "|" + Math.round(E.rate(i)));
   const last = cycles[cycles.length - 1];
-  return { E, cycles, rows: last.rows, traces: last.traces, mur: last.mur, ext, stocks, rend, age: S().age, minutes: cyc(), ecoule: cyc() + (absent - absDebut) / 60000, absent: absent / 3.6e6, penseTotal, gels, taps: S().stats.taps, crafts: S().stats.crafts };
+  return { rel, essais, essaisPar, E, cycles, rows: last.rows, traces: last.traces, mur: last.mur, ext, stocks, rend, age: S().age, minutes: cyc(), ecoule: cyc() + (absent - absDebut) / 60000, absent: absent / 3.6e6, penseTotal, gels, taps: S().stats.taps, crafts: S().stats.crafts };
 }
 
 /* ------------------------------------------------------------------ affichage */

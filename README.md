@@ -142,6 +142,7 @@ tools/test.js         tests du moteur, dont le chemin secret complet jusqu’à 
 tools/golden-ui.js    référence de rendu de l’interface (Playwright) : rien ne doit changer en remaniant ui.js
 tools/sim.js          bot qui joue une partie entière pour mesurer le rythme
 tools/sim-passages.js joueur simulé pour régler les passages, la relève et la Mémoire (--compare, --cycles, --cout)
+tools/sim-parcours.js  le vrai premier parcours d’un nouveau joueur (découverte par essais, relève obligatoire, premier achat) : docs/revue/simulation-premier-parcours.md
 tools/build.js        empreinte de version du service worker (sans elle, les joueurs ne reçoivent pas la mise à jour)
 tools/icons.js        sprite assets/icons.svg et js/icons.js à partir de tools/icons.json
 tools/fixtures/       sauvegardes des versions 1 à 5, pour tester la compatibilité

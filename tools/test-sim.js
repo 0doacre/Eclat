@@ -104,4 +104,38 @@ test("les séances repartent de zéro à chaque relève", () => {
   r.cycles.forEach((c) => c.rows.forEach((x) => assert.ok(x.ecoule >= x.t - 1e-9)));
 });
 
+/* Le vrai premier parcours (--parcours) : partie neuve, découverte par des essais, relève obligatoire, achat, cycle 2. */
+const parcours = (pol, achat, graine) => jouer("--parcours", "--minutes", "30", "--decouverte", pol, "--achat", achat || "recolte", "--graine", String(graine || 1));
+const plaine2 = (r) => (r.rows.find((x) => x.z === "plaine" && !x.offert) || {}).t;
+test("premier parcours : la relève obligatoire est prise, puis le cycle 2 franchit la Plaine", () => {
+  const r = parcours("enigme");
+  assert.ok(r.rel && r.rel.t > 1 && r.rel.t < 6, "relève entre 1 et 6 min : " + (r.rel && r.rel.t));
+  assert.ok(plaine2(r) > 0, "la Plaine est franchie au cycle 2");
+  assert.strictEqual(r.E.state.meta.forcedDone, true);
+  assert.strictEqual(r.E.state.cycle, 2);
+});
+test("premier parcours : le joueur découvre vraiment (aucune recette connue d’avance), les essais viennent du moteur", () => {
+  const r = parcours("guide");
+  assert.ok(r.rel.essais >= r.rel.connues, "au moins un essai par recette découverte");
+  assert.ok(r.rel.connues >= 4 && r.rel.connues <= 12, "quelques recettes apprises au cycle 1 : " + r.rel.connues);
+  assert.ok(r.rel.essais > 5, "bien plus d’un essai par recette quand on cherche");
+});
+test("premier parcours : la découverte compte (l’énigme résolue d’emblée est la plus rapide jusqu’à la Plaine)", () => {
+  const tot = (pol) => { const r = parcours(pol); return r.rel.t + plaine2(r); };
+  const e = tot("enigme"), g = tot("guide"), h = tot("hasard");
+  assert.ok(e < g && e < h, "l’énigme résolue d’emblée est la plus rapide : " + [e, g, h].map(r3).join(" / "));
+});
+test("premier parcours : le premier achat de Mémoire change le cycle 2 (Mains calleuses avant la Plaine)", () => {
+  assert.ok(plaine2(parcours("enigme", "recolte")) < plaine2(parcours("enigme", "aucun")), "Mains calleuses accélère la Plaine");
+});
+test("premier parcours : déterminisme (même graine, mêmes nombres) et la graine change le hasard", () => {
+  const a = parcours("hasard", "recolte", 2), b = parcours("hasard", "recolte", 2), c = parcours("hasard", "recolte", 5);
+  assert.deepStrictEqual([a.rel.t, a.essais, plaine2(a)], [b.rel.t, b.essais, plaine2(b)]);
+  assert.notStrictEqual(a.essais, c.essais, "deux graines, deux parcours");
+});
+test("premier parcours : --decouverte et --achat inconnus sont dits", () => {
+  assert.throws(() => lire(["--parcours", "--decouverte", "x"]), /enigme, guide ou hasard/);
+  assert.throws(() => lire(["--parcours", "--achat", "x"]), /--achat/);
+});
+
 console.log(passed + " tests du simulateur réussis" + (process.exitCode ? ", des échecs." : "."));
