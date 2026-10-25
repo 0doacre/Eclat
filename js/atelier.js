@@ -365,12 +365,12 @@
       let h = '<h2 class="title">Carnet</h2>';
       if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. Choisis une <b>quantité</b> (×1 à Max, elle est mémorisée) puis touche <b>Fabriquer</b> : c’est une commande, les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> montre ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
       // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
-      const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec && !I[id].sib).length;
+      const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
       h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
       h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
       h += cqBarHTML();
-      h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+      h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]].map(([k, n]) =>
         '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       return h + '<div id="clist">' + carnetList() + "</div>";
     }
@@ -588,6 +588,16 @@
         const ids = E.pathRecipes().filter(keep);
         if (ids.length) h += '<details class="card age-sec" open><summary><span class="ic" style="border-color:#b36bff">🎵</span><span class="an">La Résonance</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
       }
+      // les extracteurs se rangent par bâtiment (Bûcheron, Cueilleur…), niveau après niveau, plutôt que par âge
+      if (U.carnetFilter === "ext") {
+        (D.LIGNES || []).forEach((L) => {
+          const ids = L.niv.map((v) => v.id).filter(keep);
+          if (!ids.length) return;
+          const kn = L.niv.filter((v) => st.known[v.id]).length;
+          h += '<details class="card age-sec" open><summary><span class="ic">' + L.ic + '</span><span class="an">' + esc(L.n) + '</span><span class="cnt">' + kn + "/" + L.niv.length + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
+        });
+        return h || '<p class="small muted center">Aucun extracteur connu pour l’instant.</p>';
+      }
       const book = E.carnet();
       const order = book.map((b, i) => i).sort((a, b) => {
         const rank = (x) => (book[x].age === st.age ? 0 : book[x].age === st.age + 1 ? 1 : 2 + (st.age - book[x].age));
@@ -617,6 +627,9 @@
       if (U.carnetFilter === "unk") return !st.known[id];
       if (U.carnetFilter === "craft") return st.known[id] && (E.maxCraftable(id, 1) > 0 || E.plan(id, 1).ok);
       if (U.carnetFilter === "prod") return st.known[id] && ["ext", "upg", "mach", "tool", "stat"].includes(it.t);
+      if (U.carnetFilter === "ext") return st.known[id] && it.t === "ext";
+      if (U.carnetFilter === "tool") return st.known[id] && ["tool", "upg"].includes(it.t);
+      if (U.carnetFilter === "mach") return st.known[id] && ["mach", "stat"].includes(it.t);
       if (U.carnetFilter === "pin") return !!st.pins[id];
       return true;
     }

@@ -28,7 +28,7 @@
     /* un gisement se montre s’il se récolte à la main, s’il est exploité, ou si on connaît de quoi l’exploiter */
     function depShown(z, d) {
       if (d.hand || E.domExt(z, d.res)) return true;
-      return E.extFor(d.res, z).some((t) => E.extKnown(t) || E.count(t) >= 1);
+      return E.extFor(d.res, z).some((t) => S().known[t] || E.count(t) >= 1);
     }
     function depRate(z, res) {
       const e = E.domExt(z, res);
@@ -607,7 +607,7 @@
     function extHTML(key) {
       const i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
       const e = E.domExt(z, res), us = E.extUnits(), info = E.machInfo(key), dep = E.zoneDeps(z).find((d) => d.res === res);
-      const types = E.extFor(res, z).filter((t) => us[t].own > 0 || (e && e.u[t]) || E.extKnown(t));
+      const types = E.extFor(res, z).filter((t) => us[t].own > 0 || (e && e.u[t]) || S().known[t]);
       const rate = depRate(z, res);
       let h = '<div class="sheet-h">' + icon(res) + '<div class="grow"><h2>' + esc(I[res].n) + '</h2><div class="tiny muted">' + esc(E.ZONES[z].n) + "</div></div></div>";
       h += '<p class="small">' + (!e ? "Aucun extracteur actif." : info.s === "off" ? "En pause." : rate > 0 ? "Récolte : " + perTime(rate) + " (active hors ligne)." : "Démarrage…") + "</p>";
@@ -617,7 +617,7 @@
         h += '<p class="tiny muted">' + (L ? "<b>" + esc(L.n) + "</b> : " : "") + "un bâtiment par ressource, qui monte de niveau. Chaque exemplaire récolte seulement ce gisement ; « Améliorer » en remplace un par le niveau d’après.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
           const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0, nx = E.extNext(t);
-          const up = cur && nx && E.extKnown(nx) && I[nx].a <= S().age ? '<button class="mini lbl" data-m="eup" data-t="' + t + '" aria-label="Améliorer un exemplaire : ' + esc(I[nx].n) + '" style="margin-top:6px">↑ Niveau ' + I[nx].lv + "</button>" : "";
+          const up = cur && nx && S().known[nx] && I[nx].a <= S().age ? '<button class="mini lbl" data-m="eup" data-t="' + t + '" aria-label="Améliorer un exemplaire : ' + esc(I[nx].n) + '" style="margin-top:6px">↑ Niveau ' + I[nx].lv + "</button>" : "";
           return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small"><span class="tiny muted">Niveau ' + I[t].lv + "</span> " + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par exemplaire · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span>" + (up ? "<br>" + up : "") + "</span>" +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';

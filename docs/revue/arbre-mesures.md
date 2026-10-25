@@ -68,3 +68,14 @@ Chromium, sauvegarde `tools/fixtures/save-v5-age8-usine.json`, Carnet puis Arbre
 - Les étiquettes (10,5 px) et les traits (1,6 px à 30 %) sont faits pour l'échelle 1 : à l'échelle 0,6, une étiquette se lit à 6,3 px.
 - Au plus 159 recettes se montrent : 175 recettes au total, dont 16 secrètes que l'arbre ne dessine pas avant qu'elles soient connues.
 - La mise en page prend 1 à 2 ms à froid : la vitesse ne limite pas une autre structure.
+
+
+## Vue verticale : contenu
+
+<!-- mesures-verticales:debut -->
+| État | Objets visibles | Recettes connues | Relations | Ingrédients max. | Usages max. |
+|---|---:|---:|---:|---:|---:|
+| neuve | 1 | 0 | 0 | 0 | 0 |
+| avancée | 83 | 71 | 153 | 3 | 26 |
+| tout connu | 204 | 182 | 432 | 3 | 37 |
+<!-- mesures-verticales:fin -->

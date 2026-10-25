@@ -82,7 +82,8 @@ test("thermomètre : mauvais geste / ingrédient manquant", () => {
   assert.strictEqual(E.temperature("assembler", ["manche"]).temp, 3, "archet : il manque la corde");
   assert.strictEqual(E.temperature("tresser", ["bois"]).why, "geste", "le manche (tailler + bois) est encore inconnu");
   E.state.known.manche = true;
-  assert.strictEqual(E.temperature("tresser", ["bois"]).temp, 0);
+  // le bois entre dans la recette d’une claie de séchage (Âge du Bois) : « frais », plus « froid » comme avant la 0.17
+  assert.strictEqual(E.temperature("tresser", ["bois"]).temp, 1);
 });
 test("chaleur insuffisante = Brûlant, recette notée", () => {
   const E = mk();
@@ -317,17 +318,16 @@ test("un extracteur par ressource : chaque ressource récoltable a sa ligne, ses
     const it = D.ITEMS[id], L = D.LIGNES.find((x) => x.id === it.lg);
     assert.ok(L, id + " : sans ligne");
     assert.deepStrictEqual(Object.keys(it.p), [L.res], id + " : une seule ressource");
-    assert.strictEqual(L.niv[it.lv - 1][0], id, id + " : son niveau");
+    assert.strictEqual(L.niv[it.lv - 1].id, id, id + " : son niveau");
   });
   // tout ce que les anciens extracteurs récoltaient, un niveau le récolte toujours, au même taux (sauf le tamis à sable, relevé)
-  D.LIGNES.forEach((L) => L.niv.forEach((v, k) => { if (k) assert.ok(D.ITEMS[v[0]].p[L.res] > D.ITEMS[L.niv[k - 1][0]].p[L.res], L.id + " : chaque niveau récolte plus vite"); }));
-  // la recette d’un groupe est découverte une fois, tous ses niveaux sont connus
+  D.LIGNES.forEach((L) => L.niv.forEach((v, k) => { if (k) assert.ok(D.ITEMS[v.id].p[L.res] > D.ITEMS[L.niv[k - 1].id].p[L.res], L.id + " : chaque niveau récolte plus vite"); }));
+  // chaque niveau a sa propre recette à découvrir (l’index des recettes refuse les doublons)
   assert.ok(!E.state.known.fibre_1 && !E.state.known.caillou_1);
   E.learn("cabane", true);
-  assert.ok(E.state.known.fibre_1 && E.state.known.caillou_1, "le cueilleur et le carrier viennent avec la cabane");
-  assert.ok(!E.state.known.fibre_2, "mais pas le niveau d’après");
-  assert.strictEqual(E.nRecettes(), 1, "une seule recette découverte");
+  assert.ok(!E.state.known.fibre_1 && !E.state.known.caillou_1, "la cabane du bûcheron ne dit rien du cueilleur");
   assert.ok(E.extFor("fibre", "lisiere").every((t) => D.ITEMS[t].lg === "cueilleur"), "sur la fibre, seulement la ligne du cueilleur");
+  exts.forEach((id) => { const it = D.ITEMS[id]; assert.ok(it.r && it.h && it.d, id + " : recette, indice et description"); for (const i in it.r[1]) assert.ok((D.ITEMS[i].a || 0) <= it.a, id + " : « " + i + " » arrive après lui"); });
   // une ressource, un bâtiment, partout : le sable se récolte avec la même ligne à la Rivière et au Désert
   assert.deepStrictEqual(E.extFor("sable", "riviere").sort(), E.extFor("sable", "desert").sort());
   // une ressource vue dans une terre n’est jamais récoltée par un autre bâtiment
@@ -362,8 +362,8 @@ test("améliorer un exemplaire : il prend la place de l’ancien, qui est retir�
 
 test("« +1 » : un extracteur libre est posé, sinon les mains le fabriquent puis le posent", () => {
   const E = mk();
-  E.learn("cabane", true);
-  E.add("manche", 50); E.add("corde", 50); E.add("fibre", 200);
+  E.learn("fibre_1", true); E.learn("cabane", true);
+  E.add("manche", 50); E.add("corde", 50); E.add("bois", 200);
   const r = E.domExtAdd("lisiere", "fibre", 2);
   assert.deepStrictEqual([r.ok, r.placed, r.queued], [true, 0, 2], JSON.stringify(r));
   assert.strictEqual(E.domQueued("x:lisiere:fibre"), 2);
@@ -439,7 +439,7 @@ test("les sauvegardes v1 à v5 se chargent sans rien perdre", () => {
     const S = E.state;
     assert.strictEqual(S.v, SAVE_VERSION, f);
     // un extracteur à plusieurs ressources est devenu une ligne par ressource : on compte la famille (même recette)
-    const famille = (k) => Object.keys(D.ITEMS).filter((x) => x === k || D.ITEMS[x].sib === k).reduce((a, x) => a + (S.inv[x] || 0), 0);
+    const famille = (k) => Object.keys(D.ITEMS).filter((x) => x === k || D.ITEMS[x].de === k).reduce((a, x) => a + (S.inv[x] || 0), 0);
     for (const k in old.inv) assert.ok((D.ITEMS[k] && D.ITEMS[k].t === "ext" ? famille(k) : S.inv[k]) >= old.inv[k] - 1e-9, f + " : stock de " + k);
     for (const k in old.known) assert.ok(S.known[k], f + " : recette " + k);
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
@@ -1147,7 +1147,7 @@ test("âge accompli : toutes ses étapes faites, un peu d’Intuition, une seule
   const F = mk(); F.load(JSON.stringify(raw));
   assert.ok(F.state.flags.ages[0]); assert.strictEqual(F.state.intu, 5);
 });
-const extTotals = (cells) => { const o = {}; cells.forEach((e) => { if (e.u && (e.k === undefined || e.k === "ext")) for (const t in e.u) { const g = (D.ITEMS[t] && D.ITEMS[t].sib) || t; o[g] = (o[g] || 0) + e.u[t]; } }); return o; };
+const extTotals = (cells) => { const o = {}; cells.forEach((e) => { if (e.u && (e.k === undefined || e.k === "ext")) for (const t in e.u) { const g = (D.ITEMS[t] && D.ITEMS[t].de) || t; o[g] = (o[g] || 0) + e.u[t]; } }); return o; };
 const machList = (list) => list.map((e) => [e.id, e.m, e.r || null, e.n, e.on !== false, e.cap || 0].join(" ")).sort();
 test("v4 → v6 : les extracteurs de l’usine passent dans le Domaine, les groupes de machines sont dissous", () => {
   const raw = fixture("save-v4-age8-carte.json"), old = JSON.parse(raw);
@@ -1160,7 +1160,7 @@ test("v4 → v6 : les extracteurs de l’usine passent dans le Domaine, les grou
   assert.deepStrictEqual(S.orphans.fab5.c, old.fab.c, "l’ancienne usine est gardée de côté");
   // la récolte par matière est la même
   // l’ancien extracteur à plusieurs ressources rendait, sur chacune, le taux de son niveau frère d’aujourd’hui
-  const frere = (t, res) => Object.keys(D.ITEMS).find((x) => (x === t || D.ITEMS[x].sib === t) && D.ITEMS[x].t === "ext" && D.ITEMS[x].p[res]) || t;
+  const frere = (t, res) => Object.keys(D.ITEMS).find((x) => (x === t || D.ITEMS[x].de === t) && D.ITEMS[x].t === "ext" && D.ITEMS[x].p[res]) || t;
   const rate = (list) => { const o = {}; list.forEach((e) => { if (e.u && e.k !== "mach") for (const t in e.u) o[e.res] = (o[e.res] || 0) + e.u[t] * E.extRate(frere(t, e.res), e.res); }); return o; };
   assert.deepStrictEqual(rate(Object.values(S.dom.ext)), rate(cells.filter((e) => e.k === "ext")));
   assert.deepStrictEqual(S.hints, old.hints, "les indices déjà obtenus");
@@ -1193,7 +1193,7 @@ test("v5 → v6 : rien ne se perd, ce qui était en route ou dans les machines r
     if (e.k === "mach" && e.r) { put(e.r, B.o); for (const i in B.b) put(i, B.b[i]); }
     if (e.k === "site") for (const i in B.b) put(i, B.b[i]);
   });
-  const fam = (i) => Object.keys(D.ITEMS).filter((x) => x === i || D.ITEMS[x].sib === i).reduce((a, x) => a + (S.inv[x] || 0), 0);
+  const fam = (i) => Object.keys(D.ITEMS).filter((x) => x === i || D.ITEMS[x].de === i).reduce((a, x) => a + (S.inv[x] || 0), 0);
   for (const i in want) assert.ok(Math.abs((D.ITEMS[i] && D.ITEMS[i].t === "ext" ? fam(i) : (S.inv[i] || 0)) - want[i]) < 1e-6, i + " : " + S.inv[i] + " / " + want[i]);
   assert.ok(E.siteOn("dyson"), "le chantier devient un Grand Œuvre alimenté");
   assert.ok(!("usine" in S.settings));
@@ -3207,8 +3207,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.17.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.17.0");
+test("Version 0.18.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.18.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3423,12 +3423,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.17.0");
+  assert.strictEqual(D.VERSION, "0.18.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 17, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 18, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 

@@ -2,7 +2,7 @@
 
 Simulation sur le moteur réel (`node tools/sim-parcours.js --ecrire`), sans écran. **Ce sont des durées de jeu actif, en minutes**, pour un joueur de type « tapeur » (4 appuis par seconde). Elles comparent des hypothèses ; elles ne remplacent pas l’observation de vrais joueurs.
 
-Version du jeu : 0.17.0 · 40 min de cycle 2 · 8 s par essai · 9 graines de hasard par case (médiane, puis [min–max]).
+Version du jeu : 0.18.0 · 40 min de cycle 2 · 8 s par essai · 9 graines de hasard par case (médiane, puis [min–max]).
 
 ## Ce qui est simulé
 
@@ -22,9 +22,9 @@ Le nombre d’essais vient du moteur (thermomètre, souvenirs du guide) ; seule 
 
 | Hypothèse | Relève à (min) | Essais | Réflexion (min) | Recettes connues |
 |---|---:|---:|---:|---:|
-| énigme résolue d’emblée | 5.8 [5.5–5.8] | 8 [8–8] | 2.7 [2.7–2.7] | 8 [8–8] |
-| thermomètre et indices | 12.3 [9.9–13.1] | 69 [51–77] | 9.2 [6.8–10.3] | 9 [9–10] |
-| au hasard | 12.6 [9.6–15.4] | 73 [49–92] | 9.7 [6.5–12.3] | 8 [8–9] |
+| énigme résolue d’emblée | 5.8 [5.7–5.8] | 8 [8–8] | 2.7 [2.7–2.7] | 8 [8–8] |
+| thermomètre et indices | 13.7 [9.5–16.0] | 79 [48–97] | 10.5 [6.4–12.9] | 11 [9–12] |
+| au hasard | 12.6 [9.6–15.4] | 73 [49–92] | 9.7 [6.5–12.3] | 9 [8–10] |
 
 Le cycle 1 ne dépend pas de l’achat : c’est avant la relève.
 
@@ -34,9 +34,9 @@ Ancienne règle : dès que la première cabane est posée et la première explor
 
 | Hypothèse | Relève (ancienne) | Relève (actuelle) | Rivière depuis le début (ancienne) | Rivière depuis le début (actuelle) |
 |---|---:|---:|---:|---:|
-| énigme résolue d’emblée | 2.3 [2.0–2.3] | 5.8 [5.5–5.8] | 27.4 [25.3–27.5] | 30.6 [30.1–30.7] |
-| thermomètre et indices | 4.6 [2.9–5.8] | 12.3 [9.9–13.1] | 31.4 [27.9–38.3] | 35.9 [32.6–45.6] |
-| au hasard | 5.1 [3.8–7.5] | 12.6 [9.6–15.4] | 35.8 [30.6–38.0] | 38.4 [35.8–42.9] |
+| énigme résolue d’emblée | 2.3 [2.0–2.3] | 5.8 [5.7–5.8] | 25.3 [25.0–25.3] | 28.4 [28.3–28.5] |
+| thermomètre et indices | 5.4 [2.5–7.5] | 13.7 [9.5–16.0] | 33.5 [29.1–39.4] | 38.1 [35.3–42.8] |
+| au hasard | 5.1 [3.8–7.5] | 12.6 [9.6–15.4] | 33.6 [31.3–38.2] | 38.3 [33.6–41.2] |
 
 ## La Plaine
 
@@ -44,17 +44,17 @@ Ancienne règle : dès que la première cabane est posée et la première explor
 
 | Hypothèse | aucun achat | Mains calleuses | Mains sûres | Mém. des gisements |
 |---|---:|---:|---:|---:|
-| énigme résolue d’emblée | 8.5 [8.2–8.5] | 7.2 [7.0–7.3] | 8.4 [8.2–8.5] | 8.3 [8.0–8.3] |
-| thermomètre et indices | 14.0 [11.6–14.8] | 13.5 [11.0–14.3] | 14.1 [11.6–14.8] | 13.9 [11.5–14.8] |
-| au hasard | 14.9 [12.3–17.0] | 14.1 [11.1–16.6] | 14.9 [12.3–17.0] | 14.8 [12.1–17.0] |
+| énigme résolue d’emblée | 8.5 [8.3–8.5] | 7.3 [7.1–7.3] | 8.4 [8.3–8.5] | 8.3 [8.2–8.3] |
+| thermomètre et indices | 15.3 [12.2–17.7] | 14.8 [11.0–17.2] | 15.2 [12.2–17.7] | 15.2 [12.0–17.6] |
+| au hasard | 15.3 [12.3–17.0] | 14.1 [11.1–16.6] | 15.3 [12.3–17.0] | 15.1 [12.1–16.9] |
 
 **Le cycle 2 seul (depuis la relève), en minutes**
 
 | Hypothèse | aucun achat | Mains calleuses | Mains sûres | Mém. des gisements |
 |---|---:|---:|---:|---:|
-| énigme résolue d’emblée | 2.7 [2.7–2.7] | 1.5 [1.5–1.5] | 2.7 [2.6–2.7] | 2.5 [2.5–2.5] |
-| thermomètre et indices | 1.7 [1.6–2.7] | 1.2 [1.1–1.5] | 1.7 [1.5–2.6] | 1.6 [1.5–2.5] |
-| au hasard | 2.7 [1.6–2.7] | 1.5 [1.0–1.5] | 2.6 [1.6–2.7] | 2.5 [1.6–2.5] |
+| énigme résolue d’emblée | 2.7 [2.7–2.7] | 1.5 [1.5–1.5] | 2.7 [2.7–2.7] | 2.5 [2.5–2.5] |
+| thermomètre et indices | 1.6 [1.6–2.7] | 1.1 [1.0–1.5] | 1.6 [1.6–2.7] | 1.6 [1.5–2.5] |
+| au hasard | 2.7 [1.6–2.7] | 1.5 [1.0–1.5] | 2.7 [1.6–2.7] | 2.5 [1.5–2.6] |
 
 ## La Rivière
 
@@ -62,17 +62,17 @@ Ancienne règle : dès que la première cabane est posée et la première explor
 
 | Hypothèse | aucun achat | Mains calleuses | Mains sûres | Mém. des gisements |
 |---|---:|---:|---:|---:|
-| énigme résolue d’emblée | — | 30.6 [29.8–30.7] | — | 43.9 [43.7–43.9] |
-| thermomètre et indices | 48.6 [47.0–50.8] (8/9) | 36.3 [32.7–46.1] | 48.7 [46.2–50.8] (8/9) | 46.2 [44.5–48.3] (8/9) |
-| au hasard | 49.3 [48.6–50.3] (3/9) | 37.4 [35.7–42.8] | 49.4 [48.6–50.3] (3/9) | 47.1 [46.2–48.0] (3/9) |
+| énigme résolue d’emblée | 40.2 [40.2–40.3] | 28.4 [28.3–28.5] | 40.2 [40.2–40.3] | 35.7 [35.7–35.8] |
+| thermomètre et indices | 48.3 [45.7–51.9] (8/9) | 38.1 [35.2–42.5] | 48.3 [45.7–51.9] (8/9) | 45.4 [42.6–49.3] (8/9) |
+| au hasard | 49.1 [45.3–52.0] (8/9) | 38.2 [33.7–41.2] | 49.1 [45.4–52.0] (8/9) | 44.8 [42.3–53.3] |
 
 **Le cycle 2 seul (depuis la relève), en minutes**
 
 | Hypothèse | aucun achat | Mains calleuses | Mains sûres | Mém. des gisements |
 |---|---:|---:|---:|---:|
-| énigme résolue d’emblée | — | 24.8 [24.2–24.9] | — | 38.2 [38.1–38.3] |
-| thermomètre et indices | 37.1 [34.4–37.7] (8/9) | 24.7 [21.6–34.0] | 37.1 [33.9–38.2] (8/9) | 34.7 [32.3–35.2] (8/9) |
-| au hasard | 35.3 [33.9–35.3] (3/9) | 26.2 [21.4–30.6] | 35.3 [34.0–35.3] (3/9) | 33.0 [31.7–33.0] (3/9) |
+| énigme résolue d’emblée | 34.5 [34.5–34.5] | 22.7 [22.6–22.7] | 34.5 [34.4–34.5] | 30.0 [29.9–30.0] |
+| thermomètre et indices | 34.6 [31.8–37.2] (8/9) | 23.7 [22.0–33.0] | 34.5 [31.8–37.2] (8/9) | 31.5 [28.6–34.6] (8/9) |
+| au hasard | 38.6 [30.0–38.9] (8/9) | 27.2 [21.9–27.8] | 38.6 [30.0–38.8] (8/9) | 33.5 [26.9–39.8] |
 
 ## Si le joueur cherche aussi les recettes hors objectif (achat : Mains calleuses)
 
@@ -80,17 +80,17 @@ Par défaut le joueur simulé ne suit que le guide et n’utilise que les recett
 
 | Hypothèse | Plaine (depuis le début) | Rivière (depuis le début) | Réflexion cycle 2 (min) | Essais cycle 2 | Extracteurs posés |
 |---|---:|---:|---:|---:|---:|
-| énigme résolue d’emblée | 7.2 [7.0–7.3] (sans : 7.2 [7.0–7.3]) | 18.0 [17.8–18.3] (sans : 30.6 [29.8–30.7]) | 4.0 [4.0–4.0] | 12 [12–12] | 7 [5–7] |
-| thermomètre et indices | 13.5 [11.0–14.7] (sans : 13.5 [11.0–14.3]) | 38.6 [33.6–49.0] (sans : 36.3 [32.7–46.1]) | 21.7 [17.6–26.1] | 163 [132–196] | 13 [3–13] |
-| au hasard | 14.7 [12.3–16.6] (sans : 14.1 [11.1–16.6]) | 41.5 [38.0–45.0] (sans : 37.4 [35.7–42.8]) | 19.2 [17.6–20.5] | 144 [132–154] | 4 [3–13] |
+| énigme résolue d’emblée | 7.2 [7.1–7.3] (sans : 7.3 [7.1–7.3]) | 18.1 [17.8–18.3] (sans : 28.4 [28.3–28.5]) | 4.0 [4.0–4.0] | 12 [12–12] | 7 [5–8] |
+| thermomètre et indices | 14.8 [12.2–17.2] (sans : 14.8 [11.0–17.2]) | 41.2 [38.4–43.7] (sans : 38.1 [35.2–42.5]) | 23.3 [20.4–25.9] | 175 [153–194] | 5 [2–6] |
+| au hasard | 16.2 [13.5–17.1] (sans : 14.1 [11.1–16.6]) | 42.2 [40.1–50.4] (sans : 38.2 [33.7–41.2]) | 20.7 [19.5–23.2] | 155 [146–174] | 4 [3–4] |
 
 ## Où passe le temps du cycle 2 (achat : Mains calleuses, sans chasse)
 
 | Hypothèse | Réflexion (min) | Essais | Extracteurs posés à la fin |
 |---|---:|---:|---:|
-| énigme résolue d’emblée | 2.3 [2.3–2.3] | 7 [7–7] | 7 [7–8] |
-| thermomètre et indices | 17.2 [13.7–19.9] | 129 [103–149] | 8 [3–14] |
-| au hasard | 12.7 [10.7–13.9] | 95 [80–104] | 7 [7–14] |
+| énigme résolue d’emblée | 2.3 [2.3–2.3] | 7 [7–7] | 3 [3–3] |
+| thermomètre et indices | 16.5 [14.3–20.8] | 124 [107–156] | 4 [3–6] |
+| au hasard | 12.5 [10.4–13.3] | 94 [78–100] | 3 [2–6] |
 
 ## Ce que ce modèle ne sait pas faire
 
@@ -109,4 +109,4 @@ Par défaut le joueur simulé ne suit que le guide et n’utilise que les recett
 - Regarder ensuite l’**écart entre les achats** : il dit si le premier choix de Mémoire change vraiment le cycle 2, et ce que coûte de ne rien acheter.
 - Pour les seuils de rythme : voir seulement après des essais avec de vrais joueurs ; ce rapport ne fixe aucune cible.
 
-_Mesuré au commit 047ba2f._
+_Mesuré au commit 3a54bfc._
