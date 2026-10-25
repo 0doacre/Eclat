@@ -23,6 +23,9 @@ puis d’établir un lien, puis d’agir. Une aide qui suggérait d’attendre a
 jeu attend des interactions est corrigée. Une phrase cassée dans les fouilles répétées
 est également remise en français.
 
+Sur les écrans de 430 px ou moins, les quatre onglets du Comptoir passent sur deux
+lignes : leurs libellés se chevauchaient en grand texte.
+
 ## Périmètre de l’extension
 
 | Famille | Champs réécrits après le pilote |

@@ -357,7 +357,7 @@
         // à l’ouverture, ce que le Troqueur dit et ce que porte le bois du comptoir (données du récit)
         const parole = uiSigne("comptoir", "Le Comptoir");
         if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
-        h += '<div class="subtabs">' +
+        h += '<div class="subtabs comptoir-tabs">' +
           '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
           '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +
           '<button class="' + (curTab === "demandes" ? "on" : "") + '" data-m="ctab" data-t="demandes">Demandes</button>' +
