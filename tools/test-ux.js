@@ -184,7 +184,7 @@ async function run() {
   await p.locator('#tabs [data-tab="arbre"]').click();
   await p.waitForTimeout(500);
   ok(await p.evaluate(() => document.querySelectorAll(".arb-n.pret").length > 0 && document.querySelectorAll(".arb-n.pret").length < document.querySelectorAll(".arb-n.allume").length), "Arbre : des recettes prêtes sont marquées, pas toutes");
-  await p.locator('[data-arb="prets"]').click();
+  await p.locator('[data-arb="prets"]').click(); await p.waitForTimeout(500);
   ok(await p.evaluate(() => document.querySelector(".arb-monde").classList.contains("prets") && getComputedStyle(document.querySelector(".arb-n.allume:not(.pret)")).opacity < 0.5), "Arbre : « prêtes » estompe le reste");
   await p.locator('[data-arb="prets"]').click();
   await p.locator('[data-arb="chercher"]').click();
