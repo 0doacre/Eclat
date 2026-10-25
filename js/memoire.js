@@ -301,7 +301,7 @@
       }
       h += '</div><div class="mroot"><span>✦ ' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + "</span></div>";
       const id = U.memSel;
-      if (!id) return h + '<p class="tiny muted center">Touche un point de l’arbre pour le lire.</p>';
+      if (!id) return h + '<p class="tiny muted center">Sélectionne une amélioration pour consulter ses effets.</p>';
       const n = info(id), x = n.x;
       const sv = (v) => String(v).replace(".", ",");
       const now = x.d.replace("{v}", sv(x.v(n.l))).replace(/\.$/, ""), next = n.max ? "" : x.d.replace("{v}", sv(x.v(n.l + 1))).replace(/\.$/, "");
@@ -405,7 +405,7 @@
       const st = S(), m = st.meta, rec = Object.keys(st.known).length;
       const rows = [];
       if (rec) rows.push("Le Carnet garde tes <b>" + rec + "</b> recettes.");
-      if (Object.keys(E.ruins()).length) rows.push("Des ruines t’attendent : les réparer coûte presque rien.");
+      if (Object.keys(E.ruins()).length) rows.push("Des ruines peuvent être réparées pour une fraction de leur coût de construction.");
       if (m.traces > 0) rows.push("Tes <b>" + fmt(m.traces) + " ✦</b> Traces sont dans la Mémoire des mains.");
       if (!rows.length) { if (onClose) onClose(); return; }
       openModal({

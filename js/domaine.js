@@ -104,7 +104,7 @@
       }
       h += regleHTML(z);
       deps.forEach((d) => { h += gisHTML(z, d); });
-      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ici, rien ne se récolte à la main : pose des extracteurs.</p>';
+      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ces ressources nécessitent des extracteurs pour être récoltées.</p>';
       void st;
       return h + "</section>";
     }
@@ -196,7 +196,7 @@
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
-      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Tes mains et tes machines travaillent ensemble sur les commandes lancées depuis l’Atelier.</p>';
+      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Les machines accélèrent automatiquement les commandes compatibles, avec l’aide de tes mains.</p>';
       const ruins = E.ruins();
       for (const id in ruins) {
         const it = I[id];
@@ -220,7 +220,7 @@
           h += '<div class="bar" style="margin:6px 0"><i data-opbar="' + idx + '" style="width:' + pct.toFixed(1) + '%"></i></div>';
           if (workTxt) h += '<div class="tiny good">' + esc(workTxt) + '</div>';
           if (missTxt) h += '<div class="tiny warn">' + esc(missTxt) + '</div>';
-          else if (j.wait && !workTxt) h += '<div class="tiny muted">attend une main ou une machine</div>';
+          else if (j.wait && !workTxt) h += '<div class="tiny muted">en attente de mains ou de machines disponibles</div>';
           if (j.steps.length > 1) {
             h += '<div class="tiny muted" style="margin-top:4px">' +
               j.steps.map((s) => (s.done >= s.n ? "✓ " : s.hands || s.machs ? "▸ " : "") + esc(I[s.id].n.toLowerCase()) + " " + s.done + "/" + s.n).join(" → ") +
@@ -557,7 +557,7 @@
           '<button class="btn small ghost" data-tip="tip_freeExt">Compris</button>';
       }
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOn(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
-      if (lone && !st.flags.tip_site) return "Ton Grand Œuvre peut se servir seul dans la Réserve : touche <b>Alimenter</b>. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
+      if (lone && !st.flags.tip_site) return "Active <b>Alimenter</b> pour approvisionner automatiquement ton Grand Œuvre depuis la Réserve. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
       return null;
     }
 
@@ -605,7 +605,7 @@
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
-      } else h += '<p class="small muted">Tu ne connais encore aucun extracteur pour ce gisement. Il faut d’abord le découvrir à l’Atelier, comme toute recette.</p>';
+      } else h += '<p class="small muted">Aucun extracteur découvert pour ce gisement. Cherche sa recette à l’Atelier.</p>';
       if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans le Domaine, ou garde le doigt dessus.</p>';
       if (z === "mine") {
         const total = e ? Object.values(e.u).reduce((a, b) => a + b, 0) : 0;
@@ -628,7 +628,7 @@
       }
       A.fail(0);
       const miss = r.missing ? Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n.toLowerCase())).join(", ") : "";
-      toast(r.why === "full" ? "Tes mains sont occupées : attends la fin de la commande en cours." :
+      toast(r.why === "full" ? "La liste des commandes est pleine. Attends qu’une commande se termine." :
         r.why === "noext" ? "Tu ne connais encore aucun extracteur pour ce gisement." :
           "Pas de quoi fabriquer " + esc(I[t].n.toLowerCase()) + (miss ? " : il manque " + miss : "") + ".", { key: "xq" });
     }

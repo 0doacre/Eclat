@@ -51,11 +51,11 @@ Quatre mots seulement, partout : **tes mains**, une **commande**, **en cours**, 
 
 | Mot | Sens |
 |---|---|
-| **Tes mains** | La part du joueur : une seule commande à la fois, à la main. Toujours « tes mains » (jamais « file », « queue », « slot »). Libre : « Tes mains sont libres. » Sinon : « Tes mains sont occupées. » |
+| **Tes mains** | La part du joueur : une seule commande à la fois, à la main. Garder ce nom quand on désigne le travail manuel. Les statuts parlent de commandes : « Aucune commande en cours », « Commande ajoutée ». Une limite de capacité se dit « La liste des commandes est pleine ». Ne pas confondre mains occupées et liste pleine. Jamais « queue » ni « slot » à l’écran. |
 | **en cours** | Ce que quelqu’un fait avancer : « Déjà en cours. », « 3 en cours », « Aucune commande en cours ». Jamais « en fabrication ». |
-| **attendre** | Une commande que personne ne peut avancer « attend une main ou une machine » : elle n’est pas « en attente », et il ne lui « manque » des ressources que si `miss` en signale. |
+| **attendre** | Une commande que personne ne peut avancer est « en attente de mains ou de machines disponibles ». Elle ne manque de ressources que si `miss` en signale. |
 | **au repos** | Une machine sans travail est **au repos** ; avec du travail, elle est **au travail**. Elle ne « attend » pas. |
-| **fini** | Une commande se termine : « Fini dans ~4 s » pour le lot, « fini dans ~4 s » pour une commande. Jamais « prêt dans ». |
+| **fin estimée** | Une commande se termine : « Fin estimée dans ~4 s » pour le lot, « fin estimée dans ~4 s » pour une commande. Ne pas annoncer un délai garanti. |
 
 ## Progression
 

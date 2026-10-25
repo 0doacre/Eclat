@@ -60,7 +60,7 @@
     function openSaves() {
       const list = backups();
       openModal({
-        html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Ta partie s’enregistre toute seule sur cet appareil. Pour la mettre à l’abri ou la passer sur un autre appareil, télécharge-la dans un fichier.</p>" +
+        html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Ta partie est sauvegardée automatiquement sur cet appareil. Télécharge une copie pour la conserver ou la transférer sur un autre appareil.</p>" +
           '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="dl">⬇️ Télécharger ma sauvegarde</button><button class="btn" data-m="up">⬆️ Charger un fichier de sauvegarde</button>' +
           '<button class="btn ghost" data-m="code">📋 Code texte (ancien format)</button></div>' +
           (list.length ? '<h3 class="sub">Copies de sécurité automatiques</h3>' + list.map((b, i) =>
@@ -528,7 +528,7 @@
     function openHelp() {
       simpleModal("Aide", "Comment jouer",
         '<div class="small">' +
-        "<p><b>En bref.</b> Tu récoltes des ressources, tu découvres des recettes à l’Atelier, puis tu poses des extracteurs et des machines qui travaillent pour toi. L’<b>objectif</b>, en haut du Domaine, dit toujours quoi faire ensuite.</p>" +
+        "<p><b>En bref.</b> Tu récoltes des ressources, tu découvres des recettes à l’Atelier, puis tu poses des extracteurs et des machines qui travaillent pour toi. L’<b>objectif</b>, en haut du Domaine, indique ta prochaine étape.</p>" +
         '<h3 class="sub">Les mots du jeu</h3><dl class="lexique">' +
         "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Ce que tu récoltes ou fabriques y arrive, et chaque fabrication y prend ses ressources.</dd>" +
         "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement est une ressource à récolter.</dd>" +
@@ -554,7 +554,7 @@
         '<h3 class="sub">Les écrans</h3>' +
         "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
         "<p><b>🗺️ Carte.</b> Le monde, avec de la brume sur les terres que tu n’as pas encore atteintes. Touche un lieu 🧭 pour l’explorer : chaque lieu raconte un morceau de l’histoire.</p>" +
-        "<p><b>🔨 Atelier.</b> Choisis une action, pose jusqu’à trois ressources, touche le gros bouton. Quand rien ne sort, le <b>thermomètre</b> dit si tu t’approches. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> montre ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
+        "<p><b>🔨 Atelier.</b> Choisis une action, pose jusqu’à trois ressources, lance l’action choisie. Si la tentative échoue, le <b>thermomètre</b> indique si tu approches d’une recette. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> montre ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
         "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
         "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
         "<p><b>Jeu fermé.</b> Les extracteurs, les commandes et l’exploration continuent pendant 12 h au plus.</p>" +

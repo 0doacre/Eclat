@@ -17,21 +17,38 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 
 ## Les règles
 
-- **Des phrases françaises.** Sujet, verbe, complément, comme on parle à quelqu’un en face de
-  soi. Le test : est-ce que je le dirais tel quel à voix haute ? Sinon, on réécrit.
+- **Un ton de jeu naturel.** L’interface nomme une action, un état ou un résultat :
+  « Fouille lancée », « Commande ajoutée », « Ressources manquantes ».
+  Les titres et boutons peuvent être courts ; les explications utilisent des phrases complètes.
+  Ne pas raconter chaque clic (« tu pars, tu fermes le jeu si tu veux ») ni personnifier
+  systématiquement les mécanismes (« tes mains s’y mettent »).
+- **Une information utile par phrase.** Donner d’abord le résultat ou l’état, puis la
+  conséquence pratique. Une action automatique reste explicite : « Elle se poursuit même
+  lorsque le jeu est fermé. » Ne pas remplacer cette précision par le seul mot « hors ligne ».
+- **Guider au bon endroit.** Le tutoriel explique les manipulations ; les messages courants
+  confirment leur résultat. Citer le nom réel du bouton ou de l’écran (« Tailler », « Carte »),
+  plutôt que sa taille ou sa position (« le gros bouton », « là »).
+- **Expliquer les blocages.** Dire ce qui manque et comment avancer. Distinguer une liste
+  de commandes pleine, une commande qui manque de ressources et une commande qui attend
+  des mains ou des machines disponibles. Ne jamais annoncer un travail déjà commencé
+  lorsqu’il a seulement été ajouté aux commandes.
+- **Respecter la mécanique.** Préciser si le butin doit être récupéré, où, et à quel moment.
+  Ne pas promettre un gain automatique ni un délai certain si le moteur ne les garantit pas.
+  Pour une commande, employer « fin estimée » lorsque sa durée dépend des ressources ou des machines.
 - **Pas d’anglais traduit.** Pas de futur qui prédit (« tu en mettras partout »), pas de
   tournures calquées (« tu le fabriques d’un bouton »).
-- **Très peu de « ce », « ça », « c’est ».** « Tu peux les plier et les nouer », pas « ça se
-  plie et ça se noue ». « Lourd, mais solide », pas « c’est lourd mais c’est solide ».
+- **Des tournures simples.** « Ce », « ça » et « c’est » sont permis quand leur référent
+  est clair. Éviter les règles de syntaxe qui rendent le français artificiel.
 - **Pas d’image pour faire joli.** Une phrase dit une chose concrète : un objet, un geste, un
   chiffre.
 - **Le récit se raconte par des gestes.** On montre l’émotion (un sourire), on ne la nomme
   pas.
 - **Un clin d’œil de temps en temps**, un peu méta, au plus un par écran : « L’ingrédient de
   base de tout jeu de survie. »
-- **Encourager simplement.** « N’hésite pas à faire plusieurs tentatives, ce n’est jamais
-  perdu. »
-- Tutoiement partout. Pas de tiret cadratin.
+- **Encourager avec mesure.** « Bien joué ! » suffit après une découverte. Une aide précise
+  est plus utile qu’une promesse vague comme « ce n’est jamais perdu ».
+- Tutoiement quand on s’adresse au joueur. Inutile d’ajouter « tu » ou « tes » à chaque statut.
+  Pas de tiret cadratin.
 
 ## Exemples validés
 
@@ -42,3 +59,16 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 | Manche | Sert dans les outils, l’archet à feu et la cabane. *Un bâton bien droit, écorcé. L’ingrédient de base de tout jeu de survie.* |
 | Carnet | Le Carnet garde toutes tes recettes. |
 | Tutoriel | Tu ne peux fabriquer qu’un objet à la fois. |
+
+## Repères pour l’interface
+
+| Situation | Formulation |
+|---|---|
+| Fouille disponible | Les fouilles se poursuivent même lorsque le jeu est fermé. Une fois la fouille terminée, récupère ton butin sur la Carte. |
+| Départ | Fouille lancée. Elle se poursuit même lorsque le jeu est fermé. |
+| Fin | Fouille terminée ! Récupère ton butin sur la Carte. |
+| Commande ajoutée | Commande ajoutée. Retrouve sa progression au-dessus des onglets. |
+| Limite atteinte | La liste des commandes est pleine. Attends qu’une commande se termine. |
+
+Le lexique fixe les noms des systèmes, pas chaque tournure de phrase. « Tes mains » reste
+le nom de la fabrication manuelle ; une confirmation peut simplement dire « Commande ajoutée ».
