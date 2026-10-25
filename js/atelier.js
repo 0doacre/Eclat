@@ -379,7 +379,8 @@
       futur: (de, a) => (de === a ? "Âge " + a : "Âges " + de + " à " + a) + " · encore loin",
       legende: "Légende", rail: "Aller à un âge", loin: "Éloigner", pres: "Rapprocher", centrer: "Centrer",
       trouvee: (n) => n + (n > 1 ? " recettes trouvées" : " recette trouvée"), aucune: "Aucune recette trouvée pour l’instant",
-      lg: ["Une recette trouvée.", "Une matière que tu as déjà vue.", "Une recette pas encore trouvée.", "Ton objectif.", "Un trait qui saute des âges : touche une case pour le voir."] };
+      lg: ["Une recette trouvée.", "Une matière que tu as déjà vue.", "Une recette pas encore trouvée.", "Ton objectif.", "Un trait qui saute des âges : touche une case pour le voir.", "Tu as de quoi la fabriquer maintenant."],
+      chercher: "Chercher dans l’arbre", prets: "Montrer ce que tu peux fabriquer", centrer: "Centrer", aide: "Nom d’une recette ou d’une ressource que tu connais.", rien: "Rien de tel parmi ce que tu connais." };
     /* l’échelle de la vue, et ses trois niveaux : loin (les âges et leur compte), milieu (les icônes), près (les noms) */
     const ARB_K = [0.3, 2];
     const ARB_NIV = { loin: 0.3, milieu: 0.7, pres: 1 }; // l’échelle où l’on tombe en changeant de niveau
@@ -392,8 +393,10 @@
       const txt = n ? ARB_TXT.trouvee(n) : ARB_TXT.aucune;
       return '<div class="arb-barre">' +
         '<span class="arb-compte" aria-label="' + esc(txt) + '">' + (n ? "<b>" + n + '</b><span class="arb-cpt-t"> ' + esc(n > 1 ? "recettes trouvées" : "recette trouvée") + "</span>" : '<span class="arb-cpt-t">' + esc(ARB_TXT.aucune) + "</span>") + "</span>" +
+        '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="' + esc(ARB_TXT.chercher) + '" aria-expanded="' + (U.arbreChercher ? "true" : "false") + '">🔍</button>' +
+        '<button type="button" class="btn small ghost' + (U.arbrePrets ? " on" : "") + '" data-arb="prets" aria-label="' + esc(ARB_TXT.prets) + '" aria-pressed="' + (U.arbrePrets ? "true" : "false") + '"><span class="pt-pret" aria-hidden="true">●</span></button>' +
         '<button type="button" class="btn small ghost" data-arb="moins" aria-label="' + esc(ARB_TXT.loin) + '">−</button><button type="button" class="btn small ghost" data-arb="plus" aria-label="' + esc(ARB_TXT.pres) + '">+</button>' +
-        '<button type="button" class="btn small ghost" data-arb="centre">' + esc(ARB_TXT.centrer) + '</button>' +
+        '<button type="button" class="btn small ghost" data-arb="centre" aria-label="' + esc(ARB_TXT.centrer) + '">◎</button>' +
         '<button type="button" class="btn small ghost" data-arb="legende" aria-label="' + esc(ARB_TXT.legende) + '" aria-expanded="' + (U.arbreLegende ? "true" : "false") + '">?</button></div>';
     }
     function arbreLoinHTML(loin) {
@@ -411,14 +414,28 @@
       for (let a = D.AGES.length - 1; a >= 0; a--) h += '<button type="button" class="arb-rb" data-arbage="' + a + '" aria-label="' + esc(D.AGES[a].n) + '" style="--ac:' + esc(D.AGES[a].c) + '"><span>' + (a + 1) + "</span></button>";
       return h + "</div>";
     }
+    /* la recherche : un nom parmi ce qui est déjà vu ou trouvé (jamais un fantôme : pas de nom, pas de fuite), un appui mène au nœud */
+    function arbreChercherHTML() {
+      return '<div class="arb-chercher" role="search"' + (U.arbreChercher ? "" : " hidden") + '><input id="arbq" type="search" placeholder="Chercher dans l’arbre…" autocomplete="off" spellcheck="false" aria-label="' + esc(ARB_TXT.chercher) + '" value="' + esc(U.arbreQ || "") + '">' +
+        '<div class="arb-res" id="arbres" aria-live="polite">' + arbreResultats(U.arbreQ || "") + "</div></div>";
+    }
+    function arbreResultats(q) {
+      q = norm(q || "").trim();
+      if (!q) return '<p class="tiny muted">' + esc(ARB_TXT.aide) + "</p>";
+      const lay = U.arbreLay, hits = lay ? lay.noeuds.filter((n) => n.id && n.etat !== "fantome" && I[n.id] && norm(I[n.id].n).includes(q)) : [];
+      hits.sort((a, b) => (norm(I[a.id].n).startsWith(q) ? 0 : 1) - (norm(I[b.id].n).startsWith(q) ? 0 : 1) || I[a.id].n.localeCompare(I[b.id].n, "fr"));
+      if (!hits.length) return '<p class="tiny muted">' + esc(ARB_TXT.rien) + "</p>";
+      return hits.slice(0, 6).map((n) => '<button type="button" class="arb-puce" data-arbsel="' + esc(n.cle) + '" data-arbferme="1">' + icon(n.id, "sm") + esc(I[n.id].n) + "</button>").join("");
+    }
     function arbreLegendeHTML() {
       const sym = ['<span class="arb-n allume" aria-hidden="true"></span>', '<span class="arb-n vu" aria-hidden="true"></span>', '<span class="arb-n fantome" aria-hidden="true"></span>',
-        '<span class="arb-n fantome obj" aria-hidden="true"></span>', '<svg viewBox="0 0 26 26" aria-hidden="true"><path class="arb-t" d="M13 2 C13 9 13 17 13 24"/></svg>'];
+        '<span class="arb-n fantome obj" aria-hidden="true"></span>', '<svg viewBox="0 0 26 26" aria-hidden="true"><path class="arb-t" d="M13 2 C13 9 13 17 13 24"/></svg>',
+        '<span class="arb-n allume pret" aria-hidden="true"></span>'];
       return '<div class="arb-legende" role="note"' + (U.arbreLegende ? "" : " hidden") + ">" + ARB_TXT.lg.map((l, i) => '<p class="arb-lg">' + sym[i] + "<span>" + esc(l) + "</span></p>").join("") + "</div>";
     }
     function arbreVueHTML(g, lay) {
       return '<div class="arb-vue" id="arbre">' + Arb.rendu(lay, { icon: (id) => icon(id), esc, neuf: U.arbreNeuf, txt: ARB_TXT, car: Arb.carrefours(D) }) +
-        arbreLoinHTML(Arb.loin(g, D)) + '<div class="arb-ici" aria-hidden="true"></div>' + arbreRailHTML() + '<div class="arb-rb-tip" hidden></div>' + arbreLegendeHTML() + '<div class="arb-fiche" hidden></div></div>';
+        arbreLoinHTML(Arb.loin(g, D)) + '<div class="arb-ici" aria-hidden="true"></div>' + arbreRailHTML() + '<div class="arb-rb-tip" hidden></div>' + arbreChercherHTML() + arbreLegendeHTML() + '<div class="arb-fiche" hidden></div></div>';
     }
     const arbreEl = () => document.getElementById("v-arbre");
     const arbreSig = (g) => Arb.sig(g) + "|" + (U.arbreNeuf || "");
@@ -436,6 +453,16 @@
       if (!id && el.firstElementChild && el.dataset.sig === arbreSig(g)) return;
       arbreBati(el, id, !U.arbreVue);
     }
+    /* ce qu’on peut fabriquer maintenant : un point vert sur les recettes trouvées dont tout est en Réserve (mis à jour sans redessiner l’arbre) */
+    function arbrePretsMaj(el) {
+      const m = (el || arbreEl() || document).querySelector(".arb-monde");
+      if (!m) return;
+      m.classList.toggle("prets", !!U.arbrePrets);
+      m.querySelectorAll(".arb-n.allume").forEach((b) => {
+        const id = b.dataset.arbn, it = I[id];
+        b.classList.toggle("pret", !!(it && it.r && !(E.isUnique(it) && (S().made[id] || 0) > 0) && !E.missingFor(id, 1)));
+      });
+    }
     function arbreBati(el, id, centrer) {
       const g = Arb.graphe(E, D), lay = Arb.mise_en_page(g, D);
       const actif = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.arb : null;
@@ -446,6 +473,7 @@
       const n = id && lay.noeuds.find((x) => x.cle === id);
       if (centrer || !U.arbreVue) arbreCentrer(lay, g);
       arbreMonter(el.querySelector(".arb-vue"));
+      arbrePretsMaj(el);
       if (n) arbreChoisir(n.cle, true);
       else if (U.arbreSel && lay.noeuds.some((x) => x.cle === U.arbreSel)) arbreChoisir(U.arbreSel);
       else U.arbreSel = null;
@@ -455,6 +483,7 @@
     function arbreMaj() {
       const el = arbreEl();
       if (!el || !Arb || U.tab !== "arbre") return;
+      if (Date.now() - (U.arbreP || 0) > 1000) { U.arbreP = Date.now(); arbrePretsMaj(el); } // la Réserve change tout le temps : on ne touche qu’aux points verts
       if (el.dataset.sig === arbreSig(Arb.graphe(E, D))) return;
       arbreBati(el, null, false);
     }
@@ -614,7 +643,7 @@
         else if (p.length >= 2) base = { mx: (p[0].x + p[1].x) / 2, my: (p[0].y + p[1].y) / 2, d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, tx: o.tx, ty: o.ty, k: o.k };
       };
       v.addEventListener("pointerdown", (e) => {
-        if (e.button > 0 || e.target.closest(".arb-fiche, .arb-rail, .arb-legende")) return;
+        if (e.button > 0 || e.target.closest(".arb-fiche, .arb-rail, .arb-legende, .arb-chercher")) return;
         pts.set(e.pointerId, rel(e));
         if (pts.size === 1) U.arbreGlisse = false;
         debut();
@@ -658,7 +687,7 @@
         rail.addEventListener("pointerup", finRail);
         rail.addEventListener("pointercancel", finRail);
       }
-      v.addEventListener("wheel", (e) => { if (e.target.closest(".arb-fiche")) return; e.preventDefault(); const p = rel(e); arbreZoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y); }, { passive: false });
+      v.addEventListener("wheel", (e) => { if (e.target.closest(".arb-fiche, .arb-chercher")) return; e.preventDefault(); const p = rel(e); arbreZoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y); }, { passive: false });
       // au clavier : le nœud qui prend le focus vient dans le cadre
       v.addEventListener("focusin", (e) => {
         const b = e.target.closest(".arb-n"), o = U.arbreVue;
@@ -670,6 +699,9 @@
     }
     if (typeof document !== "undefined") {
       document.addEventListener("keydown", arbreClavier, true);
+      document.addEventListener("input", (e) => {
+        if (e.target && e.target.id === "arbq") { U.arbreQ = e.target.value; const r = document.getElementById("arbres"); if (r) { r.innerHTML = arbreResultats(U.arbreQ); iconize(r); } }
+      });
       // en capture : un doigt qui a glissé n’ouvre pas de fiche en relâchant
       document.addEventListener("click", (e) => {
         const t = e.target, b = t.closest && t.closest("[data-arb], [data-arbre-obj], .arb-vue");
@@ -678,7 +710,14 @@
         if (b.dataset.arb) {
           e.stopPropagation(); A.click();
           const a = b.dataset.arb;
-          if (a === "centre") { if (U.arbreLay) { arbreCentrer(U.arbreLay, Arb.graphe(E, D)); arbrePoser(); } }
+          if (a === "chercher") {
+            U.arbreChercher = !U.arbreChercher;
+            const pn = document.querySelector("#v-arbre .arb-chercher"); if (pn) pn.hidden = !U.arbreChercher;
+            b.setAttribute("aria-expanded", U.arbreChercher ? "true" : "false");
+            if (U.arbreChercher) { const q = document.getElementById("arbq"); if (q) q.focus({ preventScroll: true }); }
+          } else if (a === "prets") {
+            U.arbrePrets = !U.arbrePrets; b.classList.toggle("on", U.arbrePrets); b.setAttribute("aria-pressed", U.arbrePrets ? "true" : "false"); arbrePretsMaj();
+          } else if (a === "centre") { if (U.arbreLay) { arbreCentrer(U.arbreLay, Arb.graphe(E, D)); arbrePoser(); } }
           else if (a === "legende") {
             U.arbreLegende = !U.arbreLegende;
             const lg = document.querySelector("#v-arbre .arb-legende"); if (lg) lg.hidden = !U.arbreLegende;
@@ -696,8 +735,16 @@
         if (ab) { e.stopPropagation(); return; }
         if (U.arbreGlisse) { U.arbreGlisse = false; e.stopPropagation(); e.preventDefault(); return; }
         const sel = t.closest("[data-arbsel]");
-        if (sel) { e.stopPropagation(); A.click(); arbreChoisir(sel.dataset.arbsel || null, !!sel.dataset.arbsel); return; }
-        if (t.closest(".arb-fiche")) return; // « Fiche » : l’écouteur commun ouvre la fiche de l’objet
+        if (sel) {
+          e.stopPropagation(); A.click();
+          if (sel.dataset.arbferme) { // venu de la recherche : le panneau se referme sur le nœud trouvé
+            U.arbreChercher = false; U.arbreQ = "";
+            const pn = document.querySelector("#v-arbre .arb-chercher"); if (pn) pn.hidden = true;
+            const bt = document.querySelector('#v-arbre [data-arb="chercher"]'); if (bt) bt.setAttribute("aria-expanded", "false");
+          }
+          arbreChoisir(sel.dataset.arbsel || null, !!sel.dataset.arbsel); return;
+        }
+        if (t.closest(".arb-fiche, .arb-chercher")) return; // « Fiche » : l’écouteur commun ouvre la fiche de l’objet ; la recherche garde son focus
         const nb = t.closest("[data-arbn]");
         if (nb) {
           e.stopPropagation();

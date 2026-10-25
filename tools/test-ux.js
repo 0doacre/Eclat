@@ -179,6 +179,27 @@ async function run() {
     ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), nom + " : pas de débordement horizontal");
     ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   }
+  // Retrouver dans l’arbre : la recherche mène au nœud, et « prêtes » montre ce qu’on peut fabriquer (sans jamais nommer un fantôme).
+  p = await page(390, true);
+  await p.locator('#tabs [data-tab="arbre"]').click();
+  await p.waitForTimeout(500);
+  ok(await p.evaluate(() => document.querySelectorAll(".arb-n.pret").length > 0 && document.querySelectorAll(".arb-n.pret").length < document.querySelectorAll(".arb-n.allume").length), "Arbre : des recettes prêtes sont marquées, pas toutes");
+  await p.locator('[data-arb="prets"]').click();
+  ok(await p.evaluate(() => document.querySelector(".arb-monde").classList.contains("prets") && getComputedStyle(document.querySelector(".arb-n.allume:not(.pret)")).opacity < 0.5), "Arbre : « prêtes » estompe le reste");
+  await p.locator('[data-arb="prets"]').click();
+  await p.locator('[data-arb="chercher"]').click();
+  await p.locator("#arbq").fill("bobine");
+  ok(await p.evaluate(() => [...document.querySelectorAll("#arbres button")].map((b) => b.dataset.arbsel).join() === "bobine"), "Arbre : la recherche trouve la recette connue");
+  await p.locator("#arbq").fill("zzzz");
+  ok(await p.evaluate(() => document.querySelectorAll("#arbres button").length === 0 && /Rien de tel/.test(document.getElementById("arbres").innerText)), "Arbre : sans résultat, un message");
+  await p.locator("#arbq").fill("");
+  await p.locator("#arbq").fill("a");
+  ok(await p.evaluate(() => [...document.querySelectorAll("#arbres button")].every((b) => !/^f\d/.test(b.dataset.arbsel))), "Arbre : la recherche ne propose jamais un fantôme");
+  await p.locator("#arbq").fill("bobine");
+  await p.locator("#arbres button").first().click();
+  await p.waitForTimeout(500);
+  ok(await p.evaluate(() => document.querySelector(".arb-n.sel").dataset.arbn === "bobine" && document.querySelector(".arb-chercher").hidden && !document.querySelector(".arb-fiche").hidden), "Arbre : toucher le résultat choisit le nœud et ouvre son bandeau");
+  ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // Depuis la fiche d’un objet : « Voir dans l’arbre » ouvre la vue sur lui, choisi
   p = await page(390, true);
   await p.evaluate(() => { document.querySelector("#views").insertAdjacentHTML("beforeend", '<button id="essai-goto" data-goto="manche"></button>'); });
