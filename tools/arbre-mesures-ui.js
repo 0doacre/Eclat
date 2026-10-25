@@ -51,16 +51,16 @@ async function mesurer(browser, largeur) {
   await p.locator("#arbre").waitFor({ state: "visible" });
   await p.waitForTimeout(700); // la vue se centre
   const r = await p.evaluate(() => {
-    const vue = document.querySelector(".arb-vue"), monde = vue.querySelector(".arb-monde");
+    const vue = document.querySelector(".arb-vue"), monde = vue;
     const vr = vue.getBoundingClientRect();
     const m = getComputedStyle(monde).transform.match(/matrix\(([^)]+)\)/);
     const k = m ? Number(m[1].split(",")[0]) : 1;
     const dedans = (r) => r.left >= vr.left - 0.5 && r.right <= vr.right + 0.5 && r.top >= vr.top - 0.5 && r.bottom <= vr.bottom + 0.5;
-    const noeuds = [...vue.querySelectorAll(".arb-monde .arb-n")];
+    const noeuds = [...vue.querySelectorAll(".arb-card")];
     const visibles = noeuds.filter((n) => dedans(n.getBoundingClientRect())).length;
     const etiquettes = [...vue.querySelectorAll(".arb-l")].map((e) => parseFloat(getComputedStyle(e).fontSize) * k);
-    const ages = [...vue.querySelectorAll(".arb-age")].map((e) => parseFloat(getComputedStyle(e).fontSize) * k);
-    const cibles = [...vue.querySelectorAll(".arb-monde .arb-n"), ...document.querySelectorAll(".arb-barre .btn")]
+    const ages = [...vue.querySelectorAll(".arb-age-groupe summary")].map((e) => parseFloat(getComputedStyle(e).fontSize) * k);
+    const cibles = [...vue.querySelectorAll("button.arb-card"), ...document.querySelectorAll(".arb-barre .btn")]
       .map((e) => { const r = e.getBoundingClientRect(); return { n: Math.round(Math.min(r.width, r.height) * 10) / 10, c: (e.className || e.tagName).toString().slice(0, 30), vu: r.width > 0 }; })
       .filter((c) => c.vu);
     const entete = document.getElementById("top").getBoundingClientRect().bottom;
@@ -68,7 +68,7 @@ async function mesurer(browser, largeur) {
     const nb = (s) => { const e = document.querySelector(s); return e ? Math.round(e.getBoundingClientRect().height) : null; };
     return {
       ecran: innerHeight, surfaceUtile: Math.round(vr.height), partEcran: Math.round(1000 * vr.height / innerHeight) / 10,
-      largeurVue: Math.round(vr.width), echelle: Math.round(k * 100) / 100,
+      largeurVue: Math.round(vr.width), debordHorizontal: vue.scrollWidth - vue.clientWidth, echelle: Math.round(k * 100) / 100,
       noeudsTotal: noeuds.length, noeudsDansLaVue: visibles,
       policeEtiquetteMin: Math.round(Math.min(...etiquettes) * 10) / 10, policeAgeMin: ages.length ? Math.round(Math.min(...ages) * 10) / 10 : null,
       cibleMin: Math.min(...cibles.map((c) => c.n)), cibleMinNom: cibles.sort((a, b) => a.n - b.n)[0].c,
@@ -100,6 +100,7 @@ async function mesurer(browser, largeur) {
   ligne("Bande libre entre l’en-tête et les onglets (px)", (r) => r.bandeEcran);
   ligne("Barre fine au-dessus de l’arbre (px)", (r) => r.hauteurTete);
   ligne("Échelle à l’ouverture", (r) => r.echelle);
+  ligne("Débordement horizontal (px)", (r) => r.debordHorizontal);
   ligne("Nœuds entièrement dans la vue / dans l’arbre", (r) => r.noeudsDansLaVue + " / " + r.noeudsTotal);
   ligne("Plus petite police d’étiquette, à l’écran (px)", (r) => r.policeEtiquetteMin);
   ligne("Plus petite police de nom d’âge, à l’écran (px)", (r) => r.policeAgeMin);

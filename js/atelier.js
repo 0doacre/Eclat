@@ -375,393 +375,163 @@
       return h + '<div id="clist">' + carnetList() + "</div>";
     }
 
-    /* ------------------------------------------------------------ ARBRE (0.11)
-     * L’onglet « Arbre » : js/arbre.js décide de ce qui se voit et le place ;
-     * ici, l’interrupteur, le cadre qu’on glisse et qu’on pince, et les touches. */
+    /* Arbre vertical : largeur du téléphone, défilement natif, voisinage d’une recette. */
     const Arb = typeof window !== "undefined" ? window.EclatArbre : null;
-    const ARB_TXT = { plein: "Arbre des connaissances", fantome: "Recette pas encore trouvée", toucher: "Pas encore trouvée. Essaie avec ce qui est autour.",
-      futur: (de, a) => (de === a ? "Âge " + a : "Âges " + de + " à " + a) + " · encore loin",
-      legende: "Légende", rail: "Aller à un âge", loin: "Éloigner", pres: "Rapprocher", centrer: "Centrer",
-      trouvee: (n) => n + (n > 1 ? " recettes trouvées" : " recette trouvée"), aucune: "Aucune recette trouvée pour l’instant",
-      lg: ["Une recette trouvée.", "Une ressource déjà découverte.", "Une recette pas encore trouvée.", "Ton objectif.", "Un trait qui saute des âges : touche une case pour le voir.", "Tu as de quoi la fabriquer maintenant."],
-      chercher: "Chercher dans l’arbre", prets: "Montrer ce que tu peux fabriquer", centrer: "Centrer", aide: "Nom d’une recette ou d’une ressource que tu connais.", rien: "Rien de tel parmi ce que tu connais." };
-    /* l’échelle de la vue, et ses trois niveaux : loin (les âges et leur compte), milieu (les icônes), près (les noms) */
-    const ARB_K = [0.3, 2];
-    const ARB_NIV = { loin: 0.3, milieu: 0.7, pres: 1 }; // l’échelle où l’on tombe en changeant de niveau
-    const ARB_LOIN = 0.5, ARB_PRES = 1;                    // en dessous : loin ; jusqu’à 1 : milieu ; à partir de 1 : près
-    const ARB_RAIL = 44;                                   // la largeur de la réglette des âges (la vue la laisse libre)
-    const arbreNiveau0 = (k) => (k < ARB_LOIN ? "loin" : k < ARB_PRES - 0.001 ? "milieu" : "pres");
-    /* l’onglet Arbre : une barre fine, la vue qu’on glisse, la réglette des âges, le niveau « loin », la légende, le bandeau du nœud choisi */
-    function arbreBarreHTML(g) {
-      const n = g.compte;
-      const txt = n ? ARB_TXT.trouvee(n) : ARB_TXT.aucune;
-      return '<div class="arb-barre">' +
-        '<span class="arb-compte" aria-label="' + esc(txt) + '">' + (n ? "<b>" + n + '</b><span class="arb-cpt-t"> ' + esc(n > 1 ? "recettes trouvées" : "recette trouvée") + "</span>" : '<span class="arb-cpt-t">' + esc(ARB_TXT.aucune) + "</span>") + "</span>" +
-        '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="' + esc(ARB_TXT.chercher) + '" aria-expanded="' + (U.arbreChercher ? "true" : "false") + '">🔍</button>' +
-        '<button type="button" class="btn small ghost' + (U.arbrePrets ? " on" : "") + '" data-arb="prets" aria-label="' + esc(ARB_TXT.prets) + '" aria-pressed="' + (U.arbrePrets ? "true" : "false") + '"><span class="pt-pret" aria-hidden="true">●</span></button>' +
-        '<button type="button" class="btn small ghost" data-arb="moins" aria-label="' + esc(ARB_TXT.loin) + '">−</button><button type="button" class="btn small ghost" data-arb="plus" aria-label="' + esc(ARB_TXT.pres) + '">+</button>' +
-        '<button type="button" class="btn small ghost" data-arb="centre" aria-label="' + esc(ARB_TXT.centrer) + '">◎</button>' +
-        '<button type="button" class="btn small ghost" data-arb="legende" aria-label="' + esc(ARB_TXT.legende) + '" aria-expanded="' + (U.arbreLegende ? "true" : "false") + '">?</button></div>';
+    function arbreEl() { return document.getElementById("v-arbre"); }
+    function arbrePret(n) {
+      const it = n.id && I[n.id];
+      return !!(n.etat === "allume" && it && it.r && !(E.isUnique(it) && S().made[n.id] > 0) && !E.missingFor(n.id, 1));
     }
-    function arbreLoinHTML(loin) {
-      let h = '<div class="arb-loin" hidden>';
-      if (loin.futur) h += '<div class="arb-lb futur">' + esc(ARB_TXT.futur(loin.futur.de, loin.futur.a)) + "</div>";
-      loin.bandes.forEach((b) => {
-        h += '<button type="button" class="arb-lb' + (b.atteint ? "" : " suivant") + (b.objectif ? " obj" : "") + '" data-arbband="' + b.age + '" style="--ac:' + esc(b.c) + '">' +
-          '<span class="arb-lb-n">' + (b.age + 1) + " · " + esc(b.nom) + '</span><span class="arb-lb-p" aria-hidden="true">' + "●".repeat(Math.min(b.trouvees, 40)) + "</span>" +
-          '<span class="arb-lb-c">' + (b.trouvees ? esc(ARB_TXT.trouvee(b.trouvees)) : "") + "</span></button>";
-      });
-      return h + "</div>";
+    function arbreEtat(n) {
+      if (n.etat === "fantome") return "À découvrir";
+      if (arbrePret(n)) return "Fabricable maintenant";
+      if (n.etat === "allume") return "Recette connue";
+      return I[n.id].r ? "Recette à découvrir" : "Ressource découverte";
     }
-    function arbreRailHTML() {
-      let h = '<div class="arb-rail" role="group" aria-label="' + esc(ARB_TXT.rail) + '">';
-      for (let a = D.AGES.length - 1; a >= 0; a--) h += '<button type="button" class="arb-rb" data-arbage="' + a + '" aria-label="' + esc(D.AGES[a].n) + '" style="--ac:' + esc(D.AGES[a].c) + '"><span>' + (a + 1) + "</span></button>";
-      return h + "</div>";
-    }
-    /* la recherche : un nom parmi ce qui est déjà vu ou trouvé (jamais un fantôme : pas de nom, pas de fuite), un appui mène au nœud */
-    function arbreChercherHTML() {
-      return '<div class="arb-chercher" role="search"' + (U.arbreChercher ? "" : " hidden") + '><input id="arbq" type="search" placeholder="Chercher dans l’arbre…" autocomplete="off" spellcheck="false" aria-label="' + esc(ARB_TXT.chercher) + '" value="' + esc(U.arbreQ || "") + '">' +
-        '<div class="arb-res" id="arbres" aria-live="polite">' + arbreResultats(U.arbreQ || "") + "</div></div>";
+    function arbreCarte(n, centre, q) {
+      const fant = n.etat === "fantome", pret = arbrePret(n);
+      const tag = centre ? "article" : "button";
+      return '<' + tag + (centre ? ' tabindex="-1" aria-label="' + esc(fant ? "Recette à découvrir" : n.n) + '"' : ' type="button" data-arbsel="' + esc(n.cle) + '"') +
+        ' class="arb-card ' + n.etat + (centre ? " sel" : "") + (pret ? " pret" : "") + '" data-arbn="' + esc(n.cle) + '">' +
+        (fant ? '<span class="arb-inconnu" aria-hidden="true">?</span>' : icon(n.id, "sm")) +
+        '<span class="arb-card-corps"><span class="arb-l">' + (q > 1 ? '<b>' + fmt(q) + ' × </b>' : '') + esc(fant ? "Recette à découvrir" : n.n) + '</span>' +
+        '<span class="arb-status">' + esc(arbreEtat(n)) + '</span>' +
+        (n.objectif ? '<span class="arb-objectif">Objectif</span>' : '') + '</span></' + tag + '>';
     }
     function arbreResultats(q) {
       q = norm(q || "").trim();
-      if (!q) return '<p class="tiny muted">' + esc(ARB_TXT.aide) + "</p>";
-      const lay = U.arbreLay, hits = lay ? lay.noeuds.filter((n) => n.id && n.etat !== "fantome" && I[n.id] && norm(I[n.id].n).includes(q)) : [];
-      hits.sort((a, b) => (norm(I[a.id].n).startsWith(q) ? 0 : 1) - (norm(I[b.id].n).startsWith(q) ? 0 : 1) || I[a.id].n.localeCompare(I[b.id].n, "fr"));
-      if (!hits.length) return '<p class="tiny muted">' + esc(ARB_TXT.rien) + "</p>";
-      return hits.slice(0, 6).map((n) => '<button type="button" class="arb-puce" data-arbsel="' + esc(n.cle) + '" data-arbferme="1">' + icon(n.id, "sm") + esc(I[n.id].n) + "</button>").join("");
+      if (!q) return '<p class="small muted">Cherche une recette ou une ressource que tu connais.</p>';
+      const hits = (U.arbreG ? U.arbreG.noeuds : []).filter((n) => n.id && norm(n.n).includes(q));
+      hits.sort((a, b) => (norm(a.n).startsWith(q) ? 0 : 1) - (norm(b.n).startsWith(q) ? 0 : 1) || a.n.localeCompare(b.n, "fr"));
+      return hits.length ? hits.slice(0, 8).map((n) => arbreCarte(n, false)).join("") : '<p class="small muted">Rien de tel parmi ce que tu connais.</p>';
     }
-    function arbreLegendeHTML() {
-      const sym = ['<span class="arb-n allume" aria-hidden="true"></span>', '<span class="arb-n vu" aria-hidden="true"></span>', '<span class="arb-n fantome" aria-hidden="true"></span>',
-        '<span class="arb-n fantome obj" aria-hidden="true"></span>', '<svg viewBox="0 0 26 26" aria-hidden="true"><path class="arb-t" d="M13 2 C13 9 13 17 13 24"/></svg>',
-        '<span class="arb-n allume pret" aria-hidden="true"></span>'];
-      return '<div class="arb-legende" role="note"' + (U.arbreLegende ? "" : " hidden") + ">" + ARB_TXT.lg.map((l, i) => '<p class="arb-lg">' + sym[i] + "<span>" + esc(l) + "</span></p>").join("") + "</div>";
+    function arbreBarre(g) {
+      return '<div class="arb-barre"><button type="button" class="btn small" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '">Âges</button>' +
+        '<button type="button" class="btn small" data-arb="centre">Objectif</button>' +
+        '<button type="button" class="btn small' + (U.arbrePrets ? ' on' : '') + '" data-arb="prets" aria-pressed="' + !!U.arbrePrets + '">Fabricables</button>' +
+        '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans l’arbre" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
+        '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans l’arbre</label>' +
+        '<input id="arbq" type="search" placeholder="Recette ou ressource" value="' + esc(U.arbreQ || '') + '" autocomplete="off" spellcheck="false">' +
+        '<div id="arbres" class="arb-grille" aria-live="polite">' + arbreResultats(U.arbreQ) + '</div></div>';
     }
-    function arbreVueHTML(g, lay) {
-      return '<div class="arb-vue" id="arbre">' + Arb.rendu(lay, { icon: (id) => icon(id), esc, neuf: U.arbreNeuf, txt: ARB_TXT, car: Arb.carrefours(D) }) +
-        arbreLoinHTML(Arb.loin(g, D)) + '<div class="arb-ici" aria-hidden="true"></div>' + arbreRailHTML() + '<div class="arb-rb-tip" hidden></div>' + arbreChercherHTML() + arbreLegendeHTML() + '<div class="arb-fiche" hidden></div></div>';
-    }
-    const arbreEl = () => document.getElementById("v-arbre");
-    const arbreSig = (g) => Arb.sig(g) + "|" + (U.arbreNeuf || "");
-    /* va à l’onglet Arbre ; avec un id d’objet, il s’ouvre sur lui (choisi), sinon sur l’objectif ou la dernière découverte */
-    function arbreOuvrir(id) {
-      if (!Arb || typeof document === "undefined") return;
-      U.arbreVoirId = id || null;
-      setTab("arbre");
-    }
-    /* appelé par render() quand l’onglet est à l’écran : on ne redessine que si l’arbre a changé, la vue (glissée, zoomée) reste où elle était */
-    function arbreRendre(el) {
-      if (!Arb) return;
-      const g = Arb.graphe(E, D), id = U.arbreVoirId;
-      U.arbreVoirId = null;
-      if (!id && el.firstElementChild && el.dataset.sig === arbreSig(g)) return;
-      arbreBati(el, id, !U.arbreVue);
-    }
-    /* ce qu’on peut fabriquer maintenant : un point vert sur les recettes trouvées dont tout est en Réserve (mis à jour sans redessiner l’arbre) */
-    function arbrePretsMaj(el) {
-      const m = (el || arbreEl() || document).querySelector(".arb-monde");
-      if (!m) return;
-      m.classList.toggle("prets", !!U.arbrePrets);
-      m.querySelectorAll(".arb-n.allume").forEach((b) => {
-        const id = b.dataset.arbn, it = I[id];
-        b.classList.toggle("pret", !!(it && it.r && !(E.isUnique(it) && (S().made[id] || 0) > 0) && !E.missingFor(id, 1)));
-      });
-    }
-    function arbreBati(el, id, centrer) {
-      const g = Arb.graphe(E, D), lay = Arb.mise_en_page(g, D);
-      const actif = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.arb : null;
-      U.arbreLay = lay;
-      el.innerHTML = arbreBarreHTML(g) + arbreVueHTML(g, lay);
-      el.dataset.sig = arbreSig(g);
-      U.arbreNeuf = null; // l’éclat d’une découverte ne se joue qu’une fois
-      const n = id && lay.noeuds.find((x) => x.cle === id);
-      if (centrer || !U.arbreVue) arbreCentrer(lay, g);
-      arbreMonter(el.querySelector(".arb-vue"));
-      arbrePretsMaj(el);
-      if (n) arbreChoisir(n.cle, true);
-      else if (U.arbreSel && lay.noeuds.some((x) => x.cle === U.arbreSel)) arbreChoisir(U.arbreSel);
-      else U.arbreSel = null;
-      if (actif && !centrer) { const b = el.querySelector('[data-arb="' + actif + '"]'); if (b) b.focus({ preventScroll: true }); }
-    }
-    /* appelé régulièrement : si quelque chose a changé dans l’arbre (une découverte), on le redessine */
-    function arbreMaj() {
-      const el = arbreEl();
-      if (!el || !Arb || U.tab !== "arbre") return;
-      if (Date.now() - (U.arbreP || 0) > 1000) { U.arbreP = Date.now(); arbrePretsMaj(el); } // la Réserve change tout le temps : on ne touche qu’aux points verts
-      if (el.dataset.sig === arbreSig(Arb.graphe(E, D))) return;
-      arbreBati(el, null, false);
-    }
-    function arbreClavier(e) {
-      const rb = e.target.closest && e.target.closest("#v-arbre .arb-rb");
-      if (rb && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
-        e.preventDefault();
-        const bs = Array.from(document.querySelectorAll("#v-arbre .arb-rb")), i = bs.indexOf(rb) + (e.key === "ArrowUp" ? -1 : 1);
-        if (bs[i]) bs[i].focus({ preventScroll: true });
+    function arbreEnsemble(g) {
+      let h = '<header class="arb-entete"><h2>Arbre des connaissances</h2><p class="small muted">' + g.compte + (g.compte > 1 ? ' recettes trouvées' : ' recette trouvée') + '</p></header>';
+      if (U.arbrePrets) h += '<p class="small arb-filtre">Les recettes que tu peux fabriquer avec ta Réserve.</p>';
+      let total = 0;
+      for (let a = 0; a <= g.max; a++) {
+        const ns = g.noeuds.filter((n) => n.age === a && (!U.arbrePrets || arbrePret(n)));
+        if (U.arbrePrets && !ns.length) continue;
+        total += ns.length;
+        const ouverts = U.arbreAges || {};
+        const ouvert = U.arbrePrets || (ouverts[a] !== undefined ? ouverts[a] : a === Math.min(g.age, g.max));
+        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '') + '</span></summary>';
+        h += '<div class="arb-grille">' + (ns.length ? ns.map((n) => arbreCarte(n, false)).join('') : '<p class="small muted">Rien découvert pour l’instant.</p>') + '</div></details>';
       }
-    }
-    /* la réglette des âges : amène la vue à un âge */
-    function arbreAller(a) {
-      const v = document.getElementById("arbre"), o = U.arbreVue, lay = U.arbreLay;
-      if (!v || !o || !lay) return;
-      if (o.k < ARB_LOIN) o.k = ARB_NIV.milieu; // depuis le niveau « loin », on vient plus près
-      const b = lay.bandes.find((x) => x.age === a);
-      const y = b ? b.y + b.h / 2 : lay.futur ? lay.futur.h / 2 : 0;
-      o.ty = v.clientHeight / 2 - y * o.k;
-      const m = v.firstElementChild;
-      if (m) { m.classList.add("glisse"); setTimeout(() => m.classList.remove("glisse"), 320); }
-      arbrePoser(v);
-    }
-    /* de loin à près et retour : − et + passent d’un niveau à l’autre (puis + continue jusqu’à l’échelle 2) */
-    function arbreNiveau(dir) {
-      const o = U.arbreVue;
-      if (!o) return;
-      const L = [ARB_NIV.loin, ARB_NIV.milieu, ARB_NIV.pres], i = arbreNiveau0(o.k) === "loin" ? 0 : arbreNiveau0(o.k) === "milieu" ? 1 : 2;
-      const cible = dir > 0 ? (i < 2 ? L[i + 1] : Math.min(ARB_K[1], o.k * 1.25)) : (o.k > ARB_PRES + 0.02 ? ARB_PRES : i > 0 ? L[i - 1] : ARB_K[0]);
-      arbreZoom(cible / o.k);
-    }
-    /* Toucher un nœud le choisit : ses traits s’allument (même ceux qui sautent des âges), le reste
-     * s’efface, et un bandeau dit de quoi il est fait et à quoi il sert. Le toucher encore ouvre sa fiche. */
-    function arbreChoisir(cle, voir) {
-      const v = document.getElementById("arbre"), lay = U.arbreLay;
-      if (!v || !lay) return;
-      const m = v.querySelector(".arb-monde"), f = v.querySelector(".arb-fiche");
-      m.querySelectorAll(".sel, .lie").forEach((x) => x.classList.remove("sel", "lie", "amont", "aval"));
-      const n = cle && lay.noeuds.find((x) => x.cle === cle);
-      U.arbreSel = n ? cle : null;
-      m.classList.toggle("focus", !!n);
-      if (!n) { f.hidden = true; f.innerHTML = ""; return; }
-      const L = Arb.liens(lay, cle);
-      const el = (k) => m.querySelector('[data-arbn="' + k + '"]');
-      el(cle).classList.add("sel");
-      L.amont.forEach((k) => { const x = el(k); if (x) x.classList.add("lie"); });
-      L.aval.forEach((k) => { const x = el(k); if (x) x.classList.add("lie"); });
-      L.traits.forEach((i) => { const t = m.querySelector('[data-t="' + i + '"]'); if (t) t.classList.add("lie", lay.traits[i].a === cle ? "amont" : "aval"); });
-      f.innerHTML = arbreFiche(n, L);
-      f.hidden = false;
-      // le nœud reste visible au-dessus du bandeau ; venu d’une puce, il vient au milieu
-      const o = U.arbreVue, sy = n.y * o.k + o.ty, sx = n.x * o.k + o.tx;
-      if (voir || sy < 40 || sy > v.clientHeight - f.offsetHeight - 50 || sx < 20 || sx > v.clientWidth - 20) arbreVoir(n);
-    }
-    const arbPuce = (id, q) => '<button type="button" class="arb-puce" data-arbsel="' + esc(id) + '">' + icon(id, "sm") + (q > 1 ? "<b>" + fmt(q) + "</b> " : "") + esc(I[id].n) + "</button>";
-    function arbreFiche(n, L) {
-      if (n.etat === "fantome") {
-        const src = L.amont.filter((k) => I[k]);
-        return '<div class="arb-f-tete"><span class="ic sm unk">?</span><b class="grow">' + esc(ARB_TXT.fantome) + '</b><button type="button" class="btn small ghost" data-arbsel="" aria-label="Fermer">✕</button></div>' +
-          '<p class="arb-f-l small muted">' + (n.objectif ? "Ton objectif. " : "") + esc(ARB_TXT.toucher) + "</p>" +
-          (src.length ? '<div class="arb-f-l"><span class="arb-f-k">Part de</span>' + src.map((k) => arbPuce(k)).join("") + "</div>" : "");
-      }
-      const it = I[n.id], par = {};
-      U.arbreLay.noeuds.forEach((x) => { par[x.cle] = x; });
-      let h = '<div class="arb-f-tete">' + icon(n.id, "sm") + '<b class="grow">' + esc(it.n) + "</b>" +
-        '<button type="button" class="btn small" data-goto="' + esc(n.id) + '">Fiche</button><button type="button" class="btn small ghost" data-arbsel="" aria-label="Fermer">✕</button></div>';
-      if (it.r && n.etat === "allume") {
-        const G = D.GESTES[it.r[0]], ing = it.r[1];
-        h += '<div class="arb-f-l"><span class="arb-f-k">' + (G ? gIc(it.r[0]) + " " + esc(G.n) : "Fait de") + "</span>" +
-          Object.keys(ing).map((k) => (I[k] && par[k] ? arbPuce(k, ing[k]) : '<span class="arb-puce off">' + (I[k] && (S().seen[k] || S().known[k]) ? esc(I[k].n) : "?") + "</span>")).join("") + "</div>";
-      } else h += '<p class="arb-f-l small muted">Une ressource : elle se récolte, ou s’obtient sans recette connue.</p>';
-      const usages = L.aval.filter((k) => par[k] && par[k].etat !== "fantome");
-      const f = L.aval.length - usages.length;
-      if (usages.length || f) h += '<div class="arb-f-l"><span class="arb-f-k">Sert à</span>' + usages.map((k) => arbPuce(k)).join("") +
-        (f ? '<span class="arb-puce fant">✦ ' + f + (f > 1 ? " recettes à trouver" : " recette à trouver") + "</span>" : "") + "</div>";
-      else if (it.r) h += '<p class="arb-f-l small muted">Ne sert encore à aucune recette trouvée.</p>';
+      if (U.arbrePrets && !total) h += '<p class="small muted">Aucune recette fabricable pour l’instant. Récolte les ressources qui te manquent.</p>';
+      if (g.max < D.AGES.length - 1) h += '<p class="small muted">Les autres âges se dévoileront au fil de tes découvertes.</p>';
       return h;
     }
-    /* amène un nœud au milieu de la vue (au-dessus du bandeau) */
-    function arbreVoir(n) {
-      const v = document.getElementById("arbre"), o = U.arbreVue;
-      if (!v || !o) return;
-      const f = v.querySelector(".arb-fiche"), bas = f && !f.hidden ? f.offsetHeight : 0;
-      o.tx = (v.clientWidth - ARB_RAIL) / 2 - n.x * o.k; o.ty = (v.clientHeight - bas) / 2 - n.y * o.k;
-      const m = v.firstElementChild;
-      if (m) { m.classList.add("glisse"); setTimeout(() => m.classList.remove("glisse"), 320); }
-      arbrePoser(v);
-    }
-    function arbreCentrer(lay, g) {
-      const v = document.getElementById("arbre"), c = Arb.centre(lay, g);
-      const vw = v ? v.clientWidth : 360, vh = v ? v.clientHeight : 480, k = ARB_NIV.pres;
-      U.arbreVue = arbreBorne({ k, tx: (vw - ARB_RAIL) / 2 - c.x * k, ty: vh / 2 - c.y * k }, vw, vh);
-    }
-    function arbreBorne(o, vw, vh) {
-      const lay = U.arbreLay;
-      if (!lay) return o;
-      const W = lay.w * o.k, H = lay.h * o.k, marge = 60;
-      // le bandeau du nœud choisi couvre le bas de la vue : on peut faire monter l’arbre au-dessus
-      const f = document.querySelector("#arbre .arb-fiche"), bas = f && !f.hidden ? f.offsetHeight : 0;
-      const libre = vw - ARB_RAIL; // la réglette des âges prend le bord droit
-      o.tx = W <= libre ? (libre - W) / 2 : Math.min(8, Math.max(libre - W - 8, o.tx));
-      o.ty = H <= vh - bas ? (vh - bas - H) / 2 : Math.min(marge, Math.max(vh - H - marge - bas, o.ty));
-      return o;
-    }
-    function arbrePoser(v) {
-      v = v || document.getElementById("arbre");
-      if (!v || !U.arbreVue) return;
-      const o = arbreBorne(U.arbreVue, v.clientWidth, v.clientHeight), m = v.firstElementChild;
-      if (m) { m.style.transform = "translate(" + Math.round(o.tx) + "px," + Math.round(o.ty) + "px) scale(" + o.k + ")"; m.style.setProperty("--k", o.k); }
-      const niv = arbreNiveau0(o.k);
-      if (v.dataset.niv !== niv) { v.dataset.niv = niv; const lo = v.querySelector(".arb-loin"); if (lo) lo.hidden = niv !== "loin"; }
-      // la réglette : l’âge où l’on est (plein), l’âge au milieu de la vue (cerclé), les âges encore loin (estompés)
-      const lay0 = U.arbreLay;
-      if (lay0) {
-        const rail0 = v.querySelector(".arb-rail");
-        const bc = niv === "loin" ? null : Arb.bandeA(lay0, (v.clientHeight / 2 - o.ty) / o.k);
-        v.querySelectorAll(".arb-rb").forEach((b) => {
-          const a = +b.dataset.arbage;
-          b.classList.toggle("ici", a === S().age);
-          b.classList.toggle("centre", !!bc && bc.age === a);
-          b.classList.toggle("lointain", !lay0.bandes.some((x) => x.age === a));
-        });
-        // réglette qui défile : l’âge au milieu de la vue (ou l’âge atteint) reste à l’écran
-        const defile0 = !!rail0 && rail0.scrollHeight > rail0.clientHeight + 1;
-        if (rail0) rail0.classList.toggle("defile", defile0);
-        if (defile0) {
-          const cb = v.querySelector(".arb-rb.centre") || v.querySelector(".arb-rb.ici");
-          if (cb) rail0.scrollTop = cb.offsetTop - (rail0.clientHeight - cb.offsetHeight) / 2;
-        }
+    function arbreBranche(g, cle) {
+      const v = Arb.voisinage(g, cle);
+      if (!v) return arbreEnsemble(g);
+      const n = v.centre, it = n.id && I[n.id];
+      let h = '<header class="arb-entete"><button type="button" class="btn small ghost" data-arb="retour">← ' + ((U.arbreHistorique || []).length ? 'Revenir' : 'Les âges') + '</button><p class="small muted">' + esc(D.AGES[n.age].n) + '</p></header>';
+      if (v.amont.length) {
+        h += '<section class="arb-etape" aria-labelledby="arb-ingredients"><h3 id="arb-ingredients">' + (n.etat === 'fantome' ? 'Une piste pour commencer' : 'Ingrédients') + '</h3><div class="arb-grille">' + v.amont.map((p) => arbreCarte(p, false, n.etat === 'allume' ? it.r[1][p.id] : null)).join('') + '</div></section><div class="arb-fleche" aria-hidden="true">↓</div>';
       }
-      // l’âge sous le haut de la vue reste écrit, même au milieu d’une longue bande
-      const ici = v.querySelector(".arb-ici"), lay = U.arbreLay;
-      if (ici && lay) {
-        const b = Arb.bandeA(lay, (24 - o.ty) / o.k);
-        const cache = !b || niv === "loin" || (b.y * o.k + o.ty > -4); // l’étiquette de la bande est déjà à l’écran
-        ici.hidden = cache;
-        if (b && !cache) { ici.textContent = (b.age + 1) + " · " + b.nom; ici.style.setProperty("--ac", b.c); }
+      h += '<section class="arb-selection" aria-label="Objet sélectionné">' + arbreCarte(n, true) + '<div class="arb-actions">';
+      if (it) h += '<button type="button" class="btn small" data-goto="' + esc(n.id) + '">Voir la fiche</button>';
+      h += '</div>';
+      if (n.etat === 'fantome' || (n.etat !== 'allume' && it.r)) h += '<p class="small muted">' + (n.etat === 'fantome' ? 'Essaie avec les ressources que tu as étudiées à l’Atelier.' : 'La recette reste à découvrir à l’Atelier.') + '</p>';
+      else if (n.etat === 'allume' && D.GESTES[it.r[0]]) h += '<p class="small muted arb-geste">' + esc(D.GESTES[it.r[0]].n) + '</p>';
+      h += '</section>';
+      if (v.aval.length) {
+        const connus = v.aval.filter((p) => p.etat !== 'fantome'), inconnus = v.aval.length - connus.length;
+        const visibles = U.arbreTout ? connus : connus.slice(0, 6);
+        h += '<div class="arb-fleche" aria-hidden="true">↓</div><section class="arb-etape" aria-labelledby="arb-usages"><h3 id="arb-usages">Sert à fabriquer</h3><div class="arb-grille">' + visibles.map((p) => arbreCarte(p, false)).join('') + '</div>';
+        if (connus.length > visibles.length) h += '<button type="button" class="btn small wide" data-arb="tout">Voir les ' + connus.length + ' usages connus</button>';
+        if (inconnus) h += '<p class="small arb-pistes">' + inconnus + (inconnus > 1 ? ' autres recettes restent à découvrir.' : ' autre recette reste à découvrir.') + '</p>';
+        h += '</section>';
+      } else h += '<p class="small muted">Aucun usage découvert pour le moment.</p>';
+      return h;
+    }
+    function arbreBati(el) {
+      if (!el || !Arb) return;
+      const v = el.querySelector('#arbre'), scroll = v ? v.scrollTop : 0;
+      const focus = document.activeElement, action = focus && focus.dataset && focus.dataset.arb;
+      const recherche = focus && focus.id === 'arbq', caret = recherche ? focus.selectionStart : null;
+      const ancien = U.arbreG && U.arbreG.noeuds.find((n) => n.cle === U.arbreSel);
+      const signature = Arb.sig(Arb.graphe(E, D));
+      if (ancien && ancien.etat === 'fantome' && el.dataset.sig !== signature) { U.arbreSel = null; U.arbreHistorique = []; }
+      U.arbreG = Arb.graphe(E, D);
+      U.arbreDisponibles = U.arbreG.noeuds.filter(arbrePret).map((n) => n.cle).join('|');
+      if (U.arbreSel && !U.arbreG.noeuds.some((n) => n.cle === U.arbreSel)) U.arbreSel = null;
+      el.innerHTML = arbreBarre(U.arbreG) + '<div id="arbre" class="arb-vue" tabindex="0" aria-label="Arbre des connaissances, défilement vertical">' + (U.arbreSel ? arbreBranche(U.arbreG, U.arbreSel) : arbreEnsemble(U.arbreG)) + '</div>';
+      el.dataset.sig = Arb.sig(U.arbreG);
+      el.querySelector('#arbre').scrollTop = scroll;
+      el.querySelectorAll('details[data-arbage]').forEach((d) => d.addEventListener('toggle', () => { if (d.isConnected && !U.arbrePrets) (U.arbreAges || (U.arbreAges = {}))[d.dataset.arbage] = d.open; }));
+      iconize(el);
+      if (recherche) { const q = el.querySelector('#arbq'); q.focus({ preventScroll: true }); if (caret !== null) q.setSelectionRange(caret, caret); }
+      if (action) { const b = el.querySelector('[data-arb="' + action + '"]'); if (b) b.focus({ preventScroll: true }); }
+    }
+    function arbreChoisir(cle, historique) {
+      if (!U.arbreG || !U.arbreG.noeuds.some((n) => n.cle === cle)) return;
+      if (historique && U.arbreSel && U.arbreSel !== cle) (U.arbreHistorique || (U.arbreHistorique = [])).push(U.arbreSel);
+      U.arbreSel = cle; U.arbreTout = false; U.arbrePrets = false; U.arbreChercher = false; U.arbreQ = '';
+      const el = arbreEl(); arbreBati(el);
+      const c = el.querySelector('.arb-selection .sel');
+      if (c) { c.focus({ preventScroll: true }); const v = el.querySelector('#arbre'); v.scrollTop = Math.max(0, c.offsetTop - v.clientHeight * .35); }
+    }
+    function arbreOuvrir(id) { if (!Arb) return; U.arbreVoirId = id || null; setTab('arbre'); }
+    function arbreRendre(el) {
+      if (!Arb) return;
+      const id = U.arbreVoirId; U.arbreVoirId = null;
+      const g = Arb.graphe(E, D);
+      const premier = !el.firstElementChild;
+      if (premier) {
+        const cible = g.noeuds.find((n) => n.objectif && n.etat !== 'fantome');
+        U.arbreSel = cible ? cible.cle : g.dernier;
       }
+      if (!el.firstElementChild || el.dataset.sig !== Arb.sig(g)) arbreBati(el);
+      if (id || (premier && U.arbreSel)) { U.arbreHistorique = []; arbreChoisir(id || U.arbreSel); }
     }
-    function arbreZoom(f, px, py) {
-      const v = document.getElementById("arbre"), o = U.arbreVue;
-      if (!v || !o) return;
-      if (px === undefined) { px = (v.clientWidth - ARB_RAIL) / 2; py = v.clientHeight / 2; }
-      const k = Math.max(ARB_K[0], Math.min(ARB_K[1], o.k * f));
-      o.tx = px - (px - o.tx) * k / o.k; o.ty = py - (py - o.ty) * k / o.k; o.k = k;
-      arbrePoser(v);
+    function arbreMaj() {
+      const el = arbreEl(); if (!el || !Arb || U.tab !== 'arbre') return;
+      const g = Arb.graphe(E, D);
+      if (el.dataset.sig !== Arb.sig(g)) { arbreBati(el); return; }
+      if (Date.now() - (U.arbreP || 0) < 1000) return;
+      U.arbreP = Date.now();
+      const prets = g.noeuds.filter(arbrePret).map((n) => n.cle).join('|');
+      if (U.arbreDisponibles !== prets) { U.arbreDisponibles = prets; arbreBati(el); }
     }
-    function arbreMonter(v) {
-      if (!v) return;
-      arbrePoser(v);
-      const pts = new Map();
-      let base = null;
-      const rel = (e) => { const r = v.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-      const debut = () => {
-        const p = Array.from(pts.values()), o = U.arbreVue;
-        if (p.length === 1) base = { x: p[0].x, y: p[0].y, tx: o.tx, ty: o.ty, k: o.k };
-        else if (p.length >= 2) base = { mx: (p[0].x + p[1].x) / 2, my: (p[0].y + p[1].y) / 2, d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, tx: o.tx, ty: o.ty, k: o.k };
-      };
-      v.addEventListener("pointerdown", (e) => {
-        if (e.button > 0 || e.target.closest(".arb-fiche, .arb-rail, .arb-legende, .arb-chercher")) return;
-        pts.set(e.pointerId, rel(e));
-        if (pts.size === 1) U.arbreGlisse = false;
-        debut();
-      });
-      v.addEventListener("pointermove", (e) => {
-        if (!pts.has(e.pointerId) || !base) return;
-        pts.set(e.pointerId, rel(e));
-        const p = Array.from(pts.values()), o = U.arbreVue;
-        if (p.length === 1) {
-          const dx = p[0].x - base.x, dy = p[0].y - base.y;
-          if (!U.arbreGlisse && Math.hypot(dx, dy) < 7) return;
-          if (!U.arbreGlisse) { U.arbreGlisse = true; v.classList.add("tient"); try { v.setPointerCapture(e.pointerId); } catch (er) { /* rien */ } }
-          o.tx = base.tx + dx; o.ty = base.ty + dy;
-        } else {
-          U.arbreGlisse = true;
-          const mx = (p[0].x + p[1].x) / 2, my = (p[0].y + p[1].y) / 2, d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1;
-          const k = Math.max(ARB_K[0], Math.min(ARB_K[1], base.k * d / base.d));
-          o.k = k; o.tx = mx - (base.mx - base.tx) * k / base.k; o.ty = my - (base.my - base.ty) * k / base.k;
-        }
-        arbrePoser(v);
-      });
-      const fin = (e) => { pts.delete(e.pointerId); v.classList.remove("tient"); debut(); };
-      v.addEventListener("pointerup", fin);
-      v.addEventListener("pointercancel", fin);
-      // la réglette des âges : le doigt la parcourt, la vue saute à l’âge touché, une pastille dit lequel
-      const rail = v.querySelector(".arb-rail");
-      if (rail) {
-        const tip = v.querySelector(".arb-rb-tip");
-        // petit écran : les âges gardent 44 px et la réglette défile ; on ne la parcourt plus d’un trait, on touche un âge
-        const defile = () => rail.scrollHeight > rail.clientHeight + 1;
-        let actif = false;
-        const ageAt = (e) => { const r = rail.getBoundingClientRect(), n = D.AGES.length; return n - 1 - Math.max(0, Math.min(n - 1, Math.floor((e.clientY - r.top) / r.height * n))); };
-        const va = (e) => {
-          const a = ageAt(e), r = rail.getBoundingClientRect();
-          arbreAller(a);
-          tip.hidden = false; tip.textContent = (a + 1) + " · " + D.AGES[a].n; tip.style.top = Math.max(18, Math.min(r.height - 18, e.clientY - r.top)) + "px";
-        };
-        rail.addEventListener("pointerdown", (e) => { if (e.button > 0 || defile()) return; actif = true; U.arbreRail = true; try { rail.setPointerCapture(e.pointerId); } catch (er) { /* rien */ } va(e); e.preventDefault(); });
-        rail.addEventListener("pointermove", (e) => { if (actif) va(e); });
-        const finRail = () => { actif = false; tip.hidden = true; setTimeout(() => { U.arbreRail = false; }, 50); };
-        rail.addEventListener("pointerup", finRail);
-        rail.addEventListener("pointercancel", finRail);
-      }
-      v.addEventListener("wheel", (e) => { if (e.target.closest(".arb-fiche, .arb-chercher")) return; e.preventDefault(); const p = rel(e); arbreZoom(e.deltaY < 0 ? 1.15 : 1 / 1.15, p.x, p.y); }, { passive: false });
-      // au clavier : le nœud qui prend le focus vient dans le cadre
-      v.addEventListener("focusin", (e) => {
-        const b = e.target.closest(".arb-n"), o = U.arbreVue;
-        if (!b || !o) return;
-        v.scrollLeft = 0; v.scrollTop = 0;
-        const x = (parseFloat(b.style.left) + 24) * o.k + o.tx, y = (parseFloat(b.style.top) + 24) * o.k + o.ty;
-        if (x < 30 || y < 30 || x > v.clientWidth - 30 || y > v.clientHeight - 30) { o.tx += v.clientWidth / 2 - x; o.ty += v.clientHeight / 2 - y; arbrePoser(v); }
-      });
-    }
-    if (typeof document !== "undefined") {
-      document.addEventListener("keydown", arbreClavier, true);
-      document.addEventListener("input", (e) => {
-        if (e.target && e.target.id === "arbq") { U.arbreQ = e.target.value; const r = document.getElementById("arbres"); if (r) { r.innerHTML = arbreResultats(U.arbreQ); iconize(r); } }
-      });
-      // en capture : un doigt qui a glissé n’ouvre pas de fiche en relâchant
-      document.addEventListener("click", (e) => {
-        const t = e.target, b = t.closest && t.closest("[data-arb], [data-arbre-obj], .arb-vue");
+    if (typeof document !== 'undefined') {
+      document.addEventListener('input', (e) => { if (e.target.id === 'arbq') { U.arbreQ = e.target.value; const r = document.getElementById('arbres'); if (r) { r.innerHTML = arbreResultats(U.arbreQ); iconize(r); } } });
+      document.addEventListener('click', (e) => {
+        const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj]');
         if (!b) return;
-        if (b.dataset.arbreObj !== undefined) { e.stopPropagation(); A.click(); arbreOuvrir(objectifCle()); return; }
-        if (b.dataset.arb) {
-          e.stopPropagation(); A.click();
-          const a = b.dataset.arb;
-          if (a === "chercher") {
-            U.arbreChercher = !U.arbreChercher;
-            const pn = document.querySelector("#v-arbre .arb-chercher"); if (pn) pn.hidden = !U.arbreChercher;
-            b.setAttribute("aria-expanded", U.arbreChercher ? "true" : "false");
-            if (U.arbreChercher) { const q = document.getElementById("arbq"); if (q) q.focus({ preventScroll: true }); }
-          } else if (a === "prets") {
-            U.arbrePrets = !U.arbrePrets; b.classList.toggle("on", U.arbrePrets); b.setAttribute("aria-pressed", U.arbrePrets ? "true" : "false"); arbrePretsMaj();
-          } else if (a === "centre") { if (U.arbreLay) { arbreCentrer(U.arbreLay, Arb.graphe(E, D)); arbrePoser(); } }
-          else if (a === "legende") {
-            U.arbreLegende = !U.arbreLegende;
-            const lg = document.querySelector("#v-arbre .arb-legende"); if (lg) lg.hidden = !U.arbreLegende;
-            b.setAttribute("aria-expanded", U.arbreLegende ? "true" : "false");
-          } else arbreNiveau(a === "plus" ? 1 : -1);
+        if (b.hasAttribute('data-arbre-obj')) { e.stopPropagation(); arbreOuvrir(objectifCle()); return; }
+        if (!b.closest('#v-arbre')) return;
+        e.stopPropagation(); A.click();
+        if (b.dataset.arbsel) { arbreChoisir(b.dataset.arbsel, true); return; }
+        const a = b.dataset.arb, el = arbreEl();
+        if (a === 'chercher') {
+          U.arbreChercher = !U.arbreChercher; const p = el.querySelector('.arb-chercher'); p.hidden = !U.arbreChercher; b.setAttribute('aria-expanded', U.arbreChercher);
+          if (U.arbreChercher) el.querySelector('#arbq').focus();
           return;
         }
-        const ab = t.closest("[data-arbage], [data-arbband]");
-        if (ab && !U.arbreRail) {
-          e.stopPropagation(); A.click();
-          if (ab.dataset.arbband !== undefined) { const o = U.arbreVue; if (o) o.k = ARB_NIV.milieu; arbreAller(+ab.dataset.arbband); }
-          else arbreAller(+ab.dataset.arbage);
-          return;
+        if (a === 'centre') { const cle = objectifCle(); if (cle) { U.arbreHistorique = []; arbreChoisir(cle); return; } }
+        if (a === 'retour' && (U.arbreHistorique || []).length) { arbreChoisir(U.arbreHistorique.pop()); return; }
+        if (a === 'tout') U.arbreTout = true;
+        else { U.arbreSel = null; U.arbreHistorique = []; U.arbrePrets = a === 'prets' ? !U.arbrePrets : false; }
+        arbreBati(el);
+        if (a !== 'tout') {
+          const v = el.querySelector('#arbre'), age = a === 'ensemble' && el.querySelector('[data-arbage="' + S().age + '"]');
+          v.scrollTop = age ? Math.max(0, age.offsetTop - 8) : 0;
         }
-        if (ab) { e.stopPropagation(); return; }
-        if (U.arbreGlisse) { U.arbreGlisse = false; e.stopPropagation(); e.preventDefault(); return; }
-        const sel = t.closest("[data-arbsel]");
-        if (sel) {
-          e.stopPropagation(); A.click();
-          if (sel.dataset.arbferme) { // venu de la recherche : le panneau se referme sur le nœud trouvé
-            U.arbreChercher = false; U.arbreQ = "";
-            const pn = document.querySelector("#v-arbre .arb-chercher"); if (pn) pn.hidden = true;
-            const bt = document.querySelector('#v-arbre [data-arb="chercher"]'); if (bt) bt.setAttribute("aria-expanded", "false");
-          }
-          arbreChoisir(sel.dataset.arbsel || null, !!sel.dataset.arbsel); return;
-        }
-        if (t.closest(".arb-fiche, .arb-chercher")) return; // « Fiche » : l’écouteur commun ouvre la fiche de l’objet ; la recherche garde son focus
-        const nb = t.closest("[data-arbn]");
-        if (nb) {
-          e.stopPropagation();
-          const n = U.arbreLay && U.arbreLay.noeuds.find((x) => x.cle === nb.dataset.arbn);
-          if (n && n.id && U.arbreSel === n.cle) { goto(n.id); return; } // deuxième toucher : la fiche
-          A.click(); arbreChoisir(nb.dataset.arbn);
-          return;
-        }
-        if (U.arbreSel) { e.stopPropagation(); arbreChoisir(null); } // toucher le vide : on lâche
       }, true);
     }
-    E.on("learn", (id) => { if (I[id] && !I[id].path) U.arbreNeuf = id; });
-    /* le nœud de l’objectif en cours (case vide ou recette trouvée), pour ouvrir l’arbre dessus */
+    E.on('learn', () => { U.arbreNeuf = null; });
+
     function objectifCle() {
       if (!Arb) return null;
       const n = Arb.graphe(E, D).noeuds.find((x) => x.objectif);
