@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.22.1";
+  D.VERSION = "0.23.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1248,11 +1248,19 @@
     trace: 100,       // prix de la première Trace, à l’âge 0
     traceAge: 1.8,    // ×1,8 par âge atteint
     traceUp: 1.5,     // ×1,5 à chaque Trace achetée pendant le cycle
-    buy: 3            // une matière achetée coûte 3 fois sa valeur
+    buy: 3,           // une matière achetée coûte 3 fois sa valeur
+    /* À la relève, les écus deviennent des Traces au plein tarif jusqu’à hauteur de ce que les passages du cycle
+     * ont rapporté (au moins `plancher`), puis à `part` seulement au-delà : vendre reste toujours utile, mais ne remplace pas les passages. */
+    plafond: { plancher: 3, part: 0.25 }
   };
 
   /* Les demandes du Troqueur : livrer des objets fabriqués contre des Traces */
-  D.TROQUEUR = { slots: 3, refresh: 1200, share: 0.15, size: 2 };
+  /* Le Troqueur passe par à-coups : le temps se découpe en blocs de `bloc` secondes, chacun ouvert avec la probabilité `ouvre`
+   * (tirée de la graine de la partie, donc la même hors ligne), jamais plus de `maxFerme` blocs fermés de suite. Une ouverture
+   * apporte `slots` demandes, valables jusqu’à sa fermeture : pas de renouvellement dans une même ouverture.
+   * Quantité d’une demande : ce que le joueur extrait en `minParTrace` minutes par Trace de récompense (entre `minMin` et `minMax`),
+   * `main` appuis par seconde comptés pour la récolte à la main. */
+  D.TROQUEUR = { slots: 3, share: 0.15, bloc: 10800, ouvre: 0.6, maxFerme: 3, minParTrace: 10, minMin: 10, minMax: 90, main: 0.5 };
 
   /* Le premier parcours : première renaissance obligatoire */
   D.PARCOURS = {
@@ -1280,6 +1288,10 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🎯 Le guide ne se perd plus : fabriquer en avance le tout dernier objet laisse les étapes qui restent à faire, et une pièce déjà dans ta Réserve n’est plus demandée comme une étape.",
+    "⛏️ Quand l’extracteur d’une matière est à toi mais ne la récolte pas, l’objectif le dit : il propose de le poser, ou de le relancer s’il est arrêté.",
+    "🪙 Les écus gagnés au Comptoir pèsent moins lourd à la relève : ils deviennent des Traces à plein tarif jusqu’à ce que tes passages ont rapporté, puis à un quart. Le calcul s’affiche au Comptoir et dans la fenêtre de relève.",
+    "🧳 Le Troqueur demande selon ce que tu produis réellement : plus la matière demandée vient lentement, moins il en réclame. Il ne renouvelle plus ses demandes sans cesse et part en tournée de temps en temps, le Comptoir restant ouvert pour vendre et acheter.",
     "🔤 Les cartes de signes du Journal, les deux formulaires à ⏎ et les questions à réfléchir ont un nom pour le lecteur d’écran.",
     "💬 Les boutons qui ne disaient rien s’expliquent : une info-bulle dit ce que font Suivre, Épingler, Détail, ×10, Max, les filtres et les tris.",
     "💭 Le guide ralentit : une seule explication à la fois, et au plus une toutes les deux ou trois minutes.",

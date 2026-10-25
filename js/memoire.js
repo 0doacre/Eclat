@@ -184,9 +184,12 @@
       const st = S();
       const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0), gain = E.releveGain();
       const ecus = Math.floor(st.ecus || 0);
-      const ecusTr = E.ecusToTraces ? E.ecusToTraces(ecus) : 0;
+      const det = E.ecusDetail(ecus);
+      const ecusTr = det.trace;
       const totalGain = gain + ecusTr;
-      const ecusMsg = ecus > 0 ? '<p class="small">Tes ' + fmt(ecus) + ' écus deviennent ' + ecusTr + ' ✦ Trace' + (ecusTr > 1 ? 's' : '') + '.</p>' : '';
+      // au-delà de ce que les passages ont rapporté, le Troqueur ne rachète plus qu’un quart : on le dit
+      const plafond = det.plafonne ? " Il les rachète à plein tarif jusqu’à " + det.seuil + " ✦, ce que tes passages ont rapporté, puis à un quart : sans cela, " + det.brut + " ✦." : "";
+      const ecusMsg = ecus > 0 ? '<p class="small">Tes ' + fmt(ecus) + ' écus deviennent ' + ecusTr + ' ✦ Trace' + (ecusTr > 1 ? 's' : '') + '.' + plafond + '</p>' : '';
       const isLibere = (typeof E.isLibere === "function" && E.isLibere()) || (st.meta && st.meta.endings && st.meta.endings.retour);
       const kicker = isLibere ? "Le repos partagé" : "La relève";
       const title = isLibere ? "Passer le relais près du feu ?" : "Éveiller le Semeur " + (st.cycle + 7) + " ?";
