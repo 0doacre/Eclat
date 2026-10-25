@@ -482,7 +482,7 @@ function play(o) {
     return true;
   };
   function releveForcee() {
-    rel = { t: minutes(), pense: penseTotal / 60, essais, essaisPar: Object.assign({}, essaisPar), connues: Object.keys(S().known).length };
+    rel = { t: minutes(), pense: penseTotal / 60, essais, essaisPar: Object.assign({}, essaisPar), connues: E.nRecettes() };
     E.forcedReleve();
     if (o.achat === "auto") { for (const id of ACHATS) if (!E.memBuy(id) && E.memCost(id) !== undefined) break; } // il dépense ses Traces dans l'ordre habituel
     else if (o.achat && o.achat !== "aucun") E.memBuy(o.achat);

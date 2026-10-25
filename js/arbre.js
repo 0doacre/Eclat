@@ -47,7 +47,7 @@
     const I = D.ITEMS, nA = D.AGES.length;
     const place = {}, col = {}, rows = [];
     const parAge = [];
-    for (const id in I) { if (I[id].path) continue; const a = I[id].a || 0; (parAge[a] = parAge[a] || []).push(id); }
+    for (const id in I) { if (I[id].path || I[id].sib) continue; const a = I[id].a || 0; (parAge[a] = parAge[a] || []).push(id); }
     const depth = {};
     function prof(id, a, pile) {
       if (depth[id] !== undefined) return depth[id];
@@ -103,7 +103,7 @@
   function usages(D) {
     if (USES && USES.has(D)) return USES.get(D);
     const u = {};
-    for (const id in D.ITEMS) { const it = D.ITEMS[id]; if (it.r) for (const g in it.r[1]) (u[g] = u[g] || []).push(id); }
+    for (const id in D.ITEMS) { const it = D.ITEMS[id]; if (it.r && !it.sib) for (const g in it.r[1]) (u[g] = u[g] || []).push(id); }
     if (USES) USES.set(D, u);
     return u;
   }
@@ -141,13 +141,13 @@
     // les recettes trouvées
     for (const id in S.known) {
       const it = I[id];
-      if (!it || !it.r || it.path || !dansLesAges(id)) continue;
+      if (!it || !it.r || it.path || it.sib || !dansLesAges(id)) continue;
       ajoute({ cle: id, etat: "allume", id, n: it.n, age: it.a || 0 });
     }
     // les ressources déjà vues (matières brutes, ou objets reçus sans en connaître la recette)
     for (const id in S.seen) {
       const it = I[id];
-      if (!it || par[id] || it.path || it.sec || RARE[it.t] || !dansLesAges(id)) continue;
+      if (!it || par[id] || it.path || it.sib || it.sec || RARE[it.t] || !dansLesAges(id)) continue;
       ajoute({ cle: id, etat: "vu", id, n: it.n, age: it.a || 0 });
     }
     // les traits pleins : une recette trouvée vers ses ingrédients visibles
@@ -183,7 +183,7 @@
       par[x].etude = liste.length;
       liste.forEach((r) => { const f = fantome(I[r].a || 0, false); traits.push({ de: x, a: f.cle, pointille: true }); });
     }
-    const compte = Object.keys(S.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
+    const compte = Object.keys(S.known).filter((id) => I[id] && I[id].r && !I[id].sec && !I[id].sib).length;
     const dernier = Object.keys(S.known).filter((id) => par[id]).pop() || null;
     return { age: S.age || 0, max: maxA, noeuds, traits, compte, dernier };
   }

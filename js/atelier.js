@@ -365,7 +365,7 @@
       let h = '<h2 class="title">Carnet</h2>';
       if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. Choisis une <b>quantité</b> (×1 à Max, elle est mémorisée) puis touche <b>Fabriquer</b> : c’est une commande, les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> montre ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
       // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
-      const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
+      const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec && !I[id].sib).length;
       h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
       h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
