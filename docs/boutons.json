@@ -1,0 +1,1658 @@
+[
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "✕",
+  "repere": "button[data-m=\"close\"].modal-x",
+  "explique": "lecteur d’écran : Fermer",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Auto",
+  "repere": "button[data-m=\"theme\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"largeText\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"sound\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Activées",
+  "repere": "button[data-m=\"vibe\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Oui",
+  "repere": "button[data-m=\"visiteurs\"].btn",
+  "explique": "info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Revoir",
+  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"tuto\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "✦ Mémoire des mains",
+  "repere": "button[data-m=\"mem\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Sauvegardes",
+  "repere": "button[data-m=\"saves\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Compte en ligne",
+  "repere": "button[data-m=\"account\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Comment jouer",
+  "repere": "button[data-m=\"help\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "📰 Nouveautés",
+  "repere": "button[data-m=\"news\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Crédits",
+  "repere": "button[data-m=\"credits\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Tout recommencer",
+  "repere": "button[data-m=\"reset\"].btn.ghost",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Fermer",
+  "repere": "button[data-m=\"close\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Bois ÂGE 1/15",
+  "repere": "button#ageBtn.age",
+  "explique": "info-bulle : Toucher pour voir les étapes de cet âge ; lecteur d’écran : Âge du Bois : étapes de l’âge",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "✦ 1",
+  "repere": "button#memBtn.chip.mem",
+  "explique": "lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "☰",
+  "repere": "button#menuBtn.icon-btn",
+  "explique": "lecteur d’écran : Menu",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "SCÉNARIO Manche ▾",
+  "repere": "button[data-goalt=\"\"].ghead",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "✦ ÉTAPE CLÉ « Prends du bois et retire tout ce qui dépasse. »",
+  "repere": "div[data-goto=\"manche\"].grow",
+  "explique": "guide (.goal-card)",
+  "tag": "div"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Tenter",
+  "repere": "button[data-gotab=\"atelier\"].btn",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Explorer · Le Grand Chêne",
+  "repere": "button[data-exp=\"lisiere\"].btn",
+  "explique": "info-bulle : Lancer cette exploration : elle avance toute seule",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "(sans mot)",
+  "repere": "button[data-harv=\"lisiere:bois\"].gis-ic.hand",
+  "explique": "lecteur d’écran : Récolter : Bois",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Bois 🖐️ à la main Tu en as 0",
+  "repere": "button[data-gsheet=\"lisiere:bois\"].gis-body",
+  "explique": "lecteur d’écran : Gisement : Bois",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "▶ Récolter",
+  "repere": "button[data-hloop=\"lisiere:bois\"].mini.harvest",
+  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Bois ; guide ([data-hloop=\"lisiere:bois\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Domaine",
+  "repere": "button[data-tab=\"domaine\"]",
+  "explique": "info-bulle : Tes terres, tes gisements et ce qu’ils produisent",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Carte",
+  "repere": "button[data-tab=\"carte\"]",
+  "explique": "info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Atelier",
+  "repere": "button[data-tab=\"atelier\"]",
+  "explique": "info-bulle : Poser tes ressources, lancer une action",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Journal",
+  "repere": "button[data-tab=\"journal\"].born",
+  "explique": "info-bulle : Ce que tu as trouvé et compris ; guide (#tabs [data-tab=\"journal\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cf=\"plaine\"].c-ahead",
+  "explique": "lecteur d’écran : des herbes hautes, au loin",
+  "tag": "g"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cf=\"riviere\"].c-ahead",
+  "explique": "lecteur d’écran : Une terre inconnue",
+  "tag": "g"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "text.c-name",
+  "explique": "lecteur d’écran : La Lisière : ouvrir dans le Domaine",
+  "tag": "text"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-camp=\"\"].c-camp",
+  "explique": "lecteur d’écran : Ton camp : ouvrir le Domaine",
+  "tag": "g"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cl=\"lisiere:0\"].c-lieu.next",
+  "explique": "lecteur d’écran : La Lisière : Le Grand Chêne, à explorer ; guide ([data-cl=\"lisiere:0\"])",
+  "tag": "g"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Lieu",
+  "label": "Explorer",
+  "repere": "button[data-m=\"go\"].btn",
+  "explique": "guide (.modal:not(.hidden) [data-m=\"go\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "▶ Récolter du bois",
+  "repere": "button[data-hloop=\"lisiere:bois\"].btn",
+  "explique": "guide ([data-hloop=\"lisiere:bois\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "Assembler",
+  "repere": "button[data-g=\"assembler\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "Tresser",
+  "repere": "button[data-g=\"tresser\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "Tailler",
+  "repere": "button[data-g=\"tailler\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "? ???",
+  "repere": "button[data-lock=\"chauffer\"].geste.lock",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "+",
+  "repere": "button[data-slot=\"0\"].slot",
+  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "+",
+  "repere": "button[data-slot=\"1\"].slot",
+  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "+",
+  "repere": "button[data-slot=\"2\"].slot",
+  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "TAILLER",
+  "repere": "button#forge.forge-btn",
+  "explique": "guide (#forge)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "ⓘ Fiches",
+  "repere": "button[data-fichemode=\"\"].btn.ghost",
+  "explique": "info-bulle : Un appui sur une ressource ouvre sa fiche (comme un appui long)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal",
+  "label": "Fragments",
+  "repere": "button[data-jt=\"fragments\"]",
+  "explique": "info-bulle : Les morceaux d’histoire retrouvés",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal",
+  "label": "Signes",
+  "repere": "button[data-jt=\"signes\"]",
+  "explique": "info-bulle : Les mots des Anciens et leur sens",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal",
+  "label": "Secrets",
+  "repere": "button[data-jt=\"secrets\"]",
+  "explique": "info-bulle : Ce que tu as trouvé, et ce qu’il reste",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal",
+  "label": "Fins",
+  "repere": "button[data-jt=\"fins\"]",
+  "explique": "info-bulle : Les fins du jeu et ce que tu en sais",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal",
+  "label": "Mémoire",
+  "repere": "button[data-jt=\"stats\"]",
+  "explique": "info-bulle : Ta partie en chiffres",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal · signes",
+  "label": "1 endroit",
+  "repere": "button[data-s=\"faire\"].signe-card",
+  "explique": "info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal · fins",
+  "label": "✦ Mémoire des mains",
+  "repere": "button[data-cycle=\"\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Journal · stats",
+  "label": "⏎",
+  "repere": "button.btn",
+  "explique": "info-bulle : Envoyer ce nom ; lecteur d’écran : Envoyer ce nom",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "✕",
+  "repere": "button[data-m=\"close\"].modal-x",
+  "explique": "lecteur d’écran : Fermer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Auto",
+  "repere": "button[data-m=\"theme\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"largeText\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"sound\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Activées",
+  "repere": "button[data-m=\"vibe\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Oui",
+  "repere": "button[data-m=\"visiteurs\"].btn",
+  "explique": "info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Revoir",
+  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Coupé",
+  "repere": "button[data-m=\"tuto\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "✦ Mémoire des mains",
+  "repere": "button[data-m=\"mem\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Sauvegardes",
+  "repere": "button[data-m=\"saves\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Compte en ligne",
+  "repere": "button[data-m=\"account\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Comment jouer",
+  "repere": "button[data-m=\"help\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "📰 Nouveautés",
+  "repere": "button[data-m=\"news\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Crédits",
+  "repere": "button[data-m=\"credits\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Tout recommencer",
+  "repere": "button[data-m=\"reset\"].btn.ghost",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Fermer",
+  "repere": "button[data-m=\"close\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Électricité ÂGE 9/15 0/3",
+  "repere": "button#ageBtn.age",
+  "explique": "info-bulle : Toucher pour voir les étapes de cet âge ; lecteur d’écran : Âge de l’Électricité : étapes de l’âge",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "0/3",
+  "repere": "button#questBtn.chip.quest",
+  "explique": "info-bulle : Quêtes : l’objectif, les rituels, le Troqueur ; lecteur d’écran : Quêtes",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "✦ +18",
+  "repere": "button#memBtn.chip.mem",
+  "explique": "lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "22",
+  "repere": "button#intuBtn.chip.intu",
+  "explique": "lecteur d’écran : Intuition ; guide (#intuBtn)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "☰",
+  "repere": "button#menuBtn.icon-btn",
+  "explique": "lecteur d’écran : Menu",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "SCÉNARIO Régulateur à boules ▾",
+  "repere": "button[data-goalt=\"\"].ghead",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Arbre",
+  "repere": "button[data-arbre-obj=\"\"].gmiles",
+  "explique": "info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Âge de l’Électricité · 0/3 étapes",
+  "repere": "button[data-miles=\"\"].gprog-row",
+  "explique": "info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "✦ ÉTAPE CLÉ « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. »",
+  "repere": "div[data-goto=\"ressort\"].grow",
+  "explique": "guide (.goal-card)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Tenter",
+  "repere": "button[data-gotab=\"atelier\"].btn",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "🤏 Vue dense",
+  "repere": "button[data-dom-dense=\"\"].chip.ghost",
+  "explique": "info-bulle : Voir plus de terres d’un coup, en plus petit",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Compris",
+  "repere": "button[data-tip=\"tip_site\"].btn.ghost",
+  "explique": "info-bulle : Fermer cette astuce",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Voir : Torche",
+  "repere": "button[data-goto=\"torche\"].btn",
+  "explique": "guide (.dom-regle.gene)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "(sans mot)",
+  "repere": "button[data-harv=\"mine:fer_min\"].gis-ic.hand",
+  "explique": "lecteur d’écran : Récolter : Minerai de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Minerai de fer +48/min Tu en as 543 · 1 mine de fer",
+  "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
+  "explique": "lecteur d’écran : Gisement : Minerai de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "▶ Récolter",
+  "repere": "button[data-hloop=\"mine:fer_min\"].mini.harvest",
+  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "+ mine de fer",
+  "repere": "button[data-xadd=\"mine:fer_min\"][data-n=\"1\"].mini.lbl",
+  "explique": "info-bulle : Poser : Mine de fer ; lecteur d’écran : Poser : Mine de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "3 autre terres · +2,16 k/min en tout voir ▾",
+  "repere": "button[data-dall=\"\"].dom-more",
+  "explique": "info-bulle : Afficher ou replier les autres terres",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "0 machine au travail · 10 au repos · voir ▸",
+  "repere": "button[data-tab2=\"machines\"][data-dmach=\"\"].dom-more.dom-mach-link",
+  "explique": "guide ([data-tab2=\"machines\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Ouvrir le Comptoir",
+  "repere": "button[data-comptoir=\"\"].btn",
+  "explique": "guide (#dcomptoir)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Supraconducteur 0 / 380",
+  "repere": "div[data-goto=\"supra\"].cost-row",
+  "explique": "info-bulle : Supraconducteur (toucher pour inspecter)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Fournir",
+  "repere": "button[data-contrib=\"dyson\"].btn",
+  "explique": "info-bulle : Déposer depuis ta Réserve ce qu’il demande",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Alimenté ✓",
+  "repere": "button[data-feed=\"dyson\"].btn",
+  "explique": "guide (.dom-oeuvre [data-feed])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Tout ce qui entre et sort, par ressource",
+  "repere": "summary",
+  "explique": "info-bulle : Plier ou déplier le tableau",
+  "tag": "summary"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Bois+19/min8,73 k",
+  "repere": "div[data-goto=\"bois\"].u-pr",
+  "explique": "info-bulle : Bois (toucher pour inspecter)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Domaine",
+  "repere": "button[data-tab=\"domaine\"]",
+  "explique": "info-bulle : Tes terres, tes gisements et ce qu’ils produisent",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Carte",
+  "repere": "button[data-tab=\"carte\"]",
+  "explique": "info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Atelier",
+  "repere": "button[data-tab=\"atelier\"]",
+  "explique": "info-bulle : Poser tes ressources, lancer une action",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Arbre",
+  "repere": "button[data-tab=\"arbre\"]",
+  "explique": "info-bulle : Qui sert à quoi : une recette, ses ingrédients, ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Carnet",
+  "repere": "button[data-tab=\"carnet\"]",
+  "explique": "info-bulle : Toutes tes recettes, avec la quantité et les commandes",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Journal",
+  "repere": "button[data-tab=\"journal\"]",
+  "explique": "info-bulle : Ce que tu as trouvé et compris ; guide (#tabs [data-tab=\"journal\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "Vendre",
+  "repere": "button[data-m=\"ctab\"][data-t=\"vendre\"]",
+  "explique": "info-bulle : Vendre ce qui encombre ta Réserve",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "Acheter",
+  "repere": "button[data-m=\"ctab\"][data-t=\"acheter\"]",
+  "explique": "info-bulle : Acheter la ressource qui te manque",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "Demandes",
+  "repere": "button[data-m=\"ctab\"][data-t=\"demandes\"]",
+  "explique": "guide (.modal:not(.hidden) [data-t=\"demandes\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "Parler",
+  "repere": "button[data-m=\"ctab\"][data-t=\"parler\"]",
+  "explique": "guide (.modal:not(.hidden) [data-t=\"parler\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "Minerai de fer · tu en as 544 9,8 écu l’unité",
+  "repere": "div[data-goto=\"fer_min\"].comptoir-head",
+  "explique": "info-bulle : Minerai de fer (toucher pour inspecter)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "10 % +520",
+  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"54\"].btn.mini",
+  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "10 % +201",
+  "repere": "button[data-m=\"sell\"][data-id=\"aimant\"][data-n=\"1\"].btn.mini",
+  "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "La moitié +126",
+  "repere": "button[data-m=\"sell\"][data-id=\"bobine\"][data-n=\"10\"].btn.mini",
+  "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cf=\"desert\"].c-ahead",
+  "explique": "lecteur d’écran : du sable à perte de vue",
+  "tag": "g"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cf=\"gisement\"].c-ahead",
+  "explique": "lecteur d’écran : Une terre inconnue",
+  "tag": "g"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "text.c-name",
+  "explique": "lecteur d’écran : La Lisière : ouvrir dans le Domaine",
+  "tag": "text"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-camp=\"\"].c-camp",
+  "explique": "lecteur d’écran : Ton camp : ouvrir le Domaine",
+  "tag": "g"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cl=\"lisiere:0\"].c-lieu.done",
+  "explique": "lecteur d’écran : La Lisière : Le Grand Chêne, exploré ; guide ([data-cl=\"lisiere:0\"])",
+  "tag": "g"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cl=\"lisiere:2\"].c-lieu.locked",
+  "explique": "lecteur d’écran : La Lisière : lieu caché, verrouillé",
+  "tag": "g"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-cl=\"plaine:2\"].c-lieu.next",
+  "explique": "lecteur d’écran : La Plaine des Hautes Herbes : lieu caché, à explorer",
+  "tag": "g"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Lieu",
+  "label": "Un tour · 30 min",
+  "repere": "button[data-m=\"fouille\"][data-lvl=\"1\"].btn",
+  "explique": "guide (.modal:not(.hidden) .fouille-niv)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Découvrir",
+  "repere": "button[data-tab2=\"atelier\"]",
+  "explique": "info-bulle : Fabriquer et découvrir",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Machines",
+  "repere": "button[data-tab2=\"machines\"]",
+  "explique": "info-bulle : Tes machines et ce qu’elles fabriquent ; guide ([data-tab2=\"machines\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Niveaux",
+  "repere": "button[data-skills=\"\"].btn.ghost",
+  "explique": "info-bulle : Le niveau de chaque action et de la récolte",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Assembler 1",
+  "repere": "button[data-g=\"assembler\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Tresser 1",
+  "repere": "button[data-g=\"tresser\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Tailler 1",
+  "repere": "button[data-g=\"tailler\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Chauffer 1",
+  "repere": "button[data-g=\"chauffer\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Marteler 1",
+  "repere": "button[data-g=\"marteler\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Allier 1",
+  "repere": "button[data-g=\"allier\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Tremper 1",
+  "repere": "button[data-g=\"tremper\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Usiner 1",
+  "repere": "button[data-g=\"usiner\"].geste",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "? ???",
+  "repere": "button[data-lock=\"electriser\"].geste.lock",
+  "explique": "guide (.gestes)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "+",
+  "repere": "button[data-slot=\"0\"].slot",
+  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "+",
+  "repere": "button[data-slot=\"1\"].slot",
+  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "+",
+  "repere": "button[data-slot=\"2\"].slot",
+  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "TAILLER",
+  "repere": "button#forge.forge-btn",
+  "explique": "guide (#forge)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "ⓘ Fiches",
+  "repere": "button[data-fichemode=\"\"].btn.ghost",
+  "explique": "info-bulle : Un appui sur une ressource ouvre sa fiche (comme un appui long)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Filtres ▾",
+  "repere": "button[data-filtres=\"\"].btn.ghost",
+  "explique": "lecteur d’écran : Tri et filtres",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "8,80 k +810/min Bois",
+  "repere": "button[data-inv=\"bois\"].inv",
+  "explique": "info-bulle : Bois : ouvrir sa fiche ; lecteur d’écran : Bois : ouvrir sa fiche ; guide ([data-inv=\"bois\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "0 Archet à feu",
+  "repere": "button[data-inv=\"archet\"].inv.zero",
+  "explique": "info-bulle : Archet à feu : ouvrir sa fiche ; lecteur d’écran : Archet à feu : ouvrir sa fiche",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "1 Tablette des astres",
+  "repere": "button[data-inv=\"tablette\"].inv.relic",
+  "explique": "info-bulle : Tablette des astres : ouvrir sa fiche ; lecteur d’écran : Tablette des astres : ouvrir sa fiche",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "Par âgePlus nombreuses⚡ Flux actifs⚠️ En déficitNom (A → Z)Dernières trouvées",
+  "repere": "select#isort",
+  "explique": "info-bulle : Trier les ressources ; lecteur d’écran : Trier les ressources",
+  "tag": "select"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "Tout 46",
+  "repere": "button[data-if=\"tout\"]",
+  "explique": "info-bulle : Toutes tes ressources",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "En flux 12",
+  "repere": "button[data-if=\"flow\"]",
+  "explique": "info-bulle : Celles qui entrent ou sortent en ce moment",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "🪨 Brutes 12",
+  "repere": "button[data-if=\"res\"]",
+  "explique": "info-bulle : Les ressources brutes, récoltées telles quelles",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "Pièces 34",
+  "repere": "button[data-if=\"comp\"]",
+  "explique": "info-bulle : Les pièces fabriquées à l’Atelier",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "✦ Action 9",
+  "repere": "button[data-if=\"geste\"]",
+  "explique": "info-bulle : Celles qui servent à l’action choisie",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "♥ Favoris 0",
+  "repere": "button[data-if=\"fav\"]",
+  "explique": "info-bulle : Celles que tu as marquées d’un ♥",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "Inutilisées 4",
+  "repere": "button[data-if=\"new\"]",
+  "explique": "info-bulle : Celles qu’aucune recette connue n’utilise encore",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "À tenter 0",
+  "repere": "button[data-if=\"try\"]",
+  "explique": "info-bulle : Les ressources étudiées qui cachent encore une recette",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "Progression",
+  "repere": "button[data-arb=\"ensemble\"].btn",
+  "explique": "info-bulle : Ta progression : ton âge, tes étapes et le prochain objectif",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "Objectif",
+  "repere": "button[data-arb=\"centre\"].btn",
+  "explique": "info-bulle : Ton objectif du moment, et ce qu’il demande",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "(sans mot)",
+  "repere": "button[data-arb=\"chercher\"].btn.ghost",
+  "explique": "lecteur d’écran : Chercher dans l’arbre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "? Recette à découvrir À découvrir Objectif",
+  "repere": "button[data-arbsel=\"f1\"][data-arbn=\"f1\"].arb-card.fantome",
+  "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "MancheDéjà fabriqué",
+  "repere": "button[data-arbsel=\"manche\"][data-arbn=\"manche\"].arb-card.allume",
+  "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "BoisRessource découverte",
+  "repere": "button[data-arbsel=\"bois\"][data-arbn=\"bois\"].arb-card.vu",
+  "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre · une branche",
+  "label": "← Les âges",
+  "repere": "button[data-arb=\"retour\"].btn.ghost",
+  "explique": "info-bulle : Revenir en arrière dans l’arbre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "⊞ 2 col.",
+  "repere": "button[data-cvue=\"cols\"].btn.ghost",
+  "explique": "info-bulle : Revenir à la vue en 1 colonne",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "🤏 Compact",
+  "repere": "button[data-cvue=\"dense\"].btn.ghost",
+  "explique": "info-bulle : Voir plus de recettes à l’écran, en plus petit",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "×1",
+  "repere": "button[data-qty=\"1\"].chipq",
+  "explique": "info-bulle : Un seul exemplaire",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Apprises",
+  "repere": "button[data-cf=\"tout\"]",
+  "explique": "info-bulle : Toutes les recettes que tu connais",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Prêtes",
+  "repere": "button[data-cf=\"pret\"]",
+  "explique": "info-bulle : Celles que ta Réserve couvre entièrement, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Réalisables",
+  "repere": "button[data-cf=\"craft\"]",
+  "explique": "info-bulle : Celles dont les pièces manquantes peuvent encore être fabriquées",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "À découvrir",
+  "repere": "button[data-cf=\"unk\"]",
+  "explique": "info-bulle : Celles qu’il te reste à découvrir",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Extracteurs",
+  "repere": "button[data-cf=\"ext\"]",
+  "explique": "info-bulle : Les bâtiments qui récoltent à ta place",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Outils",
+  "repere": "button[data-cf=\"tool\"]",
+  "explique": "info-bulle : Les outils et leurs améliorations",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Machines",
+  "repere": "button[data-cf=\"mach\"]",
+  "explique": "info-bulle : Les machines qui fabriquent seules",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "★ Épinglées",
+  "repere": "button[data-cf=\"pin\"]",
+  "explique": "info-bulle : Tes épingles, en haut de l’Atelier",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "▴ Plier",
+  "repere": "button[data-age-all=\"\"].age-pill.age-all",
+  "explique": "info-bulle : Replier tous les âges ; lecteur d’écran : Replier tous les âges",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Âge 1",
+  "repere": "button[data-age-jump=\"0\"].age-pill",
+  "explique": "info-bulle : Âge du Bois ; lecteur d’écran : Aller à : Âge du Bois",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "☆",
+  "repere": "button[data-pin=\"bobine\"].pinb",
+  "explique": "info-bulle : Épingler cette recette en haut de l’Atelier ; lecteur d’écran : Épingler cette recette en haut de l’Atelier ; guide ([data-pin])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "6 Fil de cuivre",
+  "repere": "span[data-need=\"fil_cuivre\"][data-q=\"6\"][data-goto=\"fil_cuivre\"].ing.link",
+  "explique": "info-bulle : Ouvrir sa fiche",
+  "tag": "span"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Fabriquer",
+  "repere": "button[data-cr=\"bobine\"][data-n=\"1\"][data-lbl=\"Fabriquer\"].btn.make",
+  "explique": "info-bulle : Commander cette quantité, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "(sans mot)",
+  "repere": "button[data-tree=\"bobine\"][data-n=\"1\"].btn.ghost",
+  "explique": "info-bulle : Les étapes de cette commande, et ce qu’il manque ; lecteur d’écran : Détail du lot",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "(sans mot)",
+  "repere": "button[data-track=\"bobine\"].btn.ghost",
+  "explique": "info-bulle : Suivre cette recette ; lecteur d’écran : Suivre ; guide ([data-track])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "🌿",
+  "repere": "button[data-situer=\"bobine\"].btn.ghost",
+  "explique": "info-bulle : Situer dans l’Arbre ; lecteur d’écran : Situer dans l’Arbre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "♨1 Circuit de vapeur",
+  "repere": "span[data-goto=\"circuit_vapeur\"].ing.link",
+  "explique": "info-bulle : Ouvrir sa fiche",
+  "tag": "span"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Voir les 19 objets déjà possédés",
+  "repere": "button[data-owned=\"\"].btn.ghost",
+  "explique": "info-bulle : Masquer ou montrer les objets déjà fabriqués",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Journal",
+  "repere": "button[data-tab2=\"journal\"]",
+  "explique": "info-bulle : Ce que tu as trouvé et compris",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Cosmos",
+  "repere": "button[data-tab2=\"cosmos\"]",
+  "explique": "info-bulle : Le ciel, les signes et les Grands Œuvres",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Fragments",
+  "repere": "button[data-jt=\"fragments\"]",
+  "explique": "info-bulle : Les morceaux d’histoire retrouvés",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Questions",
+  "repere": "button[data-jt=\"questions\"]",
+  "explique": "info-bulle : Ce que tu peux demander au Livre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Signes",
+  "repere": "button[data-jt=\"signes\"]",
+  "explique": "info-bulle : Les mots des Anciens et leur sens",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Secrets",
+  "repere": "button[data-jt=\"secrets\"]",
+  "explique": "info-bulle : Ce que tu as trouvé, et ce qu’il reste",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Fins",
+  "repere": "button[data-jt=\"fins\"]",
+  "explique": "info-bulle : Les fins du jeu et ce que tu en sais",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "Mémoire",
+  "repere": "button[data-jt=\"stats\"]",
+  "explique": "info-bulle : Ta partie en chiffres",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal",
+  "label": "La Porte Les Profondeurs",
+  "repere": "button[data-frag=\"porte\"].frag",
+  "explique": "info-bulle : Lire ce fragment",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal · questions",
+  "label": "Réfléchir : 45 (manque d’Intuition)",
+  "repere": "button[data-askhelp=\"q_porte\"].btn.dis",
+  "explique": "info-bulle : Il te manque de l’Intuition : elle vient des recettes, des fragments et des secrets",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal · signes",
+  "label": "1 endroit",
+  "repere": "button[data-s=\"faire\"].signe-card",
+  "explique": "info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal · fins",
+  "label": "✦ Mémoire des mains",
+  "repere": "button[data-cycle=\"\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Journal · stats",
+  "label": "⏎",
+  "repere": "button.btn",
+  "explique": "info-bulle : Envoyer ce nom ; lecteur d’écran : Envoyer ce nom",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Cosmos",
+  "label": "Ciel",
+  "repere": "button[data-ct=\"ciel\"]",
+  "explique": "info-bulle : Le ciel de la nuit",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Cosmos",
+  "label": "Figures",
+  "repere": "button[data-ct=\"figures\"]",
+  "explique": "info-bulle : Les étoiles et les signes déjà vus ; guide ([data-ct=\"figures\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Cosmos",
+  "label": "ARCHE",
+  "repere": "button[data-ct=\"arche\"]",
+  "explique": "info-bulle : Le terminal des Anciens",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Cosmos",
+  "label": "Grands Œuvres",
+  "repere": "button[data-ct=\"oeuvres\"]",
+  "explique": "info-bulle : Les Grands Œuvres, ce qu’il reste à bâtir",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "♡",
+  "repere": "button[data-m=\"fav\"].pinb.fav",
+  "explique": "info-bulle : Ressource favorite (en tête de liste à l’Atelier) ; lecteur d’écran : Ressource favorite",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "☆",
+  "repere": "button[data-m=\"pin\"].pinb",
+  "explique": "info-bulle : Épingler la recette en haut de l’Atelier ; lecteur d’écran : Épingler la recette en haut de l’Atelier",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Fil de cuivre (prêt à fabriquer) 3 / 6 ›",
+  "repere": "button[data-m=\"nav\"][data-id=\"fil_cuivre\"].ring",
+  "explique": "info-bulle : Ouvrir sa fiche : ce qu’il faut, et ce que tu as",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Fabriquer",
+  "repere": "button[data-m=\"cr\"][data-cr=\"bobine\"][data-n=\"1\"].btn",
+  "explique": "info-bulle : Commander 1 exemplaire, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "×10",
+  "repere": "button[data-m=\"cr\"][data-cr=\"bobine\"][data-n=\"10\"].btn",
+  "explique": "info-bulle : Commander 10 exemplaires d’un coup, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "×50",
+  "repere": "button[data-m=\"cr\"][data-cr=\"bobine\"][data-n=\"50\"].btn",
+  "explique": "info-bulle : Commander 50 exemplaires d’un coup, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "×100",
+  "repere": "button[data-m=\"cr\"][data-cr=\"bobine\"][data-n=\"100\"].btn",
+  "explique": "info-bulle : Commander 100 exemplaires d’un coup, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "×1000",
+  "repere": "button[data-m=\"cr\"][data-cr=\"bobine\"][data-n=\"1000\"].btn",
+  "explique": "info-bulle : Commander 1000 exemplaires d’un coup, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Max",
+  "repere": "button[data-m=\"cr\"][data-cr=\"bobine\"][data-n=\"max\"].btn",
+  "explique": "info-bulle : Tout ce que ta Réserve permet, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Détail",
+  "repere": "button[data-m=\"tree\"].btn.ghost",
+  "explique": "info-bulle : Détail : les étapes de la commande et ce qu’il manque",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Suivre",
+  "repere": "button[data-m=\"track\"].btn.ghost",
+  "explique": "info-bulle : Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Aimant",
+  "repere": "button[data-m=\"nav\"][data-id=\"aimant\"].ing.link",
+  "explique": "info-bulle : Ouvrir sa fiche",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Étudier · 3",
+  "repere": "button[data-m=\"study\"].btn",
+  "explique": "guide (.modal:not(.hidden) [data-m=\"study\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Carnet",
+  "repere": "button[data-m=\"carnet\"].btn.ghost",
+  "explique": "info-bulle : Voir sa recette dans le Carnet",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Fiche d’un objet",
+  "label": "Voir dans l’arbre",
+  "repere": "button[data-m=\"arbre\"].btn.ghost",
+  "explique": "info-bulle : Voir ses ingrédients et ses usages dans l’arbre",
+  "tag": "button"
+ }
+]

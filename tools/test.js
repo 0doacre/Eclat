@@ -1473,35 +1473,6 @@ test("livrer retire de la Réserve et donne les Traces ; pas de livraison sans l
   assert.strictEqual(fail2.ok, false);
   assert.strictEqual(fail2.why, "empty");
 });
-test("renouvellement après refresh, y compris hors ligne", () => {
-  const E = mk();
-  E.state.zones.plaine = true;
-  E.state.known.manche = true;
-  E.state.made.manche = 10;
-  E.refreshTroqueur(true);
-  const ask = E.state.comptoir.asks[0];
-  E.add(ask.id, ask.n);
-  E.deliverAsk(0);
-  assert.strictEqual(E.state.comptoir.asks[0], null);
-
-  // Temps insuffisant : pas de renouvellement
-  T += 100 * 1000;
-  E.update();
-  assert.strictEqual(E.state.comptoir.asks[0], null);
-
-  // Temps écoulé en jeu : renouvellement
-  T += (D.TROQUEUR.refresh + 10) * 1000;
-  E.update();
-  assert.ok(E.state.comptoir.asks[0] !== null, "slot renouvelé");
-
-  // Renouvellement hors ligne (catchUp)
-  E.add(E.state.comptoir.asks[0].id, E.state.comptoir.asks[0].n);
-  E.deliverAsk(0);
-  assert.strictEqual(E.state.comptoir.asks[0], null);
-  T += (D.TROQUEUR.refresh + 100) * 1000;
-  E.catchUp(D.TROQUEUR.refresh + 100);
-  assert.ok(E.state.comptoir.asks[0] !== null, "slot renouvelé hors ligne");
-});
 test("sauvegarde sans ecus ou corrompue : se charge nettoyée", () => {
   const E = mk();
   const raw = E.serialize();
@@ -2746,7 +2717,7 @@ test("terminal : ouverture de la Clause et bascule en mode Registre", () => {
   assert.strictEqual(E.state.intu, initIntu + 2);
   assert.ok(res[0].startsWith("REG > "));
   assert.ok(res.some((l) => l.includes("CLAUSE RECONNUE")));
-  assert.ok(res.some((l) => l.includes("CE REGISTRE NE CONNAÎT QUE LES MAINS")));
+  assert.ok(res.some((l) => l.includes("ENFANTS IDENTIFIÉS PAR NUMÉRO")));
 });
 
 test("terminal : navigation entre modes et entrées Registre", () => {
@@ -2775,7 +2746,7 @@ test("terminal : semeurs S-01 à S-12 et rotation selon les cycles", () => {
   // S-01 est mort, relais sectionné, sépulture avec oiseau
   const s01 = E.terminal("s-01");
   assert.ok(s01.some((l) => l.includes("MORT")));
-  assert.ok(s01.some((l) => l.includes("RELAIS SECTIONNÉ")));
+  assert.ok(s01.some((l) => l.includes("SECTION DU RELAIS DANS SON CORPS")));
   assert.ok(s01.some((l) => l.includes("UN OISEAU")));
   // S-07 au cycle 1 est actif
   const s07 = E.terminal("s-07");
@@ -3298,8 +3269,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.21.1 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.21.1");
+test("Version 0.23.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.23.1");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3514,12 +3485,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.21.1");
+  assert.strictEqual(D.VERSION, "0.23.1");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 21, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 23, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
@@ -3719,6 +3690,44 @@ test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro san
   const o = JSON.parse(E.serialize()); delete o.meta.troc;
   const E4 = createEngine({ now: () => T }); E4.load(JSON.stringify(o));
   assert.deepStrictEqual(E4.state.meta.troc, { vus: {}, dernier: null, refus: 0 });
+});
+test("Parler RPG : arbre de dialogue interactif à 3 choix", () => {
+  const E = trocOuvert(() => 0);
+  const r1 = E.troqueurParle("comptoir");
+  assert.ok(r1.ok && !r1.vide);
+  assert.strictEqual(r1.attenteChoix, true);
+  assert.ok(Array.isArray(r1.choix) && r1.choix.length === 3);
+  assert.deepStrictEqual(r1.choix.map((c) => c.k), ["a", "b", "c"]);
+
+  // Etat dernier en attente de réponse
+  const d1 = E.troqueurDernier();
+  assert.strictEqual(d1.rep, null);
+  assert.ok(d1.stage, "présence de didascalie");
+
+  // Choix invalide
+  assert.strictEqual(E.troqueurChoix("x").ok, false);
+
+  // Choix valide 'b'
+  const repB = E.troqueurChoix("b");
+  assert.strictEqual(repB.ok, true);
+  assert.strictEqual(repB.choix, "b");
+  assert.ok(repB.t && repB.q);
+
+  const d2 = E.troqueurDernier();
+  assert.strictEqual(d2.rep, "b");
+  assert.strictEqual(d2.q, repB.q);
+  assert.strictEqual(d2.t, repB.t);
+
+  // Persistance / sauvegarde avec choix
+  const E2 = createEngine({ now: () => T, rand: () => 0 });
+  E2.load(E.serialize());
+  const dSaved = E2.troqueurDernier();
+  assert.strictEqual(dSaved.rep, "b");
+  assert.strictEqual(dSaved.q, repB.q);
+
+  // E.troqueurFin() permet de revenir au menu
+  assert.strictEqual(E.troqueurFin().ok, true);
+  assert.strictEqual(E.troqueurDernier(), null);
 });
 
 console.log("Les fouilles : expéditions longues");
@@ -4121,6 +4130,9 @@ require("./test-figures.js");
 require("./test-arbre.js");
 require("./test-densite.js");
 require("./test-carnet.js");
+require("./test-guidage.js");
+require("./test-comptoir.js");
+require("./test-stockage.js");
 
 console.log("La file des fenêtres automatiques (0.13.3)");
 const Fen = require("../js/fenetres.js");

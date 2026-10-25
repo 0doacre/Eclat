@@ -150,7 +150,8 @@
       if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Clins d’œil"]);
       tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
       if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
-      let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
+      let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (U.journalTab === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
         const n = ids.filter((f) => st.frags[f]).length;
@@ -159,7 +160,7 @@
         ids.forEach((f) => {
           const F = D.FRAGS[f];
           if (!F) return;
-          if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n || F.titre) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div>" + stampHTML("f:" + f) + "</div></button>";
+          if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '" title="Lire ce fragment"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n || F.titre) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div>" + stampHTML("f:" + f) + "</div></button>";
           else { const k = unkPlace(F.z); miss[k] = (miss[k] || 0) + 1; }
         });
         if (Object.keys(miss).length) {
@@ -214,7 +215,7 @@
               const canAfford = (st.intu || 0) >= q.cost;
               const whyText = canAfford ? "" : " (manque d’Intuition)";
               h += '<div class="acts" style="margin-top:8px">';
-              h += '<button class="btn' + (canAfford ? ' pri' : ' dis') + '" data-askhelp="' + esc(q.id) + '"' + (canAfford ? '' : ' disabled') + '>';
+              h += '<button class="btn' + (canAfford ? ' pri' : ' dis') + '" data-askhelp="' + esc(q.id) + '"' + (canAfford ? '' : ' disabled title="Il te manque de l’Intuition : elle vient des recettes, des fragments et des secrets"') + '>';
               h += '💭 Réfléchir : ' + q.cost + ' ✨' + (canAfford ? '' : ' <span class="tiny muted">' + whyText + '</span>');
               h += '</button></div>';
             }
@@ -233,7 +234,7 @@
           seen.forEach((s) => {
             const count = s.count || 0;
             const countTxt = count === 1 ? "1 endroit" : count + " endroits";
-            h += '<button class="signe-card' + (s.lu ? ' lu' : '') + '" data-s="' + esc(s.id) + '">' +
+            h += '<button class="signe-card' + (s.lu ? ' lu' : '') + '" data-s="' + esc(s.id) + '" title="Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais">' +
               (s.lu
                 ? '<div class="signe-card-mot">' + esc(s.def.mot) + '</div>'
                 : '<div class="signe-card-dessin">' + (window.signeSVG ? window.signeSVG(s.def.h, 36) : '') + '</div>') +
@@ -294,7 +295,7 @@
         const NM = (E.RECIT && E.RECIT.nommer) || {};
         const nom = E.nomDuCycle ? E.nomDuCycle() : null;
         h += '<div class="card"><div class="stat"><span class="muted">Semeur ' + (st.cycle + 6) + "</span><b>" + (nom ? esc(nom) : "—") + "</b></div>" +
-          (E.peutNommer && E.peutNommer() ? '<form class="term-in" id="nomForm" autocomplete="off" style="margin-top:8px"><input id="nomIn" maxlength="24" placeholder="' + esc(NM.invite || "") + '" autocapitalize="words" spellcheck="false"><button class="btn" type="submit">⏎</button></form>' : "") + "</div>";
+          (E.peutNommer && E.peutNommer() ? '<form class="term-in" id="nomForm" autocomplete="off" style="margin-top:8px"><input id="nomIn" maxlength="24" placeholder="' + esc(NM.invite || "") + '" autocapitalize="words" spellcheck="false"><button class="btn" type="submit" title="Envoyer ce nom" aria-label="Envoyer ce nom">⏎</button></form>' : "") + "</div>";
         if (evs.length) {
           h += '<h3 class="sub">Réminiscences</h3>';
           evs.forEach((id) => { h += '<div class="card small serif" style="font-size:15px">' + icon(id, "sm") + " " + esc(D.EVENTS[id]) + "</div>"; });
@@ -352,7 +353,8 @@
       if (st.flags.arche || E.cache().term) tabs.push(["arche", isReg ? "REGISTRE" : "ARCHE"]);
       if (Object.keys(D.PROJECTS).some(E.projVisible)) tabs.push(["oeuvres", "Grands Œuvres"]);
       if (!tabs.find((t) => t[0] === U.cosmosTab)) U.cosmosTab = "ciel";
-      let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      const CTT = { ciel: "Le ciel de la nuit", figures: "Les étoiles et les signes déjà vus", arche: "Le terminal des Anciens", oeuvres: "Les Grands Œuvres, ce qu’il reste à bâtir" };
+      let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" title="' + (CTT[k] || "") + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (U.cosmosTab === "figures") {
         h += figuresHTML();
       } else if (U.cosmosTab === "ciel") {
@@ -366,7 +368,7 @@
         st.arche.forEach((l) => { h += '<div class="l">' + esc(l.txt) + "</div>"; });
         if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") || l.startsWith("REG > ") || l.startsWith("ARCHE > ") ? " u" : "") + '">' + (l.startsWith("REG · ") ? recitInline(l, "Le Registre") + lectureHTML(l) : esc(l)) + "</div>").join("");
         h += "</div>";
-        if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><span class="term-pfx">' + esc(pfx) + '</span><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit">⏎</button></form>';
+        if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><span class="term-pfx">' + esc(pfx) + '</span><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit" title="Envoyer la commande" aria-label="Envoyer la commande">⏎</button></form>';
         else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ' + (isReg ? "le Registre" : "ARCHE") + '.</p>';
       } else {
         h += '<p class="small muted">Un Grand Œuvre se bâtit avec ce que tu verses depuis la Réserve, ou ce qu’il y prend seul quand tu l’alimentes. Il en demande des quantités énormes.</p>';

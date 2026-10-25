@@ -43,7 +43,7 @@
       U.domDense = dense;
       let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
       h += api.top();
-      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense aria-pressed="' + dense + '" title="Basculer entre affichage compact et normal">' + (dense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
+      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense aria-pressed="' + dense + '" title="Voir plus de terres d’un coup, en plus petit">' + (dense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -52,9 +52,9 @@
         const rest = zs.filter((z, i) => i >= SHOWN && U.domOpen !== z);
         if (rest.length) {
           const r = rest.reduce((a, z) => a + zoneRate(z), 0);
-          h += '<button class="dom-more" data-dall>' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>voir ▾</span></button>';
+          h += '<button class="dom-more" data-dall title="Afficher ou replier les autres terres">' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>voir ▾</span></button>';
         }
-      } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall>Replier les terres anciennes<span>▴</span></button>';
+      } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall title="Afficher ou replier les autres terres">Replier les terres anciennes<span>▴</span></button>';
       h += domaineMachinesSummary();
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
@@ -127,7 +127,7 @@
         const reqStr = nx.x.hidden ? nx.x.hidden : (typeof nx.x.need === "string" && I[nx.x.need] ? "il faut " + I[nx.x.need].n.toLowerCase() : Array.isArray(nx.x.need) ? "il faut " + nx.x.need.map((id) => (I[id] ? I[id].n.toLowerCase() : id)).join(", ") : "lieu verrouillé");
         return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(reqStr) + "</span>";
       }
-      return '<button class="btn small" data-exp="' + z + '">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
+      return '<button class="btn small" data-exp="' + z + '" title="Lancer cette exploration : elle avance toute seule">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
     }
     function gisHTML(z, d) {
       const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
@@ -270,7 +270,9 @@
       ];
       const phrase = phrases[(st.cycle + st.age) % phrases.length];
       const count = E.troqueurCount ? E.troqueurCount() : 0;
-      const askLine = count === 0 ? "Aucune demande du Troqueur" : count === 1 ? "1 demande du Troqueur" : count + " demandes du Troqueur";
+      const hor = E.troqueurHoraire();
+      const askLine = !hor.ouvert ? "Le Troqueur est en tournée · retour dans " + fmtTime(Math.max(0, (hor.ouvre - Date.now()) / 1000))
+        : count === 0 ? "Aucune demande du Troqueur" : count === 1 ? "1 demande du Troqueur" : count + " demandes du Troqueur";
       return '<section class="dom-card dom-comptoir" id="dcomptoir">' +
         '<h3>🪙 Le Comptoir</h3>' +
         '<p class="small muted">' + esc(phrase) + '</p>' +
@@ -357,11 +359,15 @@
         const st = S();
         let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus</div></div></div>';
         // à l’ouverture, ce que le Troqueur dit et ce que porte le bois du comptoir (données du récit)
+        // à quoi servent les écus : ils deviennent des Traces à la relève, avec un plafond mou
+        const det = E.ecusDetail((st.ecus || 0));
+        h += '<p class="tiny muted" style="margin:6px 0 0">À la relève, tes écus deviennent des ✦ Traces : au prix de ton âge (' + fmt(E.traceBasePrice()) + ' écus la Trace), à plein tarif jusqu’à ' + fmt(det.seuil) + ' ✦ (ce que tes passages ont rapporté), puis à un quart.' +
+          ((st.ecus || 0) > 0 ? ' Tes ' + fmt(st.ecus || 0) + ' écus en feraient <b>' + det.trace + '</b>.' : '') + '</p>';
         const parole = uiSigne("comptoir", "Le Comptoir");
         if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
         h += '<div class="subtabs comptoir-tabs">' +
-          '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
-          '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +
+          '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre" title="Vendre ce qui encombre ta Réserve">Vendre</button>' +
+          '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter" title="Acheter la ressource qui te manque">Acheter</button>' +
           '<button class="' + (curTab === "demandes" ? "on" : "") + '" data-m="ctab" data-t="demandes">Demandes</button>' +
           '<button class="' + (curTab === "parler" ? "on" : "") + '" data-m="ctab" data-t="parler">Parler</button>' +
           '</div>';
@@ -390,24 +396,45 @@
         } else if (curTab === "parler") {
           const TR = (E.RECIT && E.RECIT.troc) || {};
           const last = E.troqueurDernier ? E.troqueurDernier() : null;
-          h += '<div class="troc-parole">' + (last
-            ? (last.q ? '<p class="troc-moi">' + String(recitInline(last.q, "Le Comptoir")) + "</p>" : "") +
-              '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + "</p>"
-            : '<p class="small muted"><i>' + esc(TR.intro || "") + "</i></p>") + "</div>";
-          h += '<p class="tiny muted center">' + esc(TR.consigne || "") + "</p>";
-          h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
-            '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + "</button>").join("") + "</div>";
+          if (!last) {
+            h += '<div class="troc-parole"><p class="small muted"><i>' + esc(TR.intro || "") + '</i></p></div>';
+            h += '<p class="tiny muted center">' + esc(TR.consigne || "") + '</p>';
+            h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
+              '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + '</button>').join("") + '</div>';
+          } else if (last.choix && !last.rep) {
+            h += '<div class="troc-parole">';
+            if (last.stage) h += '<p class="tiny muted troc-stage"><i>' + esc(last.stage) + '</i></p>';
+            h += '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + '</p>';
+            h += '</div>';
+            h += '<p class="tiny muted center">Que réponds-tu ?</p>';
+            h += '<div class="troc-choix">' + last.choix.map((c) =>
+              '<button type="button" class="btn troc-rep" data-m="trocChoix" data-k="' + esc(c.k) + '">' +
+              '<span class="troc-rep-k">' + esc(c.k.toUpperCase()) + '</span>' +
+              '<span class="troc-rep-txt">' + String(recitInline(c.q, "Le Comptoir")) + '</span></button>'
+            ).join("") + '</div>';
+          } else {
+            h += '<div class="troc-parole">';
+            if (last.stage && !last.q) h += '<p class="tiny muted troc-stage"><i>' + esc(last.stage) + '</i></p>';
+            if (last.q) h += '<p class="troc-moi">' + String(recitInline(last.q, "Le Comptoir")) + '</p>';
+            h += '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + '</p>';
+            h += '</div>';
+            h += '<div class="row troc-fin-bar"><button type="button" class="btn small ghost" data-m="trocFin">← Poser une autre question</button></div>';
+            h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
+              '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + '</button>').join("") + '</div>';
+          }
         } else if (curTab === "demandes") {
           const asks = E.troqueurAsks ? E.troqueurAsks() : [];
-          const next = (st.comptoir && st.comptoir.next) || 0;
-          const leftSec = Math.max(0, Math.ceil((next - Date.now()) / 1000));
-          if (!asks.length) {
-            h += '<p class="small muted center" style="padding:20px 0">Le Troqueur n’a pas de demande pour l’instant. Fabrique des objets de ton âge.</p>';
+          const hor = E.troqueurHoraire();
+          if (!hor.ouvert) {
+            h += '<p class="small muted center" style="padding:20px 0">Le Troqueur est parti en tournée. Il reprend ses demandes dans <b>' + fmtTime(Math.max(0, Math.ceil((hor.ouvre - Date.now()) / 1000))) +
+              '</b>. Le Comptoir reste ouvert pour vendre et acheter.</p>';
           } else {
-            h += '<div class="comptoir-list">' + asks.map(askRowHTML).join("") + '</div>';
-          }
-          if (next > 0) {
-            h += '<p class="tiny muted center" style="margin:10px 0 6px">Prochain renouvellement dans ' + fmtTime(leftSec) + '.</p>';
+            if (!asks.length) {
+              h += '<p class="small muted center" style="padding:20px 0">Le Troqueur n’a pas de demande pour l’instant. Fabrique des objets de ton âge, avec des matières que tu récoltes.</p>';
+            } else {
+              h += '<div class="comptoir-list">' + asks.map(askRowHTML).join("") + '</div>';
+            }
+            h += '<p class="tiny muted center" style="margin:10px 0 6px">Il repart dans ' + fmtTime(Math.max(0, Math.ceil((hor.fin - Date.now()) / 1000))) + '. Ses demandes ne se renouvellent pas avant son retour.</p>';
           }
         }
 
@@ -435,6 +462,16 @@
           parler: (b) => {
             const r = E.troqueurParle(b.dataset.th);
             if (r.ok && !r.vide) A.page(); else A.click();
+            return redraw();
+          },
+          trocChoix: (b) => {
+            const r = E.troqueurChoix ? E.troqueurChoix(b.dataset.k) : null;
+            if (r && r.ok) A.page(); else A.click();
+            return redraw();
+          },
+          trocFin: () => {
+            if (E.troqueurFin) E.troqueurFin();
+            A.click();
             return redraw();
           },
           sell: (b) => {
@@ -522,7 +559,7 @@
           .map((x) => ({ k: x.k, rem: x.rem, t: E.limiting(x.k, x.rem).eta })).sort((a, b) => (b.t === null) - (a.t === null) || b.t - a.t)[0];
         if (lim && !(step.need && !st.frags[step.need])) h += limitHTML(lim.k, lim.rem);
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
-        else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Fournir</button>' +
+        else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '" title="Déposer depuis ta Réserve ce qu’il demande">Fournir</button>' +
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
           '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve : au plus " + perMin(E.siteRate()) + " pour chaque ressource." : "Une fois alimenté, il se sert seul dans la Réserve.") + "</span></div>";
       } else if (step.action === "relais") {
@@ -543,7 +580,7 @@
     function prodHTML() {
       const P = E.production().filter((x) => x.in > 1e-4 || x.out > 1e-4), st = S();
       if (!P.length) return "";
-      return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary>Tout ce qui entre et sort, par ressource</summary>' +
+      return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary title="Plier ou déplier le tableau">Tout ce qui entre et sort, par ressource</summary>' +
         '<div class="u-pr u-ph tiny muted"><span class="grow">Ressource</span><span>entre</span><span>sort</span><span>réserve</span></div>' +
         P.slice(0, 30).map((x) => '<div class="u-pr" data-goto="' + x.id + '" role="button" tabindex="0" title="' + esc(I[x.id].n) + ' (toucher pour inspecter)">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
           "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + '</i><span data-c="' + x.id + '">' + fmt(st.inv[x.id] || 0) + "</span></div>").join("") + "</details>";
@@ -560,10 +597,10 @@
       if (freeE.length && !st.flags.tip_freeExt) {
         const t = freeE[0], n = us[t].own - us[t].used;
         return "Tu as " + esc(many(t, n)) + " à poser : touche <b>+ " + esc(nm(t, 1)) + "</b> sur un gisement " + esc(deZone(I[t].z)) + ". " +
-          '<button class="btn small ghost" data-tip="tip_freeExt">Compris</button>';
+          '<button class="btn small ghost" data-tip="tip_freeExt" title="Fermer cette astuce">Compris</button>';
       }
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOn(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
-      if (lone && !st.flags.tip_site) return "Active <b>Alimenter</b> pour approvisionner automatiquement ton Grand Œuvre depuis la Réserve. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
+      if (lone && !st.flags.tip_site) return "Active <b>Alimenter</b> pour approvisionner automatiquement ton Grand Œuvre depuis la Réserve. " + '<button class="btn small ghost" data-tip="tip_site" title="Fermer cette astuce">Compris</button>';
       return null;
     }
 
@@ -723,6 +760,13 @@
         const r = E.domExtAdd(z, res, Number(b.dataset.n) || 1);
         const rc = b.getBoundingClientRect();
         feedback(r, ch.t, { x: rc.left + rc.width / 2, y: rc.top });
+        render(true);
+        return true;
+      }
+      if ((b = t.closest("[data-xrun]"))) {
+        const key = b.dataset.xrun, i = key.indexOf(":");
+        E.domExtToggle(key.slice(0, i), key.slice(i + 1), true);
+        A.click();
         render(true);
         return true;
       }

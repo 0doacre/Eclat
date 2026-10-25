@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.21.1";
+  D.VERSION = "0.23.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -134,7 +134,7 @@
     u: "Se joue depuis le Journal.", d: "Un os creux percé de cinq trous. Le premier son qui en sort, tu l’as déjà entendu quelque part." };
   I.statuette = { n: "Figurine d’os", ic: "🗿", a: 1, t: "curio", sec: true, r: ["tailler", { os: 1, silex: 1 }, 1],
     e: { once: { intu: 3 } },
-    d: "Tes mains sculptent toutes seules : une femme aux cheveux courts, la main levée, paume ouverte. Toi, tu ne l’as jamais vue. Tes mains, si." };
+    d: "Tu sculptes une femme aux cheveux courts, une main levée, paume ouverte. Tu ne reconnais pas son visage, mais tu n’as pas eu besoin de modèle." };
 
   /* Âge 2 — Pierre */
   I.argile = { n: "Argile", ic: "🟫", a: 2, t: "res", u: "Sert aux briques et au four en argile, puis au creuset.", d: "Une terre grasse et collante, qui garde la forme qu’on lui donne." };
@@ -587,7 +587,7 @@
   I.vaisseau = { n: "Vaisseau interplanétaire", ic: "🛸", a: 13, t: "tool", r: ["assembler", { propulseur: 45, composite: 960, alliage_ancien: 480 }, 1],
     e: { zone: "mercure" }, u: "Ouvre le chemin vers Mercure.", d: "Cette fois, tu pars vers le Soleil.", h: "Une coque de composite renforcée du métal des Anciens peut porter les propulseurs à fusion jusqu’aux autres planètes." };
   I.ia = { n: "Intelligence artificielle", ic: "🧠", a: 13, t: "upg", r: ["assembler", { processeur: 720, supra: 200, graphene: 280 }, 1],
-    e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Elle répond avant que tu aies fini. Elle a la voix qui te raconte.",
+    e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.",
     h: "Les processeurs peuvent travailler ensemble si le graphène et les supraconducteurs les relient assez vite." };
   I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 13, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
     u: "Palier 3. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main. 600 fabrications par minute.", d: "Il assemble la matière atome par atome.",
@@ -874,7 +874,7 @@
   D.EVENTS = {
     feu: "Le feu prend. Tu le regardes longtemps. Quelque part au fond de ta tête, une voix sans timbre dit : « Seuil 1. »",
     epieu: "La pointe noircit et durcit. Au loin, dans la plaine, une bête lève la tête vers la fumée.",
-    eclat: "Le silex se fend net. Tes mains savaient où frapper, comme si elles l’avaient déjà fait. Six fois, peut-être.",
+    eclat: "Le silex se fend net. Tu as frappé au bon endroit sans hésiter, alors que tu ne te souviens pas de l’avoir appris.",
     four: "La chaleur monte, les briques rougeoient. Quelque part sous la terre, quelque chose enregistre : « Seuil 3. »",
     lingot_cuivre: "Le métal coule, rouge vif. Tu sens qu’on te regarde faire, et que quelqu’un, quelque part, est content de toi.",
     lingot_bronze: "Deux métaux tendres, et ce qui sort du creuset est dur. Tu fais tinter le lingot contre une pierre, juste pour l’entendre.",
@@ -1222,19 +1222,19 @@
   D.SKILL_RECOLTE = { n: "Récolte", ic: "🧺", d: "Récolter à la main, sur les gisements." };
 
   /* Réminiscences de guidage : quand le joueur cherche (combinaisons nouvelles à
-   * l’Atelier), les mains des Semeurs précédents guident les siennes. */
+   * l’Atelier), la narratrice présente les pistes comme des souvenirs. */
   D.GUIDE = {
     tries: [6, 14, 26], // souvenirs à réunir pour le geste, une matière, puis la recette
     lines: [
-      ["Tes mains frémissent, comme si elles se souvenaient d’un autre corps. L’action qu’il te faut : {g}.",
+      ["Tu retrouves le geste sans savoir où tu l’as appris : {g}.",
         "Tes doigts esquissent un mouvement tout seuls, avant que tu y penses : {g}.",
         "Un geste te revient, comme si tu l’avais fait mille fois : {g}."],
-      ["Une image te traverse : d’autres mains, avant les tiennes, qui tiennent {i}.",
-        "Tu revois une main abîmée poser {i} sur une pierre plate. Ce n’était pas la tienne.",
+      ["Tu te souviens d’avoir vu quelqu’un tenir {i}, avant ton arrivée.",
+        "Tu revois quelqu’un poser {i} sur une pierre plate. Tu ne reconnais pas son visage.",
         "Un souvenir qui n’est pas à toi remonte : une odeur, un bruit, et au milieu, nettement, {i}."],
       ["Tout te revient d’un coup. La recette s’inscrit dans ton Carnet.",
         "Tout se remet en place, comme si tu l’avais toujours su. La recette s’inscrit dans ton Carnet.",
-        "Les autres mains ont fini de te montrer. La recette s’inscrit dans ton Carnet."]
+        "Tu retrouves la suite des gestes. La recette s’inscrit dans ton Carnet."]
     ]
   };
 
@@ -1248,11 +1248,19 @@
     trace: 100,       // prix de la première Trace, à l’âge 0
     traceAge: 1.8,    // ×1,8 par âge atteint
     traceUp: 1.5,     // ×1,5 à chaque Trace achetée pendant le cycle
-    buy: 3            // une matière achetée coûte 3 fois sa valeur
+    buy: 3,           // une matière achetée coûte 3 fois sa valeur
+    /* À la relève, les écus deviennent des Traces au plein tarif jusqu’à hauteur de ce que les passages du cycle
+     * ont rapporté (au moins `plancher`), puis à `part` seulement au-delà : vendre reste toujours utile, mais ne remplace pas les passages. */
+    plafond: { plancher: 3, part: 0.25 }
   };
 
   /* Les demandes du Troqueur : livrer des objets fabriqués contre des Traces */
-  D.TROQUEUR = { slots: 3, refresh: 1200, share: 0.15, size: 2 };
+  /* Le Troqueur passe par à-coups : le temps se découpe en blocs de `bloc` secondes, chacun ouvert avec la probabilité `ouvre`
+   * (tirée de la graine de la partie, donc la même hors ligne), jamais plus de `maxFerme` blocs fermés de suite. Une ouverture
+   * apporte `slots` demandes, valables jusqu’à sa fermeture : pas de renouvellement dans une même ouverture.
+   * Quantité d’une demande : ce que le joueur extrait en `minParTrace` minutes par Trace de récompense (entre `minMin` et `minMax`),
+   * `main` appuis par seconde comptés pour la récolte à la main. */
+  D.TROQUEUR = { slots: 3, share: 0.15, bloc: 10800, ouvre: 0.6, maxFerme: 3, minParTrace: 10, minMin: 10, minMax: 90, main: 0.5 };
 
   /* Le premier parcours : première renaissance obligatoire */
   D.PARCOURS = {
@@ -1280,6 +1288,15 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🎯 Le guide ne se perd plus : fabriquer en avance le tout dernier objet laisse les étapes qui restent à faire, et une pièce déjà dans ta Réserve n’est plus demandée comme une étape.",
+    "⛏️ Quand l’extracteur d’une matière est à toi mais ne la récolte pas, l’objectif le dit : il propose de le poser, ou de le relancer s’il est arrêté.",
+    "🪙 Les écus gagnés au Comptoir pèsent moins lourd à la relève : ils deviennent des Traces à plein tarif jusqu’à ce que tes passages ont rapporté, puis à un quart. Le calcul s’affiche au Comptoir et dans la fenêtre de relève.",
+    "🧳 Le Troqueur demande selon ce que tu produis réellement : plus la matière demandée vient lentement, moins il en réclame. Il ne renouvelle plus ses demandes sans cesse et part en tournée de temps en temps, le Comptoir restant ouvert pour vendre et acheter.",
+    "🔤 Les cartes de signes du Journal, les deux formulaires à ⏎ et les questions à réfléchir ont un nom pour le lecteur d’écran.",
+    "💬 Les boutons qui ne disaient rien s’expliquent : une info-bulle dit ce que font Suivre, Épingler, Détail, ×10, Max, les filtres et les tris.",
+    "💭 Le guide ralentit : une seule explication à la fois, et au plus une toutes les deux ou trois minutes.",
+    "⭐ Trois chapitres nouveaux, au moment où ils servent : Suivre, Épingler, et commander d’un coup (×10, Max).",
+    "📖 Qui a déjà pris l’habitude ne revoit rien : ces chapitres s’effacent si tu as déjà suivi une recette, épinglé ou commandé en lot.",
     "📖 Ergonomie générale : le Carnet propose une vue en deux colonnes sur écran large et un mode compact, avec un saut rapide vers chaque âge découvert et un repli global. Les épingles de l’Atelier s’affichent en vignettes compactes avec fabrication directe, le Domaine s’allège d’une vue resserrée mémorisée, l’objectif clarifie son accès à l’Arbre et aux étapes, et le menu regroupe ses raccourcis.",
     "💧 La Vapeur commence à la Rivière : une pompe à bras récolte l’eau, les tuyaux la conduisent à la chaudière et les condenseurs la récupèrent. Aux Polymères, raffine le pétrole en naphta et récolte le soufre des Collines pour fabriquer le caoutchouc. Les joints et les tuyaux souples servent au refroidissement des machines. Treize nouveaux objets, sans décaler les âges ni retirer tes découvertes.",
     "📖 L’Arbre et le Carnet ont chacun leur rôle. L’Arbre te situe dans la progression : il s’ouvre sur ton âge, tes étapes et le prochain objectif. Le Carnet garde les recettes et prépare les lots : il s’ouvre sur « Apprises », et chaque lot affiche son coût, ce qu’il produit, les ressources à réunir et une durée estimée. De l’un à l’autre : « Ouvrir la recette dans le Carnet » et « Situer dans l’Arbre ».",
