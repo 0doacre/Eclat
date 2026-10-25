@@ -114,7 +114,14 @@
   const glyphAlt = Object.keys(GLYPH).sort((a, b) => b.length - a.length).map((k) => k.replace(/\uFE0F/g, "")).join("|");
   const GLYPH_RE = new RegExp("(" + glyphAlt + ")\uFE0F?", "g"), GLYPH_T = new RegExp("(" + glyphAlt + ")");
   const glyphOf = (k) => GLYPH[k] || GLYPH[k + "\uFE0F"];
+  /* ce qui se touche doit aussi se focaliser et se nommer : un lien vers une fiche devient un bouton au clavier, un champ sans libellé prend son texte d’aide */
+  function a11y(root) {
+    if (!root || !root.querySelectorAll) return;
+    root.querySelectorAll("[data-goto]:not(button):not([tabindex])").forEach((e) => { e.setAttribute("role", "button"); e.setAttribute("tabindex", "0"); });
+    root.querySelectorAll("input[placeholder]:not([aria-label])").forEach((e) => { if (!(e.labels && e.labels.length)) e.setAttribute("aria-label", e.getAttribute("placeholder")); });
+  }
   function iconize(root) {
+    a11y(root);
     if (!root || !glyphAlt) return;
     const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (GLYPH_T.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
     const list = [];
@@ -727,6 +734,14 @@
     // garder le focus d’un champ de saisie pendant le rendu
     const ae = document.activeElement;
     const focus = ae && ae.id && el.contains(ae) ? { id: ae.id, s: ae.selectionStart, e: ae.selectionEnd } : null;
+    // un bouton sans identifiant (un lieu de la Carte, un lien de fiche) : on le retrouve à son nom après le redessin, pour que le clavier ne perde pas sa place
+    // un bouton de liste (une ressource, une action, une quantité…) : même chose, retrouvé à son attribut de données
+    let fsel = null;
+    if (!focus && ae && ae !== document.body && el.contains(ae) && ae.dataset) {
+      const k = ["inv", "g", "slot", "qty", "if", "cf", "pin", "tree", "track", "cr", "tab2"].find((x) => ae.dataset[x] !== undefined);
+      if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
+    }
+    const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
     else if (U.tab === "arbre") Atl.arbreRendre(el); // l’arbre se redessine lui-même (js/arbre.js), seulement s’il a changé
@@ -748,6 +763,8 @@
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
     U.anchor = null;
     if (U.tab === "atelier") { S().flags.bench = { g: U.geste, s: U.slots.slice() }; updMini(); }
+    if (fsel) { const f = el.querySelector(fsel); if (f && f !== document.activeElement) f.focus({ preventScroll: true }); }
+    if (fnom) { const f = Array.from(el.querySelectorAll('[role="button"]')).find((x) => x.getAttribute("aria-label") === fnom); if (f) f.focus({ preventScroll: true }); }
     if (focus) { const f = document.getElementById(focus.id); if (f) { f.focus(); try { f.setSelectionRange(focus.s, focus.e); } catch (e) { /* champ sans sélection */ } } }
     refresh();
     ambient();

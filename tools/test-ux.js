@@ -179,6 +179,56 @@ async function run() {
     ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), nom + " : pas de débordement horizontal");
     ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   }
+  // Accessibilité (0.15.8) : le clavier, les noms, la Carte, l’alternative à l’appui long, et les contrastes mesurés.
+  p = await page(390, true);
+  await p.locator('#tabs [data-tab="atelier"]').click(); await p.waitForTimeout(300);
+  await p.locator("#v-atelier .inv").first().focus(); await p.keyboard.press("Enter"); await p.waitForTimeout(250);
+  ok(await p.evaluate(() => window.__eclat.U.slots.some(Boolean) && document.activeElement.classList.contains("inv")), "Clavier : Entrée pose la ressource sur l’établi et le focus reste sur elle");
+  await p.keyboard.press("i"); await p.waitForTimeout(500);
+  ok(await p.evaluate(() => !document.querySelector("#modal").classList.contains("hidden")), "Clavier : « i » ouvre la fiche de la ressource, sans appui long");
+  await p.evaluate(() => window.__eclat.closeModal()); await p.waitForTimeout(200);
+  await p.evaluate(() => { window.__eclat.U.slots = [null, null, null]; });
+  await p.locator("[data-fichemode]").click();
+  await p.locator("#v-atelier .inv").first().click(); await p.waitForTimeout(500);
+  ok(await p.evaluate(() => !document.querySelector("#modal").classList.contains("hidden") && !window.__eclat.U.slots.some(Boolean)), "« ⓘ Fiches » : un appui ouvre la fiche au lieu de poser (alternative à l’appui long)");
+  await p.evaluate(() => window.__eclat.closeModal()); await p.waitForTimeout(200);
+  for (const tab of ["domaine", "carte", "atelier", "arbre", "carnet", "journal"]) {
+    await p.locator('#tabs [data-tab="' + tab + '"]').click(); await p.waitForTimeout(350);
+    const mal = await p.evaluate(() => {
+      const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+      const nom = (e) => (e.getAttribute("aria-label") || e.getAttribute("title") || e.innerText || e.textContent || "").trim();
+      const racine = document.querySelector(".view.on");
+      return [...racine.querySelectorAll("button, [role=button], a, input, select")].filter(vis).filter((e) => !nom(e)).map((e) => e.outerHTML.slice(0, 80))
+        .concat([...racine.querySelectorAll("[data-goto]")].filter(vis).filter((e) => !(e.tagName === "BUTTON" || e.getAttribute("tabindex") !== null)).map((e) => "non focalisable : " + e.outerHTML.slice(0, 60)));
+    });
+    ok(!mal.length, "Accessibilité : " + tab + " : contrôles sans nom ou hors clavier " + JSON.stringify(mal));
+  }
+  await p.locator('#tabs [data-tab="carte"]').click(); await p.waitForTimeout(400);
+  const lieu = p.locator('#v-carte [data-cl][tabindex="0"]').first();
+  ok(await p.locator('#v-carte svg [role="button"][aria-label]').count() >= 3, "Carte : lieux, terres et camp sont des boutons nommés");
+  await lieu.focus(); await p.keyboard.press("Enter"); await p.waitForTimeout(500);
+  ok(await p.evaluate(() => !document.querySelector("#modal").classList.contains("hidden")), "Carte : Entrée sur un lieu ouvre sa fiche");
+  await p.evaluate(() => window.__eclat.closeModal());
+  // contrastes : chaque texte à 4,5:1 au moins sur les fonds, dans les six époques et les deux thèmes, sur toutes les couleurs d’âge
+  const faibles = await p.evaluate((ages) => {
+    const cv = document.createElement("canvas").getContext("2d");
+    const rgb = (c) => { cv.clearRect(0, 0, 1, 1); cv.fillStyle = "#000"; cv.fillStyle = c; cv.fillRect(0, 0, 1, 1); const d = cv.getImageData(0, 0, 1, 1).data; return [d[0], d[1], d[2]]; };
+    const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const cr = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const mal = [];
+    for (const dark of [false, true]) for (const ep of ["pigments", "papyrus", "enluminure", "registre", "quadrille", "bord"]) {
+      document.body.classList.toggle("theme-dark", dark); document.body.dataset.ep = ep;
+      const lire = (v) => { const e = document.createElement("i"); e.style.color = "var(" + v + ")"; document.body.appendChild(e); const c = getComputedStyle(e).color; e.remove(); return rgb(c); };
+      const fonds = ["--bg", "--bg2", "--panel", "--panel2"].map(lire);
+      for (const t of ["--text", "--muted", "--dim", "--good", "--bad", "--intu"]) { const c = lire(t); for (const f of fonds) { const r = cr(c, f); if (r < 4.5) mal.push((dark ? "Veillée " : "Jour ") + ep + " " + t + " " + r.toFixed(2)); } }
+      for (const a of ages) { document.body.style.setProperty("--age", a); const r = cr(lire("--acc"), lire("--bg")); if (r < 4.5) mal.push((dark ? "Veillée " : "Jour ") + ep + " accent " + a + " " + r.toFixed(2)); }
+      document.body.style.removeProperty("--age");
+    }
+    document.body.classList.remove("theme-dark");
+    return mal;
+  }, D.AGES.map((a) => a.c));
+  ok(!faibles.length, "Contrastes : textes sous 4,5:1 " + JSON.stringify(faibles.slice(0, 6)));
+  ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // Retrouver dans l’arbre : la recherche mène au nœud, et « prêtes » montre ce qu’on peut fabriquer (sans jamais nommer un fantôme).
   p = await page(390, true);
   await p.locator('#tabs [data-tab="arbre"]').click();
