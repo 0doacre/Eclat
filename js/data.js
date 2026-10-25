@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.18.0";
+  D.VERSION = "0.19.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -15,7 +15,8 @@
     { id: "cuivre", n: "Âge du Cuivre", c: "#e0814a", q: "La pierre verte cache un métal rouge." },
     { id: "bronze", n: "Âge du Bronze", c: "#d6a746", q: "Deux métaux tendres, un alliage dur." },
     { id: "fer", n: "Âge du Fer", c: "#cf6a52", q: "Le fer ne cède qu’au marteau." },
-    { id: "acier", n: "Âge de l’Acier", c: "#8db0d6", q: "La vapeur se met à travailler pour toi." },
+    { id: "acier", n: "Âge de l’Acier", c: "#8db0d6", q: "Le fer durcit : il plie, mais ne casse plus." },
+    { id: "vapeur", n: "Âge de la Vapeur", c: "#cdb89c", q: "La vapeur se met à travailler pour toi." },
     { id: "elec", n: "Âge de l’Électricité", c: "#f2d13c", q: "Une étincelle captive." },
     { id: "silicium", n: "Âge du Silicium", c: "#5fd394", q: "Le sable se met à penser." },
     { id: "polymeres", n: "Âge des Polymères", c: "#bd8cf0", q: "L’huile noire devient tout ce que tu veux." },
@@ -90,10 +91,10 @@
   I.gants = { n: "Gants de peau", ic: "🧤", a: 4, t: "comp", r: ["assembler", { cuir: 2, fibre: 4 }, 1],
     u: "Aux mains, ils protègent du verre du Désert : sans eux, la récolte à la main rapporte moins là-bas.", d: "Deux peaux cousues à la forme de tes mains.",
     h: "Le cuir doit épouser la forme des mains. Des fibres serviront de fil pour le coudre." };
-  I.masque = { n: "Masque filtrant", ic: "😷", a: 9, t: "comp", r: ["assembler", { caoutchouc: 2, plastique: 1 }, 1],
+  I.masque = { n: "Masque filtrant", ic: "😷", a: 10, t: "comp", r: ["assembler", { caoutchouc: 2, plastique: 1 }, 1],
     u: "Sur le visage, il retient les vapeurs du Gisement Noir : sans lui, la récolte à la main rapporte moins là-bas.", d: "Une coque de plastique, un joint de caoutchouc.",
     h: "La coque de plastique couvre le visage ; le caoutchouc la maintient contre la peau." };
-  I.bouteille = { n: "Bouteille d’air", ic: "💨", a: 9, t: "comp", r: ["assembler", { aluminium: 2, caoutchouc: 1 }, 1],
+  I.bouteille = { n: "Bouteille d’air", ic: "💨", a: 10, t: "comp", r: ["assembler", { aluminium: 2, caoutchouc: 1 }, 1],
     u: "Elle te donne de quoi respirer là-haut : sans elle, la récolte à la main rapporte moins aux Pics Fracturés.", d: "Un cylindre d’aluminium, un tuyau de caoutchouc.",
     h: "L’aluminium enferme l’air dans un cylindre léger. Un tuyau de caoutchouc permet de le respirer." };
   I.galette = { n: "Herbes grillées", ic: "🌾", a: 0, t: "curio", sec: true, r: ["chauffer", { fibre: 5 }, 1, { heat: 600 }],
@@ -320,7 +321,7 @@
   I.tour = { n: "Tour d’usinage", ic: "🗜️", a: 6, t: "stat", r: ["assembler", { lingot_acier: 55, engrenage: 70, manche: 35 }, 1],
     e: { st: [{ g: "usiner" }] }, u: "Débloque l’action Usiner.", d: "Elle façonne le métal au dixième de millimètre.",
     h: "Les engrenages font tourner la pièce pendant que les leviers guident l’outil. L’acier doit garder l’ensemble bien rigide." };
-  I.piston = { n: "Piston", sym: "▮", col: "#9fb0c4", a: 6, t: "comp", r: ["usiner", { lingot_acier: 2 }, 1],
+  I.piston = { n: "Piston", sym: "▮", col: "#9fb0c4", a: 7, t: "comp", r: ["usiner", { lingot_acier: 2 }, 1],
     u: "Sert dans le moteur à vapeur.", d: "Il pousse, il tire, il recommence.", h: "Pour que la vapeur pousse sans s’échapper, un cylindre d’acier doit épouser exactement son logement." };
   I.engrenage_acier = { n: "Engrenage d’acier", sym: "⚙", col: "#5e86b8", a: 6, t: "comp", r: ["usiner", { acier_trempe: 1 }, 2],
     u: "Sert dans le moteur à vapeur et la sonde pétrolière.", d: "Des dents qui ne cassent jamais.", h: "Une roue dentée d’acier trempé supporterait des efforts qui usent celles de bronze." };
@@ -328,233 +329,251 @@
     u: "Sert dans les roulements à billes.", d: "Une hélice gravée dans le fer.", h: "Une hélice creusée autour d’une tige de fer la ferait avancer à chaque tour." };
   I.roulement = { n: "Roulement à billes", sym: "◉", col: "#9fb0c4", a: 6, t: "comp", r: ["usiner", { acier_trempe: 1, vis: 4 }, 2],
     u: "Sert dans la presse à vapeur.", d: "Il fait tourner les machines sans effort.", h: "Des billes d’acier trempé font rouler la charge au lieu de la laisser frotter. Des vis maintiennent leur cage." };
-  I.chaudiere = { n: "Chaudière", ic: "♨️", a: 6, t: "comp", r: ["marteler", { plaque_fer: 8, clous: 30 }, 1, { lvl: 2 }],
+  I.chaudiere = { n: "Chaudière", ic: "♨️", a: 7, t: "comp", r: ["marteler", { plaque_fer: 8, clous: 30 }, 1, { lvl: 2 }],
     u: "Sert dans le moteur à vapeur.", d: "Un ventre de fer. L’eau y bout sous pression.", h: "La vapeur pousse sur les parois. Il faut battre les plaques de fer et les riveter avec des clous pour fermer la cuve." };
-  I.moteur_vapeur = { n: "Moteur à vapeur", ic: "🚂", a: 6, t: "comp", r: ["assembler", { chaudiere: 1, piston: 2, engrenage_acier: 4 }, 1],
+  I.moteur_vapeur = { n: "Moteur à vapeur", ic: "🚂", a: 7, t: "comp", r: ["assembler", { chaudiere: 1, piston: 2, engrenage_acier: 4 }, 1],
     u: "Sert dans tout ce qui marche à la vapeur : presse, pompe, scierie, drague, treuil, chemin de fer. Et dans la dynamo.", d: "La première machine qui travaille sans toi.", h: "La chaudière fournit la vapeur, mais il faut encore la faire travailler : pousser les pistons, puis entraîner les engrenages d’acier." };
-  I.presse_vapeur = { n: "Presse à vapeur", sn: "presse", pl: "presses", ic: "📠", a: 6, t: "mach", s: 1.25, spd: 40, ing: 3, prof: 0, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
+  I.presse_vapeur = { n: "Presse à vapeur", sn: "presse", pl: "presses", ic: "📠", a: 7, t: "mach", s: 1.25, spd: 40, ing: 3, prof: 0, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
     u: "Palier 3, 40 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Elle siffle et cogne toute la journée.",
     h: "Les roulements guident le mouvement du moteur à vapeur dans un bâti de plaques de fer." };
-  I.pompe = { n: "Pompe d’exhaure", ic: "⛽", a: 6, t: "upg", r: ["assembler", { moteur_vapeur: 4, plaque_fer: 55 }, 1],
+  I.pompe = { n: "Pompe d’exhaure", ic: "⛽", a: 7, t: "upg", r: ["assembler", { moteur_vapeur: 4, plaque_fer: 55 }, 1],
     e: { auto: { mine: 1.5, collines: 1.5 } }, u: "Augmente de 50 % la récolte de tes extracteurs dans les Profondeurs et les Collines.", d: "Les galeries inondées se vident. Tu peux creuser plus profond.",
     h: "Le moteur à vapeur peut remonter l’eau des galeries si des plaques de fer la canalisent." };
-  I.scierie = { n: "Scierie à vapeur", sn: "scierie", pl: "scieries", ic: "🪚", a: 6, t: "ext", z: "lisiere", s: 1.25,
+  I.scierie = { n: "Scierie à vapeur", sn: "scierie", pl: "scieries", ic: "🪚", a: 7, t: "ext", z: "lisiere", s: 1.25,
     r: ["assembler", { moteur_vapeur: 2, lame: 7, bois: 360 }, 1], p: { bois: 3, fibre: 2, caillou: 2 },
     u: "Pose-la sur un gisement de la Lisière : elle récolte bois, fibres ou pierre à ta place.", d: "La forêt recule en hurlant.", h: "Fixées à une charpente de bois, les lames peuvent suivre le mouvement du moteur à vapeur." };
-  I.drague = { n: "Drague à vapeur", sn: "drague", pl: "dragues", ic: "⛴️", a: 6, t: "ext", z: "riviere", s: 1.25,
+  I.drague = { n: "Drague à vapeur", sn: "drague", pl: "dragues", ic: "⛴️", a: 7, t: "ext", z: "riviere", s: 1.25,
     r: ["assembler", { moteur_vapeur: 2, plaque_fer: 20, clous: 110 }, 1], p: { argile: 1.2, silex: 0.8, sable: 1.2 },
     u: "Pose-la sur un gisement de la Rivière : elle récolte argile, silex ou sable à ta place.", d: "Elle racle le lit de la rivière.", h: "Un moteur à vapeur installé sur une coque de fer rivetée peut travailler au milieu du courant." };
-  I.treuil = { n: "Treuil à vapeur", sn: "treuil", pl: "treuils", ic: "🪝", a: 6, t: "ext", z: "collines", s: 1.25,
+  I.treuil = { n: "Treuil à vapeur", sn: "treuil", pl: "treuils", ic: "🪝", a: 7, t: "ext", z: "collines", s: 1.25,
     r: ["assembler", { moteur_vapeur: 2, corde: 70, lingot_acier: 20 }, 1], p: { malachite: 1.2, cassiterite: 0.6 },
     u: "Pose-le sur un gisement des Collines : il récolte malachite ou cassitérite à ta place.", d: "Les wagonnets remontent tout seuls.", h: "La vapeur peut tirer plus fort que toi. Une corde enroulée sur une pièce d’acier transmettrait cet effort." };
-  I.locomotive = { n: "Chemin de fer", ic: "🛤️", a: 6, t: "upg", r: ["assembler", { moteur_vapeur: 7, roue: 35, plaque_fer: 110 }, 1],
+  I.locomotive = { n: "Chemin de fer", ic: "🛤️", a: 7, t: "upg", r: ["assembler", { moteur_vapeur: 7, roue: 35, plaque_fer: 110 }, 1],
     e: { auto: { "*": 1.5 } }, u: "Augmente de 50 % la récolte de tous tes extracteurs, dans toutes les terres.", d: "Des rails relient tous tes chantiers.",
     h: "Le moteur à vapeur entraîne des roues sur des plaques de fer posées en rails." };
   I.outils_acier = { n: "Outils d’acier", ic: "🛠️", a: 6, t: "tool", r: ["assembler", { acier_trempe: 35, manche: 20, lame: 10 }, 1],
     e: { tap: { lisiere: 2, plaine: 2, mine: 2, desert: 2 } }, u: "Double ta récolte à la main dans la Lisière, la Plaine, les Profondeurs et le Désert.", d: "Des outils qui ne s’usent plus.", h: "Les manches donnent la prise ; l’acier trempé et les lames doivent résister à ce que le fer ordinaire n’entame plus." };
 
-  /* Âge 7 — Électricité */
-  I.bobine = { n: "Bobine de cuivre", sym: "◎", col: "#c7713b", a: 7, t: "comp", r: ["usiner", { fil_cuivre: 6 }, 1],
+  /* Âge 7 — Vapeur : la chaudière, le piston, le moteur et ce qui en descend (presse, pompe, chemin de fer, extracteurs à vapeur)
+   * sont rangés plus haut, avec l’acier dont ils sont faits ; voici ce que l’âge ajoute. */
+  I.soupape = { n: "Soupape de sûreté", sym: "◍", col: "#b9c2cc", a: 7, t: "comp", r: ["usiner", { ressort: 2, vis: 4 }, 1],
+    u: "Sert dans le régulateur et dans la chaudière tubulaire.", d: "Elle s’ouvre toute seule quand la pression devient dangereuse.",
+    h: "Le ressort retient le clapet, et les vis le règlent au bon seuil." };
+  I.manometre = { n: "Manomètre", sym: "◔", col: "#d9c9a8", a: 7, t: "comp", r: ["assembler", { verre_trempe: 1, ressort: 1, plaque_cuivre: 2 }, 1],
+    u: "Sert dans la chaudière tubulaire.", d: "Une aiguille qui dit la pression, sans avoir à deviner.",
+    h: "Le verre trempé protège le cadran, le ressort fait bouger l’aiguille et le cuivre forme le boîtier." };
+  I.regulateur = { n: "Régulateur à boules", sym: "⚖", col: "#c7a76a", a: 7, t: "comp", r: ["assembler", { engrenage_acier: 2, ressort: 3, soupape: 1 }, 1],
+    u: "Sert dans le marteau-pilon.", d: "Deux boules tournent plus vite quand le moteur s’emballe, et ferment l’arrivée de vapeur.",
+    h: "Les engrenages d’acier le font tourner, le ressort le rappelle et la soupape reste en secours." };
+  I.chaudiere_tubulaire = { n: "Chaudière tubulaire", ic: "🔥", a: 7, t: "upg", r: ["assembler", { chaudiere: 6, soupape: 4, manometre: 2 }, 1],
+    e: { auto: { "*": 1.25 } }, u: "Augmente de 25 % la récolte de tous tes extracteurs, dans toutes les terres.", d: "Plus de surface de chauffe, donc plus de vapeur pour le même feu.",
+    h: "Plusieurs chaudières reliées, des soupapes pour la sécurité et des manomètres pour les surveiller." };
+  I.marteau_pilon = { n: "Marteau-pilon", ic: "🔨", a: 7, t: "tool", r: ["assembler", { moteur_vapeur: 2, lame: 12, regulateur: 1 }, 1],
+    e: { tap: { riviere: 2, collines: 2 } }, u: "Double ta récolte à la main dans la Rivière et les Collines.", d: "Un bloc d’acier tombe de haut, à intervalle régulier. Rien ne lui résiste.",
+    h: "La vapeur lève le bloc, les lames le guident et le régulateur règle la cadence." };
+
+  /* Âge 8 — Électricité */
+  I.bobine = { n: "Bobine de cuivre", sym: "◎", col: "#c7713b", a: 8, t: "comp", r: ["usiner", { fil_cuivre: 6 }, 1],
     u: "Sert dans les aimants, la dynamo, le moteur électrique, le poste radio et le radiotélescope.", d: "Des kilomètres de fil, enroulés spire contre spire.", h: "Le fil de cuivre, enroulé spire contre spire, prend une forme régulière sous la machine." };
-  I.aimant = { n: "Aimant", ic: "🧲", a: 7, t: "comp", r: ["assembler", { acier_trempe: 2, bobine: 1 }, 1],
+  I.aimant = { n: "Aimant", ic: "🧲", a: 8, t: "comp", r: ["assembler", { acier_trempe: 2, bobine: 1 }, 1],
     u: "Sert dans la dynamo, le télégraphe et le moteur électrique.", d: "Il attire le fer. Tu passes un moment à jouer avec des clous.", h: "De l’acier durci au cœur d’une bobine." };
-  I.dynamo = { n: "Dynamo", ic: "🔌", a: 7, t: "stat", r: ["assembler", { aimant: 10, bobine: 20, moteur_vapeur: 4 }, 1],
+  I.dynamo = { n: "Dynamo", ic: "🔌", a: 8, t: "stat", r: ["assembler", { aimant: 10, bobine: 20, moteur_vapeur: 4 }, 1],
     e: { st: [{ g: "electriser", lvl: 1 }] }, u: "Débloque l’action Électriser.", d: "La vapeur fait tourner des aimants dans des bobines, et le courant passe.",
     h: "Le moteur à vapeur fait tourner les aimants près des bobines. Ce mouvement peut donner du courant." };
-  I.cuivre_pur = { n: "Cuivre pur", sym: "Cu", col: "#ff9a5c", a: 7, t: "comp", r: ["electriser", { lingot_cuivre: 2 }, 2],
+  I.cuivre_pur = { n: "Cuivre pur", sym: "Cu", col: "#ff9a5c", a: 8, t: "comp", r: ["electriser", { lingot_cuivre: 2 }, 2],
     u: "Sert dans le four à arc, le réseau électrique et les puces.", d: "Raffiné par le courant, pur à 99,99 %.", h: "Le courant sépare les impuretés du cuivre." };
-  I.batterie = { n: "Batterie", ic: "🔋", a: 7, t: "comp", r: ["electriser", { plaque_cuivre: 2, lingot_etain: 1 }, 1],
+  I.batterie = { n: "Batterie", ic: "🔋", a: 8, t: "comp", r: ["electriser", { plaque_cuivre: 2, lingot_etain: 1 }, 1],
     u: "Sert dans le télégraphe, l’éclairage électrique, le poste radio, le four à arc et l’ordinateur.", d: "De l’électricité en boîte.", h: "Comment garder du courant sans faire tourner la dynamo ? Une plaque de cuivre et de l’étain pourraient t’y aider." };
-  I.ampoule = { n: "Ampoule", ic: "💡", a: 7, t: "comp", r: ["assembler", { verre: 1, fil_cuivre: 2 }, 1],
+  I.ampoule = { n: "Ampoule", ic: "💡", a: 8, t: "comp", r: ["assembler", { verre: 1, fil_cuivre: 2 }, 1],
     u: "Sert dans l’éclairage électrique et le poste radio.", d: "Le premier soir, tu restes longtemps à la regarder briller.", h: "Protégé par le verre, un fil de cuivre peut donner de la lumière." };
-  I.cable = { n: "Câble électrique", sym: "⌁", col: "#c7713b", a: 7, t: "comp", r: ["tresser", { fil_cuivre: 4 }, 1],
+  I.cable = { n: "Câble électrique", sym: "⌁", col: "#c7713b", a: 8, t: "comp", r: ["tresser", { fil_cuivre: 4 }, 1],
     u: "Sert dans le télégraphe et les capteurs de forage.", d: "Tu tresses comme au premier jour, mais avec du métal.", h: "Le fil de cuivre peut se tresser comme la fibre, pour former un lien qui conduit le courant." };
-  I.telegraphe = { n: "Télégraphe", ic: "📟", a: 7, t: "upg", r: ["assembler", { cable: 20, batterie: 6, aimant: 4 }, 1],
+  I.telegraphe = { n: "Télégraphe", ic: "📟", a: 8, t: "upg", r: ["assembler", { cable: 20, batterie: 6, aimant: 4 }, 1],
     e: { intu: 1 }, u: "Te rapporte 1 Intuition ✨ par minute.", d: "Tu tapes des messages dans le vide. Parfois, tu jurerais qu’on te répond.",
     h: "Un aimant peut claquer au bout d’un câble quand la batterie envoie du courant." };
-  I.eclairage = { n: "Éclairage électrique", ic: "🏮", a: 7, t: "upg", r: ["assembler", { ampoule: 100, fil_cuivre: 300, batterie: 30 }, 1],
+  I.eclairage = { n: "Éclairage électrique", ic: "🏮", a: 8, t: "upg", r: ["assembler", { ampoule: 100, fil_cuivre: 300, batterie: 30 }, 1],
     e: { auto: { mine: 1.5 }, exp: 1.5 }, u: "Augmente de 50 % la récolte de tes extracteurs dans les Profondeurs. Tes explorations vont 1,5 fois plus vite.", d: "Les galeries s’illuminent d’un bout à l’autre.",
     h: "Relie les ampoules par du fil de cuivre jusqu’à une batterie pour éclairer plusieurs lieux." };
-  I.radio = { n: "Poste radio", ic: "📻", a: 7, t: "tool", r: ["assembler", { bobine: 20, ampoule: 10, batterie: 10 }, 1],
+  I.radio = { n: "Poste radio", ic: "📻", a: 8, t: "tool", r: ["assembler", { bobine: 20, ampoule: 10, batterie: 10 }, 1],
     e: { arche: true }, u: "Capte les ondes radio.", d: "Surtout du bruit. Parfois autre chose.",
     h: "Les bobines captent le signal ; les ampoules et la batterie permettent de l’entendre." };
-  I.moteur_elec = { n: "Moteur électrique", ic: "🌀", a: 7, t: "comp", r: ["assembler", { bobine: 2, aimant: 2, lingot_acier: 2 }, 1],
+  I.moteur_elec = { n: "Moteur électrique", ic: "🌀", a: 8, t: "comp", r: ["assembler", { bobine: 2, aimant: 2, lingot_acier: 2 }, 1],
     u: "Sert dans le réseau électrique, la pelleteuse, la foreuse électrique et presque toutes les constructions qui suivent.", d: "Presque silencieux.", h: "Les bobines et les aimants peuvent produire un mouvement. Une carcasse d’acier permet de l’utiliser." };
-  I.four_arc = { n: "Four à arc", ic: "⚡", a: 7, t: "stat", r: ["assembler", { brique_refr: 400, cuivre_pur: 120, batterie: 60 }, 1],
+  I.four_arc = { n: "Four à arc", ic: "⚡", a: 8, t: "stat", r: ["assembler", { brique_refr: 400, cuivre_pur: 120, batterie: 60 }, 1],
     e: { st: [{ g: "chauffer", heat: 3500 }] }, u: "Chauffer monte jusqu’à 3 500 °C : assez pour le silicium.", d: "Un éclair permanent enfermé dans des briques.",
     h: "Le cuivre pur conduit le courant des batteries jusqu’au feu. Des briques réfractaires contiennent cette chaleur." };
-  I.reseau = { n: "Réseau électrique", ic: "🗼", a: 7, t: "upg", r: ["assembler", { moteur_elec: 20, fil_cuivre: 600, cuivre_pur: 100 }, 1],
+  I.reseau = { n: "Réseau électrique", ic: "🗼", a: 8, t: "upg", r: ["assembler", { moteur_elec: 20, fil_cuivre: 600, cuivre_pur: 100 }, 1],
     e: { auto: { "*": 1.5 } }, u: "Augmente de 50 % la récolte de tous tes extracteurs, dans toutes les terres.", d: "Des pylônes relient tous tes chantiers.", h: "Du fil de cuivre peut relier tous les moteurs. Le cuivre pur doit supporter le courant que l’ensemble demande." };
-  I.excavatrice = { n: "Pelleteuse électrique", sn: "pelleteuse", pl: "pelleteuses", ic: "🚜", a: 7, t: "ext", z: "desert", s: 1.25,
+  I.excavatrice = { n: "Pelleteuse électrique", sn: "pelleteuse", pl: "pelleteuses", ic: "🚜", a: 8, t: "ext", z: "desert", s: 1.25,
     r: ["assembler", { moteur_elec: 4, plaque_fer: 40, roue: 10 }, 1], p: { quartz: 1, sable: 2 },
     u: "Pose-la sur un gisement du Désert : elle récolte quartz ou sable à ta place.", d: "Elle avale les dunes.", h: "Des roues portent une benne de plaques de fer ; les moteurs électriques la font creuser." };
-  I.foreuse_elec = { n: "Foreuse électrique", sn: "foreuse", pl: "foreuses", ic: "🔧", a: 7, t: "ext", z: "mine", s: 1.25,
+  I.foreuse_elec = { n: "Foreuse électrique", sn: "foreuse", pl: "foreuses", ic: "🔧", a: 8, t: "ext", z: "mine", s: 1.25,
     r: ["assembler", { moteur_elec: 4, acier_trempe: 15, plaque_fer: 30 }, 1], p: { fer_min: 1.5, charbon: 1.5 },
     u: "Pose-la sur un gisement des Profondeurs : elle récolte minerai de fer ou charbon à ta place.", d: "Elle perce la roche en chantant.", h: "Un moteur électrique fait tourner la mèche d’acier trempé, guidée par un bâti de plaques de fer." };
 
-  /* Âge 8 — Silicium */
+  /* Âge 9 — Silicium */
   I.quartz = { b: 0.5, n: "Quartz", sym: "◇", col: "#d9d4f0", a: 4, t: "res", u: "Sert, bien plus tard, à fabriquer le silicium.", d: "Des cristaux limpides, tirés du sable." };
-  I.silicium = { n: "Silicium", sym: "Si", col: "#62758a", a: 8, t: "comp", r: ["chauffer", { quartz: 3, charbon: 2 }, 1, { heat: 3500 }],
+  I.silicium = { n: "Silicium", sym: "Si", col: "#62758a", a: 9, t: "comp", r: ["chauffer", { quartz: 3, charbon: 2 }, 1, { heat: 3500 }],
     u: "Sert à fabriquer les plaquettes de silicium.", d: "Un métal qui n’en est pas tout à fait un.", h: "Le quartz peut livrer une matière nouvelle s’il chauffe avec du charbon, à la température du four à arc." };
-  I.wafer = { n: "Plaquette de silicium", ic: "💿", a: 8, t: "comp", r: ["tailler", { silicium: 1 }, 4],
+  I.wafer = { n: "Plaquette de silicium", ic: "💿", a: 9, t: "comp", r: ["tailler", { silicium: 1 }, 4],
     u: "Sert dans les puces et les cellules photovoltaïques.", d: "Un disque miroir, parfaitement plat.", h: "Le silicium se taille en tranches assez fines pour recevoir des circuits." };
-  I.lithographe = { n: "Lithographe", ic: "🔬", a: 8, t: "stat", r: ["assembler", { lentille: 90, moteur_elec: 15, acier_trempe: 90 }, 1],
+  I.lithographe = { n: "Lithographe", ic: "🔬", a: 9, t: "stat", r: ["assembler", { lentille: 90, moteur_elec: 15, acier_trempe: 90 }, 1],
     e: { st: [{ g: "graver" }] }, u: "Débloque l’action Graver.", d: "Il dessine avec la lumière des traits plus fins qu’un cheveu.",
     h: "Les lentilles guident la lumière et les moteurs électriques règlent sa position. L’acier trempé empêche le bâti de se déformer." };
-  I.puce = { n: "Puce", sym: "▣", col: "#3f9a68", a: 8, t: "comp", r: ["graver", { wafer: 1, cuivre_pur: 1 }, 2],
+  I.puce = { n: "Puce", sym: "▣", col: "#3f9a68", a: 9, t: "comp", r: ["graver", { wafer: 1, cuivre_pur: 1 }, 2],
     u: "Sert dans les processeurs et les circuits imprimés.", d: "Des millions de minuscules interrupteurs.", h: "Le cuivre pur peut dessiner des pistes sur une plaquette de silicium si la lumière les grave assez finement." };
-  I.processeur = { n: "Processeur", sym: "µP", col: "#2f7d55", a: 8, t: "comp", r: ["graver", { puce: 4 }, 1],
+  I.processeur = { n: "Processeur", sym: "µP", col: "#2f7d55", a: 9, t: "comp", r: ["graver", { puce: 4 }, 1],
     u: "Sert dans l’ordinateur, les robots ouvriers, la ligne d’assemblage, le radiotélescope, et presque tout ce qui suit.", d: "Un caillou qui pense.", h: "Plusieurs puces peuvent se graver ensemble pour traiter des instructions." };
-  I.cellule = { n: "Cellule photovoltaïque", sym: "▥", col: "#3550a0", a: 8, t: "comp", r: ["graver", { wafer: 1, verre_trempe: 1 }, 1],
+  I.cellule = { n: "Cellule photovoltaïque", sym: "▥", col: "#3550a0", a: 9, t: "comp", r: ["graver", { wafer: 1, verre_trempe: 1 }, 1],
     u: "Sert dans le filet orbital et le panneau de Dyson.", d: "Tu la tournes vers le soleil, et elle donne du courant.", h: "La lumière qui traverse le verre trempé peut produire du courant sur une plaquette de silicium gravée." };
-  I.circuit = { n: "Circuit imprimé", sym: "⌗", col: "#2f6b3f", a: 8, t: "comp", r: ["graver", { plaque_cuivre: 1, puce: 1 }, 2],
+  I.circuit = { n: "Circuit imprimé", sym: "⌗", col: "#2f6b3f", a: 9, t: "comp", r: ["graver", { plaque_cuivre: 1, puce: 1 }, 2],
     u: "Sert dans les capteurs de forage et l’assembleur moléculaire.", d: "Une plaque de cuivre parcourue de pistes minuscules.", h: "Une puce commande le courant dans des pistes gravées sur une plaque de cuivre." };
-  I.capteurs = { n: "Capteurs de forage", ic: "📶", a: 8, t: "upg", r: ["assembler", { circuit: 12, moteur_elec: 6, cable: 30 }, 1],
+  I.capteurs = { n: "Capteurs de forage", ic: "📶", a: 9, t: "upg", r: ["assembler", { circuit: 12, moteur_elec: 6, cable: 30 }, 1],
     e: { auto: { mine: 1.5, desert: 1.5 } }, u: "Augmente de 50 % la récolte de tes extracteurs dans les Profondeurs et le Désert.", d: "Tes engins sentent où creuser.",
     h: "Des circuits suivent le mouvement des moteurs électriques et transmettent leurs mesures par câble." };
-  I.ordinateur = { n: "Ordinateur", ic: "🖥️", a: 8, t: "upg", r: ["assembler", { processeur: 15, batterie: 45, verre_trempe: 30 }, 1],
+  I.ordinateur = { n: "Ordinateur", ic: "🖥️", a: 9, t: "upg", r: ["assembler", { processeur: 15, batterie: 45, verre_trempe: 30 }, 1],
     e: { term: true, intu: 1, auto: { "*": 1.25 } }, u: "Ouvre le Terminal. Te rapporte 1 Intuition ✨ par minute et augmente de 25 % la récolte de tous tes extracteurs.", d: "Il calcule. Et il te parle.",
     h: "Le processeur calcule, la batterie l’alimente et le verre trempé forme l’écran." };
-  I.robots = { n: "Robots ouvriers", ic: "🤖", a: 8, t: "upg", r: ["assembler", { processeur: 45, moteur_elec: 75, acier_trempe: 180 }, 1],
+  I.robots = { n: "Robots ouvriers", ic: "🤖", a: 9, t: "upg", r: ["assembler", { processeur: 45, moteur_elec: 75, acier_trempe: 180 }, 1],
     e: { auto: { "*": 1.5 } }, u: "Augmente de 50 % la récolte de tous tes extracteurs, dans toutes les terres.", d: "Ils ne dorment jamais.", h: "Les moteurs électriques peuvent travailler à ta place si des processeurs les guident. L’acier trempé leur donnera un corps solide." };
-  I.chaine = { n: "Ligne d’assemblage", sn: "ligne d’assemblage", pl: "lignes d’assemblage", ic: "🏗️", a: 8, t: "mach", s: 1.3, spd: 120, ing: 3, prof: 1,
+  I.chaine = { n: "Ligne d’assemblage", sn: "ligne d’assemblage", pl: "lignes d’assemblage", ic: "🏗️", a: 9, t: "mach", s: 1.3, spd: 120, ing: 3, prof: 1,
     r: ["assembler", { processeur: 10, moteur_elec: 20, lingot_acier: 150 }, 1],
     u: "Palier 3, 120 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium.",
     h: "Les processeurs coordonnent les moteurs électriques le long d’une structure d’acier pour répéter le même travail." };
-  I.foreuse = { n: "Sonde pétrolière", ic: "🌪️", a: 8, t: "tool", r: ["assembler", { moteur_elec: 15, acier_trempe: 75, engrenage_acier: 90 }, 1],
+  I.foreuse = { n: "Sonde pétrolière", ic: "🌪️", a: 9, t: "tool", r: ["assembler", { moteur_elec: 15, acier_trempe: 75, engrenage_acier: 90 }, 1],
     e: { zone: "gisement" }, u: "Ouvre le chemin vers le Gisement Noir.", d: "Une longue tige d’acier qui perce jusqu’à l’huile noire. Elle descend bien plus bas que la foreuse des Profondeurs.", h: "Les moteurs électriques entraînent la mèche par des engrenages d’acier. La pointe doit être en acier trempé." };
-  I.derrick = { n: "Derrick", sn: "derrick", pl: "derricks", ic: "🛢️", a: 8, t: "ext", z: "gisement", s: 1.25,
+  I.derrick = { n: "Derrick", sn: "derrick", pl: "derricks", ic: "🛢️", a: 9, t: "ext", z: "gisement", s: 1.25,
     r: ["assembler", { moteur_elec: 6, lingot_acier: 60, clous: 240 }, 1], p: { petrole: 1 },
     u: "Pose-le sur un gisement de pétrole, dans le Gisement Noir : il le récolte à ta place.", d: "Il hoche la tête et l’huile monte.", h: "Le moteur électrique tire depuis une tour d’acier dont les clous tiennent les pièces." };
-  I.radiotelescope = { n: "Radiotélescope", ic: "📡", a: 8, t: "tool", r: ["assembler", { processeur: 15, plaque_fer: 450, bobine: 90 }, 1],
+  I.radiotelescope = { n: "Radiotélescope", ic: "📡", a: 9, t: "tool", r: ["assembler", { processeur: 15, plaque_fer: 450, bobine: 90 }, 1],
     e: { signal: true, sky: true }, u: "Ouvre le Cosmos. De là, tu peux écouter Kher.", d: "Une oreille géante tournée vers les étoiles.",
     h: "Une grande coupole de fer recueille les ondes. Des bobines les captent et des processeurs trient le signal." };
-  I.pip = { n: "Pip", ic: "🐞", a: 8, t: "curio", sec: true, r: ["assembler", { processeur: 1, moteur_elec: 1, laniere: 2 }, 1],
+  I.pip = { n: "Pip", ic: "🐞", a: 9, t: "curio", sec: true, r: ["assembler", { processeur: 1, moteur_elec: 1, laniere: 2 }, 1],
     e: { pip: 2 }, u: "Récolte à ta place, 2 fois par seconde, sur tes terres ouvertes.", d: "Un petit robot au bout d’une laisse de cuir. Il bipe quand il est content." };
-  I.capsule = { n: "Capsule temporelle", ic: "⏳", a: 8, t: "curio", sec: true, r: ["assembler", { processeur: 1, verre_trempe: 2, plaque_fer: 2 }, 1],
+  I.capsule = { n: "Capsule temporelle", ic: "⏳", a: 9, t: "curio", sec: true, r: ["assembler", { processeur: 1, verre_trempe: 2, plaque_fer: 2 }, 1],
     e: { capsule: true, once: { intu: 2 } }, u: "Agit à ta prochaine Relève.", d: "Tu y enregistres un message pour celui ou celle qui viendra après toi." };
 
-  /* Âge 9 — Polymères */
-  I.petrole = { b: 0.5, n: "Pétrole", sym: "●", col: "#17120e", a: 9, t: "res", u: "Sert à synthétiser : plastique, résine époxy, caoutchouc, dynamite.", d: "Des forêts mortes il y a cent millions d’années." };
-  I.bauxite = { b: 0.5, n: "Bauxite", sym: "◒", col: "#b8612f", a: 9, t: "res", u: "Sert à fabriquer l’aluminium.", d: "Une terre rouge qui cache un métal léger." };
-  I.ilmenite = { b: 0.5, n: "Ilménite", sym: "◓", col: "#4a4a5c", a: 9, t: "res", u: "Sert à fabriquer le titane.", d: "Un sable noir et lourd." };
-  I.terres_rares = { b: 0.2, n: "Terres rares", sym: "✳", col: "#8a6bbe", a: 9, t: "res", u: "Sert dans les aimants néodyme et les supraconducteurs.", d: "Pas si rares, mais si dispersées." };
-  I.reacteur = { n: "Réacteur chimique", ic: "🧪", a: 9, t: "stat", r: ["assembler", { acier_trempe: 240, verre_trempe: 120, processeur: 40 }, 1],
+  /* Âge 10 — Polymères */
+  I.petrole = { b: 0.5, n: "Pétrole", sym: "●", col: "#17120e", a: 10, t: "res", u: "Sert à synthétiser : plastique, résine époxy, caoutchouc, dynamite.", d: "Des forêts mortes il y a cent millions d’années." };
+  I.bauxite = { b: 0.5, n: "Bauxite", sym: "◒", col: "#b8612f", a: 10, t: "res", u: "Sert à fabriquer l’aluminium.", d: "Une terre rouge qui cache un métal léger." };
+  I.ilmenite = { b: 0.5, n: "Ilménite", sym: "◓", col: "#4a4a5c", a: 10, t: "res", u: "Sert à fabriquer le titane.", d: "Un sable noir et lourd." };
+  I.terres_rares = { b: 0.2, n: "Terres rares", sym: "✳", col: "#8a6bbe", a: 10, t: "res", u: "Sert dans les aimants néodyme et les supraconducteurs.", d: "Pas si rares, mais si dispersées." };
+  I.reacteur = { n: "Réacteur chimique", ic: "🧪", a: 10, t: "stat", r: ["assembler", { acier_trempe: 240, verre_trempe: 120, processeur: 40 }, 1],
     e: { st: [{ g: "synthetiser" }] }, u: "Débloque l’action Synthétiser.", d: "Des cuves, et des tuyaux partout.",
     h: "Les réactions demandent une cuve d’acier trempé. À travers le verre trempé, les processeurs pourront suivre ce qui s’y passe." };
-  I.plastique = { n: "Plastique", ic: "🧴", a: 9, t: "comp", r: ["synthetiser", { petrole: 3 }, 2],
+  I.plastique = { n: "Plastique", ic: "🧴", a: 10, t: "comp", r: ["synthetiser", { petrole: 3 }, 2],
     u: "Sert dans l’outillage électrique, la fibre de carbone et le graphène. Il en faut aussi pour le passage vers les Pics Fracturés.", d: "Tu peux lui donner toutes les formes et toutes les couleurs.", h: "Les molécules du pétrole peuvent se recomposer en une matière qui garde la forme qu’on lui donne." };
-  I.resine = { n: "Résine époxy", ic: "🍯", a: 9, t: "comp", r: ["synthetiser", { petrole: 2, bois: 6 }, 1],
+  I.resine = { n: "Résine époxy", ic: "🍯", a: 10, t: "comp", r: ["synthetiser", { petrole: 2, bois: 6 }, 1],
     u: "Sert à fabriquer le composite carbone.", d: "Une colle qui durcit comme de la pierre.", h: "Le pétrole et le bois peuvent se recomposer en une colle qui durcit après l’application." };
-  I.dynamite = { n: "Dynamite", ic: "🧨", a: 9, t: "comp", r: ["synthetiser", { petrole: 2, argile: 3 }, 3],
+  I.dynamite = { n: "Dynamite", ic: "🧨", a: 10, t: "comp", r: ["synthetiser", { petrole: 2, argile: 3 }, 3],
     e: { zone: "montagnes" }, u: "Ouvre le chemin vers les Pics Fracturés. Sert aussi dans la carrière et l’excavateur géant.", d: "Tu allumes la mèche, et tu cours.",
     h: "L’argile peut absorber la préparation explosive tirée du pétrole, pour qu’on puisse la transporter." };
-  I.caoutchouc = { n: "Caoutchouc", sym: "◖", col: "#3b3b3b", a: 9, t: "comp", r: ["synthetiser", { petrole: 2, charbon: 1 }, 2],
+  I.caoutchouc = { n: "Caoutchouc", sym: "◖", col: "#3b3b3b", a: 10, t: "comp", r: ["synthetiser", { petrole: 2, charbon: 1 }, 2],
     u: "Sert dans les tapis convoyeurs.", d: "Il rebondit, et il isole.", h: "Avec du charbon, le pétrole peut se transformer en une matière souple qui reprend sa forme après un choc." };
-  I.convoyeurs = { n: "Tapis convoyeurs", ic: "📦", a: 9, t: "upg", r: ["assembler", { caoutchouc: 80, moteur_elec: 12, lingot_acier: 80 }, 1],
+  I.convoyeurs = { n: "Tapis convoyeurs", ic: "📦", a: 10, t: "upg", r: ["assembler", { caoutchouc: 80, moteur_elec: 12, lingot_acier: 80 }, 1],
     e: { aspd: 1.5 }, u: "Tes machines fabriquent 50 % plus vite.", d: "Des bras chargent les pièces tout seuls, et les courroies défilent plus vite.",
     h: "Les moteurs électriques entraînent les bandes de caoutchouc sur une structure d’acier." };
-  I.aluminium = { n: "Aluminium", sym: "Al", col: "#c4cad3", a: 9, t: "comp", r: ["electriser", { bauxite: 4, charbon: 1 }, 1],
+  I.aluminium = { n: "Aluminium", sym: "Al", col: "#c4cad3", a: 10, t: "comp", r: ["electriser", { bauxite: 4, charbon: 1 }, 1],
     u: "Sert dans le titane et la céramique technique. Il en faut aussi pour le passage vers l’Orbite Basse.", d: "Autrefois plus précieux que l’or.", h: "Le courant extrait un métal léger de la bauxite, avec le charbon pour électrodes." };
-  I.titane = { n: "Titane", sym: "Ti", col: "#8f93a8", a: 9, t: "comp", r: ["chauffer", { ilmenite: 4, aluminium: 1 }, 1, { heat: 3500 }],
+  I.titane = { n: "Titane", sym: "Ti", col: "#8f93a8", a: 10, t: "comp", r: ["chauffer", { ilmenite: 4, aluminium: 1 }, 1, { heat: 3500 }],
     u: "Sert dans beaucoup de recettes de l’espace : moteur-fusée, propulseur à fusion, autoclave, outillage électrique, excavateur géant. Il en faut aussi pour les passages vers l’Orbite Basse et la Lune.", d: "Léger, et il ne rouille pas.", h: "L’aluminium peut extraire un autre métal de l’ilménite, mais il faut la chaleur du four à arc." };
-  I.aimant_neo = { n: "Aimant néodyme", sym: "Nd", col: "#7461b3", a: 9, t: "comp", r: ["allier", { terres_rares: 2, lingot_fer: 2 }, 1, { heat: 1700 }],
+  I.aimant_neo = { n: "Aimant néodyme", sym: "Nd", col: "#7461b3", a: 10, t: "comp", r: ["allier", { terres_rares: 2, lingot_fer: 2 }, 1, { heat: 1700 }],
     u: "Sert à construire la centrale électrique.", d: "Petit et terriblement puissant.", h: "Les terres rares, alliées au fer, donnent un aimant bien plus puissant." };
-  I.centrale = { n: "Centrale électrique", ic: "🌩️", a: 9, t: "stat", r: ["assembler", { aimant_neo: 120, moteur_elec: 80, cuivre_pur: 600 }, 1],
+  I.centrale = { n: "Centrale électrique", ic: "🌩️", a: 10, t: "stat", r: ["assembler", { aimant_neo: 120, moteur_elec: 80, cuivre_pur: 600 }, 1],
     e: { st: [{ g: "electriser", lvl: 2 }], auto: { "*": 1.5 } }, u: "Tes extracteurs récoltent 50 % plus vite, dans toutes les terres.", d: "Des turbines géantes tournent jour et nuit.",
     h: "De puissants aimants et des moteurs électriques peuvent fournir du courant en grande quantité. Le cuivre pur doit le conduire." };
-  I.outillage = { n: "Outillage électrique", ic: "🔧", a: 9, t: "tool", r: ["assembler", { titane: 60, plastique: 120, moteur_elec: 15 }, 1],
+  I.outillage = { n: "Outillage électrique", ic: "🔧", a: 10, t: "tool", r: ["assembler", { titane: 60, plastique: 120, moteur_elec: 15 }, 1],
     e: { tap: { montagnes: 3, gisement: 3, desert: 2 } }, u: "Triple ta récolte à la main dans les Pics Fracturés et le Gisement Noir, et la double dans le Désert de Verre.", d: "Perceuse, tronçonneuse, marteau-piqueur.", h: "Un moteur électrique entraîne l’outil de titane, tandis que le plastique isole la poignée." };
-  I.carriere = { n: "Carrière à ciel ouvert", sn: "carrière", pl: "carrières", ic: "🏔️", a: 9, t: "ext", z: "montagnes", s: 1.25,
+  I.carriere = { n: "Carrière à ciel ouvert", sn: "carrière", pl: "carrières", ic: "🏔️", a: 10, t: "ext", z: "montagnes", s: 1.25,
     r: ["assembler", { dynamite: 80, moteur_elec: 10, acier_trempe: 60 }, 1], p: { bauxite: 1, ilmenite: 0.8, terres_rares: 0.3 },
     u: "Pose-la sur un gisement des Pics Fracturés : elle récolte la bauxite, l’ilménite ou les terres rares à ta place.", d: "Tu ne creuses plus : tu fais sauter.", h: "La dynamite ouvre la roche ; les moteurs électriques déplacent les godets d’acier trempé." };
-  I.feu_artifice = { n: "Feu d’artifice", ic: "🎆", a: 9, t: "curio", sec: true, r: ["chauffer", { dynamite: 1, plaque_cuivre: 1 }, 1, { heat: 600 }],
+  I.feu_artifice = { n: "Feu d’artifice", ic: "🎆", a: 10, t: "curio", sec: true, r: ["chauffer", { dynamite: 1, plaque_cuivre: 1 }, 1, { heat: 600 }],
     e: { once: { intu: 3 }, fireworks: true },
     d: "Le cuivre brûle vert et bleu. Des Lucioles tournent autour des étincelles. Tu ris, pour la première fois depuis ton éveil." };
 
-  /* Âge 10 — Composites */
-  I.fibre_carbone = { n: "Fibre de carbone", sym: "〰", col: "#262626", a: 10, t: "comp", r: ["chauffer", { plastique: 4 }, 2, { heat: 3500 }],
+  /* Âge 11 — Composites */
+  I.fibre_carbone = { n: "Fibre de carbone", sym: "〰", col: "#262626", a: 11, t: "comp", r: ["chauffer", { plastique: 4 }, 2, { heat: 3500 }],
     u: "Sert à tresser le tissu de carbone.", d: "Un fil noir, plus solide que l’acier.", h: "À la chaleur du four à arc, le plastique perd ce qui le rend souple et laisse des fils noirs." };
-  I.tissu_carbone = { n: "Tissu de carbone", sym: "▦", col: "#2b2b2b", a: 10, t: "comp", r: ["tresser", { fibre_carbone: 4 }, 1],
+  I.tissu_carbone = { n: "Tissu de carbone", sym: "▦", col: "#2b2b2b", a: 11, t: "comp", r: ["tresser", { fibre_carbone: 4 }, 1],
     u: "Sert à fabriquer le composite carbone.", d: "Tu tresses du fil noir comme tu tressais les herbes de la Lisière.", h: "Les fibres de carbone se croisent comme les herbes de la Lisière. Tu connais déjà le geste qui les fera tenir ensemble." };
-  I.autoclave = { n: "Autoclave", ic: "⏲️", a: 10, t: "stat", r: ["assembler", { titane: 200, acier_trempe: 400, processeur: 100 }, 1],
+  I.autoclave = { n: "Autoclave", ic: "⏲️", a: 11, t: "stat", r: ["assembler", { titane: 200, acier_trempe: 400, processeur: 100 }, 1],
     e: { st: [{ g: "stratifier" }] }, u: "Débloque l’action Stratifier.", d: "Il règle la pression et la chaleur au degré près.",
     h: "Les processeurs règlent la chaleur et la pression dans une cuve de titane renforcée d’acier trempé." };
-  I.composite = { n: "Composite carbone", sym: "▩", col: "#1d3038", a: 10, t: "comp", r: ["stratifier", { tissu_carbone: 2, resine: 1 }, 1],
+  I.composite = { n: "Composite carbone", sym: "▩", col: "#1d3038", a: 11, t: "comp", r: ["stratifier", { tissu_carbone: 2, resine: 1 }, 1],
     u: "Sert dans la fusée, le vaisseau, les boucliers thermiques et bien d’autres. Il en faut aussi pour les passages vers l’Orbite Basse, la Lune et Mercure.", d: "Une plaque noire, légère, que rien ne raye.", h: "Le tissu de carbone reste souple. La résine peut lier ses couches pour en faire une plaque rigide." };
-  I.ceramique = { n: "Céramique technique", sym: "◐", col: "#e8e2d6", a: 10, t: "comp", r: ["chauffer", { argile: 6, aluminium: 2 }, 1, { heat: 3500 }],
+  I.ceramique = { n: "Céramique technique", sym: "◐", col: "#e8e2d6", a: 11, t: "comp", r: ["chauffer", { argile: 6, aluminium: 2 }, 1, { heat: 3500 }],
     u: "Sert dans le bouclier thermique et le moteur-fusée.", d: "De l’argile, comme tes premières briques. Celle-ci supporte la rentrée dans l’atmosphère.",
     h: "L’argile mêlée d’aluminium peut donner une pièce qui supporte de très fortes chaleurs. Il faut la cuisson du four à arc." };
-  I.bouclier_th = { n: "Bouclier thermique", ic: "🛡️", a: 10, t: "comp", r: ["stratifier", { ceramique: 4, composite: 1 }, 1],
+  I.bouclier_th = { n: "Bouclier thermique", ic: "🛡️", a: 11, t: "comp", r: ["stratifier", { ceramique: 4, composite: 1 }, 1],
     u: "Sert dans la fusée, l’alunisseur et la forge stellaire.", d: "Il encaisse 3 000 °C sans broncher.", h: "La céramique reçoit la chaleur ; le composite la porte sans trop alourdir la pièce. Il faut les disposer par couches." };
-  I.graphene = { n: "Graphène", sym: "⬡", col: "#3a3a3a", a: 10, t: "comp", r: ["tailler", { charbon: 10, plastique: 1 }, 1],
+  I.graphene = { n: "Graphène", sym: "⬡", col: "#3a3a3a", a: 11, t: "comp", r: ["tailler", { charbon: 10, plastique: 1 }, 1],
     u: "Sert dans le réacteur à fusion, l’intelligence artificielle, la forge stellaire, le métamatériau et la matière exotique.", d: "Une couche d’atomes de carbone. Tu l’obtiens en arrachant des feuilles de charbon avec un ruban collant. Sérieusement.",
     h: "Un ruban de plastique peut arracher au charbon des feuilles presque aussi fines qu’un atome." };
-  I.supra = { n: "Supraconducteur", sym: "∞", col: "#5fc9f0", a: 10, t: "comp", r: ["allier", { terres_rares: 2, cuivre_pur: 3 }, 1, { heat: 3500 }],
+  I.supra = { n: "Supraconducteur", sym: "∞", col: "#5fc9f0", a: 11, t: "comp", r: ["allier", { terres_rares: 2, cuivre_pur: 3 }, 1, { heat: 3500 }],
     u: "Sert dans le propulseur à fusion, la base lunaire, le filet orbital, l’intelligence artificielle et bien d’autres.", d: "Le courant y circule sans perte, pour toujours.", h: "Le cuivre pur et les terres rares peuvent former un alliage où le courant circule sans perte. Il faut fondre très chaud." };
-  I.moteur_fusee = { n: "Moteur-fusée", ic: "☄️", a: 10, t: "comp", r: ["assembler", { titane: 15, ceramique: 10, processeur: 3 }, 1],
+  I.moteur_fusee = { n: "Moteur-fusée", ic: "☄️", a: 11, t: "comp", r: ["assembler", { titane: 15, ceramique: 10, processeur: 3 }, 1],
     u: "Sert dans la fusée et l’alunisseur.", d: "Une tuyère qui crache le feu.", h: "Le titane porte le moteur, la céramique supporte sa chaleur et les processeurs règlent la poussée." };
-  I.fusee = { n: "Fusée", ic: "🚀", a: 10, t: "tool", r: ["assembler", { moteur_fusee: 25, composite: 400, bouclier_th: 60 }, 1],
+  I.fusee = { n: "Fusée", ic: "🚀", a: 11, t: "tool", r: ["assembler", { moteur_fusee: 25, composite: 400, bouclier_th: 60 }, 1],
     e: { zone: "orbite" }, u: "Ouvre le chemin vers l’Orbite Basse.", d: "Tu t’assieds tout en haut, au-dessus de tonnes de carburant.", h: "Les moteurs doivent emporter une coque de composite, protégée par des boucliers thermiques." };
-  I.drones = { n: "Essaim de drones", ic: "🐝", a: 10, t: "upg", r: ["assembler", { composite: 200, processeur: 150, moteur_elec: 200 }, 1],
+  I.drones = { n: "Essaim de drones", ic: "🐝", a: 11, t: "upg", r: ["assembler", { composite: 200, processeur: 150, moteur_elec: 200 }, 1],
     e: { auto: { "*": 1.5 } }, u: "Tes extracteurs récoltent 50 % plus vite, dans toutes les terres.", d: "Des milliers de petites hélices bourdonnent au-dessus de tes gisements.", h: "Une coque de composite allège la machine ; ses processeurs guident les moteurs électriques." };
-  I.plateforme = { n: "Plateforme pétrolière", sn: "plateforme", pl: "plateformes", ic: "🛳️", a: 10, t: "ext", z: "gisement", s: 1.25,
+  I.plateforme = { n: "Plateforme pétrolière", sn: "plateforme", pl: "plateformes", ic: "🛳️", a: 11, t: "ext", z: "gisement", s: 1.25,
     r: ["assembler", { composite: 50, moteur_elec: 40, acier_trempe: 150 }, 1], p: { petrole: 3 },
     u: "Pose-la sur un gisement du Gisement Noir : elle récolte le pétrole à ta place.", d: "Une ville flottante qui pompe l’huile.", h: "Les moteurs déplacent une coque de composite posée sur une armature d’acier trempé." };
-  I.excavateur = { n: "Excavateur géant", sn: "excavateur", pl: "excavateurs", ic: "🦣", a: 10, t: "ext", z: "montagnes", s: 1.25,
+  I.excavateur = { n: "Excavateur géant", sn: "excavateur", pl: "excavateurs", ic: "🦣", a: 11, t: "ext", z: "montagnes", s: 1.25,
     r: ["assembler", { titane: 120, moteur_elec: 50, dynamite: 250 }, 1], p: { bauxite: 3, ilmenite: 2, terres_rares: 0.8 },
     u: "Pose-le sur un gisement des Pics Fracturés : il récolte la bauxite, l’ilménite ou les terres rares à ta place.", d: "Un monstre de titane qui mange les montagnes.", h: "Les moteurs électriques déplacent la structure de titane jusqu’à la roche que la dynamite ouvre." };
 
-  /* Âge 11 — Spatial */
-  I.debris = { b: 0.25, n: "Débris orbitaux", sym: "⁂", col: "#7a7f8a", a: 11, t: "res", u: "Sert à usiner l’alliage ancien. Il en faut aussi pour le passage vers la Lune.", d: "Des satellites morts, des panneaux, des boulons, qui tournent là depuis des milliers d’années." };
-  I.helium3 = { b: 0.1, n: "Hélium-3", sym: "³He", col: "#7fd9e6", a: 11, t: "res", u: "Sert dans le propulseur à fusion, le réacteur à fusion, la matière exotique et l’antimatière. Il en faut aussi pour le passage vers Mercure.", d: "Rare sur Terre, abondant dans la poussière lunaire." };
-  I.regolithe = { b: 0.5, n: "Régolithe", sym: "∷", col: "#9a9a9a", a: 11, t: "res", u: "Sert au passage vers Mercure, puis à un Grand Œuvre.", d: "La poussière grise de la Lune." };
-  I.station_orbitale = { n: "Filet orbital", sn: "filet", pl: "filets", ic: "🛰️", a: 11, t: "ext", z: "orbite", s: 1.25,
+  /* Âge 12 — Spatial */
+  I.debris = { b: 0.25, n: "Débris orbitaux", sym: "⁂", col: "#7a7f8a", a: 12, t: "res", u: "Sert à usiner l’alliage ancien. Il en faut aussi pour le passage vers la Lune.", d: "Des satellites morts, des panneaux, des boulons, qui tournent là depuis des milliers d’années." };
+  I.helium3 = { b: 0.1, n: "Hélium-3", sym: "³He", col: "#7fd9e6", a: 12, t: "res", u: "Sert dans le propulseur à fusion, le réacteur à fusion, la matière exotique et l’antimatière. Il en faut aussi pour le passage vers Mercure.", d: "Rare sur Terre, abondant dans la poussière lunaire." };
+  I.regolithe = { b: 0.5, n: "Régolithe", sym: "∷", col: "#9a9a9a", a: 12, t: "res", u: "Sert au passage vers Mercure, puis à un Grand Œuvre.", d: "La poussière grise de la Lune." };
+  I.station_orbitale = { n: "Filet orbital", sn: "filet", pl: "filets", ic: "🛰️", a: 12, t: "ext", z: "orbite", s: 1.25,
     r: ["assembler", { composite: 280, supra: 45, cellule: 150 }, 1], p: { debris: 0.5 },
     u: "Pose-le sur un gisement de l’Orbite Basse : il récolte les débris orbitaux à ta place.", d: "Un filet qui ramasse les restes des Anciens.", h: "Les cellules solaires alimentent les supraconducteurs à l’abri d’une coque de composite." };
-  I.alliage_ancien = { n: "Alliage ancien", sym: "Ω", col: "#a99cf0", a: 11, t: "comp", r: ["usiner", { debris: 5 }, 1],
+  I.alliage_ancien = { n: "Alliage ancien", sym: "Ω", col: "#a99cf0", a: 12, t: "comp", r: ["usiner", { debris: 5 }, 1],
     u: "Sert dans l’alunisseur, la base lunaire, le vaisseau interplanétaire et le réplicateur.", d: "Un métal que tu ne sais pas fabriquer. Les Anciens, si.", h: "Récupère et usine ce que les Anciens ont laissé en orbite." };
-  I.alunisseur = { n: "Alunisseur", ic: "🌙", a: 11, t: "tool", r: ["assembler", { moteur_fusee: 45, alliage_ancien: 200, bouclier_th: 90 }, 1],
+  I.alunisseur = { n: "Alunisseur", ic: "🌙", a: 12, t: "tool", r: ["assembler", { moteur_fusee: 45, alliage_ancien: 200, bouclier_th: 90 }, 1],
     e: { zone: "lune" }, u: "Ouvre le chemin vers la Lune.", d: "Un petit pas pour un Semeur.", h: "Les moteurs-fusées freinent la descente ; le métal des Anciens et les boucliers protègent la coque." };
-  I.base_lunaire = { n: "Base lunaire", sn: "base", pl: "bases", ic: "🏕️", a: 11, t: "ext", z: "lune", s: 1.25,
+  I.base_lunaire = { n: "Base lunaire", sn: "base", pl: "bases", ic: "🏕️", a: 12, t: "ext", z: "lune", s: 1.25,
     r: ["assembler", { alliage_ancien: 200, supra: 90, processeur: 150 }, 1], p: { helium3: 0.5, regolithe: 1.5 },
     u: "Pose-la sur un gisement de la Lune : elle récolte l’hélium-3 ou le régolithe à ta place.", d: "Des dômes sous la lumière de la Terre.", h: "Le métal des Anciens forme l’abri. Les processeurs distribuent le courant par les supraconducteurs sans en perdre." };
-  I.propulseur = { n: "Propulseur à fusion", sym: "⇶", col: "#ffb347", a: 11, t: "comp", r: ["assembler", { supra: 10, helium3: 30, titane: 30 }, 1],
+  I.propulseur = { n: "Propulseur à fusion", sym: "⇶", col: "#ffb347", a: 12, t: "comp", r: ["assembler", { supra: 10, helium3: 30, titane: 30 }, 1],
     u: "Sert dans le vaisseau interplanétaire, la forge stellaire et le réplicateur.", d: "Une petite étoile en bouteille.", h: "Les supraconducteurs peuvent contenir la fusion de l’hélium-3. Dans une coque de titane, cette énergie pourrait pousser un vaisseau." };
-  I.reacteur_fusion = { n: "Réacteur à fusion", ic: "⚛️", a: 11, t: "upg", r: ["assembler", { supra: 280, helium3: 720, graphene: 390 }, 1],
+  I.reacteur_fusion = { n: "Réacteur à fusion", ic: "⚛️", a: 12, t: "upg", r: ["assembler", { supra: 280, helium3: 720, graphene: 390 }, 1],
     e: { auto: { "*": 1.5 } }, u: "Tes extracteurs récoltent 50 % plus vite, dans toutes les terres.", d: "De l’énergie, autant que tu en veux.", h: "Une enveloppe de graphène entoure le dispositif où les supraconducteurs contiennent la fusion de l’hélium-3." };
-  I.vaisseau = { n: "Vaisseau interplanétaire", ic: "🛸", a: 11, t: "tool", r: ["assembler", { propulseur: 45, composite: 960, alliage_ancien: 480 }, 1],
+  I.vaisseau = { n: "Vaisseau interplanétaire", ic: "🛸", a: 12, t: "tool", r: ["assembler", { propulseur: 45, composite: 960, alliage_ancien: 480 }, 1],
     e: { zone: "mercure" }, u: "Ouvre le chemin vers Mercure.", d: "Cette fois, tu pars vers le Soleil.", h: "Une coque de composite renforcée du métal des Anciens peut porter les propulseurs à fusion jusqu’aux autres planètes." };
-  I.ia = { n: "Intelligence artificielle", ic: "🧠", a: 11, t: "upg", r: ["assembler", { processeur: 720, supra: 200, graphene: 280 }, 1],
+  I.ia = { n: "Intelligence artificielle", ic: "🧠", a: 12, t: "upg", r: ["assembler", { processeur: 720, supra: 200, graphene: 280 }, 1],
     e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Elle répond avant que tu aies fini. Elle a la voix qui te raconte.",
     h: "Les processeurs peuvent travailler ensemble si le graphène et les supraconducteurs les relient assez vite." };
-  I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 11, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
+  I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 12, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
     u: "Palier 3. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main. 600 fabrications par minute.", d: "Il assemble la matière atome par atome.",
     h: "Les circuits transmettent les ordres des processeurs, tandis que les supraconducteurs règlent les gestes à l’échelle des molécules." };
 
-  /* Âge 12 — Stellaire */
-  I.metal_mercure = { b: 0.5, n: "Métal mercurien", sym: "☿", col: "#c9a24a", a: 12, t: "res", u: "Sert dans le métamatériau, le panneau de Dyson et les Grands Œuvres.", d: "Mercure, démontée boulon par boulon." };
-  I.forge_stellaire = { n: "Forge stellaire", ic: "🌟", a: 12, t: "stat", r: ["assembler", { propulseur: 45, graphene: 720, bouclier_th: 280 }, 1],
+  /* Âge 13 — Stellaire */
+  I.metal_mercure = { b: 0.5, n: "Métal mercurien", sym: "☿", col: "#c9a24a", a: 13, t: "res", u: "Sert dans le métamatériau, le panneau de Dyson et les Grands Œuvres.", d: "Mercure, démontée boulon par boulon." };
+  I.forge_stellaire = { n: "Forge stellaire", ic: "🌟", a: 13, t: "stat", r: ["assembler", { propulseur: 45, graphene: 720, bouclier_th: 280 }, 1],
     e: { st: [{ g: "transmuter" }, { g: "chauffer", heat: 50000 }] }, u: "Débloque l’action Transmuter. Chauffer y monte jusqu’à 50 000 °C.", d: "Même derrière le verre fumé, tu dois détourner les yeux.",
     h: "La chaleur des propulseurs à fusion peut servir à transformer les matériaux. Le graphène et les boucliers doivent la contenir." };
-  I.replicateur = { n: "Réplicateur", sn: "réplicateur", pl: "réplicateurs", ic: "🦾", a: 12, t: "ext", z: "mercure", s: 1.12,
+  I.replicateur = { n: "Réplicateur", sn: "réplicateur", pl: "réplicateurs", ic: "🦾", a: 13, t: "ext", z: "mercure", s: 1.12,
     r: ["assembler", { processeur: 150, alliage_ancien: 150, propulseur: 9 }, 1], p: { metal_mercure: 3 },
     u: "Pose-le sur un gisement de Mercure : il récolte le métal mercurien à ta place.", d: "Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.", h: "Une machine construite en métal ancien pourrait fabriquer ses propres pièces. Il lui faut des processeurs et l’énergie des propulseurs à fusion." };
-  I.metamateriau = { n: "Métamatériau", sym: "✶", col: "#d58cff", a: 12, t: "comp", r: ["stratifier", { graphene: 4, metal_mercure: 10 }, 1],
+  I.metamateriau = { n: "Métamatériau", sym: "✶", col: "#d58cff", a: 13, t: "comp", r: ["stratifier", { graphene: 4, metal_mercure: 10 }, 1],
     u: "Sert dans le panneau de Dyson et les Grands Œuvres.", d: "Une matière qui plie la lumière.", h: "Entre deux couches de métal mercurien, une feuille de graphène pourrait changer le trajet de la lumière." };
-  I.matiere_exotique = { n: "Matière exotique", sym: "✺", col: "#9b59ff", a: 12, t: "comp", r: ["transmuter", { helium3: 10, graphene: 2 }, 1],
+  I.matiere_exotique = { n: "Matière exotique", sym: "✺", col: "#9b59ff", a: 13, t: "comp", r: ["transmuter", { helium3: 10, graphene: 2 }, 1],
     u: "Nécessaire pour un Grand Œuvre.", d: "Sa masse est négative. Tu refais la mesure trois fois.", h: "Autour d’une trame de graphène, l’hélium-3 peut se transmuter en une matière aux propriétés nouvelles." };
-  I.antimatiere = { n: "Antimatière", sym: "⊖", col: "#ff4fa3", a: 12, t: "comp", r: ["transmuter", { helium3: 20, supra: 1 }, 1],
+  I.antimatiere = { n: "Antimatière", sym: "⊖", col: "#ff4fa3", a: 13, t: "comp", r: ["transmuter", { helium3: 20, supra: 1 }, 1],
     u: "Nécessaire pour un Grand Œuvre.", d: "Un gramme suffit à raser une ville.", h: "L’hélium-3 transmuté ne doit toucher aucune paroi. Le champ des supraconducteurs peut le maintenir à distance." };
-  I.panneau_dyson = { n: "Panneau de Dyson", sym: "⬢", col: "#ffcf4a", a: 12, t: "comp",
+  I.panneau_dyson = { n: "Panneau de Dyson", sym: "⬢", col: "#ffcf4a", a: 13, t: "comp",
     r: ["stratifier", { metamateriau: 2, cellule: 6, metal_mercure: 30 }, 1],
     u: "Nécessaire pour les Grands Œuvres.", d: "Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.", h: "Le métal mercurien porte les cellules solaires. Des couches de métamatériau guident la lumière jusqu’à elles." };
-  I.diamant = { n: "Diamant", ic: "💎", a: 12, t: "comp", sec: true, r: ["chauffer", { graphene: 4 }, 1, { heat: 50000 }],
+  I.diamant = { n: "Diamant", ic: "💎", a: 13, t: "comp", sec: true, r: ["chauffer", { graphene: 4 }, 1, { heat: 50000 }],
     d: "Sous une chaleur d’étoile, le carbone devient éternel." };
-  I.bague = { n: "Bague de la promesse", ic: "💍", a: 12, t: "curio", sec: true, r: ["assembler", { diamant: 1, alliage_ancien: 1 }, 1],
+  I.bague = { n: "Bague de la promesse", ic: "💍", a: 13, t: "curio", sec: true, r: ["assembler", { diamant: 1, alliage_ancien: 1 }, 1],
     e: { once: { intu: 5 } },
     d: "La douzième bague, refaite. Tu la passes à ton doigt : elle est à ta taille." };
-  I.philosophale = { n: "Pierre philosophale", ic: "🟡", a: 12, t: "curio", sec: true, r: ["transmuter", { caillou: 500 }, 1],
+  I.philosophale = { n: "Pierre philosophale", ic: "🟡", a: 13, t: "curio", sec: true, r: ["transmuter", { caillou: 500 }, 1],
     e: { tap: { "*": 2 } },
     u: "Double ta récolte à la main dans toutes les terres.", d: "Ce que cherchaient les alchimistes, tiré du plus banal des cailloux. Elle ne change rien en or." };
 
@@ -584,16 +603,16 @@
   I.resonite = { b: 0.5, n: "Résonite", sym: "◊", col: "#b36bff", a: 5, t: "res", d: "Un cristal violet qui vibre quand on chante près de lui." };
   I.diapason = { n: "Diapason", sym: "Ψ", col: "#c9a0ff", a: 5, t: "comp", path: true, r: ["accorder", { resonite: 5, lingot_bronze: 2 }, 1],
     d: "Il donne la note juste. Toujours la même.", h: "La résonite peut donner sa note au bronze si leurs vibrations s’accordent." };
-  I.cristal_chantant = { n: "Cristal chantant", ic: "🔮", a: 7, t: "comp", path: true, r: ["accorder", { resonite: 10, verre: 4 }, 1],
+  I.cristal_chantant = { n: "Cristal chantant", ic: "🔮", a: 8, t: "comp", path: true, r: ["accorder", { resonite: 10, verre: 4 }, 1],
     d: "Il retient une mélodie et la répète à l’infini.", h: "Le verre peut prolonger la vibration de la résonite si leurs sons s’accordent." };
-  I.traducteur = { n: "Traducteur", ic: "🗝️", a: 8, t: "relic", path: true, r: ["accorder", { signal_brut: 1, processeur: 4, cristal_chantant: 2 }, 1],
+  I.traducteur = { n: "Traducteur", ic: "🗝️", a: 9, t: "relic", path: true, r: ["accorder", { signal_brut: 1, processeur: 4, cristal_chantant: 2 }, 1],
     e: { decode: true }, u: "Décode le signal de Kher.", d: "Il traduit l’intention plus que les mots.",
     h: "Les cristaux chantants donnent une hauteur au signal brut. Les processeurs pourraient y reconnaître des mots." };
 
   /* Reliques trouvées en exploration */
   I.tablette = { n: "Tablette des astres", sym: "⌖", col: "#857a66", a: 3, t: "relic", d: "Une pierre gravée de cercles et d’encoches pour des roues dentées qui n’existent plus." };
   I.partition = { n: "Vieille partition", ic: "📜", a: 5, t: "relic", old: true, d: "Une feuille de notes à l’encre pâlie. Les chiffres ne disent plus rien." };
-  I.signal_brut = { n: "Signal de Kher", ic: "〽️", a: 8, t: "relic", d: "L’enregistrement brut du signal venu de Kher. Tu n’y comprends rien, pour l’instant." };
+  I.signal_brut = { n: "Signal de Kher", ic: "〽️", a: 9, t: "relic", d: "L’enregistrement brut du signal venu de Kher. Tu n’y comprends rien, pour l’instant." };
 
   /* ---------------------------------------------------------------- LIGNES D’EXTRACTEURS
    * Un bâtiment par ressource : le bois a son Bûcheron, la pierre son Carrier, la peau son Tanneur…
@@ -952,8 +971,10 @@
     { k: "pass", z: "desert", n: "Vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
     ["haut_fourneau", "Pour l’acier, il faut encore plus chaud. Le haut-fourneau monte jusqu’à 1 700 °C."],
     ["lingot_acier", "Fer et carbone, à très haute température."],
+    ["acier_trempe", "Plonge l’acier brûlant dans l’eau froide : il devient dur comme jamais."],
     ["tour", "La tour d’usinage débloque l’action Usiner, pour travailler le métal avec la précision d’une machine."],
     ["moteur_vapeur", "Fais travailler la vapeur à ta place."],
+    ["regulateur", "Un moteur à vapeur qui s’emballe se brise. Quelque chose doit le retenir."],
     ["presse_vapeur", "Une machine-outil à vapeur ferait tourner tes machines bien plus vite."],
     ["dynamo", "Capture l’étincelle. La dynamo débloque l’action Électriser."],
     ["radio", "Quelqu’un émet peut-être encore, quelque part."],
@@ -1116,7 +1137,7 @@
 
   /* Un Grand Œuvre alimenté se sert seul dans la Réserve : au plus ça par seconde et
    * par matière, à chaque âge (les améliorations qui accélèrent les machines comptent). */
-  D.SITE_RATE = [3, 4, 6, 10, 14, 18, 30, 50, 70, 140, 300, 500, 1500];
+  D.SITE_RATE = [3, 4, 6, 10, 14, 18, 30, 40, 50, 70, 140, 300, 500, 1500];
 
   /* Les mains : fabriquer à la main prend du temps, une pièce après l’autre.
    * Durée d’une pièce (s) : (base + age × âge de l’objet) × (1 − star × étoiles de maîtrise)
@@ -1192,6 +1213,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🚂 Un âge de plus : l’Âge de la Vapeur, entre l’Acier et l’Électricité. L’Acier garde le haut-fourneau, l’acier trempé, les lames et les outils d’acier ; la Vapeur reçoit la chaudière, le piston, le moteur, la presse, la pompe, le chemin de fer et les extracteurs à vapeur, plus cinq nouveautés : soupape, manomètre, régulateur à boules, chaudière tubulaire et marteau-pilon. Tes parties en cours sont conservées : chaque âge après l’Acier avance d’un rang, et la Vapeur est comptée comme accomplie si tu l’as dépassée.",
     "🏗️ Chaque bâtiment a sa propre recette à découvrir, avec un nom qui lui ressemble : Claie de séchage et Rouissoir pour la fibre, Carrière à coins pour la pierre, Fosse de tannage et Tannerie pour la peau, Argilière, Gravière, Sablière, et des mines (cuivre, étain, charbon, fer, bauxite…). Dans le Carnet, trois nouveaux filtres : « Extracteurs » (rangés par bâtiment et par niveau), « Outils » et « Machines ».",
     "🏗️ Un extracteur par ressource : le Bûcheron pour le bois, le Carrier pour la pierre, le Tanneur pour la peau, le Charbonnier, le Sablier, les mineurs… Chaque bâtiment ne récolte que sa ressource et monte de niveau avec les âges (Cabane, Hutte, Scierie…). Dans la fiche d’un gisement, « ↑ Niveau 2 » remplace un exemplaire par le niveau d’après. Le sable et le charbon se récoltent avec le même bâtiment dans toutes leurs terres. Tes parties en cours sont converties : rien n’est perdu, chaque extracteur reste où il était.",
     "✦ Les Traces ne se dépensent plus en pleine partie : la Mémoire des mains se consulte toujours, mais les achats ne s’ouvrent qu’au réveil d’un nouveau Semeur, après la relève. Ils se ferment avec le bouton « Terminé : commencer le cycle » ou au premier passage franchi, et les Traces non dépensées attendent la relève suivante.",

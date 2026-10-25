@@ -301,7 +301,7 @@ async function run() {
   ok(download.suggestedFilename().endsWith('.json'), "Export au format JSON");
   const exported = fs.readFileSync(await download.path(), 'utf8');
   const restored = createEngine(); restored.load(exported);
-  ok(restored.state.known.manche && restored.state.age === 7, "Export réimportable sans perte de recettes ni d’âge");
+  ok(restored.state.known.manche && restored.state.age === 8, "Export réimportable sans perte de recettes ni d’âge");
   ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
   // 0.13.3 : les fenêtres du lancement et du retour d’absence
   for (const width of [390, 320]) {

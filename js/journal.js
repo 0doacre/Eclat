@@ -478,7 +478,7 @@
         info.textContent = msg || (E.RECIT.ui || {}).lune;
       } else if (hit.k === "kher") {
         const ui = E.RECIT.ui || {};
-        info.textContent = (S().inv.traducteur || S().flags.decoded) ? ui.kher8 : S().age >= 7 ? ui.kher7 : ui.kher0;
+        info.textContent = (S().inv.traducteur || S().flags.decoded) ? ui.kher8 : S().age >= 8 ? ui.kher7 : ui.kher0;
       } else info.textContent = hit.n + ".";
     }
 
