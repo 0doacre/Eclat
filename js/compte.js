@@ -468,16 +468,24 @@
       const nextTh = { auto: "light", light: "dark", dark: "auto" };
       openModal({
         html: "<h2>Menu</h2>" +
+          '<div class="menu-toggles">' +
           '<div class="toggle"><span>Thème</span><button class="btn small" data-m="theme">' + thLabels[thMode] + "</button></div>" +
           '<div class="toggle"><span>Grand texte</span><button class="btn small" data-m="largeText">' + (st.settings.largeText ? "Activé" : "Désactivé") + "</button></div>" +
           '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
-          [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
           '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
           '<div class="toggle"><span>Visiteurs</span><button class="btn small" data-m="visiteurs" title="Laisser quelqu’un passer de temps en temps sur le Domaine">' + (E.visiteurActif() ? "Oui" : "Non") + "</button></div>" +
+          '</div>' +
+          '<div id="volGroup" class="vol-group' + (st.settings.sound ? "" : " hidden") + '">' +
+          [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
+          '</div>' +
           '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
-          '<div class="acts" style="flex-direction:column"><button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="saves">💾 Sauvegardes</button><button class="btn" data-m="help">❓ Comment jouer</button><button class="btn" data-m="news">Nouveautés</button><button class="btn" data-m="credits">Crédits</button>' +
-          '<button class="btn" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
-          '<p class="tiny dim center" style="margin-top:12px">Éclat, du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
+          '<div class="menu-grid">' +
+          '<button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="saves">💾 Sauvegardes</button>' +
+          '<button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="help">❓ Comment jouer</button>' +
+          '<button class="btn" data-m="news">📰 Nouveautés</button><button class="btn" data-m="credits">📜 Crédits</button>' +
+          '</div>' +
+          '<div class="acts"><button class="btn ghost" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
+          '<p class="tiny dim center" style="margin-top:10px">Éclat, du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
         onOpen: (box) => {
           $$("[data-vol]", box).forEach((r) => {
             r.addEventListener("input", () => {
@@ -503,7 +511,15 @@
             save();
             return true;
           },
-          sound: (b) => { st.settings.sound = !st.settings.sound; A.init(); A.setEnabled(st.settings.sound); b.textContent = st.settings.sound ? "Activé" : "Coupé"; save(); return true; },
+          sound: (b) => {
+            st.settings.sound = !st.settings.sound;
+            A.init(); A.setEnabled(st.settings.sound);
+            b.textContent = st.settings.sound ? "Activé" : "Coupé";
+            const vg = $("#volGroup");
+            if (vg) vg.classList.toggle("hidden", !st.settings.sound);
+            save();
+            return true;
+          },
           vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
           visiteurs: (b) => { E.setVisiteurs(!E.visiteurActif()); if (!E.visiteurActif()) visiteurFin(); b.textContent = E.visiteurActif() ? "Oui" : "Non"; save(); return true; },
           tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },

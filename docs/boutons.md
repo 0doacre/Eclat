@@ -4,11 +4,11 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844, se
 
 | | |
 |---|---|
-| Boutons relevés | 239 |
+| Boutons relevés | 242 |
 | Sans explication | 0 |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`) |
 
-## Domaine (46 boutons, 0 sans explication)
+## Domaine (45 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -32,9 +32,8 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844, se
 | avancée | 22 | `button#intuBtn.chip.intu` | lecteur d’écran : Intuition ; guide (#intuBtn) |
 | avancée | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
 | avancée | SCÉNARIO Régulateur à boules ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
-| avancée | Quêtes | `button[data-open-quests=""].gmiles` | info-bulle : Ouvrir les quêtes ; guide (.goal-card) |
-| avancée | étapes 0/3 | `button[data-miles=""].gmiles` | info-bulle : Les étapes de cet âge ; guide (.goal-card) |
-| avancée | Dans l’arbre | `button[data-arbre-obj=""].gmiles` | info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card) |
+| avancée | Arbre | `button[data-arbre-obj=""].gmiles` | info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card) |
+| avancée | Âge de l’Électricité · 0/3 étapes | `button[data-miles=""].gprog-row` | info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card) |
 | avancée | ✦ ÉTAPE CLÉ « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. » | `div[data-goto="ressort"].grow` | guide (.goal-card) |
 | avancée | Tenter | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
 | avancée | 🤏 Vue dense | `button[data-dom-dense=""].chip.ghost` | info-bulle : Voir plus de terres d’un coup, en plus petit |
@@ -152,12 +151,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844, se
 | neuve | Revoir | `button[data-m="tutoAgain"].btn.ghost` | fiche Aide |
 | neuve | Activé | `button[data-m="tuto"].btn` | fiche Aide |
 | neuve | ✦ Mémoire des mains | `button[data-m="mem"].btn` | fiche Aide |
-| neuve | Compte en ligne | `button[data-m="account"].btn` | fiche Aide |
 | neuve | Sauvegardes | `button[data-m="saves"].btn` | fiche Aide |
+| neuve | Compte en ligne | `button[data-m="account"].btn` | fiche Aide |
 | neuve | Comment jouer | `button[data-m="help"].btn` | fiche Aide |
-| neuve | Nouveautés | `button[data-m="news"].btn` | fiche Aide |
+| neuve | 📰 Nouveautés | `button[data-m="news"].btn` | fiche Aide |
 | neuve | Crédits | `button[data-m="credits"].btn` | fiche Aide |
-| neuve | Tout recommencer | `button[data-m="reset"].btn` | fiche Aide |
+| neuve | Tout recommencer | `button[data-m="reset"].btn.ghost` | fiche Aide |
 | avancée | Auto | `button[data-m="theme"].btn` | fiche Aide |
 | avancée | Désactivé | `button[data-m="largeText"].btn` | fiche Aide |
 | avancée | Activé | `button[data-m="sound"].btn` | fiche Aide |
@@ -166,12 +165,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844, se
 | avancée | Revoir | `button[data-m="tutoAgain"].btn.ghost` | fiche Aide |
 | avancée | Coupé | `button[data-m="tuto"].btn` | fiche Aide |
 | avancée | ✦ Mémoire des mains | `button[data-m="mem"].btn` | fiche Aide |
-| avancée | Compte en ligne | `button[data-m="account"].btn` | fiche Aide |
 | avancée | Sauvegardes | `button[data-m="saves"].btn` | fiche Aide |
+| avancée | Compte en ligne | `button[data-m="account"].btn` | fiche Aide |
 | avancée | Comment jouer | `button[data-m="help"].btn` | fiche Aide |
-| avancée | Nouveautés | `button[data-m="news"].btn` | fiche Aide |
+| avancée | 📰 Nouveautés | `button[data-m="news"].btn` | fiche Aide |
 | avancée | Crédits | `button[data-m="credits"].btn` | fiche Aide |
-| avancée | Tout recommencer | `button[data-m="reset"].btn` | fiche Aide |
+| avancée | Tout recommencer | `button[data-m="reset"].btn.ghost` | fiche Aide |
 
 ## Comptoir (52 boutons, 0 sans explication)
 
@@ -185,40 +184,40 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844, se
 | avancée | Minerai de fer · tu en as 35,1 k 9,8 écu l’unité | `div[data-goto="fer_min"].comptoir-head` | info-bulle : Minerai de fer (toucher pour inspecter) |
 | avancée | 10 % +19,7 k | `button[data-m="sell"][data-id="fer_min"][data-n="3510"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +44,5 k | `button[data-m="sell"][data-id="fer_min"][data-n="17552"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +56,9 k | `button[data-m="sell"][data-id="fer_min"][data-n="35004.924000000094"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +56,9 k | `button[data-m="sell"][data-id="fer_min"][data-n="35004.844000000085"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +3,17 k | `button[data-m="sell"][data-id="malachite"][data-n="3521"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +7,13 k | `button[data-m="sell"][data-id="malachite"][data-n="17609"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +9,12 k | `button[data-m="sell"][data-id="malachite"][data-n="35119.0240000001"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +9,12 k | `button[data-m="sell"][data-id="malachite"][data-n="35118.94400000009"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +1,97 k | `button[data-m="sell"][data-id="cassiterite"][data-n="1766"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +5,27 k | `button[data-m="sell"][data-id="cassiterite"][data-n="8833"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +7,12 k | `button[data-m="sell"][data-id="cassiterite"][data-n="17567.01200000005"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +7,12 k | `button[data-m="sell"][data-id="cassiterite"][data-n="17566.972000000045"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +2,00 k | `button[data-m="sell"][data-id="silex"][data-n="7943"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +3,79 k | `button[data-m="sell"][data-id="silex"][data-n="39716"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +4,63 k | `button[data-m="sell"][data-id="silex"][data-n="79333.65399999986"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +4,63 k | `button[data-m="sell"][data-id="silex"][data-n="79333.47399999987"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +1,72 k | `button[data-m="sell"][data-id="sable"][data-n="5955"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +3,45 k | `button[data-m="sell"][data-id="sable"][data-n="29779"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +4,28 k | `button[data-m="sell"][data-id="sable"][data-n="59459.21550000007"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +4,28 k | `button[data-m="sell"][data-id="sable"][data-n="59459.08050000006"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +1,72 k | `button[data-m="sell"][data-id="argile"][data-n="5941"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +3,45 k | `button[data-m="sell"][data-id="argile"][data-n="29708"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +4,27 k | `button[data-m="sell"][data-id="argile"][data-n="59316.215500000086"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +4,27 k | `button[data-m="sell"][data-id="argile"][data-n="59316.08050000008"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +1,64 k | `button[data-m="sell"][data-id="charbon"][data-n="8342"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +3,08 k | `button[data-m="sell"][data-id="charbon"][data-n="41711"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +3,75 k | `button[data-m="sell"][data-id="charbon"][data-n="83323.60699999983"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +3,75 k | `button[data-m="sell"][data-id="charbon"][data-n="83323.41699999984"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +1,01 k | `button[data-m="sell"][data-id="os"][data-n="13244"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +1,76 k | `button[data-m="sell"][data-id="os"][data-n="66221"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +2,10 k | `button[data-m="sell"][data-id="os"][data-n="132342.58999999997"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +2,10 k | `button[data-m="sell"][data-id="os"][data-n="132342.28999999995"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +936 | `button[data-m="sell"][data-id="cuir"][data-n="11015"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +1,67 k | `button[data-m="sell"][data-id="cuir"][data-n="55078"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +2,01 k | `button[data-m="sell"][data-id="cuir"][data-n="110056.82500000003"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | 10 % +684 | `button[data-m="sell"][data-id="bois"][data-n="59195"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | La moitié +1,00 k | `button[data-m="sell"][data-id="bois"][data-n="295975"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +1,13 k | `button[data-m="sell"][data-id="bois"][data-n="591850.4549999989"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +2,01 k | `button[data-m="sell"][data-id="cuir"][data-n="110056.57500000003"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | 10 % +684 | `button[data-m="sell"][data-id="bois"][data-n="59194"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | La moitié +1,00 k | `button[data-m="sell"][data-id="bois"][data-n="295974"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +1,13 k | `button[data-m="sell"][data-id="bois"][data-n="591849.1049999989"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +565 | `button[data-m="sell"][data-id="fibre"][data-n="31744"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +877 | `button[data-m="sell"][data-id="fibre"][data-n="158722"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +1,01 k | `button[data-m="sell"][data-id="fibre"][data-n="317345.0159999995"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +1,01 k | `button[data-m="sell"][data-id="fibre"][data-n="317344.2959999995"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +478 | `button[data-m="sell"][data-id="caillou"][data-n="19859"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +784 | `button[data-m="sell"][data-id="caillou"][data-n="99299"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
-| avancée | Tout sauf 100 +921 | `button[data-m="sell"][data-id="caillou"][data-n="198499.78500000012"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
+| avancée | Tout sauf 100 +921 | `button[data-m="sell"][data-id="caillou"][data-n="198499.33500000017"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +201 | `button[data-m="sell"][data-id="aimant"][data-n="1"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +403 | `button[data-m="sell"][data-id="aimant"][data-n="2"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | Tout sauf 100 − | `button[data-m="sell"][data-id="aimant"][data-n="0"].btn.mini` | info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m="sell"]) |
@@ -261,10 +260,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844, se
 |---|---|---|---|
 | avancée | ← Les âges | `button[data-arb="retour"].btn.ghost` | info-bulle : Revenir en arrière dans l’arbre |
 
-## Carnet (17 boutons, 0 sans explication)
+## Carnet (21 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
+| avancée | ⊞ 2 col. | `button[data-cvue="cols"].btn.ghost` | info-bulle : Revenir à la vue en 1 colonne |
+| avancée | 🤏 Compact | `button[data-cvue="dense"].btn.ghost` | info-bulle : Voir plus de recettes à l’écran, en plus petit |
 | avancée | ×1 | `button[data-qty="1"].chipq` | info-bulle : Un seul exemplaire |
 | avancée | Apprises | `button[data-cf="tout"]` | info-bulle : Toutes les recettes que tu connais |
 | avancée | Prêtes | `button[data-cf="pret"]` | info-bulle : Celles que ta Réserve couvre entièrement, pièces comprises |
@@ -274,12 +275,14 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844, se
 | avancée | Outils | `button[data-cf="tool"]` | info-bulle : Les outils et leurs améliorations |
 | avancée | Machines | `button[data-cf="mach"]` | info-bulle : Les machines qui fabriquent seules |
 | avancée | ★ Épinglées | `button[data-cf="pin"]` | info-bulle : Tes épingles, en haut de l’Atelier |
+| avancée | ▴ Plier | `button[data-age-all=""].age-pill.age-all` | info-bulle : Replier tous les âges ; lecteur d’écran : Replier tous les âges |
+| avancée | Âge 1 | `button[data-age-jump="0"].age-pill` | info-bulle : Âge du Bois ; lecteur d’écran : Aller à : Âge du Bois |
 | avancée | ☆ | `button[data-pin="bobine"].pinb` | info-bulle : Épingler cette recette en haut de l’Atelier ; lecteur d’écran : Épingler cette recette en haut de l’Atelier ; guide ([data-pin]) |
 | avancée | 6 Fil de cuivre | `span[data-need="fil_cuivre"][data-q="6"][data-goto="fil_cuivre"].ing.link` | info-bulle : Ouvrir sa fiche |
 | avancée | Fabriquer | `button[data-cr="bobine"][data-n="1"][data-lbl="Fabriquer"].btn.make` | info-bulle : Commander cette quantité, pièces comprises |
-| avancée | Détail du lot | `button[data-tree="bobine"][data-n="1"].btn.ghost` | info-bulle : Les étapes de cette commande, et ce qu’il manque |
-| avancée | Suivre | `button[data-track="bobine"].btn.ghost` | info-bulle : Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé ; guide ([data-track]) |
-| avancée | Situer dans l’Arbre | `button[data-situer="bobine"].btn.ghost` | info-bulle : Voir cette recette dans l’arbre : ses ingrédients et ses usages |
+| avancée | (sans mot) | `button[data-tree="bobine"][data-n="1"].btn.ghost` | info-bulle : Les étapes de cette commande, et ce qu’il manque ; lecteur d’écran : Détail du lot |
+| avancée | (sans mot) | `button[data-track="bobine"].btn.ghost` | info-bulle : Suivre cette recette ; lecteur d’écran : Suivre ; guide ([data-track]) |
+| avancée | 🌿 | `button[data-situer="bobine"].btn.ghost` | info-bulle : Situer dans l’Arbre ; lecteur d’écran : Situer dans l’Arbre |
 | avancée | ♨1 Circuit de vapeur | `span[data-goto="circuit_vapeur"].ing.link` | info-bulle : Ouvrir sa fiche |
 | avancée | Voir les 19 objets déjà possédés | `button[data-owned=""].btn.ghost` | info-bulle : Masquer ou montrer les objets déjà fabriqués |
 

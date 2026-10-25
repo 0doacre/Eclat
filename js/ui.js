@@ -740,7 +740,7 @@
     // un bouton de liste (une ressource, une action, une quantité…) : même chose, retrouvé à son attribut de données
     let fsel = null;
     if (!focus && ae && ae !== document.body && el.contains(ae) && ae.dataset) {
-      const k = ["inv", "g", "slot", "qty", "if", "cf", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
+      const k = ["inv", "g", "slot", "qty", "if", "cf", "cvue", "jt", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
       if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
     }
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
@@ -760,6 +760,13 @@
       const gs = $(".gestes", el);
       if (gs) { gs.scrollLeft = U.gScroll || 0; const on = $(".geste.on", gs); if (on && (on.offsetLeft < gs.scrollLeft || on.offsetLeft + on.offsetWidth > gs.scrollLeft + gs.clientWidth)) gs.scrollLeft = Math.max(0, on.offsetLeft - 12); }
     }
+    $$(".filters, .age-nav", el).forEach((bar) => {
+      bar.classList.toggle("more", bar.scrollWidth > bar.clientWidth + 4);
+      const on = $(".on, .cur", bar);
+      if (on && (on.offsetLeft < bar.scrollLeft || on.offsetLeft + on.offsetWidth > bar.scrollLeft + bar.clientWidth)) {
+        bar.scrollLeft = Math.max(0, on.offsetLeft - Math.round((bar.clientWidth - on.offsetWidth) / 2));
+      }
+    });
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }

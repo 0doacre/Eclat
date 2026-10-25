@@ -11,7 +11,7 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 ## Fait récemment
 
 - **0.22.0, tutoriel des boutons** : chaque bouton de l’interface a une info-bulle ou un nom de lecteur
-  d’écran ; `tools/boutons.js` inventorie les 237 boutons dans `docs/boutons.md`, `tools/test-boutons.js`
+  d’écran ; `tools/boutons.js` inventorie les 242 boutons dans `docs/boutons.md`, `tools/test-boutons.js`
   échoue si l’un reste muet. Trois chapitres nouveaux (Suivre, Épingler, commander d’un coup) et le guide
   ralenti à une explication toutes les deux ou trois minutes. Textes à relire : `docs/revue/boutons.md`.
 - **0.20** : l’Âge de l’Atome (uranium et galène, par extracteur seulement ; centrale à fission). **0.19** : l’Âge de la Vapeur,

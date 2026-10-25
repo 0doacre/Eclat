@@ -362,16 +362,16 @@
  {
   "partie": "neuve",
   "ecran": "Menu ☰",
-  "label": "Compte en ligne",
-  "repere": "button[data-m=\"account\"].btn",
+  "label": "Sauvegardes",
+  "repere": "button[data-m=\"saves\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Menu ☰",
-  "label": "Sauvegardes",
-  "repere": "button[data-m=\"saves\"].btn",
+  "label": "Compte en ligne",
+  "repere": "button[data-m=\"account\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
@@ -386,7 +386,7 @@
  {
   "partie": "neuve",
   "ecran": "Menu ☰",
-  "label": "Nouveautés",
+  "label": "📰 Nouveautés",
   "repere": "button[data-m=\"news\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
@@ -403,7 +403,7 @@
   "partie": "neuve",
   "ecran": "Menu ☰",
   "label": "Tout recommencer",
-  "repere": "button[data-m=\"reset\"].btn",
+  "repere": "button[data-m=\"reset\"].btn.ghost",
   "explique": "fiche Aide",
   "tag": "button"
  },
@@ -458,25 +458,17 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Quêtes",
-  "repere": "button[data-open-quests=\"\"].gmiles",
-  "explique": "info-bulle : Ouvrir les quêtes ; guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "étapes 0/3",
-  "repere": "button[data-miles=\"\"].gmiles",
-  "explique": "info-bulle : Les étapes de cet âge ; guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Dans l’arbre",
+  "label": "Arbre",
   "repere": "button[data-arbre-obj=\"\"].gmiles",
   "explique": "info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Âge de l’Électricité · 0/3 étapes",
+  "repere": "button[data-miles=\"\"].gprog-row",
+  "explique": "info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card)",
   "tag": "button"
  },
  {
@@ -731,7 +723,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +56,9 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"35004.924000000094\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"35004.844000000085\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -755,7 +747,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +9,12 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"malachite\"][data-n=\"35119.0240000001\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"malachite\"][data-n=\"35118.94400000009\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -779,7 +771,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +7,12 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cassiterite\"][data-n=\"17567.01200000005\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"cassiterite\"][data-n=\"17566.972000000045\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -803,7 +795,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +4,63 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"silex\"][data-n=\"79333.65399999986\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"silex\"][data-n=\"79333.47399999987\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -827,7 +819,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +4,28 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"sable\"][data-n=\"59459.21550000007\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"sable\"][data-n=\"59459.08050000006\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -851,7 +843,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +4,27 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"argile\"][data-n=\"59316.215500000086\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"argile\"][data-n=\"59316.08050000008\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -875,7 +867,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +3,75 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"charbon\"][data-n=\"83323.60699999983\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"charbon\"][data-n=\"83323.41699999984\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -899,7 +891,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +2,10 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"os\"][data-n=\"132342.58999999997\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"os\"][data-n=\"132342.28999999995\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -923,7 +915,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +2,01 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cuir\"][data-n=\"110056.82500000003\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"cuir\"][data-n=\"110056.57500000003\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -931,7 +923,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "10 % +684",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"59195\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"59194\"].btn.mini",
   "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -939,7 +931,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "La moitié +1,00 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"295975\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"295974\"].btn.mini",
   "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -947,7 +939,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +1,13 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"591850.4549999989\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"591849.1049999989\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -971,7 +963,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +1,01 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fibre\"][data-n=\"317345.0159999995\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"fibre\"][data-n=\"317344.2959999995\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -995,7 +987,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +921",
-  "repere": "button[data-m=\"sell\"][data-id=\"caillou\"][data-n=\"198499.78500000012\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"caillou\"][data-n=\"198499.33500000017\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -1442,6 +1434,22 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
+  "label": "⊞ 2 col.",
+  "repere": "button[data-cvue=\"cols\"].btn.ghost",
+  "explique": "info-bulle : Revenir à la vue en 1 colonne",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "🤏 Compact",
+  "repere": "button[data-cvue=\"dense\"].btn.ghost",
+  "explique": "info-bulle : Voir plus de recettes à l’écran, en plus petit",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
   "label": "×1",
   "repere": "button[data-qty=\"1\"].chipq",
   "explique": "info-bulle : Un seul exemplaire",
@@ -1514,6 +1522,22 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
+  "label": "▴ Plier",
+  "repere": "button[data-age-all=\"\"].age-pill.age-all",
+  "explique": "info-bulle : Replier tous les âges ; lecteur d’écran : Replier tous les âges",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "Âge 1",
+  "repere": "button[data-age-jump=\"0\"].age-pill",
+  "explique": "info-bulle : Âge du Bois ; lecteur d’écran : Aller à : Âge du Bois",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
   "label": "☆",
   "repere": "button[data-pin=\"bobine\"].pinb",
   "explique": "info-bulle : Épingler cette recette en haut de l’Atelier ; lecteur d’écran : Épingler cette recette en haut de l’Atelier ; guide ([data-pin])",
@@ -1538,25 +1562,25 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Détail du lot",
+  "label": "(sans mot)",
   "repere": "button[data-tree=\"bobine\"][data-n=\"1\"].btn.ghost",
-  "explique": "info-bulle : Les étapes de cette commande, et ce qu’il manque",
+  "explique": "info-bulle : Les étapes de cette commande, et ce qu’il manque ; lecteur d’écran : Détail du lot",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Suivre",
+  "label": "(sans mot)",
   "repere": "button[data-track=\"bobine\"].btn.ghost",
-  "explique": "info-bulle : Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé ; guide ([data-track])",
+  "explique": "info-bulle : Suivre cette recette ; lecteur d’écran : Suivre ; guide ([data-track])",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Situer dans l’Arbre",
+  "label": "🌿",
   "repere": "button[data-situer=\"bobine\"].btn.ghost",
-  "explique": "info-bulle : Voir cette recette dans l’arbre : ses ingrédients et ses usages",
+  "explique": "info-bulle : Situer dans l’Arbre ; lecteur d’écran : Situer dans l’Arbre",
   "tag": "button"
  },
  {
@@ -1866,16 +1890,16 @@
  {
   "partie": "avancée",
   "ecran": "Menu ☰",
-  "label": "Compte en ligne",
-  "repere": "button[data-m=\"account\"].btn",
+  "label": "Sauvegardes",
+  "repere": "button[data-m=\"saves\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Menu ☰",
-  "label": "Sauvegardes",
-  "repere": "button[data-m=\"saves\"].btn",
+  "label": "Compte en ligne",
+  "repere": "button[data-m=\"account\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
  },
@@ -1890,7 +1914,7 @@
  {
   "partie": "avancée",
   "ecran": "Menu ☰",
-  "label": "Nouveautés",
+  "label": "📰 Nouveautés",
   "repere": "button[data-m=\"news\"].btn",
   "explique": "fiche Aide",
   "tag": "button"
@@ -1907,7 +1931,7 @@
   "partie": "avancée",
   "ecran": "Menu ☰",
   "label": "Tout recommencer",
-  "repere": "button[data-m=\"reset\"].btn",
+  "repere": "button[data-m=\"reset\"].btn.ghost",
   "explique": "fiche Aide",
   "tag": "button"
  }

@@ -65,9 +65,10 @@ Les textes du récit ne sont pas touchés.
 | Filtre Carnet « Épinglées » | Tes épingles, en haut de l’Atelier |
 | Étoile d’une recette du Carnet | Épingler cette recette en haut de l’Atelier |
 | Bouton de commande du Carnet | Commander cette quantité, pièces comprises |
-| « Détail du lot » et « Détail de la recette » (Carnet) | Les étapes de cette commande, et ce qu’il manque |
-| « Suivre » dans le Carnet | Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé |
-| « Situer dans l’Arbre » (Carnet) | Voir cette recette dans l’arbre : ses ingrédients et ses usages |
+| Le 🌳 d’une recette du Carnet (Détail du lot ou de la recette) | Les étapes de cette commande, et ce qu’il manque |
+| Le 🎯 d’une recette du Carnet | Suivre cette recette (l’icône ne dit pas ce qu’elle fait : le chapitre s’en charge) |
+| Le 🌿 d’une recette du Carnet | Situer dans l’Arbre |
+| Carnet : « 🤏 Compact » | Voir plus de recettes à l’écran, en plus petit |
 | « Suivi » dans le Carnet | Ne plus suivre : la carte d’objectif revient à ton étape |
 | Recette encore inconnue (Carnet) | Ouvrir sa fiche : ce qu’il faut pour la trouver |
 | Objets déjà possédés | Masquer ou montrer les objets déjà fabriqués |
