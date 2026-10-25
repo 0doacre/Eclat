@@ -146,6 +146,6 @@ Les 480 contrôles mobiles ont réussi sur le lot 0.21 lors de son intégration 
 
 ## Comparaison avec Claude
 
-La demande neutre est dans `demande-audit-claude.md`. Ne pas lui fournir ce rapport avant qu’il ait arrêté ses propres conclusions. Comparer ensuite, sur le même commit : problème observé, reproduction, impact, priorité, point d’accord ou de désaccord, et décision. Un désaccord d’équilibrage doit rester distinct d’une reproduction différente. **La colonne Claude est en attente de sa réponse ; aucune comparaison n’est encore prétendue achevée.**
+La demande neutre est dans `demande-audit-claude.md`. Le résumé indépendant de Claude a été transmis par l’auteur. La confrontation et les reproductions complémentaires se trouvent dans **`comparaison-audits-codex-claude.md`** : elles ajoutent les problèmes de sauvegarde et la cause de l’écart Windows/Linux du service worker, confirment le problème de marché et nuancent les corrections proposées. Le rapport intégral et les scripts du scratchpad de Claude n’ont pas été fournis ; les tests seulement annoncés y restent distingués des cas rejoués ici.
 
 Ordre proposé après confrontation : marché et Traces, disparition des objectifs, guide fondé sur la Réserve et la production réelle, puis décisions sur les bonus et les étapes obligatoires. Ne pas ajouter tout de suite de nouvelles ressources aux autres âges sur la seule base du temps du bot.
