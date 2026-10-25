@@ -315,8 +315,11 @@
     const listeners = {};
     const E = { D, RECIPES, ZONES, RES_ZONE, MACHINES, keyOf, SAVE_VERSION, RECIT };
     let OFF = false; // vrai pendant le rattrapage d’une absence : pas de tirage de clin d’œil
+    /* tirée de l’heure, sans toucher au hasard injecté : les simulations et les tests gardent leurs suites de tirages */
+    const graineDuJour = () => (Math.floor(now()) % 2147483000) + 1;
     let S = freshState(now());
     S.meta.parcours = 1;
+    S.meta.graine = graineDuJour(); // dons de la relève et horaires du Troqueur
     let C = null; // caches dérivés de l’état
 
     /* ------------------------------------------------------- événements */
@@ -3547,12 +3550,20 @@
     };
     E.traceCost = E.traceBasePrice;
 
-    E.ecusToTraces = function (ecus, age) {
+    /* Ce que valent des écus à la relève. Au prix de la Trace de l’âge atteint on obtient `brut` Traces ; le plafond mou en laisse
+     * le plein tarif jusqu’à `seuil` (les Traces des passages du cycle, au moins D.COMPTOIR.plafond.plancher), puis `part` du reste. */
+    E.ecusDetail = function (ecus, age, passages) {
       const e = ecus !== undefined ? ecus : (S.ecus || 0);
       const base = E.traceBasePrice(age);
-      if (!(base > 0) || !(e > 0)) return 0;
-      return Math.floor(e / base);
+      if (!(base > 0) || !(e > 0)) return { brut: 0, trace: 0, seuil: 0, plafonne: false };
+      const brut = Math.floor(e / base);
+      const P = passages !== undefined ? passages : E.releveGain();
+      const C = D.COMPTOIR.plafond || { plancher: 0, part: 1 };
+      const seuil = Math.max(P, C.plancher || 0);
+      const trace = Math.min(brut, seuil) + Math.floor(Math.max(0, brut - seuil) * (C.part === undefined ? 1 : C.part));
+      return { brut, trace, seuil, plafonne: trace < brut };
     };
+    E.ecusToTraces = (ecus, age, passages) => E.ecusDetail(ecus, age, passages).trace;
 
     /* Arrondi à un nombre rond (ex. 1, 2, 5, 10, 25, 50, 100, 130...) */
     function roundNice(n) {
@@ -3601,49 +3612,113 @@
       return list;
     };
 
-    /* Renouvellement des demandes du Troqueur */
+    /* ---- Le Troqueur passe par à-coups (D.TROQUEUR) : des blocs de temps, ouverts ou fermés, tirés de la graine de la partie */
+    const tqBloc = () => ((D.TROQUEUR && D.TROQUEUR.bloc) || 10800) * 1000;
+    function tqTirage(k) { // un nombre dans [0, 1) qui ne dépend que de la graine et du bloc
+      let a = (((S.meta && S.meta.graine) | 0) || 40503) ^ Math.imul(k | 0, 2654435761);
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    const tqTiree = (k) => tqTirage(k) < ((D.TROQUEUR && D.TROQUEUR.ouvre) || 0.6);
+    function tqOuvertBloc(k) {
+      if (tqTiree(k)) return true;
+      const m = (D.TROQUEUR && D.TROQUEUR.maxFerme) || 3; // jamais plus de m blocs fermés de suite
+      for (let j = 1; j <= m; j++) if (tqTiree(k - j)) return false;
+      return true;
+    }
+    /* ouvert ou non, la fin de l’ouverture en cours (ms) ou le début de la prochaine */
+    E.troqueurHoraire = function (t) {
+      const B = tqBloc(), k0 = Math.floor((t === undefined ? now() : t) / B);
+      let j = k0;
+      if (tqOuvertBloc(k0)) {
+        while (j - k0 < 48 && tqOuvertBloc(j + 1)) j++;
+        return { ouvert: true, fin: (j + 1) * B };
+      }
+      while (j - k0 < 48 && !tqOuvertBloc(j)) j++;
+      return { ouvert: false, ouvre: j * B };
+    };
+
+    /* matières premières d’une unité d’un objet : on remonte les recettes jusqu’à ce que le joueur récolte */
+    function tqBrut(id, out, mult, depth) {
+      const it = item(id);
+      if (!it || depth > 30) return;
+      if (it.t === "res" && (!it.r || tqTaux(id) > 0)) { out[id] = (out[id] || 0) + mult; return; }
+      if (!it.r) { out[id] = (out[id] || 0) + mult; return; }
+      const ing = it.r[1], q = it.r[2] || 1;
+      for (const i in ing) tqBrut(i, out, (mult * ing[i]) / q, depth + 1);
+    }
+    /* ce que le joueur tire d’une matière par seconde : ses extracteurs, plus un peu de récolte à la main */
+    function tqTaux(res) {
+      let r = 0;
+      const c = E.cache();
+      for (const k in S.dom.ext) { const e = S.dom.ext[k]; if (e.res === res && e.on) r += extOut(e, c); }
+      const z = RES_ZONE[res];
+      if (z && zoneOpen(z) && ZONES[z].res.includes(res)) r += tapYield(res, z) * ((D.TROQUEUR && D.TROQUEUR.main) || 0.5);
+      return r;
+    }
+    /* arrondi par défaut à deux chiffres significatifs : une demande ne dépasse jamais ce que la production permet */
+    function tqPlancher(n) {
+      if (n <= 10) return Math.floor(n);
+      const d = Math.pow(10, Math.floor(Math.log10(n)) - 1);
+      return Math.floor(n / d) * d;
+    }
+    /* Combien d’exemplaires le joueur produit en (minParTrace × récompense) minutes, la matière la plus lente fixant le rythme ;
+     * 0 si une matière lui est inaccessible (aucun extracteur, aucune récolte à la main) ou si un seul exemplaire demande plus que ça. */
+    E.troqueurQuantite = function (id, tr) {
+      const TQ = D.TROQUEUR || {};
+      const minutes = Math.max(TQ.minMin || 10, Math.min(TQ.minMax || 90, (TQ.minParTrace || 10) * (tr || 1)));
+      const brut = {};
+      tqBrut(id, brut, 1, 0);
+      let parUnite = 0;
+      for (const res in brut) {
+        const r = tqTaux(res);
+        if (!(r > 0)) return 0;
+        parUnite = Math.max(parUnite, brut[res] / r);
+      }
+      if (!(parUnite > 0)) return 0;
+      return tqPlancher((minutes * 60) / parUnite);
+    };
+
+    /* Nouvelle série de demandes (D.TROQUEUR.slots), valable jusqu’à la fin de l’ouverture en cours */
     E.refreshTroqueur = function (force) {
       if (!E.comptoirOpen() && !force) return false;
-      const eligible = E.troqueurEligibleItems();
-      const TQ = D.TROQUEUR || { slots: 3, refresh: 1200, share: 0.15, size: 2 };
-      const slots = TQ.slots || 3;
-      const base = E.traceBasePrice();
-      const size = TQ.size || 2;
+      const horaire = E.troqueurHoraire();
+      if (!horaire.ouvert && !force) return false;
+      const TQ = D.TROQUEUR || { slots: 3 };
       const tr = E.troqueurReward();
-
-      const pool = eligible.slice();
+      const pool = E.troqueurEligibleItems().filter((id) => E.troqueurQuantite(id, tr) >= 1);
       for (let i = pool.length - 1; i > 0; i--) {
         const j = Math.floor(rand() * (i + 1));
         const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
       }
-      const picked = pool.slice(0, slots);
-      const asks = picked.map((id) => {
-        const v = valueOf(id);
-        const rawN = (size * base * tr) / v;
-        const n = roundNice(rawN);
-        return { id, n, tr };
-      });
-
+      const asks = pool.slice(0, TQ.slots || 3).map((id) => ({ id, n: E.troqueurQuantite(id, tr), tr }));
       S.comptoir = S.comptoir || { sold: {}, traces: 0, asks: [], next: 0 };
       S.comptoir.asks = asks;
-      S.comptoir.next = now() + (TQ.refresh || 1200) * 1000;
+      S.comptoir.next = horaire.ouvert ? horaire.fin : now() + tqBloc();
       E.emit("troqueur", { asks });
       E.emit("struct");
       return true;
     };
-
-    /* Liste courante des demandes (renouvelle si expirée) */
-    E.troqueurAsks = function () {
+    /* met les demandes d’accord avec l’heure : une série par ouverture, rien pendant la fermeture */
+    function syncTroqueur() {
+      if (!E.comptoirOpen()) return;
       if (!S.comptoir) S.comptoir = { sold: {}, traces: 0, asks: [], next: 0 };
-      if (E.comptoirOpen()) {
-        const t = now();
-        if (!S.comptoir.next || t >= S.comptoir.next) {
-          E.refreshTroqueur();
-        } else if ((!S.comptoir.asks || !S.comptoir.asks.length) && E.troqueurEligibleItems().length > 0) {
-          E.refreshTroqueur();
-        }
+      const c = S.comptoir, h = E.troqueurHoraire();
+      if (h.ouvert) {
+        if (c.next !== h.fin) E.refreshTroqueur();
+        else if (!(c.asks && c.asks.length) && E.troqueurEligibleItems().length > 0) E.refreshTroqueur();
+      } else if ((c.asks && c.asks.length) || c.next !== h.ouvre) {
+        c.asks = [];
+        c.next = h.ouvre;
+        E.emit("struct");
       }
-      return S.comptoir.asks || [];
+    }
+    /* Liste courante des demandes (vide quand le Troqueur est parti) */
+    E.troqueurAsks = function () {
+      syncTroqueur();
+      return (S.comptoir && S.comptoir.asks) || [];
     };
 
     E.troqueurCount = () => (S.comptoir && S.comptoir.asks ? S.comptoir.asks.filter(Boolean).length : 0);
@@ -4097,13 +4172,7 @@
     }
     E.step = step;
 
-    function checkTroqueur() {
-      if (!E.comptoirOpen()) return;
-      if (!S.comptoir) S.comptoir = { sold: {}, traces: 0, asks: [], next: 0 };
-      if (!S.comptoir.next || now() >= S.comptoir.next) {
-        E.refreshTroqueur();
-      }
-    }
+    function checkTroqueur() { syncTroqueur(); }
 
     /* ===== FIGURES DU COSMOS (début) =====
      * Les fragments du Journal et les signes, vus comme des étoiles. Ne donne jamais le texte d'un fragment,
@@ -4801,6 +4870,7 @@
     E.load = function (src) {
       const o = parseSave(src);
       S = o;
+      if (!(S.meta.graine >= 1)) S.meta.graine = graineDuJour(); // une ancienne partie n’avait pas de graine avant la première relève
       forgetDom();
       recalc();
       const mig = o._mig || {};
@@ -4833,7 +4903,7 @@
       E.emit("struct");
       return true;
     };
-    E.reset = function () { S = freshState(now()); S.meta.parcours = 1; forgetDom(); recalc(); E.emit("struct"); };
+    E.reset = function () { S = freshState(now()); S.meta.parcours = 1; S.meta.graine = graineDuJour(); forgetDom(); recalc(); E.emit("struct"); };
     E.exportSave = () => {
       const s = E.serialize();
       return typeof btoa !== "undefined" ? btoa(unescape(encodeURIComponent(s))) : Buffer.from(s, "utf8").toString("base64");

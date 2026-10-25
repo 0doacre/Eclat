@@ -1473,35 +1473,6 @@ test("livrer retire de la Réserve et donne les Traces ; pas de livraison sans l
   assert.strictEqual(fail2.ok, false);
   assert.strictEqual(fail2.why, "empty");
 });
-test("renouvellement après refresh, y compris hors ligne", () => {
-  const E = mk();
-  E.state.zones.plaine = true;
-  E.state.known.manche = true;
-  E.state.made.manche = 10;
-  E.refreshTroqueur(true);
-  const ask = E.state.comptoir.asks[0];
-  E.add(ask.id, ask.n);
-  E.deliverAsk(0);
-  assert.strictEqual(E.state.comptoir.asks[0], null);
-
-  // Temps insuffisant : pas de renouvellement
-  T += 100 * 1000;
-  E.update();
-  assert.strictEqual(E.state.comptoir.asks[0], null);
-
-  // Temps écoulé en jeu : renouvellement
-  T += (D.TROQUEUR.refresh + 10) * 1000;
-  E.update();
-  assert.ok(E.state.comptoir.asks[0] !== null, "slot renouvelé");
-
-  // Renouvellement hors ligne (catchUp)
-  E.add(E.state.comptoir.asks[0].id, E.state.comptoir.asks[0].n);
-  E.deliverAsk(0);
-  assert.strictEqual(E.state.comptoir.asks[0], null);
-  T += (D.TROQUEUR.refresh + 100) * 1000;
-  E.catchUp(D.TROQUEUR.refresh + 100);
-  assert.ok(E.state.comptoir.asks[0] !== null, "slot renouvelé hors ligne");
-});
 test("sauvegarde sans ecus ou corrompue : se charge nettoyée", () => {
   const E = mk();
   const raw = E.serialize();
@@ -3298,8 +3269,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.22.2 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.22.2");
+test("Version 0.23.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.23.1");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3514,12 +3485,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.22.2");
+  assert.strictEqual(D.VERSION, "0.23.1");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 22, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 23, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
@@ -4122,6 +4093,8 @@ require("./test-arbre.js");
 require("./test-densite.js");
 require("./test-carnet.js");
 require("./test-guidage.js");
+require("./test-comptoir.js");
+require("./test-stockage.js");
 
 console.log("La file des fenêtres automatiques (0.13.3)");
 const Fen = require("../js/fenetres.js");
