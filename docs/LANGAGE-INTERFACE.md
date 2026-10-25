@@ -6,13 +6,18 @@ distincts de ces messages.
 
 ## Direction
 
-- Naturel : des formulations françaises courantes, sans récit artificiel du clic.
+- Compact : des statuts courts, des formulations nominales et des précisions entre parenthèses.
 - Familier aux joueurs : action nommée, état visible, résultat annoncé.
 - Accessible : expliquer les automatismes, le lieu où agir et la cause d’un blocage.
 
-Le tutoiement et les noms propres à Éclat restent les repères du joueur. Il ne s’agit pas
-de généraliser le jargon des jeux : « même lorsque le jeu est fermé » explique mieux
-le fonctionnement que « AFK » ou « offline ».
+Les noms propres à Éclat restent les repères du joueur. Les notifications emploient
+« hors ligne » : « Fouille lancée (continue hors ligne). » L’aide peut préciser une fois
+que cette progression fonctionne même jeu fermé. Le tutoiement reste utile dans les
+consignes du tutoriel ; il n’est pas nécessaire dans chaque statut. Les phrases comme
+« Elle se poursuit… » allongent le message et donnent un ton explicatif à éviter ici.
+
+Ne pas confondre concision et suppression des informations utiles : conserver le lieu
+de récupération du butin, la cause du blocage et les conditions de progression.
 
 ## Références consultées le 25 octobre 2026
 
@@ -31,10 +36,10 @@ originales et les consignes durables figurent dans STYLE.md et LEXIQUE.md.
 
 | Avant | Après |
 |---|---|
-| Tu pars, tu fermes le jeu si tu veux. Le butin t’attend à ton retour. | Les fouilles se poursuivent même lorsque le jeu est fermé. Une fois la fouille terminée, récupère ton butin sur la Carte. |
-| Tu pars fouiller. Le butin t’attendra, même jeu fermé. | Fouille lancée. Elle se poursuit même lorsque le jeu est fermé. |
-| Tes mains s’y mettent. La recette est dans tes commandes. | Commande ajoutée. Retrouve sa progression au-dessus des onglets. |
-| Tes mains sont occupées : attends la fin de la commande en cours. | La liste des commandes est pleine. Attends qu’une commande se termine. |
+| Tu pars, tu fermes le jeu si tu veux. Le butin t’attend à ton retour. | Progression active hors ligne. Butin à récupérer sur la Carte en fin de fouille. |
+| Tu pars fouiller. Le butin t’attendra, même jeu fermé. | Fouille lancée (continue hors ligne). |
+| Tes mains s’y mettent. La recette est dans tes commandes. | Commande ajoutée · Suivi au-dessus des onglets. |
+| Tes mains sont occupées : attends la fin de la commande en cours. | Commandes au maximum. Une place se libère à la fin d’une commande. |
 | Touche le gros bouton pour fabriquer. | Touche « Tailler » sous l’établi pour fabriquer ton premier objet. |
 
 Le moteur confirme que le butin des fouilles doit être récupéré sur la Carte avant de

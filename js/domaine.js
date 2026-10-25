@@ -196,7 +196,7 @@
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
-      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Les machines accélèrent automatiquement les commandes compatibles, avec l’aide de tes mains.</p>';
+      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Commandes compatibles accélérées par les machines, en complément des mains.</p>';
       const ruins = E.ruins();
       for (const id in ruins) {
         const it = I[id];
@@ -220,7 +220,7 @@
           h += '<div class="bar" style="margin:6px 0"><i data-opbar="' + idx + '" style="width:' + pct.toFixed(1) + '%"></i></div>';
           if (workTxt) h += '<div class="tiny good">' + esc(workTxt) + '</div>';
           if (missTxt) h += '<div class="tiny warn">' + esc(missTxt) + '</div>';
-          else if (j.wait && !workTxt) h += '<div class="tiny muted">en attente de mains ou de machines disponibles</div>';
+          else if (j.wait && !workTxt) h += '<div class="tiny muted">en attente de mains ou de machines</div>';
           if (j.steps.length > 1) {
             h += '<div class="tiny muted" style="margin-top:4px">' +
               j.steps.map((s) => (s.done >= s.n ? "✓ " : s.hands || s.machs ? "▸ " : "") + esc(I[s.id].n.toLowerCase()) + " " + s.done + "/" + s.n).join(" → ") +
@@ -229,7 +229,7 @@
           h += '</section>';
         });
       } else {
-        h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Tu peux en lancer une depuis l’Atelier ou le Carnet (×10, ×50, ×100, ×1000).</p>';
+        h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Commandes disponibles dans l’Atelier ou le Carnet (×10, ×50, ×100, ×1000).</p>';
       }
 
       h += '<h3 class="sub" style="margin-top:16px">Tes machines</h3>';
@@ -595,7 +595,7 @@
       const types = E.extFor(res, z).filter((t) => us[t].own > 0 || (e && e.u[t]) || S().known[t]);
       const rate = depRate(z, res);
       let h = '<div class="sheet-h">' + icon(res) + '<div class="grow"><h2>' + esc(I[res].n) + '</h2><div class="tiny muted">' + esc(E.ZONES[z].n) + "</div></div></div>";
-      h += '<p class="small">' + (!e ? "Aucun extracteur ne travaille ici." : info.s === "off" ? "En pause." : rate > 0 ? "Les extracteurs posés ici récoltent " + perTime(rate) + ", même quand le jeu est fermé." : "Démarrage…") + "</p>";
+      h += '<p class="small">' + (!e ? "Aucun extracteur actif." : info.s === "off" ? "En pause." : rate > 0 ? "Récolte : " + perTime(rate) + " (active hors ligne)." : "Démarrage…") + "</p>";
       h += seuilHTML(e);
       if (types.length) {
         h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + " : chacun récolte seulement le gisement où tu le poses.</p>";
@@ -605,7 +605,7 @@
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
-      } else h += '<p class="small muted">Aucun extracteur découvert pour ce gisement. Cherche sa recette à l’Atelier.</p>';
+      } else h += '<p class="small muted">Extracteur non découvert. Recette à chercher à l’Atelier.</p>';
       if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans le Domaine, ou garde le doigt dessus.</p>';
       if (z === "mine") {
         const total = e ? Object.values(e.u).reduce((a, b) => a + b, 0) : 0;
@@ -623,12 +623,12 @@
         A.click(); vibe(8);
         if (r.placed && at) sparks(at.x, at.y, 10, "#ffd36b");
         if (at) floater((r.placed ? "+" + r.placed + " " : "") + (r.queued ? "✋ " + r.queued : ""), at.x, at.y - 14, "var(--good)");
-        if (r.queued) toast("✋ Tes mains fabriquent " + esc(many(t, r.queued)) + " pour ce gisement.", { key: "xq" });
+        if (r.queued) toast("✋ Commande ajoutée : " + esc(many(t, r.queued)) + " (pose automatique sur ce gisement).", { key: "xq" });
         return;
       }
       A.fail(0);
       const miss = r.missing ? Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n.toLowerCase())).join(", ") : "";
-      toast(r.why === "full" ? "La liste des commandes est pleine. Attends qu’une commande se termine." :
+      toast(r.why === "full" ? "Commandes au maximum. Une place se libère à la fin d’une commande." :
         r.why === "noext" ? "Tu ne connais encore aucun extracteur pour ce gisement." :
           "Pas de quoi fabriquer " + esc(I[t].n.toLowerCase()) + (miss ? " : il manque " + miss : "") + ".", { key: "xq" });
     }
@@ -725,7 +725,7 @@
       }
       if ((b = t.closest("[data-contrib]"))) {
         const r = E.contribute(b.dataset.contrib);
-        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Ressources manquantes : tu n’as rien à déposer pour ce chantier.", { key: "contrib" }); }
+        if (r.ok) { A.click(); vibe(10); } else { A.fail(0); toast("Dépôt impossible : ressources manquantes.", { key: "contrib" }); }
         render(true);
         return true;
       }

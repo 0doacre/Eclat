@@ -73,7 +73,7 @@
           { tab: "carte", go: "Un nouveau lieu est apparu sur la Carte. Ouvre-la.", at: '[data-cl="lisiere:0"]', text: "Touche le grand chêne. Au milieu de la lisière, il ne ressemble pas aux autres arbres.",
             done: () => !!document.querySelector('.modal:not(.hidden) [data-m="go"]') || !!S().exp.active },
           { modal: true, at: '.modal:not(.hidden) [data-m="go"]', back: 0,
-            text: "Lance l’exploration pour découvrir l’histoire de ce lieu. Tu peux poursuivre tes activités pendant sa durée.", done: () => !!S().exp.active }
+            text: "Lance l’exploration pour découvrir l’histoire de ce lieu. Les autres actions restent disponibles.", done: () => !!S().exp.active }
         ] },
       { id: "cabane", n: "Ta première cabane",
         when: () => U.tab === "domaine" && has("cabane") && !anyExt(),

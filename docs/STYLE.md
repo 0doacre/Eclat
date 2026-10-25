@@ -17,14 +17,19 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 
 ## Les règles
 
-- **Un ton de jeu naturel.** L’interface nomme une action, un état ou un résultat :
+- **Un ton d’interface compact.** L’interface nomme une action, un état ou un résultat :
   « Fouille lancée », « Commande ajoutée », « Ressources manquantes ».
-  Les titres et boutons peuvent être courts ; les explications utilisent des phrases complètes.
+  Statuts, confirmations et notifications privilégient les formulations courtes, nominales
+  ou entre parenthèses. Exemple : « Fouille lancée (continue hors ligne). »
   Ne pas raconter chaque clic (« tu pars, tu fermes le jeu si tu veux ») ni personnifier
   systématiquement les mécanismes (« tes mains s’y mettent »).
-- **Une information utile par phrase.** Donner d’abord le résultat ou l’état, puis la
-  conséquence pratique. Une action automatique reste explicite : « Elle se poursuit même
-  lorsque le jeu est fermé. » Ne pas remplacer cette précision par le seul mot « hors ligne ».
+- **État puis précision.** Donner d’abord le résultat ou l’état, puis la condition utile :
+  « Fouille en cours. Progression active hors ligne. » Éviter les phrases explicatives
+  dans les statuts, notamment « Elle se poursuit… » ou « Tu peux poursuivre tes activités… ».
+  « Hors ligne » est le terme retenu pour la progression pendant l’absence ; l’aide peut
+  préciser une fois « même jeu fermé ». Réserver les explications détaillées au tutoriel
+  et aux aides. « En arrière-plan » ne remplace pas « hors ligne » pour annoncer une
+  progression qui fonctionne aussi après fermeture du jeu.
 - **Guider au bon endroit.** Le tutoriel explique les manipulations ; les messages courants
   confirment leur résultat. Citer le nom réel du bouton ou de l’écran (« Tailler », « Carte »),
   plutôt que sa taille ou sa position (« le gros bouton », « là »).
@@ -64,11 +69,11 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 
 | Situation | Formulation |
 |---|---|
-| Fouille disponible | Les fouilles se poursuivent même lorsque le jeu est fermé. Une fois la fouille terminée, récupère ton butin sur la Carte. |
-| Départ | Fouille lancée. Elle se poursuit même lorsque le jeu est fermé. |
-| Fin | Fouille terminée ! Récupère ton butin sur la Carte. |
-| Commande ajoutée | Commande ajoutée. Retrouve sa progression au-dessus des onglets. |
-| Limite atteinte | La liste des commandes est pleine. Attends qu’une commande se termine. |
+| Fouille disponible | Progression active hors ligne. Butin à récupérer sur la Carte en fin de fouille. |
+| Départ | Fouille lancée (continue hors ligne). |
+| Fin | Fouille terminée. Butin disponible sur la Carte. |
+| Commande ajoutée | Commande ajoutée · Suivi au-dessus des onglets. |
+| Limite atteinte | Commandes au maximum. Une place se libère à la fin d’une commande. |
 
 Le lexique fixe les noms des systèmes, pas chaque tournure de phrase. « Tes mains » reste
 le nom de la fabrication manuelle ; une confirmation peut simplement dire « Commande ajoutée ».

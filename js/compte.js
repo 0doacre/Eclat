@@ -60,7 +60,7 @@
     function openSaves() {
       const list = backups();
       openModal({
-        html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Ta partie est sauvegardée automatiquement sur cet appareil. Télécharge une copie pour la conserver ou la transférer sur un autre appareil.</p>" +
+        html: "<h2>💾 Sauvegardes</h2><p class=\"small muted\">Sauvegarde automatique sur cet appareil. Télécharge une copie pour la conserver ou la transférer.</p>" +
           '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="dl">⬇️ Télécharger ma sauvegarde</button><button class="btn" data-m="up">⬆️ Charger un fichier de sauvegarde</button>' +
           '<button class="btn ghost" data-m="code">📋 Code texte (ancien format)</button></div>' +
           (list.length ? '<h3 class="sub">Copies de sécurité automatiques</h3>' + list.map((b, i) =>
@@ -93,7 +93,7 @@
         onOpen: (box) => { const t = $("textarea", box); t.focus(); t.select(); },
         on: {
           copy: () => { try { navigator.clipboard.writeText($("#codeTxt").value); toast("Copié."); } catch (e) { /* ignoré */ } return true; },
-          load: () => { const v = $("#codeTxt").value; if (v.trim() === code) { toast("Ce code correspond déjà à ta partie actuelle."); return true; } setTimeout(() => confirmReplace(v, "Avant le chargement d’un code"), 80); }
+          load: () => { const v = $("#codeTxt").value; if (v.trim() === code) { toast("Partie actuelle déjà chargée."); return true; } setTimeout(() => confirmReplace(v, "Avant le chargement d’un code"), 80); }
         }
       });
     }
@@ -249,7 +249,7 @@
           solve: (b) => { busy(b); Cloud.pull().then((cl) => cl && chooseVersion(cl, "Ta partie a avancé sur un autre appareil.")).catch((e) => swapModal(accountModal(e.message))); return true; },
           slot: (b) => { swapModal(slotModal(Number(b.dataset.i))); return true; },
           pw: () => { swapModal(passwordModal()); return true; },
-          out: () => { Cloud.logout().then(updateCloudBtn); toast("Déconnecté. Ta partie reste sur cet appareil."); },
+          out: () => { Cloud.logout().then(updateCloudBtn); toast("Déconnexion effectuée. Partie conservée sur cet appareil."); },
           del: () => { swapModal(deleteModal()); return true; }
         }
       };
@@ -403,7 +403,7 @@
           back: () => { swapModal(accountModal()); return true; },
           go: (b) => {
             busy(b, "Suppression…");
-            Cloud.deleteAccount($("#dl0").value).then(() => { closeModal(); updateCloudBtn(); toast("Compte supprimé. Ta partie reste sur cet appareil."); })
+            Cloud.deleteAccount($("#dl0").value).then(() => { closeModal(); updateCloudBtn(); toast("Compte supprimé. Partie conservée sur cet appareil."); })
               .catch((e) => { unbusy(b); $("#dlErr").textContent = e.message; });
             return true;
           }
@@ -507,7 +507,7 @@
           vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
           visiteurs: (b) => { E.setVisiteurs(!E.visiteurActif()); if (!E.visiteurActif()) visiteurFin(); b.textContent = E.visiteurActif() ? "Oui" : "Non"; save(); return true; },
           tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
-          tutoAgain: () => { Tuto.restart(); toast("💭 Le tutoriel reprend : chaque chapitre réapparaît au moment où il sert."); },
+          tutoAgain: () => { Tuto.restart(); toast("💭 Tutoriel réactivé. Chapitres affichés au fil de la progression."); },
           saves: () => setTimeout(openSaves, 80),
           credits: () => setTimeout(() => simpleModal("Éclat", "Crédits",
             '<div class="small"><p><b>Icônes</b> : <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a>, par Lorc, Delapouite et leurs contributeurs, sous licence CC BY 3.0. Recolorées, dessin inchangé.</p>' +

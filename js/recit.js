@@ -1190,21 +1190,21 @@
       ],
       ui: {
         titre: "Fouiller de nouveau",
-        aide: "Les fouilles se poursuivent même lorsque le jeu est fermé. Une fois la fouille terminée, récupère ton butin sur la Carte.",
-        busy: "Une fouille est déjà en cours. Récupère son butin avant d’en lancer une autre.",
+        aide: "Progression active hors ligne. Butin à récupérer sur la Carte en fin de fouille.",
+        busy: "Fouille déjà active. Butin à récupérer avant le prochain départ.",
         avant1: "Termine « Un tour » et récupère le butin pour débloquer « Une fouille ».",
         avant2: "Termine « Une fouille » et récupère le butin pour débloquer le dernier niveau.",
         fait: "Déjà fait",
-        parti: "Fouille lancée. Elle se poursuit même lorsque le jeu est fermé.",
+        parti: "Fouille lancée (continue hors ligne).",
         chip: "Fouille",
         chipReste: "reste",
         chipPret: "terminée · Récupérer le butin",
-        prete: "Fouille terminée ! Récupère ton butin sur la Carte.",
+        prete: "Fouille terminée. Butin disponible sur la Carte.",
         kicker: "Fouille",
         rapporte: "Butin récupéré",
-        nouveau: "Un nouveau lieu sur la Carte",
+        nouveau: "Nouveau lieu sur la Carte",
         entendu: "Ce que tu y as entendu",
-        pasFini: "La fouille est encore en cours."
+        pasFini: "Fouille en cours."
       }
     },
 

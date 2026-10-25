@@ -233,7 +233,7 @@
         if (o.dt < ABSENCE_FENETRE) {
           // une absence courte (une autre application, l’écran éteint) : un mot, pas une fenêtre qui bloque
           if (top.length) toast("Pendant ton absence : " + top.slice(0, 2).map((k) => "+" + fmt(o.gains[k]) + " " + esc(I[k].n)).join(", "), { key: "absence" });
-          if (o.exp) toast("Ton exploration est terminée.", { key: "absence-exp" });
+          if (o.exp) toast("Exploration terminée.", { key: "absence-exp" });
           return;
         }
         if (!top.length && !o.exp && o.dt < 600) return;
@@ -375,7 +375,7 @@
           A.click(); render(true); return;
         }
         if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
-        if ((b = t.closest("[data-lock]"))) { toast("Action encore inconnue. Elle se débloque avec sa station : feu, enclume, creuset…"); return; }
+        if ((b = t.closest("[data-lock]"))) { toast("Action verrouillée. Station nécessaire : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
         if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
         if (t.closest("#forge, [data-forge]") && !t.closest("[data-s]")) {
@@ -403,7 +403,7 @@
         if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
         if ((b = t.closest("[data-hcancel]"))) {
           const j = S().hand.q[Number(b.dataset.hcancel)];
-          if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Matières restituées."); render(true); }
+          if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Commande annulée : " + esc(I[j.id].n) + ". Ressources restituées."); render(true); }
           return;
         }
         if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }

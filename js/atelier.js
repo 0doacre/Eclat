@@ -282,7 +282,7 @@
         if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultHTML(); }
         const miss = q ? null : E.missingFor(r.id, 1);
         const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
-        if (q) return head + '<div class="small">✋ Commande ajoutée. Retrouve sa progression au-dessus des onglets.</div></div></div>';
+        if (q) return head + '<div class="small">✋ Commande ajoutée · Suivi au-dessus des onglets.</div></div></div>';
         // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
         if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
           '<div class="row wrap small" style="margin-top:8px"><span class="muted">Ressources nécessaires (disponibles) :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
@@ -307,7 +307,7 @@
         const done = r.kind === "queued" && !E.queued(r.id);
         const msg = done ? "✓ Fabriqué : la pièce est rangée dans ta Réserve."
           : r.kind === "queued" ? "✋ Commande ajoutée. Durée estimée : " + fmtTime(r.time) + "."
-          : r.why === "full" ? "La liste des commandes est pleine. Attends qu’une commande se termine."
+          : r.why === "full" ? "Commandes au maximum. Une place se libère à la fin d’une commande."
           : r.why === "queued" ? "Déjà en cours." : "Impossible pour l’instant.";
         return '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + '</div><div class="small">' + msg + "</div>" +
           (E.isUnique(it) ? "" : '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div>") + "</div></div>";
@@ -816,7 +816,7 @@
     /* pourquoi on ne peut pas fabriquer (n fois, en chaîne ou non), en une phrase */
     function whyNot(id, n, chain) {
       const it = I[id], b = E.blocker(id);
-      if (E.handInfo().full) return "La liste des commandes est pleine. Attends qu’une commande se termine.";
+      if (E.handInfo().full) return "Commandes au maximum. Une place se libère à la fin d’une commande.";
       if (b && b.why === "owned") return "Tu possèdes déjà " + esc(it.n) + ".";
       if (!E.ageOK(id)) return esc(it.n) + " vient d’un âge que tu n’as pas encore atteint.";
       if (b) return esc(it.n) + " : " + esc(needText(id, b)) + ".";
@@ -838,7 +838,7 @@
       if (i >= 0) { U.slots[i] = null; }
       else {
         const free = U.slots.indexOf(null);
-        if (free < 0) { toast("L’établi est plein : touche un emplacement pour le vider."); return; }
+        if (free < 0) { toast("Établi plein. Touche un emplacement pour le vider."); return; }
         U.slots[free] = id;
       }
       A.click();
@@ -982,7 +982,7 @@
       const j = h.jobs[0], it = I[j.id];
       const missTxt = jobMissTag(j);
       const what = missTxt ? '<span style="color:var(--bad)">' + esc(missTxt) + "</span>"
-        : j.wait ? '<span style="color:var(--bad)">en attente de mains ou de machines disponibles</span>'
+        : j.wait ? '<span style="color:var(--bad)">en attente de mains ou de machines</span>'
         : j.steps.length > 1 ? "étape " + (j.i + 1) + "/" + j.steps.length + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.done) + "/" + fmt(j.n);
       const pct = Math.min(100, 100 * (j.frac || 0));
       return '<span class="hh">✋</span>' + icon(j.id, "sm") + '<div class="grow hmain" data-hopen><div class="small ell"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) +
@@ -1059,7 +1059,7 @@
           const sub = [];
           if (w) sub.push(w);
           if (miss) sub.push(miss);
-          else if (j.wait) sub.push("en attente de mains ou de machines disponibles");
+          else if (j.wait) sub.push("en attente de mains ou de machines");
           else sub.push("fin estimée dans ~" + fmtTime(i ? j.at : j.left));
           return '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
             '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span></span>" +
@@ -1073,7 +1073,7 @@
         on: {
           hc: (b) => {
             const i = Number(b.dataset.i), j = S().hand.q[i];
-            if (j && E.cancelJob(i)) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Matières restituées."); }
+            if (j && E.cancelJob(i)) { A.click(); toast("Commande annulée : " + esc(I[j.id].n) + ". Ressources restituées."); }
             const box = $("#modal .modal-box");
             box.innerHTML = handsSheet(); iconize(box);
             render(true);
@@ -1281,7 +1281,7 @@
           nav: (b) => { recipeNav(b.dataset.id); return true; },
           back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
           rfrom: () => { const f = U.rfrom; U.rfrom = null; closeModal(); if (f) setTimeout(f, 80); return true; },
-          zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => { setTab("domaine"); Dom.focusZone(z); }, 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
+          zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => { setTab("domaine"); Dom.focusZone(z); }, 60); } else { toast("Terre non atteinte."); return true; } },
           cr: (b) => { craftFrom(b); redraw(); return true; },
           chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
           tree: () => { setTimeout(() => openTree(id, 1), 60); },

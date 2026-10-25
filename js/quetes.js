@@ -191,7 +191,7 @@
       }
       if (!r.ok) {
         A.fail(0);
-        toast("Ressources manquantes : tu n’as rien à déposer pour l’instant. Il faut encore " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
+        toast("Dépôt impossible. Ressources manquantes : " + Object.keys(p.left).map((k) => fmt(p.left[k]) + " " + esc(I[k].n)).join(", ") + ".", { key: "pour" });
         return;
       }
       A.click(); vibe(10);
