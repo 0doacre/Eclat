@@ -7,7 +7,7 @@
 
   function create(api) {
     const {
-      E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, zoneName, GI, gi, gIc, icon,
+      E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
       iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
       floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
       uiSigne, memoryHTML
@@ -1061,8 +1061,10 @@
           if (miss) sub.push(miss);
           else if (j.wait) sub.push("attend une main ou une machine");
           else sub.push("fini dans ~" + fmtTime(i ? j.at : j.left));
+          // ce qui bloque : d’où vient la ressource qui manque, et un accès à son gisement
+          const lim = Object.keys(j.miss || {}).filter((k) => j.miss[k] > 1e-9).slice(0, 2).map((k) => limitHTML(k, j.miss[k])).join("");
           return '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
-            '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span></span>" +
+            '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span>" + lim + "</span>" +
             '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
         }).join("") +
         '</div><p class="tiny muted">Annuler une commande rend ses ressources à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';

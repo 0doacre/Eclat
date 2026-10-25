@@ -9,7 +9,7 @@
   const SHOWN = 2; // terres dépliées d’office ; les plus anciennes se replient
 
   function create(api) {
-    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
+    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
     const uiSigne = api.uiSigne || (() => "");
     const recitInline = api.recitInline || ((t) => esc(t));
     const itemPill = api.itemPill || ((id) => esc(id));
@@ -515,6 +515,10 @@
           return '<div class="cost-row" data-goto="' + k + '" role="button" tabindex="0" title="' + esc(I[k].n) + ' (toucher pour inspecter)">' + icon(k, "sm") + '<span class="grow">' + esc(I[k].n) + '</span><span class="tiny" data-sp="' + pid + ":" + k + '">' + fmt(paid) + " / " + fmt(step.cost[k]) +
             '</span><div class="bar"><i style="width:' + (100 * paid / step.cost[k]).toFixed(1) + '%"></i></div></div>';
         }).join("");
+        // la ressource qui limite : celle qui demande le plus de temps (ou que rien ne produit), avec d’où elle vient
+        const lim = Object.keys(step.cost).map((k) => ({ k, rem: step.cost[k] - (ps.paid[k] || 0) - E.count(k) })).filter((x) => x.rem > 0 && E.isRawRes(x.k))
+          .map((x) => ({ k: x.k, rem: x.rem, t: E.limiting(x.k, x.rem).eta })).sort((a, b) => (b.t === null) - (a.t === null) || b.t - a.t)[0];
+        if (lim && !(step.need && !st.frags[step.need])) h += limitHTML(lim.k, lim.rem);
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
         else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Fournir</button>' +
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
