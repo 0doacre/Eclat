@@ -11,7 +11,7 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 8;
+  const SAVE_VERSION = 9;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -186,6 +186,22 @@
       // v8 : un extracteur par ressource (voir D.LIGNES). Le passage des exemplaires posés sur une autre ressource que celle
       // de leur objet vers le niveau frère se fait au chargement (checkDom), pour toutes les vieilles sauvegardes.
       o.v = 8;
+    }
+    if (from < 9) {
+      // v9 : un âge de plus, la Vapeur, entre l’Acier (6) et l’Électricité. Tout âge d’avant 7 reste, les autres avancent d’un rang.
+      // Qui a dépassé l’Acier a dépassé la Vapeur : son âge est marqué accompli, sans récompense.
+      const apres = (a) => (Number(a) >= 7 ? Number(a) + 1 : Number(a));
+      if (typeof o.age === "number") o.age = apres(o.age);
+      o.flags = o.flags || {};
+      if (o.flags.ages && typeof o.flags.ages === "object") {
+        const ages = {};
+        for (const k in o.flags.ages) ages[apres(k)] = o.flags.ages[k];
+        if (ages[8] || o.age >= 8) ages[7] = 1;
+        o.flags.ages = ages;
+      }
+      const st = o.meta && o.meta.stamps;
+      if (st && typeof st === "object") for (const k in st) if (Array.isArray(st[k]) && st[k].length > 2) st[k][2] = apres(st[k][2]);
+      o.v = 9;
     }
     return o;
   }
@@ -3759,13 +3775,14 @@
         "Chapitre IV · La Flamme et le cuivre",
         "Chapitre V · L’Alliage du bronze",
         "Chapitre VI · Le Marteau et le fer",
-        "Chapitre VII · L’Acier et la vapeur",
-        "Chapitre VIII · L’Étincelle captive",
-        "Chapitre IX · La Pensée du silicium",
-        "Chapitre X · L’Huile noire",
-        "Chapitre XI · L’Étoffe des composites",
-        "Chapitre XII · L’Envol spatial",
-        "Chapitre XIII · La Lumière stellaire"
+        "Chapitre VII · L’Acier",
+        "Chapitre VIII · La Vapeur au travail",
+        "Chapitre IX · L’Étincelle captive",
+        "Chapitre X · La Pensée du silicium",
+        "Chapitre XI · L’Huile noire",
+        "Chapitre XII · L’Étoffe des composites",
+        "Chapitre XIII · L’Envol spatial",
+        "Chapitre XIV · La Lumière stellaire"
       ];
       const chapter = chapterTitles[S.age] || ("Chapitre " + (S.age + 1));
       return {
