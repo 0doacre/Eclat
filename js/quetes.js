@@ -68,7 +68,20 @@
         if (st.exp.active) return line('<span class="small">🧭 En route… <b data-xl></b></span>');
         return line('<button class="btn small pri" data-exp="' + ob.z + '">🧭 Explorer</button><span class="tiny muted">' + esc(E.ZONES[ob.z].n) + "</span>");
       }
-      if (ob.k === "pass") return passHTML(ob.z);
+      if (ob.k === "pass") {
+        // un lieu de la terre actuelle demande un objet dont on ne connaît pas la recette (la torche) : le guide la montre avant le passage
+        const un = (id) => (D.GENRE.p.split(" ").includes(id) ? "des " : D.GENRE.f.split(" ").includes(id) ? "une " : "un ") + I[id].n.toLowerCase();
+        const manque = g.step && !st.known[g.step] && g.pour && I[g.pour] ? un(g.pour) : null;
+        if (manque) {
+          const lvl = st.hints[g.step] || 0, it0 = I[g.step];
+          return line('<div class="grow" data-goto="' + g.step + '"><div class="small">🧭 Pour explorer le prochain lieu, il te faut <b>' + esc(manque) + "</b>. " +
+            (g.step === g.pour ? "" : "Une des recettes qui y mènent reste à trouver. ") + (it0.h ? "<i>« " + esc(it0.h) + " »</i>" : "") + "</div>" +
+            (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(g.step) + "</div>" : "") +
+            (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(g.step), "sm") + " " + esc(I[mainIngredient(g.step)].n) + "</div>" : "") +
+            '</div><button class="btn small pri" data-gotab="atelier">Tenter</button>') + passHTML(ob.z);
+        }
+        return passHTML(ob.z);
+      }
       if (ob.k === "ext") {
         const d = E.deposits().find((x) => { const c = E.extChoice(x.res, x.z); return c && (c.free > 0 || E.plan(c.t, 1).ok); });
         return d ? line('<button class="btn small pri" data-xadd="' + d.key + '" data-n="1">Poser ' + esc(I[E.extChoice(d.res, d.z).t].n.toLowerCase()) + " sur " + esc(I[d.res].n.toLowerCase()) + "</button>") : line('<span class="small">' + esc(ob.txt) + "</span>");

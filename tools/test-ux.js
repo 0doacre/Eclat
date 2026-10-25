@@ -365,7 +365,7 @@ async function run() {
   p = await page(390, false);
   await p.evaluate(() => {
     const st = window.__eclat.E.state;
-    st.meta.parcours = true; st.meta.forcedDone = false; st.cycle = 1; st.flags.extDone = true; st.exp.done.lisiere = 1;
+    st.meta.parcours = true; st.meta.forcedDone = false; st.cycle = 1; st.flags.extDone = true; st.exp.done.lisiere = 1; st.pass.plaine = { paid: {}, done: true };
     st.known.manche = 1;
     window.__eclat.E.emit("struct");
   });
@@ -375,7 +375,26 @@ async function run() {
   await p.locator('#modal [data-m="go"]').click();
   await p.waitForFunction(() => window.__eclat.E.state.cycle === 2, null, { timeout: 5000 });
   ok(await p.evaluate(() => window.__eclat.E.state.known.manche > 0 && window.__eclat.E.state.meta.forcedDone), "Première relève : le cycle 2 commence, le savoir est conservé");
-  ok(!p.errors.length, "Première relève : aucune erreur après le relais " + p.errors.join(" | ")); await p.context().close();
+  ok(!p.errors.length, "Première relève : aucune erreur après le relais " + p.errors.join(" | "));
+  // le rappel du Domaine : un autre Semeur a pris le relais, ce qui est gardé, les Traces à dépenser ; il s’efface quand elles sont dépensées
+  for (let i = 0; i < 8; i++) { await p.waitForTimeout(250); await p.evaluate(() => window.__eclat.closeModal()); }
+  await p.locator('#tabs [data-tab="domaine"]').click(); await p.waitForTimeout(400);
+  ok(await p.evaluate(() => { const e = document.querySelector(".dom-reveil"); return !!e && /Un autre Semeur a pris le relais/.test(e.innerText) && /\d+ ✦ Traces/.test(e.innerText) && /recette/.test(e.innerText); }), "Rappel après l’éveil : « Un autre Semeur a pris le relais », recettes gardées et Traces à dépenser");
+  ok(await p.evaluate(() => document.querySelector(".dom-reveil").getBoundingClientRect().height >= 43.9), "Rappel après l’éveil : cible d’au moins 44 px");
+  await p.evaluate(() => { window.__eclat.E.state.meta.traces = 0; window.__eclat.render(true); }); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => !document.querySelector(".dom-reveil")), "Rappel après l’éveil : il s’efface quand les Traces sont dépensées");
+  await p.context().close();
+  // Le guide du passage : un lieu demande une torche dont la recette est inconnue, la carte d’objectif le dit et propose « Tenter »
+  p = await page(390, false);
+  await p.evaluate(() => {
+    const E = window.__eclat.E, s = E.state;
+    for (const id of ["manche", "corde", "archet", "feu", "cabane", "epieu"]) { E.learn(id, true); s.made[id] = 1; }
+    s.inv.feu = 1; E.recalc(); s.flags.extDone = true; s.pass.plaine = { paid: {}, done: false }; s.exp.done = { lisiere: 1 }; s.meta.parcours = 1;
+    window.__eclat.render(true);
+  });
+  await p.waitForTimeout(500);
+  ok(await p.evaluate(() => { const c = document.querySelector(".goal-card"); return !!c && /Pour explorer le prochain lieu, il te faut une torche/.test(c.innerText) && !!c.querySelector('[data-gotab="atelier"]'); }), "Passage : la carte d’objectif dit qu’il faut une torche et propose « Tenter »");
+  ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // L’Atelier court (0.15.5) : les actions tiennent sur une rangée, la première rangée de ressources et le gros bouton sont dans la première vue ;
   // sur très petit écran, une ressource touchée fait venir le petit établi, avec son bouton, sans remonter.
   for (const [width, haut] of [[390, 844], [320, 568]]) {

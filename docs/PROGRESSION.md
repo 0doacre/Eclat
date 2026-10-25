@@ -52,6 +52,15 @@ par la main ne se perd pas ».
 - Les Échos des fins (+50 % de récolte et de production chacun) restent la couche
   profonde, au-dessus.
 - Une copie de sécurité est faite avant chaque relève.
+- **La première relève est obligatoire** (`E.canForcedReleve`, une seule fois, au cycle 1) : elle se déclenche
+  **une fois le premier passage (la Plaine) franchi**, donc après les premières Traces (+2) et après que le joueur a vu le
+  Domaine s’agrandir. Elle offre en plus `D.PARCOURS.gift` (3) Traces, puis la fenêtre de la Mémoire s’ouvre.
+  Avant la 0.16 elle se déclenchait dès la première cabane posée et la première exploration faite (de 2 à 5 minutes
+  de jeu) ; voir `docs/revue/simulation-premier-parcours.md` pour la comparaison mesurée.
+  Pour que ce déclencheur soit sûr, le guide mène au lieu que le passage demande (la torche de la grotte, donc le
+  charbon) : `E.guide()` renvoie alors `{ pour, step }`.
+- Après l’éveil, un rappel en haut du Domaine (`reveilRepere`, js/memoire.js) dit ce que le nouveau Semeur a gardé et
+  les Traces à dépenser ; il s’efface quand elles sont dépensées, ou au bout de quinze minutes.
 
 ## 3. La Mémoire des mains (méta-progression)
 

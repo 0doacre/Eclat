@@ -7,7 +7,7 @@
  *  1. Partie neuve : AUCUNE recette connue d’avance. Le joueur voit chaque matière, puis DÉCOUVRE la recette de l’étape en cours
  *     par des essais (E.attempt du moteur : thermomètre, et souvenirs du guide qui finissent par donner l’action, une matière,
  *     puis la recette). Chaque essai prend du temps (--essai secondes) pendant lequel il ne récolte pas.
- *  2. La relève obligatoire du cycle 1 est prise dès qu’elle se déclenche (E.canForcedReleve) : +3 Traces.
+ *  2. La relève obligatoire du cycle 1 est prise dès qu’elle se déclenche (E.canForcedReleve : le premier passage, la Plaine, est franchi) : +3 Traces.
  *  3. Un premier achat de Mémoire avec ces Traces (un par colonne : aucun, Mains calleuses, Mains sûres, Mémoire des gisements).
  *  4. Cycle 2 (--minutes) : il ne connaît que ce qu’il a appris au cycle 1. On note la minute où il franchit la Plaine et la Rivière.
  *
@@ -42,8 +42,8 @@ function reglages(argv) {
 }
 
 /* une partie du premier parcours ; renvoie ce qu’on en retient */
-function une(pol, achat, graine, r, chasse) {
-  const o = lire(["--parcours", "--minutes", String(r.minutes), "--decouverte", pol, "--essai", String(r.essai), "--achat", achat, "--graine", String(graine), "--chasse", String(chasse || 0)]);
+function une(pol, achat, graine, r, chasse, releve) {
+  const o = lire(["--parcours", "--minutes", String(r.minutes), "--decouverte", pol, "--essai", String(r.essai), "--achat", achat, "--graine", String(graine), "--chasse", String(chasse || 0), "--releve", releve || "jeu"]);
   const x = play(o);
   const plaine = x.rows.find((y) => y.z === "plaine" && !y.offert), riviere = x.rows.find((y) => y.z === "riviere" && !y.offert);
   const rel = x.rel;
@@ -90,14 +90,27 @@ function tableau(titre, cle, res) {
   for (const [pol, nom] of POLITIQUES) L.push("| " + nom + " | " + ACHATS.map(([a]) => cell(res[pol][a][cle])).join(" | ") + " |");
   return L;
 }
-function rapport(r, res, resChasse) {
+/* l’ancienne règle (cabane posée et première exploration) à côté de la règle du jeu, pour l’achat qui accélère le plus */
+function compareRegles(r) {
+  const out = {};
+  for (const [pol] of POLITIQUES) {
+    out[pol] = {};
+    for (const regle of ["tot", "jeu"]) {
+      const liste = [];
+      for (let g = 1; g <= (pol === "enigme" ? 1 : r.graines); g++) liste.push(une(pol, "auto", g, r, 0, regle));
+      out[pol][regle] = { releve: agreger(liste, "releve"), plaine2: agreger(liste, "plaine2"), riviere2: agreger(liste, "riviere2"), riviere: agreger(liste, "riviere") };
+    }
+  }
+  return out;
+}
+function rapport(r, res, resChasse, regles) {
   const L = [];
   L.push("# Le premier parcours d’un nouveau joueur : mesures", "");
   L.push("Simulation sur le moteur réel (`node tools/sim-parcours.js --ecrire`), sans écran. **Ce sont des durées de jeu actif, en minutes**, pour un joueur de type « tapeur » (4 appuis par seconde). Elles comparent des hypothèses ; elles ne remplacent pas l’observation de vrais joueurs.", "");
   L.push("Version du jeu : " + D.VERSION + " · " + r.minutes + " min de cycle 2 · " + r.essai + " s par essai · " + r.graines + " graines de hasard par case (médiane, puis [min–max]).", "");
   L.push("## Ce qui est simulé", "",
     "1. Partie neuve : aucune recette connue d’avance. Le joueur voit chaque matière, puis **découvre** la recette de l’étape en cours par des essais sur le moteur réel (thermomètre, et souvenirs du guide qui donnent l’action, une matière, puis la recette).",
-    "2. La relève obligatoire du cycle 1 est prise dès qu’elle se déclenche (première cabane posée et première exploration faite) : +3 Traces.",
+    "2. La relève obligatoire du cycle 1 est prise dès qu’elle se déclenche : une fois le premier passage (la Plaine) franchi, ce qui demande d’explorer la grotte, donc de fabriquer une torche. +3 Traces offertes, en plus de celles du passage.",
     "3. Un premier achat de Mémoire avec ces Traces : une colonne par choix possible, plus « aucun achat ».",
     "4. Cycle 2 : il ne connaît que ce qu’il a appris au cycle 1. On note la minute où il franchit la Plaine, puis la Rivière.", "");
   L.push("## Les trois hypothèses sur la découverte (la partie incertaine)", "",
@@ -110,6 +123,11 @@ function rapport(r, res, resChasse) {
     "| Hypothèse | Relève à (min) | Essais | Réflexion (min) | Recettes connues |", "|---|---:|---:|---:|---:|");
   for (const [pol, nom] of POLITIQUES) { const c = res[pol].aucun; L.push("| " + nom + " | " + cell(c.releve) + " | " + cell(c.essais1).replace(/\.\d/g, "") + " | " + cell(c.pense1) + " | " + cell(c.connues).replace(/\.\d/g, "") + " |"); }
   L.push("", "Le cycle 1 ne dépend pas de l’achat : c’est avant la relève.", "");
+  L.push("## Quand la relève se déclenche : l’ancienne règle et la règle actuelle", "",
+    "Ancienne règle : dès que la première cabane est posée et la première exploration faite. Règle actuelle : une fois la Plaine franchie. Les Traces sont dépensées dans l’ordre habituel de la Mémoire (3 offertes, plus 2 du passage pour la règle actuelle).", "",
+    "| Hypothèse | Relève (ancienne) | Relève (actuelle) | Rivière depuis le début (ancienne) | Rivière depuis le début (actuelle) |", "|---|---:|---:|---:|---:|");
+  for (const [pol, nom] of POLITIQUES) { const a = regles[pol].tot, b = regles[pol].jeu; L.push("| " + nom + " | " + cell(a.releve) + " | " + cell(b.releve) + " | " + cell(a.riviere) + " | " + cell(b.riviere) + " |"); }
+  L.push("");
   L.push("## La Plaine", "");
   tableau("Depuis le début de la partie (cycle 1 + cycle 2), en minutes", "plaine", res).forEach((l) => L.push(l));
   L.push("");
@@ -145,10 +163,10 @@ function commit() { try { return execSync("git rev-parse --short HEAD", { cwd: p
 if (require.main === module) {
   try {
     const r = reglages(process.argv.slice(2));
-    const res = mesurer(r, 0), resChasse = mesurer(r, r.chasse);
-    if (r.json) console.log(JSON.stringify({ version: D.VERSION, reglages: r, resultats: res, avecChasse: resChasse }, null, 2));
+    const res = mesurer(r, 0), resChasse = mesurer(r, r.chasse), regles = compareRegles(r);
+    if (r.json) console.log(JSON.stringify({ version: D.VERSION, reglages: r, resultats: res, avecChasse: resChasse, regles }, null, 2));
     else {
-      const txt = rapport(r, res, resChasse);
+      const txt = rapport(r, res, resChasse, regles);
       if (r.ecrire) { fs.writeFileSync(FICHIER, txt + (commit() ? "\n_Mesuré au commit " + commit() + "._\n" : "")); console.log("✓ " + path.relative(process.cwd(), FICHIER) + " écrit."); }
       else console.log(txt);
     }

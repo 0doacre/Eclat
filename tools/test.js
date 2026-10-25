@@ -1640,12 +1640,28 @@ test("récolte à la main : coup de chance ×2, plus fréquent avec « Coup d’
 });
 
 console.log("Premier parcours et ruines");
+test("le guide mène à la torche : un lieu du passage demande un objet dont la recette est inconnue", () => {
+  const E = mk();
+  for (const id of ["manche", "corde", "archet", "feu", "cabane", "epieu"]) E.learn(id, true);
+  for (const id of ["manche", "corde", "archet", "feu", "cabane", "epieu"]) E.state.made[id] = 1;
+  E.state.inv.feu = 1; E.recalc(); // le feu de camp est là : l’action Chauffer est possible
+  E.state.flags.extDone = true;
+  E.state.pass.plaine = { paid: {}, done: false };
+  E.state.exp.done = { lisiere: 1 }; // la grotte reste à explorer : elle demande une torche
+  const g = E.guide();
+  assert.strictEqual(g.ob.k, "pass", "l’objectif est le passage vers la Plaine");
+  assert.strictEqual(g.pour, "torche", "pour explorer la grotte");
+  assert.strictEqual(g.step, "charbon", "la torche se fait avec du charbon, dont la recette reste à trouver");
+  assert.ok(!E.state.known[g.step]);
+});
 test("une partie neuve a meta.parcours ; une sauvegarde chargée sans ce drapeau ne l’a pas, et n’est jamais forcée", () => {
   const E1 = mk();
   assert.strictEqual(E1.state.meta.parcours, 1, "partie neuve a parcours");
   E1.state.flags.extDone = true;
   E1.state.exp.done = { lisiere: 1 };
-  assert.ok(E1.canForcedReleve(), "peut faire la première renaissance forcée");
+  assert.ok(!E1.canForcedReleve(), "la cabane et la première exploration ne suffisent plus");
+  E1.state.pass.plaine = { paid: {}, done: true };
+  assert.ok(E1.canForcedReleve(), "peut faire la première renaissance forcée une fois la Plaine franchie");
 
   // Ancienne sauvegarde sans parcours
   const oldSave = JSON.stringify({
@@ -3103,8 +3119,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.15.9 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.15.9");
+test("Version 0.16.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.16.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3319,12 +3335,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.15.9");
+  assert.strictEqual(D.VERSION, "0.16.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 15, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 16, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
