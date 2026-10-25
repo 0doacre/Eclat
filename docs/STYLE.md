@@ -17,19 +17,29 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 
 ## Les règles
 
-- **Un ton d’interface compact.** L’interface nomme une action, un état ou un résultat :
-  « Fouille lancée », « Commande ajoutée », « Ressources manquantes ».
-  Statuts, confirmations et notifications privilégient les formulations courtes, nominales
-  ou entre parenthèses. Exemple : « Fouille lancée (continue hors ligne). »
-  Ne pas raconter chaque clic (« tu pars, tu fermes le jeu si tu veux ») ni personnifier
-  systématiquement les mécanismes (« tes mains s’y mettent »).
-- **État puis précision.** Donner d’abord le résultat ou l’état, puis la condition utile :
-  « Fouille en cours. Progression active hors ligne. » Éviter les phrases explicatives
-  dans les statuts, notamment « Elle se poursuit… » ou « Tu peux poursuivre tes activités… ».
-  « Hors ligne » est le terme retenu pour la progression pendant l’absence ; l’aide peut
-  préciser une fois « même jeu fermé ». Réserver les explications détaillées au tutoriel
-  et aux aides. « En arrière-plan » ne remplace pas « hors ligne » pour annoncer une
-  progression qui fonctionne aussi après fermeture du jeu.
+- **Un français de jeu naturel et fluide.** Le ton recherché est direct, vivant et familier
+  aux joueurs, avec des informations explicites pour les joueurs occasionnels. La brièveté
+  aide, mais ne suffit pas : couper une explication en plusieurs fragments ne la rend pas
+  naturelle. Ne pas imposer un modèle « état, puis précision » à chaque message.
+- **Pas de ton scolaire.** Éviter de décrire chaque geste et d’expliquer systématiquement
+  ce que le joueur peut faire : « Tu pars, tu fermes le jeu si tu veux », « Tu peux poursuivre
+  tes activités pendant ce temps ». Donner l’information nécessaire dans son contexte,
+  sans transformer chaque notification en leçon ou en mode d’emploi.
+- **Un rythme fluide.** Éviter les successions de petites phrases autonomes, de statuts
+  nominaux et de précisions administratives. Un libellé bref comme « Fouille lancée » convient
+  à une confirmation ; ce n’est pas un modèle à étendre à tous les textes. Les points,
+  points médians et parenthèses ne doivent pas remplacer les liens naturels entre les idées.
+- **Des verbes concrets.** Éviter le vocabulaire passif, abstrait ou administratif et
+  l’accumulation de noms comme « progression maintenue », « récupération disponible ».
+  Préférer une action claire quand elle sert le message. Le problème ne se limite pas à
+  la voix passive grammaticale : une phrase peut être grammaticalement active et sembler
+  tout aussi mécanique.
+- **Écrire en français, sans calquer l’anglais.** « Elle se poursuit même lorsque le jeu
+  est fermé » sonne comme la traduction littérale de « continues even when the game is
+  closed ». Cette tournure est à éviter, même si l’information est juste. Reformuler à
+  partir de ce que le joueur a besoin de savoir, sans conserver la structure anglaise.
+  « Hors ligne » peut résumer cette propriété ; l’aide peut préciser « même jeu fermé ».
+  « En arrière-plan » ne garantit pas à lui seul une progression après fermeture du jeu.
 - **Guider au bon endroit.** Le tutoriel explique les manipulations ; les messages courants
   confirment leur résultat. Citer le nom réel du bouton ou de l’écran (« Tailler », « Carte »),
   plutôt que sa taille ou sa position (« le gros bouton », « là »).
@@ -65,7 +75,11 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 | Carnet | Le Carnet garde toutes tes recettes. |
 | Tutoriel | Tu ne peux fabriquer qu’un objet à la fois. |
 
-## Repères pour l’interface
+## Repères pour l’interface à relire dans leur contexte
+
+Ces formulations figurent dans la passe actuelle. Elles ne constituent pas toutes des
+références éditoriales validées : la préférence exprimée porte aussi sur la fluidité,
+le rythme et le vocabulaire, et ne se résume pas à raccourcir les messages.
 
 | Situation | Formulation |
 |---|---|
