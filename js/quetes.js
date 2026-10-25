@@ -113,7 +113,13 @@
           (st.act && st.act.k === "harv" && st.act.res === hand ? '<span class="tiny muted">en cours…</span>' : '<button class="btn small" data-hloop="' + z + ":" + hand + '">▶</button>') + "</div>";
       }
       const ext = miss.find((k) => isRawGather(k));
-      if (ext) return line('<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque ' + itemPill(ext, { qty: p.missing[ext], lack: true }) + " : cette ressource ne se récolte pas à la main. Pose un extracteur sur son gisement.</span>");
+      if (ext) {
+        // l’extracteur est déjà à toi : il ne tourne pas sur ce gisement (jamais posé, ou éteint)
+        const ee = E.extEtat(ext), manque = '<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque ' + itemPill(ext, { qty: p.missing[ext], lack: true });
+        if (ee && ee.etat === "libre") return line(manque + " : " + esc(I[ee.t].n.toLowerCase()) + " attend d’être posé.</span>" + '<button class="btn small pri" data-xadd="' + ee.key + '" data-n="1">Poser</button>');
+        if (ee && ee.etat === "arret") return line(manque + " : ton extracteur est arrêté.</span>" + '<button class="btn small pri" data-xrun="' + ee.key + '">Relancer</button>');
+        return line(manque + " : cette ressource ne se récolte pas à la main. Pose un extracteur sur son gisement.</span>");
+      }
       return line('<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque : ' + miss.map((k) => itemPill(k, { qty: p.missing[k], lack: true })).join("") + ".</span>");
     }
     /* ce qui change la carte d’objectif (pour la redessiner au bon moment) */

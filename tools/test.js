@@ -3269,8 +3269,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.23.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.23.0");
+test("Version 0.23.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.23.1");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3485,7 +3485,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.23.0");
+  assert.strictEqual(D.VERSION, "0.23.1");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
@@ -4092,6 +4092,7 @@ require("./test-figures.js");
 require("./test-arbre.js");
 require("./test-densite.js");
 require("./test-carnet.js");
+require("./test-guidage.js");
 require("./test-comptoir.js");
 require("./test-stockage.js");
 

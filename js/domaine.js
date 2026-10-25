@@ -734,6 +734,13 @@
         render(true);
         return true;
       }
+      if ((b = t.closest("[data-xrun]"))) {
+        const key = b.dataset.xrun, i = key.indexOf(":");
+        E.domExtToggle(key.slice(0, i), key.slice(i + 1), true);
+        A.click();
+        render(true);
+        return true;
+      }
       if ((b = t.closest("[data-gsheet]"))) { A.click(); extSheet(b.dataset.gsheet); return true; }
       if ((b = t.closest("[data-mcancel]"))) {
         E.cancelJob(Number(b.dataset.mcancel));

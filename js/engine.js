@@ -729,6 +729,16 @@
       return r;
     };
 
+    /* un extracteur déjà possédé qui ne récolte pas une matière : « libre » (jamais posé) ou « arret » (posé, mais éteint) */
+    E.extEtat = (res) => {
+      const z = RES_ZONE[res];
+      if (!z || !zoneOpen(z) || HAND[res] || E.rate(res) > 0) return null;
+      const key = extKey(z, res), e = S.dom.ext[key];
+      if (e && e.on === false && Object.keys(e.u).length) return { etat: "arret", z, key };
+      const ch = E.extChoice(res, z);
+      return ch && ch.free > 0 ? { etat: "libre", z, key, t: ch.t } : null;
+    };
+
     /* d’où vient une ressource qui manque : sa terre, ce que les extracteurs en donnent (par seconde) et le temps qu’il faudrait pour q */
     E.isRawRes = (res) => { const it = item(res); return !!(it && it.t === "res" && RES_ZONE[res]); };
     E.limiting = (res, q) => {
@@ -1843,7 +1853,9 @@
         }
         return ob;
       }
-      return null;
+      // plus rien devant : avoir fabriqué en avance le dernier objet ne doit pas effacer les étapes de l’âge qui restent
+      const reste = D.OBJECTIVES.findIndex((o, j) => ageDeLEtape(j) === S.age && !objDone(o));
+      return reste >= 0 ? normObj(D.OBJECTIVES[reste], reste) : null;
     };
     /* l’âge d’une étape : celui de l’objet qui la précède (comme dans milestones) */
     function ageDeLEtape(i) {
@@ -1866,7 +1878,7 @@
      * qui manque, ou la clé d’une zone fermée. */
     function nextStep(target) {
       const seen = {};
-      function walk(id, d) {
+      function walk(id, d, need) {
         if (d > 14 || seen[id]) return null;
         seen[id] = true;
         const it = item(id);
@@ -1874,13 +1886,13 @@
         const zid = RES_ZONE[id];
         if (zid && zoneOpen(zid)) {
           // une ressource que seul un extracteur récolte : il faut d’abord celui-là
-          if (!HAND[id] && EXT_OF[id] && !(count(EXT_OF[id]) > 0)) return walk(EXT_OF[id], d + 1) || { id: EXT_OF[id], why: "known" };
+          if (!HAND[id] && EXT_OF[id] && !(count(EXT_OF[id]) > 0)) return walk(EXT_OF[id], d + 1, 1) || { id: EXT_OF[id], why: "known" };
           return null; // se récolte
         }
         if (!it.r) {
           // matière première d’une zone fermée : il faut la clé de la zone
           const req = zid && ZONES[zid].req;
-          if (req && req[0] !== "@") return walk(req, d + 1) || (S.pass[zid] && !S.pass[zid].done ? { id: req, why: "pass", z: zid } : { id: req, why: "zone", z: zid });
+          if (req && req[0] !== "@") return walk(req, d + 1, 1) || (S.pass[zid] && !S.pass[zid].done ? { id: req, why: "pass", z: zid } : { id: req, why: "zone", z: zid });
           return null;
         }
         // sinon (y compris le charbon avant les Profondeurs) : on la fabrique
@@ -1888,16 +1900,18 @@
         const g = it.r[0], o = it.r[3] || {};
         if (g !== "accorder" && (!gesteOK(g) || (o.heat && E.heat() < o.heat) || (o.lvl && E.level(g) < o.lvl))) {
           const st = stationFor(g, o.heat, o.lvl);
-          if (st && st !== id) return walk(st, d + 1) || { id: st, why: "station" };
+          if (st && st !== id) return walk(st, d + 1, 1) || { id: st, why: "station" };
         }
         for (const i of Object.keys(it.r[1])) {
-          const w = walk(i, d + 1);
+          const q = it.r[1][i] * Math.ceil((need || 1) / (it.r[2] || 1));
+          if ((S.inv[i] || 0) >= q) continue; // déjà en Réserve : sa recette n’est pas une étape
+          const w = walk(i, d + 1, q);
           if (w) return w;
         }
         if (!S.known[id]) return { id, why: "unknown" };
         return null;
       }
-      return walk(target, 0) || { id: target, why: S.known[target] ? "known" : "unknown" };
+      return walk(target, 0, 1) || { id: target, why: S.known[target] ? "known" : "unknown" };
     }
     E.nextStep = nextStep;
     E.guide = function () {
