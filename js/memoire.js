@@ -266,7 +266,7 @@
     const REVEIL_MIN = 15;
     function reveilRepere() {
       const st = S(), m = st.meta;
-      if (!m.forcedDone || st.cycle !== 2 || !(m.traces > 0) || !m.reveilAt || Date.now() - m.reveilAt > REVEIL_MIN * 60000) return "";
+      if (!m.forcedDone || st.cycle !== 2 || !(m.traces > 0) || !E.achatsOuverts() || !m.reveilAt || Date.now() - m.reveilAt > REVEIL_MIN * 60000) return "";
       const rec = Object.keys(st.known).length;
       return '<button class="dom-tip dom-reveil" data-cycle>🌅 Un autre Semeur a pris le relais. Il a gardé tes ' + rec + " recette" + (rec > 1 ? "s" : "") +
         " et dispose de <b>" + fmt(m.traces) + " ✦ Traces</b> à dépenser dans la Mémoire des mains. <span>dépenser ▸</span></button>";
@@ -296,7 +296,7 @@
       const info = (id) => {
         const x = memNode(id), inf = (D.TRANSCENDANCE || []).some((t) => t.id === id);
         const l = inf ? E.transLvl(id) : E.memLvl(id), c = inf ? E.transCost(id) : E.memCost(id), max = !inf && c === undefined;
-        return { x, inf, l, c, max, ok: !max && m.traces >= c, soon: !max && m.traces < c && can && m.traces + gain >= c };
+        return { x, inf, l, c, max, ok: !max && E.achatsOuverts() && m.traces >= c, soon: !max && can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c) };
       };
       let h = '<div class="mtree" role="group" aria-label="Arbre de la Mémoire des mains">';
       for (const b of branches) {
@@ -321,11 +321,15 @@
     }
     /* ------------------------------------------------------------ MÉMOIRE DES MAINS
      * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
+    const ACHATS_FERMES = "Les Traces se dépensent au réveil d’un nouveau Semeur : passe le relais, puis achète ici.";
     function memHTML() {
       const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
       let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
         '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
       h += donCycleHTML();
+      h += E.achatsOuverts()
+        ? '<p class="small mem-achats">C’est le moment de dépenser tes Traces. Les achats se ferment quand tu touches « Terminé », ou au premier passage franchi. Les Traces non dépensées attendent la prochaine relève.</p>'
+        : '<p class="small muted mem-achats">Les achats sont fermés en cours de partie. Ils rouvrent au réveil du prochain Semeur, après la relève. Tu peux consulter tes améliorations ici.</p>';
       h += '<div class="card memrel">' + (can
         ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
         : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
@@ -335,11 +339,11 @@
       h += '<div class="mems">' + D.MEMOIRE.map((x) => {
         const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
         const now = memDesc(x, l), next = max ? "" : memDesc(x, l + 1);
-        const soon = !max && m.traces < c && can && m.traces + gain >= c; // possible juste après la relève
+        const soon = !max && can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c); // possible juste après la relève
         return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
           '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
           (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
-          (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
+          (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (E.achatsOuverts() && m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
       }).join("") + "</div>";
 
       if (D.TRANSCENDANCE && D.TRANSCENDANCE.length) {
@@ -348,10 +352,10 @@
         h += '<div class="mems">' + D.TRANSCENDANCE.map((x) => {
           const l = E.transLvl(x.id), c = E.transCost(x.id);
           const curV = x.v(l), nextV = x.v(l + 1);
-          const soon = m.traces < c && can && m.traces + gain >= c;
+          const soon = can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c);
           return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">Niveau ' + l + "</span></div>" +
             '<div class="tiny muted">' + esc(x.d.replace("{v}", String(curV).replace(".", ",")).replace(/\.$/, "")) + ' → <b style="color:var(--good)">×' + String(nextV).replace(".", ",") + '</b></div></div>' +
-            '<button class="btn small' + (m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buytrans" data-id="' + x.id + '">' + fmt(c) + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button></div>";
+            '<button class="btn small' + (E.achatsOuverts() && m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buytrans" data-id="' + x.id + '">' + fmt(c) + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button></div>";
         }).join("") + "</div>";
       }
 
@@ -371,12 +375,12 @@
           return '<div class="mem on" style="border-left-color:var(--intu)"><span class="mic">✨</span><div class="grow"><div class="small"><b>Dénouement secret · Murmure céleste</b></div><div class="tiny" style="color:var(--text);font-style:italic">« ' + esc(en.hint || "Le destin attend.") + ' »</div></div><span class="tiny muted" style="color:var(--intu)">Murmure acquis</span></div>';
         }
         const hintCost = D.HINT_ENDING_COST || 75;
-        const canHint = m.traces >= hintCost;
-        const soonHint = !canHint && can && m.traces + gain >= hintCost;
+        const canHint = E.achatsOuverts() && m.traces >= hintCost;
+        const soonHint = can && m.traces + gain >= hintCost && (!E.achatsOuverts() || m.traces < hintCost);
         return '<div class="mem dim" style="opacity:0.85"><span class="mic" style="filter:grayscale(1)">❔</span><div class="grow"><div class="small"><b>Dénouement inconnu</b></div><div class="tiny muted">Écouter un murmure du destin…</div></div><button class="btn small' + (canHint ? " pri" : " nope") + (soonHint ? " soon" : "") + '" data-m="buyhint" data-k="' + k + '">Murmure · ' + hintCost + ' ✦' + (soonHint ? '<small class="tiny">après la relève</small>' : "") + '</button></div>';
       }).join("") + "</div>";
 
-      return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
+      return h + '<div class="acts"><button class="btn" data-m="close">Fermer</button>' + (E.achatsOuverts() ? '<button class="btn pri" data-m="fin">Terminé : commencer le cycle</button>' : "") + "</div>";
     }
     U.memHTML = memHTML;
     /* deux colonnes de chiffres : ce qui est conservé, ce qui est remis à zéro */
@@ -474,6 +478,7 @@
           memsel: (b) => { U.memSel = b.dataset.id; A.click(); swapModal(Object.assign(o, { html: memHTML() })); return true; },
           buy: (b) => {
             if (E.memBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([10, 30, 10]); save(); }
+            else if (!E.achatsOuverts()) { A.fail(0); toast(ACHATS_FERMES, { key: "mem" }); }
             else {
               A.fail(0);
               const c = E.memCost(b.dataset.id), m = S().meta;
@@ -484,6 +489,7 @@
           },
           buytrans: (b) => {
             if (E.transBuy(b.dataset.id)) { A.secret ? A.secret() : A.click(); vibe([15, 40, 15]); save(); }
+            else if (!E.achatsOuverts()) { A.fail(0); toast(ACHATS_FERMES, { key: "trans" }); }
             else {
               A.fail(0);
               const c = E.transCost(b.dataset.id), m = S().meta;
@@ -494,6 +500,7 @@
           },
           buyhint: (b) => {
             if (E.buyEndingHint(b.dataset.k)) { A.secret ? A.secret() : A.click(); vibe([20, 50, 20]); save(); toast("✨ Un murmure du destin résonne dans ta mémoire…", { key: "hint" }); }
+            else if (!E.achatsOuverts()) { A.fail(0); toast(ACHATS_FERMES, { key: "hint" }); }
             else {
               A.fail(0);
               const cost = D.HINT_ENDING_COST || 75, m = S().meta;
@@ -502,6 +509,7 @@
             swapModal(Object.assign(o, { html: memHTML() }));
             return true;
           },
+          fin: () => { E.fermerAchats(); save(); return false; },
           dons: () => { setTimeout(() => openDons(), 80); },
           releve: () => { setTimeout(confirmCycle, 80); }
         }
@@ -586,7 +594,7 @@
       if (n.textContent !== txt) n.textContent = txt;
 
       // Calcul si un achat réel est possible (maintenant ou après la relève)
-      const pot = can && gain ? m.traces + gain : m.traces;
+      const pot = E.achatsOuverts() ? m.traces : can && gain ? m.traces + gain : 0;
       const canBuyBase = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && pot >= c; });
       const canBuyTrans = (D.TRANSCENDANCE || []).some((x) => pot >= E.transCost(x.id));
       const canBuyHint = Object.keys(D.ENDINGS || {}).some((k) => !((m.endings || {})[k]) && !E.hasEndingHint(k) && pot >= (D.HINT_ENDING_COST || 75) && Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));

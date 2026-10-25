@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.16.1";
+  D.VERSION = "0.16.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1076,6 +1076,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✦ Les Traces ne se dépensent plus en pleine partie : la Mémoire des mains se consulte toujours, mais les achats ne s’ouvrent qu’au réveil d’un nouveau Semeur, après la relève. Ils se ferment avec le bouton « Terminé : commencer le cycle » ou au premier passage franchi, et les Traces non dépensées attendent la relève suivante.",
     "🌅 La fenêtre de première relève est réécrite : elle s’appelle « Fin du premier cycle » et liste ce que tu gagnes (✦ Traces), ce que tu gardes et ce qui repart de zéro. Le bouton « Passer le relais » est visible tout de suite. ⏱️ Mains sûres a enfin un vrai effet : fabrication à la main 20 % plus rapide par niveau, et 10 % de chances de gagner une pièce en plus.",
     "🌅 La première relève arrive plus tard : une fois la Plaine franchie, avec les ✦ Traces du passage en plus des 3 offertes. Pour explorer la grotte, le guide t’aide à trouver la torche. Après l’éveil, un rappel en haut du Domaine dit ce que le nouveau Semeur a gardé et combien de Traces il peut dépenser.",
     "🔎 Les ressources de l’Atelier remontent : la recherche reste en haut, et le tri et les filtres se rangent derrière un bouton « Filtres » (le chiffre dit combien sont actifs). Il s’ouvre sur place et se referme quand tu choisis.",
