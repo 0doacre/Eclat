@@ -311,7 +311,7 @@ test("un extracteur ne travaille que sur sa terre ; une ancienne pose ailleurs r
 test("un extracteur par ressource : chaque ressource récoltable a sa ligne, ses niveaux et sa recette", () => {
   const E = mk();
   const exts = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
-  assert.strictEqual(exts.length, 44);
+  assert.strictEqual(exts.length, 46);
   const res = new Set(D.LIGNES.map((L) => L.res));
   assert.strictEqual(res.size, D.LIGNES.length, "une seule ligne par ressource");
   exts.forEach((id) => {
@@ -443,7 +443,7 @@ test("les sauvegardes v1 à v5 se chargent sans rien perdre", () => {
     for (const k in old.inv) assert.ok((D.ITEMS[k] && D.ITEMS[k].t === "ext" ? famille(k) : S.inv[k]) >= old.inv[k] - 1e-9, f + " : stock de " + k);
     for (const k in old.known) assert.ok(S.known[k], f + " : recette " + k);
     for (const k in old.made) assert.strictEqual(S.made[k], old.made[k], f + " : fabriqué " + k);
-    assert.strictEqual(S.age, old.age >= 7 ? old.age + 1 : old.age, "l’âge avance d’un rang après l’Acier (la Vapeur est insérée)"); assert.strictEqual(S.intu, old.intu);
+    assert.strictEqual(S.age, old.age >= 9 ? old.age + 2 : old.age >= 7 ? old.age + 1 : old.age, "l’âge avance d’un rang après l’Acier (la Vapeur) et d’un autre après l’Électricité (l’Atome)"); assert.strictEqual(S.intu, old.intu);
     assert.deepStrictEqual(S.zones, old.zones); assert.deepStrictEqual(S.frags, old.frags);
     assert.strictEqual(S.flags.news, "6", "annonce des nouveautés");
     assert.ok(S.dom && !S.fab && !S.settings.usine);
@@ -1701,13 +1701,14 @@ console.log("Mains sûres");
 test("Âge de la Vapeur : inséré entre l’Acier et l’Électricité, ses objets et ses étapes", () => {
   const ids = D.AGES.map((a) => a.id);
   assert.deepStrictEqual(ids.slice(5, 9), ["fer", "acier", "vapeur", "elec"]);
-  assert.strictEqual(D.AGES.length, 14);
-  assert.strictEqual(D.SITE_RATE.length, 14, "une vitesse de chantier par âge");
+  assert.strictEqual(D.AGES.length, 15);
+  assert.strictEqual(D.SITE_RATE.length, 15, "une vitesse de chantier par âge");
   const par = {}; Object.values(D.ITEMS).forEach((x) => (par[x.a] = (par[x.a] || 0) + 1));
   assert.ok(par[6] >= 10 && par[6] <= 18 && par[7] >= 10 && par[7] <= 22, "l’Acier et la Vapeur se partagent ce qu’un seul âge portait : " + par[6] + " / " + par[7]);
   ["moteur_vapeur", "chaudiere", "piston", "presse_vapeur", "pompe", "locomotive", "scierie", "regulateur", "marteau_pilon", "chaudiere_tubulaire"].forEach((i) => assert.strictEqual(D.ITEMS[i].a, 7, i));
   ["haut_fourneau", "lingot_acier", "acier_trempe", "tour", "outils_acier", "engrenage_acier"].forEach((i) => assert.strictEqual(D.ITEMS[i].a, 6, i));
   assert.strictEqual(D.ITEMS.dynamo.a, 8, "l’Électricité est avancée d’un rang");
+  assert.strictEqual(D.ITEMS.ordinateur.a, 10, "le Silicium est avancé de deux rangs (Vapeur, Atome)");
   // les étapes : chaque âge en a, la Vapeur aussi
   const E = createEngine();
   const m = E.milestones();
@@ -1731,15 +1732,61 @@ test("sauvegarde v8 : les âges après l’Acier avancent d’un rang, la Vapeur
   const F = createEngine();
   F.load(JSON.stringify(o));
   assert.strictEqual(F.state.v, SAVE_VERSION);
-  assert.strictEqual(F.state.age, 9, "le Silicium est maintenant le 10e âge");
-  assert.ok(F.state.flags.ages[8] && F.state.flags.ages[7] && F.state.flags.ages[6], "Électricité, Vapeur et Acier restent accomplis");
-  assert.ok(!F.state.flags.ages[9], "rien n’est accompli en trop");
-  assert.deepStrictEqual([F.state.meta.stamps["m:dynamo"][2], F.state.meta.stamps["m:manche"][2]], [8, 0]);
+  assert.strictEqual(F.state.age, 10, "le Silicium est maintenant le 11e âge (Vapeur, puis Atome)");
+  assert.ok(F.state.flags.ages[8] && F.state.flags.ages[7] && F.state.flags.ages[6] && F.state.flags.ages[9], "Électricité, Vapeur, Acier et Atome sont accomplis");
+  assert.ok(!F.state.flags.ages[10], "rien n’est accompli en trop");
+  assert.deepStrictEqual([F.state.meta.stamps["m:dynamo"][2], F.state.meta.stamps["m:manche"][2]], [8, 0], "la dynamo (Électricité) ne bouge pas, le reste avance");
   assert.strictEqual(F.state.intu, 12, "aucune récompense d’âge");
   // une partie à l’Acier ou avant garde son âge
   const G = createEngine(); const p = JSON.parse(G.serialize()); p.v = 8; p.age = 6;
   const H = createEngine(); H.load(JSON.stringify(p));
   assert.strictEqual(H.state.age, 6);
+});
+
+test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plomb par extracteur seulement", () => {
+  const ids = D.AGES.map((a) => a.id);
+  assert.deepStrictEqual(ids.slice(7, 12), ["vapeur", "elec", "atome", "silicium", "polymeres"]);
+  ["uranium", "galene", "lingot_plomb", "plaque_plomb", "pastille_uranium", "graphite", "barre_combustible", "compteur_geiger", "centrale_fission", "uranium_1", "galene_1"].forEach((i) => assert.strictEqual(D.ITEMS[i].a, 9, i));
+  assert.strictEqual(D.ITEMS.silicium.a, 10);
+  // l’uranium et la galène ne se récoltent pas à la main : aucune terre ne les donne seules
+  const E = createEngine();
+  D.ZONES.forEach((z) => { assert.ok(!z.res.includes("uranium") && !z.res.includes("galene"), z.id); });
+  assert.strictEqual(E.RES_ZONE.uranium, "mine", "sa terre est celle de son extracteur");
+  assert.strictEqual(E.RES_ZONE.galene, "collines");
+  assert.deepStrictEqual(E.extFor("uranium", "mine"), ["uranium_1"]);
+  E.state.zones.mine = true; E.state.zones.collines = true;
+  assert.strictEqual(E.deposits().find((d) => d.res === "uranium").hand, false, "un gisement qui ne se récolte pas à la main");
+  // le guide mène à l’extracteur d’abord : pas de galène sans sa mine
+  Object.keys(D.ITEMS).forEach((i) => { if (D.ITEMS[i].r && !D.ITEMS[i].sec && !D.ITEMS[i].path) E.learn(i, true); });
+  ["mine", "collines"].forEach((z) => (E.state.zones[z] = true));
+  stations(E, Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].t === "stat" && !D.ITEMS[i].sec));
+  E.state.age = 9;
+  const s = E.nextStep("galene");
+  assert.strictEqual(s.id, "galene_1", JSON.stringify(s));
+  // des étapes pour l’âge, dans l’ordre
+  const m = E.milestones()[9];
+  assert.deepStrictEqual(m.filter((x) => x.ob.k === "craft").map((x) => x.ob.id), ["uranium_1", "lingot_plomb", "barre_combustible", "centrale_fission"]);
+  // des ingrédients d’âge égal ou antérieur
+  Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].a === 9 && D.ITEMS[i].r).forEach((i) => { for (const g in D.ITEMS[i].r[1]) assert.ok(D.ITEMS[g].a <= 9, i + " demande " + g); });
+  // l’extracteur d’uranium récolte une fois posé
+  const F = mk();
+  F.state.age = 9; F.state.zones.mine = true; F.learn("uranium_1", true);
+  F.add("uranium_1", 2);
+  assert.ok(F.domExtSet("mine", "uranium", "uranium_1", 2), "il se pose sur le gisement d’uranium");
+  run(F, 30);
+  assert.ok(F.count("uranium") > 10, "il récolte : " + F.count("uranium"));
+});
+test("sauvegarde v9 : l’Atome s’insère, les âges d’après avancent d’un rang", () => {
+  const E = createEngine();
+  const o = JSON.parse(E.serialize());
+  o.v = 9; o.age = 9; o.flags.ages = { 0: 1, 8: 1 }; o.intu = 7;
+  const F = createEngine(); F.load(JSON.stringify(o));
+  assert.strictEqual(F.state.age, 10, "le Silicium passe de 9 à 10");
+  assert.ok(F.state.flags.ages[8] && F.state.flags.ages[9] && !F.state.flags.ages[10], "l’Atome est marqué accompli, pas le Silicium");
+  assert.strictEqual(F.state.intu, 7);
+  const G = createEngine(); const p = JSON.parse(G.serialize()); p.v = 9; p.age = 8;
+  const H = createEngine(); H.load(JSON.stringify(p));
+  assert.strictEqual(H.state.age, 8, "l’Électricité ne bouge pas");
 });
 
 test("Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur", () => {
@@ -1916,13 +1963,13 @@ test("déchiffrer : le prix suit la formule (âge, nombre de ressources, niveau)
   assert.strictEqual(E.decipherCost("manche"), 8);
   E.state.hints.manche = 2;
   assert.strictEqual(E.decipherCost("manche"), 20);
-  // ordinateur : âge 9 (depuis l’Âge de la Vapeur), 3 ressources -> 90, 240, 600
-  E.state.age = 9;
-  assert.strictEqual(E.decipherCost("ordinateur"), 90);
+  // ordinateur : âge 10 (après la Vapeur et l’Atome), 3 ressources -> 99, 264, 660
+  E.state.age = 10;
+  assert.strictEqual(E.decipherCost("ordinateur"), 99);
   E.state.hints.ordinateur = 1;
-  assert.strictEqual(E.decipherCost("ordinateur"), 240);
+  assert.strictEqual(E.decipherCost("ordinateur"), 264);
   E.state.hints.ordinateur = 2;
-  assert.strictEqual(E.decipherCost("ordinateur"), 600);
+  assert.strictEqual(E.decipherCost("ordinateur"), 660);
 });
 
 test("déchiffrer : monte S.hints de 1, retire l’Intuition, et apprend la recette au niveau 3", () => {
@@ -3251,8 +3298,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.19.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.19.0");
+test("Version 0.20.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.20.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3467,12 +3514,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.19.0");
+  assert.strictEqual(D.VERSION, "0.20.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 19, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 20, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
