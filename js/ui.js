@@ -265,7 +265,7 @@
       const q = ing[i];
       const lack = (S().inv[i] || 0) + 1e-9 < q;
       return '<span class="ing' + (lack && opts.check ? " lack" : "") + (opts.link ? " link" : "") + '"' +
-        (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + (opts.link ? ' data-goto="' + i + '"' : "") + ">" +
+        (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + (opts.link ? ' data-goto="' + i + '" title="Ouvrir sa fiche"' : "") + ">" +
         icon(i, "sm") + '<span class="q">' + fmt(q) + "</span> " + esc(I[i].n) + "</span>";
     }).join("");
   }
@@ -808,6 +808,7 @@
     $("#intuBtn").classList.toggle("hidden", Object.keys(S().known).length < 3 && !Object.keys(S().studied).length);
   }
   /* les onglets d’un même groupe (2 ou 3 pages) */
+  const SUBT = { atelier: "Fabriquer et découvrir", machines: "Tes machines et ce qu’elles fabriquent", journal: "Ce que tu as trouvé et compris", cosmos: "Le ciel, les signes et les Grands Œuvres" };
   function subTabs(...args) {
     let list;
     if (args.length === 6) list = [[args[0], args[3]], [args[1], args[4]], [args[2], args[5]]];
@@ -815,7 +816,7 @@
     const avail = list.filter(([t]) => tabAvailable(t));
     if (avail.length <= 1) return "";
     return '<div class="subtabs">' + avail.map(([t, lbl]) =>
-      '<button data-tab2="' + t + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
+      '<button data-tab2="' + t + '" title="' + (SUBT[t] || "") + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
     ).join("") + "</div>";
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); if (PARENT[t] === U.tab) render(true); } }
@@ -840,7 +841,7 @@
     // un bouton de liste (une ressource, une action, une quantité…) : même chose, retrouvé à son attribut de données
     let fsel = null;
     if (!focus && ae && ae !== document.body && el.contains(ae) && ae.dataset) {
-      const k = ["inv", "g", "slot", "qty", "if", "cf", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
+      const k = ["inv", "g", "slot", "qty", "if", "cf", "cvue", "jt", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
       if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
     }
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
@@ -860,6 +861,13 @@
       const gs = $(".gestes", el);
       if (gs) { gs.scrollLeft = U.gScroll || 0; const on = $(".geste.on", gs); if (on && (on.offsetLeft < gs.scrollLeft || on.offsetLeft + on.offsetWidth > gs.scrollLeft + gs.clientWidth)) gs.scrollLeft = Math.max(0, on.offsetLeft - 12); }
     }
+    $$(".filters, .age-nav", el).forEach((bar) => {
+      bar.classList.toggle("more", bar.scrollWidth > bar.clientWidth + 4);
+      const on = $(".on, .cur", bar);
+      if (on && (on.offsetLeft < bar.scrollLeft || on.offsetLeft + on.offsetWidth > bar.scrollLeft + bar.clientWidth)) {
+        bar.scrollLeft = Math.max(0, on.offsetLeft - Math.round((bar.clientWidth - on.offsetWidth) / 2));
+      }
+    });
     $("#views").scrollTop = sc;
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }

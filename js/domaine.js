@@ -39,9 +39,11 @@
     /* ------------------------------------------------------------ la page */
     function view() {
       const st = S(), zs = openZones().reverse();
-      let h = '<div class="dom' + (U.domDense ? " dom-dense" : "") + '">';
+      const dense = !!(U.domDense !== undefined ? U.domDense : st.settings && st.settings.domDense);
+      U.domDense = dense;
+      let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
       h += api.top();
-      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense title="Basculer entre affichage compact et normal">' + (U.domDense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
+      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense aria-pressed="' + dense + '" title="Voir plus de terres d’un coup, en plus petit">' + (dense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -50,9 +52,9 @@
         const rest = zs.filter((z, i) => i >= SHOWN && U.domOpen !== z);
         if (rest.length) {
           const r = rest.reduce((a, z) => a + zoneRate(z), 0);
-          h += '<button class="dom-more" data-dall>' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>voir ▾</span></button>';
+          h += '<button class="dom-more" data-dall title="Afficher ou replier les autres terres">' + plural(rest.length, "autre terre") + (r > 0 ? " · +" + perTime(r) + " en tout" : "") + '<span>voir ▾</span></button>';
         }
-      } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall>Replier les terres anciennes<span>▴</span></button>';
+      } else if (zs.length > SHOWN + 1) h += '<button class="dom-more" data-dall title="Afficher ou replier les autres terres">Replier les terres anciennes<span>▴</span></button>';
       h += domaineMachinesSummary();
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
@@ -125,7 +127,7 @@
         const reqStr = nx.x.hidden ? nx.x.hidden : (typeof nx.x.need === "string" && I[nx.x.need] ? "il faut " + I[nx.x.need].n.toLowerCase() : Array.isArray(nx.x.need) ? "il faut " + nx.x.need.map((id) => (I[id] ? I[id].n.toLowerCase() : id)).join(", ") : "lieu verrouillé");
         return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(reqStr) + "</span>";
       }
-      return '<button class="btn small" data-exp="' + z + '">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
+      return '<button class="btn small" data-exp="' + z + '" title="Lancer cette exploration : elle avance toute seule">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
     }
     function gisHTML(z, d) {
       const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
@@ -358,8 +360,8 @@
         const parole = uiSigne("comptoir", "Le Comptoir");
         if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
         h += '<div class="subtabs comptoir-tabs">' +
-          '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre">Vendre</button>' +
-          '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter">Acheter</button>' +
+          '<button class="' + (curTab === "vendre" ? "on" : "") + '" data-m="ctab" data-t="vendre" title="Vendre ce qui encombre ta Réserve">Vendre</button>' +
+          '<button class="' + (curTab === "acheter" ? "on" : "") + '" data-m="ctab" data-t="acheter" title="Acheter la ressource qui te manque">Acheter</button>' +
           '<button class="' + (curTab === "demandes" ? "on" : "") + '" data-m="ctab" data-t="demandes">Demandes</button>' +
           '<button class="' + (curTab === "parler" ? "on" : "") + '" data-m="ctab" data-t="parler">Parler</button>' +
           '</div>';
@@ -520,7 +522,7 @@
           .map((x) => ({ k: x.k, rem: x.rem, t: E.limiting(x.k, x.rem).eta })).sort((a, b) => (b.t === null) - (a.t === null) || b.t - a.t)[0];
         if (lim && !(step.need && !st.frags[step.need])) h += limitHTML(lim.k, lim.rem);
         if (step.need && !st.frags[step.need]) h += '<p class="why">Il faut d’abord atteindre ' + esc(D.FRAGS[step.need].n) + ".</p>";
-        else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '">Fournir</button>' +
+        else h += '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-contrib="' + pid + '" title="Déposer depuis ta Réserve ce qu’il demande">Fournir</button>' +
           '<button class="btn small' + (on ? " on" : "") + '" data-feed="' + pid + '">' + (on ? "Alimenté ✓" : "Alimenter") + "</button>" +
           '<span class="tiny muted">' + (on ? "Il se sert seul dans la Réserve : au plus " + perMin(E.siteRate()) + " pour chaque ressource." : "Une fois alimenté, il se sert seul dans la Réserve.") + "</span></div>";
       } else if (step.action === "relais") {
@@ -541,7 +543,7 @@
     function prodHTML() {
       const P = E.production().filter((x) => x.in > 1e-4 || x.out > 1e-4), st = S();
       if (!P.length) return "";
-      return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary>Tout ce qui entre et sort, par ressource</summary>' +
+      return '<details class="dom-card dom-prod"' + (U.prodOpen ? " open" : "") + ' data-prod><summary title="Plier ou déplier le tableau">Tout ce qui entre et sort, par ressource</summary>' +
         '<div class="u-pr u-ph tiny muted"><span class="grow">Ressource</span><span>entre</span><span>sort</span><span>réserve</span></div>' +
         P.slice(0, 30).map((x) => '<div class="u-pr" data-goto="' + x.id + '" role="button" tabindex="0" title="' + esc(I[x.id].n) + ' (toucher pour inspecter)">' + icon(x.id, "sm") + '<span class="grow ell">' + esc(I[x.id].n) + "</span>" +
           "<b>" + (x.in > 1e-4 ? "+" + perTime(x.in) : "") + "</b><i>" + (x.out > 1e-4 ? "−" + perTime(x.out) : "") + '</i><span data-c="' + x.id + '">' + fmt(st.inv[x.id] || 0) + "</span></div>").join("") + "</details>";
@@ -558,10 +560,10 @@
       if (freeE.length && !st.flags.tip_freeExt) {
         const t = freeE[0], n = us[t].own - us[t].used;
         return "Tu as " + esc(many(t, n)) + " à poser : touche <b>+ " + esc(nm(t, 1)) + "</b> sur un gisement " + esc(deZone(I[t].z)) + ". " +
-          '<button class="btn small ghost" data-tip="tip_freeExt">Compris</button>';
+          '<button class="btn small ghost" data-tip="tip_freeExt" title="Fermer cette astuce">Compris</button>';
       }
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOn(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
-      if (lone && !st.flags.tip_site) return "Active <b>Alimenter</b> pour approvisionner automatiquement ton Grand Œuvre depuis la Réserve. " + '<button class="btn small ghost" data-tip="tip_site">Compris</button>';
+      if (lone && !st.flags.tip_site) return "Active <b>Alimenter</b> pour approvisionner automatiquement ton Grand Œuvre depuis la Réserve. " + '<button class="btn small ghost" data-tip="tip_site" title="Fermer cette astuce">Compris</button>';
       return null;
     }
 
@@ -733,7 +735,7 @@
       }
       if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
-      if (t.closest("[data-dom-dense]")) { U.domDense = !U.domDense; A.click(); vibe(8); render(true); return true; }
+      if (t.closest("[data-dom-dense]")) { const next = !(U.domDense !== undefined ? U.domDense : S().settings.domDense); U.domDense = next; S().settings.domDense = next; A.click(); vibe(8); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
         E.domSite(pid, !E.siteOn(pid));
@@ -801,7 +803,7 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join(),
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.domDense, Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
     }
 

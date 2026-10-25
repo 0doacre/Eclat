@@ -150,7 +150,8 @@
       if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Clins d’œil"]);
       tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
       if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
-      let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
+      let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (U.journalTab === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
         const n = ids.filter((f) => st.frags[f]).length;
@@ -159,7 +160,7 @@
         ids.forEach((f) => {
           const F = D.FRAGS[f];
           if (!F) return;
-          if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n || F.titre) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div>" + stampHTML("f:" + f) + "</div></button>";
+          if (st.frags[f]) h += '<button class="frag" data-frag="' + f + '" title="Lire ce fragment"><span class="fi">📜</span><div class="grow"><b>' + esc(F.n || F.titre) + '</b><div class="tiny muted">' + esc(fragPlace(F.z)) + "</div>" + stampHTML("f:" + f) + "</div></button>";
           else { const k = unkPlace(F.z); miss[k] = (miss[k] || 0) + 1; }
         });
         if (Object.keys(miss).length) {
@@ -352,7 +353,8 @@
       if (st.flags.arche || E.cache().term) tabs.push(["arche", isReg ? "REGISTRE" : "ARCHE"]);
       if (Object.keys(D.PROJECTS).some(E.projVisible)) tabs.push(["oeuvres", "Grands Œuvres"]);
       if (!tabs.find((t) => t[0] === U.cosmosTab)) U.cosmosTab = "ciel";
-      let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      const CTT = { ciel: "Le ciel de la nuit", figures: "Les étoiles et les signes déjà vus", arche: "Le terminal des Anciens", oeuvres: "Les Grands Œuvres, ce qu’il reste à bâtir" };
+      let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" title="' + (CTT[k] || "") + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (U.cosmosTab === "figures") {
         h += figuresHTML();
       } else if (U.cosmosTab === "ciel") {
