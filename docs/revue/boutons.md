@@ -129,12 +129,17 @@ Les textes du récit ne sont pas touchés.
 | Cosmos : « ARCHE » | Le terminal des Anciens |
 | Cosmos : « Grands Œuvres » | Les Grands Œuvres, ce qu’il reste à bâtir |
 | Un fragment du Journal | Lire ce fragment |
+| Journal → Signes : la carte d’un signe | Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais |
+| Journal → Questions : « Réfléchir », sans assez d’Intuition | Il te manque de l’Intuition : elle vient des recettes, des fragments et des secrets |
+| Le ⏎ d’un nom à donner | Envoyer ce nom |
+| Le ⏎ d’une commande à taper | Envoyer la commande |
 
 ## Le journal des nouveautés (js/data.js)
 
 | Où | Texte |
 |---|---|
-| Nouveautés, ligne 1 | 💬 Les boutons qui ne disaient rien s’expliquent : une info-bulle dit ce que font Suivre, Épingler, Détail, ×10, Max, les filtres et les tris. |
-| Nouveautés, ligne 2 | 💭 Le guide ralentit : une seule explication à la fois, et au plus une toutes les deux ou trois minutes. |
-| Nouveautés, ligne 3 | ⭐ Trois chapitres nouveaux, au moment où ils servent : Suivre, Épingler, et commander d’un coup (×10, Max). |
-| Nouveautés, ligne 4 | 📖 Qui a déjà pris l’habitude ne revoit rien : ces chapitres s’effacent si tu as déjà suivi une recette, épinglé ou commandé en lot. |
+| Nouveautés, ligne 1 | 🔤 Les cartes de signes du Journal, les deux formulaires à ⏎ et les questions à réfléchir ont un nom pour le lecteur d’écran. |
+| Nouveautés, ligne 2 | 💬 Les boutons qui ne disaient rien s’expliquent : une info-bulle dit ce que font Suivre, Épingler, Détail, ×10, Max, les filtres et les tris. |
+| Nouveautés, ligne 3 | 💭 Le guide ralentit : une seule explication à la fois, et au plus une toutes les deux ou trois minutes. |
+| Nouveautés, ligne 4 | ⭐ Trois chapitres nouveaux, au moment où ils servent : Suivre, Épingler, et commander d’un coup (×10, Max). |
+| Nouveautés, ligne 5 | 📖 Qui a déjà pris l’habitude ne revoit rien : ces chapitres s’effacent si tu as déjà suivi une recette, épinglé ou commandé en lot. |

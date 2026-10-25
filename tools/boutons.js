@@ -4,8 +4,9 @@
  *   BROWSER=chromium node tools/boutons.js       (avec Chromium)
  *
  * Ouvre le jeu à 390×844, service worker bloqué, deux parties : une neuve et une avancée
- * (tools/fixtures/save-v5-age8-usine.json). Il parcourt le Domaine, la Carte, l’Atelier et
- * ses pages, le Journal et le Cosmos, une fiche, le menu et l’Aide, puis écrit :
+ * (tools/fixtures/save-v5-age8-usine.json), puis repasse la partie avancée à 900×900 pour le
+ * Carnet à deux colonnes. Il parcourt le Domaine, la Carte, l’Atelier et ses pages, le Carnet,
+ * l’Arbre, le Journal et ses neuf onglets, le Cosmos, une fiche, le menu et la fiche d’aide, puis écrit :
  *   docs/boutons.md    le tableau, groupé par écran
  *   docs/boutons.json  la même liste, pour tools/test-boutons.js
  * Une ligne par bouton : l’écran, le libellé, le repère (data-*, classe), et ce qui
@@ -66,20 +67,19 @@ async function dismiss(p) {
   }
 }
 
-/* la fiche d’aide, telle qu’elle s’affiche (texte brut) : ce qu’une joueuse peut y chercher */
-async function aideText(p) {
+/* ouvre la fiche d’aide et la laisse ouverte : son texte sert à reconnaître un mot déjà
+ * expliqué, ses boutons se relèvent comme ceux d’un écran */
+async function ouvrirAide(p) {
   await dismiss(p);
   await p.evaluate(() => document.querySelector("#menuBtn").click());
   await p.waitForTimeout(300);
   const b = await p.$('[data-m="help"]');
-  if (!b) { await p.keyboard.press("Escape"); return ""; }
+  if (!b) { await p.keyboard.press("Escape"); await p.waitForTimeout(200); return false; }
   await b.evaluate((x) => x.click());
-  await p.waitForTimeout(350);
-  const t = await p.evaluate(() => { const m = document.querySelector("#modal:not(.hidden) .modal-box"); return m ? m.innerText : ""; });
-  await p.keyboard.press("Escape");
-  await p.waitForTimeout(250);
-  return t;
+  await p.waitForTimeout(400);
+  return true;
 }
+const aideTexte = (p) => p.evaluate(() => { const m = document.querySelector("#modal:not(.hidden) .modal-box"); return m ? m.innerText : ""; });
 
 /* un seul aller-retour par écran : la liste des boutons, avec ce qui les explique */
 const COLLECT = ([sels, aide]) => {
@@ -94,7 +94,10 @@ const COLLECT = ([sels, aide]) => {
   };
   /* le même bouton répété dans chaque recette : une seule ligne, avec le nombre d’exemplaires */
   const GARDE = /^(data-m|data-t|data-tab|data-tab2|data-ct|data-jt|data-g|data-if|data-cf|data-cvue|data-slot|data-n|data-x|data-arb)$/;
-  const famille = (el, repere) => repere.replace(/\[([^\]=]+)="([^"]*)"\]/g, (x, nom) => (GARDE.test(nom) ? x : "[" + nom + "]"));
+  /* data-n d’un bouton de vente porte une quantité calculée, différente à chaque relevé :
+   * on ne le garde que s’il dit une taille de lot (×10, ×50, Max…) */
+  const famille = (el, repere) => repere.replace(/\[([^\]=]+)="([^"]*)"\]/g, (x, nom, val) =>
+    nom === "data-n" && !/^(1|10|50|100|1000|max)$/.test(val) ? "[data-n]" : GARDE.test(nom) ? x : "[" + nom + "]");
   const out = [];
   // dans une fenêtre, on ne relève qu’elle : le fond est recouvert
   const box = document.querySelector("#modal:not(.hidden) .modal-box");
@@ -140,16 +143,21 @@ const COLLECT = ([sels, aide]) => {
   const rows = [];
   const seen = new Set();
 
-  for (const [partie, fixture] of [["neuve", null], ["avancée", SAVE]]) {
-    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block", hasTouch: true });
+  for (const [partie, fixture, larg, haut] of [["neuve", null, 390, 844], ["avancée", SAVE, 390, 844], ["avancée", SAVE, 900, 900]]) {
+    const ctx = await browser.newContext({ viewport: { width: larg, height: haut }, serviceWorkers: "block", hasTouch: true });
     const p = await ctx.newPage();
     const errs = [];
     p.on("pageerror", (e) => errs.push(e.message));
-    if (fixture) await p.addInitScript((s) => { if (!sessionStorage.getItem("seeded")) { const o = JSON.parse(s); o.introSeen = true; o.settings = Object.assign(o.settings || {}, { tuto: false }); localStorage.setItem("eclat.save.v1", JSON.stringify(o)); sessionStorage.setItem("seeded", "1"); } }, fs.readFileSync(path.join(ROOT, fixture), "utf8"));
+    if (fixture) {
+      const o = JSON.parse(fs.readFileSync(path.join(ROOT, fixture), "utf8"));
+      o.introSeen = true;
+      o.settings = Object.assign(o.settings || {}, { tuto: false });
+      o.flags = Object.assign(o.flags || {}, { ver: require(path.join(ROOT, "package.json")).version, news: null });
+      o.t = Date.now();
+      await p.addInitScript((s) => { if (!sessionStorage.getItem("seeded")) { localStorage.setItem("eclat.save.v1", s); sessionStorage.setItem("seeded", "1"); } }, JSON.stringify(o));
+    }
     await p.goto(URL);
     await p.waitForTimeout(1200);
-    await dismiss(p);
-    const aide = (await aideText(p)).toLowerCase();
     await dismiss(p);
 
     const grab = async (ecran) => {
@@ -172,6 +180,12 @@ const COLLECT = ([sels, aide]) => {
     };
     /* une page de l’Atelier : un onglet à part (le Carnet) ou une bascule dans la page (les Machines) */
     const sousPage = async (nom) => (await clic('[data-tab="' + nom + '"]')) || (await clic('[data-tab2="' + nom + '"]'));
+
+    // la fiche d’aide : son texte d’abord, ses boutons ensuite
+    const aideOuverte = await ouvrirAide(p);
+    const aide = aideOuverte ? (await aideTexte(p)).toLowerCase() : "";
+    if (aideOuverte) { await grab("Aide"); await p.keyboard.press("Escape"); await p.waitForTimeout(250); }
+    await dismiss(p);
 
     await grab("Domaine");
     // le Comptoir : ses onglets et sa boutique
@@ -203,6 +217,10 @@ const COLLECT = ([sels, aide]) => {
     if (await clic('#tabs [data-tab="carnet"]')) { await p.waitForTimeout(400); await grab("Carnet"); }
     if (await clic('#tabs [data-tab="journal"]')) {
       await grab("Journal");
+      // ses neuf onglets : chacun peut cacher un bouton
+      for (const k of ["fragments", "livre", "questions", "signes", "secrets", "flute", "curios", "fins", "stats"]) {
+        if (await clic('[data-jt="' + k + '"]')) { await p.waitForTimeout(350); await grab("Journal · " + k); }
+      }
       if (await sousPage("cosmos")) { await p.waitForTimeout(500); await grab("Cosmos"); }
     }
     await clic('#tabs [data-tab="domaine"]');
@@ -227,7 +245,7 @@ const COLLECT = ([sels, aide]) => {
   const esc = (s) => String(s).replace(/\|/g, "\\|");
   const total = rows.length;
   const sans = rows.filter((r) => r.explique === "rien").length;
-  const lines = ["# Les boutons de l’interface", "", "Fichier généré par `node tools/boutons.js` (Playwright, " + BROWSER + ", 390×844, service worker bloqué) : ne pas le corriger à la main, relancer l’outil.", "", "| | |", "|---|---|", "| Boutons relevés | " + total + " |", "| Sans explication | " + sans + " |", "| Parties | une neuve, une avancée (`save-v5-age8-usine`) |", ""];
+  const lines = ["# Les boutons de l’interface", "", "Fichier généré par `node tools/boutons.js` (Playwright, " + BROWSER + ", 390×844 puis 900×900 pour le Carnet à deux colonnes, service worker bloqué) : ne pas le corriger à la main, relancer l’outil.", "", "| | |", "|---|---|", "| Boutons relevés | " + total + " |", "| Sans explication | " + sans + " |", "| Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |", "| Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |", ""];
   for (const e of ecrans) {
     const l = rows.filter((r) => r.ecran === e);
     const s = l.filter((r) => r.explique === "rien").length;

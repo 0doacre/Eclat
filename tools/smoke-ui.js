@@ -17,9 +17,19 @@ const URL = process.env.URL || "http://localhost:8765/index.html";
     const ctx = await b.newContext({ viewport: { width: w, height: h }, serviceWorkers: "block", hasTouch: true });
     const p = await ctx.newPage();
     p.on("pageerror", (e) => bad.push(w + " : erreur " + e.message));
-    await p.addInitScript((s) => { if (!sessionStorage.getItem("seeded")) { const o = JSON.parse(s); o.introSeen = true; o.intu = 50; o.settings = Object.assign(o.settings || {}, { tuto: false }); localStorage.setItem("eclat.save.v1", JSON.stringify(o)); sessionStorage.setItem("seeded", "1"); } }, fs.readFileSync(save, "utf8"));
+    /* la sauvegarde de départ se prépare ici, en Node : nouveautés déjà lues et horodatage
+     * d’aujourd’hui, sinon la fenêtre de mise à jour ou celle du retour d’absence reste ouverte,
+     * le jeu sous elle est inerte et le clavier ne peut plus rien tester. */
+    const seed = JSON.parse(fs.readFileSync(save, "utf8"));
+    seed.introSeen = true;
+    seed.intu = 50;
+    seed.settings = Object.assign(seed.settings || {}, { tuto: false });
+    seed.flags = Object.assign(seed.flags || {}, { ver: require("../package.json").version, news: null });
+    seed.t = Date.now();
+    await p.addInitScript((s) => { if (!sessionStorage.getItem("seeded")) { localStorage.setItem("eclat.save.v1", s); sessionStorage.setItem("seeded", "1"); } }, JSON.stringify(seed));
     await p.goto(URL); await p.waitForTimeout(1200);
-    const closeAll = async () => { for (let k = 0; k < 8; k++) { await p.waitForTimeout(500); if (await p.evaluate(() => document.querySelector("#modal").classList.contains("hidden"))) return; await p.evaluate(() => { const x = [...document.querySelectorAll("#modal button")].find((e) => /Continuer|Compris|Fermer/.test(e.innerText)); if (x) x.click(); }); } };
+    /* ce qui s’ouvre au chargement (une fête, un rappel) se ferme par son bouton principal */
+    const closeAll = async () => { for (let k = 0; k < 8; k++) { await p.waitForTimeout(400); if (await p.evaluate(() => document.querySelector("#modal").classList.contains("hidden"))) return; await p.evaluate(() => { const bs = [...document.querySelectorAll("#modal .modal-box button")]; const x = bs.reverse().find((e) => e.dataset.m === "close") || bs[0]; if (x) x.click(); }); } };
     await closeAll();
     const r = await p.evaluate(() => {
       const n = document.querySelector("#ageName"), g = document.querySelector(".goal-card .gname");
