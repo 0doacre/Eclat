@@ -369,9 +369,11 @@ async function run() {
     st.known.manche = 1;
     window.__eclat.E.emit("struct");
   });
-  await p.waitForFunction(() => !document.querySelector("#modal").classList.contains("hidden") && /La nuit tombe/.test(document.querySelector("#modal").innerText), null, { timeout: 5000 });
+  await p.waitForFunction(() => !document.querySelector("#modal").classList.contains("hidden") && /Fin du premier cycle/.test(document.querySelector("#modal").innerText), null, { timeout: 5000 });
   ok(!p.errors.length, "Première relève : la fenêtre s’ouvre sans erreur " + p.errors.join(" | "));
-  await p.waitForTimeout(3400); // le bouton apparaît en fondu
+  // une interface de jeu : ce qu’on gagne, ce qu’on garde, ce qui repart de zéro, et le bouton tout de suite (pas de récit à attendre)
+  ok(await p.evaluate(() => { const t = document.querySelector("#modal").innerText, b = document.querySelector('#modal [data-m="go"]').getBoundingClientRect(); return /Tu gagnes/i.test(t) && /Tu gardes/i.test(t) && /Repart de zéro/i.test(t) && /Traces/.test(t) && /Mémoire des mains/.test(t) && !/nuit tombe/i.test(t) && b.height >= 43.9 && b.bottom <= innerHeight; }), "Première relève : la fenêtre dit ce qu’on gagne, garde et perd, sans récit, et le bouton est là tout de suite");
+  await p.waitForTimeout(500); // la garde anti-tap des fenêtres (450 ms)
   await p.locator('#modal [data-m="go"]').click();
   await p.waitForFunction(() => window.__eclat.E.state.cycle === 2, null, { timeout: 5000 });
   ok(await p.evaluate(() => window.__eclat.E.state.known.manche > 0 && window.__eclat.E.state.meta.forcedDone), "Première relève : le cycle 2 commence, le savoir est conservé");

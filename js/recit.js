@@ -949,6 +949,7 @@
       libre: ["Tu te réveilles dans l’herbe, au bord d’une forêt.", "Tu as faim.", "Quelqu’un, à côté de toi, te tend des herbes grillées."]
     },
     releve: {
+      /* plus affichée : la fenêtre de la première relève parle le langage d’une interface de jeu (js/memoire.js, forcedReleveHTML) */
       forcee: ["La nuit tombe sur la Lisière. Près de la cabane, le bois s’empile sans que tu y touches.", "Tu t’assieds contre le Grand Chêne. Tes paupières sont lourdes.", "Repose-toi. Demain, quelqu’un d’autre ouvrira les yeux ici. Tes mains lui auront tout appris."],
       musique: "Quelque part, une boîte à musique joue un air très doux. Tu ne l’écoutes pas vraiment.",
       trait: "Ta main glisse dans l’herbe, trouve une pierre à arête vive, et remonte vers l’écorce.",

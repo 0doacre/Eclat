@@ -1639,6 +1639,23 @@ test("récolte à la main : coup de chance ×2, plus fréquent avec « Coup d’
   assert.strictEqual(E.state.stats.crits, 2);
 });
 
+console.log("Mains sûres");
+test("Mains sûres : durée ×0,8 par niveau, et une chance de pièce en plus pour ce que les mains fabriquent", () => {
+  const faire = (lvl, rand) => {
+    const E = createEngine({ now: () => T, rand });
+    E.learn("corde", true); E.state.meta.mem = { mains: lvl }; E.recalc();
+    E.state.inv.fibre = 1e5; E.state.inv.bois = 1e5; E.state.inv.caillou = 1e5;
+    return { E, r: E.craft("corde", 10) };
+  };
+  const base = faire(0, () => 0.05), n1 = faire(1, () => 0.05), n1sans = faire(1, () => 0.5);
+  assert.strictEqual(base.r.n, 10, "niveau 0 : aucune pièce en plus");
+  assert.strictEqual(n1.r.n, 20, "niveau 1, chance de 10 % : un tirage de 5 % donne une pièce en plus à chaque fabrication");
+  assert.strictEqual(n1sans.r.n, 10, "un tirage de 50 % n’en donne pas à 10 %");
+  assert.strictEqual(n1.E.memV("mains"), 0.8, "la durée passe à ×0,8");
+  assert.strictEqual(D.MEMOIRE.find((m) => m.id === "mains").bonus(3), 0.3, "10 % par niveau");
+  assert.ok(D.MEMOIRE.find((m) => m.id === "mains").bonus(20) <= 0.9, "plafonné");
+});
+
 console.log("Premier parcours et ruines");
 test("le guide mène à la torche : un lieu du passage demande un objet dont la recette est inconnue", () => {
   const E = mk();
@@ -3119,8 +3136,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.16.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.16.0");
+test("Version 0.16.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.16.1");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3335,7 +3352,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.16.0");
+  assert.strictEqual(D.VERSION, "0.16.1");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
