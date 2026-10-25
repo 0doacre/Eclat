@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.20.0";
+  D.VERSION = "0.20.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1245,6 +1245,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📖 L’Arbre et le Carnet ont chacun leur rôle. L’Arbre te situe dans la progression : il s’ouvre sur ton âge, tes étapes et le prochain objectif. Le Carnet garde les recettes et prépare les lots : il s’ouvre sur « Apprises », et chaque lot affiche son coût, ce qu’il produit, les ressources à réunir et une durée estimée. De l’un à l’autre : « Ouvrir la recette dans le Carnet » et « Situer dans l’Arbre ».",
     "☢️ Un âge de plus : l’Âge de l’Atome, entre l’Électricité et le Silicium. Deux ressources que seul un extracteur récolte, jamais tes mains : l’uranium (Profondeurs) et la galène (Collines). Onze nouveautés : mines d’uranium et de plomb, lingot et plaque de plomb, pastille d’uranium, graphite, barre de combustible, compteur Geiger (explorations ×1,25) et centrale à fission (extracteurs +25 %). Tes parties en cours sont conservées : chaque âge après l’Électricité avance d’un rang. « Chauffer du charbon » n’est plus un essai sans suite : à très haute température, il donne du graphite.",
     "🚂 Un âge de plus : l’Âge de la Vapeur, entre l’Acier et l’Électricité. L’Acier garde le haut-fourneau, l’acier trempé, les lames et les outils d’acier ; la Vapeur reçoit la chaudière, le piston, le moteur, la presse, la pompe, le chemin de fer et les extracteurs à vapeur, plus cinq nouveautés : soupape, manomètre, régulateur à boules, chaudière tubulaire et marteau-pilon. Tes parties en cours sont conservées : chaque âge après l’Acier avance d’un rang, et la Vapeur est comptée comme accomplie si tu l’as dépassée.",
     "🏗️ Chaque bâtiment a sa propre recette à découvrir, avec un nom qui lui ressemble : Claie de séchage et Rouissoir pour la fibre, Carrière à coins pour la pierre, Fosse de tannage et Tannerie pour la peau, Argilière, Gravière, Sablière, et des mines (cuivre, étain, charbon, fer, bauxite…). Dans le Carnet, trois nouveaux filtres : « Extracteurs » (rangés par bâtiment et par niveau), « Outils » et « Machines ».",
