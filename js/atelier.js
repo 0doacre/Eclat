@@ -359,18 +359,15 @@
     }
     function viewCarnet() {
       const st = S();
-      const book = E.carnet();
-      let known = 0, total = 0;
-      book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
       let h = '<h2 class="title">Carnet</h2>';
-      if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. Choisis une <b>quantité</b> (×1 à Max, elle est mémorisée) puis touche <b>Fabriquer</b> : c’est une commande, les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> montre ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
-      // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
+      if (!st.flags.tip_carnet) h += '<div class="tip">Retrouve tes recettes et choisis un lot à fabriquer. ×10 répète la recette dix fois ; les pièces intermédiaires sont fabriquées avec la commande. Les indices des autres recettes restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
+      // La mémoire des recettes traverse les relèves, même quand un âge n’est plus atteint.
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
-      h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
+      h += '<p class="small muted">' + all + (all > 1 ? " recettes apprises" : " recette apprise") + '</p>';
       h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
-      h += cqBarHTML();
-      h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+      if (U.carnetFilter !== 'unk') h += cqBarHTML();
+      h += '<div class="filters">' + [["tout", "Apprises"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]].map(([k, n]) =>
         '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       return h + '<div id="clist">' + carnetList() + "</div>";
     }
@@ -378,23 +375,18 @@
     /* Arbre vertical : largeur du téléphone, défilement natif, voisinage d’une recette. */
     const Arb = typeof window !== "undefined" ? window.EclatArbre : null;
     function arbreEl() { return document.getElementById("v-arbre"); }
-    function arbrePret(n) {
-      const it = n.id && I[n.id];
-      return !!(n.etat === "allume" && it && it.r && !(E.isUnique(it) && S().made[n.id] > 0) && !E.missingFor(n.id, 1));
-    }
     function arbreEtat(n) {
       if (n.etat === "fantome") return "À découvrir";
-      if (arbrePret(n)) return "Fabricable maintenant";
-      if (n.etat === "allume") return "Recette connue";
+      if (n.etat === "allume") return S().made[n.id] > 0 ? "Déjà fabriqué" : "Recette découverte";
       return I[n.id].r ? "Recette à découvrir" : "Ressource découverte";
     }
-    function arbreCarte(n, centre, q) {
-      const fant = n.etat === "fantome", pret = arbrePret(n);
+    function arbreCarte(n, centre) {
+      const fant = n.etat === "fantome";
       const tag = centre ? "article" : "button";
       return '<' + tag + (centre ? ' tabindex="-1" aria-label="' + esc(fant ? "Recette à découvrir" : n.n) + '"' : ' type="button" data-arbsel="' + esc(n.cle) + '"') +
-        ' class="arb-card ' + n.etat + (centre ? " sel" : "") + (pret ? " pret" : "") + '" data-arbn="' + esc(n.cle) + '">' +
+        ' class="arb-card ' + n.etat + (centre ? " sel" : "") + '" data-arbn="' + esc(n.cle) + '">' +
         (fant ? '<span class="arb-inconnu" aria-hidden="true">?</span>' : icon(n.id, "sm")) +
-        '<span class="arb-card-corps"><span class="arb-l">' + (q > 1 ? '<b>' + fmt(q) + ' × </b>' : '') + esc(fant ? "Recette à découvrir" : n.n) + '</span>' +
+        '<span class="arb-card-corps"><span class="arb-l">' + esc(fant ? "Recette à découvrir" : n.n) + '</span>' +
         '<span class="arb-status">' + esc(arbreEtat(n)) + '</span>' +
         (n.objectif ? '<span class="arb-objectif">Objectif</span>' : '') + '</span></' + tag + '>';
     }
@@ -406,28 +398,29 @@
       return hits.length ? hits.slice(0, 8).map((n) => arbreCarte(n, false)).join("") : '<p class="small muted">Rien de tel parmi ce que tu connais.</p>';
     }
     function arbreBarre(g) {
-      return '<div class="arb-barre"><button type="button" class="btn small" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '">Âges</button>' +
+      return '<div class="arb-barre"><button type="button" class="btn small" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '">Progression</button>' +
         '<button type="button" class="btn small" data-arb="centre">Objectif</button>' +
-        '<button type="button" class="btn small' + (U.arbrePrets ? ' on' : '') + '" data-arb="prets" aria-pressed="' + !!U.arbrePrets + '">Fabricables</button>' +
         '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans l’arbre" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
         '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans l’arbre</label>' +
         '<input id="arbq" type="search" placeholder="Recette ou ressource" value="' + esc(U.arbreQ || '') + '" autocomplete="off" spellcheck="false">' +
         '<div id="arbres" class="arb-grille" aria-live="polite">' + arbreResultats(U.arbreQ) + '</div></div>';
     }
     function arbreEnsemble(g) {
-      let h = '<header class="arb-entete"><h2>Arbre des connaissances</h2><p class="small muted">' + g.compte + (g.compte > 1 ? ' recettes trouvées' : ' recette trouvée') + '</p></header>';
-      if (U.arbrePrets) h += '<p class="small arb-filtre">Les recettes que tu peux fabriquer avec ta Réserve.</p>';
-      let total = 0;
+      const etapes = E.milestones()[g.age] || [], faites = etapes.filter((x) => x.done).length;
+      const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
+      let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
+        '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
+      if (objectif) h += '<h3>Prochaine étape</h3>' + arbreCarte(objectif, false);
+      else if (ob) h += '<h3>Prochain objectif</h3><p>' + esc(ob.txt || ob.n || 'Poursuivre l’exploration') + '</p>';
+      else h += '<p>Tu as accompli les objectifs proposés.</p>';
+      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3>';
       for (let a = 0; a <= g.max; a++) {
-        const ns = g.noeuds.filter((n) => n.age === a && (!U.arbrePrets || arbrePret(n)));
-        if (U.arbrePrets && !ns.length) continue;
-        total += ns.length;
+        const ns = g.noeuds.filter((n) => n.age === a);
         const ouverts = U.arbreAges || {};
-        const ouvert = U.arbrePrets || (ouverts[a] !== undefined ? ouverts[a] : a === Math.min(g.age, g.max));
+        const ouvert = ouverts[a] !== undefined ? ouverts[a] : a === Math.min(g.age, g.max);
         h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '') + '</span></summary>';
         h += '<div class="arb-grille">' + (ns.length ? ns.map((n) => arbreCarte(n, false)).join('') : '<p class="small muted">Rien découvert pour l’instant.</p>') + '</div></details>';
       }
-      if (U.arbrePrets && !total) h += '<p class="small muted">Aucune recette fabricable pour l’instant. Récolte les ressources qui te manquent.</p>';
       if (g.max < D.AGES.length - 1) h += '<p class="small muted">Les autres âges se dévoileront au fil de tes découvertes.</p>';
       return h;
     }
@@ -437,13 +430,13 @@
       const n = v.centre, it = n.id && I[n.id];
       let h = '<header class="arb-entete"><button type="button" class="btn small ghost" data-arb="retour">← ' + ((U.arbreHistorique || []).length ? 'Revenir' : 'Les âges') + '</button><p class="small muted">' + esc(D.AGES[n.age].n) + '</p></header>';
       if (v.amont.length) {
-        h += '<section class="arb-etape" aria-labelledby="arb-ingredients"><h3 id="arb-ingredients">' + (n.etat === 'fantome' ? 'Une piste pour commencer' : 'Ingrédients') + '</h3><div class="arb-grille">' + v.amont.map((p) => arbreCarte(p, false, n.etat === 'allume' ? it.r[1][p.id] : null)).join('') + '</div></section><div class="arb-fleche" aria-hidden="true">↓</div>';
+        h += '<section class="arb-etape" aria-labelledby="arb-ingredients"><h3 id="arb-ingredients">' + (n.etat === 'fantome' ? 'Une piste pour commencer' : 'Utilise') + '</h3><div class="arb-grille">' + v.amont.map((p) => arbreCarte(p, false)).join('') + '</div></section><div class="arb-fleche" aria-hidden="true">↓</div>';
       }
       h += '<section class="arb-selection" aria-label="Objet sélectionné">' + arbreCarte(n, true) + '<div class="arb-actions">';
-      if (it) h += '<button type="button" class="btn small" data-goto="' + esc(n.id) + '">Voir la fiche</button>';
+      if (n.etat === 'allume') h += '<button type="button" class="btn small" data-carnet-rec="' + esc(n.id) + '">Ouvrir la recette dans le Carnet</button>';
+      else if (it) h += '<button type="button" class="btn small" data-goto="' + esc(n.id) + '">Voir la fiche</button>';
       h += '</div>';
       if (n.etat === 'fantome' || (n.etat !== 'allume' && it.r)) h += '<p class="small muted">' + (n.etat === 'fantome' ? 'Essaie avec les ressources que tu as étudiées à l’Atelier.' : 'La recette reste à découvrir à l’Atelier.') + '</p>';
-      else if (n.etat === 'allume' && D.GESTES[it.r[0]]) h += '<p class="small muted arb-geste">' + esc(D.GESTES[it.r[0]].n) + '</p>';
       h += '</section>';
       if (v.aval.length) {
         const connus = v.aval.filter((p) => p.etat !== 'fantome'), inconnus = v.aval.length - connus.length;
@@ -461,15 +454,14 @@
       const focus = document.activeElement, action = focus && focus.dataset && focus.dataset.arb;
       const recherche = focus && focus.id === 'arbq', caret = recherche ? focus.selectionStart : null;
       const ancien = U.arbreG && U.arbreG.noeuds.find((n) => n.cle === U.arbreSel);
-      const signature = Arb.sig(Arb.graphe(E, D));
+      const signature = arbreSignature(Arb.graphe(E, D));
       if (ancien && ancien.etat === 'fantome' && el.dataset.sig !== signature) { U.arbreSel = null; U.arbreHistorique = []; }
       U.arbreG = Arb.graphe(E, D);
-      U.arbreDisponibles = U.arbreG.noeuds.filter(arbrePret).map((n) => n.cle).join('|');
       if (U.arbreSel && !U.arbreG.noeuds.some((n) => n.cle === U.arbreSel)) U.arbreSel = null;
       el.innerHTML = arbreBarre(U.arbreG) + '<div id="arbre" class="arb-vue" tabindex="0" aria-label="Arbre des connaissances, défilement vertical">' + (U.arbreSel ? arbreBranche(U.arbreG, U.arbreSel) : arbreEnsemble(U.arbreG)) + '</div>';
-      el.dataset.sig = Arb.sig(U.arbreG);
+      el.dataset.sig = arbreSignature(U.arbreG);
       el.querySelector('#arbre').scrollTop = scroll;
-      el.querySelectorAll('details[data-arbage]').forEach((d) => d.addEventListener('toggle', () => { if (d.isConnected && !U.arbrePrets) (U.arbreAges || (U.arbreAges = {}))[d.dataset.arbage] = d.open; }));
+      el.querySelectorAll('details[data-arbage]').forEach((d) => d.addEventListener('toggle', () => { if (d.isConnected) (U.arbreAges || (U.arbreAges = {}))[d.dataset.arbage] = d.open; }));
       iconize(el);
       if (recherche) { const q = el.querySelector('#arbq'); q.focus({ preventScroll: true }); if (caret !== null) q.setSelectionRange(caret, caret); }
       if (action) { const b = el.querySelector('[data-arb="' + action + '"]'); if (b) b.focus({ preventScroll: true }); }
@@ -477,7 +469,7 @@
     function arbreChoisir(cle, historique) {
       if (!U.arbreG || !U.arbreG.noeuds.some((n) => n.cle === cle)) return;
       if (historique && U.arbreSel && U.arbreSel !== cle) (U.arbreHistorique || (U.arbreHistorique = [])).push(U.arbreSel);
-      U.arbreSel = cle; U.arbreTout = false; U.arbrePrets = false; U.arbreChercher = false; U.arbreQ = '';
+      U.arbreSel = cle; U.arbreTout = false; U.arbreChercher = false; U.arbreQ = '';
       const el = arbreEl(); arbreBati(el);
       const c = el.querySelector('.arb-selection .sel');
       if (c) { c.focus({ preventScroll: true }); const v = el.querySelector('#arbre'); v.scrollTop = Math.max(0, c.offsetTop - v.clientHeight * .35); }
@@ -488,27 +480,25 @@
       const id = U.arbreVoirId; U.arbreVoirId = null;
       const g = Arb.graphe(E, D);
       const premier = !el.firstElementChild;
-      if (premier) {
-        const cible = g.noeuds.find((n) => n.objectif && n.etat !== 'fantome');
-        U.arbreSel = cible ? cible.cle : g.dernier;
-      }
-      if (!el.firstElementChild || el.dataset.sig !== Arb.sig(g)) arbreBati(el);
-      if (id || (premier && U.arbreSel)) { U.arbreHistorique = []; arbreChoisir(id || U.arbreSel); }
+      if (premier) U.arbreSel = null;
+      if (!el.firstElementChild || el.dataset.sig !== arbreSignature(g)) arbreBati(el);
+      if (id) { U.arbreHistorique = []; arbreChoisir(id); }
+    }
+    function arbreSignature(g) {
+      return Arb.sig(g) + '|' + (E.milestones()[S().age] || []).map((x) => x.done ? 1 : 0).join('') + '|' + (E.objective() || {}).i + '|' + g.noeuds.map((n) => S().made[n.id] > 0 ? 1 : 0).join('');
     }
     function arbreMaj() {
       const el = arbreEl(); if (!el || !Arb || U.tab !== 'arbre') return;
       const g = Arb.graphe(E, D);
-      if (el.dataset.sig !== Arb.sig(g)) { arbreBati(el); return; }
-      if (Date.now() - (U.arbreP || 0) < 1000) return;
-      U.arbreP = Date.now();
-      const prets = g.noeuds.filter(arbrePret).map((n) => n.cle).join('|');
-      if (U.arbreDisponibles !== prets) { U.arbreDisponibles = prets; arbreBati(el); }
+      if (el.dataset.sig !== arbreSignature(g)) arbreBati(el);
     }
     if (typeof document !== 'undefined') {
       document.addEventListener('input', (e) => { if (e.target.id === 'arbq') { U.arbreQ = e.target.value; const r = document.getElementById('arbres'); if (r) { r.innerHTML = arbreResultats(U.arbreQ); iconize(r); } } });
       document.addEventListener('click', (e) => {
-        const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj]');
+        const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer]');
         if (!b) return;
+        if (b.dataset.carnetRec) { e.stopPropagation(); if (S().known[b.dataset.carnetRec]) showInCarnet(b.dataset.carnetRec); return; }
+        if (b.dataset.situer) { e.stopPropagation(); if (S().known[b.dataset.situer] && arbreVisible(b.dataset.situer)) arbreOuvrir(b.dataset.situer); return; }
         if (b.hasAttribute('data-arbre-obj')) { e.stopPropagation(); arbreOuvrir(objectifCle()); return; }
         if (!b.closest('#v-arbre')) return;
         e.stopPropagation(); A.click();
@@ -522,11 +512,10 @@
         if (a === 'centre') { const cle = objectifCle(); if (cle) { U.arbreHistorique = []; arbreChoisir(cle); return; } }
         if (a === 'retour' && (U.arbreHistorique || []).length) { arbreChoisir(U.arbreHistorique.pop()); return; }
         if (a === 'tout') U.arbreTout = true;
-        else { U.arbreSel = null; U.arbreHistorique = []; U.arbrePrets = a === 'prets' ? !U.arbrePrets : false; }
+        else { U.arbreSel = null; U.arbreHistorique = []; }
         arbreBati(el);
         if (a !== 'tout') {
-          const v = el.querySelector('#arbre'), age = a === 'ensemble' && el.querySelector('[data-arbage="' + S().age + '"]');
-          v.scrollTop = age ? Math.max(0, age.offsetTop - 8) : 0;
+          el.querySelector('#arbre').scrollTop = 0;
         }
       }, true);
     }
@@ -537,7 +526,7 @@
       const n = Arb.graphe(E, D).noeuds.find((x) => x.objectif);
       return n ? n.cle : null;
     }
-    const arbreVisible = (id) => !!(Arb && I[id] && I[id].r && !I[id].sec && !I[id].path && I[id].t !== "curio" && I[id].t !== "relic");
+    const arbreVisible = (id) => !!(Arb && I[id] && I[id].r && I[id].a <= S().age + 1 && !I[id].sec && !I[id].path && I[id].t !== "curio" && I[id].t !== "relic");
     /* fin ARBRE */
 
     function viewMachines() {
@@ -549,8 +538,9 @@
       const st = S();
       const ids = [];
       E.carnet().forEach((s) => s.ids.forEach((id) => ids.push(id)));
+      Object.keys(S().known).forEach((id) => { if (I[id] && I[id].r && !ids.includes(id)) ids.push(id); });
       if (E.gesteOK("accorder")) E.pathRecipes().forEach((id) => ids.push(id));
-      return ids;
+      return [...new Set(ids)];
     }
     function hiddenOwned(id) {
       const it = I[id];
@@ -584,8 +574,8 @@
         h += ids.length ? '<div class="list flat">' + ids.map(recCard).join("") + "</div>" : '<p class="small muted center">Aucune recette ne correspond.</p>';
         return h;
       }
-      if (E.gesteOK("accorder")) {
-        const ids = E.pathRecipes().filter(keep);
+      if (E.gesteOK("accorder") || E.pathRecipes().some((id) => st.known[id])) {
+        const ids = E.pathRecipes().filter((id) => E.gesteOK('accorder') || st.known[id]).filter(keep);
         if (ids.length) h += '<details class="card age-sec" open><summary><span class="ic" style="border-color:#b36bff">🎵</span><span class="an">La Résonance</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
       }
       // les extracteurs se rangent par bâtiment (Bûcheron, Cueilleur…), niveau après niveau, plutôt que par âge
@@ -598,9 +588,15 @@
         });
         return h || '<p class="small muted center">Aucun extracteur connu pour l’instant.</p>';
       }
-      const book = E.carnet();
+      const book = E.carnet().map((s) => ({ age: s.age, ids: s.ids.slice() }));
+      for (const id of Object.keys(st.known)) {
+        const it = I[id]; if (!it || !it.r || it.path) continue;
+        let sec = book.find((s) => s.age === it.a);
+        if (!sec) { sec = { age: it.a, ids: [] }; book.push(sec); }
+        if (!sec.ids.includes(id)) sec.ids.push(id);
+      }
       const order = book.map((b, i) => i).sort((a, b) => {
-        const rank = (x) => (book[x].age === st.age ? 0 : book[x].age === st.age + 1 ? 1 : 2 + (st.age - book[x].age));
+        const rank = (x) => (book[x].age === st.age ? 0 : book[x].age === st.age + 1 ? 1 : book[x].age < st.age ? 2 + st.age - book[x].age : 2 + D.AGES.length + book[x].age);
         return rank(a) - rank(b);
       });
       for (const k of order) {
@@ -609,10 +605,9 @@
         if (!ids.length) continue;
         const ag = D.AGES[sec.age];
         const kn = sec.ids.filter((id) => st.known[id] && !I[id].sec).length;
-        const all = sec.ids.filter((id) => !I[id].sec).length;
         const open = U.carnetFilter !== "tout" || (U.openAges[sec.age] !== undefined ? U.openAges[sec.age] : sec.age >= st.age);
         h += '<details class="card age-sec" data-age="' + sec.age + '"' + (open ? " open" : "") + '><summary><span class="ic" style="background:' + ag.c + "22;border-color:" + ag.c + '66">' + (sec.age + 1) +
-          '</span><span class="an">' + ag.n + '</span><span class="cnt">' + kn + "/" + all + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
+          '</span><span class="an">' + ag.n + '</span><span class="cnt">' + (U.carnetFilter === 'unk' ? ids.length + ' à découvrir' : kn + ' apprises') + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
       }
       const secrets = Object.keys(I).filter((id) => I[id].sec && st.known[id] && I[id].r).filter(keep);
       if (secrets.length) h += '<details class="card age-sec"' + (U.carnetFilter !== "tout" ? " open" : "") + '><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recCard).join("") + "</div></details>";
@@ -622,16 +617,52 @@
     }
     function passFilter(id) {
       const st = S(), it = I[id];
-      if (U.carnetFilter === "tout") return true;
-      if (U.carnetFilter === "pret") return st.known[id] && !E.missingFor(id, 1) && (!E.isUnique(it) || (st.made[id] || 0) === 0);
+      if (U.carnetFilter === "tout") return !!st.known[id];
       if (U.carnetFilter === "unk") return !st.known[id];
-      if (U.carnetFilter === "craft") return st.known[id] && (E.maxCraftable(id, 1) > 0 || E.plan(id, 1).ok);
+      if (U.carnetFilter === "pret" || U.carnetFilter === "craft") {
+        const lot = window.EclatCarnet.lot(E, D, id, cqNow());
+        if (!lot || !lot.n || !E.ageOK(id) || E.blocker(id)) return false;
+        return U.carnetFilter === 'pret' ? Object.entries(lot.cout).every(([k, n]) => (st.inv[k] || 0) + 1e-9 >= n) : lot.plan.ok;
+      }
       if (U.carnetFilter === "prod") return st.known[id] && ["ext", "upg", "mach", "tool", "stat"].includes(it.t);
       if (U.carnetFilter === "ext") return st.known[id] && it.t === "ext";
       if (U.carnetFilter === "tool") return st.known[id] && ["tool", "upg"].includes(it.t);
       if (U.carnetFilter === "mach") return st.known[id] && ["mach", "stat"].includes(it.t);
-      if (U.carnetFilter === "pin") return !!st.pins[id];
+      if (U.carnetFilter === "pin") return !!st.known[id] && !!st.pins[id];
       return true;
+    }
+    function carnetLotHTML(id, lot) {
+      lot = lot || window.EclatCarnet.lot(E, D, id, cqNow());
+      if (!lot) return '';
+      if (!lot.n) return '<p class="small muted">Max : aucun lot disponible avec ta Réserve actuelle.</p><p class="tiny muted">Recette pour une fabrication :</p><div class="rl lot-cout">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + '</div>';
+      const p = lot.plan, manques = Object.keys(p.missing), connus = {};
+      manques.forEach((k) => { if (S().seen[k] || S().known[k] || lot.cout[k]) connus[k] = p.missing[k]; });
+      let h = '<p class="lot-titre"><b>Lot ×' + fmt(lot.n) + '</b> · ' + fmt(lot.sortie) + (lot.sortie > 1 ? ' pièces produites' : ' pièce produite') + '</p>' +
+        '<div class="rl lot-cout">' + gesteChip(id) + ingHTML(lot.cout, { check: true, link: true }) + '</div>';
+      if (p.locked.length) h += '<p class="small why">Une recette intermédiaire reste à découvrir.</p>';
+      else if (Object.keys(p.blocked).length) h += '<p class="small why">Une étape intermédiaire est bloquée. Consulte le détail du lot.</p>';
+      if (Object.keys(connus).length) h += '<div class="small lot-manques"><span>À réunir :</span>' + ingHTML(connus, { link: true }) + '</div>';
+      if (manques.length > Object.keys(connus).length) h += '<p class="small why">Une ressource encore inconnue est nécessaire.</p>';
+      if (!manques.length && !Object.keys(p.blocked).length && !p.locked.length) h += '<p class="tiny muted">Ressources disponibles' + (p.steps.length > 1 ? ', avec fabrication des pièces intermédiaires.' : '.') + '</p>';
+      if (lot.duree !== null) h += '<p class="tiny muted">' + (manques.length ? 'Fabrication estimée à ' : 'Durée estimée : ') + fmtTime(lot.duree) + (manques.length ? ', une fois les ressources réunies.' : '.') + '</p>';
+      return h;
+    }
+    function carnetLive() {
+      if (Date.now() - (U.carnetP || 0) < 1000) return;
+      U.carnetP = Date.now();
+      if (U.carnetFilter === 'pret' || U.carnetFilter === 'craft') {
+        const sig = visibleRecipes().filter(passFilter).filter((id) => !hiddenOwned(id)).sort().join('|');
+        if (sig !== U.carnetFiltreSig) { U.carnetFiltreSig = sig; const l = document.getElementById('clist'); if (l) { l.innerHTML = carnetList(); iconize(l); } }
+      }
+      document.querySelectorAll('#v-carnet [data-carnet-lot]').forEach((el) => {
+        if (!el.getClientRects().length) return;
+        const id = el.dataset.carnetLot, lot = window.EclatCarnet.lot(E, D, id, cqNow()), h = carnetLotHTML(id, lot);
+        if (el._lotHTML !== h) { el.innerHTML = h; el._lotHTML = h; iconize(el); }
+        const rec = el.closest('.rec'), ready = lot.n > 0 && E.ageOK(id) && !E.blocker(id) && lot.plan.ok, badge = rec.querySelector('.badge-ready');
+        rec.classList.toggle('can-craft', ready);
+        if (ready && !badge) rec.querySelector('.rt').insertAdjacentHTML('beforeend', '<span class="badge-ready">⚡ Lot prêt</span>');
+        else if (!ready && badge) badge.remove();
+      });
     }
     function recCard(id) {
       const st = S(), it = I[id];
@@ -647,26 +678,29 @@
       const uniq = E.isUnique(it);
       const owned = uniq && (st.made[id] || 0) > 0;
       const stars = E.stars(id);
-      const readyCraft = st.known[id] && !owned && !E.missingFor(id, 1);
-      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Prêt</span>' : '') + "</div>" +
+      const lot = window.EclatCarnet.lot(E, D, id, cqNow());
+      const readyCraft = !owned && E.ageOK(id) && lot.n > 0 && lot.plan.ok;
+      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Lot prêt</span>' : '') + "</div>" +
         (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div>' +
         (readyCraft && cqFor(it) !== 1 ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
         '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
         '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
-      if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
+      if (!owned) h += '<div class="carnet-lot" data-carnet-lot="' + id + '">' + carnetLotHTML(id) + '</div>';
       const fx = fxText(id);
       if (fx) h += '<div class="fx">' + esc(fx) + "</div>";
       if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:4px">Construits : ' + Math.floor(st.inv[id] || 0) + "</div>";
       if (!owned) {
         const b = E.blocker(id);
-        if (b && b.why !== "owned") h += '<div class="why">' + cap1(needText(id, b, true)) + "</div>";
+        if (!E.ageOK(id)) h += '<div class="why">Recette conservée. Fabrication disponible : ' + esc(D.AGES[it.a].n) + '.</div>';
+        else if (b && b.why !== "owned") h += '<div class="why">' + cap1(needText(id, b, true)) + "</div>";
         else {
           const qn = cqFor(it), lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
           h += '<div class="acts carnet-acts"><button class="btn small pri make" data-cr="' + id + '" data-n="' + qn + '" data-lbl="' + lbl + '">' + lbl + (qn === 1 ? "" : qn === "max" ? " Max" : " ×" + qn) + "</button>" +
-            '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳 Détail</button>' +
+            '<button class="btn small ghost" data-tree="' + id + '" data-n="' + qn + '">' + (lot.n ? 'Détail du lot' : 'Détail de la recette') + '</button>' +
             (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯 Suivi</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯 Suivre</button>') + "</div>";
         }
       }
+      if (arbreVisible(id)) h += '<button class="btn small ghost carnet-situer" data-situer="' + id + '">Situer dans l’Arbre</button>';
       return h + "</div>";
     }
 
@@ -1164,7 +1198,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
+    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
   }
 
   window.EclatAtelier = { create };
