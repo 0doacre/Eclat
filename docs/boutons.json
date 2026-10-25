@@ -2,7 +2,7 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "Bois ÂGE 1/13",
+  "label": "Bois ÂGE 1/15",
   "repere": "button#ageBtn.age",
   "explique": "info-bulle : Toucher pour voir les étapes de cet âge ; lecteur d’écran : Âge du Bois : étapes de l’âge",
   "tag": "button"
@@ -410,7 +410,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Électricité ÂGE 8/13 0/3",
+  "label": "Électricité ÂGE 9/15 0/3",
   "repere": "button#ageBtn.age",
   "explique": "info-bulle : Toucher pour voir les étapes de cet âge ; lecteur d’écran : Âge de l’Électricité : étapes de l’âge",
   "tag": "button"
@@ -450,7 +450,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "SCÉNARIO Presse à vapeur ▾",
+  "label": "SCÉNARIO Régulateur à boules ▾",
   "repere": "button[data-goalt=\"\"].ghead",
   "explique": "guide (.goal-card)",
   "tag": "button"
@@ -482,8 +482,8 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "✦ ÉTAPE CLÉ « Une hélice creusée autour d’une tige de fer la ferait avancer à chaque tour. » L’action : Usiner",
-  "repere": "div[data-goto=\"vis\"].grow",
+  "label": "✦ ÉTAPE CLÉ « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. »",
+  "repere": "div[data-goto=\"ressort\"].grow",
   "explique": "guide (.goal-card)",
   "tag": "div"
  },
@@ -731,7 +731,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +56,9 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"35004.8824000001\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"fer_min\"][data-n=\"35004.924000000094\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -755,7 +755,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +9,12 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"malachite\"][data-n=\"35118.9824000001\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"malachite\"][data-n=\"35119.0240000001\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -779,7 +779,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +7,12 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cassiterite\"][data-n=\"17566.99120000005\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"cassiterite\"][data-n=\"17567.01200000005\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -803,7 +803,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +4,63 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"silex\"][data-n=\"79333.56039999984\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"silex\"][data-n=\"79333.65399999986\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -827,7 +827,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +4,28 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"sable\"][data-n=\"59459.14530000007\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"sable\"][data-n=\"59459.21550000007\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -851,7 +851,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +4,27 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"argile\"][data-n=\"59316.145300000084\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"argile\"][data-n=\"59316.215500000086\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -875,7 +875,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +3,75 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"charbon\"][data-n=\"83323.50819999987\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"charbon\"][data-n=\"83323.60699999983\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -899,7 +899,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +2,10 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"os\"][data-n=\"132342.43399999992\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"os\"][data-n=\"132342.58999999997\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -923,7 +923,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +2,01 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"cuir\"][data-n=\"110056.695\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"cuir\"][data-n=\"110056.82500000003\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -931,7 +931,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "10 % +684",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"59194\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"59195\"].btn.mini",
   "explique": "info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -939,7 +939,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "La moitié +1,00 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"295974\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"295975\"].btn.mini",
   "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -947,7 +947,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +1,13 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"591849.752999999\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"bois\"][data-n=\"591850.4549999989\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -971,7 +971,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +1,01 k",
-  "repere": "button[data-m=\"sell\"][data-id=\"fibre\"][data-n=\"317344.6415999994\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"fibre\"][data-n=\"317345.0159999995\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -995,7 +995,7 @@
   "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Tout sauf 100 +921",
-  "repere": "button[data-m=\"sell\"][data-id=\"caillou\"][data-n=\"198499.55100000015\"].btn.mini",
+  "repere": "button[data-m=\"sell\"][data-id=\"caillou\"][data-n=\"198499.78500000012\"].btn.mini",
   "explique": "info-bulle : Tout vendre, sauf 100 ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
   "tag": "button"
  },
@@ -1370,7 +1370,7 @@
  {
   "partie": "avancée",
   "ecran": "Atelier · filtres",
-  "label": "Inutilisées 3",
+  "label": "Inutilisées 4",
   "repere": "button[data-if=\"new\"]",
   "explique": "info-bulle : Celles qu’aucune recette connue n’utilise encore",
   "tag": "button"
@@ -1386,9 +1386,17 @@
  {
   "partie": "avancée",
   "ecran": "Arbre",
-  "label": "Âges",
+  "label": "Progression",
   "repere": "button[data-arb=\"ensemble\"].btn",
-  "explique": "info-bulle : Toutes les recettes, âge par âge",
+  "explique": "info-bulle : Ta progression : ton âge, tes étapes et le prochain objectif",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "Objectif",
+  "repere": "button[data-arb=\"centre\"].btn",
+  "explique": "info-bulle : Ton objectif du moment, et ce qu’il demande",
   "tag": "button"
  },
  {
@@ -1402,15 +1410,23 @@
  {
   "partie": "avancée",
   "ecran": "Arbre",
-  "label": "20 × Manche Fabricable maintenant",
+  "label": "? Recette à découvrir À découvrir Objectif",
+  "repere": "button[data-arbsel=\"f1\"][data-arbn=\"f1\"].arb-card.fantome",
+  "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "MancheDéjà fabriqué",
   "repere": "button[data-arbsel=\"manche\"][data-arbn=\"manche\"].arb-card.allume",
   "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Arbre · une branche",
-  "label": "3 × Bois Ressource découverte",
+  "ecran": "Arbre",
+  "label": "BoisRessource découverte",
   "repere": "button[data-arbsel=\"bois\"][data-arbn=\"bois\"].arb-card.vu",
   "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
   "tag": "button"
@@ -1418,9 +1434,9 @@
  {
   "partie": "avancée",
   "ecran": "Arbre · une branche",
-  "label": "Voir les 26 usages connus",
-  "repere": "button[data-arb=\"tout\"].btn.wide",
-  "explique": "info-bulle : Afficher tous les usages connus",
+  "label": "← Les âges",
+  "repere": "button[data-arb=\"retour\"].btn.ghost",
+  "explique": "info-bulle : Revenir en arrière dans l’arbre",
   "tag": "button"
  },
  {
@@ -1434,9 +1450,9 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Tout",
+  "label": "Apprises",
   "repere": "button[data-cf=\"tout\"]",
-  "explique": "info-bulle : Toutes les recettes de cet âge",
+  "explique": "info-bulle : Toutes les recettes que tu connais",
   "tag": "button"
  },
  {
@@ -1522,9 +1538,9 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Détail",
-  "repere": "button[data-tree=\"bobine\"].btn.ghost",
-  "explique": "info-bulle : Détail : les étapes de la commande et ce qu’il manque",
+  "label": "Détail du lot",
+  "repere": "button[data-tree=\"bobine\"][data-n=\"1\"].btn.ghost",
+  "explique": "info-bulle : Les étapes de cette commande, et ce qu’il manque",
   "tag": "button"
  },
  {
@@ -1538,10 +1554,18 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "? DynamoSTATION Débloque l’action Électriser « Le moteur à vapeur fait tourner les aimants près des bobines. Ce mouvement peut donner du courant. » Action : ? · Ressource : ? · 3 ressources",
-  "repere": "div[data-rec=\"dynamo\"][data-goto=\"dynamo\"].rec.unknown",
-  "explique": "info-bulle : Ouvrir sa fiche : ce qu’il faut pour la trouver",
-  "tag": "div"
+  "label": "Situer dans l’Arbre",
+  "repere": "button[data-situer=\"bobine\"].btn.ghost",
+  "explique": "info-bulle : Voir cette recette dans l’arbre : ses ingrédients et ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
+  "label": "♨1 Circuit de vapeur",
+  "repere": "span[data-goto=\"circuit_vapeur\"].ing.link",
+  "explique": "info-bulle : Ouvrir sa fiche",
+  "tag": "span"
  },
  {
   "partie": "avancée",
@@ -1754,7 +1778,7 @@
  {
   "partie": "avancée",
   "ecran": "Fiche d’un objet",
-  "label": "Étudier · 2",
+  "label": "Étudier · 3",
   "repere": "button[data-m=\"study\"].btn",
   "explique": "guide (.modal:not(.hidden) [data-m=\"study\"])",
   "tag": "button"

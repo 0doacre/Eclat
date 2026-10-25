@@ -377,7 +377,7 @@
       h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
       if (U.carnetFilter !== "unk") h += cqBarHTML();
-      const CF_T = { tout: "Toutes les recettes de cet âge", pret: "Celles que ta Réserve couvre entièrement, pièces comprises", craft: "Celles dont les pièces manquantes peuvent encore être fabriquées", unk: "Celles qu’il te reste à découvrir", ext: "Les bâtiments qui récoltent à ta place", tool: "Les outils et leurs améliorations", mach: "Les machines qui fabriquent seules", pin: "Tes épingles, en haut de l’Atelier" };
+      const CF_T = { tout: "Toutes les recettes que tu connais", pret: "Celles que ta Réserve couvre entièrement, pièces comprises", craft: "Celles dont les pièces manquantes peuvent encore être fabriquées", unk: "Celles qu’il te reste à découvrir", ext: "Les bâtiments qui récoltent à ta place", tool: "Les outils et leurs améliorations", mach: "Les machines qui fabriquent seules", pin: "Tes épingles, en haut de l’Atelier" };
       h += '<div class="filters">' + [["tout", "Apprises"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]].map(([k, n]) =>
         '<button data-cf="' + k + '" title="' + (CF_T[k] || "") + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       return h + '<div id="clist">' + carnetList() + "</div>";
@@ -395,7 +395,7 @@
       const fant = n.etat === "fantome";
       const tag = centre ? "article" : "button";
       return '<' + tag + (centre ? ' tabindex="-1" aria-label="' + esc(fant ? "Recette à découvrir" : n.n) + '"' : ' type="button" data-arbsel="' + esc(n.cle) + '" title="Ouvrir cette branche : ses ingrédients et ses usages"') +
-        ' class="arb-card ' + n.etat + (centre ? " sel" : "") + (pret ? " pret" : "") + '" data-arbn="' + esc(n.cle) + '">' +
+        ' class="arb-card ' + n.etat + (centre ? " sel" : "") + '" data-arbn="' + esc(n.cle) + '">' +
         (fant ? '<span class="arb-inconnu" aria-hidden="true">?</span>' : icon(n.id, "sm")) +
         '<span class="arb-card-corps"><span class="arb-l">' + esc(fant ? "Recette à découvrir" : n.n) + '</span>' +
         '<span class="arb-status">' + esc(arbreEtat(n)) + '</span>' +
@@ -410,7 +410,7 @@
     }
     function arbreBarre(g) {
       return '<div class="arb-barre"><button type="button" class="btn small" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '" title="Ta progression : ton âge, tes étapes et le prochain objectif">Progression</button>' +
-        '<button type="button" class="btn small" data-arb="centre">Objectif</button>' +
+        '<button type="button" class="btn small" data-arb="centre" title="Ton objectif du moment, et ce qu’il demande">Objectif</button>' +
         '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans l’arbre" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
         '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans l’arbre</label>' +
         '<input id="arbq" type="search" placeholder="Recette ou ressource" value="' + esc(U.arbreQ || '') + '" autocomplete="off" spellcheck="false">' +
@@ -439,7 +439,7 @@
       const v = Arb.voisinage(g, cle);
       if (!v) return arbreEnsemble(g);
       const n = v.centre, it = n.id && I[n.id];
-      let h = '<header class="arb-entete"><button type="button" class="btn small ghost" data-arb="retour">← ' + ((U.arbreHistorique || []).length ? 'Revenir' : 'Les âges') + '</button><p class="small muted">' + esc(D.AGES[n.age].n) + '</p></header>';
+      let h = '<header class="arb-entete"><button type="button" class="btn small ghost" data-arb="retour" title="Revenir en arrière dans l’arbre">← ' + ((U.arbreHistorique || []).length ? 'Revenir' : 'Les âges') + '</button><p class="small muted">' + esc(D.AGES[n.age].n) + '</p></header>';
       if (v.amont.length) {
         h += '<section class="arb-etape" aria-labelledby="arb-ingredients"><h3 id="arb-ingredients">' + (n.etat === 'fantome' ? 'Une piste pour commencer' : 'Utilise') + '</h3><div class="arb-grille">' + v.amont.map((p) => arbreCarte(p, false)).join('') + '</div></section><div class="arb-fleche" aria-hidden="true">↓</div>';
       }
@@ -711,7 +711,7 @@
             (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre : la carte d’objectif revient à ton étape">🎯 Suivi</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé">🎯 Suivre</button>') + "</div>";
         }
       }
-      if (arbreVisible(id)) h += '<button class="btn small ghost carnet-situer" data-situer="' + id + '">Situer dans l’Arbre</button>';
+      if (arbreVisible(id)) h += '<button class="btn small ghost carnet-situer" data-situer="' + id + '" title="Voir cette recette dans l’arbre : ses ingrédients et ses usages" aria-label="Situer dans l’Arbre">Situer dans l’Arbre</button>';
       return h + "</div>";
     }
 

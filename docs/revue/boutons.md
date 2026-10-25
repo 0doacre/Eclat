@@ -1,4 +1,4 @@
-# Relecture : ce que disent les boutons (0.19.0)
+# Relecture : ce que disent les boutons (0.22.0)
 
 Tous les textes visibles ajoutés ou changés, une ligne chacun, avec l’endroit où ils apparaissent.
 Les textes du récit ne sont pas touchés.
@@ -55,7 +55,7 @@ Les textes du récit ne sont pas touchés.
 | Quantité « ×1 » (Carnet) | Un seul exemplaire |
 | Quantité « ×10 » à « ×1000 » (Carnet) | 10, 50, 100 ou 1000 exemplaires d’un coup |
 | Quantité « Max » (Carnet) | Tout ce que ta Réserve permet |
-| Filtre Carnet « Tout » | Toutes les recettes de cet âge |
+| Filtre Carnet « Apprises » | Toutes les recettes que tu connais |
 | Filtre Carnet « Prêtes » | Celles que ta Réserve couvre entièrement, pièces comprises |
 | Filtre Carnet « Réalisables » | Celles dont les pièces manquantes peuvent encore être fabriquées |
 | Filtre Carnet « À découvrir » | Celles qu’il te reste à découvrir |
@@ -65,8 +65,9 @@ Les textes du récit ne sont pas touchés.
 | Filtre Carnet « Épinglées » | Tes épingles, en haut de l’Atelier |
 | Étoile d’une recette du Carnet | Épingler cette recette en haut de l’Atelier |
 | Bouton de commande du Carnet | Commander cette quantité, pièces comprises |
-| « Détail » dans le Carnet | Détail : les étapes de la commande et ce qu’il manque |
+| « Détail du lot » et « Détail de la recette » (Carnet) | Les étapes de cette commande, et ce qu’il manque |
 | « Suivre » dans le Carnet | Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé |
+| « Situer dans l’Arbre » (Carnet) | Voir cette recette dans l’arbre : ses ingrédients et ses usages |
 | « Suivi » dans le Carnet | Ne plus suivre : la carte d’objectif revient à ton étape |
 | Recette encore inconnue (Carnet) | Ouvrir sa fiche : ce qu’il faut pour la trouver |
 | Objets déjà possédés | Masquer ou montrer les objets déjà fabriqués |
@@ -74,7 +75,9 @@ Les textes du récit ne sont pas touchés.
 | Commandes : « ×10 » à « ×1000 » | Commander 10, 50, 100 ou 1000 exemplaires d’un coup, pièces comprises |
 | Commandes : « Max » | Tout ce que ta Réserve permet, pièces comprises |
 | Recette épinglée, en haut de l’Atelier | Commander 1 exemplaire, pièces comprises |
-| Arbre : « Âges » | Toutes les recettes, âge par âge |
+| Arbre : « Progression » | Ta progression : ton âge, tes étapes et le prochain objectif |
+| Arbre : « Objectif » | Ton objectif du moment, et ce qu’il demande |
+| Arbre : « ← Les âges » et « ← Revenir » | Revenir en arrière dans l’arbre |
 | Arbre : une carte de recette | Ouvrir cette branche : ses ingrédients et ses usages |
 | Arbre : « Voir les N usages connus » | Afficher tous les usages connus |
 | Fiche d’un objet : une pastille d’ingrédient | Ouvrir sa fiche |
@@ -84,7 +87,7 @@ Les textes du récit ne sont pas touchés.
 | Fiche d’un objet : « Voir dans l’arbre » | Voir ses ingrédients et ses usages dans l’arbre |
 | Fiche d’un objet : l’étoile | Épingler la recette en haut de l’Atelier |
 | Fiche d’un objet : un anneau d’ingrédient | Ouvrir sa fiche : ce qu’il faut, et ce que tu as |
-| Astuce du Carnet (texte retiré) | La phrase « 🎯 Suivre montre ce qui manque en haut du Domaine » disparaît : le chapitre s’en charge. |
+| Astuce du Carnet (texte retiré) | La phrase « 🎯 Suivre montre ce qui manque en haut du Domaine » disparaît : le chapitre s’en charge. Le reste de l’astuce est réécrit par la 0.20. |
 
 ## Le Domaine et le Comptoir (js/domaine.js)
 

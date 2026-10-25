@@ -10,6 +10,10 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Fait récemment
 
+- **0.22.0, tutoriel des boutons** : chaque bouton de l’interface a une info-bulle ou un nom de lecteur
+  d’écran ; `tools/boutons.js` inventorie les 237 boutons dans `docs/boutons.md`, `tools/test-boutons.js`
+  échoue si l’un reste muet. Trois chapitres nouveaux (Suivre, Épingler, commander d’un coup) et le guide
+  ralenti à une explication toutes les deux ou trois minutes. Textes à relire : `docs/revue/boutons.md`.
 - **0.20** : l’Âge de l’Atome (uranium et galène, par extracteur seulement ; centrale à fission). **0.19** : l’Âge de la Vapeur,
   pris sur l’Acier. **0.18** : une recette et un nom pour chaque niveau d’extracteur, filtres Extracteurs / Outils / Machines au Carnet.
   **0.17** : un extracteur par ressource, avec des niveaux. **0.16.2** : Traces dépensées seulement au réveil d’un Semeur.
@@ -20,16 +24,6 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 - **Arbre de connaissance** (0.11.0), **Carnet en onglet** et **Mémoire en arbre** (0.11.1).
 
 ## Juste après
-
-- **Tutoriel exhaustif** (retour de Marion, bêta-testeuse : « ça sert à quoi de faire *suivre* ? »). Aucun bouton
-  ne doit rester inexpliqué : Suivre, Épingler, Détail, ×10 / Max, Vue dense, Étudier, Déchiffrer, filtres
-  de la Réserve et du Carnet, tris, Fouiller de nouveau, Visiteurs, etc. Principe : **ralentir**, expliquer **un
-  élément à la fois**, au moment où il apparaît ou devient utile, une phrase chacun, jamais en rafale ; un
-  bouton « Passer » partout ; le guide se coupe dans le menu. À faire une fois l'onboarding 0.10 relu, pour ne
-  pas refaire deux fois la même chose.
-  Méthode proposée : (1) un outil qui liste tous les boutons de l'interface (`data-*`, classes) et ce qui les
-  explique (chapitre du guide, info-bulle, fiche d'aide) ; (2) un test qui échoue quand un bouton n'a aucune
-  explication ; (3) un chapitre du guide ou une info-bulle par trou ; (4) relecture des textes par l'auteur.
 
 ## Plus tard
 

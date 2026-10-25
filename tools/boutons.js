@@ -93,7 +93,7 @@ const COLLECT = ([sels, aide]) => {
     return parts.join("");
   };
   /* le même bouton répété dans chaque recette : une seule ligne, avec le nombre d’exemplaires */
-  const GARDE = /^(data-m|data-t|data-tab|data-tab2|data-ct|data-jt|data-g|data-if|data-cf|data-cvue|data-slot|data-n|data-x)$/;
+  const GARDE = /^(data-m|data-t|data-tab|data-tab2|data-ct|data-jt|data-g|data-if|data-cf|data-cvue|data-slot|data-n|data-x|data-arb)$/;
   const famille = (el, repere) => repere.replace(/\[([^\]=]+)="([^"]*)"\]/g, (x, nom) => (GARDE.test(nom) ? x : "[" + nom + "]"));
   const out = [];
   // dans une fenêtre, on ne relève qu’elle : le fond est recouvert
