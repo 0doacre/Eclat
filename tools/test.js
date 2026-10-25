@@ -851,7 +851,7 @@ test("Mémoire des mains : premiers prix inchangés, niveaux en plus, prix qui m
   for (const m of D.MEMOIRE) for (let i = 1; i < m.cost.length; i++) assert.ok(m.cost[i] > m.cost[i - 1], m.id + " : prix croissants");
   assert.ok(M.mach.cost.length >= 12 && M.recolte.cost.length >= 10);
   const E = mk();
-  E.state.meta.traces = 1e6;
+  E.state.meta.traces = 1e6; E.state.meta.achats = true;
   for (let i = 0; i < M.recolte.cost.length; i++) assert.ok(E.memBuy("recolte"));
   assert.ok(!E.memBuy("recolte"), "au maximum");
   assert.strictEqual(E.memV("recolte"), 1 + M.recolte.cost.length);
@@ -1640,6 +1640,19 @@ test("récolte à la main : coup de chance ×2, plus fréquent avec « Coup d’
 });
 
 console.log("Mains sûres");
+test("Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur", () => {
+  const E = createEngine();
+  E.state.meta.traces = 500;
+  assert.ok(!E.achatsOuverts(), "en cours de partie : fermé");
+  assert.ok(!E.memBuy("recolte") && !E.transBuy("trans_main") && !E.buyEndingHint("retour"), "rien ne s’achète");
+  assert.strictEqual(E.state.meta.traces, 500, "aucune Trace perdue");
+  E.newCycle();
+  assert.ok(E.achatsOuverts(), "la relève ouvre les achats");
+  assert.ok(E.memBuy("recolte"), "au réveil : on peut acheter");
+  E.fermerAchats();
+  assert.ok(!E.achatsOuverts() && !E.memBuy("oeil"), "fermé quand on quitte la Mémoire");
+});
+
 test("Mains sûres : durée ×0,8 par niveau, et une chance de pièce en plus pour ce que les mains fabriquent", () => {
   const faire = (lvl, rand) => {
     const E = createEngine({ now: () => T, rand });
@@ -3136,8 +3149,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.16.1 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.16.1");
+test("Version 0.16.2 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.16.2");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3271,7 +3284,7 @@ test("Progression de l'Âge et Jalons : calcul de complétion et level design", 
 
 console.log("Profondeur Late-Game : Résonances Stellaires et Murmures (6.14)");
 test("Résonances Stellaires : paliers infinis, coûts exponentiels et multiplicateurs", () => {
-  const E = createEngine();
+  const E = createEngine(); E.state.meta.achats = true;
   assert.ok(Array.isArray(D.TRANSCENDANCE));
   assert.strictEqual(D.TRANSCENDANCE.length, 3);
 
@@ -3315,7 +3328,7 @@ test("Résonances Stellaires : paliers infinis, coûts exponentiels et multiplic
 });
 
 test("Murmures du Temps : déblocage d'indices de dénouements secrets", () => {
-  const E = createEngine();
+  const E = createEngine(); E.state.meta.achats = true;
   assert.strictEqual(E.hasEndingHint("retour"), false);
 
   // Sans assez de Traces
@@ -3352,7 +3365,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.16.1");
+  assert.strictEqual(D.VERSION, "0.16.2");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

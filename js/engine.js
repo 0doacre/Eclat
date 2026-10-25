@@ -378,9 +378,12 @@
     E.memLvl = memLvl;
     E.memV = memV;
     E.memCost = (id) => MEM[id].cost[memLvl(id)]; // undefined : au maximum
+    /* Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur : la fenêtre s’ouvre à la relève et se ferme au bouton « Terminé » ou au premier passage franchi */
+    E.achatsOuverts = () => !!(S.meta && S.meta.achats);
+    E.fermerAchats = () => { if (S.meta && S.meta.achats) { S.meta.achats = false; E.emit("struct"); } };
     E.memBuy = function (id) {
       const m = MEM[id], c = m && m.cost[memLvl(id)];
-      if (c === undefined || S.meta.traces < c) return false;
+      if (!E.achatsOuverts() || c === undefined || S.meta.traces < c) return false;
       S.meta.traces -= c;
       S.meta.mem[id] = memLvl(id) + 1;
       recalc();
@@ -451,7 +454,7 @@
     E.transCost = (id) => (TRANS[id] ? TRANS[id].cost(transLvl(id)) : Infinity);
     E.transBuy = function (id) {
       const t = TRANS[id], c = t && t.cost(transLvl(id));
-      if (!t || c === undefined || S.meta.traces < c) return false;
+      if (!E.achatsOuverts() || !t || c === undefined || S.meta.traces < c) return false;
       S.meta.traces -= c;
       S.meta.trans = S.meta.trans || {};
       S.meta.trans[id] = transLvl(id) + 1;
@@ -464,7 +467,7 @@
     E.hasEndingHint = (k) => !!(S.meta && S.meta.hints_endings && S.meta.hints_endings[k]);
     E.buyEndingHint = function (k) {
       const cost = D.HINT_ENDING_COST || 75;
-      if (E.hasEndingHint(k) || !D.ENDINGS || !D.ENDINGS[k] || S.meta.traces < cost) return false;
+      if (!E.achatsOuverts() || E.hasEndingHint(k) || !D.ENDINGS || !D.ENDINGS[k] || S.meta.traces < cost) return false;
       S.meta.traces -= cost;
       S.meta.hints_endings = S.meta.hints_endings || {};
       S.meta.hints_endings[k] = true;
@@ -543,6 +546,7 @@
       const done = Object.keys(cost).every((i) => (p.paid[i] || 0) >= cost[i]);
       if (done) {
         p.done = true;
+        if (S.meta.achats) S.meta.achats = false; // le premier passage du cycle ferme les achats
         E.emit("passdone", { z: zid, tr: PASS[zid].tr });
         unlockZone(zid);
         checkAges();
@@ -3856,6 +3860,7 @@
         Object.assign(n.inv, { bois: 60, fibre: 60, caillou: 40, manche: 10, corde: 10 });
       }
       S = n;
+      S.meta.achats = true; // les Traces se dépensent maintenant, au réveil du nouveau Semeur
       // la Mémoire des mains : le paquetage, et les terres déjà connues
       // ce que le paquetage donne compte comme déjà fait (les étapes « manche », « corde »… passent)
       D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); } });
