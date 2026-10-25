@@ -265,6 +265,18 @@
           if (ev.shiftKey && (cur === first || cur === box || !box.contains(cur))) { ev.preventDefault(); last.focus(); return; }
           if (!ev.shiftKey && (cur === last || !box.contains(cur))) { ev.preventDefault(); first.focus(); return; }
         }
+        // la Carte au clavier : un lieu, un passage, une terre ou le camp se touchent d’Entrée ou d’Espace
+        if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("#v-carte svg [tabindex]")) {
+          ev.preventDefault();
+          Carte.click(document.activeElement);
+          return;
+        }
+        // une ressource au clavier : Entrée pose sur l’établi (voir le clic), « i » ou Maj + Entrée ouvre sa fiche, sans appui long
+        if (document.activeElement && document.activeElement.matches(".inv") && (ev.key === "i" || (ev.key === "Enter" && ev.shiftKey))) {
+          ev.preventDefault();
+          openItemInfo(document.activeElement.dataset.inv);
+          return;
+        }
         if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("[data-goto]")) {
           ev.preventDefault();
           goto(document.activeElement.dataset.goto);
@@ -336,7 +348,11 @@
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, (ev) => Dom.up(ev)));
       views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } updMini(); }, { passive: true });
-      views.addEventListener("contextmenu", (ev) => { if (ev.target.closest(".inv, .slot, [data-harv]")) ev.preventDefault(); });
+      views.addEventListener("contextmenu", (ev) => {
+        const iv = ev.target.closest(".inv");
+        if (iv) { ev.preventDefault(); openItemInfo(iv.dataset.inv); return; } // clic droit ou touche Menu : la fiche
+        if (ev.target.closest(".slot, [data-harv]")) ev.preventDefault();
+      });
 
       views.addEventListener("click", (ev) => {
         const t = ev.target;
@@ -345,9 +361,12 @@
         if (U.tab === "carte" && Carte.click(t)) return;
         if (Dom.click(t, ev)) return;
         if ((b = t.closest(".inv"))) {
-          if (U.lp) { cancelLp(); U.lp = null; putInSlot(b.dataset.inv); }
+          // « Fiches » : un appui ouvre la fiche (l’alternative à l’appui long) ; sinon un appui pose sur l’établi
+          if (U.lp) { cancelLp(); U.lp = null; if (U.invFiche) openItemInfo(b.dataset.inv); else putInSlot(b.dataset.inv); }
+          else if (ev.detail === 0) { if (U.invFiche) openItemInfo(b.dataset.inv); else putInSlot(b.dataset.inv); } // au clavier : pas d’appui, donc pas de minuteur
           return;
         }
+        if (t.closest("[data-fichemode]")) { U.invFiche = !U.invFiche; A.click(); render(true); return; }
         if ((b = t.closest("[data-pin]"))) { const on = E.togglePin(b.dataset.pin); A.click(); toast(on ? "★ Épinglée : visible en haut de l’Atelier." : "Recette désépinglée."); render(true); return; }
         if ((b = t.closest(".nope[data-chain], .nope[data-cr]"))) {
           A.fail(0);

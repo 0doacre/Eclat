@@ -67,7 +67,7 @@ body[data-ep="bord"] {
 }
 :root, body {
   --sans: "Alegreya Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --acc: color-mix(in srgb, var(--acc-base) 78%, var(--age, var(--acc-base)));
+  --acc: color-mix(in srgb, color-mix(in srgb, var(--acc-base) 78%, var(--age, var(--acc-base))) calc(100% - var(--acc-dark, 0%)), var(--text));
   --acc-ink: var(--bg);
 }
 
@@ -328,3 +328,21 @@ body.large-text .inv .n { font-size: 14px; }
   .gis:not(.gact) .gis-l1 { flex-wrap: wrap; gap: 2px 6px; }
   .gis:not(.gact) .gis-b { grid-column: 3; flex-direction: column; align-items: stretch; max-width: 112px; }
 }
+
+/* ---------------------------------------------------------------- contraste (0.15.8)
+ * Mesuré dans le navigateur, époque par époque, sur toutes les couleurs d’âge : chaque texte au moins à 4,5:1 sur le fond,
+ * le second fond et les panneaux ; l’encre des boutons pleins au moins à 4,5:1 sur l’accent (--acc-dark l’assombrit au besoin).
+ * Le test de contraste de tools/test-ux.js refait cette mesure. */
+body:not(.theme-dark)[data-ep="pigments"] { --dim: #6b5f4e; --intu: #815912; --good: #3e6b2d; --acc-dark: 16%; }
+body:not(.theme-dark)[data-ep="papyrus"] { --muted: #6d573a; --dim: #6b573c; --intu: #7b5210; --good: #47631e; --bad: #9f391c; --acc-dark: 34%; }
+body:not(.theme-dark)[data-ep="enluminure"] { --dim: #6f6052; --intu: #7d5e14; }
+body:not(.theme-dark)[data-ep="registre"] { --muted: #5b6472; --dim: #5b6473; --intu: #796024; --bad: #b13a2a; --acc-dark: 19%; }
+body:not(.theme-dark)[data-ep="quadrille"] { --dim: #5a699b; --intu: #80682f; --acc-dark: 22%; }
+body:not(.theme-dark)[data-ep="bord"] { --dim: #5f666f; --intu: #875d1f; --bad: #b8372a; --acc-dark: 32%; }
+body.theme-dark { --dim: #998e7e; --acc-dark: 0%; }
+body.theme-dark[data-ep="pigments"] { --bad: #e36c52; }
+body.theme-dark[data-ep="papyrus"] { --bad: #e16e50; }
+body.theme-dark[data-ep="enluminure"] { --good: #7091c7; --bad: #e36a68; }
+body.theme-dark[data-ep="registre"] { --good: #5594d2; --bad: #e36c58; }
+body.theme-dark[data-ep="quadrille"] { --bad: #e36c5a; }
+body.theme-dark[data-ep="bord"] { --good: #7289f0; --bad: #e36c5a; }

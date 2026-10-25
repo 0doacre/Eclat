@@ -82,7 +82,7 @@
       const { open, ahead } = state();
       const seen = open.concat(ahead);
       const top = Math.min.apply(null, seen.map((z) => GEO[z].y - GEO[z].ry - 60));
-      let s = '<div class="carte">' + chip() + '<svg class="carte-svg" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Carte du monde">' +
+      let s = '<div class="carte">' + chip() + '<svg class="carte-svg" viewBox="0 0 ' + W + " " + H + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
         "<defs>" +
         '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" class="c-hatch"/></pattern>' +
         '<linearGradient id="fogEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0.75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
@@ -139,8 +139,8 @@
         const a = (k / Math.max(1, n)) * Math.PI * 2 + i, r = 0.5 + 0.2 * ((k * 37) % 3) / 2;
         s += use(dz, g.x + Math.cos(a) * g.rx * r, g.y + Math.sin(a) * g.ry * r * 0.8, 16 + (k % 2) * 6, "c-deco");
       }
-      s += '<text class="c-name" x="' + g.x + '" y="' + (g.y - g.ry - 10) + '">' + esc(Z.n) + "</text>";
-      if (z === "lisiere") s += '<g class="c-camp" data-camp>' + use(GI.items.feu || "campfire", g.x + 4, g.y + 26, 26) + '<text class="c-small" x="' + (g.x + 4) + '" y="' + (g.y + 52) + '">ton camp</text></g>';
+      s += '<text class="c-name" x="' + g.x + '" y="' + (g.y - g.ry - 10) + '" role="button" tabindex="0" aria-label="' + esc(Z.n) + ' : ouvrir dans le Domaine">' + esc(Z.n) + "</text>";
+      if (z === "lisiere") s += '<g class="c-camp" data-camp role="button" tabindex="0" aria-label="Ton camp : ouvrir le Domaine">' + use(GI.items.feu || "campfire", g.x + 4, g.y + 26, 26) + '<text class="c-small" x="' + (g.x + 4) + '" y="' + (g.y + 52) + '">ton camp</text></g>';
       (Z.exps || []).forEach((x, k) => { s += lieuArt(z, k); });
       return s + "</g>";
     }
@@ -152,7 +152,9 @@
       const stt = lieuState(z, k), x0 = E.ZONES[z].exps[k];
       if (stt === "later") return "";
       const ic = stt === "locked" ? GI.ui.verrou : GI.places[x0.id] || GI.ui.exploration;
-      return '<g class="c-lieu ' + stt + '" data-cl="' + z + ":" + k + '"><circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="16"/>' + use(ic, x, y, 20) +
+      const ETAT = { done: "exploré", active: "en cours", next: "à explorer", locked: "verrouillé" };
+      const nom = x0.hidden && stt !== "done" && stt !== "active" ? "lieu caché" : x0.n;
+      return '<g class="c-lieu ' + stt + '" data-cl="' + z + ":" + k + '" role="button" tabindex="0" aria-label="' + esc(E.ZONES[z].n + " : " + nom + ", " + (ETAT[stt] || "")) + '"><circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="16"/>' + use(ic, x, y, 20) +
         (stt === "done" ? '<circle class="c-tick" cx="' + (x + 12).toFixed(1) + '" cy="' + (y - 12).toFixed(1) + '" r="5"/>' : "") +
         (stt === "active" ? '<circle class="c-pulse" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="20"/>' : "") + "</g>";
     }
@@ -161,7 +163,7 @@
       if (!g) return "";
       const i = D.ZONES.findIndex((x) => x.id === z);
       const shape = g.sky === "disc" ? '<circle cx="' + g.x + '" cy="' + g.y + '" r="' + g.rx + '"' : g.sky === "ring" ? '<ellipse cx="' + g.x + '" cy="' + g.y + '" rx="' + g.rx + '" ry="' + g.ry + '"' : '<path d="' + blob(g, i + 1) + '"';
-      return '<g class="c-ahead" data-cf="' + z + '">' + shape + ' class="c-mist"/>' + shape + ' class="c-mist-h" fill="url(#hatch)"/>' +
+      return '<g class="c-ahead" data-cf="' + z + '" role="button" tabindex="0" aria-label="' + esc(first ? VAGUE[z] || "Une terre inconnue" : "Une terre inconnue") + '">' + shape + ' class="c-mist"/>' + shape + ' class="c-mist-h" fill="url(#hatch)"/>' +
         (first ? '<text class="c-vague" x="' + g.x + '" y="' + g.y + '">' + esc(VAGUE[z] || "une terre inconnue") + "</text>" : "") + "</g>";
     }
     function passArt(z) {
@@ -172,7 +174,7 @@
       const label = "Passage · " + Math.floor(p.frac * 100) + " %";
       const w = 18 + label.length * 7.2;
       return '<path class="c-pathway" d="M' + P.x + " " + (P.y - P.ry * 0.6) + " L" + g.x + " " + (g.y + g.ry * 0.6) + '"/>' +
-        '<g class="c-pass" data-cp="' + z + '"><rect x="' + (x - w / 2).toFixed(1) + '" y="' + (y - 15) + '" width="' + w.toFixed(1) + '" height="30" rx="15"/>' +
+        '<g class="c-pass" data-cp="' + z + '" role="button" tabindex="0" aria-label="Passage vers ' + esc(E.ZONES[z].n) + " : " + Math.floor(p.frac * 100) + ' %"><rect x="' + (x - w / 2).toFixed(1) + '" y="' + (y - 15) + '" width="' + w.toFixed(1) + '" height="30" rx="15"/>' +
         '<text x="' + x.toFixed(1) + '" y="' + (y + 5) + '" data-cpl="' + z + '">' + label + "</text></g>";
     }
 
