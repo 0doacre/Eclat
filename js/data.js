@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.15.6";
+  D.VERSION = "0.15.7";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1076,6 +1076,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🌳 Retrouver ses recettes dans l’arbre : une recherche (🔍) mène au nœud et ouvre ses ingrédients et ses usages ; le bouton vert ● ne laisse en lumière que ce que tu peux fabriquer maintenant, et un point vert les marque toujours.",
     "📖 Le Carnet va plus vite : une barre de quantité (×1 à Max) reste en haut et se souvient de ton choix ; chaque recette n’a plus qu’un bouton « Fabriquer ×N ». Les cartes sont plus courtes, et le détail et le suivi restent à portée.",
     "🛠️ L’Atelier est plus court : les actions tiennent sur une seule rangée qu’on fait glisser, l’établi est plus compact, et tes ressources se voient dès l’ouverture. Après un essai, le résultat se garde, et un bouton « Réduire » le range.",
     "🧱 Quand une commande ou un Grand Œuvre attend une ressource, le jeu dit laquelle, d’où elle vient, ce que tes extracteurs en produisent et le temps qu’il faudrait. Un bouton « Aller au gisement » mène à la bonne terre.",

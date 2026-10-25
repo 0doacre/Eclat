@@ -169,3 +169,21 @@ body.has-act #v-arbre.on { padding-bottom: calc(var(--nav) + var(--safe-b) + 66p
 .arb-lg svg { flex: 0 0 auto; width: 26px; height: 26px; }
 .arb-lg .arb-t { display: inline; opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .arb-monde.glisse { transition: none; } }
+
+/* (0.15.7) recherche, « prêtes », point vert */
+.arb-barre .btn.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+@media (max-width: 359px) { .arb-barre .arb-compte { display: none; } .arb-barre { justify-content: space-between; } }
+.pt-pret { color: #2f9e5b; font-size: 20px; line-height: 1; }
+.arb-barre .btn.on .pt-pret { color: #fff; }
+.arb-n.pret::after { content: ""; position: absolute; right: -4px; top: -4px; width: 13px; height: 13px; border-radius: 50%; background: #2f9e5b; border: 2px solid var(--bg2); }
+.arb-lg .arb-n.pret { position: relative; }
+.arb-lg .arb-n.pret::after { right: -3px; top: -3px; }
+.arb-monde.prets .arb-n:not(.pret) { opacity: .22; }
+.arb-chercher {
+  position: absolute; left: 8px; right: 52px; top: 8px; z-index: 7; padding: 8px; border-radius: 12px; cursor: auto;
+  background: var(--panel); border: 1px solid var(--line2); box-shadow: 0 6px 24px rgba(0, 0, 0, .35); touch-action: pan-y;
+}
+.arb-chercher[hidden] { display: none; }
+.arb-chercher input { width: 100%; }
+.arb-res { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.arb-res p { margin: 2px 4px; }
