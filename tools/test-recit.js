@@ -956,7 +956,7 @@ const INDICES = {
   cregistre: [["ui", "lune7", /trois, cinq, trois/], ["terminal", "ls", /CLÉ/], ["page", "p20", /Clause/], ["frag", "plaque", /\[main\] \[dabord\]/]],
   ccapsule: [["ui", "capsule", /Fais confiance/], ["registre", "aide", /CAPSULES/], ["nuit", "9:2", /capsule/]],
   signature: [["frag", "coeur", /en lettres et en signe/], ["registre", "arche", /DÉCLARÉ PAR : \S+ \[nourrice\]/], ["interface", "ornement", /\[nourrice\]/]],
-  noms: [["frag", "berceuse", /un nom brûlé et un numéro/], ["frag", "quai", /lit 7/], ["item", "miroir", /iris/], ["registre", "vivant", /CUVE/], ["q", "q_noms", /des noms portent des chiffres/]],
+  noms: [["frag", "berceuse", /un nom brûlé et un numéro/], ["frag", "quai", /lit 7/], ["item", "miroir", /iris/], ["registre", "vivant", /CUVE/], ["q", "q_noms", /numéro de ton iris.*nom/]],
   visage: [["nuit", "8:2", /je la dessine toujours/], ["frag", "cuves", /de nouveau pleine/], ["registre", "vivant", /ÉVEILS/], ["q", "q_oeil", /six éveils/]]
 };
 /* le nom juste de l’enfant du cycle, retrouvé comme le joueur : le chiffre de l’iris, puis le lit de la Chambre */

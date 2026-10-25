@@ -1,8 +1,11 @@
 # Éclat : échantillon de textes (le ton)
 
 > **COFFRE. L’auteur du jeu ne lit pas ce dossier.** Textes à la qualité finale, pour fixer le
-> ton. Ils suivent `docs/STYLE.md` : phrases françaises, gestes et objets, pas d’explication,
-> pas de tiret cadratin, peu de « ça » et de « c’est ».
+> ton. Ils suivent `docs/STYLE.md` : français naturel, observations concrètes et voix distinctes.
+> Les aides peuvent expliquer une action ; les documents ne commentent pas systématiquement
+> leur propre sens. Pas de tiret cadratin. « Ça » et « c’est » restent possibles si leur référent
+> est clair. La passe de langue du 25 octobre 2026 conserve les faits et les inscriptions
+> de ces échantillons ; les formulations affichées à jour sont dans `js/recit.js`.
 
 **Conventions.** `[main]` = un signe des Anciens : il s’affiche dessiné tant qu’il n’est pas
 compris, puis comme le mot, dans un style à part. Dans les données (`js/recit.js`), le jeton
@@ -63,9 +66,9 @@ Variante de la troisième phrase sans « Mains calleuses » : « Pas une ampoule
 
 ## 4. Le Grand Chêne, revisité (fragment, cycle 2 et suivants)
 
-> Six traits, et le septième, toujours à peine commencé.
+> Le septième trait dépasse à peine des six autres. Celui qui le grave semble toujours manquer de temps.
 >
-> Au pied du tronc, l’herbe garde la forme de quelqu’un d’assis. Deux sillons partent de là, bien droits, vers les collines.
+> Au pied du tronc, l’herbe garde la forme de quelqu’un d’assis. Deux sillons bien droits en partent vers les collines.
 >
 > Tu cherches un corps. Il n’y en a pas.
 
@@ -73,13 +76,13 @@ Après une relève où le joueur a laissé faire : « Le septième trait est un 
 
 ## 5. Le Champ des Os (fragment réécrit)
 
-> Des os de bêtes énormes, blanchis par le soleil. Au milieu, six squelettes plus petits, humains, couchés sur le dos, les mains croisées sur la poitrine. Chacun serre un éclat de silex dans son poing.
+> Des os de bêtes énormes ont blanchi au soleil. Au milieu reposent six squelettes humains, plus petits, les mains croisées sur la poitrine. Chacun serre un éclat de silex dans son poing.
 >
-> À la tête de chacun, une pierre plate porte le même signe, `[enfant]`, et des traits : un, deux, trois, jusqu’à six.
+> À leur tête, les pierres plates portent le même signe, `[enfant]`, et des traits : un, deux, trois, jusqu’à six. Sur la première se tient une petite figure taillée dans un os, la main levée.
 >
-> Le sixième est le plus récent. Il a encore toutes ses dents. Sur une côte, à gauche, une entaille nette.
+> Le sixième est le plus récent. Il a encore toutes ses dents et porte une entaille nette sur une côte, à gauche.
 
-Revisite : « Tu comptes encore. Six. Personne n’a couché de septième ici. »
+Revisite : « Tu comptes de nouveau les six squelettes. Personne n’en a couché de septième ici, ni ouvert leurs poings. »
 
 ## 6. La Carcasse (fragment réécrit)
 
