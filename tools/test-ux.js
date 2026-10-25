@@ -383,6 +383,15 @@ async function run() {
     ok(m.gestes <= 90, width + " : les actions tiennent sur une rangée (" + m.gestes + " px)");
     if (width === 390) {
       ok(m.forge <= m.nav && m.tuile <= m.nav + 1, width + " : le gros bouton (" + Math.round(m.forge) + ") et une rangée de ressources (" + Math.round(m.tuile) + ") tiennent au-dessus des onglets (" + Math.round(m.nav) + ")");
+      // tri et filtres rangés derrière « Filtres » : rien n’est affiché d’avance, l’ouverture est sur place, un choix la referme
+      ok(await p.evaluate(() => !document.querySelector("#v-atelier .filters") && !!document.querySelector("[data-filtres]") && document.querySelector("[data-filtres]").getBoundingClientRect().height >= 43.9), width + " : les filtres sont rangés, le bouton « Filtres » fait 44 px");
+      await p.locator("[data-filtres]").click();
+      ok(await p.evaluate(() => { const b = [...document.querySelectorAll("#invpanel [data-if]")]; return b.length === 8 && b.every((x) => x.getBoundingClientRect().height >= 43.9) && document.querySelector("[data-filtres]").getAttribute("aria-expanded") === "true"; }), width + " : le panneau s’ouvre sur place avec les 8 filtres de 44 px");
+      const avant = await p.evaluate(() => document.querySelectorAll("#v-atelier .inv").length);
+      await p.locator('#invpanel [data-if="comp"]').click(); await p.waitForTimeout(250);
+      ok(await p.evaluate((n) => !document.getElementById("invpanel") && document.querySelectorAll("#v-atelier .inv").length < n && /Filtres\s*1/.test(document.querySelector("[data-filtres]").innerText) && document.activeElement.hasAttribute("data-filtres"), avant), width + " : un filtre choisi referme le panneau, le bouton dit « 1 » et garde le focus");
+      await p.locator("[data-filtres]").click(); await p.locator("[data-fclear]").click(); await p.waitForTimeout(250);
+      ok(await p.evaluate((n) => document.querySelectorAll("#v-atelier .inv").length === n && !/Filtres\s*1/.test(document.querySelector("[data-filtres]").innerText), avant), width + " : « Tout effacer » rend toute la liste");
     } else {
       await p.locator("#v-atelier [data-inv]").first().scrollIntoViewIfNeeded();
       await p.locator("#v-atelier [data-inv]").first().tap();

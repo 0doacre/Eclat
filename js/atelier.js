@@ -89,18 +89,22 @@
       const counts = invCounts();
       // recherche, tri et filtres quand il y a de quoi chercher
       const many = Object.keys(st.seen).length >= 8 || !!U.iq || o.filter !== "tout";
+      const nAct = (o.filter !== "tout" ? 1 : 0) + (o.sort !== "age" ? 1 : 0), filtreNom = (INV_FILTERS.find(([k]) => k === o.filter) || ["", ""])[1];
       const totalStock = Object.keys(st.inv).reduce((acc, k) => acc + (st.inv[k] || 0), 0);
       const inv = invItems();
       h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3><button type="button" class="btn small ghost' + (U.invFiche ? " on" : "") + '" data-fichemode aria-pressed="' + (U.invFiche ? "true" : "false") + '" title="Un appui sur une ressource ouvre sa fiche (comme un appui long)">ⓘ Fiches</button>' +
-        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + " · " + fmt(totalStock) + " au total</span>" : "") +
+        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + (o.filter !== "tout" ? " · " + esc(filtreNom) : "") + " · " + fmt(totalStock) + " au total</span>" : "") +
         "</div>" + studyAllHTML() +
+        // la recherche reste affichée ; le tri et les filtres se rangent derrière « Filtres » (le chiffre dit combien sont actifs) et s’ouvrent sur place
         (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" aria-label="Chercher une ressource" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
         (U.iq ? '<button class="search-clear" data-clear-search="iq" aria-label="Effacer">✕</button>' : "") + '</div>' +
-        '<select id="isort" aria-label="Trier">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>" +
-        '<div class="filters">' + INV_FILTERS.map(([k, n, ic]) => {
-          const cnt = counts[k] || 0;
-          return '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '">' + (ic ? ic + " " : "") + n + '<span class="f-cnt">' + cnt + "</span></button>";
-        }).join("") + "</div>" : "");
+        '<button type="button" class="btn small ghost inv-fbtn' + (nAct ? " on" : "") + '" data-filtres aria-expanded="' + (U.invPanel ? "true" : "false") + '" aria-controls="invpanel" aria-label="Tri et filtres' + (nAct ? ", " + nAct + (nAct > 1 ? " actifs" : " actif") : "") + '">Filtres' + (nAct ? ' <b class="inv-fn">' + nAct + "</b>" : "") + (U.invPanel ? " ▴" : " ▾") + "</button></div>" +
+        (U.invPanel ? '<div class="inv-panel" id="invpanel"><label class="tiny muted" for="isort">Trier par</label>' +
+          '<select id="isort">' + INV_SORTS.map(([k, n]) => '<option value="' + k + '"' + (o.sort === k ? " selected" : "") + ">" + n + "</option>").join("") + "</select>" +
+          '<div class="filters wrap" role="group" aria-label="Filtrer">' + INV_FILTERS.map(([k, n, ic]) => {
+            const cnt = counts[k] || 0;
+            return '<button data-if="' + k + '" class="' + (o.filter === k ? "on" : "") + '" aria-pressed="' + (o.filter === k) + '">' + (ic ? ic + " " : "") + n + '<span class="f-cnt">' + cnt + "</span></button>";
+          }).join("") + "</div>" + (nAct ? '<button type="button" class="btn small ghost" data-fclear>Tout effacer</button>' : "") + "</div>" : "") : "");
       const flows = E.flows();
       const tile = (id) => {
         const sel = U.slots.includes(id), fav = favs()[id];

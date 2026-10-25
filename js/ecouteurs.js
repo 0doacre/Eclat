@@ -423,7 +423,14 @@
         }
         if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
         if ((b = t.closest("[data-study-all]"))) { const n = E.studyAll(); if (n) { toast("🔍 " + n + " ressources étudiées."); A.discover(); } render(true); return; }
-        if ((b = t.closest("[data-if]"))) { U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter }); render(true); return; }
+        if (t.closest("[data-filtres]")) { U.invPanel = !U.invPanel; A.click(); render(true); return; }
+        if ((b = t.closest("[data-if]"))) { // un filtre choisi : il s’applique et le panneau se replie ; le focus revient sur « Filtres »
+          U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter });
+          U.invPanel = false; A.click(); render(true);
+          const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true });
+          return;
+        }
+        if (t.closest("[data-fclear]")) { U.invFilter = "tout"; S().settings.inv = Object.assign({}, S().settings.inv, { filter: "tout", sort: "age" }); U.invPanel = false; A.click(); render(true); const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true }); return; }
         if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
         if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
         if ((b = t.closest("[data-hcancel]"))) {

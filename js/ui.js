@@ -738,7 +738,7 @@
     // un bouton de liste (une ressource, une action, une quantité…) : même chose, retrouvé à son attribut de données
     let fsel = null;
     if (!focus && ae && ae !== document.body && el.contains(ae) && ae.dataset) {
-      const k = ["inv", "g", "slot", "qty", "if", "cf", "pin", "tree", "track", "cr", "tab2"].find((x) => ae.dataset[x] !== undefined);
+      const k = ["inv", "g", "slot", "qty", "if", "cf", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
       if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
     }
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
