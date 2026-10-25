@@ -1827,6 +1827,16 @@
     E.guide = function () {
       const ob = E.objective();
       if (!ob) return null;
+      if (ob.k === "pass") {
+        // le passage ne s’ouvre qu’une fois les lieux de la terre explorés, et un lieu peut demander un objet (la torche de la grotte) : le guide y mène
+        const l = ob.z && E.passLieux(ob.z), nx = l && l.left.length ? E.nextExp(l.z) : null, cost = (nx && !nx.locked && nx.x.cost) || {};
+        for (const i of Object.keys(cost)) {
+          if (!item(i) || !item(i).r || (S.inv[i] || 0) >= cost[i]) continue;
+          const s = nextStep(i);
+          if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i };
+        }
+        return { ob, step: null };
+      }
       if (ob.k !== "craft") return { ob, step: null };
       const s = nextStep(ob.id);
       return { ob, step: s.id, why: s.why };
@@ -3865,10 +3875,12 @@
     };
 
     /* Première renaissance obligatoire (fin du tutoriel) */
-    E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.flags && S.flags.extDone && S.exp && S.exp.done && S.exp.done.lisiere >= 1);
+    /* la relève obligatoire : une fois, au cycle 1, quand le premier passage (la Plaine) est franchi : le joueur a déjà gagné ses premières Traces et sait ce que coûte un passage */
+    E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.pass && S.pass.plaine && S.pass.plaine.done);
     E.forcedReleve = function () {
       if (S.meta.forcedDone || S.cycle !== 1) return false;
       S.meta.forcedDone = true;
+      S.meta.reveilAt = now(); // le rappel du Domaine (« Un autre Semeur a pris le relais ») ne reste que quelques minutes
       const gift = (D.PARCOURS && D.PARCOURS.gift) || 3;
       S.meta.traces = (S.meta.traces || 0) + gift;
       S.meta.tracesTotal = (S.meta.tracesTotal || 0) + gift;

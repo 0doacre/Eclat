@@ -88,7 +88,7 @@ const ACHATS = ["recolte", "mains", "recolte", "paquetage", "extr", "mains", "ra
 /* ------------------------------------------------------------------ options */
 function lire(argv) {
   const donne = {}; // les options données à la main : elles l’emportent sur un profil
-  const o = { parcours: false, decouverte: "guide", essai: 8, achat: "recolte", graine: 1, chasse: 0, minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, fouilles: false, sessions: null, joueur: null, joueurs: false, json: false, don: null, dons: false };
+  const o = { parcours: false, decouverte: "guide", essai: 8, achat: "recolte", graine: 1, chasse: 0, releve: "jeu", minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, fouilles: false, sessions: null, joueur: null, joueurs: false, json: false, don: null, dons: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], val = () => argv[++i];
     if (a === "--minutes") o.minutes = +val();
@@ -120,9 +120,10 @@ function lire(argv) {
     else if (a === "--parcours") o.parcours = true;
     else if (a === "--decouverte") { o.decouverte = val(); if (!["enigme", "guide", "hasard"].includes(o.decouverte)) throw new Error("--decouverte : enigme, guide ou hasard"); }
     else if (a === "--essai") { o.essai = +val(); if (!(o.essai > 0)) throw new Error("--essai : des secondes par essai (8)"); }
-    else if (a === "--achat") { o.achat = val(); if (o.achat !== "aucun" && !D.MEMOIRE.some((m) => m.id === o.achat)) throw new Error("--achat : aucun ou un id de la Mémoire"); }
+    else if (a === "--achat") { o.achat = val(); if (o.achat !== "aucun" && o.achat !== "auto" && !D.MEMOIRE.some((m) => m.id === o.achat)) throw new Error("--achat : aucun ou un id de la Mémoire"); }
     else if (a === "--graine") o.graine = +val();
     else if (a === "--chasse") { o.chasse = Math.max(0, Math.floor(+val())); }
+    else if (a === "--releve") { o.releve = val(); if (!["jeu", "tot", "epieu", "plaine", "age1"].includes(o.releve) && !/^min\d+$/.test(o.releve)) throw new Error("--releve : jeu (la règle du jeu, par défaut), tot (l’ancienne : cabane et première exploration), epieu, plaine, age1 ou minN (essais de déclenchement)"); }
     else if (a === "--cycles") o.cycles = Math.max(1, Math.floor(+val()));
     else if (a === "--cout") val().split(",").filter(Boolean).forEach((p) => { // --cout riviere=2,collines=3
       const [z, v] = p.split("=");
@@ -273,6 +274,21 @@ function play(o) {
     pense += sec; penseTotal += sec; essais += n; essaisPar[cible] = (essaisPar[cible] || 0) + n;
     return !!S().known[cible];
   }
+  /* un objet dont on a besoin (le coût d’un lieu à explorer, d’un passage…) sans que le guide en parle : il le cherche, trois fois au plus (40 essais), puis il continue d’autres choses */
+  const requis = {};
+  function decouvrirRequis(id, prof) {
+    // une matière pas encore vue : s’il sait la fabriquer, il la fabrique ; sinon il cherche d’abord sa recette (le charbon pour la torche)
+    const manque = Object.keys(I[id].r[1]).filter((i) => !S().seen[i]);
+    for (const i of manque) {
+      if (!I[i].r || I[i].sec || I[i].path) continue;
+      if (S().known[i]) { if (!E.queued(i)) order(i, 1); }
+      else if ((prof || 0) < 3) decouvrirRequis(i, (prof || 0) + 1);
+    }
+    if (manque.length) return true; // pas encore prêt : on réessaiera quand tout sera vu
+    if ((requis[id] || 0) >= 3) return false;
+    requis[id] = (requis[id] || 0) + 1;
+    return !decouvrirId(id, 40) ? true : false;
+  }
   /* l’étape en cours de l’objectif : le guide la souffle (souvenirs), donc elle finit toujours par se trouver */
   function decouvrir() {
     const g = E.guide(), step = g && g.step;
@@ -408,6 +424,8 @@ function play(o) {
       const n = E.nextExp(p.lieux.z);
       if (!n || n.locked) return;
       const c = n.x.cost || {};
+      // le lieu demande un objet qu’il ne sait pas encore faire (une torche) : il le cherche. Avant la relève du jeu actuel (--releve tot), ce n’est pas sur son chemin : il suit le guide.
+      if (parc && (rel || !["tot", "epieu"].includes(o.releve))) for (const i in c) if (I[i] && I[i].r && !S().known[i] && !I[i].sec && !I[i].path) decouvrirRequis(i);
       for (const i in c) order(i, Math.ceil(c[i]));
       if (!S().exp.active && !Object.keys(c).some((i) => (S().inv[i] || 0) < c[i])) E.startExp(p.lieux.z);
     });
@@ -449,10 +467,23 @@ function play(o) {
 
   /* la relève obligatoire du premier parcours : +3 Traces, un premier achat de Mémoire, et le cycle 2 repart */
   let rel = null;
+  /* quand la relève obligatoire se déclenche : le jeu actuel (cabane posée et première exploration), ou, pour comparer, une fois la Plaine franchie / l’Âge de l’Os atteint */
+  const declencheur = () => {
+    if (o.releve === "jeu") return E.canForcedReleve(); // la règle du jeu
+    // les autres : des déclenchements d’essai, sur la partie du cycle 1 (parcours en cours)
+    if (!(S().meta.parcours && !S().meta.forcedDone && S().cycle === 1)) return false;
+    if (o.releve === "tot") return !!(S().flags.extDone && S().exp.done.lisiere >= 1); // l’ancienne règle : cabane posée et première exploration faite
+    if (o.releve === "epieu") return S().flags.extDone && S().exp.done.lisiere >= 1 && S().made.epieu > 0;
+    if (/^min\d+$/.test(o.releve)) return S().flags.extDone && S().exp.done.lisiere >= 1 && minutes() >= +o.releve.slice(3);
+    if (o.releve === "plaine") return !!(S().pass.plaine && S().pass.plaine.done);
+    if (o.releve === "age1") return S().age >= 1;
+    return true;
+  };
   function releveForcee() {
     rel = { t: minutes(), pense: penseTotal / 60, essais, essaisPar: Object.assign({}, essaisPar), connues: Object.keys(S().known).length };
     E.forcedReleve();
-    if (o.achat && o.achat !== "aucun") E.memBuy(o.achat);
+    if (o.achat === "auto") { for (const id of ACHATS) if (!E.memBuy(id) && E.memCost(id) !== undefined) break; } // il dépense ses Traces dans l'ordre habituel
+    else if (o.achat && o.achat !== "aucun") E.memBuy(o.achat);
     need = {}; urgent = {}; planned = {}; invest = null; evite = new Set(); rows = []; traces = 0; prete = {}; debut = minutes(); pense0 = penseTotal / 60; absDebut = absent; sesDebut = minutes();
     ouverts();
   }
@@ -475,7 +506,7 @@ function play(o) {
     for (let step = 0; cyc() < o.minutes; step++) {
       T += 100;
       E.update();
-      if (parc && !rel && step % 5 === 0 && E.canForcedReleve()) releveForcee();
+      if (parc && !rel && step % 5 === 0 && declencheur()) releveForcee();
       if (o.journal && step % 10 === 0) { // --journal : l’heure de chaque objectif franchi
         const ob = E.objective();
         if (ob && ob.i !== objPrec) { objPrec = ob.i; console.log("  " + mm(cyc()) + " min  objectif " + String(ob.i).padStart(2) + " : " + (ob.id || ob.n)); }

@@ -502,8 +502,8 @@
     E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z) => passHTML(z), uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
-    top: () => donsRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
-    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length
+    top: () => donsRepere() + reveilRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
+    topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length + "|" + (reveilRepere() ? "r" : "")
   });
   const Carte = window.EclatCarte.create({
     E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML: (z) => passHTML(z), expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
@@ -1096,7 +1096,7 @@
     save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
   });
   const {
-    intro, openStillnessScene, showEnding, confirmCycle, donsRepere, openDons, openMemoire, openForcedReleve, memChip
+    intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip
   } = Mem;
 
   /* le menu, les sauvegardes et le compte en ligne */
