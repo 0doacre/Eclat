@@ -176,6 +176,74 @@ const ajoute = (p, n) => p.evaluate((k) => { window.__eclat.E.add("bois", k); },
     await ctx.close();
   });
 
+  const sansVerrou = () => { Object.defineProperty(navigator, "locks", { value: undefined, configurable: true }); };
+  /* une écriture d’une autre page que celle-ci ne voit pas passer (aucun événement storage n’arrive dans la page qui écrit) */
+  const ecritureEtrangere = (p, bois) => p.evaluate((n) => { const o = JSON.parse(localStorage.getItem("eclat.save.v1")); o.inv.bois = n; localStorage.setItem("eclat.save.v1", JSON.stringify(o)); }, bois);
+
+  await test("« Garder celle de cette page » : sans copie de secours enregistrée, l’autre partie n’est pas écrasée et rien n’est annoncé comme réussi", async () => {
+    const ctx = await profil(sansVerrou);
+    const A = await ouvre(ctx);
+    await ecritureEtrangere(A, 132);
+    assert.equal(await A.evaluate(() => window.__eclat.save()), false);
+    assert.equal(await etat(A), "perime");
+    await attendreFenetre(A);
+    // les copies de secours ne s’enregistrent plus
+    await A.evaluate(() => { const set = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === "eclat.backups") throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); }; });
+    await A.locator('[data-m="keep"]').click();
+    await A.waitForFunction(() => /Remplacer la partie/.test(document.querySelector("#modal h2").textContent));
+    await attendreFenetre(A);
+    await A.locator('[data-m="go"]').click();
+    await A.waitForFunction(() => /n’est plus à jour/.test(document.querySelector("#modal h2").textContent));
+    assert.equal(await stocke(A), 132, "la partie de l’autre onglet est intacte");
+    assert.equal(await A.evaluate(() => (JSON.parse(localStorage.getItem("eclat.backups") || "[]")).length), 0);
+    assert.match(await A.locator("#toasts").innerText(), /copie de secours .* n’a pas pu être enregistrée/);
+    assert.doesNotMatch(await A.locator("#toasts").innerText(), /Partie de cette page enregistrée/);
+    assert.equal(await etat(A), "perime");
+    await ctx.close();
+  });
+
+  await test("« Garder celle de cette page » : si l’écriture finale échoue, l’échec est dit et l’autre partie reste dans les copies", async () => {
+    const ctx = await profil(sansVerrou);
+    const A = await ouvre(ctx);
+    await ecritureEtrangere(A, 132);
+    await A.evaluate(() => window.__eclat.save());
+    await attendreFenetre(A);
+    await A.evaluate(() => { const set = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === "eclat.save.v1") throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); }; });
+    await A.locator('[data-m="keep"]').click();
+    await A.waitForFunction(() => /Remplacer la partie/.test(document.querySelector("#modal h2").textContent));
+    await attendreFenetre(A);
+    await A.locator('[data-m="go"]').click();
+    await A.waitForFunction(() => /n’est plus à jour|ouverte ailleurs/.test(document.querySelector("#modal h2").textContent) || !!document.querySelector("#saveBar:not(.hidden)"));
+    assert.equal(await stocke(A), 132);
+    const copies = await A.evaluate(() => JSON.parse(localStorage.getItem("eclat.backups") || "[]"));
+    assert.ok(copies.some((c) => JSON.parse(c.data).inv.bois === 132), "l’autre partie est dans les copies de secours");
+    assert.doesNotMatch(await A.locator("#toasts").innerText(), /Partie de cette page enregistrée/);
+    await ctx.close();
+  });
+
+  await test("compte en ligne : une page que save() découvre périmée n’envoie pas sa partie", async () => {
+    const ctx = await profil(sansVerrou);
+    const A = await ouvre(ctx);
+    await A.evaluate(() => {
+      const C = window.__eclat.Cloud;
+      window.__envois = [];
+      C.account = () => ({ token: "t", auto: true, slot: 1, last: 0, pseudo: "x" });
+      C.push = async (text) => { window.__envois.push(JSON.parse(text).inv.bois); return { ok: true, slot: 1, rev: 1, updated: 1 }; };
+    });
+    // contrôle : une page à jour envoie bien (la sauvegarde en arrière-plan appelle cloudPush)
+    const quitter = () => A.evaluate(() => { Object.defineProperty(document, "hidden", { value: true, configurable: true }); document.dispatchEvent(new Event("visibilitychange")); });
+    await quitter();
+    await A.waitForFunction(() => window.__envois.length === 1, null, { timeout: 3000 });
+    // une autre page écrit sans que celle-ci le sache ; l’envoi suivant doit être refusé après save()
+    await ecritureEtrangere(A, 132);
+    await A.evaluate(() => { window.__envois.length = 0; });
+    await quitter();
+    await A.waitForTimeout(600);
+    assert.equal(await etat(A), "perime", "save() a découvert la page périmée");
+    assert.deepEqual(await A.evaluate(() => window.__envois), [], "aucun envoi de la partie périmée");
+    await ctx.close();
+  });
+
   await test("exception de stockage : la partie reste en mémoire, l’alerte s’affiche, l’export marche, puis tout se rétablit", async () => {
     const ctx = await profil();
     const p = await ouvre(ctx);

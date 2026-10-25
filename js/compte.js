@@ -390,7 +390,7 @@
             if (n !== $("#pw2").value) { err.textContent = "Les deux nouveaux mots de passe ne sont pas identiques."; return true; }
             busy(b, "Chiffrement…");
             save();
-            Cloud.changePassword(o, n, E.serialize()).then(() => swapModal(accountModal("Mot de passe changé."))).catch((e) => { unbusy(b); err.textContent = e.message; });
+            Cloud.changePassword(o, n, U.peutEcrire() ? E.serialize() : null).then(() => swapModal(accountModal("Mot de passe changé."))).catch((e) => { unbusy(b); err.textContent = e.message; });
             return true;
           }
         }
@@ -419,6 +419,8 @@
       U.sync.busy = true;
       try {
         save();
+        // save() peut avoir découvert qu’une autre page a enregistré depuis : on n’envoie pas une partie périmée
+        if (U.saveLocked || !U.peutEcrire()) return null;
         const r = await Cloud.push(E.serialize(), o);
         if (r.conflict) { U.sync.conflict = r; if (!o.quiet) toast("☁️ Une autre version de ta partie est en ligne (emplacement " + r.slot + "). Ouvre ☁️ pour choisir laquelle garder."); }
         else { U.sync.conflict = null; U.sync.err = null; if (o.manual && !U.mcur) toast("☁️ Partie envoyée."); }

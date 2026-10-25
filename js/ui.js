@@ -563,25 +563,30 @@
   function backups() {
     try { const l = JSON.parse(localStorage.getItem(BACKUP_KEY) || "[]"); return Array.isArray(l) ? l : []; } catch (e) { return []; }
   }
+  /* met une copie de côté ; renvoie vrai seulement si elle est bien relue dans la liste enregistrée */
   function pushBackup(raw, why) {
-    if (!raw) return;
+    if (!raw) return false;
     const list = backups();
-    if (list[0] && list[0].data === raw) return;
+    if (list[0] && list[0].data === raw) return true;
     list.unshift({ t: Date.now(), why, v: verOf(raw), data: raw });
     while (list.length > MAX_BACKUPS) list.pop();
     for (;;) {
-      try { localStorage.setItem(BACKUP_KEY, JSON.stringify(list)); return; } catch (e) {
-        if (list.length <= 1) return;
+      try {
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(list));
+        return !!(backups()[0] && backups()[0].data === raw);
+      } catch (e) {
+        if (list.length <= 1) return false;
         list.pop();
       }
     }
   }
-  /* une copie de secours de moins : de la place pour la partie quand le stockage est plein */
+  /* une copie de secours de moins : de la place pour la partie quand le stockage est plein.
+   * La plus récente reste toujours : c’est celle qui protège la partie qu’on vient peut-être de remplacer. */
   function libererBackups() {
     const l = backups();
-    if (!l.length) return false;
+    if (l.length <= 1) return false;
     l.pop();
-    try { if (l.length) localStorage.setItem(BACKUP_KEY, JSON.stringify(l)); else localStorage.removeItem(BACKUP_KEY); } catch (e) { return false; }
+    try { localStorage.setItem(BACKUP_KEY, JSON.stringify(l)); } catch (e) { return false; }
     return true;
   }
   /* L’écriture de la partie passe par js/stockage.js : un seul onglet enregistre (verrou), une page périmée
@@ -654,9 +659,14 @@
         go: () => {
           let stocke = null;
           try { stocke = localStorage.getItem(SAVE_KEY); } catch (e) { /* illisible */ }
-          if (stocke) pushBackup(stocke, "Partie d’un autre onglet, remplacée par celle d’une page périmée");
+          // la partie de l’autre onglet n’est remplacée que si sa copie de secours est bien enregistrée
+          if (stocke && !pushBackup(stocke, "Partie d’un autre onglet, remplacée par celle d’une page périmée")) {
+            toast("La copie de secours de l’autre partie n’a pas pu être enregistrée : elle n’est pas remplacée. Télécharge celle de cette page, ou libère de la place et réessaie.", { key: "remplace", p: 2 });
+            modalPerimee();
+            return true;
+          }
           if (!Stk.reprendreCettePage()) { modalAutrePage(); return true; }
-          save();
+          if (!save()) { toast("⚠️ La partie de cette page n’a pas pu être enregistrée. L’autre partie est intacte, mise de côté dans les copies de secours.", { key: "remplace", p: 2 }); modalPerimee(); return true; }
           toast("Partie de cette page enregistrée.");
         }
       }
