@@ -134,6 +134,12 @@ while (changed) {
   if (flags.has("caveau") && !zones.has("caveau")) { zones.add("caveau"); changed = true; }
   if (have.has("radiotelescope") && !have.has("signal_brut")) { have.add("signal_brut"); changed = true; }
   if (have.has("flute") && flags.has("caveau") && !gestes.has("accorder")) { gestes.add("accorder"); changed = true; }
+  // les ressources que seul un extracteur récolte (uranium, galène) : une fois l’extracteur fabriqué, dans une terre ouverte
+  for (const id in I) {
+    const it = I[id];
+    if (it.t !== "ext" || !have.has(id) || !(it.zs || [it.z]).some((z) => zones.has(z))) continue;
+    for (const r in it.p) if (!have.has(r)) { have.add(r); changed = true; }
+  }
   for (const id in I) {
     const it = I[id];
     if (!it.r || have.has(id)) continue;
