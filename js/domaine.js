@@ -270,7 +270,9 @@
       ];
       const phrase = phrases[(st.cycle + st.age) % phrases.length];
       const count = E.troqueurCount ? E.troqueurCount() : 0;
-      const askLine = count === 0 ? "Aucune demande du Troqueur" : count === 1 ? "1 demande du Troqueur" : count + " demandes du Troqueur";
+      const hor = E.troqueurHoraire();
+      const askLine = !hor.ouvert ? "Le Troqueur est en tournée · retour dans " + fmtTime(Math.max(0, (hor.ouvre - Date.now()) / 1000))
+        : count === 0 ? "Aucune demande du Troqueur" : count === 1 ? "1 demande du Troqueur" : count + " demandes du Troqueur";
       return '<section class="dom-card dom-comptoir" id="dcomptoir">' +
         '<h3>🪙 Le Comptoir</h3>' +
         '<p class="small muted">' + esc(phrase) + '</p>' +
@@ -357,6 +359,10 @@
         const st = S();
         let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus</div></div></div>';
         // à l’ouverture, ce que le Troqueur dit et ce que porte le bois du comptoir (données du récit)
+        // à quoi servent les écus : ils deviennent des Traces à la relève, avec un plafond mou
+        const det = E.ecusDetail((st.ecus || 0));
+        h += '<p class="tiny muted" style="margin:6px 0 0">À la relève, tes écus deviennent des ✦ Traces : au prix de ton âge (' + fmt(E.traceBasePrice()) + ' écus la Trace), à plein tarif jusqu’à ' + fmt(det.seuil) + ' ✦ (ce que tes passages ont rapporté), puis à un quart.' +
+          ((st.ecus || 0) > 0 ? ' Tes ' + fmt(st.ecus || 0) + ' écus en feraient <b>' + det.trace + '</b>.' : '') + '</p>';
         const parole = uiSigne("comptoir", "Le Comptoir");
         if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
         h += '<div class="subtabs comptoir-tabs">' +
@@ -399,15 +405,17 @@
             '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + "</button>").join("") + "</div>";
         } else if (curTab === "demandes") {
           const asks = E.troqueurAsks ? E.troqueurAsks() : [];
-          const next = (st.comptoir && st.comptoir.next) || 0;
-          const leftSec = Math.max(0, Math.ceil((next - Date.now()) / 1000));
-          if (!asks.length) {
-            h += '<p class="small muted center" style="padding:20px 0">Le Troqueur n’a pas de demande pour l’instant. Fabrique des objets de ton âge.</p>';
+          const hor = E.troqueurHoraire();
+          if (!hor.ouvert) {
+            h += '<p class="small muted center" style="padding:20px 0">Le Troqueur est parti en tournée. Il reprend ses demandes dans <b>' + fmtTime(Math.max(0, Math.ceil((hor.ouvre - Date.now()) / 1000))) +
+              '</b>. Le Comptoir reste ouvert pour vendre et acheter.</p>';
           } else {
-            h += '<div class="comptoir-list">' + asks.map(askRowHTML).join("") + '</div>';
-          }
-          if (next > 0) {
-            h += '<p class="tiny muted center" style="margin:10px 0 6px">Prochain renouvellement dans ' + fmtTime(leftSec) + '.</p>';
+            if (!asks.length) {
+              h += '<p class="small muted center" style="padding:20px 0">Le Troqueur n’a pas de demande pour l’instant. Fabrique des objets de ton âge, avec des matières que tu récoltes.</p>';
+            } else {
+              h += '<div class="comptoir-list">' + asks.map(askRowHTML).join("") + '</div>';
+            }
+            h += '<p class="tiny muted center" style="margin:10px 0 6px">Il repart dans ' + fmtTime(Math.max(0, Math.ceil((hor.fin - Date.now()) / 1000))) + '. Ses demandes ne se renouvellent pas avant son retour.</p>';
           }
         }
 
