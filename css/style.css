@@ -501,6 +501,12 @@ body:has(#modal:not(.hidden)) #toasts, body:has(.tuto:not(.hidden)) #toasts { to
 .gprog-track i { display: block; height: 100%; border-radius: 3px; transition: width .3s ease; }
 .gprog-txt { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 .card.result:empty { display: none; }
+.qtybar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 6px; margin: 0 -12px 8px; padding: 6px 12px; background: var(--bg); border-bottom: 1px solid var(--line2); }
+.qtybar .tiny { flex: 0 0 auto; margin-right: 2px; }
+.chipq { flex: 1 1 0; min-width: 44px; min-height: 44px; border-radius: 99px; border: 1.5px solid var(--line2); background: transparent; color: var(--text); font: 600 14px var(--sans); }
+.chipq.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
+.carnet-acts { display: flex; gap: 6px; align-items: stretch; }
+.carnet-acts .make { flex: 1 1 auto; }
 .result { position: relative; }
 .result-x { display: block; margin: 8px 0 0 auto; }
 .limit { margin-top: 4px; color: var(--muted); line-height: 1.35; }

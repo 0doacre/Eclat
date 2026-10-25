@@ -196,11 +196,17 @@ async function run() {
   await layout(p, "Carnet (liste)");
   await p.locator('#cq').fill('manche');
   const quantity = await p.evaluate(() => window.__eclat.E.state.made.manche || 0);
+  // la quantité se choisit une fois, se mémorise, et « Fabriquer » la lance en un appui
+  await p.locator('.qtybar [data-qty="10"]').click();
+  ok(await p.evaluate(() => window.__eclat.E.state.flags.carnetQty === 10 && document.querySelector('[data-cr="manche"].make').textContent.trim() === "Fabriquer ×10"), "Carnet : la quantité choisie est mémorisée et lue sur le bouton");
+  ok(await p.evaluate(() => { const q = document.querySelector(".qtybar").getBoundingClientRect(), r = document.querySelector('[data-cr="manche"].make').closest(".rec").getBoundingClientRect(); return q.height >= 44 && r.height < 200; }), "Carnet : sélecteur de quantité de 44 px, carte de recette sur une seule rangée d’actions");
   await p.locator('[data-cr="manche"][data-n="10"]').click();
   ok(await p.evaluate(n => window.__eclat.E.queued('manche') > 0 || window.__eclat.E.state.made.manche > n, quantity), "Commande ×10 depuis le Carnet");
   await p.locator('#actbar [data-ab="hands"]').click(); await p.waitForTimeout(500);
   ok(await p.locator('#modal').innerText().then(t => t.includes('Manche')), "La barre de commande ouvre ses détails");
   await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+  await p.locator('#tabs [data-tab="atelier"]').click(); await p.locator('#tabs [data-tab="carnet"]').click();
+  ok(await p.evaluate(() => window.__eclat.E.state.flags.carnetQty === 10 && document.querySelector(".chipq.on").dataset.qty === "10"), "Carnet : la quantité reste après un changement d’onglet");
   await p.locator('#memBtn').click(); await p.waitForTimeout(500);
   await p.locator('#modal [data-m="releve"]').click(); await p.waitForTimeout(600);
   const confirm = await p.locator('#modal').innerText();
