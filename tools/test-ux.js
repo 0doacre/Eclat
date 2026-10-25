@@ -198,8 +198,8 @@ async function run() {
   const quantity = await p.evaluate(() => window.__eclat.E.state.made.manche || 0);
   // la quantité se choisit une fois, se mémorise, et « Fabriquer » la lance en un appui
   await p.locator('.qtybar [data-qty="10"]').click();
-  ok(await p.evaluate(() => window.__eclat.E.state.flags.carnetQty === 10 && document.querySelector('[data-cr="manche"]').textContent.trim() === "Fabriquer ×10"), "Carnet : la quantité choisie est mémorisée et lue sur le bouton");
-  ok(await p.evaluate(() => { const q = document.querySelector(".qtybar").getBoundingClientRect(), r = document.querySelector('[data-cr="manche"]').closest(".rec").getBoundingClientRect(); return q.height >= 44 && r.height < 200; }), "Carnet : sélecteur de quantité de 44 px, carte de recette sur une seule rangée d’actions");
+  ok(await p.evaluate(() => window.__eclat.E.state.flags.carnetQty === 10 && document.querySelector('[data-cr="manche"].make').textContent.trim() === "Fabriquer ×10"), "Carnet : la quantité choisie est mémorisée et lue sur le bouton");
+  ok(await p.evaluate(() => { const q = document.querySelector(".qtybar").getBoundingClientRect(), r = document.querySelector('[data-cr="manche"].make').closest(".rec").getBoundingClientRect(); return q.height >= 44 && r.height < 200; }), "Carnet : sélecteur de quantité de 44 px, carte de recette sur une seule rangée d’actions");
   await p.locator('[data-cr="manche"][data-n="10"]').click();
   ok(await p.evaluate(n => window.__eclat.E.queued('manche') > 0 || window.__eclat.E.state.made.manche > n, quantity), "Commande ×10 depuis le Carnet");
   await p.locator('#tabs [data-tab="atelier"]').click(); await p.locator('#tabs [data-tab="carnet"]').click();
