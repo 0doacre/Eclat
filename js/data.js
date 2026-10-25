@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.21.0";
+  D.VERSION = "0.21.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1280,6 +1280,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📖 Ergonomie générale : le Carnet propose une vue en deux colonnes sur écran large et un mode compact, avec un saut rapide vers chaque âge découvert et un repli global. Les épingles de l’Atelier s’affichent en vignettes compactes avec fabrication directe, le Domaine s’allège d’une vue resserrée mémorisée, l’objectif clarifie son accès à l’Arbre et aux étapes, et le menu regroupe ses raccourcis.",
     "💧 La Vapeur commence à la Rivière : une pompe à bras récolte l’eau, les tuyaux la conduisent à la chaudière et les condenseurs la récupèrent. Aux Polymères, raffine le pétrole en naphta et récolte le soufre des Collines pour fabriquer le caoutchouc. Les joints et les tuyaux souples servent au refroidissement des machines. Treize nouveaux objets, sans décaler les âges ni retirer tes découvertes.",
     "📖 L’Arbre et le Carnet ont chacun leur rôle. L’Arbre te situe dans la progression : il s’ouvre sur ton âge, tes étapes et le prochain objectif. Le Carnet garde les recettes et prépare les lots : il s’ouvre sur « Apprises », et chaque lot affiche son coût, ce qu’il produit, les ressources à réunir et une durée estimée. De l’un à l’autre : « Ouvrir la recette dans le Carnet » et « Situer dans l’Arbre ».",
     "☢️ Un âge de plus : l’Âge de l’Atome, entre l’Électricité et le Silicium. Deux ressources que seul un extracteur récolte, jamais tes mains : l’uranium (Profondeurs) et la galène (Collines). Onze nouveautés : mines d’uranium et de plomb, lingot et plaque de plomb, pastille d’uranium, graphite, barre de combustible, compteur Geiger (explorations ×1,25) et centrale à fission (extracteurs +25 %). Tes parties en cours sont conservées : chaque âge après l’Électricité avance d’un rang. « Chauffer du charbon » n’est plus un essai sans suite : à très haute température, il donne du graphite.",

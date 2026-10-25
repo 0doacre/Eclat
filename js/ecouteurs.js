@@ -294,7 +294,7 @@
       });
       document.addEventListener("pointerdown", (ev) => { U.pointer = { x: ev.clientX, y: ev.clientY }; }, true);
       document.addEventListener("wheel", (ev) => {
-        const el = ev.target.closest(".ztabs, .filters, .u-tools, .u-free");
+        const el = ev.target.closest(".ztabs, .filters, .age-nav, .u-tools, .u-free");
         if (el && !ev.shiftKey && Math.abs(ev.deltaY) > Math.abs(ev.deltaX)) {
           if (el.scrollWidth > el.clientWidth) {
             el.scrollLeft += ev.deltaY;
@@ -432,6 +432,34 @@
         }
         if (t.closest("[data-fclear]")) { U.invFilter = "tout"; S().settings.inv = Object.assign({}, S().settings.inv, { filter: "tout", sort: "age" }); U.invPanel = false; A.click(); render(true); const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true }); return; }
         if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
+        if ((b = t.closest("[data-cvue]"))) {
+          const st = S();
+          if (b.dataset.cvue === "cols") st.settings.carnet1Col = !st.settings.carnet1Col;
+          else if (b.dataset.cvue === "dense") st.settings.carnetDense = !st.settings.carnetDense;
+          A.click(); save(); render(true);
+          return;
+        }
+        if ((b = t.closest("[data-age-jump]"))) {
+          const a = Number(b.dataset.ageJump);
+          U.openAges[a] = true; A.click(); render(true);
+          const sec = document.querySelector('#v-carnet details[data-age="' + a + '"]');
+          if (sec) {
+            sec.open = true;
+            const views = $("#views"), qb = $("#v-carnet .qtybar");
+            const off = qb ? qb.getBoundingClientRect().height + 8 : 8;
+            views.scrollTo({ top: Math.max(0, views.scrollTop + sec.getBoundingClientRect().top - views.getBoundingClientRect().top - off), behavior: "smooth" });
+          }
+          return;
+        }
+        if (t.closest("[data-age-all]")) {
+          const st = S();
+          const book = E.carnet();
+          const anyOpen = book.some((s) => U.carnetFilter !== "tout" || (U.openAges[s.age] !== undefined ? U.openAges[s.age] : s.age >= st.age));
+          if (U.carnetFilter !== "tout") U.carnetFilter = "tout";
+          book.forEach((s) => { U.openAges[s.age] = !anyOpen; });
+          A.click(); render(true);
+          return;
+        }
         if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
         if ((b = t.closest("[data-hcancel]"))) {
           const j = S().hand.q[Number(b.dataset.hcancel)];

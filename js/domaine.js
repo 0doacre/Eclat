@@ -39,9 +39,11 @@
     /* ------------------------------------------------------------ la page */
     function view() {
       const st = S(), zs = openZones().reverse();
-      let h = '<div class="dom' + (U.domDense ? " dom-dense" : "") + '">';
+      const dense = !!(U.domDense !== undefined ? U.domDense : st.settings && st.settings.domDense);
+      U.domDense = dense;
+      let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
       h += api.top();
-      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense title="Basculer entre affichage compact et normal">' + (U.domDense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
+      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense aria-pressed="' + dense + '" title="Basculer entre affichage compact et normal">' + (dense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -733,7 +735,7 @@
       }
       if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
-      if (t.closest("[data-dom-dense]")) { U.domDense = !U.domDense; A.click(); vibe(8); render(true); return true; }
+      if (t.closest("[data-dom-dense]")) { const next = !(U.domDense !== undefined ? U.domDense : S().settings.domDense); U.domDense = next; S().settings.domDense = next; A.click(); vibe(8); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
         E.domSite(pid, !E.siteOn(pid));
@@ -801,7 +803,7 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, Object.values(st.dom.ext).map((e) => e.on).join(),
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.domDense, Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
     }
 
