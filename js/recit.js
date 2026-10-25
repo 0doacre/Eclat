@@ -1060,52 +1060,497 @@
         "« Reviens quand tu auras vu autre chose. Je parle de ce que je vois passer. »",
         "« Pas aujourd’hui. »"
       ],
+      refusScenes: {
+        comptoir: {
+          t: "« Là-dessus, j’ai tout dit. »",
+          stage: "Il range deux poids dans leur boîte.",
+          choix: [
+            { k: "a", q: "« Tout dit, ou tout vendu ? »", t: "« Ce qui a un prix, je le vends. Ce qui n’en a pas, je le tais. »" },
+            { k: "b", q: "« Je peux attendre. »", t: "« Attends. Je n’ai rien de plus à peser aujourd’hui. »" },
+            { k: "c", q: "« … »", t: "« Tu insistes avec le silence. Il ne pèse rien non plus. »" }
+          ]
+        },
+        marchandises: {
+          t: "« Mes plateaux sont vides pour aujourd’hui. »",
+          stage: "Il retourne une caisse en bois.",
+          choix: [
+            { k: "a", q: "« Tu n’as vraiment plus rien ? »", t: "« Des clous, du sel. Le sel, tu en as déjà. »" },
+            { k: "b", q: "« Je voulais juste voir. »", t: "« Regarde. Les caisses sont ouvertes et vides. »" },
+            { k: "c", q: "« Rien à vendre, alors. »", t: "« Rien. Les mains vides, ça se voit de loin. »" }
+          ]
+        },
+        terres: {
+          t: "« Les chemins, je te les ai donnés. »",
+          stage: "Il trace une ligne dans la poussière du plateau.",
+          choix: [
+            { k: "a", q: "« Tu en connais d’autres ? »", t: "« Peut-être. Reviens quand tu auras marché. »" },
+            { k: "b", q: "« Dis-moi juste où chercher. »", t: "« Tu as des pieds. Sers-t’en. »" },
+            { k: "c", q: "« … »", t: "« Tu penses que je cède au silence. Je cède au poids. »" }
+          ]
+        },
+        mains: {
+          t: "« Tes mains, je les ai assez vues aujourd’hui. »",
+          stage: "Il repousse le plateau du plat de la main.",
+          choix: [
+            { k: "a", q: "« Elles changent tout le temps. »", t: "« Elles changent. Tu me diras quand elles auront fini. »" },
+            { k: "b", q: "« Tu as un dernier conseil ? »", t: "« Use-les. Les conseils s’usent aussi. »" },
+            { k: "c", q: "« … »", t: "« Rien à ajouter. Tes mains parlent pour toi. »" }
+          ]
+        },
+        ciel: {
+          t: "« Le ciel, ce soir, ne dit rien de plus. »",
+          stage: "Il replace sa chandelle près de la balance.",
+          choix: [
+            { k: "a", q: "« Tu l’as déjà vu parler ? »", t: "« Les clients demandent, je réponds. Le ciel, lui, ne demande rien. »" },
+            { k: "b", q: "« Et l’étoile rouge ? »", t: "« Elle clignote. Elle clignotait hier aussi. »" },
+            { k: "c", q: "« … »", t: "« Lève la tête. Tu verras mieux que moi. »" }
+          ]
+        },
+        avant: {
+          t: "« Les Anciens. J’ai déjà tout dit. »",
+          stage: "Il recompte calmement ses poids de cuivre.",
+          choix: [
+            { k: "a", q: "« Tu ne veux plus en parler ? »", t: "« Je n’ai rien à vendre dessus. Le vide ne se pèse pas. »" },
+            { k: "b", q: "« Un nom, juste un. »", t: "« Les noms que je donne, je les regrette. »" },
+            { k: "c", q: "« … »", t: "« Tu as raison. On se tait. Les balances ne parlent pas. »" }
+          ]
+        },
+        clients: {
+          t: "« Il en passe. Pas d’autre aujourd’hui. »",
+          stage: "Il jette un œil vers le chemin désert.",
+          choix: [
+            { k: "a", q: "« Personne d’autre du tout ? »", t: "« Un chien est passé. Il n’a rien acheté. »" },
+            { k: "b", q: "« Tu retiens leurs visages ? »", t: "« Les visages ne me servent à rien au comptoir. »" },
+            { k: "c", q: "« … »", t: "« Tu guettes la route. Moi, je pèse. »" }
+          ]
+        }
+      },
       lignes: [
         /* le comptoir */
-        { id: "c1", th: "comptoir", rang: 0, q: "« Ce bois creusé, au milieu de ton comptoir, qui l’a fait ? »", t: "« Les paumes de mes clients ont creusé le bois au milieu du comptoir. Aucune n’était la mienne. »" },
-        { id: "c2", th: "comptoir", rang: 0, q: "« Tu pèses tout à la main, toi ? »", t: "« Je pèse, je compte, je rends la monnaie. Mes balances n’ont pas bougé depuis les Anciens. »" },
-        { id: "c3", th: "comptoir", rang: 1, renouv: true, q: "« Et mes écus, quand je passe le relais ? »", t: "« Quand tu passes le relais, je change tes écus restants en Traces. Ce qui traîne chez moi ne rapporte rien. »" },
-        { id: "c4", th: "comptoir", rang: 2, cond: { cycle: 2 }, q: "« Comment tu me reconnais, d’une relève à l’autre ? »", t: "« Je dis « encore toi » à tout le monde. Je regarde les mains plutôt que les yeux : les yeux changent. »" },
-        { id: "c5", th: "comptoir", rang: 3, cond: { not: { feuillet: "celeste1" } }, q: "« Ce signe sur ta poitrine, il veut dire quoi ? »", t: "« Certains clients lisent ce que je porte sur la poitrine avant de me parler. D’autres ne le lisent jamais. Après, leurs questions changent. »" },
+        {
+          id: "c1", th: "comptoir", rang: 0,
+          stage: "Il ne lève pas les yeux de sa balance.",
+          q: "« Ce bois creusé, au milieu de ton comptoir, qui l’a fait ? »",
+          t: "« Les paumes de mes clients ont creusé le bois au milieu du comptoir. Aucune n’était la mienne. »",
+          choix: [
+            { k: "a", q: "« Je n’ai rien à vendre aujourd’hui. »", t: "« Alors tu regardes. Les planches sous le plateau ont onze encoches, onze mains avant la tienne. »" },
+            { k: "b", q: "« Tu es là depuis quand ? »", t: "« Depuis que tu es là. Avant, je ne tenais rien. »" },
+            { k: "c", q: "« … »", t: "« Muet. Reste alors, les muets ne me volent pas de temps. »" }
+          ]
+        },
+        {
+          id: "c2", th: "comptoir", rang: 0,
+          stage: "Il aligne trois clous du bout du doigt.",
+          q: "« Tu pèses tout à la main, toi ? »",
+          t: "« Je pèse, je compte, je rends la monnaie. Mes balances n’ont pas bougé depuis les Anciens. »",
+          choix: [
+            { k: "a", q: "« Tu les comptes trois fois ? »", t: "« Deux. La troisième, je la fais pour toi. Un client qui compte ses sous part plus vite. »" },
+            { k: "b", q: "« Tu le vois à quoi quand je vends ? »", t: "« À la poussière. Tu as posé ton sac plus léger, ta main droite a maigri. »" },
+            { k: "c", q: "« Je regarde tes balances. »", t: "« Elles ont pesé avant toi. Elles pèseront après. Le bois s’use au milieu, la pierre non. »" }
+          ]
+        },
+        {
+          id: "c3", th: "comptoir", rang: 1, renouv: true,
+          stage: "Il tapote une coupelle de cuivre.",
+          q: "« Et mes écus, quand je passe le relais ? »",
+          t: "« Quand tu passes le relais, je change tes écus restants en Traces. Ce qui traîne chez moi ne rapporte rien. »",
+          choix: [
+            { k: "a", q: "« Tu ne me gardes pas mes pièces d’or ? »", t: "« Les pièces dorment chez moi. Les Traces éveillent les mains du prochain Semeur. »" },
+            { k: "b", q: "« Le taux de conversion est fixe ? »", t: "« Je convertis ce qui reste sur le plateau. Plus tu laisses d’écus, plus tu gagnes de Traces. »" },
+            { k: "c", q: "« Je préfère tout dépenser en marchandises. »", t: "« Achète ce qui t’aide. Mais les outils ne traversent pas la relève, la mémoire si. »" }
+          ]
+        },
+        {
+          id: "c4", th: "comptoir", rang: 2, cond: { cycle: 2 },
+          stage: "Il essuie son plateau du revers de la manche.",
+          q: "« Comment tu me reconnais, d’une relève à l’autre ? »",
+          t: "« Je dis « encore toi » à tout le monde. Je regarde les mains plutôt que les yeux : les yeux changent. »",
+          choix: [
+            { k: "a", q: "« Tu dis ça à tous les Semeurs ? »", t: "« À tous. Les visages passent comme le vent. Les cals des paumes restent les mêmes. »" },
+            { k: "b", q: "« Mes mains n’ont pas changé ? »", t: "« Elles portent les mêmes gestes. Le bois, la pierre, la braise. Le reste s’efface. »" },
+            { k: "c", q: "« Tu as bonne mémoire. »", t: "« Une mémoire de balances. Elle ne retient que ce qui pèse. »" }
+          ]
+        },
+        {
+          id: "c5", th: "comptoir", rang: 3, cond: { not: { feuillet: "celeste1" } },
+          stage: "Il croise les bras sur son tablier.",
+          q: "« Ce signe sur ta poitrine, il veut dire quoi ? »",
+          t: "« Certains clients lisent ce que je porte sur la poitrine avant de me parler. D’autres ne le lisent jamais. Après, leurs questions changent. »",
+          choix: [
+            { k: "a", q: "« Tu appartiens à la Nourrice ? »", t: "« Je ne sers personne. Le signe était là au réveil. Je vends, je pèse, c’est tout. »" },
+            { k: "b", q: "« Pourquoi tu le caches sous le tablier ? »", t: "« Je ne cache rien. Qui sait lire le voit. Qui ne sait pas passe son chemin. »" },
+            { k: "c", q: "« … »", t: "« Tu as vu. Alors parle-moi d’autre chose que de mes devoirs. »" }
+          ]
+        },
         /* la marchandise */
-        { id: "m1", th: "marchandises", rang: 0, q: "« Tout ça, tu le trouves où ? »", t: "« Des cordes, des pierres, des pages. Ce que les gens laissent derrière eux, je le ramasse. Quelqu’un finit toujours par le chercher. »" },
-        { id: "m2", th: "marchandises", rang: 0, cond: { page: "p01" }, q: "« Les pages de mon Livre, tu les as écrites ? »", t: "« J’ai ramassé les pages de ton Livre comme le reste. Je ne les ai pas écrites. Elles ne sont à personne. »" },
-        { id: "m3", th: "marchandises", rang: 0, renouv: true, q: "« Qu’est-ce que je devrais vendre, selon toi ? »", t: "« Je rachète tout, mais jamais au prix où je vends. Vends ce qui t’encombre. Garde ce qui te manque. »" },
-        { id: "m4", th: "marchandises", rang: 0, renouv: true, q: "« Ton prix baisse, quand je te vends la même chose ? »", t: "« Si tu me vends cent fois la même chose, mon prix baisse. Mes plateaux se fatiguent. À ta prochaine relève, il remonte. »" },
-        { id: "m5", th: "marchandises", rang: 1, renouv: true, q: "« Tes demandes, tu les choisis comment ? »", t: "« Je ne te demande que ce que tu sais déjà fabriquer, de ton âge ou du précédent. Ma liste change avec l’heure. »" },
+        {
+          id: "m1", th: "marchandises", rang: 0,
+          stage: "Il pousse du pied un sac de cordes.",
+          q: "« Tout ça, tu le trouves où ? »",
+          t: "« Des cordes, des pierres, des pages. Ce que les gens laissent derrière eux, je le ramasse. Quelqu’un finit toujours par le chercher. »",
+          choix: [
+            { k: "a", q: "« Le bois ne vaut rien ? »", t: "« Le bois brut, presque rien. Le manche taillé, trois fois plus. »" },
+            { k: "b", q: "« Et les pages de Livre ? »", t: "« Ramassées au vent. Quelqu’un les cherche toujours. Je ne lis pas ce que je vends. »" },
+            { k: "c", q: "« … »", t: "« Touche, tu peux toucher. Rien ici ne mord. »" }
+          ]
+        },
+        {
+          id: "m2", th: "marchandises", rang: 0, cond: { page: "p01" },
+          stage: "Il retourne une planche et suit l’arête avec l’ongle.",
+          q: "« Les pages de mon Livre, tu les as écrites ? »",
+          t: "« J’ai ramassé les pages de ton Livre comme le reste. Je ne les ai pas écrites. Elles ne sont à personne. »",
+          choix: [
+            { k: "a", q: "« Qui les a perdues ? »", t: "« Ceux qui marchaient avant toi. Les feuilles volent quand les mains s’endorment. »" },
+            { k: "b", q: "« Tu ne les as pas lues ? »", t: "« Je pèse le papier, pas les mots. Les mots ne font pencher aucun plateau. »" },
+            { k: "c", q: "« Elles me sont utiles. »", t: "« Alors achète-les. Le savoir a le prix qu’on lui donne. »" }
+          ]
+        },
+        {
+          id: "m3", th: "marchandises", rang: 0, renouv: true,
+          stage: "Il tapote une caisse d’outils.",
+          q: "« Qu’est-ce que je devrais vendre, selon toi ? »",
+          t: "« Je rachète tout, mais jamais au prix où je vends. Vends ce qui t’encombre. Garde ce qui te manque. »",
+          choix: [
+            { k: "a", q: "« Les surplus de récolte ? »", t: "« Le bois et la pierre partent bien quand tes caisses débordent. Les pièces finies rapportent plus. »" },
+            { k: "b", q: "« Tu ne vends pas à perte ? »", t: "« Jamais. Mes marges paient l’huile de mes rouages. »" },
+            { k: "c", q: "« Mes poches sont pleines. »", t: "« Dépose sur le plateau. L’or est plus léger à transporter que le granite. »" }
+          ]
+        },
+        {
+          id: "m4", th: "marchandises", rang: 0, renouv: true,
+          stage: "Il secoue un bocal de grenaille.",
+          q: "« Ton prix baisse, quand je te vends la même chose ? »",
+          t: "« Si tu me vends cent fois la même chose, mon prix baisse. Mes plateaux se fatiguent. À ta prochaine relève, il remonte. »",
+          choix: [
+            { k: "a", q: "« La baisse est définitive ? »", t: "« Non, elle s’efface à la relève. Varie tes ventes si tu veux garder de bons cours. »" },
+            { k: "b", q: "« Tu satures ton stock ? »", t: "« Mes étagères plient. Quand j’ai trop de silex, je le paie au rabais. »" },
+            { k: "c", q: "« Je vendrai autre chose. »", t: "« C’est plus sage. Apporte-moi des pièces ouvragées, elles tiennent moins de place. »" }
+          ]
+        },
+        {
+          id: "m5", th: "marchandises", rang: 1, renouv: true,
+          stage: "Il vérifie une feuille de commandes.",
+          q: "« Tes demandes, tu les choisis comment ? »",
+          t: "« Je ne te demande que ce que tu sais déjà fabriquer, de ton âge ou du précédent. Ma liste change avec l’heure. »",
+          choix: [
+            { k: "a", q: "« Qu’est-ce que j’y gagne ? »", t: "« Des Traces et de la confiance. Plus tu livres, plus j’ouvre mes réserves. »" },
+            { k: "b", q: "« Tu demandes des quantités raisonnables ? »", t: "« Mes commandes suivent ce que tes ateliers produisent. Je ne demande pas la lune à qui n’a qu’un bâton. »" },
+            { k: "c", q: "« Et si je n’ai pas le temps ? »", t: "« La liste tournera. Je pars en tournée, puis je reviens avec d’autres besoins. »" }
+          ]
+        },
         /* les terres */
-        { id: "t1", th: "terres", rang: 0, q: "« Pourquoi ton comptoir est là, au milieu de rien ? »", t: "« J’ai posé mon comptoir ici parce que des routes se croisent. Il y en a encore, sous l’herbe. »" },
-        { id: "t2", th: "terres", rang: 0, renouv: true, q: "« Un passage, il faut le remplir d’un coup ? »", t: "« Un passage garde ce que tu y déposes. Tu peux revenir le finir en plusieurs fois. »" },
-        { id: "t3", th: "terres", rang: 1, cond: { frag: "gue2" }, q: "« Tu as vu quelque chose, à l’autre rive du gué ? »", t: "« Les marches du gué descendent sous l’eau. Je n’y suis jamais allé : il me faudrait garder de l’air avec moi. »" },
-        { id: "t4", th: "terres", rang: 1, cond: { frag: "porte" }, q: "« Cette porte au fond de la galerie, tu l’as ouverte ? »", t: "« Mes clients essaient leurs clés sur la porte de la galerie, puis leurs épaules. Rien de tout ça ne l’ouvre. »" },
-        { id: "t5", th: "terres", rang: 1, cond: { frag: "journal" }, q: "« Les billets du Désert, ça servait à quoi ? »", t: "« Au Désert, on vendait des billets pour un seul trajet. Personne n’est revenu les faire rembourser. »" },
-        { id: "t6", th: "terres", rang: 2, renouv: true, cond: { age: 2 }, q: "« Et quand un lieu me réclame quelque chose ? »", t: "« Si tu sais quel objet manque pour explorer un lieu, regarde sa recette avant de repartir. »" },
+        {
+          id: "t1", th: "terres", rang: 0,
+          stage: "Il désigne du menton l’herbe derrière ses tonneaux.",
+          q: "« Pourquoi ton comptoir est là, au milieu de rien ? »",
+          t: "« J’ai posé mon comptoir ici parce que des routes se croisent. Il y en a encore, sous l’herbe. »",
+          choix: [
+            { k: "a", q: "« Où allaient ces routes ? »", t: "« D’un bord à l’autre, comme aujourd’hui. Avec moins d’herbe dessus. »" },
+            { k: "b", q: "« Tu en as suivi une ? »", t: "« Une seule, vers la rivière. Elle s’arrêtait à l’eau. Je ne nage pas. »" },
+            { k: "c", q: "« Et l’autre côté ? »", t: "« Je n’y suis pas allé. Ma balance ne voyage pas. »" }
+          ]
+        },
+        {
+          id: "t2", th: "terres", rang: 0, renouv: true,
+          stage: "Il soulève le loquet de son comptoir, puis le laisse retomber.",
+          q: "« Un passage, il faut le remplir d’un coup ? »",
+          t: "« Un passage garde ce que tu y déposes. Tu peux revenir le finir en plusieurs fois. »",
+          choix: [
+            { k: "a", q: "« Les ressources déposées ne disparaissent pas ? »", t: "« Jamais. Ce qui est posé au seuil attend ton retour, même après une longue absence. »" },
+            { k: "b", q: "« Qu’est-ce qui bloque une terre ? »", t: "« La nature du terrain. Sans torche, sans protection, tes mains n’avancent pas. »" },
+            { k: "c", q: "« J’avance petit à petit. »", t: "« C’est la seule manière d’ouvrir une route sans y laisser ses forces. »" }
+          ]
+        },
+        {
+          id: "t3", th: "terres", rang: 1, cond: { frag: "gue2" },
+          stage: "Il tourne un galet plat entre ses paumes.",
+          q: "« Tu as vu quelque chose, à l’autre rive du gué ? »",
+          t: "« Les marches du gué descendent sous l’eau. Je n’y suis jamais allé : il me faudrait garder de l’air avec moi. »",
+          choix: [
+            { k: "a", q: "« Il y a des marches sous la surface ? »", t: "« Des marches taillées dans la roche. L’eau les recouvre, mais le fond est profond. »" },
+            { k: "b", q: "« Comment garder de l’air sous l’eau ? »", t: "« Une cloche de plongeur, peut-être. Du verre et du cuir bien étanches. »" },
+            { k: "c", q: "« Tu n’as pas essayé de plonger ? »", t: "« Mes engrenages rouillent. L’eau est bonne pour les poissons, pas pour moi. »" }
+          ]
+        },
+        {
+          id: "t4", th: "terres", rang: 1, cond: { frag: "porte" },
+          stage: "Il range une clé rouillée sans serrure.",
+          q: "« Cette porte au fond de la galerie, tu l’as ouverte ? »",
+          t: "« Mes clients essaient leurs clés sur la porte de la galerie, puis leurs épaules. Rien de tout ça ne l’ouvre. »",
+          choix: [
+            { k: "a", q: "« Il faut une clé spéciale ? »", t: "« La pierre n’a pas de trou de serrure. Elle attend autre chose qu’un bout de métal. »" },
+            { k: "b", q: "« La force ne suffit pas ? »", t: "« Même avec un bélier, le linteau ne bougerait pas d’un pouce. »" },
+            { k: "c", q: "« Tu as un indice ? »", t: "« Écoute la pierre quand le vent souffle dans la galerie. Elle résonne. »" }
+          ]
+        },
+        {
+          id: "t5", th: "terres", rang: 1, cond: { frag: "journal" },
+          stage: "Il feuillette un carnet jauni aux coins cornés.",
+          q: "« Les billets du Désert, ça servait à quoi ? »",
+          t: "« Au Désert, on vendait des billets pour un seul trajet. Personne n’est revenu les faire rembourser. »",
+          choix: [
+            { k: "a", q: "« Ils partaient où ? »", t: "« Vers les rails du sud. Une gare sous le sable, là où le vent siffle fort. »" },
+            { k: "b", q: "« Pourquoi un seul trajet ? »", t: "« Les départs ne prévoyaient pas de retour. Tout était pensé pour l’aller simple. »" },
+            { k: "c", q: "« Tu en as gardé un ? »", t: "« Un ticket perforé. Il ne vaut plus rien, sauf pour qui cherche le tracé. »" }
+          ]
+        },
+        {
+          id: "t6", th: "terres", rang: 2, renouv: true, cond: { age: 2 },
+          stage: "Il pointe son index vers la remise.",
+          q: "« Et quand un lieu me réclame quelque chose ? »",
+          t: "« Si tu sais quel objet manque pour explorer un lieu, regarde sa recette avant de repartir. »",
+          choix: [
+            { k: "a", q: "« Le Carnet me dira comment le faire ? »", t: "« Le Carnet te donne les ingrédients et le bon geste. Inutile de chercher au hasard. »" },
+            { k: "b", q: "« Et si je n’ai pas la matière ? »", t: "« Regarde d’où elle vient dans ton Domaine. Chaque terre cache sa ressource. »" },
+            { k: "c", q: "« Je prépare mon sac avant de marcher. »", t: "« Sage décision. Revenir les mains vides use les semelles pour rien. »" }
+          ]
+        },
         /* les mains du joueur : des conseils */
-        { id: "h1", th: "mains", rang: 0, renouv: true, q: "« Comment on apprend un geste à un automate ? »", t: "« Fabrique la pièce une fois à la main. Les automates pourront ensuite la refaire pour toi. »" },
-        { id: "h2", th: "mains", rang: 0, renouv: true, cond: { age: 1 }, q: "« À quoi ça sert d’étudier une ressource ? »", t: "« Étudie une ressource pour savoir quelles actions tenter avec. L’Atelier permet de toutes les étudier d’un coup, contre de l’Intuition. »" },
-        { id: "h3", th: "mains", rang: 1, renouv: true, q: "« Et une recette que je n’arrive pas à trouver ? »", t: "« Tu peux déchiffrer une recette par étapes, contre de l’Intuition. Garde-la pour celles que tes tentatives à l’Atelier ne t’ont pas encore apprises. »" },
-        { id: "h4", th: "mains", rang: 1, renouv: true, q: "« Qu’est-ce qui reste, quand je passe le relais ? »", t: "« Tu gardes tes recettes et les améliorations achetées avec tes Traces. Quant aux ruines, les réparer coûte bien moins cher que de tout reconstruire. »" },
-        { id: "h5", th: "mains", rang: 0, cond: { cycle: 2 }, q: "« Tu ne me demandes jamais d’où je viens ? »", t: "« Tes paumes sont déjà dures. Je regarde, c’est tout. Je ne demande pas pourquoi. »" },
+        {
+          id: "h1", th: "mains", rang: 0, renouv: true,
+          stage: "Il prend ta main et la retourne, sans délicatesse.",
+          q: "« Comment on apprend un geste à un automate ? »",
+          t: "« Fabrique la pièce une fois à la main. Les automates pourront ensuite la refaire pour toi. »",
+          choix: [
+            { k: "a", q: "« Il suffit d’un exemplaire ? »", t: "« Un seul. Le premier guide les leviers. Après, le bois et le métal imitent tes doigts. »" },
+            { k: "b", q: "« Tu regardes toujours les mains ? »", t: "« Les yeux mentent, les mains moins. Elles ont des cals là où on travaille. »" },
+            { k: "c", q: "« … »", t: "« Tu me laisses faire. Les nouveaux retirent toujours leur main trop vite. »" }
+          ]
+        },
+        {
+          id: "h2", th: "mains", rang: 0, renouv: true, cond: { age: 1 },
+          stage: "Il laisse tomber une poignée de sciure sur le plateau.",
+          q: "« À quoi ça sert d’étudier une ressource ? »",
+          t: "« Étudie une ressource pour savoir quelles actions tenter avec. L’Atelier permet de toutes les étudier d’un coup, contre de l’Intuition. »",
+          choix: [
+            { k: "a", q: "« Comment tu sais ce que j’ai étudié ? »", t: "« Tu portes moins, tu choisis mieux. Un objet qu’on connaît, on le pose au bon endroit. »" },
+            { k: "b", q: "« L’Intuition est précieuse ? »", t: "« Elle éclaire les réactions cachées. Dépense-la pour gagner du temps sur l’établi. »" },
+            { k: "c", q: "« Tu as tout appris, toi ? »", t: "« Je pèse, je n’apprends pas. Ce que je pèse, je le connais de la main. »" }
+          ]
+        },
+        {
+          id: "h3", th: "mains", rang: 1, renouv: true,
+          stage: "Il trace un cercle avec son compas d’ébène.",
+          q: "« Et une recette que je n’arrive pas à trouver ? »",
+          t: "« Tu peux déchiffrer une recette par étapes, contre de l’Intuition. Garde-la pour celles que tes tentatives à l’Atelier ne t’ont pas encore apprises. »",
+          choix: [
+            { k: "a", q: "« Le geste se révèle peu à peu ? »", t: "« D’abord la chaleur, puis les matières, enfin l’action. Chaque pas réduit le brouillard. »" },
+            { k: "b", q: "« Vaut-il mieux chercher soi-même ? »", t: "« Le geste trouvé par tes mains coûte moins cher. Déchiffre seulement quand tu butes. »" },
+            { k: "c", q: "« Je préfère essayer toutes les combinaisons. »", t: "« Tu y passeras tes journées. Mais l’expérience forme le maître, après tout. »" }
+          ]
+        },
+        {
+          id: "h4", th: "mains", rang: 1, renouv: true,
+          stage: "Il tape sur un carnet relié de cuir épais.",
+          q: "« Qu’est-ce qui reste, quand je passe le relais ? »",
+          t: "« Tu gardes tes recettes et les améliorations achetées avec tes Traces. Quant aux ruines, les réparer coûte bien moins cher que de tout reconstruire. »",
+          choix: [
+            { k: "a", q: "« Les ruines restent ouvertes ? »", t: "« Les murs restent debout. Il suffit de quelques pièces pour réveiller les machines. »" },
+            { k: "b", q: "« Les Traces sont éternelles ? »", t: "« Gravées dans la pierre. Aucun départ n’efface ce que la mémoire a acquis. »" },
+            { k: "c", q: "« Je reconstruirai plus vite au prochain cycle. »", t: "« Chaque relève va deux fois plus vite que la précédente. C’est la loi du Domaine. »" }
+          ]
+        },
+        {
+          id: "h5", th: "mains", rang: 0, cond: { cycle: 2 },
+          stage: "Il observe tes paumes durcies par le silex.",
+          q: "« Tu ne me demandes jamais d’où je viens ? »",
+          t: "« Tes paumes sont déjà dures. Je regarde, c’est tout. Je ne demande pas pourquoi. »",
+          choix: [
+            { k: "a", q: "« D’où viennent les autres ? »", t: "« De la clairière, toujours. Les premiers pas chancellent, puis le pas s’affermit. »" },
+            { k: "b", q: "« Mes mains ont travaillé dur. »", t: "« Je le vois aux échardes et aux cals. Les mains de bois savent ce que coûte un bâton. »" },
+            { k: "c", q: "« Tu en as vu passer beaucoup ? »", t: "« Assez pour ne plus compter les réveils. Seuls les comptes de mon livre m’importent. »" }
+          ]
+        },
         /* le ciel */
-        { id: "s1", th: "ciel", rang: 0, cond: { has: "lunette" }, q: "« Tu as déjà regardé le ciel, la nuit ? »", t: "« J’ai vu l’étoile rouge, l’autre soir. Elle clignotait. Je lui ai demandé ce qu’elle vendait. Elle n’a pas répondu. »" },
-        { id: "s2", th: "ciel", rang: 1, cond: { has: "lunette" }, q: "« Et la Lune, elle vaut combien ? »", t: "« La Lune ressemble à une pièce. J’ai voulu payer avec, une fois. Elle n’a jamais rendu la monnaie. »" },
-        { id: "s3", th: "ciel", rang: 2, cond: { has: "lunette" }, q: "« Ces lumières qui clignotent, tu les as comptées ? »", t: "« Ces éclats reviennent dans le même ordre depuis des années. J’ai eu le temps de les regarder entre deux pesées. »" },
+        {
+          id: "s1", th: "ciel", rang: 0, cond: { has: "lunette" },
+          stage: "Il lève à peine la tête, comme pour vérifier le toit.",
+          q: "« Tu as déjà regardé le ciel, la nuit ? »",
+          t: "« J’ai vu l’étoile rouge, l’autre soir. Elle clignotait. Je lui ai demandé ce qu’elle vendait. Elle n’a pas répondu. »",
+          choix: [
+            { k: "a", q: "« Tu regardes souvent là-haut ? »", t: "« Le soir, quand la balance est juste. Là-haut, il y a de la place, beaucoup de place. »" },
+            { k: "b", q: "« L’étoile clignote toujours au même rythme ? »", t: "« Trois temps courts, un temps long. Une régularité d’horloge, pas de flamme. »" },
+            { k: "c", q: "« … »", t: "« Regarde toi-même avec ta lunette. Je ne décris pas ce qui ne se pèse pas. »" }
+          ]
+        },
+        {
+          id: "s2", th: "ciel", rang: 1, cond: { has: "lunette" },
+          stage: "Il fait tourner une pièce ronde sur le zinc.",
+          q: "« Et la Lune, elle vaut combien ? »",
+          t: "« La Lune ressemble à une pièce. J’ai voulu payer avec, une fois. Elle n’a jamais rendu la monnaie. »",
+          choix: [
+            { k: "a", q: "« Elle change de forme avec les nuits. »", t: "« Elle s’arrondit, puis elle maigrit. Comme une bourse après le marché. »" },
+            { k: "b", q: "« On peut monter là-haut ? »", t: "« Il faudrait une échelle bien longue. Et des semelles qui ne craignent pas le vide. »" },
+            { k: "c", q: "« Elle éclaire le comptoir sans chandelle. »", t: "« Une lumière froide. Elle n’échauffe pas les plateaux. »" }
+          ]
+        },
+        {
+          id: "s3", th: "ciel", rang: 2, cond: { has: "lunette" },
+          stage: "Il pose sa chandelle au bord du plateau et la laisse brûler.",
+          q: "« Ces lumières qui clignotent, tu les as comptées ? »",
+          t: "« Ces éclats reviennent dans le même ordre depuis des années. J’ai eu le temps de les regarder entre deux pesées. »",
+          choix: [
+            { k: "a", q: "« C’est un message ? »", t: "« Une phrase répétée sans fin. Quelqu’un a laissé la voix allumée là-haut avant de partir. »" },
+            { k: "b", q: "« Elle descend au fil des cycles ? »", t: "« Plus basse, oui. Elle éclaire le bord de mon toit à chaque automne. »" },
+            { k: "c", q: "« Elle te fait peur ? »", t: "« Je range mes clous. On range, on ne prie pas. »" }
+          ]
+        },
         /* les Anciens */
-        { id: "a1", th: "avant", rang: 0, q: "« Les Anciens, ils venaient chez toi ? »", t: "« Les Anciens achetaient tout et revenaient en demander davantage. Je ne sais rien d’autre d’eux. »" },
-        { id: "a2", th: "avant", rang: 1, q: "« Tu te souviens du jour où tout s’est arrêté ? »", t: "« Je pesais une pomme quand tout s’est arrêté, moi compris. Quand j’ai repris, la pomme avait disparu. »" },
-        { id: "a3", th: "avant", rang: 1, cond: { cycle: 2 }, apres: "a2", q: "« Et toi, comment tu t’es réveillé ? »", t: "« Quelqu’un m’a demandé une corde en posant un caillou sur le plateau. Quand la balance a bougé, je me suis réveillé. »" },
-        { id: "a4", th: "avant", rang: 3, cond: { signe: "nourrice" }, q: "« Quelqu’un d’autre vient te voir, parfois ? »", t: "« [nourrice] vient aussi, parfois. Je lui vends comme à toi. Je ne lui dois rien. »" },
+        {
+          id: "a1", th: "avant", rang: 0,
+          stage: "Il essuie le plateau avec le dos de sa manche.",
+          q: "« Les Anciens, ils venaient chez toi ? »",
+          t: "« Les Anciens achetaient tout et revenaient en demander davantage. Je ne sais rien d’autre d’eux. »",
+          choix: [
+            { k: "a", q: "« Ils payaient avec quoi ? »", t: "« Des pièces, les mêmes que les tiennes. Plus lourdes, frappées d’un chiffre net. »" },
+            { k: "b", q: "« Ils te parlaient ? »", t: "« Ils commandaient. Une voix qui commande ne demande rien d’autre. »" },
+            { k: "c", q: "« … »", t: "« Rien à ajouter. Ils sont partis, je suis resté. »" }
+          ]
+        },
+        {
+          id: "a2", th: "avant", rang: 1,
+          stage: "Il remet droit un pot de clous qui n’était pas de travers.",
+          q: "« Tu te souviens du jour où tout s’est arrêté ? »",
+          t: "« Je pesais une pomme quand tout s’est arrêté, moi compris. Quand j’ai repris, la pomme avait disparu. »",
+          choix: [
+            { k: "a", q: "« Tu es resté figé longtemps ? »", t: "« Le temps ne s’écoule pas quand la balance est gelée. À mon réveil, l’herbe avait tout couvert. »" },
+            { k: "b", q: "« La pomme a pourri sur place ? »", t: "« Pas une trace. Mon plateau penchait encore. J’attends toujours qu’on me la paie. »" },
+            { k: "c", q: "« Tu étais déjà derrière ce comptoir ? »", t: "« Derrière ce comptoir, oui. Le comptoir n’a pas bougé, moi si. »" }
+          ]
+        },
+        {
+          id: "a3", th: "avant", rang: 1, cond: { cycle: 2 }, apres: "a2",
+          stage: "Il tapote une pierre lisse posée près de sa caisse.",
+          q: "« Et toi, comment tu t’es réveillé ? »",
+          t: "« Quelqu’un m’a demandé une corde en posant un caillou sur le plateau. Quand la balance a bougé, je me suis réveillé. »",
+          choix: [
+            { k: "a", q: "« C’était un premier Semeur ? »", t: "« Un enfant aux mains nues. Il avait froid. Je lui ai donné la corde contre le caillou. »" },
+            { k: "b", q: "« Le caillou valait une corde ? »", t: "« Sur le moment, oui. Le poids était juste. La balance a frémi, mes rouages sont repartis. »" },
+            { k: "c", q: "« Tu as gardé ce caillou ? »", t: "« Il est sous mon tablier. Le premier troc ne s’oublie pas. »" }
+          ]
+        },
+        {
+          id: "a4", th: "avant", rang: 3, cond: { signe: "nourrice" },
+          stage: "Il abaisse la voix sans quitter des yeux son plateau.",
+          q: "« Quelqu’un d’autre vient te voir, parfois ? »",
+          t: "« [nourrice] vient aussi, parfois. Je lui vends comme à toi. Je ne lui dois rien. »",
+          choix: [
+            { k: "a", q: "« Elle achète quoi chez toi ? »", t: "« De l’huile, du fil fin. Elle paie sans marchander et repart vers le caveau. »" },
+            { k: "b", q: "« Elle ne commande pas ici ? »", t: "« Elle commande aux automates, pas à moi. Je vends à tout le monde, sans courbettes. »" },
+            { k: "c", q: "« Tu sais ce qu’elle garde là-bas ? »", t: "« Elle garde ceux qui dorment. Mais les dormeurs ne m’achètent rien. »" }
+          ]
+        },
         /* les clients : des clins d’œil, et ce que le joueur a en poche */
-        { id: "k1", th: "clients", rang: 1, q: "« Tu as eu des clients bizarres, ces derniers temps ? »", t: "« Un client est passé avec une serviette autour du cou. Il m’a dit de ne pas paniquer. Je ne panique jamais. »" },
-        { id: "k2", th: "clients", rang: 1, q: "« Quelqu’un a cassé quelque chose, chez toi ? »", t: "« Un garçon en vert a cassé trois de mes pots pour regarder dedans. Il m’a laissé quelques sous. Il ne dit rien, il ramasse. »" },
-        { id: "k3", th: "clients", rang: 2, cond: { age: 3 }, q: "« On t’a déjà fait un drôle d’échange ? »", t: "« Un client a troqué une idole en or contre un sac de sable, au même poids. Il est parti en courant. Une grosse pierre roulait derrière lui. »" },
-        { id: "k4", th: "clients", rang: 2, q: "« Un gâteau a déjà traîné sur ton comptoir ? »", t: "« Un client a laissé un gâteau sur mon comptoir en jurant qu’il était vrai. Je ne l’ai pas goûté. »" },
-        { id: "k5", th: "clients", rang: 2, q: "« Tu as un habitué qui parle tout seul ? »", t: "« Un client répète toujours « c’est pas faux ». Il ne dit jamais à quoi. »" },
-        { id: "p1", th: "clients", rang: 0, cond: { has: "poudre_rouge" }, q: "« Ma poudre rouge, tu la veux ? »", t: "« Ta poudre rouge crépite. Pose-la loin de mes balances. Je ne rachète pas les comptoirs brûlés. »" },
-        { id: "p2", th: "clients", rang: 0, cond: { has: "anneau_lourd" }, q: "« Cet anneau, il vaut quelque chose ? »", t: "« Cet anneau tout simple. Ne le mets pas à ton doigt. Il pèse plus que son poids, et il connaît le chemin du retour. »" },
-        { id: "p3", th: "clients", rang: 0, cond: { has: "quart_coeur" }, q: "« Tu as déjà vu un cœur comme celui-là ? »", t: "« Un petit cœur rouge, en morceaux. J’en ai déjà vu un dans la poche d’un aventurier. Il en manquait toujours un. »" },
-        { id: "p4", th: "clients", rang: 0, cond: { has: "de_vingt" }, q: "« On joue, avec ce dé ? »", t: "« Un dé à vingt faces. Je ne joue pas contre. La première fois, il tombe toujours juste. »" },
-        { id: "p5", th: "clients", rang: 0, cond: { has: "fouet_cuir" }, q: "« Ce fouet te dérange ? »", t: "« Un fouet. Passe tes nuits ailleurs que chez moi. Mes chandelles ont peur. »" }
+        {
+          id: "k1", th: "clients", rang: 1,
+          stage: "Il regarde la route par-dessus ton épaule.",
+          q: "« Tu as eu des clients bizarres, ces derniers temps ? »",
+          t: "« Un client est passé avec une serviette autour du cou. Il m’a dit de ne pas paniquer. Je ne panique jamais. »",
+          choix: [
+            { k: "a", q: "« Il cherchait quelque chose ? »", t: "« Une tasse de thé et un guide. Je n’avais que du thé froid. Il est reparti vers les étoiles. »" },
+            { k: "b", q: "« Pourquoi une serviette ? »", t: "« Il prétendait que c’est l’outil le plus utile de tout l’univers. Mes balances disent le contraire. »" },
+            { k: "c", q: "« … »", t: "« Mes rouages ignorent la panique, mais pas l’humidité. »" }
+          ]
+        },
+        {
+          id: "k2", th: "clients", rang: 1,
+          stage: "Il balaie quelques tessons de terre cuite sur le coin de l’étal.",
+          q: "« Quelqu’un a cassé quelque chose, chez toi ? »",
+          t: "« Un garçon en vert a cassé trois de mes pots pour regarder dedans. Il m’a laissé quelques sous. Il ne dit rien, il ramasse. »",
+          choix: [
+            { k: "a", q: "« Il y avait quoi dans les pots ? »", t: "« Deux graines et de la poussière. Il a poussé un cri aigu et a foncé dans l’herbe. »" },
+            { k: "b", q: "« Il a tout remboursé ? »", t: "« Trois rubis verts. Ils ont le même poids que mes pièces de cuivre. »" },
+            { k: "c", q: "« Au moins, il payait sa vaisselle. »", t: "« C’est vrai. Mais balayer les tessons me prend du temps sur les comptes. »" }
+          ]
+        },
+        {
+          id: "k3", th: "clients", rang: 2, cond: { age: 3 },
+          stage: "Il soupèse un sac de toile grise.",
+          q: "« On t’a déjà fait un drôle d’échange ? »",
+          t: "« Un client a troqué une idole en or contre un sac de sable, au même poids. Il est parti en courant. Une grosse pierre roulait derrière lui. »",
+          choix: [
+            { k: "a", q: "« L’or était vrai ? »", t: "« Pur à dix-huit carats. Le sable pesait exactement pareil. Je n’ai rien remboursé. »" },
+            { k: "b", q: "« La pierre l’a écrasé ? »", t: "« Je ne regarde pas au-delà de la palissade. Mais il courait très vite avec son chapeau. »" },
+            { k: "c", q: "« Belle affaire pour toi. »", t: "« Une affaire est une affaire quand le poids est égal des deux côtés. »" }
+          ]
+        },
+        {
+          id: "k4", th: "clients", rang: 2,
+          stage: "Il renifle une boîte en fer blanc.",
+          q: "« Un gâteau a déjà traîné sur ton comptoir ? »",
+          t: "« Un client a laissé un gâteau sur mon comptoir en jurant qu’il était vrai. Je ne l’ai pas goûté. »",
+          choix: [
+            { k: "a", q: "« Il sentait bon ? »", t: "« La vanille et le métal. Je me méfie des promesses trop sucrées. »" },
+            { k: "b", q: "« C’était un mensonge ? »", t: "« Les balances ne mentent pas. Il pesait moins qu’une plume. J’ai jeté la boîte. »" },
+            { k: "c", q: "« Je ne goûte pas les promesses non plus. »", t: "« Tu as bien raison. Le sucre attire les fourmis, pas la fortune. »" }
+          ]
+        },
+        {
+          id: "k5", th: "clients", rang: 2,
+          stage: "Il secoue la tête d’un air las.",
+          q: "« Tu as un habitué qui parle tout seul ? »",
+          t: "« Un client répète toujours « c’est pas faux ». Il ne dit jamais à quoi. »",
+          choix: [
+            { k: "a", q: "« Tu lui as demandé pourquoi ? »", t: "« Dès que j’utilise un mot de trois syllabes, il me sort sa phrase. Le marchandage dure des heures. »" },
+            { k: "b", q: "« Il achète quelque chose au moins ? »", t: "« Une côtelette ou un bol de soupe. Puis il repart chercher un graal imaginaire. »" },
+            { k: "c", q: "« C’est pas faux. »", t: "« Toi aussi, tu t’y mets ? Parle droit ou va couper du bois. »" }
+          ]
+        },
+        {
+          id: "p1", th: "clients", rang: 0, cond: { has: "poudre_rouge" },
+          stage: "Il recule d’un pas et souffle sur la poussière.",
+          q: "« Ma poudre rouge, tu la veux ? »",
+          t: "« Ta poudre rouge crépite. Pose-la loin de mes balances. Je ne rachète pas les comptoirs brûlés. »",
+          choix: [
+            { k: "a", q: "« Ça sert pour les circuits et les signaux. »", t: "« Garde tes signaux pour tes machines. Mes balances fonctionnent au poids, pas à l’étincelle. »" },
+            { k: "b", q: "« Tu as peur du feu ? »", t: "« Le bois sec brûle vite. Et je n’ai pas l’intention de finir en cendres pour quelques grains rouges. »" },
+            { k: "c", q: "« Je la range dans ma poche. »", t: "« Merci. Mes balances te remercient aussi. »" }
+          ]
+        },
+        {
+          id: "p2", th: "clients", rang: 0, cond: { has: "anneau_lourd" },
+          stage: "Il plisse les yeux en regardant ta main.",
+          q: "« Cet anneau, il vaut quelque chose ? »",
+          t: "« Cet anneau tout simple. Ne le mets pas à ton doigt. Il pèse plus que son poids, et il connaît le chemin du retour. »",
+          choix: [
+            { k: "a", q: "« Il est en or massif ? »", t: "« L’or ne chuchote pas dans la tête. Cet anneau a un maître, et ce n’est pas toi. »" },
+            { k: "b", q: "« Tu ne veux pas l’acheter ? »", t: "« Je ne veux pas attirer d’ombres sous mon auvent. Jette-le dans une montagne si tu peux. »" },
+            { k: "c", q: "« Je le garde au fond de mon sac. »", t: "« Laisse-le bien au fond. Et n’écoute pas ce qu’il raconte. »" }
+          ]
+        },
+        {
+          id: "p3", th: "clients", rang: 0, cond: { has: "quart_coeur" },
+          stage: "Il effleure le morceau d’émail écarlate.",
+          q: "« Tu as déjà vu un cœur comme celui-là ? »",
+          t: "« Un petit cœur rouge, en morceaux. J’en ai déjà vu un dans la poche d’un aventurier. Il en manquait toujours un. »",
+          choix: [
+            { k: "a", q: "« Il en faut quatre pour le réparer ? »", t: "« Quatre morceaux, oui. Quand ils s’assemblent, on se sent plus solide sous l’armure. »" },
+            { k: "b", q: "« Tu as le reste ? »", t: "« Si je l’avais, je l’aurais déjà vendu à prix d’or. Cherche dans les coffres oubliés. »" },
+            { k: "c", q: "« C’est joli à regarder. »", t: "« Ça brille d’un éclat doux. Au moins, ça ne fait pas de bruit sur le plateau. »" }
+          ]
+        },
+        {
+          id: "p4", th: "clients", rang: 0, cond: { has: "de_vingt" },
+          stage: "Il fait rouler le dé à facettes sur le bois.",
+          q: "« On joue, avec ce dé ? »",
+          t: "« Un dé à vingt faces. Je ne joue pas contre. La première fois, il tombe toujours juste. »",
+          choix: [
+            { k: "a", q: "« Tu crains de perdre ? »", t: "« Le hasard truqué ne m’intéresse pas. Sur vingt faces, il y a dix-neuf façons de perdre son temps. »" },
+            { k: "b", q: "« C’est pour tester la chance. »", t: "« Les marchands ne comptent pas sur la chance. Ils comptent sur la tare et le poids. »" },
+            { k: "c", q: "« Un coup pour voir ? »", t: "« Non. Range ce dé avant qu’il ne fasse apparaître un dragon sous la pluie. »" }
+          ]
+        },
+        {
+          id: "p5", th: "clients", rang: 0, cond: { has: "fouet_cuir" },
+          stage: "Il repousse la lanière tressée du bout d’une règle.",
+          q: "« Ce fouet te dérange ? »",
+          t: "« Un fouet. Passe tes nuits ailleurs que chez moi. Mes chandelles ont peur. »",
+          choix: [
+            { k: "a", q: "« C’est pour repousser les bêtes de la nuit. »", t: "« Les bêtes ont des crocs, les chauves-souris aussi. Mes planches n’aiment pas les claquements. »" },
+            { k: "b", q: "« C’est du bon cuir tressé. »", t: "« Du cuir résistant, oui. Mais ça ne sert pas à peser des carottes. »" },
+            { k: "c", q: "« Je le range à ma ceinture. »", t: "« Garde-le attaché. Je tiens à mes vitrines et à mes bocaux. »" }
+          ]
+        }
       ]
     },
 

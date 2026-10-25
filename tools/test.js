@@ -3691,6 +3691,44 @@ test("Parler : sauvegarde sans perte, et un champ abîmé est remis à zéro san
   const E4 = createEngine({ now: () => T }); E4.load(JSON.stringify(o));
   assert.deepStrictEqual(E4.state.meta.troc, { vus: {}, dernier: null, refus: 0 });
 });
+test("Parler RPG : arbre de dialogue interactif à 3 choix", () => {
+  const E = trocOuvert(() => 0);
+  const r1 = E.troqueurParle("comptoir");
+  assert.ok(r1.ok && !r1.vide);
+  assert.strictEqual(r1.attenteChoix, true);
+  assert.ok(Array.isArray(r1.choix) && r1.choix.length === 3);
+  assert.deepStrictEqual(r1.choix.map((c) => c.k), ["a", "b", "c"]);
+
+  // Etat dernier en attente de réponse
+  const d1 = E.troqueurDernier();
+  assert.strictEqual(d1.rep, null);
+  assert.ok(d1.stage, "présence de didascalie");
+
+  // Choix invalide
+  assert.strictEqual(E.troqueurChoix("x").ok, false);
+
+  // Choix valide 'b'
+  const repB = E.troqueurChoix("b");
+  assert.strictEqual(repB.ok, true);
+  assert.strictEqual(repB.choix, "b");
+  assert.ok(repB.t && repB.q);
+
+  const d2 = E.troqueurDernier();
+  assert.strictEqual(d2.rep, "b");
+  assert.strictEqual(d2.q, repB.q);
+  assert.strictEqual(d2.t, repB.t);
+
+  // Persistance / sauvegarde avec choix
+  const E2 = createEngine({ now: () => T, rand: () => 0 });
+  E2.load(E.serialize());
+  const dSaved = E2.troqueurDernier();
+  assert.strictEqual(dSaved.rep, "b");
+  assert.strictEqual(dSaved.q, repB.q);
+
+  // E.troqueurFin() permet de revenir au menu
+  assert.strictEqual(E.troqueurFin().ok, true);
+  assert.strictEqual(E.troqueurDernier(), null);
+});
 
 console.log("Les fouilles : expéditions longues");
 const H = 3600 * 1000;

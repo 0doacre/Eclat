@@ -3762,28 +3762,79 @@
       const T = trocData();
       return (T.themes || []).map((th) => ({ id: th.id, n: th.n, dispo: (T.lignes || []).filter((l) => l.th === th.id && trocDispo(l)).length }));
     };
-    E.troqueurParle = function (th) {
+    E.troqueurParle = function (th, choixKey) {
       if (!E.comptoirOpen()) return { ok: false, why: "closed" };
       const T = trocData(), st = trocState();
       if (!(T.themes || []).some((x) => x.id === th)) return { ok: false, why: "theme" };
+
+      // Choix de réplique dans la scène en cours :
+      if (choixKey) {
+        if (!st.dernier || st.dernier.th !== th || !st.dernier.choix || st.dernier.rep) {
+          return { ok: false, why: "choix" };
+        }
+        const c = st.dernier.choix.find((x) => x.k === choixKey);
+        if (!c) return { ok: false, why: "choix" };
+        st.dernier.rep = choixKey;
+        st.dernier.q = c.q;
+        st.dernier.t = interpolate(c.t);
+        E.emit("troc", st.dernier);
+        E.emit("struct");
+        return { ok: true, id: st.dernier.id, th, rep: choixKey, choix: choixKey, q: c.q, t: st.dernier.t };
+      }
+
       const pool = (T.lignes || []).filter((l) => l.th === th && trocDispo(l));
       let out;
       if (pool.length) {
         const l = pool[Math.min(pool.length - 1, Math.floor(rand() * pool.length))];
         st.vus[l.id] = S.cycle || 1;
-        st.dernier = { id: l.id, th };
-        out = { ok: true, id: l.id, th, vide: false, q: l.q || "", t: interpolate(l.t) };
+        const initialT = interpolate(l.t);
+        const initialQ = l.q || (l.choix && l.choix[0] && l.choix[0].q) || "";
+        st.dernier = {
+          id: l.id,
+          th,
+          stage: l.stage || "",
+          q: initialQ,
+          t: initialT,
+          choix: l.choix || null,
+          rep: null
+        };
+        out = { ok: true, id: l.id, th, vide: false, attenteChoix: !!(l.choix && l.choix.length), stage: l.stage || "", q: initialQ, t: initialT, choix: l.choix || null };
       } else {
         const R = T.refus || [];
         const i = st.refus | 0;
         st.refus = i + 1;
-        st.dernier = { id: null, th, refus: i };
         const th0 = (T.themes || []).find((x) => x.id === th);
-        out = { ok: true, th, vide: true, q: (th0 && th0.q) || "", t: R.length ? interpolate(R[i % R.length]) : "" };
+        const q = (th0 && th0.q) || "";
+        const t = R.length ? interpolate(R[i % R.length]) : "";
+        const RS = T.refusScenes && T.refusScenes[th];
+        st.dernier = {
+          id: null,
+          th,
+          refus: i,
+          stage: (RS && RS.stage) || "",
+          q,
+          t,
+          choix: (RS && RS.choix) || null,
+          rep: null
+        };
+        out = { ok: true, th, vide: true, attenteChoix: !!(RS && RS.choix && RS.choix.length), refus: i, stage: (RS && RS.stage) || "", q, t, choix: (RS && RS.choix) || null };
       }
       E.emit("troc", out);
       E.emit("struct");
       return out;
+    };
+    E.troqueurChoix = function (k) {
+      const st = trocState();
+      if (!st || !st.dernier || !st.dernier.choix || st.dernier.rep) return { ok: false };
+      return E.troqueurParle(st.dernier.th, k);
+    };
+    E.troqueurFin = function () {
+      const st = trocState();
+      if (!st || !st.dernier) return { ok: false };
+      st.dernier = null;
+      E.emit("troc", null);
+      E.emit("struct");
+      return { ok: true };
     };
     /* la dernière parole, qui reste affichée tant qu’il n’en dit pas une autre */
     E.troqueurDernier = function () {
@@ -3792,11 +3843,32 @@
       const T = trocData();
       if (d.id) {
         const l = (T.lignes || []).find((x) => x.id === d.id);
-        return l ? { th: d.th, vide: false, q: l.q || "", t: interpolate(l.t) } : null;
+        if (!l) return null;
+        return {
+          id: l.id,
+          th: d.th,
+          vide: false,
+          q: d.q || l.q || "",
+          t: d.t || interpolate(l.t),
+          stage: l.stage || d.stage || "",
+          choix: l.choix || null,
+          rep: d.rep || null
+        };
       }
       const R = T.refus || [];
       const th0 = (T.themes || []).find((x) => x.id === d.th);
-      return R.length ? { th: d.th, vide: true, q: (th0 && th0.q) || "", t: interpolate(R[(d.refus | 0) % R.length]) } : null;
+      const RS = T.refusScenes && T.refusScenes[d.th];
+      return {
+        id: null,
+        th: d.th,
+        vide: true,
+        refus: d.refus | 0,
+        stage: d.stage || (RS && RS.stage) || "",
+        q: d.q || (th0 && th0.q) || "",
+        t: d.t || (R.length ? interpolate(R[(d.refus | 0) % R.length]) : ""),
+        choix: d.choix || (RS && RS.choix) || null,
+        rep: d.rep || null
+      };
     };
     E.troqueurDispo = () => E.troqueurThemes().reduce((a, x) => a + x.dispo, 0);
 
@@ -4650,7 +4722,15 @@
         const d = ok && t.dernier && typeof t.dernier === "object" ? t.dernier : null;
         o.meta.troc = {
           vus,
-          dernier: d && typeof d.th === "string" ? { id: typeof d.id === "string" ? d.id : null, th: d.th, refus: Math.max(0, Math.floor(Number(d.refus)) || 0) } : null,
+          dernier: d && typeof d.th === "string" ? {
+            id: typeof d.id === "string" ? d.id : null,
+            th: d.th,
+            refus: Math.max(0, Math.floor(Number(d.refus)) || 0),
+            rep: typeof d.rep === "string" ? d.rep : null,
+            q: typeof d.q === "string" ? d.q : "",
+            t: typeof d.t === "string" ? d.t : "",
+            stage: typeof d.stage === "string" ? d.stage : ""
+          } : null,
           refus: Math.max(0, Math.floor(ok ? Number(t.refus) : 0) || 0)
         };
       }

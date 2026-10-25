@@ -303,7 +303,7 @@ body[data-tab="cosmos"] #views, body[data-tab="cosmos"] #v-cosmos { background: 
 .btn, .btn.small, body.large-text .btn.small, .mini, .gis-b .mini,
 .gmiles, .pinb, .hx, .hmore, .bench-clear, .search-clear,
 .filters button, .subtabs button, [data-jt], [data-ct], [data-cvue], .dom-more, .exp-mini,
-.chip, .chipq, .icon-btn, .modal-x, .ab-main, .ab-x, .age-pill, .pin-make, .icon-act {
+.chip, .chipq, .icon-btn, .modal-x, .ab-main, .ab-x, .age-pill, .pin-make, .icon-act, .troc-rep {
   min-height: 44px; min-width: 44px;
 }
 .mini, .gis-b .mini, .icon-btn, .modal-x { height: auto; }
