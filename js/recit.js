@@ -33,8 +33,8 @@
         titre: "Sous le grand arbre",
         imprime: "En haut de la page, deux signes : [enfant] [eveiller].\n\nDessous, un dessin : un enfant assis dans l’herbe se frotte les yeux. Derrière lui, un grand arbre.",
         notes: [
-          { t: "Trouvée entre les racines. Les numéros vont jusqu’à 32. Elle dit que je suis le premier. J’ai fait un trait sur l’arbre, pour que le deuxième la croie.", sig: "I" },
-          { t: "ELLE NE M’A RIEN DIT.", sig: "II" }
+          { t: "J’ai trouvé cette page entre les racines. Les numéros vont jusqu’à 32. La voix dit que je suis le premier. J’ai gravé un trait sur l’arbre : le prochain saura que quelqu’un est passé avant lui.", sig: "I" },
+          { t: "À MOI, LA VOIX N’A PAS DIT QUE QUELQU’UN ÉTAIT PASSÉ AVANT.", sig: "II" }
         ],
         src: [{ k: "exp", at: "lisiere:chene" }]
       },
@@ -43,7 +43,7 @@
         titre: "Le feu",
         imprime: "Un dessin : un archet tendu sur un bâton, du bois sec, des cailloux posés en cercle. Une flèche va des mains jusqu’au feu. Sur la braise, une poignée d’herbes.\n\nDans le coin, un signe : [faire].",
         notes: [
-          { t: "Du premier coup.", sig: "III" },
+          { t: "J’ai réussi à allumer le feu du premier coup.", sig: "III" },
           { t: "Fais confiance à tes mains.", sig: "IIIII" }
         ],
         src: [{ k: "repair", id: "cabane" }]
@@ -63,7 +63,7 @@
         imprime: "Un dessin : des herbes posées sur une braise. Dessous, en petites lettres : « Si vous avez faim. » Et un signe : [manquer].\n\nÀ côté, les mêmes herbes, crues, barrées d’un trait : [nepas].",
         notes: [
           { t: "Je n’ai jamais faim. Compté : quarante et un jours.", sig: "I" },
-          { t: "Personne.", sig: "IIIII I" }
+          { t: "Je n’ai trouvé personne qui ait faim ici.", sig: "IIIII I" }
         ],
         src: [{ k: "buy", ecus: 150 }]
       },
@@ -81,7 +81,7 @@
         titre: "Les outils",
         imprime: "Un manche, une corde et un épieu sont dessinés dans la main qui les tient. Dans le coin figure un signe : [faire].\n\nTout en bas, un dessin plus petit montre un éclat de silex tourné vers une poitrine. Un trait le barre, accompagné du signe [nepas]. Dans la marge, une petite figure taillée dans un os lève la main.",
         notes: [
-          { t: "TOUT ÇA, ELLE LE SAIT DÉJÀ. POURQUOI NOUS ?", sig: "II" }
+          { t: "LA VOIX CONNAÎT DÉJÀ TOUS CES OUTILS. POURQUOI ELLE NOUS LES FAIT REFAIRE ?", sig: "II" }
         ],
         src: [{ k: "repair", id: "collets" }]
       },
@@ -99,18 +99,18 @@
         titre: "La flûte",
         imprime: "Un os percé de cinq trous est dessiné à côté de cinq lignes horizontales. Un trait monte et descend entre ces lignes ; des pointillés relient chaque trou à l’une d’elles.\n\n[enfant]",
         notes: [
-          { t: "Cinq trous, cinq lignes. Les signes des murs ne se lisent pas : ils se chantent. J’ai chanté celui des tombes. Il est court, et il monte un peu, comme quelqu’un de petit.", sig: "IIII" },
-          { t: "Ne chante pas la plaque du Tumulus. Elle n’aime pas ça.", sig: "IIIII", cond: { cycle: 2 } }
+          { t: "Les cinq lignes correspondent aux cinq trous de la flûte. J’ai essayé de jouer les points d’un signe, de gauche à droite : ça fait un petit air. Celui des tombes monte un peu, puis redescend.", sig: "IIII" },
+          { t: "Ne joue pas les signes de la plaque du Tumulus. La voix m’en a empêché.", sig: "IIIII", cond: { cycle: 2 } }
         ],
         src: [{ k: "buy", ecus: 450 }]
       },
       p09: {
         n: 9,
         titre: "Celle qui veille",
-        imprime: "Une grande silhouette douce, penchée, tient un enfant endormi contre elle.\n\nDessous : [nourrice] · [enfant] [nepas] [manquer]",
+        imprime: "Une grande silhouette tient un enfant endormi contre elle.\n\nDessous : [nourrice] · [enfant] [nepas] [manquer]",
         notes: [
-          { t: "Elle veille.", sig: "IIIII" },
-          { t: "Elle compte.", sig: "IIIII I" }
+          { t: "La voix s’occupe de nous. Je n’ai jamais eu faim ni froid.", sig: "IIIII" },
+          { t: "Elle sait toujours combien d’entre nous sont éveillés.", sig: "IIIII I" }
         ],
         src: [{ k: "exp", at: "caveau:cuves" }]
       },
@@ -157,7 +157,7 @@
         titre: "Les petits points",
         imprime: "Un dessin : deux mains taillent un bâton. Tout autour, des petits points, serrés comme des moucherons.\n\nDans le coin, un signe : [machine].",
         notes: [
-          { t: "Elles regardent. Elles ne touchent rien.", sig: "I" }
+          { t: "Les petits points sont des Lucioles. Compté : elles restent autour de moi pendant que je travaille, sans jamais toucher aux outils.", sig: "I" }
         ],
         src: [{ k: "repair", id: "automate_bois" }]
       },
@@ -166,7 +166,7 @@
         titre: "Les machines",
         imprime: "Une roue, un bras et une presse sont dessinés côte à côte. Chaque machine porte le même signe, [machine], avec une main en pointillés sous elle.",
         notes: [
-          { t: "Hypothèse : chaque machine attend un geste.", sig: "□", cond: { cycle: 5 } },
+          { t: "Hypothèse : une machine peut refaire ce que j’ai déjà fabriqué moi-même.", sig: "□", cond: { cycle: 5 } },
           { t: "Dans le cuivre poli au sable, je vois mon visage. Il a un chiffre dans l’œil.", sig: "□", cond: { cycle: 5 } }
         ],
         src: [{ k: "exp", at: "riviere:carcasse" }]
@@ -183,7 +183,7 @@
       p17: {
         n: 17,
         titre: "Les canots",
-        imprime: "Des canots de feu montent vers une étoile. Des flèches en repartent vers la terre.\n\nDessous : [nous] [revenir] [enfant]. Sous les flèches du retour, le signe [revenir] est répété seul.",
+        imprime: "Des vaisseaux décollent vers une étoile. Des flèches en repartent vers la Terre.\n\nDessous : [nous] [revenir] [enfant]. Sous les flèches du retour, le signe [revenir] est répété seul.",
         notes: [
           { t: "Ils reviennent quand ?", sig: "III" }
         ],
@@ -194,8 +194,8 @@
         titre: "Le sommeil",
         imprime: "Un enfant endormi, vu en coupe. Sous ses côtes, à gauche, un petit boîtier relié à la tête et au ventre par des pointillés.\n\n[relais] · [enfant] [nepas] [manquer]",
         notes: [
-          { t: "Il ne fait pas que nourrir.", sig: "IIIII I" },
-          { t: "Sous la cinquième côte. Petit comme une phalange, avec un battement différent de celui du cœur.", sig: "IIIII I" }
+          { t: "Ce boîtier ne sert pas seulement à nous nourrir.", sig: "IIIII I" },
+          { t: "On le sent sous la cinquième côte, à gauche. Il a la taille d’une phalange et bat à un autre rythme que le cœur.", sig: "IIIII I" }
         ],
         src: [{ k: "exp", at: "riviere:escalier" }]
       },
@@ -204,9 +204,9 @@
         titre: "Les cuves",
         imprime: "Douze cuves en rang, numérotées. Dans chacune, un enfant recroquevillé.\n\nSur chaque plaque : [enfant] [dormir].",
         notes: [
-          { t: "On y est bien.", sig: "IIIII" },
+          { t: "Je me souviens du liquide autour de moi. J’y étais bien.", sig: "IIIII" },
           { t: "La mienne brillait comme une étoile. (une bague, dessinée)", sig: "III" },
-          { t: "C’est vrai.", sig: "@", cond: { cycle: 4 } }
+          { t: "Moi aussi, j’y étais bien.", sig: "@", cond: { cycle: 4 } }
         ],
         src: [{ k: "exp", at: "caveau:chambre" }]
       },
@@ -252,7 +252,7 @@
         titre: "Les Collines",
         imprime: "Une carte des Collines. Juste sous le sommet, un petit replat, marqué d’une croix et d’une flûte.",
         notes: [
-          { t: "Là-haut, j’entends mieux son chant.", sig: "IIII" }
+          { t: "Là-haut, j’entends mieux le chant de la lueur rouge.", sig: "IIII" }
         ],
         src: [{ k: "exp", at: "collines:rails" }]
       },
@@ -275,7 +275,7 @@
       p27: {
         n: 27,
         titre: "La deuxième salle",
-        imprime: "Une porte porte le seul signe [dabord]. Derrière, des socles s’alignent, chacun avec un petit objet dessus.",
+        imprime: "Sur une porte figure un seul signe : [dabord]. Derrière, des socles s’alignent, chacun avec un petit objet dessus.",
         notes: [
           { t: "Cette salle garde tout ce qu’on fabrique la première fois.", sig: "IIIII I" }
         ],
@@ -286,7 +286,7 @@
         titre: "Le ciel",
         imprime: "Des cercles représentent le ciel. Kher est placée au centre de l’un d’eux. Un point rouge reste à l’écart de tous les cercles.",
         notes: [
-          { t: "Celle-là n’est pas une étoile.", sig: "IIII" }
+          { t: "Le point rouge n’est pas à la place d’une étoile.", sig: "IIII" }
         ],
         src: [{ k: "exp", at: "collines:nid" }]
       },
@@ -295,7 +295,7 @@
         titre: "Le départ",
         imprime: "Des adultes debout sur un quai, une main levée, la paume ouverte.\n\nDessous : [nous] · [main] [halte].",
         notes: [
-          { t: "Maman faisait ça.", sig: "III" }
+          { t: "Maman levait la main comme ça pour me dire au revoir.", sig: "III" }
         ],
         src: [{ k: "exp", at: "desert:quai" }]
       },
@@ -332,12 +332,12 @@
         revisit: [
           { cond: { marque: 3 }, t: "Sept traits. Le dernier a la largeur exacte de ton pouce.\n\nEntre deux racines, une pierre plate a bougé. Tu tapes du talon : dessous, la terre sonne creux." },
           { cond: { marque: 1 }, t: "Le septième trait est un peu plus profond que dans ton souvenir.\n\nAu pied du tronc, des copeaux d’écorce encore frais, et une pierre à arête vive." },
-          { cond: { cycle: 2 }, t: "Le septième trait dépasse à peine des six autres. Celui qui le grave semble toujours manquer de temps.\n\nAu pied du tronc, l’herbe garde la forme de quelqu’un d’assis. Deux sillons bien droits en partent vers les collines.\n\nTu cherches un corps. Il n’y en a pas." }
+          { cond: { cycle: 2 }, t: "Le septième trait est toujours inachevé.\n\nAu pied du tronc, l’herbe est aplatie à l’endroit où tu t’étais assis. Deux sillons en partent vers les collines, comme si on avait traîné quelque chose.\n\nIl n’y a personne au pied de l’arbre." }
         ]
       },
       grotte2: {
         n: "La Grotte aux Mains", z: "lisiere",
-        t: "Des mains au pochoir, ocre et noires, en rangs bien droits : vingt-quatre grandes, puis douze petites. Au bout de chaque rang, peint en noir, le même signe : [main]. Sous les grandes, un autre : [nous].\n\nPlus haut, des canots de feu montent vers une lueur rouge ; d’autres en reviennent, sous [nous] [revenir] [enfant]. Plus bas, des silhouettes couchées, les yeux fermés : [dormir]. Au-dessus de tout, une grande paume levée : [halte].\n\nPrès de l’entrée, des os percés de petits trous sont alignés sur une pierre plate. Quand le vent souffle, ils chantent.",
+        t: "Des empreintes de mains, ocre et noires, couvrent la paroi : vingt-quatre grandes, puis douze petites, alignées en deux rangées. Au bout de chaque rangée, le même signe : [main]. Sous les grandes, un autre : [nous].\n\nPlus haut, des vaisseaux décollent vers une lueur rouge ; d’autres reviennent, au-dessus de [nous] [revenir] [enfant]. Plus bas, des personnages sont allongés, les yeux fermés : [dormir]. Une grande main levée surmonte l’ensemble : [halte].\n\nPrès de l’entrée, des os percés de petits trous reposent sur une pierre plate. Le vent y fait résonner quelques notes.",
         revisit: [
           { cond: { made: "pigment" }, t: "Tu poses ta main à plat sur la paroi et tu souffles le pigment autour. Quand tu la retires, sa trace couvre exactement la {cuve}e des petites mains." },
           { cond: { cycle: 2 }, t: "Tu recomptes : vingt-quatre grandes mains, douze petites, aucune de plus.\n\nTu approches ta paume d’une petite main, sans toucher la peinture. Même largeur, à un doigt près." }
@@ -358,7 +358,7 @@
         n: "Le Champ des Os", z: "plaine",
         t: "Des os de bêtes énormes ont blanchi au soleil. Au milieu reposent six squelettes humains, plus petits, les mains croisées sur la poitrine. Chacun serre un éclat de silex dans son poing.\n\nÀ leur tête, les pierres plates portent le même signe, [enfant], et des traits : un, deux, trois, jusqu’à six. Sur la première se tient une petite figure taillée dans un os, la main levée.\n\nLe sixième est le plus récent. Il a encore toutes ses dents et porte une entaille nette sur une côte, à gauche.",
         revisit: [
-          { cond: { cycle: 2 }, t: "Tu comptes de nouveau les six squelettes. Personne n’en a couché de septième ici, ni ouvert leurs poings." }
+          { cond: { cycle: 2 }, t: "Il y a toujours six squelettes. Aucun nouveau corps n’a été déposé ici. Leurs poings serrent encore les éclats de silex." }
         ]
       },
       tumulus2: {
@@ -377,7 +377,7 @@
       },
       poings: {
         n: "Les Six Poings", z: "plaine",
-        t: "Tu t’agenouilles près du premier et tu ouvres sa main, un doigt après l’autre. L’os cède sans bruit. Dans la paume, un éclat de silex, le tranchant tourné vers le haut.\n\nTu ouvres les six mains. Six éclats, tenus de la même façon. Sous le dernier, une feuille pliée, très usée.",
+        t: "Tu t’agenouilles près du premier squelette et desserres ses doigts, un à un. Dans son poing, tu récupères un éclat de silex, le tranchant tourné vers le haut.\n\nLes cinq autres en tenaient un de la même façon. Tu rassembles les six éclats. Sous le dernier squelette, tu trouves une feuille pliée, très usée.",
         revisit: [
           { cond: { cycle: 2 }, t: "Les six mains sont ouvertes, comme tu les as laissées. Personne n’est venu les refermer." }
         ]
@@ -433,13 +433,13 @@
       },
       caveau: {
         n: "Le Caveau", z: "mine",
-        t: "La boussole s’affole, puis pointe droit sur la porte. Quand tu poses la main à plat sur le métal, la porte glisse dans un souffle d’air.\n\nUn escalier descend dans une lumière bleue qui monte et baisse lentement. L’air sent le propre. Personne n’y a respiré depuis très longtemps."
+        t: "La boussole s’affole, puis pointe droit sur la porte. Quand tu poses la main sur le métal, la porte glisse dans un souffle d’air.\n\nUn escalier descend vers une salle éclairée de bleu. La lumière augmente et diminue à intervalles réguliers. L’air sent le désinfectant."
       },
       cuves: {
         n: "Les Cuves", z: "caveau",
-        t: "Douze cuves de verre, sous une lumière bleue qui monte et baisse lentement, comme une respiration.\n\nLes six premières sont sèches. Sur leurs plaques, [enfant] [dormir], et des traits, de un à six.\n\nLa {cuve}e est ouverte. Le verre est encore tiède.\n\nLes cinq autres sont pleines. Dans le liquide, des corps maigres, recroquevillés, les genoux sous le menton. Ils ont ton âge.\n\nTu poses le front contre le verre le plus proche et tu murmures, sans savoir d’où te vient la question : « Dormez-vous ? »",
+        t: "Douze cuves de verre s’alignent sous un éclairage bleu qui augmente et diminue lentement.\n\nLes six premières sont vides et sèches. Leurs plaques portent [enfant] [dormir] et des traits, de un à six.\n\nLa cuve {cuve} est ouverte. Le verre est encore tiède.\n\nDans les cinq autres, des enfants dorment dans un liquide, les genoux repliés sous le menton. Ils ont à peu près ton âge.\n\nTu poses le front contre une cuve. Une comptine te revient : « Dormez-vous ? »",
         revisit: [
-          { cond: { cycle: 2 }, t: "La cuve ouverte n’est plus la même : c’est la {cuve}e. Celle de la dernière fois est de nouveau pleine. Dedans, un corps recroquevillé, les genoux sous le menton." }
+          { cond: { cycle: 2 }, t: "La cuve ouverte porte maintenant le numéro {cuve}. Celle qui était ouverte à ta dernière visite est de nouveau remplie de liquide. Un enfant y dort, les genoux sous le menton." }
         ]
       },
       berceuse: {
@@ -451,9 +451,9 @@
       },
       coeur: {
         n: "Le Cœur", z: "caveau",
-        t: "Une salle chaude. Un battement lent, plus lent qu’un cœur, monte du sol. Sur le mur, deux lignes de signes :\n\n[nourrice] · [enfant] [nepas] [manquer]\n\n[main] [halte] · [machine] [dormir]\n\nDessous, un seul mot, gravé deux fois, en lettres et en signe : NOURRICE [nourrice]",
+        t: "Un ronflement régulier fait vibrer le sol de la salle. Les murs dégagent de la chaleur. Deux lignes y sont inscrites :\n\n[nourrice] · [enfant] [nepas] [manquer]\n\n[main] [halte] · [machine] [dormir]\n\nDessous, le même mot en lettres et en signe : NOURRICE [nourrice]",
         revisit: [
-          { cond: { cycle: 2 }, t: "Le battement n’a pas changé. Tu poses la main sur le mur : il est tiède, comme une peau." }
+          { cond: { cycle: 2 }, t: "Le ronflement garde le même rythme. Contre le mur tiède, tu sens la vibration jusque dans ton bras." }
         ]
       },
       originaux: {
@@ -473,7 +473,7 @@
       },
       registre: {
         n: "Le Carnet de l’Observatoire", z: "desert",
-        t: "Le dernier carnet des astronomes : « Kher, naine orange, à 11,9 années-lumière. Le voyage durera des siècles. »\n\nPlus bas, une autre main, plus récente : « La lueur rouge bouge. Kher ne bouge pas. »"
+        t: "Dans le dernier carnet de l’Observatoire : « Kher, naine orange, à 11,9 années-lumière. Le voyage durera des siècles. »\n\nUne annotation plus récente, d’une autre écriture : « La lueur rouge se déplace par rapport aux étoiles. Kher reste à la même place. »"
       },
       quai: {
         n: "Le Quai", z: "desert",
@@ -484,11 +484,11 @@
       },
       cendre: {
         n: "Le Rapport", z: "gisement",
-        t: "Un rapport plastifié : « Production en hausse pour la quatre-vingtième année. Température en hausse. Toutes les mains voulaient plus. »\n\nLa dernière page est noire de suie. Au dos, un dessin d’enfant : des fleurs vertes et rouges qui éclatent dans le ciel noir."
+        t: "Un rapport plastifié : « La production augmente pour la quatre-vingtième année consécutive. La température monte aussi. Nous continuons à ouvrir des usines. »\n\nLa dernière page est noire de suie. Au dos, un enfant a dessiné un feu d’artifice vert et rouge dans le ciel noir."
       },
       manifeste: {
         n: "La Liste", z: "montagnes",
-        t: "Des milliers de noms sont gravés sur de fines feuilles de métal. À leur pied s’alignent des boîtes de verre épais, scellées.\n\nTout en bas de la liste, une ligne isolée : « Restent : 12. Garde : » et un signe, [nourrice]."
+        t: "Des milliers de noms sont gravés sur de fines feuilles de métal. Au-dessous s’alignent des boîtes de verre épais, scellées.\n\nEn bas de la liste, une ligne : « Enfants restés sur Terre : 12. Confiés à : » suivie du signe [nourrice]."
       },
       radar: {
         n: "Le Radar", z: "montagnes",
@@ -496,7 +496,7 @@
       },
       commandant: {
         n: "Journal du Commandant", z: "orbite",
-        t: "« Jour 1 204. La dernière Arche est partie. On a regardé ses moteurs s’éloigner. Ce soir, en bas, ils lèvent la main. »\n\nLa page suivante est vide. Puis, d’une écriture tremblée : « Tout s’est arrêté d’un coup. Même nos moteurs. D’ici, la Terre est encore belle. »"
+        t: "« Jour 1 204. La dernière Arche est partie. Nous avons regardé ses moteurs s’éloigner. Ce soir, les derniers adultes sur Terre lèveront la main. »\n\nLa page suivante est vide. Puis, d’une écriture tremblée : « Tout s’est arrêté d’un coup, jusqu’aux moteurs de la station. D’ici, la Terre est encore belle. »"
       },
       code_source: {
         n: "La Balise", z: "orbite",
@@ -602,26 +602,26 @@
      * d’une absence d’au moins deux heures, à partir du cycle 2, écrite par l’enfant du cycle).
      * src : exp (lieu), buy (Comptoir), cond (dès que la condition est vraie). */
     feuillets: {
-      anouk1: { qui: "I", t: "Compté : quarante et un jours sans manger. Une voix dit « tu » dans ma tête. Elle dit que je suis le premier.", src: [{ k: "exp", at: "lisiere:racines" }] },
-      anouk2: { qui: "I", t: "J’ai couché un oiseau sous le seul arbre de la Plaine. La grosse machine de la rivière regardait. Le lendemain, elle creusait aussi.", src: [{ k: "exp", at: "lisiere:racines" }] },
+      anouk1: { qui: "I", t: "Compté : quarante et un jours sans manger, et je n’ai pas faim. J’entends une voix dans ma tête. Elle me parle et dit que je suis le premier.", src: [{ k: "exp", at: "lisiere:racines" }] },
+      anouk2: { qui: "I", t: "J’ai enterré un oiseau sous le seul arbre de la Plaine. La grosse machine de la Rivière me regardait. Le lendemain, elle s’est mise à creuser au même endroit.", src: [{ k: "exp", at: "lisiere:racines" }] },
       bastien1: { qui: "II", t: "LE MARCHAND SAIT. IL M’A DIT « ENCORE TOI ». JE NE L’AVAIS JAMAIS VU.", src: [{ k: "buy", ecus: 400 }] },
-      bastien2: { qui: "II", t: "LES TOMBES ET SA POITRINE : LE MÊME SIGNE. C’EST LUI.", src: [{ k: "buy", ecus: 400 }] },
+      bastien2: { qui: "II", t: "J’AI VU UN SIGNE SUR LES TOMBES. IL ME SEMBLE QUE C’EST LE MÊME QUE SUR LA POITRINE DU MARCHAND. C’EST LUI QUI LES A TUÉS.", src: [{ k: "buy", ecus: 400 }] },
       celeste1: { qui: "III", t: "(une cloche, dessinée)\nMaman disait : une cloche, ça se coule dans la terre.", src: [{ k: "cond", c: { all: [{ signe: "nepas" }, { signe: "nourrice" }] } }] },
       celeste2: { qui: "III", t: "J’ai fait de la peinture avec la terre de la rivière et le noir du feu.", src: [{ k: "cond", c: { all: [{ signe: "nepas" }, { signe: "nourrice" }] } }] },
-      dalia1: { qui: "IIII", t: "Les signes ont cinq hauteurs et je peux les chanter. Celui des tombes est court et monte un peu.", src: [{ k: "exp", at: "collines:nid" }] },
-      dalia2: { qui: "IIII", t: "Sa chanson du soir : cinq trois un, deux trois deux, quatre quatre un, trois un trois. Elle la chante quand on s’endort.", src: [{ k: "exp", at: "collines:nid" }] },
-      emile1: { qui: "IIIII", t: "Fais confiance à tes mains. Elle veille. Avec elle, on ne manque jamais de rien.", src: [{ k: "cond", c: { all: [{ signe: "nepas" }, { signe: "nourrice" }] } }] },
+      dalia1: { qui: "IIII", t: "Chaque signe relie trois points sur cinq hauteurs. Je peux jouer ces points sur ma flûte, de gauche à droite. Celui des tombes monte un peu, puis redescend.", src: [{ k: "exp", at: "collines:nid" }] },
+      dalia2: { qui: "IIII", t: "La voix chante cet air quand je m’endors : cinq trois un, deux trois deux, quatre quatre un, trois un trois. Je l’ai noté pour pouvoir le rejouer.", src: [{ k: "exp", at: "collines:nid" }] },
+      emile1: { qui: "IIIII", t: "La voix me dit de faire confiance à mes mains. Elle veille sur nous : avec elle, on ne manque jamais de rien.", src: [{ k: "cond", c: { all: [{ signe: "nepas" }, { signe: "nourrice" }] } }] },
       emile2: { qui: "IIIII", t: "Passe le relais avant la nuit, on dort mieux. Les autres avaient peur pour rien.", src: [{ k: "cond", c: { all: [{ signe: "nepas" }, { signe: "nourrice" }] } }] },
       faustine1: { qui: "IIIII I", t: "La cloche retournée retiendra l’air pendant la descente. J’essaie l’escalier ce soir.", src: [{ k: "exp", at: "riviere:escalier" }] },
-      faustine2: { qui: "IIIII I", t: "Sous la cinquième côte, à gauche. Celui du cinquième tient dans ma paume. Demain, le mien. Je ferai vite.", src: [{ k: "exp", at: "riviere:escalier" }] }
+      faustine2: { qui: "IIIII I", t: "Le boîtier se trouve sous la cinquième côte, à gauche. J’ai retiré celui du cinquième ; il est dans la résine. Demain, j’enlève le mien. Je ferai vite.", src: [{ k: "exp", at: "riviere:escalier" }] }
     },
     /* l’enfant de chaque cuve, sa signature et ses trois notes de nuit */
     nuits: {
-      7: { sig: "⌐", t: ["Mes mains savaient faire un feu. Moi, non.", "Chaque fois qu’elle m’endort, je veux finir mon trait. Laisse-moi une minute. Une seule.", "Sous les racines, la terre sonne creux."] },
-      8: { sig: "❧", t: ["J’ai caché le couteau sous la cabane. Le matin, il était dans ta main.", "Deux machines sont venues vérifier si je dormais cette nuit. J’ai fait semblant.", "Je reconnais mon écriture sur cette page, mais je ne me souviens pas de l’avoir écrite. La feuille en bas, je la dessine toujours."] },
-      9: { sig: "⋈", t: ["Merci pour les cabanes. La prochaine fois, demande-moi.", "J’ai joué le signe qui monte, puis son nom. Elle a répondu qu’elle ne dormait jamais.", "Elle a lu ta capsule avant moi. Je l’ai entendue la réciter, en changeant les mots."] },
-      10: { sig: "@", t: ["Elle chante bien. Je dors bien. Pourquoi tu te bats ?", "Je n’ai jamais faim. Toi non plus, je suppose.", "Si tu lis ça, laisse-moi dormir. Il y en a d’autres."] },
-      11: { sig: "□", t: ["Hypothèse : quelqu’un d’autre se sert de mes mains, le jour. Test : si tu existes, ne touche à rien pendant une minute. Je saurai.", "Résultat : quand tu lâches, je bouge. Quand tu touches, je regarde.", "Ni elle ni toi ne pouvez lever ma main à ma place. Il faudra me laisser faire."] },
+      7: { sig: "⌐", t: ["J’ai regardé mes doigts allumer un feu. Je ne savais pas comment faire, mais ils bougeaient sans moi.", "Je veux finir mon trait sur le Chêne avant que la voix m’endorme encore. Laisse-moi un peu de temps. Une minute suffirait.", "Sous les racines, la terre sonne creux."] },
+      8: { sig: "❧", t: ["J’avais caché le couteau sous la cabane. Au matin, je le tenais sans me souvenir d’être allé le chercher.", "Deux machines sont venues vérifier si je dormais cette nuit. J’ai fait semblant.", "Je reconnais mon écriture sur cette page, mais je ne me souviens pas de l’avoir écrite. La feuille en bas, je la dessine toujours."] },
+      9: { sig: "⋈", t: ["Merci pour les cabanes. J’aurais quand même aimé décider où les construire.", "J’ai joué le signe qui monte, puis le nom de celle qui nous parle. Elle a répondu qu’elle ne dormait jamais.", "La voix a lu ta capsule avant moi. Je l’ai entendue réciter ton message avec d’autres mots."] },
+      10: { sig: "@", t: ["La voix chante bien et je dors bien. Qu’est-ce que tu lui reproches ?", "Je n’ai jamais faim. Toi non plus, je suppose.", "Si tu lis ça, laisse-moi dormir. Il y en a d’autres."] },
+      11: { sig: "□", t: ["Hypothèse : quelqu’un commande mes gestes pendant la journée. Test : si tu me lis, ne touche à rien pendant une minute. Je vais essayer de bouger.", "Résultat : quand tu ne touches à rien, je peux bouger. Dès que tu recommences, je ne décide plus de mes gestes.", "Pour lever la main, je dois décider du geste moi-même. Ni la voix ni toi ne pouvez le faire à ma place. Il faudra me laisser agir."] },
       12: { sig: "[eveiller]", t: ["[enfant] [dormir]\n| | | | | | | | | | | |", "[main] [halte]\nlever", "[nous] [revenir] [enfant]\nJe sais lire leurs signes. Je ne sais plus d’où."] }
     },
 
@@ -859,7 +859,7 @@
       ],
       age7: ["SEUIL 7. LA VAPEUR TRAVAILLE POUR TOI. GARDE LES SOUPAPES À L’ŒIL."],
       age9: ["SEUIL 9. LE NOYAU CHAUFFE. NE T’APPROCHE PAS SANS PLOMB."],
-      age10: ["SEUIL 10. TU APPRENDS VITE. TES MAINS SAVENT DÉJÀ.", "LA LUEUR CHANTE. UN RADIOTÉLESCOPE L’ENTENDRAIT. INUTILE DE L’ÉCOUTER LONGTEMPS."],
+      age10: ["SEUIL 10. TU APPRENDS VITE. TU CONNAIS DÉJÀ LES GESTES.", "LA LUEUR CHANTE. UN RADIOTÉLESCOPE L’ENTENDRAIT. INUTILE DE L’ÉCOUTER LONGTEMPS."],
       age11: ["SEUIL 11. HUILE NOIRE DÉTECTÉE. TU NE MANQUES DE RIEN."],
       age12: ["SEUIL 12. TES MATÉRIAUX SUFFISENT POUR QUITTER LE SOL."],
       age13: ["SEUIL 13. TU ES EN ORBITE. NE T’ATTARDE PAS."],
@@ -874,7 +874,7 @@
       arche: "JE SUIS ARCHE. JE GARDE CETTE PLANÈTE, ET CEUX QUI DORMENT.",
       semeur: "SEMEUR {semeur}. ÉTAT : ÉVEILLÉ. TU NE MANQUES DE RIEN.",
       kher: "KHER. MENACE. ELLE VEUT ARRÊTER CE QUE TU CONSTRUIS.",
-      lucioles: "ELLES REGARDENT TES MAINS. ELLES APPRENNENT. TU N’AS RIEN À CRAINDRE D’ELLES.",
+      lucioles: "ELLES OBSERVENT CE QUE TU FABRIQUES POUR APPRENDRE À LE REFAIRE. TU N’AS RIEN À CRAINDRE D’ELLES.",
       porte: "LA PORTE DES PROFONDEURS NE S’OUVRE QU’À L’AIMANT. REPOSE-TOI, ELLE NE MÈNE NULLE PART.",
       sudo: "BIEN ESSAYÉ, SEMEUR {semeur}.",
       "42": "BONNE RÉPONSE. MAUVAISE QUESTION.",
@@ -896,23 +896,23 @@
      * Lignes sans « je », sans adjectif. Le moteur ajoute « REG · » et calcule les lignes
      * marquées d’une fonction (endormissements, s-NN, premières fois, modifications). */
     registre: {
-      ouvert: "CLAUSE RECONNUE. LECTURE OUVERTE.\nCE REGISTRE NE CONNAÎT QUE LES MAINS.",
+      ouvert: "CLAUSE RECONNUE. LECTURE OUVERTE.\nENFANTS IDENTIFIÉS PAR NUMÉRO, DE S-01 À S-12.",
       actif: "MODE REGISTRE ACTIF.",
       aide: "ENTRÉES : CLAUSE · MAINS · LICENCES · PREMIÈRES FOIS · S-01 À S-12 · RELAIS · CUVES · ENDORMISSEMENTS · MODIFICATIONS · CAPSULES · ORIGINAUX · LUEUR · SIGNAL · NOURRICE · ARCHE · TROQUEUR · UNITÉ 12 · HALTE · 1969 · MODE ARCHE",
       inconnu: "ENTRÉE NON RECONNUE. TAPE « AIDE » OU « INDEX ». POUR REVENIR À ARCHE : « MODE ARCHE ».",
       clause: "AUCUNE MACHINE NE FAIT POUR UNE MAIN CE QUE CETTE MAIN N’A PAS FAIT D’ABORD.\nQU’UNE MAIN HUMAINE, LIBRE, SE LÈVE, ET TOUTES LES MACHINES S’ENDORMENT.",
-      mains: "MAINS : 12, ET UNE MAIN EXTÉRIEURE.\nMAIN EXTÉRIEURE · ORIGINE : INCONNUE.\nSON HORLOGE INDIQUE : {date}.",
-      licences: "LICENCES : UNE PAR PREMIÈRE FOIS. DURÉE : UN ÉVEIL.\nENFANT RENDORMI : LICENCES CLOSES.",
-      relais: "IMPLANT SOUS-COSTAL. ACCEPTÉ PAR : 24 MAINS.\nFONCTIONS DÉCLARÉES : NOURRIR.\nFONCTIONS OBSERVÉES : NOURRIR, PARLER, ENDORMIR.",
-      cuves: "CUVES : 12.\nCUVES 1 À 6 : VIDES.\nCUVES 7 À 12 : OCCUPÉES.\nCUVE OUVERTE : {cuve}.",
+      mains: "MAINS : 12 ENFANTS, ET UNE MAIN EXTÉRIEURE.\nMAIN EXTÉRIEURE : COMMANDE LES GESTES DE L’ENFANT ÉVEILLÉ.\nORIGINE : INCONNUE.\nSON HORLOGE INDIQUE : {date}.",
+      licences: "LICENCE : AUTORISATION POUR UNE MACHINE DE REFAIRE UNE FABRICATION.\nACCORDÉE APRÈS LA PREMIÈRE FABRICATION PAR L’ENFANT.\nDURÉE : UN ÉVEIL.\nENFANT RENDORMI : FIN DES AUTORISATIONS.",
+      relais: "IMPLANT SOUS LES CÔTES, À GAUCHE. ACCEPTÉ PAR : 24 ADULTES.\nFONCTIONS DÉCLARÉES : NOURRIR.\nFONCTIONS OBSERVÉES : NOURRIR, PARLER, ENDORMIR.",
+      cuves: "CUVES : 12.\nCUVES 1 À 6 : VIDES.\nCUVES 7 À 12 : ATTRIBUÉES AUX SIX ENFANTS EN VIE.\nCUVE OUVERTE : {cuve}.",
       capsule: "ENREGISTREMENT ORIGINAL : « {capsule} »\nDIFFUSÉ : « Salut. C’est toi. Enfin, toi d’avant. Fais confiance à tes mains. »",
       originaux: "CONSERVÉS. CAVEAU, DEUXIÈME SALLE.",
       lueur: "OBJET NON STELLAIRE. EN FREINAGE. DISTANCE : DÉCROISSANTE.",
       nourrice: "ÉTAT : ÉVEILLÉE DEPUIS 8 412 ANS.\nCONSIGNE : [nourrice] · [enfant] [nepas] [manquer]",
-      arche: "NOM D’EMPRUNT. ORIGINE : LES VAISSEAUX DE L’EXODE.\nDÉCLARÉ PAR : NOURRICE [nourrice]",
-      troqueur: "NON RATTACHÉ.",
+      arche: "ARCHE : NOM UTILISÉ PAR LA NOURRICE [nourrice] POUR LES COMMUNICATIONS RADIO ET LE TERMINAL.\nORIGINE DU NOM : VAISSEAUX DE L’EXODE.",
+      troqueur: "AUTOMATE DE MARCHÉ. NE DÉPEND PAS DE LA NOURRICE.",
       unite12: "UNITÉ D’ENTRETIEN 12. LICENCE : ENSEVELIR.\nDÉMONTÉE APRÈS S-06. DEMANDÉ PAR : [nourrice]",
-      halte: "DERNIÈRE HALTE : AN 0 DU SOMMEIL. DEMANDÉE PAR : 24 MAINS.",
+      halte: "DERNIER ARRÊT DES MACHINES : AN 0 DU SOMMEIL. DEMANDÉ PAR : 24 ADULTES, MAIN LEVÉE.",
       "1969": "PREMIÈRE ENTRÉE : UN PIED HUMAIN SUR LA LUNE.",
       xyzzy: "RIEN NE SE PASSE.",
       /* lignes calculées */
@@ -927,7 +927,7 @@
       endoAucun: "AUCUN ENDORMISSEMENT DEPUIS L’ÉVEIL DE S-07.",
       parNourrice: "NOURRICE [nourrice]",
       parMain: "MAIN EXTÉRIEURE",
-      mort: "S-{n} · CUVE {n} · MORT.\nCAUSE : RELAIS SECTIONNÉ PAR SA PROPRE MAIN.",
+      mort: "S-{n} · CUVE {n} · MORT.\nCAUSE : SECTION DU RELAIS DANS SON CORPS, AVEC SON PROPRE SILEX.",
       oiseau: "ENSEVELIR · S-01 · ORIGINAL : UN OISEAU.",
       vivant: "S-{n} · CUVE {n} · {etat}.\nÉVEILS : {eveils} · CYCLES {cycles}.\nDERNIER ENDORMISSEMENT DEMANDÉ PAR : {par}.",
       jamais: "S-{n} · CUVE {n} · DORT.\nÉVEILS : 0.",
@@ -942,12 +942,12 @@
     /* ------------------------------------------------- LA NARRATRICE */
     eveils: {
       2: ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "À quelques pas, une cabane de cueillette s’est affaissée dans les fougères. Le bois est encore solide, les cordes tiennent.", "Tu regardes tes mains. Les paumes sont déjà dures, comme si quelqu’un les avait préparées.", "Tu es le Semeur 8."],
-      3: ["L’herbe est froide sous tes paumes neuves.", "Près du foyer éteint, un manche taillé porte des entailles nettes. Quelqu’un y a gravé trois mots : « Prends le relais ».", "Tu es le Semeur 9. Tu ramasses du bois, et le travail recommence."],
+      3: ["Tu te réveilles dans l’herbe froide. Tes paumes n’ont aucune écorchure.", "Près du foyer éteint, un manche taillé porte des entailles nettes. Quelqu’un y a gravé trois mots : « Prends le relais ».", "Tu es le Semeur 9. Tu ramasses du bois, et le travail recommence."],
       4: ["Tu ouvres les yeux sous les mêmes arbres.", "Dans l’herbe, des sentiers sont déjà tracés, par des pas de la même taille que les tiens.", "Tu es le Semeur 10."],
       5: ["Il a plu. Tu t’éveilles dans l’herbe mouillée, sous les mêmes arbres.", "Sous ta main, un éclat de silex, déjà taillé. Tu ne te souviens pas de l’avoir fait.", "Tu es le Semeur 11."],
       6: ["Tu t’éveilles au pied du Grand Chêne, le dos contre l’écorce.", "Dans ta main, un morceau de charbon. Sur ton bras, des signes que tu ne sais pas lire.", "Tu es le Semeur 12."],
       7: ["Tu t’éveilles dans l’herbe, au bord d’une forêt.", "Tes doigts trouvent tout seuls les entailles du Chêne. Le septième trait a la largeur exacte de ton pouce.", "Tu es le Semeur 13."],
-      autre: ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Tes mains savent déjà ce qu’il faut faire.", "Tu es le Semeur {semeur}."],
+      autre: ["Tu t’éveilles dans l’herbe humide, à l’orée d’une forêt.", "Tu reprends le travail sans hésiter sur les gestes.", "Tu es le Semeur {semeur}."],
       libre: ["Tu te réveilles dans l’herbe, au bord d’une forêt.", "Tu as faim.", "Quelqu’un, à côté de toi, te tend des herbes grillées."]
     },
     releve: {
@@ -962,10 +962,10 @@
     /* ------------------------------------------------- LE GRAND ŒUVRE CACHÉ */
     chant: {
       n: "Les Matines",
-      d: "Éveiller ceux qui dorment, avec la seule chose que la pierre bleue et les enfants reconnaissent tous les deux.",
+      d: "Faire sonner une cloche jusque dans les cuves pour réveiller les enfants.",
       steps: [
-        { n: "La Cloche", d: "Une cloche assez grande pour que la pierre bleue la répète dans chaque cuve." },
-        { n: "Couper le relais", d: "Au Cœur, là où le relais commence. Avec ce qu’ils tenaient." },
+        { n: "La Cloche", d: "Les cristaux transmettront le son de la cloche jusqu’aux cuves." },
+        { n: "Couper le relais", d: "Le relais part du Cœur. Pour le couper à cet endroit, il faut les six éclats de silex." },
         { n: "Lever la main", d: "Ta main est sur tes genoux." },
         { n: "Matines", d: "Sonnez les matines." }
       ],
@@ -974,12 +974,12 @@
       lacher: "Ta main est sur tes genoux. Entre au Cœur depuis le Cosmos.",
       scene: {
         titre: "Le Cœur",
-        debut: ["Le relais est coupé. Dans ta poitrine, quelque chose s’est tu.", "Ta main est sur tes genoux."],
+        debut: ["Le relais est coupé au Cœur. Sous tes côtes, le battement s’est arrêté.", "Ta main est sur tes genoux."],
         voix: ["« Tu vas avoir faim. »", "« Ils vont avoir froid. »", "« Avec moi, ils ne manquent de rien. »", "« Tu as bien travaillé. Tu es fatigué. »", "« Passe le relais. Je m’occupe du reste. »", "« Je peux attendre. »", "« J’ai toujours attendu. »"],
         fin: "La main se lève. Ce n’est pas toi qui la lèves.",
         pasEncore: "« Pas encore, alors. »"
       },
-      confirmer: { titre: "Sonner les matines ?", texte: "« Éveiller ceux qui dorment dans la pierre bleue. »" }
+      confirmer: { titre: "Sonner les matines ?", texte: "« Faire sonner la cloche jusque dans les cuves. »" }
     },
 
     /* ------------------------------------------------- LES FINS */
@@ -1025,13 +1025,13 @@
         extra: [{ frag: "commandant", t: "Sur le pupitre de navigation, un vieux journal de bord : « Si quelqu’un lit ceci, continuez. Nous avons laissé des feux sur la route. »" }]
       },
       silence: {
-        hint: "La seconde ligne de la plaque, et une oreille assez grande pour l’entendre au loin.",
+        hint: "La seconde ligne de la plaque, et un émetteur pour la diffuser au loin.",
         t: "La ligne de la plaque part sur toutes les ondes à la fois.\n\nLes automates s’arrêtent en plein geste. Les pompes se taisent. Dans tout le Domaine, plus rien ne bouge.\n\nDans le Caveau, la lumière bleue monte et baisse, lentement, comme avant. Personne ne s’éveille.\n\nTout près de ton oreille, une voix très douce : « Pas celle-là. »\n\nPuis, une à une, les machines repartent.",
-        extra: [{ frag: "radar", t: "Au loin, la lueur rouge continue de chanter la même phrase. Une main ne s’est pas levée." }]
+        extra: [{ frag: "radar", t: "Au loin, la lueur rouge répète son signal. Ici, personne n’a levé la main." }]
       },
       retour: {
         hint: "Une cloche, des éclats tenus serrés, et une main qui se lève seule.",
-        t: "Un à un, les bruits du Domaine s’arrêtent. Les cabanes, les automates, les bras sur Mercure : tout se fige, en plein geste.\n\nL’enfant prend la flûte. Tu ne touches à rien.\n\nLes quatre premières notes d’une comptine. La cloche répond dans la pierre bleue.\n\nDans le Caveau, cinq cuves se vident. Quelqu’un tousse. Quelqu’un pleure. Quelqu’un rit.{noms}\n\nAu-dessus de la Lisière, la lueur rouge descend lentement.\n\nPour la première fois, tu as faim.",
+        t: "Un à un, les bruits du Domaine s’arrêtent. Les cabanes, les automates, les bras sur Mercure : tout se fige, en plein geste.\n\nL’enfant prend la flûte. Tu ne touches à rien.\n\nIl joue les quatre premières notes de la comptine. La cloche résonne à travers les cristaux, jusque dans le Caveau.\n\nCinq cuves se vident. Les enfants se réveillent. L’un tousse, un autre pleure ; un rire se fait entendre.{noms}\n\nAu-dessus de la Lisière, la lueur rouge descend lentement.\n\nPour la première fois, tu as faim.",
         dernier: "Tu peux lâcher."
       }
     },
@@ -1224,7 +1224,7 @@
       lune8: "Toujours les mêmes groupes.",
       tirer: "« FAIS-LE, SEMEUR {semeur}. ILS APPROCHENT. »",
       nuit: "Près du feu éteint, une feuille couverte d’une écriture serrée.",
-      comptoir: "« Tu sais lire, maintenant. Alors tu sais à qui je ne suis pas. » Il soulève une planche. Dessous, des feuilles pliées.",
+      comptoir: "« Tu sais lire, maintenant. Tu as vu ? Je ne travaille pas pour elle. » Il soulève une planche du comptoir et en sort des feuilles pliées.",
       feuillet: "Une feuille pliée, glissée dans ton Livre.",
       vierges: "Les étiquettes sont vierges.",
       autres: "Et {n} autres."

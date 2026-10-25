@@ -102,6 +102,28 @@ une question peut convenir aussi bien qu’une formule brève. Vérifier ce qu�
   peuvent être des indices. Vérifier les documents associés avant de les changer, sans livrer
   prématurément leur interprétation. Les éléments du coffre restent dans le coffre.
 
+## Comprendre le récit au fil des découvertes
+
+Le mystère porte sur les événements, les intentions et les liens entre les indices. La syntaxe
+et le vocabulaire doivent permettre de comprendre chaque document dès sa lecture. Une
+découverte peut répondre à une question ; elle n’a pas à en ouvrir systématiquement une autre.
+Après plusieurs découvertes, le joueur doit pouvoir formuler ce qu’il a appris.
+
+- Nommer l’objet ou l’interlocuteur quand un pronom prête à confusion. « Elle », « celui-là »,
+  « le cinquième » ne dispensent pas d’établir de qui ou de quoi on parle.
+- Réserver les images récurrentes à leur fonction précise. Les mains peuvent être un dessin,
+  un geste observé ou un indice ; elles ne remplacent pas partout les personnes, le travail,
+  les souvenirs ou les décisions.
+- Un personnage peut se tromper ou dissimuler un fait. Sa phrase doit rester compréhensible,
+  et d’autres éléments du jeu doivent permettre de vérifier ce qu’il affirme.
+- Un document technique peut expliquer son vocabulaire. Une voix sèche n’impose ni jargon
+  opaque ni phrases grammaticalement incomplètes.
+- Ne pas transformer la relecture en résumé de l’intrigue. Conserver les découvertes et leur
+  ordre d’accès ; rendre leurs apports lisibles à l’endroit où le joueur les trouve.
+
+La passe consacrée au récit est présentée sans révélations dans `docs/RECIT-PASSE-LANGUE.md`.
+Son audit détaillé reste dans `docs/coffre/AUDIT-LANGUE.md`.
+
 | Texte | Version retenue |
 |---|---|
 | Intro | Tu te réveilles dans l’herbe, au bord d’une forêt. Tu ne te souviens de rien, même pas de ton nom. / Tu regardes autour de toi. Tu ramasses un morceau de bois par terre et commences à l’écorcer. / Un sourire naît au coin de tes lèvres : oui, ça, tu t’en souviens. |

@@ -192,7 +192,8 @@ mains croisées sur la poitrine, le silex laissé au poing. La Nourrice l’a fa
 ### Les mensonges de la narratrice (liste fermée, à tenir)
 1. « Demain, quelqu’un d’autre ouvrira les yeux ici. » (Le même reviendra ; celui-ci va dormir.)
 2. « Tes mains lui auront tout appris. » (C’est elle qui garde et souffle.)
-3. « D’autres mains, avant les tiennes » (réminiscences de `D.GUIDE`). (Au-dessus, pas avant.)
+3. Les souvenirs présentés comme antérieurs au réveil (réminiscences de `D.GUIDE`).
+   Leur origine est masquée : la voix les fournit, ils ne prouvent pas une vie antérieure.
 4. « Quelque part au fond de ta tête, une voix sans timbre dit : « Seuil 1. » » (C’est elle.)
 5. « Tu es le Semeur 8. » Vrai compte, fausse idée : le Semeur 13 est le 7 de nouveau.
 6. Le message de la capsule temporelle, qu’elle remplace par le sien (SECRETS, « Le message »).
@@ -420,8 +421,9 @@ le relais veut enfin dire ce qu’il dit : un autre prend le travail pendant que
 ## 17. Écrire ce récit (en plus de STYLE.md)
 
 - **Court.** Un fragment : 3 à 6 phrases. Une note manuscrite : 1 à 3 phrases. Une réplique : une ligne.
-- **Un détail par texte qui ne colle pas.** Le joueur doit sortir de chaque lecture avec une
-  question, pas une réponse. Jamais la conclusion dans le texte.
+- **Un apport identifiable par texte.** Le joueur comprend ce qui est décrit et peut en
+  retenir un fait. Une découverte peut répondre à une question. Les liens entre ces faits,
+  les intentions de la Nourrice et l’origine du joueur restent à reconstituer.
 - **Le thriller tient au doute**, pas aux adjectifs. Pas de « mystérieux », « étrange »,
   « sinistre ». Un sillon dans l’herbe fait plus peur.
 - **La narratrice est douce.** Plus elle est douce, plus elle inquiète. Jamais menaçante en clair.
@@ -432,6 +434,22 @@ le relais veut enfin dire ce qu’il dit : un autre prend le travail pendant que
 - Ne jamais genrer le Semeur. Ne jamais nommer la Nourrice avant qu’on ait lu son signe, sauf
   dans les deux pierres de Rosette prévues (le Cœur, le Registre).
 - Les enfants ne savent pas leur nom ; ils ne le découvrent qu’avec le joueur.
+
+### Précision éditoriale après le retour de l’auteur
+
+Le retour porte sur une compréhension qui ne progresse pas malgré plusieurs parties terminées.
+Les règles de brièveté ci-dessus sont des repères, pas des quotas de phrases. Elles ne doivent
+pas produire des notes elliptiques ni imposer un détail inexplicable dans chaque scène.
+`docs/STYLE.md`, section « Comprendre le récit au fil des découvertes », prime pour la langue.
+
+La main reste un terme de la Clause et du Registre, un motif dessiné et un geste réel. Dans
+la prose courante, nommer les enfants, les adultes, la fabrication ou la voix quand c’est cela
+qui est décrit. Au Registre, définir ce que désignent « main extérieure » et « licence » :
+l’accès à cette archive doit permettre de relier les indices, pas ajouter un vocabulaire à deviner.
+
+Les tableaux et annexes décrivent les faits et les chemins d’indices. Leurs citations
+historiques ne sont pas toutes les formulations affichées : `js/recit.js` et `js/data.js` portent
+les textes actuels ; `TEXTES.md` en donne des échantillons actualisés.
 
 ---
 

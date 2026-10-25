@@ -2746,7 +2746,7 @@ test("terminal : ouverture de la Clause et bascule en mode Registre", () => {
   assert.strictEqual(E.state.intu, initIntu + 2);
   assert.ok(res[0].startsWith("REG > "));
   assert.ok(res.some((l) => l.includes("CLAUSE RECONNUE")));
-  assert.ok(res.some((l) => l.includes("CE REGISTRE NE CONNAÎT QUE LES MAINS")));
+  assert.ok(res.some((l) => l.includes("ENFANTS IDENTIFIÉS PAR NUMÉRO")));
 });
 
 test("terminal : navigation entre modes et entrées Registre", () => {
@@ -2775,7 +2775,7 @@ test("terminal : semeurs S-01 à S-12 et rotation selon les cycles", () => {
   // S-01 est mort, relais sectionné, sépulture avec oiseau
   const s01 = E.terminal("s-01");
   assert.ok(s01.some((l) => l.includes("MORT")));
-  assert.ok(s01.some((l) => l.includes("RELAIS SECTIONNÉ")));
+  assert.ok(s01.some((l) => l.includes("SECTION DU RELAIS DANS SON CORPS")));
   assert.ok(s01.some((l) => l.includes("UN OISEAU")));
   // S-07 au cycle 1 est actif
   const s07 = E.terminal("s-07");
