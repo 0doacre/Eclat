@@ -67,6 +67,16 @@ On ne les mélange que quand c’est utile, et jamais dans la même phrase.
 
 ## Exemples validés
 
+Pour les indices de recettes, un premier lot de travail est présenté dans
+`docs/ENIGMES-LOT-PILOTE.md`. Ses formulations sont des propositions à éprouver,
+pas encore un modèle à généraliser.
+
+Un indice peut partir d’une propriété, d’un besoin ou du rapport entre des objets.
+Le nom d’une ressource déjà connue reste disponible : nul besoin de le remplacer
+systématiquement par une image. Le rythme suit l’idée ; une phrase développée ou
+une question peut convenir aussi bien qu’une formule brève. Vérifier ce qu’il reste
+à comprendre et ce que les aides ajouteront, puis relire à l’écran.
+
 | Texte | Version retenue |
 |---|---|
 | Intro | Tu te réveilles dans l’herbe, au bord d’une forêt. Tu ne te souviens de rien, même pas de ton nom. / Tu regardes autour de toi. Tu ramasses un morceau de bois par terre et commences à l’écorcer. / Un sourire naît au coin de tes lèvres : oui, ça, tu t’en souviens. |
