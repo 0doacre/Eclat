@@ -7,6 +7,7 @@
     "start": "npx --yes serve -l 8080 .",
     "test": "node tools/syntax.js && node tools/validate.js && node tools/test.js && node tools/arbre-mesures.js --check && node tools/test-sim.js && node tools/test-recit.js && node --no-warnings server/test.js && node tools/build.js --check",
     "sim": "node tools/sim.js 3 dyson",
+    "sim:parcours": "node tools/sim-parcours.js",
     "sim:joueurs": "node tools/sim-passages.js --joueurs",
     "test:ux": "node tools/test-ux.js",
     "build": "node tools/build.js",
