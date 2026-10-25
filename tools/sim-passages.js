@@ -88,7 +88,7 @@ const ACHATS = ["recolte", "mains", "recolte", "paquetage", "extr", "mains", "ra
 /* ------------------------------------------------------------------ options */
 function lire(argv) {
   const donne = {}; // les options données à la main : elles l’emportent sur un profil
-  const o = { parcours: false, decouverte: "guide", essai: 8, achat: "recolte", graine: 1, chasse: 0, releve: "jeu", minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, fouilles: false, sessions: null, joueur: null, joueurs: false, json: false, don: null, dons: false };
+  const o = { parcours: false, decouverte: "guide", essai: 8, achat: "recolte", graine: 1, chasse: 0, releve: "jeu", moteur: "fixe", minutes: 120, mem: {}, offline: 0, compare: false, reflexion: 20, carnet: null, taps: 4, retour: 120, journal: false, cout: {}, cycles: 1, fouilles: false, sessions: null, joueur: null, joueurs: false, json: false, don: null, dons: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], val = () => argv[++i];
     if (a === "--minutes") o.minutes = +val();
@@ -122,6 +122,7 @@ function lire(argv) {
     else if (a === "--essai") { o.essai = +val(); if (!(o.essai > 0)) throw new Error("--essai : des secondes par essai (8)"); }
     else if (a === "--achat") { o.achat = val(); if (o.achat !== "aucun" && o.achat !== "auto" && !D.MEMOIRE.some((m) => m.id === o.achat)) throw new Error("--achat : aucun ou un id de la Mémoire"); }
     else if (a === "--graine") o.graine = +val();
+    else if (a === "--moteur") { o.moteur = val(); if (!["fixe", "hasard"].includes(o.moteur)) throw new Error("--moteur : fixe (par défaut) ou hasard"); }
     else if (a === "--chasse") { o.chasse = Math.max(0, Math.floor(+val())); }
     else if (a === "--releve") { o.releve = val(); if (!["jeu", "tot", "epieu", "plaine", "age1"].includes(o.releve) && !/^min\d+$/.test(o.releve)) throw new Error("--releve : jeu (la règle du jeu, par défaut), tot (l’ancienne : cabane et première exploration), epieu, plaine, age1 ou minN (essais de déclenchement)"); }
     else if (a === "--cycles") o.cycles = Math.max(1, Math.floor(+val()));
@@ -148,7 +149,8 @@ function appliquerJoueur(o, nom, donne) {
 /* ------------------------------------------------------------------ une partie */
 function play(o) {
   let T = 1e12;
-  const T0 = T, E = createEngine({ now: () => T, rand: () => 0.5 }), S = () => E.state;
+  const R0 = o.moteur === "hasard" ? rng((o.graine || 1) * 7919 + 1) : null; // --moteur hasard : le hasard du moteur (coups de chance, pièces en plus) varie lui aussi, avec la graine
+  const T0 = T, E = createEngine({ now: () => T, rand: R0 || (() => 0.5) }), S = () => E.state;
   const parc = !!o.parcours; // le vrai premier parcours : partie neuve, il découvre tout par des essais
   if (!parc) for (const id in I) if (I[id].r && !I[id].sec && !I[id].path) E.learn(id, true); // il connaît tout
   const avecMem = Object.keys(o.mem).length > 0;

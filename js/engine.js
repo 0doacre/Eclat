@@ -767,10 +767,12 @@
     E.learn = learn;
 
     /* chefs-d’œuvre : chance de lot bonus selon la maîtrise */
-    function bonusFor(it, times) {
+    function bonusFor(it, times, main) {
       let bonus = 0;
       if (it.t !== "comp" && it.t !== "res") return 0;
-      const ch = 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0);
+      // « Mains sûres » : une chance de pièce en plus pour ce que les mains fabriquent (pas les machines)
+      const mem = main && MEM.mains.bonus ? MEM.mains.bonus(memLvl("mains")) : 0;
+      const ch = Math.min(0.95, 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0) + mem);
       if (ch > 0) {
         if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
         else bonus = Math.floor(times * ch + rand());
@@ -796,7 +798,7 @@
      * l’établi (sous-composant d’une fabrication en chaîne) au lieu d’aller au stock. */
     function makeIt(id, times, quiet, bench) {
       const it = item(id);
-      const bonus = bonusFor(it, times);
+      const bonus = bonusFor(it, times, true);
       const out = it.r[2] * (times + bonus);
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
