@@ -4120,6 +4120,7 @@ require("./test-visiteurs.js");
 require("./test-figures.js");
 require("./test-arbre.js");
 require("./test-densite.js");
+require("./test-carnet.js");
 
 console.log("La file des fenêtres automatiques (0.13.3)");
 const Fen = require("../js/fenetres.js");
