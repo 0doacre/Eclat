@@ -142,7 +142,7 @@ h2 .mgain { color: #ffd36b; font-family: inherit; }
 
 h2.title { font-family: var(--serif); font-weight: 500; font-size: 22px; margin: 6px 4px 10px; }
 h3.sub { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin: 18px 4px 8px; font-weight: 600; }
-.sub-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 18px 4px 8px; }
+.sub-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 4px 8px; }
 .sub-row h3.sub { margin: 0; }
 .bench-clear { flex: 0 0 auto; font-size: 12px; padding: 3px 9px; border-radius: 99px; color: #f3dcb8;
   background: rgba(0,0,0,.35); border: 1px solid rgba(255,240,220,.18); }
@@ -253,7 +253,10 @@ p { margin: 0.4em 0; }
 .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--acc) 70%, #000), var(--acc)); border-radius: 999px; transition: width .25s linear; }
 
 /* ---------------------------------------------------------------- atelier */
-.gestes { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 10px; }
+.gestes { display: flex; flex-wrap: nowrap; gap: 6px; padding: 2px 12px 8px; margin: 0 -12px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding: 0 12px; }
+.gestes::-webkit-scrollbar { display: none; }
+.gestes.more { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 22px), transparent); }
+.gestes .geste { scroll-snap-align: start; }
 .geste {
   flex: 0 0 auto; width: 68px; display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 8px 4px; border-radius: 14px; border: 1px solid var(--line2); background: var(--panel);
@@ -265,7 +268,7 @@ p { margin: 0.4em 0; }
 .geste.lock { opacity: .4; border-style: dashed; }
 .geste.secret { border-color: #b36bff; }
 
-.bench { position: relative; padding: 16px 12px 14px; text-align: center; border: 1px solid #2b1d12; overflow: hidden;
+.bench { position: relative; padding: 10px 12px 10px; text-align: center; border: 1px solid #2b1d12; overflow: hidden;
   --wood1: #6b4a2e; --wood2: #4a3220;
   background:
     linear-gradient(180deg, rgba(255,235,200,.09), transparent 28%),
@@ -284,10 +287,10 @@ p { margin: 0.4em 0; }
     linear-gradient(90deg, rgba(120,200,255,.06) 1px, transparent 1px) 0 0 / 16px 16px,
     linear-gradient(0deg, rgba(120,200,255,.06) 1px, transparent 1px) 0 0 / 16px 16px,
     linear-gradient(180deg, var(--wood1), var(--wood2)); }
-.bench .heat { font-size: 12px; color: #f3dcb8; text-shadow: 0 1px 2px rgba(0,0,0,.6); min-height: 24px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.bench .heat { font-size: 12px; color: #f3dcb8; text-shadow: 0 1px 2px rgba(0,0,0,.6); min-height: 24px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .slots { display: flex; justify-content: center; align-items: center; gap: 10px; }
 .slot {
-  width: 84px; height: 96px; border-radius: 16px; border: 1.5px dashed rgba(255,230,190,.28); background: rgba(10,6,3,.42);
+  width: 80px; height: 84px; border-radius: 16px; border: 1.5px dashed rgba(255,230,190,.28); background: rgba(10,6,3,.42);
   box-shadow: inset 0 4px 10px rgba(0,0,0,.55), 0 1px 0 rgba(255,230,190,.12);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 4px;
   transition: border-color .2s, transform .1s;
@@ -302,7 +305,7 @@ p { margin: 0.4em 0; }
 .slot .tiny.muted { color: #c9b496; }
 .strike { position: fixed; z-index: 55; pointer-events: none; font-size: 54px; line-height: 1; filter: drop-shadow(0 6px 6px rgba(0,0,0,.5)); }
 .forge-btn {
-  margin-top: 14px; width: 100%; min-height: 54px; border-radius: 16px; border: 0;
+  margin-top: 10px; width: 100%; min-height: 50px; border-radius: 16px; border: 0;
   background: linear-gradient(180deg, color-mix(in srgb, var(--acc) 100%, #fff 12%), color-mix(in srgb, var(--acc) 80%, #000));
   color: var(--acc-ink); font-family: var(--serif); font-size: 20px; letter-spacing: .12em; font-weight: 700;
   box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--acc) 70%, transparent), inset 0 1px 0 rgba(255,255,255,.3);
@@ -498,6 +501,8 @@ body:has(#modal:not(.hidden)) #toasts, body:has(.tuto:not(.hidden)) #toasts { to
 .gprog-track i { display: block; height: 100%; border-radius: 3px; transition: width .3s ease; }
 .gprog-txt { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 .card.result:empty { display: none; }
+.result { position: relative; }
+.result-x { display: block; margin: 8px 0 0 auto; }
 .limit { margin-top: 4px; color: var(--muted); line-height: 1.35; }
 .limit b { color: var(--text); }
 .limit .mini { margin-left: 4px; }

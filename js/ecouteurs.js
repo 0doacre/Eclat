@@ -381,6 +381,7 @@
         if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
         if ((b = t.closest("[data-lock]"))) { toast("Action encore inconnue. Elle se débloque avec sa station : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
+        if (t.closest("[data-resclose]")) { U.last = null; A.click(); render(true); return; }
         if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
         if (t.closest("#forge, [data-forge]") && !t.closest("[data-s]")) {
           if (performance.now() - (U.forgeUp || 0) < 600) return; // déjà fait au relâcher
