@@ -11,7 +11,7 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 7;
+  const SAVE_VERSION = 8;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -37,17 +37,21 @@
   /* Les gisements de chaque terre : ce qu’on y récolte à la main, puis ce que
    * produisent les extracteurs de la terre. */
   const EXTS = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
+  /* les terres où se pose un extracteur : celles de sa ressource (le sable est à la Rivière et au Désert) */
+  const extZones = (id) => { const it = D.ITEMS[id]; return (it && (it.zs || (it.z ? [it.z] : []))) || []; };
   const ZONE_DEPS = {}; // zone → [{ res, hand }]
   D.ZONES.forEach((z) => {
     const list = z.res.slice();
-    EXTS.forEach((id) => { if (D.ITEMS[id].z === z.id) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
+    EXTS.forEach((id) => { if (extZones(id).includes(z.id)) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
     ZONE_DEPS[z.id] = list.map((r) => ({ res: r, hand: z.res.includes(r) }));
   });
   const extKey = (z, res) => z + ":" + res;
+  /* avant la 0.17, un extracteur récoltait plusieurs ressources : le niveau qui descend de lui (champ de) et récolte celle-ci */
+  const extFrere = (id, res) => { const g = D.ITEMS[id].de || id; return Object.keys(D.ITEMS).find((k) => (k === g || D.ITEMS[k].de === g) && D.ITEMS[k].t === "ext" && D.ITEMS[k].p && D.ITEMS[k].p[res]) || null; };
   /* un extracteur posé met tout son effort sur la matière de son gisement */
   const extRate = (id, r) => { const p = D.ITEMS[id] && D.ITEMS[id].p; return p && p[r] ? p[r] * Object.keys(p).length : 0; };
   /* un extracteur ne travaille que sur les gisements de sa propre terre */
-  const extOk = (id, z, r) => !!(D.ITEMS[id] && D.ITEMS[id].z === z && extRate(id, r) > 0);
+  const extOk = (id, z, r) => !!(D.ITEMS[id] && extZones(id).includes(z) && extRate(id, r) > 0);
   /* Où étaient ces gisements sur la grille de l’ancienne usine (sauvegardes v4 et
    * v5) : ne sert plus qu’à la migration, pour savoir ce qu’exploitait chaque case. */
   const OLD_PATCH = {
@@ -177,6 +181,11 @@
         o.proj.chant = { step: 0, paid: {} };
       }
       o.v = 7;
+    }
+    if (from < 8) {
+      // v8 : un extracteur par ressource (voir D.LIGNES). Le passage des exemplaires posés sur une autre ressource que celle
+      // de leur objet vers le niveau frère se fait au chargement (checkDom), pour toutes les vieilles sauvegardes.
+      o.v = 8;
     }
     return o;
   }
@@ -378,9 +387,12 @@
     E.memLvl = memLvl;
     E.memV = memV;
     E.memCost = (id) => MEM[id].cost[memLvl(id)]; // undefined : au maximum
+    /* Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur : la fenêtre s’ouvre à la relève et se ferme au bouton « Terminé » ou au premier passage franchi */
+    E.achatsOuverts = () => !!(S.meta && S.meta.achats);
+    E.fermerAchats = () => { if (S.meta && S.meta.achats) { S.meta.achats = false; E.emit("struct"); } };
     E.memBuy = function (id) {
       const m = MEM[id], c = m && m.cost[memLvl(id)];
-      if (c === undefined || S.meta.traces < c) return false;
+      if (!E.achatsOuverts() || c === undefined || S.meta.traces < c) return false;
       S.meta.traces -= c;
       S.meta.mem[id] = memLvl(id) + 1;
       recalc();
@@ -451,7 +463,7 @@
     E.transCost = (id) => (TRANS[id] ? TRANS[id].cost(transLvl(id)) : Infinity);
     E.transBuy = function (id) {
       const t = TRANS[id], c = t && t.cost(transLvl(id));
-      if (!t || c === undefined || S.meta.traces < c) return false;
+      if (!E.achatsOuverts() || !t || c === undefined || S.meta.traces < c) return false;
       S.meta.traces -= c;
       S.meta.trans = S.meta.trans || {};
       S.meta.trans[id] = transLvl(id) + 1;
@@ -464,7 +476,7 @@
     E.hasEndingHint = (k) => !!(S.meta && S.meta.hints_endings && S.meta.hints_endings[k]);
     E.buyEndingHint = function (k) {
       const cost = D.HINT_ENDING_COST || 75;
-      if (E.hasEndingHint(k) || !D.ENDINGS || !D.ENDINGS[k] || S.meta.traces < cost) return false;
+      if (!E.achatsOuverts() || E.hasEndingHint(k) || !D.ENDINGS || !D.ENDINGS[k] || S.meta.traces < cost) return false;
       S.meta.traces -= cost;
       S.meta.hints_endings = S.meta.hints_endings || {};
       S.meta.hints_endings[k] = true;
@@ -543,6 +555,7 @@
       const done = Object.keys(cost).every((i) => (p.paid[i] || 0) >= cost[i]);
       if (done) {
         p.done = true;
+        if (S.meta.achats) S.meta.achats = false; // le premier passage du cycle ferme les achats
         E.emit("passdone", { z: zid, tr: PASS[zid].tr });
         unlockZone(zid);
         checkAges();
@@ -767,10 +780,12 @@
     E.learn = learn;
 
     /* chefs-d’œuvre : chance de lot bonus selon la maîtrise */
-    function bonusFor(it, times) {
+    function bonusFor(it, times, main) {
       let bonus = 0;
       if (it.t !== "comp" && it.t !== "res") return 0;
-      const ch = 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0);
+      // « Mains sûres » : une chance de pièce en plus pour ce que les mains fabriquent (pas les machines)
+      const mem = main && MEM.mains.bonus ? MEM.mains.bonus(memLvl("mains")) : 0;
+      const ch = Math.min(0.95, 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0) + mem);
       if (ch > 0) {
         if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
         else bonus = Math.floor(times * ch + rand());
@@ -796,7 +811,7 @@
      * l’établi (sous-composant d’une fabrication en chaîne) au lieu d’aller au stock. */
     function makeIt(id, times, quiet, bench) {
       const it = item(id);
-      const bonus = bonusFor(it, times);
+      const bonus = bonusFor(it, times, true);
       const out = it.r[2] * (times + bonus);
       const first = !(S.made[id] > 0);
       S.made[id] = (S.made[id] || 0) + times;
@@ -2974,6 +2989,7 @@
 
     /* --- gisements et extracteurs */
     E.EXTS = EXTS;
+    E.extZones = extZones;
     E.extRate = extRate;
     E.extKey = extKey;
     E.zoneDeps = (z) => ZONE_DEPS[z] || [];
@@ -3001,7 +3017,7 @@
       if (ch && !regleSans(ch)) f *= ch.mult;
       for (const t in e.u) {
         const it = item(t);
-        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
+        if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[e.z || it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
       return r * f * donExt(e.z) * seuilMult(e);
     }
@@ -3057,6 +3073,32 @@
       if (!q.ok) return { ok: placed > 0, placed, queued: 0, t, why: q.why, missing: q.missing || (q.plan && q.plan.missing) };
       return { ok: true, placed, queued: n - placed, t };
     };
+    /* ---- Les lignes : un bâtiment par ressource, qui monte de niveau en niveau ---- */
+    const LIGNE = {}; // ressource → ligne
+    (D.LIGNES || []).forEach((L) => (LIGNE[L.res] = L));
+    E.ligneDe = (res) => LIGNE[res] || null;
+    E.ligneOf = (id) => { const it = item(id); return it && it.lg ? D.LIGNES.find((L) => L.id === it.lg) : null; };
+    /* le niveau d’après (l’objet), ou null au dernier niveau */
+    E.extNext = (id) => { const L = E.ligneOf(id), it = item(id); return L && it ? (L.niv[it.lv] ? L.niv[it.lv].id : null) : null; };
+    E.extNiveaux = (res) => (LIGNE[res] ? LIGNE[res].niv.map((v) => v.id) : []);
+    /* Améliorer un exemplaire posé : on fabrique le niveau d’après, il prend la place de l’ancien,
+     * qui est retiré. Si un exemplaire du niveau d’après attend déjà, l’échange est immédiat. */
+    E.domExtUp = function (z, res, from) {
+      const e = S.dom.ext[extKey(z, res)], nx = E.extNext(from);
+      if (!e || !(e.u[from] >= 1) || !nx || !S.known[nx]) return { ok: false, why: "niveau" };
+      if (freeExt(nx) >= 1) { swapUp(z, res, from, nx); return { ok: true, placed: 1, queued: 0, t: nx }; }
+      const q = E.queue(nx, 1, true, "u:" + z + ":" + res + ":" + from);
+      if (!q.ok) return { ok: false, why: q.why, missing: q.missing || (q.plan && q.plan.missing), t: nx };
+      return { ok: true, placed: 0, queued: 1, t: nx };
+    };
+    function swapUp(z, res, from, nx) {
+      const key = extKey(z, res), e = S.dom.ext[key];
+      if (e && e.u[from] >= 1 && count(from) >= 1) {
+        e.u[from]--; if (!e.u[from]) delete e.u[from];
+        add(from, -1);
+      }
+      assignExt(z, res, nx, 1);
+    }
     /* nombre exact d’extracteurs d’un type sur un gisement (0 les retire) */
     E.domExtSet = function (z, res, t, n) {
       if (!zoneOpen(z) || !extOk(t, z, res) || !(ZONE_DEPS[z] || []).some((d) => d.res === res)) return null;
@@ -3088,8 +3130,9 @@
      * ne travaillaient sur aucun gisement. */
     E.domAutoExt = function (t) {
       const it = item(t);
-      if (!it || it.t !== "ext" || freeExt(t) < 1 || !zoneOpen(it.z)) return null;
-      const spots = ZONE_DEPS[it.z].filter((d) => extRate(t, d.res) > 0).map((d) => ({ r: d.res }));
+      if (!it || it.t !== "ext" || freeExt(t) < 1) return null;
+      const spots = [];
+      extZones(t).filter(zoneOpen).forEach((z) => ZONE_DEPS[z].forEach((d) => { if (extRate(t, d.res) > 0) spots.push({ z, r: d.res }); }));
       if (!spots.length) return null;
       // viser ce que donneraient tous les extracteurs s’ils travaillaient partout,
       // en couvrant d’abord les matières qui ne sont pas encore extraites
@@ -3101,7 +3144,7 @@
         sp.score = (cur[sp.r] ? 0 : 1000) + Math.abs(d) - Math.abs(d - extRate(t, sp.r));
       });
       spots.sort((a, b) => b.score - a.score);
-      return assignExt(it.z, spots[0].r, t, 1) ? { z: it.z, res: spots[0].r } : null;
+      return assignExt(spots[0].z, spots[0].r, t, 1) ? { z: spots[0].z, res: spots[0].r } : null;
     };
     function placeOldExtractors() {
       let placed = 0;
@@ -3143,6 +3186,9 @@
       if (to.slice(0, 2) === "x:" && it.t === "ext") {
         const i = to.indexOf(":", 2);
         assignExt(to.slice(2, i), to.slice(i + 1), id, n);
+      } else if (to.slice(0, 2) === "u:" && it.t === "ext") { // une amélioration : zone:ressource:ancien niveau
+        const [z, res, from] = to.slice(2).split(":");
+        if (z && res && from) swapUp(z, res, from, id); else E.domAutoExt(id);
       }
     }
     /* pièces encore attendues pour un gisement ("x:zone:res") */
@@ -3854,6 +3900,7 @@
         Object.assign(n.inv, { bois: 60, fibre: 60, caillou: 40, manche: 10, corde: 10 });
       }
       S = n;
+      S.meta.achats = true; // les Traces se dépensent maintenant, au réveil du nouveau Semeur
       // la Mémoire des mains : le paquetage, et les terres déjà connues
       // ce que le paquetage donne compte comme déjà fait (les étapes « manche », « corde »… passent)
       D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); } });
@@ -4274,9 +4321,21 @@
         e.z = z; e.res = res; e.on = e.on !== false;
         for (const t in e.u) {
           const n = Math.max(0, Math.floor(e.u[t]) || 0);
+          // v8 : un extracteur à plusieurs ressources est devenu une ligne par ressource ; ceux qui travaillaient une autre ressource que celle de leur objet passent au niveau frère de cette ressource
+          const frere = D.ITEMS[t] && D.ITEMS[t].t === "ext" && n && !extRate(t, res) ? extFrere(t, res) : null;
+          if (frere) {
+            o.inv = o.inv || {};
+            o.inv[t] = Math.max(0, (Number(o.inv[t]) || 0) - n);
+            o.inv[frere] = (Number(o.inv[frere]) || 0) + n;
+            if (o.made && o.made[t]) o.made[frere] = Math.max(o.made[frere] || 0, 1);
+            delete e.u[t];
+            e.u[frere] = (e.u[frere] || 0) + n;
+            if (o.known && o.known[t]) o.known[frere] = true;
+            continue;
+          }
           if (!D.ITEMS[t] || D.ITEMS[t].t !== "ext" || !extRate(t, res) || !n) { if (n) aside("ext:" + k + ":" + t, n); delete e.u[t]; }
           // posé sur une autre terre que la sienne (permis avant la 5.3) : il rentre chez lui au chargement
-          else if (D.ITEMS[t].z !== z) { const m = (o.flags.reExt = o.flags.reExt || {}); m[t] = (m[t] || 0) + n; delete e.u[t]; }
+          else if (!extZones(t).includes(z)) { const m = (o.flags.reExt = o.flags.reExt || {}); m[t] = (m[t] || 0) + n; delete e.u[t]; }
           else e.u[t] = n;
         }
         if (!Object.keys(e.u).length) delete d.ext[k];

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.16.0";
+  D.VERSION = "0.18.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -595,6 +595,122 @@
   I.partition = { n: "Vieille partition", ic: "📜", a: 5, t: "relic", old: true, d: "Une feuille de notes à l’encre pâlie. Les chiffres ne disent plus rien." };
   I.signal_brut = { n: "Signal de Kher", ic: "〽️", a: 8, t: "relic", d: "L’enregistrement brut du signal venu de Kher. Tu n’y comprends rien, pour l’instant." };
 
+  /* ---------------------------------------------------------------- LIGNES D’EXTRACTEURS
+   * Un bâtiment par ressource : le bois a son Bûcheron, la pierre son Carrier, la peau son Tanneur…
+   * Chaque ligne monte par niveaux (un par âge) ; chaque niveau est un extracteur qui ne récolte que la
+   * ressource de sa ligne, et qui se pose sur tout gisement de cette ressource (sable : Rivière et Désert).
+   * Chaque niveau a sa propre recette, à découvrir. Le taux et l’âge viennent de l’ancien extracteur à plusieurs
+   * ressources dont il descend (champ de) : un exemplaire garde la même récolte qu’avant la 0.17.
+   * niveau : { id, n, sn, pl, ic } pour un objet qui existait déjà, avec en plus { de, a, d, h, r, taux } pour un nouveau. */
+  D.LIGNES = [
+    { id: "bucheron", res: "bois", n: "Bûcheron", ic: "🪓", ph: "le bois", zs: ["lisiere"], niv: [
+      { id: "cabane", n: "Cabane de bûcheron", sn: "cabane", pl: "cabanes", ic: "🛖" },
+      { id: "hutte", n: "Hutte de bûcheron", sn: "hutte", pl: "huttes", ic: "🏚️" },
+      { id: "scierie", n: "Scierie à vapeur", sn: "scierie", pl: "scieries", ic: "🪚" }] },
+    { id: "cueilleur", res: "fibre", n: "Cueilleur", ic: "🌿", ph: "les fibres", zs: ["lisiere"], niv: [
+      { id: "fibre_1", n: "Claie de séchage", sn: "claie", pl: "claies", ic: "🧺", de: "cabane", r: ["assembler", { manche: 5, corde: 6, bois: 12 }, 1],
+        d: "Les tiges de fibre sèchent à l’air, étalées sur un cadre.", h: "Un cadre de bois, des manches pour le soutenir et des cordes pour tendre les tiges à sécher." },
+      { id: "fibre_2", n: "Rouissoir", sn: "rouissoir", pl: "rouissoirs", ic: "🪺", de: "hutte", r: ["assembler", { brique: 6, argile: 15, bois: 40 }, 1],
+        d: "Les tiges trempent dans l’eau stagnante jusqu’à lâcher leurs fibres. Ça sent fort.", h: "Un bassin de briques jointes à l’argile, couvert de bois : les tiges y trempent jusqu’à libérer leurs fibres." },
+      { id: "fibre_3", n: "Filature à vapeur", sn: "filature", pl: "filatures", ic: "🧵", de: "scierie", r: ["assembler", { moteur_vapeur: 2, roulement: 12, fibre: 300 }, 1],
+        d: "Les bobines tournent sans s’arrêter et la fibre sort en fils réguliers.", h: "La vapeur fait tourner les bobines sur leurs roulements. Les fibres s’y tordent en fil." }] },
+    { id: "carrier", res: "caillou", n: "Carrier", ic: "⛏️", ph: "la pierre", zs: ["lisiere"], niv: [
+      { id: "caillou_1", n: "Carrière à main", sn: "carrière", pl: "carrières", ic: "🪨", de: "cabane", r: ["assembler", { manche: 6, caillou: 30, fibre: 8 }, 1],
+        d: "Chaque coup de pic détache un bloc, que tu remontes à la corde.", h: "Les manches font les pics, la fibre tresse les paniers qui remontent les blocs, et quelques pierres calent le tout." },
+      { id: "caillou_2", n: "Carrière à coins", sn: "carrière à coins", pl: "carrières à coins", ic: "⛰️", de: "hutte", r: ["assembler", { manche: 15, eclat: 12, caillou: 60 }, 1],
+        d: "Des coins de bois enfoncés dans les fentes font éclater la roche en blocs nets.", h: "Les éclats tranchants entaillent la roche, les manches portent les maillets et les pierres servent à frapper." },
+      { id: "caillou_3", n: "Carrière à vapeur", sn: "carrière à vapeur", pl: "carrières à vapeur", ic: "🏗️", de: "scierie", r: ["assembler", { moteur_vapeur: 2, piston: 8, caillou: 400 }, 1],
+        d: "Un marteau à vapeur frappe la roche à un rythme qui ne faiblit pas.", h: "La vapeur pousse les pistons qui lèvent le marteau. Les pierres lui servent d’enclume." }] },
+    { id: "chasseur", res: "os", n: "Chasseur", ic: "🏹", ph: "les os", zs: ["plaine"], niv: [
+      { id: "collets", n: "Collets", sn: "collet", pl: "collets", ic: "🪤" },
+      { id: "enclos", n: "Enclos d’élevage", sn: "enclos", pl: "enclos", ic: "🐐" }] },
+    { id: "tanneur", res: "cuir", n: "Tanneur", ic: "🐂", ph: "la peau", zs: ["plaine"], niv: [
+      { id: "cuir_1", n: "Fosse de tannage", sn: "fosse de tannage", pl: "fosses de tannage", ic: "🧶", de: "collets", r: ["assembler", { manche: 10, laniere: 8, caillou: 30 }, 1],
+        d: "Les peaux trempent des jours dans une eau brune, puis sèchent, souples.", h: "Des pierres bordent la fosse, des manches y suspendent les peaux et des lanières les tiennent." },
+      { id: "cuir_2", n: "Tannerie", sn: "tannerie", pl: "tanneries", ic: "🏭", de: "enclos", r: ["assembler", { bois: 250, clous: 60, laniere: 40 }, 1],
+        d: "Des rangées de cuves, une odeur qui prend à la gorge, et du cuir en continu.", h: "Des cuves de bois clouées planche par planche, et des lanières pour suspendre et retourner les peaux." }] },
+    { id: "argilier", res: "argile", n: "Argilier", ic: "🧱", ph: "l’argile", zs: ["riviere"], niv: [
+      { id: "nasse", n: "Argilière", sn: "argilière", pl: "argilières", ic: "🪣", d: "Une fosse ouverte au bord de l’eau, où l’argile se découpe en mottes.", h: "Les manches soutiennent les parois, la corde remonte les paniers et des briques évitent l’éboulement." },
+      { id: "drague", n: "Drague à godets", sn: "drague", pl: "dragues", ic: "⛴️" }] },
+    { id: "silex", res: "silex", n: "Mineur de silex", ic: "🔪", ph: "le silex", zs: ["riviere"], niv: [
+      { id: "silex_1", n: "Gravière", sn: "gravière", pl: "gravières", ic: "🕳️", de: "nasse", r: ["assembler", { manche: 8, eclat: 8, brique: 3 }, 1],
+        d: "Les silex roulés par le courant se ramassent entre les galets.", h: "Les manches font des pelles, les éclats des racloirs, et les briques un muret qui retient les graviers." },
+      { id: "silex_2", n: "Minière à silex", sn: "minière", pl: "minières", ic: "🚤", de: "drague", r: ["assembler", { moteur_vapeur: 2, plaque_fer: 15, corde: 60 }, 1],
+        d: "Un puits profond où l’on descend chercher les gros rognons noirs.", h: "La vapeur remonte les paniers de silex par des cordes, dans un puits tapissé de plaques de fer." }] },
+    { id: "sablonnier", res: "sable", n: "Sablonnier", ic: "⏳", ph: "le sable", zs: ["riviere", "desert"], niv: [
+      { id: "sable_1", n: "Sablière", sn: "sablière", pl: "sablières", ic: "🏖️", de: "nasse", r: ["assembler", { manche: 10, eclat: 4, fibre: 30 }, 1],
+        d: "Une fosse où l’on pellette le sable, qu’on passe ensuite à la claie.", h: "Des pelles à manche, des éclats pour racler et une claie de fibres pour garder le sable fin." },
+      { id: "sable_2", n: "Tamis à sable", sn: "tamis", pl: "tamis", ic: "🕸️", de: "tamis", taux: 1.8, r: ["assembler", { manche: 25, plaque_bronze: 6, fibre: 60 }, 1],
+        d: "Un cadre qui laisse passer le sable fin et garde le reste.", h: "Une grille de bronze trie les grains, la fibre tressée amortit les secousses et les manches font le cadre." },
+      { id: "sable_3", n: "Suceuse à sable", sn: "suceuse", pl: "suceuses", ic: "⚓", de: "drague", r: ["assembler", { moteur_vapeur: 2, piston: 6, roue: 8 }, 1],
+        d: "Un gros tuyau aspire le sable du fond et le crache sur la rive.", h: "La vapeur pousse un piston, et la pompe à roues aspire le sable du fond." },
+      { id: "sable_4", n: "Pelleteuse à sable", sn: "pelleteuse à sable", pl: "pelleteuses à sable", ic: "🚜", de: "excavatrice", r: ["assembler", { moteur_elec: 4, plaque_fer: 30, vis: 40 }, 1],
+        d: "Une large benne charge du sable à chaque passage.", h: "Un moteur électrique, une benne en plaques de fer, et des vis pour tout assembler." }] },
+    { id: "cuivre", res: "malachite", n: "Mineur de cuivre", ic: "🟢", ph: "la malachite", zs: ["collines"], niv: [
+      { id: "puits", n: "Mine de cuivre", sn: "mine de cuivre", pl: "mines de cuivre", ic: "🕳️" },
+      { id: "treuil", n: "Mine de cuivre à vapeur", sn: "mine à vapeur", pl: "mines à vapeur", ic: "🪝" }] },
+    { id: "etain", res: "cassiterite", n: "Mineur d’étain", ic: "⚪", ph: "la cassitérite", zs: ["collines"], niv: [
+      { id: "cassiterite_1", n: "Mine d’étain", sn: "mine d’étain", pl: "mines d’étain", ic: "⛏️", de: "puits", r: ["assembler", { manche: 20, lingot_cuivre: 6, corde: 12 }, 1],
+        d: "Le minerai gris est lourd : on le remonte à part, seau après seau.", h: "Les manches étayent le puits, la corde remonte les seaux, et le cuivre donne des pics qui mordent la roche dure." },
+      { id: "cassiterite_2", n: "Mine d’étain à vapeur", sn: "mine d’étain à vapeur", pl: "mines d’étain à vapeur", ic: "🔗", de: "treuil", r: ["assembler", { moteur_vapeur: 2, chainon: 60, lingot_acier: 15 }, 1],
+        d: "Une chaîne sans fin remonte les wagonnets d’étain.", h: "La vapeur tire une chaîne d’acier qui remonte les wagonnets dans le puits." }] },
+    { id: "charbonnier", res: "charbon", n: "Charbonnier", ic: "⚫", ph: "le charbon", zs: ["lisiere", "mine"], niv: [
+      { id: "charbonniere", n: "Meule de charbonnier", sn: "meule", pl: "meules", ic: "🌫️" },
+      { id: "charbon_2", n: "Mine de charbon", sn: "mine de charbon", pl: "mines de charbon", ic: "🚧", de: "galerie", r: ["assembler", { manche: 40, soufflet: 3, clous: 50 }, 1],
+        d: "Des galeries noires, où la poussière colle à la gorge.", h: "Les manches étayent les galeries, les clous les fixent et un soufflet y renvoie de l’air frais." },
+      { id: "charbon_3", n: "Mine de charbon électrique", sn: "mine électrique", pl: "mines électriques", ic: "🔩", de: "foreuse_elec", r: ["assembler", { moteur_elec: 4, acier_trempe: 12, cable: 60 }, 1],
+        d: "Les outils tournent au fond, alimentés par un câble qui court le long de la galerie.", h: "Un moteur électrique, des outils d’acier trempé, et un câble qui l’alimente jusqu’au fond." }] },
+    { id: "cristallier", res: "quartz", n: "Cristallier", ic: "💎", ph: "le quartz", zs: ["desert"], niv: [
+      { id: "tamis", n: "Carrière de quartz", sn: "carrière de quartz", pl: "carrières de quartz", ic: "🕸️" },
+      { id: "excavatrice", n: "Carrière de quartz mécanisée", sn: "carrière mécanisée", pl: "carrières mécanisées", ic: "🚜" }] },
+    { id: "ferrier", res: "fer_min", n: "Mineur de fer", ic: "🔩", ph: "le minerai de fer", zs: ["mine"], niv: [
+      { id: "galerie", n: "Mine de fer", sn: "mine de fer", pl: "mines de fer", ic: "🚧" },
+      { id: "foreuse_elec", n: "Mine de fer électrique", sn: "mine électrique de fer", pl: "mines électriques de fer", ic: "🔧" }] },
+    { id: "petrolier", res: "petrole", n: "Pétrolier", ic: "🛢️", ph: "le pétrole", zs: ["gisement"], niv: [
+      { id: "derrick", n: "Derrick", sn: "derrick", pl: "derricks", ic: "🛢️" },
+      { id: "plateforme", n: "Plateforme pétrolière", sn: "plateforme", pl: "plateformes", ic: "🛳️" }] },
+    { id: "bauxite", res: "bauxite", n: "Mineur de bauxite", ic: "🏔️", ph: "la bauxite", zs: ["montagnes"], niv: [
+      { id: "carriere", n: "Mine de bauxite", sn: "mine de bauxite", pl: "mines de bauxite", ic: "🏔️" },
+      { id: "excavateur", n: "Mine de bauxite géante", sn: "mine géante de bauxite", pl: "mines géantes de bauxite", ic: "🦣" }] },
+    { id: "ilmenite", res: "ilmenite", n: "Mineur d’ilménite", ic: "🪨", ph: "l’ilménite", zs: ["montagnes"], niv: [
+      { id: "ilmenite_1", n: "Mine d’ilménite", sn: "mine d’ilménite", pl: "mines d’ilménite", ic: "⛰️", de: "carriere", r: ["assembler", { dynamite: 60, moteur_elec: 8, aluminium: 30 }, 1],
+        d: "La roche noire se détache en grandes plaques lourdes.", h: "La dynamite fend la roche noire, le moteur la remonte et l’aluminium allège les bennes." },
+      { id: "ilmenite_2", n: "Mine d’ilménite géante", sn: "mine géante d’ilménite", pl: "mines géantes d’ilménite", ic: "🚛", de: "excavateur", r: ["assembler", { titane: 100, moteur_elec: 40, aluminium: 120 }, 1],
+        d: "Des bennes de la taille d’une maison, pour des blocs entiers.", h: "Des bennes en titane, plus solides que l’aluminium, portées par des moteurs électriques." }] },
+    { id: "rares", res: "terres_rares", n: "Mineur de terres rares", ic: "🧪", ph: "les terres rares", zs: ["montagnes"], niv: [
+      { id: "terres_1", n: "Mine de terres rares", sn: "mine de terres rares", pl: "mines de terres rares", ic: "🧲", de: "carriere", r: ["assembler", { moteur_elec: 8, dynamite: 40, plastique: 30 }, 1],
+        d: "Un filon mince, suivi avec soin sur toute sa longueur.", h: "On fait sauter peu, avec soin : la dynamite ouvre le filon, les moteurs remontent le minerai et le plastique résiste aux acides." },
+      { id: "terres_2", n: "Mine de terres rares géante", sn: "mine géante de terres rares", pl: "mines géantes de terres rares", ic: "🚧", de: "excavateur", r: ["assembler", { moteur_elec: 40, titane: 80, aimant_neo: 30 }, 1],
+        d: "Des aimants triment les grains utiles et laissent le reste.", h: "Les aimants séparent les grains rares du reste. Le titane porte les moteurs électriques." }] },
+    { id: "orbital", res: "debris", n: "Récupérateur orbital", ic: "🛰️", ph: "les débris orbitaux", zs: ["orbite"], niv: [
+      { id: "station_orbitale", n: "Filet orbital", sn: "filet", pl: "filets", ic: "🛰️" }] },
+    { id: "heliophage", res: "helium3", n: "Extracteur d’hélium", ic: "🎈", ph: "l’hélium-3", zs: ["lune"], niv: [
+      { id: "base_lunaire", n: "Base d’hélium-3", sn: "base", pl: "bases", ic: "🏕️" }] },
+    { id: "regolitier", res: "regolithe", n: "Terrassier lunaire", ic: "🌑", ph: "le régolithe", zs: ["lune"], niv: [
+      { id: "regolithe_1", n: "Excavatrice lunaire", sn: "excavatrice lunaire", pl: "excavatrices lunaires", ic: "🏗️", de: "base_lunaire", r: ["assembler", { alliage_ancien: 120, moteur_fusee: 6, supra: 60 }, 1],
+        d: "Des pelles automatiques raclent la poussière grise du sol lunaire.", h: "Un alliage ancien pour la structure, un moteur-fusée pour se poser, un supraconducteur qui ne chauffe jamais." }] },
+    { id: "fondeur", res: "metal_mercure", n: "Fondeur de Mercure", ic: "🔥", ph: "le métal mercurien", zs: ["mercure"], niv: [
+      { id: "replicateur", n: "Réplicateur", sn: "réplicateur", pl: "réplicateurs", ic: "🦾" }] }
+  ];
+  (function () {
+    // 1) ce que rapportait chaque ancien extracteur, avant le partage : taux de la ressource × nombre de ressources
+    const ancien = {}, modele = {};
+    Object.keys(I).forEach((id) => { if (I[id].t === "ext") modele[id] = Object.assign({}, I[id]); });
+    D.LIGNES.forEach((L) => L.niv.forEach((v) => {
+      const g = v.de || v.id, o = modele[g];
+      if (!o) throw new Error("Ligne " + L.id + " : ancien extracteur inconnu " + g);
+      ancien[v.id] = v.taux || Math.round(o.p[L.res] * Object.keys(o.p).length * 1000) / 1000;
+    }));
+    D.LIGNES.forEach((L) => L.niv.forEach((v, k) => {
+      const m = modele[v.de || v.id], it = I[v.id] || (I[v.id] = {});
+      if (v.de) Object.assign(it, { a: m.a, t: "ext", s: m.s, r: v.r, d: v.d, h: v.h });
+      else { if (v.d) it.d = v.d; if (v.h) it.h = v.h; }
+      Object.assign(it, { n: v.n, sn: v.sn, pl: v.pl, ic: v.ic, p: { [L.res]: ancien[v.id] }, z: L.zs[0], zs: L.zs.slice(), lg: L.id, lv: k + 1 });
+      if (v.de) it.de = v.de; // l’ancien extracteur dont il descend : sert aux anciennes sauvegardes
+      it.u = "Récolte " + L.ph + " à ta place, même quand le jeu est fermé.";
+    }));
+  })();
+
   /* ---------------------------------------------------------------- ZONES */
   D.ZONES = [
     { id: "lisiere", n: "La Lisière", ic: "🌲", res: ["bois", "fibre", "caillou"],
@@ -899,7 +1015,7 @@
   /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
   D.MEMOIRE = [
     { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 18, 36, 70, 130, 240, 440, 800] },
-    { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Durée des fabrications à la main ×{v}.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, cost: [2, 4, 7, 13, 23, 45, 85, 160] },
+    { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Fabrication à la main : durée ×{v}, et {p} de chances de gagner une pièce en plus.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, bonus: (l) => Math.min(0.9, Math.round(l * 10) / 100), cost: [2, 4, 7, 13, 23, 45, 85, 160] },
     { id: "extr", n: "Mémoire des gisements", ic: "⛏️", d: "Production des extracteurs ×{v}.", v: (l) => 1 + 0.5 * l, cost: [3, 5, 8, 13, 23, 38, 62, 100, 180, 330, 600, 1100] },
     { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Vitesse des machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 36, 60, 98, 160, 290, 530, 960, 1750] },
     { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Prix des passages ×{v}.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 34, 70, 140, 270, 520] },
@@ -1076,6 +1192,10 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🏗️ Chaque bâtiment a sa propre recette à découvrir, avec un nom qui lui ressemble : Claie de séchage et Rouissoir pour la fibre, Carrière à coins pour la pierre, Fosse de tannage et Tannerie pour la peau, Argilière, Gravière, Sablière, et des mines (cuivre, étain, charbon, fer, bauxite…). Dans le Carnet, trois nouveaux filtres : « Extracteurs » (rangés par bâtiment et par niveau), « Outils » et « Machines ».",
+    "🏗️ Un extracteur par ressource : le Bûcheron pour le bois, le Carrier pour la pierre, le Tanneur pour la peau, le Charbonnier, le Sablier, les mineurs… Chaque bâtiment ne récolte que sa ressource et monte de niveau avec les âges (Cabane, Hutte, Scierie…). Dans la fiche d’un gisement, « ↑ Niveau 2 » remplace un exemplaire par le niveau d’après. Le sable et le charbon se récoltent avec le même bâtiment dans toutes leurs terres. Tes parties en cours sont converties : rien n’est perdu, chaque extracteur reste où il était.",
+    "✦ Les Traces ne se dépensent plus en pleine partie : la Mémoire des mains se consulte toujours, mais les achats ne s’ouvrent qu’au réveil d’un nouveau Semeur, après la relève. Ils se ferment avec le bouton « Terminé : commencer le cycle » ou au premier passage franchi, et les Traces non dépensées attendent la relève suivante.",
+    "🌅 La fenêtre de première relève est réécrite : elle s’appelle « Fin du premier cycle » et liste ce que tu gagnes (✦ Traces), ce que tu gardes et ce qui repart de zéro. Le bouton « Passer le relais » est visible tout de suite. ⏱️ Mains sûres a enfin un vrai effet : fabrication à la main 20 % plus rapide par niveau, et 10 % de chances de gagner une pièce en plus.",
     "🌅 La première relève arrive plus tard : une fois la Plaine franchie, avec les ✦ Traces du passage en plus des 3 offertes. Pour explorer la grotte, le guide t’aide à trouver la torche. Après l’éveil, un rappel en haut du Domaine dit ce que le nouveau Semeur a gardé et combien de Traces il peut dépenser.",
     "🔎 Les ressources de l’Atelier remontent : la recherche reste en haut, et le tri et les filtres se rangent derrière un bouton « Filtres » (le chiffre dit combien sont actifs). Il s’ouvre sur place et se referme quand tu choisis.",
     "♿ Plus accessible : au clavier, Entrée pose une ressource sur l’établi (« i » ou Maj + Entrée ouvre sa fiche) et la Carte se parcourt lieu par lieu. Le bouton « ⓘ Fiches » remplace l’appui long, les champs et les liens ont un nom, et les textes sont au moins à 4,5:1 de contraste dans toutes les époques (les accents du Jour sont un peu plus sombres).",

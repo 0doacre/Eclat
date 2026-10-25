@@ -43,7 +43,7 @@ function reglages(argv) {
 
 /* une partie du premier parcours ; renvoie ce qu’on en retient */
 function une(pol, achat, graine, r, chasse, releve) {
-  const o = lire(["--parcours", "--minutes", String(r.minutes), "--decouverte", pol, "--essai", String(r.essai), "--achat", achat, "--graine", String(graine), "--chasse", String(chasse || 0), "--releve", releve || "jeu"]);
+  const o = lire(["--parcours", "--minutes", String(r.minutes), "--decouverte", pol, "--essai", String(r.essai), "--achat", achat, "--graine", String(graine), "--chasse", String(chasse || 0), "--releve", releve || "jeu", "--moteur", "hasard"]);
   const x = play(o);
   const plaine = x.rows.find((y) => y.z === "plaine" && !y.offert), riviere = x.rows.find((y) => y.z === "riviere" && !y.offert);
   const rel = x.rel;
@@ -65,7 +65,7 @@ function mesurer(r, chasse) {
   const res = {};
   for (const [pol] of POLITIQUES) {
     res[pol] = {};
-    const graines = pol === "enigme" ? 1 : r.graines;
+    const graines = r.graines;
     for (const [achat] of (chasse ? [ACHATS[1]] : ACHATS)) {
       const liste = [];
       for (let g = 1; g <= graines; g++) liste.push(une(pol, achat, g, r, chasse));
@@ -97,7 +97,7 @@ function compareRegles(r) {
     out[pol] = {};
     for (const regle of ["tot", "jeu"]) {
       const liste = [];
-      for (let g = 1; g <= (pol === "enigme" ? 1 : r.graines); g++) liste.push(une(pol, "auto", g, r, 0, regle));
+      for (let g = 1; g <= r.graines; g++) liste.push(une(pol, "auto", g, r, 0, regle));
       out[pol][regle] = { releve: agreger(liste, "releve"), plaine2: agreger(liste, "plaine2"), riviere2: agreger(liste, "riviere2"), riviere: agreger(liste, "riviere") };
     }
   }
@@ -147,9 +147,11 @@ function rapport(r, res, resChasse, regles) {
     "- **Les recettes hors objectif** (extracteurs, outils d’amélioration) : par défaut le joueur simulé n’en cherche aucune ; avec la section ci-dessus, il en cherche à coups d’essais, au cycle 2 seulement. Un vrai joueur les déduit peut-être de l’énigme du Carnet (l’hypothèse « énigme ») ou n’y pense pas. C’est ce qui fait le plus varier la fin du cycle 2 : regarder les deux versions.",
     "- **La récolte** : 4 appuis par seconde (le type « tapeur »). Un vrai joueur peut utiliser la récolte continue : la vitesse manuelle compte donc moins que dans ces chiffres.",
     "- Ni l’Intuition (étude, déchiffrage), ni les secrets, ni les dialogues, ni la lecture : seulement ce qu’on peut mesurer sur le moteur.",
-    "- Le hasard du moteur (coups de chance) est fixe ; celui du joueur varie avec la graine.",
+    "- Le hasard du moteur (coups de chance à la récolte, pièces en plus) varie lui aussi avec la graine : même graine, mêmes nombres.",
     "- Aucun joueur qui s’arrête : tout est en minutes de jeu actif, jusqu’au bout.", "");
   L.push("## Comment lire", "",
+    "- **Depuis la 0.17 (un extracteur par ressource)**, le joueur simulé choisit lui-même quel bâtiment construire pour chaque ressource. Ses temps ont bougé de quelques pour cent (la Rivière en énigme : environ 10 % plus tard) : c’est surtout son choix de bâtiments, pas un prix qui a changé, car chaque niveau garde la recette et le taux de l’ancien extracteur.",
+    "- **Mains sûres** (les fabrications à la main : 20 % plus rapides et 10 % de chances d’une pièce en plus par niveau) ne change presque rien avant la Rivière, même avec un bonus de 90 % (mesuré une fois : 34,7 contre 30,8 min). Les murs du début se règlent à la récolte, pas aux pièces fabriquées. Mains calleuses (récolte ×2) est le seul achat qui compte au premier relève.",
     "- « — » : la Rivière n’est pas franchie dans la durée simulée ; « (6/9) » : seules 6 graines sur 9 y arrivent.",
     "- Regarder d’abord l’**écart entre les hypothèses** : si les trois donnent à peu près la même durée, la découverte ne fait pas la différence ; sinon, c’est ce qu’il faut observer chez de vrais joueurs.",
     "- Regarder ensuite l’**écart entre les achats** : il dit si le premier choix de Mémoire change vraiment le cycle 2, et ce que coûte de ne rien acheter.",

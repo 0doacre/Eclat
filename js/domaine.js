@@ -100,7 +100,7 @@
       const ruins = E.ruins();
       for (const id in ruins) {
         const it = I[id];
-        if (it && it.t === "ext" && it.z === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
+        if (it && it.t === "ext" && E.extZones(id)[0] === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
       }
       h += regleHTML(z);
       deps.forEach((d) => { h += gisHTML(z, d); });
@@ -579,6 +579,17 @@
             if (v > 0 && E.freeExt(t) < v) feedback(E.domExtAdd(z, res, v, t), t); else { E.domExtSet(z, res, t, cur + v); A.click(); }
             return redraw();
           },
+          eup: (b) => {
+            const t = b.dataset.t, r = E.domExtUp(z, res, t);
+            if (r.ok && r.queued) { A.click(); vibe(8); toast("✋ Amélioration commandée : " + esc(I[r.t].n) + ". Elle remplace un « " + esc(I[t].n.toLowerCase()) + " » dès qu’elle est finie.", { key: "xq" }); }
+            else if (r.ok) { A.click(); vibe(8); }
+            else {
+              A.fail(0);
+              const miss = r.missing ? Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n.toLowerCase())).join(", ") : "";
+              toast("Pas de quoi améliorer : " + esc(I[r.t || t].n.toLowerCase()) + (miss ? " : il manque " + miss : "") + ".", { key: "xq" });
+            }
+            return redraw();
+          },
           toggle: () => { E.domExtToggle(z, res); A.click(); return redraw(); },
           clear: () => { const x = E.domExt(z, res); if (x) Object.keys(x.u).forEach((t) => E.domExtSet(z, res, t, 0)); A.click(); render(true); }
         }
@@ -602,10 +613,12 @@
       h += '<p class="small">' + (!e ? "Aucun extracteur actif." : info.s === "off" ? "En pause." : rate > 0 ? "Récolte : " + perTime(rate) + " (active hors ligne)." : "Démarrage…") + "</p>";
       h += seuilHTML(e);
       if (types.length) {
-        h += '<p class="tiny muted">Les extracteurs ' + esc(deZone(z)) + " : chacun récolte seulement le gisement où tu le poses.</p>";
+        const L = E.ligneDe(res);
+        h += '<p class="tiny muted">' + (L ? "<b>" + esc(L.n) + "</b> : " : "") + "un bâtiment par ressource, qui monte de niveau. Chaque exemplaire récolte seulement ce gisement ; « Améliorer » en remplace un par le niveau d’après.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
-          const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0;
-          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small">' + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par extracteur · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span></span>" +
+          const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0, nx = E.extNext(t);
+          const up = cur && nx && S().known[nx] && I[nx].a <= S().age ? '<button class="mini lbl" data-m="eup" data-t="' + t + '" aria-label="Améliorer un exemplaire : ' + esc(I[nx].n) + '" style="margin-top:6px">↑ Niveau ' + I[nx].lv + "</button>" : "";
+          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small"><span class="tiny muted">Niveau ' + I[t].lv + "</span> " + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par exemplaire · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span>" + (up ? "<br>" + up : "") + "</span>" +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";

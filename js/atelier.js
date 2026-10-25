@@ -367,7 +367,7 @@
       h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
       if (U.carnetFilter !== 'unk') h += cqBarHTML();
-      h += '<div class="filters">' + [["tout", "Apprises"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+      h += '<div class="filters">' + [["tout", "Apprises"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]].map(([k, n]) =>
         '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       return h + '<div id="clist">' + carnetList() + "</div>";
     }
@@ -578,6 +578,16 @@
         const ids = E.pathRecipes().filter((id) => E.gesteOK('accorder') || st.known[id]).filter(keep);
         if (ids.length) h += '<details class="card age-sec" open><summary><span class="ic" style="border-color:#b36bff">🎵</span><span class="an">La Résonance</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
       }
+      // les extracteurs se rangent par bâtiment (Bûcheron, Cueilleur…), niveau après niveau, plutôt que par âge
+      if (U.carnetFilter === "ext") {
+        (D.LIGNES || []).forEach((L) => {
+          const ids = L.niv.map((v) => v.id).filter(keep);
+          if (!ids.length) return;
+          const kn = L.niv.filter((v) => st.known[v.id]).length;
+          h += '<details class="card age-sec" open><summary><span class="ic">' + L.ic + '</span><span class="an">' + esc(L.n) + '</span><span class="cnt">' + kn + "/" + L.niv.length + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
+        });
+        return h || '<p class="small muted center">Aucun extracteur connu pour l’instant.</p>';
+      }
       const book = E.carnet().map((s) => ({ age: s.age, ids: s.ids.slice() }));
       for (const id of Object.keys(st.known)) {
         const it = I[id]; if (!it || !it.r || it.path) continue;
@@ -615,6 +625,9 @@
         return U.carnetFilter === 'pret' ? Object.entries(lot.cout).every(([k, n]) => (st.inv[k] || 0) + 1e-9 >= n) : lot.plan.ok;
       }
       if (U.carnetFilter === "prod") return st.known[id] && ["ext", "upg", "mach", "tool", "stat"].includes(it.t);
+      if (U.carnetFilter === "ext") return st.known[id] && it.t === "ext";
+      if (U.carnetFilter === "tool") return st.known[id] && ["tool", "upg"].includes(it.t);
+      if (U.carnetFilter === "mach") return st.known[id] && ["mach", "stat"].includes(it.t);
       if (U.carnetFilter === "pin") return !!st.known[id] && !!st.pins[id];
       return true;
     }

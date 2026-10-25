@@ -184,7 +184,7 @@
   function badgeHTML(id) {
     const it = I[id];
     let t = TYPE[it.t];
-    if (it.t === "ext" && it.z && E.ZONES[it.z]) t += " · " + E.ZONES[it.z].n.replace(/^(Le |La |Les |L’)/, "");
+    if (it.t === "ext" && it.lg) { const L = E.ligneOf(id); t = (L ? L.n : t) + " · niveau " + it.lv; }
     else if (it.t === "mach" && it.ing) t += " · palier " + it.ing;
     return '<span class="badge t-' + it.t + '">' + esc(t) + "</span>";
   }
@@ -236,7 +236,7 @@
     if (e.auto) for (const k in e.auto) out.push("Extracteurs " + (k === "*" ? "de toutes les terres" : deZone(k)) + " " + fmtMul(e.auto[k]));
     if (it.p) {
       const c = E.cache(), m = (c.auto[it.z] || 1) * (c.auto["*"] || 1) * c.echo;
-      if (it.t === "ext") out.push("Se pose sur un gisement " + deZone(it.z) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
+      if (it.t === "ext") out.push("Se pose sur un gisement " + (it.zs && it.zs.length > 1 ? it.zs.map(deZone).join(" ou ") : deZone(it.z)) + " : " + Object.keys(it.p).map((r) => fmtRate(E.extRate(id, r) * m) + " " + I[r].n).join(" ou "));
       else out.push("Chacun : " + Object.keys(it.p).map((r) => fmtRate(it.p[r] * m) + " " + I[r].n).join(", "));
     }
     if (it.t === "mach") {

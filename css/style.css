@@ -1499,6 +1499,7 @@ h2 + .stamp { margin: -4px 0 8px; }
 .rel-keep li::before { content: "✦"; color: var(--intu); }
 .rel-reset li::before { content: "↺"; }
 .rel-gain { font-size: 13px; margin: 8px 0 2px; }
+.rel-gagne li::before { content: "+"; color: var(--good); font-weight: 700; font-size: 13px; top: 2px; }
 .rel-gain b { color: var(--intu); }
 
 /* les illustrations des terres : l’île sur la Carte, le décor derrière la fiche du Domaine */
