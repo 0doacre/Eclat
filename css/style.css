@@ -1519,5 +1519,9 @@ body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 .lot-manques { margin-top: 6px; }
 .carnet-lot p.tiny { margin: 5px 0 0; }
 .carnet-situer { margin-top: 8px; }
-.carnet-lot .ing { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.carnet-lot .ing { max-width: 100%; margin-right: 0; white-space: normal; overflow-wrap: anywhere; }
 .carnet-acts { flex-wrap: wrap; }
+@media (max-width: 359px) {
+  .qtybar { gap: 4px; }
+  .qtybar .tiny { display: none; }
+}

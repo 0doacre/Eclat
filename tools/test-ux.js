@@ -272,7 +272,7 @@ async function run() {
     await p.locator('[data-qty="10"]').click();
     let lot=p.locator('[data-carnet-lot="manche"]');
     ok(await lot.locator('[data-need="bois"]').getAttribute('data-q')==='30' && (await lot.innerText()).includes('10 pièces'),width+' : coût et rendement du lot');
-    ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),width+' : le lot tient dans la largeur');
+    ok(await p.evaluate(()=>{const v=document.getElementById('views');return document.documentElement.scrollWidth<=innerWidth&&v.scrollWidth===v.clientWidth&&v.scrollLeft===0;}),width+' : le lot tient dans la largeur sans déplacement latéral');
     const made=await p.evaluate(()=>window.__eclat.E.state.made.manche||0);
     await p.locator('[data-cr="manche"][data-n="10"]').click();
     await p.waitForFunction(n=>window.__eclat.E.state.made.manche>=n+10,made);

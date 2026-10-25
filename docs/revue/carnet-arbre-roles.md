@@ -21,6 +21,9 @@ recettes inconnues restent dans « À découvrir », où le sélecteur de quanti
 Les recettes apprises restent consultables après une relève, y compris celles d’un âge
 qui n’est plus atteint. Leur consultation ne débloque pas leur fabrication.
 
+Les catégories Extracteurs, Outils et Machines restent disponibles. Les extracteurs
+gardent leur regroupement par bâtiment et par niveau.
+
 La quantité mémorisée choisit le nombre de répétitions de la recette : ×10 correspond
 à dix fabrications. Le Carnet affiche le nombre de pièces ainsi produites, les ingrédients
 du lot, les ressources encore à réunir et une durée de fabrication estimée. Les pièces
