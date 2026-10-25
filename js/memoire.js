@@ -262,6 +262,15 @@
     function donsRepere() {
       return E.donsOffre().length ? '<button class="dom-tip dom-don" data-dons>🎁 Le Semeur d’avant a laissé trois dons. Tu en prends un. <span>voir ▸</span></button>' : "";
     }
+    /* après la relève obligatoire : un rappel en haut du Domaine, qui s’efface quand les Traces sont dépensées (ou au bout de quinze minutes) */
+    const REVEIL_MIN = 15;
+    function reveilRepere() {
+      const st = S(), m = st.meta;
+      if (!m.forcedDone || st.cycle !== 2 || !(m.traces > 0) || !m.reveilAt || Date.now() - m.reveilAt > REVEIL_MIN * 60000) return "";
+      const rec = Object.keys(st.known).length;
+      return '<button class="dom-tip dom-reveil" data-cycle>🌅 Un autre Semeur a pris le relais. Il a gardé tes ' + rec + " recette" + (rec > 1 ? "s" : "") +
+        " et dispose de <b>" + fmt(m.traces) + " ✦ Traces</b> à dépenser dans la Mémoire des mains. <span>dépenser ▸</span></button>";
+    }
     /* le don du cycle, dans la Mémoire des mains */
     function donCycleHTML() {
       const d = E.don();
@@ -569,7 +578,7 @@
       b.classList.toggle("ready", hasPurchase && (can && gain > 0 || m.traces >= 2));
     }
 
-    return { intro, openStillnessScene, showEnding, confirmCycle, donsRepere, openDons, openMemoire, openForcedReleve, memChip };
+    return { intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip };
   }
 
   window.EclatMemoire = { create };

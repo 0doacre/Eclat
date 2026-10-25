@@ -109,7 +109,8 @@ const parcours = (pol, achat, graine) => jouer("--parcours", "--minutes", "30", 
 const plaine2 = (r) => (r.rows.find((x) => x.z === "plaine" && !x.offert) || {}).t;
 test("premier parcours : la relève obligatoire est prise, puis le cycle 2 franchit la Plaine", () => {
   const r = parcours("enigme");
-  assert.ok(r.rel && r.rel.t > 1 && r.rel.t < 6, "relève entre 1 et 6 min : " + (r.rel && r.rel.t));
+  assert.ok(r.rel && r.rel.t > 3 && r.rel.t < 10, "relève une fois la Plaine franchie, entre 3 et 10 min : " + (r.rel && r.rel.t));
+  assert.ok(r.rel.essais >= 5, "la Plaine demande de découvrir plusieurs recettes (dont la torche)");
   assert.ok(plaine2(r) > 0, "la Plaine est franchie au cycle 2");
   assert.strictEqual(r.E.state.meta.forcedDone, true);
   assert.strictEqual(r.E.state.cycle, 2);
@@ -131,7 +132,7 @@ test("premier parcours : le premier achat de Mémoire change le cycle 2 (Mains c
 test("premier parcours : déterminisme (même graine, mêmes nombres) et la graine change le hasard", () => {
   const a = parcours("hasard", "recolte", 2), b = parcours("hasard", "recolte", 2), c = parcours("hasard", "recolte", 5);
   assert.deepStrictEqual([a.rel.t, a.essais, plaine2(a)], [b.rel.t, b.essais, plaine2(b)]);
-  assert.notStrictEqual(a.essais, c.essais, "deux graines, deux parcours");
+  assert.notDeepStrictEqual([a.rel.t, a.essais, a.rel.essaisPar], [c.rel.t, c.essais, c.rel.essaisPar], "deux graines, deux parcours");
 });
 test("premier parcours : --decouverte et --achat inconnus sont dits", () => {
   assert.throws(() => lire(["--parcours", "--decouverte", "x"]), /enigme, guide ou hasard/);
