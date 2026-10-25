@@ -338,18 +338,34 @@
     }
 
     /* ------------------------------------------------------------ CARNET */
+    /* la quantité du Carnet : choisie une fois (en haut, elle reste visible en défilant), mémorisée, appliquée au bouton « Fabriquer » de chaque recette */
+    const cqSizes = () => [1].concat((D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000], ["max"]);
+    const cqNow = () => { const q = S().flags.carnetQty; return cqSizes().includes(q) ? q : 1; };
+    /* la quantité mémorisée, ramenée à ce que cette recette accepte (une pièce unique : 1 ; un extracteur ou une machine : pas de ×50 ni plus) */
+    function cqFor(it) {
+      const q = cqNow();
+      if (E.isUnique(it)) return 1;
+      if (E.isScaled(it)) return q === 1 || q === 10 || q === "max" ? q : 10;
+      return q;
+    }
+    function cqBarHTML() {
+      const q = cqNow();
+      return '<div class="qtybar" role="group" aria-label="Quantité à fabriquer"><span class="tiny muted">Quantité</span>' +
+        cqSizes().map((n) => '<button type="button" class="chipq' + (n === q ? " on" : "") + '" data-qty="' + n + '" aria-pressed="' + (n === q) + '">' + (n === "max" ? "Max" : "×" + n) + "</button>").join("") + "</div>";
+    }
     function viewCarnet() {
       const st = S();
       const book = E.carnet();
       let known = 0, total = 0;
       book.forEach((s) => s.ids.forEach((id) => { if (!I[id].sec) { total++; if (st.known[id]) known++; } }));
       let h = '<h2 class="title">Carnet</h2>';
-      if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. <b>Fabriquer, ×10, ×50, ×100, ×1000, Max</b> lancent une commande : les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> montre ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
+      if (!st.flags.tip_carnet) h += '<div class="tip">Le Carnet garde toutes tes recettes. Choisis une <b>quantité</b> (×1 à Max, elle est mémorisée) puis touche <b>Fabriquer</b> : c’est une commande, les pièces qui manquent sont fabriquées aussi, et tes machines t’aident. 🎯 <b>Suivre</b> montre ce qui manque en haut du Domaine. <button class="btn small ghost" data-tip="tip_carnet">Compris</button></div>';
       // le compte suit les âges à ta portée ; après une relève, le Carnet entier reste acquis (« en tout »)
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
       h += '<p class="small muted">' + known + (known > 1 ? " recettes découvertes" : " recette découverte") + " sur " + total + " jusqu’à cet âge" + (all > known ? " · " + all + " dans ton Carnet en tout" : "") + "</p>";
       h += '<div class="search"><input id="cq" type="search" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
+      h += cqBarHTML();
       h += '<div class="filters">' + [["tout", "Tout"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["prod", "Équipement"], ["pin", "★ Épinglées"]].map(([k, n]) =>
         '<button data-cf="' + k + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       return h + '<div id="clist">' + carnetList() + "</div>";
@@ -800,7 +816,7 @@
       const readyCraft = st.known[id] && !owned && !E.missingFor(id, 1);
       let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Prêt</span>' : '') + "</div>" +
         (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div>' +
-        (readyCraft ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
+        (readyCraft && cqFor(it) !== 1 ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
         '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
         '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" aria-label="Épingler">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
       if (!owned) h += '<div class="rl">' + gesteChip(id) + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>";
@@ -811,7 +827,8 @@
         const b = E.blocker(id);
         if (b && b.why !== "owned") h += '<div class="why">' + cap1(needText(id, b, true)) + "</div>";
         else {
-          h += '<div class="acts">' + craftBtns(id) +
+          const qn = cqFor(it), lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
+          h += '<div class="acts carnet-acts"><button class="btn small pri make" data-cr="' + id + '" data-n="' + qn + '" data-lbl="' + lbl + '">' + lbl + (qn === 1 ? "" : qn === "max" ? " Max" : " ×" + qn) + "</button>" +
             '<button class="btn small ghost" data-tree="' + id + '" title="Détail">🌳 Détail</button>' +
             (st.track && st.track.id === id ? '<button class="btn small ghost auto-on" data-untrack title="Ne plus suivre">🎯 Suivi</button>' : '<button class="btn small ghost" data-track="' + id + '" title="Suivre">🎯 Suivre</button>') + "</div>";
         }

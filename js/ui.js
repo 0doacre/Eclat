@@ -883,7 +883,7 @@
       if (n === "max") {
         const max = E.maxPlan(id);
         b.classList.toggle("nope", max < 1);
-        b.textContent = "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
+        b.textContent = (b.dataset.lbl ? b.dataset.lbl + " " : "") + "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
       } else {
         const p = E.plan(id, 1);
         const ok = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length;
