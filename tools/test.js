@@ -3095,8 +3095,16 @@ test("Règle de terre : la gêne nomme les protections (le Domaine propose leur 
   assert.deepStrictEqual(r.sans, ["torche", "lampe"]);
   assert.deepStrictEqual(E0.regle("riviere").sans, []);
 });
-test("Version 0.15.3 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.15.3");
+test("Ce qui limite : d’où vient une ressource qui manque", () => {
+  const E0 = createEngine();
+  const l = E0.limiting("bois", 100);
+  assert.ok(l.raw && l.z === "lisiere" && l.open && l.rate === 0 && l.eta === null, "rien ne produit encore le bois");
+  assert.ok(E0.limiting("bois", 100).hand, "les mains récoltent le bois");
+  assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
+  assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
+});
+test("Version 0.15.4 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.15.4");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3311,7 +3319,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.15.3");
+  assert.strictEqual(D.VERSION, "0.15.4");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

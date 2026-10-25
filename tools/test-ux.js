@@ -291,6 +291,17 @@ async function run() {
   await p.waitForFunction(() => window.__eclat.E.state.cycle === 2, null, { timeout: 5000 });
   ok(await p.evaluate(() => window.__eclat.E.state.known.manche > 0 && window.__eclat.E.state.meta.forcedDone), "Première relève : le cycle 2 commence, le savoir est conservé");
   ok(!p.errors.length, "Première relève : aucune erreur après le relais " + p.errors.join(" | ")); await p.context().close();
+  // Une commande qui attend une ressource : la feuille des commandes dit d’où elle vient et mène à son gisement.
+  p = await page(390, true);
+  await p.locator('#tabs [data-tab="atelier"]').click();
+  await p.evaluate(() => { const E = window.__eclat.E; E.state.inv = {}; E.order("manche", 500); });
+  await p.locator('#actbar [data-ab="hands"]').click();
+  await p.locator("#modal .limit").first().waitFor({ state: "visible" });
+  ok(await p.evaluate(() => /Bois/.test(document.querySelector("#modal .limit").innerText)), "Commande bloquée : la ressource limitante est nommée");
+  await p.waitForTimeout(500);
+  await p.locator("#modal [data-gz]").first().click();
+  await p.waitForFunction(() => document.body.dataset.tab === "domaine" && document.querySelector("#modal").classList.contains("hidden"), null, { timeout: 3000 });
+  ok(!p.errors.length, "Commande bloquée : « Aller au gisement » mène au Domaine sans erreur " + p.errors.join(" | ")); await p.context().close();
   console.log("UX mobile : " + checks + " contrôles réussis.");
 }
 run().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); server.close(); });

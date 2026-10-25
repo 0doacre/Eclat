@@ -359,6 +359,10 @@
         if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, 1); return; }
         if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
         if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
+        if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans le Domaine
+          const z = b.dataset.gz; A.click(); U.zone = z; if (U.mcur) closeModal();
+          setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return;
+        }
         if ((b = t.closest("[data-gotab]"))) { setTab(b.dataset.gotab); return; }
         if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
         if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }

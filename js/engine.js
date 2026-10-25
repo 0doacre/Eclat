@@ -663,6 +663,14 @@
       return r;
     };
 
+    /* d’où vient une ressource qui manque : sa terre, ce que les extracteurs en donnent (par seconde) et le temps qu’il faudrait pour q */
+    E.isRawRes = (res) => { const it = item(res); return !!(it && it.t === "res" && RES_ZONE[res]); };
+    E.limiting = (res, q) => {
+      const it = item(res), z = RES_ZONE[res], raw = !!(it && it.t === "res" && z);
+      const rate = raw ? E.rate(res) : 0;
+      return { res, q, raw, z: raw ? z : null, open: raw ? zoneOpen(z) : true, rate, eta: rate > 0 ? q / rate : null, hand: raw && zoneOpen(z) ? E.tapYieldOf(res) > 0 : false };
+    };
+
     /* ------------------------------------------------------ coûts */
     function costFor(id, k) {
       const it = item(id), base = it.r[1];
