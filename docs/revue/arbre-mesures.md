@@ -76,6 +76,6 @@ Chromium, sauvegarde `tools/fixtures/save-v5-age8-usine.json`, Carnet puis Arbre
 | État | Objets visibles | Recettes connues | Relations | Ingrédients max. | Usages max. |
 |---|---:|---:|---:|---:|---:|
 | neuve | 1 | 0 | 0 | 0 | 0 |
-| avancée | 83 | 71 | 153 | 3 | 26 |
-| tout connu | 220 | 196 | 464 | 3 | 37 |
+| avancée | 83 | 71 | 152 | 3 | 26 |
+| tout connu | 233 | 207 | 490 | 3 | 38 |
 <!-- mesures-verticales:fin -->

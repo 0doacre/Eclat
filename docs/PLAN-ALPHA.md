@@ -1,10 +1,10 @@
 # Plan de l’alpha
 
-État au 25 octobre 2026, version 0.20.0.
+État au 25 octobre 2026, version 0.21.0.
 
 ## Où en est le contenu
 
-15 âges, 246 objets, 12 terres, 5 fins. Les extracteurs sont un par ressource, avec des niveaux (0.17 et 0.18). Les âges de la Vapeur (0.19) et de l’Atome (0.20) ont été insérés.
+15 âges, 259 objets, 12 terres, 5 fins. Les extracteurs sont un par ressource, avec des niveaux (0.17 et 0.18). Les âges de la Vapeur (0.19) et de l’Atome (0.20) ont été insérés. Le premier lot de densité (0.21) ajoute l’eau à la Vapeur et le soufre aux Polymères, avec leurs usages : `revue/densite-ressources.md`.
 
 ### Objets par âge
 
@@ -17,11 +17,11 @@
 | 5 | Âge du Bronze | 1 | 7 | 2 | 1 | 3 | 3 | 1 | 2 | 20 |
 | 6 | Âge du Fer | 2 | 8 | 4 | 0 | 2 | 1 | 1 | 4 | 22 |
 | 7 | Âge de l’Acier | 0 | 7 | 0 | 0 | 1 | 0 | 3 | 0 | 11 |
-| 8 | Âge de la Vapeur | 0 | 6 | 8 | 1 | 1 | 3 | 0 | 0 | 19 |
+| 8 | Âge de la Vapeur | 1 | 9 | 9 | 1 | 1 | 4 | 0 | 0 | 25 |
 | 9 | Âge de l’Électricité | 0 | 7 | 4 | 0 | 1 | 3 | 2 | 1 | 18 |
 | 10 | Âge de l’Atome | 2 | 5 | 2 | 0 | 0 | 2 | 0 | 0 | 11 |
 | 11 | Âge du Silicium | 0 | 6 | 1 | 1 | 2 | 3 | 1 | 4 | 18 |
-| 12 | Âge des Polymères | 4 | 9 | 3 | 0 | 1 | 1 | 2 | 1 | 21 |
+| 12 | Âge des Polymères | 5 | 13 | 4 | 0 | 1 | 2 | 2 | 1 | 28 |
 | 13 | Âge des Composites | 0 | 8 | 4 | 0 | 1 | 1 | 1 | 0 | 15 |
 | 14 | Âge Spatial | 3 | 2 | 3 | 1 | 2 | 2 | 0 | 0 | 13 |
 | 15 | Âge Stellaire | 1 | 4 | 1 | 0 | 0 | 0 | 1 | 3 | 10 |
@@ -30,17 +30,20 @@
 
 ### Le bot par âge (`node tools/sim.js`, joueur idéal, 4 appuis par seconde)
 
-Bois → Os 0 min 46 · Pierre +0 min 53 · Cuivre +1 min 31 · Bronze +1 min 03 · Fer +2 min 51 · Acier +3 min 18 · **Vapeur +0 min 52** · Électricité +8 min 34 · Atome +2 min 17 · Silicium +1 min 51 · **Polymères +0 min 33** · Composites +1 min 59 · Spatial +6 min 59 · Stellaire +11 min 07. Fin en 1 h 16 min.
+Temps **passé dans chaque âge**, de son entrée à l’entrée dans le suivant (pour le Stellaire, jusqu’à la fin Dyson) : Bois 0 min 46 · Os 0 min 53 · Pierre 1 min 31 · Cuivre 1 min 03 · Bronze 2 min 51 · Fer 3 min 18 · Acier 0 min 52 · Vapeur 9 min 12 · Électricité 2 min 22 · Atome 1 min 45 · Silicium 0 min 29 · Polymères 2 min 12 · Composites 7 min 24 · Spatial 11 min 16 · Stellaire 32 min 21. Fin en 1 h 18 min 15.
 
-C’est une borne basse : le bot ne se trompe pas de recette, ne cherche pas, et ne lit pas. Les âges à moins d’une minute (Vapeur, Polymères) et les âges **sans ressource brute** (Acier, Vapeur, Électricité, Silicium, Composites) sont les plus minces à jouer.
+Correction de lecture : jusqu’en 0.20, le « +… » sur la ligne d’un âge mesurait le précédent. Les 52 s attribuées à la Vapeur étaient celles de l’Acier ; les 33 s attribuées aux Polymères étaient celles du Silicium. Le simulateur affiche désormais deux colonnes explicites, entrée et temps dans cet âge, y compris le Bois et le Stellaire. Il construit aussi l’extracteur nécessaire avant de viser une ressource sans récolte à la main.
+
+C’est une borne basse : le bot ne se trompe pas de recette, ne cherche pas et ne lit pas ; par défaut, il fabrique instantanément. Avec `MAINS=1`, qui estime les durées manuelles et l’aide des machines, il termine en 2 h 50 min 47. Les âges à moins d’une minute sont **Bois, Os, Acier et Silicium**. L’absence de ressource brute (Acier, Électricité, Silicium, Composites) est une piste de conception, pas une preuve que l’âge manque de contenu. Le test humain reste nécessaire.
 
 ## Ce qui reste avant l’alpha
 
 Dans l’ordre.
 
-1. **Densité** (une version, sur la méthode de `docs/AJOUTER-UN-AGE.md`).
-   - Étoffer les âges les plus fins : Polymères et Vapeur (le bot les passe en moins d’une minute), Stellaire (10 objets), Atome (11).
-   - Une ressource brute dans les âges qui n’en ont pas (candidats : un sable de silice pour le Silicium, des fibres synthétiques pour les Composites), sur le modèle de l’uranium et de la galène (ressource d’extracteur).
+1. **Densité**, par lots (méthode : `docs/AJOUTER-UN-AGE.md`).
+   - Premier lot réalisé : eau et circuits de vapeur, raffinage du pétrole, soufre, étanchéité et refroidissement. Le but est de relier les recettes, pas d’ajouter une attente.
+   - Prochain examen : **Acier et Silicium**, au vu des durées corrigées ; Stellaire et Atome pour leurs usages et leurs choix, pas seulement leur nombre d’objets.
+   - Direction retenue avec l’auteur : une ou plusieurs ressources brutes par âge pour donner un sens aux nouvelles techniques. Chaque ressource doit avoir un lieu, une façon de la récolter et des usages. Candidats à étudier : minerai de manganèse (Acier), mica (Électricité), silice de haute pureté (Silicium), basalte (Composites). Une fibre synthétique serait une pièce transformée, pas une ressource brute.
    - Un **deuxième niveau** pour l’uranium et la galène (ils n’en ont qu’un).
    - Un usage pour les pièces qui n’en ont pas (`gants`, `masque`, `bouteille` : ce sont des protections de terre, à confirmer).
 2. **Tutoriel exhaustif** (`docs/A-FAIRE.md`, « Juste après ») : un bouton, une explication, au moment où il devient utile. Outil proposé : lister tous les boutons de l’interface et ce qui les explique, avec un test qui échoue quand un bouton n’a aucune explication.
@@ -54,9 +57,10 @@ Dans l’ordre.
 - Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur (0.16.2).
 - La première relève est proposée une fois la Plaine franchie, avec une fenêtre en langage d’interface (0.16.1).
 - Alpha **ouverte à des testeurs** avant toute alpha publique.
+- Les nouvelles ressources doivent expliquer les techniques et relier les âges entre eux ; une ressource déjà connue peut changer d’usage et d’échelle (l’eau à la Vapeur).
 
 ## À trancher plus tard
 
-- Le deuxième niveau de ressource par âge (voir densité) : une ressource brute partout, ou seulement là où l’histoire s’y prête.
+- Les ressources précises des prochains lots et leur place dans les recettes, sans ajouter une chaîne parallèle qui ne sert qu’à elle-même.
 - Un 16ᵉ âge après le Stellaire : une suite au récit demande un dénouement ; à décider avec l’histoire.
 - Les terres sans règle de terre propre (Gisement Noir, Mercure) : `docs/A-FAIRE.md`.

@@ -7,7 +7,9 @@ Deux âges ont été insérés en cours de route : la **Vapeur** (0.19, entre l�
 Mesurer d’abord (le tableau « objets par âge » est dans `docs/PLAN-ALPHA.md`, le bot par âge se lit avec `node tools/sim.js`) :
 - un âge **trop chargé** se coupe en deux (la Vapeur a été prise à l’Acier : 27 objets, contre 10 à 17 ailleurs) ;
 - un âge **absent de l’histoire des techniques** s’ajoute (l’Atome) ;
-- un âge qui **s’enchaîne en moins d’une minute** au bot est trop mince : à étoffer avant d’en ajouter un autre.
+- un âge qui **s’enchaîne en moins d’une minute** au bot mérite un examen de ses usages et de ses choix avant d’en ajouter un autre.
+
+Lire la colonne **Temps dans cet âge**, pas l’heure d’entrée. Avant la 0.21, le « +… » d’une ligne mesurait l’âge précédent : Vapeur +52 s désignait en réalité l’Acier. La durée ne suffit pas à juger l’intérêt d’un âge ; vérifier les propriétés des ressources, les choix et les usages avec des joueurs.
 
 Un âge neuf demande, au minimum : une devise, une couleur, 4 à 5 étapes (objectifs), 8 à 12 objets, une ligne dans le récit (voix d’ARCHE), un titre de chapitre.
 
