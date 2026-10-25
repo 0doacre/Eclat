@@ -11,7 +11,7 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 9;
+  const SAVE_VERSION = 10;
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -44,6 +44,13 @@
     const list = z.res.slice();
     EXTS.forEach((id) => { if (extZones(id).includes(z.id)) for (const r in D.ITEMS[id].p) if (!list.includes(r)) list.push(r); });
     ZONE_DEPS[z.id] = list.map((r) => ({ res: r, hand: z.res.includes(r) }));
+  });
+  /* une ressource qui ne se récolte qu’avec un extracteur (l’uranium, la galène) : sa terre est celle de son extracteur, et le jeu
+   * sait lequel la produit (le moins avancé) pour guider vers lui */
+  const HAND = {}, EXT_OF = {};
+  D.ZONES.forEach((z) => z.res.forEach((r) => (HAND[r] = true)));
+  EXTS.slice().sort((a, b) => (D.ITEMS[a].a || 0) - (D.ITEMS[b].a || 0)).forEach((id) => {
+    for (const r in D.ITEMS[id].p) { if (!EXT_OF[r]) EXT_OF[r] = id; if (!RES_ZONE[r]) RES_ZONE[r] = extZones(id)[0]; }
   });
   const extKey = (z, res) => z + ":" + res;
   /* avant la 0.17, un extracteur récoltait plusieurs ressources : le niveau qui descend de lui (champ de) et récolte celle-ci */
@@ -202,6 +209,21 @@
       const st = o.meta && o.meta.stamps;
       if (st && typeof st === "object") for (const k in st) if (Array.isArray(st[k]) && st[k].length > 2) st[k][2] = apres(st[k][2]);
       o.v = 9;
+    }
+    if (from < 10) {
+      // v10 : un âge de plus, l’Atome, entre l’Électricité (8) et le Silicium. Les âges d’avant 9 restent, les autres avancent d’un rang.
+      const apres = (a) => (Number(a) >= 9 ? Number(a) + 1 : Number(a));
+      if (typeof o.age === "number") o.age = apres(o.age);
+      o.flags = o.flags || {};
+      if (o.flags.ages && typeof o.flags.ages === "object") {
+        const ages = {};
+        for (const k in o.flags.ages) ages[apres(k)] = o.flags.ages[k];
+        if (ages[10] || o.age >= 10) ages[9] = 1;
+        o.flags.ages = ages;
+      }
+      const st = o.meta && o.meta.stamps;
+      if (st && typeof st === "object") for (const k in st) if (Array.isArray(st[k]) && st[k].length > 2) st[k][2] = apres(st[k][2]);
+      o.v = 10;
     }
     return o;
   }
@@ -1831,7 +1853,11 @@
         const it = item(id);
         if (!it) return null;
         const zid = RES_ZONE[id];
-        if (zid && zoneOpen(zid)) return null; // se récolte
+        if (zid && zoneOpen(zid)) {
+          // une ressource que seul un extracteur récolte : il faut d’abord celui-là
+          if (!HAND[id] && EXT_OF[id] && !(count(EXT_OF[id]) > 0)) return walk(EXT_OF[id], d + 1) || { id: EXT_OF[id], why: "known" };
+          return null; // se récolte
+        }
         if (!it.r) {
           // matière première d’une zone fermée : il faut la clé de la zone
           const req = zid && ZONES[zid].req;
@@ -3778,11 +3804,12 @@
         "Chapitre VII · L’Acier",
         "Chapitre VIII · La Vapeur au travail",
         "Chapitre IX · L’Étincelle captive",
-        "Chapitre X · La Pensée du silicium",
-        "Chapitre XI · L’Huile noire",
-        "Chapitre XII · L’Étoffe des composites",
-        "Chapitre XIII · L’Envol spatial",
-        "Chapitre XIV · La Lumière stellaire"
+        "Chapitre X · Le Cœur de l’atome",
+        "Chapitre XI · La Pensée du silicium",
+        "Chapitre XII · L’Huile noire",
+        "Chapitre XIII · L’Étoffe des composites",
+        "Chapitre XIV · L’Envol spatial",
+        "Chapitre XV · La Lumière stellaire"
       ];
       const chapter = chapterTitles[S.age] || ("Chapitre " + (S.age + 1));
       return {

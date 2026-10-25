@@ -617,7 +617,7 @@
 
   /* ------------------------------------------------------------ thème */
   /* le carnet change d’habit avec l’époque (css/theme.css) ; la page tourne quand elle change */
-  const EPOCH = ["pigments", "pigments", "pigments", "papyrus", "papyrus", "enluminure", "registre", "registre", "registre", "quadrille", "quadrille", "quadrille", "bord", "bord"];
+  const EPOCH = ["pigments", "pigments", "pigments", "papyrus", "papyrus", "enluminure", "registre", "registre", "registre", "quadrille", "quadrille", "quadrille", "quadrille", "bord", "bord"];
   const ROMAN = (n) => [["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1]].reduce((o, [r, v]) => { while (n >= v) { o += r; n -= v; } return o; }, "");
   function applyAge() {
     const a = S().age, ag = D.AGES[a], ep = EPOCH[a] || "pigments", body = document.body;

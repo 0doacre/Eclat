@@ -2,7 +2,16 @@
 
 Liste tenue à la main, du plus proche au plus lointain. Rien ici n'est un secret du récit.
 
+## Vers l’alpha
+
+Le plan complet, avec le tableau des objets par âge, est dans **`docs/PLAN-ALPHA.md`** (densité, tutoriel exhaustif, relecture, bandeau d’alpha, test à 5 joueurs). Pour ajouter un âge : **`docs/AJOUTER-UN-AGE.md`**.
+
 ## Fait récemment
+
+- **0.20** : l’Âge de l’Atome (uranium et galène, par extracteur seulement ; centrale à fission). **0.19** : l’Âge de la Vapeur,
+  pris sur l’Acier. **0.18** : une recette et un nom pour chaque niveau d’extracteur, filtres Extracteurs / Outils / Machines au Carnet.
+  **0.17** : un extracteur par ressource, avec des niveaux. **0.16.2** : Traces dépensées seulement au réveil d’un Semeur.
+  **0.16.1** : fenêtre de première relève en langage d’interface, Mains sûres.
 
 - **Onboarding 0.12.0** (DeepSeek, rebasé par Claude) : lieux à explorer avant un passage (premier cycle seulement),
   moins d'écrans au début, relève expliquée en chiffres, retours discrets. Textes à relire : `docs/revue/onboarding.md`.
