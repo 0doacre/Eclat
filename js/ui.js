@@ -667,6 +667,7 @@
     if (!tabAvailable(t)) t = "domaine";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
     const was = U.tab;
+    if (t === 'arbre' && was !== 'arbre' && !U.arbreVoirId) { U.arbreSel = null; U.arbreHistorique = []; }
     const views = $("#views");
     U.viewScroll = U.viewScroll || {};
     if (was !== t) U.viewScroll[was] = views.scrollTop;
@@ -920,6 +921,7 @@
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
     }
+    if (U.tab === 'carnet') Atl.carnetLive();
   }
 
   /* ------------------------------------------------------------ ambiance */
