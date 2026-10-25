@@ -365,16 +365,22 @@ async function run() {
   p = await page(390, false);
   await p.evaluate(() => {
     const { E } = window.__eclat, st = E.state;
-    st.age = 2; ["cabane", "hutte"].forEach((t) => E.learn(t, true));
+    st.age = 2; ["cabane", "hutte", "fibre_1"].forEach((t) => E.learn(t, true));
     E.add("cabane", 2); E.add("fibre_1", 1); E.domExtSet("lisiere", "bois", "cabane", 2); E.domExtSet("lisiere", "fibre", "fibre_1", 1);
     E.emit("struct");
   });
   await p.locator('#tabs [data-tab="domaine"]').click(); await p.waitForTimeout(300);
   await p.locator('[data-gsheet="lisiere:fibre"]').click(); await p.waitForTimeout(400);
-  ok(await p.evaluate(() => { const t = document.querySelector("#modal").innerText; return /Cueilleur/.test(t) && /Cabane de cueilleur/.test(t) && !/Cabane de bûcheron/.test(t); }), "Fiche de la fibre : la ligne du Cueilleur, pas celle du Bûcheron");
+  ok(await p.evaluate(() => { const t = document.querySelector("#modal").innerText; return /Cueilleur/.test(t) && /Claie de séchage/.test(t) && !/Cabane de bûcheron/.test(t); }), "Fiche de la fibre : la ligne du Cueilleur, pas celle du Bûcheron");
   await p.evaluate(() => window.__eclat.closeModal()); await p.waitForTimeout(200);
   await p.locator('[data-gsheet="lisiere:bois"]').click(); await p.waitForTimeout(400);
   ok(await p.evaluate(() => { const b = document.querySelector('#modal [data-m="eup"]'); const r = b && b.getBoundingClientRect(); return !!b && /Niveau 2/.test(b.innerText) && r.height >= 43.9 && r.right <= innerWidth; }), "Fiche du bois : « Niveau 2 » pour améliorer une cabane, à portée du doigt");
+  await p.evaluate(() => window.__eclat.closeModal()); await p.waitForTimeout(200);
+  // Carnet : le filtre « Extracteurs » range par bâtiment, niveau après niveau
+  await p.locator('#tabs [data-tab="carnet"]').click(); await p.waitForTimeout(300);
+  await p.evaluate(() => { const b = document.querySelector('[data-cf="ext"]'); b.scrollIntoView({ inline: "center" }); });
+  await p.locator('[data-cf="ext"]').click(); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => { const t = document.querySelector("#clist").innerText; return /Bûcheron/.test(t) && /Cabane de bûcheron/.test(t) && /Hutte de bûcheron/.test(t); }), "Carnet, filtre Extracteurs : les niveaux du Bûcheron sont rangés ensemble");
   ok(!p.errors.length, "Fiche d’un gisement : aucune erreur " + p.errors.join(" | "));
   // La première relève (cycle 1, premier parcours fini) : la fenêtre s’ouvre, le relais se passe, le savoir reste.
   p = await page(390, false);

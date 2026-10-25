@@ -22,7 +22,7 @@
   for (const id in D.ITEMS) {
     const it = D.ITEMS[id];
     it.id = id;
-    if (it.r && !it.sib) { // un niveau « frère » partage la recette (et la découverte) de son groupe
+    if (it.r) {
       const k = keyOf(it.r[0], Object.keys(it.r[1]));
       if (RECIPES[k]) throw new Error("Recette en double : " + k + " (" + RECIPES[k] + " / " + id + ")");
       RECIPES[k] = id;
@@ -46,8 +46,8 @@
     ZONE_DEPS[z.id] = list.map((r) => ({ res: r, hand: z.res.includes(r) }));
   });
   const extKey = (z, res) => z + ":" + res;
-  /* le niveau de la même famille (même recette) qui récolte cette ressource */
-  const extFrere = (id, res) => { const g = D.ITEMS[id].sib || id; return Object.keys(D.ITEMS).find((k) => (k === g || D.ITEMS[k].sib === g) && D.ITEMS[k].t === "ext" && D.ITEMS[k].p && D.ITEMS[k].p[res]) || null; };
+  /* avant la 0.17, un extracteur récoltait plusieurs ressources : le niveau qui descend de lui (champ de) et récolte celle-ci */
+  const extFrere = (id, res) => { const g = D.ITEMS[id].de || id; return Object.keys(D.ITEMS).find((k) => (k === g || D.ITEMS[k].de === g) && D.ITEMS[k].t === "ext" && D.ITEMS[k].p && D.ITEMS[k].p[res]) || null; };
   /* un extracteur posé met tout son effort sur la matière de son gisement */
   const extRate = (id, r) => { const p = D.ITEMS[id] && D.ITEMS[id].p; return p && p[r] ? p[r] * Object.keys(p).length : 0; };
   /* un extracteur ne travaille que sur les gisements de sa propre terre */
@@ -772,7 +772,6 @@
       if (S.known[id]) return false;
       S.known[id] = true;
       const it = item(id);
-      for (const k in D.ITEMS) if (D.ITEMS[k].sib === id) S.known[k] = true; // les niveaux frères viennent avec
       if (!silent && !it.sec) { S.intu += 1; donIntu(1); }
       E.emit("learn", id);
       E.emit("struct");
@@ -1038,7 +1037,7 @@
         return it && it.r && ids.every((i) => it.r[1][i] !== undefined);
       });
     };
-    E.usesOf = (id) => Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].r && !D.ITEMS[k].sib && D.ITEMS[k].r[1][id] !== undefined);
+    E.usesOf = (id) => Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].r && D.ITEMS[k].r[1][id] !== undefined);
 
     /* ------------------------------------------------------ planification récursive
      * Que faut-il fabriquer (sous-composants compris) pour obtenir `times` fois `id` ?
@@ -3001,11 +3000,6 @@
     };
     E.extOk = extOk;
     E.extFor = (r, z) => EXTS.filter((t) => (z ? extOk(t, z, r) : extRate(t, r) > 0));
-    /* un niveau frère est connu dès que la recette de son groupe l’est */
-    const extKnown = (t) => { const it = item(t); return !!(S.known[t] || (it && it.sib && S.known[it.sib])); };
-    E.extKnown = extKnown;
-    /* le nombre de recettes connues : les niveaux frères ne comptent pas, ils viennent avec la recette de leur groupe */
-    E.nRecettes = () => Object.keys(S.known).filter((id) => !(D.ITEMS[id] && D.ITEMS[id].sib)).length;
     E.extUnits = function () {
       const out = {};
       EXTS.forEach((t) => (out[t] = { own: Math.floor(count(t)), used: 0 }));
@@ -3047,7 +3041,7 @@
       const types = E.extFor(res, z).sort((a, b) => extRate(b, res) - extRate(a, res));
       const free = types.find((t) => freeExt(t) >= 1);
       if (free) return { t: free, free: freeExt(free) };
-      const known = types.filter(extKnown);
+      const known = types.filter((t) => S.known[t]);
       if (!known.length) return null;
       const can = known.find((t) => E.plan(t, 1).ok);
       return { t: can || known[known.length - 1], free: 0 };
@@ -3085,13 +3079,13 @@
     E.ligneDe = (res) => LIGNE[res] || null;
     E.ligneOf = (id) => { const it = item(id); return it && it.lg ? D.LIGNES.find((L) => L.id === it.lg) : null; };
     /* le niveau d’après (l’objet), ou null au dernier niveau */
-    E.extNext = (id) => { const L = E.ligneOf(id), it = item(id); return L && it ? (L.niv[it.lv] ? L.niv[it.lv][0] : null) : null; };
-    E.extNiveaux = (res) => (LIGNE[res] ? LIGNE[res].niv.map((v) => v[0]) : []);
+    E.extNext = (id) => { const L = E.ligneOf(id), it = item(id); return L && it ? (L.niv[it.lv] ? L.niv[it.lv].id : null) : null; };
+    E.extNiveaux = (res) => (LIGNE[res] ? LIGNE[res].niv.map((v) => v.id) : []);
     /* Améliorer un exemplaire posé : on fabrique le niveau d’après, il prend la place de l’ancien,
      * qui est retiré. Si un exemplaire du niveau d’après attend déjà, l’échange est immédiat. */
     E.domExtUp = function (z, res, from) {
       const e = S.dom.ext[extKey(z, res)], nx = E.extNext(from);
-      if (!e || !(e.u[from] >= 1) || !nx || !extKnown(nx)) return { ok: false, why: "niveau" };
+      if (!e || !(e.u[from] >= 1) || !nx || !S.known[nx]) return { ok: false, why: "niveau" };
       if (freeExt(nx) >= 1) { swapUp(z, res, from, nx); return { ok: true, placed: 1, queued: 0, t: nx }; }
       const q = E.queue(nx, 1, true, "u:" + z + ":" + res + ":" + from);
       if (!q.ok) return { ok: false, why: q.why, missing: q.missing || (q.plan && q.plan.missing), t: nx };
@@ -3174,7 +3168,7 @@
     };
     const freeMach = (m) => { const x = E.machines()[m]; return x ? Math.max(0, x.own - x.used) : 0; };
     E.freeMach = freeMach;
-    E.hasFactory = () => EXTS.some((t) => count(t) > 0 || extKnown(t)) || MACHINES.some((m) => count(m) > 0) ||
+    E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) ||
       Object.keys(S.dom.ext).length > 0 || S.hand.q.length > 0;
     E.machRate = (m) => (item(m) && item(m).t === "mach" ? machUnitRate(m) : 0);
     E.machCan = function (m, r) {
@@ -4580,8 +4574,6 @@
       }
       checkHand(o);
       checkDom(o);
-      // les niveaux frères d’une recette connue sont connus (v8)
-      if (o.known && typeof o.known === "object") for (const k in D.ITEMS) { const g = D.ITEMS[k].sib; if (g && o.known[g]) o.known[k] = true; }
       // compétences et action en cours : des nombres, et une action qui a un sens
       if (!o.skills || typeof o.skills !== "object") o.skills = {};
       for (const g in o.skills) { const v = Number(o.skills[g]); if (!(v >= 0) || !(D.GESTES[g] || g === "recolte")) delete o.skills[g]; else o.skills[g] = v; }

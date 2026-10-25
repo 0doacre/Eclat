@@ -37,7 +37,7 @@ for (const id in I) {
       }
       if (!(ing[i] > 0)) err(id + " : quantité invalide pour " + i);
     }
-    if (!it.sec && !it.curio && !it.path && !it.h && !it.sib) warn(id + " : pas d’indice (h)");
+    if (!it.sec && !it.curio && !it.path && !it.h) warn(id + " : pas d’indice (h)");
   }
   if (it.t === "mach" && !(it.spd > 0)) err(id + " : machine sans vitesse (spd)");
   if (it.t === "ext") {

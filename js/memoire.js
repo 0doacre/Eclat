@@ -267,7 +267,7 @@
     function reveilRepere() {
       const st = S(), m = st.meta;
       if (!m.forcedDone || st.cycle !== 2 || !(m.traces > 0) || !E.achatsOuverts() || !m.reveilAt || Date.now() - m.reveilAt > REVEIL_MIN * 60000) return "";
-      const rec = E.nRecettes();
+      const rec = Object.keys(st.known).length;
       return '<button class="dom-tip dom-reveil" data-cycle>🌅 Un autre Semeur a pris le relais. Il a gardé tes ' + rec + " recette" + (rec > 1 ? "s" : "") +
         " et dispose de <b>" + fmt(m.traces) + " ✦ Traces</b> à dépenser dans la Mémoire des mains. <span>dépenser ▸</span></button>";
     }
@@ -389,7 +389,7 @@
       const st = S(), n = (k) => (k === "ext" ? Object.values(st.dom.ext).reduce((a, e) => a + Object.values(e.u).reduce((x, y) => x + y, 0), 0) : E.MACHINES.reduce((a, m) => a + Math.floor(st.inv[m] || 0), 0));
       const paid = Object.keys(st.pass).filter((z) => !st.pass[z].done && D.PASSAGES[z]);
       const m = st.meta;
-      const rec = E.nRecettes();
+      const rec = Object.keys(st.known).length;
       const pages = Object.keys((st.livre && st.livre.p) || {}).length;
       const frags = Object.keys(st.frags || {}).length;
       const signes = Object.values(st.signes || {}).filter((x) => x && x.lu).length;
@@ -435,7 +435,7 @@
     }
     /* la carte de l’éveil : trois faits, un bouton */
     function accueil(onClose) {
-      const st = S(), m = st.meta, rec = E.nRecettes();
+      const st = S(), m = st.meta, rec = Object.keys(st.known).length;
       const rows = [];
       if (rec) rows.push("Le Carnet garde tes <b>" + rec + "</b> recettes.");
       if (Object.keys(E.ruins()).length) rows.push("Des ruines peuvent être réparées pour une fraction de leur coût de construction.");
