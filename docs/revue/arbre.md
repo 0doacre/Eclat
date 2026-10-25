@@ -1,5 +1,8 @@
 # L’arbre des connaissances (0.11.0) : les textes affichés
 
+> Document historique des vues 0.11 à 0.15. La présentation actuelle est décrite
+> dans [Arbre : lecture verticale sur téléphone](arbre-vertical.md).
+
 Ce que la joueuse lit, tel quel, à relire. Une ligne par texte, avec l’endroit où il apparaît.
 `{n}` est remplacé par le jeu. Les noms des âges et des objets viennent des données, rien de neuf.
 

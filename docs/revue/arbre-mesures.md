@@ -1,5 +1,9 @@
 # L’arbre des connaissances : mesures
 
+> Les mesures géométriques ci-dessous concernent le graphe historique. La vue actuelle
+> suit [la présentation verticale](arbre-vertical.md) ; les mesures dans le navigateur
+> utilisent les cartes et vérifient désormais aussi le débordement horizontal.
+
 État des lieux chiffré de l’onglet « Arbre » (`node tools/arbre-mesures.js --ecrire`).
 
 Version du jeu : 0.16.0 · commit : 0f756c8 · date : 2026-10-25.

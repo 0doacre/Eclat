@@ -136,48 +136,43 @@ async function run() {
     await p.context().close();
   }
   // Les écrans avancés qui partagent les commandes et la pile de fenêtres.
-  // L’onglet Arbre (0.15.0) : entre l’Atelier et le Carnet, surface utile, rail des âges, étiquettes, cibles, entrée depuis une fiche.
-  for (const [width, large] of [[390, false], [390, true], [320, false], [320, true]]) {
+  // Arbre vertical : cartes lisibles, largeur fixe, navigation et défilement natifs.
+  for (const width of [320, 360, 390, 430]) for (const large of [false, true]) {
     p = await page(width, true, large);
-    const nom = width + " " + (large ? "Veillée + grand texte" : "Jour") + " arbre";
-    const surfaceMin = width === 320 ? 360 : 650;
-    ok(await p.evaluate(() => [...document.querySelectorAll("#tabs button:not(.hidden)")].map((b) => b.dataset.tab).join() === "domaine,carte,atelier,arbre,carnet,journal"), nom + " : l’onglet Arbre est entre l’Atelier et le Carnet");
+    const nom = width + '/' + large + ' arbre';
     await p.locator('#tabs [data-tab="arbre"]').click();
-    await p.locator("#v-arbre #arbre").waitFor({ state: "visible" });
-    await p.waitForTimeout(300);
-    ok(await p.evaluate(() => !document.querySelector("#app").inert && !document.querySelector("[data-cvue]")), nom + " : un onglet, pas une fenêtre ; plus d’interrupteur dans le Carnet");
-    ok(await p.evaluate(() => { const t = document.querySelector("#tabs").getBoundingClientRect(), v = document.getElementById("arbre").getBoundingClientRect(); return v.bottom <= t.top + 1 && v.width <= innerWidth + 1; }), nom + " : l’arbre s’arrête au-dessus des onglets");
-    ok(await p.evaluate(() => getComputedStyle(document.querySelector("#arbre .arb-t:not(.loin)")).opacity === "0.6"), nom + " : traits à 60 % quand rien n’est choisi");
-    const m = await p.evaluate(() => {
-      const v = document.getElementById("arbre"), vr = v.getBoundingClientRect();
-      const bar = [...document.querySelectorAll("#v-arbre .arb-barre button")].map((b) => { const r = b.getBoundingClientRect(); return { t: b.getAttribute("aria-label") || b.textContent.trim(), w: r.width, h: r.height }; });
-      const vus = [...document.querySelectorAll("#arbre .arb-n .arb-l, #arbre .arb-l")].filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.bottom > vr.top && r.top < vr.bottom && r.right > vr.left && r.left < vr.right; });
-      const k = window.__eclat.U.arbreVue.k;
-      return { surface: v.clientHeight, k, bar, etiquettes: vus.length, plusPetite: Math.min(...vus.map((e) => parseFloat(getComputedStyle(e).fontSize) * k)), debord: document.documentElement.scrollWidth - innerWidth };
+    await p.locator('#arbre').waitFor({state:'visible'});
+    await p.locator('[data-arb="ensemble"]').click();
+    const mesure = await p.evaluate(() => {
+      const v = document.getElementById('arbre'), r = v.getBoundingClientRect();
+      const cards = [...v.querySelectorAll('details[open] .arb-card')];
+      return { largeur:v.clientWidth, contenu:v.scrollWidth, ecran:innerWidth,
+        fin:r.bottom, nav:document.getElementById('tabs').getBoundingClientRect().top,
+        polices:cards.map(c=>parseFloat(getComputedStyle(c.querySelector('.arb-l')).fontSize)),
+        texteCoupe:cards.some(c=>c.scrollWidth>c.clientWidth),
+        cibles:[...document.querySelectorAll('.arb-barre button')].map(c=>{const b=c.getBoundingClientRect();return Math.min(b.width,b.height);}) };
     });
-    ok(m.surface >= surfaceMin, nom + " : surface utile " + m.surface + " px (au moins " + surfaceMin + ")");
-    ok(m.bar.every((b) => b.w >= 43.9 && b.h >= 43.9), nom + " : cibles de la barre < 44 px " + JSON.stringify(m.bar.filter((b) => b.w < 43.9 || b.h < 43.9)));
-    ok(m.k === 1 && m.etiquettes > 3 && m.plusPetite >= 11, nom + " : étiquettes de " + m.plusPetite + " px à l’échelle " + m.k + " (" + m.etiquettes + " visibles)");
-    ok(m.debord <= 0, nom + " : débordement horizontal " + m.debord);
-    const rail = await p.evaluate(() => [...document.querySelectorAll("#v-arbre .arb-rb")].map((b) => { const r = b.getBoundingClientRect(); return { w: r.width, h: r.height }; }));
-    ok(rail.length === 13 && rail.every((b) => b.w >= 43.9 && b.h >= 43.9), nom + " : les âges de la réglette font au moins 44 px " + JSON.stringify(rail.filter((b) => b.w < 43.9 || b.h < 43.9)));
-    // le rail : toucher un âge y amène la vue, et le repère « au centre » suit
-    await p.locator('#v-arbre [data-arbage="2"]').click();
-    await p.waitForTimeout(450);
-    ok(await p.evaluate(() => { const b = document.querySelector("#v-arbre .arb-rb.centre"); return !!b && b.dataset.arbage === "2"; }), nom + " : le rail amène la vue à l’âge touché");
-    await p.locator('#v-arbre [data-arbage="2"]').focus(); await p.keyboard.press("ArrowUp");
-    ok(await p.evaluate(() => document.activeElement.dataset.arbage === "3"), nom + " : le rail se parcourt aux flèches");
-    // − puis + : les trois niveaux
-    await p.locator('#v-arbre [data-arb="moins"]').click(); await p.locator('#v-arbre [data-arb="moins"]').click(); await p.waitForTimeout(200);
-    ok(await p.evaluate(() => document.getElementById("arbre").dataset.niv === "loin" && !document.querySelector("#arbre .arb-loin").hidden), nom + " : niveau loin, les âges et leur compte");
-    const loin = await p.evaluate(() => [...document.querySelectorAll("#arbre .arb-lb:not(.futur)")].map((b) => ({ n: parseFloat(getComputedStyle(b.querySelector(".arb-lb-n")).fontSize), h: b.getBoundingClientRect().height })));
-    ok(loin.length >= 8 && loin.every((b) => b.n >= 12), nom + " : noms d’âge d’au moins 12 px au niveau loin");
-    ok(await p.evaluate(() => { const v = document.getElementById("arbre"), l = document.querySelector("#arbre .arb-loin"); return l.scrollHeight <= v.clientHeight + 1; }), nom + " : les âges tiennent sans défilement");
-    await p.locator('#v-arbre [data-arbband="5"]').click(); await p.waitForTimeout(450);
-    ok(await p.evaluate(() => document.getElementById("arbre").dataset.niv !== "loin"), nom + " : toucher une bande vient dessus");
-    // largeur de l’appli, déplacement conservé : l’arbre ne dépasse pas l’écran et se glisse
-    ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), nom + " : pas de débordement horizontal");
-    ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
+    ok(mesure.contenu===mesure.largeur && mesure.largeur<=width, nom+' : contenu à la largeur du téléphone');
+    ok(mesure.fin<=mesure.nav+1,nom+' : aucun contenu sous les onglets');
+    ok(mesure.polices.length>0 && mesure.polices.every(n=>n>=14) && !mesure.texteCoupe,nom+' : noms lisibles sans troncature');
+    ok(mesure.cibles.every(n=>n>=43.9),nom+' : cibles de 44 px');
+    // La molette reste un déplacement vertical, même avec une composante latérale.
+    await p.locator('#arbre').evaluate(v=>{v.scrollTop=0;});
+    await p.locator('#arbre').hover();await p.mouse.wheel(100,450);await p.waitForTimeout(200);
+    ok(await p.evaluate(()=>{const v=document.getElementById('arbre');return v.scrollTop>0&&v.scrollLeft===0;}),nom+' : défilement vertical sans dérive latérale');
+    await p.locator('[data-arb="chercher"]').click();await p.locator('#arbq').fill('bobine');
+    await p.locator('#arbres [data-arbsel="bobine"]').click();
+    ok(await p.locator('.arb-selection .arb-l').innerText()==='Bobine de cuivre',nom+' : sélection depuis la recherche');
+    ok(await p.locator('#arb-ingredients').count()===1,nom+' : ingrédients présents');
+    ok(await p.evaluate(()=>{const v=document.getElementById('arbre'),c=v.querySelector('.sel');return v.scrollWidth===v.clientWidth&&c.getBoundingClientRect().width<=v.clientWidth&&getComputedStyle(v).touchAction==='pan-y';}),nom+' : branche contenue et geste vertical natif');
+    await p.locator('[data-arbsel="fil_cuivre"]').first().click();
+    ok((await p.locator('.arb-selection .arb-l').innerText()).includes('Fil de cuivre'),nom+' : navigation vers un ingrédient');
+    await p.locator('[data-arb="retour"]').click();
+    ok((await p.locator('.arb-selection .arb-l').innerText()).includes('Bobine'),nom+' : retour dans la branche');
+    // Un redimensionnement conserve la recette choisie et ne crée pas d’axe horizontal.
+    await p.setViewportSize({width:width===320?430:320,height:700});await p.waitForTimeout(100);
+    ok(await p.evaluate(()=>{const v=document.getElementById('arbre');return v.scrollWidth===v.clientWidth&&v.querySelector('.sel').dataset.arbn==='bobine';}),nom+' : largeur recalculée après redimensionnement');
+    ok(!p.errors.length,p.errors.join('\n'));await p.context().close();
   }
   // Accessibilité (0.15.8) : le clavier, les noms, la Carte, l’alternative à l’appui long, et les contrastes mesurés.
   p = await page(390, true);
@@ -233,9 +228,10 @@ async function run() {
   p = await page(390, true);
   await p.locator('#tabs [data-tab="arbre"]').click();
   await p.waitForTimeout(500);
-  ok(await p.evaluate(() => document.querySelectorAll(".arb-n.pret").length > 0 && document.querySelectorAll(".arb-n.pret").length < document.querySelectorAll(".arb-n.allume").length), "Arbre : des recettes prêtes sont marquées, pas toutes");
+  await p.locator('[data-arb="ensemble"]').click();
+  ok(await p.evaluate(() => document.querySelectorAll(".arb-card.pret").length > 0 && document.querySelectorAll(".arb-card.pret").length < document.querySelectorAll(".arb-card.allume").length), "Arbre : des recettes prêtes sont marquées, pas toutes");
   await p.locator('[data-arb="prets"]').click(); await p.waitForTimeout(500);
-  ok(await p.evaluate(() => document.querySelector(".arb-monde").classList.contains("prets") && getComputedStyle(document.querySelector(".arb-n.allume:not(.pret)")).opacity < 0.5), "Arbre : « prêtes » estompe le reste");
+  ok(await p.evaluate(() => document.querySelectorAll(".arb-card").length > 0 && [...document.querySelectorAll("#arbre .arb-card")].every(c => c.classList.contains("pret"))), "Arbre : Fabricables ne montre que les recettes disponibles");
   await p.locator('[data-arb="prets"]').click();
   await p.locator('[data-arb="chercher"]').click();
   await p.locator("#arbq").fill("bobine");
@@ -248,7 +244,19 @@ async function run() {
   await p.locator("#arbq").fill("bobine");
   await p.locator("#arbres button").first().click();
   await p.waitForTimeout(500);
-  ok(await p.evaluate(() => document.querySelector(".arb-n.sel").dataset.arbn === "bobine" && document.querySelector(".arb-chercher").hidden && !document.querySelector(".arb-fiche").hidden), "Arbre : toucher le résultat choisit le nœud et ouvre son bandeau");
+  ok(await p.evaluate(() => document.querySelector(".arb-card.sel").dataset.arbn === "bobine" && document.querySelector(".arb-chercher").hidden && !!document.querySelector("#arb-ingredients")), "Arbre : toucher le résultat ouvre la branche");
+  await p.locator('[data-arb="chercher"]').click(); await p.locator('#arbq').fill('manche');
+  await p.locator('#arbres [data-arbsel="manche"]').click();
+  const nbUsages = await p.evaluate(() => window.EclatArbre.voisinage(window.__eclat.U.arbreG, 'manche').aval.filter(n=>n.etat!=='fantome').length);
+  ok(nbUsages > 6 && await p.locator('[aria-labelledby="arb-usages"] .arb-card').count() === 6, 'Arbre : les nombreux usages commencent par six cartes');
+  await p.locator('[data-arb="tout"]').click();
+  ok(await p.locator('[aria-labelledby="arb-usages"] .arb-card').count() === nbUsages, 'Arbre : tous les usages connus restent accessibles');
+  await p.evaluate(() => { const b=document.createElement('button'); b.dataset.arbreObj=''; document.querySelector('#views').appendChild(b);b.click(); });
+  ok(await p.evaluate(() => { const n=window.__eclat.U.arbreG.noeuds.find(n=>n.objectif);return !!n&&document.querySelector('.arb-card.sel').dataset.arbn===n.cle; }), 'Objectif → arbre : la bonne carte est sélectionnée');
+  await p.locator('[data-arb="prets"]').click();
+  await p.evaluate(() => { const s=window.__eclat.E.state; for(const x of Object.values(s.dom.ext))x.on=false; s.act=null; s.inv={}; });
+  await p.waitForFunction(() => !document.querySelector('#arbre .arb-card'),null,{timeout:4000});
+  ok((await p.locator('#arbre').innerText()).includes('Aucune recette fabricable'), 'Arbre : le filtre suit une Réserve qui se vide');
   ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // Depuis la fiche d’un objet : « Voir dans l’arbre » ouvre la vue sur lui, choisi
   p = await page(390, true);
@@ -257,9 +265,9 @@ async function run() {
   await p.locator('#modal [data-m="arbre"]').waitFor({ state: "visible" }); await p.waitForTimeout(500); // la fenêtre finit de s’ouvrir
   await p.locator('#modal [data-m="arbre"]').click();
   await p.locator("#v-arbre #arbre").waitFor({ state: "visible" }); await p.waitForTimeout(500);
-  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-n.sel"); return !!s && s.dataset.arbn === "manche" && !document.querySelector("#arbre .arb-fiche").hidden; }), "Fiche → arbre : le nœud est choisi et son bandeau ouvert");
-  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-n.sel").getBoundingClientRect(), v = document.getElementById("arbre").getBoundingClientRect(), f = document.querySelector("#arbre .arb-fiche").getBoundingClientRect(); return s.top >= v.top && s.bottom <= f.top + 1; }), "Fiche → arbre : le bandeau ne recouvre pas le nœud");
-  ok(await p.evaluate(() => document.querySelector("#arbre .arb-fiche").getBoundingClientRect().height <= 140), "Le bandeau reste bas");
+  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-card.sel"); return !!s && s.dataset.arbn === "manche" && !!document.querySelector("#arb-ingredients"); }), "Fiche → arbre : la recette et ses ingrédients sont affichés");
+  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-card.sel").getBoundingClientRect(), v = document.getElementById("arbre").getBoundingClientRect(); return s.top >= v.top && s.bottom <= v.bottom; }), "Fiche → arbre : la sélection reste visible");
+  ok(await p.evaluate(() => document.getElementById("arbre").scrollWidth === document.getElementById("arbre").clientWidth), "La branche tient dans la largeur de l’écran");
   ok(await p.evaluate(() => document.body.dataset.tab === "arbre"), "Fiche → arbre : on est sur l’onglet Arbre");
   ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   p = await page(390, true);

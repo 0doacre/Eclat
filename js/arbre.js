@@ -1,4 +1,6 @@
-/* ÉCLAT — l’arbre des connaissances (Carnet, vue « Arbre »).
+/* ÉCLAT — l’arbre des connaissances.
+ * L’interface verticale utilise graphe() et voisinage() dans js/atelier.js.
+ * Le catalogue et le rendu géométrique restent disponibles pour les comparaisons historiques.
  * Module sans état, sur le modèle de js/constellations.js :
  *   graphe(E, D)          ce qui se voit, et rien d’autre (la seule fonction qui en décide) ;
  *   mise_en_page(g, D)    des positions déterministes, sans DOM ;
@@ -330,7 +332,17 @@
     return null;
   }
 
-  const Arbre = { graphe, mise_en_page, rendu, liens, bandeA, centre, sig, catalogue, carrefours, loin, hash, NODE, COLS, PX, PY, CARREFOUR };
+  /* La vue de lecture ne reçoit que le graphe visible : elle ne peut pas révéler une recette cachée. */
+  function voisinage(g, cle) {
+    const par = new Map(g.noeuds.map((n) => [n.cle, n]));
+    const n = par.get(cle);
+    if (!n) return null;
+    const L = liens(g, cle);
+    const nodes = (ids) => [...new Set(ids)].map((id) => par.get(id)).filter(Boolean);
+    return { centre: n, amont: nodes(L.amont), aval: nodes(L.aval) };
+  }
+
+  const Arbre = { graphe, mise_en_page, rendu, liens, voisinage, bandeA, centre, sig, catalogue, carrefours, loin, hash, NODE, COLS, PX, PY, CARREFOUR };
   if (typeof module !== "undefined" && module.exports) module.exports = Arbre;
   root.EclatArbre = Arbre;
 })(typeof globalThis !== "undefined" ? globalThis : this);
