@@ -396,13 +396,32 @@
         } else if (curTab === "parler") {
           const TR = (E.RECIT && E.RECIT.troc) || {};
           const last = E.troqueurDernier ? E.troqueurDernier() : null;
-          h += '<div class="troc-parole">' + (last
-            ? (last.q ? '<p class="troc-moi">' + String(recitInline(last.q, "Le Comptoir")) + "</p>" : "") +
-              '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + "</p>"
-            : '<p class="small muted"><i>' + esc(TR.intro || "") + "</i></p>") + "</div>";
-          h += '<p class="tiny muted center">' + esc(TR.consigne || "") + "</p>";
-          h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
-            '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + "</button>").join("") + "</div>";
+          if (!last) {
+            h += '<div class="troc-parole"><p class="small muted"><i>' + esc(TR.intro || "") + '</i></p></div>';
+            h += '<p class="tiny muted center">' + esc(TR.consigne || "") + '</p>';
+            h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
+              '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + '</button>').join("") + '</div>';
+          } else if (last.choix && !last.rep) {
+            h += '<div class="troc-parole">';
+            if (last.stage) h += '<p class="tiny muted troc-stage"><i>' + esc(last.stage) + '</i></p>';
+            h += '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + '</p>';
+            h += '</div>';
+            h += '<p class="tiny muted center">Que réponds-tu ?</p>';
+            h += '<div class="troc-choix">' + last.choix.map((c) =>
+              '<button type="button" class="btn troc-rep" data-m="trocChoix" data-k="' + esc(c.k) + '">' +
+              '<span class="troc-rep-k">' + esc(c.k.toUpperCase()) + '</span>' +
+              '<span class="troc-rep-txt">' + String(recitInline(c.q, "Le Comptoir")) + '</span></button>'
+            ).join("") + '</div>';
+          } else {
+            h += '<div class="troc-parole">';
+            if (last.stage && !last.q) h += '<p class="tiny muted troc-stage"><i>' + esc(last.stage) + '</i></p>';
+            if (last.q) h += '<p class="troc-moi">' + String(recitInline(last.q, "Le Comptoir")) + '</p>';
+            h += '<p class="serif troc-lui">' + String(recitInline(last.t, "Le Comptoir")).replace(/\n/g, "<br>") + '</p>';
+            h += '</div>';
+            h += '<div class="row troc-fin-bar"><button type="button" class="btn small ghost" data-m="trocFin">← Poser une autre question</button></div>';
+            h += '<div class="troc-themes">' + E.troqueurThemes().map((th) =>
+              '<button class="btn small' + (th.dispo ? " pri" : " nope") + '" data-m="parler" data-th="' + esc(th.id) + '">' + esc(th.n) + '</button>').join("") + '</div>';
+          }
         } else if (curTab === "demandes") {
           const asks = E.troqueurAsks ? E.troqueurAsks() : [];
           const hor = E.troqueurHoraire();
@@ -443,6 +462,16 @@
           parler: (b) => {
             const r = E.troqueurParle(b.dataset.th);
             if (r.ok && !r.vide) A.page(); else A.click();
+            return redraw();
+          },
+          trocChoix: (b) => {
+            const r = E.troqueurChoix ? E.troqueurChoix(b.dataset.k) : null;
+            if (r && r.ok) A.page(); else A.click();
+            return redraw();
+          },
+          trocFin: () => {
+            if (E.troqueurFin) E.troqueurFin();
+            A.click();
             return redraw();
           },
           sell: (b) => {
