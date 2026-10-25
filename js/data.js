@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.15.8";
+  D.VERSION = "0.15.9";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1076,6 +1076,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔎 Les ressources de l’Atelier remontent : la recherche reste en haut, et le tri et les filtres se rangent derrière un bouton « Filtres » (le chiffre dit combien sont actifs). Il s’ouvre sur place et se referme quand tu choisis.",
     "♿ Plus accessible : au clavier, Entrée pose une ressource sur l’établi (« i » ou Maj + Entrée ouvre sa fiche) et la Carte se parcourt lieu par lieu. Le bouton « ⓘ Fiches » remplace l’appui long, les champs et les liens ont un nom, et les textes sont au moins à 4,5:1 de contraste dans toutes les époques (les accents du Jour sont un peu plus sombres).",
     "🌳 Retrouver ses recettes dans l’arbre : une recherche (🔍) mène au nœud et ouvre ses ingrédients et ses usages ; le bouton vert ● ne laisse en lumière que ce que tu peux fabriquer maintenant, et un point vert les marque toujours.",
     "📖 Le Carnet va plus vite : une barre de quantité (×1 à Max) reste en haut et se souvient de ton choix ; chaque recette n’a plus qu’un bouton « Fabriquer ×N ». Les cartes sont plus courtes, et le détail et le suivi restent à portée.",
