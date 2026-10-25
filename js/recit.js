@@ -1179,7 +1179,7 @@
         ["Tu es resté longtemps. Le lieu t’a montré ses coins.", "Tu as creusé là où tu ne regardais pas la première fois."],
         ["Tu as soulevé chaque pierre. Il ne reste dessous que de la terre.", "Tu as tout retourné, même ce qui pesait trop. Tu rentres à la nuit."]
       ],
-      refaite: ["Tu connais le lieu par cœur. Tu rapportes ce que tu trouves.", "Rien de neuf, mais tes poches ne sont pas vides."],
+      refaite: ["Tu connais le lieu par cœur. Butin récupéré ce que tu trouves.", "Rien de neuf, mais tes poches ne sont pas vides."],
       /* les lieux qui s’ouvrent à côté : de la terre, du lieu qu’il faut avoir retourné à fond, et le lieu lui-même */
       cotes: [
         { z: "lisiere", parent: "chene", id: "ronds", n: "Les Ronds d’herbe", dur: 60 },
@@ -1190,21 +1190,21 @@
       ],
       ui: {
         titre: "Fouiller de nouveau",
-        aide: "Tu pars, tu fermes le jeu si tu veux. Le butin t’attend à ton retour.",
-        busy: "Tu fouilles déjà ailleurs.",
-        avant1: "Il faut d’abord avoir fini un tour.",
-        avant2: "Il faut d’abord avoir fini une fouille.",
+        aide: "Progression active hors ligne. Butin à récupérer sur la Carte en fin de fouille.",
+        busy: "Fouille déjà active. Butin à récupérer avant le prochain départ.",
+        avant1: "Termine « Un tour » et récupère le butin pour débloquer « Une fouille ».",
+        avant2: "Termine « Une fouille » et récupère le butin pour débloquer le dernier niveau.",
         fait: "Déjà fait",
-        parti: "Tu pars fouiller. Le butin t’attendra, même jeu fermé.",
+        parti: "Fouille lancée (continue hors ligne).",
         chip: "Fouille",
         chipReste: "reste",
-        chipPret: "finie : touche pour recevoir",
-        prete: "Ta fouille est finie. Touche-la sur la Carte.",
+        chipPret: "terminée · Récupérer le butin",
+        prete: "Fouille terminée. Butin disponible sur la Carte.",
         kicker: "Fouille",
-        rapporte: "Tu rapportes",
-        nouveau: "Un nouveau lieu sur la Carte",
+        rapporte: "Butin récupéré",
+        nouveau: "Nouveau lieu sur la Carte",
         entendu: "Ce que tu y as entendu",
-        pasFini: "Pas encore finie."
+        pasFini: "Fouille en cours."
       }
     },
 

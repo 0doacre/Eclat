@@ -190,7 +190,7 @@
     comp: "Une pièce : elle sert à fabriquer d’autres objets.",
     tool: "Un outil : renforce tes récoltes à la main ou ouvre de nouveaux chemins.",
     stat: "Une station : elle reste à l’Atelier et débloque une action ou une chaleur.",
-    ext: "Un extracteur : il se pose sur un gisement de sa terre et récolte seul, même quand le jeu est fermé.",
+    ext: "Récolte automatique (active hors ligne). À poser sur un gisement de la terre indiquée.",
     upg: "Une amélioration : son effet est permanent dès son obtention.",
     mach: "Une machine : elle reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire.",
     curio: "Une curiosité : vestige insolite consigné dans ton Journal.",
@@ -931,8 +931,8 @@
   /* pourquoi on ne peut pas explorer ce lieu tout de suite (rien si on peut) */
   function expWhy(z) {
     const st = S(), n = E.nextExp(z);
-    if (!n) return "Plus rien à explorer ici pour l’instant.";
-    if (st.exp.active) return "Tu explores déjà ailleurs : une exploration à la fois.";
+    if (!n) return "Tous les lieux disponibles sont explorés.";
+    if (st.exp.active) return "Exploration déjà active. Prochain départ à la fin de l’exploration.";
     if (n.locked) {
       if (n.x.hidden) return n.x.hidden;
       if (typeof n.x.need === "string" && I[n.x.need]) return "Il te faut d’abord : " + esc(I[n.x.need].n) + ".";
@@ -971,10 +971,10 @@
 
   /* lancer l’exploration du prochain lieu d’une terre */
   function explore(z, xid) {
-    const why = xid ? (S().exp.active ? "Tu explores déjà ailleurs : une exploration à la fois." : "") : expWhy(z);
+    const why = xid ? (S().exp.active ? "Exploration déjà active. Prochain départ à la fin de l’exploration." : "") : expWhy(z);
     if (why) { A.fail(0); toast(why, { key: "nope" }); return; }
     const r = E.startExp(z, xid);
-    if (r.ok) { A.init(); A.explore(); toast("🧭 Exploration lancée : elle avance toute seule."); }
+    if (r.ok) { A.init(); A.explore(); toast("🧭 Exploration lancée (autres actions disponibles)."); }
     render(true);
   }
   /* ------------------------------------------------------ fouilles (expéditions longues) */
@@ -1003,10 +1003,10 @@
     openModal({
       on: { journal: () => { setTab("journal"); }, goal: () => { setTab("domaine"); } },
       html: '<div class="kicker">Pendant ton absence · ' + fmtTime(o.dt) + "</div><h2>Bon retour !</h2>" +
-      (list ? '<p class="small muted">Pendant ce temps, voici ce qui a été récolté et fabriqué :</p><div class="row wrap">' + list + "</div>"
+      (list ? '<p class="small muted">Ressources récoltées et objets fabriqués :</p><div class="row wrap">' + list + "</div>"
         : '<p class="small">Rien n’a été récolté ni fabriqué pendant ton absence.' + (auto ? "" : " Pose une cabane sur un gisement : elle récolte même quand le jeu est fermé.") + "</p>") +
       (full.length ? '<p class="small">📦 La Réserve s’est remplie de ' + full.map((k) => esc(I[k].n.toLowerCase())).join(", ") + " : " + (full.length > 1 ? "leurs extracteurs se sont arrêtés" : "son extracteur s’est arrêté") + ". Une machine qui " + (full.length > 1 ? "les" : "le") + " transforme ferait de la place.</p>" : "") +
-      (o.exp ? '<p class="small">🧭 Ton exploration est terminée. Consulte le Journal.</p>' : "") +
+      (o.exp ? '<p class="small">🧭 Exploration terminée. Consulte le Journal.</p>' : "") +
         '<div class="acts">' + suite + '<button class="btn pri" data-m="close">Continuer</button></div>'
     });
   }

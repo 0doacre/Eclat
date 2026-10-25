@@ -31,7 +31,7 @@
       const st = S();
       let h = subTabs("atelier", "machines", "Découvrir", "Machines");
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
-      if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Touche des <b>ressources</b> pour les poser sur l’établi. 3. Touche le <b>gros bouton</b>. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
+      if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Touche des <b>ressources</b> pour les poser sur l’établi. 3. Lance l’<b>action choisie</b>. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       // Le premier essai reste possible sans un aller-retour au Domaine.
       const firstWood = I.manche.r[1].bois;
       if (!(st.stats.crafts > 0) && E.count("bois") < firstWood) {
@@ -132,7 +132,7 @@
       if (!inv.length) {
         const emptyMsg = o.filter === "fav" ? "Aucune ressource favorite. Appui long sur une ressource pour la marquer d’un ♥."
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
-          : (U.iq || o.filter !== "tout" ? "Rien ne correspond." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Rien ici. Va récolter dans le Domaine.");
+          : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans le Domaine pour remplir ta Réserve.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
       } else if (Object.keys(st.known).length >= 3) h += '<p class="tiny dim center" style="margin-top:8px">Appui long sur une ressource : ouvre sa fiche (♥ pour la garder en tête de liste, 🔍 pour l’étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie, et pâlit quand elle n’a plus rien à donner.</p>';
       return h;
@@ -269,7 +269,7 @@
     }
     function resultBody(r) {
       if (!r && S().stats.crafts >= 3) return ""; // déjà appris : la carte vide ne garde pas sa place (voir .result:empty)
-      if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis touche le gros bouton. Le <b>thermomètre</b> dit si tu t’approches d’une recette.</p>';
+      if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis lance l’action choisie. Le <b>thermomètre</b> indique si tu approches d’une recette.</p>';
       if (r.kind === "craft") {
         const it = I[r.id];
         let h = '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow">' +
@@ -288,23 +288,23 @@
         if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultBody(U.last); }
         const miss = q ? null : E.missingFor(r.id, 1);
         const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
-        if (q) return head + '<div class="small">✋ Tes mains s’y mettent. La recette est dans tes commandes.</div></div></div>';
+        if (q) return head + '<div class="small">✋ Commande ajoutée · Suivi au-dessus des onglets.</div></div></div>';
         // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
         if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
-          '<div class="row wrap small" style="margin-top:8px"><span class="muted">Tu as tout ce qu’il faut. Il te faut :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
+          '<div class="row wrap small" style="margin-top:8px"><span class="muted">Ressources nécessaires (disponibles) :</span>' + ingHTML(E.costFor(r.id), { check: true, link: true }) + "</div>" +
           '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div></div></div>";
-        return head + '<div class="small">Tu connais la recette, mais il te manque :</div><div class="row wrap small" style="margin-top:4px;gap:4px">' +
+        return head + '<div class="small">Recette découverte. Ressources manquantes :</div><div class="row wrap small" style="margin-top:4px;gap:4px">' +
           Object.keys(miss).map((i) => itemPill(i, { qty: miss[i], lack: true })).join("") + "</div>" +
           '<div class="row wrap" style="margin-top:8px"><button class="btn small pri" data-chain="' + r.id + '">⚡ Tout fabriquer</button><button class="btn small" data-tree="' + r.id + '">🌳 Détail</button><button class="btn small" data-track="' + r.id + '">🎯 Suivre</button></div></div></div>';
       }
       if (r.kind === "blocked") {
         const b = r.info;
         let msg = "Il te manque un outil.";
-        if (b.why === "heat") msg = "Tu chauffes, mais rien ne prend. Il faut au moins " + fmtHeat(b.heat) + " (tu atteins " + fmtHeat(E.heat()) + ").";
+        if (b.why === "heat") msg = "Température insuffisante. Il faut au moins " + fmtHeat(b.heat) + " (tu atteins " + fmtHeat(E.heat()) + ").";
         if (b.why === "lvl") msg = U.geste === "marteler" ? "Ton enclume n’est pas assez dure pour ce métal." : "Il faudrait bien plus de puissance.";
         const st = b.why === "heat" ? E.stationFor("chauffer", b.heat) : b.why === "lvl" ? E.stationFor(I[r.id].r[0], 0, b.lvl) : null;
         return thermo(4) + '<div class="row" style="margin-top:6px">' + icon(r.id) + '<div class="grow"><b>' + esc(I[r.id].n) + '</b><div class="small">' + esc(msg) + "</div>" +
-          (st ? '<div class="small" style="display:flex;align-items:center;gap:6px;margin-top:4px">Il te faudrait : ' + itemPill(st) + "</div>" : "") +
+          (st ? '<div class="small" style="display:flex;align-items:center;gap:6px;margin-top:4px">Station nécessaire : ' + itemPill(st) + "</div>" : "") +
           (r.fresh ? '<div class="tiny muted">Recette notée dans le Carnet.</div>' : "") + "</div></div>";
       }
       if (r.kind === "owned") return '<p class="small">Tu possèdes déjà <b>' + esc(I[r.id].n) + "</b>.</p>";
@@ -312,8 +312,8 @@
         const it = I[r.id];
         const done = r.kind === "queued" && !E.queued(r.id);
         const msg = done ? "✓ Fabriqué : la pièce est rangée dans ta Réserve."
-          : r.kind === "queued" ? "✋ Tes mains s’y mettent. Fini dans " + fmtTime(r.time) + "."
-          : r.why === "full" ? "Tes mains sont occupées. Attends la fin de la commande en cours."
+          : r.kind === "queued" ? "✋ Commande ajoutée. Durée estimée : " + fmtTime(r.time) + "."
+          : r.why === "full" ? "Commandes au maximum. Une place se libère à la fin d’une commande."
           : r.why === "queued" ? "Déjà en cours." : "Impossible pour l’instant.";
         return '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + '</div><div class="small">' + msg + "</div>" +
           (E.isUnique(it) ? "" : '<div class="row wrap" style="margin-top:8px">' + craftBtns(r.id) + "</div>") + "</div></div>";
@@ -379,7 +379,7 @@
       futur: (de, a) => (de === a ? "Âge " + a : "Âges " + de + " à " + a) + " · encore loin",
       legende: "Légende", rail: "Aller à un âge", loin: "Éloigner", pres: "Rapprocher", centrer: "Centrer",
       trouvee: (n) => n + (n > 1 ? " recettes trouvées" : " recette trouvée"), aucune: "Aucune recette trouvée pour l’instant",
-      lg: ["Une recette trouvée.", "Une matière que tu as déjà vue.", "Une recette pas encore trouvée.", "Ton objectif.", "Un trait qui saute des âges : touche une case pour le voir.", "Tu as de quoi la fabriquer maintenant."],
+      lg: ["Une recette trouvée.", "Une ressource déjà découverte.", "Une recette pas encore trouvée.", "Ton objectif.", "Un trait qui saute des âges : touche une case pour le voir.", "Tu as de quoi la fabriquer maintenant."],
       chercher: "Chercher dans l’arbre", prets: "Montrer ce que tu peux fabriquer", centrer: "Centrer", aide: "Nom d’une recette ou d’une ressource que tu connais.", rien: "Rien de tel parmi ce que tu connais." };
     /* l’échelle de la vue, et ses trois niveaux : loin (les âges et leur compte), milieu (les icônes), près (les noms) */
     const ARB_K = [0.3, 2];
@@ -886,7 +886,7 @@
     /* pourquoi on ne peut pas fabriquer (n fois, en chaîne ou non), en une phrase */
     function whyNot(id, n, chain) {
       const it = I[id], b = E.blocker(id);
-      if (E.handInfo().full) return "Tes mains sont occupées : attends la fin de la commande en cours.";
+      if (E.handInfo().full) return "Commandes au maximum. Une place se libère à la fin d’une commande.";
       if (b && b.why === "owned") return "Tu possèdes déjà " + esc(it.n) + ".";
       if (!E.ageOK(id)) return esc(it.n) + " vient d’un âge que tu n’as pas encore atteint.";
       if (b) return esc(it.n) + " : " + esc(needText(id, b)) + ".";
@@ -908,7 +908,7 @@
       if (i >= 0) { U.slots[i] = null; }
       else {
         const free = U.slots.indexOf(null);
-        if (free < 0) { toast("L’établi est plein : touche un emplacement pour le vider."); return; }
+        if (free < 0) { toast("Établi plein. Touche un emplacement pour le vider."); return; }
         U.slots[free] = id;
       }
       A.click();
@@ -966,7 +966,7 @@
     function resultLine(r) {
       const n = (id) => "<b>" + esc(I[id].n) + "</b>";
       if (r.kind === "craft") return r.fresh ? "✨ Nouvelle découverte : " + n(r.id) : "+" + fmt(r.n) + " " + n(r.id);
-      if (r.kind === "queued") return "✋ " + n(r.id) + " : fini dans " + fmtTime(r.time) + ".";
+      if (r.kind === "queued") return "✋ " + n(r.id) + " : fin estimée dans " + fmtTime(r.time) + ".";
       if (r.kind === "learn") return "📖 Recette trouvée : " + n(r.id) + (r.missing ? ". Il manque " + Object.keys(r.missing).map((k) => fmt(r.missing[k]) + " " + esc(I[k].n)).join(", ") + "." : ". À fabriquer quand tu veux.");
       if (r.kind === "blocked") return "🔥 " + n(r.id) + " : " + needText(r.id, r.info, true) + ".";
       if (r.kind === "owned") return "Tu possèdes déjà " + n(r.id) + ".";
@@ -1013,7 +1013,7 @@
       if (!r.ok) {
         if (r.why === "plan") { openTree(id, n); return false; }
         A.fail(0);
-        toast(r.why === "full" ? "Tes mains sont occupées : " + D.HAND.max + " commandes au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours." : whyNot(id, n, true));
+        toast(r.why === "full" ? "Limite atteinte : " + D.HAND.max + " commandes au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours." : whyNot(id, n, true));
         return false;
       }
       A.click();
@@ -1025,7 +1025,7 @@
         const mTxt = missKeys.map((k) => fmt(Math.ceil(r.missing[k])) + " " + esc(I[k].n.toLowerCase())).join(", ");
         toast("✋ Commande lancée : <b>" + esc(I[id].n) + "</b>" + (n > 1 ? " ×" + fmt(n) : "") + " · il manque : " + mTxt + ".");
       } else if (sub > 0) {
-        toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à fabriquer avant : fini dans " + fmtTime(r.time) + ".");
+        toast("⚡ " + esc(I[id].n) + ", avec " + sub + " pièce" + (sub > 1 ? "s" : "") + " à fabriquer avant : fin estimée dans " + fmtTime(r.time) + ".");
       }
       render(true);
       return true;
@@ -1048,11 +1048,11 @@
     /* la file de « Tes mains » : ce qui est en cours, ce qui attend */
     function handsHTML() {
       const h = E.handInfo();
-      if (!h.jobs.length) return '<span class="hh">✋</span><span class="grow tiny muted">Tes mains sont libres.</span>';
+      if (!h.jobs.length) return '<span class="hh">✋</span><span class="grow tiny muted">Aucune commande en cours.</span>';
       const j = h.jobs[0], it = I[j.id];
       const missTxt = jobMissTag(j);
       const what = missTxt ? '<span style="color:var(--bad)">' + esc(missTxt) + "</span>"
-        : j.wait ? '<span style="color:var(--bad)">attend une main ou une machine</span>'
+        : j.wait ? '<span style="color:var(--bad)">en attente de mains ou de machines</span>'
         : j.steps.length > 1 ? "étape " + (j.i + 1) + "/" + j.steps.length + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.done) + "/" + fmt(j.n);
       const pct = Math.min(100, 100 * (j.frac || 0));
       return '<span class="hh">✋</span>' + icon(j.id, "sm") + '<div class="grow hmain" data-hopen><div class="small ell"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) +
@@ -1110,7 +1110,7 @@
     function skillsHTML() {
       const st = S();
       const shown = E.SKILLS.filter((g) => g === "recolte" || E.gesteOK(g) || (st.skills[g] || 0) > 0);
-      return '<div class="kicker">Tes mains</div><h2>Actions et récolte</h2><p class="small muted">Chaque pièce fabriquée à la main fait progresser son action, et chaque récolte fait progresser la récolte. Chaque niveau rend l’action 1 % plus rapide (pour la récolte : 1 % de ressources en plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", tu gagnes une chance d’avoir une pièce en plus. À la relève, tu gardes un dixième de ta progression.</p>" +
+      return '<div class="kicker">Tes mains</div><h2>Actions et récolte</h2><p class="small muted">Fabriquer à la main et récolter rapportent de l’expérience dans l’action correspondante. Chaque niveau rend l’action 1 % plus rapide (pour la récolte : 1 % de ressources en plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", tu gagnes une chance d’avoir une pièce en plus. À la relève, tu gardes un dixième de ta progression.</p>" +
         '<div class="skills">' + shown.map((g) => {
           const k = E.skill(g);
           return '<div class="skill"><span class="sk-ic">' + (g === "recolte" ? gi(GI.ui && GI.ui.recolte || "sickle") : gIc(g)) + '</span><div class="grow"><div class="row between"><b>' + esc(skillName(g)) + '</b><span class="sk-l">niv. ' + k.lvl + "</span></div>" +
@@ -1123,14 +1123,14 @@
     function handsSheet() {
       const hi = E.handInfo();
       if (!hi.jobs.length) return '<div class="kicker">Commandes</div><h2>Aucune commande en cours</h2><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
-      return '<div class="kicker">Commandes</div><h2>' + (hi.left > 0 ? "Fini dans ~" + fmtTime(hi.left) : "Commandes en cours") + '</h2><div class="picklist">' +
+      return '<div class="kicker">Commandes</div><h2>' + (hi.left > 0 ? "Fin estimée dans ~" + fmtTime(hi.left) : "Commandes en cours") + '</h2><div class="picklist">' +
         hi.jobs.map((j, i) => {
           const w = jobWorkersTag(j), miss = jobMissTag(j);
           const sub = [];
           if (w) sub.push(w);
           if (miss) sub.push(miss);
-          else if (j.wait) sub.push("attend une main ou une machine");
-          else sub.push("fini dans ~" + fmtTime(i ? j.at : j.left));
+          else if (j.wait) sub.push("en attente de mains ou de machines");
+          else sub.push("fin estimée dans ~" + fmtTime(i ? j.at : j.left));
           // ce qui bloque : d’où vient la ressource qui manque, et un accès à son gisement
           const lim = Object.keys(j.miss || {}).filter((k) => j.miss[k] > 1e-9).slice(0, 2).map((k) => limitHTML(k, j.miss[k])).join("");
           return '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
@@ -1145,7 +1145,7 @@
         on: {
           hc: (b) => {
             const i = Number(b.dataset.i), j = S().hand.q[i];
-            if (j && E.cancelJob(i)) { A.click(); toast("Annulé : " + esc(I[j.id].n) + ". Matières restituées."); }
+            if (j && E.cancelJob(i)) { A.click(); toast("Commande annulée : " + esc(I[j.id].n) + ". Ressources restituées."); }
             const box = $("#modal .modal-box");
             box.innerHTML = handsSheet(); iconize(box);
             render(true);
@@ -1353,7 +1353,7 @@
           nav: (b) => { recipeNav(b.dataset.id); return true; },
           back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
           rfrom: () => { const f = U.rfrom; U.rfrom = null; closeModal(); if (f) setTimeout(f, 80); return true; },
-          zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => { setTab("domaine"); Dom.focusZone(z); }, 60); } else { toast("Tu n’as pas encore atteint cette terre."); return true; } },
+          zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => { setTab("domaine"); Dom.focusZone(z); }, 60); } else { toast("Terre non atteinte."); return true; } },
           cr: (b) => { craftFrom(b); redraw(); return true; },
           chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
           tree: () => { setTimeout(() => openTree(id, 1), 60); },
