@@ -54,7 +54,7 @@
       });
       E.on("passdone", (o) => {
         const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
-        fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève" });
+        fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève", tier: 2 });
         if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
           "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
@@ -224,7 +224,9 @@
         const c = D.EASTER && D.EASTER[id];
         if (c) {
           A.secret && A.secret();
-          toast((c.ic ? c.ic + " " : "") + "<b>Curiosité :</b> " + esc(c.desc || c.n));
+          // une curiosité est une rareté : une fête qui prend l’écran, à la hauteur de ce qu’il fallait pour la trouver
+          fete({ ic: c.ic || "✨", kick: "Curiosité trouvée", title: c.n, sub: c.desc, tier: c.tier || 2, color: "#ffd36b" });
+          toast((c.ic ? c.ic + " " : "") + "<b>Curiosité :</b> " + esc(c.desc || c.n), { p: 1 });
         }
       });
       E.on("offline", (o) => {

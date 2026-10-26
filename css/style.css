@@ -1064,7 +1064,7 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .cele .cb { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 26px; border-radius: 26px; text-align: center; max-width: 82vw;
   background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--acc) 30%, var(--panel)), color-mix(in srgb, var(--panel) 94%, transparent));
   border: 1px solid color-mix(in srgb, var(--acc) 60%, transparent); box-shadow: 0 18px 60px rgba(0,0,0,.6), 0 0 40px color-mix(in srgb, var(--acc) 35%, transparent);
-  animation: celepop 1.9s cubic-bezier(.2,1.4,.4,1) forwards; }
+  animation: celepop var(--ms, 1.9s) cubic-bezier(.2,1.4,.4,1) forwards; }
 .cele .ic.xl { animation: celeic .7s cubic-bezier(.2,1.6,.4,1); }
 .cele .ck { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--acc); font-weight: 800; margin-top: 6px; }
 .cele .cn { font-family: var(--serif); font-size: 26px; color: var(--text); }
@@ -1443,7 +1443,7 @@ h2 + .stamp { margin: -4px 0 8px; }
 .modal-x { position: sticky; top: 0; float: right; z-index: 2; width: 40px; height: 40px; margin: -8px -8px 0 0; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 16px; }
 .modal-x:focus-visible, .modal-box button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
 /* la fête de découverte : un voile léger sur ce qu’il y a derrière, pour qu’on la lise seule */
-.cele::before { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--bg) 62%, transparent); animation: celeveil 1.9s ease forwards; }
+.cele::before { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--bg) 62%, transparent); animation: celeveil var(--ms, 1.9s) ease forwards; }
 .cele .cb { position: relative; background-color: var(--panel); }
 @keyframes celeveil { 0% { opacity: 0; } 12% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; } }
 
@@ -1602,4 +1602,47 @@ body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 @media (max-width: 359px) {
   .qtybar { gap: 4px; }
   .qtybar .tiny { display: none; }
+}
+
+/* ===== LE JUS (js/juice.js) ===== */
+/* un appui : le bouton s’enfonce et s’éclaire, un anneau part du doigt */
+.jpress { scale: .95; filter: brightness(1.18); transition: scale .06s ease-out, filter .06s ease-out; }
+.jring { position: absolute; width: var(--s, 56px); height: var(--s, 56px); margin: calc(var(--s, 56px) / -2) 0 0 calc(var(--s, 56px) / -2); border-radius: 50%;
+  border: 2px solid var(--c, var(--acc)); box-shadow: 0 0 12px var(--c, var(--acc)), inset 0 0 8px var(--c, var(--acc)); animation: jring var(--ms, 520ms) cubic-bezier(.1, .7, .3, 1) forwards; }
+@keyframes jring { from { transform: scale(.15); opacity: .95; } to { transform: scale(1); opacity: 0; } }
+.jflash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 40%, var(--c, #fff), transparent 72%); opacity: 0; animation: jflash .55s ease-out; }
+@keyframes jflash { from { opacity: var(--o, .3); } to { opacity: 0; } }
+#app.jshake { animation: jshake .42s linear; }
+@keyframes jshake { 0%, 100% { translate: 0 0; } 14% { translate: calc(var(--shake, 4px) * -1) calc(var(--shake, 4px) * .5); } 28% { translate: var(--shake, 4px) calc(var(--shake, 4px) * -.5); }
+  42% { translate: calc(var(--shake, 4px) * -.7) calc(var(--shake, 4px) * -.3); } 56% { translate: calc(var(--shake, 4px) * .5) calc(var(--shake, 4px) * .3); } 72% { translate: calc(var(--shake, 4px) * -.25) 0; } }
+/* le visiteur attrapé fait « pop » */
+.vis-pop { position: absolute; font-size: 34px; line-height: 1; transform: translate(-50%, -50%); animation: vispop .5s ease-out forwards; filter: drop-shadow(0 0 10px #ffd36b); }
+@keyframes vispop { 0% { transform: translate(-50%, -50%) scale(1); } 35% { transform: translate(-50%, -64%) scale(1.7); } 100% { transform: translate(-50%, -120%) scale(.2); opacity: 0; } }
+/* les fêtes rares : plus longues, plus grandes, avec un choc à l’arrivée */
+.cele.t2 .cb, .cele.t3 .cb { animation: celepopbig var(--ms, 2.9s) cubic-bezier(.2, 1.4, .4, 1) forwards; border-color: var(--cc, var(--acc));
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .6), 0 0 56px color-mix(in srgb, var(--cc, var(--acc)) 55%, transparent); }
+.cele.t2 .cn { font-size: 30px; }
+.cele.t2 .ic.xl, .cele.t3 .ic.xl { animation: celeicbig .9s cubic-bezier(.2, 1.7, .4, 1); }
+.cele.t3 .cb { padding: 26px 34px; gap: 6px; }
+.cele.t3 .cn { font-size: 36px; text-shadow: 0 0 22px color-mix(in srgb, var(--cc, var(--acc)) 70%, transparent); }
+.cele.t3 .ck { font-size: 13px; letter-spacing: .3em; color: color-mix(in srgb, var(--cc, var(--acc)) 55%, var(--text)); }
+.cele.t3 .ic.xl { font-size: 64px; filter: drop-shadow(0 0 18px var(--cc, var(--acc))); }
+.cele.t3 .cs { font-size: 15px; }
+.cele .crays { position: absolute; left: 50%; top: 40%; width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax; pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--cc, var(--acc)) 38%, transparent) 0 5deg, transparent 5deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0, transparent 38%); mask-image: radial-gradient(circle, #000 0, transparent 38%);
+  animation: crays var(--ms, 4.4s) linear forwards; }
+@keyframes crays { 0% { transform: rotate(0) scale(.4); opacity: 0; } 8% { opacity: 1; transform: rotate(8deg) scale(1); } 85% { opacity: 1; } 100% { transform: rotate(60deg) scale(1.05); opacity: 0; } }
+@keyframes celepopbig { 0% { transform: scale(.3); opacity: 0; } 6% { transform: scale(1.16); opacity: 1; } 10% { transform: scale(.97); } 14% { transform: none; } 88% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-24px) scale(.96); } }
+@keyframes celeicbig { 0% { transform: scale(.1) rotate(-40deg); } 55% { transform: scale(1.35) rotate(10deg); } 75% { transform: scale(.92) rotate(-4deg); } 100% { transform: none; } }
+/* les trouvailles dorées brillent sur le toast aussi */
+.toast-gold { animation: toastIn .3s ease-out, jgold 1.6s ease-in-out .3s 2; }
+@keyframes jgold { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, #ffd36b 45%, transparent), 0 0 22px #ffd36b; } }
+@media (prefers-reduced-motion: reduce) {
+  .jpress { scale: 1; }
+  .cele .crays, .jring, .jflash, .vis-pop { display: none; }
+  .cele.t2 .cb, .cele.t3 .cb { animation: celeveil var(--ms, 2.9s) ease forwards; }
+  .cele.t2 .ic.xl, .cele.t3 .ic.xl { animation: none; }
+  .toast-gold { animation: none; }
+  #app.jshake { animation: none; }
 }

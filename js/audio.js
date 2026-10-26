@@ -287,6 +287,16 @@
   A.err = function () { if (ready()) { tone({ f: 220, type: "square", d: 0.08, v: 0.04, lp: 1200 }); tone({ f: 180, type: "square", t: 0.09, d: 0.1, v: 0.04, lp: 1200 }); } };
   A.page = function () { if (ready()) noise({ f: 2400, f2: 1200, d: 0.22, v: 0.05, q: 0.7, a: 0.03 }); };
   A.explore = function () { if (!ready()) return; for (let i = 0; i < 4; i++) noise({ ft: "lowpass", f: 500, t: i * 0.28, d: 0.08, v: 0.12 }); };
+  /* le petit « plop » d’une chose attrapée au vol (un visiteur) : deux notes qui montent, un souffle */
+  A.pop = function () { if (!ready()) return; tone({ f: 520, f2: 880, type: "triangle", d: 0.09, v: 0.14 }); tone({ f: 1320, t: 0.07, d: 0.18, v: 0.07 }); noise({ f: 3000, f2: 6000, d: 0.12, v: 0.05, q: 0.8 }); };
+  /* l’impact d’un moment rare : un coup sourd qui fait trembler l’écran, et plus il est rare, plus il est grave et long */
+  A.boom = function (tier) {
+    if (!ready()) return;
+    const t = tier >= 3 ? 3 : 2;
+    tone({ f: 120 - t * 20, f2: 36, type: "sine", d: 0.5 + t * 0.2, v: 0.32 });
+    noise({ ft: "lowpass", f: 900, f2: 120, d: 0.4 + t * 0.15, v: 0.16 });
+    if (t >= 3) { tone({ f: 61, f2: 30, type: "triangle", t: 0.12, d: 1.1, v: 0.14 }); noise({ ft: "highpass", f: 3500, t: 0.02, d: 0.5, v: 0.06 }); }
+  };
   A.found = function () { if (!ready()) return; bell(880, { d: 1.4, v: 0.07 }); bell(1318.5, { t: 0.18, d: 1.6, v: 0.05 }); };
 
   /* la musique se fait discrète le temps d’un moment important */
