@@ -420,6 +420,15 @@
       if (n.etat === "allume") return S().made[n.id] > 0 ? "Déjà fabriqué" : "Recette découverte";
       return I[n.id].r ? "Recette à découvrir" : "Ressource découverte";
     }
+    function arbrePortee(n) {
+      return Arb && Arb.portee ? Arb.portee(n, E, D) : "pret";
+    }
+    function arbrePassPortee(n, f) {
+      if (!f || f === "tout") return true;
+      const p = arbrePortee(n);
+      if (f === "portee") return p === "pret" || p === "presque";
+      return p === f;
+    }
     function arbreCarte(n, centre) {
       const fant = n.etat === "fantome";
       const tag = centre ? "article" : "button";
@@ -442,7 +451,11 @@
     /* une pastille de la frise : une icône, un nom court, un état écrit pour le lecteur d’écran */
     function arbrePastille(n) {
       const fant = n.etat === "fantome", nom = fant ? "Recette à découvrir" : n.n;
-      return '<button type="button" class="arb-pas ' + n.etat + (n.objectif ? " obj" : "") + '" data-arbsel="' + esc(n.cle) + '" data-arbn="' + esc(n.cle) + '" aria-label="' + esc(nom + ", " + arbreEtat(n).toLowerCase() + (n.objectif ? ", objectif" : "")) + '" title="Ouvrir : ses ingrédients et ses usages">' +
+      const pCat = arbrePortee(n);
+      const neuf = n.etat === "allume" && !(S().made[n.id] > 0);
+      const label = nom + ", " + arbreEtat(n).toLowerCase() + (neuf ? ", nouvelle recette" : "") + (n.objectif ? ", objectif" : "");
+      return '<button type="button" class="arb-pas ' + n.etat + ' p-' + pCat + (n.objectif ? " obj" : "") + (neuf ? " neuf" : "") + '" data-arbsel="' + esc(n.cle) + '" data-arbn="' + esc(n.cle) + '" aria-label="' + esc(label) + '" title="Ouvrir : ses ingrédients et ses usages">' +
+        (neuf ? '<span class="arb-dot-neuf" aria-hidden="true" title="Nouvelle recette"></span>' : '') +
         (fant ? '<span class="arb-inconnu" aria-hidden="true">?</span>' : icon(n.id, "sm")) + '<span class="arb-pas-n" aria-hidden="true">' + esc(fant ? "?" : nom) + '</span></button>';
     }
     function arbreResultats(q) {
@@ -453,9 +466,29 @@
       return hits.length ? hits.slice(0, 8).map((n) => arbreCarte(n, false)).join("") : '<p class="small muted">Rien de tel parmi ce que tu connais.</p>';
     }
     function arbreBarre(g) {
-      return '<div class="arb-barre"><button type="button" class="btn small" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '" title="Ta progression : ton âge, tes étapes et le prochain objectif">Progression</button>' +
+      const f = U.arbreFiltre || "tout";
+      const FILTRES = [
+        ["tout", "Toutes", "Afficher toutes les pastilles"],
+        ["portee", "À portée", "Afficher les recettes réalisables ou presque"],
+        ["pret", "Prêtes", "Afficher les recettes fabricables immédiatement avec ta Réserve"],
+        ["presque", "Presque", "Afficher les recettes dont seules manquent des matières à récolter"],
+        ["bloque", "Pas encore", "Afficher les recettes bloquées par une station, un geste ou non découvertes"]
+      ];
+      const counts = { tout: g.noeuds.length, portee: 0, pret: 0, presque: 0, bloque: 0 };
+      g.noeuds.forEach((n) => {
+        const p = arbrePortee(n);
+        if (counts[p] !== undefined) counts[p]++;
+        if (p === "pret" || p === "presque") counts.portee++;
+      });
+      return '<div class="arb-barre"><button type="button" class="btn small' + (!U.arbreSel ? ' on' : '') + '" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '" title="Ta progression : ton âge, tes étapes et le prochain objectif">Progression</button>' +
         '<button type="button" class="btn small" data-arb="centre" title="Ton objectif du moment, et ce qu’il demande">Objectif</button>' +
         '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans l’arbre" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
+        '<div class="filters arb-filtres" role="toolbar" aria-label="Filtrer les pastilles">' +
+        FILTRES.map(([k, lbl, tip]) =>
+          '<button type="button" data-arb-f="' + k + '" class="' + (f === k ? 'on' : '') + '" title="' + tip + '">' +
+          lbl + ' <span class="f-cnt">' + (counts[k] || 0) + '</span></button>'
+        ).join('') +
+        '</div>' +
         '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans l’arbre</label>' +
         '<input id="arbq" type="search" placeholder="Recette ou ressource" value="' + esc(U.arbreQ || '') + '" autocomplete="off" spellcheck="false">' +
         '<div id="arbres" class="arb-grille" aria-live="polite">' + arbreResultats(U.arbreQ) + '</div></div>';
@@ -463,20 +496,25 @@
     function arbreEnsemble(g) {
       const etapes = E.milestones()[g.age] || [], faites = etapes.filter((x) => x.done).length;
       const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
+      const f = U.arbreFiltre || "tout";
       let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
         '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
       if (objectif) h += '<h3>Prochain objectif</h3>' + arbreCarte(objectif, false);
       else if (ob) h += '<h3>Prochain objectif</h3><p>' + esc(ob.txt || ob.n || 'Poursuivre l’exploration') + '</p>';
       else h += '<p>Tu as accompli les objectifs proposés.</p>';
-      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>matière vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span></div>';
+      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>matière vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span><span><i class="neuf-i"></i>nouveau</span></div>';
       for (let a = 0; a <= g.max; a++) {
         const ns = g.noeuds.filter((n) => n.age === a);
         const ouverts = U.arbreAges || {};
-        const ouvert = ouverts[a] !== undefined ? ouverts[a] : a === Math.min(g.age, g.max);
-        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '') + '</span></summary>';
-        const rang = new Map(ns.map((n) => [n.cle, arbreRang(n, g)]));
-        ns.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
-        h += (ns.length ? '<div class="arb-frise">' + ns.map(arbrePastille).join('') + '</div>' : '<p class="small muted">Rien découvert pour l’instant.</p>') + '</details>';
+        const visibles = f === "tout" ? ns : ns.filter((n) => arbrePassPortee(n, f));
+        const ouvert = ouverts[a] !== undefined ? ouverts[a] : (f !== "tout" ? visibles.length > 0 : a === Math.min(g.age, g.max));
+        const compteTxt = f === "tout" ?
+          (ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '')) :
+          (visibles.length + ' visible' + (visibles.length > 1 ? 's' : ''));
+        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + compteTxt + '</span></summary>';
+        const rang = new Map(visibles.map((n) => [n.cle, arbreRang(n, g)]));
+        visibles.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
+        h += (visibles.length ? '<div class="arb-frise">' + visibles.map(arbrePastille).join('') + '</div>' : '<p class="small muted">' + (ns.length ? 'Aucune recette pour ce filtre.' : 'Rien découvert pour l’instant.') + '</p>') + '</details>';
       }
       if (g.max < D.AGES.length - 1) h += '<p class="small muted">Les autres âges se dévoileront au fil de tes découvertes.</p>';
       return h;
@@ -562,7 +600,7 @@
     if (typeof document !== 'undefined') {
       document.addEventListener('input', (e) => { if (e.target.id === 'arbq') { U.arbreQ = e.target.value; const r = document.getElementById('arbres'); if (r) { r.innerHTML = arbreResultats(U.arbreQ); iconize(r); } } });
       document.addEventListener('click', (e) => {
-        const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer], [data-chemin], [data-ch-craft], [data-ch-harv], [data-ch-voir], [data-ch-atelier]');
+        const b = e.target.closest && e.target.closest('[data-arb], [data-arb-f], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer], [data-chemin], [data-ch-craft], [data-ch-harv], [data-ch-voir], [data-ch-atelier]');
         if (!b) return;
         if (b.dataset.chCraft) {
           e.stopPropagation(); A.click();
@@ -597,6 +635,13 @@
         if (!b.closest('#v-arbre, .arb-sheet-c')) return;
         e.stopPropagation(); A.click();
         if (b.dataset.arbsel) { arbreChoisir(b.dataset.arbsel, true); return; }
+        if (b.dataset.arbF) {
+          U.arbreFiltre = b.dataset.arbF;
+          const el = arbreEl();
+          arbreBati(el);
+          if (el) { const scr = el.querySelector('#arbre'); if (scr) scr.scrollTop = 0; }
+          return;
+        }
         const a = b.dataset.arb, el = arbreEl();
         if (a === 'chercher') {
           U.arbreChercher = !U.arbreChercher; const p = el.querySelector('.arb-chercher'); p.hidden = !U.arbreChercher; b.setAttribute('aria-expanded', U.arbreChercher);

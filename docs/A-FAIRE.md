@@ -10,6 +10,7 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Fait récemment
 
+- **0.31.0, Arbre étape 3** : filtres de portée (Toutes, À portée, Prêtes, Presque, Pas encore) avec compteurs en temps réel, qualification sans état (`Arbre.portee`), et point « nouveau » discret sur les pastilles de recettes découvertes jamais fabriquées.
 - **0.30.0, le chemin vers une cible dans l'Arbre** : échelle verticale des marches depuis une pastille ou l'objectif du Domaine (fait, en cours, à trouver, bloquée), action directe pour chaque marche (Fabriquer, Récolter, Voir la recette), anonymat strict des recettes inconnues (« Recette à trouver »), « Tout fabriquer » et « Suivre ».
 - **0.29.0, vocabulaire et ouverture** : un mot par chose (Objectif, Nouvelle recette, Requis, Atelier), le choix du guide dans la première fenêtre, plus de bulle d'accueil sur la carte d'objectif. `docs/revue/vocabulaire.md`.
 - **0.28.0, Arbre étape 1** : la frise en pastilles et la feuille de voisinage ; la progression reste l'accueil.
@@ -23,8 +24,7 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Juste après
 
-1. **Arbre, étape 3.** Le filtre **« à portée »** (prêt, presque avec ce qui manque, pas encore) et le point **« nouveau »** sur les pastilles.
-2. **Friction, suite.** Relire le guide par lots avec la règle du vocabulaire ; mémoriser le dernier filtre et la dernière recherche du Carnet ; une quantité libre à côté de ×10 et Max.
+1. **Friction, suite.** Relire le guide par lots avec la règle du vocabulaire ; mémoriser le dernier filtre et la dernière recherche du Carnet ; une quantité libre à côté de ×10 et Max.
 
 ## Plus tard
 

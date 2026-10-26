@@ -548,7 +548,43 @@
     };
   }
 
-  const Arbre = { graphe, mise_en_page, rendu, liens, voisinage, bandeA, centre, sig, catalogue, carrefours, loin, hash, NODE, COLS, PX, PY, CARREFOUR, route };
+  /* ------------------------------------------------------------ portée d’une pastille
+   * Évalue l’atteignabilité d’un nœud de l’arbre :
+   *   'pret'     : fabricable immédiatement avec la Réserve (ou ressource en stock) ;
+   *   'presque'  : toutes les recettes sont connues et débloquées, seules manquent
+   *                des matières récoltables dans une zone ouverte ;
+   *   'bloque'   : bloqué par un geste, une chaleur, une station, une recette
+   *                inconnue (fantôme compris), ou une zone fermée. */
+  function portee(n, E, D) {
+    if (!n || n.etat === "fantome" || !n.id) return "bloque";
+    const I = D.ITEMS, S = E.state;
+    const it = I[n.id];
+    if (!it) return "bloque";
+    if (!it.r) {
+      if ((S.inv[n.id] || 0) > 0) return "pret";
+      const zid = E.RES_ZONE ? E.RES_ZONE[n.id] : null;
+      if (zid && E.zoneOpen && E.zoneOpen(zid)) return "presque";
+      return "bloque";
+    }
+    if (n.etat !== "allume" || !S.known[n.id]) {
+      return (S.inv[n.id] || 0) > 0 ? "pret" : "bloque";
+    }
+    if (E.blocker && E.blocker(n.id)) return "bloque";
+    const p = E.plan ? E.plan(n.id, 1) : null;
+    if (!p) return "bloque";
+    if (p.locked && p.locked.length > 0) return "bloque";
+    if (p.blocked && Object.keys(p.blocked).length > 0) return "bloque";
+    if (p.ok) return "pret";
+    const missingKeys = Object.keys(p.missing || {});
+    const allGatherable = missingKeys.length > 0 && missingKeys.every((m) => {
+      const zid = E.RES_ZONE ? E.RES_ZONE[m] : null;
+      return zid && E.zoneOpen && E.zoneOpen(zid);
+    });
+    if (allGatherable) return "presque";
+    return "bloque";
+  }
+
+  const Arbre = { graphe, mise_en_page, rendu, liens, voisinage, bandeA, centre, sig, catalogue, carrefours, loin, hash, NODE, COLS, PX, PY, CARREFOUR, route, portee };
   if (typeof module !== "undefined" && module.exports) module.exports = Arbre;
   root.EclatArbre = Arbre;
 })(typeof globalThis !== "undefined" ? globalThis : this);
