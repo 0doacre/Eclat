@@ -41,3 +41,112 @@ h3.sub { font-size: 13px; letter-spacing: .065em; }
 @media (prefers-reduced-motion: reduce) {
   .btn, .mini, .chip, .icon-btn, #tabs button { transition: none; }
 }
+
+/* ---------------------------------------------------------------- Atlas vivant · Domaine
+ * Une page de registre lisible : hiérarchie, traits de plume, rythmes réguliers.
+ * Tous les sélecteurs sont purement visuels ; aucun geste ni événement modifié.
+ */
+#v-domaine {
+  --atlas-rule: color-mix(in srgb, var(--text) 21%, transparent);
+  --atlas-wash: color-mix(in srgb, var(--acc) 7%, var(--panel));
+}
+#v-domaine h2.title {
+  font-size: clamp(25px, 6.2vw, 33px);
+  line-height: 1.12;
+  letter-spacing: -.025em;
+  margin: 9px 2px 16px;
+  padding-bottom: 12px;
+  border-bottom: 3px double var(--atlas-rule);
+}
+#v-domaine h3.sub {
+  font-family: var(--label, var(--sans));
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-top: 22px;
+}
+#v-domaine .card,
+#v-domaine .dom-card {
+  border: 1px solid var(--atlas-rule);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--panel) 96%, var(--bg));
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 5%, transparent);
+}
+#v-domaine .goal-card {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--acc) 70%, var(--text));
+  border-left: 4px solid var(--acc);
+  border-radius: 5px 9px 9px 5px;
+  background: var(--atlas-wash);
+  padding: 14px;
+}
+#v-domaine .goal-card .lbl,
+#v-domaine .goal .lbl {
+  font-size: 12px;
+  letter-spacing: .12em;
+}
+#v-domaine .goal .name {
+  font-size: 20px;
+  line-height: 1.22;
+}
+#v-domaine .dom-th {
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--atlas-rule);
+  align-items: baseline;
+}
+#v-domaine .dom-th h3,
+#v-domaine .dom-card h3 {
+  font-size: clamp(20px, 5.2vw, 25px);
+  line-height: 1.18;
+  letter-spacing: -.012em;
+}
+#v-domaine .dom-terre { gap: 10px; }
+#v-domaine .gis {
+  min-height: 62px;
+  padding-block: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 11%, transparent);
+}
+#v-domaine .gis:last-child { border-bottom-color: transparent; }
+#v-domaine .gis-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid color-mix(in srgb, var(--text) 30%, transparent);
+  background: color-mix(in srgb, var(--acc) 5%, var(--panel));
+}
+#v-domaine .gis-ic.hand {
+  border-color: var(--acc);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--acc) 12%, transparent);
+}
+#v-domaine .gis-l1 { font-size: 16px; line-height: 1.25; font-weight: 650; }
+#v-domaine .gis-l2 { font-size: 13px; line-height: 1.35; color: var(--muted); }
+#v-domaine .dom-rate { font-size: 14px; }
+#v-domaine .dom-tip {
+  border-radius: 6px;
+  border-left: 3px solid var(--intu);
+  border-top: 1px solid var(--line2);
+  border-right: 1px solid var(--line2);
+  border-bottom: 1px solid var(--line2);
+  background: color-mix(in srgb, var(--intu) 7%, var(--panel));
+  padding: 11px 13px;
+  line-height: 1.48;
+}
+#v-domaine .dom-lieu .bar { height: 6px; margin-top: 5px; }
+#v-domaine .dom-ruine { border-radius: 6px; padding: 11px 12px; }
+#v-domaine .dom-epi { font-size: 19px; line-height: 1.4; margin-block: 17px; }
+#v-domaine .btn.pri {
+  border-color: var(--acc);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--text) 15%, transparent);
+}
+#v-domaine .btn:focus-visible,
+#v-domaine .mini:focus-visible,
+#v-domaine .gis-ic:focus-visible { outline-offset: 2px; }
+@media (max-width: 360px) {
+  #v-domaine .gis { gap: 7px; }
+  #v-domaine .gis-ic { flex-basis: 44px; width: 44px; height: 44px; }
+  #v-domaine .goal-card { padding: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #v-domaine .gis-ic { animation: none; }
+}
