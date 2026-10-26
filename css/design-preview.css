@@ -1,0 +1,1070 @@
+/* ÉCLAT — Atlas vivant / première passe de design.
+ * Couche additive et réversible : aucune mécanique ni structure modifiée.
+ * Ne pas neutraliser les palettes d'époque ; préserver les thèmes et le Cosmos.
+ */
+:root {
+  --nav: 72px;
+  --design-reading: 15px;
+  --design-caption: 13px;
+  --design-radius: 12px;
+  --design-focus: 3px;
+}
+body { font-size: var(--design-reading); line-height: 1.5; }
+.small { font-size: 14px; line-height: 1.45; }
+.tiny { font-size: var(--design-caption); line-height: 1.4; }
+h3.sub { font-size: 13px; letter-spacing: .065em; }
+#tabs button span { font-size: 12px; }
+.age small { font-size: 12px; letter-spacing: .045em; }
+.chip .cv small { font-size: 11px; }
+.goal .lbl, .goal-card .lbl { font-size: 12px; }
+.btn.small { font-size: 14px; }
+.btn, .mini, .chip, .icon-btn, #tabs button { transition: background-color .16s ease, border-color .16s ease, color .16s ease; }
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--design-focus) solid var(--acc);
+  outline-offset: 3px;
+}
+:where(.card, .dom-card, .rec, .stepbox, .passbox) {
+  border-radius: var(--design-radius);
+}
+.card, .dom-card, .rec, .stepbox, .passbox {
+  background-color: var(--panel);
+}
+.goal-card { border-style: solid; border-color: color-mix(in srgb, var(--acc) 55%, var(--line2)); }
+.bar { min-height: 7px; overflow: hidden; }
+.bar > i { border-radius: inherit; }
+#tabs button.on { color: var(--text); }
+#tabs button.on::before { left: 20%; right: 20%; height: 3px; }
+#v-cosmos .small, #v-cosmos .tiny { color: var(--text); }
+@media (max-width: 360px) {
+  .view { padding-left: 10px; padding-right: 10px; }
+  .top-right { gap: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .mini, .chip, .icon-btn, #tabs button { transition: none; }
+}
+
+/* ---------------------------------------------------------------- Atlas vivant · Domaine
+ * Une page de registre lisible : hiérarchie, traits de plume, rythmes réguliers.
+ * Tous les sélecteurs sont purement visuels ; aucun geste ni événement modifié.
+ */
+:where(#v-domaine) {
+  --atlas-rule: color-mix(in srgb, var(--text) 21%, transparent);
+  --atlas-wash: color-mix(in srgb, var(--acc) 7%, var(--panel));
+}
+:where(#v-domaine) h2.title {
+  font-size: clamp(25px, 6.2vw, 33px);
+  line-height: 1.12;
+  letter-spacing: -.025em;
+  margin: 9px 2px 16px;
+  padding-bottom: 12px;
+  border-bottom: 3px double var(--atlas-rule);
+}
+:where(#v-domaine) h3.sub {
+  font-family: var(--label, var(--sans));
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .12em;
+  color: var(--muted);
+  margin-top: 22px;
+}
+:where(#v-domaine) .card,
+:where(#v-domaine) .dom-card {
+  border: 1px solid var(--atlas-rule);
+  border-radius: 9px;
+  background: var(--panel);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 5%, transparent);
+}
+:where(#v-domaine) .goal-card {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--acc) 70%, var(--text));
+  border-left: 4px solid var(--acc);
+  border-radius: 5px 9px 9px 5px;
+  background: var(--atlas-wash);
+  padding: 14px;
+}
+:where(#v-domaine) .goal-card .lbl,
+:where(#v-domaine) .goal .lbl {
+  font-size: 12px;
+  letter-spacing: .12em;
+}
+:where(#v-domaine) .goal .name {
+  font-size: 20px;
+  line-height: 1.22;
+}
+:where(#v-domaine) .dom-th {
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--atlas-rule);
+  align-items: baseline;
+}
+:where(#v-domaine) .dom-th h3,
+:where(#v-domaine) .dom-card h3 {
+  font-size: clamp(20px, 5.2vw, 25px);
+  line-height: 1.18;
+  letter-spacing: -.012em;
+}
+:where(#v-domaine) .dom-terre { gap: 10px; }
+:where(#v-domaine) .gis {
+  min-height: 62px;
+  padding-block: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 11%, transparent);
+}
+:where(#v-domaine) .gis:last-child { border-bottom-color: transparent; }
+:where(#v-domaine) .gis-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid color-mix(in srgb, var(--text) 30%, transparent);
+  background: color-mix(in srgb, var(--acc) 5%, var(--panel));
+}
+:where(#v-domaine) .gis-ic.hand {
+  border-color: var(--acc);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--acc) 12%, transparent);
+}
+:where(#v-domaine) .gis-l1 { font-size: 16px; line-height: 1.25; font-weight: 650; }
+:where(#v-domaine) .gis-l2 { font-size: 13px; line-height: 1.35; color: var(--muted); }
+:where(#v-domaine) .dom-rate { font-size: 14px; }
+:where(#v-domaine) .dom-tip {
+  border-radius: 6px;
+  border-left: 3px solid var(--intu);
+  border-top: 1px solid var(--line2);
+  border-right: 1px solid var(--line2);
+  border-bottom: 1px solid var(--line2);
+  background: color-mix(in srgb, var(--intu) 7%, var(--panel));
+  padding: 11px 13px;
+  line-height: 1.48;
+}
+:where(#v-domaine) .dom-lieu .bar { height: 6px; margin-top: 5px; }
+:where(#v-domaine) .dom-ruine { border-radius: 6px; padding: 11px 12px; }
+:where(#v-domaine) .dom-epi { font-size: 19px; line-height: 1.4; margin-block: 17px; }
+:where(#v-domaine) .btn.pri {
+  border-color: var(--acc);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--text) 15%, transparent);
+}
+:where(#v-domaine) .btn:focus-visible,
+:where(#v-domaine) .mini:focus-visible,
+:where(#v-domaine) .gis-ic:focus-visible { outline-offset: 2px; }
+@media (max-width: 360px) {
+  :where(#v-domaine) .gis { gap: 7px; }
+  :where(#v-domaine) .gis-ic { flex-basis: 44px; width: 44px; height: 44px; }
+  :where(#v-domaine) .goal-card { padding: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :where(#v-domaine) .gis-ic { animation: none; }
+}
+
+/* ATLAS VIVANT — expérimentation assumée, page du Domaine */
+html, body { max-width: 100%; overflow-x: clip; }
+#app, #views, .view { min-width: 0; max-width: 100%; }
+#views { overflow-x: clip; }
+:where(#v-domaine) { overflow-wrap: anywhere; }
+:where(#v-domaine) :is(.row,.gis,.dom-th,.sub-row) > * { min-width: 0; }
+:where(#v-domaine) :is(.card,.dom-card,.goal-card,.dom-tip) { max-width: 100%; }
+
+/* La page devient un feuillet relié : double filet, encre, accent marginal. */
+:where(#v-domaine) {
+  position: relative;
+  padding-inline: clamp(12px, 4vw, 24px);
+  background:
+    linear-gradient(90deg, color-mix(in srgb,var(--acc) 15%,transparent) 0 2px, transparent 2px) 8px 0 / 3px 100% no-repeat,
+    linear-gradient(90deg, color-mix(in srgb,var(--text) 12%,transparent) 0 1px, transparent 1px) 13px 0 / 2px 100% no-repeat;
+}
+:where(#v-domaine) h2.title {
+  font-size: clamp(29px, 7.8vw, 42px);
+  font-weight: 500;
+  letter-spacing: -.035em;
+  padding: 8px 0 18px;
+  margin: 8px 0 20px;
+  border-bottom: 4px double color-mix(in srgb,var(--text) 60%,transparent);
+}
+:where(#v-domaine) h3.sub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  letter-spacing: .17em;
+  color: var(--text);
+  margin: 26px 0 12px;
+}
+:where(#v-domaine) h3.sub::after {
+  content: "";
+  flex: 1;
+  min-width: 10px;
+  border-top: 1px solid color-mix(in srgb,var(--text) 30%,transparent);
+}
+:where(#v-domaine) .card, :where(#v-domaine) .dom-card {
+  border: 1px solid color-mix(in srgb,var(--text) 38%,transparent);
+  border-radius: 3px;
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--acc) 5%,transparent),transparent 46%),
+    color-mix(in srgb,var(--panel) 97%,var(--bg));
+  box-shadow: 3px 4px 0 color-mix(in srgb,var(--text) 10%,transparent);
+  padding: clamp(12px,3.5vw,20px);
+  margin-bottom: 18px;
+}
+:where(#v-domaine) .goal-card {
+  border: 1px solid var(--text);
+  border-left: 6px solid var(--acc);
+  border-radius: 2px;
+  background: color-mix(in srgb,var(--acc) 12%,var(--panel));
+  padding: 17px 15px;
+  box-shadow: 4px 4px 0 color-mix(in srgb,var(--acc) 20%,transparent);
+}
+:where(#v-domaine) .goal .name { font-size: clamp(22px,5.6vw,29px); }
+:where(#v-domaine) .dom-th {
+  border-bottom: 2px solid color-mix(in srgb,var(--text) 55%,transparent);
+  padding-bottom: 13px;
+  margin-bottom: 5px;
+}
+:where(#v-domaine) .dom-th h3, :where(#v-domaine) .dom-card h3 {
+  font-size: clamp(23px,6vw,30px);
+}
+:where(#v-domaine) .gis {
+  padding-block: 12px;
+  min-height: 76px;
+  border-bottom: 1px dashed color-mix(in srgb,var(--text) 25%,transparent);
+}
+:where(#v-domaine) .gis-ic {
+  border-radius: 3px;
+  background: color-mix(in srgb,var(--acc) 11%,var(--panel));
+  border: 1.5px solid color-mix(in srgb,var(--text) 48%,transparent);
+  box-shadow: inset 0 0 0 3px var(--panel);
+}
+:where(#v-domaine) .gis-l1 { font-size: 17px; }
+:where(#v-domaine) .dom-tip {
+  border-radius: 2px;
+  border: 1px dashed var(--intu);
+  border-left: 5px solid var(--intu);
+  background: color-mix(in srgb,var(--intu) 11%,var(--panel));
+  padding: 13px 14px;
+}
+:where(#v-domaine) .btn { border-radius: 4px; }
+:where(#v-domaine) .btn.pri { box-shadow: 3px 3px 0 color-mix(in srgb,var(--text) 28%,transparent); }
+:where(#v-domaine) .dom-epi { font-size: 21px; padding: 10px 0; }
+@media (max-width: 380px) {
+  :where(#v-domaine) { padding-inline: 12px; }
+  :where(#v-domaine) .card, :where(#v-domaine) .dom-card { padding: 12px; }
+  :where(#v-domaine) .gis { gap: 7px; }
+  :where(#v-domaine) .gis-l1 { font-size: 15px; }
+  :where(#v-domaine) .gis-b { gap: 3px; }
+}
+
+/* ========================================================================
+   ATLAS VIVANT · MANIFESTE VISUEL / V1
+   Langage transversal, volontairement expressif, sans changement de gameplay.
+   ======================================================================== */
+:root, body {
+  --atlas-ink: color-mix(in srgb, var(--text) 80%, var(--acc));
+  --atlas-hairline: color-mix(in srgb, var(--text) 24%, transparent);
+  --atlas-stamp: color-mix(in srgb, var(--acc) 16%, var(--panel));
+}
+#app { isolation: isolate; }
+#views { scrollbar-color: var(--atlas-hairline) transparent; }
+.view { min-width: 0; }
+.view > * { max-width: 100%; }
+.view :is(.row,.sub-row,.sheet-h,.goal,.dom-th,.gis,.mrow) { min-width: 0; }
+.view :is(.row,.sub-row,.sheet-h,.goal,.dom-th,.gis,.mrow) > * { min-width: 0; }
+.view :is(h1,h2,h3,p,.small,.tiny,.muted) { overflow-wrap: break-word; }
+
+/* Couverture et index : l'âge devient le cartouche du livre. */
+#top {
+  min-height: calc(70px + var(--safe-t));
+  height: auto;
+  padding-block: calc(8px + var(--safe-t)) 8px;
+  border-bottom: 3px double var(--atlas-ink);
+  box-shadow: 0 4px 0 color-mix(in srgb,var(--text) 6%,transparent);
+}
+#top .age { border-left: 3px solid var(--acc); padding-left: 10px; }
+#top .age #ageName { font-size: clamp(20px,5.4vw,27px); letter-spacing: -.02em; }
+#top .age-bar-track { height: 4px; margin-top: 7px; }
+#top .age-sub small { font-size: 10px; }
+#top .icon-btn { border-radius: 4px; border-color: var(--atlas-hairline); }
+#top .chip { border-radius: 4px; border-color: var(--atlas-hairline); background: var(--atlas-stamp); }
+#tabs {
+  min-height: calc(72px + var(--safe-b));
+  height: calc(72px + var(--safe-b));
+  border-top: 3px double var(--atlas-ink);
+  box-shadow: 0 -5px 0 color-mix(in srgb,var(--text) 6%,transparent);
+}
+#tabs button { gap: 4px; border-right: 1px solid var(--atlas-hairline); }
+#tabs button:last-child { border-right: 0; }
+#tabs button.on { background: color-mix(in srgb,var(--acc) 11%,transparent); }
+#tabs button.on::before { left: 0; right: 0; top: 0; height: 4px; }
+#tabs button span { font-size: 12px; font-weight: 700; letter-spacing: .015em; }
+#tabs .gi { width: 23px; height: 23px; }
+
+/* Titres de chapitre, repères de lecture et surfaces documentaires. */
+.view h2.title {
+  font-size: clamp(28px,7vw,38px);
+  line-height: 1.12;
+  font-weight: 500;
+  letter-spacing: -.035em;
+  margin: 12px 0 20px;
+  padding: 4px 0 15px;
+  border-bottom: 3px double var(--atlas-ink);
+}
+.view h3.sub {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .15em;
+  color: var(--text);
+}
+.view .card,
+.view .rec,
+.view .stepbox,
+.view .passbox,
+.view .dom-card {
+  border-radius: 4px;
+  border-color: var(--atlas-hairline);
+  background: var(--panel);
+}
+.view .card.acc { border-left: 4px solid var(--acc); }
+.view .btn { border-radius: 5px; min-height: 44px; }
+.view .btn.pri { border-width: 1.5px; box-shadow: 2px 2px 0 var(--atlas-hairline); }
+.view .mini { border-radius: 4px; }
+.view .ic:not(.sym) { border-radius: 4px; }
+.view .ic.sym { border-radius: 5px; box-shadow: none; border-width: 1.5px; }
+.view .bar { height: 9px; border-radius: 2px; }
+.view .bar > i { border-radius: 1px; }
+
+/* Atelier : planche de travail, gestes comme outils gravés. */
+#v-atelier .gestes { gap: 9px; padding-block: 7px 13px; }
+#v-atelier .geste {
+  width: 77px;
+  min-height: 77px;
+  border-radius: 5px;
+  border: 1.5px solid var(--atlas-hairline);
+  background: color-mix(in srgb,var(--panel) 90%,var(--acc));
+}
+#v-atelier .geste.on {
+  border: 2px solid var(--acc);
+  box-shadow: inset 0 0 0 2px var(--panel), 0 3px 0 var(--atlas-hairline);
+}
+#v-atelier .geste .gn { font-size: 12px; font-weight: 650; }
+#v-atelier .bench { border-radius: 4px; outline: 2px solid color-mix(in srgb,var(--text) 20%,transparent); outline-offset: -6px; }
+#v-atelier .slot { border-radius: 5px; }
+#v-atelier .inv { border-radius: 5px; }
+
+/* Carte : la carte reste une carte, pas un tableau de bord. */
+#v-carte .card, #v-carte .dom-card { border-radius: 4px; }
+#v-carte .carte-svg { filter: drop-shadow(0 3px 0 color-mix(in srgb,var(--text) 8%,transparent)); }
+
+/* Carnet et Arbre : fiches et planches d'étude. */
+#v-carnet .rec { border-left: 3px solid var(--atlas-ink); padding-block: 13px; }
+#v-arbre .card, #v-arbre .rec { border-style: solid; }
+#v-carnet h3.sub, #v-arbre h3.sub, #v-journal h3.sub {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--atlas-hairline);
+}
+#v-journal .card { border-left: 3px solid var(--atlas-ink); }
+#v-machines .card { border-top: 3px solid var(--atlas-ink); }
+
+/* Modales : feuilles posées sur l'atlas. */
+.modal-box {
+  border-radius: 5px;
+  border: 2px solid var(--atlas-ink);
+  box-shadow: 6px 8px 0 color-mix(in srgb,var(--text) 18%,transparent);
+  max-width: min(94vw, 580px);
+}
+.modal-box :is(h2,h3) { line-height: 1.2; }
+#toasts > * { border-radius: 4px; }
+
+/* L'observatoire est volontairement une rupture : aucune texture de papier. */
+#v-cosmos { --atlas-ink: #d4c4a3; --atlas-hairline: rgba(232,226,214,.24); }
+#v-cosmos .card { background: #161c26; }
+#v-cosmos h2.title { border-color: rgba(232,226,214,.4); }
+
+/* Sécurité mobile : aucun composant non défilant ne pousse la page en largeur. */
+html, body, #app { width: 100%; max-width: 100%; }
+#app { overflow-x: clip; }
+#views, .view { min-width: 0; max-width: 100%; }
+.view :is(img,svg,canvas,video) { max-width: 100%; }
+.view :is(input,select,textarea) { max-width: 100%; }
+.view :is(.card,.dom-card,.rec,.stepbox,.passbox,.modal-box) { min-width: 0; }
+@media (max-width: 390px) {
+  #top { gap: 3px; padding-inline: 6px; }
+  #top .age { min-width: 65px; padding-left: 5px; }
+  #top .age #ageName { font-size: 18px; }
+  #top .chip { padding-inline: 5px; }
+  #top .icon-btn { width: 36px; height: 38px; }
+  #tabs button span { font-size: 11px; }
+  .view { padding-inline: 10px; }
+  #v-atelier .geste { width: 70px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app, #v-carte .carte-svg { transition: none; }
+}
+
+/* Les modes d'affichage explicites priment sur le style Atlas. */
+body.dom-dense :where(#v-domaine) .gis,
+.dom-dense :where(#v-domaine) .gis { min-height: 0; padding-block: 3px; }
+body.dom-dense :where(#v-domaine) .gis-ic,
+.dom-dense :where(#v-domaine) .gis-ic { flex-basis: 40px; width: 40px; height: 40px; }
+body.dom-dense :where(#v-domaine) .gis-l1,
+.dom-dense :where(#v-domaine) .gis-l1 { font-size: 14px; }
+body.dom-dense :where(#v-domaine) .gis-l2,
+.dom-dense :where(#v-domaine) .gis-l2 { font-size: 12px; }
+
+/* =====================================================================
+   ATLAS / GRANDE PLANCHE — rupture visuelle assumée.
+   Les décors existants deviennent les images principales des feuillets.
+   ===================================================================== */
+body:not([data-ep="bord"]) {
+  --atlas-page-shadow: color-mix(in srgb,var(--text) 14%,transparent);
+}
+#views {
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.07) 0,transparent 12px,transparent calc(100% - 12px),rgba(0,0,0,.045) 100%),
+    var(--paper), var(--bg);
+}
+:where(#v-domaine) {
+  padding: 0 12px calc(var(--nav) + var(--safe-b) + 36px);
+  background: none;
+}
+:where(#v-domaine) > .dom {
+  padding: 12px 0;
+}
+:where(#v-domaine) .dom-terre {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  padding: 0 14px 14px;
+  margin: 18px 0 28px;
+  border: 1px solid color-mix(in srgb,var(--text) 48%,transparent);
+  border-radius: 2px;
+  background: var(--panel);
+  box-shadow: 5px 6px 0 var(--atlas-page-shadow);
+}
+:where(#v-domaine) .dom-terre::before {
+  content: "T E R R E  ·  É C L A T";
+  display: block;
+  padding: 8px 0 7px;
+  border-bottom: 1px solid var(--atlas-hairline);
+  font: 700 10px/1.3 "IBM Plex Mono",monospace;
+  letter-spacing: .13em;
+  color: var(--muted);
+}
+:where(#v-domaine) .dom-terre.a-decor::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 30px 0 auto;
+  height: clamp(165px,49vw,245px);
+  z-index: -1;
+  background:
+    linear-gradient(180deg,rgba(20,15,10,.02) 0%,rgba(20,15,10,.05) 56%,var(--panel) 100%),
+    var(--decor) center 42% / cover no-repeat;
+  filter: saturate(.85) contrast(1.08);
+  pointer-events: none;
+}
+:where(#v-domaine) .dom-terre.a-decor .dom-th {
+  min-height: clamp(165px,49vw,245px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 35px 10px 18px;
+  margin: 0 -14px 12px;
+  position: relative;
+  border: 0;
+  background: linear-gradient(0deg,var(--panel) 0%,color-mix(in srgb,var(--panel) 86%,transparent) 26%,transparent 80%);
+}
+:where(#v-domaine) .dom-terre.a-decor .dom-th h3 {
+  font: 400 clamp(32px,9vw,52px)/1.05 var(--serif);
+  letter-spacing: -.045em;
+  max-width: 100%;
+  text-shadow: 0 1px 0 var(--panel),1px 0 0 var(--panel),-1px 0 0 var(--panel);
+}
+:where(#v-domaine) .dom-terre:not(.a-decor) .dom-th {
+  padding: 18px 0 15px;
+  margin-bottom: 12px;
+}
+:where(#v-domaine) .dom-terre:not(.a-decor) .dom-th h3 {
+  font-size: clamp(27px,7vw,39px);
+}
+:where(#v-domaine) .dom-terre .dom-lieu {
+  max-width: 100%;
+  flex: 0 1 auto;
+}
+:where(#v-domaine) .dom-terre .dom-lieu .btn {
+  background: var(--panel);
+  border: 1px solid var(--text);
+  box-shadow: 3px 3px 0 var(--atlas-page-shadow);
+}
+:where(#v-domaine) .dom-terre .gis {
+  padding: 12px 0;
+  margin: 0;
+  min-height: 76px;
+  border-bottom: 1px solid var(--atlas-hairline);
+}
+:where(#v-domaine) .dom-terre .gis:last-of-type { border-bottom: 0; }
+:where(#v-domaine) .dom-terre .gis-ic {
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  border: 1.5px solid var(--text);
+  border-radius: 50%;
+  background: var(--panel2);
+  box-shadow: inset 0 0 0 4px var(--panel),0 2px 0 var(--atlas-page-shadow);
+}
+:where(#v-domaine) .dom-terre .gis-l1 { font-size: 18px; }
+:where(#v-domaine) .dom-terre .gis-l1 b { font-family: var(--serif); font-weight: 600; }
+:where(#v-domaine) .dom-terre .dom-rate {
+  display: inline-block;
+  padding: 3px 6px;
+  border: 1px solid var(--atlas-hairline);
+  border-radius: 2px;
+  background: var(--panel2);
+  font: 600 12px/1.25 "IBM Plex Mono",monospace;
+}
+:where(#v-domaine) .dom-terre .gis-b .mini {
+  border-radius: 3px;
+  border: 1.5px solid var(--text);
+  background: var(--panel);
+  box-shadow: 2px 2px 0 var(--atlas-page-shadow);
+}
+:where(#v-domaine) .dom-terre .dom-regle {
+  padding: 12px;
+  margin: 0 0 6px;
+  border-left: 3px solid var(--acc);
+  background: var(--panel2);
+}
+:where(#v-domaine) .dom-card {
+  border-top: 5px double var(--text);
+  padding: 18px;
+}
+:where(#v-domaine) .dom-card h3 {
+  font-size: clamp(24px,6vw,32px);
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--atlas-hairline);
+}
+:where(#v-domaine) .dom-epi {
+  padding: 25px 15px;
+  margin: 24px 0;
+  border-top: 3px double var(--atlas-ink);
+  border-bottom: 3px double var(--atlas-ink);
+  font-size: clamp(20px,5.5vw,28px);
+}
+/* L'affichage compact garde priorité : l'illustration reste, mais les lignes se resserrent. */
+:where(#v-domaine) .dom-dense .dom-terre .gis { min-height: 0; padding: 3px 0; }
+:where(#v-domaine) .dom-dense .dom-terre .gis-ic { flex-basis: 40px; width: 40px; height: 40px; }
+:where(#v-domaine) .dom-dense .dom-terre .gis-l1 { font-size: 14px; }
+:where(#v-domaine) .dom-dense .dom-terre { margin-bottom: 14px; }
+@media (max-width: 360px) {
+  :where(#v-domaine) { padding-inline: 8px; }
+  :where(#v-domaine) .dom-terre { padding-inline: 10px; }
+  :where(#v-domaine) .dom-terre.a-decor .dom-th { margin-inline: -10px; }
+  :where(#v-domaine) .dom-terre .gis { gap: 6px; }
+  :where(#v-domaine) .dom-terre .gis-b { gap: 3px; }
+  :where(#v-domaine) .dom-terre .gis-b .mini { min-width: 40px; padding-inline: 4px; }
+}
+
+/* =====================================================================
+   ATLAS VIVANT / THEME II — IDENTITÉ MATÉRIELLE DES ÉPOQUES
+   Rupture volontaire avec le thème classique. Palette, lumière, papier,
+   encre et ornements changent avec l'histoire de la civilisation.
+   ===================================================================== */
+
+/* Bois / pierre : terre sombre, charbon, ocre rouge, papier de fibres. */
+body[data-ep="pigments"] {
+  --bg: #c6ad85;
+  --bg2: #b99b70;
+  --panel: #f0dfbd;
+  --panel2: #dfc69b;
+  --text: #302219;
+  --muted: #654d37;
+  --dim: #806a50;
+  --line: rgba(48,34,25,.23);
+  --line2: rgba(48,34,25,.48);
+  --acc-base: #ad3c23;
+  --good: #3e652e;
+  --intu: #805313;
+  --paper:
+    repeating-linear-gradient(2deg,rgba(69,40,22,.065) 0 1px,transparent 1px 7px),
+    radial-gradient(ellipse at 82% 12%,rgba(255,241,203,.4),transparent 57%),
+    radial-gradient(ellipse at 10% 87%,rgba(107,61,27,.19),transparent 60%);
+}
+/* Papyrus : végétal, Nil, cuivre oxydé, fibres horizontales. */
+body[data-ep="papyrus"] {
+  --bg: #bda879;
+  --bg2: #ad9564;
+  --panel: #f1e3bb;
+  --panel2: #ddc99b;
+  --text: #292b1d;
+  --muted: #5e6144;
+  --dim: #7c7e5c;
+  --line: rgba(41,43,29,.22);
+  --line2: rgba(41,43,29,.43);
+  --acc-base: #176c61;
+  --good: #396b38;
+  --paper:
+    repeating-linear-gradient(0deg,rgba(68,77,40,.09) 0 1px,transparent 1px 5px),
+    repeating-linear-gradient(90deg,rgba(68,77,40,.04) 0 1px,transparent 1px 17px);
+}
+/* Enluminure : ivoire, vermillon, dorure. */
+body[data-ep="enluminure"] {
+  --bg: #c7b68f;
+  --bg2: #bba780;
+  --panel: #f8eed5;
+  --panel2: #e7d6b0;
+  --text: #2b211c;
+  --muted: #665449;
+  --dim: #877567;
+  --line: rgba(43,33,28,.2);
+  --line2: rgba(43,33,28,.42);
+  --acc-base: #9a2025;
+  --good: #295e53;
+  --paper:
+    repeating-linear-gradient(90deg,transparent 0 35px,rgba(113,45,36,.065) 35px 36px),
+    radial-gradient(ellipse at 50% 0%,rgba(255,250,228,.45),transparent 70%);
+}
+/* Archives mécaniques : papier de bureau, encre bleue, cachets rouges. */
+body[data-ep="registre"] {
+  --bg: #aeb8b4;
+  --bg2: #9daaa7;
+  --panel: #f2efe3;
+  --panel2: #dce2dc;
+  --text: #172d3c;
+  --muted: #4a6170;
+  --dim: #77848a;
+  --line: rgba(23,45,60,.2);
+  --line2: rgba(23,45,60,.4);
+  --acc-base: #a6322d;
+  --good: #246a5b;
+  --paper:
+    repeating-linear-gradient(180deg,transparent 0 29px,rgba(31,88,127,.14) 29px 30px),
+    linear-gradient(90deg,transparent 0 40px,rgba(163,52,47,.16) 40px 42px,transparent 42px);
+}
+/* Technique et industrie : bleu d'architecte, blanc technique. */
+body[data-ep="quadrille"] {
+  --bg: #cad7dc;
+  --bg2: #b5c8d1;
+  --panel: #f5f8f6;
+  --panel2: #dbe7e8;
+  --text: #173d57;
+  --muted: #496879;
+  --dim: #718b98;
+  --line: rgba(23,61,87,.2);
+  --line2: rgba(23,61,87,.4);
+  --acc-base: #136b62;
+  --good: #166b47;
+  --paper:
+    linear-gradient(rgba(30,93,127,.16) 1px,transparent 1px) 0 0/20px 20px,
+    linear-gradient(90deg,rgba(30,93,127,.16) 1px,transparent 1px) 0 0/20px 20px,
+    linear-gradient(rgba(30,93,127,.06) 1px,transparent 1px) 0 0/5px 5px,
+    linear-gradient(90deg,rgba(30,93,127,.06) 1px,transparent 1px) 0 0/5px 5px;
+}
+/* Frontière spatiale : interface de mission, noir graphite et orange. */
+body[data-ep="bord"] {
+  --bg: #17232b;
+  --bg2: #101a22;
+  --panel: #22343d;
+  --panel2: #2b424a;
+  --text: #f4eee2;
+  --muted: #b9c6c7;
+  --dim: #8da3a9;
+  --line: rgba(235,245,242,.18);
+  --line2: rgba(235,245,242,.4);
+  --acc-base: #f3a64e;
+  --good: #8bd4b3;
+  --bad: #ff9b8e;
+  --intu: #ffd27a;
+  --paper:
+    linear-gradient(rgba(148,200,214,.07) 1px,transparent 1px) 0 0/28px 28px,
+    linear-gradient(90deg,rgba(148,200,214,.07) 1px,transparent 1px) 0 0/28px 28px,
+    radial-gradient(ellipse at 70% 0%,rgba(62,124,146,.26),transparent 65%);
+  color-scheme: dark;
+}
+
+/* Le papier physique s'arrête aux limites des feuillets. */
+body:not([data-ep="bord"]) #views {
+  background:
+    linear-gradient(90deg,rgba(28,23,15,.12),transparent 12px,transparent calc(100% - 12px),rgba(28,23,15,.09)),
+    var(--paper),var(--bg);
+}
+body[data-ep="bord"] #views { background: var(--paper),var(--bg); }
+#top, #tabs {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--text);
+}
+#top { box-shadow: 0 5px 0 color-mix(in srgb,var(--text) 15%,transparent); }
+#tabs { box-shadow: 0 -5px 0 color-mix(in srgb,var(--text) 12%,transparent); }
+#tabs button.on { background: var(--panel2); }
+#tabs button.on::before { background: var(--acc-base); }
+#ageName { color: var(--text); }
+.age-bar-fill { background: var(--acc-base); }
+.view .card, .view .dom-card, .view .rec, .view .stepbox, .view .passbox {
+  background: var(--panel);
+  color: var(--text);
+}
+.view .btn.pri { background: var(--acc-base); color: var(--panel); border-color: var(--text); }
+body[data-ep="bord"] .view .btn.pri { color: #171e21; }
+.view .mini, .view .btn, .view .gis-ic { color: var(--text); }
+:where(#v-domaine) .dom-terre {
+  background: var(--panel);
+  border-color: var(--text);
+  box-shadow: 7px 8px 0 color-mix(in srgb,var(--text) 19%,transparent);
+}
+:where(#v-domaine) .dom-terre.a-decor .dom-th {
+  background: linear-gradient(0deg,var(--panel) 0%,color-mix(in srgb,var(--panel) 92%,transparent) 25%,transparent 90%);
+}
+body[data-ep="bord"] :where(#v-domaine) .dom-terre.a-decor::after {
+  filter: saturate(.65) contrast(1.15);
+}
+body[data-ep="bord"] :where(#v-domaine) .dom-terre.a-decor .dom-th h3 {
+  text-shadow: 0 1px 1px var(--panel),1px 0 var(--panel),-1px 0 var(--panel);
+}
+body[data-ep="enluminure"] :where(#v-domaine) .dom-terre {
+  border: 3px double #8f6c2e;
+}
+body[data-ep="enluminure"] :where(#v-domaine) .dom-terre::before {
+  color: #7d5720;
+  border-bottom: 2px solid #a68745;
+}
+body[data-ep="quadrille"] :where(#v-domaine) .dom-terre {
+  box-shadow: 5px 5px 0 #517e9c;
+}
+body[data-ep="bord"] :where(#v-domaine) .dom-terre {
+  border: 1px solid #6e969d;
+  box-shadow: 0 0 0 1px #314c59,5px 5px 0 #0c151b;
+}
+@media (prefers-reduced-motion: reduce) {
+  #top, #tabs { transition: none; }
+}
+
+/* ATLAS V4 — l’établi et les fiches de savoir-faire.
+ * Présentation uniquement ; les cibles, états et commandes sont conservés. */
+body.theme-dark:not([data-ep="bord"]) {
+  --bg: #1c2423; --bg2: #232d2a; --panel: #2b3530; --panel2: #354039;
+  --text: #f1eadc; --muted: #bdc8b8; --dim: #a7b5a1;
+  --line: rgba(241,234,220,.17); --line2: rgba(241,234,220,.38);
+  color-scheme: dark;
+}
+#v-atelier, #v-carnet { padding-inline: clamp(10px,3vw,20px); }
+#v-atelier .btn, #v-carnet .btn { min-height: 44px; min-width: 44px; }
+#v-atelier .atlas-workshop-heading {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 5px 14px; flex-wrap: wrap; padding: 10px 0 9px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--line2);
+}
+.atlas-workshop-heading h2 { margin: 0; font: 400 28px/1.1 var(--serif); }
+.atlas-workshop-heading span { font: italic 15px/1.3 "IM Fell English",serif; color: var(--muted); }
+#v-atelier:has(> .subtabs) .atlas-workshop-heading { display: none; }
+#v-atelier .subtabs { margin-bottom: 12px; }
+#v-atelier .tip, #v-carnet .tip {
+  border: 0; border-left: 2px solid var(--line2); border-radius: 0;
+  background: color-mix(in srgb,var(--panel) 65%,transparent);
+  padding: 9px 11px; font: 400 14px/1.45 "Alegreya Sans",sans-serif;
+}
+#v-atelier .starter-harvest { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+#v-atelier .goal-hint {
+  border: 1px solid var(--line2); border-left: 3px solid var(--acc-base);
+  padding: 6px 10px; box-shadow: none;
+}
+#v-atelier .goal-hint i { font: italic 15.5px/1.3 "IM Fell English",serif; }
+#v-atelier .gestes { margin-inline: 0; padding: 4px 0 8px; gap: 8px; }
+#v-atelier .geste {
+  width: 78px; min-height: 74px; padding: 8px 5px 6px; gap: 5px;
+  border: 1px solid var(--line2); border-radius: 3px; background: var(--panel);
+  color: var(--text); box-shadow: none;
+}
+#v-atelier .geste .gn { font: 500 14px/1.2 "Alegreya Sans",sans-serif; color: inherit; }
+#v-atelier .geste.on { border: 2px solid var(--acc-base); background: var(--atlas-stamp); box-shadow: inset 0 -3px 0 var(--acc-base); }
+#v-atelier .geste.lock { background: transparent; }
+#v-atelier .geste .glv { font: 500 11px/1 "IBM Plex Mono",monospace; }
+#v-atelier .bench {
+  --work-top: #5f4938; --work-bottom: #3d3028;
+  padding: 10px; margin-bottom: 6px; border: 1px solid #30271e; border-radius: 4px;
+  outline: 1px solid #a89477; outline-offset: -5px;
+  background: linear-gradient(120deg,rgba(255,240,208,.05),transparent 55%),linear-gradient(var(--work-top),var(--work-bottom));
+  color: #f8efd9; box-shadow: 0 3px 0 color-mix(in srgb,var(--text) 20%,transparent);
+}
+#v-atelier .bench.m-pierre { --work-top: #65655d; --work-bottom: #424941; }
+#v-atelier .bench.m-metal { --work-top: #4b5c62; --work-bottom: #2d3e47; }
+#v-atelier .bench.m-labo { --work-top: #263f4b; --work-bottom: #162a36; }
+#v-atelier .bench .heat { color: #f5ebd5; font: 400 14px/1.4 "Alegreya Sans",sans-serif; text-shadow: none; flex-wrap: wrap; }
+#v-atelier .bench .bench-clear { min-width: 44px; min-height: 44px; color: #fff5dd; border: 1px solid #a99e8c; border-radius: 3px; background: #25323a; font-size: 13px; }
+#v-atelier .slots { gap: 8px; }
+#v-atelier .slot { flex: 1 1 0; min-width: 0; width: auto; height: 92px; padding: 6px 3px; border: 1px dashed #b5aa91; background: rgba(10,20,23,.28); box-shadow: none; border-radius: 3px; }
+#v-atelier .slot.full { border-style: solid; background: rgba(10,20,23,.5); }
+#v-atelier .slot .sn { font: 500 14px/1.2 "Alegreya Sans",sans-serif; color: #fff3db; max-width: 100%; }
+#v-atelier .slot .ic:not(.sym) { background: #f3e8ce; color: #22343d; border-color: #b2a789; }
+#v-atelier .slot .tiny.muted { color: #e4d7be; font: 500 12px/1.2 "IBM Plex Mono",monospace; }
+#v-atelier .slot .plus { color: #d9ccb3; font-size: 28px; }
+#v-atelier .plus-sep { flex: 0 0 8px; color: #d9ccb3; }
+#v-atelier .forge-btn {
+  border: 1px solid #f0dfbb; border-radius: 3px; min-height: 50px;
+  background: var(--acc-base); color: #fff5dc; box-shadow: none;
+  font: 700 17px/1.25 "Alegreya Sans",sans-serif; letter-spacing: .08em;
+}
+#v-atelier .forge-btn:disabled { background: #53605e; color: #e0e2d7; border-color: #9ca99e; filter: none; opacity: 1; }
+body.theme-dark #v-atelier .forge-btn:not(:disabled), body[data-ep="bord"] #v-atelier .forge-btn:not(:disabled) { color: #172126; }
+#v-atelier .result { border: 1px solid var(--line2); border-left: 3px solid var(--intu); box-shadow: none; padding: 12px; }
+#v-atelier .result .rname { font-size: 24px; line-height: 1.2; }
+#v-atelier .inv-grid { grid-template-columns: repeat(auto-fill,minmax(82px,1fr)); gap: 8px; }
+#v-atelier .inv { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); grid-template-rows: 34px auto auto; align-items: center; justify-items: center; padding: 5px 4px; gap: 2px; border: 1px solid var(--line2); border-radius: 3px; box-shadow: none; }
+#v-atelier .inv > .ic { grid-column: 1; grid-row: 1; width: 32px; height: 32px; }
+#v-atelier .inv .c { grid-column: 2; grid-row: 1; }
+#v-atelier .inv .c-flow { grid-column: 1 / -1; grid-row: 2; }
+#v-atelier .inv.sel { border: 2px solid var(--acc-base); background: var(--atlas-stamp); }
+#v-atelier .inv .n { grid-column: 1 / -1; grid-row: 3; font: 500 14px/1.2 "Alegreya Sans",sans-serif; min-height: 2.4em; white-space: normal; overflow-wrap: anywhere; text-overflow: clip; color: var(--text); }
+#v-atelier .inv .c { font: 500 13px/1.3 "IBM Plex Mono",monospace; }
+#v-atelier .inv-age { padding: 4px 0 2px; font: 500 11px/1.3 "IBM Plex Mono",monospace; border-top: 1px solid var(--line2); margin-top: 4px; }
+#v-atelier .sub-row { margin-block: 4px; }
+#v-atelier .inv.zero { opacity: 1; border-style: dashed; background: color-mix(in srgb,var(--panel) 65%,var(--bg)); }
+#v-atelier .inv.zero.sel { opacity: 1; border-style: solid; }
+#v-atelier .inv.spent .n { opacity: 1; }
+#v-atelier .mbench { border-radius: 3px; background: var(--panel); border-color: var(--line2); box-shadow: 0 3px 0 var(--atlas-hairline); }
+#v-atelier .mslot, #v-atelier .mforge { border-radius: 3px; }
+#v-atelier .sub-row h3.sub { white-space: nowrap; letter-spacing: .08em; }
+#v-atelier .inv-tools input, #v-carnet .search input { border-radius: 3px; min-height: 46px; font-size: 16px; background: var(--panel); }
+#v-atelier .inv-panel { border-radius: 3px; }
+#v-carnet .carnet-head { padding: 10px 0 12px; border-bottom: 3px double var(--line2); margin-bottom: 14px; }
+#v-carnet .carnet-head > .grow { display: flex; align-items: baseline; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; }
+#v-carnet .carnet-head .title { border: 0; margin: 0; padding: 0; font-size: 30px; }
+#v-carnet .carnet-head p { margin: 0; font: 500 12px/1.5 "IBM Plex Mono",monospace; }
+#v-carnet .qtybar { margin-inline: 0; padding: 7px 0; gap: 5px; flex-wrap: wrap; background: var(--bg); border-bottom: 1px solid var(--line2); }
+#v-carnet .qtybar button { border-radius: 3px; min-width: 44px; min-height: 44px; box-shadow: none; }
+#v-carnet .qtybar button.on { background: var(--text); color: var(--panel); border-color: var(--text); }
+#v-carnet .filters, #v-carnet .age-nav { margin-inline: 0; padding: 4px 0 10px; max-width: 100%; gap: 6px; }
+#v-carnet .filters button { border-radius: 3px; background: var(--panel); color: var(--text); min-height: 44px; font-size: 14px; box-shadow: none; }
+#v-carnet .filters button.on { background: var(--acc-base); color: var(--panel); border-color: var(--acc-base); }
+#v-carnet .age-pill { border-radius: 3px; min-width: 48px; min-height: 44px; background: var(--panel); font: 500 12px/1.2 "IBM Plex Mono",monospace; }
+#v-carnet .age-pill.cur { background: var(--text); color: var(--panel); border-color: var(--text); }
+#v-carnet .age-sec { border: 1px solid var(--line2); border-radius: 3px; margin-bottom: 14px; background: var(--panel); }
+#v-carnet .age-sec > summary { padding: 13px 12px; gap: 8px; border-bottom: 1px solid transparent; flex-wrap: wrap; }
+#v-carnet .age-sec[open] > summary { border-bottom-color: var(--line2); }
+#v-carnet .age-sec > summary .an { font-size: 22px; line-height: 1.2; min-width: 0; }
+#v-carnet .age-sec > summary .cnt { font: 500 11px/1.3 "IBM Plex Mono",monospace; }
+#v-carnet #clist .rec { position: relative; padding: 14px 12px; margin: 0; border: 1px solid var(--line2); border-left: 3px solid var(--line2); border-radius: 2px; box-shadow: none; background: var(--panel); }
+#v-carnet #clist .rec.can-craft { border-left-color: var(--good); }
+#v-carnet #clist .rec.unknown { border-style: dashed; border-left-style: solid; background: color-mix(in srgb,var(--panel) 70%,var(--bg)); }
+#v-carnet #clist .rec .rh { gap: 9px; align-items: flex-start; padding-right: 44px; }
+#v-carnet #clist .rec .rh > .ic { flex: 0 0 42px; width: 42px; height: 42px; }
+#v-carnet #clist .rec .rt { font: 500 21px/1.2 var(--serif); overflow-wrap: break-word; }
+#v-carnet #clist .rec .badge { background: transparent; color: var(--muted); border: 1px solid var(--line2); font: 500 10px/1.4 "IBM Plex Mono",monospace; border-radius: 2px; margin: 4px 4px 0 4px; }
+#v-carnet #clist .rec .badge-ready { font: 500 12px/1.3 "Alegreya Sans",sans-serif; border-radius: 2px; }
+#v-carnet #clist .rec .pinb { position: absolute; right: 6px; top: 7px; border-radius: 3px; min-width: 44px; min-height: 44px; }
+#v-carnet #clist .rec .rh > .small.muted { position: static; font: 500 12px/1.4 "IBM Plex Mono",monospace; flex: 0 0 auto; }
+#v-carnet #clist .rec .fx { font: 400 14px/1.4 "Alegreya Sans",sans-serif; margin-top: 9px; }
+#v-carnet #clist .rec .riddle { font: italic 19px/1.45 "IM Fell English",serif; padding: 9px 0; }
+#v-carnet #clist .rec .rl { font-size: 14px; line-height: 1.45; padding-top: 8px; border-top: 1px solid var(--line); }
+#v-carnet #clist .carnet-lot { margin: 10px 0; padding: 10px 0; font-size: 14px; }
+#v-carnet #clist .lot-titre { font: 500 14px/1.4 "Alegreya Sans",sans-serif; }
+#v-carnet #clist .carnet-acts { gap: 6px; margin-top: 10px; }
+#v-carnet #clist .carnet-acts .make { flex: 1 1 auto; }
+#v-carnet #clist.carnet-dense .rec { padding-block: 8px; }
+#v-carnet #clist.carnet-dense .carnet-lot { padding-block: 6px; margin-block: 6px; }
+#v-carnet #clist.carnet-dense .rec .rt { font-size: 18px; }
+body.large-text #v-atelier .inv .n { font-size: 16px; }
+body.large-text #v-carnet #clist .rec .fx, body.large-text #v-carnet #clist .rec .rl { font-size: 16px; }
+@media (max-width: 619px) {
+  #v-carnet #clist .age-sec > .list, #v-carnet #clist > .list.flat { display: flex; flex-direction: column; align-items: stretch; padding: 10px; gap: 10px; }
+  #v-carnet #clist .rec .quick-make { display: none; }
+}
+
+/* Les encres de lecture gardent 4,5:1 sur chacun des quatre supports,
+   pour les six époques et les deux thèmes. Les accents d’action restent ceux de l’époque. */
+body:not(.theme-dark)[data-ep="pigments"] { --muted: #3f3022; --dim: #3b3125; --good: #23391a; --bad: #5f1c0f; --intu: #462e0a; --acc-dark: 68%; }
+body:not(.theme-dark)[data-ep="papyrus"] { --muted: #2b2d1f; --dim: #2b2c20; --good: #1a311a; --bad: #53180d; --intu: #3b2806; --acc-dark: 78%; }
+body:not(.theme-dark)[data-ep="enluminure"] { --muted: #443831; --dim: #413831; --good: #1c4139; --bad: #6b2011; --intu: #4f3608; --acc-dark: 50%; }
+body:not(.theme-dark)[data-ep="registre"] { --muted: #2c3a43; --dim: #33393b; --good: #164037; --bad: #6a1f11; --intu: #4b3408; --acc-dark: 61%; }
+body:not(.theme-dark)[data-ep="quadrille"] { --muted: #39515e; --dim: #404f57; --good: #12593b; --bad: #8f2a17; --intu: #67470b; --acc-dark: 51%; }
+body:not(.theme-dark)[data-ep="bord"] { --dim: #a0b3b8; --bad: #ff9b8e; --intu: #ffd27a; --acc-dark: 0%; }
+body.theme-dark[data-ep="pigments"] { --good: #83bc6e; --bad: #ed9786; --acc-dark: 8%; }
+body.theme-dark[data-ep="papyrus"] { --good: #81be56; --bad: #eb9884; --acc-dark: 0%; }
+body.theme-dark[data-ep="enluminure"] { --good: #94afdb; --bad: #ee9696; --acc-dark: 15%; }
+body.theme-dark[data-ep="registre"] { --good: #84b2df; --bad: #ec978a; --acc-dark: 9%; }
+body.theme-dark[data-ep="quadrille"] { --good: #3ec47c; --bad: #ed978c; --acc-dark: 0%; }
+body.theme-dark[data-ep="bord"] { --dim: #a0b3b8; --good: #9aacf9; --bad: #ee988e; --intu: #e8a03a; --acc-dark: 0%; }
+@media (prefers-reduced-motion: reduce) {
+  .tu-bub.pop, .tu-spot { animation: none; transition: none; }
+}
+
+/* ATLAS V5 — archives à parcourir et instrument d’observation. */
+#v-journal, #v-cosmos { padding-inline: clamp(10px,3vw,20px); }
+#v-journal .subtabs, #v-cosmos .subtabs { margin-bottom: 12px; border-bottom: 3px double var(--line2); }
+#v-journal .subtabs button, #v-cosmos .subtabs button { padding-block: 12px; font-size: 24px; line-height: 1.15; }
+#v-journal .subtabs button.on::after, #v-cosmos .subtabs button.on::after { height: 2px; bottom: -2px; left: 15%; right: 15%; }
+#v-journal .filters, #v-cosmos .filters { margin-inline: 0; padding: 0 0 10px; max-width: 100%; gap: 6px; }
+#v-journal .filters button, #v-cosmos .filters button { border-radius: 3px; min-height: 44px; box-shadow: none; font-size: 14px; }
+#v-journal .filters button { background: var(--panel); color: var(--text); }
+#v-journal .filters button.on { background: var(--text); color: var(--panel); border-color: var(--text); }
+#v-journal > p.small, #v-cosmos > p.small { font-size: 15px; line-height: 1.5; margin: 4px 0 14px; }
+#v-journal { counter-reset: archive-frag; }
+#v-journal .frag {
+  border: 1px solid var(--line2); border-radius: 3px; padding: 12px 10px; margin-bottom: 8px;
+  background: var(--panel); gap: 11px; color: var(--text); box-shadow: none; min-height: 74px;
+}
+#v-journal button.frag[data-frag]::before {
+  counter-increment: archive-frag; content: counter(archive-frag,decimal-leading-zero);
+  align-self: flex-start; padding-top: 2px; font: 500 11px/1.4 "IBM Plex Mono",monospace; color: var(--muted);
+}
+#v-journal .frag .fi { flex: 0 0 28px; color: var(--text); }
+#v-journal .frag .fi svg.gi { width: 25px; height: 25px; }
+#v-journal .frag b { display: block; font: 400 22px/1.2 "IM Fell English",serif; margin-bottom: 4px; }
+#v-journal .frag .tiny { font: 400 13px/1.4 "Alegreya Sans",sans-serif; }
+#v-journal .stamp { font: 500 12px/1.4 "IBM Plex Mono",monospace; opacity: 1; }
+#v-journal .frag.unk { opacity: 1; border-style: dashed; background: color-mix(in srgb,var(--panel) 50%,var(--bg)); color: var(--muted); }
+#v-journal .livre-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+#v-journal .livre-cell { aspect-ratio: auto; min-height: 112px; border: 1px solid var(--line2); border-radius: 3px; padding: 12px 8px; gap: 4px; background: var(--panel); }
+#v-journal .livre-cell.found { border-left: 3px solid var(--text); box-shadow: none; }
+#v-journal .livre-cell.empty { opacity: 1; min-height: 56px; color: var(--muted); border: 1px dashed var(--line); background: transparent; }
+#v-journal .livre-num, #v-journal .livre-cell.found .livre-num { font: 500 12px/1.4 "IBM Plex Mono",monospace; color: var(--muted); }
+#v-journal .livre-titre { display: block; overflow: visible; font: 400 19px/1.25 "IM Fell English",serif; margin: 0; overflow-wrap: break-word; -webkit-line-clamp: unset; }
+#v-journal .livre-cell .stamp { font-size: 11px; }
+#v-journal .question-card { padding: 14px; border-left: 3px solid var(--intu); box-shadow: none; }
+#v-journal .question-title { font: 400 22px/1.25 "IM Fell English",serif; }
+#v-journal .question-card.resolu { opacity: 1; border-left-color: var(--good); }
+#v-journal .question-aides { padding: 4px 0 4px 12px; gap: 10px; border-left-width: 1px; }
+#v-journal .question-aide { font-size: 16px; line-height: 1.55; }
+#v-journal .aide-num { font: 500 12px/1.5 "IBM Plex Mono",monospace; }
+#v-journal .signes-grid { grid-template-columns: repeat(auto-fit,minmax(96px,1fr)); gap: 8px; }
+#v-journal .signe-card { border: 1px solid var(--line2); border-radius: 3px; background: var(--panel); min-height: 94px; }
+#v-journal .signe-card.lu { background: var(--atlas-stamp); border-color: var(--text); }
+#v-journal .signe-card-mot { font: 400 21px/1.25 "IM Fell English",serif; color: var(--text); }
+#v-journal .signe-card-lieux { font-size: 13px; }
+#v-journal .secret-grid { grid-template-columns: repeat(auto-fit,minmax(132px,1fr)); gap: 8px; }
+#v-journal .sec { padding: 12px; border: 1px solid var(--line2); border-radius: 3px; background: var(--panel); font-size: 16px; }
+#v-journal .sec .k { font: 500 11px/1.4 "IBM Plex Mono",monospace; margin-bottom: 6px; }
+#v-journal .sec.unk { opacity: 1; color: var(--muted); border-style: dashed; background: transparent; }
+#v-journal .stat { gap: 10px; padding-block: 10px; font-size: 15px; flex-wrap: wrap; }
+#v-journal .stat b { font: 500 13px/1.5 "IBM Plex Mono",monospace; margin-left: auto; text-align: right; overflow-wrap: anywhere; }
+#v-journal .term-in input { color: var(--text); background: var(--panel); border-color: var(--line2); border-radius: 3px; }
+#v-journal .flute-body { border-radius: 5px; padding: 10px 8px; }
+#v-journal .flute { gap: 4px; }
+#v-journal .hole { flex: 1 1 44px; width: auto; min-width: 44px; max-width: 54px; min-height: 54px; }
+#v-journal .notes { font: 500 16px/1.5 "IBM Plex Mono",monospace; padding: 12px 0; }
+
+/* Lecture : prose imprimée et annotations gardent des voix distinctes. */
+.modal-box:has(.lore) { padding: 22px 20px; border-width: 1px; max-width: min(94vw,620px); }
+.modal-box:has(.lore) h2 { font-size: 28px; line-height: 1.2; padding-right: 32px; }
+.modal-box .lore { font-family: "IM Fell English",Georgia,serif; font-size: 20px; line-height: 1.65; }
+.modal-box .livre-notes { margin-top: 22px; padding-top: 16px; border-top-style: solid; }
+.modal-box .livre-note { font-size: 23px; line-height: 1.45; border-radius: 0; background: var(--panel2); }
+.modal-box .livre-note .livre-sig { font-size: 18px; }
+.modal-box:has(.lore) .stamp { font: 500 12px/1.5 "IBM Plex Mono",monospace; }
+
+/* Le Cosmos possède ses propres encres, indépendantes du papier de l’époque. */
+body[data-tab="cosmos"] #v-cosmos {
+  --bg: #101d29; --bg2: #152633; --panel: #192c39; --panel2: #223b48;
+  --text: #f0e9d8; --muted: #c0cacc; --dim: #aabfc3;
+  --acc: #e2cca0; --acc-base: #e2cca0; --acc-ink: #12232c;
+  --good: #9ed5bf; --bad: #f0aaa0; --intu: #e7cda2;
+  --line: rgba(223,214,189,.16); --line2: rgba(223,214,189,.38);
+  --atlas-ink: #e2cca0; --atlas-hairline: rgba(223,214,189,.24);
+  color: var(--text); color-scheme: dark;
+  background: radial-gradient(ellipse at 90% 10%,rgba(59,91,105,.22),transparent 65%),var(--bg);
+}
+#v-cosmos.on { min-height: 100%; }
+#v-cosmos .filters button { color: var(--text); background: var(--panel); border-color: var(--line2); }
+#v-cosmos .filters button.on { background: var(--acc); color: var(--acc-ink); border-color: var(--acc); }
+#v-cosmos .subtabs button { font-family: "IM Fell English",serif; color: var(--muted); }
+#v-cosmos .subtabs button.on { color: var(--text); }
+#v-cosmos .sky-wrap { border: 1px solid #b1a17d; border-radius: 3px; background: #0a1520; padding: 8px; box-shadow: inset 0 0 0 3px #172c39; }
+#v-cosmos .atlas-sky-caption { display: flex; align-items: center; gap: 8px; padding: 5px 5px 12px; color: var(--text); font: 500 12px/1.5 "IBM Plex Mono",monospace; }
+#v-cosmos .atlas-sky-caption .gi { width: 18px; height: 18px; }
+#v-cosmos .atlas-sky-field { position: relative; }
+#v-cosmos #skyCanvas { width: 100%; height: clamp(260px,45dvh,390px); max-height: none; min-height: 260px; }
+#v-cosmos .atlas-sky-engraving { display: block; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none; stroke: #d9c6a1; stroke-width: 1; opacity: .55; }
+#v-cosmos .atlas-sky-engraving .a-sky-ticks { stroke-dasharray: 1 12; stroke-width: 5; opacity: .55; }
+#v-cosmos .atlas-sky-engraving .a-sky-cross { opacity: .3; }
+#v-cosmos .sky-info { position: static; margin: 8px 2px 2px; border: 0; border-top: 1px solid var(--line2); border-radius: 0; padding: 11px 5px 4px; background: transparent; color: var(--text); font: 400 16px/1.45 "Alegreya Sans",sans-serif; }
+#v-cosmos .fig-wrap { border: 1px solid var(--line2); border-radius: 3px; background: linear-gradient(#0b1823,#152a3b); }
+#v-cosmos .fig-nom { color: #c4d0cd; font: 500 12px/1.4 "Alegreya Sans",sans-serif; }
+#v-cosmos .fig-mot { font: 400 18px/1.25 "IM Fell English",serif; }
+#v-cosmos .term { background: #0a161d; color: #c1dfd0; border: 1px solid var(--line2); border-radius: 3px; padding: 16px 12px; min-height: 220px; max-height: 55dvh; font: 500 14px/1.65 "IBM Plex Mono",monospace; overflow-wrap: anywhere; }
+#v-cosmos .term .u { color: #f0e9d8; }
+#v-cosmos .term-in { padding: 10px 0; gap: 7px; }
+#v-cosmos .term-pfx { color: #d8c7a6; font-size: 13px; opacity: 1; }
+#v-cosmos .term-in input { background: #0a161d; color: #e5e9dc; border: 1px solid var(--line2); border-radius: 3px; min-height: 46px; padding: 10px 8px; }
+#v-cosmos .term-in .btn { background: var(--panel); color: var(--text); border-color: var(--line2); }
+#v-cosmos .proj { padding: 14px; border: 1px solid var(--line2); border-top: 3px double #b1a17d; border-radius: 3px; background: var(--panel); box-shadow: none; }
+#v-cosmos .proj .ph { align-items: flex-start; gap: 10px; }
+#v-cosmos .proj .pn { font: 400 26px/1.2 "IM Fell English",serif; margin-bottom: 7px; }
+#v-cosmos .proj .pi { color: #dfcda4; flex: 0 0 30px; }
+#v-cosmos .oeuvre-art { border-radius: 2px; border: 1px solid var(--line2); height: clamp(125px,32vw,180px); object-fit: cover; }
+#v-cosmos .step { border: 1px solid var(--line2); border-radius: 3px; background: var(--bg2); padding: 12px 10px; }
+#v-cosmos .step.cur { border-left: 3px solid #dfcda4; }
+#v-cosmos .step.done { opacity: 1; color: var(--muted); }
+#v-cosmos .step .sn { font: 500 17px/1.4 "Alegreya Sans",sans-serif; }
+#v-cosmos .cost-row { display: grid; grid-template-columns: 24px minmax(0,1fr) auto; gap: 6px; font-size: 14px; margin-top: 9px; }
+#v-cosmos .cost-row .ic { width: 24px; height: 24px; }
+#v-cosmos .cost-row .tiny { font: 500 12px/1.4 "IBM Plex Mono",monospace; }
+#v-cosmos .cost-row .bar { grid-column: 2 / -1; width: 100%; height: 5px; }
+#v-cosmos .btn.pri { background: var(--acc); color: var(--acc-ink); border-color: var(--acc); }
+#v-cosmos .btn.on { color: var(--good); border-color: var(--good); }
+#v-cosmos button:focus-visible, #v-cosmos input:focus-visible { outline-color: #f2deaa; }
+
+/* ATLAS V6 — fiches et fenêtres : une même feuille, du détail au Menu.
+ * Les scènes d'âge et de fin gardent leur mise en scène propre. */
+.modal:not(.ending):not(.agecard) .modal-box {
+  padding: 22px 18px calc(20px + var(--safe-b));
+  border-width: 1px;
+  max-height: min(88vh, 88dvh);
+  overscroll-behavior: contain;
+  scrollbar-color: var(--atlas-ink) var(--panel);
+  font-size: 16px;
+}
+.modal:not(.ending):not(.agecard) .modal-box h2 { font-size: 28px; }
+.modal:not(.ending):not(.agecard) .modal-box > h2 { padding-right: 44px; }
+.modal-box .modal-x {
+  width: 44px; height: 44px; margin: -10px -6px 0 0;
+  border-radius: 3px; color: var(--text); border-color: var(--atlas-hairline);
+}
+.modal-box :is(.btn,.mini,.pinb,.ing.link,.ring,.seg button) { min-height: 44px; min-width: 44px; }
+.modal-box :is(.btn,.mini,.pinb,.ing.link,.ring,.pick,.vol-group,.seg,.fld input,textarea.save) { border-radius: 3px; }
+.modal-box :is(.small,.pick,.menu-grid .btn) { font-size: 16px; line-height: 1.4; }
+.modal-box .tiny { font-size: 14px; line-height: 1.45; }
+.modal-box .kicker { color: var(--muted); font-size: 12px; line-height: 1.5; letter-spacing: .1em; }
+.modal-box h3.sub {
+  margin-top: 22px; padding-bottom: 7px; border-bottom: 1px solid var(--atlas-hairline);
+  font-size: 13px; letter-spacing: .08em;
+}
+.modal-box :is(.grow,.fld,.toggle > span) { min-width: 0; }
+.modal-box :is(.btn,.ing,.ring,.tstep,.pick,.toggle) { overflow-wrap: anywhere; }
+.modal-box :is(.ing,.ing.link) { max-width: 100%; white-space: normal; }
+.modal-box .btn:disabled {
+  opacity: 1; color: var(--muted); background: var(--bg2);
+  border: 1px dashed var(--atlas-hairline); box-shadow: none;
+}
+.modal-box .gi { flex-shrink: 0; }
+.rwin > .row:first-child { flex-wrap: wrap; padding-right: 42px; gap: 8px; padding-bottom: 16px; border-bottom: 3px double var(--atlas-hairline); }
+.rwin > .row:first-child > .grow { flex: 1 1 calc(100% - 64px); }
+.rwin > .row:first-child > .pinb { align-self: center; margin: 0; }
+.rwin .rdesc { font-size: 19px; line-height: 1.5; margin-block: 16px; }
+.rwin .stars { color: var(--atlas-ink); }
+.rwin .ring { padding: 11px 10px; gap: 8px; border-left-width: 3px; }
+.rwin .ring .tiny { font-family: "IBM Plex Mono",monospace; font-size: 12px; white-space: nowrap; }
+.rwin .ring .can-make { display: block; margin: 3px 0 0; font-size: 13px; }
+.rwin .ing.link { padding: 7px 9px; font-size: 15px; }
+.rwin .riddle { font: 19px/1.5 "IM Fell English",Georgia,serif; border-radius: 0; }
+.rwin :is(.study,.decipher) { padding: 12px 0; gap: 10px; }
+.rwin .study .g { border-radius: 2px; font-size: 14px; padding: 5px 8px; }
+.modal-box .why { border-radius: 0; border-left: 3px solid var(--bad); padding: 10px; background: var(--bg2); }
+.modal-box .acts { padding-top: 14px; border-top: 1px solid var(--atlas-hairline); gap: 8px; }
+.modal-box .acts .btn { flex: 1 1 auto; min-width: min(100%,120px); }
+.modal-box .toggle { gap: 12px; padding-block: 12px; }
+.modal-box .toggle .sw { flex-shrink: 0; }
+.modal-box .toggle:has([data-m="tuto"]) { flex-wrap: wrap; }
+.modal-box .menu-grid .btn { justify-content: flex-start; text-align: left; padding: 10px; }
+.modal-box .menu-grid .gi { width: 22px; height: 22px; }
+.modal-box .vol-group { background: var(--bg2); padding-inline: 10px; }
+.modal-box .picklist { gap: 8px; }
+.modal-box .pick { padding: 12px 10px; }
+.modal-box .fld input { min-height: 48px; font-size: 16px; }
+.modal-box textarea.save { font-size: 13px; line-height: 1.5; }
+.modal-box .tstep { flex-wrap: wrap; }
+@media (max-width: 360px) {
+  .modal-box .menu-grid { grid-template-columns: minmax(0,1fr); }
+}
+body.large-text .modal-box :is(.small,.pick,.menu-grid .btn) { font-size: 18px; }
+body.large-text .modal-box .tiny { font-size: 16px; }
+body.large-text .rwin :is(.rdesc,.riddle) { font-size: 21px; }
+@media (min-width: 620px) {
+  #v-journal .livre-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+body.large-text #v-journal .frag .tiny, body.large-text #v-journal .signe-card-lieux { font-size: 15px; }
+body.large-text #v-journal .livre-titre { font-size: 21px; }
+body.large-text #v-cosmos .term { font-size: 16px; }

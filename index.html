@@ -17,6 +17,9 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/arbre.css">
+  <style>/* Les éléments de comparaison Atlas ne s’affichent pas en mode classique. */ .atlas-only,.atlas-map-heading,.atlas-map-footer,.atlas-landscape,.atlas-terrain,.atlas-compass{display:none}</style>
+  <link id="atlasStylesheet" rel="stylesheet" href="css/design-preview.css">
+  <link id="atlasMapStylesheet" rel="stylesheet" href="css/carte-atlas.css">
 </head>
 <body>
   <div id="app">
@@ -27,6 +30,7 @@
         <span class="age-bar-track"><i id="ageBar" class="age-bar-fill" style="width:0%"></i></span>
       </button>
       <div class="top-right">
+        <button id="atlasToggle" class="icon-btn" type="button" aria-label="Passer au style classique" title="Comparer : Atlas / Classique" style="font-size:12px;font-weight:700;min-width:44px;width:auto;padding:0 6px">Atlas</button>
         <button id="tutoMini" class="exp-mini hidden" aria-label="Rouvrir le conseil">💭</button>
         <button id="expMini" class="exp-mini hidden" aria-label="Exploration en cours"></button>
         <button id="questBtn" class="chip quest" aria-label="Quêtes" title="Quêtes : l’objectif, les rituels, le Troqueur">📜 <span class="cv"><b id="questBadge">Quêtes</b><small id="questSub">0/3</small></span><span id="questDot" class="quest-dot hidden">●</span></button>
@@ -63,6 +67,41 @@
   <div id="toasts" aria-live="polite"></div>
   <div id="fx"></div>
   <noscript><p style="padding:20px">Éclat a besoin de JavaScript pour fonctionner.</p></noscript>
+  <script>
+    /* Comparaison visuelle sans toucher aux sauvegardes ni à la progression. */
+    (function () {
+      const key = "eclat.preview.style";
+      const sheet = document.getElementById("atlasStylesheet");
+      const button = document.getElementById("atlasToggle");
+      function apply(mode) {
+        const classic = mode === "classique";
+        sheet.disabled = classic;
+        const game = window.__eclat;
+        if (game) {
+          game.render(true);
+          const map = document.querySelector("#v-carte .carte-svg");
+          const views = document.getElementById("views");
+          if (map && views && document.getElementById("v-carte").classList.contains("on")) {
+            requestAnimationFrame(function () {
+              const offset = map.getBoundingClientRect().top - views.getBoundingClientRect().top + views.scrollTop;
+              views.scrollTop = Math.max(0, offset + map.getBoundingClientRect().height * game.Carte.focusY(game.U.zone) - views.clientHeight * .55);
+            });
+          }
+        }
+        button.textContent = classic ? "Class." : "Atlas";
+        button.setAttribute("aria-label", classic ? "Activer le style Atlas vivant" : "Revenir au style classique");
+        button.setAttribute("aria-pressed", String(!classic));
+        button.title = classic ? "Style classique actif — toucher pour Atlas" : "Style Atlas actif — toucher pour Classique";
+        try { localStorage.setItem(key, classic ? "classique" : "atlas"); } catch (_) {}
+      }
+      let mode = "atlas";
+      try { if (localStorage.getItem(key) === "classique") mode = "classique"; } catch (_) {}
+      apply(mode);
+      button.addEventListener("click", function () {
+        apply(sheet.disabled ? "atlas" : "classique");
+      });
+    })();
+  </script>
   <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/recit.js"></script>
@@ -77,6 +116,7 @@
   <script src="js/scenes.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/domaine.js"></script>
+  <script src="js/carte-atlas.js"></script>
   <script src="js/carte.js"></script>
   <script src="js/tuto.js"></script>
   <script src="js/cloud.js"></script>

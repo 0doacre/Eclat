@@ -1,0 +1,83 @@
+/* Paysage et interface : les couleurs de carte restent celles du papier peint,
+ * y compris en Veillée. Les commandes suivent le thème du reste du jeu. */
+#v-carte.on:has(> .atlas-carte) { padding: 0 0 calc(var(--nav) + var(--safe-b) + 12px); }
+#v-carte .atlas-carte { max-width: 560px; margin-inline: auto; padding: 0; background: #f0ebdd; min-width: 0; }
+#v-carte .atlas-carte .atlas-map-heading {
+  display: block; padding: 10px 14px 8px; background: var(--panel);
+  border-bottom: 1px solid var(--line2); position: sticky; top: 0; z-index: 3;
+}
+.atlas-map-title { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+.atlas-map-title h2 { margin: 0; font: 400 25px/1.2 "IM Fell English",serif; color: var(--text); }
+.atlas-map-title span { font: 500 12px/1.5 "IBM Plex Mono",monospace; color: var(--muted); }
+.atlas-map-actions { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.atlas-map-actions button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  min-width: 44px; min-height: 44px; padding: 6px 11px; border: 1px solid var(--line2);
+  border-radius: 4px; color: var(--text); background: var(--panel);
+  font: 500 15px/1.2 "Alegreya Sans",sans-serif; cursor: pointer; touch-action: manipulation;
+}
+.atlas-map-actions button:last-child { margin-left: auto; }
+.atlas-map-actions .gi { width: 18px; height: 18px; }
+.atlas-map-actions button:hover { background: var(--panel2); }
+.atlas-map-actions button:focus-visible { outline: 3px solid var(--acc); outline-offset: 2px; }
+#v-carte .atlas-world { display: block; width: 100%; height: auto; max-width: none; overflow: hidden; filter: none; background: #f0ebdd; }
+.atlas-world .a-landscape, .atlas-world .a-fog, .atlas-world .a-fog-edge,
+.atlas-world .a-north, .atlas-world .a-celestial-art { pointer-events: none; }
+.atlas-world .a-button { cursor: pointer; color: #3c392c; touch-action: manipulation; }
+.atlas-world .a-hit { fill: transparent; stroke: none; pointer-events: all; }
+.atlas-world .a-name {
+  fill: #302f24; font: 400 23px "IM Fell English",serif; text-anchor: middle;
+  paint-order: stroke; stroke: #f3eddd; stroke-width: 4px; stroke-linejoin: round;
+  pointer-events: none;
+}
+.atlas-world .a-place-name {
+  fill: #292c21; font: 500 18px "Alegreya Sans",sans-serif;
+  stroke: #f4efde; stroke-width: 5px; stroke-linejoin: round; paint-order: stroke;
+  pointer-events: auto;
+}
+.atlas-world .a-pin { fill: #f6f0dd; stroke: #52533e; stroke-width: 2; pointer-events: none; }
+.atlas-world .a-place use, .atlas-world .a-camp use { pointer-events: none; }
+.atlas-world .next .a-pin { fill: #3c563d; stroke: #fbf5e6; stroke-width: 3; }
+.atlas-world .next { color: #fff9e8; }
+.atlas-world .done .a-pin { fill: #f4efde; stroke: #486047; }
+.atlas-world .locked .a-pin { stroke-dasharray: 3 3; }
+.atlas-world .a-active { fill: none; stroke: #6f4e25; stroke-width: 2; stroke-dasharray: 3 3; pointer-events: none; }
+.atlas-world .a-camp { color: #fff8e4; }
+.atlas-world .a-camp-pin { fill: #85602d; stroke: #fff7df; stroke-width: 3; pointer-events: none; }
+.atlas-world .a-frontier-hit { fill: #f0eddf; fill-opacity: .78; stroke: none; }
+.atlas-world .a-hint { fill: #57594d; font: italic 19px "IM Fell English",serif; text-anchor: middle; pointer-events: none; }
+.atlas-world .a-north { fill: #565345; text-anchor: middle; font: 16px "IM Fell English",serif; }
+.atlas-world .a-pass-bg { fill: #66502e; stroke: #fff5dc; stroke-width: 2; }
+.atlas-world .a-pass-text { fill: #fff7e4; text-anchor: middle; font: 700 18px "Alegreya Sans",sans-serif; pointer-events: none; }
+.atlas-world .a-button:focus-visible { outline: none; }
+.atlas-world .a-button:focus-visible .a-hit,
+.atlas-world .a-button:focus-visible .a-frontier-hit,
+.atlas-world .a-button:focus-visible .a-pass-bg { stroke: #332a15; stroke-width: 3; stroke-dasharray: 4 3; }
+.atlas-world .a-button:hover .a-pin { stroke-width: 4; }
+.atlas-world .a-fog-ground { fill: #cfd7d3; }
+.atlas-world .a-fog-space { fill: #172e3d; }
+.atlas-world .a-fog-edge-space { opacity: .32; }
+.atlas-world .a-celestial-node .a-name,
+.atlas-world .a-celestial-node .a-place-name { fill: #f0e8d0; stroke: #142631; stroke-width: 4px; }
+.atlas-world .a-celestial-node { color: #f1e6c7; }
+.atlas-world .a-celestial-node .a-pin { fill: #253e4b; stroke: #dfcfaa; }
+.atlas-world .a-celestial-node.next .a-pin { fill: #e6d6ae; stroke: #fff6df; }
+.atlas-world .a-celestial-node.next { color: #17313d; }
+.atlas-world .a-celestial-node .a-check { stroke: #e7d6ab; }
+.atlas-world .a-celestial-node .a-active { stroke: #e7d6ab; }
+.atlas-world .a-celestial-node .a-frontier-hit { fill: #142b39; fill-opacity: .7; }
+.atlas-world .a-celestial-node .a-hint { fill: #e7ddc6; }
+.atlas-world .a-north-space { fill: #ddd5bc; }
+.atlas-world .a-celestial-node:focus-visible .a-hit,
+.atlas-world .a-celestial-node:focus-visible .a-frontier-hit { stroke: #fff1c4; }
+.atlas-world .a-check { fill: none; stroke: #3c563d; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.atlas-world .a-underground rect { fill: #e0e4dc; stroke: #8d9b93; stroke-width: 1; }
+.atlas-world .a-underground text { fill: #57594d; font: italic 18px "IM Fell English",serif; text-anchor: middle; }
+body.large-text .atlas-map-actions button { font-size: 17px; }
+body.large-text .atlas-world .a-place-name { font-size: 20px; }
+body.large-text .atlas-world .a-name { font-size: 25px; }
+@media (max-width: 360px) {
+  #v-carte .atlas-carte .atlas-map-heading { padding-inline: 10px; }
+  .atlas-map-actions { gap: 5px; }
+  .atlas-map-actions button { padding-inline: 8px; }
+}
