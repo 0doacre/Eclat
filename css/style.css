@@ -421,15 +421,34 @@ p { margin: 0.4em 0; }
 .carnet-acts { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
 .carnet-acts .make { flex: 1 1 auto; }
 
-/* Grille 2 colonnes du Carnet (écrans larges) */
-@media (min-width: 520px) {
-  #clist:not(.cols-1) .age-sec > .list,
-  #clist:not(.cols-1) > .list.flat {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    align-items: start;
-  }
+/* Grille 2 colonnes du Carnet, sur téléphone comme sur grand écran : sur téléphone, les fiches se resserrent */
+#clist:not(.cols-1) .age-sec > .list,
+#clist:not(.cols-1) > .list.flat {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-items: start;
+}
+/* en dessous de 360 px, deux fiches ne tiennent plus côte à côte : une seule colonne, quel que soit le réglage */
+@media (max-width: 359px) {
+  #clist:not(.cols-1) .age-sec > .list, #clist:not(.cols-1) > .list.flat { display: flex; flex-direction: column; align-items: stretch; }
+}
+@media (min-width: 360px) and (max-width: 519px) {
+  #clist:not(.cols-1) .age-sec > .list { padding: 0 6px 8px; gap: 6px; }
+  #clist:not(.cols-1) .rec { padding: 8px; min-width: 0; }
+  #clist:not(.cols-1) .rec { position: relative; }
+  #clist:not(.cols-1) .rec .rh { flex-wrap: nowrap; gap: 6px; padding-right: 40px; align-items: flex-start; }
+  #clist:not(.cols-1) .rec .rh > .grow { min-width: 0; }
+  #clist:not(.cols-1) .rec .rh > .ic { flex: 0 0 auto; }
+  #clist:not(.cols-1) .rec .pinb { position: absolute; top: 2px; right: 2px; }
+  #clist:not(.cols-1) .rec .rh > .small.muted { position: absolute; top: 48px; right: 12px; font-size: 11px; }
+  #clist:not(.cols-1) .rec .quick-make { display: none; }
+  #clist:not(.cols-1) .rec .badge { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
+  #clist:not(.cols-1) .rec .rt { font-size: 14px; overflow-wrap: anywhere; }
+  #clist:not(.cols-1) .rec .rl { font-size: 12px; }
+  #clist:not(.cols-1) .carnet-acts { gap: 4px; }
+  #clist:not(.cols-1) .carnet-acts .make { flex: 1 1 100%; }
+  #clist:not(.cols-1) .carnet-lot { font-size: 12px; }
 }
 
 /* Carnet mode compact */
@@ -1646,3 +1665,22 @@ body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
   .toast-gold { animation: none; }
   #app.jshake { animation: none; }
 }
+
+/* Affichage compact du Domaine : les boutons d’un gisement ne gardent que leur symbole, côte à côte, la rangée perd la moitié de sa hauteur */
+.dom-dense .gis-b .mini .bl { display: none; }
+.dom-dense .gis-b .mini .bi { font-size: 16px; }
+.dom-dense .gis-b { flex-direction: row; }
+.dom-dense .gis-ic { width: 40px; height: 40px; flex-basis: 40px; }
+.dom-dense .gis { min-height: 48px; }
+@media (max-width: 430px) {
+  .dom-dense .gis:not(.gact) { grid-template-columns: 40px minmax(0, 1fr) auto; padding: 4px 0; gap: 6px; }
+  .dom-dense .gis:not(.gact) .gis-b { flex-direction: row; max-width: none; }
+  .dom-dense .gis:not(.gact) .gis-ic { width: 40px; height: 40px; }
+}
+
+/* le menu : des sections, des interrupteurs qui se lisent pareil partout */
+.menu-sec { margin: 4px 0 10px; }
+.menu-sec .sub { margin: 10px 0 2px; }
+.menu-sec .menu-grid { margin: 8px 0 4px; }
+.btn.sw { min-width: 104px; }
+.btn.sw.on { background: color-mix(in srgb, var(--acc) 18%, var(--panel)); border-color: var(--acc); font-weight: 700; }

@@ -12,39 +12,55 @@
   "ecran": "Aide",
   "label": "Auto",
   "repere": "button[data-m=\"theme\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Changer de thème : clair, sombre ou celui de ton appareil",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Aide",
   "label": "Désactivé",
-  "repere": "button[data-m=\"largeText\"].btn",
-  "explique": "fiche Aide",
+  "repere": "button[data-m=\"largeText\"].btn.sw",
+  "explique": "info-bulle : Agrandir les textes de tout le jeu",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"compact\"].btn.sw",
+  "explique": "info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Aide",
   "label": "Activé",
-  "repere": "button[data-m=\"sound\"].btn",
-  "explique": "fiche Aide",
+  "repere": "button[data-m=\"carnet2\"].btn.sw",
+  "explique": "info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Aide",
-  "label": "Activées",
-  "repere": "button[data-m=\"vibe\"].btn",
-  "explique": "fiche Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"sound\"].btn.sw",
+  "explique": "info-bulle : Couper ou remettre la musique et les bruitages",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Aide",
-  "label": "Oui",
-  "repere": "button[data-m=\"visiteurs\"].btn",
-  "explique": "info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine",
+  "label": "Activé",
+  "repere": "button[data-m=\"vibe\"].btn.sw",
+  "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"visiteurs\"].btn.sw",
+  "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
   "tag": "button"
  },
  {
@@ -52,15 +68,15 @@
   "ecran": "Aide",
   "label": "Revoir",
   "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Revoir les explications du guide depuis le début",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Aide",
   "label": "Activé",
-  "repere": "button[data-m=\"tuto\"].btn",
-  "explique": "fiche Aide",
+  "repere": "button[data-m=\"tuto\"].btn.sw",
+  "explique": "info-bulle : Afficher ou masquer les explications du guide",
   "tag": "button"
  },
  {
@@ -68,7 +84,7 @@
   "ecran": "Aide",
   "label": "✦ Mémoire des mains",
   "repere": "button[data-m=\"mem\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre",
   "tag": "button"
  },
  {
@@ -76,7 +92,7 @@
   "ecran": "Aide",
   "label": "Sauvegardes",
   "repere": "button[data-m=\"saves\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Télécharger ta partie, la recharger ou restaurer une copie",
   "tag": "button"
  },
  {
@@ -84,7 +100,7 @@
   "ecran": "Aide",
   "label": "Compte en ligne",
   "repere": "button[data-m=\"account\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
   "tag": "button"
  },
  {
@@ -92,7 +108,7 @@
   "ecran": "Aide",
   "label": "Comment jouer",
   "repere": "button[data-m=\"help\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Les mots du jeu et le rôle de chaque écran",
   "tag": "button"
  },
  {
@@ -100,7 +116,7 @@
   "ecran": "Aide",
   "label": "📰 Nouveautés",
   "repere": "button[data-m=\"news\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Ce qui a changé dans cette version",
   "tag": "button"
  },
  {
@@ -108,15 +124,15 @@
   "ecran": "Aide",
   "label": "Crédits",
   "repere": "button[data-m=\"credits\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Les icônes, les polices et la musique",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Aide",
-  "label": "Tout recommencer",
+  "label": "Recommencer la partie",
   "repere": "button[data-m=\"reset\"].btn.ghost",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Effacer ta progression et repartir de zéro",
   "tag": "button"
  },
  {
@@ -444,39 +460,55 @@
   "ecran": "Aide",
   "label": "Auto",
   "repere": "button[data-m=\"theme\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Changer de thème : clair, sombre ou celui de ton appareil",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Aide",
   "label": "Désactivé",
-  "repere": "button[data-m=\"largeText\"].btn",
-  "explique": "fiche Aide",
+  "repere": "button[data-m=\"largeText\"].btn.sw",
+  "explique": "info-bulle : Agrandir les textes de tout le jeu",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"compact\"].btn.sw",
+  "explique": "info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Aide",
   "label": "Activé",
-  "repere": "button[data-m=\"sound\"].btn",
-  "explique": "fiche Aide",
+  "repere": "button[data-m=\"carnet2\"].btn.sw",
+  "explique": "info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Aide",
-  "label": "Activées",
-  "repere": "button[data-m=\"vibe\"].btn",
-  "explique": "fiche Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"sound\"].btn.sw",
+  "explique": "info-bulle : Couper ou remettre la musique et les bruitages",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Aide",
-  "label": "Oui",
-  "repere": "button[data-m=\"visiteurs\"].btn",
-  "explique": "info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine",
+  "label": "Activé",
+  "repere": "button[data-m=\"vibe\"].btn.sw",
+  "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Activé",
+  "repere": "button[data-m=\"visiteurs\"].btn.sw",
+  "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
   "tag": "button"
  },
  {
@@ -484,15 +516,15 @@
   "ecran": "Aide",
   "label": "Revoir",
   "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Revoir les explications du guide depuis le début",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Aide",
-  "label": "Coupé",
-  "repere": "button[data-m=\"tuto\"].btn",
-  "explique": "fiche Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"tuto\"].btn.sw",
+  "explique": "info-bulle : Afficher ou masquer les explications du guide",
   "tag": "button"
  },
  {
@@ -500,7 +532,7 @@
   "ecran": "Aide",
   "label": "✦ Mémoire des mains",
   "repere": "button[data-m=\"mem\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre",
   "tag": "button"
  },
  {
@@ -508,7 +540,7 @@
   "ecran": "Aide",
   "label": "Sauvegardes",
   "repere": "button[data-m=\"saves\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Télécharger ta partie, la recharger ou restaurer une copie",
   "tag": "button"
  },
  {
@@ -516,7 +548,7 @@
   "ecran": "Aide",
   "label": "Compte en ligne",
   "repere": "button[data-m=\"account\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
   "tag": "button"
  },
  {
@@ -524,7 +556,7 @@
   "ecran": "Aide",
   "label": "Comment jouer",
   "repere": "button[data-m=\"help\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Les mots du jeu et le rôle de chaque écran",
   "tag": "button"
  },
  {
@@ -532,7 +564,7 @@
   "ecran": "Aide",
   "label": "📰 Nouveautés",
   "repere": "button[data-m=\"news\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Ce qui a changé dans cette version",
   "tag": "button"
  },
  {
@@ -540,15 +572,15 @@
   "ecran": "Aide",
   "label": "Crédits",
   "repere": "button[data-m=\"credits\"].btn",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Les icônes, les polices et la musique",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Aide",
-  "label": "Tout recommencer",
+  "label": "Recommencer la partie",
   "repere": "button[data-m=\"reset\"].btn.ghost",
-  "explique": "fiche Aide",
+  "explique": "info-bulle : Effacer ta progression et repartir de zéro",
   "tag": "button"
  },
  {
@@ -637,14 +669,6 @@
   "label": "Tenter",
   "repere": "button[data-gotab=\"atelier\"].btn",
   "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "🤏 Vue dense",
-  "repere": "button[data-dom-dense=\"\"].chip.ghost",
-  "explique": "info-bulle : Voir plus de terres d’un coup, en plus petit",
   "tag": "button"
  },
  {
@@ -754,7 +778,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+19/min8,73 k",
+  "label": "Bois+21/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -1106,7 +1130,7 @@
  {
   "partie": "avancée",
   "ecran": "Atelier · filtres",
-  "label": "Par âgePlus nombreuses⚡ Flux actifs⚠️ En déficitNom (A → Z)Dernières trouvées",
+  "label": "Par âge Plus nombreuses ⚡ Flux actifs ⚠️ En déficit Nom (A → Z) Dernières trouvées",
   "repere": "select#isort",
   "explique": "info-bulle : Trier les ressources ; lecteur d’écran : Trier les ressources",
   "tag": "select"
@@ -1177,6 +1201,14 @@
  },
  {
   "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "✕",
+  "repere": "button.toast-x",
+  "explique": "lecteur d’écran : Fermer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
   "ecran": "Arbre",
   "label": "Progression",
   "repere": "button[data-arb=\"ensemble\"].btn",
@@ -1229,22 +1261,6 @@
   "label": "← Les âges",
   "repere": "button[data-arb=\"retour\"].btn.ghost",
   "explique": "info-bulle : Revenir en arrière dans l’arbre",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Carnet",
-  "label": "⊞ 2 col.",
-  "repere": "button[data-cvue=\"cols\"].btn.ghost",
-  "explique": "info-bulle : Revenir à la vue en 1 colonne",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Carnet",
-  "label": "🤏 Compact",
-  "repere": "button[data-cvue=\"dense\"].btn.ghost",
-  "explique": "info-bulle : Voir plus de recettes à l’écran, en plus petit",
   "tag": "button"
  },
  {

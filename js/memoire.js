@@ -204,7 +204,7 @@
           (isLibere
             ? "<p>Tu gagnes <b>" + totalGain + " ✦ Trace" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg
             : leftHTML(totalGain, ecus, ecusTr)) +
-          '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
+          '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (Menu → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
           releveExtrasHTML() +
           '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button>' + releveBtnSigne() + '</div>',
         onOpen: armTrait,

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.24.0";
+  D.VERSION = "0.25.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1288,6 +1288,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⚙️ Le menu est réorganisé en sections (Affichage, Son et vibrations, Jeu, Ma partie, Aide), avec les mêmes interrupteurs partout (Activé, Désactivé). Le thème sombre s’appelle « Sombre », le tutoriel « Guide », et « Tout recommencer » devient « Recommencer la partie ».",
+    "🤏 L’affichage compact se règle dans le menu, pour le Domaine et le Carnet à la fois, et il resserre vraiment : chaque gisement tient sur une ligne basse, ses boutons ne gardent que leur symbole. Les boutons de bascule des pages disparaissent.",
+    "⊞ Le Carnet sur deux colonnes marche enfin sur téléphone : les fiches se resserrent pour tenir côte à côte.",
     "✨ Plus de punch : un appui sur un bouton se voit (il s’enfonce, un anneau part du doigt) ; le visiteur attrapé fait « pop » et éclate en étincelles, avec son gain qui monte ; et les raretés ont un vrai moment. Une curiosité trouvée prend l’écran : rayons, secousse, coup sourd et vibrations, d’autant plus fort qu’elle est rare (la poudre rouge, le quart de cœur, le dé et l’anneau en haut de l’échelle). « Réduire les animations » garde le message et supprime mouvement et secousses.",
     "🌌 Le ciel du Cosmos s’affiche de nouveau : il restait noir, comme si le canvas avait été démonté aussitôt monté.",
     "🎯 Le guide ne se perd plus : fabriquer en avance le tout dernier objet laisse les étapes qui restent à faire, et une pièce déjà dans ta Réserve n’est plus demandée comme une étape.",

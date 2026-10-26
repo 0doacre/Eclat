@@ -605,6 +605,9 @@
     key: SAVE_KEY, liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
   });
   U.peutEcrire = () => Stk.peutEcrire();
+  /* l’affichage resserré (Domaine et Carnet) : un seul réglage, dans le menu. Les anciennes parties avaient deux réglages. */
+  U.compact = () => { const s = S().settings || {}; return s.compact !== undefined ? !!s.compact : !!(s.domDense || s.carnetDense); };
+  U.setCompact = (on) => { const s = S().settings; s.compact = !!on; delete s.domDense; delete s.carnetDense; };
   function save() {
     if (U.saveLocked || !Stk.peutEcrire()) return false;
     return Stk.ecrire(E.serialize()).ok;
@@ -661,7 +664,7 @@
     modalUrgente({
       persistent: true,
       html: '<div class="kicker">Sauvegarde</div><h2>Remplacer la partie enregistrée ?</h2>' +
-        "<p>La partie de cette page prendra la place de celle de l’autre onglet, qui sera perdue pour le jeu. Elle est d’abord mise de côté dans les copies de secours (☰ → Sauvegardes).</p>" +
+        "<p>La partie de cette page prendra la place de celle de l’autre onglet, qui sera perdue pour le jeu. Elle est d’abord mise de côté dans les copies de secours (Menu → Sauvegardes).</p>" +
         '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Remplacer</button></div>',
       on: {
         back: () => { modalPerimee(); return true; },
@@ -700,7 +703,7 @@
     safeStore.setItem("eclat.persist", JSON.stringify({ etat, t: Date.now() }));
     if (etat !== "accordee" && !S().flags.tip_persist) {
       S().flags.tip_persist = 1;
-      toast("Ton navigateur ne garantit pas la conservation de ta partie. Télécharge une copie de temps en temps (☰ → Sauvegardes).", { key: "persist", p: 2 });
+      toast("Ton navigateur ne garantit pas la conservation de ta partie. Télécharge une copie de temps en temps (Menu → Sauvegardes).", { key: "persist", p: 2 });
     }
     return etat;
   }
@@ -850,7 +853,7 @@
     // un bouton de liste (une ressource, une action, une quantité…) : même chose, retrouvé à son attribut de données
     let fsel = null;
     if (!focus && ae && ae !== document.body && el.contains(ae) && ae.dataset) {
-      const k = ["inv", "g", "slot", "qty", "if", "cf", "cvue", "jt", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
+      const k = ["inv", "g", "slot", "qty", "if", "cf", "jt", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
       if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
     }
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;

@@ -39,11 +39,9 @@
     /* ------------------------------------------------------------ la page */
     function view() {
       const st = S(), zs = openZones().reverse();
-      const dense = !!(U.domDense !== undefined ? U.domDense : st.settings && st.settings.domDense);
-      U.domDense = dense;
+      const dense = U.compact();
       let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
       h += api.top();
-      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense aria-pressed="' + dense + '" title="Voir plus de terres d’un coup, en plus petit">' + (dense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -142,11 +140,11 @@
       let btns = "";
       if (d.hand) {
         const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;
-        btns += '<button class="mini harvest' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter de récolter : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■ Arrêter" : "▶ Récolter") + "</button>";
+        btns += '<button class="mini harvest' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter de récolter : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + '<span class="bi">' + (on ? "■" : "▶") + '</span><span class="bl"> ' + (on ? "Arrêter" : "Récolter") + "</span>" + "</button>";
       }
       if (ch) {
         const free = E.freeExt(ch.t), can = free >= 1 || E.plan(ch.t, 1).ok;
-        btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '">+ ' + esc(nm(ch.t, 1)) + "</button>";
+        btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
       }
       return '<div class="gis" data-gis="' + key + '">' +
         '<button class="gis-ic' + (d.hand ? " hand" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + icon(res) + "</button>" +
@@ -779,7 +777,6 @@
       }
       if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
-      if (t.closest("[data-dom-dense]")) { const next = !(U.domDense !== undefined ? U.domDense : S().settings.domDense); U.domDense = next; S().settings.domDense = next; A.click(); vibe(8); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
         E.domSite(pid, !E.siteOn(pid));
@@ -847,7 +844,7 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.domDense, Object.values(st.dom.ext).map((e) => e.on).join(),
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
     }
 

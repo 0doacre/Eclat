@@ -434,13 +434,6 @@
         }
         if (t.closest("[data-fclear]")) { U.invFilter = "tout"; S().settings.inv = Object.assign({}, S().settings.inv, { filter: "tout", sort: "age" }); U.invPanel = false; A.click(); render(true); const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true }); return; }
         if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
-        if ((b = t.closest("[data-cvue]"))) {
-          const st = S();
-          if (b.dataset.cvue === "cols") st.settings.carnet1Col = !st.settings.carnet1Col;
-          else if (b.dataset.cvue === "dense") st.settings.carnetDense = !st.settings.carnetDense;
-          A.click(); save(); render(true);
-          return;
-        }
         if ((b = t.closest("[data-age-jump]"))) {
           const a = Number(b.dataset.ageJump);
           U.openAges[a] = true; A.click(); render(true);
