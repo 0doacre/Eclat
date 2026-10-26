@@ -207,4 +207,30 @@ test("sauvegarde : l’état des demandes est gardé tel quel, la forme ne chang
   assert.deepEqual(Object.keys(F.state.comptoir).sort(), ["asks", "next", "sold", "traces"]);
 });
 
+/* Un extracteur sur 12 h, vente d’un coup, en Traces au prix de l’âge de la matière : la valeur d’une matière ne dépend pas du débit
+ * de son extracteur, mais la saturation (le prix baisse quand on vend beaucoup) écrase l’écart. À mesurer, pas à corriger : voir
+ * docs/revue/valeurs-debit.md. Ce test garde les deux propriétés qui comptent : à âge égal, aucune matière ne rapporte plus de deux
+ * fois une autre ; et d’un âge à l’autre le meilleur revenu ne baisse jamais. */
+test("valeurs : à âge égal, un extracteur rapporte à peu près autant quelle que soit la matière ; le revenu croît avec l’âge", () => {
+  const E = mk();
+  const exts = Object.entries(D.ITEMS).filter(([, i]) => i.t === "ext");
+  const par = {};
+  for (const [id, it] of Object.entries(D.ITEMS)) {
+    if (it.t !== "res" || it.r || it.curio || it.sec) continue;
+    let rate = 0;
+    for (const [, e] of exts) if (e.p && e.p[id] > rate) rate = e.p[id];
+    if (!(rate > 0)) continue;
+    const n = rate * 43200, sat = D.COMPTOIR.sat;
+    const traces = E.value(id) * sat * Math.log((sat + n) / sat) / E.traceBasePrice(it.a);
+    (par[it.a] = par[it.a] || []).push({ id, traces });
+  }
+  let prev = 0;
+  for (const a of Object.keys(par).map(Number).sort((x, y) => x - y)) {
+    const t = par[a].map((x) => x.traces), max = Math.max(...t), min = Math.min(...t);
+    assert.ok(max / min <= 2, "âge " + a + " : " + par[a].map((x) => x.id + " " + x.traces.toFixed(1)).join(", "));
+    assert.ok(max >= prev, "âge " + a + " : le meilleur revenu (" + max.toFixed(1) + ") ne baisse pas (" + prev.toFixed(1) + " avant)");
+    prev = max;
+  }
+});
+
 console.log(passed + " tests du Comptoir réussis.");
