@@ -26,7 +26,7 @@ h3.sub { font-size: 13px; letter-spacing: .065em; }
   border-radius: var(--design-radius);
 }
 .card, .dom-card, .rec, .stepbox, .passbox {
-  background-color: color-mix(in srgb, var(--panel) 93%, transparent);
+  background-color: var(--panel);
 }
 .goal-card { border-style: solid; border-color: color-mix(in srgb, var(--acc) 55%, var(--line2)); }
 .bar { min-height: 7px; overflow: hidden; }
@@ -46,11 +46,11 @@ h3.sub { font-size: 13px; letter-spacing: .065em; }
  * Une page de registre lisible : hiérarchie, traits de plume, rythmes réguliers.
  * Tous les sélecteurs sont purement visuels ; aucun geste ni événement modifié.
  */
-#v-domaine {
+:where(#v-domaine) {
   --atlas-rule: color-mix(in srgb, var(--text) 21%, transparent);
   --atlas-wash: color-mix(in srgb, var(--acc) 7%, var(--panel));
 }
-#v-domaine h2.title {
+:where(#v-domaine) h2.title {
   font-size: clamp(25px, 6.2vw, 33px);
   line-height: 1.12;
   letter-spacing: -.025em;
@@ -58,7 +58,7 @@ h3.sub { font-size: 13px; letter-spacing: .065em; }
   padding-bottom: 12px;
   border-bottom: 3px double var(--atlas-rule);
 }
-#v-domaine h3.sub {
+:where(#v-domaine) h3.sub {
   font-family: var(--label, var(--sans));
   font-size: 12px;
   font-weight: 750;
@@ -66,14 +66,14 @@ h3.sub { font-size: 13px; letter-spacing: .065em; }
   color: var(--muted);
   margin-top: 22px;
 }
-#v-domaine .card,
-#v-domaine .dom-card {
+:where(#v-domaine) .card,
+:where(#v-domaine) .dom-card {
   border: 1px solid var(--atlas-rule);
   border-radius: 9px;
-  background: color-mix(in srgb, var(--panel) 96%, var(--bg));
+  background: var(--panel);
   box-shadow: 0 3px 0 color-mix(in srgb, var(--text) 5%, transparent);
 }
-#v-domaine .goal-card {
+:where(#v-domaine) .goal-card {
   position: relative;
   border: 1px solid color-mix(in srgb, var(--acc) 70%, var(--text));
   border-left: 4px solid var(--acc);
@@ -81,48 +81,48 @@ h3.sub { font-size: 13px; letter-spacing: .065em; }
   background: var(--atlas-wash);
   padding: 14px;
 }
-#v-domaine .goal-card .lbl,
-#v-domaine .goal .lbl {
+:where(#v-domaine) .goal-card .lbl,
+:where(#v-domaine) .goal .lbl {
   font-size: 12px;
   letter-spacing: .12em;
 }
-#v-domaine .goal .name {
+:where(#v-domaine) .goal .name {
   font-size: 20px;
   line-height: 1.22;
 }
-#v-domaine .dom-th {
+:where(#v-domaine) .dom-th {
   padding-bottom: 9px;
   border-bottom: 1px solid var(--atlas-rule);
   align-items: baseline;
 }
-#v-domaine .dom-th h3,
-#v-domaine .dom-card h3 {
+:where(#v-domaine) .dom-th h3,
+:where(#v-domaine) .dom-card h3 {
   font-size: clamp(20px, 5.2vw, 25px);
   line-height: 1.18;
   letter-spacing: -.012em;
 }
-#v-domaine .dom-terre { gap: 10px; }
-#v-domaine .gis {
+:where(#v-domaine) .dom-terre { gap: 10px; }
+:where(#v-domaine) .gis {
   min-height: 62px;
   padding-block: 6px;
   border-bottom: 1px solid color-mix(in srgb, var(--text) 11%, transparent);
 }
-#v-domaine .gis:last-child { border-bottom-color: transparent; }
-#v-domaine .gis-ic {
+:where(#v-domaine) .gis:last-child { border-bottom-color: transparent; }
+:where(#v-domaine) .gis-ic {
   width: 48px;
   height: 48px;
   border-radius: 12px;
   border: 1.5px solid color-mix(in srgb, var(--text) 30%, transparent);
   background: color-mix(in srgb, var(--acc) 5%, var(--panel));
 }
-#v-domaine .gis-ic.hand {
+:where(#v-domaine) .gis-ic.hand {
   border-color: var(--acc);
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--acc) 12%, transparent);
 }
-#v-domaine .gis-l1 { font-size: 16px; line-height: 1.25; font-weight: 650; }
-#v-domaine .gis-l2 { font-size: 13px; line-height: 1.35; color: var(--muted); }
-#v-domaine .dom-rate { font-size: 14px; }
-#v-domaine .dom-tip {
+:where(#v-domaine) .gis-l1 { font-size: 16px; line-height: 1.25; font-weight: 650; }
+:where(#v-domaine) .gis-l2 { font-size: 13px; line-height: 1.35; color: var(--muted); }
+:where(#v-domaine) .dom-rate { font-size: 14px; }
+:where(#v-domaine) .dom-tip {
   border-radius: 6px;
   border-left: 3px solid var(--intu);
   border-top: 1px solid var(--line2);
@@ -132,42 +132,42 @@ h3.sub { font-size: 13px; letter-spacing: .065em; }
   padding: 11px 13px;
   line-height: 1.48;
 }
-#v-domaine .dom-lieu .bar { height: 6px; margin-top: 5px; }
-#v-domaine .dom-ruine { border-radius: 6px; padding: 11px 12px; }
-#v-domaine .dom-epi { font-size: 19px; line-height: 1.4; margin-block: 17px; }
-#v-domaine .btn.pri {
+:where(#v-domaine) .dom-lieu .bar { height: 6px; margin-top: 5px; }
+:where(#v-domaine) .dom-ruine { border-radius: 6px; padding: 11px 12px; }
+:where(#v-domaine) .dom-epi { font-size: 19px; line-height: 1.4; margin-block: 17px; }
+:where(#v-domaine) .btn.pri {
   border-color: var(--acc);
   box-shadow: 0 2px 0 color-mix(in srgb, var(--text) 15%, transparent);
 }
-#v-domaine .btn:focus-visible,
-#v-domaine .mini:focus-visible,
-#v-domaine .gis-ic:focus-visible { outline-offset: 2px; }
+:where(#v-domaine) .btn:focus-visible,
+:where(#v-domaine) .mini:focus-visible,
+:where(#v-domaine) .gis-ic:focus-visible { outline-offset: 2px; }
 @media (max-width: 360px) {
-  #v-domaine .gis { gap: 7px; }
-  #v-domaine .gis-ic { flex-basis: 44px; width: 44px; height: 44px; }
-  #v-domaine .goal-card { padding: 11px; }
+  :where(#v-domaine) .gis { gap: 7px; }
+  :where(#v-domaine) .gis-ic { flex-basis: 44px; width: 44px; height: 44px; }
+  :where(#v-domaine) .goal-card { padding: 11px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #v-domaine .gis-ic { animation: none; }
+  :where(#v-domaine) .gis-ic { animation: none; }
 }
 
 /* ATLAS VIVANT — expérimentation assumée, page du Domaine */
 html, body { max-width: 100%; overflow-x: clip; }
 #app, #views, .view { min-width: 0; max-width: 100%; }
 #views { overflow-x: clip; }
-#v-domaine { overflow-wrap: anywhere; }
-#v-domaine :is(.row,.gis,.dom-th,.sub-row) > * { min-width: 0; }
-#v-domaine :is(.card,.dom-card,.goal-card,.dom-tip) { max-width: 100%; }
+:where(#v-domaine) { overflow-wrap: anywhere; }
+:where(#v-domaine) :is(.row,.gis,.dom-th,.sub-row) > * { min-width: 0; }
+:where(#v-domaine) :is(.card,.dom-card,.goal-card,.dom-tip) { max-width: 100%; }
 
 /* La page devient un feuillet relié : double filet, encre, accent marginal. */
-#v-domaine {
+:where(#v-domaine) {
   position: relative;
   padding-inline: clamp(12px, 4vw, 24px);
   background:
     linear-gradient(90deg, color-mix(in srgb,var(--acc) 15%,transparent) 0 2px, transparent 2px) 8px 0 / 3px 100% no-repeat,
     linear-gradient(90deg, color-mix(in srgb,var(--text) 12%,transparent) 0 1px, transparent 1px) 13px 0 / 2px 100% no-repeat;
 }
-#v-domaine h2.title {
+:where(#v-domaine) h2.title {
   font-size: clamp(29px, 7.8vw, 42px);
   font-weight: 500;
   letter-spacing: -.035em;
@@ -175,7 +175,7 @@ html, body { max-width: 100%; overflow-x: clip; }
   margin: 8px 0 20px;
   border-bottom: 4px double color-mix(in srgb,var(--text) 60%,transparent);
 }
-#v-domaine h3.sub {
+:where(#v-domaine) h3.sub {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -184,13 +184,13 @@ html, body { max-width: 100%; overflow-x: clip; }
   color: var(--text);
   margin: 26px 0 12px;
 }
-#v-domaine h3.sub::after {
+:where(#v-domaine) h3.sub::after {
   content: "";
   flex: 1;
   min-width: 10px;
   border-top: 1px solid color-mix(in srgb,var(--text) 30%,transparent);
 }
-#v-domaine .card, #v-domaine .dom-card {
+:where(#v-domaine) .card, :where(#v-domaine) .dom-card {
   border: 1px solid color-mix(in srgb,var(--text) 38%,transparent);
   border-radius: 3px;
   background:
@@ -200,7 +200,7 @@ html, body { max-width: 100%; overflow-x: clip; }
   padding: clamp(12px,3.5vw,20px);
   margin-bottom: 18px;
 }
-#v-domaine .goal-card {
+:where(#v-domaine) .goal-card {
   border: 1px solid var(--text);
   border-left: 6px solid var(--acc);
   border-radius: 2px;
@@ -208,43 +208,43 @@ html, body { max-width: 100%; overflow-x: clip; }
   padding: 17px 15px;
   box-shadow: 4px 4px 0 color-mix(in srgb,var(--acc) 20%,transparent);
 }
-#v-domaine .goal .name { font-size: clamp(22px,5.6vw,29px); }
-#v-domaine .dom-th {
+:where(#v-domaine) .goal .name { font-size: clamp(22px,5.6vw,29px); }
+:where(#v-domaine) .dom-th {
   border-bottom: 2px solid color-mix(in srgb,var(--text) 55%,transparent);
   padding-bottom: 13px;
   margin-bottom: 5px;
 }
-#v-domaine .dom-th h3, #v-domaine .dom-card h3 {
+:where(#v-domaine) .dom-th h3, :where(#v-domaine) .dom-card h3 {
   font-size: clamp(23px,6vw,30px);
 }
-#v-domaine .gis {
+:where(#v-domaine) .gis {
   padding-block: 12px;
   min-height: 76px;
   border-bottom: 1px dashed color-mix(in srgb,var(--text) 25%,transparent);
 }
-#v-domaine .gis-ic {
+:where(#v-domaine) .gis-ic {
   border-radius: 3px;
   background: color-mix(in srgb,var(--acc) 11%,var(--panel));
   border: 1.5px solid color-mix(in srgb,var(--text) 48%,transparent);
   box-shadow: inset 0 0 0 3px var(--panel);
 }
-#v-domaine .gis-l1 { font-size: 17px; }
-#v-domaine .dom-tip {
+:where(#v-domaine) .gis-l1 { font-size: 17px; }
+:where(#v-domaine) .dom-tip {
   border-radius: 2px;
   border: 1px dashed var(--intu);
   border-left: 5px solid var(--intu);
   background: color-mix(in srgb,var(--intu) 11%,var(--panel));
   padding: 13px 14px;
 }
-#v-domaine .btn { border-radius: 4px; }
-#v-domaine .btn.pri { box-shadow: 3px 3px 0 color-mix(in srgb,var(--text) 28%,transparent); }
-#v-domaine .dom-epi { font-size: 21px; padding: 10px 0; }
+:where(#v-domaine) .btn { border-radius: 4px; }
+:where(#v-domaine) .btn.pri { box-shadow: 3px 3px 0 color-mix(in srgb,var(--text) 28%,transparent); }
+:where(#v-domaine) .dom-epi { font-size: 21px; padding: 10px 0; }
 @media (max-width: 380px) {
-  #v-domaine { padding-inline: 12px; }
-  #v-domaine .card, #v-domaine .dom-card { padding: 12px; }
-  #v-domaine .gis { gap: 7px; }
-  #v-domaine .gis-l1 { font-size: 15px; }
-  #v-domaine .gis-b { gap: 3px; }
+  :where(#v-domaine) { padding-inline: 12px; }
+  :where(#v-domaine) .card, :where(#v-domaine) .dom-card { padding: 12px; }
+  :where(#v-domaine) .gis { gap: 7px; }
+  :where(#v-domaine) .gis-l1 { font-size: 15px; }
+  :where(#v-domaine) .gis-b { gap: 3px; }
 }
 
 /* ========================================================================
@@ -314,7 +314,7 @@ html, body { max-width: 100%; overflow-x: clip; }
 .view .dom-card {
   border-radius: 4px;
   border-color: var(--atlas-hairline);
-  background: color-mix(in srgb,var(--panel) 96%,var(--bg));
+  background: var(--panel);
 }
 .view .card.acc { border-left: 4px solid var(--acc); }
 .view .btn { border-radius: 5px; min-height: 42px; }
@@ -392,3 +392,13 @@ html, body, #app { width: 100%; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   #app, #v-carte .carte-svg { transition: none; }
 }
+
+/* Les modes d'affichage explicites priment sur le style Atlas. */
+body.dom-dense :where(#v-domaine) .gis,
+.dom-dense :where(#v-domaine) .gis { min-height: 0; padding-block: 3px; }
+body.dom-dense :where(#v-domaine) .gis-ic,
+.dom-dense :where(#v-domaine) .gis-ic { flex-basis: 40px; width: 40px; height: 40px; }
+body.dom-dense :where(#v-domaine) .gis-l1,
+.dom-dense :where(#v-domaine) .gis-l1 { font-size: 14px; }
+body.dom-dense :where(#v-domaine) .gis-l2,
+.dom-dense :where(#v-domaine) .gis-l2 { font-size: 12px; }
