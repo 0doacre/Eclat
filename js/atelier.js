@@ -23,7 +23,7 @@
       if (!g || g.ob.k !== "craft") return "";
       const id = g.step, it = I[id], lvl = S().hints[id] || 0;
       if (!it || S().known[id]) return "";
-      return '<div class="card acc goal-hint"><div class="small"><span class="step-badge">✦ Étape clé</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Une recette nouvelle</b>") + "</div>" +
+      return '<div class="card acc goal-hint"><div class="small"><span class="step-badge">✦ Nouvelle recette</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
         (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") + "</div>";
     }
@@ -31,7 +31,7 @@
       const st = S();
       let h = subTabs("atelier", "machines", "Découvrir", "Machines");
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
-      if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Touche des <b>ressources</b> pour les poser sur l’établi. 3. Lance l’<b>action choisie</b>. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
+      if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Pose des <b>ressources</b> sur l’établi. 3. Lance l’action. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       // Le premier essai reste possible sans un aller-retour au Domaine.
       const firstWood = I.manche.r[1].bois;
       if (!(st.stats.crafts > 0) && E.count("bois") < firstWood) {
@@ -465,7 +465,7 @@
       const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
       let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
         '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
-      if (objectif) h += '<h3>Prochaine étape</h3>' + arbreCarte(objectif, false);
+      if (objectif) h += '<h3>Prochain objectif</h3>' + arbreCarte(objectif, false);
       else if (ob) h += '<h3>Prochain objectif</h3><p>' + esc(ob.txt || ob.n || 'Poursuivre l’exploration') + '</p>';
       else h += '<p>Tu as accompli les objectifs proposés.</p>';
       h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>matière vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span></div>';

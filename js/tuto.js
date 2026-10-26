@@ -42,29 +42,22 @@
      * dim (assombrir autour, oui par défaut s’il y a une cible), modal (elle se
      * passe dans une fenêtre). */
     const CH = [
-      // le tout premier message : on propose de couper le guide avant de commencer
-      { id: "bienvenue", n: "Bienvenue", quick: true,
-        when: () => !S().known.manche && S().age === 0 && !S().stats.crafts && !S().stats.taps,
-        steps: [
-          { text: "Découvre les bases pour fabriquer tes premiers objets. Tu peux désactiver le guide à tout moment dans le menu.",
-            choices: [{ l: "Guide-moi", a: "next" }, { l: "Je me débrouille", a: "off" }] }
-        ] },
       { id: "debut", n: "Premiers pas",
         when: () => !S().known.manche && S().age === 0 && !S().stats.crafts,
         steps: [
-          { tab: "domaine", at: '[data-hloop="lisiere:bois"]', text: "Touche « ▶ Récolter » pour lancer la récolte continue de bois. Touche à nouveau ce bouton pour l’arrêter. Un appui sur l’icône du bois récolte une seule fois.",
+          { tab: "domaine", at: '[data-hloop="lisiere:bois"]', text: "▶ Récolter : récolte en continu. Touche encore pour arrêter. L’icône du bois récolte un seul coup.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
-          { tab: "atelier", go: "Tu as de quoi tailler. Ouvre l’Atelier.", at: ".gestes",
-            text: "Chaque recette demande une action et des ressources. Tu as trois actions au départ : Tailler, Tresser et Assembler. Tailler est déjà choisie.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
-          { tab: "atelier", at: () => (U.slots.includes("bois") ? null : '[data-inv="bois"]'), text: "Touche le bois pour l’ajouter à l’établi.",
+          { tab: "atelier", go: "Ouvre l’Atelier.", at: ".gestes",
+            text: "Une recette = une action + des ressources. Actions de départ : Tailler, Tresser, Assembler.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
+          { tab: "atelier", at: () => (U.slots.includes("bois") ? null : '[data-inv="bois"]'), text: "Touche le bois pour le poser sur l’établi.",
             done: () => U.slots.includes("bois") || S().known.manche },
-          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Touche « Tailler » sous l’établi pour fabriquer ton premier objet." : "Sélectionne l’action Tailler."),
+          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Lance Tailler pour fabriquer ton premier objet." : "Choisis l’action Tailler."),
             done: () => S().known.manche },
-          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Tu as fabriqué un manche. Sa recette s’ajoute à ton Carnet. Tu ne peux fabriquer qu’un objet à la fois.", next: true },
-          { tab: "domaine", go: "Retourne au Domaine.", at: ".goal-card", text: "L’objectif en haut du Domaine indique ta prochaine découverte. Touche 🏁 pour consulter les étapes de cet âge.", next: true, done: () => S().known.corde },
-          { text: "Nouvel objectif : trouver de quoi attacher deux objets. Récolte des fibres, puis tente des actions à l’Atelier. Le thermomètre indique si tu approches d’une recette. Chaque nouvelle combinaison peut révéler un indice.",
+          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Manche fabriqué. Sa recette est dans le Carnet.", next: true },
+          { tab: "domaine", go: "Retour au Domaine.", at: ".goal-card", text: "L’objectif en haut du Domaine indique la suite. 🏁 : les étapes de l’âge.", next: true, done: () => S().known.corde },
+          { text: "Objectif : de quoi attacher deux objets. Récolte des fibres, puis essaie des actions à l’Atelier. Le thermomètre montre si tu approches d’une recette.",
             free: true, done: () => S().known.corde },
-          { text: "Bien joué ! Suis l’objectif pour continuer. L’aide ❓ reste disponible si besoin.", next: true }
+          { text: "Suis l’objectif. L’aide ❓ est toujours là.", next: true }
         ] },
       { id: "lieux", n: "Les lieux",
         when: () => { const ob = E.objective(); return (U.tab === "domaine" || U.tab === "carte") && ob && ob.k === "exp" && !S().exp.active && !Object.keys(S().exp.done).length; },
