@@ -222,6 +222,12 @@
       E.on("ending", (r) => { setTimeout(() => showEnding(r), 600); save(); });
       E.on("capsulePrompt", () => { setTimeout(promptCapsuleText, 400); });
       E.on("toast", (msg) => { if (typeof msg === "string") toast(msg); });
+      E.on("geste", (id) => {
+        badge("journal");
+        vibe(12);
+        const g = D.GESTES_REMARQUES && D.GESTES_REMARQUES[id];
+        if (g && U.live) toast("✦ Geste remarqué : <b>" + esc(g.n) + "</b>", { key: "g:" + id, p: 1 });
+      });
       E.on("curio", (id) => {
         const c = D.EASTER && D.EASTER[id];
         if (c) {
