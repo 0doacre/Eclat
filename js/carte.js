@@ -86,7 +86,7 @@
       const crop = Math.max(0, Math.floor(top - 70));
       const mapTop = atlas ? crop : 0;
       const mapHeight = H - mapTop;
-      let s = '<div class="carte">' + chip() + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
+      let s = '<div class="carte">' + chip() + (atlas ? '<div class="atlas-map-heading"><span class="atlas-map-kicker">✧ ATLAS DES TERRES CONNUES</span><strong>Le monde se dévoile</strong><span class="atlas-map-sub">Les chemins apparaissent au fil de tes découvertes</span></div>' : "") + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
         "<defs>" +
         '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" class="c-hatch"/></pattern>' +
         '<linearGradient id="fogEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0.75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
@@ -95,6 +95,7 @@
       // le ciel commence au-dessus des montagnes : quelques étoiles
       s += '<g class="c-stars">' + Array.from({ length: 46 }, (_, i) => { const x = (i * 97.3) % W, y = (i * 53.7) % 560; return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (i % 3 ? 0.9 : 1.5) + '"/>'; }).join("") + "</g>";
       s += '<path class="c-horizon" d="M0 560 Q 100 548 200 556 T 400 552"/>';
+      if (atlas) s += terrain(seen, open);
       // les chemins entre terres déjà ouvertes
       const ord = order();
       for (let i = 1; i < ord.length; i++) {
@@ -106,8 +107,36 @@
       // la brume : tout ce qui est plus haut que ce qu’on devine
       if (top > 0) s += '<rect x="0" y="0" width="' + W + '" height="' + (top + 90) + '" fill="url(#hatch)" mask="url(#fogMask)" class="c-fog"/>';
       E.passPending().forEach((z) => { s += passArt(z); });
-      s += "</svg></div>";
+      s += "</svg>" + (atlas ? '<div class="atlas-map-footer"><span>✦ Terre découverte</span><span>◌ Terre à explorer</span><span>⋯ Passage</span></div>' : "") + "</div>";
       return s;
+    }
+    /* Paysage de fond : des repères de fantasy, uniquement autour des terres
+       accessibles. Le reste demeure réellement inconnu. */
+    function terrain(seen, open) {
+      const known = new Set(open);
+      let h = '<g class="atlas-terrain" aria-hidden="true">';
+      seen.forEach((z, i) => {
+        const g = GEO[z];
+        if (!g || g.sky) return;
+        const discovered = known.has(z);
+        if (!discovered) return;
+        const y = g.y + g.ry + 17;
+        // Des lignes de relief en éventail évoquent une carte gravée.
+        for (let k = 0; k < 3; k++) {
+          const dy = k * 11;
+          h += '<path class="atlas-contour" d="M' + (g.x - g.rx - 20) + ' ' + (y + dy) +
+            ' Q' + g.x + ' ' + (y + dy + 20) + ' ' + (g.x + g.rx + 20) + ' ' + (y + dy) + '"/>';
+        }
+        // Repères naturels déterministes, sans masquer les lieux interactifs.
+        const left = Math.max(18, g.x - g.rx - 28), right = Math.min(382, g.x + g.rx + 24);
+        h += '<path class="atlas-forest" d="M' + left + ' ' + (g.y - 28) +
+          ' l8 -17 8 17 m-11 0 l11 -24 11 24 m-13 0 v12"/>';
+        h += '<path class="atlas-forest" d="M' + right + ' ' + (g.y + 22) +
+          ' l8 -17 8 17 m-11 0 l11 -24 11 24 m-13 0 v12"/>';
+        if (i % 2 === 0) h += '<path class="atlas-ridge" d="M' + left + ' ' + (g.y + 45) +
+          ' l17 -24 15 24 13 -17 14 17"/>';
+      });
+      return h + '</g>';
     }
     /* l’expédition longue en cours : une ligne en haut de la Carte (se touche pour recevoir ou pour voir) */
     function chip() {
