@@ -311,7 +311,7 @@ test("un extracteur ne travaille que sur sa terre ; une ancienne pose ailleurs r
 test("un extracteur par ressource : chaque ressource récoltable a sa ligne, ses niveaux et sa recette", () => {
   const E = mk();
   const exts = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
-  assert.strictEqual(exts.length, 48);
+  assert.strictEqual(exts.length, 50);
   const res = new Set(D.LIGNES.map((L) => L.res));
   assert.strictEqual(res.size, D.LIGNES.length, "une seule ligne par ressource");
   exts.forEach((id) => {
@@ -1724,7 +1724,7 @@ test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plo
   D.ZONES.forEach((z) => { assert.ok(!z.res.includes("uranium") && !z.res.includes("galene"), z.id); });
   assert.strictEqual(E.RES_ZONE.uranium, "mine", "sa terre est celle de son extracteur");
   assert.strictEqual(E.RES_ZONE.galene, "collines");
-  assert.deepStrictEqual(E.extFor("uranium", "mine"), ["uranium_1"]);
+  assert.deepStrictEqual(E.extFor("uranium", "mine"), ["uranium_1", "uranium_2"]);
   E.state.zones.mine = true; E.state.zones.collines = true;
   assert.strictEqual(E.deposits().find((d) => d.res === "uranium").hand, false, "un gisement qui ne se récolte pas à la main");
   // le guide mène à l’extracteur d’abord : pas de galène sans sa mine

@@ -758,10 +758,20 @@
         d: "Des racloirs détachent les croûtes jaunes ; les chariots les descendent de la colline.", h: "Des racloirs d’acier trempé, vissés sur des chariots à roues, peuvent récolter les cristaux de soufre." }] },
     { id: "uranium", res: "uranium", n: "Mineur d’uranium", ic: "☢️", ph: "l’uranium", zs: ["mine"], niv: [
       { id: "uranium_1", n: "Mine d’uranium", sn: "mine d’uranium", pl: "mines d’uranium", ic: "☢️", a: 9, s: 1.25, taux: 0.8, r: ["assembler", { moteur_elec: 5, acier_trempe: 25, ampoule: 30 }, 1],
-        d: "Un puits étroit, éclairé en continu. On n’y reste jamais longtemps.", h: "Un moteur électrique remonte le minerai, l’acier trempé tient les parois et les ampoules éclairent le puits." }] },
+        d: "Un puits étroit, éclairé en continu. On n’y reste jamais longtemps.", h: "Un moteur électrique remonte le minerai, l’acier trempé tient les parois et les ampoules éclairent le puits." },
+      { id: "uranium_2", n: "Puits d’uranium blindé", sn: "puits blindé", pl: "puits blindés", ic: "🛡️", a: 11, s: 1.25, taux: 2.4, de: "uranium_1",
+        r: ["assembler", { lingot_plomb: 40, processeur: 6, verre_trempe: 20 }, 1],
+        d: "Des sas de plomb et des parois épaisses permettent d’extraire l’uranium plus vite et plus profond.",
+        h: "Le plomb arrête le rayonnement, le verre trempé protège les commandes et les processeurs pilotent l’extraction." }
+    ] },
     { id: "plomb", res: "galene", n: "Mineur de plomb", ic: "🔘", ph: "la galène", zs: ["collines"], niv: [
       { id: "galene_1", n: "Mine de plomb", sn: "mine de plomb", pl: "mines de plomb", ic: "⛏️", a: 9, s: 1.25, taux: 1.2, r: ["assembler", { moteur_elec: 3, lingot_acier: 30, roue: 20 }, 1],
-        d: "Les galeries suivent des veines grises, si lourdes que les wagons grincent.", h: "Le moteur tire les wagons sur leurs roues, et l’acier empêche les éboulements." }] },
+        d: "Les galeries suivent des veines grises, si lourdes que les wagons grincent.", h: "Le moteur tire les wagons sur leurs roues, et l’acier empêche les éboulements." },
+      { id: "galene_2", n: "Mine de plomb mécanisée", sn: "mine de plomb mécanisée", pl: "mines de plomb mécanisées", ic: "🏗️", a: 11, s: 1.25, taux: 3.6, de: "galene_1",
+        r: ["assembler", { moteur_elec: 12, lingot_acier: 80, cable: 60 }, 1],
+        d: "Des treuils électriques et des convoyeurs remontent les blocs de galène en continu.",
+        h: "Des câbles alimentent les moteurs au fond, et des structures d’acier soutiennent les bennes." }
+    ] },
     { id: "fondeur", res: "metal_mercure", n: "Fondeur de Mercure", ic: "🔥", ph: "le métal mercurien", zs: ["mercure"], niv: [
       { id: "replicateur", n: "Réplicateur", sn: "réplicateur", pl: "réplicateurs", ic: "🦾" }] }
   ];
@@ -827,18 +837,18 @@
     { id: "desert", n: "Le Désert de Verre", ic: "🏜️", res: ["quartz", "sable"], req: "chariot",
       d: "Des dunes à perte de vue. Par endroits, le sable a fondu en dalles de verre.",
       exps: [
-        { id: "ville", n: "La Ville Ensevelie", dur: 90, rw: { inv: { quartz: 20 }, frag: "journal" } },
+        { id: "ville", n: "La Ville Ensevelie", dur: 90, need: "gants", rw: { inv: { quartz: 20 }, frag: "journal" } },
         { id: "observatoire", n: "L’Observatoire", dur: 120, need: "lunette", rw: { frag: "registre", intu: 3 } },
         { id: "quai", n: "Le Quai", dur: 140, need: { glyph: "revenir" }, show: { frag: "journal" }, hidden: "Un signe sur la carte indique un quai enfoui sous les dunes.", rw: { frag: "quai", intu: 3 } }
       ] },
     { id: "gisement", n: "Le Gisement Noir", ic: "🛢️", res: ["petrole"], req: "foreuse",
       d: "Une plaine de bitume où l’huile suinte du sol.",
-      exps: [{ id: "plateforme_r", n: "La Plateforme Rouillée", dur: 120, rw: { frag: "cendre", intu: 2 } }] },
+      exps: [{ id: "plateforme_r", n: "La Plateforme Rouillée", dur: 120, need: "masque", rw: { frag: "cendre", intu: 2 } }] },
     { id: "montagnes", n: "Les Pics Fracturés", ic: "🏔️", res: ["bauxite", "ilmenite", "terres_rares"], req: "dynamite",
       d: "Des montagnes éventrées par une catastrophe ancienne.",
       exps: [
         { id: "silo", n: "Le Silo", dur: 150, rw: { frag: "manifeste", intu: 2 } },
-        { id: "radar", n: "Le Radar", dur: 180, rw: { frag: "radar", intu: 3 } }
+        { id: "radar", n: "Le Radar", dur: 180, need: "bouteille", rw: { frag: "radar", intu: 3 } }
       ] },
     { id: "orbite", n: "L’Orbite Basse", ic: "🛰️", res: ["debris"], req: "fusee",
       d: "Un anneau de débris tourne autour de la Terre. Les Anciens n’ont jamais rien redescendu.",
@@ -1193,8 +1203,11 @@
     { k: "pass", z: "desert", n: "Vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
     ["haut_fourneau", "Pour l’acier, il faut encore plus chaud. Le haut-fourneau monte jusqu’à 1 700 °C."],
     ["lingot_acier", "Fer et carbone, à très haute température."],
+    ["bac_trempe", "Un grand bac d’eau froide pour durcir le métal brûlant d’un coup. Le bac débloque l’action Tremper."],
     ["acier_trempe", "Plonge l’acier brûlant dans l’eau froide : il devient dur comme jamais."],
     ["tour", "La tour d’usinage débloque l’action Usiner, pour travailler le métal avec la précision d’une machine."],
+    ["engrenage_acier", "Usiner des engrenages d’acier trempé permet de transmettre des efforts mécaniques sans jamais casser."],
+    ["roulement", "Des billes d’acier trempé dans leur cage : les roulements réduisent le frottement au cœur des futures machines."],
     ["eau_1", "Pour alimenter une chaudière, il faut un débit régulier d’eau. Construis une pompe à bras pour la Rivière."],
     ["circuit_vapeur", "De l’eau dans la chaudière, des tuyaux pour conduire la vapeur : le moteur peut prendre forme."],
     ["moteur_vapeur", "Fais travailler la vapeur à ta place."],
@@ -1209,7 +1222,12 @@
     ["barre_combustible", "L’uranium cuit, enfermé dans l’acier, devient un combustible."],
     ["centrale_fission", "De la chaleur sans flamme : fais-la travailler à ta place."],
     ["silicium", "Le cristal du désert cache un métal qui pense."],
+    ["lithographe", "La lumière peut graver des circuits plus fins qu’un cheveu. Le lithographe débloque l’action Graver."],
+    ["wafer", "Le silicium se taille en plaquettes minces et polies comme des miroirs."],
+    ["puce", "La lumière grave des pistes de cuivre microscopiques sur le silicium."],
+    ["processeur", "Plusieurs puces réunies forment un cerveau de silicium capable de traiter des instructions."],
     ["ordinateur", "Construis une machine qui calcule."],
+    ["radiotelescope", "Une coupole géante tournée vers les étoiles pour capter les signaux du Cosmos."],
     ["foreuse", "L’huile noire dort sous le Gisement Noir. Il te faut une sonde pour l’atteindre."],
     { k: "pass", z: "gisement", n: "Vers le Gisement Noir", txt: "L’huile dort loin sous la croûte. Il faut y creuser une tranchée." },
     ["reacteur", "Le réacteur chimique débloque l’action Synthétiser : il recompose les molécules."],
