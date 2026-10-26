@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal,
-      save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App
+      save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
     } = api;
     const S = () => E.state;
     const $ = (s, r) => (r || document).querySelector(s);
@@ -492,7 +492,8 @@
             sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un traverser le Domaine de temps en temps") +
             '<div class="toggle"><span id="mt-tuto">Guide <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain" title="Revoir les explications du guide depuis le début">Revoir</button>' +
             '<button class="btn small sw' + (Tuto.enabled() ? " on" : "") + '" role="switch" aria-checked="' + Tuto.enabled() + '" aria-labelledby="mt-tuto" data-m="tuto" title="Afficher ou masquer les explications du guide">' + (Tuto.enabled() ? "Activé" : "Désactivé") + "</button></span></div>" +
-            '<div class="menu-grid"><button class="btn" data-m="mem" title="Ce que tes Traces t’offrent d’une partie à l’autre">✦ Mémoire des mains</button></div>') +
+            '<div class="menu-grid"><button class="btn" data-m="mem" title="Ce que tes Traces t’offrent d’une partie à l’autre">✦ Mémoire des mains</button>' +
+            (E.zoneOpen(D.COMPTOIR.zone) ? '<button class="btn" data-m="comptoir" title="Vendre, acheter et répondre aux demandes du Troqueur">🪙 Le Comptoir</button>' : "") + "</div>") +
           sec("Ma partie",
             '<div class="menu-grid"><button class="btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie">💾 Sauvegardes</button>' +
             '<button class="btn" data-m="account" title="Retrouver ta partie sur tous tes appareils">☁️ Compte en ligne</button>' +
@@ -553,6 +554,7 @@
           account: () => { openAccount(); return true; },
           help: () => setTimeout(openHelp, 80),
           mem: () => setTimeout(openMemoire, 80),
+          comptoir: () => setTimeout(() => Dom.comptoirSheet(), 80),
           news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
           reset: () => setTimeout(() => {
             openModal({ html: '<h2>Recommencer la partie ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans Menu → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" style="background:var(--bad)" data-m="go">Tout effacer</button></div>',

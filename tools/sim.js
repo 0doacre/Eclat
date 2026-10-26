@@ -27,7 +27,14 @@ const MAINS = !!process.env.MAINS;
 let busyUntil = 0, busyTotal = 0, handTotal = 0, lastMach = -1e9;
 /* crafts par seconde des machines possédées, si on pouvait les mettre toutes à l’ouvrage */
 const machRate = () => E.MACHINES.reduce((a, m) => a + Math.floor(S().inv[m] || 0) * I[m].spd / 60, 0) * E.cache().aspd;
-E.on("age", (a) => { ageAt[a] = T / 1000; if (process.env.STOP_AGE && a >= Number(process.env.STOP_AGE)) stopNow = true; });
+/* RELEVE=<âge> : à cet âge, le bot fait la relève, répare les ruines dès qu’il le peut, rejoue, et on mesure le temps du rattrapage */
+const RELEVE = process.env.RELEVE !== undefined ? Number(process.env.RELEVE) : null;
+let releveAt = null, relevePending = false, cycle2At = {};
+E.on("age", (a) => {
+  if (RELEVE !== null && S().cycle >= 2) { cycle2At[a] = T / 1000 - releveAt; if (a >= RELEVE) stopNow = true; return; }
+  if (RELEVE !== null && a >= RELEVE && releveAt === null) { releveAt = T / 1000; relevePending = true; }
+});
+E.on("age", (a) => { if (RELEVE !== null && S().cycle >= 2) return; ageAt[a] = T / 1000; if (process.env.STOP_AGE && a >= Number(process.env.STOP_AGE)) stopNow = true; });
 let stopNow = false;
 const objAt = [];
 const OBJ = new Set(D.OBJECTIVES.filter(Array.isArray).map((o) => o[0]));
@@ -235,6 +242,8 @@ function considerInvest(deficit, goalTaps) {
 
 for (T = 0; T < MAX_T * 1000 && !projDone && !stopNow; T += 1000) {
   E.update();
+  if (relevePending) { relevePending = false; E.newCycle(); interim = null; }
+  if (RELEVE !== null && S().cycle >= 2) for (const id of Object.keys(E.ruins())) E.repair(id);
   for (const z of E.passPending()) { S().pass[z].done = true; S().zones[z] = true; E.recalc(); }
   // explorations
   if (!S().exp.active) for (const z of E.openZones()) {
@@ -281,6 +290,16 @@ if (process.env.DUMP) {
   S().introSeen = true;
   S().t = Date.now();
   require("fs").writeFileSync(process.env.DUMP, E.serialize());
+}
+if (RELEVE !== null) {
+  if (process.env.DEBUG_RELEVE) console.log("  fin : T=" + fmtT(T / 1000) + " cycle " + S().cycle + " âge " + S().age + " objectif " + JSON.stringify(E.objective()) + " ruines " + JSON.stringify(E.ruins()) + " stop " + stopNow + " inv " + JSON.stringify(S().inv).slice(0, 300) + " cibles " + JSON.stringify(currentTargets()) + " plan " + JSON.stringify(plan(currentTargets() || {})) + " zones " + JSON.stringify(S().zones));
+  console.log("Relève à l’âge " + RELEVE + " (" + D.AGES[RELEVE].n + ") : première fois en " + fmtT(releveAt) + ".");
+  console.log("  Rattrapage après la relève (ruines réparées dès que possible, aucun achat de Mémoire) :");
+  for (const a of Object.keys(cycle2At).map(Number).sort((x, y) => x - y)) console.log("    âge " + a + " " + D.AGES[a].n.padEnd(24) + fmtT(cycle2At[a]).padStart(8) + "  (première fois : " + fmtT(ageAt[a] === undefined ? 0 : ageAt[a]) + ")");
+  if (process.env.OBJ) { let prev = releveAt; objAt.filter(([, t]) => t >= releveAt).forEach(([id, t]) => { console.log("      · " + id.padEnd(18) + fmtT(t - releveAt).padStart(8) + "  (+" + fmtT(t - prev) + ")"); prev = t; }); }
+  const rejoint = cycle2At[RELEVE];
+  console.log(rejoint === undefined ? "  ✗ l’âge " + RELEVE + " n’est pas rejoint" : "  Rattrapé en " + fmtT(rejoint) + ", soit " + Math.round(100 * rejoint / releveAt) + " % de la première fois.");
+  process.exit(0);
 }
 console.log("Simulation : " + TAPS + " tapes/s, projet " + PROJECT);
 console.log("  Âge                            Entrée   Temps dans cet âge");

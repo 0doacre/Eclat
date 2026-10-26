@@ -1684,3 +1684,12 @@ body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 .menu-sec .menu-grid { margin: 8px 0 4px; }
 .btn.sw { min-width: 104px; }
 .btn.sw.on { background: color-mix(in srgb, var(--acc) 18%, var(--panel)); border-color: var(--acc); font-weight: 700; }
+
+/* les ruines : un bloc replié sous ce qui se récolte */
+.dom-ruines { margin: 6px 0 2px; border: 1px dashed var(--line2); border-radius: 12px; background: color-mix(in srgb, var(--panel) 75%, transparent); }
+.dom-ruines > summary { cursor: pointer; padding: 10px 12px; font-size: 14px; list-style: none; min-height: 44px; display: flex; align-items: center; gap: 6px; }
+.dom-ruines > summary::-webkit-details-marker { display: none; }
+.dom-ruines > summary::after { content: "›"; margin-left: auto; color: var(--muted); font-size: 20px; transition: transform .2s; }
+.dom-ruines[open] > summary::after { transform: rotate(90deg); }
+.dom-ruines .dom-ruine { margin: 0; border: 0; border-top: 1px dashed var(--line2); border-radius: 0; background: none; }
+.dom-ruines-all { padding: 0 12px 8px; }

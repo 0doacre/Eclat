@@ -80,6 +80,22 @@
         "</div>";
     }
 
+    /* les ruines d’une terre ou des machines : un seul bloc replié, sous ce qui se récolte. Ouvert d’emblée quand
+     * on peut déjà réparer quelque chose ; un bouton répare tout ce que la Réserve permet. */
+    function ruinsBlock(key, ids) {
+      const st = S(), ruins = E.ruins();
+      ids = ids.filter((id) => ruins[id] > 0);
+      if (!ids.length) return "";
+      const can = (id) => Object.keys(E.ruinCost(id)).every((k) => (st.inv[k] || 0) >= E.ruinCost(id)[k]);
+      const total = ids.reduce((n, id) => n + ruins[id], 0), ready = ids.filter(can);
+      ids = ready.concat(ids.filter((id) => !ready.includes(id)));
+      const open = U.ruinesOpen && U.ruinesOpen[key] !== undefined ? U.ruinesOpen[key] : ready.length > 0;
+      return '<details class="dom-ruines" data-ruines="' + key + '"' + (open ? " open" : "") + '><summary data-ruines-sum="' + key + '">🛖 ' + total + (total > 1 ? " ruines" : " ruine") + " à relever" +
+        (ready.length ? ' · <b>' + ready.length + " à portée</b>" : "") + "</summary>" +
+        (ready.length > 1 ? '<div class="dom-ruines-all"><button class="btn small pri" data-repair-all="' + ids.join(",") + '" title="Réparer tout ce que ta Réserve permet de relever">Tout réparer</button></div>' : "") +
+        ids.map((id) => ruinHTML(id, ruins[id])).join("") + "</details>";
+    }
+
     /* la règle de la terre, en une ligne : ce qui la distingue des autres */
     function regleHTML(z) {
       const r = E.regle(z);
@@ -97,13 +113,9 @@
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
       const decor = DECORS[z] ? ' style="--decor:url(' + new URL('assets/terres/' + z + '-decor.webp', document.baseURI).href + ')"' : "";
       let h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
-      const ruins = E.ruins();
-      for (const id in ruins) {
-        const it = I[id];
-        if (it && it.t === "ext" && E.extZones(id)[0] === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
-      }
       h += regleHTML(z);
       deps.forEach((d) => { h += gisHTML(z, d); });
+      h += ruinsBlock(z, Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "ext" && E.extZones(id)[0] === z));
       if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ces ressources nécessitent des extracteurs pour être récoltées.</p>';
       void st;
       return h + "</section>";
@@ -197,11 +209,7 @@
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
       h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Commandes compatibles accélérées par les machines, en complément des mains.</p>';
-      const ruins = E.ruins();
-      for (const id in ruins) {
-        const it = I[id];
-        if (it && it.t === "mach" && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
-      }
+      h += ruinsBlock("machines", Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "mach"));
 
       h += '<h3 class="sub" style="margin-top:8px">Commandes en cours</h3>';
       if (hi && hi.jobs.length) {
@@ -800,6 +808,21 @@
       }
       if ((b = t.closest("[data-proj-scene]"))) {
         if (typeof api.openStillnessScene === "function") api.openStillnessScene();
+        return true;
+      }
+      if ((b = t.closest("[data-ruines-sum]"))) {
+        // le bloc se plie et se déplie sans être redessiné ; on retient l’état pour le prochain dessin
+        const d = b.closest("details"), k = b.dataset.ruinesSum;
+        U.ruinesOpen = U.ruinesOpen || {};
+        U.ruinesOpen[k] = !d.open;
+        return false;
+      }
+      if ((b = t.closest("[data-repair-all]"))) {
+        const ids = b.dataset.repairAll.split(",").filter((id) => I[id]);
+        const n = E.repairAll(ids);
+        if (n > 0) { A.init(); A.click(); vibe([10, 30, 10]); toast("🛖 " + n + (n > 1 ? " ruines relevées." : " ruine relevée."), { key: "repair" }); }
+        else { A.fail(0); toast("Rien à relever pour l’instant : il manque des matières.", { key: "repair" }); }
+        render(true);
         return true;
       }
       if ((b = t.closest("[data-repair]"))) {
