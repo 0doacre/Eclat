@@ -95,7 +95,7 @@
       // le ciel commence au-dessus des montagnes : quelques étoiles
       s += '<g class="c-stars">' + Array.from({ length: 46 }, (_, i) => { const x = (i * 97.3) % W, y = (i * 53.7) % 560; return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (i % 3 ? 0.9 : 1.5) + '"/>'; }).join("") + "</g>";
       s += '<path class="c-horizon" d="M0 560 Q 100 548 200 556 T 400 552"/>';
-      if (atlas) s += terrain(seen, open);
+      if (atlas) s += terrain(seen, open) + compass(mapTop);
       // les chemins entre terres déjà ouvertes
       const ord = order();
       for (let i = 1; i < ord.length; i++) {
@@ -137,6 +137,15 @@
           ' l17 -24 15 24 13 -17 14 17"/>';
       });
       return h + '</g>';
+    }
+    /* Rose des vents placée au sommet du territoire visible. */
+    function compass(mapTop) {
+      const y = mapTop + 46;
+      return '<g class="atlas-compass" aria-hidden="true" transform="translate(354 ' + y + ')">' +
+        '<circle r="24"/><circle r="18"/>' +
+        '<path d="M0 -19 L5 0 0 19 -5 0Z"/>' +
+        '<path class="atlas-compass-needle" d="M0 -19 L5 0 0 0Z"/>' +
+        '<text x="0" y="-29">N</text></g>';
     }
     /* l’expédition longue en cours : une ligne en haut de la Carte (se touche pour recevoir ou pour voir) */
     function chip() {
