@@ -320,4 +320,60 @@ test("chemin : règle absolue d’anonymat sur toutes les cibles possibles", () 
     }
   }
 });
+
+test("portée : qualification d’un nœud (pret, presque, bloque)", () => {
+  const E = mk();
+
+  // 1. Un fantôme est toujours bloqué
+  assert.strictEqual(Arb.portee({ etat: "fantome" }, E, D), "bloque");
+
+  // 2. Ressource brute sans recette
+  // Avec stock -> pret
+  E.state.inv.bois = 5;
+  assert.strictEqual(Arb.portee({ etat: "vu", id: "bois" }, E, D), "pret");
+  // Sans stock mais zone ouverte -> presque
+  E.state.inv.bois = 0;
+  assert.strictEqual(Arb.portee({ etat: "vu", id: "bois" }, E, D), "presque");
+  // Sans stock et zone fermée -> bloque
+  assert.strictEqual(Arb.portee({ etat: "vu", id: "or_pepite" }, E, D), "bloque");
+
+  // 3. Recette de craft
+  // Ingrédients manquants mais tous connus et récoltables en zone ouverte -> presque
+  E.learn("manche");
+  E.state.inv.bois = 0;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "manche" }, E, D), "presque");
+
+  // Ingrédients réunis dans la Réserve -> pret
+  E.state.inv.bois = 10;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "manche" }, E, D), "pret");
+
+  // Recette bloquée par sous-recette inconnue -> bloque
+  E.learn("archet");
+  delete E.state.known.corde;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "archet" }, E, D), "bloque");
+
+  // Recette bloquée par manque de station / chaleur -> bloque
+  E.learn("lingot_bronze");
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "lingot_bronze" }, E, D), "bloque");
+
+  // Objet unique déjà fabriqué -> bloque
+  E.learn("feu");
+  E.state.made.feu = 1;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "feu" }, E, D), "bloque");
+});
+
+test("portée : cohérence globale sur une partie avancée et sans fuite", () => {
+  const E = avancee();
+  const g = Arb.graphe(E, D);
+  const counts = { pret: 0, presque: 0, bloque: 0 };
+  for (const n of g.noeuds) {
+    const p = Arb.portee(n, E, D);
+    assert.ok(["pret", "presque", "bloque"].includes(p), "valeur de portée valide : " + p);
+    counts[p]++;
+  }
+  assert.ok(counts.pret > 0, "il y a des recettes prêtes");
+  assert.ok(counts.bloque > 0, "il y a des recettes bloquées (uniques faites, fantôme)");
+  assert.strictEqual(counts.pret + counts.presque + counts.bloque, g.noeuds.length, "tous les nœuds sont classés");
+});
+
 console.log(passed + " tests de l’arbre réussis" + (process.exitCode ? ", des échecs." : "."));
