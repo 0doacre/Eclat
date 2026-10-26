@@ -10,6 +10,7 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Fait récemment
 
+- **0.33.0, ligne d’ambiance sous l’en-tête** : une petite phrase diégétique et sobre sous l’en-tête donne à voir et à sentir le monde vivant selon la terre active (12 terres), l’âge atteint (15 âges) et l’heure réelle (aube, jour, crépuscule, nuit). Concrète et sensorielle (odeur d’écorce, résonite, balancier de vapeur, goutte d’eau), elle se renouvelle chaque minute ou au clic, et se coupe dans Menu → Affichage. Table complète et charte dans `docs/revue/ambiance.md`.
 - **0.32.0, friction Carnet & quantités** : mémorisation du dernier filtre et de la dernière recherche du Carnet dans les réglages sauvegardés, bouton de quantité libre à côté de ×10 et Max pour commander le volume exact souhaité, harmonisation des filtres de l'Arbre en 4 termes de jeu vidéo (Toutes, À portée, Prêtes, Verrouillées), et relecture du guide par lots.
 - **0.31.0, Arbre étape 3** : filtres de portée (Toutes, À portée, Prêtes, Presque, Pas encore) avec compteurs en temps réel, qualification sans état (`Arbre.portee`), et point « nouveau » discret sur les pastilles de recettes découvertes jamais fabriquées.
 - **0.30.0, le chemin vers une cible dans l'Arbre** : échelle verticale des marches depuis une pastille ou l'objectif du Domaine (fait, en cours, à trouver, bloquée), action directe pour chaque marche (Fabriquer, Récolter, Voir la recette), anonymat strict des recettes inconnues (« Recette à trouver »), « Tout fabriquer » et « Suivre ».
@@ -25,14 +26,12 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Juste après
 
-1. **Friction, suite.** Relire le guide par lots avec la règle du vocabulaire ; mémoriser le dernier filtre et la dernière recherche du Carnet ; une quantité libre à côté de ×10 et Max.
+1. **Succès discrets** (« gestes remarqués », sans récompense chiffrée, pastilles dans le Journal / Livre).
+2. **Deuxième couche de prestige**, liée aux fins.
+3. **Densité des âges de l'Acier et du Silicium** (rythmes corrigés du simulateur, `docs/PLAN-ALPHA.md`).
 
 ## Plus tard
 
-- **Ligne d'ambiance** sous l'en-tête (une petite phrase qui change selon l'âge, la terre, l'heure) : à écrire
-  avec le plus grand soin, c'est là que « écrit par une IA » se voit le plus.
-- **Succès discrets** (« gestes remarqués », sans récompense chiffrée).
-- **Deuxième couche de prestige**, liée aux fins.
 - Les trois **terres sans règle** n'existent plus (toutes en ont une) ; à régler à l'usage : les dons « Les
   mains pleines » et « La main heureuse » sont à 12 % au lieu de 15 %, la Rivière n'a pas de paliers de
   gisement (sa règle du courant fait l'inverse).
