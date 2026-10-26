@@ -795,7 +795,7 @@
     // la carte s’ouvre sur la terre où l’on est
     if (t === "carte" && was !== "carte" && U.viewScroll[t] === undefined) {
       const v = $("#views"), svg = $("#v-carte svg");
-      if (svg) v.scrollTop = Math.max(0, svg.getBoundingClientRect().height * Carte.focusY(U.zone) - v.clientHeight * 0.55);
+      if (svg) { const offset = svg.getBoundingClientRect().top - v.getBoundingClientRect().top; v.scrollTop = Math.max(0, offset + svg.getBoundingClientRect().height * Carte.focusY(U.zone) - v.clientHeight * 0.55); }
     }
   }
   function updateBadges() {
