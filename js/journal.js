@@ -292,17 +292,28 @@
         const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
         h += '<div class="card cyc"><b>✦ Relève, Traces et Échos</b><p class="small">Dès qu’un passage vers une nouvelle terre est franchi, tu peux passer le relais : un nouveau Semeur s’éveille. ' +
           "Le monde, tes ressources, tes machines et les terres repartent de zéro, mais tu gardes ton Carnet, tes fragments, tes secrets et la <b>Mémoire des mains</b>, achetée avec les <b>Traces</b> que laissent les passages.</p>" +
-          '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b>, pour toujours : +50 % de récolte et de production par Écho, dès la relève suivante.</p>' +
+          '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b> immuable (+50 % de récolte et production par Écho) et éveille une <b>Règle d’Écho majeure</b> pour toujours.</p>' +
           '<div class="stat"><span class="muted">Ce Semeur</span><b>' + (st.cycle + 6) + "e · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
           '<div class="stat"><span class="muted">À la relève</span><b>+' + E.releveGain() + " ✦ · " + ech + " Écho" + (ech > 1 ? "s" : "") + "</b></div>" +
           '<button class="btn small pri" data-cycle style="margin-top:8px">✦ Mémoire des mains</button></div>';
+        h += '<h3 class="sub" style="margin:16px 0 8px">Les Dénouements &amp; Règles d’Écho</h3>';
         let reste = false;
         Object.keys(D.ENDINGS).forEach((k) => {
-          const en = D.ENDINGS[k], got = st.meta.endings[k];
-          if (got) h += '<div class="frag"><span class="fi">' + en.ic + '</span><div class="grow"><b>' + esc(en.n) + '</b><div class="tiny muted">Atteinte ' + got + " fois</div></div></div>";
-          else reste = true;
+          const en = D.ENDINGS[k], got = (st.meta.endings && st.meta.endings[k]) || 0;
+          const echoRule = D.ECHOS_FINS && D.ECHOS_FINS[k];
+          if (got) {
+            h += '<div class="frag echo-frag active"><span class="fi">' + en.ic + '</span><div class="grow">' +
+              '<div><b>' + esc(en.n) + '</b> <span class="tiny muted">· atteinte ' + got + " fois</span></div>" +
+              (echoRule ? '<div class="echo-rule-badge"><div class="echo-rule-title">✦ Règle d’Écho : ' + esc(echoRule.n) + '</div><div class="echo-rule-desc">' + esc(echoRule.d) + '</div></div>' : "") +
+              '</div></div>';
+          } else {
+            reste = true;
+          }
         });
-        if (reste) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow"><b>???</b><div class="tiny muted">Une fin encore inconnue.</div></div></div>';
+        if (reste) {
+          const nbManquantes = Object.keys(D.ENDINGS).filter((k) => !(st.meta.endings && st.meta.endings[k])).length;
+          h += '<div class="frag echo-frag unk"><span class="fi">❔</span><div class="grow"><b>' + nbManquantes + " dénouement" + (nbManquantes > 1 ? "s" : "") + ' encore inconnu' + (nbManquantes > 1 ? "s" : "") + '</b><div class="tiny muted">D\'autres fins sommeillent dans le monde. Chacune éveillera sa règle d\'Écho pour toujours.</div></div></div>';
+        }
       } else {
         const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
         h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes à la main", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],

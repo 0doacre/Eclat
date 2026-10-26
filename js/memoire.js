@@ -369,11 +369,13 @@
       // une case par fin atteinte, ou dont le Grand Œuvre est en vue : rien ne dit combien il y en a
       const endKeys = Object.keys(D.ENDINGS).filter((k) => (m.endings || {})[k] || Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
       h += '<h3 class="sub" style="margin-top:16px">Dénouements &amp; Échos</h3>';
-      h += '<p class="tiny muted">Chaque fin atteinte dépose un Écho immuable (+50 % récolte &amp; production) qui traverse les générations.' + (ech ? ' Total : <b>+' + (ech * 50) + ' %</b> (' + ech + ' Écho' + (ech > 1 ? 's' : '') + ').' : '') + '</p>';
+      h += '<p class="tiny muted">Chaque fin atteinte dépose un Écho immuable (+50 % récolte &amp; production) et éveille une <b>Règle d’Écho majeure</b> pour toujours.' + (ech ? ' Total : <b>+' + (ech * 50) + ' %</b> (' + ech + ' Écho' + (ech > 1 ? 's' : '') + ').' : '') + '</p>';
       h += '<div class="mems mem-endings">' + endKeys.map((k) => {
-        const en = D.ENDINGS[k], got = (m.endings || {})[k] || 0;
+        const en = D.ENDINGS[k], got = (m.endings || {})[k] || 0, echoRule = D.ECHOS_FINS && D.ECHOS_FINS[k];
         if (got) {
-          return '<div class="mem on"><span class="mic">' + en.ic + '</span><div class="grow"><div class="small"><b>' + esc(en.n) + '</b> <span class="tiny muted">×' + got + '</span></div><div class="tiny muted">Écho actif : +' + (got * 50) + ' %</div></div><span class="tiny ok">✦ Atteint</span></div>';
+          return '<div class="mem on"><span class="mic">' + en.ic + '</span><div class="grow"><div class="small"><b>' + esc(en.n) + '</b> <span class="tiny muted">×' + got + '</span></div><div class="tiny muted">Écho actif : +' + (got * 50) + ' %</div>' +
+            (echoRule ? '<div class="tiny" style="color:var(--pri);margin-top:2px">✦ <b>' + esc(echoRule.n) + '</b> : ' + esc(echoRule.d) + '</div>' : '') +
+            '</div><span class="tiny ok">✦ Atteint</span></div>';
         }
         const hasHint = E.hasEndingHint(k);
         if (hasHint) {

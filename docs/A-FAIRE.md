@@ -10,6 +10,7 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Fait récemment
 
+- **0.35.0, deuxième couche de prestige liée aux fins** : atteindre l'un des cinq dénouements éveille désormais une Règle d'Écho majeure pour toujours (Foyer Perpétuel, L'Onde de Choc, La Voie des Étoiles, L'Écho Cosmique, L'Éveil Partagé), apportant de vraies nouvelles règles de gameplay et non seulement des multiplicateurs. Documenté dans `docs/revue/prestige-fins.md`.
 - **0.34.0, gestes remarqués** : 20 succès discrets jalonnent désormais la route dans le Journal (onglet Gestes), sans récompense chiffrée, avec l’horodatage diégétique de chaque accomplissement (cycle, âge, date), pastilles d'état (accompli ou à découvrir) et persistance à la relève. Documenté dans `docs/revue/gestes-remarques.md`.
 - **0.33.0, ligne d’ambiance sous l’en-tête** : une petite phrase diégétique et sobre sous l’en-tête donne à voir et à sentir le monde vivant selon la terre active (12 terres), l’âge atteint (15 âges) et l’heure réelle (aube, jour, crépuscule, nuit). Concrète et sensorielle (odeur d’écorce, résonite, balancier de vapeur, goutte d’eau), elle se renouvelle chaque minute ou au clic, et se coupe dans Menu → Affichage. Table complète et charte dans `docs/revue/ambiance.md`.
 - **0.32.0, friction Carnet & quantités** : mémorisation du dernier filtre et de la dernière recherche du Carnet dans les réglages sauvegardés, bouton de quantité libre à côté de ×10 et Max pour commander le volume exact souhaité, harmonisation des filtres de l'Arbre en 4 termes de jeu vidéo (Toutes, À portée, Prêtes, Verrouillées), et relecture du guide par lots.
@@ -27,7 +28,7 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Juste après
 
-1. **Deuxième couche de prestige**, liée aux fins.
+1. **Refonte du menu** (clarté des sections, ergonomie, accès rapide aux outils).
 2. **Densité des âges de l'Acier et du Silicium** (rythmes corrigés du simulateur, `docs/PLAN-ALPHA.md`).
 
 ## Plus tard

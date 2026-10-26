@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.34.0";
+  D.VERSION = "0.35.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1113,6 +1113,45 @@
   };
   D.HINT_ENDING_COST = 75;
 
+  /* --------------------------------- RÈGLES D'ÉCHO DES FINS (DEUXIÈME PRESTIGE) */
+  D.ECHOS_FINS = {
+    aube: {
+      id: "aube",
+      n: "Foyer Perpétuel",
+      ic: "☀️",
+      sub: "L'Aube éternelle",
+      d: "Le geste Chauffer est actif dès l'éveil (600 °C), les stations gagnent +200 °C, et les fontes/alliages ont +25 % de chance de pièce bonus."
+    },
+    brasier: {
+      id: "brasier",
+      n: "L'Onde de Choc",
+      ic: "💥",
+      sub: "Le Brasier",
+      d: "25 % de chance de coup critique (×3) sur toutes les récoltes et extracteurs ; passages entre terres 15 % moins chers."
+    },
+    exode: {
+      id: "exode",
+      n: "La Voie des Étoiles",
+      ic: "🚀",
+      sub: "L'Exode",
+      d: "Vitesse d'exploration doublée (durée ÷2) ; temps de veille hors-ligne étendu jusqu'à 24 h à plein rendement."
+    },
+    silence: {
+      id: "silence",
+      n: "L'Écho Cosmique",
+      ic: "🌌",
+      sub: "Le Grand Silence",
+      d: "Régénération continue de +3 ✨ d'Intuition par minute ; coût en Intuition des indices et questions divisé par deux."
+    },
+    retour: {
+      id: "retour",
+      n: "L'Éveil Partagé",
+      ic: "🕊️",
+      sub: "Les Matines",
+      d: "Les machines assemblent les recettes connues sans premier essai à la main ; vitesse de toutes les machines +25 %."
+    }
+  };
+
   /* ----------------------------------------------------------- OBJECTIFS */
   /* Un objectif est soit [objet, texte] (le fabriquer), soit une action :
    * { k: "exp", z: zone, x: exploration }, { k: "ext" } (poser et relier un extracteur)
@@ -1415,6 +1454,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✦ Deuxième couche de prestige liée aux fins : atteindre l'un des cinq dénouements éveille désormais une Règle d'Écho majeure pour toujours (Foyer Perpétuel, L'Onde de Choc, La Voie des Étoiles, L'Écho Cosmique, L'Éveil Partagé), visible dans le Journal et la Mémoire des mains.",
     "✦ Les gestes remarqués : 20 succès discrets jalonnent désormais ta route dans le Journal (onglet Gestes), sans récompense chiffrée, avec l’horodatage diégétique de chaque accomplissement (cycle, âge, date).",
     "🍃 Ligne d’ambiance : sous l’en-tête, une petite phrase discrète donne à voir et à sentir le monde vivant selon la terre où tu te trouves, ton âge et l’heure réelle (aube, jour, crépuscule, nuit). Toucher la ligne fait défiler une autre observation du moment, et elle peut se couper dans Menu → Affichage.",
     "📖 Carnet & fabrication : mémorisation du dernier filtre et de la recherche du Carnet, quantité libre à côté de ×10 et Max pour commander le volume exact souhaité, et ajustement des filtres de l’Arbre vers des termes de jeu (Toutes, À portée, Prêtes, Verrouillées).",
