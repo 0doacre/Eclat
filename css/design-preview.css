@@ -832,3 +832,35 @@ body[data-ep="bord"] :where(#v-domaine) .dom-terre {
   #v-carte .atlas-map-heading { padding-inline: 12px; }
   #v-carte .atlas-map-footer { padding-inline: 10px; gap: 7px 10px; font-size: 11px; }
 }
+
+/* Carte de jeu : les derniers lieux ne doivent jamais finir sous l'onglet fixe. */
+#v-carte { padding-bottom: max(180px, calc(var(--safe-b, 0px) + 130px)); }
+#v-carte .carte-svg { overflow: visible; }
+#v-carte .carte-svg .atlas-compass circle {
+  fill: var(--panel);
+  stroke: var(--muted);
+  stroke-width: 1.3;
+}
+#v-carte .carte-svg .atlas-compass path {
+  fill: var(--panel2);
+  stroke: var(--text);
+  stroke-width: 1;
+}
+#v-carte .carte-svg .atlas-compass .atlas-compass-needle {
+  fill: var(--acc-base);
+  stroke: var(--acc-base);
+}
+#v-carte .carte-svg .atlas-compass text {
+  font: 700 11px var(--serif);
+  text-anchor: middle;
+  fill: var(--text);
+}
+#v-carte .carte-svg .c-art {
+  filter: drop-shadow(0 3px 4px color-mix(in srgb,var(--text) 28%,transparent));
+}
+#v-carte .carte-svg .c-zone:focus-visible,
+#v-carte .carte-svg .c-lieu:focus-visible,
+#v-carte .carte-svg .c-ahead:focus-visible {
+  outline: none;
+  filter: drop-shadow(0 0 4px var(--acc-base));
+}
