@@ -902,3 +902,71 @@ body[data-ep="bord"] :where(#v-domaine) .dom-terre {
   #v-carte .carte-svg .c-ahead,
   #v-carte .carte-svg .c-zone { transition: none; }
 }
+
+/* ATLAS V1 — finition de l'écran d'exploration. */
+#v-carte .atlas-map-heading { gap: 5px; }
+#v-carte .atlas-map-actions {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+#v-carte .atlas-map-actions button {
+  appearance: none;
+  min-width: 0;
+  min-height: 44px;
+  padding: 9px 8px;
+  border: 1px solid var(--line2);
+  border-radius: 3px;
+  background: var(--panel2);
+  color: var(--text);
+  font: 700 13px/1.2 var(--sans);
+  box-shadow: 2px 3px 0 color-mix(in srgb,var(--text) 12%,transparent);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#v-carte .atlas-map-actions button:last-child {
+  background: color-mix(in srgb,var(--acc-base) 12%,var(--panel));
+  border-color: var(--acc-base);
+}
+#v-carte .atlas-map-actions button:focus-visible {
+  outline: 3px solid var(--acc-base);
+  outline-offset: 3px;
+}
+#v-carte .carte-svg .atlas-landscape { pointer-events: none; }
+#v-carte .carte-svg .atlas-valley {
+  fill: none;
+  stroke: color-mix(in srgb,var(--good) 46%,var(--muted));
+  stroke-width: 19;
+  stroke-linecap: round;
+  opacity: .12;
+}
+#v-carte .carte-svg .atlas-valley-outer {
+  stroke-width: 12;
+  opacity: .10;
+}
+#v-carte .carte-svg .atlas-contour-wide {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: .8;
+  stroke-dasharray: 3 7;
+  opacity: .26;
+}
+#v-carte .carte-svg .c-hit { fill: transparent; }
+#v-carte .carte-svg .c-name { pointer-events: auto; }
+#v-carte .carte-svg .c-fog { opacity: .2; }
+#v-carte .carte-svg .c-ahead .c-vague { pointer-events: none; }
+#v-carte .carte-svg .c-lieu { touch-action: manipulation; }
+#v-carte .carte-svg .c-lieu circle:first-child { stroke-width: 2; }
+#v-carte .atlas-map-footer {
+  justify-content: center;
+  background: color-mix(in srgb,var(--panel2) 70%,var(--panel));
+  padding-block: 14px;
+}
+@media (max-width: 360px) {
+  #v-carte .atlas-map-actions { gap: 7px; }
+  #v-carte .atlas-map-actions button { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #v-carte .atlas-map-actions button { transition: none; }
+}
