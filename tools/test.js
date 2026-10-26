@@ -3269,9 +3269,27 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.31.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.31.0");
+test("Version 0.32.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.32.0");
   assert.ok(D.CHANGES.length >= 2);
+});
+
+test("Carnet : mémorisation du filtre, de la recherche et quantité libre", () => {
+  const E = createEngine();
+  // Vérification de la persistance des préférences du Carnet dans les settings
+  E.state.settings.carnet = { filter: "pret", q: "corde" };
+  const raw = E.serialize();
+  const E2 = createEngine();
+  E2.load(raw);
+  assert.deepStrictEqual(E2.state.settings.carnet, { filter: "pret", q: "corde" }, "les réglages de filtre et recherche du Carnet survivent à la sauvegarde");
+
+  // Planification avec quantité libre arbitraire
+  E.state.known.corde = true;
+  E.state.inv.fibre = 100;
+  const p = E.plan("corde", 17);
+  assert.strictEqual(p.ok, true);
+  assert.strictEqual(p.times, 17);
+  assert.strictEqual(p.used.fibre, 51);
 });
 
 test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
@@ -3485,12 +3503,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.31.0");
+  assert.strictEqual(D.VERSION, "0.32.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 31, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 32, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 

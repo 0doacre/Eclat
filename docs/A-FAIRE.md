@@ -10,6 +10,7 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Fait récemment
 
+- **0.32.0, friction Carnet & quantités** : mémorisation du dernier filtre et de la dernière recherche du Carnet dans les réglages sauvegardés, bouton de quantité libre à côté de ×10 et Max pour commander le volume exact souhaité, harmonisation des filtres de l'Arbre en 4 termes de jeu vidéo (Toutes, À portée, Prêtes, Verrouillées), et relecture du guide par lots.
 - **0.31.0, Arbre étape 3** : filtres de portée (Toutes, À portée, Prêtes, Presque, Pas encore) avec compteurs en temps réel, qualification sans état (`Arbre.portee`), et point « nouveau » discret sur les pastilles de recettes découvertes jamais fabriquées.
 - **0.30.0, le chemin vers une cible dans l'Arbre** : échelle verticale des marches depuis une pastille ou l'objectif du Domaine (fait, en cours, à trouver, bloquée), action directe pour chaque marche (Fabriquer, Récolter, Voir la recette), anonymat strict des recettes inconnues (« Recette à trouver »), « Tout fabriquer » et « Suivre ».
 - **0.29.0, vocabulaire et ouverture** : un mot par chose (Objectif, Nouvelle recette, Requis, Atelier), le choix du guide dans la première fenêtre, plus de bulle d'accueil sur la carte d'objectif. `docs/revue/vocabulaire.md`.
