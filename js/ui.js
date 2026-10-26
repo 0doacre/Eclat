@@ -1223,9 +1223,11 @@
   } = Mem;
 
   /* le menu, les sauvegardes et le compte en ligne */
+  /* le jeu dans l’appareil : le bouton Retour, l’installation, le titre, l’écran allumé, le clavier (js/appareil.js) */
+  const App = window.EclatAppareil.create({ E, U, toast, closeModal, setTab, tabVisible: (t) => tabAvailable(t) });
   const Cpt = window.EclatCompte.create({
     E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
-    backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin
+    backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App
   });
   const {
     openMenu, openAccount, downloadSave, showBadSave, showNews, cloudTimers, cloudCheck, promptCapsuleText
@@ -1245,7 +1247,7 @@
 
   /* les écouteurs : le moteur et les gestes du joueur */
   const Ecu = window.EclatEcouteurs.create({
-    E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete, fireworks,
+    App, E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete, fireworks,
     elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge,
     updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML,
     FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
@@ -1316,6 +1318,7 @@
       if (!U.persistAsked && S().stats.play >= 600) { U.persistAsked = true; demanderPersistance(); } // après dix minutes de jeu, pas dès l’arrivée
     }, 10000);
     setupSW();
+    App.demarrer();
     cloudTimers();
     setTimeout(cloudCheck, 1500);
     U.applyTheme = applyTheme;

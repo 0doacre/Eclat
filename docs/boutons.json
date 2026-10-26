@@ -42,6 +42,14 @@
  {
   "partie": "neuve",
   "ecran": "Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"ecran\"].btn.sw",
+  "explique": "info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
   "label": "Activé",
   "repere": "button[data-m=\"sound\"].btn.sw",
   "explique": "info-bulle : Couper ou remettre la musique et les bruitages",
@@ -485,6 +493,14 @@
   "label": "Activé",
   "repere": "button[data-m=\"carnet2\"].btn.sw",
   "explique": "info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Désactivé",
+  "repere": "button[data-m=\"ecran\"].btn.sw",
+  "explique": "info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert",
   "tag": "button"
  },
  {
