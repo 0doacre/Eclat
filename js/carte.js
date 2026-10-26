@@ -83,7 +83,7 @@
       const seen = open.concat(ahead);
       const explored = open.length;
       const total = order().length;
-      const top = Math.min.apply(null, seen.map((z) => GEO[z].y - GEO[z].ry - 60));
+      const top = seen.length ? Math.min.apply(null, seen.map((z) => GEO[z].y - GEO[z].ry - 60)) : GEO.lisiere.y - GEO.lisiere.ry - 60;
       const atlas = document.getElementById("atlasStylesheet") && !document.getElementById("atlasStylesheet").disabled;
       const crop = Math.max(0, Math.floor(top - 70));
       const mapTop = atlas ? crop : 0;
@@ -98,7 +98,7 @@
       // le ciel commence au-dessus des montagnes : quelques étoiles
       s += '<g class="c-stars">' + Array.from({ length: 46 }, (_, i) => { const x = (i * 97.3) % W, y = (i * 53.7) % 560; return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (i % 3 ? 0.9 : 1.5) + '"/>'; }).join("") + "</g>";
       s += '<path class="c-horizon" d="M0 560 Q 100 548 200 556 T 400 552"/>';
-      s += landscape(seen, open) + terrain(seen, open) + compass(crop);
+      if (atlas) s += landscape(seen, open) + terrain(seen, open) + compass(crop);
       // les chemins entre terres déjà ouvertes
       const ord = order();
       for (let i = 1; i < ord.length; i++) {
@@ -110,7 +110,7 @@
       // la brume : tout ce qui est plus haut que ce qu’on devine
       if (top > 0) s += '<rect x="0" y="0" width="' + W + '" height="' + (top + 90) + '" fill="url(#hatch)" mask="url(#fogMask)" class="c-fog"/>';
       E.passPending().forEach((z) => { s += passArt(z); });
-      s += '</svg><div class="atlas-map-footer"><span>✦ Terre découverte</span><span>◌ Terre à explorer</span><span>⋯ Passage</span></div></div>';
+      s += '</svg>' + (atlas ? '<div class="atlas-map-footer"><span>✦ Terre découverte</span><span>◌ Terre à explorer</span><span>⋯ Passage</span></div>' : '') + '</div>';
       return s;
     }
     /* Paysage continu entre les terres réellement découvertes. */
@@ -390,7 +390,7 @@
       const atlas = document.getElementById("atlasStylesheet") && !document.getElementById("atlasStylesheet").disabled;
       if (!atlas) return g.y / H;
       const seen = open.concat(order().filter((id) => !E.zoneOpen(id)).slice(0, 2));
-      const top = Math.min(...seen.map((id) => GEO[id].y - GEO[id].ry - 60));
+      const top = seen.length ? Math.min(...seen.map((id) => GEO[id].y - GEO[id].ry - 60)) : GEO.lisiere.y - GEO.lisiere.ry - 60;
       const crop = Math.max(0, Math.floor(top - 70));
       return Math.max(0, Math.min(1, (g.y - crop) / (H - crop)));
     }
