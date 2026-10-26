@@ -417,9 +417,9 @@
     function mountCosmos() {
       const cv = $("#skyCanvas");
       if (cv) Sky.mount(cv, { age: S().age, dish: E.cache().signal, decoded: !!S().flags.decoded });
+      else Sky.unmount();
       // la Promesse jouée : la lueur répond, la prochaine fois que le Ciel s’ouvre
       if (cv && S().meta.pulseDue && window.EclatSky && window.EclatSky.trigger) { delete S().meta.pulseDue; setTimeout(() => window.EclatSky.trigger("double_pulse"), 1800); }
-      else Sky.unmount();
       const t = $("#term");
       if (t) t.scrollTop = t.scrollHeight;
     }

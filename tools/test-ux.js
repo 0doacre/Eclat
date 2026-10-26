@@ -348,6 +348,12 @@ async function run() {
   const restored = createEngine(); restored.load(exported);
   ok(restored.state.known.manche && restored.state.age === 8, "Export réimportable sans perte de recettes ni d’âge");
   ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
+  // le ciel du Cosmos est monté (et non démonté aussitôt) : un canvas vide fait un ciel noir
+  p = await page(390, true);
+  await p.evaluate(() => { const { E, U, render } = window.__eclat; E.cache().sky = true; U.tab = "cosmos"; U.cosmosTab = "ciel"; document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-cosmos")); render(true); });
+  await p.waitForFunction(() => !!document.getElementById("skyCanvas"));
+  ok(await p.evaluate(() => window.EclatSky.mounted()), "Le ciel du Cosmos est monté");
+  ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // 0.13.3 : les fenêtres du lancement et du retour d’absence
   for (const width of [390, 320]) {
     // une partie qui revient d’une version précédente, après 400 s, le guide actif : les fenêtres passent une à une, le guide attend
