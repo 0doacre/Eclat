@@ -4186,6 +4186,17 @@
       for (const k in it.r[1]) cost[k] = Math.ceil(it.r[1][k] * part);
       return cost;
     };
+    /* relève tout ce que la Réserve permet, parmi `ids` (ou toutes les ruines), une réparation à la fois ; renvoie combien */
+    E.repairAll = function (ids) {
+      let n = 0;
+      const list = (ids || Object.keys(E.ruins())).filter((id) => item(id));
+      let again = true;
+      while (again) {
+        again = false;
+        for (const id of list) if (S.meta && S.meta.ruins && S.meta.ruins[id] > 0 && E.repair(id).ok) { n++; again = true; }
+      }
+      return n;
+    };
     E.repair = function (id) {
       const it = item(id);
       if (!it || !(S.meta && S.meta.ruins && S.meta.ruins[id] > 0)) return { ok: false, why: "noruin" };
@@ -4200,6 +4211,9 @@
       add(id, 1);
       S.meta.ruins[id] -= 1;
       if (S.meta.ruins[id] <= 0) delete S.meta.ruins[id];
+      // réparer vaut fabriquer : l’étape « fabrique une cabane » est faite (comme pour ce que donne le paquetage)
+      S.made[id] = Math.max(S.made[id] || 0, 1);
+      markSeen(id);
       S.repaired = S.repaired || {};
       const firstRepair = !S.repaired[id];
       S.repaired[id] = (S.repaired[id] || 0) + 1;

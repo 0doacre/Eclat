@@ -10,21 +10,21 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Fait récemment
 
-- **0.22.1** : le Journal (signes, questions, formulaires) et ses ⏎ nommés pour le lecteur d’écran ; `tools/smoke-ui.js`
-  repart d’une sauvegarde déterministe et passe. **0.22.0, tutoriel des boutons** : chaque bouton de l’interface a une info-bulle ou un nom de lecteur
-  d’écran ; `tools/boutons.js` inventorie les 207 boutons dans `docs/boutons.md` (Journal et fiche d’aide compris),
-  `tools/test-boutons.js` échoue si l’un reste muet ; `tools/smoke-ui.js` vérifie le clavier. Trois chapitres nouveaux (Suivre, Épingler, commander d’un coup) et le guide
-  ralenti à une explication toutes les deux ou trois minutes. Textes à relire : `docs/revue/boutons.md`.
-- **0.20** : l’Âge de l’Atome (uranium et galène, par extracteur seulement ; centrale à fission). **0.19** : l’Âge de la Vapeur,
-  pris sur l’Acier. **0.18** : une recette et un nom pour chaque niveau d’extracteur, filtres Extracteurs / Outils / Machines au Carnet.
-  **0.17** : un extracteur par ressource, avec des niveaux. **0.16.2** : Traces dépensées seulement au réveil d’un Semeur.
-  **0.16.1** : fenêtre de première relève en langage d’interface, Mains sûres.
-
-- **Onboarding 0.12.0** (DeepSeek, rebasé par Claude) : lieux à explorer avant un passage (premier cycle seulement),
-  moins d'écrans au début, relève expliquée en chiffres, retours discrets. Textes à relire : `docs/revue/onboarding.md`.
-- **Arbre de connaissance** (0.11.0), **Carnet en onglet** et **Mémoire en arbre** (0.11.1).
+- **0.30.0, le chemin vers une cible dans l'Arbre** : échelle verticale des marches depuis une pastille ou l'objectif du Domaine (fait, en cours, à trouver, bloquée), action directe pour chaque marche (Fabriquer, Récolter, Voir la recette), anonymat strict des recettes inconnues (« Recette à trouver »), « Tout fabriquer » et « Suivre ».
+- **0.29.0, vocabulaire et ouverture** : un mot par chose (Objectif, Nouvelle recette, Requis, Atelier), le choix du guide dans la première fenêtre, plus de bulle d'accueil sur la carte d'objectif. `docs/revue/vocabulaire.md`.
+- **0.28.0, Arbre étape 1** : la frise en pastilles et la feuille de voisinage ; la progression reste l'accueil.
+- **0.27.0, friction** : ruines en un bloc replié avec « Tout réparer », réparer compte comme fabriquer, Comptoir dans le menu.
+- **0.26.0, l'appareil** : bouton Retour, titre de l'onglet, écran allumé, installation, touches 1 à 6.
+- **0.25.0, menu et affichage** : sections, interrupteurs Activé / Désactivé, un seul réglage « Affichage compact », Carnet sur deux colonnes sur téléphone.
+- **0.24.0, le jus** : appuis qui se voient, visiteur qui éclate, curiosités rares en trois paliers (`js/juice.js`).
+- **0.23.x** : économie du Comptoir, guidage, ciel du Cosmos.
+- **Sauvegardes et cache** : verrou d'enregistrement, persistance vérifiée, CI Linux et Windows.
+- **Valeurs** : mesurées, aucun prix changé (`docs/revue/valeurs-debit.md`).
 
 ## Juste après
+
+1. **Arbre, étape 3.** Le filtre **« à portée »** (prêt, presque avec ce qui manque, pas encore) et le point **« nouveau »** sur les pastilles.
+2. **Friction, suite.** Relire le guide par lots avec la règle du vocabulaire ; mémoriser le dernier filtre et la dernière recherche du Carnet ; une quantité libre à côté de ×10 et Max.
 
 ## Plus tard
 

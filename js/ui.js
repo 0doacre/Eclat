@@ -318,18 +318,25 @@
       const l = document.createElement("div"); l.className = "ca"; l.textContent = o.add; $(".cb", cur).appendChild(l);
       return;
     }
-    if (o.add) o = { ic: "🏁", kick: "Étape réussie", title: o.title || "", sub: o.sub };
+    if (o.add) o = { ic: "🏁", kick: "Étape accomplie", title: o.title || "", sub: o.sub };
     if (cur) cur.remove();
     clearTimeout(U.celeT);
     U.celeAt = performance.now();
+    // le palier dit la rareté : 1 une trouvaille, 2 une rareté, 3 un moment qui se raconte
+    const tier = Math.max(1, Math.min(3, o.tier || 1)), P = Jus.palier(tier), col = o.color || D.AGES[S().age].c;
     const el = document.createElement("div");
-    el.className = "cele";
-    el.innerHTML = '<div class="cb">' + (o.id ? icon(o.id, "xl") : '<span class="ic xl">' + o.ic + "</span>") + '<div class="ck">' + esc(o.kick) + '</div><div class="cn">' + esc(o.title) + "</div>" +
+    el.className = "cele t" + tier;
+    el.style.setProperty("--ms", P.ms + "ms");
+    el.style.setProperty("--cc", col);
+    el.innerHTML = (tier >= 3 ? '<div class="crays" aria-hidden="true"></div>' : "") +
+      '<div class="cb">' + (o.id ? icon(o.id, "xl") : '<span class="ic xl">' + o.ic + "</span>") + '<div class="ck">' + esc(o.kick) + '</div><div class="cn">' + esc(o.title) + "</div>" +
       (o.sub ? '<div class="cs">' + esc(o.sub) + "</div>" : "") + "</div>";
     document.body.appendChild(el);
-    sparks(innerWidth / 2, innerHeight * 0.4, 34, D.AGES[S().age].c);
-    vibe([12, 40, 24]);
-    U.celeT = setTimeout(() => el.remove(), 1900);
+    sparks(innerWidth / 2, innerHeight * 0.4, P.sparks, col);
+    if (tier === 1) vibe(P.vibre);
+    else Jus.impact(tier, innerWidth / 2, innerHeight * 0.4, col);
+    for (let k = 0; k < P.fireworks; k++) setTimeout(() => sparks(innerWidth * (0.2 + Math.random() * 0.6), innerHeight * (0.2 + Math.random() * 0.35), 30, ["#ffd36b", "#ff7ad9", "#5aa0ff", "#7fe08a"][k % 4]), 500 + k * 380);
+    U.celeT = setTimeout(() => el.remove(), P.ms);
   }
   function fireworks() {
     if (!motionOK()) return;
@@ -413,10 +420,12 @@
     };
 
     const plainLen = html.replace(/<[^>]+>/g, "").length;
-    const duration = Math.min(4800, Math.max(2500, 2200 + plainLen * 30));
+    const duration = kind === "gold" ? Math.min(7000, Math.max(4500, 3000 + plainLen * 40)) : Math.min(4800, Math.max(2500, 2200 + plainLen * 30));
     t._tm = setTimeout(dismiss, duration);
   }
   function vibe(ms) { if (S().settings.vibe && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* ignoré */ } }
+  /* le jus : l’appui qui se voit, le choc des moments rares (js/juice.js) */
+  const Jus = window.EclatJuice.create({ A, U, S, vibe, motionOK });
   function elCenter(el) {
     if (!el || !el.isConnected) return { x: U.pointer.x || innerWidth / 2, y: U.pointer.y || innerHeight / 2 };
     const r = el.getBoundingClientRect();
@@ -596,6 +605,9 @@
     key: SAVE_KEY, liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
   });
   U.peutEcrire = () => Stk.peutEcrire();
+  /* l’affichage resserré (Domaine et Carnet) : un seul réglage, dans le menu. Les anciennes parties avaient deux réglages. */
+  U.compact = () => { const s = S().settings || {}; return s.compact !== undefined ? !!s.compact : !!(s.domDense || s.carnetDense); };
+  U.setCompact = (on) => { const s = S().settings; s.compact = !!on; delete s.domDense; delete s.carnetDense; };
   function save() {
     if (U.saveLocked || !Stk.peutEcrire()) return false;
     return Stk.ecrire(E.serialize()).ok;
@@ -652,7 +664,7 @@
     modalUrgente({
       persistent: true,
       html: '<div class="kicker">Sauvegarde</div><h2>Remplacer la partie enregistrée ?</h2>' +
-        "<p>La partie de cette page prendra la place de celle de l’autre onglet, qui sera perdue pour le jeu. Elle est d’abord mise de côté dans les copies de secours (☰ → Sauvegardes).</p>" +
+        "<p>La partie de cette page prendra la place de celle de l’autre onglet, qui sera perdue pour le jeu. Elle est d’abord mise de côté dans les copies de secours (Menu → Sauvegardes).</p>" +
         '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Remplacer</button></div>',
       on: {
         back: () => { modalPerimee(); return true; },
@@ -691,7 +703,7 @@
     safeStore.setItem("eclat.persist", JSON.stringify({ etat, t: Date.now() }));
     if (etat !== "accordee" && !S().flags.tip_persist) {
       S().flags.tip_persist = 1;
-      toast("Ton navigateur ne garantit pas la conservation de ta partie. Télécharge une copie de temps en temps (☰ → Sauvegardes).", { key: "persist", p: 2 });
+      toast("Ton navigateur ne garantit pas la conservation de ta partie. Télécharge une copie de temps en temps (Menu → Sauvegardes).", { key: "persist", p: 2 });
     }
     return etat;
   }
@@ -841,7 +853,7 @@
     // un bouton de liste (une ressource, une action, une quantité…) : même chose, retrouvé à son attribut de données
     let fsel = null;
     if (!focus && ae && ae !== document.body && el.contains(ae) && ae.dataset) {
-      const k = ["inv", "g", "slot", "qty", "if", "cf", "cvue", "jt", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
+      const k = ["inv", "g", "slot", "qty", "if", "cf", "jt", "pin", "tree", "track", "cr", "tab2", "filtres"].find((x) => ae.dataset[x] !== undefined);
       if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
     }
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
@@ -947,7 +959,7 @@
     const name = x.ob.k === "craft" ? I[x.ob.id].n : x.ob.n, k = list.filter((y) => y.done).length, a = lists.indexOf(list);
     const where = a === S().age ? "cet âge" : D.AGES[a].n.replace("Âge", "l’âge");
     if (k === list.length) fete({ add: "🏆 " + D.AGES[a].n + " accompli · +" + D.AGE_DONE + " ✨", title: name, sub: "Toutes les étapes de " + where + " · +" + D.AGE_DONE + " ✨ Intuition" });
-    else fete({ add: "🏁 Étape réussie · " + k + " sur " + list.length, title: name, sub: k + " sur " + list.length + " pour " + where });
+    else fete({ add: "🏁 Étape accomplie · " + k + " sur " + list.length, title: name, sub: k + " sur " + list.length + " pour " + where });
   }
   function refresh() {
     const st = S();
@@ -1178,7 +1190,7 @@
    * créés après tout le noyau : chacun reçoit ce dont il a besoin, et rend ce que
    * le noyau et les modules suivants appellent (js/visiteurs.js, js/journal.js…) */
   /* les visiteurs de passage */
-  const Vis = window.EclatVisiteurs.create({ E, A, D, U, esc, fmt, toast, Tuto });
+  const Vis = window.EclatVisiteurs.create({ E, A, D, U, esc, fmt, toast, Tuto, sparks, floater, vibe, Jus });
   const { visiteurTick, visiteurFin } = Vis;
 
   /* le Journal et le Cosmos */
@@ -1204,16 +1216,18 @@
   /* la relève, les dons et la Mémoire des mains */
   const Mem = window.EclatMemoire.create({
     E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render,
-    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
   });
   const {
     intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip
   } = Mem;
 
   /* le menu, les sauvegardes et le compte en ligne */
+  /* le jeu dans l’appareil : le bouton Retour, l’installation, le titre, l’écran allumé, le clavier (js/appareil.js) */
+  const App = window.EclatAppareil.create({ E, U, toast, closeModal, setTab, tabVisible: (t) => tabAvailable(t) });
   const Cpt = window.EclatCompte.create({
     E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
-    backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin
+    backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
   });
   const {
     openMenu, openAccount, downloadSave, showBadSave, showNews, cloudTimers, cloudCheck, promptCapsuleText
@@ -1233,7 +1247,7 @@
 
   /* les écouteurs : le moteur et les gestes du joueur */
   const Ecu = window.EclatEcouteurs.create({
-    E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete, fireworks,
+    App, E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete, fireworks,
     elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge,
     updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML,
     FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
@@ -1276,6 +1290,7 @@
     }
     A.setEnabled(S().settings.sound);
     A.setVolumes(volumes());
+    Jus.press();
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
     setTab("domaine");
@@ -1303,6 +1318,7 @@
       if (!U.persistAsked && S().stats.play >= 600) { U.persistAsked = true; demanderPersistance(); } // après dix minutes de jeu, pas dès l’arrivée
     }, 10000);
     setupSW();
+    App.demarrer();
     cloudTimers();
     setTimeout(cloudCheck, 1500);
     U.applyTheme = applyTheme;

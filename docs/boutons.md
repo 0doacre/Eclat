@@ -1,61 +1,68 @@
 # Les boutons de l’interface
 
-Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844 puis 900×900 pour le Carnet à deux colonnes, service worker bloqué) : ne pas le corriger à la main, relancer l’outil.
+Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 puis 900×900 pour le Carnet à deux colonnes, service worker bloqué) : ne pas le corriger à la main, relancer l’outil.
 
 | | |
 |---|---|
-| Boutons relevés | 207 |
+| Boutons relevés | 212 |
 | Sans explication | 0 |
 | Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |
 
-## Aide (32 boutons, 0 sans explication)
+## Aide (39 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
 | neuve | ✕ | `button[data-m="close"].modal-x` | lecteur d’écran : Fermer |
-| neuve | Auto | `button[data-m="theme"].btn` | fiche Aide |
-| neuve | Désactivé | `button[data-m="largeText"].btn` | fiche Aide |
-| neuve | Activé | `button[data-m="sound"].btn` | fiche Aide |
-| neuve | Activées | `button[data-m="vibe"].btn` | fiche Aide |
-| neuve | Oui | `button[data-m="visiteurs"].btn` | info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine |
-| neuve | Revoir | `button[data-m="tutoAgain"].btn.ghost` | fiche Aide |
-| neuve | Activé | `button[data-m="tuto"].btn` | fiche Aide |
-| neuve | ✦ Mémoire des mains | `button[data-m="mem"].btn` | fiche Aide |
-| neuve | Sauvegardes | `button[data-m="saves"].btn` | fiche Aide |
-| neuve | Compte en ligne | `button[data-m="account"].btn` | fiche Aide |
-| neuve | Comment jouer | `button[data-m="help"].btn` | fiche Aide |
-| neuve | 📰 Nouveautés | `button[data-m="news"].btn` | fiche Aide |
-| neuve | Crédits | `button[data-m="credits"].btn` | fiche Aide |
-| neuve | Tout recommencer | `button[data-m="reset"].btn.ghost` | fiche Aide |
+| neuve | Auto | `button[data-m="theme"].btn` | info-bulle : Changer de thème : clair, sombre ou celui de ton appareil |
+| neuve | Désactivé | `button[data-m="largeText"].btn.sw` | info-bulle : Agrandir les textes de tout le jeu |
+| neuve | Désactivé | `button[data-m="compact"].btn.sw` | info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup |
+| neuve | Activé | `button[data-m="carnet2"].btn.sw` | info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large) |
+| neuve | Désactivé | `button[data-m="ecran"].btn.sw` | info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert |
+| neuve | Activé | `button[data-m="sound"].btn.sw` | info-bulle : Couper ou remettre la musique et les bruitages |
+| neuve | Activé | `button[data-m="vibe"].btn.sw` | info-bulle : Faire vibrer l’appareil lors des actions importantes |
+| neuve | Activé | `button[data-m="visiteurs"].btn.sw` | info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps |
+| neuve | Revoir | `button[data-m="tutoAgain"].btn.ghost` | info-bulle : Revoir les explications du guide depuis le début |
+| neuve | Désactivé | `button[data-m="tuto"].btn.sw` | info-bulle : Afficher ou masquer les explications du guide |
+| neuve | ✦ Mémoire des mains | `button[data-m="mem"].btn` | info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre |
+| neuve | Sauvegardes | `button[data-m="saves"].btn` | info-bulle : Télécharger ta partie, la recharger ou restaurer une copie |
+| neuve | Compte en ligne | `button[data-m="account"].btn` | info-bulle : Retrouver ta partie sur tous tes appareils |
+| neuve | Comment jouer | `button[data-m="help"].btn` | info-bulle : Les mots du jeu et le rôle de chaque écran |
+| neuve | 📰 Nouveautés | `button[data-m="news"].btn` | info-bulle : Ce qui a changé dans cette version |
+| neuve | Crédits | `button[data-m="credits"].btn` | info-bulle : Les icônes, les polices et la musique |
+| neuve | Recommencer la partie | `button[data-m="reset"].btn.ghost` | info-bulle : Effacer ta progression et repartir de zéro |
 | neuve | Fermer | `button[data-m="close"].btn` | fiche Aide |
 | avancée | ✕ | `button[data-m="close"].modal-x` | lecteur d’écran : Fermer |
-| avancée | Auto | `button[data-m="theme"].btn` | fiche Aide |
-| avancée | Désactivé | `button[data-m="largeText"].btn` | fiche Aide |
-| avancée | Activé | `button[data-m="sound"].btn` | fiche Aide |
-| avancée | Activées | `button[data-m="vibe"].btn` | fiche Aide |
-| avancée | Oui | `button[data-m="visiteurs"].btn` | info-bulle : Laisser quelqu’un passer de temps en temps sur le Domaine |
-| avancée | Revoir | `button[data-m="tutoAgain"].btn.ghost` | fiche Aide |
-| avancée | Coupé | `button[data-m="tuto"].btn` | fiche Aide |
-| avancée | ✦ Mémoire des mains | `button[data-m="mem"].btn` | fiche Aide |
-| avancée | Sauvegardes | `button[data-m="saves"].btn` | fiche Aide |
-| avancée | Compte en ligne | `button[data-m="account"].btn` | fiche Aide |
-| avancée | Comment jouer | `button[data-m="help"].btn` | fiche Aide |
-| avancée | 📰 Nouveautés | `button[data-m="news"].btn` | fiche Aide |
-| avancée | Crédits | `button[data-m="credits"].btn` | fiche Aide |
-| avancée | Tout recommencer | `button[data-m="reset"].btn.ghost` | fiche Aide |
+| avancée | Auto | `button[data-m="theme"].btn` | info-bulle : Changer de thème : clair, sombre ou celui de ton appareil |
+| avancée | Désactivé | `button[data-m="largeText"].btn.sw` | info-bulle : Agrandir les textes de tout le jeu |
+| avancée | Désactivé | `button[data-m="compact"].btn.sw` | info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup |
+| avancée | Activé | `button[data-m="carnet2"].btn.sw` | info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large) |
+| avancée | Désactivé | `button[data-m="ecran"].btn.sw` | info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert |
+| avancée | Activé | `button[data-m="sound"].btn.sw` | info-bulle : Couper ou remettre la musique et les bruitages |
+| avancée | Activé | `button[data-m="vibe"].btn.sw` | info-bulle : Faire vibrer l’appareil lors des actions importantes |
+| avancée | Activé | `button[data-m="visiteurs"].btn.sw` | info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps |
+| avancée | Revoir | `button[data-m="tutoAgain"].btn.ghost` | info-bulle : Revoir les explications du guide depuis le début |
+| avancée | Désactivé | `button[data-m="tuto"].btn.sw` | info-bulle : Afficher ou masquer les explications du guide |
+| avancée | ✦ Mémoire des mains | `button[data-m="mem"].btn` | info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre |
+| avancée | 🪙 Le Comptoir | `button[data-m="comptoir"].btn` | info-bulle : Vendre, acheter et répondre aux demandes du Troqueur |
+| avancée | Sauvegardes | `button[data-m="saves"].btn` | info-bulle : Télécharger ta partie, la recharger ou restaurer une copie |
+| avancée | Compte en ligne | `button[data-m="account"].btn` | info-bulle : Retrouver ta partie sur tous tes appareils |
+| avancée | Comment jouer | `button[data-m="help"].btn` | info-bulle : Les mots du jeu et le rôle de chaque écran |
+| avancée | 📰 Nouveautés | `button[data-m="news"].btn` | info-bulle : Ce qui a changé dans cette version |
+| avancée | Crédits | `button[data-m="credits"].btn` | info-bulle : Les icônes, les polices et la musique |
+| avancée | Recommencer la partie | `button[data-m="reset"].btn.ghost` | info-bulle : Effacer ta progression et repartir de zéro |
 | avancée | Fermer | `button[data-m="close"].btn` | fiche Aide |
 
-## Domaine (45 boutons, 0 sans explication)
+## Domaine (44 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
 | neuve | Bois ÂGE 1/15 | `button#ageBtn.age` | info-bulle : Toucher pour voir les étapes de cet âge ; lecteur d’écran : Âge du Bois : étapes de l’âge |
 | neuve | ✦ 1 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | neuve | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
-| neuve | SCÉNARIO Manche ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
-| neuve | ✦ ÉTAPE CLÉ « Prends du bois et retire tout ce qui dépasse. » | `div[data-goto="manche"].grow` | guide (.goal-card) |
-| neuve | Tenter | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
+| neuve | OBJECTIF Manche ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
+| neuve | ✦ NOUVELLE RECETTE « Prends du bois et retire tout ce qui dépasse. » | `div[data-goto="manche"].grow` | guide (.goal-card) |
+| neuve | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
 | neuve | Explorer · Le Grand Chêne | `button[data-exp="lisiere"].btn` | info-bulle : Lancer cette exploration : elle avance toute seule |
 | neuve | (sans mot) | `button[data-harv="lisiere:bois"].gis-ic.hand` | lecteur d’écran : Récolter : Bois |
 | neuve | Bois 🖐️ à la main Tu en as 0 | `button[data-gsheet="lisiere:bois"].gis-body` | lecteur d’écran : Gisement : Bois |
@@ -69,12 +76,11 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844 pui
 | avancée | ✦ +18 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | avancée | 22 | `button#intuBtn.chip.intu` | lecteur d’écran : Intuition ; guide (#intuBtn) |
 | avancée | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
-| avancée | SCÉNARIO Régulateur à boules ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
+| avancée | OBJECTIF Régulateur à boules ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
 | avancée | Arbre | `button[data-arbre-obj=""].gmiles` | info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card) |
 | avancée | Âge de l’Électricité · 0/3 étapes | `button[data-miles=""].gprog-row` | info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card) |
-| avancée | ✦ ÉTAPE CLÉ « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. » | `div[data-goto="ressort"].grow` | guide (.goal-card) |
-| avancée | Tenter | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
-| avancée | 🤏 Vue dense | `button[data-dom-dense=""].chip.ghost` | info-bulle : Voir plus de terres d’un coup, en plus petit |
+| avancée | ✦ NOUVELLE RECETTE « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. » | `div[data-goto="ressort"].grow` | guide (.goal-card) |
+| avancée | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
 | avancée | Compris | `button[data-tip="tip_site"].btn.ghost` | info-bulle : Fermer cette astuce |
 | avancée | Voir : Torche | `button[data-goto="torche"].btn` | guide (.dom-regle.gene) |
 | avancée | (sans mot) | `button[data-harv="mine:fer_min"].gis-ic.hand` | lecteur d’écran : Récolter : Minerai de fer |
@@ -88,7 +94,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844 pui
 | avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
 | avancée | Alimenté ✓ | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
 | avancée | Tout ce qui entre et sort, par ressource | `summary` | info-bulle : Plier ou déplier le tableau |
-| avancée | Bois+19/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
+| avancée | Bois+20/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 | avancée | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | avancée | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | avancée | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
@@ -209,11 +215,11 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844 pui
 | avancée | 10 % +201 | `button[data-m="sell"][data-id="aimant"][data-n="1"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +126 | `button[data-m="sell"][data-id="bobine"][data-n="10"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
 
-## Atelier · filtres (9 boutons, 0 sans explication)
+## Atelier · filtres (10 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
-| avancée | Par âgePlus nombreuses⚡ Flux actifs⚠️ En déficitNom (A → Z)Dernières trouvées | `select#isort` | info-bulle : Trier les ressources ; lecteur d’écran : Trier les ressources |
+| avancée | Par âge Plus nombreuses ⚡ Flux actifs ⚠️ En déficit Nom (A → Z) Dernières trouvées | `select#isort` | info-bulle : Trier les ressources ; lecteur d’écran : Trier les ressources |
 | avancée | Tout 46 | `button[data-if="tout"]` | info-bulle : Toutes tes ressources |
 | avancée | En flux 12 | `button[data-if="flow"]` | info-bulle : Celles qui entrent ou sortent en ce moment |
 | avancée | 🪨 Brutes 12 | `button[data-if="res"]` | info-bulle : Les ressources brutes, récoltées telles quelles |
@@ -222,8 +228,9 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844 pui
 | avancée | ♥ Favoris 0 | `button[data-if="fav"]` | info-bulle : Celles que tu as marquées d’un ♥ |
 | avancée | Inutilisées 4 | `button[data-if="new"]` | info-bulle : Celles qu’aucune recette connue n’utilise encore |
 | avancée | À tenter 0 | `button[data-if="try"]` | info-bulle : Les ressources étudiées qui cachent encore une recette |
+| avancée | ✕ | `button.toast-x` | lecteur d’écran : Fermer |
 
-## Arbre (6 boutons, 0 sans explication)
+## Arbre (7 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -231,21 +238,14 @@ Fichier généré par `node tools/boutons.js` (Playwright, firefox, 390×844 pui
 | avancée | Objectif | `button[data-arb="centre"].btn` | info-bulle : Ton objectif du moment, et ce qu’il demande |
 | avancée | (sans mot) | `button[data-arb="chercher"].btn.ghost` | lecteur d’écran : Chercher dans l’arbre |
 | avancée | ? Recette à découvrir À découvrir Objectif | `button[data-arbsel="f1"][data-arbn="f1"].arb-card.fantome` | info-bulle : Ouvrir cette branche : ses ingrédients et ses usages |
-| avancée | MancheDéjà fabriqué | `button[data-arbsel="manche"][data-arbn="manche"].arb-card.allume` | info-bulle : Ouvrir cette branche : ses ingrédients et ses usages |
-| avancée | BoisRessource découverte | `button[data-arbsel="bois"][data-arbn="bois"].arb-card.vu` | info-bulle : Ouvrir cette branche : ses ingrédients et ses usages |
+| avancée | Bois | `button[data-arbsel="bois"][data-arbn="bois"].arb-pas.vu` | info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Bois, ressource découverte |
+| avancée | Charbon | `button[data-arbsel="charbon"][data-arbn="charbon"].arb-pas.allume` | info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Charbon, déjà fabriqué |
+| avancée | ?? | `button[data-arbsel="f1"][data-arbn="f1"].arb-pas.fantome` | info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Recette à découvrir, à découvrir, objectif |
 
-## Arbre · une branche (1 boutons, 0 sans explication)
-
-| Partie | Bouton | Repère | Expliqué par |
-|---|---|---|---|
-| avancée | ← Les âges | `button[data-arb="retour"].btn.ghost` | info-bulle : Revenir en arrière dans l’arbre |
-
-## Carnet (21 boutons, 0 sans explication)
+## Carnet (19 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
-| avancée | ⊞ 2 col. | `button[data-cvue="cols"].btn.ghost` | info-bulle : Revenir à la vue en 1 colonne |
-| avancée | 🤏 Compact | `button[data-cvue="dense"].btn.ghost` | info-bulle : Voir plus de recettes à l’écran, en plus petit |
 | avancée | ×1 | `button[data-qty="1"].chipq` | info-bulle : Un seul exemplaire |
 | avancée | Apprises | `button[data-cf="tout"]` | info-bulle : Toutes les recettes que tu connais |
 | avancée | Prêtes | `button[data-cf="pret"]` | info-bulle : Celles que ta Réserve couvre entièrement, pièces comprises |

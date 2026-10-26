@@ -39,11 +39,9 @@
     /* ------------------------------------------------------------ la page */
     function view() {
       const st = S(), zs = openZones().reverse();
-      const dense = !!(U.domDense !== undefined ? U.domDense : st.settings && st.settings.domDense);
-      U.domDense = dense;
+      const dense = U.compact();
       let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
       h += api.top();
-      if (zs.length > 1) h += '<div class="dom-ctrls"><button class="chip ghost" data-dom-dense aria-pressed="' + dense + '" title="Voir plus de terres d’un coup, en plus petit">' + (dense ? "↕️ Vue normale" : "🤏 Vue dense") + "</button></div>";
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
       const all = U.domAll || zs.length <= SHOWN + 1;
@@ -82,6 +80,22 @@
         "</div>";
     }
 
+    /* les ruines d’une terre ou des machines : un seul bloc replié, sous ce qui se récolte. Ouvert d’emblée quand
+     * on peut déjà réparer quelque chose ; un bouton répare tout ce que la Réserve permet. */
+    function ruinsBlock(key, ids) {
+      const st = S(), ruins = E.ruins();
+      ids = ids.filter((id) => ruins[id] > 0);
+      if (!ids.length) return "";
+      const can = (id) => Object.keys(E.ruinCost(id)).every((k) => (st.inv[k] || 0) >= E.ruinCost(id)[k]);
+      const total = ids.reduce((n, id) => n + ruins[id], 0), ready = ids.filter(can);
+      ids = ready.concat(ids.filter((id) => !ready.includes(id)));
+      const open = U.ruinesOpen && U.ruinesOpen[key] !== undefined ? U.ruinesOpen[key] : ready.length > 0;
+      return '<details class="dom-ruines" data-ruines="' + key + '"' + (open ? " open" : "") + '><summary data-ruines-sum="' + key + '">🛖 ' + total + (total > 1 ? " ruines" : " ruine") + " à relever" +
+        (ready.length ? ' · <b>' + ready.length + " à portée</b>" : "") + "</summary>" +
+        (ready.length > 1 ? '<div class="dom-ruines-all"><button class="btn small pri" data-repair-all="' + ids.join(",") + '" title="Réparer tout ce que ta Réserve permet de relever">Tout réparer</button></div>' : "") +
+        ids.map((id) => ruinHTML(id, ruins[id])).join("") + "</details>";
+    }
+
     /* la règle de la terre, en une ligne : ce qui la distingue des autres */
     function regleHTML(z) {
       const r = E.regle(z);
@@ -99,13 +113,9 @@
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
       const decor = DECORS[z] ? ' style="--decor:url(' + new URL('assets/terres/' + z + '-decor.webp', document.baseURI).href + ')"' : "";
       let h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
-      const ruins = E.ruins();
-      for (const id in ruins) {
-        const it = I[id];
-        if (it && it.t === "ext" && E.extZones(id)[0] === z && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
-      }
       h += regleHTML(z);
       deps.forEach((d) => { h += gisHTML(z, d); });
+      h += ruinsBlock(z, Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "ext" && E.extZones(id)[0] === z));
       if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ces ressources nécessitent des extracteurs pour être récoltées.</p>';
       void st;
       return h + "</section>";
@@ -142,11 +152,11 @@
       let btns = "";
       if (d.hand) {
         const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;
-        btns += '<button class="mini harvest' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter de récolter : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■ Arrêter" : "▶ Récolter") + "</button>";
+        btns += '<button class="mini harvest' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter de récolter : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + '<span class="bi">' + (on ? "■" : "▶") + '</span><span class="bl"> ' + (on ? "Arrêter" : "Récolter") + "</span>" + "</button>";
       }
       if (ch) {
         const free = E.freeExt(ch.t), can = free >= 1 || E.plan(ch.t, 1).ok;
-        btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '">+ ' + esc(nm(ch.t, 1)) + "</button>";
+        btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
       }
       return '<div class="gis" data-gis="' + key + '">' +
         '<button class="gis-ic' + (d.hand ? " hand" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + icon(res) + "</button>" +
@@ -199,11 +209,7 @@
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
       h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Commandes compatibles accélérées par les machines, en complément des mains.</p>';
-      const ruins = E.ruins();
-      for (const id in ruins) {
-        const it = I[id];
-        if (it && it.t === "mach" && ruins[id] > 0) h += ruinHTML(id, ruins[id]);
-      }
+      h += ruinsBlock("machines", Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "mach"));
 
       h += '<h3 class="sub" style="margin-top:8px">Commandes en cours</h3>';
       if (hi && hi.jobs.length) {
@@ -779,7 +785,6 @@
       }
       if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
-      if (t.closest("[data-dom-dense]")) { const next = !(U.domDense !== undefined ? U.domDense : S().settings.domDense); U.domDense = next; S().settings.domDense = next; A.click(); vibe(8); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
         const pid = b.dataset.feed;
         E.domSite(pid, !E.siteOn(pid));
@@ -803,6 +808,21 @@
       }
       if ((b = t.closest("[data-proj-scene]"))) {
         if (typeof api.openStillnessScene === "function") api.openStillnessScene();
+        return true;
+      }
+      if ((b = t.closest("[data-ruines-sum]"))) {
+        // le bloc se plie et se déplie sans être redessiné ; on retient l’état pour le prochain dessin
+        const d = b.closest("details"), k = b.dataset.ruinesSum;
+        U.ruinesOpen = U.ruinesOpen || {};
+        U.ruinesOpen[k] = !d.open;
+        return false;
+      }
+      if ((b = t.closest("[data-repair-all]"))) {
+        const ids = b.dataset.repairAll.split(",").filter((id) => I[id]);
+        const n = E.repairAll(ids);
+        if (n > 0) { A.init(); A.click(); vibe([10, 30, 10]); toast("🛖 " + n + (n > 1 ? " ruines relevées." : " ruine relevée."), { key: "repair" }); }
+        else { A.fail(0); toast("Rien à relever pour l’instant : il manque des matières.", { key: "repair" }); }
+        render(true);
         return true;
       }
       if ((b = t.closest("[data-repair]"))) {
@@ -847,7 +867,7 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.domDense, Object.values(st.dom.ext).map((e) => e.on).join(),
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
     }
 

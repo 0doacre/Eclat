@@ -342,7 +342,213 @@
     return { centre: n, amont: nodes(L.amont), aval: nodes(L.aval) };
   }
 
-  const Arbre = { graphe, mise_en_page, rendu, liens, voisinage, bandeA, centre, sig, catalogue, carrefours, loin, hash, NODE, COLS, PX, PY, CARREFOUR };
+  /* ------------------------------------------------------------ la route vers une cible
+   * L’échelle verticale des marches, de la plus profonde à la cible.
+   * Données : E.plan, E.nextStep, E.blocker, Arb.graphe.
+   * Règle absolue : aucun nom, icône ni identifiant d’une recette inconnue ne fuite. */
+  function route(E, D, targetId, times) {
+    times = Math.max(1, Math.floor(times || 1));
+    const S = E.state, I = D.ITEMS;
+    const it = I[targetId];
+    if (!it) return null;
+
+    const targetKnown = !!S.known[targetId];
+    const targetSeen = !!S.seen[targetId];
+    const estInconnu = (id) => !S.known[id] && !S.seen[id];
+
+    const p = targetKnown ? E.plan(targetId, times) : { ok: false, id: targetId, times, steps: [], missing: { [targetId]: times }, blocked: {}, locked: [targetId], used: {} };
+
+    const marches = [];
+    let fantomeSeq = 0;
+
+    function besoinRequis(id, b) {
+      if (!b || b.why === "owned") return null;
+      const st = E.blockStation ? E.blockStation(id, b) : null;
+      const stepIt = I[id];
+      const g = stepIt && stepIt.r && D.GESTES ? D.GESTES[stepIt.r[0]] : null;
+      const det = b.why === "heat" ? (b.heat + " °C") : b.why === "lvl" ? ("niveau " + b.lvl) : g ? ("pour " + g.v) : "";
+      const cibleStation = st && I[st] ? I[st].n : (g ? ("action " + g.n) : "station");
+      return "Requis : " + cibleStation + (det ? " (" + det + ")" : "");
+    }
+
+    // 1. Matières premières nécessaires (ressources sans recette ou récoltables)
+    const allRes = new Set();
+    Object.keys(p.missing).forEach((k) => { if (I[k] && !I[k].r) allRes.add(k); });
+    Object.keys(p.used).forEach((k) => { if (I[k] && !I[k].r) allRes.add(k); });
+
+    const resList = Array.from(allRes).sort((a, b) => (I[a].a || 0) - (I[b].a || 0) || I[a].n.localeCompare(I[b].n, "fr"));
+
+    for (const resId of resList) {
+      const resIt = I[resId];
+      const needed = (p.used[resId] || 0) + (p.missing[resId] || 0);
+      const have = S.inv[resId] || 0;
+      const miss = p.missing[resId] || 0;
+      const zid = E.RES_ZONE ? E.RES_ZONE[resId] : null;
+      const zoneFermee = zid && E.zoneOpen && !E.zoneOpen(zid);
+      const inc = estInconnu(resId);
+
+      let etat = "en_cours";
+      let action = "recolter";
+      let requis = null;
+
+      if (miss <= 0 || have >= needed) {
+        etat = "fait";
+        action = "recolter";
+      } else if (zoneFermee) {
+        etat = "bloquee";
+        action = "voir";
+        requis = "Requis : Nouvelle terre";
+      } else {
+        etat = "en_cours";
+        action = "recolter";
+      }
+
+      marches.push({
+        cle: inc ? "f" + (++fantomeSeq) : resId,
+        id: inc ? undefined : resId,
+        anon: inc,
+        nom: inc ? "Ressource à découvrir" : resIt.n,
+        ic: inc ? "?" : resIt.ic,
+        type: "res",
+        quantite: needed,
+        enStock: have,
+        manque: miss,
+        etat,
+        action,
+        requis
+      });
+    }
+
+    // 2. Recettes inconnues requises (p.locked, hors cible)
+    for (const lockedId of p.locked) {
+      if (lockedId === targetId) continue;
+      marches.push({
+        cle: "f" + (++fantomeSeq),
+        anon: true,
+        nom: "Recette à trouver",
+        ic: "?",
+        type: "craft",
+        quantite: p.missing[lockedId] || 1,
+        enStock: 0,
+        manque: p.missing[lockedId] || 1,
+        etat: "a_trouver",
+        action: "voir",
+        requis: null
+      });
+    }
+
+    // 3. Pièces intermédiaires déjà en stock (p.used pour les crafts hors p.steps)
+    const stepsItems = new Set(p.steps.map((s) => s[0]));
+    const usedCrafts = Object.keys(p.used).filter((k) => I[k] && I[k].r && k !== targetId && !stepsItems.has(k))
+      .sort((a, b) => (I[a].a || 0) - (I[b].a || 0) || I[a].n.localeCompare(I[b].n, "fr"));
+
+    for (const usedId of usedCrafts) {
+      const inc = estInconnu(usedId);
+      marches.push({
+        cle: inc ? "f" + (++fantomeSeq) : usedId,
+        id: inc ? undefined : usedId,
+        anon: inc,
+        nom: inc ? "Recette à trouver" : I[usedId].n,
+        ic: inc ? "?" : I[usedId].ic,
+        type: "craft",
+        quantite: p.used[usedId],
+        enStock: S.inv[usedId] || 0,
+        manque: 0,
+        etat: "fait",
+        action: "voir",
+        requis: null
+      });
+    }
+
+    // 4. Étapes de fabrication (p.steps)
+    for (const [stepId, count] of p.steps) {
+      const isTarget = stepId === targetId;
+      const stepIt = I[stepId];
+      const b = p.blocked[stepId] || (E.blocker && E.blocker(stepId));
+      const inc = estInconnu(stepId);
+      let etat = "en_cours";
+      let action = "fabriquer";
+      let requis = null;
+
+      if (b && b.why !== "owned") {
+        etat = "bloquee";
+        action = "voir";
+        requis = besoinRequis(stepId, b);
+      } else if (E.isUnique && E.isUnique(stepIt) && (S.made[stepId] || 0) > 0) {
+        etat = "fait";
+        action = "voir";
+      } else if (!isTarget && (S.inv[stepId] || 0) >= count) {
+        etat = "fait";
+        action = "voir";
+      } else {
+        etat = "en_cours";
+        action = "fabriquer";
+      }
+
+      marches.push({
+        cle: inc ? "f" + (++fantomeSeq) : stepId,
+        id: inc ? undefined : stepId,
+        anon: inc,
+        nom: inc ? "Recette à trouver" : stepIt.n,
+        ic: inc ? "?" : stepIt.ic,
+        type: "craft",
+        quantite: count,
+        enStock: S.inv[stepId] || 0,
+        manque: Math.max(0, count - (S.inv[stepId] || 0)),
+        etat,
+        action,
+        requis,
+        isTarget
+      });
+    }
+
+    // 5. Cible finale si absente de p.steps (recette inconnue ou ressource brute)
+    if (!stepsItems.has(targetId)) {
+      const b = targetKnown ? (E.blocker && E.blocker(targetId)) : null;
+      const inc = estInconnu(targetId);
+      let etat = targetKnown ? (b ? "bloquee" : "en_cours") : "a_trouver";
+      let requis = b ? besoinRequis(targetId, b) : null;
+      marches.push({
+        cle: inc ? "f" + (++fantomeSeq) : targetId,
+        id: inc ? undefined : targetId,
+        anon: inc,
+        nom: inc ? (it.r ? "Recette à trouver" : "Ressource à découvrir") : it.n,
+        ic: inc ? "?" : it.ic,
+        type: it.r ? "craft" : "res",
+        quantite: times,
+        enStock: S.inv[targetId] || 0,
+        manque: times,
+        etat,
+        action: etat === "bloquee" ? "voir" : (targetKnown ? (it.r ? "fabriquer" : "recolter") : "voir"),
+        requis,
+        isTarget: true
+      });
+    }
+
+    const faites = marches.filter((m) => m.etat === "fait").length;
+    const canLaunch = targetKnown && !E.blocker(targetId) && !p.locked.length && !Object.keys(p.blocked).length && (p.ok || !(E.isScaled && E.isScaled(it)));
+
+    const incCible = estInconnu(targetId);
+    const cible = {
+      id: incCible ? undefined : targetId,
+      anon: incCible,
+      nom: incCible ? (it.r ? "Recette à trouver" : "Ressource à découvrir") : it.n,
+      ic: incCible ? "?" : it.ic,
+      times
+    };
+
+    return {
+      cible,
+      times,
+      marches,
+      compte: { total: marches.length, faites },
+      pret: !!p.ok,
+      peutToutFabriquer: canLaunch,
+      suivi: !!(S.track && S.track.id === targetId)
+    };
+  }
+
+  const Arbre = { graphe, mise_en_page, rendu, liens, voisinage, bandeA, centre, sig, catalogue, carrefours, loin, hash, NODE, COLS, PX, PY, CARREFOUR, route };
   if (typeof module !== "undefined" && module.exports) module.exports = Arbre;
   root.EclatArbre = Arbre;
 })(typeof globalThis !== "undefined" ? globalThis : this);

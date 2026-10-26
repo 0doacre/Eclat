@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.23.1";
+  D.VERSION = "0.30.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -922,17 +922,17 @@
 
   /* ---------------------------------------------------- CURIOSITÉS (EASTER EGGS) */
   D.EASTER = {
-    poudre_rouge: { n: "Poudre rouge", ic: "🔴", desc: "Une poudre rouge, qui crépite entre tes doigts." },
-    coeur: { n: "Quart de cœur", ic: "❤️", desc: "Un fragment de réceptacle. Tu te sens un peu plus solide." },
-    anneau: { n: "Anneau tout simple", ic: "💍", desc: "Au fond du gué, un anneau très lourd pour sa taille." },
-    d20: { n: "Dé à vingt faces", ic: "🎲", desc: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20." },
-    fouet: { n: "Fouet de cuir", ic: "🪢", desc: "Une corde tressée la nuit, qui claque toute seule près des chandelles." },
-    tuyau: { n: "Tuyau vert", ic: "🟩", desc: "Un tuyau vert dépasse de la roche dans les Profondeurs." },
-    survivant: { n: "La demi-heure", ic: "⏱️", desc: "Tes mains tournent toutes seules depuis une demi-heure. Tu n’as jamais été aussi efficace, ni aussi seul." },
-    zera: { n: "Événement", ic: "🎙️", desc: "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE." },
-    squeeze: { n: "Le million", ic: "📦", desc: "Un million. Quelqu’un, quelque part, a dû appuyer très fort sur un bouton." },
-    wtc: { n: "On coupe ?", ic: "✂️", desc: "Une transition sèche. On coupe ?" },
-    konami: { n: "Haut, haut, bas, bas", ic: "⭐", desc: "Trente étoiles de plus brillent dans la nuit." }
+    poudre_rouge: { n: "Poudre rouge", ic: "🔴", tier: 3, desc: "Une poudre rouge, qui crépite entre tes doigts." },
+    coeur: { n: "Quart de cœur", ic: "❤️", tier: 3, desc: "Un fragment de réceptacle. Tu te sens un peu plus solide." },
+    anneau: { n: "Anneau tout simple", ic: "💍", tier: 3, desc: "Au fond du gué, un anneau très lourd pour sa taille." },
+    d20: { n: "Dé à vingt faces", ic: "🎲", tier: 3, desc: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20." },
+    fouet: { n: "Fouet de cuir", ic: "🪢", tier: 2, desc: "Une corde tressée la nuit, qui claque toute seule près des chandelles." },
+    tuyau: { n: "Tuyau vert", ic: "🟩", tier: 2, desc: "Un tuyau vert dépasse de la roche dans les Profondeurs." },
+    survivant: { n: "La demi-heure", ic: "⏱️", tier: 2, desc: "Tes mains tournent toutes seules depuis une demi-heure. Tu n’as jamais été aussi efficace, ni aussi seul." },
+    zera: { n: "Événement", ic: "🎙️", tier: 2, desc: "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE." },
+    squeeze: { n: "Le million", ic: "📦", tier: 2, desc: "Un million. Quelqu’un, quelque part, a dû appuyer très fort sur un bouton." },
+    wtc: { n: "On coupe ?", ic: "✂️", tier: 2, desc: "Une transition sèche. On coupe ?" },
+    konami: { n: "Haut, haut, bas, bas", ic: "⭐", tier: 2, desc: "Trente étoiles de plus brillent dans la nuit." }
   };
 
   /* ------------------------------------------------------- GRANDS ŒUVRES */
@@ -1288,6 +1288,18 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🪜 Le chemin vers une cible : depuis une pastille de l’Arbre ou l’objectif du Domaine, le bouton « Chemin » ouvre toute la route jusqu’à l’objet en une échelle de marches (ce qui est fait, en cours, bloqué ou à trouver), avec l’action directe pour chaque marche, et « Tout fabriquer ».",
+    "🏷️ Des mots d’interface, un par chose : la carte du Domaine s’appelle « Objectif » (plus « Scénario »), son bouton « Atelier » (plus « Tenter »), le badge d’une recette à trouver « Nouvelle recette » (plus « Étape clé »), et ce qu’il faut avoir s’écrit « Requis ». Les premières explications du guide sont plus courtes.",
+    "👋 Au premier réveil, le choix du guide se fait dans la fenêtre d’ouverture : « Ouvrir les yeux » ou « Sans guide ». La bulle d’accueil qui venait se poser sur ton objectif disparaît.",
+    "🌳 L’Arbre se lit en pastilles : chaque âge devient une frise d’icônes (matières vues, recettes trouvées, pistes à découvrir, ton objectif), plus facile à parcourir que des cartes. Toucher une pastille ouvre une feuille qui monte du bas avec ce que la recette utilise et ce qu’elle sert à fabriquer ; l’arbre reste visible dessous. La progression reste l’accueil de l’Arbre.",
+    "🛖 Après une relève, les ruines tiennent dans un seul bloc replié sous ce qui se récolte, au lieu d’une carte par ruine qui repoussait les gisements. Quand tu peux relever quelque chose, le bloc s’ouvre et « Tout réparer » relève tout ce que ta Réserve permet. Réparer une ruine compte maintenant comme fabriquer l’objet : l’étape « fabrique une cabane » ne te redemande plus ce que tu viens de relever.",
+    "🪙 Le Comptoir est dans le menu : tu y accèdes de n’importe quel écran.",
+    "📱 Le jeu se tient mieux dans l’appareil : sur téléphone, le bouton Retour ferme la fenêtre ouverte, puis ramène au Domaine, et ne quitte qu’au second appui. L’onglet affiche (2) dans son titre quand une commande ou une exploration se termine pendant que le jeu est caché. Le menu propose « Garder l’écran allumé » et, quand l’appareil le permet, « Installer le jeu ». Sur ordinateur, les touches 1 à 6 changent d’écran.",
+    "⚙️ Le menu est réorganisé en sections (Affichage, Son et vibrations, Jeu, Ma partie, Aide), avec les mêmes interrupteurs partout (Activé, Désactivé). Le thème sombre s’appelle « Sombre », le tutoriel « Guide », et « Tout recommencer » devient « Recommencer la partie ».",
+    "🤏 L’affichage compact se règle dans le menu, pour le Domaine et le Carnet à la fois, et il resserre vraiment : chaque gisement tient sur une ligne basse, ses boutons ne gardent que leur symbole. Les boutons de bascule des pages disparaissent.",
+    "⊞ Le Carnet sur deux colonnes marche enfin sur téléphone : les fiches se resserrent pour tenir côte à côte.",
+    "✨ Plus de punch : un appui sur un bouton se voit (il s’enfonce, un anneau part du doigt) ; le visiteur attrapé fait « pop » et éclate en étincelles, avec son gain qui monte ; et les raretés ont un vrai moment. Une curiosité trouvée prend l’écran : rayons, secousse, coup sourd et vibrations, d’autant plus fort qu’elle est rare (la poudre rouge, le quart de cœur, le dé et l’anneau en haut de l’échelle). « Réduire les animations » garde le message et supprime mouvement et secousses.",
+    "🌌 Le ciel du Cosmos s’affiche de nouveau : il restait noir, comme si le canvas avait été démonté aussitôt monté.",
     "🎯 Le guide ne se perd plus : fabriquer en avance le tout dernier objet laisse les étapes qui restent à faire, et une pièce déjà dans ta Réserve n’est plus demandée comme une étape.",
     "⛏️ Quand l’extracteur d’une matière est à toi mais ne la récolte pas, l’objectif le dit : il propose de le poser, ou de le relancer s’il est arrêté.",
     "🪙 Les écus gagnés au Comptoir pèsent moins lourd à la relève : ils deviennent des Traces à plein tarif jusqu’à ce que tes passages ont rapporté, puis à un quart. Le calcul s’affiche au Comptoir et dans la fenêtre de relève.",

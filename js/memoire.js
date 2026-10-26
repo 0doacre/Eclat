@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal,
-      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -25,11 +25,13 @@
         (!isLibere && st.cycle > 1 && uiSigne("eveil") ? '<p class="scene-signe" style="opacity:0;animation:fadeup 1.2s 0.1s forwards">' + uiSigne("eveil", lieu) + "</p>" : "") +
         lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + recitInline(l, lieu) + "</p>").join("") +
         (!isLibere ? ornementHTML(lieu, 0.3 + lines.length * 1.1) : "") +
-        '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>';
+        '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button>' +
+        (!isLibere && st.cycle === 1 && !st.stats.crafts ? '<button class="btn ghost wide" data-m="sansguide" title="Jouer sans les bulles d’explication (réactivable dans le Menu)">Sans guide</button>' : "") + "</div>";
       openModal({
         persistent: true,
         html: html(),
         refresh: html,
+        on: { sansguide: () => { Tuto.setEnabled(false); } },
         onClose: () => {
           st.introSeen = true; st.flags.news = null; st.flags.ver = D.VERSION; save(); A.init();
           if (st.flags.capsuleMsg) {
@@ -204,7 +206,7 @@
           (isLibere
             ? "<p>Tu gagnes <b>" + totalGain + " ✦ Trace" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg
             : leftHTML(totalGain, ecus, ecusTr)) +
-          '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (☰ → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
+          '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (Menu → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
           releveExtrasHTML() +
           '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button>' + releveBtnSigne() + '</div>',
         onOpen: armTrait,

@@ -145,16 +145,17 @@ async function run() {
     await p.locator('[data-arb="ensemble"]').click();
     const mesure = await p.evaluate(() => {
       const v = document.getElementById('arbre'), r = v.getBoundingClientRect();
-      const cards = [...v.querySelectorAll('details[open] .arb-card')];
+      const cards = [...v.querySelectorAll('details[open] .arb-pas')];
       return { largeur:v.clientWidth, contenu:v.scrollWidth, ecran:innerWidth,
         fin:r.bottom, nav:document.getElementById('tabs').getBoundingClientRect().top,
-        polices:cards.map(c=>parseFloat(getComputedStyle(c.querySelector('.arb-l')).fontSize)),
+        polices:cards.map(c=>parseFloat(getComputedStyle(c.querySelector('.arb-pas-n')).fontSize)),
         texteCoupe:cards.some(c=>c.scrollWidth>c.clientWidth),
         cibles:[...document.querySelectorAll('.arb-barre button')].map(c=>{const b=c.getBoundingClientRect();return Math.min(b.width,b.height);}) };
     });
     ok(mesure.contenu===mesure.largeur && mesure.largeur<=width, nom+' : contenu à la largeur du téléphone');
     ok(mesure.fin<=mesure.nav+1,nom+' : aucun contenu sous les onglets');
-    ok(mesure.polices.length>0 && mesure.polices.every(n=>n>=14) && !mesure.texteCoupe,nom+' : noms lisibles sans troncature');
+    ok(mesure.polices.length>0 && mesure.polices.every(n=>n>=(large?14:12)) && !mesure.texteCoupe,nom+' : noms des pastilles lisibles (12 px, 14 en grand texte)');
+    ok(await p.evaluate(()=>[...document.querySelectorAll('details[open] .arb-pas')].every(b=>(b.getAttribute('aria-label')||'').length>3)),nom+' : le nom entier et l’état sont dans le nom accessible de chaque pastille');
     ok(mesure.cibles.every(n=>n>=43.9),nom+' : cibles de 44 px');
     // La molette reste un déplacement vertical, même avec une composante latérale.
     await p.locator('#arbre').evaluate(v=>{v.scrollTop=0;});
@@ -164,14 +165,14 @@ async function run() {
     await p.locator('#arbres [data-arbsel="bobine"]').click();
     ok(await p.locator('.arb-selection .arb-l').innerText()==='Bobine de cuivre',nom+' : sélection depuis la recherche');
     ok(await p.locator('#arb-ingredients').count()===1,nom+' : ingrédients présents');
-    ok(await p.evaluate(()=>{const v=document.getElementById('arbre'),c=v.querySelector('.sel');return v.scrollWidth===v.clientWidth&&c.getBoundingClientRect().width<=v.clientWidth&&getComputedStyle(v).touchAction==='pan-y';}),nom+' : branche contenue et geste vertical natif');
-    await p.locator('[data-arbsel="fil_cuivre"]').first().click();
+    ok(await p.evaluate(()=>{const v=document.getElementById('arbre'),m=document.querySelector('#modal .modal-box'),c=m.querySelector('.sel');return v.scrollWidth===v.clientWidth&&m.scrollWidth<=m.clientWidth&&c.getBoundingClientRect().width<=m.clientWidth&&getComputedStyle(v).touchAction==='pan-y';}),nom+' : feuille contenue et geste vertical natif');
+    await p.waitForTimeout(500);await p.locator('#modal [data-arbsel="fil_cuivre"]').first().click();
     ok((await p.locator('.arb-selection .arb-l').innerText()).includes('Fil de cuivre'),nom+' : navigation vers un ingrédient');
     await p.locator('[data-arb="retour"]').click();
     ok((await p.locator('.arb-selection .arb-l').innerText()).includes('Bobine'),nom+' : retour dans la branche');
     // Un redimensionnement conserve la recette choisie et ne crée pas d’axe horizontal.
     await p.setViewportSize({width:width===320?430:320,height:700});await p.waitForTimeout(100);
-    ok(await p.evaluate(()=>{const v=document.getElementById('arbre');return v.scrollWidth===v.clientWidth&&v.querySelector('.sel').dataset.arbn==='bobine';}),nom+' : largeur recalculée après redimensionnement');
+    ok(await p.evaluate(()=>{const v=document.getElementById('arbre');return v.scrollWidth===v.clientWidth&&document.querySelector('#modal .sel').dataset.arbn==='bobine';}),nom+' : largeur recalculée après redimensionnement');
     ok(!p.errors.length,p.errors.join('\n'));await p.context().close();
   }
   // Accessibilité (0.15.8) : le clavier, les noms, la Carte, l’alternative à l’appui long, et les contrastes mesurés.
@@ -242,14 +243,16 @@ async function run() {
   await p.locator("#arbres button").first().click();
   await p.waitForTimeout(500);
   ok(await p.evaluate(() => document.querySelector(".arb-card.sel").dataset.arbn === "bobine" && document.querySelector(".arb-chercher").hidden && !!document.querySelector("#arb-ingredients")), "Arbre : toucher le résultat ouvre la branche");
+  await p.waitForTimeout(500); await p.locator('#modal .modal-x').click(); await p.waitForTimeout(300);
   await p.locator('[data-arb="chercher"]').click(); await p.locator('#arbq').fill('manche');
   await p.locator('#arbres [data-arbsel="manche"]').click();
   const nbUsages = await p.evaluate(() => window.EclatArbre.voisinage(window.__eclat.U.arbreG, 'manche').aval.filter(n=>n.etat!=='fantome').length);
-  ok(nbUsages > 6 && await p.locator('[aria-labelledby="arb-usages"] .arb-card').count() === 6, 'Arbre : les nombreux usages commencent par six cartes');
+  ok(nbUsages > 8 && await p.locator('[aria-labelledby="arb-usages"] .arb-pas').count() === 8, 'Arbre : les nombreux usages commencent par huit pastilles');
   await p.locator('[data-arb="tout"]').click();
-  ok(await p.locator('[aria-labelledby="arb-usages"] .arb-card').count() === nbUsages, 'Arbre : tous les usages connus restent accessibles');
+  ok(await p.locator('[aria-labelledby="arb-usages"] .arb-pas').count() === nbUsages, 'Arbre : tous les usages connus restent accessibles');
   await p.evaluate(() => { const b=document.createElement('button'); b.dataset.arbreObj=''; document.querySelector('#views').appendChild(b);b.click(); });
   ok(await p.evaluate(() => { const n=window.__eclat.U.arbreG.noeuds.find(n=>n.objectif);return !!n&&document.querySelector('.arb-card.sel').dataset.arbn===n.cle; }), 'Objectif → arbre : la bonne carte est sélectionnée');
+  await p.waitForTimeout(500); await p.locator('#modal .modal-x').click(); await p.waitForTimeout(300);
   await p.locator('[data-arb="chercher"]').click(); await p.locator('#arbq').fill('manche'); await p.locator('#arbres [data-arbsel="manche"]').click();
   await p.locator('[data-carnet-rec="manche"]').click();
   ok(await p.evaluate(() => window.__eclat.U.tab==='carnet' && !!document.querySelector('[data-rec="manche"]')), 'Arbre → Carnet : la recette apprise est retrouvée');
@@ -310,9 +313,9 @@ async function run() {
   await p.locator('#modal [data-m="arbre"]').waitFor({ state: "visible" }); await p.waitForTimeout(500); // la fenêtre finit de s’ouvrir
   await p.locator('#modal [data-m="arbre"]').click();
   await p.locator("#v-arbre #arbre").waitFor({ state: "visible" }); await p.waitForTimeout(500);
-  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-card.sel"); return !!s && s.dataset.arbn === "manche" && !!document.querySelector("#arb-ingredients"); }), "Fiche → arbre : la recette et ses ingrédients sont affichés");
-  ok(await p.evaluate(() => { const s = document.querySelector("#arbre .arb-card.sel").getBoundingClientRect(), v = document.getElementById("arbre").getBoundingClientRect(); return s.top >= v.top && s.bottom <= v.bottom; }), "Fiche → arbre : la sélection reste visible");
-  ok(await p.evaluate(() => document.getElementById("arbre").scrollWidth === document.getElementById("arbre").clientWidth), "La branche tient dans la largeur de l’écran");
+  ok(await p.evaluate(() => { const s = document.querySelector("#modal .arb-card.sel"); return !!s && s.dataset.arbn === "manche" && !!document.querySelector("#arb-ingredients"); }), "Fiche → arbre : la recette et ses ingrédients sont affichés");
+  ok(await p.evaluate(() => { const s = document.querySelector("#modal .arb-card.sel").getBoundingClientRect(), v = document.querySelector("#modal .modal-box").getBoundingClientRect(); return s.top >= v.top && s.bottom <= v.bottom; }), "Fiche → arbre : la sélection reste visible dans la feuille");
+  ok(await p.evaluate(() => { const m = document.querySelector("#modal .modal-box"); return m.scrollWidth === m.clientWidth && document.documentElement.scrollWidth === innerWidth; }), "La feuille tient dans la largeur de l’écran");
   ok(await p.evaluate(() => document.body.dataset.tab === "arbre"), "Fiche → arbre : on est sur l’onglet Arbre");
   ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   p = await page(390, true);
@@ -348,6 +351,12 @@ async function run() {
   const restored = createEngine(); restored.load(exported);
   ok(restored.state.known.manche && restored.state.age === 8, "Export réimportable sans perte de recettes ni d’âge");
   ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
+  // le ciel du Cosmos est monté (et non démonté aussitôt) : un canvas vide fait un ciel noir
+  p = await page(390, true);
+  await p.evaluate(() => { const { E, U, render } = window.__eclat; E.cache().sky = true; U.tab = "cosmos"; U.cosmosTab = "ciel"; document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.id === "v-cosmos")); render(true); });
+  await p.waitForFunction(() => !!document.getElementById("skyCanvas"));
+  ok(await p.evaluate(() => window.EclatSky.mounted()), "Le ciel du Cosmos est monté");
+  ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // 0.13.3 : les fenêtres du lancement et du retour d’absence
   for (const width of [390, 320]) {
     // une partie qui revient d’une version précédente, après 400 s, le guide actif : les fenêtres passent une à une, le guide attend
@@ -395,6 +404,7 @@ async function run() {
       else if (!(await p.evaluate(() => window.__eclat.U.fen.attente().length))) break;
     }
     await p.waitForFunction(() => !!document.querySelector(".tuto:not(.hidden)"), null, { timeout: 8000 });
+    await p.waitForTimeout(600); // la bulle finit de se poser : mesurée en cours de route, elle passait parfois sous les onglets
     const s0 = await etatFenetres(p);
     ok(s0.bulle && !inter(s0.rect, s0.onglets) && !inter(s0.rect, s0.entete), width + " : la bulle ne couvre ni les onglets ni l’en-tête");
     for (const tab of ["carte", "atelier", "carnet", "journal", "domaine"]) {
@@ -452,7 +462,7 @@ async function run() {
   await p.evaluate(() => { window.__eclat.E.state.meta.traces = 0; window.__eclat.render(true); }); await p.waitForTimeout(300);
   ok(await p.evaluate(() => !document.querySelector(".dom-reveil")), "Rappel après l’éveil : il s’efface quand les Traces sont dépensées");
   await p.context().close();
-  // Le guide du passage : un lieu demande une torche dont la recette est inconnue, la carte d’objectif le dit et propose « Tenter »
+  // Le guide du passage : un lieu demande une torche dont la recette est inconnue, la carte d’objectif le dit et propose « Atelier »
   p = await page(390, false);
   await p.evaluate(() => {
     const E = window.__eclat.E, s = E.state;
@@ -461,7 +471,7 @@ async function run() {
     window.__eclat.render(true);
   });
   await p.waitForTimeout(500);
-  ok(await p.evaluate(() => { const c = document.querySelector(".goal-card"); return !!c && /Pour explorer le prochain lieu, il te faut une torche/.test(c.innerText) && !!c.querySelector('[data-gotab="atelier"]'); }), "Passage : la carte d’objectif dit qu’il faut une torche et propose « Tenter »");
+  ok(await p.evaluate(() => { const c = document.querySelector(".goal-card"); return !!c && /Requis pour le prochain lieu : une torche/.test(c.innerText) && !!c.querySelector('[data-gotab="atelier"]'); }), "Passage : la carte d’objectif dit qu’il faut une torche et propose « Atelier »");
   ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // L’Atelier court (0.15.5) : les actions tiennent sur une rangée, la première rangée de ressources et le gros bouton sont dans la première vue ;
   // sur très petit écran, une ressource touchée fait venir le petit établi, avec son bouton, sans remonter.
@@ -527,8 +537,8 @@ async function run() {
     await p.locator('[data-arb="chercher"]').click();
     await p.locator('#arbq').fill('circuit de vapeur');
     await p.locator('#arbres [data-arbsel="circuit_vapeur"]').click();
-    ok(await p.locator('[data-arbsel="eau"]').count()>0, width+' : la branche montre son eau');
-    ok(await p.evaluate(()=>{const v=document.getElementById('arbre');return v.scrollWidth===v.clientWidth && document.documentElement.scrollWidth===innerWidth;}), width+' : branche contenue dans l’écran');
+    ok(await p.locator('#modal [data-arbsel="eau"]').count()>0, width+' : la feuille montre son eau');
+    ok(await p.evaluate(()=>{const m=document.querySelector('#modal .modal-box');return m.scrollWidth===m.clientWidth && document.documentElement.scrollWidth===innerWidth;}), width+' : feuille contenue dans l’écran');
     if (width===390&&!large) await shot(p,'densite-circuit-vapeur');
     ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
   }

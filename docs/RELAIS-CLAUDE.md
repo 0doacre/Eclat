@@ -120,7 +120,7 @@ La version majeure **v0.8.0** a été entièrement implémentée, testée et val
    - Bouton instantané `⚡ +1` sur les fiches de recettes réalisables pour fabriquer immédiatement sans ouvrir la modale.
 
 3. **Piste 3 — Confort Visuel, Domaine Dense & Game Feel** :
-   - Mode compact / dense pour le Domaine (`[data-dom-dense]` et classe `.dom-dense` sur `.dom`).
+   - Affichage compact, un seul réglage (Menu → Affichage → Affichage compact, `settings.compact`) pour le Domaine (classe `.dom-dense` sur `.dom`) et le Carnet (`#clist.carnet-dense`). Carnet sur deux colonnes : `settings.carnet1Col` inversé, aussi dans le menu.
    - Animations CSS dédiées (`questpulse`, `ready-pulse`) et retours tactiles haptiques (`vibe`).
 
 - **Validation** : 158 tests moteur + 32 tests récit + 9 tests serveur (199 tests réussis). Service worker synchronisé (`tools/build.js`).

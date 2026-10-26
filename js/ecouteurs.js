@@ -7,7 +7,7 @@
 
   function create(api) {
     const {
-      E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete,
+      App, E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete,
       fireworks, elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge,
       updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML,
       FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
@@ -54,7 +54,7 @@
       });
       E.on("passdone", (o) => {
         const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
-        fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève" });
+        fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève", tier: 2 });
         if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
           "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
@@ -174,6 +174,8 @@
         }, 900);
       });
       /* une pièce sort des mains : le compte monte (le bruit, lui, est celui de l’atelier au travail : js/audio.js, A.work) */
+      // le jeu est caché et quelque chose est fini : le titre de l’onglet le dit
+      ["handdone", "expdone", "fouillePrete"].forEach((ev) => E.on(ev, () => App.attention()));
       E.on("handdone", (d) => {
         const el = U.tab === "atelier" ? $("#hands") : null;
         if (el && d.last) { const p = elCenter(el); floater("+" + fmt(d.n) + " " + I[d.id].n, p.x, p.y - 10, "var(--good)"); if (d.bonus) setTimeout(() => floater("★ +" + fmt(d.bonus), p.x, p.y - 26, "var(--intu)"), 200); }
@@ -224,7 +226,9 @@
         const c = D.EASTER && D.EASTER[id];
         if (c) {
           A.secret && A.secret();
-          toast((c.ic ? c.ic + " " : "") + "<b>Curiosité :</b> " + esc(c.desc || c.n));
+          // une curiosité est une rareté : une fête qui prend l’écran, à la hauteur de ce qu’il fallait pour la trouver
+          fete({ ic: c.ic || "✨", kick: "Curiosité trouvée", title: c.n, sub: c.desc, tier: c.tier || 2, color: "#ffd36b" });
+          toast((c.ic ? c.ic + " " : "") + "<b>Curiosité :</b> " + esc(c.desc || c.n), { p: 1 });
         }
       });
       E.on("offline", (o) => {
@@ -375,7 +379,7 @@
         }
         if ((b = t.closest("[data-hopen]"))) { A.init(); openHands(); return; }
         if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
-        if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
+        if ((b = t.closest("[data-chemin], [data-tree]"))) { openTree(b.dataset.chemin || b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.chemin || b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
         if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
         if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
         if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans le Domaine
@@ -432,13 +436,6 @@
         }
         if (t.closest("[data-fclear]")) { U.invFilter = "tout"; S().settings.inv = Object.assign({}, S().settings.inv, { filter: "tout", sort: "age" }); U.invPanel = false; A.click(); render(true); const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true }); return; }
         if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
-        if ((b = t.closest("[data-cvue]"))) {
-          const st = S();
-          if (b.dataset.cvue === "cols") st.settings.carnet1Col = !st.settings.carnet1Col;
-          else if (b.dataset.cvue === "dense") st.settings.carnetDense = !st.settings.carnetDense;
-          A.click(); save(); render(true);
-          return;
-        }
         if ((b = t.closest("[data-age-jump]"))) {
           const a = Number(b.dataset.ageJump);
           U.openAges[a] = true; A.click(); render(true);

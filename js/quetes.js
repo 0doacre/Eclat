@@ -28,7 +28,7 @@
       const ml = E.milestones()[st.age] || [], md = ml.filter((x) => x.done).length;
       // le premier âge d’abord : le compteur d’étapes n’a rien à dire avant
       const tard = st.age > 0 || md > 0;
-      let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Scénario</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
+      let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Objectif</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
         (tard && ob.k === "craft" ? '<button class="gmiles" data-arbre-obj title="Voir ton objectif dans l’arbre">🌳 Arbre</button>' : "") + "</div>";
       if (ml.length && tard) {
         const pct = Math.round((md / ml.length) * 100);
@@ -44,7 +44,7 @@
         const it = I[ob.id];
         if (it.h && !st.known[ob.id]) h += '<div class="riddle small">« ' + esc(it.h) + " »</div>";
         if (g.step !== ob.id && I[g.step]) h += '<div class="tiny muted" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px">Il faut d’abord : ' + itemPill(g.step) + "</div>";
-        if (st.known[ob.id]) h += '<div class="row wrap" style="margin-top:6px"><button class="btn small ghost" data-tree="' + ob.id + '">Détail</button>' + (st.track && st.track.id === ob.id ? "" : '<button class="btn small ghost" data-track="' + ob.id + '">Suivre</button>') + "</div>";
+        h += '<div class="row wrap" style="margin-top:6px"><button class="btn small ghost" data-chemin="' + ob.id + '" data-tree="' + ob.id + '" title="Chemin : la route complète jusqu’à l’objet">Chemin</button>' + (st.track && st.track.id === ob.id ? "" : '<button class="btn small ghost" data-track="' + ob.id + '">Suivre</button>') + "</div>";
         const z = it.e && it.e.zone;
         if (z && D.PASSAGES[z] && !(st.pass[z] && st.pass[z].done)) {
           const c = E.passCost(z);
@@ -69,11 +69,11 @@
         const manque = g.step && !st.known[g.step] && g.pour && I[g.pour] ? un(g.pour) : null;
         if (manque) {
           const lvl = st.hints[g.step] || 0, it0 = I[g.step];
-          return line('<div class="grow" data-goto="' + g.step + '"><div class="small">🧭 Pour explorer le prochain lieu, il te faut <b>' + esc(manque) + "</b>. " +
-            (g.step === g.pour ? "" : "Une des recettes qui y mènent reste à trouver. ") + (it0.h ? "<i>« " + esc(it0.h) + " »</i>" : "") + "</div>" +
+          return line('<div class="grow" data-goto="' + g.step + '"><div class="small">🧭 Requis pour le prochain lieu : <b>' + esc(manque) + "</b>. " +
+            (g.step === g.pour ? "" : "Une recette à trouver. ") + (it0.h ? "<i>« " + esc(it0.h) + " »</i>" : "") + "</div>" +
             (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(g.step) + "</div>" : "") +
             (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(g.step), "sm") + " " + esc(I[mainIngredient(g.step)].n) + "</div>" : "") +
-            '</div><button class="btn small pri" data-gotab="atelier">Tenter</button>') + passHTML(ob.z);
+            '</div><button class="btn small pri" data-gotab="atelier">Atelier</button>') + passHTML(ob.z);
         }
         return passHTML(ob.z);
       }
@@ -89,10 +89,10 @@
       if (!it) return "";
       if (!st.known[id]) {
         const lvl = st.hints[id] || 0;
-        return line('<div class="grow" data-goto="' + id + '"><div class="small"><span class="step-badge">✦ Étape clé</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Une recette nouvelle</b>") + "</div>" +
+        return line('<div class="grow" data-goto="' + id + '"><div class="small"><span class="step-badge">✦ Nouvelle recette</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
           (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
           (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
-          '</div><button class="btn small pri" data-gotab="atelier">Tenter</button>');
+          '</div><button class="btn small pri" data-gotab="atelier">Atelier</button>');
       }
       if (E.queued(id) > 0) return line('<span class="small">✋ En cours : ' + esc(it.n.toLowerCase()) + ".</span>");
       const b = E.blocker(id);
@@ -162,7 +162,7 @@
       });
       openModal({ reopen: openMilestones, html: h + '<div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
     }
-    const WHY_STEP = { station: "Il te faut d’abord :", zone: "Il te faut d’abord atteindre une nouvelle terre. Elle s’ouvre avec :", pass: "Il te faut d’abord ouvrir le passage vers une nouvelle terre :", unknown: "Prochaine étape :" };
+    const WHY_STEP = { station: "Requis :", zone: "Nouvelle terre, ouverte par :", pass: "Passage à ouvrir :", unknown: "À faire :" };
     /* un passage vers une terre : ce qu’il coûte, ce qui est déjà déposé, et le bouton pour déposer */
     function passHTML(z) {
       const p = E.passInfo(z), st = S();
@@ -315,7 +315,7 @@
 
         let h = '<h2>Quêtes</h2>';
         h += '<div class="quest-tabs">' +
-          '<button class="' + (tab === "scenario" ? "on" : "") + '" data-mqtab="scenario">📜 Scénario' + (sc.ready ? ' <span class="qdot"></span>' : '') + '</button>' +
+          '<button class="' + (tab === "scenario" ? "on" : "") + '" data-mqtab="scenario">📜 Objectifs' + (sc.ready ? ' <span class="qdot"></span>' : '') + '</button>' +
           '<button class="' + (tab === "rituals" ? "on" : "") + '" data-mqtab="rituals">🕯️ Rituels' + (sum.readyRitual ? ' <span class="qdot"></span>' : '') + '</button>' +
           '<button class="' + (tab === "troqueur" ? "on" : "") + '" data-mqtab="troqueur">⚖️ Troqueur' + (sum.payableAsk ? ' <span class="qdot"></span>' : '') + '</button>' +
           '</div>';
