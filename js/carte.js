@@ -88,7 +88,8 @@
       const crop = Math.max(0, Math.floor(top - 70));
       const mapTop = atlas ? crop : 0;
       const mapHeight = H - mapTop;
-      let s = '<div class="carte">' + chip() + (atlas ? '<div class="atlas-map-heading"><span class="atlas-map-kicker">✧ ATLAS DES TERRES CONNUES</span><strong>Le monde se dévoile</strong><span class="atlas-map-sub">' + explored + ' terres découvertes sur ' + total + ' · Suis les sentiers vers l’inconnu</span></div>' : "") + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
+      const frontier = ahead[0] || open[open.length - 1] || "lisiere";
+      let s = '<div class="carte">' + chip() + (atlas ? '<div class="atlas-map-heading"><span class="atlas-map-kicker">✧ ATLAS DES TERRES CONNUES</span><strong>Le monde se dévoile</strong><span class="atlas-map-sub">' + explored + ' terres découvertes sur ' + total + ' · Suis les sentiers vers l’inconnu</span><div class="atlas-map-actions"><button type="button" data-map-go="lisiere">⌂ Mon camp</button><button type="button" data-map-go="' + frontier + '">✧ La frontière</button></div></div>' : "") + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
         "<defs>" +
         '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" class="c-hatch"/></pattern>' +
         '<linearGradient id="fogEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0.75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
@@ -97,7 +98,7 @@
       // le ciel commence au-dessus des montagnes : quelques étoiles
       s += '<g class="c-stars">' + Array.from({ length: 46 }, (_, i) => { const x = (i * 97.3) % W, y = (i * 53.7) % 560; return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (i % 3 ? 0.9 : 1.5) + '"/>'; }).join("") + "</g>";
       s += '<path class="c-horizon" d="M0 560 Q 100 548 200 556 T 400 552"/>';
-      if (atlas) s += terrain(seen, open) + compass(mapTop);
+      if (atlas) s += landscape(seen, open) + terrain(seen, open) + compass(mapTop);
       // les chemins entre terres déjà ouvertes
       const ord = order();
       for (let i = 1; i < ord.length; i++) {
@@ -111,6 +112,30 @@
       E.passPending().forEach((z) => { s += passArt(z); });
       s += "</svg>" + (atlas ? '<div class="atlas-map-footer"><span>✦ Terre découverte</span><span>◌ Terre à explorer</span><span>⋯ Passage</span></div>' : "") + "</div>";
       return s;
+    }
+    /* Paysage continu entre les terres réellement découvertes. */
+    function landscape(seen, open) {
+      const known = new Set(open);
+      const lands = seen.filter((z) => known.has(z) && GEO[z] && !GEO[z].sky);
+      let h = '<g class="atlas-landscape" aria-hidden="true">';
+      for (let i = 1; i < lands.length; i++) {
+        const a = GEO[lands[i - 1]], b = GEO[lands[i]], m = (a.y + b.y) / 2;
+        h += '<path class="atlas-valley" d="M' + (a.x - a.rx * .7) + ' ' + a.y +
+          ' C' + (a.x - 80) + ' ' + m + ' ' + (b.x - 80) + ' ' + m +
+          ' ' + (b.x - b.rx * .7) + ' ' + b.y + '"/>';
+        h += '<path class="atlas-valley atlas-valley-outer" d="M' + (a.x + a.rx * .7) + ' ' + a.y +
+          ' C' + (a.x + 80) + ' ' + m + ' ' + (b.x + 80) + ' ' + m +
+          ' ' + (b.x + b.rx * .7) + ' ' + b.y + '"/>';
+      }
+      lands.forEach((z) => {
+        const g = GEO[z];
+        for (let k = 0; k < 3; k++) {
+          const y = g.y + g.ry + 20 + k * 11;
+          h += '<path class="atlas-contour-wide" d="M-15 ' + (y - 8) +
+            ' Q80 ' + (y + 13) + ' 160 ' + (y - 7) + ' T415 ' + (y + 4) + '"/>';
+        }
+      });
+      return h + '</g>';
     }
     /* Paysage de fond : des repères de fantasy, uniquement autour des terres
        accessibles. Le reste demeure réellement inconnu. */
@@ -319,6 +344,18 @@
     /* ------------------------------------------------------------ gestes */
     function click(t) {
       let b;
+      if ((b = t.closest("[data-map-go]"))) {
+        const g = GEO[b.dataset.mapGo], svg = document.querySelector("#v-carte .carte-svg");
+        const scroller = document.getElementById("views");
+        if (g && svg && scroller) {
+          const box = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+          const y = box.top + (g.y - vb.y) * (box.height / vb.height);
+          const viewport = scroller.getBoundingClientRect();
+          const target = scroller.scrollTop + y - viewport.top - viewport.height * .52;
+          scroller.scrollTo({ top: Math.max(0, target), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        }
+        return true;
+      }
       if ((b = t.closest("[data-fouille]"))) {
         api.A.click();
         const f = E.fouilleEnCours();
