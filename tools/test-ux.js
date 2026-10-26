@@ -404,6 +404,7 @@ async function run() {
       else if (!(await p.evaluate(() => window.__eclat.U.fen.attente().length))) break;
     }
     await p.waitForFunction(() => !!document.querySelector(".tuto:not(.hidden)"), null, { timeout: 8000 });
+    await p.waitForTimeout(600); // la bulle finit de se poser : mesurée en cours de route, elle passait parfois sous les onglets
     const s0 = await etatFenetres(p);
     ok(s0.bulle && !inter(s0.rect, s0.onglets) && !inter(s0.rect, s0.entete), width + " : la bulle ne couvre ni les onglets ni l’en-tête");
     for (const tab of ["carte", "atelier", "carnet", "journal", "domaine"]) {
@@ -461,7 +462,7 @@ async function run() {
   await p.evaluate(() => { window.__eclat.E.state.meta.traces = 0; window.__eclat.render(true); }); await p.waitForTimeout(300);
   ok(await p.evaluate(() => !document.querySelector(".dom-reveil")), "Rappel après l’éveil : il s’efface quand les Traces sont dépensées");
   await p.context().close();
-  // Le guide du passage : un lieu demande une torche dont la recette est inconnue, la carte d’objectif le dit et propose « Tenter »
+  // Le guide du passage : un lieu demande une torche dont la recette est inconnue, la carte d’objectif le dit et propose « Atelier »
   p = await page(390, false);
   await p.evaluate(() => {
     const E = window.__eclat.E, s = E.state;
@@ -470,7 +471,7 @@ async function run() {
     window.__eclat.render(true);
   });
   await p.waitForTimeout(500);
-  ok(await p.evaluate(() => { const c = document.querySelector(".goal-card"); return !!c && /Pour explorer le prochain lieu, il te faut une torche/.test(c.innerText) && !!c.querySelector('[data-gotab="atelier"]'); }), "Passage : la carte d’objectif dit qu’il faut une torche et propose « Tenter »");
+  ok(await p.evaluate(() => { const c = document.querySelector(".goal-card"); return !!c && /Requis pour le prochain lieu : une torche/.test(c.innerText) && !!c.querySelector('[data-gotab="atelier"]'); }), "Passage : la carte d’objectif dit qu’il faut une torche et propose « Atelier »");
   ok(!p.errors.length, p.errors.join("\n")); await p.context().close();
   // L’Atelier court (0.15.5) : les actions tiennent sur une rangée, la première rangée de ressources et le gros bouton sont dans la première vue ;
   // sur très petit écran, une ressource touchée fait venir le petit établi, avec son bouton, sans remonter.

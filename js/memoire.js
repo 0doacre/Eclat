@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal,
-      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -25,11 +25,13 @@
         (!isLibere && st.cycle > 1 && uiSigne("eveil") ? '<p class="scene-signe" style="opacity:0;animation:fadeup 1.2s 0.1s forwards">' + uiSigne("eveil", lieu) + "</p>" : "") +
         lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + recitInline(l, lieu) + "</p>").join("") +
         (!isLibere ? ornementHTML(lieu, 0.3 + lines.length * 1.1) : "") +
-        '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>';
+        '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button>' +
+        (!isLibere && st.cycle === 1 && !st.stats.crafts ? '<button class="btn ghost wide" data-m="sansguide" title="Jouer sans les bulles d’explication (réactivable dans le Menu)">Sans guide</button>' : "") + "</div>";
       openModal({
         persistent: true,
         html: html(),
         refresh: html,
+        on: { sansguide: () => { Tuto.setEnabled(false); } },
         onClose: () => {
           st.introSeen = true; st.flags.news = null; st.flags.ver = D.VERSION; save(); A.init();
           if (st.flags.capsuleMsg) {

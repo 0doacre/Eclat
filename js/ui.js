@@ -318,7 +318,7 @@
       const l = document.createElement("div"); l.className = "ca"; l.textContent = o.add; $(".cb", cur).appendChild(l);
       return;
     }
-    if (o.add) o = { ic: "🏁", kick: "Étape réussie", title: o.title || "", sub: o.sub };
+    if (o.add) o = { ic: "🏁", kick: "Étape accomplie", title: o.title || "", sub: o.sub };
     if (cur) cur.remove();
     clearTimeout(U.celeT);
     U.celeAt = performance.now();
@@ -959,7 +959,7 @@
     const name = x.ob.k === "craft" ? I[x.ob.id].n : x.ob.n, k = list.filter((y) => y.done).length, a = lists.indexOf(list);
     const where = a === S().age ? "cet âge" : D.AGES[a].n.replace("Âge", "l’âge");
     if (k === list.length) fete({ add: "🏆 " + D.AGES[a].n + " accompli · +" + D.AGE_DONE + " ✨", title: name, sub: "Toutes les étapes de " + where + " · +" + D.AGE_DONE + " ✨ Intuition" });
-    else fete({ add: "🏁 Étape réussie · " + k + " sur " + list.length, title: name, sub: k + " sur " + list.length + " pour " + where });
+    else fete({ add: "🏁 Étape accomplie · " + k + " sur " + list.length, title: name, sub: k + " sur " + list.length + " pour " + where });
   }
   function refresh() {
     const st = S();
@@ -1216,7 +1216,7 @@
   /* la relève, les dons et la Mémoire des mains */
   const Mem = window.EclatMemoire.create({
     E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render,
-    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
   });
   const {
     intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip
