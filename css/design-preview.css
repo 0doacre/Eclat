@@ -1,0 +1,43 @@
+/* ÉCLAT — Atlas vivant / première passe de design.
+ * Couche additive et réversible : aucune mécanique ni structure modifiée.
+ * Ne pas neutraliser les palettes d'époque ; préserver les thèmes et le Cosmos.
+ */
+:root {
+  --design-reading: 15px;
+  --design-caption: 13px;
+  --design-radius: 12px;
+  --design-focus: 3px;
+}
+body { font-size: var(--design-reading); line-height: 1.5; }
+.small { font-size: 14px; line-height: 1.45; }
+.tiny { font-size: var(--design-caption); line-height: 1.4; }
+h3.sub { font-size: 13px; letter-spacing: .065em; }
+#tabs button span { font-size: 12px; }
+.age small { font-size: 12px; letter-spacing: .045em; }
+.chip .cv small { font-size: 11px; }
+.goal .lbl, .goal-card .lbl { font-size: 12px; }
+.btn.small { font-size: 14px; }
+.btn, .mini, .chip, .icon-btn, #tabs button { transition: background-color .16s ease, border-color .16s ease, color .16s ease; }
+:where(button, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--design-focus) solid var(--acc);
+  outline-offset: 3px;
+}
+:where(.card, .dom-card, .rec, .stepbox, .passbox) {
+  border-radius: var(--design-radius);
+}
+.card, .dom-card, .rec, .stepbox, .passbox {
+  background-color: color-mix(in srgb, var(--panel) 93%, transparent);
+}
+.goal-card { border-style: solid; border-color: color-mix(in srgb, var(--acc) 55%, var(--line2)); }
+.bar { min-height: 7px; overflow: hidden; }
+.bar > i { border-radius: inherit; }
+#tabs button.on { color: var(--text); }
+#tabs button.on::before { left: 20%; right: 20%; height: 3px; }
+#v-cosmos .small, #v-cosmos .tiny { color: var(--text); }
+@media (max-width: 360px) {
+  .view { padding-left: 10px; padding-right: 10px; }
+  .top-right { gap: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .mini, .chip, .icon-btn, #tabs button { transition: none; }
+}
