@@ -146,4 +146,104 @@ test("Style CSS du Menu Jeu Vidéo et composants tactiles", () => {
   assert.ok(css.includes(".menu-danger-zone"), "Zone de danger stylisée");
 });
 
+test("Structure et lisibilité des fenêtres de Sauvegardes", () => {
+  let modalOpened = null;
+  const eng = createEngine();
+  const mockApi = {
+    E: eng,
+    ENGINE: {},
+    A: { init() {}, click() {}, setVolumes() {}, setEnabled() {} },
+    D,
+    U: { persist: "accordee", sync: {} },
+    Cloud: {},
+    esc: (s) => String(s),
+    fmtTime: (s) => Math.floor(s / 60) + " min",
+    fmtDate: () => "aujourd'hui 12:00",
+    toast() {},
+    openModal(o) { modalOpened = o; },
+    closeModal() {},
+    swapModal(o) { modalOpened = o; },
+    simpleModal() {},
+    save() {},
+    backups: () => [
+      { t: Date.now() - 3600000, why: "Avant relève", v: 11, data: eng.serialize() }
+    ],
+    pushBackup() {},
+    downloadSave() {}
+  };
+
+  const CompteModule = require("../js/compte.js");
+  const Cpt = CompteModule.create(mockApi);
+
+  Cpt.openSaves();
+  assert.ok(modalOpened, "Modal de sauvegardes ouverte");
+  const h = modalOpened.html;
+  assert.ok(h.includes("saves-actions-grid"), "Grille des actions de sauvegarde présente");
+  assert.ok(h.includes('data-m="dl"'), "Bouton télécharger sauvegarde présent");
+  assert.ok(h.includes('data-m="up"'), "Bouton charger fichier présent");
+  assert.ok(h.includes('data-m="code"'), "Bouton code texte présent");
+  assert.ok(h.includes("backup-card"), "Cartes de copies de sauvegarde présentes");
+  assert.ok(h.includes("bk-chips"), "Puces d'informations (Âge, Semeur, Temps de jeu) présentes");
+  assert.ok(h.includes('data-m="bdl"'), "Bouton de téléchargement d'une copie présent");
+  assert.ok(h.includes('data-m="brs"'), "Bouton de restauration d'une copie présent");
+});
+
+test("Structure et lisibilité des fenêtres de Compte et Emplacements en ligne", async () => {
+  let modalOpened = null;
+  let accountData = { pseudo: "Explorateur", token: "tok123", slot: 1, last: Date.now() - 60000, auto: true, revs: { 1: { rev: 4, updated: Date.now() - 60000 } } };
+  const mockApi = {
+    E: createEngine(),
+    ENGINE: {},
+    A: { init() {}, click() {}, setVolumes() {}, setEnabled() {} },
+    D,
+    U: { sync: {} },
+    Cloud: {
+      configured: () => true,
+      account: () => accountData,
+      slots: async () => [{ slot: 1, rev: 4, updated: Date.now() - 60000 }],
+      setAuto() {}
+    },
+    esc: (s) => String(s),
+    fmtTime: (s) => Math.floor(s / 60) + " min",
+    fmtDate: () => "aujourd'hui 12:00",
+    toast() {},
+    openModal(o) { modalOpened = o; },
+    closeModal() {},
+    swapModal(o) { modalOpened = o; },
+    simpleModal() {},
+    save() {},
+    backups: () => []
+  };
+
+  const CompteModule = require("../js/compte.js");
+  const Cpt = CompteModule.create(mockApi);
+
+  await Cpt.openAccount();
+  assert.ok(modalOpened, "Modal de compte ouverte");
+  const h = modalOpened.html;
+  assert.ok(h.includes("account-user-card"), "Carte de profil Semeur en ligne présente");
+  assert.ok(h.includes("slots-container"), "Conteneur des 3 emplacements cloud présent");
+  assert.ok(h.includes("slot-card"), "Cartes d'emplacements présentes");
+  assert.ok(h.includes("slot-active"), "Emplacement actif mis en avant");
+  assert.ok(h.includes('data-m="slot"'), "Boutons de gestion de slot présents");
+  assert.ok(h.includes('data-m="push"'), "Bouton synchroniser/envoyer présent");
+  assert.ok(h.includes('data-m="pull"'), "Bouton récupérer présent");
+  assert.ok(h.includes('data-m="auto"'), "Bouton bascule envoi automatique présent");
+});
+
+test("Style CSS des sauvegardes, comptes et duels de version", () => {
+  const fs = require("fs");
+  const path = require("path");
+  const css = fs.readFileSync(path.join(__dirname, "../css/style.css"), "utf8");
+
+  assert.ok(css.includes(".save-status"), "Style .save-status présent");
+  assert.ok(css.includes(".saves-actions-grid"), "Style .saves-actions-grid présent");
+  assert.ok(css.includes(".backup-card"), "Style .backup-card présent");
+  assert.ok(css.includes(".save-duel"), "Style .save-duel présent");
+  assert.ok(css.includes(".duel-card"), "Style .duel-card présent");
+  assert.ok(css.includes(".account-user-card"), "Style .account-user-card présent");
+  assert.ok(css.includes(".slot-card"), "Style .slot-card présent");
+  assert.ok(css.includes(".slot-status-pill"), "Style .slot-status-pill présent");
+});
+
 console.log("✓ Tous les tests de la refonte du menu sont réussis.");

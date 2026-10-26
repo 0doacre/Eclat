@@ -75,3 +75,26 @@ Objectifs :
 - Respect absolu des attributs ARIA (`role="switch"`, `aria-checked="true|false"`), des intitulés (`Activé` / `Désactivé`) et des sélecteurs `data-m="..."`.
 - Tous les boutons sont expliqués via leurs attributs `title` (validé par `tools/test-boutons.js`).
 - Tests unitaires et structurels dans `tools/test-menu-ui.js`.
+
+---
+
+## 4. Sauvegardes, Compte et Restauration vidéo-ludiques
+
+En complément du menu de pause, les fenêtres de gestion de partie et de synchronisation ont été clarifiées pour offrir une lisibilité exemplaire façon save-picker RPG :
+
+1. **Sauvegardes locales et exports (`openSaves`)** :
+   - Grille d'actions explicites : *Télécharger ma sauvegarde* (.json) et *Charger un fichier*.
+   - Badge d'état de persistance rassurant (*Le navigateur s'est engagé à garder cette partie* ou avertissement clair).
+   - Cartes de copies de sécurité automatiques (`backup-card`) : extraction des métadonnées de la partie (Âge atteint, numéro de Semeur, temps de jeu cumulé, nombre de recettes connues, Traces ✦) avec puces thématiques au lieu d'une ligne technique brute `format v11`.
+   - Boutons clairs par copie : téléchargement direct (`⬇️`) et restauration en un clic (`Restaurer`).
+
+2. **Duel visuel de versions (`confirmReplace` & `chooseVersion`)** :
+   - Mise en vis-à-vis côte-à-côte *Partie à charger* (vert/good) vs *Partie actuelle archivée* (lueur d'avertissement).
+   - Détail instantané des différences : Âge, Semeur, temps de jeu, recettes, Traces.
+   - Message rassurant confirmant qu'une copie de l'état actuel est immédiatement archivée avant tout remplacement.
+
+3. **Compte Semeur et gestion des 3 emplacements cloud (`accountModal`, `slotLine`, `slotModal`)** :
+   - Carte de profil Semeur en ligne avec avatar et date de dernière synchronisation.
+   - 3 cartes d'emplacements (`slot-card`) avec pastille *Actif* / *Réserve*, statut de sauvegarde en ligne (ou emplacement vide), et bouton *Gérer*.
+   - Commutateur d'envoi automatique stylisé.
+   - Formulaire de connexion (`loginModal`) avec onglets segmentés *🔑 J’ai un compte* / *✨ Nouveau compte*, placeholders clairs, et note sur le chiffrement de bout en bout.
