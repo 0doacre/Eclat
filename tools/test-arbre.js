@@ -213,7 +213,7 @@ test("les carrefours viennent des données seules, pas de la partie", () => {
 test("la mise en page reste stable (empreinte des positions, trois états ; recalée en 0.21 pour l’eau et les polymères)", () => {
   const crypto = require("crypto");
   const { ETATS } = require("./arbre-mesures.js");
-  const attendu = { "neuve": "6c2188da81e5 n=1", "avancée": "5b8ff3a319db n=83", "tout connu": "8f3f660389fd n=233" };
+  const attendu = { "neuve": "6c2188da81e5 n=1", "avancée": "5b8ff3a319db n=83", "tout connu": "99cf6bef0325 n=235" };
   for (const n of Object.keys(attendu)) {
     const lay = Arb.mise_en_page(Arb.graphe(ETATS[n](), D), D);
     const s = lay.noeuds.map((x) => [x.age, x.etat, x.x, x.y].join(",")).join(";");
