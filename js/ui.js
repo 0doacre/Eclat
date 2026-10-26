@@ -924,6 +924,7 @@
   function soundScene() {
     const z = U.zone || "lisiere";
     A.setScene({ age: S().age, tab: U.tab, zone: z, night: !Scenes.isNightless(z) && Scenes.daypart(new Date().getHours()) === "night", machines: workingMachines() });
+    if (U.Ambiance) U.Ambiance.update();
   }
   /* l’atelier au travail : un bruit continu tant qu’une commande avance, choisi par le geste en cours (et l’âge), jamais un bruit par pièce */
   let workAt = 0;
@@ -1189,6 +1190,10 @@
   /* ============================================================ MODULES
    * créés après tout le noyau : chacun reçoit ce dont il a besoin, et rend ce que
    * le noyau et les modules suivants appellent (js/visiteurs.js, js/journal.js…) */
+  /* la ligne d’ambiance sous l’en-tête */
+  const Amb = window.EclatAmbiance.create({ E, D, U, $ });
+  U.Ambiance = Amb;
+
   /* les visiteurs de passage */
   const Vis = window.EclatVisiteurs.create({ E, A, D, U, esc, fmt, toast, Tuto, sparks, floater, vibe, Jus });
   const { visiteurTick, visiteurFin } = Vis;
@@ -1262,6 +1267,7 @@
   function loop() {
     E.update();
     visiteurTick();
+    Amb.update();
     if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
     U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();
@@ -1295,6 +1301,7 @@
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
     setTab("domaine");
+    Amb.update(true);
     Object.assign(U.badges, S().flags.badges || {});
     if (S().settings && S().settings.carnet) {
       if (S().settings.carnet.filter) U.carnetFilter = S().settings.carnet.filter;

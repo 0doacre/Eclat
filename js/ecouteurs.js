@@ -336,6 +336,13 @@
         if (b.dataset.u === "save") downloadSave();
         if (b.dataset.u === "go") applyUpdate();
       });
+      const ambEl = $("#ambianceBar");
+      if (ambEl) {
+        ambEl.addEventListener("click", () => {
+          A.init();
+          if (U.Ambiance) U.Ambiance.next();
+        });
+      }
 
       const views = $("#views");
       views.addEventListener("pointerdown", (ev) => {
