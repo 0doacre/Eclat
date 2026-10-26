@@ -89,7 +89,7 @@
       const mapTop = atlas ? crop : 0;
       const mapHeight = H - mapTop;
       const frontier = ahead[0] || open[open.length - 1] || "lisiere";
-      let s = '<div class="carte">' + chip() + (atlas ? '<div class="atlas-map-heading"><span class="atlas-map-kicker">✧ ATLAS DES TERRES CONNUES</span><strong>Le monde se dévoile</strong><span class="atlas-map-sub">' + explored + ' terres découvertes sur ' + total + ' · Suis les sentiers vers l’inconnu</span><div class="atlas-map-actions"><button type="button" data-map-go="lisiere">⌂ Mon camp</button><button type="button" data-map-go="' + frontier + '">✧ La frontière</button></div></div>' : "") + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
+      let s = '<div class="carte">' + chip() + '<div class="atlas-map-heading"><span class="atlas-map-kicker">✧ ATLAS DES TERRES CONNUES</span><strong>Le monde se dévoile</strong><span class="atlas-map-sub">' + explored + ' terres découvertes sur ' + total + ' · Suis les sentiers vers l’inconnu</span><div class="atlas-map-actions"><button type="button" data-map-go="lisiere">⌂ Mon camp</button><button type="button" data-map-go="' + frontier + '">✧ La frontière</button></div></div>' : "") + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
         "<defs>" +
         '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" class="c-hatch"/></pattern>' +
         '<linearGradient id="fogEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0.75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
@@ -98,7 +98,7 @@
       // le ciel commence au-dessus des montagnes : quelques étoiles
       s += '<g class="c-stars">' + Array.from({ length: 46 }, (_, i) => { const x = (i * 97.3) % W, y = (i * 53.7) % 560; return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (i % 3 ? 0.9 : 1.5) + '"/>'; }).join("") + "</g>";
       s += '<path class="c-horizon" d="M0 560 Q 100 548 200 556 T 400 552"/>';
-      if (atlas) s += landscape(seen, open) + terrain(seen, open) + compass(mapTop);
+      s += landscape(seen, open) + terrain(seen, open) + compass(mapTop);
       // les chemins entre terres déjà ouvertes
       const ord = order();
       for (let i = 1; i < ord.length; i++) {
@@ -110,7 +110,7 @@
       // la brume : tout ce qui est plus haut que ce qu’on devine
       if (top > 0) s += '<rect x="0" y="0" width="' + W + '" height="' + (top + 90) + '" fill="url(#hatch)" mask="url(#fogMask)" class="c-fog"/>';
       E.passPending().forEach((z) => { s += passArt(z); });
-      s += "</svg>" + (atlas ? '<div class="atlas-map-footer"><span>✦ Terre découverte</span><span>◌ Terre à explorer</span><span>⋯ Passage</span></div>' : "") + "</div>";
+      s += '</svg><div class="atlas-map-footer"><span>✦ Terre découverte</span><span>◌ Terre à explorer</span><span>⋯ Passage</span></div></div>';
       return s;
     }
     /* Paysage continu entre les terres réellement découvertes. */
