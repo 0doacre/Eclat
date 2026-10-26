@@ -81,12 +81,14 @@
     function view() {
       const { open, ahead } = state();
       const seen = open.concat(ahead);
+      const explored = open.length;
+      const total = order().length;
       const top = Math.min.apply(null, seen.map((z) => GEO[z].y - GEO[z].ry - 60));
       const atlas = document.getElementById("atlasStylesheet") && !document.getElementById("atlasStylesheet").disabled;
       const crop = Math.max(0, Math.floor(top - 70));
       const mapTop = atlas ? crop : 0;
       const mapHeight = H - mapTop;
-      let s = '<div class="carte">' + chip() + (atlas ? '<div class="atlas-map-heading"><span class="atlas-map-kicker">✧ ATLAS DES TERRES CONNUES</span><strong>Le monde se dévoile</strong><span class="atlas-map-sub">Les chemins apparaissent au fil de tes découvertes</span></div>' : "") + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
+      let s = '<div class="carte">' + chip() + (atlas ? '<div class="atlas-map-heading"><span class="atlas-map-kicker">✧ ATLAS DES TERRES CONNUES</span><strong>Le monde se dévoile</strong><span class="atlas-map-sub">' + explored + ' terres découvertes sur ' + total + ' · Suis les sentiers vers l’inconnu</span></div>' : "") + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
         "<defs>" +
         '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" class="c-hatch"/></pattern>' +
         '<linearGradient id="fogEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0.75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
@@ -116,25 +118,54 @@
       const known = new Set(open);
       let h = '<g class="atlas-terrain" aria-hidden="true">';
       seen.forEach((z, i) => {
+        if (!known.has(z)) return;
         const g = GEO[z];
         if (!g || g.sky) return;
-        const discovered = known.has(z);
-        if (!discovered) return;
-        const y = g.y + g.ry + 17;
-        // Des lignes de relief en éventail évoquent une carte gravée.
-        for (let k = 0; k < 3; k++) {
-          const dy = k * 11;
-          h += '<path class="atlas-contour" d="M' + (g.x - g.rx - 20) + ' ' + (y + dy) +
-            ' Q' + g.x + ' ' + (y + dy + 20) + ' ' + (g.x + g.rx + 20) + ' ' + (y + dy) + '"/>';
+        const x = g.x, y = g.y, rx = g.rx, ry = g.ry;
+        // Une gravure topographique qui épouse le contour des terres.
+        for (let k = 0; k < 4; k++) {
+          const a = k * 12 + 13;
+          h += '<path class="atlas-contour" d="M' + (x - rx - 12) + ' ' + (y + ry + a) +
+            ' Q' + x + ' ' + (y + ry + a + 28) + ' ' + (x + rx + 12) + ' ' + (y + ry + a) + '"/>';
         }
-        // Repères naturels déterministes, sans masquer les lieux interactifs.
-        const left = Math.max(18, g.x - g.rx - 28), right = Math.min(382, g.x + g.rx + 24);
-        h += '<path class="atlas-forest" d="M' + left + ' ' + (g.y - 28) +
-          ' l8 -17 8 17 m-11 0 l11 -24 11 24 m-13 0 v12"/>';
-        h += '<path class="atlas-forest" d="M' + right + ' ' + (g.y + 22) +
-          ' l8 -17 8 17 m-11 0 l11 -24 11 24 m-13 0 v12"/>';
-        if (i % 2 === 0) h += '<path class="atlas-ridge" d="M' + left + ' ' + (g.y + 45) +
-          ' l17 -24 15 24 13 -17 14 17"/>';
+        const left = Math.max(16, x - rx - 24), right = Math.min(382, x + rx + 18);
+        if (z === "lisiere" || z === "plaine" || z === "collines") {
+          // Bosquets sur les marges de la terre, jamais sur les lieux cliquables.
+          for (let k = 0; k < 3; k++) {
+            const tx = k % 2 ? right : left + k * 7;
+            const ty = y - 35 + k * 19;
+            h += '<path class="atlas-forest" d="M' + tx + ' ' + ty +
+              ' l9 -16 9 16 h-5 l7 10 h-19 l7 -10 M' + (tx + 9) + ' ' + (ty + 10) + ' v9"/>';
+          }
+        }
+        if (z === "riviere") {
+          h += '<path class="atlas-water" d="M' + left + ' ' + (y - 66) +
+            ' Q' + (x - 48) + ' ' + (y - 5) + ' ' + x + ' ' + (y - 62) +
+            ' T' + right + ' ' + (y + 60) + '"/>';
+          h += '<path class="atlas-water atlas-water-thin" d="M' + (left + 12) + ' ' + (y - 66) +
+            ' Q' + (x - 35) + ' ' + (y - 5) + ' ' + (x + 12) + ' ' + (y - 62) +
+            ' T' + (right + 10) + ' ' + (y + 60) + '"/>';
+        }
+        if (z === "collines" || z === "montagnes" || z === "mine" || z === "gisement") {
+          for (let k = 0; k < 3; k++) {
+            const mx = left + k * 19, my = y + 35 + k * 8;
+            h += '<path class="atlas-ridge" d="M' + mx + ' ' + my +
+              ' l17 -25 15 25 13 -17 14 17"/>';
+          }
+        }
+        if (z === "desert") {
+          for (let k = 0; k < 4; k++) {
+            const dy = y + 30 + k * 12;
+            h += '<path class="atlas-dune" d="M' + left + ' ' + dy +
+              ' q22 -20 45 0 t45 0 t45 0"/>';
+          }
+        }
+        // Petits jalons de découverte sur les sentiers du monde.
+        if (i > 0 && known.has(seen[i - 1])) {
+          const p = GEO[seen[i - 1]];
+          if (p) h += '<circle class="atlas-waypoint" cx="' + ((p.x + x) / 2) +
+            '" cy="' + ((p.y + y) / 2) + '" r="3"/>';
+        }
       });
       return h + '</g>';
     }
