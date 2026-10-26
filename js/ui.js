@@ -1242,7 +1242,8 @@
   });
   const {
     viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML,
-    handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo
+    handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty,
+    promptCraftQty
   } = Atl;
 
   /* les écouteurs : le moteur et les gestes du joueur */
@@ -1253,7 +1254,7 @@
     FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
     playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene,
     openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge,
-    craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree
+    craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree, promptCarnetQty, promptCraftQty
   });
   const { bindEngine, bindDom, checkForcedReleve } = Ecu;
 
@@ -1295,6 +1296,10 @@
     bindDom();
     setTab("domaine");
     Object.assign(U.badges, S().flags.badges || {});
+    if (S().settings && S().settings.carnet) {
+      if (S().settings.carnet.filter) U.carnetFilter = S().settings.carnet.filter;
+      if (S().settings.carnet.q) U.q = S().settings.carnet.q;
+    }
     const bk = S().flags.bench;
     if (bk && Array.isArray(bk.s)) {
       if (D.GESTES[bk.g] && E.gesteOK(bk.g)) U.geste = bk.g;

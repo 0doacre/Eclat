@@ -13,7 +13,7 @@
       FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
       playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene,
       openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge,
-      craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree
+      craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree, promptCarnetQty, promptCraftQty
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -405,6 +405,8 @@
         if ((b = t.closest("[data-lock]"))) { toast("Action verrouillée. Station nécessaire : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
         if ((b = t.closest("[data-qty]"))) { S().flags.carnetQty = b.dataset.qty === "max" ? "max" : Number(b.dataset.qty); A.click(); render(true); return; }
+        if ((b = t.closest("[data-qty-custom]"))) { if (promptCarnetQty) promptCarnetQty(); return; }
+        if ((b = t.closest("[data-cr-custom]"))) { if (promptCraftQty) promptCraftQty(b.dataset.crCustom); return; }
         if (t.closest("[data-resclose]")) { U.last = null; A.click(); render(true); return; }
         if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
         if (t.closest("#forge, [data-forge]") && !t.closest("[data-s]")) {
@@ -419,6 +421,7 @@
             render(true);
           } else if (target === "cq") {
             U.q = "";
+            if (S().settings) S().settings.carnet = Object.assign({}, S().settings.carnet, { q: "" });
             const l = $("#clist");
             if (l) { l.innerHTML = carnetList(); refresh(); }
             render(true);
@@ -435,7 +438,12 @@
           return;
         }
         if (t.closest("[data-fclear]")) { U.invFilter = "tout"; S().settings.inv = Object.assign({}, S().settings.inv, { filter: "tout", sort: "age" }); U.invPanel = false; A.click(); render(true); const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true }); return; }
-        if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
+        if ((b = t.closest("[data-cf]"))) {
+          U.carnetFilter = b.dataset.cf;
+          if (S().settings) S().settings.carnet = Object.assign({}, S().settings.carnet, { filter: U.carnetFilter });
+          render(true);
+          return;
+        }
         if ((b = t.closest("[data-age-jump]"))) {
           const a = Number(b.dataset.ageJump);
           U.openAges[a] = true; A.click(); render(true);
@@ -551,6 +559,7 @@
         if (ev.target.id === "iq") { U.iq = ev.target.value; render(true); return; }
         if (ev.target.id === "cq") {
           U.q = ev.target.value;
+          if (S().settings) S().settings.carnet = Object.assign({}, S().settings.carnet, { q: U.q });
           const l = $("#clist");
           if (l) { l.innerHTML = carnetList(); refresh(); }
           const p = ev.target.parentNode;

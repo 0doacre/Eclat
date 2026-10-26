@@ -585,9 +585,10 @@ button.gprog-row:hover, .gprog-row:hover { background: color-mix(in srgb, var(--
 .card.result:empty { display: none; }
 .carte-svg [tabindex]:focus-visible { outline: 3px solid var(--acc); outline-offset: 3px; }
 [data-fichemode].on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
-.qtybar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 6px; margin: 0 -12px 8px; padding: 6px 12px; background: var(--bg); border-bottom: 1px solid var(--line2); }
+.qtybar { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 6px; margin: 0 -12px 8px; padding: 6px 12px; background: var(--bg); border-bottom: 1px solid var(--line2); overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.qtybar::-webkit-scrollbar { display: none; }
 .qtybar .tiny { flex: 0 0 auto; margin-right: 2px; }
-.chipq { flex: 1 1 0; min-width: 44px; min-height: 44px; border-radius: 99px; border: 1.5px solid var(--line2); background: transparent; color: var(--text); font: 600 14px var(--sans); }
+.chipq { flex: 0 0 auto; min-width: 44px; min-height: 44px; padding: 0 10px; border-radius: 99px; border: 1.5px solid var(--line2); background: transparent; color: var(--text); font: 600 14px var(--sans); cursor: pointer; }
 .chipq.on { background: var(--acc); border-color: var(--acc); color: var(--acc-ink); }
 .result { position: relative; }
 .result-x { display: block; margin: 8px 0 0 auto; }

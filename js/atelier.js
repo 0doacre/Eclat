@@ -350,13 +350,17 @@
       const lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
       return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="Commander 1 exemplaire, pièces comprises">' + lbl + "</button>" +
         sizes.map((sz) => '<button class="btn small" data-cr="' + id + '" data-n="' + sz + '" title="Commander ' + sz + ' exemplaires d’un coup, pièces comprises">×' + sz + "</button>").join("") +
-        '<button class="btn small" data-cr="' + id + '" data-n="max" title="Tout ce que ta Réserve permet, pièces comprises">Max</button>';
+        '<button class="btn small" data-cr="' + id + '" data-n="max" title="Tout ce que ta Réserve permet, pièces comprises">Max</button>' +
+        (E.isScaled(it) ? '' : '<button class="btn small" data-cr-custom="' + id + '" title="Saisir une quantité libre à fabriquer">…</button>');
     }
 
     /* ------------------------------------------------------------ CARNET */
     /* la quantité du Carnet : choisie une fois (en haut, elle reste visible en défilant), mémorisée, appliquée au bouton « Fabriquer » de chaque recette */
     const cqSizes = () => [1].concat((D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000], ["max"]);
-    const cqNow = () => { const q = S().flags.carnetQty; return cqSizes().includes(q) ? q : 1; };
+    const cqNow = () => {
+      const q = S().flags.carnetQty;
+      return (typeof q === "number" && q > 0) || q === "max" ? q : 1;
+    };
     /* la quantité mémorisée, ramenée à ce que cette recette accepte (une pièce unique : 1 ; un extracteur ou une machine : pas de ×50 ni plus) */
     function cqFor(it) {
       const q = cqNow();
@@ -366,8 +370,78 @@
     }
     function cqBarHTML() {
       const q = cqNow();
+      const standard = cqSizes();
+      const isCustom = typeof q === "number" && !standard.includes(q);
       return '<div class="qtybar" role="group" aria-label="Quantité à fabriquer"><span class="tiny muted">Quantité</span>' +
-        cqSizes().map((n) => '<button type="button" class="chipq' + (n === q ? " on" : "") + '" data-qty="' + n + '" title="' + (n === "max" ? "Tout ce que ta Réserve permet" : n === 1 ? "Un seul exemplaire" : n + " exemplaires d’un coup") + '" aria-pressed="' + (n === q) + '">' + (n === "max" ? "Max" : "×" + n) + "</button>").join("") + "</div>";
+        standard.map((n) => '<button type="button" class="chipq' + (n === q ? " on" : "") + '" data-qty="' + n + '" title="' + (n === "max" ? "Tout ce que ta Réserve permet" : n === 1 ? "Un seul exemplaire" : n + " exemplaires d’un coup") + '" aria-pressed="' + (n === q) + '">' + (n === "max" ? "Max" : "×" + n) + "</button>").join("") +
+        '<button type="button" class="chipq' + (isCustom ? " on" : "") + '" data-qty-custom title="Saisir une quantité libre" aria-label="Quantité libre" aria-pressed="' + isCustom + '">' + (isCustom ? "×" + q : "…") + "</button></div>";
+    }
+    function promptCarnetQty() {
+      const current = cqNow();
+      const def = current === "max" ? 10 : current;
+      openModal({
+        cls: "qty-modal",
+        html: '<div class="kicker">Carnet</div>' +
+          '<h2>Quantité libre</h2>' +
+          '<p class="small muted">Choisis la quantité pour les commandes du Carnet.</p>' +
+          '<form id="cqCustomForm" class="qty-form">' +
+          '<div class="fld" style="margin:12px 0">' +
+          '<input id="cqCustomIn" type="number" min="1" max="100000" class="input" value="' + def + '" required style="font-size:18px;padding:8px 12px;width:100%;box-sizing:border-box">' +
+          '</div>' +
+          '<div class="acts" style="display:flex;gap:8px;margin-top:14px">' +
+          '<button type="submit" class="btn pri" style="flex:1">Appliquer</button>' +
+          '<button type="button" class="btn" data-m="close" style="flex:1">Annuler</button>' +
+          '</div>' +
+          '</form>',
+        onOpen: (box) => {
+          const form = box.querySelector("#cqCustomForm");
+          const input = box.querySelector("#cqCustomIn");
+          if (input) { input.focus(); input.select(); }
+          if (form) {
+            form.addEventListener("submit", (ev) => {
+              ev.preventDefault();
+              const n = Math.max(1, Math.min(100000, Math.floor(Number(input.value) || 1)));
+              S().flags.carnetQty = n;
+              A.click();
+              closeModal();
+              render(true);
+            });
+          }
+        }
+      });
+    }
+    function promptCraftQty(id) {
+      const it = I[id];
+      if (!it) return;
+      const max = E.maxPlan ? E.maxPlan(id) : 100000;
+      openModal({
+        cls: "qty-modal",
+        html: '<div class="kicker">Fabrication</div>' +
+          '<h2>' + esc(it.n) + '</h2>' +
+          '<p class="small muted">Choisis la quantité exacte à commander' + (max > 0 ? ' (maximum possible : ' + fmt(max) + ')' : '') + '.</p>' +
+          '<form id="crCustomForm" class="qty-form">' +
+          '<div class="fld" style="margin:12px 0">' +
+          '<input id="crCustomIn" type="number" min="1" max="100000" class="input" value="1" required style="font-size:18px;padding:8px 12px;width:100%;box-sizing:border-box">' +
+          '</div>' +
+          '<div class="acts" style="display:flex;gap:8px;margin-top:14px">' +
+          '<button type="submit" class="btn pri" style="flex:1">Commander</button>' +
+          '<button type="button" class="btn" data-m="close" style="flex:1">Annuler</button>' +
+          '</div>' +
+          '</form>',
+        onOpen: (box) => {
+          const form = box.querySelector("#crCustomForm");
+          const input = box.querySelector("#crCustomIn");
+          if (input) { input.focus(); input.select(); }
+          if (form) {
+            form.addEventListener("submit", (ev) => {
+              ev.preventDefault();
+              const n = Math.max(1, Math.min(100000, Math.floor(Number(input.value) || 1)));
+              closeModal();
+              handQueue(document.body, id, n, true);
+            });
+          }
+        }
+      });
     }
     function carnetBook() {
       const st = S(), book = E.carnet().map((s) => ({ age: s.age, ids: s.ids.slice() }));
@@ -427,6 +501,8 @@
       if (!f || f === "tout") return true;
       const p = arbrePortee(n);
       if (f === "portee") return p === "pret" || p === "presque";
+      if (f === "pret") return p === "pret";
+      if (f === "verrouille" || f === "bloque") return p === "bloque";
       return p === f;
     }
     function arbreCarte(n, centre) {
@@ -469,16 +545,16 @@
       const f = U.arbreFiltre || "tout";
       const FILTRES = [
         ["tout", "Toutes", "Afficher toutes les pastilles"],
-        ["portee", "À portée", "Afficher les recettes réalisables ou presque"],
+        ["portee", "À portée", "Afficher les recettes prêtes ou dont les matières sont récoltables"],
         ["pret", "Prêtes", "Afficher les recettes fabricables immédiatement avec ta Réserve"],
-        ["presque", "Presque", "Afficher les recettes dont seules manquent des matières à récolter"],
-        ["bloque", "Pas encore", "Afficher les recettes bloquées par une station, un geste ou non découvertes"]
+        ["verrouille", "Verrouillées", "Afficher les recettes avec un prérequis manquant ou non découvertes"]
       ];
-      const counts = { tout: g.noeuds.length, portee: 0, pret: 0, presque: 0, bloque: 0 };
+      const counts = { tout: g.noeuds.length, portee: 0, pret: 0, verrouille: 0 };
       g.noeuds.forEach((n) => {
         const p = arbrePortee(n);
-        if (counts[p] !== undefined) counts[p]++;
-        if (p === "pret" || p === "presque") counts.portee++;
+        if (p === "pret") { counts.pret++; counts.portee++; }
+        else if (p === "presque") { counts.portee++; }
+        else { counts.verrouille++; }
       });
       return '<div class="arb-barre"><button type="button" class="btn small' + (!U.arbreSel ? ' on' : '') + '" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '" title="Ta progression : ton âge, tes étapes et le prochain objectif">Progression</button>' +
         '<button type="button" class="btn small" data-arb="centre" title="Ton objectif du moment, et ce qu’il demande">Objectif</button>' +
@@ -510,7 +586,7 @@
         const ouvert = ouverts[a] !== undefined ? ouverts[a] : (f !== "tout" ? visibles.length > 0 : a === Math.min(g.age, g.max));
         const compteTxt = f === "tout" ?
           (ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '')) :
-          (visibles.length + ' visible' + (visibles.length > 1 ? 's' : ''));
+          (visibles.length + ' ' + (f === 'pret' ? 'prête' + (visibles.length > 1 ? 's' : '') : f === 'portee' ? 'à portée' : 'verrouillée' + (visibles.length > 1 ? 's' : '')));
         h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + compteTxt + '</span></summary>';
         const rang = new Map(visibles.map((n) => [n.cle, arbreRang(n, g)]));
         visibles.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
@@ -1382,6 +1458,7 @@
     function showInCarnet(id) {
       const it = I[id];
       U.q = ""; U.carnetFilter = "tout"; U.openAges[it.a] = true;
+      if (S().settings) S().settings.carnet = { filter: "tout", q: "" };
       if (E.isUnique(it) && S().made[id] > 0) U.showOwned = true;
       setTab("carnet");
       setTimeout(() => { const el = $('[data-rec="' + id + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); flash(el); } }, 60);
@@ -1389,7 +1466,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
+    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
   }
 
   window.EclatAtelier = { create };

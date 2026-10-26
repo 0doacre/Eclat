@@ -134,7 +134,7 @@ async function run() {
   // 10. filtres de portée et point « nouveau »
   p = await page(browser, {});
   await ouvrirArbre(p);
-  ok(await p.locator(".arb-filtres [data-arb-f]").count() === 5, "les 5 filtres de portée sont présents");
+  ok(await p.locator(".arb-filtres [data-arb-f]").count() === 4, "les 4 filtres de portée sont présents");
   ok(await p.evaluate(() => [...document.querySelectorAll(".arb-filtres button")].every(b => b.getBoundingClientRect().height >= 44)), "chaque filtre fait au moins 44 px de haut");
   ok(await p.locator(".arb-pas.neuf .arb-dot-neuf").count() >= 1, "les nouvelles recettes portent le point nouveau");
   const countTous = await p.locator(".arb-pas").count();
