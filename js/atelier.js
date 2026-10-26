@@ -29,7 +29,7 @@
     }
     function viewAtelier() {
       const st = S();
-      let h = subTabs("atelier", "machines", "Découvrir", "Machines");
+      let h = '<header class="atlas-workshop-heading atlas-only"><h2>Atelier</h2><span>Le geste et la matière</span></header>' + subTabs("atelier", "machines", "Découvrir", "Machines");
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
       if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Pose des <b>ressources</b> sur l’établi. 3. Lance l’action. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       // Le premier essai reste possible sans un aller-retour au Domaine.

@@ -385,7 +385,8 @@
       if (U.cosmosTab === "figures") {
         h += figuresHTML();
       } else if (U.cosmosTab === "ciel") {
-        h += '<div class="sky-wrap"><canvas id="skyCanvas"></canvas><div class="sky-info" id="skyInfo">Touche le ciel.</div></div>';
+        h += '<div class="sky-wrap"><div class="atlas-sky-caption atlas-only"><svg class="gi" aria-hidden="true"><use href="#gi-telescope"/></svg><span>Ciel nocturne</span></div><div class="atlas-sky-field"><canvas id="skyCanvas" role="img" aria-label="Ciel nocturne interactif"></canvas>' +
+          '<svg class="atlas-sky-engraving atlas-only" viewBox="0 0 400 430" preserveAspectRatio="none" aria-hidden="true"><path d="M12 40V12H40 M360 12H388V40 M388 390V418H360 M40 418H12V390"/><path class="a-sky-ticks" d="M55 12H345 M55 418H345 M12 55V375 M388 55V375"/><path class="a-sky-cross" d="M193 215H207 M200 208V222"/></svg></div><div class="sky-info" id="skyInfo" role="status">Touche le ciel.</div></div>';
         if (E.cache().signal) h += '<button class="btn wide pri" id="listen">📡 Écouter Kher</button>';
         else h += '<p class="small muted">Avec une oreille assez grande, tu pourrais peut-être entendre ce que dit l’étoile rouge.</p>';
       } else if (U.cosmosTab === "arche") {
