@@ -397,13 +397,10 @@
       const st = S();
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
       const col1 = !!(st.settings && st.settings.carnet1Col);
-      const dense = !!(st.settings && st.settings.carnetDense);
+      const dense = U.compact();
       let h = '<div class="carnet-head"><div class="grow"><h2 class="title">Carnet</h2>' +
         '<p class="small muted">' + all + (all > 1 ? " recettes apprises" : " recette apprise") + "</p></div>" +
-        '<div class="carnet-view-btns">' +
-        '<button type="button" class="btn small ghost' + (col1 ? "" : " on") + '" data-cvue="cols" aria-pressed="' + (!col1) + '" title="' + (col1 ? "Passer en vue 2 colonnes (sur écran large)" : "Revenir à la vue en 1 colonne") + '">' + (col1 ? "☰ 1 col." : "⊞ 2 col.") + "</button>" +
-        '<button type="button" class="btn small ghost' + (dense ? " on" : "") + '" data-cvue="dense" aria-pressed="' + dense + '" title="Voir plus de recettes à l’écran, en plus petit">🤏 Compact</button>' +
-        "</div></div>";
+        "</div>";
       if (!st.flags.tip_carnet) h += '<div class="tip">Retrouve tes recettes et choisis un lot à fabriquer. ×10 répète la recette dix fois ; les pièces intermédiaires sont fabriquées avec la commande. Les indices des autres recettes restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Fermer cette astuce">Compris</button></div>';
       h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';

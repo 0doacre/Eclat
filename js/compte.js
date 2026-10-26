@@ -127,7 +127,7 @@
           (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles sont au repos et aident tes commandes. Les ressources qu’elles utilisaient sont revenues dans ta Réserve.</p>' : "") +
           (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Les tapis disparaissent : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils récoltent autant qu’avant, et ce qui se trouvait sur les tapis est revenu dans ta Réserve.</p>' : "") +
           (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as fourni est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
-          (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis ☰ → Sauvegardes.</p>' : "") +
+          (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis Menu → Sauvegardes.</p>' : "") +
           '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
         on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
         onClose: () => { st.flags.news = null; st.flags.ver = D.VERSION; delete st.flags.fab3; delete st.flags.fab4; delete st.flags.v5proj; delete st.flags.mach57; save(); }
@@ -140,7 +140,7 @@
     const unbusy = (b) => { if (b && b.isConnected) { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; } };
     async function openAccount(msg) {
       if (!Cloud.configured()) {
-        simpleModal("Compte", "Pas encore de comptes", "<p>Les comptes en ligne ne sont pas encore ouverts sur ce jeu. En attendant, ta partie reste enregistrée sur cet appareil, et tu peux la télécharger dans ☰ → Sauvegardes.</p>" +
+        simpleModal("Compte", "Pas encore de comptes", "<p>Les comptes en ligne ne sont pas encore ouverts sur ce jeu. En attendant, ta partie reste enregistrée sur cet appareil, et tu peux la télécharger dans Menu → Sauvegardes.</p>" +
           '<p class="tiny dim">Pour la personne qui publie le jeu : la marche à suivre est dans server/README.md.</p>');
         return;
       }
@@ -213,7 +213,7 @@
         html: '<div class="kicker">Compte</div><h2>Quelle partie garder ?</h2><p class="small">' + esc(intro) + "</p>" +
           '<div class="vs"><div class="card"><b>📱 Cet appareil</b><div class="small muted">' + summary(S()) + '</div></div><div class="card"><b>☁️ Emplacement ' + cloud.slot + '</b><div class="small muted">' + summary(o) +
           "<br>Envoyée le " + esc(fmtDate(cloud.updated)) + "</div></div></div>" +
-          '<p class="tiny dim">Celle que tu ne gardes pas n’est pas perdue : elle va dans les copies de sécurité (☰ → Sauvegardes).</p>' +
+          '<p class="tiny dim">Celle que tu ne gardes pas n’est pas perdue : elle va dans les copies de sécurité (Menu → Sauvegardes).</p>' +
           '<div class="acts" style="flex-direction:column"><button class="btn pri" data-m="cloud">Prendre la partie en ligne</button><button class="btn" data-m="local">Garder celle de cet appareil</button></div>',
         on: {
           cloud: () => { if (replaceWith(cloud.text, "Avant de charger la partie du compte")) { Cloud.useSlot(cloud.slot); Cloud.adopt(cloud.rev, cloud.updated, cloud.slot); U.sync.conflict = null; updateCloudBtn(); } },
@@ -324,8 +324,8 @@
       return {
         html: '<div class="kicker">Compte</div><h2>Nouvelle partie dans l’emplacement ' + n + ' ?</h2>' +
           (prev !== n ? '<p class="small">La partie de cet appareil est d’abord envoyée dans l’emplacement ' + prev + ', où tu pourras la retrouver.</p>' : "") +
-          (s.rev ? '<p class="small err">La partie en ligne de l’emplacement ' + n + ' (envoyée le ' + esc(fmtDate(s.updated)) + ') sera remplacée. Elle est d’abord rangée dans les copies de sécurité de cet appareil (☰ → Sauvegardes).</p>' : "") +
-          '<p class="tiny dim">L’emplacement ' + n + ' devient l’emplacement actif. Une copie de la partie de cet appareil est aussi gardée dans ☰ → Sauvegardes.</p>' +
+          (s.rev ? '<p class="small err">La partie en ligne de l’emplacement ' + n + ' (envoyée le ' + esc(fmtDate(s.updated)) + ') sera remplacée. Elle est d’abord rangée dans les copies de sécurité de cet appareil (Menu → Sauvegardes).</p>' : "") +
+          '<p class="tiny dim">L’emplacement ' + n + ' devient l’emplacement actif. Une copie de la partie de cet appareil est aussi gardée dans Menu → Sauvegardes.</p>' +
           '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Commencer</button></div>',
         on: {
           back: () => { swapModal(slotModal(n)); return true; },
@@ -355,7 +355,7 @@
       return {
         html: '<div class="kicker">Compte</div><h2>Remplacer l’emplacement ' + n + ' ?</h2>' +
           '<p class="small">La partie en ligne du ' + esc(fmtDate(updated)) + ' sera remplacée par celle de cet appareil.</p>' +
-          '<p class="tiny dim">Celle qui est en ligne n’est pas gardée telle quelle : elle sera téléchargée avant d’être remplacée, puis rangée dans les copies de sécurité de cet appareil (☰ → Sauvegardes).</p>' +
+          '<p class="tiny dim">Celle qui est en ligne n’est pas gardée telle quelle : elle sera téléchargée avant d’être remplacée, puis rangée dans les copies de sécurité de cet appareil (Menu → Sauvegardes).</p>' +
           '<div class="acts"><button class="btn" data-m="back">Annuler</button><button class="btn pri" data-m="go">Remplacer</button></div>',
         on: {
           back: () => { swapModal(slotModal(n)); return true; },
@@ -468,27 +468,38 @@
     function openMenu() {
       const st = S();
       const thMode = (st.settings && st.settings.theme) || "auto";
-      const thLabels = { auto: "Auto", light: "Jour", dark: "Veillée" };
+      const thLabels = { auto: "Auto", light: "Jour", dark: "Sombre" };
       const nextTh = { auto: "light", light: "dark", dark: "auto" };
+      /* un réglage qui s’active ou se coupe : toujours le même interrupteur, toujours les mêmes mots */
+      const sw = (k, label, on, title) => '<div class="toggle"><span id="mt-' + k + '">' + label + '</span><button class="btn small sw' + (on ? " on" : "") + '" role="switch" aria-checked="' + !!on + '" aria-labelledby="mt-' + k + '" data-m="' + k + '" title="' + esc(title) + '">' + (on ? "Activé" : "Désactivé") + "</button></div>";
+      const setSw = (b, on) => { b.setAttribute("aria-checked", String(!!on)); b.classList.toggle("on", !!on); b.textContent = on ? "Activé" : "Désactivé"; };
+      const sec = (n, inner) => '<section class="menu-sec"><h3 class="sub">' + n + "</h3>" + inner + "</section>";
       openModal({
         html: "<h2>Menu</h2>" +
-          '<div class="menu-toggles">' +
-          '<div class="toggle"><span>Thème</span><button class="btn small" data-m="theme">' + thLabels[thMode] + "</button></div>" +
-          '<div class="toggle"><span>Grand texte</span><button class="btn small" data-m="largeText">' + (st.settings.largeText ? "Activé" : "Désactivé") + "</button></div>" +
-          '<div class="toggle"><span>Son</span><button class="btn small" data-m="sound">' + (st.settings.sound ? "Activé" : "Coupé") + "</button></div>" +
-          '<div class="toggle"><span>Vibrations</span><button class="btn small" data-m="vibe">' + (st.settings.vibe ? "Activées" : "Coupées") + "</button></div>" +
-          '<div class="toggle"><span>Visiteurs</span><button class="btn small" data-m="visiteurs" title="Laisser quelqu’un passer de temps en temps sur le Domaine">' + (E.visiteurActif() ? "Oui" : "Non") + "</button></div>" +
-          '</div>' +
-          '<div id="volGroup" class="vol-group' + (st.settings.sound ? "" : " hidden") + '">' +
-          [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
-          '</div>' +
-          '<div class="toggle"><span>Tutoriel <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain">Revoir</button><button class="btn small" data-m="tuto">' + (Tuto.enabled() ? "Activé" : "Coupé") + "</button></span></div>" +
-          '<div class="menu-grid">' +
-          '<button class="btn" data-m="mem">✦ Mémoire des mains</button><button class="btn" data-m="saves">💾 Sauvegardes</button>' +
-          '<button class="btn" data-m="account">☁️ Compte en ligne</button><button class="btn" data-m="help">❓ Comment jouer</button>' +
-          '<button class="btn" data-m="news">📰 Nouveautés</button><button class="btn" data-m="credits">📜 Crédits</button>' +
-          '</div>' +
-          '<div class="acts"><button class="btn ghost" data-m="reset" style="color:var(--bad)">🗑️ Tout recommencer</button><button class="btn pri" data-m="close">Fermer</button></div>' +
+          sec("Affichage",
+            '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>" +
+            sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
+            sw("compact", "Affichage compact", U.compact(), "Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup") +
+            sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)")) +
+          sec("Son et vibrations",
+            sw("sound", "Son", st.settings.sound, "Couper ou remettre la musique et les bruitages") +
+            '<div id="volGroup" class="vol-group' + (st.settings.sound ? "" : " hidden") + '">' +
+            [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
+            "</div>" +
+            sw("vibe", "Vibrations", st.settings.vibe, "Faire vibrer l’appareil lors des actions importantes")) +
+          sec("Jeu",
+            sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un traverser le Domaine de temps en temps") +
+            '<div class="toggle"><span id="mt-tuto">Guide <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain" title="Revoir les explications du guide depuis le début">Revoir</button>' +
+            '<button class="btn small sw' + (Tuto.enabled() ? " on" : "") + '" role="switch" aria-checked="' + Tuto.enabled() + '" aria-labelledby="mt-tuto" data-m="tuto" title="Afficher ou masquer les explications du guide">' + (Tuto.enabled() ? "Activé" : "Désactivé") + "</button></span></div>" +
+            '<div class="menu-grid"><button class="btn" data-m="mem" title="Ce que tes Traces t’offrent d’une partie à l’autre">✦ Mémoire des mains</button></div>') +
+          sec("Ma partie",
+            '<div class="menu-grid"><button class="btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie">💾 Sauvegardes</button>' +
+            '<button class="btn" data-m="account" title="Retrouver ta partie sur tous tes appareils">☁️ Compte en ligne</button></div>') +
+          sec("Aide",
+            '<div class="menu-grid"><button class="btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran">❓ Comment jouer</button>' +
+            '<button class="btn" data-m="news" title="Ce qui a changé dans cette version">📰 Nouveautés</button>' +
+            '<button class="btn" data-m="credits" title="Les icônes, les polices et la musique">📜 Crédits</button></div>') +
+          '<div class="acts"><button class="btn ghost" data-m="reset" style="color:var(--bad)" title="Effacer ta progression et repartir de zéro">🗑️ Recommencer la partie</button><button class="btn pri" data-m="close">Fermer</button></div>' +
           '<p class="tiny dim center" style="margin-top:10px">Éclat, du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
         onOpen: (box) => {
           $$("[data-vol]", box).forEach((r) => {
@@ -511,23 +522,25 @@
           largeText: (b) => {
             st.settings.largeText = !st.settings.largeText;
             applyLargeText();
-            b.textContent = st.settings.largeText ? "Activé" : "Désactivé";
+            setSw(b, st.settings.largeText);
             save();
             return true;
           },
+          compact: (b) => { U.setCompact(!U.compact()); setSw(b, U.compact()); save(); U.dirty = true; return true; },
+          carnet2: (b) => { st.settings.carnet1Col = !st.settings.carnet1Col; setSw(b, !st.settings.carnet1Col); save(); U.dirty = true; return true; },
           sound: (b) => {
             st.settings.sound = !st.settings.sound;
             A.init(); A.setEnabled(st.settings.sound);
-            b.textContent = st.settings.sound ? "Activé" : "Coupé";
+            setSw(b, st.settings.sound);
             const vg = $("#volGroup");
             if (vg) vg.classList.toggle("hidden", !st.settings.sound);
             save();
             return true;
           },
-          vibe: (b) => { st.settings.vibe = !st.settings.vibe; b.textContent = st.settings.vibe ? "Activées" : "Coupées"; save(); return true; },
-          visiteurs: (b) => { E.setVisiteurs(!E.visiteurActif()); if (!E.visiteurActif()) visiteurFin(); b.textContent = E.visiteurActif() ? "Oui" : "Non"; save(); return true; },
-          tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); b.textContent = Tuto.enabled() ? "Activé" : "Coupé"; return true; },
-          tutoAgain: () => { Tuto.restart(); toast("💭 Tutoriel réactivé. Chapitres affichés au fil de la progression."); },
+          vibe: (b) => { st.settings.vibe = !st.settings.vibe; setSw(b, st.settings.vibe); save(); return true; },
+          visiteurs: (b) => { E.setVisiteurs(!E.visiteurActif()); if (!E.visiteurActif()) visiteurFin(); setSw(b, E.visiteurActif()); save(); return true; },
+          tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); setSw(b, Tuto.enabled()); return true; },
+          tutoAgain: () => { Tuto.restart(); toast("💭 Guide réactivé. Les chapitres reviennent au fil de ta progression."); },
           saves: () => setTimeout(openSaves, 80),
           credits: () => setTimeout(() => simpleModal("Éclat", "Crédits",
             '<div class="small"><p><b>Icônes</b> : <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a>, par Lorc, Delapouite et leurs contributeurs, sous licence CC BY 3.0. Recolorées, dessin inchangé.</p>' +
@@ -538,8 +551,8 @@
           mem: () => setTimeout(openMemoire, 80),
           news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
           reset: () => setTimeout(() => {
-            openModal({ html: '<h2>Tout recommencer ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans ☰ → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Non</button><button class="btn pri" style="background:var(--bad)" data-m="go">Effacer</button></div>',
-              on: { go: () => { pushBackup(E.serialize(), "Avant de tout recommencer"); E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("carte"); intro(); } } });
+            openModal({ html: '<h2>Recommencer la partie ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans Menu → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" style="background:var(--bad)" data-m="go">Tout effacer</button></div>',
+              on: { go: () => { pushBackup(E.serialize(), "Avant de recommencer la partie"); E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("carte"); intro(); } } });
           }, 80)
         }
       });
@@ -578,7 +591,7 @@
         "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
         "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
         "<p><b>Jeu fermé.</b> Les extracteurs, les commandes et l’exploration continuent pendant 12 h au plus.</p>" +
-        "<p><b>💾 Sauvegardes.</b> Menu ☰ : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
+        "<p><b>💾 Sauvegardes.</b> Dans le Menu : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
     }
 
     function promptCapsuleText() {
