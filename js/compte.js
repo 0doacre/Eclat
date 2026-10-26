@@ -6,7 +6,7 @@
 
   function create(api) {
     const {
-      E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal,
+      E, ENGINE, A, D, U, Cloud, Tuto, esc, fmt, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal,
       save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
     } = api;
     const S = () => E.state;
@@ -470,47 +470,98 @@
       const thMode = (st.settings && st.settings.theme) || "auto";
       const thLabels = { auto: "Auto", light: "Jour", dark: "Sombre" };
       const nextTh = { auto: "light", light: "dark", dark: "auto" };
+      const ageName = D.AGES && D.AGES[st.age] ? D.AGES[st.age].n : "Âge du Bois";
+      const echosList = E.activeEchoesFins ? E.activeEchoesFins() : Object.keys((st.meta && st.meta.endings) || {});
+      const nbEchos = echosList.length;
+      const hasComptoir = E.zoneOpen(D.COMPTOIR.zone);
+
       /* un réglage qui s’active ou se coupe : toujours le même interrupteur, toujours les mêmes mots */
       const sw = (k, label, on, title) => '<div class="toggle"><span id="mt-' + k + '">' + label + '</span><button class="btn small sw' + (on ? " on" : "") + '" role="switch" aria-checked="' + !!on + '" aria-labelledby="mt-' + k + '" data-m="' + k + '" title="' + esc(title) + '">' + (on ? "Activé" : "Désactivé") + "</button></div>";
       const setSw = (b, on) => { b.setAttribute("aria-checked", String(!!on)); b.classList.toggle("on", !!on); b.textContent = on ? "Activé" : "Désactivé"; };
-      const sec = (n, inner) => '<section class="menu-sec"><h3 class="sub">' + n + "</h3>" + inner + "</section>";
+      const sec = (id, ic, n, inner) => '<section class="menu-sec" id="msec-' + id + '"><div class="menu-sec-head"><span class="m-sec-ic">' + ic + '</span><h3 class="sub">' + n + "</h3></div>" + inner + "</section>";
+
       openModal({
-        html: "<h2>Menu</h2>" +
-          sec("Affichage",
-            '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>" +
+        cls: "menu-modal",
+        html: '<div class="menu-wrap">' +
+          '<div class="menu-game-header">' +
+            '<div class="menu-game-title">' +
+              '<span class="m-title-text">ÉCLAT</span>' +
+              '<span class="m-version-badge">v' + esc(D.VERSION) + '</span>' +
+            '</div>' +
+            '<div class="menu-game-banner">' +
+              '<div class="m-hero-cell"><span class="m-cell-lbl">Semeur</span><b class="m-cell-val">' + ((st.cycle || 1) + 6) + 'e</b></div>' +
+              '<div class="m-hero-cell"><span class="m-cell-lbl">Âge</span><b class="m-cell-val">' + esc(ageName.replace(/^Âge du /, "").replace(/^Âge de l'/, "").replace(/^Âge de la /, "").replace(/^Âge des /, "")) + '</b></div>' +
+              '<div class="m-hero-cell"><span class="m-cell-lbl">Traces</span><b class="m-cell-val m-acc">✦ ' + fmt((st.meta && st.meta.traces) || 0) + '</b></div>' +
+              '<div class="m-hero-cell"><span class="m-cell-lbl">Échos</span><b class="m-cell-val m-echo">🌅 ' + nbEchos + '/5</b></div>' +
+            '</div>' +
+          '</div>' +
+          '<nav class="menu-nav-bar" role="tablist" aria-label="Catégories du menu">' +
+            '<button class="m-nav-tab on" data-mjump="jeu" role="tab" aria-selected="true" title="Aller à la section Jeu"><span class="m-nav-ic">🎮</span> Jeu</button>' +
+            '<button class="m-nav-tab" data-mjump="affichage" role="tab" aria-selected="false" title="Aller à la section Affichage"><span class="m-nav-ic">🖥️</span> Affichage</button>' +
+            '<button class="m-nav-tab" data-mjump="audio" role="tab" aria-selected="false" title="Aller à la section Audio"><span class="m-nav-ic">🔊</span> Audio</button>' +
+            '<button class="m-nav-tab" data-mjump="systeme" role="tab" aria-selected="false" title="Aller à la section Système"><span class="m-nav-ic">⚙️</span> Système</button>' +
+          '</nav>' +
+          sec("jeu", "🎮", "Jeu &amp; Raccourcis",
+            '<div class="menu-grid game-grid">' +
+              '<button class="btn m-card-btn m-card-mem" data-m="mem" title="Ce que tes Traces t’offrent d’une partie à l’autre"><span class="m-card-icon">✦</span><span class="m-card-main"><b>Mémoire des mains</b><span class="tiny muted">' + ((st.meta && st.meta.traces) || 0) + ' Traces disponibles</span></span></button>' +
+              (hasComptoir ? '<button class="btn m-card-btn m-card-comp" data-m="comptoir" title="Vendre, acheter et répondre aux demandes du Troqueur"><span class="m-card-icon">🪙</span><span class="m-card-main"><b>Le Comptoir</b><span class="tiny muted">Troc &amp; commandes</span></span></button>' : "") +
+            "</div>" +
+            '<div class="toggle"><span id="mt-tuto">Guide des Semeurs <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain" title="Revoir les explications du guide depuis le début">Revoir</button>' +
+            '<button class="btn small sw' + (Tuto.enabled() ? " on" : "") + '" role="switch" aria-checked="' + Tuto.enabled() + '" aria-labelledby="mt-tuto" data-m="tuto" title="Afficher ou masquer les explications du guide">' + (Tuto.enabled() ? "Activé" : "Désactivé") + "</button></span></div>" +
+            sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un traverser le Domaine de temps en temps")) +
+          sec("affichage", "🖥️", "Affichage &amp; Écran",
+            '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>" +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("compact", "Affichage compact", U.compact(), "Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup") +
             sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)") +
             sw("ambiance", "Ligne d’ambiance", st.settings.ambiance !== false, "Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure") +
             (App.ecranPossible() ? sw("ecran", "Garder l’écran allumé", st.settings.ecranAllume, "Empêcher la mise en veille de l’écran tant que le jeu est ouvert") : "")) +
-          sec("Son et vibrations",
+          sec("audio", "🔊", "Audio &amp; Vibrations",
             sw("sound", "Son", st.settings.sound, "Couper ou remettre la musique et les bruitages") +
             '<div id="volGroup" class="vol-group' + (st.settings.sound ? "" : " hidden") + '">' +
-            [["music", "Musique"], ["amb", "Ambiance"], ["sfx", "Bruitages"]].map(([k, n]) => '<label class="toggle vol"><span>' + n + '</span><input type="range" min="0" max="100" step="5" value="' + Math.round(volumes()[k] * 100) + '" data-vol="' + k + '"></label>').join("") +
+            [["music", "Musique", "🎵"], ["amb", "Ambiance", "🍃"], ["sfx", "Bruitages", "🔨"]].map(([k, n, ic]) => {
+              const v = Math.round(volumes()[k] * 100);
+              return '<label class="toggle vol"><span class="vol-name"><span class="vol-ic">' + ic + '</span> ' + n + '</span><div class="vol-ctrl"><input type="range" min="0" max="100" step="5" value="' + v + '" data-vol="' + k + '"><span class="vol-val" id="vv-' + k + '">' + v + '%</span></div></label>';
+            }).join("") +
             "</div>" +
             sw("vibe", "Vibrations", st.settings.vibe, "Faire vibrer l’appareil lors des actions importantes")) +
-          sec("Jeu",
-            sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un traverser le Domaine de temps en temps") +
-            '<div class="toggle"><span id="mt-tuto">Guide <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain" title="Revoir les explications du guide depuis le début">Revoir</button>' +
-            '<button class="btn small sw' + (Tuto.enabled() ? " on" : "") + '" role="switch" aria-checked="' + Tuto.enabled() + '" aria-labelledby="mt-tuto" data-m="tuto" title="Afficher ou masquer les explications du guide">' + (Tuto.enabled() ? "Activé" : "Désactivé") + "</button></span></div>" +
-            '<div class="menu-grid"><button class="btn" data-m="mem" title="Ce que tes Traces t’offrent d’une partie à l’autre">✦ Mémoire des mains</button>' +
-            (E.zoneOpen(D.COMPTOIR.zone) ? '<button class="btn" data-m="comptoir" title="Vendre, acheter et répondre aux demandes du Troqueur">🪙 Le Comptoir</button>' : "") + "</div>") +
-          sec("Ma partie",
-            '<div class="menu-grid"><button class="btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie">💾 Sauvegardes</button>' +
-            '<button class="btn" data-m="account" title="Retrouver ta partie sur tous tes appareils">☁️ Compte en ligne</button>' +
-            (App.installable() ? '<button class="btn" data-m="installer" title="Ajouter Éclat à l’écran d’accueil de ton appareil">📲 Installer le jeu</button>' : "") + "</div>") +
-          sec("Aide",
-            '<div class="menu-grid"><button class="btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran">❓ Comment jouer</button>' +
-            '<button class="btn" data-m="news" title="Ce qui a changé dans cette version">📰 Nouveautés</button>' +
-            '<button class="btn" data-m="credits" title="Les icônes, les polices et la musique">📜 Crédits</button></div>') +
-          '<div class="acts"><button class="btn ghost" data-m="reset" style="color:var(--bad)" title="Effacer ta progression et repartir de zéro">🗑️ Recommencer la partie</button><button class="btn pri" data-m="close">Fermer</button></div>' +
-          '<p class="tiny dim center" style="margin-top:10px">Éclat, du silex aux étoiles · version ' + esc(D.VERSION) + "</p>",
+          sec("systeme", "⚙️", "Système &amp; Sauvegardes",
+            '<div class="menu-grid">' +
+              '<button class="btn m-card-btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie"><span class="m-card-icon">💾</span><b>Sauvegardes</b></button>' +
+              '<button class="btn m-card-btn" data-m="account" title="Retrouver ta partie sur tous tes appareils"><span class="m-card-icon">☁️</span><b>Compte en ligne</b></button>' +
+              (App.installable() ? '<button class="btn m-card-btn" data-m="installer" title="Ajouter Éclat à l’écran d’accueil de ton appareil"><span class="m-card-icon">📲</span><b>Installer le jeu</b></button>' : "") +
+              '<button class="btn m-card-btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran"><span class="m-card-icon">❓</span><b>Comment jouer</b></button>' +
+              '<button class="btn m-card-btn" data-m="news" title="Ce qui a changé dans cette version"><span class="m-card-icon">📰</span><b>Nouveautés</b></button>' +
+              '<button class="btn m-card-btn" data-m="credits" title="Les icônes, les polices et la musique"><span class="m-card-icon">📜</span><b>Crédits</b></button>' +
+            "</div>" +
+            '<div class="menu-danger-zone"><button class="btn ghost danger-btn" data-m="reset" style="color:var(--bad)" title="Effacer ta progression et repartir de zéro">🗑️ Recommencer la partie</button></div>') +
+          '<div class="acts"><button class="btn pri m-close-btn" data-m="close">Fermer</button></div>' +
+          '<p class="tiny dim center menu-footer">Éclat · du silex aux étoiles · version ' + esc(D.VERSION) + " · ⏱️ " + fmtTime(st.stats.play) + "</p>" +
+        '</div>',
         onOpen: (box) => {
+          $$("[data-mjump]", box).forEach((tabBtn) => {
+            tabBtn.addEventListener("click", () => {
+              const target = box.querySelector("#msec-" + tabBtn.dataset.mjump);
+              if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+                $$(".m-nav-tab", box).forEach((b) => {
+                  const on = b === tabBtn;
+                  b.classList.toggle("on", on);
+                  b.setAttribute("aria-selected", String(on));
+                });
+                A.init(); A.click();
+              }
+            });
+          });
           $$("[data-vol]", box).forEach((r) => {
+            const k = r.dataset.vol;
+            const valEl = box.querySelector("#vv-" + k);
             r.addEventListener("input", () => {
-              st.settings.vol = Object.assign(volumes(), { [r.dataset.vol]: Number(r.value) / 100 });
+              const val = Number(r.value);
+              if (valEl) valEl.textContent = val + "%";
+              st.settings.vol = Object.assign(volumes(), { [k]: val / 100 });
               A.init(); A.setVolumes(st.settings.vol);
-              if (r.dataset.vol === "sfx") A.click();
+              if (k === "sfx") A.click();
             });
             r.addEventListener("change", save);
           });
@@ -647,5 +698,6 @@
     return { openMenu, openAccount, downloadSave, showBadSave, showNews, cloudTimers, cloudCheck, promptCapsuleText };
   }
 
-  window.EclatCompte = { create };
+  if (typeof module !== "undefined" && module.exports) module.exports = { create };
+  if (typeof window !== "undefined") window.EclatCompte = { create };
 })();
