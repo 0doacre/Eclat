@@ -554,6 +554,14 @@
  {
   "partie": "avancée",
   "ecran": "Aide",
+  "label": "🪙 Le Comptoir",
+  "repere": "button[data-m=\"comptoir\"].btn",
+  "explique": "info-bulle : Vendre, acheter et répondre aux demandes du Troqueur",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Sauvegardes",
   "repere": "button[data-m=\"saves\"].btn",
   "explique": "info-bulle : Télécharger ta partie, la recharger ou restaurer une copie",

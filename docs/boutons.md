@@ -4,12 +4,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 
 | | |
 |---|---|
-| Boutons relevés | 211 |
+| Boutons relevés | 212 |
 | Sans explication | 0 |
 | Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |
 
-## Aide (38 boutons, 0 sans explication)
+## Aide (39 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -44,6 +44,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Revoir | `button[data-m="tutoAgain"].btn.ghost` | info-bulle : Revoir les explications du guide depuis le début |
 | avancée | Désactivé | `button[data-m="tuto"].btn.sw` | info-bulle : Afficher ou masquer les explications du guide |
 | avancée | ✦ Mémoire des mains | `button[data-m="mem"].btn` | info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre |
+| avancée | 🪙 Le Comptoir | `button[data-m="comptoir"].btn` | info-bulle : Vendre, acheter et répondre aux demandes du Troqueur |
 | avancée | Sauvegardes | `button[data-m="saves"].btn` | info-bulle : Télécharger ta partie, la recharger ou restaurer une copie |
 | avancée | Compte en ligne | `button[data-m="account"].btn` | info-bulle : Retrouver ta partie sur tous tes appareils |
 | avancée | Comment jouer | `button[data-m="help"].btn` | info-bulle : Les mots du jeu et le rôle de chaque écran |

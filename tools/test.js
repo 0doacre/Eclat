@@ -3269,8 +3269,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.26.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.26.0");
+test("Version 0.27.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.27.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3485,12 +3485,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.26.0");
+  assert.strictEqual(D.VERSION, "0.27.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 26, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 27, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
@@ -4152,6 +4152,7 @@ require("./test-carnet.js");
 require("./test-guidage.js");
 require("./test-juice.js");
 require("./test-appareil.js");
+require("./test-renaissance.js");
 require("./test-comptoir.js");
 require("./test-stockage.js");
 
