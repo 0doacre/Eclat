@@ -970,3 +970,11 @@ body[data-ep="bord"] :where(#v-domaine) .dom-terre {
 @media (prefers-reduced-motion: reduce) {
   #v-carte .atlas-map-actions button { transition: none; }
 }
+
+/* L'en-tête et le paysage sont conservés dans le DOM pour que le comparateur
+   puisse basculer instantanément, y compris si le jeu démarre en Classique. */
+#v-carte .atlas-map-heading,
+#v-carte .atlas-map-footer { display: flex; }
+#v-carte .carte-svg .atlas-landscape,
+#v-carte .carte-svg .atlas-terrain,
+#v-carte .carte-svg .atlas-compass { display: inline; }
