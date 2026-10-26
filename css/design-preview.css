@@ -246,3 +246,149 @@ html, body { max-width: 100%; overflow-x: clip; }
   #v-domaine .gis-l1 { font-size: 15px; }
   #v-domaine .gis-b { gap: 3px; }
 }
+
+/* ========================================================================
+   ATLAS VIVANT · MANIFESTE VISUEL / V1
+   Langage transversal, volontairement expressif, sans changement de gameplay.
+   ======================================================================== */
+:root {
+  --atlas-ink: color-mix(in srgb, var(--text) 80%, var(--acc));
+  --atlas-hairline: color-mix(in srgb, var(--text) 24%, transparent);
+  --atlas-stamp: color-mix(in srgb, var(--acc) 16%, var(--panel));
+}
+#app { isolation: isolate; }
+#views { scrollbar-color: var(--atlas-hairline) transparent; }
+.view { min-width: 0; }
+.view > * { max-width: 100%; }
+.view :is(.row,.sub-row,.sheet-h,.goal,.dom-th,.gis,.mrow) { min-width: 0; }
+.view :is(.row,.sub-row,.sheet-h,.goal,.dom-th,.gis,.mrow) > * { min-width: 0; }
+.view :is(h1,h2,h3,p,.small,.tiny,.muted) { overflow-wrap: break-word; }
+
+/* Couverture et index : l'âge devient le cartouche du livre. */
+#top {
+  min-height: calc(70px + var(--safe-t));
+  height: auto;
+  padding-block: calc(8px + var(--safe-t)) 8px;
+  border-bottom: 3px double var(--atlas-ink);
+  box-shadow: 0 4px 0 color-mix(in srgb,var(--text) 6%,transparent);
+}
+#top .age { border-left: 3px solid var(--acc); padding-left: 10px; }
+#top .age #ageName { font-size: clamp(20px,5.4vw,27px); letter-spacing: -.02em; }
+#top .age-bar-track { height: 4px; margin-top: 7px; }
+#top .age-sub small { font-size: 10px; }
+#top .icon-btn { border-radius: 4px; border-color: var(--atlas-hairline); }
+#top .chip { border-radius: 4px; border-color: var(--atlas-hairline); background: var(--atlas-stamp); }
+#tabs {
+  min-height: calc(72px + var(--safe-b));
+  height: calc(72px + var(--safe-b));
+  border-top: 3px double var(--atlas-ink);
+  box-shadow: 0 -5px 0 color-mix(in srgb,var(--text) 6%,transparent);
+}
+#tabs button { gap: 4px; border-right: 1px solid var(--atlas-hairline); }
+#tabs button:last-child { border-right: 0; }
+#tabs button.on { background: color-mix(in srgb,var(--acc) 11%,transparent); }
+#tabs button.on::before { left: 0; right: 0; top: 0; height: 4px; }
+#tabs button span { font-size: 12px; font-weight: 700; letter-spacing: .015em; }
+#tabs .gi { width: 23px; height: 23px; }
+
+/* Titres de chapitre, repères de lecture et surfaces documentaires. */
+.view h2.title {
+  font-size: clamp(28px,7vw,38px);
+  line-height: 1.12;
+  font-weight: 500;
+  letter-spacing: -.035em;
+  margin: 12px 0 20px;
+  padding: 4px 0 15px;
+  border-bottom: 3px double var(--atlas-ink);
+}
+.view h3.sub {
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .15em;
+  color: var(--text);
+}
+.view .card,
+.view .rec,
+.view .stepbox,
+.view .passbox,
+.view .dom-card {
+  border-radius: 4px;
+  border-color: var(--atlas-hairline);
+  background: color-mix(in srgb,var(--panel) 96%,var(--bg));
+}
+.view .card.acc { border-left: 4px solid var(--acc); }
+.view .btn { border-radius: 5px; min-height: 42px; }
+.view .btn.pri { border-width: 1.5px; box-shadow: 2px 2px 0 var(--atlas-hairline); }
+.view .mini { border-radius: 4px; }
+.view .ic:not(.sym) { border-radius: 4px; }
+.view .ic.sym { border-radius: 5px; box-shadow: none; border-width: 1.5px; }
+.view .bar { height: 9px; border-radius: 2px; }
+.view .bar > i { border-radius: 1px; }
+
+/* Atelier : planche de travail, gestes comme outils gravés. */
+#v-atelier .gestes { gap: 9px; padding-block: 7px 13px; }
+#v-atelier .geste {
+  width: 77px;
+  min-height: 77px;
+  border-radius: 5px;
+  border: 1.5px solid var(--atlas-hairline);
+  background: color-mix(in srgb,var(--panel) 90%,var(--acc));
+}
+#v-atelier .geste.on {
+  border: 2px solid var(--acc);
+  box-shadow: inset 0 0 0 2px var(--panel), 0 3px 0 var(--atlas-hairline);
+}
+#v-atelier .geste .gn { font-size: 12px; font-weight: 650; }
+#v-atelier .bench { border-radius: 4px; outline: 2px solid color-mix(in srgb,var(--text) 20%,transparent); outline-offset: -6px; }
+#v-atelier .slot { border-radius: 5px; }
+#v-atelier .inv { border-radius: 5px; }
+
+/* Carte : la carte reste une carte, pas un tableau de bord. */
+#v-carte .card, #v-carte .dom-card { border-radius: 4px; }
+#v-carte .carte-svg { filter: drop-shadow(0 3px 0 color-mix(in srgb,var(--text) 8%,transparent)); }
+
+/* Carnet et Arbre : fiches et planches d'étude. */
+#v-carnet .rec { border-left: 3px solid var(--atlas-ink); padding-block: 13px; }
+#v-arbre .card, #v-arbre .rec { border-style: solid; }
+#v-carnet h3.sub, #v-arbre h3.sub, #v-journal h3.sub {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--atlas-hairline);
+}
+#v-journal .card { border-left: 3px solid var(--atlas-ink); }
+#v-machines .card { border-top: 3px solid var(--atlas-ink); }
+
+/* Modales : feuilles posées sur l'atlas. */
+.modal-box {
+  border-radius: 5px;
+  border: 2px solid var(--atlas-ink);
+  box-shadow: 6px 8px 0 color-mix(in srgb,var(--text) 18%,transparent);
+  max-width: min(94vw, 580px);
+}
+.modal-box :is(h2,h3) { line-height: 1.2; }
+#toasts > * { border-radius: 4px; }
+
+/* L'observatoire est volontairement une rupture : aucune texture de papier. */
+#v-cosmos { --atlas-ink: #d4c4a3; --atlas-hairline: rgba(232,226,214,.24); }
+#v-cosmos .card { background: #161c26; }
+#v-cosmos h2.title { border-color: rgba(232,226,214,.4); }
+
+/* Sécurité mobile : aucun composant non défilant ne pousse la page en largeur. */
+html, body, #app { width: 100%; max-width: 100%; }
+#app { overflow-x: clip; }
+#views, .view { min-width: 0; max-width: 100%; }
+.view :is(img,svg,canvas,video) { max-width: 100%; }
+.view :is(input,select,textarea) { max-width: 100%; }
+.view :is(.card,.dom-card,.rec,.stepbox,.passbox,.modal-box) { min-width: 0; }
+@media (max-width: 390px) {
+  #top { gap: 3px; padding-inline: 6px; }
+  #top .age { min-width: 65px; padding-left: 5px; }
+  #top .age #ageName { font-size: 18px; }
+  #top .chip { padding-inline: 5px; }
+  #top .icon-btn { width: 36px; height: 38px; }
+  #tabs button span { font-size: 11px; }
+  .view { padding-inline: 10px; }
+  #v-atelier .geste { width: 70px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app, #v-carte .carte-svg { transition: none; }
+}
