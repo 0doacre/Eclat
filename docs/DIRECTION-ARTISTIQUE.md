@@ -28,3 +28,17 @@
 - Conserver les titres d'époque très typés ou les réserver aux pages narratives.
 - Uniformiser les symboles de navigation avec un set de gravures.
 - Définir un cadre documentaire réutilisable pour les Grands Œuvres.
+
+
+## Garde-fou impératif — aucune navigation horizontale
+
+**La largeur totale de chaque écran doit rester inférieure ou égale à la largeur utile du viewport, à tout instant.** Le joueur ne doit jamais pouvoir faire défiler la page latéralement, ni voir des cartes, boutons ou textes déborder hors écran.
+
+- Tester les largeurs **320, 360, 390 et 430 px**, avec les textes longs et les états chargés.
+- Tout conteneur flex/grid réductible doit pouvoir rétrécir (`min-width: 0`) ; les contenus textuels doivent se couper ou revenir à la ligne sans masquer les actions.
+- Les listes défilant horizontalement **à l'intérieur d'un composant intentionnel** (par exemple le sélecteur de gestes de l'Atelier) sont tolérées seulement si le viewport principal reste fixe et si le geste est explicite.
+- Ne jamais se contenter d'un `overflow-x: hidden` global pour cacher un défaut : corriger aussi le composant qui déborde. Une protection globale peut s'ajouter en défense.
+- **Critère bloquant avant fusion** : `document.documentElement.scrollWidth <= window.innerWidth` et `document.body.scrollWidth <= window.innerWidth` sur les tailles cibles, dans les écrans et états testés.
+
+## Deuxième passe — expérimentation visible
+La branche de test assume une identité plus forte : filets de reliure, titrage éditorial, cartes à contours d'encre, objectif en marge colorée, séparateurs de registre et ressources plus aérées. Les changements sont concentrés sur le Domaine et restent réversibles.
