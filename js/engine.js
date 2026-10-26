@@ -348,6 +348,10 @@
     }
     E.add = add;
 
+    /* --------------------------------- Règles d'Écho des fins (deuxième prestige) */
+    E.hasEchoFin = (k) => !!((S.meta && S.meta.endings && S.meta.endings[k] > 0) || (S.endings && S.endings[k]));
+    E.activeEchoesFins = () => Object.keys(D.ECHOS_FINS || {}).filter((k) => E.hasEchoFin(k));
+
     /* -------------------------------------------------- effets dérivés */
     function recalc() {
       const c = { st: {}, heat: 0, tap: {}, auto: {}, intu: 0, exp: 1, pip: 0, aspd: 1, rates: {}, sky: false, arche: false, term: false, signal: false };
@@ -375,6 +379,12 @@
         }
       }
       c.heat = c.st.chauffer ? c.st.chauffer.heat || 0 : 0;
+      if (E.hasEchoFin("aube")) {
+        c.heat = Math.max(600, c.heat + (c.heat > 0 ? 200 : 0));
+      }
+      if (E.hasEchoFin("exode")) c.exp *= 2;
+      if (E.hasEchoFin("silence")) c.intu += 3;
+      if (E.hasEchoFin("retour")) c.aspd *= 1.25;
       if (S.flags.lucioles) c.auto["*"] = (c.auto["*"] || 1) * 1.25;
       if (S.boosts) {
         const curT = now();
@@ -397,6 +407,7 @@
     /* ------------------------------------------------------ gestes */
     function gesteOK(g) {
       if (BASE_GESTES.includes(g)) return true;
+      if (g === "chauffer" && E.hasEchoFin("aube")) return true;
       if (g === "accorder") return !!S.flags.berceuse && has("flute");
       return !!E.cache().st[g];
     }
@@ -550,6 +561,7 @@
     }
     E.passCost = function (zid) {
       let k = memV("chemins") * donMul("pass");
+      if (E.hasEchoFin("brasier")) k *= 0.85;
       for (const z in REG) {
         const m = REG[z].remise;
         if (m && m.vers === zid) k *= 1 - m.par * Math.min(m.max, (S.exp && S.exp.done && S.exp.done[z]) || 0);
@@ -689,9 +701,10 @@
       if (!zoneOpen(zid) || !ZONES[zid].res.includes(res)) return 0;
       let n = tapYield(res, zid);
       if (!(n > 0)) return 0;
-      // coup de chance : la récolte double, et l’interface fait des étincelles
-      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil") + (donE().crit || 0);
-      if (E.lastCrit) { n *= D.CRIT.mult; S.stats.crits = (S.stats.crits || 0) + 1; }
+      // coup de chance : la récolte double, et l’interface fait des étincelles (ou triple avec l'Écho du Brasier)
+      const hasBrasier = E.hasEchoFin("brasier");
+      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil") + (donE().crit || 0) + (hasBrasier ? 0.25 : 0);
+      if (E.lastCrit) { n *= (hasBrasier ? 3 : D.CRIT.mult); S.stats.crits = (S.stats.crits || 0) + 1; }
       add(res, n);
       advanceRitual(1, n);
       S.stats.taps++;
@@ -848,7 +861,8 @@
       if (it.t !== "comp" && it.t !== "res") return 0;
       // « Mains sûres » : une chance de pièce en plus pour ce que les mains fabriquent (pas les machines)
       const mem = main && MEM.mains.bonus ? MEM.mains.bonus(memLvl("mains")) : 0;
-      const ch = Math.min(0.95, 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0) + mem);
+      const aubeBonus = (E.hasEchoFin("aube") && it.r && (it.r[0] === "chauffer" || it.r[0] === "allier")) ? 0.25 : 0;
+      const ch = Math.min(0.95, 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0) + mem + aubeBonus);
       if (ch > 0) {
         if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
         else bonus = Math.floor(times * ch + rand());
@@ -1232,7 +1246,7 @@
     }
     function machReadyFor(m, rec) {
       if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
-      if (D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
+      if (!E.hasEchoFin("retour") && D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
       if (blocker(rec)) return false;
       return true;
     }
@@ -1728,7 +1742,11 @@
      * geste connu, combien de recettes encore inconnues s’en servent (parmi celles
      * qu’on peut tenter avec des matières déjà vues). À l’Atelier, les matières
      * étudiées qui réagissent avec le geste choisi sont marquées. */
-    E.studyCost = (id) => 1 + Math.floor((item(id).a || 0) / 4);
+    E.studyCost = (id) => {
+      let c = 1 + Math.floor((item(id).a || 0) / 4);
+      if (E.hasEchoFin("silence")) c = Math.max(1, Math.ceil(c / 2));
+      return c;
+    };
     E.study = function (id) {
       if (!item(id) || S.studied[id] || !S.seen[id]) return false;
       const c = E.studyCost(id);
@@ -1774,7 +1792,9 @@
       if ((it.a || 0) > S.age + 1) return null;
       const lvl = S.hints[id] || 0;
       if (lvl >= 3) return null;
-      return Math.round(D.DECHIFFRER.cost[lvl] * (1 + (it.a || 0)) * Object.keys(it.r[1]).length);
+      let c = Math.round(D.DECHIFFRER.cost[lvl] * (1 + (it.a || 0)) * Object.keys(it.r[1]).length);
+      if (E.hasEchoFin("silence")) c = Math.max(1, Math.ceil(c / 2));
+      return c;
     };
     E.decipher = function (id) {
       const it = item(id);
@@ -2330,7 +2350,9 @@
       if (lvl >= 3 || (q.aides && lvl >= q.aides.length)) return null;
       const cfg = RECIT.aide || { base: 5, mult: 3 };
       const age = S.age || 0;
-      return cfg.base * (1 + age) * Math.pow(cfg.mult, lvl);
+      let c = cfg.base * (1 + age) * Math.pow(cfg.mult, lvl);
+      if (E.hasEchoFin("silence")) c = Math.max(1, Math.ceil(c / 2));
+      return c;
     };
 
     E.questions = function () {
@@ -3094,6 +3116,7 @@
         const it = item(t);
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[e.z || it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
+      if (E.hasEchoFin("brasier")) r *= 1.25;
       return r * f * donExt(e.z) * seuilMult(e);
     }
     E.extOut = (e) => extOut(e, E.cache());
@@ -3453,6 +3476,7 @@
       const first = !S.endings[eid];
       S.endings[eid] = true;
       S.meta.endings[eid] = (S.meta.endings[eid] || 0) + 1;
+      recalc();
       const en = D.ENDINGS[eid];
       const extra = (en.extra || []).filter((x) => (x.frag ? S.frags[x.frag] : true) && (x.flag ? S.flags[x.flag] || (S.meta && S.meta[x.flag]) : true)).map((x) => interpolate(x.t));
       const res = { id: eid, first, extra };
@@ -4487,7 +4511,9 @@
 
     E.catchUp = function (dt) {
       const absent = dt;
-      dt = Math.min(dt, memV("veille") * donMul("veille") * 3600 || OFFLINE_CAP);
+      const baseCap = memV("veille") * donMul("veille") * 3600 || OFFLINE_CAP;
+      const maxCap = E.hasEchoFin("exode") ? Math.max(24 * 3600, baseCap) : baseCap;
+      dt = Math.min(dt, maxCap);
       OFF = true;
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
