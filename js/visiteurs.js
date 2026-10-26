@@ -4,7 +4,7 @@
   "use strict";
 
   function create(api) {
-    const { E, A, D, U, esc, fmt, toast, Tuto } = api;
+    const { E, A, D, U, esc, fmt, toast, Tuto, sparks, floater, vibe, Jus } = api;
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
@@ -35,9 +35,18 @@
       const v = U.vis;
       if (!v) return;
       const lot = E.visiteurToucher(v.id);
+      const r = v.el.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, ic = v.el.textContent;
       visiteurFin();
       if (!lot) return;
-      A.click();
+      // attrapé : il fait « pop », ça éclate là où il était, le gain monte depuis lui
+      A.pop ? A.pop() : A.click();
+      vibe([10, 30, 16]);
+      const fx = $("#fx");
+      if (fx && ic) { const pop = document.createElement("div"); pop.className = "vis-pop"; pop.textContent = ic; pop.style.left = x + "px"; pop.style.top = y + "px"; fx.appendChild(pop); setTimeout(() => pop.remove(), 520); }
+      sparks(x, y, 22, "#ffd36b");
+      Jus.ring(x, y, "#ffd36b", 90, 600);
+      const gain = [lot.res ? "+" + fmt(lot.qty) + " " + I[lot.res].n : "", lot.intu ? "+" + lot.intu + " ✨" : "", lot.objet ? "+1 " + I[lot.objet].n : ""].filter(Boolean);
+      gain.forEach((g, i) => setTimeout(() => floater(g, x, y - 10 - i * 22, "#ffd36b"), i * 140));
       const def = D.VISITEURS.liste.find((x) => x.id === lot.id);
       toast(visiteurPhrase(lot, def), { key: "visiteur", p: 1 });
       U.dirty = true;

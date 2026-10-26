@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.23.2";
+  D.VERSION = "0.24.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -922,17 +922,17 @@
 
   /* ---------------------------------------------------- CURIOSITÉS (EASTER EGGS) */
   D.EASTER = {
-    poudre_rouge: { n: "Poudre rouge", ic: "🔴", desc: "Une poudre rouge, qui crépite entre tes doigts." },
-    coeur: { n: "Quart de cœur", ic: "❤️", desc: "Un fragment de réceptacle. Tu te sens un peu plus solide." },
-    anneau: { n: "Anneau tout simple", ic: "💍", desc: "Au fond du gué, un anneau très lourd pour sa taille." },
-    d20: { n: "Dé à vingt faces", ic: "🎲", desc: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20." },
-    fouet: { n: "Fouet de cuir", ic: "🪢", desc: "Une corde tressée la nuit, qui claque toute seule près des chandelles." },
-    tuyau: { n: "Tuyau vert", ic: "🟩", desc: "Un tuyau vert dépasse de la roche dans les Profondeurs." },
-    survivant: { n: "La demi-heure", ic: "⏱️", desc: "Tes mains tournent toutes seules depuis une demi-heure. Tu n’as jamais été aussi efficace, ni aussi seul." },
-    zera: { n: "Événement", ic: "🎙️", desc: "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE." },
-    squeeze: { n: "Le million", ic: "📦", desc: "Un million. Quelqu’un, quelque part, a dû appuyer très fort sur un bouton." },
-    wtc: { n: "On coupe ?", ic: "✂️", desc: "Une transition sèche. On coupe ?" },
-    konami: { n: "Haut, haut, bas, bas", ic: "⭐", desc: "Trente étoiles de plus brillent dans la nuit." }
+    poudre_rouge: { n: "Poudre rouge", ic: "🔴", tier: 3, desc: "Une poudre rouge, qui crépite entre tes doigts." },
+    coeur: { n: "Quart de cœur", ic: "❤️", tier: 3, desc: "Un fragment de réceptacle. Tu te sens un peu plus solide." },
+    anneau: { n: "Anneau tout simple", ic: "💍", tier: 3, desc: "Au fond du gué, un anneau très lourd pour sa taille." },
+    d20: { n: "Dé à vingt faces", ic: "🎲", tier: 3, desc: "Un caillou d’os taillé à vingt facettes. Tu le lances : 20." },
+    fouet: { n: "Fouet de cuir", ic: "🪢", tier: 2, desc: "Une corde tressée la nuit, qui claque toute seule près des chandelles." },
+    tuyau: { n: "Tuyau vert", ic: "🟩", tier: 2, desc: "Un tuyau vert dépasse de la roche dans les Profondeurs." },
+    survivant: { n: "La demi-heure", ic: "⏱️", tier: 2, desc: "Tes mains tournent toutes seules depuis une demi-heure. Tu n’as jamais été aussi efficace, ni aussi seul." },
+    zera: { n: "Événement", ic: "🎙️", tier: 2, desc: "ÉVÉNEMENT TROUVÉ. RÈGLEMENT : TOUT LE MONDE GAGNE." },
+    squeeze: { n: "Le million", ic: "📦", tier: 2, desc: "Un million. Quelqu’un, quelque part, a dû appuyer très fort sur un bouton." },
+    wtc: { n: "On coupe ?", ic: "✂️", tier: 2, desc: "Une transition sèche. On coupe ?" },
+    konami: { n: "Haut, haut, bas, bas", ic: "⭐", tier: 2, desc: "Trente étoiles de plus brillent dans la nuit." }
   };
 
   /* ------------------------------------------------------- GRANDS ŒUVRES */
@@ -1288,6 +1288,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✨ Plus de punch : un appui sur un bouton se voit (il s’enfonce, un anneau part du doigt) ; le visiteur attrapé fait « pop » et éclate en étincelles, avec son gain qui monte ; et les raretés ont un vrai moment. Une curiosité trouvée prend l’écran : rayons, secousse, coup sourd et vibrations, d’autant plus fort qu’elle est rare (la poudre rouge, le quart de cœur, le dé et l’anneau en haut de l’échelle). « Réduire les animations » garde le message et supprime mouvement et secousses.",
     "🌌 Le ciel du Cosmos s’affiche de nouveau : il restait noir, comme si le canvas avait été démonté aussitôt monté.",
     "🎯 Le guide ne se perd plus : fabriquer en avance le tout dernier objet laisse les étapes qui restent à faire, et une pièce déjà dans ta Réserve n’est plus demandée comme une étape.",
     "⛏️ Quand l’extracteur d’une matière est à toi mais ne la récolte pas, l’objectif le dit : il propose de le poser, ou de le relancer s’il est arrêté.",

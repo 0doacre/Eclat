@@ -799,7 +799,7 @@
         A.fail(0);
       } else if (r.kind === "craft") {
         A.craft(g);
-        if (r.fresh) { setTimeout(() => A.discover(), 180); fete({ id: r.id, kick: "Nouvelle découverte", title: I[r.id].n, sub: fxText(r.id) }); }
+        if (r.fresh) { setTimeout(() => A.discover(), 180); fete({ id: r.id, kick: "Nouvelle découverte", title: I[r.id].n, sub: fxText(r.id), tier: I[r.id].sec ? 2 : 1 }); }
         sparks(p.x, p.y - 40, r.fresh ? 26 : 12);
         vibe(r.fresh ? [10, 40, 20] : 12);
         if (bench) { bench.classList.remove("glow"); void bench.offsetWidth; bench.classList.add("glow"); }

@@ -322,14 +322,21 @@
     if (cur) cur.remove();
     clearTimeout(U.celeT);
     U.celeAt = performance.now();
+    // le palier dit la rareté : 1 une trouvaille, 2 une rareté, 3 un moment qui se raconte
+    const tier = Math.max(1, Math.min(3, o.tier || 1)), P = Jus.palier(tier), col = o.color || D.AGES[S().age].c;
     const el = document.createElement("div");
-    el.className = "cele";
-    el.innerHTML = '<div class="cb">' + (o.id ? icon(o.id, "xl") : '<span class="ic xl">' + o.ic + "</span>") + '<div class="ck">' + esc(o.kick) + '</div><div class="cn">' + esc(o.title) + "</div>" +
+    el.className = "cele t" + tier;
+    el.style.setProperty("--ms", P.ms + "ms");
+    el.style.setProperty("--cc", col);
+    el.innerHTML = (tier >= 3 ? '<div class="crays" aria-hidden="true"></div>' : "") +
+      '<div class="cb">' + (o.id ? icon(o.id, "xl") : '<span class="ic xl">' + o.ic + "</span>") + '<div class="ck">' + esc(o.kick) + '</div><div class="cn">' + esc(o.title) + "</div>" +
       (o.sub ? '<div class="cs">' + esc(o.sub) + "</div>" : "") + "</div>";
     document.body.appendChild(el);
-    sparks(innerWidth / 2, innerHeight * 0.4, 34, D.AGES[S().age].c);
-    vibe([12, 40, 24]);
-    U.celeT = setTimeout(() => el.remove(), 1900);
+    sparks(innerWidth / 2, innerHeight * 0.4, P.sparks, col);
+    if (tier === 1) vibe(P.vibre);
+    else Jus.impact(tier, innerWidth / 2, innerHeight * 0.4, col);
+    for (let k = 0; k < P.fireworks; k++) setTimeout(() => sparks(innerWidth * (0.2 + Math.random() * 0.6), innerHeight * (0.2 + Math.random() * 0.35), 30, ["#ffd36b", "#ff7ad9", "#5aa0ff", "#7fe08a"][k % 4]), 500 + k * 380);
+    U.celeT = setTimeout(() => el.remove(), P.ms);
   }
   function fireworks() {
     if (!motionOK()) return;
@@ -413,10 +420,12 @@
     };
 
     const plainLen = html.replace(/<[^>]+>/g, "").length;
-    const duration = Math.min(4800, Math.max(2500, 2200 + plainLen * 30));
+    const duration = kind === "gold" ? Math.min(7000, Math.max(4500, 3000 + plainLen * 40)) : Math.min(4800, Math.max(2500, 2200 + plainLen * 30));
     t._tm = setTimeout(dismiss, duration);
   }
   function vibe(ms) { if (S().settings.vibe && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* ignoré */ } }
+  /* le jus : l’appui qui se voit, le choc des moments rares (js/juice.js) */
+  const Jus = window.EclatJuice.create({ A, U, S, vibe, motionOK });
   function elCenter(el) {
     if (!el || !el.isConnected) return { x: U.pointer.x || innerWidth / 2, y: U.pointer.y || innerHeight / 2 };
     const r = el.getBoundingClientRect();
@@ -1178,7 +1187,7 @@
    * créés après tout le noyau : chacun reçoit ce dont il a besoin, et rend ce que
    * le noyau et les modules suivants appellent (js/visiteurs.js, js/journal.js…) */
   /* les visiteurs de passage */
-  const Vis = window.EclatVisiteurs.create({ E, A, D, U, esc, fmt, toast, Tuto });
+  const Vis = window.EclatVisiteurs.create({ E, A, D, U, esc, fmt, toast, Tuto, sparks, floater, vibe, Jus });
   const { visiteurTick, visiteurFin } = Vis;
 
   /* le Journal et le Cosmos */
@@ -1276,6 +1285,7 @@
     }
     A.setEnabled(S().settings.sound);
     A.setVolumes(volumes());
+    Jus.press();
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
     setTab("domaine");
