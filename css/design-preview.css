@@ -557,3 +557,177 @@ body:not([data-ep="bord"]) {
   :where(#v-domaine) .dom-terre .gis-b { gap: 3px; }
   :where(#v-domaine) .dom-terre .gis-b .mini { min-width: 40px; padding-inline: 4px; }
 }
+
+/* =====================================================================
+   ATLAS VIVANT / THEME II — IDENTITÉ MATÉRIELLE DES ÉPOQUES
+   Rupture volontaire avec le thème classique. Palette, lumière, papier,
+   encre et ornements changent avec l'histoire de la civilisation.
+   ===================================================================== */
+
+/* Bois / pierre : terre sombre, charbon, ocre rouge, papier de fibres. */
+body[data-ep="pigments"] {
+  --bg: #c6ad85;
+  --bg2: #b99b70;
+  --panel: #f0dfbd;
+  --panel2: #dfc69b;
+  --text: #302219;
+  --muted: #654d37;
+  --dim: #806a50;
+  --line: rgba(48,34,25,.23);
+  --line2: rgba(48,34,25,.48);
+  --acc-base: #ad3c23;
+  --good: #3e652e;
+  --intu: #805313;
+  --paper:
+    repeating-linear-gradient(2deg,rgba(69,40,22,.065) 0 1px,transparent 1px 7px),
+    radial-gradient(ellipse at 82% 12%,rgba(255,241,203,.4),transparent 57%),
+    radial-gradient(ellipse at 10% 87%,rgba(107,61,27,.19),transparent 60%);
+}
+/* Papyrus : végétal, Nil, cuivre oxydé, fibres horizontales. */
+body[data-ep="papyrus"] {
+  --bg: #bda879;
+  --bg2: #ad9564;
+  --panel: #f1e3bb;
+  --panel2: #ddc99b;
+  --text: #292b1d;
+  --muted: #5e6144;
+  --dim: #7c7e5c;
+  --line: rgba(41,43,29,.22);
+  --line2: rgba(41,43,29,.43);
+  --acc-base: #176c61;
+  --good: #396b38;
+  --paper:
+    repeating-linear-gradient(0deg,rgba(68,77,40,.09) 0 1px,transparent 1px 5px),
+    repeating-linear-gradient(90deg,rgba(68,77,40,.04) 0 1px,transparent 1px 17px);
+}
+/* Enluminure : ivoire, vermillon, dorure. */
+body[data-ep="enluminure"] {
+  --bg: #c7b68f;
+  --bg2: #bba780;
+  --panel: #f8eed5;
+  --panel2: #e7d6b0;
+  --text: #2b211c;
+  --muted: #665449;
+  --dim: #877567;
+  --line: rgba(43,33,28,.2);
+  --line2: rgba(43,33,28,.42);
+  --acc-base: #9a2025;
+  --good: #295e53;
+  --paper:
+    repeating-linear-gradient(90deg,transparent 0 35px,rgba(113,45,36,.065) 35px 36px),
+    radial-gradient(ellipse at 50% 0%,rgba(255,250,228,.45),transparent 70%);
+}
+/* Archives mécaniques : papier de bureau, encre bleue, cachets rouges. */
+body[data-ep="registre"] {
+  --bg: #aeb8b4;
+  --bg2: #9daaa7;
+  --panel: #f2efe3;
+  --panel2: #dce2dc;
+  --text: #172d3c;
+  --muted: #4a6170;
+  --dim: #77848a;
+  --line: rgba(23,45,60,.2);
+  --line2: rgba(23,45,60,.4);
+  --acc-base: #a6322d;
+  --good: #246a5b;
+  --paper:
+    repeating-linear-gradient(180deg,transparent 0 29px,rgba(31,88,127,.14) 29px 30px),
+    linear-gradient(90deg,transparent 0 40px,rgba(163,52,47,.16) 40px 42px,transparent 42px);
+}
+/* Technique et industrie : bleu d'architecte, blanc technique. */
+body[data-ep="quadrille"] {
+  --bg: #cad7dc;
+  --bg2: #b5c8d1;
+  --panel: #f5f8f6;
+  --panel2: #dbe7e8;
+  --text: #173d57;
+  --muted: #496879;
+  --dim: #718b98;
+  --line: rgba(23,61,87,.2);
+  --line2: rgba(23,61,87,.4);
+  --acc-base: #136b62;
+  --good: #166b47;
+  --paper:
+    linear-gradient(rgba(30,93,127,.16) 1px,transparent 1px) 0 0/20px 20px,
+    linear-gradient(90deg,rgba(30,93,127,.16) 1px,transparent 1px) 0 0/20px 20px,
+    linear-gradient(rgba(30,93,127,.06) 1px,transparent 1px) 0 0/5px 5px,
+    linear-gradient(90deg,rgba(30,93,127,.06) 1px,transparent 1px) 0 0/5px 5px;
+}
+/* Frontière spatiale : interface de mission, noir graphite et orange. */
+body[data-ep="bord"] {
+  --bg: #17232b;
+  --bg2: #101a22;
+  --panel: #22343d;
+  --panel2: #2b424a;
+  --text: #f4eee2;
+  --muted: #b9c6c7;
+  --dim: #8da3a9;
+  --line: rgba(235,245,242,.18);
+  --line2: rgba(235,245,242,.4);
+  --acc-base: #f3a64e;
+  --good: #8bd4b3;
+  --bad: #ff9b8e;
+  --intu: #ffd27a;
+  --paper:
+    linear-gradient(rgba(148,200,214,.07) 1px,transparent 1px) 0 0/28px 28px,
+    linear-gradient(90deg,rgba(148,200,214,.07) 1px,transparent 1px) 0 0/28px 28px,
+    radial-gradient(ellipse at 70% 0%,rgba(62,124,146,.26),transparent 65%);
+  color-scheme: dark;
+}
+
+/* Le papier physique s'arrête aux limites des feuillets. */
+body:not([data-ep="bord"]) #views {
+  background:
+    linear-gradient(90deg,rgba(28,23,15,.12),transparent 12px,transparent calc(100% - 12px),rgba(28,23,15,.09)),
+    var(--paper),var(--bg);
+}
+body[data-ep="bord"] #views { background: var(--paper),var(--bg); }
+#top, #tabs {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--text);
+}
+#top { box-shadow: 0 5px 0 color-mix(in srgb,var(--text) 15%,transparent); }
+#tabs { box-shadow: 0 -5px 0 color-mix(in srgb,var(--text) 12%,transparent); }
+#tabs button.on { background: var(--panel2); }
+#tabs button.on::before { background: var(--acc-base); }
+#ageName { color: var(--text); }
+.age-bar-fill { background: var(--acc-base); }
+.view .card, .view .dom-card, .view .rec, .view .stepbox, .view .passbox {
+  background: var(--panel);
+  color: var(--text);
+}
+.view .btn.pri { background: var(--acc-base); color: var(--panel); border-color: var(--text); }
+body[data-ep="bord"] .view .btn.pri { color: #171e21; }
+.view .mini, .view .btn, .view .gis-ic { color: var(--text); }
+:where(#v-domaine) .dom-terre {
+  background: var(--panel);
+  border-color: var(--text);
+  box-shadow: 7px 8px 0 color-mix(in srgb,var(--text) 19%,transparent);
+}
+:where(#v-domaine) .dom-terre.a-decor .dom-th {
+  background: linear-gradient(0deg,var(--panel) 0%,color-mix(in srgb,var(--panel) 92%,transparent) 25%,transparent 90%);
+}
+body[data-ep="bord"] :where(#v-domaine) .dom-terre.a-decor::after {
+  filter: saturate(.65) contrast(1.15);
+}
+body[data-ep="bord"] :where(#v-domaine) .dom-terre.a-decor .dom-th h3 {
+  text-shadow: 0 1px 1px var(--panel),1px 0 var(--panel),-1px 0 var(--panel);
+}
+body[data-ep="enluminure"] :where(#v-domaine) .dom-terre {
+  border: 3px double #8f6c2e;
+}
+body[data-ep="enluminure"] :where(#v-domaine) .dom-terre::before {
+  color: #7d5720;
+  border-bottom: 2px solid #a68745;
+}
+body[data-ep="quadrille"] :where(#v-domaine) .dom-terre {
+  box-shadow: 5px 5px 0 #517e9c;
+}
+body[data-ep="bord"] :where(#v-domaine) .dom-terre {
+  border: 1px solid #6e969d;
+  box-shadow: 0 0 0 1px #314c59,5px 5px 0 #0c151b;
+}
+@media (prefers-reduced-motion: reduce) {
+  #top, #tabs { transition: none; }
+}
