@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal,
-      save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin
+      save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App
     } = api;
     const S = () => E.state;
     const $ = (s, r) => (r || document).querySelector(s);
@@ -480,7 +480,8 @@
             '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>" +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("compact", "Affichage compact", U.compact(), "Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup") +
-            sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)")) +
+            sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)") +
+            (App.ecranPossible() ? sw("ecran", "Garder l’écran allumé", st.settings.ecranAllume, "Empêcher la mise en veille de l’écran tant que le jeu est ouvert") : "")) +
           sec("Son et vibrations",
             sw("sound", "Son", st.settings.sound, "Couper ou remettre la musique et les bruitages") +
             '<div id="volGroup" class="vol-group' + (st.settings.sound ? "" : " hidden") + '">' +
@@ -494,7 +495,8 @@
             '<div class="menu-grid"><button class="btn" data-m="mem" title="Ce que tes Traces t’offrent d’une partie à l’autre">✦ Mémoire des mains</button></div>') +
           sec("Ma partie",
             '<div class="menu-grid"><button class="btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie">💾 Sauvegardes</button>' +
-            '<button class="btn" data-m="account" title="Retrouver ta partie sur tous tes appareils">☁️ Compte en ligne</button></div>') +
+            '<button class="btn" data-m="account" title="Retrouver ta partie sur tous tes appareils">☁️ Compte en ligne</button>' +
+            (App.installable() ? '<button class="btn" data-m="installer" title="Ajouter Éclat à l’écran d’accueil de ton appareil">📲 Installer le jeu</button>' : "") + "</div>") +
           sec("Aide",
             '<div class="menu-grid"><button class="btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran">❓ Comment jouer</button>' +
             '<button class="btn" data-m="news" title="Ce qui a changé dans cette version">📰 Nouveautés</button>' +
@@ -528,6 +530,8 @@
           },
           compact: (b) => { U.setCompact(!U.compact()); setSw(b, U.compact()); save(); U.dirty = true; return true; },
           carnet2: (b) => { st.settings.carnet1Col = !st.settings.carnet1Col; setSw(b, !st.settings.carnet1Col); save(); U.dirty = true; return true; },
+          ecran: (b) => { st.settings.ecranAllume = !st.settings.ecranAllume; setSw(b, st.settings.ecranAllume); App.ecranAllume(); save(); return true; },
+          installer: () => { App.installer(); },
           sound: (b) => {
             st.settings.sound = !st.settings.sound;
             A.init(); A.setEnabled(st.settings.sound);
@@ -591,6 +595,7 @@
         "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
         "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
         "<p><b>Jeu fermé.</b> Les extracteurs, les commandes et l’exploration continuent pendant 12 h au plus.</p>" +
+        "<p><b>⌨️ Clavier et bouton Retour.</b> Sur ordinateur, les touches 1 à 6 changent d’écran (Domaine, Carte, Atelier, Arbre, Carnet, Journal). Sur téléphone, Retour ferme la fenêtre ouverte, puis ramène au Domaine ; une deuxième fois, il quitte le jeu.</p>" +
         "<p><b>💾 Sauvegardes.</b> Dans le Menu : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
     }
 

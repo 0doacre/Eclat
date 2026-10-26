@@ -7,7 +7,7 @@
 
   function create(api) {
     const {
-      E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete,
+      App, E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete,
       fireworks, elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge,
       updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML,
       FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
@@ -174,6 +174,8 @@
         }, 900);
       });
       /* une pièce sort des mains : le compte monte (le bruit, lui, est celui de l’atelier au travail : js/audio.js, A.work) */
+      // le jeu est caché et quelque chose est fini : le titre de l’onglet le dit
+      ["handdone", "expdone", "fouillePrete"].forEach((ev) => E.on(ev, () => App.attention()));
       E.on("handdone", (d) => {
         const el = U.tab === "atelier" ? $("#hands") : null;
         if (el && d.last) { const p = elCenter(el); floater("+" + fmt(d.n) + " " + I[d.id].n, p.x, p.y - 10, "var(--good)"); if (d.bonus) setTimeout(() => floater("★ +" + fmt(d.bonus), p.x, p.y - 26, "var(--intu)"), 200); }

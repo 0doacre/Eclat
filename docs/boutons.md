@@ -4,12 +4,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 
 | | |
 |---|---|
-| Boutons relevés | 209 |
+| Boutons relevés | 211 |
 | Sans explication | 0 |
 | Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |
 
-## Aide (36 boutons, 0 sans explication)
+## Aide (38 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -18,6 +18,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | neuve | Désactivé | `button[data-m="largeText"].btn.sw` | info-bulle : Agrandir les textes de tout le jeu |
 | neuve | Désactivé | `button[data-m="compact"].btn.sw` | info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup |
 | neuve | Activé | `button[data-m="carnet2"].btn.sw` | info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large) |
+| neuve | Désactivé | `button[data-m="ecran"].btn.sw` | info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert |
 | neuve | Activé | `button[data-m="sound"].btn.sw` | info-bulle : Couper ou remettre la musique et les bruitages |
 | neuve | Activé | `button[data-m="vibe"].btn.sw` | info-bulle : Faire vibrer l’appareil lors des actions importantes |
 | neuve | Activé | `button[data-m="visiteurs"].btn.sw` | info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps |
@@ -36,6 +37,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Désactivé | `button[data-m="largeText"].btn.sw` | info-bulle : Agrandir les textes de tout le jeu |
 | avancée | Désactivé | `button[data-m="compact"].btn.sw` | info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup |
 | avancée | Activé | `button[data-m="carnet2"].btn.sw` | info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large) |
+| avancée | Désactivé | `button[data-m="ecran"].btn.sw` | info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert |
 | avancée | Activé | `button[data-m="sound"].btn.sw` | info-bulle : Couper ou remettre la musique et les bruitages |
 | avancée | Activé | `button[data-m="vibe"].btn.sw` | info-bulle : Faire vibrer l’appareil lors des actions importantes |
 | avancée | Activé | `button[data-m="visiteurs"].btn.sw` | info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps |

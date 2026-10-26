@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.25.0";
+  D.VERSION = "0.26.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1288,6 +1288,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📱 Le jeu se tient mieux dans l’appareil : sur téléphone, le bouton Retour ferme la fenêtre ouverte, puis ramène au Domaine, et ne quitte qu’au second appui. L’onglet affiche (2) dans son titre quand une commande ou une exploration se termine pendant que le jeu est caché. Le menu propose « Garder l’écran allumé » et, quand l’appareil le permet, « Installer le jeu ». Sur ordinateur, les touches 1 à 6 changent d’écran.",
     "⚙️ Le menu est réorganisé en sections (Affichage, Son et vibrations, Jeu, Ma partie, Aide), avec les mêmes interrupteurs partout (Activé, Désactivé). Le thème sombre s’appelle « Sombre », le tutoriel « Guide », et « Tout recommencer » devient « Recommencer la partie ».",
     "🤏 L’affichage compact se règle dans le menu, pour le Domaine et le Carnet à la fois, et il resserre vraiment : chaque gisement tient sur une ligne basse, ses boutons ne gardent que leur symbole. Les boutons de bascule des pages disparaissent.",
     "⊞ Le Carnet sur deux colonnes marche enfin sur téléphone : les fiches se resserrent pour tenir côte à côte.",
