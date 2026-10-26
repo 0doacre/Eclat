@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.33.0";
+  D.VERSION = "0.34.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -935,6 +935,133 @@
     konami: { n: "Haut, haut, bas, bas", ic: "⭐", tier: 2, desc: "Trente étoiles de plus brillent dans la nuit." }
   };
 
+  /* --------------------------------------------------- GESTES REMARQUÉS (SUCCÈS) */
+  D.GESTES_REMARQUES = {
+    premiers_pas: {
+      n: "Premiers pas", ic: "🪵",
+      t: "Tailler un manche en bois dans la Lisière.",
+      hint: "Retirer ce qui dépasse d’un bâton.",
+      when: (st) => !!(st.made && st.made.manche)
+    },
+    premier_feu: {
+      n: "La première flamme", ic: "🔥",
+      t: "Allumer un feu de camp avant la nuit.",
+      hint: "Réunir de quoi chauffer la matière.",
+      when: (st) => !!(st.made && st.made.feu)
+    },
+    premiere_cabane: {
+      n: "L’abri du gisement", ic: "🛖",
+      t: "Poser un premier extracteur pour récolter à ta place.",
+      hint: "Laisser un abri récolter sur un filon.",
+      when: (st) => !!(st.inv && st.inv.cabane) || (st.dom && st.dom.gis && st.dom.gis.bois && st.dom.gis.bois.ext > 0) || !!(st.meta && st.meta.ruins && st.meta.ruins.cabane)
+    },
+    premiere_plaine: {
+      n: "La première frontière", ic: "🌾",
+      t: "Franchir le passage de la Plaine avec un épieu.",
+      hint: "S’armer pour ouvrir l’accès aux hautes herbes.",
+      when: (st) => !!(st.zones && st.zones.plaine)
+    },
+    premiere_releve: {
+      n: "La relève des mains", ic: "✦",
+      t: "Passer le relais et confier le savoir au Semeur suivant.",
+      hint: "Laisser quelqu’un d’autre reprendre la route.",
+      when: (st) => (st.cycle || 1) >= 2
+    },
+    premier_automate: {
+      n: "Le souffle mécanique", ic: "⚙️",
+      t: "Faire tourner une commande avec une machine.",
+      hint: "Confier une tâche répétitive à un automate.",
+      when: (st) => !!(st.inv && (st.inv.automate_bois || st.inv.automate_bronze || st.inv.automate_acier || st.inv.chaine)) || (st.dom && st.dom.gis && Object.values(st.dom.gis).some((g) => g && g.mach > 0))
+    },
+    premier_troc: {
+      n: "Le premier troc", ic: "🪙",
+      t: "Honorer une commande du Troqueur au Comptoir.",
+      hint: "Répondre à la demande d’un marchand.",
+      when: (st) => !!((st.comptoir && Object.keys(st.comptoir.sold || {}).length > 0) || (st.meta && st.meta.troqueurDelivered > 0))
+    },
+    premier_signe: {
+      n: "La parole gravée", ic: "✍️",
+      t: "Comprendre un premier signe des Anciens.",
+      hint: "Trouver le sens d’un symbole dans la roche.",
+      when: (st) => !!(st.signes && Object.keys(st.signes).length > 0)
+    },
+    premiere_etude: {
+      n: "L’œil attentif", ic: "🔍",
+      t: "Étudier une matière à la loupe avec de l’Intuition.",
+      hint: "Regarder une matière de plus près.",
+      when: (st) => !!(st.studied && Object.keys(st.studied).length > 0)
+    },
+    premier_dechiffrage: {
+      n: "L’énigme percée", ic: "✨",
+      t: "Déchiffrer une recette inconnue pas à pas.",
+      hint: "Éclairer une recette que tu n’as pas encore trouvée.",
+      when: (st) => !!(st.hints && Object.values(st.hints).some((v) => v >= 1))
+    },
+    premier_visiteur: {
+      n: "La silhouette fugitive", ic: "🦋",
+      t: "Surprendre un visiteur qui traverse le Domaine.",
+      hint: "Toucher quelqu’un qui ne fait que passer.",
+      when: (st) => !!(st.stats && (st.stats.visiteurs >= 1 || st.stats.visiteursVus >= 1))
+    },
+    premier_don: {
+      n: "Le don du réveil", ic: "🤲",
+      t: "Recevoir la bénédiction d’un don au réveil d’un cycle.",
+      hint: "Choisir une faveur pour le prochain Semeur.",
+      when: (st) => !!(st.don || (st.meta && st.meta.jours && st.meta.jours.n > 0))
+    },
+    premier_air: {
+      n: "Le chant dans l’os", ic: "🎶",
+      t: "Retrouver une mélodie sur la flûte à cinq trous.",
+      hint: "Jouer les bonnes notes dans le silence.",
+      when: (st) => !!(st.secrets && Object.keys(D.MELODIES || {}).some((m) => st.secrets[m]))
+    },
+    premiere_constellation: {
+      n: "Le dessin du ciel", ic: "🌌",
+      t: "Relier les étoiles d’une constellation dans le Cosmos.",
+      hint: "Relier ce qui brille dans la nuit.",
+      when: (st) => !!(st.meta && st.meta.constellations && Object.keys(st.meta.constellations).length > 0)
+    },
+    ruines_relevees: {
+      n: "L’héritage relevé", ic: "🔨",
+      t: "Tout réparer d’un coup sur les ruines d’un cycle passé.",
+      hint: "Relever ce que le précédent Semeur a laissé.",
+      when: (st) => !!(st.repaired && Object.keys(st.repaired).length > 0)
+    },
+    chef_doeuvre: {
+      n: "Le geste parfait", ic: "🏆",
+      t: "Réaliser un chef-d’œuvre à l’Atelier.",
+      hint: "Façonner un objet sans le moindre défaut.",
+      when: (st) => !!(st.stats && st.stats.master >= 1)
+    },
+    douze_terres: {
+      n: "Le tour du monde", ic: "🗺️",
+      t: "Atteindre les douze terres, du sous-sol aux étoiles.",
+      hint: "Fouler chaque contrée du monde connu.",
+      when: (st) => D.ZONES.every((z) => st.zones && st.zones[z.id])
+    },
+    toutes_matieres: {
+      n: "L’encyclopédie des mains", ic: "🔬",
+      t: "Avoir étudié chaque matière première du monde.",
+      hint: "Ne laisser aucune ressource brute inexplorée.",
+      when: (st) => {
+        const mats = Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].t === "res" && !D.ITEMS[i].sec);
+        return mats.length > 0 && mats.every((i) => st.studied && st.studied[i]);
+      }
+    },
+    livre_complet: {
+      n: "Le Livre des Semeurs", ic: "📖",
+      t: "Retrouver les 32 pages du Livre des Semeurs.",
+      hint: "Rassembler toutes les pages éparpillées.",
+      when: (st) => !!(st.livre && st.livre.p && Object.keys(st.livre.p).length >= 32)
+    },
+    cinq_fins: {
+      n: "Les cinq horizons", ic: "🌅",
+      t: "Avoir contemplé les cinq fins d’Éclat.",
+      hint: "Voir où chaque grand chemin conduit le monde.",
+      when: (st) => !!(st.meta && st.meta.endings && Object.keys(st.meta.endings).length >= 5)
+    }
+  };
+
   /* ------------------------------------------------------- GRANDS ŒUVRES */
   D.PROJECTS = {
     dyson: { n: "La Sphère de Dyson", ic: "☀️", req: "arche", end: "aube",
@@ -1288,6 +1415,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✦ Les gestes remarqués : 20 succès discrets jalonnent désormais ta route dans le Journal (onglet Gestes), sans récompense chiffrée, avec l’horodatage diégétique de chaque accomplissement (cycle, âge, date).",
     "🍃 Ligne d’ambiance : sous l’en-tête, une petite phrase discrète donne à voir et à sentir le monde vivant selon la terre où tu te trouves, ton âge et l’heure réelle (aube, jour, crépuscule, nuit). Toucher la ligne fait défiler une autre observation du moment, et elle peut se couper dans Menu → Affichage.",
     "📖 Carnet & fabrication : mémorisation du dernier filtre et de la recherche du Carnet, quantité libre à côté de ×10 et Max pour commander le volume exact souhaité, et ajustement des filtres de l’Arbre vers des termes de jeu (Toutes, À portée, Prêtes, Verrouillées).",
     "🌳 L’Arbre à portée : le filtre « À portée » réunit ce que tu peux fabriquer immédiatement ou presque avec ta Réserve, avec les filtres « Prêtes », « Presque » et « Pas encore ». Un point discret signale les nouvelles recettes découvertes que tu n’as pas encore fabriquées.",

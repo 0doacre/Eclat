@@ -142,15 +142,17 @@
       const st = S();
       const tabs = [["fragments", "Fragments"]];
       const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
+      const gestesNew = E.hasNewGeste ? E.hasNewGeste() : false;
       if (E.hasLivre && E.hasLivre()) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
       if (E.hasQuestions && E.hasQuestions()) tabs.push(["questions", "Questions"]);
       if (E.hasSignes && E.hasSignes()) tabs.push(["signes", "Signes"]);
       tabs.push(["secrets", "Secrets"]);
+      tabs.push(["gestes", "Gestes" + (gestesNew ? " •" : "")]);
       if (E.has("flute")) tabs.push(["flute", "Flûte"]);
       if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Clins d’œil"]);
       tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
       if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
-      const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
+      const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", gestes: "Les gestes remarqués et accomplis au fil de ta route", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
       let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (U.journalTab === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
@@ -253,6 +255,20 @@
           h += '<div class="sec' + (found ? "" : " unk") + '"><div class="k">' + s.k + "</div>" + (found ? esc(name) : "???") + "</div>";
         });
         h += "</div>";
+      } else if (U.journalTab === "gestes") {
+        if (E.readGestes) E.readGestes();
+        const list = E.gestesList ? E.gestesList() : [];
+        const doneCount = list.filter((g) => g.done).length;
+        h += '<p class="small muted">' + doneCount + "/" + list.length + " gestes remarqués au fil de ta civilisation.</p>";
+        h += '<div class="gestes-grid">';
+        list.forEach((g) => {
+          if (g.done) {
+            h += '<div class="frag geste done"><span class="fi">' + esc(g.ic) + '</span><div class="grow"><b>' + esc(g.n) + '</b><div class="tiny muted">' + esc(g.t) + '</div>' + stampHTML("g:" + g.id, true) + '</div><span class="geste-check" title="Geste accompli">✓</span></div>';
+          } else {
+            h += '<div class="frag geste unk"><span class="fi">❔</span><div class="grow"><b>' + esc(g.n) + '</b><div class="tiny muted">' + esc(g.hint || "Un geste à accomplir dans le monde.") + '</div></div></div>';
+          }
+        });
+        h += '</div>';
       } else if (U.journalTab === "flute") {
         h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer. Une pause de quelques secondes, et l’air recommence à zéro.</p><div class="flute-body"><div class="flute">' +
           [1, 2, 3, 4, 5].map((n) => '<button class="hole" data-note="' + n + '">' + n + "</button>").join("") + '</div></div><div class="notes" id="notes">' + st.notes.join(" · ") + "</div></div>";

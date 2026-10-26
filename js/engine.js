@@ -105,7 +105,7 @@
       stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
       visiteur: { next: 0, clins: {} },
       don: null, donsOffre: [],
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null } },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null }, gestes: {}, gestesVu: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -3476,6 +3476,68 @@
     E.curiosCount = () => Object.keys((S.meta && S.meta.curios) || {}).length;
     E.curios = () => Object.assign({}, (S.meta && S.meta.curios) || {});
 
+    /* ---------------------------------------------------- GESTES REMARQUÉS (SUCCÈS) */
+    function markGeste(id) {
+      if (!D.GESTES_REMARQUES || !D.GESTES_REMARQUES[id]) return false;
+      S.meta = S.meta || {};
+      S.meta.gestes = S.meta.gestes || {};
+      if (S.meta.gestes[id]) return false;
+      S.meta.gestes[id] = now();
+      stamp("g:" + id);
+      E.emit("geste", id);
+      return true;
+    }
+    function checkGestes() {
+      if (!D.GESTES_REMARQUES) return false;
+      S.meta = S.meta || {};
+      S.meta.gestes = S.meta.gestes || {};
+      let changed = false;
+      for (const id in D.GESTES_REMARQUES) {
+        if (S.meta.gestes[id]) continue;
+        const g = D.GESTES_REMARQUES[id];
+        if (typeof g.when === "function" && g.when(S)) {
+          S.meta.gestes[id] = now();
+          stamp("g:" + id);
+          changed = true;
+          E.emit("geste", id);
+        }
+      }
+      return changed;
+    }
+    E.markGeste = markGeste;
+    E.checkGestes = checkGestes;
+    E.hasGeste = (id) => !!(S.meta && S.meta.gestes && S.meta.gestes[id]);
+    E.gestesCount = () => Object.keys((S.meta && S.meta.gestes) || {}).length;
+    E.hasNewGeste = function () {
+      if (!S.meta || !S.meta.gestes) return false;
+      const vu = S.meta.gestesVu || {};
+      for (const id in S.meta.gestes) {
+        if (!vu[id]) return true;
+      }
+      return false;
+    };
+    E.readGestes = function () {
+      if (!S.meta) return;
+      S.meta.gestesVu = S.meta.gestesVu || {};
+      for (const id in (S.meta.gestes || {})) S.meta.gestesVu[id] = true;
+    };
+    E.gestesList = function () {
+      const out = [];
+      for (const id in (D.GESTES_REMARQUES || {})) {
+        const g = D.GESTES_REMARQUES[id];
+        out.push({
+          id,
+          n: g.n,
+          ic: g.ic,
+          t: g.t,
+          hint: g.hint,
+          done: !!(S.meta && S.meta.gestes && S.meta.gestes[id]),
+          at: (S.meta && S.meta.gestes && S.meta.gestes[id]) || null
+        });
+      }
+      return out;
+    };
+
     /* ----------------------------------------------------------- LE COMPTOIR
      * Marché tenu par le Troqueur dans la Plaine : on vend ce qui encombre la
      * Réserve contre des écus, et on achète des Traces et des matières premières. */
@@ -4152,6 +4214,7 @@
       n.donsOffre = n.cycle >= 2 ? E.donsTirage(n.cycle, n.meta.graine) : [];
       forgetDom();
       recalc();
+      checkGestes();
       E.emit("cycle", n.cycle);
       E.emit("struct");
     };
@@ -4418,6 +4481,7 @@
       if (S.exp.active && t >= S.exp.active.t0 + S.exp.active.dur) finishExp(false);
       checkTroqueur();
       checkEvents();
+      checkGestes();
       return dt;
     };
 
@@ -5009,6 +5073,7 @@
       }
       if (!S.flags.ages) checkAges(true); // une partie d’avant les âges accomplis
       if (S.signes && S.signes.nourrice && S.signes.nourrice.lu) S.secrets.signature = true;
+      checkGestes();
       E.emit("struct");
       return true;
     };
