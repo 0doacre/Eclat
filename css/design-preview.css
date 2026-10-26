@@ -996,6 +996,72 @@ body[data-tab="cosmos"] #v-cosmos {
 #v-cosmos .btn.pri { background: var(--acc); color: var(--acc-ink); border-color: var(--acc); }
 #v-cosmos .btn.on { color: var(--good); border-color: var(--good); }
 #v-cosmos button:focus-visible, #v-cosmos input:focus-visible { outline-color: #f2deaa; }
+
+/* ATLAS V6 — fiches et fenêtres : une même feuille, du détail au Menu.
+ * Les scènes d'âge et de fin gardent leur mise en scène propre. */
+.modal:not(.ending):not(.agecard) .modal-box {
+  padding: 22px 18px calc(20px + var(--safe-b));
+  border-width: 1px;
+  max-height: min(88vh, 88dvh);
+  overscroll-behavior: contain;
+  scrollbar-color: var(--atlas-ink) var(--panel);
+  font-size: 16px;
+}
+.modal:not(.ending):not(.agecard) .modal-box h2 { font-size: 28px; }
+.modal:not(.ending):not(.agecard) .modal-box > h2 { padding-right: 44px; }
+.modal-box .modal-x {
+  width: 44px; height: 44px; margin: -10px -6px 0 0;
+  border-radius: 3px; color: var(--text); border-color: var(--atlas-hairline);
+}
+.modal-box :is(.btn,.mini,.pinb,.ing.link,.ring,.seg button) { min-height: 44px; min-width: 44px; }
+.modal-box :is(.btn,.mini,.pinb,.ing.link,.ring,.pick,.vol-group,.seg,.fld input,textarea.save) { border-radius: 3px; }
+.modal-box :is(.small,.pick,.menu-grid .btn) { font-size: 16px; line-height: 1.4; }
+.modal-box .tiny { font-size: 14px; line-height: 1.45; }
+.modal-box .kicker { color: var(--muted); font-size: 12px; line-height: 1.5; letter-spacing: .1em; }
+.modal-box h3.sub {
+  margin-top: 22px; padding-bottom: 7px; border-bottom: 1px solid var(--atlas-hairline);
+  font-size: 13px; letter-spacing: .08em;
+}
+.modal-box :is(.grow,.fld,.toggle > span) { min-width: 0; }
+.modal-box :is(.btn,.ing,.ring,.tstep,.pick,.toggle) { overflow-wrap: anywhere; }
+.modal-box :is(.ing,.ing.link) { max-width: 100%; white-space: normal; }
+.modal-box .btn:disabled {
+  opacity: 1; color: var(--muted); background: var(--bg2);
+  border: 1px dashed var(--atlas-hairline); box-shadow: none;
+}
+.modal-box .gi { flex-shrink: 0; }
+.rwin > .row:first-child { flex-wrap: wrap; padding-right: 42px; gap: 8px; padding-bottom: 16px; border-bottom: 3px double var(--atlas-hairline); }
+.rwin > .row:first-child > .grow { flex: 1 1 calc(100% - 64px); }
+.rwin > .row:first-child > .pinb { align-self: center; margin: 0; }
+.rwin .rdesc { font-size: 19px; line-height: 1.5; margin-block: 16px; }
+.rwin .stars { color: var(--atlas-ink); }
+.rwin .ring { padding: 11px 10px; gap: 8px; border-left-width: 3px; }
+.rwin .ring .tiny { font-family: "IBM Plex Mono",monospace; font-size: 12px; white-space: nowrap; }
+.rwin .ring .can-make { display: block; margin: 3px 0 0; font-size: 13px; }
+.rwin .ing.link { padding: 7px 9px; font-size: 15px; }
+.rwin .riddle { font: 19px/1.5 "IM Fell English",Georgia,serif; border-radius: 0; }
+.rwin :is(.study,.decipher) { padding: 12px 0; gap: 10px; }
+.rwin .study .g { border-radius: 2px; font-size: 14px; padding: 5px 8px; }
+.modal-box .why { border-radius: 0; border-left: 3px solid var(--bad); padding: 10px; background: var(--bg2); }
+.modal-box .acts { padding-top: 14px; border-top: 1px solid var(--atlas-hairline); gap: 8px; }
+.modal-box .acts .btn { flex: 1 1 auto; min-width: min(100%,120px); }
+.modal-box .toggle { gap: 12px; padding-block: 12px; }
+.modal-box .toggle .sw { flex-shrink: 0; }
+.modal-box .toggle:has([data-m="tuto"]) { flex-wrap: wrap; }
+.modal-box .menu-grid .btn { justify-content: flex-start; text-align: left; padding: 10px; }
+.modal-box .menu-grid .gi { width: 22px; height: 22px; }
+.modal-box .vol-group { background: var(--bg2); padding-inline: 10px; }
+.modal-box .picklist { gap: 8px; }
+.modal-box .pick { padding: 12px 10px; }
+.modal-box .fld input { min-height: 48px; font-size: 16px; }
+.modal-box textarea.save { font-size: 13px; line-height: 1.5; }
+.modal-box .tstep { flex-wrap: wrap; }
+@media (max-width: 360px) {
+  .modal-box .menu-grid { grid-template-columns: minmax(0,1fr); }
+}
+body.large-text .modal-box :is(.small,.pick,.menu-grid .btn) { font-size: 18px; }
+body.large-text .modal-box .tiny { font-size: 16px; }
+body.large-text .rwin :is(.rdesc,.riddle) { font-size: 21px; }
 @media (min-width: 620px) {
   #v-journal .livre-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
 }

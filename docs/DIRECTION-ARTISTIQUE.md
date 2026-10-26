@@ -49,6 +49,7 @@ La branche de test assume une identité plus forte : filets de reliure, titrage 
 - Carte : paysage continu, brume peinte et feuillet céleste intégrés ; retour utilisateur sur la V3 attendu.
 - Atelier et Carnet : passe V4 sur l’établi, les tuiles de matières et les fiches de savoir-faire. [Bilan et captures](ATLAS-VIVANT-ATELIER-CARNET-V4.md).
 - Journal et Cosmos : passe V5 sur les archives, la lecture, le champ d’observation, la console et les Grands Œuvres. [Bilan et captures](ATLAS-VIVANT-JOURNAL-COSMOS-V5.md).
-- À suivre : passe transversale sur les fiches, fenêtres et pictogrammes, états vides ou très chargés, puis recette d’ensemble sur appareil. Retour utilisateur sur la carte attendu.
+- Fiches et fenêtres : passe V6 sur les détails de recettes, ingrédients, Menu, aide et sauvegardes ; pictogrammes SVG existants harmonisés. [Bilan et captures](ATLAS-VIVANT-FICHES-FENETRES-V6.md).
+- À suivre : revue d’ensemble des écrans et des états très chargés, puis recette sur appareil. Retour utilisateur sur la carte attendu.
 
 Les versions jouables restent sur `prewiew-design` et sa prévisualisation indépendante. Leur intégration éventuelle à `main` demandera une revue distincte.
