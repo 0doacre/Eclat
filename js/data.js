@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.27.0";
+  D.VERSION = "0.28.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1288,6 +1288,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🌳 L’Arbre se lit en pastilles : chaque âge devient une frise d’icônes (matières vues, recettes trouvées, pistes à découvrir, ton objectif), plus facile à parcourir que des cartes. Toucher une pastille ouvre une feuille qui monte du bas avec ce que la recette utilise et ce qu’elle sert à fabriquer ; l’arbre reste visible dessous. La progression reste l’accueil de l’Arbre.",
     "🛖 Après une relève, les ruines tiennent dans un seul bloc replié sous ce qui se récolte, au lieu d’une carte par ruine qui repoussait les gisements. Quand tu peux relever quelque chose, le bloc s’ouvre et « Tout réparer » relève tout ce que ta Réserve permet. Réparer une ruine compte maintenant comme fabriquer l’objet : l’étape « fabrique une cabane » ne te redemande plus ce que tu viens de relever.",
     "🪙 Le Comptoir est dans le menu : tu y accèdes de n’importe quel écran.",
     "📱 Le jeu se tient mieux dans l’appareil : sur téléphone, le bouton Retour ferme la fenêtre ouverte, puis ramène au Domaine, et ne quitte qu’au second appui. L’onglet affiche (2) dans son titre quand une commande ou une exploration se termine pendant que le jeu est caché. Le menu propose « Garder l’écran allumé » et, quand l’appareil le permet, « Installer le jeu ». Sur ordinateur, les touches 1 à 6 changent d’écran.",

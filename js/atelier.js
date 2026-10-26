@@ -430,6 +430,21 @@
         '<span class="arb-status">' + esc(arbreEtat(n)) + '</span>' +
         (n.objectif ? '<span class="arb-objectif">Objectif</span>' : '') + '</span></' + tag + '>';
     }
+    /* la place d’une pastille dans son âge : les matières d’abord, puis les recettes de la moins profonde à la plus profonde, les pistes à la fin */
+    function arbreRang(n, g) {
+      if (n.etat === "fantome") return 99;
+      if (n.etat === "vu") return 0;
+      const it = I[n.id], dans = new Set(g.noeuds.filter((x) => x.age === n.age).map((x) => x.id));
+      let d = 0;
+      for (const k in it.r[1]) if (dans.has(k) && k !== n.id) { const x = g.noeuds.find((m) => m.id === k); d = Math.max(d, x ? arbreRang(x, { noeuds: g.noeuds.filter((m) => m.id !== n.id) }) : 0); }
+      return 1 + d;
+    }
+    /* une pastille de la frise : une icône, un nom court, un état écrit pour le lecteur d’écran */
+    function arbrePastille(n) {
+      const fant = n.etat === "fantome", nom = fant ? "Recette à découvrir" : n.n;
+      return '<button type="button" class="arb-pas ' + n.etat + (n.objectif ? " obj" : "") + '" data-arbsel="' + esc(n.cle) + '" data-arbn="' + esc(n.cle) + '" aria-label="' + esc(nom + ", " + arbreEtat(n).toLowerCase() + (n.objectif ? ", objectif" : "")) + '" title="Ouvrir : ses ingrédients et ses usages">' +
+        (fant ? '<span class="arb-inconnu" aria-hidden="true">?</span>' : icon(n.id, "sm")) + '<span class="arb-pas-n" aria-hidden="true">' + esc(fant ? "?" : nom) + '</span></button>';
+    }
     function arbreResultats(q) {
       q = norm(q || "").trim();
       if (!q) return '<p class="small muted">Cherche une recette ou une ressource que tu connais.</p>';
@@ -453,13 +468,15 @@
       if (objectif) h += '<h3>Prochaine étape</h3>' + arbreCarte(objectif, false);
       else if (ob) h += '<h3>Prochain objectif</h3><p>' + esc(ob.txt || ob.n || 'Poursuivre l’exploration') + '</p>';
       else h += '<p>Tu as accompli les objectifs proposés.</p>';
-      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3>';
+      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>matière vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span></div>';
       for (let a = 0; a <= g.max; a++) {
         const ns = g.noeuds.filter((n) => n.age === a);
         const ouverts = U.arbreAges || {};
         const ouvert = ouverts[a] !== undefined ? ouverts[a] : a === Math.min(g.age, g.max);
         h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '') + '</span></summary>';
-        h += '<div class="arb-grille">' + (ns.length ? ns.map((n) => arbreCarte(n, false)).join('') : '<p class="small muted">Rien découvert pour l’instant.</p>') + '</div></details>';
+        const rang = new Map(ns.map((n) => [n.cle, arbreRang(n, g)]));
+        ns.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
+        h += (ns.length ? '<div class="arb-frise">' + ns.map(arbrePastille).join('') + '</div>' : '<p class="small muted">Rien découvert pour l’instant.</p>') + '</details>';
       }
       if (g.max < D.AGES.length - 1) h += '<p class="small muted">Les autres âges se dévoileront au fil de tes découvertes.</p>';
       return h;
@@ -468,9 +485,9 @@
       const v = Arb.voisinage(g, cle);
       if (!v) return arbreEnsemble(g);
       const n = v.centre, it = n.id && I[n.id];
-      let h = '<header class="arb-entete"><button type="button" class="btn small ghost" data-arb="retour" title="Revenir en arrière dans l’arbre">← ' + ((U.arbreHistorique || []).length ? 'Revenir' : 'Les âges') + '</button><p class="small muted">' + esc(D.AGES[n.age].n) + '</p></header>';
+      let h = '<header class="arb-entete">' + ((U.arbreHistorique || []).length ? '<button type="button" class="btn small ghost" data-arb="retour" title="Revenir à la recette d’avant">← Revenir</button>' : '') + '<p class="small muted">' + esc(D.AGES[n.age].n) + '</p></header>';
       if (v.amont.length) {
-        h += '<section class="arb-etape" aria-labelledby="arb-ingredients"><h3 id="arb-ingredients">' + (n.etat === 'fantome' ? 'Une piste pour commencer' : 'Utilise') + '</h3><div class="arb-grille">' + v.amont.map((p) => arbreCarte(p, false)).join('') + '</div></section><div class="arb-fleche" aria-hidden="true">↓</div>';
+        h += '<section class="arb-etape" aria-labelledby="arb-ingredients"><h3 id="arb-ingredients">' + (n.etat === 'fantome' ? 'Une piste pour commencer' : 'Utilise') + '</h3><div class="arb-frise arb-voisins">' + v.amont.map(arbrePastille).join('') + '</div></section><div class="arb-fleche" aria-hidden="true">↓</div>';
       }
       h += '<section class="arb-selection" aria-label="Objet sélectionné">' + arbreCarte(n, true) + '<div class="arb-actions">';
       if (n.etat === 'allume') h += '<button type="button" class="btn small" data-carnet-rec="' + esc(n.id) + '">Ouvrir la recette dans le Carnet</button>';
@@ -480,8 +497,8 @@
       h += '</section>';
       if (v.aval.length) {
         const connus = v.aval.filter((p) => p.etat !== 'fantome'), inconnus = v.aval.length - connus.length;
-        const visibles = U.arbreTout ? connus : connus.slice(0, 6);
-        h += '<div class="arb-fleche" aria-hidden="true">↓</div><section class="arb-etape" aria-labelledby="arb-usages"><h3 id="arb-usages">Sert à fabriquer</h3><div class="arb-grille">' + visibles.map((p) => arbreCarte(p, false)).join('') + '</div>';
+        const visibles = U.arbreTout ? connus : connus.slice(0, 8);
+        h += '<div class="arb-fleche" aria-hidden="true">↓</div><section class="arb-etape" aria-labelledby="arb-usages"><h3 id="arb-usages">Sert à fabriquer</h3><div class="arb-frise arb-voisins">' + visibles.map(arbrePastille).join('') + '</div>';
         if (connus.length > visibles.length) h += '<button type="button" class="btn small wide" data-arb="tout" title="Afficher tous les usages connus">Voir les ' + connus.length + ' usages connus</button>';
         if (inconnus) h += '<p class="small arb-pistes">' + inconnus + (inconnus > 1 ? ' autres recettes restent à découvrir.' : ' autre recette reste à découvrir.') + '</p>';
         h += '</section>';
@@ -495,10 +512,10 @@
       const recherche = focus && focus.id === 'arbq', caret = recherche ? focus.selectionStart : null;
       const ancien = U.arbreG && U.arbreG.noeuds.find((n) => n.cle === U.arbreSel);
       const signature = arbreSignature(Arb.graphe(E, D));
-      if (ancien && ancien.etat === 'fantome' && el.dataset.sig !== signature) { U.arbreSel = null; U.arbreHistorique = []; }
       U.arbreG = Arb.graphe(E, D);
-      if (U.arbreSel && !U.arbreG.noeuds.some((n) => n.cle === U.arbreSel)) U.arbreSel = null;
-      el.innerHTML = arbreBarre(U.arbreG) + '<div id="arbre" class="arb-vue" tabindex="0" aria-label="Arbre des connaissances, défilement vertical">' + (U.arbreSel ? arbreBranche(U.arbreG, U.arbreSel) : arbreEnsemble(U.arbreG)) + '</div>';
+      // une piste (fantôme) change de clé quand l’arbre change : la feuille ouverte sur elle se ferme
+      if (U.arbreSel && ((ancien && ancien.etat === 'fantome' && el.dataset.sig !== signature) || !U.arbreG.noeuds.some((n) => n.cle === U.arbreSel))) { U.arbreSel = null; U.arbreHistorique = []; if (U.mcur && U.mcur.arbre) closeModal(); }
+      el.innerHTML = arbreBarre(U.arbreG) + '<div id="arbre" class="arb-vue" tabindex="0" aria-label="Arbre des connaissances, défilement vertical">' + arbreEnsemble(U.arbreG) + '</div>';
       el.dataset.sig = arbreSignature(U.arbreG);
       el.querySelector('#arbre').scrollTop = scroll;
       el.querySelectorAll('details[data-arbage]').forEach((d) => d.addEventListener('toggle', () => { if (d.isConnected) (U.arbreAges || (U.arbreAges = {}))[d.dataset.arbage] = d.open; }));
@@ -506,13 +523,21 @@
       if (recherche) { const q = el.querySelector('#arbq'); q.focus({ preventScroll: true }); if (caret !== null) q.setSelectionRange(caret, caret); }
       if (action) { const b = el.querySelector('[data-arb="' + action + '"]'); if (b) b.focus({ preventScroll: true }); }
     }
+    /* la feuille : la branche d’une recette dans une fenêtre qui monte du bas, l’arbre reste dessous. Une pastille de la feuille la fait passer à celle-là. */
+    function arbreFeuille() {
+      const o = { html: '<div class="arb-sheet-c">' + arbreBranche(U.arbreG, U.arbreSel) + '</div>', cls: 'arb-sheet', arbre: true,
+        onClose: () => { U.arbreSel = null; U.arbreHistorique = []; U.arbreTout = false; } };
+      if (U.mcur && U.mcur.arbre) { swapModal(o); const box = document.querySelector('#modal .modal-box'); if (box) box.insertAdjacentHTML('afterbegin', '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>'); }
+      else openModal(o);
+    }
     function arbreChoisir(cle, historique) {
       if (!U.arbreG || !U.arbreG.noeuds.some((n) => n.cle === cle)) return;
       if (historique && U.arbreSel && U.arbreSel !== cle) (U.arbreHistorique || (U.arbreHistorique = [])).push(U.arbreSel);
-      U.arbreSel = cle; U.arbreTout = false; U.arbreChercher = false; U.arbreQ = '';
-      const el = arbreEl(); arbreBati(el);
-      const c = el.querySelector('.arb-selection .sel');
-      if (c) { c.focus({ preventScroll: true }); const v = el.querySelector('#arbre'); v.scrollTop = Math.max(0, c.offsetTop - v.clientHeight * .35); }
+      U.arbreSel = cle; U.arbreTout = false;
+      if (U.arbreChercher) { U.arbreChercher = false; U.arbreQ = ''; arbreBati(arbreEl()); }
+      arbreFeuille();
+      const c = document.querySelector('#modal .arb-selection .sel');
+      if (c) c.focus({ preventScroll: true });
     }
     function arbreOuvrir(id) { if (!Arb) return; U.arbreVoirId = id || null; setTab('arbre'); }
     function arbreRendre(el) {
@@ -537,10 +562,10 @@
       document.addEventListener('click', (e) => {
         const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer]');
         if (!b) return;
-        if (b.dataset.carnetRec) { e.stopPropagation(); if (S().known[b.dataset.carnetRec]) showInCarnet(b.dataset.carnetRec); return; }
+        if (b.dataset.carnetRec) { e.stopPropagation(); if (U.mcur && U.mcur.arbre) closeModal(); if (S().known[b.dataset.carnetRec]) showInCarnet(b.dataset.carnetRec); return; }
         if (b.dataset.situer) { e.stopPropagation(); if (S().known[b.dataset.situer] && arbreVisible(b.dataset.situer)) arbreOuvrir(b.dataset.situer); return; }
         if (b.hasAttribute('data-arbre-obj')) { e.stopPropagation(); arbreOuvrir(objectifCle()); return; }
-        if (!b.closest('#v-arbre')) return;
+        if (!b.closest('#v-arbre, .arb-sheet-c')) return;
         e.stopPropagation(); A.click();
         if (b.dataset.arbsel) { arbreChoisir(b.dataset.arbsel, true); return; }
         const a = b.dataset.arb, el = arbreEl();
@@ -551,12 +576,11 @@
         }
         if (a === 'centre') { const cle = objectifCle(); if (cle) { U.arbreHistorique = []; arbreChoisir(cle); return; } }
         if (a === 'retour' && (U.arbreHistorique || []).length) { arbreChoisir(U.arbreHistorique.pop()); return; }
-        if (a === 'tout') U.arbreTout = true;
-        else { U.arbreSel = null; U.arbreHistorique = []; }
+        if (a === 'tout') { U.arbreTout = true; arbreFeuille(); return; }
+        U.arbreSel = null; U.arbreHistorique = [];
+        if (U.mcur && U.mcur.arbre) closeModal();
         arbreBati(el);
-        if (a !== 'tout') {
-          el.querySelector('#arbre').scrollTop = 0;
-        }
+        el.querySelector('#arbre').scrollTop = 0;
       }, true);
     }
     E.on('learn', () => { U.arbreNeuf = null; });

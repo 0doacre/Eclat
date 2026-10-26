@@ -94,7 +94,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
 | avancée | Alimenté ✓ | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
 | avancée | Tout ce qui entre et sort, par ressource | `summary` | info-bulle : Plier ou déplier le tableau |
-| avancée | Bois+21/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
+| avancée | Bois+18/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 | avancée | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | avancée | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | avancée | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
@@ -230,7 +230,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | À tenter 0 | `button[data-if="try"]` | info-bulle : Les ressources étudiées qui cachent encore une recette |
 | avancée | ✕ | `button.toast-x` | lecteur d’écran : Fermer |
 
-## Arbre (6 boutons, 0 sans explication)
+## Arbre (7 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -238,14 +238,9 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Objectif | `button[data-arb="centre"].btn` | info-bulle : Ton objectif du moment, et ce qu’il demande |
 | avancée | (sans mot) | `button[data-arb="chercher"].btn.ghost` | lecteur d’écran : Chercher dans l’arbre |
 | avancée | ? Recette à découvrir À découvrir Objectif | `button[data-arbsel="f1"][data-arbn="f1"].arb-card.fantome` | info-bulle : Ouvrir cette branche : ses ingrédients et ses usages |
-| avancée | MancheDéjà fabriqué | `button[data-arbsel="manche"][data-arbn="manche"].arb-card.allume` | info-bulle : Ouvrir cette branche : ses ingrédients et ses usages |
-| avancée | BoisRessource découverte | `button[data-arbsel="bois"][data-arbn="bois"].arb-card.vu` | info-bulle : Ouvrir cette branche : ses ingrédients et ses usages |
-
-## Arbre · une branche (1 boutons, 0 sans explication)
-
-| Partie | Bouton | Repère | Expliqué par |
-|---|---|---|---|
-| avancée | ← Les âges | `button[data-arb="retour"].btn.ghost` | info-bulle : Revenir en arrière dans l’arbre |
+| avancée | Bois | `button[data-arbsel="bois"][data-arbn="bois"].arb-pas.vu` | info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Bois, ressource découverte |
+| avancée | Charbon | `button[data-arbsel="charbon"][data-arbn="charbon"].arb-pas.allume` | info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Charbon, déjà fabriqué |
+| avancée | ?? | `button[data-arbsel="f1"][data-arbn="f1"].arb-pas.fantome` | info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Recette à découvrir, à découvrir, objectif |
 
 ## Carnet (19 boutons, 0 sans explication)
 
