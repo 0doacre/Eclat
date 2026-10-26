@@ -490,6 +490,8 @@
         h += '<section class="arb-etape" aria-labelledby="arb-ingredients"><h3 id="arb-ingredients">' + (n.etat === 'fantome' ? 'Une piste pour commencer' : 'Utilise') + '</h3><div class="arb-frise arb-voisins">' + v.amont.map(arbrePastille).join('') + '</div></section><div class="arb-fleche" aria-hidden="true">↓</div>';
       }
       h += '<section class="arb-selection" aria-label="Objet sélectionné">' + arbreCarte(n, true) + '<div class="arb-actions">';
+      const cibleId = n.id || (n.objectif && E.objective() && E.objective().k === 'craft' ? E.objective().id : null);
+      if (cibleId) h += '<button type="button" class="btn small" data-chemin="' + esc(cibleId) + '" title="Chemin : la route complète jusqu’à l’objet">Chemin</button>';
       if (n.etat === 'allume') h += '<button type="button" class="btn small" data-carnet-rec="' + esc(n.id) + '">Ouvrir la recette dans le Carnet</button>';
       else if (it) h += '<button type="button" class="btn small" data-goto="' + esc(n.id) + '">Voir la fiche</button>';
       h += '</div>';
@@ -560,8 +562,35 @@
     if (typeof document !== 'undefined') {
       document.addEventListener('input', (e) => { if (e.target.id === 'arbq') { U.arbreQ = e.target.value; const r = document.getElementById('arbres'); if (r) { r.innerHTML = arbreResultats(U.arbreQ); iconize(r); } } });
       document.addEventListener('click', (e) => {
-        const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer]');
+        const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer], [data-chemin], [data-ch-craft], [data-ch-harv], [data-ch-voir], [data-ch-atelier]');
         if (!b) return;
+        if (b.dataset.chCraft) {
+          e.stopPropagation(); A.click();
+          chainCraft(b, b.dataset.chCraft, 1);
+          const modalBox = document.querySelector("#modal .modal-box");
+          if (modalBox && U.cheminId) { modalBox.innerHTML = treeHTML(U.cheminId, U.cheminTimes || 1); iconize(modalBox); }
+          return;
+        }
+        if (b.dataset.chHarv) {
+          e.stopPropagation(); A.click();
+          const res = b.dataset.chHarv, zid = E.RES_ZONE ? E.RES_ZONE[res] : null;
+          closeModal();
+          if (zid && E.zoneOpen && E.zoneOpen(zid)) { setTab('domaine'); if (E.harvest) E.harvest(zid, res); }
+          return;
+        }
+        if (b.dataset.chVoir) {
+          e.stopPropagation(); A.click();
+          closeModal();
+          if (S().known[b.dataset.chVoir]) showInCarnet(b.dataset.chVoir);
+          return;
+        }
+        if (b.hasAttribute('data-ch-atelier')) {
+          e.stopPropagation(); A.click();
+          closeModal();
+          setTab('atelier');
+          return;
+        }
+        if (b.dataset.chemin) { e.stopPropagation(); A.click(); openTree(b.dataset.chemin, 1); return; }
         if (b.dataset.carnetRec) { e.stopPropagation(); if (U.mcur && U.mcur.arbre) closeModal(); if (S().known[b.dataset.carnetRec]) showInCarnet(b.dataset.carnetRec); return; }
         if (b.dataset.situer) { e.stopPropagation(); if (S().known[b.dataset.situer] && arbreVisible(b.dataset.situer)) arbreOuvrir(b.dataset.situer); return; }
         if (b.hasAttribute('data-arbre-obj')) { e.stopPropagation(); arbreOuvrir(objectifCle()); return; }
@@ -1050,35 +1079,88 @@
       return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + gIc(g) + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
         : '<span class="tiny muted">Rien de plus à tenter avec tes actions et tes ressources, pour l’instant.</span>') + "</div>";
     }
-    /* Détail récursif d’une recette : étapes, matières utilisées, ce qui manque. */
+    /* Chemin complet vers une cible : échelle verticale des marches, de la plus profonde à la cible. */
     function treeHTML(id, n) {
-      const p = E.plan(id, n), st = S();
-      // un extracteur ou une machine (prix qui monte) ne se commande qu’avec tout en main
-      const canLaunch = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length && (p.ok || !E.isScaled(I[id]));
-      let h = '<div class="kicker">Tout ce qu’il faut fabriquer</div><div class="row">' + icon(id, "lg") + '<div class="grow"><h2 style="margin:0">' + esc(I[id].n) + "</h2>";
-      if (!E.isUnique(I[id])) h += '<div class="row" style="margin-top:6px"><button class="mini" data-m="tn" data-d="-1">−</button><b style="min-width:40px;text-align:center">×' + fmt(n) + '</b><button class="mini" data-m="tn" data-d="1">+</button><button class="btn small ghost" data-m="tmax">Max</button></div>';
-      h += "</div></div>";
-      h += '<h3 class="sub">Étapes</h3><div class="tsteps">' + p.steps.map(([x, k]) => '<div class="tstep">' + D.GESTES[I[x].r[0]].ic + ' <span class="tiny muted">' + D.GESTES[I[x].r[0]].n + "</span> " + icon(x, "sm") + " <b>" + esc(I[x].n) + '</b> <span class="muted">× ' + fmt(k) + "</span></div>").join("") + "</div>";
-      const used = Object.keys(p.used);
-      if (used.length) h += '<h3 class="sub">Pris dans la Réserve</h3><div class="row wrap small">' + used.map((k) => '<span class="ing">' + icon(k, "sm") + fmt(p.used[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
-      const miss = Object.keys(p.missing).filter((k) => !p.locked.includes(k) && !p.blocked[k]);
-      if (miss.length) h += '<h3 class="sub" style="color:var(--bad)">' + (E.isScaled(I[id]) ? "Il manque" : "Il manque (pris dans la Réserve au fur et à mesure)") + '</h3><div class="row wrap small">' + miss.map((k) => '<span class="ing lack">' + icon(k, "sm") + fmt(p.missing[k]) + " " + esc(I[k].n) + "</span>").join("") + "</div>";
-      if (p.locked.length) h += '<p class="why">Recettes encore inconnues : ' + p.locked.map((k) => esc(I[k].n)).join(", ") + "</p>";
-      const bl = Object.keys(p.blocked);
-      if (bl.length) h += '<p class="why">' + bl.map((k) => esc(I[k].n) + " : " + needText(k, p.blocked[k], true)).join(" · ") + "</p>";
-      h += '<div class="acts"><button class="btn" data-m="close">Fermer</button>' + (st.track && st.track.id === id ? "" : '<button class="btn" data-m="track">🎯 Suivre</button>') +
-        '<button class="btn pri" data-m="go"' + (canLaunch ? "" : " disabled") + ">⚡ Commander (×" + fmt(n) + ")</button></div>";
+      const times = Math.max(1, n || 1);
+      const r = Arb && Arb.route ? Arb.route(E, D, id, times) : null;
+      if (!r) return '<p class="small muted">Chemin introuvable.</p>';
+      const st = S();
+      let h = '<div class="kicker">Chemin vers la cible</div><div class="row items-center">' +
+        (r.cible.anon ? '<span class="arb-inconnu" aria-hidden="true" style="font-size:20px;width:40px;height:40px">?</span>' : icon(id, "lg")) +
+        '<div class="grow"><h2 style="margin:0">' + esc(r.cible.nom) + "</h2>" +
+        '<div class="arb-chemin-prog"><span>' + r.compte.faites + ' / ' + r.compte.total + ' marches franchies</span>' +
+        '<span>' + (r.pret ? '✓ Prêt' : 'En préparation') + '</span></div></div></div>';
+
+      if (I[id] && !E.isUnique(I[id]) && !r.cible.anon) {
+        h += '<div class="row" style="margin-top:6px"><button class="mini" data-m="tn" data-d="-1" title="Un de moins">−</button>' +
+          '<b style="min-width:40px;text-align:center">×' + fmt(times) + '</b>' +
+          '<button class="mini" data-m="tn" data-d="1" title="Un de plus">+</button>' +
+          '<button class="btn small ghost" data-m="tmax" title="Nombre maximum selon la Réserve">Max</button></div>';
+      }
+
+      h += '<div class="arb-echelle" role="list" aria-label="Marches vers la cible">';
+      r.marches.forEach((m, idx) => {
+        const num = idx + 1;
+        const isCible = !!m.isTarget;
+        const etatLabel = m.etat === "fait" ? "Fait" : m.etat === "en_cours" ? "En cours" : m.etat === "a_trouver" ? "À trouver" : "Bloquée";
+        h += '<div class="arb-marche ' + m.etat + (isCible ? ' cible' : '') + '" role="listitem">' +
+          '<div class="arb-marche-rail"><span class="arb-marche-num">' + (m.etat === "fait" ? "✓" : num) + '</span></div>' +
+          '<div class="arb-marche-corps"><div class="arb-marche-entete">' +
+          (m.anon ? '<span class="arb-inconnu" aria-hidden="true" style="width:24px;height:24px;font-size:14px">?</span>' : icon(m.id, "sm")) +
+          '<span class="arb-marche-nom">' + esc(m.nom) + '</span>' +
+          (m.quantite > 1 ? '<span class="muted small">×' + fmt(m.quantite) + '</span>' : '') +
+          '<span class="arb-badge ' + m.etat + '">' + etatLabel + '</span></div>';
+
+        if (m.requis) {
+          h += '<div class="arb-marche-requis">' + esc(m.requis) + '</div>';
+        } else if (m.type === "res" && m.etat !== "fait" && !m.anon) {
+          h += '<div class="arb-marche-manque">En stock : ' + fmt(m.enStock) + ' / ' + fmt(m.quantite) + '</div>';
+        } else if (m.type === "craft" && m.etat !== "fait" && !m.anon) {
+          h += '<div class="arb-marche-manque">Possédé : ' + fmt(m.enStock) + ' / ' + fmt(m.quantite) + '</div>';
+        }
+        h += '</div><div class="arb-marche-act">';
+
+        if (m.action === "fabriquer") {
+          const ready = m.id && S().known[m.id] && !E.blocker(m.id) && E.missingFor(m.id, 1) === null;
+          h += '<button type="button" class="btn small' + (ready ? ' pri' : '') + '" data-ch-craft="' + esc(m.id) + '"' + (ready ? '' : ' disabled') + ' title="' + (ready ? 'Fabriquer immédiatement' : 'Ingrédients manquants') + '">Fabriquer</button>';
+        } else if (m.action === "recolter") {
+          h += '<button type="button" class="btn small" data-ch-harv="' + esc(m.id) + '" title="Récolter cette ressource">Récolter</button>';
+        } else if (m.action === "voir") {
+          if (m.anon) {
+            h += '<button type="button" class="btn small ghost" data-ch-atelier="1" title="Découvrir cette recette à l’Atelier">Atelier</button>';
+          } else if (I[m.id] && I[m.id].r) {
+            h += '<button type="button" class="btn small ghost" data-ch-voir="' + esc(m.id) + '" title="Voir la recette dans le Carnet">Voir</button>';
+          } else {
+            h += '<button type="button" class="btn small ghost" data-goto="' + esc(m.id) + '" title="Voir la fiche">Fiche</button>';
+          }
+        }
+        h += '</div></div>';
+      });
+      h += '</div>';
+
+      h += '<div class="arb-chemin-pied acts"><button class="btn" data-m="close">Fermer</button>' +
+        (st.track && st.track.id === id ? '<button class="btn ghost" data-m="untrack" title="Ne plus suivre cet objet">Ne plus suivre</button>' : '<button class="btn" data-m="track" title="Suivre cet objet en haut du Domaine">🎯 Suivre</button>') +
+        '<button class="btn pri" data-m="go"' + (r.peutToutFabriquer ? '' : ' disabled') + ' title="Lancer la fabrication en chaîne de toutes les étapes">⚡ Tout fabriquer (×' + fmt(times) + ')</button></div>';
       return h;
     }
     function openTree(id, n) {
       let times = Math.max(1, n || 1);
+      U.cheminId = id;
+      U.cheminTimes = times;
+      const renderChemin = () => {
+        U.cheminTimes = times;
+        const box = document.querySelector("#modal .modal-box");
+        if (box) { box.innerHTML = treeHTML(id, times); iconize(box); }
+      };
       openModal({
         html: treeHTML(id, times),
+        cls: "arb-chemin-modal",
         on: {
-          tn: (b) => { times = Math.max(1, times + Number(b.dataset.d) * (times >= 100 ? 10 : 1)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
-          tmax: () => { times = Math.max(1, E.maxPlan(id)); $("#modal .modal-box").innerHTML = treeHTML(id, times); return true; },
-          track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id].n) + "</b> (en haut du Domaine)"); },
-          go: (b) => { chainCraft(b, id, times); }
+          tn: (b) => { times = Math.max(1, times + Number(b.dataset.d) * (times >= 100 ? 10 : 1)); renderChemin(); return true; },
+          tmax: () => { times = Math.max(1, E.maxPlan(id)); renderChemin(); return true; },
+          track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id] ? I[id].n : "Objet") + "</b> (en haut du Domaine)"); render(true); renderChemin(); return true; },
+          untrack: () => { E.setTrack(null); render(true); renderChemin(); return true; },
+          go: (b) => { chainCraft(b, id, times); closeModal(); }
         }
       });
     }
