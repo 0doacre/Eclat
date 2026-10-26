@@ -64,9 +64,13 @@ body.large-text .arb-card.sel .arb-l { font-size: 18px; }
   body.large-text .arb-grille { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* ===== Filtres de portée (0.31) ===== */
+.arb-filtres { flex: 0 0 auto; margin: 0; padding: 6px 8px 8px; border-bottom: 1px solid var(--line2); background: var(--bg); }
+.arb-filtres button { min-height: 44px; }
+
 /* ===== La frise (0.28) : un âge en pastilles, la feuille en dessous ===== */
 .arb-frise { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 0 8px 10px; min-width: 0; }
-.arb-pas { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-width: 0; min-height: 76px; padding: 8px 4px 6px;
+.arb-pas { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-width: 0; min-height: 76px; padding: 8px 4px 6px;
   border-radius: 12px; border: 1.5px solid var(--text); background: var(--panel); color: inherit; font: inherit; cursor: pointer; }
 .arb-pas .ic { flex: 0 0 auto; width: 32px; height: 32px; }
 .arb-pas-n { max-width: 100%; font-size: 12px; line-height: 1.15; text-align: center; overflow-wrap: anywhere;
@@ -76,6 +80,10 @@ body.large-text .arb-card.sel .arb-l { font-size: 18px; }
 .arb-pas.fantome { border-style: dashed; border-color: var(--dim); background: transparent; }
 .arb-pas.fantome .arb-inconnu { display: grid; place-items: center; width: 32px; height: 32px; font-size: 18px; color: var(--dim); }
 .arb-pas.obj { box-shadow: 0 0 0 2px var(--intu) inset; }
+.arb-pas.p-pret { box-shadow: 0 0 0 1px var(--good); }
+.arb-pas.p-bloque { opacity: .6; }
+.arb-pas.p-bloque:hover, .arb-pas.p-bloque:focus-visible { opacity: 1; }
+.arb-dot-neuf { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 2px var(--panel); pointer-events: none; }
 .arb-pas:focus-visible { outline: 3px solid var(--acc); outline-offset: 2px; }
 .arb-pas:active { scale: .96; }
 .arb-legende { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: -2px 0 8px; font-size: 12px; color: var(--muted); }
@@ -84,6 +92,7 @@ body.large-text .arb-card.sel .arb-l { font-size: 18px; }
 .arb-legende i.vu { border-color: var(--line2); background: var(--panel2); }
 .arb-legende i.fantome { border-style: dashed; border-color: var(--dim); }
 .arb-legende i.obj { border-color: var(--intu); box-shadow: 0 0 0 1.5px var(--intu) inset; }
+.arb-legende i.neuf-i { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); border: none; vertical-align: 0; }
 @media (max-width: 340px) { .arb-frise { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 body.large-text .arb-frise { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 body.large-text .arb-pas-n { font-size: 14px; }
@@ -96,3 +105,37 @@ body.large-text .arb-pas-n { font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .arb-pas:active { scale: 1; } }
 .arb-voisins { padding: 0; }
 .arb-fleche { min-height: 28px; font-size: 22px; }
+
+/* ===== Chemin vers la cible (0.30) : échelle verticale des marches ===== */
+.arb-echelle { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; max-height: 52vh; overflow-y: auto; overflow-x: hidden; padding-right: 2px; }
+.arb-marche { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line2); background: var(--panel); min-height: 52px; box-sizing: border-box; }
+.arb-marche.cible { border: 2px solid var(--acc); background: var(--panel2); }
+.arb-marche.fait { border-color: var(--good); background: color-mix(in srgb, var(--good) 8%, var(--panel)); }
+.arb-marche.bloquee { border-color: var(--bad); }
+.arb-marche.a_trouver { border-style: dashed; }
+.arb-marche-rail { display: flex; align-items: center; justify-content: center; flex: 0 0 28px; }
+.arb-marche-num { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: 13px; font-weight: 700; background: var(--panel2); border: 1.5px solid var(--line2); color: var(--muted); }
+.arb-marche.fait .arb-marche-num { background: var(--good); color: #fff; border-color: var(--good); }
+.arb-marche.cible .arb-marche-num { background: var(--acc); color: var(--acc-t, #000); border-color: var(--acc); }
+.arb-marche-corps { display: flex; flex-direction: column; gap: 4px; flex: 1 1 auto; min-width: 0; justify-content: center; }
+.arb-marche-entete { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.arb-marche-entete .ic { flex: 0 0 auto; width: 24px; height: 24px; }
+.arb-marche-nom { font-weight: 600; font-size: 14px; }
+.arb-badge { display: inline-block; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+.arb-badge.fait { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+.arb-badge.en_cours { background: color-mix(in srgb, var(--acc) 18%, transparent); color: var(--text); }
+.arb-badge.a_trouver { background: color-mix(in srgb, var(--dim) 18%, transparent); color: var(--muted); border: 1px dashed var(--dim); }
+.arb-badge.bloquee { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }
+.arb-marche-requis { font-size: 12px; color: var(--bad); font-weight: 600; }
+.arb-marche-manque { font-size: 12px; color: var(--muted); }
+.arb-marche-act { display: flex; align-items: center; flex: 0 0 auto; gap: 4px; }
+.arb-marche-act .btn { min-height: 44px; min-width: 44px; padding: 6px 10px; font-size: 13px; }
+.arb-chemin-prog { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; font-size: 13px; color: var(--muted); }
+.arb-chemin-pied { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line2); }
+body.large-text .arb-marche-nom { font-size: 16px; }
+body.large-text .arb-badge { font-size: 12.5px; }
+body.large-text .arb-marche-requis { font-size: 13.5px; }
+@media (max-width: 359px) {
+  .arb-marche { padding: 8px; gap: 6px; }
+  .arb-marche-act .btn { padding: 4px 6px; font-size: 12px; }
+}

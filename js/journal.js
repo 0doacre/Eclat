@@ -142,15 +142,17 @@
       const st = S();
       const tabs = [["fragments", "Fragments"]];
       const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
+      const gestesNew = E.hasNewGeste ? E.hasNewGeste() : false;
       if (E.hasLivre && E.hasLivre()) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
       if (E.hasQuestions && E.hasQuestions()) tabs.push(["questions", "Questions"]);
       if (E.hasSignes && E.hasSignes()) tabs.push(["signes", "Signes"]);
       tabs.push(["secrets", "Secrets"]);
+      tabs.push(["gestes", "Gestes" + (gestesNew ? " •" : "")]);
       if (E.has("flute")) tabs.push(["flute", "Flûte"]);
       if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Clins d’œil"]);
       tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
       if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
-      const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
+      const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", gestes: "Les gestes remarqués et accomplis au fil de ta route", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
       let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (U.journalTab === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
@@ -253,6 +255,20 @@
           h += '<div class="sec' + (found ? "" : " unk") + '"><div class="k">' + s.k + "</div>" + (found ? esc(name) : "???") + "</div>";
         });
         h += "</div>";
+      } else if (U.journalTab === "gestes") {
+        if (E.readGestes) E.readGestes();
+        const list = E.gestesList ? E.gestesList() : [];
+        const doneCount = list.filter((g) => g.done).length;
+        h += '<p class="small muted">' + doneCount + "/" + list.length + " gestes remarqués au fil de ta civilisation.</p>";
+        h += '<div class="gestes-grid">';
+        list.forEach((g) => {
+          if (g.done) {
+            h += '<div class="frag geste done"><span class="fi">' + esc(g.ic) + '</span><div class="grow"><b>' + esc(g.n) + '</b><div class="tiny muted">' + esc(g.t) + '</div>' + stampHTML("g:" + g.id, true) + '</div><span class="geste-check" title="Geste accompli">✓</span></div>';
+          } else {
+            h += '<div class="frag geste unk"><span class="fi">❔</span><div class="grow"><b>' + esc(g.n) + '</b><div class="tiny muted">' + esc(g.hint || "Un geste à accomplir dans le monde.") + '</div></div></div>';
+          }
+        });
+        h += '</div>';
       } else if (U.journalTab === "flute") {
         h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer. Une pause de quelques secondes, et l’air recommence à zéro.</p><div class="flute-body"><div class="flute">' +
           [1, 2, 3, 4, 5].map((n) => '<button class="hole" data-note="' + n + '">' + n + "</button>").join("") + '</div></div><div class="notes" id="notes">' + st.notes.join(" · ") + "</div></div>";
@@ -276,17 +292,28 @@
         const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
         h += '<div class="card cyc"><b>✦ Relève, Traces et Échos</b><p class="small">Dès qu’un passage vers une nouvelle terre est franchi, tu peux passer le relais : un nouveau Semeur s’éveille. ' +
           "Le monde, tes ressources, tes machines et les terres repartent de zéro, mais tu gardes ton Carnet, tes fragments, tes secrets et la <b>Mémoire des mains</b>, achetée avec les <b>Traces</b> que laissent les passages.</p>" +
-          '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b>, pour toujours : +50 % de récolte et de production par Écho, dès la relève suivante.</p>' +
+          '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b> immuable (+50 % de récolte et production par Écho) et éveille une <b>Règle d’Écho majeure</b> pour toujours.</p>' +
           '<div class="stat"><span class="muted">Ce Semeur</span><b>' + (st.cycle + 6) + "e · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
           '<div class="stat"><span class="muted">À la relève</span><b>+' + E.releveGain() + " ✦ · " + ech + " Écho" + (ech > 1 ? "s" : "") + "</b></div>" +
           '<button class="btn small pri" data-cycle style="margin-top:8px">✦ Mémoire des mains</button></div>';
+        h += '<h3 class="sub" style="margin:16px 0 8px">Les Dénouements &amp; Règles d’Écho</h3>';
         let reste = false;
         Object.keys(D.ENDINGS).forEach((k) => {
-          const en = D.ENDINGS[k], got = st.meta.endings[k];
-          if (got) h += '<div class="frag"><span class="fi">' + en.ic + '</span><div class="grow"><b>' + esc(en.n) + '</b><div class="tiny muted">Atteinte ' + got + " fois</div></div></div>";
-          else reste = true;
+          const en = D.ENDINGS[k], got = (st.meta.endings && st.meta.endings[k]) || 0;
+          const echoRule = D.ECHOS_FINS && D.ECHOS_FINS[k];
+          if (got) {
+            h += '<div class="frag echo-frag active"><span class="fi">' + en.ic + '</span><div class="grow">' +
+              '<div><b>' + esc(en.n) + '</b> <span class="tiny muted">· atteinte ' + got + " fois</span></div>" +
+              (echoRule ? '<div class="echo-rule-badge"><div class="echo-rule-title">✦ Règle d’Écho : ' + esc(echoRule.n) + '</div><div class="echo-rule-desc">' + esc(echoRule.d) + '</div></div>' : "") +
+              '</div></div>';
+          } else {
+            reste = true;
+          }
         });
-        if (reste) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow"><b>???</b><div class="tiny muted">Une fin encore inconnue.</div></div></div>';
+        if (reste) {
+          const nbManquantes = Object.keys(D.ENDINGS).filter((k) => !(st.meta.endings && st.meta.endings[k])).length;
+          h += '<div class="frag echo-frag unk"><span class="fi">❔</span><div class="grow"><b>' + nbManquantes + " dénouement" + (nbManquantes > 1 ? "s" : "") + ' encore inconnu' + (nbManquantes > 1 ? "s" : "") + '</b><div class="tiny muted">D\'autres fins sommeillent dans le monde. Chacune éveillera sa règle d\'Écho pour toujours.</div></div></div>';
+        }
       } else {
         const evs = Object.keys(D.EVENTS).filter((id) => st.made[id] > 0);
         h += '<div class="card">' + [["Temps de jeu", fmtTime(st.stats.play)], ["Récoltes à la main", fmt(st.stats.taps)], ["Fabrications", fmt(st.stats.crafts)],

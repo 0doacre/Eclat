@@ -242,4 +242,138 @@ test("voisinage : une piste garde son anonymat, même dans une partie avancée",
     assert.ok(v.aval.every((p) => g.noeuds.includes(p)));
   }
 });
+
+/* ---- 0.30.0 : le chemin vers une cible (l’échelle des marches) ---- */
+test("chemin vers une cible : échelle de la plus profonde à la cible", () => {
+  const E = avancee();
+  const r = Arb.route(E, D, "scierie", 1);
+  assert.ok(r && r.marches.length >= 5, "route de scierie complète");
+  assert.strictEqual(r.cible.nom, I.scierie.n);
+  assert.strictEqual(r.cible.times, 1);
+  const derniere = r.marches[r.marches.length - 1];
+  assert.strictEqual(derniere.id, "scierie");
+  assert.ok(derniere.isTarget);
+  // La première marche est une matière première profonde (sans recette)
+  const premiere = r.marches[0];
+  assert.strictEqual(premiere.type, "res");
+  assert.ok(!I[premiere.id].r);
+});
+
+test("chemin : les 4 états (fait, en_cours, a_trouver, bloquee) et leurs actions", () => {
+  const E = mk();
+  E.learn("manche");
+  E.state.seen.bois = 1;
+  // 1. manche sans bois : bois [en_cours, recolter], manche [en_cours, fabriquer]
+  let r = Arb.route(E, D, "manche", 1);
+  assert.strictEqual(r.marches[0].id, "bois");
+  assert.strictEqual(r.marches[0].etat, "en_cours");
+  assert.strictEqual(r.marches[0].action, "recolter");
+  assert.strictEqual(r.marches[1].id, "manche");
+  assert.strictEqual(r.marches[1].etat, "en_cours");
+  assert.strictEqual(r.marches[1].action, "fabriquer");
+  assert.strictEqual(r.pret, false);
+
+  // 2. avec du bois en stock : bois [fait, recolter], manche [en_cours, fabriquer], pret true
+  E.state.inv.bois = 10;
+  r = Arb.route(E, D, "manche", 1);
+  assert.strictEqual(r.marches[0].etat, "fait");
+  assert.strictEqual(r.marches[1].etat, "en_cours");
+  assert.strictEqual(r.pret, true);
+
+  // 3. recette bloquée (lingot de bronze au début) : bloquee, avec explication « Requis : ... »
+  E.learn("lingot_bronze");
+  r = Arb.route(E, D, "lingot_bronze", 1);
+  const cibleBloquee = r.marches.find((m) => m.id === "lingot_bronze");
+  assert.strictEqual(cibleBloquee.etat, "bloquee");
+  assert.strictEqual(cibleBloquee.action, "voir");
+  assert.ok(cibleBloquee.requis && cibleBloquee.requis.startsWith("Requis : "), cibleBloquee.requis);
+
+  // 4. recette inconnue : a_trouver, nom « Recette à trouver », anon true, aucun id
+  r = Arb.route(E, D, "chariot", 1);
+  const cibleInconnue = r.marches[r.marches.length - 1];
+  assert.strictEqual(cibleInconnue.etat, "a_trouver");
+  assert.strictEqual(cibleInconnue.nom, "Recette à trouver");
+  assert.strictEqual(cibleInconnue.ic, "?");
+  assert.strictEqual(cibleInconnue.id, undefined);
+  assert.strictEqual(cibleInconnue.anon, true);
+});
+
+test("chemin : réutilise le Suivi existant (E.setTrack)", () => {
+  const E = avancee();
+  assert.strictEqual(Arb.route(E, D, "chariot", 1).suivi, false);
+  E.setTrack("chariot");
+  assert.strictEqual(Arb.route(E, D, "chariot", 1).suivi, true);
+  E.setTrack(null);
+  assert.strictEqual(Arb.route(E, D, "chariot", 1).suivi, false);
+});
+
+test("chemin : règle absolue d’anonymat sur toutes les cibles possibles", () => {
+  const E = mk();
+  for (const id in I) {
+    const r = Arb.route(E, D, id, 1);
+    assert.ok(r, id);
+    const data = JSON.stringify(r);
+    for (const x in I) {
+      if (!inconnu(E, x)) continue;
+      assert.ok(!data.includes('"' + x + '"'), "l'id d'un objet inconnu apparaît dans la route : " + x + " pour cible " + id);
+      assert.ok(!data.includes('"' + I[x].n + '"'), "le nom d'un objet inconnu apparaît dans la route : " + I[x].n + " pour cible " + id);
+    }
+  }
+});
+
+test("portée : qualification d’un nœud (pret, presque, bloque)", () => {
+  const E = mk();
+
+  // 1. Un fantôme est toujours bloqué
+  assert.strictEqual(Arb.portee({ etat: "fantome" }, E, D), "bloque");
+
+  // 2. Ressource brute sans recette
+  // Avec stock -> pret
+  E.state.inv.bois = 5;
+  assert.strictEqual(Arb.portee({ etat: "vu", id: "bois" }, E, D), "pret");
+  // Sans stock mais zone ouverte -> presque
+  E.state.inv.bois = 0;
+  assert.strictEqual(Arb.portee({ etat: "vu", id: "bois" }, E, D), "presque");
+  // Sans stock et zone fermée -> bloque
+  assert.strictEqual(Arb.portee({ etat: "vu", id: "or_pepite" }, E, D), "bloque");
+
+  // 3. Recette de craft
+  // Ingrédients manquants mais tous connus et récoltables en zone ouverte -> presque
+  E.learn("manche");
+  E.state.inv.bois = 0;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "manche" }, E, D), "presque");
+
+  // Ingrédients réunis dans la Réserve -> pret
+  E.state.inv.bois = 10;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "manche" }, E, D), "pret");
+
+  // Recette bloquée par sous-recette inconnue -> bloque
+  E.learn("archet");
+  delete E.state.known.corde;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "archet" }, E, D), "bloque");
+
+  // Recette bloquée par manque de station / chaleur -> bloque
+  E.learn("lingot_bronze");
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "lingot_bronze" }, E, D), "bloque");
+
+  // Objet unique déjà fabriqué -> bloque
+  E.learn("feu");
+  E.state.made.feu = 1;
+  assert.strictEqual(Arb.portee({ etat: "allume", id: "feu" }, E, D), "bloque");
+});
+
+test("portée : cohérence globale sur une partie avancée et sans fuite", () => {
+  const E = avancee();
+  const g = Arb.graphe(E, D);
+  const counts = { pret: 0, presque: 0, bloque: 0 };
+  for (const n of g.noeuds) {
+    const p = Arb.portee(n, E, D);
+    assert.ok(["pret", "presque", "bloque"].includes(p), "valeur de portée valide : " + p);
+    counts[p]++;
+  }
+  assert.ok(counts.pret > 0, "il y a des recettes prêtes");
+  assert.ok(counts.bloque > 0, "il y a des recettes bloquées (uniques faites, fantôme)");
+  assert.strictEqual(counts.pret + counts.presque + counts.bloque, g.noeuds.length, "tous les nœuds sont classés");
+});
+
 console.log(passed + " tests de l’arbre réussis" + (process.exitCode ? ", des échecs." : "."));

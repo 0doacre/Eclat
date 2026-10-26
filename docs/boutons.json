@@ -82,7 +82,7 @@
  {
   "partie": "neuve",
   "ecran": "Aide",
-  "label": "Activé",
+  "label": "Désactivé",
   "repere": "button[data-m=\"tuto\"].btn.sw",
   "explique": "info-bulle : Afficher ou masquer les explications du guide",
   "tag": "button"
@@ -186,7 +186,7 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "SCÉNARIO Manche ▾",
+  "label": "OBJECTIF Manche ▾",
   "repere": "button[data-goalt=\"\"].ghead",
   "explique": "guide (.goal-card)",
   "tag": "button"
@@ -194,7 +194,7 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "✦ ÉTAPE CLÉ « Prends du bois et retire tout ce qui dépasse. »",
+  "label": "✦ NOUVELLE RECETTE « Prends du bois et retire tout ce qui dépasse. »",
   "repere": "div[data-goto=\"manche\"].grow",
   "explique": "guide (.goal-card)",
   "tag": "div"
@@ -202,7 +202,7 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "Tenter",
+  "label": "Atelier",
   "repere": "button[data-gotab=\"atelier\"].btn",
   "explique": "guide (.goal-card)",
   "tag": "button"
@@ -682,7 +682,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "SCÉNARIO Régulateur à boules ▾",
+  "label": "OBJECTIF Régulateur à boules ▾",
   "repere": "button[data-goalt=\"\"].ghead",
   "explique": "guide (.goal-card)",
   "tag": "button"
@@ -706,7 +706,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "✦ ÉTAPE CLÉ « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. »",
+  "label": "✦ NOUVELLE RECETTE « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. »",
   "repere": "div[data-goto=\"ressort\"].grow",
   "explique": "guide (.goal-card)",
   "tag": "div"
@@ -714,7 +714,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Tenter",
+  "label": "Atelier",
   "repere": "button[data-gotab=\"atelier\"].btn",
   "explique": "guide (.goal-card)",
   "tag": "button"
@@ -826,7 +826,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+15/min8,73 k",
+  "label": "Bois+20/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"

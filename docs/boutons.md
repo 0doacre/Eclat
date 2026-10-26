@@ -23,7 +23,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | neuve | Activé | `button[data-m="vibe"].btn.sw` | info-bulle : Faire vibrer l’appareil lors des actions importantes |
 | neuve | Activé | `button[data-m="visiteurs"].btn.sw` | info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps |
 | neuve | Revoir | `button[data-m="tutoAgain"].btn.ghost` | info-bulle : Revoir les explications du guide depuis le début |
-| neuve | Activé | `button[data-m="tuto"].btn.sw` | info-bulle : Afficher ou masquer les explications du guide |
+| neuve | Désactivé | `button[data-m="tuto"].btn.sw` | info-bulle : Afficher ou masquer les explications du guide |
 | neuve | ✦ Mémoire des mains | `button[data-m="mem"].btn` | info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre |
 | neuve | Sauvegardes | `button[data-m="saves"].btn` | info-bulle : Télécharger ta partie, la recharger ou restaurer une copie |
 | neuve | Compte en ligne | `button[data-m="account"].btn` | info-bulle : Retrouver ta partie sur tous tes appareils |
@@ -61,9 +61,9 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | neuve | Atlas | `button#atlasToggle.icon-btn` | info-bulle : Style Atlas actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique |
 | neuve | ✦ 1 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | neuve | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
-| neuve | SCÉNARIO Manche ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
-| neuve | ✦ ÉTAPE CLÉ « Prends du bois et retire tout ce qui dépasse. » | `div[data-goto="manche"].grow` | guide (.goal-card) |
-| neuve | Tenter | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
+| neuve | OBJECTIF Manche ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
+| neuve | ✦ NOUVELLE RECETTE « Prends du bois et retire tout ce qui dépasse. » | `div[data-goto="manche"].grow` | guide (.goal-card) |
+| neuve | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
 | neuve | Explorer · Le Grand Chêne | `button[data-exp="lisiere"].btn` | info-bulle : Lancer cette exploration : elle avance toute seule |
 | neuve | (sans mot) | `button[data-harv="lisiere:bois"].gis-ic.hand` | lecteur d’écran : Récolter : Bois |
 | neuve | Bois 🖐️ à la main Tu en as 0 | `button[data-gsheet="lisiere:bois"].gis-body` | lecteur d’écran : Gisement : Bois |
@@ -78,11 +78,11 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | ✦ +18 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | avancée | 22 | `button#intuBtn.chip.intu` | lecteur d’écran : Intuition ; guide (#intuBtn) |
 | avancée | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
-| avancée | SCÉNARIO Régulateur à boules ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
+| avancée | OBJECTIF Régulateur à boules ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
 | avancée | Arbre | `button[data-arbre-obj=""].gmiles` | info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card) |
 | avancée | Âge de l’Électricité · 0/3 étapes | `button[data-miles=""].gprog-row` | info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card) |
-| avancée | ✦ ÉTAPE CLÉ « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. » | `div[data-goto="ressort"].grow` | guide (.goal-card) |
-| avancée | Tenter | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
+| avancée | ✦ NOUVELLE RECETTE « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. » | `div[data-goto="ressort"].grow` | guide (.goal-card) |
+| avancée | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
 | avancée | Compris | `button[data-tip="tip_site"].btn.ghost` | info-bulle : Fermer cette astuce |
 | avancée | Voir : Torche | `button[data-goto="torche"].btn` | guide (.dom-regle.gene) |
 | avancée | (sans mot) | `button[data-harv="mine:fer_min"].gis-ic.hand` | lecteur d’écran : Récolter : Minerai de fer |
@@ -96,7 +96,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
 | avancée | Alimenté ✓ | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
 | avancée | Tout ce qui entre et sort, par ressource | `summary` | info-bulle : Plier ou déplier le tableau |
-| avancée | Bois+15/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
+| avancée | Bois+20/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 | avancée | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | avancée | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | avancée | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |

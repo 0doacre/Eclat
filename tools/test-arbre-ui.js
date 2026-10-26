@@ -104,6 +104,47 @@ async function run() {
   ok(await p.evaluate(() => document.documentElement.scrollWidth === innerWidth), "320 px : rien ne déborde");
   await p.context().close();
 
+  // 8. le chemin vers une cible : depuis la feuille d'une pastille, « Chemin » ouvre l'échelle des marches
+  p = await page(browser, {});
+  await ouvrirArbre(p);
+  await p.locator('details[open] .arb-pas.allume').first().click();
+  await p.waitForSelector("#modal.arb-sheet"); await p.waitForTimeout(400);
+  ok(await p.locator('#modal [data-chemin]').count() >= 1, "le bouton Chemin apparaît sur la feuille");
+  await p.locator('#modal [data-chemin]').first().click();
+  await p.waitForSelector("#modal .arb-echelle"); await p.waitForTimeout(400);
+  ok(await p.locator("#modal .arb-marche").count() >= 1, "l'échelle des marches est affichée");
+  ok(await p.evaluate(() => [...document.querySelectorAll("#modal .arb-marche")].every(m => /fait|en_cours|a_trouver|bloquee/.test(m.className))), "chaque marche porte son état");
+  ok(await p.locator('#modal button:has-text("Tout fabriquer"), #modal button:has-text("Suivre")').count() >= 1, "les actions globales Tout fabriquer ou Suivre sont présentes");
+  ok(await p.evaluate(() => document.querySelector("#modal .modal-box").scrollWidth <= window.innerWidth), "la modale de chemin ne déborde pas");
+  await fermer(p);
+  await p.context().close();
+
+  // 9. le bouton Chemin depuis l'objectif du Domaine
+  p = await page(browser, {});
+  await p.locator('#tabs [data-tab="domaine"]').click(); await p.waitForTimeout(300);
+  const hasChemin = await p.locator('.goal-card [data-chemin]').count();
+  if (hasChemin) {
+    await p.locator('.goal-card [data-chemin]').click();
+    await p.waitForSelector("#modal .arb-echelle"); await p.waitForTimeout(400);
+    ok(await p.locator("#modal .arb-marche").count() >= 1, "Chemin depuis l'objectif ouvre l'échelle des marches");
+    await fermer(p);
+  } else ok(true, "(pas d'objectif craft au réveil)");
+  await p.context().close();
+
+  // 10. filtres de portée et point « nouveau »
+  p = await page(browser, {});
+  await ouvrirArbre(p);
+  ok(await p.locator(".arb-filtres [data-arb-f]").count() === 4, "les 4 filtres de portée sont présents");
+  ok(await p.evaluate(() => [...document.querySelectorAll(".arb-filtres button")].every(b => b.getBoundingClientRect().height >= 44)), "chaque filtre fait au moins 44 px de haut");
+  ok(await p.locator(".arb-pas.neuf .arb-dot-neuf").count() >= 1, "les nouvelles recettes portent le point nouveau");
+  const countTous = await p.locator(".arb-pas").count();
+  await p.locator('.arb-filtres [data-arb-f="pret"]').click();
+  await p.waitForTimeout(200);
+  const countPrets = await p.locator(".arb-pas").count();
+  ok(countPrets > 0 && countPrets <= countTous, "le filtre Prêtes restreint l'affichage aux seules pastilles prêtes");
+  ok(await p.evaluate(() => [...document.querySelectorAll(".arb-pas")].every(b => b.classList.contains("p-pret"))), "toutes les pastilles visibles sous le filtre Prêtes sont qualifiées p-pret");
+  await p.context().close();
+
   await browser.close(); server.close();
   console.log(checks + " contrôles de l’Arbre réussis.");
 }

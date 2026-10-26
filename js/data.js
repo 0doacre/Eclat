@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.28.0";
+  D.VERSION = "0.35.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -935,6 +935,133 @@
     konami: { n: "Haut, haut, bas, bas", ic: "⭐", tier: 2, desc: "Trente étoiles de plus brillent dans la nuit." }
   };
 
+  /* --------------------------------------------------- GESTES REMARQUÉS (SUCCÈS) */
+  D.GESTES_REMARQUES = {
+    premiers_pas: {
+      n: "Premiers pas", ic: "🪵",
+      t: "Tailler un manche en bois dans la Lisière.",
+      hint: "Retirer ce qui dépasse d’un bâton.",
+      when: (st) => !!(st.made && st.made.manche)
+    },
+    premier_feu: {
+      n: "La première flamme", ic: "🔥",
+      t: "Allumer un feu de camp avant la nuit.",
+      hint: "Réunir de quoi chauffer la matière.",
+      when: (st) => !!(st.made && st.made.feu)
+    },
+    premiere_cabane: {
+      n: "L’abri du gisement", ic: "🛖",
+      t: "Poser un premier extracteur pour récolter à ta place.",
+      hint: "Laisser un abri récolter sur un filon.",
+      when: (st) => !!(st.inv && st.inv.cabane) || (st.dom && st.dom.gis && st.dom.gis.bois && st.dom.gis.bois.ext > 0) || !!(st.meta && st.meta.ruins && st.meta.ruins.cabane)
+    },
+    premiere_plaine: {
+      n: "La première frontière", ic: "🌾",
+      t: "Franchir le passage de la Plaine avec un épieu.",
+      hint: "S’armer pour ouvrir l’accès aux hautes herbes.",
+      when: (st) => !!(st.zones && st.zones.plaine)
+    },
+    premiere_releve: {
+      n: "La relève des mains", ic: "✦",
+      t: "Passer le relais et confier le savoir au Semeur suivant.",
+      hint: "Laisser quelqu’un d’autre reprendre la route.",
+      when: (st) => (st.cycle || 1) >= 2
+    },
+    premier_automate: {
+      n: "Le souffle mécanique", ic: "⚙️",
+      t: "Faire tourner une commande avec une machine.",
+      hint: "Confier une tâche répétitive à un automate.",
+      when: (st) => !!(st.inv && (st.inv.automate_bois || st.inv.automate_bronze || st.inv.automate_acier || st.inv.chaine)) || (st.dom && st.dom.gis && Object.values(st.dom.gis).some((g) => g && g.mach > 0))
+    },
+    premier_troc: {
+      n: "Le premier troc", ic: "🪙",
+      t: "Honorer une commande du Troqueur au Comptoir.",
+      hint: "Répondre à la demande d’un marchand.",
+      when: (st) => !!((st.comptoir && Object.keys(st.comptoir.sold || {}).length > 0) || (st.meta && st.meta.troqueurDelivered > 0))
+    },
+    premier_signe: {
+      n: "La parole gravée", ic: "✍️",
+      t: "Comprendre un premier signe des Anciens.",
+      hint: "Trouver le sens d’un symbole dans la roche.",
+      when: (st) => !!(st.signes && Object.keys(st.signes).length > 0)
+    },
+    premiere_etude: {
+      n: "L’œil attentif", ic: "🔍",
+      t: "Étudier une matière à la loupe avec de l’Intuition.",
+      hint: "Regarder une matière de plus près.",
+      when: (st) => !!(st.studied && Object.keys(st.studied).length > 0)
+    },
+    premier_dechiffrage: {
+      n: "L’énigme percée", ic: "✨",
+      t: "Déchiffrer une recette inconnue pas à pas.",
+      hint: "Éclairer une recette que tu n’as pas encore trouvée.",
+      when: (st) => !!(st.hints && Object.values(st.hints).some((v) => v >= 1))
+    },
+    premier_visiteur: {
+      n: "La silhouette fugitive", ic: "🦋",
+      t: "Surprendre un visiteur qui traverse le Domaine.",
+      hint: "Toucher quelqu’un qui ne fait que passer.",
+      when: (st) => !!(st.stats && (st.stats.visiteurs >= 1 || st.stats.visiteursVus >= 1))
+    },
+    premier_don: {
+      n: "Le don du réveil", ic: "🤲",
+      t: "Recevoir la bénédiction d’un don au réveil d’un cycle.",
+      hint: "Choisir une faveur pour le prochain Semeur.",
+      when: (st) => !!(st.don || (st.meta && st.meta.jours && st.meta.jours.n > 0))
+    },
+    premier_air: {
+      n: "Le chant dans l’os", ic: "🎶",
+      t: "Retrouver une mélodie sur la flûte à cinq trous.",
+      hint: "Jouer les bonnes notes dans le silence.",
+      when: (st) => !!(st.secrets && Object.keys(D.MELODIES || {}).some((m) => st.secrets[m]))
+    },
+    premiere_constellation: {
+      n: "Le dessin du ciel", ic: "🌌",
+      t: "Relier les étoiles d’une constellation dans le Cosmos.",
+      hint: "Relier ce qui brille dans la nuit.",
+      when: (st) => !!(st.meta && st.meta.constellations && Object.keys(st.meta.constellations).length > 0)
+    },
+    ruines_relevees: {
+      n: "L’héritage relevé", ic: "🔨",
+      t: "Tout réparer d’un coup sur les ruines d’un cycle passé.",
+      hint: "Relever ce que le précédent Semeur a laissé.",
+      when: (st) => !!(st.repaired && Object.keys(st.repaired).length > 0)
+    },
+    chef_doeuvre: {
+      n: "Le geste parfait", ic: "🏆",
+      t: "Réaliser un chef-d’œuvre à l’Atelier.",
+      hint: "Façonner un objet sans le moindre défaut.",
+      when: (st) => !!(st.stats && st.stats.master >= 1)
+    },
+    douze_terres: {
+      n: "Le tour du monde", ic: "🗺️",
+      t: "Atteindre les douze terres, du sous-sol aux étoiles.",
+      hint: "Fouler chaque contrée du monde connu.",
+      when: (st) => D.ZONES.every((z) => st.zones && st.zones[z.id])
+    },
+    toutes_matieres: {
+      n: "L’encyclopédie des mains", ic: "🔬",
+      t: "Avoir étudié chaque matière première du monde.",
+      hint: "Ne laisser aucune ressource brute inexplorée.",
+      when: (st) => {
+        const mats = Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].t === "res" && !D.ITEMS[i].sec);
+        return mats.length > 0 && mats.every((i) => st.studied && st.studied[i]);
+      }
+    },
+    livre_complet: {
+      n: "Le Livre des Semeurs", ic: "📖",
+      t: "Retrouver les 32 pages du Livre des Semeurs.",
+      hint: "Rassembler toutes les pages éparpillées.",
+      when: (st) => !!(st.livre && st.livre.p && Object.keys(st.livre.p).length >= 32)
+    },
+    cinq_fins: {
+      n: "Les cinq horizons", ic: "🌅",
+      t: "Avoir contemplé les cinq fins d’Éclat.",
+      hint: "Voir où chaque grand chemin conduit le monde.",
+      when: (st) => !!(st.meta && st.meta.endings && Object.keys(st.meta.endings).length >= 5)
+    }
+  };
+
   /* ------------------------------------------------------- GRANDS ŒUVRES */
   D.PROJECTS = {
     dyson: { n: "La Sphère de Dyson", ic: "☀️", req: "arche", end: "aube",
@@ -985,6 +1112,45 @@
     silence: { n: "Le Grand Silence", ic: "🛑" }
   };
   D.HINT_ENDING_COST = 75;
+
+  /* --------------------------------- RÈGLES D'ÉCHO DES FINS (DEUXIÈME PRESTIGE) */
+  D.ECHOS_FINS = {
+    aube: {
+      id: "aube",
+      n: "Foyer Perpétuel",
+      ic: "☀️",
+      sub: "L'Aube éternelle",
+      d: "Le geste Chauffer est actif dès l'éveil (600 °C), les stations gagnent +200 °C, et les fontes/alliages ont +25 % de chance de pièce bonus."
+    },
+    brasier: {
+      id: "brasier",
+      n: "L'Onde de Choc",
+      ic: "💥",
+      sub: "Le Brasier",
+      d: "25 % de chance de coup critique (×3) sur toutes les récoltes et extracteurs ; passages entre terres 15 % moins chers."
+    },
+    exode: {
+      id: "exode",
+      n: "La Voie des Étoiles",
+      ic: "🚀",
+      sub: "L'Exode",
+      d: "Vitesse d'exploration doublée (durée ÷2) ; temps de veille hors-ligne étendu jusqu'à 24 h à plein rendement."
+    },
+    silence: {
+      id: "silence",
+      n: "L'Écho Cosmique",
+      ic: "🌌",
+      sub: "Le Grand Silence",
+      d: "Régénération continue de +3 ✨ d'Intuition par minute ; coût en Intuition des indices et questions divisé par deux."
+    },
+    retour: {
+      id: "retour",
+      n: "L'Éveil Partagé",
+      ic: "🕊️",
+      sub: "Les Matines",
+      d: "Les machines assemblent les recettes connues sans premier essai à la main ; vitesse de toutes les machines +25 %."
+    }
+  };
 
   /* ----------------------------------------------------------- OBJECTIFS */
   /* Un objectif est soit [objet, texte] (le fabriquer), soit une action :
@@ -1288,6 +1454,14 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✦ Deuxième couche de prestige liée aux fins : atteindre l'un des cinq dénouements éveille désormais une Règle d'Écho majeure pour toujours (Foyer Perpétuel, L'Onde de Choc, La Voie des Étoiles, L'Écho Cosmique, L'Éveil Partagé), visible dans le Journal et la Mémoire des mains.",
+    "✦ Les gestes remarqués : 20 succès discrets jalonnent désormais ta route dans le Journal (onglet Gestes), sans récompense chiffrée, avec l’horodatage diégétique de chaque accomplissement (cycle, âge, date).",
+    "🍃 Ligne d’ambiance : sous l’en-tête, une petite phrase discrète donne à voir et à sentir le monde vivant selon la terre où tu te trouves, ton âge et l’heure réelle (aube, jour, crépuscule, nuit). Toucher la ligne fait défiler une autre observation du moment, et elle peut se couper dans Menu → Affichage.",
+    "📖 Carnet & fabrication : mémorisation du dernier filtre et de la recherche du Carnet, quantité libre à côté de ×10 et Max pour commander le volume exact souhaité, et ajustement des filtres de l’Arbre vers des termes de jeu (Toutes, À portée, Prêtes, Verrouillées).",
+    "🌳 L’Arbre à portée : le filtre « À portée » réunit ce que tu peux fabriquer immédiatement ou presque avec ta Réserve, avec les filtres « Prêtes », « Presque » et « Pas encore ». Un point discret signale les nouvelles recettes découvertes que tu n’as pas encore fabriquées.",
+    "🪜 Le chemin vers une cible : depuis une pastille de l’Arbre ou l’objectif du Domaine, le bouton « Chemin » ouvre toute la route jusqu’à l’objet en une échelle de marches (ce qui est fait, en cours, bloqué ou à trouver), avec l’action directe pour chaque marche, et « Tout fabriquer ».",
+    "🏷️ Des mots d’interface, un par chose : la carte du Domaine s’appelle « Objectif » (plus « Scénario »), son bouton « Atelier » (plus « Tenter »), le badge d’une recette à trouver « Nouvelle recette » (plus « Étape clé »), et ce qu’il faut avoir s’écrit « Requis ». Les premières explications du guide sont plus courtes.",
+    "👋 Au premier réveil, le choix du guide se fait dans la fenêtre d’ouverture : « Ouvrir les yeux » ou « Sans guide ». La bulle d’accueil qui venait se poser sur ton objectif disparaît.",
     "🌳 L’Arbre se lit en pastilles : chaque âge devient une frise d’icônes (matières vues, recettes trouvées, pistes à découvrir, ton objectif), plus facile à parcourir que des cartes. Toucher une pastille ouvre une feuille qui monte du bas avec ce que la recette utilise et ce qu’elle sert à fabriquer ; l’arbre reste visible dessous. La progression reste l’accueil de l’Arbre.",
     "🛖 Après une relève, les ruines tiennent dans un seul bloc replié sous ce qui se récolte, au lieu d’une carte par ruine qui repoussait les gisements. Quand tu peux relever quelque chose, le bloc s’ouvre et « Tout réparer » relève tout ce que ta Réserve permet. Réparer une ruine compte maintenant comme fabriquer l’objet : l’étape « fabrique une cabane » ne te redemande plus ce que tu viens de relever.",
     "🪙 Le Comptoir est dans le menu : tu y accèdes de n’importe quel écran.",
