@@ -63,3 +63,36 @@ body.large-text .arb-card.sel .arb-l { font-size: 18px; }
   .arb-card { padding: 8px; }
   body.large-text .arb-grille { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ===== La frise (0.28) : un âge en pastilles, la feuille en dessous ===== */
+.arb-frise { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 0 8px 10px; min-width: 0; }
+.arb-pas { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-width: 0; min-height: 76px; padding: 8px 4px 6px;
+  border-radius: 12px; border: 1.5px solid var(--text); background: var(--panel); color: inherit; font: inherit; cursor: pointer; }
+.arb-pas .ic { flex: 0 0 auto; width: 32px; height: 32px; }
+.arb-pas-n { max-width: 100%; font-size: 12px; line-height: 1.15; text-align: center; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.arb-pas.allume { background: color-mix(in srgb, var(--good) 14%, var(--panel)); border-color: var(--good); }
+.arb-pas.vu { border-color: var(--line2); background: var(--panel2); }
+.arb-pas.fantome { border-style: dashed; border-color: var(--dim); background: transparent; }
+.arb-pas.fantome .arb-inconnu { display: grid; place-items: center; width: 32px; height: 32px; font-size: 18px; color: var(--dim); }
+.arb-pas.obj { box-shadow: 0 0 0 2px var(--intu) inset; }
+.arb-pas:focus-visible { outline: 3px solid var(--acc); outline-offset: 2px; }
+.arb-pas:active { scale: .96; }
+.arb-legende { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: -2px 0 8px; font-size: 12px; color: var(--muted); }
+.arb-legende i { display: inline-block; width: 11px; height: 11px; border-radius: 4px; margin-right: 4px; vertical-align: -1px; border: 1.5px solid var(--text); }
+.arb-legende i.allume { background: color-mix(in srgb, var(--good) 14%, var(--panel)); border-color: var(--good); }
+.arb-legende i.vu { border-color: var(--line2); background: var(--panel2); }
+.arb-legende i.fantome { border-style: dashed; border-color: var(--dim); }
+.arb-legende i.obj { border-color: var(--intu); box-shadow: 0 0 0 1.5px var(--intu) inset; }
+@media (max-width: 340px) { .arb-frise { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+body.large-text .arb-frise { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body.large-text .arb-pas-n { font-size: 14px; }
+/* la feuille : monte du bas, ne laisse que la tête de l’arbre visible dessus */
+.modal.arb-sheet { align-items: flex-end; background: rgba(4, 3, 2, .45); }
+.modal.arb-sheet .modal-box { border-radius: 22px 22px 0 0; margin: 0; max-height: 82vh; padding-top: 14px; border-bottom: 0; }
+.modal.arb-sheet .modal-box::before { content: ""; display: block; width: 44px; height: 4px; border-radius: 4px; background: var(--line2); margin: 0 auto 10px; }
+.arb-sheet-c .arb-entete { margin-bottom: 8px; }
+.arb-sheet-c .arb-grille { margin-bottom: 4px; }
+@media (prefers-reduced-motion: reduce) { .arb-pas:active { scale: 1; } }
+.arb-voisins { padding: 0; }
+.arb-fleche { min-height: 28px; font-size: 22px; }

@@ -1,6 +1,6 @@
 {
   "name": "eclat",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "private": true,
   "description": "Éclat — du silex aux étoiles. Un jeu de craft mobile : découvre les recettes par le geste, bâtis ton usine, traverse les âges, perce le secret de l’étoile rouge.",
   "scripts": {
@@ -14,6 +14,7 @@
     "test:affichage": "node tools/test-affichage-ui.js",
     "test:appareil": "node tools/test-appareil-ui.js",
     "test:friction": "node tools/test-friction-ui.js",
+    "test:arbre": "node tools/test-arbre-ui.js",
     "test:stockage": "node tools/test-stockage-ui.js",
     "build": "node tools/build.js",
     "serveur": "node --no-warnings server/dev.js"

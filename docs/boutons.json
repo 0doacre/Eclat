@@ -802,7 +802,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+21/min8,73 k",
+  "label": "Bois+18/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -1266,25 +1266,25 @@
  {
   "partie": "avancée",
   "ecran": "Arbre",
-  "label": "MancheDéjà fabriqué",
-  "repere": "button[data-arbsel=\"manche\"][data-arbn=\"manche\"].arb-card.allume",
-  "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
+  "label": "Bois",
+  "repere": "button[data-arbsel=\"bois\"][data-arbn=\"bois\"].arb-pas.vu",
+  "explique": "info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Bois, ressource découverte",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Arbre",
-  "label": "BoisRessource découverte",
-  "repere": "button[data-arbsel=\"bois\"][data-arbn=\"bois\"].arb-card.vu",
-  "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
+  "label": "Charbon",
+  "repere": "button[data-arbsel=\"charbon\"][data-arbn=\"charbon\"].arb-pas.allume",
+  "explique": "info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Charbon, déjà fabriqué",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Arbre · une branche",
-  "label": "← Les âges",
-  "repere": "button[data-arb=\"retour\"].btn.ghost",
-  "explique": "info-bulle : Revenir en arrière dans l’arbre",
+  "ecran": "Arbre",
+  "label": "??",
+  "repere": "button[data-arbsel=\"f1\"][data-arbn=\"f1\"].arb-pas.fantome",
+  "explique": "info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Recette à découvrir, à découvrir, objectif",
   "tag": "button"
  },
  {
