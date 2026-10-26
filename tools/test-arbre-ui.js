@@ -131,6 +131,20 @@ async function run() {
   } else ok(true, "(pas d'objectif craft au réveil)");
   await p.context().close();
 
+  // 10. filtres de portée et point « nouveau »
+  p = await page(browser, {});
+  await ouvrirArbre(p);
+  ok(await p.locator(".arb-filtres [data-arb-f]").count() === 4, "les 4 filtres de portée sont présents");
+  ok(await p.evaluate(() => [...document.querySelectorAll(".arb-filtres button")].every(b => b.getBoundingClientRect().height >= 44)), "chaque filtre fait au moins 44 px de haut");
+  ok(await p.locator(".arb-pas.neuf .arb-dot-neuf").count() >= 1, "les nouvelles recettes portent le point nouveau");
+  const countTous = await p.locator(".arb-pas").count();
+  await p.locator('.arb-filtres [data-arb-f="pret"]').click();
+  await p.waitForTimeout(200);
+  const countPrets = await p.locator(".arb-pas").count();
+  ok(countPrets > 0 && countPrets <= countTous, "le filtre Prêtes restreint l'affichage aux seules pastilles prêtes");
+  ok(await p.evaluate(() => [...document.querySelectorAll(".arb-pas")].every(b => b.classList.contains("p-pret"))), "toutes les pastilles visibles sous le filtre Prêtes sont qualifiées p-pret");
+  await p.context().close();
+
   await browser.close(); server.close();
   console.log(checks + " contrôles de l’Arbre réussis.");
 }

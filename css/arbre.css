@@ -64,9 +64,13 @@ body.large-text .arb-card.sel .arb-l { font-size: 18px; }
   body.large-text .arb-grille { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* ===== Filtres de portée (0.31) ===== */
+.arb-filtres { flex: 0 0 auto; margin: 0; padding: 6px 8px 8px; border-bottom: 1px solid var(--line2); background: var(--bg); }
+.arb-filtres button { min-height: 44px; }
+
 /* ===== La frise (0.28) : un âge en pastilles, la feuille en dessous ===== */
 .arb-frise { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 0 8px 10px; min-width: 0; }
-.arb-pas { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-width: 0; min-height: 76px; padding: 8px 4px 6px;
+.arb-pas { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-width: 0; min-height: 76px; padding: 8px 4px 6px;
   border-radius: 12px; border: 1.5px solid var(--text); background: var(--panel); color: inherit; font: inherit; cursor: pointer; }
 .arb-pas .ic { flex: 0 0 auto; width: 32px; height: 32px; }
 .arb-pas-n { max-width: 100%; font-size: 12px; line-height: 1.15; text-align: center; overflow-wrap: anywhere;
@@ -76,6 +80,10 @@ body.large-text .arb-card.sel .arb-l { font-size: 18px; }
 .arb-pas.fantome { border-style: dashed; border-color: var(--dim); background: transparent; }
 .arb-pas.fantome .arb-inconnu { display: grid; place-items: center; width: 32px; height: 32px; font-size: 18px; color: var(--dim); }
 .arb-pas.obj { box-shadow: 0 0 0 2px var(--intu) inset; }
+.arb-pas.p-pret { box-shadow: 0 0 0 1px var(--good); }
+.arb-pas.p-bloque { opacity: .6; }
+.arb-pas.p-bloque:hover, .arb-pas.p-bloque:focus-visible { opacity: 1; }
+.arb-dot-neuf { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 0 2px var(--panel); pointer-events: none; }
 .arb-pas:focus-visible { outline: 3px solid var(--acc); outline-offset: 2px; }
 .arb-pas:active { scale: .96; }
 .arb-legende { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: -2px 0 8px; font-size: 12px; color: var(--muted); }
@@ -84,6 +92,7 @@ body.large-text .arb-card.sel .arb-l { font-size: 18px; }
 .arb-legende i.vu { border-color: var(--line2); background: var(--panel2); }
 .arb-legende i.fantome { border-style: dashed; border-color: var(--dim); }
 .arb-legende i.obj { border-color: var(--intu); box-shadow: 0 0 0 1.5px var(--intu) inset; }
+.arb-legende i.neuf-i { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); border: none; vertical-align: 0; }
 @media (max-width: 340px) { .arb-frise { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 body.large-text .arb-frise { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 body.large-text .arb-pas-n { font-size: 14px; }

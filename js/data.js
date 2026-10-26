@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.30.0";
+  D.VERSION = "0.32.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1288,6 +1288,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📖 Carnet & fabrication : mémorisation du dernier filtre et de la recherche du Carnet, quantité libre à côté de ×10 et Max pour commander le volume exact souhaité, et ajustement des filtres de l’Arbre vers des termes de jeu (Toutes, À portée, Prêtes, Verrouillées).",
+    "🌳 L’Arbre à portée : le filtre « À portée » réunit ce que tu peux fabriquer immédiatement ou presque avec ta Réserve, avec les filtres « Prêtes », « Presque » et « Pas encore ». Un point discret signale les nouvelles recettes découvertes que tu n’as pas encore fabriquées.",
     "🪜 Le chemin vers une cible : depuis une pastille de l’Arbre ou l’objectif du Domaine, le bouton « Chemin » ouvre toute la route jusqu’à l’objet en une échelle de marches (ce qui est fait, en cours, bloqué ou à trouver), avec l’action directe pour chaque marche, et « Tout fabriquer ».",
     "🏷️ Des mots d’interface, un par chose : la carte du Domaine s’appelle « Objectif » (plus « Scénario »), son bouton « Atelier » (plus « Tenter »), le badge d’une recette à trouver « Nouvelle recette » (plus « Étape clé »), et ce qu’il faut avoir s’écrit « Requis ». Les premières explications du guide sont plus courtes.",
     "👋 Au premier réveil, le choix du guide se fait dans la fenêtre d’ouverture : « Ouvrir les yeux » ou « Sans guide ». La bulle d’accueil qui venait se poser sur ton objectif disparaît.",

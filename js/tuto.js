@@ -100,7 +100,7 @@
           // il manque des pièces : la bulle montre la première, dont la fiche explique comment la fabriquer
           { at: () => (document.querySelector(".dom-ruine .item-pill.lack") ? ".dom-ruine .item-pill.lack" : "[data-repair]"),
             text: () => (document.querySelector(".dom-ruine .item-pill.lack")
-              ? "Répare les constructions de ton prédécesseur à moindre coût. Il te manque des pièces : touche celles en rouge pour consulter leur recette."
+              ? "Répare les constructions à moindre coût. Touche les pièces manquantes pour voir leur recette."
               : "Tu as tout ce qu’il faut. Touche « Réparer »."),
             done: () => !document.querySelector("[data-repair]") }
         ] },
@@ -109,15 +109,15 @@
         still: () => E.passPending().length > 0,
         steps: [
           { tab: "domaine", at: () => (document.querySelector(".goal-card [data-pour]") ? ".goal-card [data-pour]" : ".dom-pass [data-pour]"),
-            text: "🚧 Derrière ce passage, une autre terre. Avant de l’ouvrir, explore les lieux de celle où tu es ; ensuite, apporte les ressources.",
+            text: "🚧 Derrière ce passage, une autre terre. Explore les lieux de celle où tu es, puis apporte les ressources.",
             done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
-          { tab: "domaine", text: "Explore, récolte, fabrique, puis reviens déposer les ressources. Chaque passage franchi te donne des ✦ Traces. Utilise-les pour acheter les améliorations permanentes de la Mémoire des mains.", next: true }
+          { tab: "domaine", text: "Explore, récolte, fabrique, puis dépose les ressources. Chaque passage franchi donne des ✦ Traces pour la Mémoire des mains.", next: true }
         ] },
       { id: "releve", n: "La relève",
         when: () => S().cycle === 1 && E.canReleve() && !!document.querySelector("#memBtn:not(.hidden)"),
         still: () => E.canReleve(),
         steps: [
-          { at: "#memBtn", dim: false, text: "La relève commence un nouveau cycle : tes connaissances sont conservées. Touche ✦ pour consulter les gains et le détail de ce qui sera conservé ou réinitialisé.",
+          { at: "#memBtn", dim: false, text: "La relève commence un nouveau cycle : tes connaissances sont conservées. Touche ✦ pour consulter les gains et ce qui sera conservé.",
             done: () => modalOpen() }
         ] },
       { id: "mains", n: "Tes mains",
@@ -202,7 +202,7 @@
         when: () => !S().flags.cmdBig && U.tab === "carnet" && S().stats.crafts >= 10 && S().stats.crafts <= 120 && S().age <= 4 && !!document.querySelector('[data-qty="10"]'),
         steps: [
           { tab: "carnet", at: '[data-qty="10"]', dim: false,
-            text: "Choisis ×10 pour commander dix exemplaires d’un coup, pièces comprises ; Max prend tout ce que ta Réserve permet.",
+            text: "Choisis une quantité (×10, Max, ou libre) pour commander plusieurs exemplaires d’un coup, pièces comprises.",
             done: () => !!S().flags.cmdBig }
         ] },
       { id: "dechiffrer", n: "Déchiffrer une recette", modal: true,

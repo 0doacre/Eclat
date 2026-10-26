@@ -350,13 +350,17 @@
       const lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
       return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="Commander 1 exemplaire, pièces comprises">' + lbl + "</button>" +
         sizes.map((sz) => '<button class="btn small" data-cr="' + id + '" data-n="' + sz + '" title="Commander ' + sz + ' exemplaires d’un coup, pièces comprises">×' + sz + "</button>").join("") +
-        '<button class="btn small" data-cr="' + id + '" data-n="max" title="Tout ce que ta Réserve permet, pièces comprises">Max</button>';
+        '<button class="btn small" data-cr="' + id + '" data-n="max" title="Tout ce que ta Réserve permet, pièces comprises">Max</button>' +
+        (E.isScaled(it) ? '' : '<button class="btn small" data-cr-custom="' + id + '" title="Saisir une quantité libre à fabriquer">…</button>');
     }
 
     /* ------------------------------------------------------------ CARNET */
     /* la quantité du Carnet : choisie une fois (en haut, elle reste visible en défilant), mémorisée, appliquée au bouton « Fabriquer » de chaque recette */
     const cqSizes = () => [1].concat((D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000], ["max"]);
-    const cqNow = () => { const q = S().flags.carnetQty; return cqSizes().includes(q) ? q : 1; };
+    const cqNow = () => {
+      const q = S().flags.carnetQty;
+      return (typeof q === "number" && q > 0) || q === "max" ? q : 1;
+    };
     /* la quantité mémorisée, ramenée à ce que cette recette accepte (une pièce unique : 1 ; un extracteur ou une machine : pas de ×50 ni plus) */
     function cqFor(it) {
       const q = cqNow();
@@ -366,8 +370,78 @@
     }
     function cqBarHTML() {
       const q = cqNow();
+      const standard = cqSizes();
+      const isCustom = typeof q === "number" && !standard.includes(q);
       return '<div class="qtybar" role="group" aria-label="Quantité à fabriquer"><span class="tiny muted">Quantité</span>' +
-        cqSizes().map((n) => '<button type="button" class="chipq' + (n === q ? " on" : "") + '" data-qty="' + n + '" title="' + (n === "max" ? "Tout ce que ta Réserve permet" : n === 1 ? "Un seul exemplaire" : n + " exemplaires d’un coup") + '" aria-pressed="' + (n === q) + '">' + (n === "max" ? "Max" : "×" + n) + "</button>").join("") + "</div>";
+        standard.map((n) => '<button type="button" class="chipq' + (n === q ? " on" : "") + '" data-qty="' + n + '" title="' + (n === "max" ? "Tout ce que ta Réserve permet" : n === 1 ? "Un seul exemplaire" : n + " exemplaires d’un coup") + '" aria-pressed="' + (n === q) + '">' + (n === "max" ? "Max" : "×" + n) + "</button>").join("") +
+        '<button type="button" class="chipq' + (isCustom ? " on" : "") + '" data-qty-custom title="Saisir une quantité libre" aria-label="Quantité libre" aria-pressed="' + isCustom + '">' + (isCustom ? "×" + q : "…") + "</button></div>";
+    }
+    function promptCarnetQty() {
+      const current = cqNow();
+      const def = current === "max" ? 10 : current;
+      openModal({
+        cls: "qty-modal",
+        html: '<div class="kicker">Carnet</div>' +
+          '<h2>Quantité libre</h2>' +
+          '<p class="small muted">Choisis la quantité pour les commandes du Carnet.</p>' +
+          '<form id="cqCustomForm" class="qty-form">' +
+          '<div class="fld" style="margin:12px 0">' +
+          '<input id="cqCustomIn" type="number" min="1" max="100000" class="input" value="' + def + '" required style="font-size:18px;padding:8px 12px;width:100%;box-sizing:border-box">' +
+          '</div>' +
+          '<div class="acts" style="display:flex;gap:8px;margin-top:14px">' +
+          '<button type="submit" class="btn pri" style="flex:1">Appliquer</button>' +
+          '<button type="button" class="btn" data-m="close" style="flex:1">Annuler</button>' +
+          '</div>' +
+          '</form>',
+        onOpen: (box) => {
+          const form = box.querySelector("#cqCustomForm");
+          const input = box.querySelector("#cqCustomIn");
+          if (input) { input.focus(); input.select(); }
+          if (form) {
+            form.addEventListener("submit", (ev) => {
+              ev.preventDefault();
+              const n = Math.max(1, Math.min(100000, Math.floor(Number(input.value) || 1)));
+              S().flags.carnetQty = n;
+              A.click();
+              closeModal();
+              render(true);
+            });
+          }
+        }
+      });
+    }
+    function promptCraftQty(id) {
+      const it = I[id];
+      if (!it) return;
+      const max = E.maxPlan ? E.maxPlan(id) : 100000;
+      openModal({
+        cls: "qty-modal",
+        html: '<div class="kicker">Fabrication</div>' +
+          '<h2>' + esc(it.n) + '</h2>' +
+          '<p class="small muted">Choisis la quantité exacte à commander' + (max > 0 ? ' (maximum possible : ' + fmt(max) + ')' : '') + '.</p>' +
+          '<form id="crCustomForm" class="qty-form">' +
+          '<div class="fld" style="margin:12px 0">' +
+          '<input id="crCustomIn" type="number" min="1" max="100000" class="input" value="1" required style="font-size:18px;padding:8px 12px;width:100%;box-sizing:border-box">' +
+          '</div>' +
+          '<div class="acts" style="display:flex;gap:8px;margin-top:14px">' +
+          '<button type="submit" class="btn pri" style="flex:1">Commander</button>' +
+          '<button type="button" class="btn" data-m="close" style="flex:1">Annuler</button>' +
+          '</div>' +
+          '</form>',
+        onOpen: (box) => {
+          const form = box.querySelector("#crCustomForm");
+          const input = box.querySelector("#crCustomIn");
+          if (input) { input.focus(); input.select(); }
+          if (form) {
+            form.addEventListener("submit", (ev) => {
+              ev.preventDefault();
+              const n = Math.max(1, Math.min(100000, Math.floor(Number(input.value) || 1)));
+              closeModal();
+              handQueue(document.body, id, n, true);
+            });
+          }
+        }
+      });
     }
     function carnetBook() {
       const st = S(), book = E.carnet().map((s) => ({ age: s.age, ids: s.ids.slice() }));
@@ -420,6 +494,17 @@
       if (n.etat === "allume") return S().made[n.id] > 0 ? "Déjà fabriqué" : "Recette découverte";
       return I[n.id].r ? "Recette à découvrir" : "Ressource découverte";
     }
+    function arbrePortee(n) {
+      return Arb && Arb.portee ? Arb.portee(n, E, D) : "pret";
+    }
+    function arbrePassPortee(n, f) {
+      if (!f || f === "tout") return true;
+      const p = arbrePortee(n);
+      if (f === "portee") return p === "pret" || p === "presque";
+      if (f === "pret") return p === "pret";
+      if (f === "verrouille" || f === "bloque") return p === "bloque";
+      return p === f;
+    }
     function arbreCarte(n, centre) {
       const fant = n.etat === "fantome";
       const tag = centre ? "article" : "button";
@@ -442,7 +527,11 @@
     /* une pastille de la frise : une icône, un nom court, un état écrit pour le lecteur d’écran */
     function arbrePastille(n) {
       const fant = n.etat === "fantome", nom = fant ? "Recette à découvrir" : n.n;
-      return '<button type="button" class="arb-pas ' + n.etat + (n.objectif ? " obj" : "") + '" data-arbsel="' + esc(n.cle) + '" data-arbn="' + esc(n.cle) + '" aria-label="' + esc(nom + ", " + arbreEtat(n).toLowerCase() + (n.objectif ? ", objectif" : "")) + '" title="Ouvrir : ses ingrédients et ses usages">' +
+      const pCat = arbrePortee(n);
+      const neuf = n.etat === "allume" && !(S().made[n.id] > 0);
+      const label = nom + ", " + arbreEtat(n).toLowerCase() + (neuf ? ", nouvelle recette" : "") + (n.objectif ? ", objectif" : "");
+      return '<button type="button" class="arb-pas ' + n.etat + ' p-' + pCat + (n.objectif ? " obj" : "") + (neuf ? " neuf" : "") + '" data-arbsel="' + esc(n.cle) + '" data-arbn="' + esc(n.cle) + '" aria-label="' + esc(label) + '" title="Ouvrir : ses ingrédients et ses usages">' +
+        (neuf ? '<span class="arb-dot-neuf" aria-hidden="true" title="Nouvelle recette"></span>' : '') +
         (fant ? '<span class="arb-inconnu" aria-hidden="true">?</span>' : icon(n.id, "sm")) + '<span class="arb-pas-n" aria-hidden="true">' + esc(fant ? "?" : nom) + '</span></button>';
     }
     function arbreResultats(q) {
@@ -453,9 +542,29 @@
       return hits.length ? hits.slice(0, 8).map((n) => arbreCarte(n, false)).join("") : '<p class="small muted">Rien de tel parmi ce que tu connais.</p>';
     }
     function arbreBarre(g) {
-      return '<div class="arb-barre"><button type="button" class="btn small" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '" title="Ta progression : ton âge, tes étapes et le prochain objectif">Progression</button>' +
+      const f = U.arbreFiltre || "tout";
+      const FILTRES = [
+        ["tout", "Toutes", "Afficher toutes les pastilles"],
+        ["portee", "À portée", "Afficher les recettes prêtes ou dont les matières sont récoltables"],
+        ["pret", "Prêtes", "Afficher les recettes fabricables immédiatement avec ta Réserve"],
+        ["verrouille", "Verrouillées", "Afficher les recettes avec un prérequis manquant ou non découvertes"]
+      ];
+      const counts = { tout: g.noeuds.length, portee: 0, pret: 0, verrouille: 0 };
+      g.noeuds.forEach((n) => {
+        const p = arbrePortee(n);
+        if (p === "pret") { counts.pret++; counts.portee++; }
+        else if (p === "presque") { counts.portee++; }
+        else { counts.verrouille++; }
+      });
+      return '<div class="arb-barre"><button type="button" class="btn small' + (!U.arbreSel ? ' on' : '') + '" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '" title="Ta progression : ton âge, tes étapes et le prochain objectif">Progression</button>' +
         '<button type="button" class="btn small" data-arb="centre" title="Ton objectif du moment, et ce qu’il demande">Objectif</button>' +
         '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans l’arbre" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
+        '<div class="filters arb-filtres" role="toolbar" aria-label="Filtrer les pastilles">' +
+        FILTRES.map(([k, lbl, tip]) =>
+          '<button type="button" data-arb-f="' + k + '" class="' + (f === k ? 'on' : '') + '" title="' + tip + '">' +
+          lbl + ' <span class="f-cnt">' + (counts[k] || 0) + '</span></button>'
+        ).join('') +
+        '</div>' +
         '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans l’arbre</label>' +
         '<input id="arbq" type="search" placeholder="Recette ou ressource" value="' + esc(U.arbreQ || '') + '" autocomplete="off" spellcheck="false">' +
         '<div id="arbres" class="arb-grille" aria-live="polite">' + arbreResultats(U.arbreQ) + '</div></div>';
@@ -463,20 +572,25 @@
     function arbreEnsemble(g) {
       const etapes = E.milestones()[g.age] || [], faites = etapes.filter((x) => x.done).length;
       const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
+      const f = U.arbreFiltre || "tout";
       let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
         '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
       if (objectif) h += '<h3>Prochain objectif</h3>' + arbreCarte(objectif, false);
       else if (ob) h += '<h3>Prochain objectif</h3><p>' + esc(ob.txt || ob.n || 'Poursuivre l’exploration') + '</p>';
       else h += '<p>Tu as accompli les objectifs proposés.</p>';
-      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>matière vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span></div>';
+      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>matière vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span><span><i class="neuf-i"></i>nouveau</span></div>';
       for (let a = 0; a <= g.max; a++) {
         const ns = g.noeuds.filter((n) => n.age === a);
         const ouverts = U.arbreAges || {};
-        const ouvert = ouverts[a] !== undefined ? ouverts[a] : a === Math.min(g.age, g.max);
-        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '') + '</span></summary>';
-        const rang = new Map(ns.map((n) => [n.cle, arbreRang(n, g)]));
-        ns.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
-        h += (ns.length ? '<div class="arb-frise">' + ns.map(arbrePastille).join('') + '</div>' : '<p class="small muted">Rien découvert pour l’instant.</p>') + '</details>';
+        const visibles = f === "tout" ? ns : ns.filter((n) => arbrePassPortee(n, f));
+        const ouvert = ouverts[a] !== undefined ? ouverts[a] : (f !== "tout" ? visibles.length > 0 : a === Math.min(g.age, g.max));
+        const compteTxt = f === "tout" ?
+          (ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '')) :
+          (visibles.length + ' ' + (f === 'pret' ? 'prête' + (visibles.length > 1 ? 's' : '') : f === 'portee' ? 'à portée' : 'verrouillée' + (visibles.length > 1 ? 's' : '')));
+        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + compteTxt + '</span></summary>';
+        const rang = new Map(visibles.map((n) => [n.cle, arbreRang(n, g)]));
+        visibles.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
+        h += (visibles.length ? '<div class="arb-frise">' + visibles.map(arbrePastille).join('') + '</div>' : '<p class="small muted">' + (ns.length ? 'Aucune recette pour ce filtre.' : 'Rien découvert pour l’instant.') + '</p>') + '</details>';
       }
       if (g.max < D.AGES.length - 1) h += '<p class="small muted">Les autres âges se dévoileront au fil de tes découvertes.</p>';
       return h;
@@ -562,7 +676,7 @@
     if (typeof document !== 'undefined') {
       document.addEventListener('input', (e) => { if (e.target.id === 'arbq') { U.arbreQ = e.target.value; const r = document.getElementById('arbres'); if (r) { r.innerHTML = arbreResultats(U.arbreQ); iconize(r); } } });
       document.addEventListener('click', (e) => {
-        const b = e.target.closest && e.target.closest('[data-arb], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer], [data-chemin], [data-ch-craft], [data-ch-harv], [data-ch-voir], [data-ch-atelier]');
+        const b = e.target.closest && e.target.closest('[data-arb], [data-arb-f], [data-arbsel], [data-arbre-obj], [data-carnet-rec], [data-situer], [data-chemin], [data-ch-craft], [data-ch-harv], [data-ch-voir], [data-ch-atelier]');
         if (!b) return;
         if (b.dataset.chCraft) {
           e.stopPropagation(); A.click();
@@ -597,6 +711,13 @@
         if (!b.closest('#v-arbre, .arb-sheet-c')) return;
         e.stopPropagation(); A.click();
         if (b.dataset.arbsel) { arbreChoisir(b.dataset.arbsel, true); return; }
+        if (b.dataset.arbF) {
+          U.arbreFiltre = b.dataset.arbF;
+          const el = arbreEl();
+          arbreBati(el);
+          if (el) { const scr = el.querySelector('#arbre'); if (scr) scr.scrollTop = 0; }
+          return;
+        }
         const a = b.dataset.arb, el = arbreEl();
         if (a === 'chercher') {
           U.arbreChercher = !U.arbreChercher; const p = el.querySelector('.arb-chercher'); p.hidden = !U.arbreChercher; b.setAttribute('aria-expanded', U.arbreChercher);
@@ -1337,6 +1458,7 @@
     function showInCarnet(id) {
       const it = I[id];
       U.q = ""; U.carnetFilter = "tout"; U.openAges[it.a] = true;
+      if (S().settings) S().settings.carnet = { filter: "tout", q: "" };
       if (E.isUnique(it) && S().made[id] > 0) U.showOwned = true;
       setTab("carnet");
       setTimeout(() => { const el = $('[data-rec="' + id + '"]'); if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); flash(el); } }, 60);
@@ -1344,7 +1466,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo };
+    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
   }
 
   window.EclatAtelier = { create };
