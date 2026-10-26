@@ -44,7 +44,7 @@
         const it = I[ob.id];
         if (it.h && !st.known[ob.id]) h += '<div class="riddle small">« ' + esc(it.h) + " »</div>";
         if (g.step !== ob.id && I[g.step]) h += '<div class="tiny muted" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:4px">Il faut d’abord : ' + itemPill(g.step) + "</div>";
-        if (st.known[ob.id]) h += '<div class="row wrap" style="margin-top:6px"><button class="btn small ghost" data-tree="' + ob.id + '">Détail</button>' + (st.track && st.track.id === ob.id ? "" : '<button class="btn small ghost" data-track="' + ob.id + '">Suivre</button>') + "</div>";
+        h += '<div class="row wrap" style="margin-top:6px"><button class="btn small ghost" data-chemin="' + ob.id + '" data-tree="' + ob.id + '" title="Chemin : la route complète jusqu’à l’objet">Chemin</button>' + (st.track && st.track.id === ob.id ? "" : '<button class="btn small ghost" data-track="' + ob.id + '">Suivre</button>') + "</div>";
         const z = it.e && it.e.zone;
         if (z && D.PASSAGES[z] && !(st.pass[z] && st.pass[z].done)) {
           const c = E.passCost(z);

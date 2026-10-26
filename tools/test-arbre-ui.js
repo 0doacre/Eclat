@@ -104,6 +104,33 @@ async function run() {
   ok(await p.evaluate(() => document.documentElement.scrollWidth === innerWidth), "320 px : rien ne déborde");
   await p.context().close();
 
+  // 8. le chemin vers une cible : depuis la feuille d'une pastille, « Chemin » ouvre l'échelle des marches
+  p = await page(browser, {});
+  await ouvrirArbre(p);
+  await p.locator('details[open] .arb-pas.allume').first().click();
+  await p.waitForSelector("#modal.arb-sheet"); await p.waitForTimeout(400);
+  ok(await p.locator('#modal [data-chemin]').count() >= 1, "le bouton Chemin apparaît sur la feuille");
+  await p.locator('#modal [data-chemin]').first().click();
+  await p.waitForSelector("#modal .arb-echelle"); await p.waitForTimeout(400);
+  ok(await p.locator("#modal .arb-marche").count() >= 1, "l'échelle des marches est affichée");
+  ok(await p.evaluate(() => [...document.querySelectorAll("#modal .arb-marche")].every(m => /fait|en_cours|a_trouver|bloquee/.test(m.className))), "chaque marche porte son état");
+  ok(await p.locator('#modal button:has-text("Tout fabriquer"), #modal button:has-text("Suivre")').count() >= 1, "les actions globales Tout fabriquer ou Suivre sont présentes");
+  ok(await p.evaluate(() => document.querySelector("#modal .modal-box").scrollWidth <= window.innerWidth), "la modale de chemin ne déborde pas");
+  await fermer(p);
+  await p.context().close();
+
+  // 9. le bouton Chemin depuis l'objectif du Domaine
+  p = await page(browser, {});
+  await p.locator('#tabs [data-tab="domaine"]').click(); await p.waitForTimeout(300);
+  const hasChemin = await p.locator('.goal-card [data-chemin]').count();
+  if (hasChemin) {
+    await p.locator('.goal-card [data-chemin]').click();
+    await p.waitForSelector("#modal .arb-echelle"); await p.waitForTimeout(400);
+    ok(await p.locator("#modal .arb-marche").count() >= 1, "Chemin depuis l'objectif ouvre l'échelle des marches");
+    await fermer(p);
+  } else ok(true, "(pas d'objectif craft au réveil)");
+  await p.context().close();
+
   await browser.close(); server.close();
   console.log(checks + " contrôles de l’Arbre réussis.");
 }

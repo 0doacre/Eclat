@@ -242,4 +242,82 @@ test("voisinage : une piste garde son anonymat, même dans une partie avancée",
     assert.ok(v.aval.every((p) => g.noeuds.includes(p)));
   }
 });
+
+/* ---- 0.30.0 : le chemin vers une cible (l’échelle des marches) ---- */
+test("chemin vers une cible : échelle de la plus profonde à la cible", () => {
+  const E = avancee();
+  const r = Arb.route(E, D, "scierie", 1);
+  assert.ok(r && r.marches.length >= 5, "route de scierie complète");
+  assert.strictEqual(r.cible.nom, I.scierie.n);
+  assert.strictEqual(r.cible.times, 1);
+  const derniere = r.marches[r.marches.length - 1];
+  assert.strictEqual(derniere.id, "scierie");
+  assert.ok(derniere.isTarget);
+  // La première marche est une matière première profonde (sans recette)
+  const premiere = r.marches[0];
+  assert.strictEqual(premiere.type, "res");
+  assert.ok(!I[premiere.id].r);
+});
+
+test("chemin : les 4 états (fait, en_cours, a_trouver, bloquee) et leurs actions", () => {
+  const E = mk();
+  E.learn("manche");
+  E.state.seen.bois = 1;
+  // 1. manche sans bois : bois [en_cours, recolter], manche [en_cours, fabriquer]
+  let r = Arb.route(E, D, "manche", 1);
+  assert.strictEqual(r.marches[0].id, "bois");
+  assert.strictEqual(r.marches[0].etat, "en_cours");
+  assert.strictEqual(r.marches[0].action, "recolter");
+  assert.strictEqual(r.marches[1].id, "manche");
+  assert.strictEqual(r.marches[1].etat, "en_cours");
+  assert.strictEqual(r.marches[1].action, "fabriquer");
+  assert.strictEqual(r.pret, false);
+
+  // 2. avec du bois en stock : bois [fait, recolter], manche [en_cours, fabriquer], pret true
+  E.state.inv.bois = 10;
+  r = Arb.route(E, D, "manche", 1);
+  assert.strictEqual(r.marches[0].etat, "fait");
+  assert.strictEqual(r.marches[1].etat, "en_cours");
+  assert.strictEqual(r.pret, true);
+
+  // 3. recette bloquée (lingot de bronze au début) : bloquee, avec explication « Requis : ... »
+  E.learn("lingot_bronze");
+  r = Arb.route(E, D, "lingot_bronze", 1);
+  const cibleBloquee = r.marches.find((m) => m.id === "lingot_bronze");
+  assert.strictEqual(cibleBloquee.etat, "bloquee");
+  assert.strictEqual(cibleBloquee.action, "voir");
+  assert.ok(cibleBloquee.requis && cibleBloquee.requis.startsWith("Requis : "), cibleBloquee.requis);
+
+  // 4. recette inconnue : a_trouver, nom « Recette à trouver », anon true, aucun id
+  r = Arb.route(E, D, "chariot", 1);
+  const cibleInconnue = r.marches[r.marches.length - 1];
+  assert.strictEqual(cibleInconnue.etat, "a_trouver");
+  assert.strictEqual(cibleInconnue.nom, "Recette à trouver");
+  assert.strictEqual(cibleInconnue.ic, "?");
+  assert.strictEqual(cibleInconnue.id, undefined);
+  assert.strictEqual(cibleInconnue.anon, true);
+});
+
+test("chemin : réutilise le Suivi existant (E.setTrack)", () => {
+  const E = avancee();
+  assert.strictEqual(Arb.route(E, D, "chariot", 1).suivi, false);
+  E.setTrack("chariot");
+  assert.strictEqual(Arb.route(E, D, "chariot", 1).suivi, true);
+  E.setTrack(null);
+  assert.strictEqual(Arb.route(E, D, "chariot", 1).suivi, false);
+});
+
+test("chemin : règle absolue d’anonymat sur toutes les cibles possibles", () => {
+  const E = mk();
+  for (const id in I) {
+    const r = Arb.route(E, D, id, 1);
+    assert.ok(r, id);
+    const data = JSON.stringify(r);
+    for (const x in I) {
+      if (!inconnu(E, x)) continue;
+      assert.ok(!data.includes('"' + x + '"'), "l'id d'un objet inconnu apparaît dans la route : " + x + " pour cible " + id);
+      assert.ok(!data.includes('"' + I[x].n + '"'), "le nom d'un objet inconnu apparaît dans la route : " + I[x].n + " pour cible " + id);
+    }
+  }
+});
 console.log(passed + " tests de l’arbre réussis" + (process.exitCode ? ", des échecs." : "."));

@@ -379,7 +379,7 @@
         }
         if ((b = t.closest("[data-hopen]"))) { A.init(); openHands(); return; }
         if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
-        if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
+        if ((b = t.closest("[data-chemin], [data-tree]"))) { openTree(b.dataset.chemin || b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.chemin || b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
         if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
         if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
         if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans le Domaine
