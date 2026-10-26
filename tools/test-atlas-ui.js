@@ -33,7 +33,7 @@ async function close(p) {
 async function run() {
   await new Promise(r => server.listen(0, "127.0.0.1", r));
   browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
-  for (const width of (process.env.ATLAS_STATES_ONLY ? [] : [320, 360, 390, 430])) for (const count of [1, 4, 11]) for (const large of [false, true]) {
+  for (const width of (process.env.ATLAS_STATES_ONLY ? [] : [320, 360, 390, 430])) for (const count of [1, 4, 8, 9, 10, 11]) for (const large of [false, true]) {
     const ctx = await browser.newContext({ viewport: { width, height: width === 320 ? 568 : 844 }, hasTouch: true, reducedMotion: "reduce", serviceWorkers: "block" });
     const p = await ctx.newPage(), errors = [], failed = [];
     p.on("pageerror", e => errors.push(e.message));
@@ -53,6 +53,7 @@ async function run() {
         overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > innerWidth,
         small: hits.filter(r => r.width < 43.9 || r.height < 43.9),
         clips: svg.querySelectorAll('#atlas-known path').length,
+        skyBands: [...svg.querySelectorAll('#atlas-sky-known path')].map(e => e.dataset.skyBand),
         regions: [...svg.querySelectorAll('[data-cz]')].map(e => e.dataset.cz),
         badIcons: [...svg.querySelectorAll('use')].map(e => e.getAttribute('href')).filter(id => !document.querySelector(id)),
         camp: box(svg.querySelector('[data-camp]')),
@@ -64,6 +65,8 @@ async function run() {
     ok(!info.small.length, tag + " : cibles insuffisantes " + JSON.stringify(info.small));
     ok(!info.badIcons.length, tag + " : icônes absentes " + info.badIcons);
     ok(info.clips === Math.min(count, 8), tag + " : masque limité aux terres ouvertes");
+    ok(info.skyBands.join() === ['orbite','lune','mercure'].slice(0, Math.max(0, count - 8)).join(), tag + ' : seuls les astres ouverts sont révélés');
+    ok(await p.locator('.a-celestial-art').count() === (count > 8 ? 1 : 0), tag + ' : illustration céleste réservée aux découvertes spatiales');
     ok(info.regions.length === count, tag + " : noms limités aux terres ouvertes");
     if (count === 1) {
       ok(await p.locator('[data-cl]').count() === 1, "Début : seul le Grand Chêne est visible");
@@ -94,6 +97,8 @@ async function run() {
     ok(await p.locator('.c-camp').count() === 1, "Mode classique préservé");
     await p.locator('#atlasToggle').click();
     await p.locator('.atlas-world').waitFor();
+    const hitFill = await p.locator('.atlas-world .a-hit').first().evaluate(e => getComputedStyle(e).fill);
+    ok(['rgba(0, 0, 0, 0)', 'transparent'].includes(hitFill), 'Bascule Atlas : zones tactiles transparentes dès le retour (' + hitFill + ')');
     ok(await p.evaluate(() => JSON.stringify(window.__eclat.E.state.zones)) === zones, "Bascule sans changement de découverte");
     if (count < 11) {
       await p.locator('[data-map-go]:has-text("Frontière")').click();
@@ -139,7 +144,7 @@ async function run() {
   ok(!await p.evaluate(() => window.__atlasPassOverlap), 'Passage et frontière ont des cibles distinctes');
   await redraw(() => { const s = window.__eclat.E.state; s.zones = { lisiere: true, riviere: true }; s.pass = {}; });
   const bands = await p.locator('#atlas-known path').evaluateAll(nodes => nodes.map(n => { const b = n.getBBox(); return [b.y, b.y + b.height]; }));
-  ok(bands.length === 2 && bands.every(b => !(b[0] < 1580 && b[1] > 1580)), 'État non contigu : la plaine fermée reste masquée');
+  ok(bands.length === 2 && bands.every(b => !(b[0] < 2080 && b[1] > 2080)), 'État non contigu : la plaine fermée reste masquée');
   ok(!await p.locator('[data-cz="plaine"]').count(), 'État non contigu : aucun libellé fermé');
   await redraw(() => { const s = window.__eclat.E.state; Object.assign(s.zones, { plaine: true, collines: true, mine: true, caveau: true }); });
   ok(await p.locator('[data-cz="caveau"]').count() === 1, 'Caveau affiché seulement après découverte');
@@ -152,6 +157,17 @@ async function run() {
   }), 'Le rendu ne modifie pas la partie');
   await p.evaluate(() => document.getElementById('views').scrollTop = document.getElementById('views').scrollHeight);
   await shot(p, 'caveau-390');
+  for (const [index, zone] of ['orbite', 'lune', 'mercure'].entries()) {
+    await p.evaluate(count => {
+      const g = window.__eclat, s = g.E.state;
+      s.zones = Object.fromEntries(window.ECLAT_DATA.ZONES.filter(z => !z.secret).slice(0, count).map(z => [z.id, true]));
+      s.exp.done = {}; s.exp.active = null; s.pass = {};
+      delete document.getElementById('v-carte').dataset.sig; g.render(true);
+    }, index + 9);
+    await p.locator('[data-cl="' + zone + ':0"]').focus(); await p.keyboard.press('Enter');
+    ok(await p.locator('#modal h2').textContent() === D.ZONES.find(z => z.id === zone).exps[0].n, zone + ' : lieu spatial accessible au clavier');
+    await close(p);
+  }
   await p.evaluate(raw => {
     const g = window.__eclat; g.E.load(raw);
     Object.assign(g.E.state.settings, { tuto: false, sound: false, visiteurs: false });
@@ -168,11 +184,12 @@ async function run() {
   for (let i = 0; i < 5; i++) { await p.waitForTimeout(100); await close(p); }
   await p.locator('#tabs [data-tab="carte"]').click();
   ok(await p.locator('.atlas-world').count() === 1, 'Carte utilisable après rechargement hors ligne');
-  for (const url of ['assets/atlas/monde-vivant-v1.webp', 'css/carte-atlas.css', 'assets/terres/lisiere-carte.webp']) {
+  for (const url of ['assets/atlas/monde-vivant-v1.webp', 'assets/atlas/brume-v1.webp', 'assets/atlas/feuillet-celeste-v1.webp', 'css/carte-atlas.css', 'assets/terres/lisiere-carte.webp']) {
     ok(await p.evaluate(async url => { const r = await fetch(url); return r.ok && (await r.arrayBuffer()).byteLength > 0; }, url), 'Cache hors ligne : ' + url);
   }
   await p.locator('#atlasToggle').click();
   ok(await p.locator('.c-camp').count() === 1, 'Classique disponible hors ligne');
+  ok(!await p.locator('#v-carte .atlas-map-heading').isVisible(), 'La feuille de carte permanente ne révèle pas les commandes Atlas en Classique');
   ok(!errors.length, 'États et hors ligne : aucune erreur ' + errors.join('; '));
   await ctx.close();
   console.log("✓ Atlas : " + checks + " contrôles.");
