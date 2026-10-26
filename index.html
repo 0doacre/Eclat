@@ -73,6 +73,15 @@
       function apply(mode) {
         const classic = mode === "classique";
         sheet.disabled = classic;
+        const map = document.querySelector("#v-carte .carte-svg");
+        if (map) {
+          const crop = Number(map.getAttribute("data-atlas-top")) || 0;
+          map.setAttribute("viewBox", classic ? "0 0 400 1900" : "0 " + crop + " 400 " + (1900 - crop));
+          const views = document.getElementById("views");
+          if (views && document.getElementById("v-carte").classList.contains("on")) {
+            requestAnimationFrame(function () { views.scrollTop = classic ? views.scrollHeight : 0; });
+          }
+        }
         button.textContent = classic ? "Class." : "Atlas";
         button.setAttribute("aria-label", classic ? "Activer le style Atlas vivant" : "Revenir au style classique");
         button.setAttribute("aria-pressed", String(!classic));
