@@ -42,3 +42,12 @@
 
 ## Deuxième passe — expérimentation visible
 La branche de test assume une identité plus forte : filets de reliure, titrage éditorial, cartes à contours d'encre, objectif en marge colorée, séparateurs de registre et ressources plus aérées. Les changements sont concentrés sur le Domaine et restent réversibles.
+
+## Avancement du chantier au 26 octobre 2026
+
+- Domaine : premier écran de référence, couche expérimentale existante.
+- Carte : paysage continu, brume peinte et feuillet céleste intégrés ; retour utilisateur sur la V3 attendu.
+- Atelier et Carnet : passe V4 sur l’établi, les tuiles de matières et les fiches de savoir-faire. [Bilan et captures](ATLAS-VIVANT-ATELIER-CARNET-V4.md).
+- À suivre : Journal comme archives ; Cosmos comme instrument d’observation ; passe transversale sur les fiches, fenêtres et pictogrammes, puis recette d’ensemble sur appareil.
+
+Les versions jouables restent sur `prewiew-design` et sa prévisualisation indépendante. Leur intégration éventuelle à `main` demandera une revue distincte.

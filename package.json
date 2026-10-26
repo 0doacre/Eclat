@@ -11,6 +11,7 @@
     "sim:joueurs": "node tools/sim-passages.js --joueurs",
     "test:ux": "node tools/test-ux.js",
     "test:atlas": "node tools/test-atlas-ui.js",
+    "test:design": "node tools/test-design-ui.js",
     "test:juice": "node tools/test-juice-ui.js",
     "test:affichage": "node tools/test-affichage-ui.js",
     "test:appareil": "node tools/test-appareil-ui.js",

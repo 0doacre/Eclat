@@ -917,6 +917,8 @@
   function updMini() {
     const m = $("#mbench"), b = $("#bench");
     if (!m || !b) return;
+    const atlasSheet = document.getElementById("atlasStylesheet");
+    if (atlasSheet && !atlasSheet.disabled) m.style.top = Math.ceil($("#top").getBoundingClientRect().bottom + 6) + "px";
     const out = b.getBoundingClientRect().bottom < $("#views").getBoundingClientRect().top + 24;
     m.classList.toggle("hidden", !(out && U.tab === "atelier" && U.slots.some(Boolean)));
   }
