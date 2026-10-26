@@ -82,7 +82,11 @@
       const { open, ahead } = state();
       const seen = open.concat(ahead);
       const top = Math.min.apply(null, seen.map((z) => GEO[z].y - GEO[z].ry - 60));
-      let s = '<div class="carte">' + chip() + '<svg class="carte-svg" viewBox="0 0 ' + W + " " + H + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
+      const atlas = document.getElementById("atlasStylesheet") && !document.getElementById("atlasStylesheet").disabled;
+      const crop = Math.max(0, Math.floor(top - 70));
+      const mapTop = atlas ? crop : 0;
+      const mapHeight = H - mapTop;
+      let s = '<div class="carte">' + chip() + '<svg class="carte-svg" viewBox="0 ' + mapTop + " " + W + " " + mapHeight + '" data-atlas-top="' + crop + '" role="group" aria-label="Carte du monde : les lieux, les passages et ton camp se parcourent au clavier">' +
         "<defs>" +
         '<pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="7" class="c-hatch"/></pattern>' +
         '<linearGradient id="fogEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0.75" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
@@ -277,7 +281,12 @@
     function focusY(z) {
       const open = D.ZONES.filter((x) => E.zoneOpen(x.id)).map((x) => x.id);
       const g = GEO[z] || GEO[open[open.length - 1]] || GEO.lisiere;
-      return g.y / H;
+      const atlas = document.getElementById("atlasStylesheet") && !document.getElementById("atlasStylesheet").disabled;
+      if (!atlas) return g.y / H;
+      const seen = open.concat(order().filter((id) => !E.zoneOpen(id)).slice(0, 2));
+      const top = Math.min(...seen.map((id) => GEO[id].y - GEO[id].ry - 60));
+      const crop = Math.max(0, Math.floor(top - 70));
+      return Math.max(0, Math.min(1, (g.y - crop) / (H - crop)));
     }
     return { view, live, sig, click, focusY };
   }
