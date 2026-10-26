@@ -162,6 +162,14 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
+  "label": "Atlas",
+  "repere": "button#atlasToggle.icon-btn",
+  "explique": "info-bulle : Style Atlas actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
   "label": "✦ 1",
   "repere": "button#memBtn.chip.mem",
   "explique": "lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn)",
@@ -266,41 +274,49 @@
  {
   "partie": "neuve",
   "ecran": "Carte",
+  "label": "Camp",
+  "repere": "button[data-map-go=\"lisiere\"]",
+  "explique": "info-bulle : Recentrer la carte sur ton camp",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
+  "label": "Légende",
+  "repere": "button[data-map-legend=\"\"]",
+  "explique": "lecteur d’écran : Lire la légende de la carte",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
   "label": "(sans mot)",
-  "repere": "g[data-cf=\"plaine\"].c-ahead",
-  "explique": "lecteur d’écran : des herbes hautes, au loin",
+  "repere": "g[data-cf=\"plaine\"].a-button.a-frontier",
+  "explique": "lecteur d’écran : des herbes hautes, au loin : découvrir ce qui ouvre le passage",
   "tag": "g"
  },
  {
   "partie": "neuve",
   "ecran": "Carte",
   "label": "(sans mot)",
-  "repere": "g[data-cf=\"riviere\"].c-ahead",
-  "explique": "lecteur d’écran : Une terre inconnue",
-  "tag": "g"
- },
- {
-  "partie": "neuve",
-  "ecran": "Carte",
-  "label": "(sans mot)",
-  "repere": "text.c-name",
+  "repere": "g[data-cz=\"lisiere\"].a-button.a-region",
   "explique": "lecteur d’écran : La Lisière : ouvrir dans le Domaine",
-  "tag": "text"
- },
- {
-  "partie": "neuve",
-  "ecran": "Carte",
-  "label": "(sans mot)",
-  "repere": "g[data-camp=\"\"].c-camp",
-  "explique": "lecteur d’écran : Ton camp : ouvrir le Domaine",
   "tag": "g"
  },
  {
   "partie": "neuve",
   "ecran": "Carte",
   "label": "(sans mot)",
-  "repere": "g[data-cl=\"lisiere:0\"].c-lieu.next",
-  "explique": "lecteur d’écran : La Lisière : Le Grand Chêne, à explorer ; guide ([data-cl=\"lisiere:0\"])",
+  "repere": "g[data-cl=\"lisiere:0\"].a-button.a-place",
+  "explique": "info-bulle : Le Grand Chêne · à explorer ; lecteur d’écran : La Lisière : Le Grand Chêne, à explorer ; guide ([data-cl=\"lisiere:0\"])",
+  "tag": "g"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-camp=\"\"].a-button.a-camp",
+  "explique": "lecteur d’écran : Ton camp : ouvrir le Domaine",
   "tag": "g"
  },
  {
@@ -626,6 +642,14 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
+  "label": "Atlas",
+  "repere": "button#atlasToggle.icon-btn",
+  "explique": "info-bulle : Style Atlas actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
   "label": "0/3",
   "repere": "button#questBtn.chip.quest",
   "explique": "info-bulle : Quêtes : l’objectif, les rituels, le Troqueur ; lecteur d’écran : Quêtes",
@@ -802,7 +826,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+18/min8,73 k",
+  "label": "Bois+15/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -922,57 +946,49 @@
  {
   "partie": "avancée",
   "ecran": "Carte",
+  "label": "Camp",
+  "repere": "button[data-map-go=\"lisiere\"]",
+  "explique": "info-bulle : Recentrer la carte sur ton camp",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "Légende",
+  "repere": "button[data-map-legend=\"\"]",
+  "explique": "lecteur d’écran : Lire la légende de la carte",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
   "label": "(sans mot)",
-  "repere": "g[data-cf=\"desert\"].c-ahead",
-  "explique": "lecteur d’écran : du sable à perte de vue",
+  "repere": "g[data-cf=\"desert\"].a-button.a-frontier",
+  "explique": "lecteur d’écran : du sable à perte de vue : découvrir ce qui ouvre le passage",
   "tag": "g"
  },
  {
   "partie": "avancée",
   "ecran": "Carte",
   "label": "(sans mot)",
-  "repere": "g[data-cf=\"gisement\"].c-ahead",
-  "explique": "lecteur d’écran : Une terre inconnue",
-  "tag": "g"
- },
- {
-  "partie": "avancée",
-  "ecran": "Carte",
-  "label": "(sans mot)",
-  "repere": "text.c-name",
+  "repere": "g[data-cz=\"lisiere\"].a-button.a-region",
   "explique": "lecteur d’écran : La Lisière : ouvrir dans le Domaine",
-  "tag": "text"
+  "tag": "g"
  },
  {
   "partie": "avancée",
   "ecran": "Carte",
   "label": "(sans mot)",
-  "repere": "g[data-camp=\"\"].c-camp",
+  "repere": "g[data-cl=\"lisiere:0\"].a-button.a-place",
+  "explique": "info-bulle : Le Grand Chêne · exploré ; lecteur d’écran : La Lisière : Le Grand Chêne, exploré ; guide ([data-cl=\"lisiere:0\"])",
+  "tag": "g"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carte",
+  "label": "(sans mot)",
+  "repere": "g[data-camp=\"\"].a-button.a-camp",
   "explique": "lecteur d’écran : Ton camp : ouvrir le Domaine",
-  "tag": "g"
- },
- {
-  "partie": "avancée",
-  "ecran": "Carte",
-  "label": "(sans mot)",
-  "repere": "g[data-cl=\"lisiere:0\"].c-lieu.done",
-  "explique": "lecteur d’écran : La Lisière : Le Grand Chêne, exploré ; guide ([data-cl=\"lisiere:0\"])",
-  "tag": "g"
- },
- {
-  "partie": "avancée",
-  "ecran": "Carte",
-  "label": "(sans mot)",
-  "repere": "g[data-cl=\"lisiere:2\"].c-lieu.locked",
-  "explique": "lecteur d’écran : La Lisière : lieu caché, verrouillé",
-  "tag": "g"
- },
- {
-  "partie": "avancée",
-  "ecran": "Carte",
-  "label": "(sans mot)",
-  "repere": "g[data-cl=\"plaine:2\"].c-lieu.next",
-  "explique": "lecteur d’écran : La Plaine des Hautes Herbes : lieu caché, à explorer",
   "tag": "g"
  },
  {

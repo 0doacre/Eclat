@@ -4,7 +4,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 
 | | |
 |---|---|
-| Boutons relevés | 212 |
+| Boutons relevés | 214 |
 | Sans explication | 0 |
 | Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |
@@ -53,11 +53,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Recommencer la partie | `button[data-m="reset"].btn.ghost` | info-bulle : Effacer ta progression et repartir de zéro |
 | avancée | Fermer | `button[data-m="close"].btn` | fiche Aide |
 
-## Domaine (44 boutons, 0 sans explication)
+## Domaine (46 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
 | neuve | Bois ÂGE 1/15 | `button#ageBtn.age` | info-bulle : Toucher pour voir les étapes de cet âge ; lecteur d’écran : Âge du Bois : étapes de l’âge |
+| neuve | Atlas | `button#atlasToggle.icon-btn` | info-bulle : Style Atlas actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique |
 | neuve | ✦ 1 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | neuve | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
 | neuve | SCÉNARIO Manche ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
@@ -72,6 +73,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | neuve | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
 | neuve | Journal | `button[data-tab="journal"].born` | info-bulle : Ce que tu as trouvé et compris ; guide (#tabs [data-tab="journal"]) |
 | avancée | Électricité ÂGE 9/15 0/3 | `button#ageBtn.age` | info-bulle : Toucher pour voir les étapes de cet âge ; lecteur d’écran : Âge de l’Électricité : étapes de l’âge |
+| avancée | Atlas | `button#atlasToggle.icon-btn` | info-bulle : Style Atlas actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique |
 | avancée | 0/3 | `button#questBtn.chip.quest` | info-bulle : Quêtes : l’objectif, les rituels, le Troqueur ; lecteur d’écran : Quêtes |
 | avancée | ✦ +18 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | avancée | 22 | `button#intuBtn.chip.intu` | lecteur d’écran : Intuition ; guide (#intuBtn) |
@@ -94,7 +96,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
 | avancée | Alimenté ✓ | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
 | avancée | Tout ce qui entre et sort, par ressource | `summary` | info-bulle : Plier ou déplier le tableau |
-| avancée | Bois+18/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
+| avancée | Bois+15/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 | avancée | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | avancée | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | avancée | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
@@ -106,18 +108,18 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
-| neuve | (sans mot) | `g[data-cf="plaine"].c-ahead` | lecteur d’écran : des herbes hautes, au loin |
-| neuve | (sans mot) | `g[data-cf="riviere"].c-ahead` | lecteur d’écran : Une terre inconnue |
-| neuve | (sans mot) | `text.c-name` | lecteur d’écran : La Lisière : ouvrir dans le Domaine |
-| neuve | (sans mot) | `g[data-camp=""].c-camp` | lecteur d’écran : Ton camp : ouvrir le Domaine |
-| neuve | (sans mot) | `g[data-cl="lisiere:0"].c-lieu.next` | lecteur d’écran : La Lisière : Le Grand Chêne, à explorer ; guide ([data-cl="lisiere:0"]) |
-| avancée | (sans mot) | `g[data-cf="desert"].c-ahead` | lecteur d’écran : du sable à perte de vue |
-| avancée | (sans mot) | `g[data-cf="gisement"].c-ahead` | lecteur d’écran : Une terre inconnue |
-| avancée | (sans mot) | `text.c-name` | lecteur d’écran : La Lisière : ouvrir dans le Domaine |
-| avancée | (sans mot) | `g[data-camp=""].c-camp` | lecteur d’écran : Ton camp : ouvrir le Domaine |
-| avancée | (sans mot) | `g[data-cl="lisiere:0"].c-lieu.done` | lecteur d’écran : La Lisière : Le Grand Chêne, exploré ; guide ([data-cl="lisiere:0"]) |
-| avancée | (sans mot) | `g[data-cl="lisiere:2"].c-lieu.locked` | lecteur d’écran : La Lisière : lieu caché, verrouillé |
-| avancée | (sans mot) | `g[data-cl="plaine:2"].c-lieu.next` | lecteur d’écran : La Plaine des Hautes Herbes : lieu caché, à explorer |
+| neuve | Camp | `button[data-map-go="lisiere"]` | info-bulle : Recentrer la carte sur ton camp |
+| neuve | Légende | `button[data-map-legend=""]` | lecteur d’écran : Lire la légende de la carte |
+| neuve | (sans mot) | `g[data-cf="plaine"].a-button.a-frontier` | lecteur d’écran : des herbes hautes, au loin : découvrir ce qui ouvre le passage |
+| neuve | (sans mot) | `g[data-cz="lisiere"].a-button.a-region` | lecteur d’écran : La Lisière : ouvrir dans le Domaine |
+| neuve | (sans mot) | `g[data-cl="lisiere:0"].a-button.a-place` | info-bulle : Le Grand Chêne · à explorer ; lecteur d’écran : La Lisière : Le Grand Chêne, à explorer ; guide ([data-cl="lisiere:0"]) |
+| neuve | (sans mot) | `g[data-camp=""].a-button.a-camp` | lecteur d’écran : Ton camp : ouvrir le Domaine |
+| avancée | Camp | `button[data-map-go="lisiere"]` | info-bulle : Recentrer la carte sur ton camp |
+| avancée | Légende | `button[data-map-legend=""]` | lecteur d’écran : Lire la légende de la carte |
+| avancée | (sans mot) | `g[data-cf="desert"].a-button.a-frontier` | lecteur d’écran : du sable à perte de vue : découvrir ce qui ouvre le passage |
+| avancée | (sans mot) | `g[data-cz="lisiere"].a-button.a-region` | lecteur d’écran : La Lisière : ouvrir dans le Domaine |
+| avancée | (sans mot) | `g[data-cl="lisiere:0"].a-button.a-place` | info-bulle : Le Grand Chêne · exploré ; lecteur d’écran : La Lisière : Le Grand Chêne, exploré ; guide ([data-cl="lisiere:0"]) |
+| avancée | (sans mot) | `g[data-camp=""].a-button.a-camp` | lecteur d’écran : Ton camp : ouvrir le Domaine |
 
 ## Lieu (2 boutons, 0 sans explication)
 

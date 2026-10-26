@@ -37,6 +37,7 @@
     const S = () => E.state;
     const GI = window.ECLAT_ICONS || { zones: {}, places: {}, ui: {} };
     const use = (name, x, y, s, cls) => name ? '<use href="#gi-' + name + '" x="' + (x - s / 2).toFixed(1) + '" y="' + (y - s / 2).toFixed(1) + '" width="' + s + '" height="' + s + '"' + (cls ? ' class="' + cls + '"' : "") + "/>" : "";
+    const Atlas = window.EclatAtlas.create({ E, D, esc, use, lieuState, chip });
 
     /* une forme de terre : une ellipse cabossée, toujours la même pour une terre donnée */
     function blob(g, seed) {
@@ -79,6 +80,7 @@
 
     /* ------------------------------------------------------------ dessin */
     function view() {
+      if (window.EclatAtlas.enabled()) return Atlas.view();
       const { open, ahead } = state();
       const seen = open.concat(ahead);
       const explored = open.length;
@@ -344,8 +346,12 @@
     /* ------------------------------------------------------------ gestes */
     function click(t) {
       let b;
+      if (t.closest("[data-map-legend]")) {
+        openModal({ html: '<div class="kicker">Atlas vivant</div><h2>Lire la carte</h2><p>Les terres découvertes sont dessinées et nommées. À la frontière, un indice se devine ; au-delà, le monde reste couvert de brume.</p><p>Les repères pleins indiquent les lieux à explorer. Une coche signale un lieu exploré, un cercle pointillé un lieu verrouillé, un double cercle une exploration en cours.</p><p>Touche un lieu pour le consulter, un nom de terre pour ouvrir le Domaine, ou un passage pour y contribuer. Camp et Frontière recentrent la carte.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
+        return true;
+      }
       if ((b = t.closest("[data-map-go]"))) {
-        const g = GEO[b.dataset.mapGo], svg = document.querySelector("#v-carte .carte-svg");
+        const g = (window.EclatAtlas.enabled() ? Atlas.GEO : GEO)[b.dataset.mapGo], svg = document.querySelector("#v-carte .carte-svg");
         const scroller = document.getElementById("views");
         if (g && svg && scroller) {
           const box = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
@@ -379,12 +385,13 @@
     function sig() {
       const st = S();
       const fe = E.fouilleEnCours ? E.fouilleEnCours() : null;
-      return [D.ZONES.filter((z) => E.zoneOpen(z.id)).map((z) => z.id).join(), JSON.stringify(st.exp.done), st.exp.active ? st.exp.active.z + st.exp.active.i : "",
+      return [window.EclatAtlas.enabled() ? "atlas-v2" : "classique", D.ZONES.filter((z) => E.zoneOpen(z.id)).map((z) => z.id).join(), JSON.stringify(st.exp.done), st.exp.active ? st.exp.active.z + st.exp.active.i : "",
         JSON.stringify(st.meta.cotes || {}), fe ? fe.z + fe.x.id + fe.lvl + (fe.pret ? "!" : "") : "",
         E.passPending().map((z) => { const p = E.passInfo(z); return z + (p && p.ready ? 1 : 0); }).join(), D.ZONES.map((z) => { const n = E.nextExp(z.id); return n && n.locked ? 1 : 0; }).join("")].join("|");
     }
     /* la terre à montrer en arrivant : celle qu’on demande, sinon la dernière ouverte */
     function focusY(z) {
+      if (window.EclatAtlas.enabled()) return Atlas.focusY(z);
       const open = D.ZONES.filter((x) => E.zoneOpen(x.id)).map((x) => x.id);
       const g = GEO[z] || GEO[open[open.length - 1]] || GEO.lisiere;
       const atlas = document.getElementById("atlasStylesheet") && !document.getElementById("atlasStylesheet").disabled;

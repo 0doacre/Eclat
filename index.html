@@ -74,13 +74,16 @@
       function apply(mode) {
         const classic = mode === "classique";
         sheet.disabled = classic;
-        const map = document.querySelector("#v-carte .carte-svg");
-        if (map) {
-          const crop = Number(map.getAttribute("data-atlas-top")) || 0;
-          map.setAttribute("viewBox", classic ? "0 0 400 1900" : "0 " + crop + " 400 " + (1900 - crop));
+        const game = window.__eclat;
+        if (game) {
+          game.render(true);
+          const map = document.querySelector("#v-carte .carte-svg");
           const views = document.getElementById("views");
-          if (views && document.getElementById("v-carte").classList.contains("on")) {
-            requestAnimationFrame(function () { views.scrollTop = classic ? views.scrollHeight : 0; });
+          if (map && views && document.getElementById("v-carte").classList.contains("on")) {
+            requestAnimationFrame(function () {
+              const offset = map.getBoundingClientRect().top - views.getBoundingClientRect().top + views.scrollTop;
+              views.scrollTop = Math.max(0, offset + map.getBoundingClientRect().height * game.Carte.focusY(game.U.zone) - views.clientHeight * .55);
+            });
           }
         }
         button.textContent = classic ? "Class." : "Atlas";
@@ -111,6 +114,7 @@
   <script src="js/scenes.js"></script>
   <script src="js/icons.js"></script>
   <script src="js/domaine.js"></script>
+  <script src="js/carte-atlas.js"></script>
   <script src="js/carte.js"></script>
   <script src="js/tuto.js"></script>
   <script src="js/cloud.js"></script>
