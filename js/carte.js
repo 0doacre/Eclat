@@ -98,7 +98,7 @@
       // le ciel commence au-dessus des montagnes : quelques étoiles
       s += '<g class="c-stars">' + Array.from({ length: 46 }, (_, i) => { const x = (i * 97.3) % W, y = (i * 53.7) % 560; return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + (i % 3 ? 0.9 : 1.5) + '"/>'; }).join("") + "</g>";
       s += '<path class="c-horizon" d="M0 560 Q 100 548 200 556 T 400 552"/>';
-      s += landscape(seen, open) + terrain(seen, open) + compass(mapTop);
+      s += landscape(seen, open) + terrain(seen, open) + compass(crop);
       // les chemins entre terres déjà ouvertes
       const ord = order();
       for (let i = 1; i < ord.length; i++) {
