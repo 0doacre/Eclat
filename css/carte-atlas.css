@@ -24,7 +24,7 @@
 .atlas-world .a-landscape, .atlas-world .a-fog, .atlas-world .a-fog-edge,
 .atlas-world .a-north, .atlas-world .a-celestial-art { pointer-events: none; }
 .atlas-world .a-button { cursor: pointer; color: #3c392c; touch-action: manipulation; }
-.atlas-world .a-hit { fill: transparent; stroke: none; pointer-events: all; }
+.atlas-world .a-hit { fill: #000; fill-opacity: 0.001; stroke: none; pointer-events: all; }
 .atlas-world .a-name {
   fill: #302f24; font: 400 23px "IM Fell English",serif; text-anchor: middle;
   paint-order: stroke; stroke: #f3eddd; stroke-width: 4px; stroke-linejoin: round;
