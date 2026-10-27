@@ -613,12 +613,17 @@
       const st = S(), us = E.extUnits();
       const exts = Object.keys(st.dom.ext).length, freeE = E.EXTS.filter((t) => us[t].own - us[t].used > 0);
       const vet = st.cycle > 1;
-      if (!exts && !freeE.length && !st.hand.q.length) return null; // l’objectif dit quoi faire
+      if (!exts && !freeE.length && !st.hand.q.length && E.count("chaine") < 1) return null; // l’objectif dit quoi faire
       void vet;
       if (freeE.length && !st.flags.tip_freeExt) {
         const t = freeE[0], n = us[t].own - us[t].used;
         return "Tu as " + esc(many(t, n)) + " à poser : touche <b>+ " + esc(nm(t, 1)) + "</b> sur un gisement " + esc(deZone(I[t].z)) + ". " +
           '<button class="btn small ghost" data-tip="tip_freeExt" title="Fermer cette astuce">Compris</button>';
+      }
+      if (E.count("chaine") >= 1 && !st.flags.tip_chaine && !st.hand.q.length) {
+        return "Ta <b>ligne d’assemblage</b> est prête : lance un lot de processeurs ou de pièces à l’Atelier. Elle aide les commandes de recettes que tes mains ont déjà fabriquées. " +
+          '<button class="btn small pri" data-gotab="atelier">Préparer un lot</button> ' +
+          '<button class="btn small ghost" data-tip="tip_chaine" title="Fermer cette astuce">Compris</button>';
       }
       const lone = Object.keys(D.PROJECTS).find((pid) => E.projVisible(pid) && !E.siteOn(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
       if (lone && !st.flags.tip_site) return "Active <b>Alimenter</b> pour approvisionner automatiquement ton Grand Œuvre depuis la Réserve. " + '<button class="btn small ghost" data-tip="tip_site" title="Fermer cette astuce">Compris</button>';
