@@ -31,6 +31,7 @@ async function run(){
     ok(await p.locator('[data-mode="tresser"]').isVisible(),width+" : second geste des mains accessible");
     await p.evaluate(()=>{const g=window.__eclatEquipmentPrototype;g.E.add("bois",3);g.draw();});
     await p.locator('[data-item="bois"]').click();
+    ok(await p.locator("#batch").isHidden(),width+" : aucun raccourci ne révèle une recette inconnue");
     const snapshot=await p.evaluate(()=>{const s=window.__eclatEquipmentPrototype.E.state;return JSON.stringify([s.inv,s.known,s.hand.q]);});
     await p.locator("#forge").click();
     ok(await p.evaluate(()=>{const s=window.__eclatEquipmentPrototype.E.state;return JSON.stringify([s.inv,s.known,s.hand.q]);})===snapshot,width+" : pas de résolution automatique après un mauvais geste");
@@ -69,6 +70,18 @@ async function run(){
     const needles=await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("aiguille"));await p.locator("#forge").click();
     await p.waitForFunction(()=>window.__eclatEquipmentPrototype.E.count("flute")===1);checks++;
     ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("aiguille"))===needles,width+" : outil conservé");
+    await p.evaluate(()=>window.__eclatEquipmentPrototype.prepare("laniere"));
+    ok(await p.locator('[data-equipment="couteau"]').getAttribute("aria-pressed")==="true",width+" : recette connue prépare le couteau plus efficace");
+    ok((await p.locator("#tool-benefit").textContent()).includes("2× plus vite"),width+" : amélioration annoncée");
+    const fast=await p.locator("#tool-benefit").textContent();await p.locator('[data-equipment="racloir_os"]').click();
+    ok(await p.locator("#tool-benefit").textContent()!==fast,width+" : comparaison en changeant d’outil");
+    const leather=await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("cuir"));
+    const strips=await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("laniere"));
+    await p.locator("#batch").click();
+    ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.state.hand.q.some(j=>j.id==="laniere"&&j.equipmentSelection?.equipment==="racloir_os")),width+" : série respecte le racloir sélectionné");
+    await p.waitForFunction(n=>window.__eclatEquipmentPrototype.E.count("laniere")===n+20,strips);checks++;
+    ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("cuir"))===leather-10,width+" : coût réel de dix découpes");
+    await p.locator('[data-equipment="couteau"]').click();
     const rack=await p.locator(".tool-rack").boundingBox(),slots=await p.locator("#slots").boundingBox();
     ok(width>600?rack.x>slots.x+slots.width:rack.y>=slots.y+slots.height,width+" : outils à droite sur bureau et sous les matières sur mobile");
     await geometry(p,width+"/Cuivre");

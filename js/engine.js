@@ -835,7 +835,7 @@
       if (o.heat && E.heat() < o.heat) return { why: "heat", heat: o.heat };
       if (o.lvl && E.level(r[0]) < o.lvl) return { why: "lvl", lvl: o.lvl };
       if (E.equipmentCheck && !(job && job.ancienAtelier)) {
-        const equipment = E.equipmentCheck(id, k => count(k) + (job && job.b && job.b[k] || 0));
+        const equipment = E.equipmentJobCheck(id, job, k => count(k) + (job && job.b && job.b[k] || 0));
         if (equipment) return equipment;
       }
       if (isUnique(it) && (S.made[id] || 0) > 0) return { why: "owned" };
@@ -1084,7 +1084,7 @@
         }
         // une découverte se fabrique sur-le-champ ; une recette connue part dans la file des mains
         if (S.known[id]) {
-          const q = E.queue(id, 1);
+          const q = E.queue(id, 1, false, undefined, selection);
           return q.ok ? { kind: "queued", id, time: q.time } : { kind: "busy", id, why: q.why };
         }
         // découvrir coûte peu : ce qui coûte cher s’inscrit sans rien prendre, on choisit ensuite
@@ -1267,15 +1267,16 @@
     let hWork = { job: null, sIdx: -1, rec: null };
 
     /* une pièce seule ; les gestes d’un âge passé vont plus vite */
-    function handTime(id) {
+    function handTime(id, selection) {
       const it = item(id);
       const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
       const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
-      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / (it.r ? skillSpeed(it.r[0]) : 1);
+      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / (it.r ? skillSpeed(it.r[0]) : 1) / (E.equipmentSpeed ? E.equipmentSpeed(id, selection) : 1);
     }
     E.handTime = handTime;
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
-    const stepTime = (id, n) => handTime(id) * Math.pow(n, H.batch);
+    const stepTime = (id, n, selection) => handTime(id, selection) * Math.pow(n, H.batch);
+    const jobSelection = (j, id) => j?.ancienAtelier ? false : j?.id===id ? j.equipmentSelection : undefined;
     E.batchTime = stepTime;
 
     function stepDone(j, idx) {
@@ -1323,7 +1324,7 @@
       return MACHINES.some((m) => Math.floor(count(m)) >= 1 && machReadyFor(m, rec));
     }
     /* durée estimée d’une étape (n unités de x) avec les machines capables disponibles */
-    function estStepTime(x, n, freeOnly) {
+    function estStepTime(x, n, freeOnly, selection) {
       if (!(n > 0)) return 0;
       const c = E.cache();
       let mRate = 0;
@@ -1334,16 +1335,16 @@
           if (cnt > 0) mRate += cnt * machUnitRate(m, c);
         });
       }
-      if (!(mRate > 0)) return stepTime(x, n);
+      if (!(mRate > 0)) return stepTime(x, n, selection);
       const firstHand = D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[x] > 0);
       if (firstHand) {
-        const t1 = handTime(x);
+        const t1 = handTime(x, selection);
         if (n <= 1) return t1;
-        const hRest = Math.max(1e-6, stepTime(x, n) - t1);
+        const hRest = Math.max(1e-6, stepTime(x, n, selection) - t1);
         const hRate = (n - 1) / hRest;
         return t1 + (n - 1) / (hRate + mRate);
       }
-      const hTotal = Math.max(1e-6, stepTime(x, n));
+      const hTotal = Math.max(1e-6, stepTime(x, n, selection));
       const hRate = n / hTotal;
       return n / (hRate + mRate);
     }
@@ -1360,12 +1361,12 @@
       j.s.forEach((s, idx) => {
         const rem = Math.max(0, s[1] - j.done[idx] - (j.sp[idx] || 0));
         if (rem <= 0) return;
-        const full = estStepTime(s[0], s[1], false);
+        const full = estStepTime(s[0], s[1], false, jobSelection(j,s[0]));
         t += full * (rem / s[1]);
       });
       if (first && S.hand.p > 0 && !MACHINES.some((m) => Math.floor(count(m)) > 0)) {
         let raw = 0;
-        j.s.forEach((s, i) => { if (i >= j.i) raw += stepTime(s[0], s[1]); });
+        j.s.forEach((s, i) => { if (i >= j.i) raw += stepTime(s[0], s[1], jobSelection(j,s[0])); });
         return Math.max(0, raw - S.hand.p);
       }
       return Math.max(0, t);
@@ -1484,7 +1485,7 @@
           for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
             const rec = j.s[sIdx][0];
             if (j.done[sIdx] >= j.s[sIdx][1]) continue;
-            if (E.equipmentCheck && !j.ancienAtelier && E.equipmentCheck(rec, k => count(k) + (j.b[k] || 0))) continue;
+            if (E.equipmentCheck && !j.ancienAtelier && E.equipmentJobCheck(rec, j, k => count(k) + (j.b[k] || 0))) continue;
             if (pass === 0 && anyOwnedMachReadyFor(rec)) continue;
             // Sur une étape où des machines travaillent déjà, les mains peuvent aider sur la même unité
             const checkResv = stepMachs[jIdx][sIdx] > 0 ? {} : resv;
@@ -1535,7 +1536,7 @@
       const miss = {};
       for (const i in p.missing) if (p.missing[i] > 0) miss[i] = p.missing[i];
       const last = S.hand.q[S.hand.q.length - 1];
-      if (p.steps.length === 1 && last && !last.ancienAtelier && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (p.steps.length === 1 && last && !last.equipmentSelection && !last.ancienAtelier && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         last.miss = last.miss || {};
@@ -1560,11 +1561,12 @@
 
     /* met une fabrication dans la file ; avec `chain`, ses sous-composants aussi.
      * `to` : le gisement ("x:zone:res") où poser ce qui sortira */
-    E.queue = function (id, times, chain, to) {
+    E.queue = function (id, times, chain, to, selection) {
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
       if (!ageOK(id)) return { ok: false, why: "age" };
+      if (D.CRAFT_EQUIPMENT && selection && !E.equipmentChoices(id).some(c=>c.ready&&c.equipment===selection.equipment&&c.mode===selection.mode)) return {ok:false,why:"equipment"};
       if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
       if (isUnique(it)) {
         times = 1;
@@ -1589,7 +1591,7 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && !last.ancienAtelier && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (steps.length === 1 && last && JSON.stringify(last.equipmentSelection||null)===JSON.stringify(selection||null) && !last.ancienAtelier && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         assignWorkers();
@@ -1601,6 +1603,7 @@
         done: steps.map(() => 0), hMade: steps.map(() => 0), sp: steps.map(() => 0), mAcc: steps.map(() => 0),
         b: bench, miss: {}
       };
+      if (D.CRAFT_EQUIPMENT && selection) j.equipmentSelection = {equipment:selection.equipment,mode:selection.mode};
       if (typeof to === "string") j.to = to;
       S.hand.q.push(j);
       assignWorkers();
@@ -1625,7 +1628,7 @@
         syncJobPos(j);
         const s = j.s[Math.min(j.i, j.s.length - 1)], left = jobTime(j, n === 0);
         t += left;
-        const tot = Math.max(1e-6, j.s.reduce((a, x) => a + estStepTime(x[0], x[1], false), 0));
+        const tot = Math.max(1e-6, j.s.reduce((a, x) => a + estStepTime(x[0], x[1], false, jobSelection(j,x[0])), 0));
         const totalCrafts = j.s.reduce((a, x) => a + x[1], 0);
         const doneCrafts = j.s.reduce((a, x, idx) => a + j.done[idx] + (j.sp[idx] || 0), 0);
         const machs = {};
@@ -1698,7 +1701,7 @@
             let hRate = 0, hDur = 0;
             if (hOn) {
               const q = (j.hMade[sIdx] || 0) + 1;
-              hDur = Math.max(1e-6, handTime(rec) * (Math.pow(q, H.batch) - Math.pow(q - 1, H.batch)));
+              hDur = Math.max(1e-6, handTime(rec, jobSelection(j,rec)) * (Math.pow(q, H.batch) - Math.pow(q - 1, H.batch)));
               hRate = 1 / hDur;
             }
             const rate = hRate + mRate;
@@ -1729,7 +1732,7 @@
             if (!S.flags.lineDone) { S.flags.lineDone = true; checkAges(); E.emit("struct"); }
           }
           if (hOn && S.hand.q[0] === j && sIdx === j.i) {
-            const t = handTime(rec);
+            const t = handTime(rec, jobSelection(j,rec));
             S.hand.p = t * Math.pow(j.hMade[sIdx] + Math.min(1, j.sp[sIdx]), H.batch);
           }
           if (j.sp[sIdx] + 1e-9 >= 1) {
@@ -4826,6 +4829,9 @@
         if (D.CRAFT_EQUIPMENT) {
           j.ancienAtelier = j.ancienAtelier === true;
           j.recettesEquipements = j.recettesEquipements === true && j.s.some(s => !!D.CRAFT_EQUIPMENT.legacyInputs[s[0]]);
+          const sel=j.equipmentSelection;
+          if (sel && D.CRAFT_EQUIPMENT.recipes[j.id]?.some(c=>c.equipment===sel.equipment&&c.mode===sel.mode)) j.equipmentSelection={equipment:sel.equipment,mode:sel.mode};
+          else delete j.equipmentSelection;
         }
         j.recettes020 = j.recettes020 === true && j.s.some((s) => !!INPUTS_020[s[0]]);
         j.recettes035 = j.recettes035 === true && j.s.some((s) => !!INPUTS_035[s[0]]);

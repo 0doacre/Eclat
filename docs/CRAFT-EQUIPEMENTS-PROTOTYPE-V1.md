@@ -16,7 +16,9 @@ Les postes fixes (foyer, four, poste de frappe, dalle de polissage) ne figurent 
 
 Cliquer une recette connue prépare ses matières, son atelier, son outil et son geste. Le bouton conserve le verbe correspondant ; une fabrication connue rejoint la file des mains. Le bouton distinct « Commander » conserve la préparation automatique des composants et outils connus par le planificateur. Un outil encore absent est signalé plutôt que remplacé silencieusement.
 
-Cette révision teste la compréhension des choix. Elle n’ajoute pas encore de bonus de vitesse ou de rendement aux outils.
+Une première amélioration est testée : le couteau de silex découpe les lanières deux fois plus vite que le racloir, à coût et quantité produite identiques. Le racloir reste utilisable. Le bénéfice figure sur le couteau ; pour une recette de lanières connue, les matières posées et l’outil choisi affichent une estimation pour dix fabrications (vingt lanières), avec un bouton « Couper ×10 ». Aucun raccourci de série ne révèle une recette inconnue. Les autres recettes gardent leurs temps antérieurs ; les machines ne reçoivent pas ce bonus.
+
+Une fabrication lancée par un geste conserve son outil dans `equipmentSelection`, y compris après rechargement et changement d’outil dans l’interface. Si cet outil disparaît, elle attend son retour. Les lots explicitement lancés avec des outils différents ne fusionnent pas. Les commandes automatiques et la préparation d’une recette connue privilégient le meilleur outil compatible disponible. Les anciennes commandes d’avant la refonte gardent leur rythme antérieur.
 
 L’interface d’essai n’est pas encore l’intégration graphique dans le jeu : elle n’inclut pas le guide complet, la relève et les écrans des âges suivants. Elle n’est pas une nouvelle version du jeu publiée sur la prévisualisation.
 
@@ -72,8 +74,8 @@ Les migrations de recettes 0.20 et 0.35 restent distinctes et prises en charge.
 
 ## Vérifications
 
-- `npm run test:equipements` : 32 scénarios, dont fabrication initiale, distinction des recettes, mauvais outil/mode sans consommation ni révélation, préparation et partage des outils, migrations, anciennes machines, chemin jusqu’à la Rivière et apprentissage progressif (départ, lieux, ambiguïtés et dédoublonnage).
-- `npm run test:equipements-ui` : 136 contrôles sur 320, 360, 390 et 980 px : outils visibles, gestes annoncés avant essai, premier manche au percuteur, outils propres au poste, aucune résolution automatique ni filtrage par les ingrédients, gestes secondaires directs, disposition mobile/bureau, commandes, conservation de l’aiguille et rechargement. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
+- `npm run test:equipements` : 38 scénarios, dont fabrication initiale, distinction des recettes, préparation et partage des outils, migrations, chemin jusqu’à la Rivière et apprentissage progressif. L’amélioration du couteau est vérifiée par la durée réelle et la production, la conservation du choix après chargement, l’attente d’un outil manquant et la non-fusion des lots utilisant des outils différents.
+- `npm run test:equipements-ui` : 164 contrôles sur 320, 360, 390 et 980 px : outils visibles, gestes annoncés avant essai, premier manche au percuteur, outils propres au poste, aucune résolution automatique ni filtrage par les ingrédients, gestes secondaires directs, disposition mobile/bureau, conservation de l’aiguille, comparaison des outils, séries de découpe et rechargement. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
 - `npm test` : suite du jeu normal et nouveaux contrôles moteur. Le profil ne modifie pas les recettes ni les comptes de contenu de la partie normale.
 
 ## Prochain travail

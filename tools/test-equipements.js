@@ -254,4 +254,47 @@ test("le lieu automatique ne substitue pas le four au feu et ne révèle pas les
   const before=E.serialize();assert.equal(E.attemptAt("four",["manche"]).why,"incompatible");assert.equal(E.serialize(),before);
   assert.equal(E.workplaceOptions("etabli",["cuivre"]).length,0);
 });
+const cut = equipment => ({equipment,mode:"couper"});
+test("le couteau divise réellement le temps de découpe par deux à coût et production identiques", () => {
+  const slow=prepared(),fast=prepared();stock(slow,{cuir:100});stock(fast,{cuir:100});
+  const a=slow.queue("laniere",10,false,undefined,cut("racloir_os"));
+  const b=fast.queue("laniere",10,false,undefined,cut("couteau"));
+  assert.equal(a.ok,true);assert.equal(b.ok,true);assert.equal(a.time,b.time*2);
+  assert.deepEqual(a.job.b,b.job.b);const duration=b.time;
+  slow.tick(duration+.1);fast.tick(duration+.1);
+  assert.equal(fast.count("laniere"),20);assert.ok(slow.count("laniere")<20);
+  slow.tick(a.time+1);assert.equal(slow.count("laniere"),20);
+  assert.equal(slow.count("cuir"),fast.count("cuir"));assert.equal(fast.count("couteau"),1);
+});
+test("le choix explicite du racloir est respecté malgré le couteau possédé, y compris après rechargement", () => {
+  const E=prepared();stock(E,{cuir:100});const r=E.attemptWith("racloir_os","couper",["cuir"]);
+  assert.equal(r.kind,"queued");assert.deepEqual(E.state.hand.q[0].equipmentSelection,cut("racloir_os"));
+  const copy=mk();copy.load(E.serialize());assert.deepEqual(copy.state.hand.q[0].equipmentSelection,cut("racloir_os"));
+  assert.equal(copy.handInfo().jobs[0].left,E.handInfo().jobs[0].left);
+});
+test("une commande au couteau attend cet outil s’il disparaît au lieu d’emprunter le racloir", () => {
+  const E=prepared();stock(E,{cuir:100});E.queue("laniere",10,false,undefined,cut("couteau"));
+  E.add("couteau",-1);E.tick(4);assert.equal(E.count("laniere"),0);assert.equal(E.handInfo().jobs[0].wait,true);
+  E.add("couteau",1);E.tick(10);assert.equal(E.count("laniere"),20);
+});
+test("les lots de découpe avec des outils différents ne fusionnent pas", () => {
+  const E=prepared();stock(E,{cuir:100,bois:100});E.queue("manche",20);
+  E.queue("laniere",1,false,undefined,cut("racloir_os"));const r=E.queue("laniere",1,false,undefined,cut("couteau"));
+  assert.notEqual(r.merged,true);assert.equal(E.state.hand.q.length,3);
+  assert.equal(E.queue("laniere",1,false,undefined,cut("couteau")).merged,true);
+});
+test("les commandes et recettes préparées peuvent préférer le meilleur outil compatible", () => {
+  const E=prepared();stock(E,{cuir:100});
+  assert.equal(E.equipmentChoices("laniere").find(c=>c.ready).equipment,"couteau");
+  assert.equal(E.handTime("laniere"),E.handTime("laniere",cut("racloir_os"))/2);
+  const r=E.order("laniere",10);assert.equal(r.ok,true);
+  assert.equal(r.time,E.batchTime("laniere",10));
+});
+test("l’amélioration ne s’applique pas aux anciens lots, aux autres gestes ou à un outil indisponible", () => {
+  const E=prepared();
+  assert.equal(E.equipmentSpeed("laniere",false),1);
+  assert.equal(E.equipmentSpeed("statuette",{equipment:"couteau",mode:"entailler"}),1);
+  E.add("couteau",-1);assert.equal(E.equipmentSpeed("laniere",cut("couteau")),1);
+  assert.equal(E.queue("laniere",1,false,undefined,cut("couteau")).why,"equipment");
+});
 console.log(checks+" contrôles du profil équipements réussis.");

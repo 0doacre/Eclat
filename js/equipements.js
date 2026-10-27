@@ -28,7 +28,7 @@
       mains: { n: "Mains", family: "main", modes: { assembler: "Assembler", tresser: "Tresser" } },
       percuteur_pierre: { n: "Percuteur de pierre", item: "percuteur_pierre", family: "taille", modes: { tailler: "Tailler" } },
       racloir_os: { n: "Racloir en os", item: "racloir_os", family: "coupe", modes: { couper: "Couper" } },
-      couteau: { n: "Couteau de silex", item: "couteau", family: "coupe", modes: { couper: "Couper", entailler: "Entailler" } },
+      couteau: { n: "Couteau de silex", item: "couteau", family: "coupe", modes: { couper: "Couper", entailler: "Entailler" }, speed: { laniere: 2 }, benefit: "Couper : 2× plus vite" },
       aiguille: { n: "Aiguille en os", item: "aiguille", family: "couture", modes: { coudre: "Coudre", percer: "Percer" } },
       feu: { n: "Feu de camp", item: "feu", family: "chauffe", modes: { doux: "Chauffe douce", vif: "Cuisson vive", etouffee: "À l’étouffée" } },
       four: { n: "Four en argile", item: "four", family: "chauffe", modes: { cuisson: "Cuisson", fonte: "Fonte" } },
@@ -84,7 +84,18 @@
     E.equipmentChoices = (recipe, available) => (cfg.recipes[recipe] || []).map(choice => {
       const lacks = missing(choice.equipment, available || E.count);
       return Object.assign({}, choice, { n: cfg.equipment[choice.equipment].n, missing: lacks, ready: Object.keys(lacks).length === 0 });
-    });
+    }).sort((a,b) => (cfg.equipment[b.equipment].speed?.[recipe] || 1) - (cfg.equipment[a.equipment].speed?.[recipe] || 1));
+    E.equipmentSpeed = (recipe, selection) => {
+      if (selection === false) return 1; // Anciennes commandes : conserver leur rythme.
+      const choice = selection ? E.equipmentChoices(recipe).find(c=>c.equipment===selection.equipment&&c.mode===selection.mode&&c.ready) : E.equipmentChoices(recipe).find(c=>c.ready);
+      return choice ? cfg.equipment[choice.equipment].speed?.[recipe] || 1 : 1;
+    };
+    E.equipmentJobCheck = (recipe, job, available) => {
+      const selection = job?.id===recipe && job.equipmentSelection;
+      if (!selection) return E.equipmentCheck(recipe, available);
+      const lacks = missing(selection.equipment, available || E.count);
+      return lacks && Object.keys(lacks).length ? {why:"equipment",equipment:selection.equipment,required:Object.keys(lacks)[0],missing:lacks} : null;
+    };
     E.equipmentCheck = (recipe, available) => {
       const choices = E.equipmentChoices(recipe, available);
       if (!choices.length || choices.some(c => c.ready)) return null;

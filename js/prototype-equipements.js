@@ -8,6 +8,7 @@
   const consumed = new Set(Object.values(D.ITEMS).filter(it=>it.r).flatMap(it=>Object.keys(it.r[1])));
   const $ = s => document.querySelector(s), name = id => D.ITEMS[id]?.n || id;
   const actionName = (equipment, id, fallback) => ({doux:"Chauffer doucement",vif:"Cuire",etouffee:"Carboniser",cuisson:"Cuire",fonte:"Fondre"})[id] || fallback;
+  const seconds = n => n.toLocaleString("fr-FR",{maximumFractionDigits:2})+" s";
   const text = (tag, value, cls) => { const e = document.createElement(tag); e.textContent = value; if (cls) e.className = cls; return e; };
   function button(label, fn, cls, disabled) { const e=text("button",label,cls);e.type="button";e.disabled=!!disabled;e.onclick=fn;return e; }
   function notice(value) { $("#notice").textContent=value; }
@@ -50,7 +51,7 @@
     if(result.equipment&&result.mode){eq=result.equipment;mode=result.mode;}
     if(result.kind==="equipment")notice(result.why==="missing"?"Il te faut : "+(E.equipmentList().find(x=>x.id===result.equipment)?.n||"un équipement adapté")+".":"Ces matières ne donnent rien ici avec ce geste. Essaie un autre outil ou d’autres matières.");
     else if(result.kind==="empty")notice("Pose des matières sur l’établi.");
-    else if(result.kind==="craft")notice("Fabriqué : "+name(result.id)+".");
+    else if(result.kind==="craft")notice("Fabriqué : "+name(result.id)+"."+(D.CRAFT_EQUIPMENT.equipment[result.id]?.benefit?" "+D.CRAFT_EQUIPMENT.equipment[result.id].benefit+".":""));
     else if(result.kind==="queued")notice("En cours : "+name(result.id)+".");
     else if(result.kind==="learn")notice("Recette trouvée : "+name(result.id)+(result.missing?". Il manque : "+Object.entries(result.missing).map(([k,n])=>n+" "+name(k)).join(", ")+".":". Tu peux la commander ci-dessous."));
     else if(result.kind==="owned")notice("Tu possèdes déjà cet objet.");
@@ -60,6 +61,11 @@
   }
   function perform(nextMode) { if(nextMode!==mode)prepared=null;mode=nextMode;finish(E.attemptWith(eq,mode,slots)); }
   $("#forge").onclick=()=>perform(mode);
+  $("#batch").onclick=()=>{
+    const id=E.equipmentRecipe(eq,mode,slots);if(id!=="laniere"||!E.state.known[id])return;
+    const r=E.queue(id,10,false,undefined,{equipment:eq,mode});
+    notice(r.ok?"Découpe lancée : "+(D.ITEMS[id].r[2]*10)+" lanières avec "+name(eq)+".":r.why==="qty"?"Pas assez de matières pour dix fabrications.":"Impossible de lancer cette découpe pour le moment.");draw(true);save();
+  };
   function draw(force) {
     const available=E.equipmentList(),ready=available.filter(x=>x.ready);
     const workplaces=E.workplaceList().filter(x=>x.ready);
@@ -79,7 +85,7 @@
       $("#goal").replaceChildren(text("b",end?"Atelier au Cuivre":id?name(id):D.AGES[s.age].n),text("p",end?"Le prototype s’arrête au Cuivre. Tu peux explorer les recettes et les équipements de ces quatre âges.":hint||goal?.ob?.txt||"Explore les possibilités de ton atelier."));
       const toolNames={feu:"Braises du foyer",four:"Chambre de cuisson",enclume_pierre:"Enclume et percuteur",polissoir:"Dalle de polissage"};
       $("#tool-title").textContent=place==="etabli"?"Tes outils":"Au poste";
-      $("#tools").replaceChildren(...tools.map(x=>{const b=button(toolNames[x.id]||x.n,()=>select(x.id),x.id===eq?"on":"");b.append(text("small",Object.values(x.modes).map((n,i)=>actionName(x.id,Object.keys(x.modes)[i],n)).join(" · ")));b.dataset.equipment=x.id;b.setAttribute("aria-pressed",String(x.id===eq));return b;}));
+      $("#tools").replaceChildren(...tools.map(x=>{const b=button(toolNames[x.id]||x.n,()=>select(x.id),x.id===eq?"on":"");b.append(text("small",Object.values(x.modes).map((n,i)=>actionName(x.id,Object.keys(x.modes)[i],n)).join(" · ")));if(x.benefit)b.append(text("small",x.benefit));b.dataset.equipment=x.id;b.setAttribute("aria-pressed",String(x.id===eq));return b;}));
       $("#modes").replaceChildren(...Object.entries(selected.modes).filter(([id])=>id!==mode).map(([id,n])=>{const b=button(actionName(eq,id,n),()=>perform(id),"wide");b.dataset.mode=id;return b;}));
       $("#slots").replaceChildren(...[0,1,2].map(i=>{const b=button(slots[i]?name(slots[i]):"+",()=>{slots.splice(i,1);prepared=null;draw(true);save();});b.setAttribute("aria-label",slots[i]?"Retirer : "+name(slots[i]):"Emplacement libre");return b;}));
       $("#forge").textContent=actionName(eq,mode,selected.modes[mode]);
@@ -102,9 +108,16 @@
       for(const z of E.passPending()){const p=E.passInfo(z),box=text("div",p.P.n+" · "+Object.entries(p.left).map(([id,n])=>Math.ceil(n)+" "+name(id)).join(", "));box.append(button("Déposer",()=>{const r=E.passPour(z);notice(r.done?"Nouvelle terre ouverte.":r.why==="lieux"?"Explore d’abord les lieux de la terre précédente.":"Ressources déposées.");draw(true);save();}));world.push(box);}
       $("#world").replaceChildren(...world);
     }
+    const recipe=E.equipmentRecipe(eq,mode,slots),cutting=recipe==="laniere"&&s.known.laniere;
+    $("#batch").hidden=!cutting;$("#tool-benefit").hidden=!cutting;
+    if(cutting){
+      const times=10,selection={equipment:eq,mode},time=E.batchTime(recipe,times,selection);
+      const baseline=E.batchTime(recipe,times,{equipment:"racloir_os",mode:"couper"});
+      $("#tool-benefit").textContent=(D.ITEMS[recipe].r[2]*times)+" lanières · "+seconds(time)+" avec "+name(eq)+(eq==="couteau"?" · 2× plus vite qu’au racloir.":E.count("couteau")>=1?" · Le couteau les coupe en "+seconds(baseline/2)+".":".");
+    }
     document.querySelectorAll("[data-count]").forEach(e=>{e.textContent=Math.floor(E.count(e.dataset.count)).toLocaleString("fr-FR");e.parentElement.disabled=E.count(e.dataset.count)<1||slots.includes(e.dataset.count);});
     $("#job-card").hidden=!info.jobs.length;
-    $("#jobs").replaceChildren(...info.jobs.map((j,i)=>{const box=text("div",name(j.id)+" · "+(j.wait?"En attente":"En cours"),"job"),p=document.createElement("progress");p.max=1;p.value=j.frac;p.setAttribute("aria-label","Avancement de "+name(j.id));box.append(p,button("Annuler",()=>{E.cancelJob(i);draw(true);save();}));return box;}));
+    $("#jobs").replaceChildren(...info.jobs.map((j,i)=>{const selected=E.state.hand.q[i].equipmentSelection;const box=text("div",name(j.id)+" · "+(j.wait?"En attente":"En cours · "+seconds(j.left))+(selected?" · "+name(selected.equipment):""),"job"),p=document.createElement("progress");p.max=1;p.value=j.frac;p.setAttribute("aria-label","Avancement de "+name(j.id));box.append(p,button("Annuler",()=>{E.cancelJob(i);draw(true);save();}));return box;}));
   }
   draw(true);setInterval(()=>{E.update();draw(false);},250);setInterval(save,5000);
   window.addEventListener("pagehide",save);
