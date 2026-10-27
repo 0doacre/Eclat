@@ -1068,3 +1068,25 @@ body.large-text .rwin :is(.rdesc,.riddle) { font-size: 21px; }
 body.large-text #v-journal .frag .tiny, body.large-text #v-journal .signe-card-lieux { font-size: 15px; }
 body.large-text #v-journal .livre-titre { font-size: 21px; }
 body.large-text #v-cosmos .term { font-size: 16px; }
+
+/* Retours V7 : arrondis communs, décor bord à bord, mots utiles. */
+#v-domaine .dom-terre.a-decor { padding-top: 0; border-radius: 12px; }
+#v-domaine .dom-terre.a-decor::before { display: none; }
+#v-domaine .dom-terre.a-decor::after { top: 0; }
+.view :is(.card,.dom-card,.rec,.stepbox,.passbox,.goal-card,.age-sec),
+#v-carnet :is(.age-sec,#clist .rec), #v-atelier .bench,
+#v-cosmos :is(.card,.proj), #v-journal :is(.card,.frag,.livre-page) { border-radius: 12px; }
+.view :is(.btn,.mini,.icon-btn,.pinb,.chip,.tip,.search input),
+#top :is(.chip,.icon-btn), #v-atelier :is(.geste,.slot,.inv,.mbench,.mslot,.mforge,.forge-btn,.bench-clear,.inv-panel),
+#v-atelier .inv-tools input, #v-carnet :is(.filters button,.qtybar button,.age-pill,.search input),
+.modal-box :is(.btn,.mini,.pinb,.ing.link,.ring,.pick,.vol-group,.seg,.fld input,textarea.save,.modal-x),
+.modal-box .rwin .ing.link { border-radius: 8px; }
+.modal:not(.ending):not(.agecard) .modal-box { border-radius: 16px; }
+#v-atelier .bench { outline: none; }
+#v-atelier .slot.full { display: grid; grid-template-rows: 32px minmax(0,1fr) 14px; gap: 2px; justify-items: center; }
+#v-atelier .slot.full .ic { width: 32px; height: 32px; }
+#v-atelier .slot.full .sn { font: 600 17px/1.15 "Alegreya Sans",sans-serif; align-self: center; }
+#v-atelier .inv .n { font-size: 16px; font-weight: 600; }
+#v-arbre .arb-pas.fantome.obj { position: relative; border: 1px dashed var(--line2); box-shadow: none; }
+#v-arbre .arb-pas.fantome.obj::after { content: ""; position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--intu); }
+#v-arbre .arb-legende i.obj { border: 0; box-shadow: none; background: var(--intu); width: 6px; height: 6px; border-radius: 50%; }

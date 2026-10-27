@@ -29,7 +29,7 @@
     }
     function viewAtelier() {
       const st = S();
-      let h = '<header class="atlas-workshop-heading atlas-only"><h2>Atelier</h2><span>Le geste et la matière</span></header>' + subTabs("atelier", "machines", "Découvrir", "Machines");
+      let h = '<header class="atlas-workshop-heading atlas-only"><h2>Atelier</h2></header>' + subTabs("atelier", "machines", "Découvrir", "Machines");
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
       if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Touche des <b>ressources</b> pour les poser sur l’établi. 3. Lance l’<b>action choisie</b>. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       // Le premier essai reste possible sans un aller-retour au Domaine.
@@ -41,9 +41,6 @@
           : '<span>Il te faut ' + firstWood + ' bois pour commencer.</span><button class="btn pri" data-hloop="lisiere:bois">▶ Récolter du bois</button>') + '</div>';
       }
       h += goalHint();
-      // l’explication des niveaux se lit une fois ; ensuite le bouton « Niveaux » rejoint l’établi et ne prend plus de ligne
-      const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;
-      if (niveauxTip) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button><button class="btn small ghost" data-tip="tip_niveaux" title="Fermer cette astuce">Compris</button></div>';
       h += pinsHTML();
       // une seule rangée, qu’on fait glisser : le haut de l’Atelier laisse la place aux ressources
       const nG = D.GESTE_ORDER.filter((g) => E.gesteOK(g)).length + 1, wG = ($("#views") && $("#views").clientWidth || 360) - 24;
@@ -61,12 +58,12 @@
       }
       h += "</div>";
       const G = D.GESTES[U.geste];
-      let heat = G.d;
+      let heat = U.geste === "tailler" ? "Fendre, découper, affûter." : G.d;
       if (U.geste === "chauffer" || U.geste === "allier") heat = "🌡️ Ta meilleure chaleur : " + fmtHeat(E.heat());
       else if ((U.geste === "marteler" || U.geste === "electriser") && E.level(U.geste) > 1) heat = G.d + " (niveau " + E.level(U.geste) + ")";
       const mat = st.age >= 11 ? " m-labo" : st.age >= 6 ? " m-metal" : st.age >= 3 ? " m-pierre" : "";
       h += '<div class="card bench' + mat + '" id="bench"><div class="heat small"><span>' + esc(heat) + "</span>" +
-        (st.stats.crafts > 0 && !niveauxTip ? '<button class="bench-clear" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button>' : "") +
+        (st.stats.crafts > 0 ? '<button class="bench-clear" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button>' : "") +
         (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") + '</div><div class="slots">';
       U.slots.forEach((id, i) => {
         if (i) h += '<span class="plus-sep">+</span>';
@@ -138,8 +135,6 @@
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
           : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans le Domaine pour remplir ta Réserve.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
-      } else if (Object.keys(st.known).length >= 3 && !st.flags.tip_inv_lp) {
-        h += '<div class="sub-row" style="margin-top:8px"><span class="tiny dim">Appui long sur une ressource (ou « ⓘ Fiches », ou la touche « i ») : ouvre sa fiche (♥ favori, 🔍 étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</span><button class="btn small ghost" data-tip="tip_inv_lp">Compris</button></div>';
       }
       return h;
     }

@@ -57,6 +57,18 @@
 .atlas-world .a-fog-ground { fill: #cfd7d3; }
 .atlas-world .a-fog-space { fill: #172e3d; }
 .atlas-world .a-fog-edge-space { opacity: .32; }
+.atlas-world .a-fog-front { pointer-events: none; }
+.atlas-world .a-fog-drift { animation: atlas-cloud-drift 32s ease-in-out infinite alternate; }
+.atlas-world .a-fog-edge { animation: atlas-mist-drift 19s ease-in-out infinite alternate; }
+.atlas-world .a-fog-counter { animation: atlas-mist-counter 27s ease-in-out infinite alternate; }
+@keyframes atlas-cloud-drift { from { transform: translate(-12px,-8px); } to { transform: translate(12px,8px); } }
+@keyframes atlas-mist-drift { from { transform: translate(-14px,-5px); } to { transform: translate(14px,5px); } }
+@keyframes atlas-mist-counter { from { transform: translate(16px,5px); } to { transform: translate(-16px,-5px); } }
+/* La déformation ne touche que la bordure, pas le grand voile opaque. */
+body:not([data-tab="carte"]) .atlas-world :is(.a-fog-drift,.a-fog-edge) { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .atlas-world :is(.a-fog-drift,.a-fog-edge) { animation: none; }
+}
 .atlas-world .a-celestial-node .a-name,
 .atlas-world .a-celestial-node .a-place-name { fill: #f0e8d0; stroke: #142631; stroke-width: 4px; }
 .atlas-world .a-celestial-node { color: #f1e6c7; }

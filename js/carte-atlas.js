@@ -86,12 +86,15 @@
       const closed = '<g class="a-fog" mask="url(#atlas-closed)" aria-hidden="true">' +
         '<rect x="0" y="1100" width="400" height="1500" class="a-fog-ground"/>' +
         '<rect width="400" height="1100" class="a-fog-space"/>' +
-        '<rect x="0" y="1100" width="400" height="1500" fill="url(#atlas-clouds)"/>' +
-        '<rect width="400" height="1100" fill="url(#atlas-clouds)" opacity=".28"/></g>';
+        '<g class="a-fog-drift"><rect x="-40" y="1060" width="480" height="1580" fill="url(#atlas-clouds)"/>' +
+        '<rect x="-40" y="1060" width="480" height="1580" fill="url(#atlas-clouds-back)" opacity=".55"/>' +
+        '<rect x="-40" y="-40" width="480" height="1180" fill="url(#atlas-clouds)" opacity=".28"/></g></g>';
       const edges = open.filter(z => !GEO[z].secret && !open.some(other => GEO[other].bottom === GEO[z].top)).map(z => {
         const g = GEO[z];
         if (g.top === 0) return "";
-        return '<image class="a-fog-edge' + (g.sky ? ' a-fog-edge-space' : '') + '" href="assets/atlas/brume-v1.webp" x="0" y="' + (g.top - 168) + '" width="400" height="240" preserveAspectRatio="none" aria-hidden="true"/>';
+        return '<g class="a-fog-front' + (g.sky ? ' a-fog-edge-space' : '') + '" mask="url(#atlas-mist-' + z + ')" aria-hidden="true">' +
+          '<g filter="url(#atlas-mist-warp)"><image class="a-fog-edge" href="assets/atlas/brume-v1.webp" x="-40" y="' + (g.top - 168) + '" width="480" height="240" preserveAspectRatio="none"/>' +
+          '<image class="a-fog-edge a-fog-counter" href="assets/atlas/brume-v1.webp" x="-40" y="' + (g.top - 138) + '" width="480" height="200" preserveAspectRatio="none" opacity=".38"/></g></g>';
       }).join("");
       return closed + edges;
     }
@@ -119,6 +122,12 @@
         '<mask id="atlas-closed" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="2600"><rect width="400" height="2600" fill="white"/>' +
         open.filter(z => !GEO[z].secret).map(z => '<path d="' + region(GEO[z]) + '" fill="black"/>').join("") + '</mask>' +
         '<pattern id="atlas-clouds" width="400" height="300" patternUnits="userSpaceOnUse"><image href="assets/atlas/brume-v1.webp" width="400" height="300" preserveAspectRatio="none"/></pattern>' +
+        '<pattern id="atlas-clouds-back" width="480" height="360" patternUnits="userSpaceOnUse" patternTransform="translate(120 85)"><image href="assets/atlas/brume-v1.webp" width="480" height="360" preserveAspectRatio="none"/></pattern>' +
+        '<filter id="atlas-mist-warp" x="-10%" y="-15%" width="120%" height="130%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".012 .026" numOctaves="2" seed="7" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G"/></filter>' +
+        open.filter(z => !GEO[z].secret && GEO[z].top > 0).map(z => {
+          const y = GEO[z].top;
+          return '<linearGradient id="atlas-mist-fade-' + z + '" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="' + (y - 168) + '" y2="' + (y + 72) + '"><stop stop-color="white" stop-opacity="0"/><stop offset=".3" stop-color="white" stop-opacity=".65"/><stop offset=".58" stop-color="white"/><stop offset="1" stop-color="white" stop-opacity="0"/></linearGradient><mask id="atlas-mist-' + z + '" maskUnits="userSpaceOnUse" x="0" y="' + (y - 168) + '" width="400" height="240"><rect y="' + (y - 168) + '" width="400" height="240" fill="url(#atlas-mist-fade-' + z + ')"/></mask>';
+        }).join('') +
         '<linearGradient id="atlas-paper" x2="0" y2="1"><stop stop-color="#e8e7de"/><stop offset="1" stop-color="#f2ecdc"/></linearGradient>' +
         '<linearGradient id="atlas-night" x1="0" x2="0" y1="0" y2="1100" gradientUnits="userSpaceOnUse"><stop stop-color="#101e2c"/><stop offset=".87" stop-color="#193341"/><stop offset="1" stop-color="#e8e7de"/></linearGradient>' +
         '<linearGradient id="atlas-reveal-fade" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="' + (north - 12) + '" y2="' + (north + 48) + '"><stop stop-color="black"/><stop offset="1" stop-color="white"/></linearGradient>' +
