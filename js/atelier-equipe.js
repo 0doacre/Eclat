@@ -33,28 +33,29 @@
       const {w,places,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();
       const raw=[...new Set(D.ZONES.filter(z=>E.zoneOpen(z.id)).flatMap(z=>z.res))];
       const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id)));
-      const known=Object.keys(s.known).filter(id=>D.CRAFT_EQUIPMENT.recipes[id]?.some(c=>E.workplaceFor(c.equipment)===w.place));
-      let h='<div class="ae-notice small">Prévisualisation du craft · Partie de test indépendante, copiée depuis ta partie locale si elle existe. Synchronisation en ligne désactivée pour cet essai.</div>';
-      h+='<nav class="ae-posts" aria-label="Postes de travail">'+places.map(p=>button("place",p.id,esc(p.n),p.id===w.place?"pri":"")).join("")+'</nav>';
-      if(s.age>=3)h+='<p class="small">'+button("legacy","1","Procédés après le Cuivre","ghost")+' <span class="muted">Les âges suivants gardent provisoirement leur interface historique.</span></p>';
+      const known=Object.keys(s.known).filter(id=>D.CRAFT_EQUIPMENT.recipes[id]?.some(c=>E.workplaceFor(c.equipment)===w.place)&&(!E.isUnique(I[id])||!(s.made[id]>0)));
+      let h='';
+      if(places.length>1)h+='<nav class="ae-posts" aria-label="Postes de travail">'+places.map(p=>button("place",p.id,esc(p.n),p.id===w.place?"pri":"")).join("")+'</nav>';
+      if(s.age>=3)h+='<p class="small">'+button("legacy","1","Procédés après le Cuivre","ghost")+'</p>';
       h+='<div class="ae-layout"><section class="card ae-bench"><h2>'+esc(places.find(x=>x.id===w.place).n)+'</h2><div class="ae-work"><div><div class="ae-slots">';
       for(let i=0;i<3;i++){const id=w.slots[i],need=w.prepared?I[w.prepared]?.r?.[1][id]:0;
         h+=button("slot",String(i),id?icon(id)+'<span>'+esc(name(id))+'</span><small data-ae-need="'+esc(id)+'" data-need="'+(need||0)+'"></small>':'+',id?"ae-filled":"ae-empty",!id);
       }
-      h+='</div><p class="small muted">'+(w.prepared?'Recette préparée : '+esc(name(w.prepared)):'Pose tes matières, prends un outil, puis choisis son geste.')+'</p><div class="ae-actions">';
+      h+='</div>'+(w.prepared?'<p class="ae-prepared">'+esc(name(w.prepared))+'</p>':'')+'<div class="ae-actions">';
       h+=Object.entries(tool.modes).map(([id,n])=>button("forge",id,esc(label(id,n)),id===w.mode?"pri":"",!w.slots.length)).join("");
       if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode]))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
       h+='</div><p id="ae-result" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><h3>Tes outils</h3>'+tools.map(t=>button("tool",t.id,(t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n)+'<small>'+esc(Object.entries(t.modes).map(([m,n])=>label(m,n)).join(" · "))+(t.benefit?' · '+esc(t.benefit):"")+'</small>',t.id===w.eq?"pri":"")).join("")+'</aside></div></section>';
-      h+='<section class="card ae-stock"><h3>Tes matières</h3><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'"><p class="tiny muted">Un clic pour poser, un autre pour retirer. Les quantités seront prises à la fabrication.</p><div class="ae-inventory">';
-      for(const id of ids){const picked=w.slots.includes(id);h+='<div class="ae-resource" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+' '+esc(name(id))+' <b data-ae-count="'+esc(id)+'"></b><small data-ae-state="'+esc(id)+'"></small>',picked?"ae-selected":"",!picked&&E.count(id)<1);
-        if(raw.includes(id))h+=button("harvest",id,s.act?.res===id?"Arrêter":"Récolter","small ghost");h+='<button type="button" class="btn small ghost" data-goto="'+esc(id)+'" title="Étudier ou consulter cette matière">Fiche</button></div>';
+      h+='<section class="card ae-stock"><h3>Tes matières</h3><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'"><div class="ae-inventory">';
+      for(const id of ids){const picked=w.slots.includes(id);h+='<div class="ae-resource" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span><b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
-      h+='</div></section></div><section class="card"><h3>Recettes connues à ce poste</h3><div class="ae-known">'+known.map(id=>'<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Commander","small")+'</div>').join("")+(known.length?'':'<p class="muted">Tes découvertes apparaîtront ici et dans le Carnet.</p>')+'</div></section>';
+      h+='</div></section></div>';
+      h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
+      if(known.length)h+='<section class="card"><h3>Recettes</h3><div class="ae-known">'+known.map(id=>'<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+'</div>').join("")+'</div></section>';
       if(s.known.laniere){h+='<section class="card ae-economy"><h2>Faire vivre l’atelier</h2><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton ouvrier</h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
         h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Fabrication de l’ouvrier"></progress><p id="ae-worker-pay" class="small"></p>';
         h+=e.hired?button("fund","","Avancer 1 écu")+button("worker","",e.working?"Mettre en pause":"Mettre au travail")+button("withdraw","","Récupérer l’avance","",e.working||e.budget<=0):button("hire","","Embaucher · "+money(e.hire));
-        h+='</section><section><h3>Le marchand de surplus</h3><label><input id="ae-merchant" type="checkbox"'+(e.merchant?' checked':'')+'> Vente automatique</label><label>Garder <input id="ae-reserve" type="number" min="0" max="100000" value="'+e.reserve+'"> lanières</label><progress id="ae-merchant-progress" max="5" value="0" aria-label="Passage du marchand"></progress><p id="ae-quote"></p>'+button("sell","","Vendre le surplus maintenant")+'<details><summary>Taxes et bilan</summary><p id="ae-tax" class="small"></p></details><p class="tiny muted">Ces ventes ne modifient pas le troqueur.</p></section></div></section>';
+        h+='</section><section><h3>Le marchand de surplus</h3><label><input id="ae-merchant" type="checkbox"'+(e.merchant?' checked':'')+'> Vente automatique</label><label>Garder <input id="ae-reserve" type="number" min="0" max="100000" value="'+e.reserve+'"> lanières</label><progress id="ae-merchant-progress" max="5" value="0" aria-label="Passage du marchand"></progress><p id="ae-quote"></p>'+button("sell","","Vendre le surplus maintenant")+'<details><summary>Taxes et bilan</summary><p id="ae-tax" class="small"></p></details></section></div></section>';
       }
       return h;
     }
@@ -64,7 +65,9 @@
     function live(){const r=root();if(!r||U.tab!=="atelier"||U.equipmentLegacy)return;
       const next=sig();if(next!==signature){const ae=document.activeElement,focus=ae&&r.contains(ae)&&ae.id?{id:ae.id,start:ae.selectionStart,end:ae.selectionEnd}:null;const scroll=r.querySelector(".ae-inventory")?.scrollTop||0;r.innerHTML=body();signature=next;const stock=r.querySelector(".ae-inventory");if(stock)stock.scrollTop=scroll;if(focus){const el=document.getElementById(focus.id);if(el){el.focus({preventScroll:true});try{el.setSelectionRange(focus.start,focus.end);}catch(_){}}}}
       const {w}=work(),e=E.atelierEconomyInfo(),query=(U.equipmentSearch||"").toLocaleLowerCase();
-      r.querySelectorAll("[data-ae-resource]").forEach(el=>{const id=el.dataset.aeResource,picked=w.slots.includes(id),b=el.querySelector('[data-ae="item"]');el.hidden=!el.dataset.name.includes(query);b.disabled=!picked&&(E.count(id)<1||w.slots.length>=3);b.classList.toggle("ae-selected",picked);b.setAttribute("aria-pressed",String(picked));el.querySelector("[data-ae-count]").textContent=Math.floor(E.count(id)).toLocaleString("fr-FR");el.querySelector("[data-ae-state]").textContent=picked?"Posé · retirer":E.count(id)<1?"Stock vide":w.slots.length>=3?"Établi plein":"Prêt à poser";});
+      r.querySelectorAll("[data-ae-resource]").forEach(el=>{const id=el.dataset.aeResource,picked=w.slots.includes(id),b=el.querySelector('[data-ae="item"]'),n=E.count(id);el.hidden=!el.dataset.name.includes(query);b.disabled=!picked&&(n<1||w.slots.length>=3);b.classList.toggle("ae-selected",picked);b.setAttribute("aria-pressed",String(picked));b.setAttribute("aria-label",name(id)+', '+n.toLocaleString('fr-FR')+' en stock'+(picked?', sur l’établi':''));b.title=name(id)+' · '+n.toLocaleString('fr-FR');el.querySelector("[data-ae-count]").textContent=api.fmt(n);});
+      const bench=r.querySelector('.ae-bench'),views=document.getElementById('views'),mini=r.querySelector('.ae-mini');
+      if(mini)mini.hidden=!(w.slots.length&&bench.getBoundingClientRect().bottom<views.getBoundingClientRect().top);
       r.querySelectorAll("[data-ae-need]").forEach(el=>{const n=E.count(el.dataset.aeNeed),need=Number(el.dataset.need);el.textContent=need?'×'+need+' requis · '+Math.floor(n)+' disponibles'+(n<need?' · manque '+Math.ceil(need-n):' · prêt'):Math.floor(n)+' disponibles';});
       const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
       set("ae-wallet",money(E.state.ecus));
@@ -99,7 +102,6 @@
       else if(action==="prepare")prepare(id);
       else if(action==="order"){const result=E.order(id,1);message=result.ok?"Commande lancée : "+name(id):"Il manque une recette ou un équipement : consulte le Carnet.";}
       else if(action==="batch"){const result=E.queue(id,tool.batch||1,false,undefined,{equipment:w.eq,mode:w.mode});message=result.ok?"Série lancée avec "+name(w.eq):"Pas assez de matières ou de place dans les commandes.";}
-      else if(action==="harvest"){if(E.state.act?.res===id)E.stopAct();else E.startAct({k:"harv",z:E.RES_ZONE[id],res:id});}
       else if(action==="build"){E.learn("etabli_amenage",true);message=E.order("etabli_amenage",1).ok?"Aménagement en cours.":"Consulte les matériaux requis dans le Carnet.";}
       else if(action==="hire")message=E.workerHire().ok?"L’ouvrier rejoint ton établi.":"Aménage le poste, prépare l’outil et finance l’embauche avec tes ventes.";
       else if(action==="fund")message=E.workerFund(1).ok?"Un écu réservé aux salaires.":"Il faut un écu disponible.";

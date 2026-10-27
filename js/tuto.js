@@ -173,7 +173,7 @@
           { text: "Compris : partout où ce signe apparaît, il se lit désormais en mot. Les autres se trouvent dans le Journal, onglet Signes.", next: true }
         ] },
       { id: "etude", n: "Étudier une ressource",
-        when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
+        when: () => !E.equipmentList && U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
         still: () => !Object.keys(S().studied).length,
         steps: [
           { tab: "atelier", at: studyTile, text: E.equipmentList?"Ouvre la Fiche d’une matière pour l’étudier et chercher ce qu’elle permet de fabriquer.":"Appuie longuement sur une ressource pour ouvrir sa fiche.",
