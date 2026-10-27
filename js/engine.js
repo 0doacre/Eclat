@@ -5133,6 +5133,7 @@
     };
     E.importSave = (txt) => E.load(E.decodeSave(txt));
 
+    (root.EclatTransmission || require("./transmission.js")).attach(E);
     recalc();
     return E;
   }

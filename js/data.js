@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.36.0";
+  D.VERSION = "0.37.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -658,6 +658,21 @@
   I.tablette = { n: "Tablette des astres", sym: "⌖", col: "#857a66", a: 3, t: "relic", d: "Une pierre gravée de cercles et d’encoches pour des roues dentées qui n’existent plus." };
   I.partition = { n: "Vieille partition", ic: "📜", a: 5, t: "relic", old: true, d: "Une feuille de notes à l’encre pâlie. Les chiffres ne disent plus rien." };
   I.signal_brut = { n: "Signal de Kher", ic: "〽️", a: 10, t: "relic", d: "L’enregistrement brut du signal venu de Kher. Tu n’y comprends rien, pour l’instant." };
+
+  /* Transmission : cinq recettes facultatives, sans monnaie supplémentaire. */
+  I.encre = { n: "Encre", sym: "●", col: "#30333c", a: 1, t: "comp", r: ["chauffer", { charbon: 1, colle_os: 1 }, 2], u: "Sert aux feuillets de papyrus et à la presse d’imprimerie.", d: "Le noir reste sur le doigt longtemps après avoir refermé le pot.", h: "Un noir de charbon lié à la colle pourrait laisser une trace durable." };
+  I.papyrus = { n: "Feuillet de papyrus", sym: "▤", col: "#c8ad74", a: 2, t: "upg", r: ["assembler", { fibre: 12, encre: 2 }, 1], u: "Permet de laisser des notes personnelles dans le Livre. Elles traversent les relèves.", d: "Tu laisses une place dans la marge pour la main qui viendra après la tienne.", h: "Des fibres végétales forment un support ; l’encre y gardera une observation." };
+  I.papier = { n: "Papier", sym: "▧", col: "#d3cdb7", a: 7, t: "comp", r: ["assembler", { fibre: 6, eau: 2 }, 4], u: "Sert à construire la presse d’imprimerie.", d: "Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.", h: "L’eau sépare les fibres ; étalées puis séchées, elles pourraient former des feuilles." };
+  I.presse_imprimer = { n: "Presse d’imprimerie", sym: "▥", col: "#847057", a: 7, t: "upg", r: ["assembler", { papier: 20, encre: 4, vis: 12 }, 1], u: "Permet de marquer les pages retrouvées comme copiées dans le Livre, sans consommer les originaux.", d: "La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.", h: "Des vis serrent le papier contre une forme encrée. La même empreinte peut alors se répéter." };
+  I.serveur_archives = { n: "Serveur d’archives", sym: "▣", col: "#5fa78f", a: 10, t: "upg", r: ["assembler", { processeur: 8, circuit: 20, verre_trempe: 10 }, 1], u: "Permet de chercher dans les pages déjà retrouvées, avec accès aux documents sources.", d: "La machine retrouve en un instant la phrase que tu cherchais depuis trois veillées.", h: "Des processeurs et des circuits peuvent classer les documents derrière une façade de verre." };
+  D.TRANSMISSION = [
+    { age: 2, ids: ["papyrus"], n: "Laisser une trace", d: "Une observation écrite peut atteindre un Semeur qui ne t’a jamais rencontré.", tech: "Le papyrus est fabriqué à partir de la moelle d’une plante précise, disposée en bandes. Le jeu regroupe ces végétaux sous le nom de fibres ; sa recette est une simplification." },
+    { age: 7, ids: ["papier"], n: "Préparer des feuilles", d: "Un même support accueille des dessins, des comptes et des lettres.", tech: "Le papier se forme à partir de fibres dispersées dans l’eau, recueillies puis séchées. Il est différent du papyrus. Son classement à la Vapeur suit ici la disponibilité de l’eau dans le jeu, pas la date de son invention." },
+    { age: 7, ids: ["presse_imprimer"], n: "Multiplier les exemplaires", d: "Les mots peuvent circuler sans que chaque main les recopie.", tech: "L’imprimerie reproduit une forme encrée sur un support. Copier conserve aussi les erreurs du modèle. Les copies du jeu signalent les originaux retrouvés ; elles ne créent aucune page du récit." },
+    { age: 8, ids: ["radio"], n: "Porter une voix", d: "Un message arrive sans que quelqu’un apporte sa feuille.", tech: "La radio transmet un signal par ondes électromagnétiques. Transmettre un message et conserver un document sont deux fonctions distinctes." },
+    { age: 10, ids: ["serveur_archives"], n: "Relier les archives", d: "Les documents gardent leur origine lorsqu’ils se répondent.", tech: "Internet relie des réseaux qui échangent des données selon des protocoles communs. Le serveur du jeu représente une archive locale ; avec la radio, il évoque la reconnexion des lieux, sans simuler Internet ni ajouter des habitants." },
+    { age: 13, ids: ["serveur_archives", "ia"], n: "Interroger les traces", d: "La voix rapproche des mots que des mains différentes ont laissés.", tech: "Un modèle de langage apprend des régularités dans des exemples. Ses paramètres ne sont pas une copie fidèle d’une bibliothèque. Une recherche documentaire peut lui apporter des sources ; une réponse doit encore être vérifiée. Cet écran effectue une recherche locale, sans exécuter de LLM." }
+  ];
 
   /* ---------------------------------------------------------------- LIGNES D’EXTRACTEURS
    * Un bâtiment par ressource : le bois a son Bûcheron, la pierre son Carrier, la peau son Tanneur…
@@ -1481,6 +1496,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📖 Une voie facultative relie les supports d’écriture, l’imprimerie et les archives au Livre : notes des Semeurs, registre de copies et recherche locale dans les pages retrouvées. Les découvertes et les recettes acquises restent conservées.",
     "⛏️ Le Cuivre se découvre étape par étape. Le chariot et le Désert arrivent au Fer : le quartz y fournit une poudre pour polir les lentilles et renforcer les briques réfractaires. La ligne d’assemblage prépare les grands chantiers après l’ordinateur.",
     "💾 Tes terres, tes stocks et tes âges acquis sont conservés. Les commandes de lentilles et de briques déjà lancées terminent avec leurs anciens ingrédients ; les nouvelles utilisent la poudre de quartz.",
     "✦ Deuxième couche de prestige liée aux fins : atteindre l'un des cinq dénouements éveille désormais une Règle d'Écho majeure pour toujours (Foyer Perpétuel, L'Onde de Choc, La Voie des Étoiles, L'Écho Cosmique, L'Éveil Partagé), visible dans le Journal et la Mémoire des mains.",
@@ -1664,7 +1680,7 @@
   };
   /* le genre et le nombre des matières, pour les articles (le, la, l’, les) */
   D.GENRE = {
-    f: "poudre_quartz fibre caillou corde cabane torche galette cuir aiguille laniere colle_os fronde outre tunique flute statuette argile hache_pierre pioche_pierre brique nasse hutte malachite cassiterite enclume_pierre plaque_cuivre charbonniere lampe plaque_bronze hache_bronze pioche_bronze enclume_bronze roue courroies brouette loupe plaque_fer chainon galerie lentille lunette boussole brique_refr lame vis chaudiere presse_vapeur pompe scierie drague bobine dynamo batterie ampoule excavatrice foreuse_elec wafer puce cellule chaine foreuse capsule bauxite ilmenite terres_rares resine dynamite centrale carriere fibre_carbone ceramique fusee plateforme station_orbitale base_lunaire ia forge_stellaire matiere_exotique antimatiere bague philosophale resonite tablette partition",
+    f: "encre presse_imprimer poudre_quartz fibre caillou corde cabane torche galette cuir aiguille laniere colle_os fronde outre tunique flute statuette argile hache_pierre pioche_pierre brique nasse hutte malachite cassiterite enclume_pierre plaque_cuivre charbonniere lampe plaque_bronze hache_bronze pioche_bronze enclume_bronze roue courroies brouette loupe plaque_fer chainon galerie lentille lunette boussole brique_refr lame vis chaudiere presse_vapeur pompe scierie drague bobine dynamo batterie ampoule excavatrice foreuse_elec wafer puce cellule chaine foreuse capsule bauxite ilmenite terres_rares resine dynamite centrale carriere fibre_carbone ceramique fusee plateforme station_orbitale base_lunaire ia forge_stellaire matiere_exotique antimatiere bague philosophale resonite tablette partition",
     p: "fibre galette laniere collets nasse courroies brouette clous outils_fer vis outils_acier capteurs robots terres_rares convoyeurs debris"
   };
 

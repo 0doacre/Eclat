@@ -210,10 +210,10 @@ test("les carrefours viennent des données seules, pas de la partie", () => {
   assert.strictEqual(JSON.stringify(Object.keys(Arb.carrefours(D)).sort()), s, "indépendant de la partie");
   for (const id in c) assert.ok(I[id] && !I[id].path, id);
 });
-test("la mise en page reste stable (empreinte des positions, trois états ; recalée en 0.36 pour le Fer et le quartz)", () => {
+test("la mise en page reste stable (empreinte des positions, trois états ; recalée en 0.37 pour les supports de transmission)", () => {
   const crypto = require("crypto");
   const { ETATS } = require("./arbre-mesures.js");
-  const attendu = { "neuve": "6c2188da81e5 n=1", "avancée": "8d8472b3ee85 n=83", "tout connu": "5614ca7eb82e n=236" };
+  const attendu = { "neuve": "6c2188da81e5 n=1", "avancée": "2d5ce9ea8d06 n=83", "tout connu": "46e4930a3d90 n=241" };
   for (const n of Object.keys(attendu)) {
     const lay = Arb.mise_en_page(Arb.graphe(ETATS[n](), D), D);
     const s = lay.noeuds.map((x) => [x.age, x.etat, x.x, x.y].join(",")).join(";");

@@ -143,7 +143,7 @@
       const tabs = [["fragments", "Fragments"]];
       const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
       const gestesNew = E.hasNewGeste ? E.hasNewGeste() : false;
-      if (E.hasLivre && E.hasLivre()) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
+      if ((E.hasLivre && E.hasLivre()) || E.transmission().ecrire) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
       if (E.hasQuestions && E.hasQuestions()) tabs.push(["questions", "Questions"]);
       if (E.hasSignes && E.hasSignes()) tabs.push(["signes", "Signes"]);
       tabs.push(["secrets", "Secrets"]);
@@ -170,6 +170,7 @@
           for (const k in miss) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow">' + esc(k) + '<div class="tiny muted">' + miss[k] + " fragment" + (miss[k] > 1 ? "s" : "") + "</div></div></div>";
         }
       } else if (U.journalTab === "livre") {
+        h += window.EclatTransmission.html(E, U, esc);
         const cases = E.livre ? E.livre() : [];
         const foundCount = cases.filter((c) => c.page).length;
         h += '<p class="small muted">' + foundCount + "/32 pages retrouvées dans le Livre des Semeurs.</p>";

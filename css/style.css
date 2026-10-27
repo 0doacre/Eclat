@@ -2255,3 +2255,10 @@ body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 }
 .status-dot.ok { background: var(--good); box-shadow: 0 0 6px var(--good); }
 .status-dot.empty { background: var(--muted); }
+
+/* Livre : les outils de transmission gardent les pages accessibles sur mobile. */
+.transmission details { margin: 10px 0; }
+.transmission summary { cursor: pointer; padding: 8px 0; }
+.transmission form { display: grid; gap: 8px; margin: 10px 0; }
+.transmission textarea, .transmission input { font: inherit; font-size: 16px; max-width: 100%; }
+.transmission .btn { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
