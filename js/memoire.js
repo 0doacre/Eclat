@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal,
-      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -25,11 +25,13 @@
         (!isLibere && st.cycle > 1 && uiSigne("eveil") ? '<p class="scene-signe" style="opacity:0;animation:fadeup 1.2s 0.1s forwards">' + uiSigne("eveil", lieu) + "</p>" : "") +
         lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + recitInline(l, lieu) + "</p>").join("") +
         (!isLibere ? ornementHTML(lieu, 0.3 + lines.length * 1.1) : "") +
-        '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button></div>';
+        '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button>' +
+        (!isLibere && st.cycle === 1 && !st.stats.crafts ? '<button class="btn ghost wide" data-m="sansguide" title="Jouer sans les bulles d’explication (réactivable dans le Menu)">Sans guide</button>' : "") + "</div>";
       openModal({
         persistent: true,
         html: html(),
         refresh: html,
+        on: { sansguide: () => { Tuto.setEnabled(false); } },
         onClose: () => {
           st.introSeen = true; st.flags.news = null; st.flags.ver = D.VERSION; save(); A.init();
           if (st.flags.capsuleMsg) {
@@ -367,11 +369,13 @@
       // une case par fin atteinte, ou dont le Grand Œuvre est en vue : rien ne dit combien il y en a
       const endKeys = Object.keys(D.ENDINGS).filter((k) => (m.endings || {})[k] || Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
       h += '<h3 class="sub" style="margin-top:16px">Dénouements &amp; Échos</h3>';
-      h += '<p class="tiny muted">Chaque fin atteinte dépose un Écho immuable (+50 % récolte &amp; production) qui traverse les générations.' + (ech ? ' Total : <b>+' + (ech * 50) + ' %</b> (' + ech + ' Écho' + (ech > 1 ? 's' : '') + ').' : '') + '</p>';
+      h += '<p class="tiny muted">Chaque fin atteinte dépose un Écho immuable (+50 % récolte &amp; production) et éveille une <b>Règle d’Écho majeure</b> pour toujours.' + (ech ? ' Total : <b>+' + (ech * 50) + ' %</b> (' + ech + ' Écho' + (ech > 1 ? 's' : '') + ').' : '') + '</p>';
       h += '<div class="mems mem-endings">' + endKeys.map((k) => {
-        const en = D.ENDINGS[k], got = (m.endings || {})[k] || 0;
+        const en = D.ENDINGS[k], got = (m.endings || {})[k] || 0, echoRule = D.ECHOS_FINS && D.ECHOS_FINS[k];
         if (got) {
-          return '<div class="mem on"><span class="mic">' + en.ic + '</span><div class="grow"><div class="small"><b>' + esc(en.n) + '</b> <span class="tiny muted">×' + got + '</span></div><div class="tiny muted">Écho actif : +' + (got * 50) + ' %</div></div><span class="tiny ok">✦ Atteint</span></div>';
+          return '<div class="mem on"><span class="mic">' + en.ic + '</span><div class="grow"><div class="small"><b>' + esc(en.n) + '</b> <span class="tiny muted">×' + got + '</span></div><div class="tiny muted">Écho actif : +' + (got * 50) + ' %</div>' +
+            (echoRule ? '<div class="tiny" style="color:var(--pri);margin-top:2px">✦ <b>' + esc(echoRule.n) + '</b> : ' + esc(echoRule.d) + '</div>' : '') +
+            '</div><span class="tiny ok">✦ Atteint</span></div>';
         }
         const hasHint = E.hasEndingHint(k);
         if (hasHint) {

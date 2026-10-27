@@ -1076,7 +1076,7 @@ body.large-text #v-cosmos .term { font-size: 16px; }
 .view :is(.card,.dom-card,.rec,.stepbox,.passbox,.goal-card,.age-sec),
 #v-carnet :is(.age-sec,#clist .rec), #v-atelier .bench,
 #v-cosmos :is(.card,.proj), #v-journal :is(.card,.frag,.livre-page) { border-radius: 12px; }
-.view :is(.btn,.mini,.icon-btn,.pinb,.chip,.tip,.search input),
+.view :is(.btn,.mini,.icon-btn,.pinb,.chip,.tip,.search input), .view .dom-terre .gis-b .mini, .view .ic:not(.sym),
 #top :is(.chip,.icon-btn), #v-atelier :is(.geste,.slot,.inv,.mbench,.mslot,.mforge,.forge-btn,.bench-clear,.inv-panel),
 #v-atelier .inv-tools input, #v-carnet :is(.filters button,.qtybar button,.age-pill,.search input),
 .modal-box :is(.btn,.mini,.pinb,.ing.link,.ring,.pick,.vol-group,.seg,.fld input,textarea.save,.modal-x),
@@ -1090,3 +1090,15 @@ body.large-text #v-cosmos .term { font-size: 16px; }
 #v-arbre .arb-pas.fantome.obj { position: relative; border: 1px dashed var(--line2); box-shadow: none; }
 #v-arbre .arb-pas.fantome.obj::after { content: ""; position: absolute; top: 8px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--intu); }
 #v-arbre .arb-legende i.obj { border: 0; box-shadow: none; background: var(--intu); width: 6px; height: 6px; border-radius: 50%; }
+.modal-box .m-nav-tab { min-width: 44px; min-height: 44px; border-radius: 8px; white-space: normal; }
+.modal-box .menu-game-title .m-title-text { margin: 0; }
+@media (max-width: 430px) {
+  .modal-box .menu-nav-bar { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  /* La nouvelle ligne d'ambiance ne repousse pas la première rangée de matières. */
+  #v-atelier .subtabs { margin-bottom: 6px; }
+  #v-atelier .bench { padding: 8px; }
+  #v-atelier .bench .heat { margin-bottom: 4px; }
+  #v-atelier .sub-row { margin-block: 2px; }
+  #v-atelier .inv-tools { margin-bottom: 4px; }
+  #v-atelier .inv-age { padding-top: 2px; }
+}

@@ -89,7 +89,7 @@ async function run(){
     await p.locator('#menuBtn').focus();await p.keyboard.press('Enter');await settled(p);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('app').inert);
     ok(await p.locator('#menuBtn').evaluate(e=>document.activeElement===e),tag+' : retour du focus au Menu');
     await p.locator('#atlasToggle').click();ok(await p.locator('#atlasToggle').getAttribute('aria-pressed')==='false',tag+' : Classique disponible');
-    await p.locator('#menuBtn').click();await settled(p);ok(await p.locator('.modal-box').evaluate(e=>getComputedStyle(e).borderRadius)!=='5px',tag+' : styles Classique rétablis');await close(p);
+    await p.locator('#menuBtn').click();await settled(p);ok(await p.locator('.modal-box').evaluate(e=>getComputedStyle(e).borderTopLeftRadius)==='22px',tag+' : styles Classique rétablis');await close(p);
     ok(!errors.length,tag+' : erreurs '+errors.join(';'));console.log('✓ '+tag);await ctx.close();
   }
   console.log('✓ Fiches / fenêtres : '+checks+' contrôles.');

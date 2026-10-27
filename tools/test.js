@@ -311,7 +311,7 @@ test("un extracteur ne travaille que sur sa terre ; une ancienne pose ailleurs r
 test("un extracteur par ressource : chaque ressource récoltable a sa ligne, ses niveaux et sa recette", () => {
   const E = mk();
   const exts = Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].t === "ext");
-  assert.strictEqual(exts.length, 48);
+  assert.strictEqual(exts.length, 50);
   const res = new Set(D.LIGNES.map((L) => L.res));
   assert.strictEqual(res.size, D.LIGNES.length, "une seule ligne par ressource");
   exts.forEach((id) => {
@@ -1724,7 +1724,7 @@ test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plo
   D.ZONES.forEach((z) => { assert.ok(!z.res.includes("uranium") && !z.res.includes("galene"), z.id); });
   assert.strictEqual(E.RES_ZONE.uranium, "mine", "sa terre est celle de son extracteur");
   assert.strictEqual(E.RES_ZONE.galene, "collines");
-  assert.deepStrictEqual(E.extFor("uranium", "mine"), ["uranium_1"]);
+  assert.deepStrictEqual(E.extFor("uranium", "mine"), ["uranium_1", "uranium_2"]);
   E.state.zones.mine = true; E.state.zones.collines = true;
   assert.strictEqual(E.deposits().find((d) => d.res === "uranium").hand, false, "un gisement qui ne se récolte pas à la main");
   // le guide mène à l’extracteur d’abord : pas de galène sans sa mine
@@ -1736,7 +1736,7 @@ test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plo
   assert.strictEqual(s.id, "galene_1", JSON.stringify(s));
   // des étapes pour l’âge, dans l’ordre
   const m = E.milestones()[9];
-  assert.deepStrictEqual(m.filter((x) => x.ob.k === "craft").map((x) => x.ob.id), ["uranium_1", "lingot_plomb", "barre_combustible", "centrale_fission"]);
+  assert.deepStrictEqual(m.filter((x) => x.ob.k === "craft").map((x) => x.ob.id), ["uranium_1", "galene_1", "lingot_plomb", "barre_combustible", "centrale_fission"]);
   // des ingrédients d’âge égal ou antérieur
   Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].a === 9 && D.ITEMS[i].r).forEach((i) => { for (const g in D.ITEMS[i].r[1]) assert.ok(D.ITEMS[g].a <= 9, i + " demande " + g); });
   // l’extracteur d’uranium récolte une fois posé
@@ -3269,9 +3269,27 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.28.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.28.0");
+test("Version 0.37.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.37.0");
   assert.ok(D.CHANGES.length >= 2);
+});
+
+test("Carnet : mémorisation du filtre, de la recherche et quantité libre", () => {
+  const E = createEngine();
+  // Vérification de la persistance des préférences du Carnet dans les settings
+  E.state.settings.carnet = { filter: "pret", q: "corde" };
+  const raw = E.serialize();
+  const E2 = createEngine();
+  E2.load(raw);
+  assert.deepStrictEqual(E2.state.settings.carnet, { filter: "pret", q: "corde" }, "les réglages de filtre et recherche du Carnet survivent à la sauvegarde");
+
+  // Planification avec quantité libre arbitraire
+  E.state.known.corde = true;
+  E.state.inv.fibre = 100;
+  const p = E.plan("corde", 17);
+  assert.strictEqual(p.ok, true);
+  assert.strictEqual(p.times, 17);
+  assert.strictEqual(p.used.fibre, 51);
 });
 
 test("Suivi d'objectif et plan d'artisanat : prêt / manquant", () => {
@@ -3485,12 +3503,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.28.0");
+  assert.strictEqual(D.VERSION, "0.37.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 28, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 37, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 

@@ -13,7 +13,7 @@
 .atlas-map-actions button {
   display: inline-flex; align-items: center; justify-content: center; gap: 5px;
   min-width: 44px; min-height: 44px; padding: 6px 11px; border: 1px solid var(--line2);
-  border-radius: 4px; color: var(--text); background: var(--panel);
+  border-radius: 8px; color: var(--text); background: var(--panel);
   font: 500 15px/1.2 "Alegreya Sans",sans-serif; cursor: pointer; touch-action: manipulation;
 }
 .atlas-map-actions button:last-child { margin-left: auto; }

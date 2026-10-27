@@ -13,7 +13,7 @@
       FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
       playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene,
       openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge,
-      craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree
+      craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree, promptCarnetQty, promptCraftQty
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -75,6 +75,14 @@
         if (!U.forging && !it.sec) fete({ id, kick: "Première fabrication", title: it.n, sub: fxText(id) });
         U.lastDiscover = Date.now();
         if (it.e && it.e.sky) badge("cosmos");
+        if (it.t === "ext") {
+          const z = E.extZones(id).find((z) => E.zoneOpen(z) && E.zoneDeps(z).some((d) => !d.hand && it.p[d.res]));
+          if (z) {
+            U.domOpen = z;
+            badge("domaine");
+            toast("⛏️ <b>" + esc(it.n) + "</b> : un gisement t’attend dans <b>" + esc(E.ZONES[z].n) + "</b>. Ouvre le Domaine pour y poser ton extracteur.", { key: "gisement:" + id, p: 2 });
+          }
+        }
         if (it.t === "mach") badge("domaine");
         updateBadges();
       });
@@ -222,6 +230,12 @@
       E.on("ending", (r) => { setTimeout(() => showEnding(r), 600); save(); });
       E.on("capsulePrompt", () => { setTimeout(promptCapsuleText, 400); });
       E.on("toast", (msg) => { if (typeof msg === "string") toast(msg); });
+      E.on("geste", (id) => {
+        badge("journal");
+        vibe(12);
+        const g = D.GESTES_REMARQUES && D.GESTES_REMARQUES[id];
+        if (g && U.live) toast("✦ Geste remarqué : <b>" + esc(g.n) + "</b>", { key: "g:" + id, p: 1 });
+      });
       E.on("curio", (id) => {
         const c = D.EASTER && D.EASTER[id];
         if (c) {
@@ -336,6 +350,13 @@
         if (b.dataset.u === "save") downloadSave();
         if (b.dataset.u === "go") applyUpdate();
       });
+      const ambEl = $("#ambianceBar");
+      if (ambEl) {
+        ambEl.addEventListener("click", () => {
+          A.init();
+          if (U.Ambiance) U.Ambiance.next();
+        });
+      }
 
       const views = $("#views");
       views.addEventListener("pointerdown", (ev) => {
@@ -379,7 +400,7 @@
         }
         if ((b = t.closest("[data-hopen]"))) { A.init(); openHands(); return; }
         if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
-        if ((b = t.closest("[data-tree]"))) { openTree(b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
+        if ((b = t.closest("[data-chemin], [data-tree]"))) { openTree(b.dataset.chemin || b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.chemin || b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
         if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
         if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
         if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans le Domaine
@@ -405,6 +426,8 @@
         if ((b = t.closest("[data-lock]"))) { toast("Action verrouillée. Station nécessaire : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
         if ((b = t.closest("[data-qty]"))) { S().flags.carnetQty = b.dataset.qty === "max" ? "max" : Number(b.dataset.qty); A.click(); render(true); return; }
+        if ((b = t.closest("[data-qty-custom]"))) { if (promptCarnetQty) promptCarnetQty(); return; }
+        if ((b = t.closest("[data-cr-custom]"))) { if (promptCraftQty) promptCraftQty(b.dataset.crCustom); return; }
         if (t.closest("[data-resclose]")) { U.last = null; A.click(); render(true); return; }
         if (t.closest("[data-clear]")) { U.slots = [null, null, null]; U.last = null; A.click(); render(true); return; }
         if (t.closest("#forge, [data-forge]") && !t.closest("[data-s]")) {
@@ -419,6 +442,7 @@
             render(true);
           } else if (target === "cq") {
             U.q = "";
+            if (S().settings) S().settings.carnet = Object.assign({}, S().settings.carnet, { q: "" });
             const l = $("#clist");
             if (l) { l.innerHTML = carnetList(); refresh(); }
             render(true);
@@ -435,7 +459,12 @@
           return;
         }
         if (t.closest("[data-fclear]")) { U.invFilter = "tout"; S().settings.inv = Object.assign({}, S().settings.inv, { filter: "tout", sort: "age" }); U.invPanel = false; A.click(); render(true); const fb = document.querySelector("[data-filtres]"); if (fb) fb.focus({ preventScroll: true }); return; }
-        if ((b = t.closest("[data-cf]"))) { U.carnetFilter = b.dataset.cf; render(true); return; }
+        if ((b = t.closest("[data-cf]"))) {
+          U.carnetFilter = b.dataset.cf;
+          if (S().settings) S().settings.carnet = Object.assign({}, S().settings.carnet, { filter: U.carnetFilter });
+          render(true);
+          return;
+        }
         if ((b = t.closest("[data-age-jump]"))) {
           const a = Number(b.dataset.ageJump);
           U.openAges[a] = true; A.click(); render(true);
@@ -468,6 +497,8 @@
         if ((b = t.closest("[data-goto]"))) { U.rfrom = null; goto(b.dataset.goto); return; }
         if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
         if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
+        if ((b = t.closest("[data-trans-delete]"))) { if (E.transmissionEffacerNote(Number(b.dataset.transDelete))) { save(); render(true); } return; }
+        if (t.closest("[data-trans-copy]")) { const r = E.transmissionCopier(); toast(r.ok ? r.n + " nouvelles copies inscrites au registre." : "Construis une presse d’imprimerie."); save(); render(true); return; }
         if ((b = t.closest("[data-page]"))) {
           const pid = b.dataset.page;
           const c = E.livre ? E.livre().find((x) => x.id === pid) : null;
@@ -551,6 +582,7 @@
         if (ev.target.id === "iq") { U.iq = ev.target.value; render(true); return; }
         if (ev.target.id === "cq") {
           U.q = ev.target.value;
+          if (S().settings) S().settings.carnet = Object.assign({}, S().settings.carnet, { q: U.q });
           const l = $("#clist");
           if (l) { l.innerHTML = carnetList(); refresh(); }
           const p = ev.target.parentNode;
@@ -573,6 +605,13 @@
         if (d.matches && d.matches("details[data-age]")) U.openAges[d.dataset.age] = d.open;
       }, true);
       views.addEventListener("submit", (ev) => {
+        if (ev.target.matches('[data-trans-note]')) {
+          ev.preventDefault(); const r = E.transmissionNote(ev.target.elements.note.value);
+          toast(r.ok ? "Ta note est conservée pour les prochains Semeurs." : "La note doit contenir de 1 à 500 caractères ; le Livre garde 50 notes au plus.");
+          if (r.ok) { save(); render(true); } return;
+        }
+        if (ev.target.matches('[data-trans-search]')) { ev.preventDefault(); U.transQuery = ev.target.elements.query.value.slice(0, 100); render(true); return; }
+
         if (ev.target.id === "termForm") { ev.preventDefault(); runTerminal($("#termIn").value); }
         if (ev.target.id === "nomForm") {
           ev.preventDefault();

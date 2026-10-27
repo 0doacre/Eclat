@@ -11,12 +11,14 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 11;
+  const SAVE_VERSION = 12;
   // Les commandes préparées avant la 0.21 terminent au prix de leur recette d’origine.
   const INPUTS_020 = {
     moteur_vapeur: { chaudiere: 1, piston: 2, engrenage_acier: 4 },
     plastique: { petrole: 3 }, resine: { petrole: 2, bois: 6 }, caoutchouc: { petrole: 2, charbon: 1 }
   };
+  // Les lots engagés avant la 0.36 gardent leurs ingrédients réservés.
+  const INPUTS_035 = { lentille: { verre: 1 }, brique_refr: { argile: 2, sable: 2 } };
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -105,7 +107,7 @@
       stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
       visiteur: { next: 0, clins: {} },
       don: null, donsOffre: [],
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null } },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null }, gestes: {}, gestesVu: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -237,6 +239,13 @@
       });
       o.v = 11;
     }
+    if (from < 12) {
+      const q = o.hand && o.hand.q;
+      if (Array.isArray(q)) q.forEach((j) => {
+        if (j && Array.isArray(j.s) && j.s.some((s) => Array.isArray(s) && INPUTS_035[s[0]])) j.recettes035 = true;
+      });
+      o.v = 12;
+    }
     return o;
   }
 
@@ -348,6 +357,10 @@
     }
     E.add = add;
 
+    /* --------------------------------- Règles d'Écho des fins (deuxième prestige) */
+    E.hasEchoFin = (k) => !!((S.meta && S.meta.endings && S.meta.endings[k] > 0) || (S.endings && S.endings[k]));
+    E.activeEchoesFins = () => Object.keys(D.ECHOS_FINS || {}).filter((k) => E.hasEchoFin(k));
+
     /* -------------------------------------------------- effets dérivés */
     function recalc() {
       const c = { st: {}, heat: 0, tap: {}, auto: {}, intu: 0, exp: 1, pip: 0, aspd: 1, rates: {}, sky: false, arche: false, term: false, signal: false };
@@ -375,6 +388,12 @@
         }
       }
       c.heat = c.st.chauffer ? c.st.chauffer.heat || 0 : 0;
+      if (E.hasEchoFin("aube")) {
+        c.heat = Math.max(600, c.heat + (c.heat > 0 ? 200 : 0));
+      }
+      if (E.hasEchoFin("exode")) c.exp *= 2;
+      if (E.hasEchoFin("silence")) c.intu += 3;
+      if (E.hasEchoFin("retour")) c.aspd *= 1.25;
       if (S.flags.lucioles) c.auto["*"] = (c.auto["*"] || 1) * 1.25;
       if (S.boosts) {
         const curT = now();
@@ -397,6 +416,7 @@
     /* ------------------------------------------------------ gestes */
     function gesteOK(g) {
       if (BASE_GESTES.includes(g)) return true;
+      if (g === "chauffer" && E.hasEchoFin("aube")) return true;
       if (g === "accorder") return !!S.flags.berceuse && has("flute");
       return !!E.cache().st[g];
     }
@@ -550,6 +570,7 @@
     }
     E.passCost = function (zid) {
       let k = memV("chemins") * donMul("pass");
+      if (E.hasEchoFin("brasier")) k *= 0.85;
       for (const z in REG) {
         const m = REG[z].remise;
         if (m && m.vers === zid) k *= 1 - m.par * Math.min(m.max, (S.exp && S.exp.done && S.exp.done[z]) || 0);
@@ -689,9 +710,10 @@
       if (!zoneOpen(zid) || !ZONES[zid].res.includes(res)) return 0;
       let n = tapYield(res, zid);
       if (!(n > 0)) return 0;
-      // coup de chance : la récolte double, et l’interface fait des étincelles
-      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil") + (donE().crit || 0);
-      if (E.lastCrit) { n *= D.CRIT.mult; S.stats.crits = (S.stats.crits || 0) + 1; }
+      // coup de chance : la récolte double, et l’interface fait des étincelles (ou triple avec l'Écho du Brasier)
+      const hasBrasier = E.hasEchoFin("brasier");
+      E.lastCrit = rand() < D.CRIT.chance + D.CRIT.up * memLvl("oeil") + (donE().crit || 0) + (hasBrasier ? 0.25 : 0);
+      if (E.lastCrit) { n *= (hasBrasier ? 3 : D.CRIT.mult); S.stats.crits = (S.stats.crits || 0) + 1; }
       add(res, n);
       advanceRitual(1, n);
       S.stats.taps++;
@@ -848,7 +870,8 @@
       if (it.t !== "comp" && it.t !== "res") return 0;
       // « Mains sûres » : une chance de pièce en plus pour ce que les mains fabriquent (pas les machines)
       const mem = main && MEM.mains.bonus ? MEM.mains.bonus(memLvl("mains")) : 0;
-      const ch = Math.min(0.95, 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0) + mem);
+      const aubeBonus = (E.hasEchoFin("aube") && it.r && (it.r[0] === "chauffer" || it.r[0] === "allier")) ? 0.25 : 0;
+      const ch = Math.min(0.95, 0.04 * E.stars(it.id) + (it.r ? perkChance(it.r[0]) : 0) + mem + aubeBonus);
       if (ch > 0) {
         if (times <= 200) for (let k = 0; k < times; k++) { if (rand() < ch) bonus++; }
         else bonus = Math.floor(times * ch + rand());
@@ -1232,7 +1255,7 @@
     }
     function machReadyFor(m, rec) {
       if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
-      if (D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
+      if (!E.hasEchoFin("retour") && D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
       if (blocker(rec)) return false;
       return true;
     }
@@ -1345,7 +1368,7 @@
     /* combien d’unités de l’étape (j, sIdx) peuvent être alimentées par l’établi (après
      * ce qui est déjà réservé par d’autres étapes en cours sur j) */
     function jobInputs(j, rec) {
-      return (j.recettes020 && INPUTS_020[rec]) || item(rec).r[1];
+      return (j.recettes020 && INPUTS_020[rec]) || (j.recettes035 && INPUTS_035[rec]) || item(rec).r[1];
     }
     function affordableUnits(j, sIdx, reserved) {
       const rec = j.s[sIdx][0], it = item(rec);
@@ -1450,7 +1473,7 @@
       const miss = {};
       for (const i in p.missing) if (p.missing[i] > 0) miss[i] = p.missing[i];
       const last = S.hand.q[S.hand.q.length - 1];
-      if (p.steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (p.steps.length === 1 && last && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         last.miss = last.miss || {};
@@ -1504,7 +1527,7 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (steps.length === 1 && last && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         assignWorkers();
@@ -1728,7 +1751,11 @@
      * geste connu, combien de recettes encore inconnues s’en servent (parmi celles
      * qu’on peut tenter avec des matières déjà vues). À l’Atelier, les matières
      * étudiées qui réagissent avec le geste choisi sont marquées. */
-    E.studyCost = (id) => 1 + Math.floor((item(id).a || 0) / 4);
+    E.studyCost = (id) => {
+      let c = 1 + Math.floor((item(id).a || 0) / 4);
+      if (E.hasEchoFin("silence")) c = Math.max(1, Math.ceil(c / 2));
+      return c;
+    };
     E.study = function (id) {
       if (!item(id) || S.studied[id] || !S.seen[id]) return false;
       const c = E.studyCost(id);
@@ -1774,7 +1801,9 @@
       if ((it.a || 0) > S.age + 1) return null;
       const lvl = S.hints[id] || 0;
       if (lvl >= 3) return null;
-      return Math.round(D.DECHIFFRER.cost[lvl] * (1 + (it.a || 0)) * Object.keys(it.r[1]).length);
+      let c = Math.round(D.DECHIFFRER.cost[lvl] * (1 + (it.a || 0)) * Object.keys(it.r[1]).length);
+      if (E.hasEchoFin("silence")) c = Math.max(1, Math.ceil(c / 2));
+      return c;
     };
     E.decipher = function (id) {
       const it = item(id);
@@ -1924,6 +1953,13 @@
           if (!item(i) || !item(i).r || (S.inv[i] || 0) >= cost[i]) continue;
           const s = nextStep(i);
           if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i };
+        }
+        // Le paiement peut lui aussi demander une recette encore inconnue (briques, plaques…).
+        const p = E.passInfo(ob.z);
+        for (const i of Object.keys((p && p.left) || {})) {
+          if (!item(i) || !item(i).r || (S.inv[i] || 0) >= p.left[i]) continue;
+          const s = nextStep(i);
+          if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i, passageCost: true };
         }
         return { ob, step: null };
       }
@@ -2330,7 +2366,9 @@
       if (lvl >= 3 || (q.aides && lvl >= q.aides.length)) return null;
       const cfg = RECIT.aide || { base: 5, mult: 3 };
       const age = S.age || 0;
-      return cfg.base * (1 + age) * Math.pow(cfg.mult, lvl);
+      let c = cfg.base * (1 + age) * Math.pow(cfg.mult, lvl);
+      if (E.hasEchoFin("silence")) c = Math.max(1, Math.ceil(c / 2));
+      return c;
     };
 
     E.questions = function () {
@@ -3094,6 +3132,7 @@
         const it = item(t);
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[e.z || it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
+      if (E.hasEchoFin("brasier")) r *= 1.25;
       return r * f * donExt(e.z) * seuilMult(e);
     }
     E.extOut = (e) => extOut(e, E.cache());
@@ -3453,6 +3492,7 @@
       const first = !S.endings[eid];
       S.endings[eid] = true;
       S.meta.endings[eid] = (S.meta.endings[eid] || 0) + 1;
+      recalc();
       const en = D.ENDINGS[eid];
       const extra = (en.extra || []).filter((x) => (x.frag ? S.frags[x.frag] : true) && (x.flag ? S.flags[x.flag] || (S.meta && S.meta[x.flag]) : true)).map((x) => interpolate(x.t));
       const res = { id: eid, first, extra };
@@ -3475,6 +3515,68 @@
     E.hasCurio = (id) => !!(S.meta && S.meta.curios && S.meta.curios[id]);
     E.curiosCount = () => Object.keys((S.meta && S.meta.curios) || {}).length;
     E.curios = () => Object.assign({}, (S.meta && S.meta.curios) || {});
+
+    /* ---------------------------------------------------- GESTES REMARQUÉS (SUCCÈS) */
+    function markGeste(id) {
+      if (!D.GESTES_REMARQUES || !D.GESTES_REMARQUES[id]) return false;
+      S.meta = S.meta || {};
+      S.meta.gestes = S.meta.gestes || {};
+      if (S.meta.gestes[id]) return false;
+      S.meta.gestes[id] = now();
+      stamp("g:" + id);
+      E.emit("geste", id);
+      return true;
+    }
+    function checkGestes() {
+      if (!D.GESTES_REMARQUES) return false;
+      S.meta = S.meta || {};
+      S.meta.gestes = S.meta.gestes || {};
+      let changed = false;
+      for (const id in D.GESTES_REMARQUES) {
+        if (S.meta.gestes[id]) continue;
+        const g = D.GESTES_REMARQUES[id];
+        if (typeof g.when === "function" && g.when(S)) {
+          S.meta.gestes[id] = now();
+          stamp("g:" + id);
+          changed = true;
+          E.emit("geste", id);
+        }
+      }
+      return changed;
+    }
+    E.markGeste = markGeste;
+    E.checkGestes = checkGestes;
+    E.hasGeste = (id) => !!(S.meta && S.meta.gestes && S.meta.gestes[id]);
+    E.gestesCount = () => Object.keys((S.meta && S.meta.gestes) || {}).length;
+    E.hasNewGeste = function () {
+      if (!S.meta || !S.meta.gestes) return false;
+      const vu = S.meta.gestesVu || {};
+      for (const id in S.meta.gestes) {
+        if (!vu[id]) return true;
+      }
+      return false;
+    };
+    E.readGestes = function () {
+      if (!S.meta) return;
+      S.meta.gestesVu = S.meta.gestesVu || {};
+      for (const id in (S.meta.gestes || {})) S.meta.gestesVu[id] = true;
+    };
+    E.gestesList = function () {
+      const out = [];
+      for (const id in (D.GESTES_REMARQUES || {})) {
+        const g = D.GESTES_REMARQUES[id];
+        out.push({
+          id,
+          n: g.n,
+          ic: g.ic,
+          t: g.t,
+          hint: g.hint,
+          done: !!(S.meta && S.meta.gestes && S.meta.gestes[id]),
+          at: (S.meta && S.meta.gestes && S.meta.gestes[id]) || null
+        });
+      }
+      return out;
+    };
 
     /* ----------------------------------------------------------- LE COMPTOIR
      * Marché tenu par le Troqueur dans la Plaine : on vend ce qui encombre la
@@ -3980,7 +4082,7 @@
       const g = E.guide();
       const curAge = D.AGES[S.age] || D.AGES[0];
       const ob = g ? g.ob : E.objective();
-      const targetId = ob && ob.k === "craft" ? ob.id : g ? g.step : null;
+      const targetId = g && g.step ? g.step : ob && ob.k === "craft" ? ob.id : null;
       const p = targetId && S.known[targetId] ? E.plan(targetId, 1) : null;
       const ready = p ? p.ok : false;
       const miss = p ? Object.keys(p.missing) : [];
@@ -4152,6 +4254,7 @@
       n.donsOffre = n.cycle >= 2 ? E.donsTirage(n.cycle, n.meta.graine) : [];
       forgetDom();
       recalc();
+      checkGestes();
       E.emit("cycle", n.cycle);
       E.emit("struct");
     };
@@ -4418,12 +4521,15 @@
       if (S.exp.active && t >= S.exp.active.t0 + S.exp.active.dur) finishExp(false);
       checkTroqueur();
       checkEvents();
+      checkGestes();
       return dt;
     };
 
     E.catchUp = function (dt) {
       const absent = dt;
-      dt = Math.min(dt, memV("veille") * donMul("veille") * 3600 || OFFLINE_CAP);
+      const baseCap = memV("veille") * donMul("veille") * 3600 || OFFLINE_CAP;
+      const maxCap = E.hasEchoFin("exode") ? Math.max(24 * 3600, baseCap) : baseCap;
+      dt = Math.min(dt, maxCap);
       OFF = true;
       const before = Object.assign({}, S.inv);
       const chunk = dt > 600 ? 10 : 1;
@@ -4650,6 +4756,7 @@
         for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
         j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
         j.recettes020 = j.recettes020 === true && j.s.some((s) => !!INPUTS_020[s[0]]);
+        j.recettes035 = j.recettes035 === true && j.s.some((s) => !!INPUTS_035[s[0]]);
         if (Array.isArray(j.done) && j.done.length === j.s.length) {
           j.done = j.done.map((d, idx) => Math.max(0, Math.min(j.s[idx][1], Math.floor(Number(d)) || 0)));
         } else {
@@ -5009,6 +5116,7 @@
       }
       if (!S.flags.ages) checkAges(true); // une partie d’avant les âges accomplis
       if (S.signes && S.signes.nourrice && S.signes.nourrice.lu) S.secrets.signature = true;
+      checkGestes();
       E.emit("struct");
       return true;
     };
@@ -5025,6 +5133,7 @@
     };
     E.importSave = (txt) => E.load(E.decodeSave(txt));
 
+    (root.EclatTransmission || require("./transmission.js")).attach(E);
     recalc();
     return E;
   }

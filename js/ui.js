@@ -318,7 +318,7 @@
       const l = document.createElement("div"); l.className = "ca"; l.textContent = o.add; $(".cb", cur).appendChild(l);
       return;
     }
-    if (o.add) o = { ic: "🏁", kick: "Étape réussie", title: o.title || "", sub: o.sub };
+    if (o.add) o = { ic: "🏁", kick: "Étape accomplie", title: o.title || "", sub: o.sub };
     if (cur) cur.remove();
     clearTimeout(U.celeT);
     U.celeAt = performance.now();
@@ -926,6 +926,7 @@
   function soundScene() {
     const z = U.zone || "lisiere";
     A.setScene({ age: S().age, tab: U.tab, zone: z, night: !Scenes.isNightless(z) && Scenes.daypart(new Date().getHours()) === "night", machines: workingMachines() });
+    if (U.Ambiance) U.Ambiance.update();
   }
   /* l’atelier au travail : un bruit continu tant qu’une commande avance, choisi par le geste en cours (et l’âge), jamais un bruit par pièce */
   let workAt = 0;
@@ -961,7 +962,7 @@
     const name = x.ob.k === "craft" ? I[x.ob.id].n : x.ob.n, k = list.filter((y) => y.done).length, a = lists.indexOf(list);
     const where = a === S().age ? "cet âge" : D.AGES[a].n.replace("Âge", "l’âge");
     if (k === list.length) fete({ add: "🏆 " + D.AGES[a].n + " accompli · +" + D.AGE_DONE + " ✨", title: name, sub: "Toutes les étapes de " + where + " · +" + D.AGE_DONE + " ✨ Intuition" });
-    else fete({ add: "🏁 Étape réussie · " + k + " sur " + list.length, title: name, sub: k + " sur " + list.length + " pour " + where });
+    else fete({ add: "🏁 Étape accomplie · " + k + " sur " + list.length, title: name, sub: k + " sur " + list.length + " pour " + where });
   }
   function refresh() {
     const st = S();
@@ -1191,6 +1192,10 @@
   /* ============================================================ MODULES
    * créés après tout le noyau : chacun reçoit ce dont il a besoin, et rend ce que
    * le noyau et les modules suivants appellent (js/visiteurs.js, js/journal.js…) */
+  /* la ligne d’ambiance sous l’en-tête */
+  const Amb = window.EclatAmbiance.create({ E, D, U, $ });
+  U.Ambiance = Amb;
+
   /* les visiteurs de passage */
   const Vis = window.EclatVisiteurs.create({ E, A, D, U, esc, fmt, toast, Tuto, sparks, floater, vibe, Jus });
   const { visiteurTick, visiteurFin } = Vis;
@@ -1209,6 +1214,7 @@
   const Qst = window.EclatQuetes.create({
     E, A, D, U, esc, fmt, fmtTime, cap1, needText, icon, itemPill, ingHTML, gesteChip, mainIngredient, isRawGather,
     zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save,
+    setTab,
     chainCraft: (b, id, n) => chainCraft(b, id, n) // défini plus bas (l’Atelier est créé après les Quêtes)
   });
   const {
@@ -1218,7 +1224,7 @@
   /* la relève, les dons et la Mémoire des mains */
   const Mem = window.EclatMemoire.create({
     E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render,
-    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote
+    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
   });
   const {
     intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip
@@ -1228,7 +1234,7 @@
   /* le jeu dans l’appareil : le bouton Retour, l’installation, le titre, l’écran allumé, le clavier (js/appareil.js) */
   const App = window.EclatAppareil.create({ E, U, toast, closeModal, setTab, tabVisible: (t) => tabAvailable(t) });
   const Cpt = window.EclatCompte.create({
-    E, ENGINE, A, D, U, Cloud, Tuto, esc, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
+    E, ENGINE, A, D, U, Cloud, Tuto, esc, fmt, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
     backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
   });
   const {
@@ -1244,7 +1250,8 @@
   });
   const {
     viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML,
-    handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo
+    handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty,
+    promptCraftQty
   } = Atl;
 
   /* les écouteurs : le moteur et les gestes du joueur */
@@ -1255,7 +1262,7 @@
     FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
     playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene,
     openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge,
-    craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree
+    craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree, promptCarnetQty, promptCraftQty
   });
   const { bindEngine, bindDom, checkForcedReleve } = Ecu;
 
@@ -1263,6 +1270,7 @@
   function loop() {
     E.update();
     visiteurTick();
+    Amb.update();
     if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
     U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();
@@ -1296,7 +1304,12 @@
     if (status === "ok" || status === "migrated") E.update();
     bindDom();
     setTab("domaine");
+    Amb.update(true);
     Object.assign(U.badges, S().flags.badges || {});
+    if (S().settings && S().settings.carnet) {
+      if (S().settings.carnet.filter) U.carnetFilter = S().settings.carnet.filter;
+      if (S().settings.carnet.q) U.q = S().settings.carnet.q;
+    }
     const bk = S().flags.bench;
     if (bk && Array.isArray(bk.s)) {
       if (D.GESTES[bk.g] && E.gesteOK(bk.g)) U.geste = bk.g;

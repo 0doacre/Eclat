@@ -102,4 +102,122 @@ test("relancer l’extracteur arrêté le fait tourner", () => {
   assert.ok(E.rate("eau") > 0);
   assert.equal(E.extEtat("eau"), null);
 });
+// Une sauvegarde au point d’une quête, sans donner les terres d’après.
+function avant(id, age) {
+  const E = setup(age), S = E.state;
+  for (const o of D.OBJECTIVES) {
+    if (Array.isArray(o) && o[0] === id || o.k === "pass" && o.z === id) break;
+    if (Array.isArray(o)) S.made[o[0]] = 1;
+    else if (o.k === "pass") S.pass[o.z] = { paid: {}, done: true };
+    else if (o.k === "exp") S.exp.done[o.z] = D.ZONES.find((z) => z.id === o.z).exps.findIndex((x) => x.id === o.x) + 1;
+    else if (o.k === "ext") S.flags.extDone = true;
+    else if (o.k === "line") S.flags.lineDone = true;
+  }
+  return E;
+}
+test("le parcours ne revient jamais à un âge antérieur", () => {
+  let age = 0;
+  for (const o of D.OBJECTIVES) if (Array.isArray(o)) {
+    assert.ok(I[o[0]].a >= age, o[0] + " revient en arrière");
+    age = I[o[0]].a;
+  }
+});
+test("Collines : une recette nécessaire au paiement est guidée, puis ses ingrédients aussi", () => {
+  const E = avant("collines", 2), S = E.state;
+  S.zones.collines = false; S.zones.mine = false;
+  S.pass.collines = { paid: {}, done: false };
+  delete S.known.brique;
+  assert.equal(E.objective().z, "collines");
+  assert.equal(E.guide().step, "brique");
+  assert.equal(E.guide().passageCost, true);
+  assert.equal(E.scenarioQuest().targetId, "brique");
+  E.learn("brique", true);
+  assert.equal(E.guide().step, null, "le paiement reprend une fois la recette connue");
+  assert.equal(E.scenarioQuest().ready, false, "un passage n’est pas une recette à fabriquer");
+});
+test("payer en partie ne réclame que le solde, pas le prix total", () => {
+  const E = avant("collines", 2), S = E.state;
+  S.pass.collines = { paid: { brique: E.passCost("collines").brique - 1 }, done: false };
+  delete S.known.brique; E.add("brique", 1);
+  assert.equal(E.guide().step, null);
+});
+test("la mine de plomb précède le lingot et se fabrique avant de quitter le Désert", () => {
+  const E = avant("galene_1", 9), S = E.state;
+  for (const z of ["gisement", "montagnes", "orbite", "lune", "mercure"]) S.zones[z] = false;
+  assert.equal(E.objective().id, "galene_1");
+  for (const [id, n] of Object.entries(I.galene_1.r[1])) E.add(id, n);
+  assert.equal(E.scenarioQuest().targetId, "galene_1");
+  assert.equal(E.scenarioQuest().ready, true);
+  assert.equal(E.craft("galene_1", 1).ok, true);
+  assert.equal(E.objective().id, "lingot_plomb");
+  assert.equal(E.extEtat("galene").etat, "libre");
+  assert.equal(E.extEtat("galene").key, "collines:galene");
+  E.domExtSet("collines", "galene", "galene_1", 1); E.catchUp(10);
+  assert.ok(E.count("galene") >= 3);
+  assert.equal(E.craft("lingot_plomb", 1).ok, true);
+  assert.equal(S.zones.gisement, false, "le pétrole n’est pas requis pour le plomb");
+});
+test("une ancienne partie déjà au lingot retrouve la mine manquante dans les Quêtes", () => {
+  const E = avant("lingot_plomb", 9), S = E.state;
+  delete S.made.galene_1; delete S.known.galene_1;
+  for (const [id, n] of Object.entries(I.galene_1.r[1])) E.add(id, n);
+  assert.equal(E.objective().id, "galene_1");
+  assert.equal(E.guide().step, "galene_1");
+  assert.equal(E.scenarioQuest().targetId, "galene_1");
+  assert.equal(E.scenarioQuest().ready, false, "la mine est à découvrir d’abord");
+  E.learn("galene_1", true);
+  assert.equal(E.scenarioQuest().ready, true);
+  assert.equal(E.scenarioQuest().targetId, "galene_1", "le bouton fabrique le prérequis, pas le lingot impossible");
+});
+test("les Quêtes proposent la sous-recette guidée, pas une cible finale impossible", () => {
+  const E = avant("galene_1", 9), S = E.state;
+  delete S.known.moteur_elec;
+  assert.equal(E.objective().id, "galene_1");
+  assert.equal(E.guide().step, "moteur_elec");
+  assert.equal(E.scenarioQuest().targetId, "moteur_elec");
+});
+test("une mine libre signale son gisement au-dessus des terres anciennes masquées, même après rechargement", () => {
+  const fs = require("fs"), vm = require("vm");
+  const ctx = { window: {}, URL, document: { baseURI: "http://localhost/" } };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/domaine.js"), "utf8"), ctx);
+  const initial = avant("lingot_plomb", 9);
+  for (const z of ["gisement", "montagnes", "orbite", "lune", "mercure", "caveau"]) initial.state.zones[z] = false;
+  initial.add("galene_1", 1);
+  const E = createEngine({ now: () => 2e12, rand: () => 0.99 }); E.load(initial.serialize());
+  const U = { compact: () => false, domAll: false, domOpen: null };
+  const api = new Proxy({ E, D, U, top: () => "", esc: String, icon: () => "", fmt: String, perMin: String, fmtTime: String, itemPill: (id) => id }, {
+    get: (o, k) => k in o ? o[k] : () => ""
+  });
+  const Dom = ctx.window.EclatDomaine.create(api);
+  let h = Dom.view();
+  assert.ok(!h.includes('id="dt-collines"'), "les Collines sont masquées dans cet état");
+  assert.ok(h.includes('data-new-deposit="collines:galene"'));
+  assert.ok(h.includes('data-gz="collines"'));
+  assert.ok(h.includes('data-xadd="collines:galene"'));
+  assert.ok(h.indexOf('data-new-deposit="collines:galene"') < h.indexOf('id="dt-desert"'), "le rappel précède les terres");
+  E.domExtSet("collines", "galene", "galene_1", 1);
+  h = Dom.view();
+  assert.ok(!h.includes('data-new-deposit="collines:galene"'), "le rappel disparaît après la pose");
+});
+test("la fenêtre Quêtes mène à l’Atelier puis au gisement, avec des commandes de modale", () => {
+  const fs = require("fs"), vm = require("vm"), ctx = { window: {} };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/quetes.js"), "utf8"), ctx);
+  const E = avant("galene_1", 9), S = E.state;
+  delete S.known.galene_1;
+  for (const [id, n] of Object.entries(I.galene_1.r[1])) E.add(id, n);
+  let modal, tab, closed = false;
+  const api = new Proxy({ E, D, U: {}, esc: String, icon: () => "", itemPill: (id) => id,
+    openModal: (o) => { modal = o; }, closeModal: () => { closed = true; }, setTab: (t) => { tab = t; }
+  }, { get: (o, k) => k in o ? o[k] : () => "" });
+  const Q = ctx.window.EclatQuetes.create(api);
+  Q.openQuestsModal();
+  assert.ok(modal.html.includes('data-m="qresume" data-tab="atelier"'));
+  modal.on.qresume({ dataset: { tab: "atelier" } });
+  assert.equal(tab, "atelier"); assert.equal(closed, true);
+  E.learn("galene_1", true); Q.openQuestsModal();
+  assert.ok(modal.html.includes('data-m="qmake" data-id="galene_1"'));
+  E.craft("galene_1", 1); Q.openQuestsModal();
+  assert.ok(modal.html.includes('data-gz="collines"'));
+  assert.ok(modal.html.includes('attend d’être posé'));
+});
 console.log(passed + " tests du guidage réussis.");

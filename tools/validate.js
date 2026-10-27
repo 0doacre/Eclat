@@ -55,8 +55,9 @@ for (const id in I) {
   const it = I[id];
   if ((it.t === "comp" || it.t === "res") && !used[id] && !it.sec) {
     const inProject = Object.values(D.PROJECTS).some((p) => p.steps.some((s) => s.cost && s.cost[id]));
-    const inExp = D.ZONES.some((z) => z.exps.some((x) => x.cost && x.cost[id]));
-    if (!inProject && !inExp && !(it.e && it.e.zone)) warn(id + " : composant jamais utilisé");
+    const inExp = D.ZONES.some((z) => z.exps.some((x) => (x.cost && x.cost[id]) || x.need === id || (Array.isArray(x.need) && x.need.includes(id))));
+    const inRegle = Object.values(D.REGLES || {}).some((rg) => (rg.tap && rg.tap.sans && rg.tap.sans.includes(id)) || (rg.chaleur && rg.chaleur.sans && rg.chaleur.sans.includes(id)));
+    if (!inProject && !inExp && !inRegle && !(it.e && it.e.zone)) warn(id + " : composant jamais utilisé");
   }
 }
 
