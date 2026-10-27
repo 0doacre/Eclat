@@ -1,0 +1,53 @@
+/* Habillage du seul prototype ; aucun chargement par le jeu habituel. */
+html{scroll-padding-top:16px}
+main{max-width:1280px}
+.craft-space{display:grid;grid-template-columns:minmax(0,2fr) minmax(290px,1fr);gap:16px;align-items:start}
+.craft-space>.card{margin:0;min-width:0}
+.craft-space{margin:16px 0}
+.bench-card{position:sticky;top:12px}
+.bench-layout{grid-template-columns:minmax(0,1fr) 175px;gap:16px}
+.slots button{min-height:100px}
+.slots button.empty-slot{border-style:dashed;background:transparent;color:#76634a}
+.slots button.filled-slot{background:#e3cba1;border-color:#8f623f}
+.slots .item-icon{display:block;font-size:25px;margin-bottom:5px}
+.stock-heading{margin-bottom:10px}
+.stock-heading h2{margin:0}
+.stock-search{display:block;font-size:14px}
+.stock-search input{display:block;width:100%;min-width:0;min-height:44px;font:inherit;font-size:17px;color:var(--ink);background:#fff4d8;border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:5px}
+.stock-card .inventory{grid-template-columns:repeat(2,minmax(0,1fr));max-height:72dvh;overflow-y:auto;scrollbar-gutter:stable;padding:3px}
+.resource{padding:7px}
+.resource>.wide{margin:0;min-height:70px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.resource .item-icon{font-size:19px}
+.resource b{float:none;margin-left:auto}
+.resource .resource-state{display:block;font-size:13px;margin:5px 1px;color:#66523b;min-height:19px}
+.resource>.wide:disabled{border-style:solid;background:#e9dcbf;color:#786b58}
+.resource.is-selected{border:2px solid var(--accent);padding:6px;background:#e2c79c}
+.resource.is-selected .wide{border-color:var(--accent);background:#f5e4bd}
+.resource.is-selected .resource-state{color:#783414;font-weight:700}
+.resource>.harvest{font-size:14px;padding-inline:5px;width:100%;border-style:solid}
+.resource .is-harvesting{background:#d3d8af}
+.mobile-link{display:none;color:#813a22;min-height:44px;padding:10px 0}
+.economy-grid{display:grid;grid-template-columns:.8fr 1fr 1.2fr;gap:14px;margin-top:16px;align-items:start}
+.economy-panel{border:1px solid #b29a73;border-radius:10px;padding:14px;min-width:0;background:#ead6ae}
+.economy-panel h3{margin:0 0 12px;font-family:'IM Fell English',Georgia,serif;font-size:23px;font-weight:400}
+.economy .key-number{font-size:30px;line-height:1.2;margin:14px 0;font-variant-numeric:tabular-nums}
+.economy progress{height:14px;margin-top:8px}
+.wallet-panel{background:#eddbac}
+#sale-feedback{min-height:3em;color:#42633b;font-weight:700}
+.merchant-toggle{display:flex;align-items:center;gap:8px;padding:6px 0;min-height:44px}
+.merchant-toggle input{width:24px;height:24px;accent-color:var(--accent);flex-shrink:0}
+.reserve-control{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}
+.reserve-control input{width:85px;min-height:44px;font:inherit;border:1px solid var(--line);border-radius:6px;padding:6px;background:#fff2d5;color:var(--ink)}
+.reserve-control label{flex-basis:100%;font-size:15px}
+.quote-number{font-size:21px;font-weight:700;font-variant-numeric:tabular-nums}
+.economy details{border-top:1px solid #b8a17d;margin-top:16px;padding-top:4px}
+.economy summary{cursor:pointer;min-height:44px;padding:10px 0}
+.tax-bands{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;list-style:none;padding:0;font-size:14px}
+.tax-bands li{border:1px solid #b29a73;border-radius:5px;padding:7px 2px;text-align:center;background:#f1e1bf}
+.tax-bands li.active{background:#b4542e;color:#fff7df;border-color:#78321b;font-weight:700}
+.tax-bands small{display:block;font-size:10px;font-weight:400}
+.bench-card.warm-post{background:#efddba;border-color:#b47f4a}
+@media(min-width:1050px){.stock-card{position:sticky;top:12px}.stock-card .inventory{max-height:66dvh}}
+@media(max-width:1049px){.craft-space{grid-template-columns:minmax(0,1fr)}.bench-card{position:static}.stock-card .inventory{grid-template-columns:repeat(auto-fill,minmax(135px,1fr));max-height:360px}.mobile-link{display:inline-block}.economy-grid{grid-template-columns:1fr 1fr}.wallet-panel{grid-column:1/-1}.wallet-panel #sale-feedback{min-height:0}}
+@media(max-width:600px){.bench-layout{grid-template-columns:minmax(0,1fr)}.economy-grid{grid-template-columns:minmax(0,1fr)}.wallet-panel{grid-column:auto}.tool-rack{grid-row:2;padding-top:10px}#tools{display:flex;overflow-x:auto;padding:3px 3px 10px;gap:8px;scroll-snap-type:x proximity}#tools button{flex:0 0 145px;scroll-snap-align:start;min-width:0}.slots button{min-height:86px}.stock-heading{position:sticky;top:0;background:var(--paper);z-index:1}.stock-card .inventory{grid-template-columns:repeat(2,minmax(0,1fr));max-height:360px}.key-number{font-size:27px}}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}.warm-post{transition:background .3s}}
