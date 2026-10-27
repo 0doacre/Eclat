@@ -1736,7 +1736,7 @@ test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plo
   assert.strictEqual(s.id, "galene_1", JSON.stringify(s));
   // des étapes pour l’âge, dans l’ordre
   const m = E.milestones()[9];
-  assert.deepStrictEqual(m.filter((x) => x.ob.k === "craft").map((x) => x.ob.id), ["uranium_1", "lingot_plomb", "barre_combustible", "centrale_fission"]);
+  assert.deepStrictEqual(m.filter((x) => x.ob.k === "craft").map((x) => x.ob.id), ["uranium_1", "galene_1", "lingot_plomb", "barre_combustible", "centrale_fission"]);
   // des ingrédients d’âge égal ou antérieur
   Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].a === 9 && D.ITEMS[i].r).forEach((i) => { for (const g in D.ITEMS[i].r[1]) assert.ok(D.ITEMS[g].a <= 9, i + " demande " + g); });
   // l’extracteur d’uranium récolte une fois posé
@@ -3269,8 +3269,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.35.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.35.0");
+test("Version 0.37.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.37.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3503,12 +3503,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.35.0");
+  assert.strictEqual(D.VERSION, "0.37.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 35, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 37, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 

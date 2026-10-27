@@ -18,13 +18,13 @@ console.log("Simulateur de passages : types de joueur et séances");
 
 /* Les valeurs ci-dessous ont été relevées sur `main` avant les séances et les types de joueur (puis recalées aux 0.17 et 0.18, un extracteur par ressource :
  * les temps bougent de moins de 1 %) :
- * sans --sessions, --joueur ni --joueurs, rien ne change d’un chiffre (le moteur est déterministe). */
+ * les valeurs sont déterministes ; le parcours Bronze/Fer est recalé en 0.36 pour la variante B. */
 test("non-régression : 30 min sans option", () => {
   assert.deepStrictEqual(lignes(jouer("--minutes", "30")), [["plaine", 5.835, 2, 0], ["riviere", 17.485, 5, 0]]);
 });
 test("non-régression : 30 min avec une mémoire", () => {
   assert.deepStrictEqual(lignes(jouer("--minutes", "30", "--mem", "recolte=2,extr=2,mains=2")),
-    [["plaine", 0.785, 2, 0], ["riviere", 6.743, 5, 0], ["collines", 13.11, 10, 0], ["mine", 21.452, 18, 0]]);
+    [["plaine", 0.785, 2, 0], ["riviere", 6.743, 5, 0], ["collines", 13.11, 10, 0], ["mine", 21.393, 18, 0], ["desert", 28.46, 30, 0]]);
 });
 test("non-régression : --offline 2 après chaque passage", () => {
   const r = jouer("--minutes", "40", "--offline", "2");

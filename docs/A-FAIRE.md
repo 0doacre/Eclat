@@ -34,6 +34,8 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Plus tard
 
+- **Première extension — après l’humanité, un avenir solarpunk** : fin de l’humanité et reconstruction low tech, avec le Livre et la mémoire comme héritage technique. Piste de conception, sans calendrier ni ajout au jeu à ce stade : [note d’intention](EXTENSION-01-SOLARPUNK.md).
+
 - Les trois **terres sans règle** n'existent plus (toutes en ont une) ; à régler à l'usage : les dons « Les
   mains pleines » et « La main heureuse » sont à 12 % au lieu de 15 %, la Rivière n'a pas de paliers de
   gisement (sa règle du courant fait l'inverse).

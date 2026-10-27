@@ -11,12 +11,14 @@
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 11;
+  const SAVE_VERSION = 12;
   // Les commandes préparées avant la 0.21 terminent au prix de leur recette d’origine.
   const INPUTS_020 = {
     moteur_vapeur: { chaudiere: 1, piston: 2, engrenage_acier: 4 },
     plastique: { petrole: 3 }, resine: { petrole: 2, bois: 6 }, caoutchouc: { petrole: 2, charbon: 1 }
   };
+  // Les lots engagés avant la 0.36 gardent leurs ingrédients réservés.
+  const INPUTS_035 = { lentille: { verre: 1 }, brique_refr: { argile: 2, sable: 2 } };
   /* clés de l’état qui référencent des objets : nettoyées des identifiants inconnus au chargement */
   const ITEM_MAPS = ["inv", "seen", "made", "known", "hints", "pins", "studied"];
 
@@ -236,6 +238,13 @@
         if (j && Array.isArray(j.s) && j.s.some((s) => Array.isArray(s) && INPUTS_020[s[0]])) j.recettes020 = true;
       });
       o.v = 11;
+    }
+    if (from < 12) {
+      const q = o.hand && o.hand.q;
+      if (Array.isArray(q)) q.forEach((j) => {
+        if (j && Array.isArray(j.s) && j.s.some((s) => Array.isArray(s) && INPUTS_035[s[0]])) j.recettes035 = true;
+      });
+      o.v = 12;
     }
     return o;
   }
@@ -1359,7 +1368,7 @@
     /* combien d’unités de l’étape (j, sIdx) peuvent être alimentées par l’établi (après
      * ce qui est déjà réservé par d’autres étapes en cours sur j) */
     function jobInputs(j, rec) {
-      return (j.recettes020 && INPUTS_020[rec]) || item(rec).r[1];
+      return (j.recettes020 && INPUTS_020[rec]) || (j.recettes035 && INPUTS_035[rec]) || item(rec).r[1];
     }
     function affordableUnits(j, sIdx, reserved) {
       const rec = j.s[sIdx][0], it = item(rec);
@@ -1464,7 +1473,7 @@
       const miss = {};
       for (const i in p.missing) if (p.missing[i] > 0) miss[i] = p.missing[i];
       const last = S.hand.q[S.hand.q.length - 1];
-      if (p.steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (p.steps.length === 1 && last && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         last.miss = last.miss || {};
@@ -1518,7 +1527,7 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && !last.recettes020 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (steps.length === 1 && last && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         assignWorkers();
@@ -1944,6 +1953,13 @@
           if (!item(i) || !item(i).r || (S.inv[i] || 0) >= cost[i]) continue;
           const s = nextStep(i);
           if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i };
+        }
+        // Le paiement peut lui aussi demander une recette encore inconnue (briques, plaques…).
+        const p = E.passInfo(ob.z);
+        for (const i of Object.keys((p && p.left) || {})) {
+          if (!item(i) || !item(i).r || (S.inv[i] || 0) >= p.left[i]) continue;
+          const s = nextStep(i);
+          if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i, passageCost: true };
         }
         return { ob, step: null };
       }
@@ -4066,7 +4082,7 @@
       const g = E.guide();
       const curAge = D.AGES[S.age] || D.AGES[0];
       const ob = g ? g.ob : E.objective();
-      const targetId = ob && ob.k === "craft" ? ob.id : g ? g.step : null;
+      const targetId = g && g.step ? g.step : ob && ob.k === "craft" ? ob.id : null;
       const p = targetId && S.known[targetId] ? E.plan(targetId, 1) : null;
       const ready = p ? p.ok : false;
       const miss = p ? Object.keys(p.missing) : [];
@@ -4740,6 +4756,7 @@
         for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
         j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
         j.recettes020 = j.recettes020 === true && j.s.some((s) => !!INPUTS_020[s[0]]);
+        j.recettes035 = j.recettes035 === true && j.s.some((s) => !!INPUTS_035[s[0]]);
         if (Array.isArray(j.done) && j.done.length === j.s.length) {
           j.done = j.done.map((d, idx) => Math.max(0, Math.min(j.s[idx][1], Math.floor(Number(d)) || 0)));
         } else {
@@ -5116,6 +5133,7 @@
     };
     E.importSave = (txt) => E.load(E.decodeSave(txt));
 
+    (root.EclatTransmission || require("./transmission.js")).attach(E);
     recalc();
     return E;
   }

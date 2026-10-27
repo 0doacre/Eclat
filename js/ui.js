@@ -1214,6 +1214,7 @@
   const Qst = window.EclatQuetes.create({
     E, A, D, U, esc, fmt, fmtTime, cap1, needText, icon, itemPill, ingHTML, gesteChip, mainIngredient, isRawGather,
     zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save,
+    setTab,
     chainCraft: (b, id, n) => chainCraft(b, id, n) // défini plus bas (l’Atelier est créé après les Quêtes)
   });
   const {
