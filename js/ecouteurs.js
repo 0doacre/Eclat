@@ -497,6 +497,8 @@
         if ((b = t.closest("[data-goto]"))) { U.rfrom = null; goto(b.dataset.goto); return; }
         if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
         if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
+        if ((b = t.closest("[data-trans-delete]"))) { if (E.transmissionEffacerNote(Number(b.dataset.transDelete))) { save(); render(true); } return; }
+        if (t.closest("[data-trans-copy]")) { const r = E.transmissionCopier(); toast(r.ok ? r.n + " nouvelles copies inscrites au registre." : "Construis une presse d’imprimerie."); save(); render(true); return; }
         if ((b = t.closest("[data-page]"))) {
           const pid = b.dataset.page;
           const c = E.livre ? E.livre().find((x) => x.id === pid) : null;
@@ -603,6 +605,13 @@
         if (d.matches && d.matches("details[data-age]")) U.openAges[d.dataset.age] = d.open;
       }, true);
       views.addEventListener("submit", (ev) => {
+        if (ev.target.matches('[data-trans-note]')) {
+          ev.preventDefault(); const r = E.transmissionNote(ev.target.elements.note.value);
+          toast(r.ok ? "Ta note est conservée pour les prochains Semeurs." : "La note doit contenir de 1 à 500 caractères ; le Livre garde 50 notes au plus.");
+          if (r.ok) { save(); render(true); } return;
+        }
+        if (ev.target.matches('[data-trans-search]')) { ev.preventDefault(); U.transQuery = ev.target.elements.query.value.slice(0, 100); render(true); return; }
+
         if (ev.target.id === "termForm") { ev.preventDefault(); runTerminal($("#termIn").value); }
         if (ev.target.id === "nomForm") {
           ev.preventDefault();

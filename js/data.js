@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.35.0";
+  D.VERSION = "0.37.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -160,7 +160,7 @@
   I.brique = { n: "Brique", ic: "🧱", a: 2, t: "comp", r: ["chauffer", { argile: 2 }, 1, { heat: 600 }],
     u: "Sert au four en argile, aux nasses et au bas-fourneau.", d: "De la boue cuite, dure comme de la pierre.", h: "La terre de la rivière, cuite." };
   I.four = { n: "Four en argile", ic: "🏺", a: 2, t: "stat", r: ["assembler", { brique: 30, argile: 20, charbon: 10 }, 1],
-    e: { st: [{ g: "chauffer", heat: 1100 }] }, u: "Chauffer monte jusqu’à 1 100 °C : métaux, briques, verre.", d: "Une chambre de briques qui garde la chaleur toute la nuit.",
+    e: { st: [{ g: "chauffer", heat: 1100 }] }, u: "Chauffer monte jusqu’à 1 100 °C : métaux et briques.", d: "Une chambre de briques qui garde la chaleur toute la nuit.",
     h: "Les briques retiennent la chaleur, l’argile ferme les joints et le charbon chauffe plus fort que le bois." };
   I.nasse = { n: "Nasses et claies", sn: "nasse", pl: "nasses", ic: "🪣", a: 2, t: "ext", z: "riviere", s: 1.2,
     r: ["assembler", { manche: 8, corde: 6, brique: 4 }, 1], p: { argile: 0.3, silex: 0.2, sable: 0.3 },
@@ -237,7 +237,7 @@
     h: "Le bronze supportera les coups sur un socle de pierre, s’il y en a assez pour que le bloc reste en place." };
   I.roue = { n: "Roue cerclée", ic: "🛞", a: 4, t: "comp", r: ["assembler", { manche: 4, plaque_bronze: 1 }, 1],
     u: "Sert au chariot, au moulin à eau, aux brouettes et aux courroies.", d: "Des rayons de bois, un cercle de métal.", h: "Des manches rayonnent depuis le centre ; un cercle de bronze les tient ensemble." };
-  I.chariot = { n: "Chariot", ic: "🐂", a: 4, t: "tool", r: ["assembler", { roue: 6, plaque_bronze: 20, corde: 30 }, 1],
+  I.chariot = { n: "Chariot", ic: "🐂", a: 5, t: "tool", r: ["assembler", { roue: 6, plaque_bronze: 20, corde: 30 }, 1],
     e: { zone: "desert", auto: { "*": 1.25 } }, u: "Ouvre le chemin vers le Désert de Verre. Tous tes extracteurs récoltent 1,25 fois plus.", d: "Tu peux enfin emporter tes outils à travers le désert.",
     h: "Des roues portent la caisse de bronze ; des cordes maintiennent les pièces ensemble." };
   I.soufflet = { n: "Soufflet", ic: "🪗", a: 4, t: "comp", r: ["assembler", { cuir: 20, manche: 4, plaque_bronze: 3 }, 1],
@@ -252,7 +252,7 @@
   I.brouette = { n: "Brouettes", ic: "🛒", a: 4, t: "upg", r: ["assembler", { roue: 3, manche: 15, plaque_bronze: 6 }, 1],
     e: { auto: { lisiere: 1.25, riviere: 1.25, collines: 1.25 } }, u: "Tes extracteurs de la Lisière, de la Rivière et des Collines récoltent 1,25 fois plus.", d: "Une caisse posée sur une roue : chaque voyage rapporte plus.",
     h: "Une roue porte la caisse de bronze ; les manches permettent de la pousser et de la guider." };
-  I.tamis = { n: "Tamis du désert", sn: "tamis", pl: "tamis", ic: "🕸️", a: 4, t: "ext", z: "desert", s: 1.22,
+  I.tamis = { n: "Tamis du désert", sn: "tamis", pl: "tamis", ic: "🕸️", a: 5, t: "ext", z: "desert", s: 1.22,
     r: ["assembler", { manche: 30, plaque_bronze: 9, corde: 20 }, 1], p: { quartz: 0.25, sable: 0.5 },
     u: "Pose-le sur un gisement du Désert de Verre : il récolte le quartz ou le sable à ta place.", d: "Un grand cadre qui trie le sable des cristaux.", h: "Une grille de bronze retient les gros morceaux. Des manches liés par des cordes lui servent de cadre." };
   I.anticythere = { n: "Mécanisme d’Anticythère", ic: "🕰️", a: 4, t: "curio", sec: true,
@@ -290,8 +290,11 @@
     u: "Pose-le sur un gisement de la Plaine : il récolte les os ou les peaux à ta place.", d: "Plus besoin de chasser.", h: "Des clous fixent les planches de bois en palissade ; des cordes complètent la clôture." };
   I.verre = { n: "Verre", sym: "◇", col: "#7fc9da", a: 5, t: "comp", r: ["chauffer", { sable: 4 }, 1, { heat: 1300 }],
     u: "Sert aux lentilles, puis au verre trempé et aux ampoules.", d: "Du sable, et tu vois au travers.", h: "Sous une chaleur assez forte, le sable fond en une matière transparente." };
-  I.lentille = { n: "Lentille", ic: "🔍", a: 5, t: "comp", r: ["tailler", { verre: 1 }, 1],
-    u: "Sert à la lunette astronomique, et bien plus tard au lithographe.", d: "Elle rapproche ce qui est loin.", h: "Le verre laisse passer la lumière. Une surface bombée pourrait aussi grossir ce que tu regardes." };
+  I.poudre_quartz = { n: "Poudre de quartz", sym: "⋄", col: "#d9d4f0", a: 5, t: "comp", r: ["tailler", { quartz: 2 }, 4],
+    u: "Sert à polir les lentilles et à renforcer les briques réfractaires.", d: "Un abrasif minéral fin, tiré des cristaux du Désert.",
+    h: "Les cristaux du Désert sont plus durs que le verre. Réduits en grains fins, ils pourraient le polir." };
+  I.lentille = { n: "Lentille", ic: "🔍", a: 5, t: "comp", r: ["tailler", { verre: 1, poudre_quartz: 1 }, 1],
+    u: "Sert à la lunette astronomique, et bien plus tard au lithographe.", d: "Elle rapproche ce qui est loin.", h: "Le verre laisse passer la lumière. Une poudre de quartz peut polir sa surface bombée pour grossir ce que tu regardes." };
   I.lunette = { n: "Lunette astronomique", ic: "🔭", a: 5, t: "tool", r: ["assembler", { lentille: 3, plaque_bronze: 15 }, 1],
     e: { sky: true }, u: "Ouvre le Cosmos, la deuxième page du Journal.", d: "Pour regarder le ciel.",
     h: "Des lentilles placées dans un tube de bronze rapprochent ce qui est loin." };
@@ -302,8 +305,8 @@
     u: "Débloque un geste à la Grotte aux Mains.", d: "De la terre de rivière et du noir de feu, écrasés ensemble. Tes doigts en restent marqués." };
 
   /* Âge 6 — Acier */
-  I.brique_refr = { n: "Brique réfractaire", sym: "▦", col: "#b5532f", a: 5, t: "comp", r: ["chauffer", { argile: 2, sable: 2 }, 1, { heat: 1100 }],
-    u: "Sert au haut-fourneau et au four à arc.", d: "Elle ne craint plus aucune chaleur.", h: "La brique ordinaire ne suffit plus quand le feu devient trop chaud. Du sable mêlé à l’argile peut la rendre plus résistante." };
+  I.brique_refr = { n: "Brique réfractaire", sym: "▦", col: "#b5532f", a: 5, t: "comp", r: ["chauffer", { argile: 2, sable: 1, poudre_quartz: 1 }, 1, { heat: 1100 }],
+    u: "Sert au haut-fourneau et au four à arc.", d: "Elle ne craint plus aucune chaleur.", h: "La brique ordinaire ne suffit plus quand le feu devient trop chaud. Du sable et de la poudre de quartz mêlés à l’argile peuvent la rendre plus résistante." };
   I.haut_fourneau = { n: "Haut-fourneau", ic: "🏭", a: 6, t: "stat", r: ["assembler", { brique_refr: 220, plaque_fer: 70, soufflet: 7 }, 1],
     e: { st: [{ g: "chauffer", heat: 1700 }] }, u: "Chauffer monte jusqu’à 1 700 °C : assez pour l’acier.", d: "Une tour de feu cerclée de fer.",
     h: "Les soufflets poussent le feu au-delà du four précédent. Il faut des briques réfractaires et des plaques de fer pour le contenir." };
@@ -442,7 +445,7 @@
     h: "Les barres chauffent dans le graphite, et le plomb retient ce qui ne doit pas sortir." };
 
   /* Âge 10 — Silicium */
-  I.quartz = { b: 0.5, n: "Quartz", sym: "◇", col: "#d9d4f0", a: 4, t: "res", u: "Sert, bien plus tard, à fabriquer le silicium.", d: "Des cristaux limpides, tirés du sable." };
+  I.quartz = { b: 0.5, n: "Quartz", sym: "◇", col: "#d9d4f0", a: 5, t: "res", u: "Sert dès le Fer à la poudre abrasive, puis au silicium.", d: "Des cristaux limpides, tirés du sable." };
   I.silicium = { n: "Silicium", sym: "Si", col: "#62758a", a: 10, t: "comp", r: ["chauffer", { quartz: 3, charbon: 2 }, 1, { heat: 3500 }],
     u: "Sert à fabriquer les plaquettes de silicium.", d: "Un métal qui n’en est pas tout à fait un.", h: "Le quartz peut livrer une matière nouvelle s’il chauffe avec du charbon, à la température du four à arc." };
   I.wafer = { n: "Plaquette de silicium", ic: "💿", a: 10, t: "comp", r: ["tailler", { silicium: 1 }, 4],
@@ -655,6 +658,21 @@
   I.tablette = { n: "Tablette des astres", sym: "⌖", col: "#857a66", a: 3, t: "relic", d: "Une pierre gravée de cercles et d’encoches pour des roues dentées qui n’existent plus." };
   I.partition = { n: "Vieille partition", ic: "📜", a: 5, t: "relic", old: true, d: "Une feuille de notes à l’encre pâlie. Les chiffres ne disent plus rien." };
   I.signal_brut = { n: "Signal de Kher", ic: "〽️", a: 10, t: "relic", d: "L’enregistrement brut du signal venu de Kher. Tu n’y comprends rien, pour l’instant." };
+
+  /* Transmission : cinq recettes facultatives, sans monnaie supplémentaire. */
+  I.encre = { n: "Encre", sym: "●", col: "#30333c", a: 1, t: "comp", r: ["chauffer", { charbon: 1, colle_os: 1 }, 2], u: "Sert aux feuillets de papyrus et à la presse d’imprimerie.", d: "Le noir reste sur le doigt longtemps après avoir refermé le pot.", h: "Un noir de charbon lié à la colle pourrait laisser une trace durable." };
+  I.papyrus = { n: "Feuillet de papyrus", sym: "▤", col: "#c8ad74", a: 2, t: "upg", r: ["assembler", { fibre: 12, encre: 2 }, 1], u: "Permet de laisser des notes personnelles dans le Livre. Elles traversent les relèves.", d: "Tu laisses une place dans la marge pour la main qui viendra après la tienne.", h: "Des fibres végétales forment un support ; l’encre y gardera une observation." };
+  I.papier = { n: "Papier", sym: "▧", col: "#d3cdb7", a: 7, t: "comp", r: ["assembler", { fibre: 6, eau: 2 }, 4], u: "Sert à construire la presse d’imprimerie.", d: "Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.", h: "L’eau sépare les fibres ; étalées puis séchées, elles pourraient former des feuilles." };
+  I.presse_imprimer = { n: "Presse d’imprimerie", sym: "▥", col: "#847057", a: 7, t: "upg", r: ["assembler", { papier: 20, encre: 4, vis: 12 }, 1], u: "Permet de marquer les pages retrouvées comme copiées dans le Livre, sans consommer les originaux.", d: "La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.", h: "Des vis serrent le papier contre une forme encrée. La même empreinte peut alors se répéter." };
+  I.serveur_archives = { n: "Serveur d’archives", sym: "▣", col: "#5fa78f", a: 10, t: "upg", r: ["assembler", { processeur: 8, circuit: 20, verre_trempe: 10 }, 1], u: "Permet de chercher dans les pages déjà retrouvées, avec accès aux documents sources.", d: "La machine retrouve en un instant la phrase que tu cherchais depuis trois veillées.", h: "Des processeurs et des circuits peuvent classer les documents derrière une façade de verre." };
+  D.TRANSMISSION = [
+    { age: 2, ids: ["papyrus"], n: "Laisser une trace", d: "Une observation écrite peut atteindre un Semeur qui ne t’a jamais rencontré.", tech: "Le papyrus est fabriqué à partir de la moelle d’une plante précise, disposée en bandes. Le jeu regroupe ces végétaux sous le nom de fibres ; sa recette est une simplification." },
+    { age: 7, ids: ["papier"], n: "Préparer des feuilles", d: "Un même support accueille des dessins, des comptes et des lettres.", tech: "Le papier se forme à partir de fibres dispersées dans l’eau, recueillies puis séchées. Il est différent du papyrus. Son classement à la Vapeur suit ici la disponibilité de l’eau dans le jeu, pas la date de son invention." },
+    { age: 7, ids: ["presse_imprimer"], n: "Multiplier les exemplaires", d: "Les mots peuvent circuler sans que chaque main les recopie.", tech: "L’imprimerie reproduit une forme encrée sur un support. Copier conserve aussi les erreurs du modèle. Les copies du jeu signalent les originaux retrouvés ; elles ne créent aucune page du récit." },
+    { age: 8, ids: ["radio"], n: "Porter une voix", d: "Un message arrive sans que quelqu’un apporte sa feuille.", tech: "La radio transmet un signal par ondes électromagnétiques. Transmettre un message et conserver un document sont deux fonctions distinctes." },
+    { age: 10, ids: ["serveur_archives"], n: "Relier les archives", d: "Les documents gardent leur origine lorsqu’ils se répondent.", tech: "Internet relie des réseaux qui échangent des données selon des protocoles communs. Le serveur du jeu représente une archive locale ; avec la radio, il évoque la reconnexion des lieux, sans simuler Internet ni ajouter des habitants." },
+    { age: 13, ids: ["serveur_archives", "ia"], n: "Interroger les traces", d: "La voix rapproche des mots que des mains différentes ont laissés.", tech: "Un modèle de langage apprend des régularités dans des exemples. Ses paramètres ne sont pas une copie fidèle d’une bibliothèque. Une recherche documentaire peut lui apporter des sources ; une réponse doit encore être vérifiée. Cet écran effectue une recherche locale, sans exécuter de LLM." }
+  ];
 
   /* ---------------------------------------------------------------- LIGNES D’EXTRACTEURS
    * Un bâtiment par ressource : le bois a son Bûcheron, la pierre son Carrier, la peau son Tanneur…
@@ -1190,16 +1208,20 @@
     ["four", "Le feu de camp ne chauffe plus assez. Le four en argile monte jusqu’à 1 100 °C."],
     ["lingot_cuivre", "La pierre verte des collines cache un métal."],
     ["enclume_pierre", "Le métal se travaille à coups de marteau, sur quelque chose de dur. L’enclume débloque l’action Marteler."],
+    ["plaque_cuivre", "Sur l’enclume, martèle une première plaque de cuivre."],
+    ["lingot_etain", "La cassitérite des Collines cache un autre métal : fonds de l’étain pour préparer l’alliage."],
+    ["charbonniere", "Construis une meule de charbonnier, puis pose-la dans la Lisière : elle alimentera les fontes sans brûler tout ton bois à la main."],
     ["creuset", "Il faudrait pouvoir fondre plusieurs métaux ensemble. Le creuset débloque l’action Allier."],
     ["lingot_bronze", "Le métal rouge est trop mou. Allie-le."],
     ["automate_bronze", "Un automate de bronze travaillerait bien plus vite que ta marionnette de bois."],
     ["pioche_bronze", "Il te faut une pioche plus dure pour creuser vers les Profondeurs."],
     { k: "pass", z: "mine", n: "Vers les Profondeurs", txt: "Pour descendre, il faut un puits solide, tenu par du métal." },
     ["enclume_bronze", "Le fer ne se bat pas sur une simple pierre. Il te faut une enclume plus dure."],
-    ["chariot", "Au-delà des collines s’étend un désert de verre. Il te faut de quoi y transporter tes outils."],
-    { k: "pass", z: "desert", n: "Vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
     ["bas_fourneau", "Le minerai de fer demande plus de chaleur. Le bas-fourneau monte jusqu’à 1 300 °C."],
     ["lingot_fer", "Bats le fer."],
+    ["chariot", "Au-delà des collines s’étend un désert de verre. Il te faut de quoi y transporter tes outils."],
+    { k: "pass", z: "desert", n: "Vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
+    ["poudre_quartz", "Le quartz du Désert peut polir le verre : prépare une poudre abrasive pour ta lunette, puis les briques des fours."],
     ["lunette", "Une étoile rouge pulse dans le ciel. Il te faut la voir de plus près."],
     ["haut_fourneau", "Pour l’acier, il faut encore plus chaud. Le haut-fourneau monte jusqu’à 1 700 °C."],
     ["lingot_acier", "Fer et carbone, à très haute température."],
@@ -1228,6 +1250,7 @@
     ["puce", "La lumière grave des pistes de cuivre microscopiques sur le silicium."],
     ["processeur", "Plusieurs puces réunies forment un cerveau de silicium capable de traiter des instructions."],
     ["ordinateur", "Construis une machine qui calcule."],
+    ["chaine", "Construis une ligne d’assemblage : ses machines aideront les commandes de recettes déjà fabriquées à la main. Lance ensuite un lot de processeurs ou de pièces pour tes prochains chantiers."],
     ["radiotelescope", "Une coupole géante tournée vers les étoiles pour capter les signaux du Cosmos."],
     ["foreuse", "L’huile noire dort sous le Gisement Noir. Il te faut une sonde pour l’atteindre."],
     { k: "pass", z: "gisement", n: "Vers le Gisement Noir", txt: "L’huile dort loin sous la croûte. Il faut y creuser une tranchée." },
@@ -1473,6 +1496,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📖 Une voie facultative relie les supports d’écriture, l’imprimerie et les archives au Livre : notes des Semeurs, registre de copies et recherche locale dans les pages retrouvées. Les découvertes et les recettes acquises restent conservées.",
+    "⛏️ Le Cuivre se découvre étape par étape. Le chariot et le Désert arrivent au Fer : le quartz y fournit une poudre pour polir les lentilles et renforcer les briques réfractaires. La ligne d’assemblage prépare les grands chantiers après l’ordinateur.",
+    "💾 Tes terres, tes stocks et tes âges acquis sont conservés. Les commandes de lentilles et de briques déjà lancées terminent avec leurs anciens ingrédients ; les nouvelles utilisent la poudre de quartz.",
     "✦ Deuxième couche de prestige liée aux fins : atteindre l'un des cinq dénouements éveille désormais une Règle d'Écho majeure pour toujours (Foyer Perpétuel, L'Onde de Choc, La Voie des Étoiles, L'Écho Cosmique, L'Éveil Partagé), visible dans le Journal et la Mémoire des mains.",
     "✦ Les gestes remarqués : 20 succès discrets jalonnent désormais ta route dans le Journal (onglet Gestes), sans récompense chiffrée, avec l’horodatage diégétique de chaque accomplissement (cycle, âge, date).",
     "🍃 Ligne d’ambiance : sous l’en-tête, une petite phrase discrète donne à voir et à sentir le monde vivant selon la terre où tu te trouves, ton âge et l’heure réelle (aube, jour, crépuscule, nuit). Toucher la ligne fait défiler une autre observation du moment, et elle peut se couper dans Menu → Affichage.",
@@ -1654,7 +1680,7 @@
   };
   /* le genre et le nombre des matières, pour les articles (le, la, l’, les) */
   D.GENRE = {
-    f: "fibre caillou corde cabane torche galette cuir aiguille laniere colle_os fronde outre tunique flute statuette argile hache_pierre pioche_pierre brique nasse hutte malachite cassiterite enclume_pierre plaque_cuivre charbonniere lampe plaque_bronze hache_bronze pioche_bronze enclume_bronze roue courroies brouette loupe plaque_fer chainon galerie lentille lunette boussole brique_refr lame vis chaudiere presse_vapeur pompe scierie drague bobine dynamo batterie ampoule excavatrice foreuse_elec wafer puce cellule chaine foreuse capsule bauxite ilmenite terres_rares resine dynamite centrale carriere fibre_carbone ceramique fusee plateforme station_orbitale base_lunaire ia forge_stellaire matiere_exotique antimatiere bague philosophale resonite tablette partition",
+    f: "encre presse_imprimer poudre_quartz fibre caillou corde cabane torche galette cuir aiguille laniere colle_os fronde outre tunique flute statuette argile hache_pierre pioche_pierre brique nasse hutte malachite cassiterite enclume_pierre plaque_cuivre charbonniere lampe plaque_bronze hache_bronze pioche_bronze enclume_bronze roue courroies brouette loupe plaque_fer chainon galerie lentille lunette boussole brique_refr lame vis chaudiere presse_vapeur pompe scierie drague bobine dynamo batterie ampoule excavatrice foreuse_elec wafer puce cellule chaine foreuse capsule bauxite ilmenite terres_rares resine dynamite centrale carriere fibre_carbone ceramique fusee plateforme station_orbitale base_lunaire ia forge_stellaire matiere_exotique antimatiere bague philosophale resonite tablette partition",
     p: "fibre galette laniere collets nasse courroies brouette clous outils_fer vis outils_acier capteurs robots terres_rares convoyeurs debris"
   };
 
