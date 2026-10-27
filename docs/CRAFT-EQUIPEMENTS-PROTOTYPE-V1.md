@@ -1,5 +1,17 @@
 # Atelier par équipements — prototype V1
 
+## Intégration dans le jeu de prévisualisation
+
+L’accueil `index.html`, sur cette branche, ouvre désormais le jeu complet avec l’Atelier par postes et outils. `js/atelier-equipe.js` est un composant du véritable onglet Atelier : il reçoit le moteur, le stock, les sauvegardes, les icônes, le Carnet et les commandes du jeu, sans créer une partie ni une boucle de simulation séparées. Le Domaine et les terres restent la source des ressources. Les fiches et l’étude des matières sont accessibles depuis cet Atelier ; le tutoriel des premiers gestes est adapté.
+
+La partie expérimentale utilise `eclat.preview.craft.v1`, ses propres copies de secours et son propre verrou de navigateur. Au premier lancement, si une partie locale `eclat.save.v1` existe, le jeu en charge une copie migrée et enregistre ensuite uniquement dans la clé de prévisualisation. La sauvegarde d’origine n’est pas réécrite. Les identifiants des comptes sont isolés et la synchronisation en ligne est désactivée pour ce profil. Une ancienne sauvegarde peut aussi être importée par le menu habituel.
+
+Les recettes et postes des quatre premiers âges utilisent les nouveaux outils. Les âges suivants restent jouables avec le bouton « Procédés après le Cuivre », qui donne accès à leur interface historique : leur refonte n’est pas encore réalisée. Le profil `fullGame` résout explicitement la collision entre tunique et gants. Le moteur strict du prototype reste inchangé ; les recettes ultérieures ne sont pas artificiellement attribuées à des outils sans conception.
+
+`index.html?atelier=classique` charge séparément le moteur et la sauvegarde habituels pour comparaison. La page `prototype-equipements.html` reste un bac à sable indépendant, utile aux scénarios accélérés mais désormais facultatif pour tester la nouvelle boucle.
+
+`tools/test-atelier-integre-ui.js` vérifie la découverte depuis l’Atelier principal, le partage avec le Carnet/Domaine, la préservation de la sauvegarde historique, le rechargement, l’absence de synchronisation en ligne, la construction du poste, la vente, l’embauche, l’avance, l’amélioration d’outil, une recette après le Cuivre et le retour aux postes. Ces contrôles s’ajoutent aux scénarios du moteur et du prototype ci-dessous.
+
 Branche de travail : `codex/craft-equipements`, issue de l’Atlas V7 à `a45aaa5`. Ce prototype ne remplace ni `main`, ni `prewiew-design`, ni l’Atelier habituel.
 
 ## Essayer

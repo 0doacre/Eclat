@@ -125,7 +125,7 @@ async function run(){
     await p.evaluate(()=>window.dispatchEvent(new Event("pagehide")));await p.reload();await p.waitForFunction(()=>!!window.__eclatEquipmentPrototype);
     ok(await p.evaluate(()=>{const e=window.__eclatEquipmentPrototype.E.atelierEconomyInfo();return e.hired&&e.merchant&&e.totalSold>0;}),width+" : contrat et marchand rechargés");
     ok(await p.evaluate(raw=>localStorage.getItem("eclat.save.v1")===raw,normal),width+" : économie isolée du jeu habituel");
-    await p.goto("http://127.0.0.1:"+server.address().port+"/index.html");await p.waitForFunction(()=>!!window.__eclat);
+    await p.goto("http://127.0.0.1:"+server.address().port+"/index.html?atelier=classique");await p.waitForFunction(()=>!!window.__eclat);
     ok(await p.evaluate(()=>window.__eclat.E.SAVE_VERSION===12&&window.__eclat.E.equipmentChoices===undefined&&Object.keys(window.__eclat.E.D.ITEMS).length===267),width+" : jeu habituel distinct et fonctionnel");
     ok(!errors.length,width+" : erreurs "+errors.join(";"));console.log("✓ "+width);await ctx.close();
   }

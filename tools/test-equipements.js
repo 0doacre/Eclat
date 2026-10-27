@@ -297,4 +297,18 @@ test("l’amélioration ne s’applique pas aux anciens lots, aux autres gestes 
   E.add("couteau",-1);assert.equal(E.equipmentSpeed("laniere",cut("couteau")),1);
   assert.equal(E.queue("laniere",1,false,undefined,cut("couteau")).why,"equipment");
 });
+test("le profil du jeu complet distingue les gants historiques de la tunique équipée", () => {
+  const Full=Normal.withData(Eq.createData(Base,{fullGame:true})),E=prepared(Full);E.state.age=4;owns(E,"aiguille");stock(E,{cuir:50,fibre:50});
+  const a=E.attemptWith("aiguille","coudre",["cuir","fibre"]);assert.equal(a.id,"tunique");
+  const b=E.attempt("assembler",["cuir","fibre"]);assert.equal(b.id,"gants");assert.notEqual(b.kind,"equipment");
+  assert.equal(E.attempt("tailler",["os"]).why,"selection");
+});
+test("les recettes de chaque âge suivant restent identifiables dans les procédés historiques", () => {
+  const data=Eq.createData(Base,{fullGame:true}),E=mk(Normal.withData(data));E.state.age=14;
+  for(const [id,it]of Object.entries(data.ITEMS)){E.add(id,1e5);if(it.r){E.learn(id,true);E.state.made[id]=1;}}
+  E.recalc();
+  for(const id of ["lingot_bronze","chariot","lingot_acier","piston","bobine","lingot_plomb","silicium","masque","fibre_carbone","station_orbitale","forge_stellaire"]){
+    const r=E.attempt(data.ITEMS[id].r[0],Object.keys(data.ITEMS[id].r[1]));assert.notEqual(r.kind,"equipment",id);assert.equal(r.id,id,id+" "+JSON.stringify(r));
+  }
+});
 console.log(checks+" contrôles du profil équipements réussis.");

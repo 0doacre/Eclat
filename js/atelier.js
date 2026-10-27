@@ -15,6 +15,7 @@
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
+    const Equipped = E.equipmentList && window.EclatAtelierEquipe ? window.EclatAtelierEquipe.create({...api,goalHint,handsHTML}) : null;
 
     /* ------------------------------------------------------------ ATELIER */
     /* l’étape clé de l’objectif, quand sa recette reste à trouver : la piste déjà donnée dans le Domaine (rien de plus) reste sous les yeux à l’établi */
@@ -28,8 +29,11 @@
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") + "</div>";
     }
     function viewAtelier() {
+      if(Equipped&&S().age<3)U.equipmentLegacy=false;
+      if(Equipped&&!U.equipmentLegacy)return Equipped.view();
       const st = S();
       let h = '<header class="atlas-workshop-heading atlas-only"><h2>Atelier</h2></header>' + subTabs("atelier", "machines", "Découvrir", "Machines");
+      if(Equipped)h+='<div class="card"><button type="button" class="btn pri" data-ae="legacy" data-value="0">← Postes et outils</button><p class="small muted">Procédés historiques pour les recettes après le Cuivre. Les recettes des premiers âges se travaillent avec leurs outils.</p></div>';
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
       if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Pose des <b>ressources</b> sur l’établi. 3. Lance l’action. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       // Le premier essai reste possible sans un aller-retour au Domaine.
@@ -279,6 +283,7 @@
       return body && U.last && S().stats.crafts >= 3 ? body + '<button class="btn small ghost result-x" data-resclose aria-label="Réduire le résultat">▴ Réduire</button>' : body;
     }
     function resultBody(r) {
+      if(r&&r.kind==="equipment")return '<p>Choisis le poste et l’outil dans « Postes et outils » pour cette fabrication.</p>';
       if (!r && S().stats.crafts >= 3) return ""; // déjà appris : la carte vide ne garde pas sa place (voir .result:empty)
       if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis lance l’action choisie. Le <b>thermomètre</b> indique si tu approches d’une recette.</p>';
       if (r.kind === "craft") {
@@ -945,6 +950,7 @@
     }
 
     function forge() {
+      if(Equipped&&!U.equipmentLegacy){Equipped.forge();return;}
       A.init();
       const ids = U.slots.filter(Boolean);
       if (!ids.length) return;
@@ -1461,7 +1467,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
+    return { equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
   }
 
   window.EclatAtelier = { create };

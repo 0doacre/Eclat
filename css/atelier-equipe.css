@@ -1,0 +1,44 @@
+/* Postes et outils dans l’Atelier principal ; couleurs héritées du thème du jeu. */
+.atelier-equipe{min-width:0}
+.atelier-equipe .btn{min-height:44px;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+.ae-notice{border-left:3px solid var(--acc);padding:10px 12px;margin:10px 0;background:var(--panel2);border-radius:8px}
+.ae-posts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.ae-posts .btn{flex:1 1 120px}
+.ae-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(240px,1fr);gap:12px;align-items:start}
+.ae-layout>.card{min-width:0;margin:0}
+.ae-bench h2{font-size:24px;margin:0 0 12px}
+.ae-work{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:12px}
+.ae-work>div{min-width:0}
+.ae-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.atelier-equipe .ae-slots>.btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:105px!important;padding:8px 3px}
+.ae-slots small{display:block;font-size:12px;text-align:center}
+.ae-empty{border-style:dashed!important;opacity:.65}
+.ae-filled{border-color:var(--acc)!important}
+.ae-actions{display:flex;flex-wrap:wrap;gap:8px}
+.ae-actions .btn{flex:1 1 110px}
+.ae-tools{border-left:1px solid var(--line2);padding-left:10px;min-width:0}
+.ae-tools h3{margin:0 0 10px}
+.ae-tools .btn{display:block;width:100%;text-align:left;margin-bottom:7px}
+.ae-tools small{display:block;font-size:12px;font-weight:400;margin-top:5px}
+.ae-stock input[type=search]{width:100%;min-height:44px;min-width:0}
+.ae-inventory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:64dvh;overflow:auto;padding:3px}
+.ae-resource{border:1px solid var(--line2);border-radius:10px;padding:6px;min-width:0}
+.ae-resource>.btn{width:100%;padding:7px 4px;margin-bottom:4px}
+.ae-resource small{display:block;font-size:12px}
+.ae-resource .ae-selected{border:2px solid var(--acc);background:var(--panel2)}
+.ae-resource .ic{vertical-align:middle}
+.ae-known>div{display:flex;gap:8px;margin:6px 0}
+.ae-known>div>.btn:first-child{flex:1;text-align:left}
+.ae-economy-grid{display:grid;grid-template-columns:.8fr 1fr 1.2fr;gap:14px}
+.ae-economy-grid>section{min-width:0;padding:12px;border:1px solid var(--line2);border-radius:12px;background:var(--panel2)}
+.ae-economy-grid h3{margin:0 0 10px}
+.ae-economy-grid label{display:block;margin:10px 0}
+.ae-economy-grid input[type=number]{width:85px;min-height:44px}
+.ae-economy-grid input[type=checkbox]{width:22px;height:22px;vertical-align:middle}
+.ae-economy-grid progress{width:100%;height:14px;accent-color:var(--acc)}
+.ae-economy-grid .btn{margin:4px 3px 4px 0}
+#ae-wallet{font-size:26px}
+#ae-sale{color:var(--good);font-weight:700}
+.ae-economy-grid summary{min-height:44px;padding:10px 0;cursor:pointer}
+@media(max-width:1100px){.ae-layout{grid-template-columns:minmax(0,1fr)}.ae-inventory{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));max-height:350px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.ae-work{grid-template-columns:minmax(0,1fr)}.ae-tools{border-left:0;border-top:1px solid var(--line2);padding:10px 0 0;display:flex;overflow:auto;gap:8px}.ae-tools h3{display:none}.ae-tools .btn{flex:0 0 145px;width:145px}.ae-slots .btn{min-height:95px}.ae-inventory{grid-template-columns:repeat(2,minmax(0,1fr))}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}}

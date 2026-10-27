@@ -17,6 +17,7 @@
     "test:retours": "node tools/test-retours-ui.js",
     "test:equipements": "node tools/test-equipements.js && node tools/test-atelier-economie.js",
     "test:economie": "node tools/test-atelier-economie.js",
+    "test:atelier-integre": "node tools/test-atelier-integre-ui.js",
     "test:equipements-ui": "node tools/test-equipements-ui.js",
     "test:juice": "node tools/test-juice-ui.js",
     "test:affichage": "node tools/test-affichage-ui.js",
