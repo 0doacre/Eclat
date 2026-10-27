@@ -1,5 +1,17 @@
 # Coordination — chantier de direction artistique « L’Atlas vivant »
 
+## Extension du chantier : intégration du craft — 27 octobre 2026
+
+Sur cette branche uniquement, le périmètre inclut désormais l’intégration dans le vrai jeu de la boucle de craft validée avec le joueur. La branche réutilisée est **`prewiew-design`**, orthographe historique conservée. **`main` reste la référence inchangée** ; aucune fusion vers `main` ni publication de la nouvelle mécanique n’est impliquée par cette préparation.
+
+Les commits du prototype, auparavant sur `codex/craft-equipements`, ont été repris sans conflit sur cette branche. Le prototype reste consultable dans `prototype-equipements.html` et documenté dans [CRAFT-EQUIPEMENTS-PROTOTYPE-V1.md](CRAFT-EQUIPEMENTS-PROTOTYPE-V1.md). À ce stade, son interface et son profil expérimental ne remplacent pas encore l’Atelier du jeu normal.
+
+Direction retenue : postes de travail construits par recettes, outils visibles qui donnent leurs gestes, expérimentation par les matières, quantités explicites pour les recettes connues, amélioration des moyens de production puis délégation à des ouvriers payés en écus. Un marchand de surplus avec taxation marginale est distinct du troqueur, de ses demandes et de sa réputation. La densité des recettes est conservée. Les paramètres économiques du prototype restent provisoires.
+
+L’intégration doit couvrir les données et dépendances, les sauvegardes, l’Atelier réel et ses aides, puis l’économie et la progression. Le profil du prototype ne couvre que Bois à Cuivre : il ne doit pas être activé tel quel dans le jeu complet au risque de bloquer les recettes suivantes. L’extension aux autres âges et la compatibilité des anciennes commandes font partie du travail, au même titre que l’interface.
+
+Les règles ci-dessous concernant l’absence de changements fonctionnels décrivent le **périmètre graphique initial**. La présente extension, expressément demandée par le joueur, les remplace pour le craft sur cette branche. Les règles de coordination avec `main` restent applicables.
+
 > **À l’attention de Claude et de toute personne intervenant sur Éclat.**
 > Ce document est volontairement placé sur `main` pour rendre visible un chantier mené **exclusivement sur une branche séparée**. Il ne modifie ni le jeu ni sa feuille de route fonctionnelle.
 
