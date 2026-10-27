@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, A, D, U, esc, fmt, fmtTime, cap1, needText, icon, itemPill, ingHTML, gesteChip, mainIngredient, isRawGather,
-      zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, chainCraft
+      zoneName, floater, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, chainCraft, setTab
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -69,7 +69,7 @@
         const manque = g.step && !st.known[g.step] && g.pour && I[g.pour] ? un(g.pour) : null;
         if (manque) {
           const lvl = st.hints[g.step] || 0, it0 = I[g.step];
-          return line('<div class="grow" data-goto="' + g.step + '"><div class="small">🧭 Requis pour le prochain lieu : <b>' + esc(manque) + "</b>. " +
+          return line('<div class="grow" data-goto="' + g.step + '"><div class="small">🧭 Requis pour ' + (g.passageCost ? 'payer le passage' : 'le prochain lieu') + ' : <b>' + esc(manque) + "</b>. " +
             (g.step === g.pour ? "" : "Une recette à trouver. ") + (it0.h ? "<i>« " + esc(it0.h) + " »</i>" : "") + "</div>" +
             (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(g.step) + "</div>" : "") +
             (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(g.step), "sm") + " " + esc(I[mainIngredient(g.step)].n) + "</div>" : "") +
@@ -150,7 +150,7 @@
       let h = '<div class="kicker">Les étapes de l’Âge</div><h2>' + esc(D.AGES[st.age].n) + '</h2>' +
         '<div class="miles-top-bar"><div class="bar" style="margin:4px 0 6px"><i style="width:' + curPct + '%;background:' + esc(D.AGES[st.age].c) + '"></i></div>' +
         '<div class="row between tiny muted"><span>Progression de l’époque : <b>' + curDone + ' / ' + curAgeList.length + '</b></span><span>' + (curDone === curAgeList.length ? '★ Accompli' : curPct + ' %') + '</span></div></div>' +
-        '<p class="small muted">Chaque âge a ses étapes. Fais-les toutes et l’âge est <b>accompli</b> : +' + D.AGE_DONE + " ✨ Intuition. Certaines sont facultatives : tu peux passer à l’âge suivant sans elles, et revenir les faire quand tu veux.</p>";
+        '<p class="small muted">Chaque âge a ses étapes. Fais-les toutes et l’âge est <b>accompli</b> : +' + D.AGE_DONE + " ✨ Intuition. Termine ces étapes et fabrique un objet de l’âge suivant pour y accéder. Les autres recettes du Carnet restent facultatives.</p>";
       ms.forEach((list, a) => {
         if (!list || a > st.age + 1) return;
         const done = list.filter((x) => x.done).length, next = a === st.age + 1, full = done === list.length;
@@ -303,6 +303,23 @@
         (c && c.t ? '<div class="tiny muted"><i>' + esc(c.t) + "</i></div>" : "") +
         (nx ? '<div class="tiny dim">Un cadeau plus gros au jour ' + nx + ".</div>" : "") + "</div>";
     }
+    // La fenêtre a ses propres commandes ; les actions de la carte du Domaine
+    // ne sont pas écoutées dans une fenêtre modale.
+    function questNextHTML(sc) {
+      const id = sc.targetId, it = id && I[id];
+      if (it && !S().known[id]) return (it.h ? '<p class="small"><i>« ' + esc(it.h) + ' »</i></p>' : '') +
+        '<button class="btn pri" data-m="qresume" data-tab="atelier">Découvrir à l’Atelier</button>';
+      let h = sc.missKeys.length ? '<div class="small row wrap"><span class="muted">Il manque :</span> ' +
+        sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '';
+      const res = sc.missKeys.find((k) => E.isRawRes(k) && E.zoneOpen(E.RES_ZONE[k]));
+      if (res) {
+        const ee = E.extEtat(res);
+        if (ee) h += '<p class="small">' + (ee.etat === "libre" ? esc(I[ee.t].n) + ' attend d’être posé.' : 'Ton extracteur est arrêté.') + '</p>';
+        h += '<button class="btn pri" data-gz="' + E.RES_ZONE[res] + '">Aller au gisement · ' + esc(zoneName(E.RES_ZONE[res])) + '</button>';
+      } else h += '<button class="btn pri" data-m="qresume" data-tab="domaine">Reprendre l’objectif dans le Domaine</button>';
+      return h;
+    }
+
     function openQuestsModal(initialTab) {
       U.questTab = initialTab || U.questTab || "scenario";
       const makeHTML = () => {
@@ -323,11 +340,11 @@
         if (tab === "scenario") {
           h += '<div class="quest-hero">' +
             '<div class="quest-chapter">' + esc(sc.chapter) + ' · ' + esc(sc.ageName) + '</div>' +
-            '<div class="quest-titre">' + (sc.ob && sc.ob.n ? esc(sc.ob.n) : sc.targetId ? esc(I[sc.targetId].n) : "Objectif en cours") + '</div>' +
+            '<div class="quest-titre">' + (sc.ob && sc.ob.n ? esc(sc.ob.n) : sc.ob && sc.ob.id ? esc(I[sc.ob.id].n) : "Objectif en cours") + '</div>' +
             (sc.txt ? '<div class="small muted" style="margin-bottom:8px"><i>« ' + esc(sc.txt) + ' »</i></div>' : '') +
-            (sc.targetId ? '<div style="margin:8px 0">' + itemPill(sc.targetId) + '</div>' : '') +
+            (sc.targetId ? '<div style="margin:8px 0">' + (sc.ob && sc.ob.id && sc.targetId !== sc.ob.id ? '<span class="tiny muted">Il faut d’abord : </span>' : '') + itemPill(sc.targetId) + '</div>' : '') +
             (sc.ready ? '<div class="small" style="color:var(--good);font-weight:600">✓ Prêt à fabriquer !</div><button class="btn pri" style="margin-top:8px;width:100%" data-m="qmake" data-id="' + sc.targetId + '">⚡ Fabriquer maintenant</button>'
-              : sc.missKeys && sc.missKeys.length ? '<div class="small" style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px"><span class="muted">Il manque :</span> ' + sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '') +
+              : questNextHTML(sc)) +
             '</div>';
         } else if (tab === "rituals") {
           h += joursHTML();
@@ -399,6 +416,11 @@
               render(true);
               swapModal(Object.assign(modalObj, { html: makeHTML() }));
             }
+            return true;
+          },
+          qresume: (b) => {
+            closeModal();
+            setTab(b.dataset.tab);
             return true;
           },
           qmake: (b) => {

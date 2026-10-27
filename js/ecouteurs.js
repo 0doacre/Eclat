@@ -75,6 +75,14 @@
         if (!U.forging && !it.sec) fete({ id, kick: "Première fabrication", title: it.n, sub: fxText(id) });
         U.lastDiscover = Date.now();
         if (it.e && it.e.sky) badge("cosmos");
+        if (it.t === "ext") {
+          const z = E.extZones(id).find((z) => E.zoneOpen(z) && E.zoneDeps(z).some((d) => !d.hand && it.p[d.res]));
+          if (z) {
+            U.domOpen = z;
+            badge("domaine");
+            toast("⛏️ <b>" + esc(it.n) + "</b> : un gisement t’attend dans <b>" + esc(E.ZONES[z].n) + "</b>. Ouvre le Domaine pour y poser ton extracteur.", { key: "gisement:" + id, p: 2 });
+          }
+        }
         if (it.t === "mach") badge("domaine");
         updateBadges();
       });

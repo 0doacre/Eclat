@@ -1945,6 +1945,13 @@
           const s = nextStep(i);
           if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i };
         }
+        // Le paiement peut lui aussi demander une recette encore inconnue (briques, plaques…).
+        const p = E.passInfo(ob.z);
+        for (const i of Object.keys((p && p.left) || {})) {
+          if (!item(i) || !item(i).r || (S.inv[i] || 0) >= p.left[i]) continue;
+          const s = nextStep(i);
+          if (s && s.why === "unknown") return { ob, step: s.id, why: s.why, pour: i, passageCost: true };
+        }
         return { ob, step: null };
       }
       if (ob.k !== "craft") return { ob, step: null };
@@ -4066,7 +4073,7 @@
       const g = E.guide();
       const curAge = D.AGES[S.age] || D.AGES[0];
       const ob = g ? g.ob : E.objective();
-      const targetId = ob && ob.k === "craft" ? ob.id : g ? g.step : null;
+      const targetId = g && g.step ? g.step : ob && ob.k === "craft" ? ob.id : null;
       const p = targetId && S.known[targetId] ? E.plan(targetId, 1) : null;
       const ready = p ? p.ok : false;
       const miss = p ? Object.keys(p.missing) : [];
