@@ -5,6 +5,8 @@
   const Engine = window.EclatEngine.withData(D), KEY = "eclat.prototype.equipements.v1";
   let E = Engine.createEngine(), eq = "mains", mode = "assembler", slots = [], signature = "", saveOK = true;
   let place = "etabli", prepared = null;
+  let previousEconomy = null;
+  const reducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)");
   const consumed = new Set(Object.values(D.ITEMS).filter(it=>it.r).flatMap(it=>Object.keys(it.r[1])));
   const $ = s => document.querySelector(s), name = id => D.ITEMS[id]?.n || id;
   const actionName = (equipment, id, fallback) => ({doux:"Chauffer doucement",vif:"Cuire",etouffee:"Carboniser",cuisson:"Cuire",fonte:"Fondre"})[id] || fallback;
@@ -13,6 +15,10 @@
   const text = (tag, value, cls) => { const e = document.createElement(tag); e.textContent = value; if (cls) e.className = cls; return e; };
   function button(label, fn, cls, disabled) { const e=text("button",label,cls);e.type="button";e.disabled=!!disabled;e.onclick=fn;return e; }
   function notice(value) { $("#notice").textContent=value; }
+  function pulse(selector){if(!reducedMotion.matches)$(selector).animate([{opacity:.65},{opacity:1}],{duration:320});}
+  function filterInventory(){const clean=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();const query=clean($("#resource-search").value.trim());let n=0;document.querySelectorAll("#inventory .resource").forEach(e=>{e.hidden=!clean(e.dataset.name).includes(query);if(!e.hidden)n++;});$("#empty-stock").hidden=n>0;}
+  $("#resource-search").oninput=filterInventory;
+  function neededSale(amount){if(amount<=1e-9)return 0;let low=0,high=1;while(E.merchantQuote(high).net<amount&&high<1e7)high*=2;while(low<high){const mid=Math.floor((low+high)/2);if(E.merchantQuote(mid).net+1e-9>=amount)high=mid;else low=mid+1;}return low;}
   function save() {
     if(!saveOK)return;
     try { localStorage.setItem(KEY,JSON.stringify({save:E.serialize(),eq,mode,slots,place,prepared})); }
@@ -24,7 +30,7 @@
   } catch (_) {saveOK=false;notice("La partie d’essai enregistrée est illisible. Elle reste conservée ; tu peux démarrer un nouvel essai.");}
   function reset(demo) {
     if(!confirm("Remplacer uniquement cette partie d’essai ?"))return;
-    E=Engine.createEngine();eq="mains";mode="assembler";slots=[];place="etabli";prepared=null;saveOK=true;
+    E=Engine.createEngine();eq="mains";mode="assembler";slots=[];place="etabli";prepared=null;saveOK=true;previousEconomy=null;$("#resource-search").value="";$("#sale-feedback").textContent="Les recettes du marchand apparaîtront ici.";
     if(demo==="chain"){
       const s=E.state;s.age=2;s.introSeen=true;s.flags.economyTrial=true;
       for(const z of ["plaine","riviere"]){s.zones[z]=true;s.pass[z]={done:true,paid:{}};}
@@ -74,6 +80,7 @@
     else if(result.kind==="blocked")notice("Recette trouvée : "+name(result.id)+". Prépare d’abord "+name(E.blockStation(result.id,result.info))+".");
     else notice("Cette fabrication ne peut pas encore être lancée.");
     draw(true);save();
+    if(result.fresh&&(result.kind==="craft"||result.kind==="learn"))pulse("#notice");
   }
   function perform(nextMode) { if(nextMode!==mode)prepared=null;mode=nextMode;finish(E.attemptWith(eq,mode,slots)); }
   $("#forge").onclick=()=>perform(mode);
@@ -96,6 +103,7 @@
       signature=structural;
       $("#workplaces").replaceChildren(...workplaces.map(x=>{const b=button(x.n,()=>{place=x.id;prepared=null;draw(true);save();},x.id===place?"on":"");b.dataset.workplace=x.id;b.setAttribute("aria-pressed",String(x.id===place));return b;}));
       $("#equipment-title").textContent=workplaces.find(x=>x.id===place)?.n||"Établi";
+      $("#bench-card").classList.toggle("warm-post",place==="feu"||place==="four");
       const goal=E.guide(),id=goal?.step;
       const hint=id&&id!==goal?.ob?.id?D.ITEMS[id].h:null;
       const end=id&&D.ITEMS[id].a>3;
@@ -107,20 +115,22 @@
       const toolNames={feu:"Braises du foyer",four:"Chambre de cuisson",enclume_pierre:"Enclume et percuteur",polissoir:"Dalle de polissage"};
       $("#tool-title").textContent=place==="etabli"?"Tes outils":"Au poste";
       $("#tools").replaceChildren(...tools.map(x=>{const b=button(toolNames[x.id]||x.n,()=>select(x.id),x.id===eq?"on":"");b.append(text("small",Object.values(x.modes).map((n,i)=>actionName(x.id,Object.keys(x.modes)[i],n)).join(" · ")));if(x.benefit)b.append(text("small",x.benefit));b.dataset.equipment=x.id;b.setAttribute("aria-pressed",String(x.id===eq));return b;}));
-      $("#modes").replaceChildren(...Object.entries(selected.modes).filter(([id])=>id!==mode).map(([id,n])=>{const b=button(actionName(eq,id,n),()=>perform(id),"wide");b.dataset.mode=id;return b;}));
-      $("#slots").replaceChildren(...[0,1,2].map(i=>{const b=button(slots[i]?name(slots[i]):"+",()=>{slots.splice(i,1);prepared=null;draw(true);save();});b.setAttribute("aria-label",slots[i]?"Retirer : "+name(slots[i]):"Emplacement libre");return b;}));
+      $("#modes").replaceChildren(...Object.entries(selected.modes).filter(([id])=>id!==mode).map(([id,n])=>{const b=button(actionName(eq,id,n),()=>perform(id),"wide",!slots.length);b.dataset.mode=id;return b;}));
+      $("#slots").replaceChildren(...[0,1,2].map(i=>{const id=slots[i],b=button("",()=>{slots.splice(i,1);prepared=null;draw(true);save();},id?"filled-slot":"empty-slot",!id);if(id){b.append(text("span",D.ITEMS[id].ic||"","item-icon"),text("span",name(id)));const stock=text("small","","slot-stock");stock.dataset.slotItem=id;stock.dataset.need=prepared?(D.ITEMS[prepared].r[1][id]||0):0;b.append(stock);}else b.textContent="+";b.setAttribute("aria-label",id?"Retirer : "+name(id):"Emplacement libre");return b;}));
       $("#forge").textContent=actionName(eq,mode,selected.modes[mode]);
       $("#forge").dataset.mode=mode;
+      $("#forge").disabled=!slots.length;$("#forge").title=slots.length?"":"Pose une matière pour travailler.";
       $("#recipe-preview").textContent=prepared?"Recette préparée : "+name(prepared):"";
       const raw=[...new Set(D.ZONES.filter(z=>E.zoneOpen(z.id)).flatMap(z=>z.res))];
       const items=Object.keys(D.ITEMS).filter(id=>(!E.isEquipmentItem(id)||consumed.has(id))&&(raw.includes(id)||s.seen[id]||E.count(id)>0));
       $("#inventory").replaceChildren(...items.map(id=>{
-        const box=text("div","","resource"),b=button(name(id),()=>{if(!slots.includes(id)&&slots.length<3){slots.push(id);prepared=null;draw(true);save();}},"wide",E.count(id)<1||slots.includes(id));b.dataset.item=id;
-        const count=text("b","0");count.dataset.count=id;b.append(count);box.append(b);
-        if(raw.includes(id))box.append(button(s.act?.res===id?"Arrêter":"Récolter",()=>{if(E.state.act?.res===id)E.stopAct();else E.startAct({k:"harv",z:E.RES_ZONE[id],res:id});draw(true);save();}));
+        const box=text("div","","resource"),b=button("",()=>{if(slots.includes(id)){slots.splice(slots.indexOf(id),1);}else if(slots.length<3&&E.count(id)>=1){slots.push(id);}else return;prepared=null;draw(true);save();pulse("#slots");},"wide",E.count(id)<1&&!slots.includes(id));b.dataset.item=id;box.dataset.name=name(id);b.append(text("span",D.ITEMS[id].ic||"","item-icon"),text("span",name(id)));
+        const count=text("b","0");count.dataset.count=id;b.append(count);const state=text("small","","resource-state");state.dataset.resourceState=id;box.append(b,state);
+        if(raw.includes(id))box.append(button(s.act?.res===id?"Arrêter":"Récolter",()=>{if(E.state.act?.res===id)E.stopAct();else E.startAct({k:"harv",z:E.RES_ZONE[id],res:id});draw(true);save();},"harvest"+(s.act?.res===id?" is-harvesting":"")));
         if(D.ITEMS[id].t==="ext"&&E.count(id)>0)box.append(button("Installer",()=>{notice(E.domAutoExt(id)?"Exploitation installée.":"Aucun emplacement disponible.");draw(true);save();}));
         return box;
       }));
+      filterInventory();
       const known=Object.keys(s.known).filter(id=>D.ITEMS[id]?.r&&D.ITEMS[id].a<=3);
       $("#recipes").replaceChildren(...known.map(id=>{const row=text("div","","row");row.append(button(name(id),()=>prepare(id)),button("Commander",()=>{const r=E.order(id,1);notice(r.ok?"Commande lancée : "+name(id)+".":"Prépare d’abord les équipements ou les recettes intermédiaires.");draw(true);save();}));return row;}));
       if(!known.length)$("#recipes").append(text("p","Tes découvertes apparaîtront ici.","muted"));
@@ -138,17 +148,36 @@
       $("#tool-benefit").textContent=(D.ITEMS[recipe].r[2]*times)+" lanières · "+seconds(time)+" avec "+name(eq)+(eq==="couteau"?" · 2× plus vite qu’au racloir.":E.count("couteau")>=1?" · Le couteau les coupe en "+seconds(baseline/2)+".":".");
     }
     const eco=E.atelierEconomyInfo();$("#economy-card").hidden=!s.known.laniere;
-    $("#economy-wallet").textContent="Bourse : "+money(s.ecus);
+    $("#economy-wallet").textContent=money(s.ecus);
     $("#build-post").hidden=E.count("etabli_amenage")>=1;
     $("#hire-worker").hidden=eco.hired;$("#hire-worker").textContent="Embaucher · "+money(eco.hire);
     for(const id of ["fund-worker","toggle-worker","withdraw-worker"])$("#"+id).hidden=!eco.hired;
     $("#withdraw-worker").disabled=eco.working||eco.budget<=0;
     $("#toggle-worker").textContent=eco.working?"Mettre en pause":"Mettre au travail";
-    $("#worker-info").textContent=eco.status+" · Salaire : "+money(eco.wage)+" par fabrication · Avance restante : "+money(eco.budget)+(eco.hired?" · Outil : "+name(eco.tool||"aucun")+" · "+eco.produced+" lanières produites":"");
+    $("#worker-info").textContent=eco.status+(eco.hired?" · "+name(eco.tool||"aucun"):"");
+    $("#worker-progress").hidden=!eco.hired;$("#worker-progress").value=eco.progress;
+    $("#worker-cadence").textContent=eco.hired?(eco.status==="Découpe des lanières"?"Prochaine fabrication dans "+seconds(Math.max(0,(1-eco.progress)*eco.duration))+" · ":"")+eco.produced+" lanières produites":"Découpe des lanières avec ton outillage.";
+    $("#worker-pay").textContent="Salaire : "+money(eco.wage)+" par fabrication · Avance restante : "+money(eco.budget);
+    const missing=Math.max(0,eco.hire+1-s.ecus);
+    $("#hire-goal").hidden=eco.hired;$("#hire-goal").textContent=missing>1e-9?"Encore "+money(missing)+" pour embaucher et avancer 1 écu · "+neededSale(missing)+" lanières à vendre, hors réserve.":"Tu peux financer l’embauche et une avance de 1 écu.";
     $("#merchant-on").checked=eco.merchant;if(document.activeElement!==$("#merchant-reserve"))$("#merchant-reserve").value=eco.reserve;
     $("#merchant-tariff").textContent="Par minute : 10 % sur les "+eco.quota+" premières lanières, puis 20 %, 30 %, 40 % par tranche de "+eco.quota+", et 50 % au-delà. Seuil lié à la capacité de production, fixé pour la minute. Prochaine vente : tranche à "+eco.nextRate+" %. Remise à zéro dans "+Math.ceil(eco.period-eco.clock)+" s.";
     $("#merchant-info").textContent=eco.totalSold+" vendues · Brut : "+money(eco.gross)+" · Taxes : "+money(eco.tax)+" · Net : "+money(eco.net)+" · Salaires versés : "+money(eco.wages);
-    document.querySelectorAll("[data-count]").forEach(e=>{e.textContent=Math.floor(E.count(e.dataset.count)).toLocaleString("fr-FR");e.parentElement.disabled=E.count(e.dataset.count)<1||slots.includes(e.dataset.count);});
+    $("#merchant-progress").value=eco.merchant?eco.saleClock:0;
+    const surplus=Math.max(0,Math.floor(E.count("laniere")-eco.reserve)),quote=E.merchantQuote(surplus);
+    $("#merchant-countdown").textContent=eco.merchant?"Prochain passage dans "+seconds(5-eco.saleClock)+(surplus?"":" · Aucun surplus"):"Ventes automatiques en pause";
+    $("#sale-quote").textContent=surplus?surplus+" lanières → "+money(quote.net)+" nets":"Ta réserve est préservée";
+    $("#sell-surplus").disabled=!surplus;$("#sell-surplus").title=surplus?"":"Aucun surplus au-dessus de la réserve.";
+    $("#sale-breakdown").textContent=surplus?"Cette vente : "+money(quote.gross)+" brut − "+money(quote.tax)+" de taxe ("+Math.round(quote.tax/quote.gross*100)+" % effectifs).":"Baisse la réserve ou produis davantage pour vendre.";
+    $("#sale-margin").textContent="Prochaine fabrication vendue : "+money(E.merchantQuote(D.ITEMS.laniere.r[2]).net-eco.wage)+" après salaire, hors coût des peaux.";
+    $("#tax-current").textContent="Tranche actuelle : "+eco.nextRate+" % · "+eco.sold+" lanières vendues cette minute.";
+    $("#tax-bands").replaceChildren(...[10,20,30,40,50].map((rate,i)=>{const li=text("li",rate+" %",rate===eco.nextRate?"active":"");if(rate===eco.nextRate)li.setAttribute("aria-current","step");li.append(text("small",i===4?"> "+4*eco.quota:(i*eco.quota+1)+"–"+((i+1)*eco.quota)));return li;}));
+    $("#tax-period").value=eco.clock;
+    if(previousEconomy&&eco.totalSold>previousEconomy.sold){$("#sale-feedback").textContent="Dernière vente : +"+money(eco.net-previousEconomy.net)+" · "+(eco.totalSold-previousEconomy.sold)+" lanières";pulse("#economy-wallet");}
+    if(previousEconomy&&eco.produced>previousEconomy.produced)pulse("#worker-progress");
+    previousEconomy={sold:eco.totalSold,net:eco.net,produced:eco.produced};
+    document.querySelectorAll("[data-count]").forEach(e=>{const id=e.dataset.count,picked=slots.includes(id),n=E.count(id),full=slots.length>=3&&!picked;e.textContent=Math.floor(n).toLocaleString("fr-FR");e.parentElement.disabled=!picked&&(n<1||full);e.parentElement.setAttribute("aria-pressed",String(picked));e.closest(".resource").classList.toggle("is-selected",picked);const label=e.closest(".resource").querySelector(".resource-state");label.textContent=picked?"Posé · clic pour retirer":n<1?"En réserve : 0":full?"Établi plein":"Prêt à poser";e.parentElement.title=label.textContent;});
+    document.querySelectorAll("[data-slot-item]").forEach(e=>{const n=Math.floor(E.count(e.dataset.slotItem)),need=Number(e.dataset.need);e.textContent=need?(n<need?"Il manque "+(need-n):"Prêt")+" · "+n+" / "+need:"En réserve : "+n;});
     $("#job-card").hidden=!info.jobs.length;
     $("#jobs").replaceChildren(...info.jobs.map((j,i)=>{const selected=E.state.hand.q[i].equipmentSelection;const box=text("div",name(j.id)+" · "+(j.wait?"En attente":"En cours · "+seconds(j.left))+(selected?" · "+name(selected.equipment):""),"job"),p=document.createElement("progress");p.max=1;p.value=j.frac;p.setAttribute("aria-label","Avancement de "+name(j.id));box.append(p,button("Annuler",()=>{E.cancelJob(i);draw(true);save();}));return box;}));
   }

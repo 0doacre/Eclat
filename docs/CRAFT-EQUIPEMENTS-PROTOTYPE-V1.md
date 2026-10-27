@@ -22,6 +22,16 @@ Une fabrication lancée par un geste conserve son outil dans `equipmentSelection
 
 L’interface d’essai n’est pas encore l’intégration graphique dans le jeu : elle n’inclut pas le guide complet, la relève et les écrans des âges suivants. Elle n’est pas une nouvelle version du jeu publiée sur la prévisualisation.
 
+## Lire et sentir le travail de l’atelier
+
+Sur grand écran, le stock est placé à côté du poste de travail et défile dans son propre panneau. Sur les formats étroits, il suit immédiatement le poste ; deux liens permettent de passer des matières à l’établi. Les outils restent accessibles dans un râtelier horizontal sur mobile, indépendamment des ingrédients choisis.
+
+Un clic pose une matière, un second la retire. « Posé », « Prêt à poser », stock vide et établi plein ont des états explicites ; une matière sélectionnée reste activable même si son stock est épuisé. La recherche filtre le stock sans modifier les matières déjà posées. Les recettes préparées indiquent le stock et les quantités manquantes dans les emplacements. Une action est désactivée seulement si aucun ingrédient n’est posé : les combinaisons inconnues restent expérimentables.
+
+Trois panneaux distinguent bourse, ouvrier et marchand. L’objectif d’embauche indique les écus manquants pour recruter et avancer un écu, ainsi que le nombre de lanières à vendre selon le barème actuel (hors réserve). Les jauges reflètent la progression réelle de l’ouvrier et le passage du marchand. Le surplus affiche son brut, sa taxe et son net avant vente ; le gain net réalisé est signalé après vente. Les tranches fiscales et le bilan détaillé sont repliés. L’estimation après salaire précise qu’elle exclut le coût des peaux.
+
+De brèves variations d’opacité accompagnent une sélection, une découverte, une fabrication de l’ouvrier et une vente réelle. Elles respectent la préférence de réduction des animations ; aucun faux cycle ou bruitage automatique n’est ajouté. Les règles de production, de salaire et de taxe restent inchangées dans cette passe.
+
 ## Premier circuit économique
 
 Le bouton « Essai ouvrier + marchand » remplace uniquement la partie d’essai après confirmation. Il prépare des terres et des stocks à l’âge 2, sans écus, racloir, établi aménagé ou couteau offerts. Quelques recettes sont connues pour concentrer le test sur la chaîne : racloir → poste aménagé → découpe et vente → recrutement et salaire → couteau. Ce scénario ne mesure pas le rythme normal depuis le Bois.
