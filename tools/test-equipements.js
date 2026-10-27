@@ -87,11 +87,51 @@ test("une matière disponible ne contourne pas l’équipement encore en attente
   assert.equal(E.count("manche"),0);assert.equal(E.count("percuteur_pierre"),0);
   E.add("caillou",2);E.tick(10);assert.equal(E.count("manche"),1);
 });
-test("une aiguille préparée dans la commande sert d’outil puis rejoint la Réserve", () => {
+test("une aiguille préparée dans la commande rejoint la Réserve et sert d’outil", () => {
   const E=mk();E.state.age=1;owns(E,"percuteur_pierre");E.state.zones.plaine=true;
   for(const id of ["aiguille","flute"])E.learn(id,true);stock(E,{os:5});
   const p=E.plan("flute",1);assert.equal(p.ok,true);assert.deepEqual(p.steps,[["aiguille",1],["flute",1]]);
   E.queue("flute",1,true);E.tick(20);assert.equal(E.count("flute"),1);assert.equal(E.count("aiguille"),2);
+});
+test("une aiguille fabriquée reste partagée si sa première commande attend des peaux", () => {
+  const E=mk();E.state.age=1;E.state.zones.plaine=true;owns(E,"percuteur_pierre");
+  for(const id of ["aiguille","outre","flute"])E.learn(id,true);
+  stock(E,{os:2,laniere:6});assert.equal(E.order("outre",1).ok,true);E.tick(5);
+  assert.equal(E.count("outre"),0);assert.equal(E.count("aiguille"),2);
+  assert.equal(E.state.hand.q[0].b.aiguille||0,0);
+  const resumed=mk();resumed.load(E.serialize());resumed.add("os",3);
+  assert.equal(resumed.order("flute",1).ok,true);resumed.tick(10);
+  assert.equal(resumed.count("flute"),1);assert.equal(resumed.count("outre"),0);assert.equal(resumed.count("aiguille"),2);
+});
+test("une seule aiguille suffit aux nouvelles coutures et n’entre pas dans leur réserve", () => {
+  const E=prepared();E.add("aiguille",1);stock(E,{cuir:8,laniere:6});
+  assert.equal(E.queue("outre",1,false).ok,true);assert.equal(E.state.hand.q[0].b.aiguille,undefined);E.tick(10);
+  assert.equal(E.count("outre"),1);assert.equal(E.count("aiguille"),1);
+  stock(E,{cuir:15,fibre:20});assert.equal(E.queue("tunique",1,false).ok,true);E.tick(10);
+  assert.equal(E.count("tunique"),1);assert.equal(E.count("aiguille"),1);
+});
+test("le four ne remplace pas automatiquement les procédés du foyer", () => {
+  const E=mk();E.state.age=3;owns(E,"four");
+  assert.equal(E.equipmentCheck("brique"),null);
+  assert.equal(E.equipmentCheck("charbon").required,"feu");
+  assert.equal(E.equipmentCheck("colle_os").required,"feu");
+  assert.equal(E.equipmentRecipe("four","cuisson",["argile"]),"brique");
+  assert.equal(E.equipmentRecipe("four","cuisson",["bois"]),null);
+});
+test("les trente premières briques cuisent au feu puis permettent de construire le four", () => {
+  const E=mk();E.state.age=2;owns(E,"feu");for(const id of ["brique","four"])E.learn(id,true);
+  stock(E,{argile:80,charbon:10});assert.equal(E.queue("brique",30,false).ok,true);E.tick(30);
+  assert.equal(E.count("brique"),30);assert.equal(E.count("four"),0);
+  assert.equal(E.craft("four",1,true).ok,true);assert.equal(E.count("four"),1);assert.equal(E.count("feu"),1);
+});
+test("la pioche prépare l’enclume avant la première utilisation du poste de frappe", () => {
+  const E=mk();E.state.age=3;owns(E,"percuteur_pierre");E.learn("enclume_pierre",true);
+  assert.equal(E.equipmentCheck("enclume_pierre").required,"pioche_pierre");
+  owns(E,"pioche_pierre");stock(E,{caillou:120,lingot_cuivre:2});
+  assert.equal(E.craft("enclume_pierre",1,true).ok,true);E.learn("plaque_cuivre",true);
+  assert.equal(E.equipmentRecipe("enclume_pierre","marteler",["lingot_cuivre"]),"plaque_cuivre");
+  assert.equal(E.queue("plaque_cuivre",2,false).ok,true);E.tick(10);
+  assert.equal(E.count("plaque_cuivre"),4);assert.equal(E.count("enclume_pierre"),1);assert.equal(E.count("percuteur_pierre"),1);
 });
 test("les outils incorporés restent consommés", () => {
   const E=prepared();stock(E,{manche:2,eclat:4,laniere:4});
@@ -119,6 +159,13 @@ test("une ancienne commande termine avec son ancien prix après deux chargements
   const old=oldOrder("outre"), E=mk();E.load(old.serialize());
   const again=mk();again.load(E.serialize());const needles=again.count("aiguille");
   again.tick(30);assert.equal(again.count("outre"),1);assert.equal(again.count("aiguille"),needles);assert.equal(again.state.hand.q.length,0);
+});
+test("les aiguilles préparées pour une ancienne couture restent ses matières réservées", () => {
+  const old=prepared(Normal);stock(old,{os:2,laniere:6});assert.equal(old.order("outre",1).ok,true);
+  const E=mk();E.load(old.serialize());E.tick(5);
+  assert.equal(E.count("aiguille"),0);assert.equal(E.state.hand.q[0].b.aiguille,2);
+  const resumed=mk();resumed.load(E.serialize());resumed.add("cuir",8);resumed.tick(10);
+  assert.equal(resumed.count("outre"),1);assert.equal(resumed.count("aiguille"),0);
 });
 test("les anciens rouages ne gagnent pas la capacité de la machine à une ressource", () => {
   const old=oldOrder("engrenage_bois",20);owns(old,"automate_bois");

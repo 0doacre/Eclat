@@ -46,7 +46,7 @@ Une sélection incompatible ne révèle pas une recette étrangère, ne consomme
 
 Le choix du poste et du mode participe à l’identité d’une recette. C’est nécessaire après le retrait des outils consommés : les aiguilles et la flûte demandent toutes deux de l’os ; la tunique et les gants demandent peau et fibres. Leurs équipements les distinguent. Le catalogue vérifie l’absence de collisions à équipement, mode et ingrédients identiques.
 
-`blocker`, `blockStation` et `nextStep` signalent les nouveaux outils requis. Le planificateur insère les outils fabriquables avant leurs usages ; les commandes ne travaillent pas sans eux quand des matières arrivent dans un ordre différent. Un outil préparé sur l’établi d’une commande reste utilisable par celle-ci puis rejoint la Réserve. La disponibilité n’introduit pas de réservation exclusive, d’usure ou de nouveau carburant.
+`blocker`, `blockStation` et `nextStep` signalent les nouveaux outils requis. Le planificateur insère les outils fabriquables avant leurs usages ; les commandes ne travaillent pas sans eux quand des matières arrivent dans un ordre différent. Un nouvel outil préparé par une commande rejoint immédiatement la Réserve et reste utilisable par les autres commandes, même si la première attend encore des matières. Les outils consommables des anciens lots restent au contraire leurs ingrédients réservés. La disponibilité n’introduit pas de réservation exclusive, d’usure ou de nouveau carburant.
 
 ## Anciennes commandes et parties
 
@@ -58,10 +58,25 @@ Les migrations de recettes 0.20 et 0.35 restent distinctes et prises en charge.
 
 ## Vérifications
 
-- `npm run test:equipements` : 20 scénarios, dont fabrication initiale, distinction des recettes, mauvais outil/mode sans consommation ni révélation, préparation des outils dans les chaînes, outils conservés et matériaux incorporés, migrations, remboursement, non-fusion, anciennes machines et chemin jusqu’à la Rivière avec respect des âges et des terres accessibles.
+- `npm run test:equipements` : 26 scénarios, dont fabrication initiale, distinction des recettes, mauvais outil/mode sans consommation ni révélation, préparation des outils dans les chaînes, partage de l’outil malgré une commande en attente, trente briques avant le four, enclume avant le martelage, outils conservés et matériaux incorporés, migrations, remboursement, non-fusion, anciennes machines et chemin jusqu’à la Rivière avec respect des âges et des terres accessibles.
 - `npm run test:equipements-ui` : 76 contrôles sur 320, 360, 390 et 980 px : fabrication effective, modes, catalogue, appui long, commandes, conservation de l’aiguille, rechargement de l’essai et partie habituelle inchangée. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
 - `npm test` : suite du jeu normal et nouveaux contrôles moteur. Le profil ne modifie pas les recettes ni les comptes de contenu de la partie normale.
 
 ## Prochain travail
 
-Confronter ce prototype aux scénarios de dépendances de Gemini. Vérifier l’ergonomie et l’apprentissage avant d’intégrer cette sélection dans l’Atelier principal. Les recettes après le Cuivre restent disponibles dans le moteur normal, mais leurs équipements ne sont pas encore conçus dans ce profil. L’étude et les souvenirs d’échec devront aussi être adaptés à la sélection d’équipement ; le prototype ne remplace pas leur interface complète.
+Le retour de Gemini est confronté au prototype dans la revue ci-dessous. Vérifier l’ergonomie et l’apprentissage avant d’intégrer cette sélection dans l’Atelier principal. Les recettes après le Cuivre restent disponibles dans le moteur normal, mais leurs équipements ne sont pas encore conçus dans ce profil. L’étude et les souvenirs d’échec devront aussi être adaptés à la sélection d’équipement ; le prototype ne remplace pas leur interface complète.
+
+## Revue des dépendances proposée par Gemini
+
+Les points d’amorçage du manche, de l’aiguille, des briques et de l’enclume sont valides comme risques de conception ; ils ne décrivent pas tous des défauts présents dans ce prototype. Les tests couvrent le percuteur de la Lisière, le racloir antérieur à la Rivière, les briques au feu avant le four et la préparation des outils par le planificateur.
+
+Quatre précisions sur les scénarios :
+
+- Le racloir du prototype consomme 3 os **et 1 pierre** ; le scénario qui ne fournit que des os doit ajouter cette pierre.
+- L’enclume est préparée avec la **pioche de pierre**, déjà disponible avant le Cuivre. Le poste de frappe combine ensuite enclume et percuteur ; il n’exige pas deux sélections actives.
+- Fabriquer l’outre rend le passage de la Rivière possible, mais **n’ouvre pas la terre immédiatement** : les explorations requises et le paiement sont conservés.
+- Pour les nouvelles coutures, **une aiguille possédée** suffit et n’est pas consommée. Les coûts historiques de 2 ou 4 aiguilles ne deviennent pas des exigences de possession artificielles. Les anciens lots consomment les quantités effectivement engagées.
+
+La compatibilité descendante est décidée recette par recette : le four accepte les briques, mais ne remplace pas automatiquement le feu pour la colle ou le charbon. Aucune règle globale « meilleur équipement pour tout » n’est introduite.
+
+Le retour identifie un cas réel, reproduit avant correction : l’aiguille fabriquée comme préalable pouvait rester dans l’établi de sa première commande, bloquant les autres usages si cette couture attendait des peaux. Les nouveaux outils rejoignent désormais la Réserve dès leur production. Un test de concurrence et rechargement vérifie leur partage ; un autre protège le comportement opposé pour les anciens lots où l’aiguille était encore un ingrédient consommable.

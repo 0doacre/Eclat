@@ -69,6 +69,8 @@
   function attach(E) {
     const cfg = E.D.CRAFT_EQUIPMENT;
     if (!cfg) return;
+    const equipmentItems = new Set(Object.values(cfg.equipment).map(eq => eq.item).filter(Boolean));
+    E.isEquipmentItem = id => equipmentItems.has(id);
     const requirements = (id) => {
       const eq = cfg.equipment[id];
       if (!eq) return null;

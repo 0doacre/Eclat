@@ -1733,18 +1733,22 @@
             const cost = isScaled(it) ? unit : Object.fromEntries(Object.entries(unit).map(([id, n]) => [id, n * k]));
             if (!(k >= 1) || !take(cost, j.b)) { j.w = 1; continue; }
             const last = sIdx === j.s.length - 1;
+            // Un outil neuf appartient à l'atelier dès sa fabrication : une
+            // couture en attente ne le monopolise pas. Les anciens lots gardent
+            // leurs aiguilles comme ingrédients réservés à leur ancien prix.
+            const reusable = !j.ancienAtelier && E.isEquipmentItem && E.isEquipmentItem(rec);
             // les pièces payées par l’avance des machines sont à elles, le reste aux mains
             const km = mCnt > 0 ? (hOn ? Math.min(k, Math.floor(j.mAcc[sIdx] + 1e-9)) : k) : 0, kh = k - km;
             if (km > 0) {
               j.mAcc[sIdx] = Math.max(0, j.mAcc[sIdx] - km);
               const out = produce(rec, km);
-              if (!last && !one) { j.b[rec] = (j.b[rec] || 0) + out; markSeen(rec); }
+              if (!last && !one && !reusable) { j.b[rec] = (j.b[rec] || 0) + out; markSeen(rec); }
               else add(rec, out);
               if (!offline) E.emit("handdone", { id: rec, n: out, bonus: out - it.r[2] * km, first: false, last, mach: true });
             }
             if (kh > 0) {
               j.hMade[sIdx] = (j.hMade[sIdx] || 0) + kh;
-              const r = makeIt(rec, kh, offline || !last, last ? null : j.b);
+              const r = makeIt(rec, kh, offline || !last, last || reusable ? null : j.b);
               if (!offline) E.emit("handdone", { id: rec, n: r.n, bonus: r.bonus, first: r.first, last });
             }
             if (last && j.to) deliver(j.to, rec, k);
