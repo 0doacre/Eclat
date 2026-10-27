@@ -95,8 +95,9 @@
       return { why: "equipment", equipment: c.equipment, required: Object.keys(c.missing)[0], missing: c.missing };
     };
     E.equipmentList = () => Object.entries(cfg.equipment).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
-    E.workplaceFor = id => id === "feu" || id === "four" ? id : "etabli";
-    E.workplaceList = () => [{ id: "etabli", n: "Établi", ready: true }, ...E.equipmentList().filter(x => x.id === "feu" || x.id === "four")];
+    const fixed = new Set(["feu", "four", "enclume_pierre", "polissoir"]);
+    E.workplaceFor = id => fixed.has(id) ? id : "etabli";
+    E.workplaceList = () => [{ id: "etabli", n: "Établi", ready: true }, ...E.equipmentList().filter(x => fixed.has(x.id)).map(x => ({ ...x, n: x.id === "feu" ? "Foyer" : x.n }))];
     const matching = (place, ids) => {
       const parts = Array.from(new Set(ids.filter(Boolean))).sort().join(",");
       return Object.keys(cfg.recipes).filter(id => E.ageOK(id) && Object.keys(E.item(id).r[1]).sort().join(",") === parts)

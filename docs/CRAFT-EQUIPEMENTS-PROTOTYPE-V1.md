@@ -8,11 +8,15 @@ Servir le dépôt avec son serveur local habituel, puis ouvrir **`prototype-equi
 
 La page propose une partie neuve et un exemple au Cuivre. Elle utilise exclusivement la clé locale `eclat.prototype.equipements.v1` ; elle ne charge, ne modifie ni n’exporte la partie habituelle. Le bouton de remise à zéro ne remplace que la partie d’essai, après confirmation. Le marqueur `craftProfile: equipements-v1` interdit l’importation silencieuse du prototype par le moteur normal, indépendamment du numéro de version de la sauvegarde.
 
-Le départ fournit un percuteur : le premier manche demande seulement de poser du bois et d’essayer. La recette du percuteur reste présente. Le choix du lieu apparaît avec le premier feu, puis le four devient un troisième lieu après sa construction. Les outils et réglages restent automatiques lorsqu’une combinaison ne donne qu’un résultat compatible avec le lieu choisi.
+Le départ fournit un percuteur, dont la recette reste présente. Le joueur choisit son atelier, pose ses matières, prend un outil visible et clique sur un geste. Exemple : Établi → bois → percuteur → Tailler. Le premier atelier est toujours visible ; les autres apparaissent lorsqu’ils sont disponibles.
 
-Lorsque plusieurs résultats sont possibles, le bouton « Essayer » propose les gestes correspondants, sans nommer les recettes à découvrir et sans consommer de matière avant le choix. Deux outils donnant le même résultat ne provoquent pas de choix supplémentaire. Une recette déjà connue prépare sa commande, y compris les outils et composants connus nécessaires.
+Les outils de l’atelier sont à droite des matières sur bureau et sous les matières sur mobile. Tous les outils disponibles pour ce poste restent visibles, indépendamment des ingrédients choisis. Chaque outil annonce ses gestes. Le geste courant est le bouton principal ; ses autres gestes sont des boutons d’action voisins, utilisables directement. Il n’y a plus de bouton « Essayer », de résolution automatique de l’outil ni de dialogue après tentative.
 
-Après la première fabrication, un volet replié « Les outils de l’atelier » donne accès à la sélection manuelle. L’appui long sur le nom de l’équipement actif et le bouton « Changer d’outil » ouvrent les mêmes variantes de sa famille. Le catalogue permet de changer de famille. Le retour au choix automatique est explicite. Les outils qui ne servent jamais d’ingrédients sont retirés de la grille des matières, mais restent dans ce catalogue et les recettes connues.
+Les postes fixes (foyer, four, poste de frappe, dalle de polissage) ne figurent plus parmi les outils portables de l’établi. Chaque poste montre son propre moyen de travail et ses gestes : braises du foyer, chambre de cuisson, enclume et percuteur, dalle de polissage. Les outils qui ne servent jamais d’ingrédients restent hors de la grille des matières.
+
+Cliquer une recette connue prépare ses matières, son atelier, son outil et son geste. Le bouton conserve le verbe correspondant ; une fabrication connue rejoint la file des mains. Le bouton distinct « Commander » conserve la préparation automatique des composants et outils connus par le planificateur. Un outil encore absent est signalé plutôt que remplacé silencieusement.
+
+Cette révision teste la compréhension des choix. Elle n’ajoute pas encore de bonus de vitesse ou de rendement aux outils.
 
 L’interface d’essai n’est pas encore l’intégration graphique dans le jeu : elle n’inclut pas le guide complet, la relève et les écrans des âges suivants. Elle n’est pas une nouvelle version du jeu publiée sur la prévisualisation.
 
@@ -41,7 +45,7 @@ Le feu propose chauffe douce, cuisson vive et carbonisation à l’étouffée. L
 L’option `{ gentleStart: false }` conserve l’amorçage strict pour les tests de dépendances. Par défaut, le percuteur est présent dès le départ sans augmenter les statistiques de fabrication. Une sauvegarde d’essai existante reçoit cet outil s’il lui manque, sans perdre ses stocks ni sa progression.
 
 - `workplaceList()` et `workplaceFor(equipmentId)` : lieux et appartenance des outils.
-- `attemptAt(workplaceId, ingredients)` : résolution automatique dans le seul lieu choisi ; renvoie `choice` si plusieurs résultats sont possibles. Les options publiques ne contiennent que l’équipement, le mode et le nom du geste.
+- `attemptAt(workplaceId, ingredients)` : ancienne résolution automatique conservée dans le moteur expérimental pour comparaison ; l’interface actuelle ne l’utilise plus. Renvoie `choice` si plusieurs résultats sont possibles.
 - `workplaceOptions(workplaceId, ingredients)` : candidats internes utilisables, dédoublonnés par résultat ; leurs identifiants de recettes ne sont pas affichés avant découverte.
 
 Le moteur du profil expose :
@@ -69,7 +73,7 @@ Les migrations de recettes 0.20 et 0.35 restent distinctes et prises en charge.
 ## Vérifications
 
 - `npm run test:equipements` : 32 scénarios, dont fabrication initiale, distinction des recettes, mauvais outil/mode sans consommation ni révélation, préparation et partage des outils, migrations, anciennes machines, chemin jusqu’à la Rivière et apprentissage progressif (départ, lieux, ambiguïtés et dédoublonnage).
-- `npm run test:equipements-ui` : 120 contrôles sur 320, 360, 390 et 980 px : départ sans réglages, révélation des lieux, fabrication automatique, choix contextuel, modes facultatifs, catalogue, appui long, commandes, conservation de l’aiguille, rechargement de l’essai et partie habituelle inchangée. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
+- `npm run test:equipements-ui` : 136 contrôles sur 320, 360, 390 et 980 px : outils visibles, gestes annoncés avant essai, premier manche au percuteur, outils propres au poste, aucune résolution automatique ni filtrage par les ingrédients, gestes secondaires directs, disposition mobile/bureau, commandes, conservation de l’aiguille et rechargement. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
 - `npm test` : suite du jeu normal et nouveaux contrôles moteur. Le profil ne modifie pas les recettes ni les comptes de contenu de la partie normale.
 
 ## Prochain travail
