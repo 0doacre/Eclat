@@ -18,9 +18,9 @@
     const modalOpen = () => !!document.querySelector(".modal:not(.hidden)");
     /* une matière de l’Atelier qui cache encore des recettes à tenter dès maintenant : celle-là vaut la peine d’être étudiée */
     function studyTile() {
-      const tiles = Array.from(document.querySelectorAll("[data-inv]"));
+      const tiles = Array.from(document.querySelectorAll(E.equipmentList?"[data-ae-resource]":"[data-inv]"));
       // une matière que la joueuse peut vraiment tenter maintenant : l’étude lui montrera au moins une action qui réagit
-      const ok = tiles.find((t) => !S().studied[t.dataset.inv] && E.usesLeft(t.dataset.inv) > 0);
+      const ok = tiles.find((t) => {const id=t.dataset.aeResource||t.dataset.inv;return !S().studied[id] && E.usesLeft(id) > 0;});
       return ok || null;
     }
     /* le joueur a déjà entendu le Troqueur */
@@ -47,13 +47,13 @@
         steps: [
           { tab: "domaine", at: '[data-hloop="lisiere:bois"]', text: "▶ Récolter : récolte en continu. Touche encore pour arrêter. L’icône du bois récolte un seul coup.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
-          { tab: "atelier", go: "Ouvre l’Atelier.", at: ".gestes",
-            text: "Une recette = une action + des ressources. Actions de départ : Tailler, Tresser, Assembler.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
-          { tab: "atelier", at: () => (U.slots.includes("bois") ? null : '[data-inv="bois"]'), text: "Touche le bois pour le poser sur l’établi.",
+          { tab: "atelier", go: "Ouvre l’Atelier.", at: E.equipmentList ? ".ae-tools" : ".gestes",
+            text: E.equipmentList ? "Choisis ton outil, pose tes matières, puis utilise son geste. Le percuteur taille, les mains assemblent ou tressent." : "Une recette = une action + des ressources. Actions de départ : Tailler, Tresser, Assembler.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
+          { tab: "atelier", at: () => (U.slots.includes("bois") ? null : E.equipmentList ? '#ae-item-bois' : '[data-inv="bois"]'), text: "Touche le bois pour le poser sur l’établi.",
             done: () => U.slots.includes("bois") || S().known.manche },
-          { tab: "atelier", at: () => (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Lance Tailler pour fabriquer ton premier objet." : "Choisis l’action Tailler."),
+          { tab: "atelier", at: () => E.equipmentList ? (U.geste === "tailler" ? '#ae-forge-tailler' : '#ae-tool-percuteur_pierre') : (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Lance Tailler pour fabriquer ton premier objet." : "Choisis l’action Tailler."),
             done: () => S().known.manche },
-          { tab: "atelier", at: "#result", done: () => S().known.corde, text: "Manche fabriqué. Sa recette est dans le Carnet.", next: true },
+          { tab: "atelier", at: E.equipmentList ? "#ae-result" : "#result", done: () => S().known.corde, text: "Manche fabriqué. Sa recette est dans le Carnet.", next: true },
           { tab: "domaine", go: "Retour au Domaine.", at: ".goal-card", text: "L’objectif en haut du Domaine indique la suite. 🏁 : les étapes de l’âge.", next: true, done: () => S().known.corde },
           { text: "Objectif : de quoi attacher deux objets. Récolte des fibres, puis essaie des actions à l’Atelier. Le thermomètre montre si tu approches d’une recette.",
             free: true, done: () => S().known.corde },
@@ -173,10 +173,10 @@
           { text: "Compris : partout où ce signe apparaît, il se lit désormais en mot. Les autres se trouvent dans le Journal, onglet Signes.", next: true }
         ] },
       { id: "etude", n: "Étudier une ressource",
-        when: () => U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
+        when: () => !E.equipmentList && U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
         still: () => !Object.keys(S().studied).length,
         steps: [
-          { tab: "atelier", at: studyTile, text: "Appuie longuement sur une ressource pour ouvrir sa fiche.",
+          { tab: "atelier", at: studyTile, text: E.equipmentList?"Ouvre la Fiche d’une matière pour l’étudier et chercher ce qu’elle permet de fabriquer.":"Appuie longuement sur une ressource pour ouvrir sa fiche.",
             done: () => !!document.querySelector('.modal:not(.hidden) [data-m="study"]') || Object.keys(S().studied).length > 0 },
           { modal: true, at: '.modal:not(.hidden) [data-m="study"]', back: 0,
             text: "Étudie-la contre un peu d’Intuition ✨ : tu sauras avec quelles actions elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },

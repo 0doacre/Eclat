@@ -1,0 +1,53 @@
+/* Postes et outils dans l’Atelier principal ; couleurs héritées du thème du jeu. */
+.atelier-equipe{min-width:0}
+.atelier-equipe .btn{min-height:44px;white-space:normal;overflow-wrap:anywhere;max-width:100%}
+.ae-posts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.ae-posts .btn{flex:1 1 120px}
+.ae-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(240px,1fr);gap:12px;align-items:start}
+.ae-layout>.card{min-width:0;margin:0}
+.ae-bench h2{font-size:24px;margin:0 0 12px}
+.ae-work{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:12px}
+.ae-work>div{min-width:0}
+.ae-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.atelier-equipe .ae-slots>.btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:105px!important;padding:8px 3px}
+.ae-slots small{display:block;font-size:12px;text-align:center}
+.ae-empty{border:1px dashed var(--line2)!important;opacity:1;background:var(--panel2)!important}
+.ae-filled{border-color:var(--acc)!important}
+.ae-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ae-actions .btn{flex:1 1 110px}
+#ae-result:empty{display:none}
+.ae-tools{border-left:1px solid var(--line2);padding-left:10px;min-width:0}
+.ae-tools h3{margin:0 0 10px}
+.ae-tools .btn{display:block;width:100%;text-align:left;margin-bottom:7px}
+.ae-tools small{display:block;font-size:12px;font-weight:400;margin-top:5px}
+.ae-stock input[type=search]{width:100%;min-height:44px;min-width:0}
+.ae-inventory{display:flex;flex-direction:column;gap:6px;max-height:64dvh;overflow:auto;padding:3px;margin-top:12px}
+.ae-resource{min-width:0}
+.atelier-equipe .ae-resource>.btn{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(3ch,auto);gap:10px;align-items:center;min-height:54px;width:100%;padding:9px 12px;text-align:left;opacity:1}
+.atelier-equipe .ae-item-name{word-break:normal;overflow-wrap:normal;white-space:normal;line-height:1.3}
+.ae-resource b{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.atelier-equipe .ae-resource>.btn:disabled{opacity:1;color:var(--muted);background:var(--panel2);border:1px solid var(--line2)}
+.ae-resource .ae-selected{border:2px solid var(--acc);background:var(--panel2)}
+.ae-resource .ic{vertical-align:middle}
+.ae-resource .ic,.ae-resource .ic.sm{margin:0;width:28px;height:28px;min-width:28px}
+.ae-known>div{display:flex;gap:8px;margin:6px 0}
+.ae-known>div>.btn:first-child{flex:1;text-align:left}
+.ae-economy-grid{display:grid;grid-template-columns:.8fr 1fr 1.2fr;gap:14px}
+.ae-economy-grid>section{min-width:0;padding:12px;border:1px solid var(--line2);border-radius:12px;background:var(--panel2)}
+.ae-economy-grid h3{margin:0 0 10px}
+.ae-economy-grid label{display:block;margin:10px 0}
+.ae-economy-grid input[type=number]{width:85px;min-height:44px}
+.ae-economy-grid input[type=checkbox]{width:22px;height:22px;vertical-align:middle}
+.ae-economy-grid progress{width:100%;height:14px;accent-color:var(--acc)}
+.ae-economy-grid .btn{margin:4px 3px 4px 0}
+#ae-wallet{font-size:26px}
+#ae-sale{color:var(--good);font-weight:700}
+.ae-economy-grid summary{min-height:44px;padding:10px 0;cursor:pointer}
+.ae-mini{position:fixed;left:10px;right:10px;bottom:calc(var(--nav) + var(--safe-b) + 8px);z-index:35;max-width:620px;margin:0 auto;display:flex;align-items:center;gap:5px;border:1px solid var(--line2);border-radius:10px;padding:7px;background:var(--panel);box-shadow:0 4px 20px #0003}
+.ae-mini[hidden]{display:none!important}
+.ae-mini-tool{min-width:0;flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.atelier-equipe .ae-mini .btn{flex-shrink:0;min-width:44px;min-height:44px;padding:7px}
+.atelier-equipe .ae-mini [data-ae=forge]{flex:0 1 100px;max-width:110px}
+.ae-mini .ic{width:24px;height:24px;min-width:24px;margin:0}
+@media(max-width:1100px){.ae-layout{grid-template-columns:minmax(0,1fr)}.ae-inventory{max-height:350px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}.ae-work{grid-template-columns:minmax(0,1fr)}.ae-tools{border-left:0;border-top:1px solid var(--line2);padding:10px 0 0;display:flex;overflow:auto;gap:8px}.ae-tools h3{display:none}.ae-tools .btn{flex:0 0 145px;width:145px}}
+@media(max-width:650px){.ae-slots .btn{min-height:95px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}}

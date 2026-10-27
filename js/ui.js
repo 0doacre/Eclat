@@ -4,14 +4,15 @@
  * et le service worker. Le reste vit dans des modules créés plus bas (MODULES). */
 (function () {
   "use strict";
-  const D = window.ECLAT_DATA;
-  const ENGINE = window.EclatEngine;
+  const CRAFT_PREVIEW = window.ECLAT_CRAFT_PREVIEW === true;
+  const D = CRAFT_PREVIEW ? window.EclatEquipements.createData(window.ECLAT_DATA,{fullGame:true}) : window.ECLAT_DATA;
+  const ENGINE = CRAFT_PREVIEW ? window.EclatEngine.withData(D) : window.EclatEngine;
   const E = ENGINE.createEngine();
   const A = window.EclatAudio;
   const Sky = window.EclatSky;
   /* Clé historique conservée : c’est là que vivent les parties en cours. */
-  const SAVE_KEY = "eclat.save.v1";
-  const BACKUP_KEY = "eclat.backups";
+  const SAVE_KEY = CRAFT_PREVIEW ? "eclat.preview.craft.v1" : "eclat.save.v1";
+  const BACKUP_KEY = CRAFT_PREVIEW ? "eclat.preview.craft.backups" : "eclat.backups";
   const MAX_BACKUPS = 5;
   const S = () => E.state;
   const I = D.ITEMS;
@@ -72,6 +73,7 @@
   function needText(id, b, html) {
     b = b || E.blocker(id);
     if (!b) return "";
+    if (b.why === "equipment") return "il faut : "+(I[b.required] ? I[b.required].n : "un outil adapté");
     if (b.why === "owned") return "déjà possédé";
     const st = E.blockStation(id, b), g = D.GESTES[I[id].r[0]];
     const det = b.why === "heat" ? fmtHeat(b.heat) : b.why === "geste" ? "pour " + g.v : "plus solide, pour " + g.v;
@@ -602,7 +604,7 @@
    * n’écrase rien, et un échec d’écriture laisse la partie en mémoire en le disant (barre #saveBar). */
   const Stk = window.EclatStockage.create({
     storage: { getItem: (k) => localStorage.getItem(k), setItem: (k, v) => localStorage.setItem(k, v) },
-    key: SAVE_KEY, liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
+    key: SAVE_KEY, lockName:CRAFT_PREVIEW?"eclat-preview-craft":"eclat-partie", liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
   });
   U.peutEcrire = () => Stk.peutEcrire();
   /* l’affichage resserré (Domaine et Carnet) : un seul réglage, dans le menu. Les anciennes parties avaient deux réglages. */
@@ -616,6 +618,12 @@
     let raw = null;
     try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { Stk.lire(null); return "none"; }
     Stk.lire(raw);
+    if (!raw && CRAFT_PREVIEW) {
+      try {
+        const original=localStorage.getItem("eclat.save.v1");
+        if(original){E.load(original);return "ok";}
+      } catch(e) { toast("La partie habituelle n’a pas pu être copiée. L’essai commence avec une nouvelle partie."); }
+    }
     if (!raw) return "none";
     const v = verOf(raw);
     if (v > 0 && v < ENGINE.SAVE_VERSION) pushBackup(raw, "Avant la mise à jour " + D.VERSION);
@@ -715,7 +723,7 @@
     setItem: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* stockage bloqué */ } },
     removeItem: (k) => { try { localStorage.removeItem(k); } catch (e) { /* stockage bloqué */ } }
   };
-  const Cloud = window.EclatCloud.create({ storage: safeStore, server: () => safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
+  const Cloud = window.EclatCloud.create({ storage: CRAFT_PREVIEW ? {getItem:k=>safeStore.getItem("preview."+k),setItem:(k,v)=>safeStore.setItem("preview."+k,v),removeItem:k=>safeStore.removeItem("preview."+k)} : safeStore, server: () => CRAFT_PREVIEW ? "" : safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
   U.sync = { busy: false, conflict: null, err: null };
   /* remplace le contenu de la fenêtre ouverte (ou en ouvre une) */
   function swapModal(o) {
@@ -1042,6 +1050,7 @@
     if (U.tab === "machines") { Dom.live($("#v-machines")); soundScene(); }
     if (U.tab === "carte") Carte.live($("#v-carte"));
     if (U.tab === "atelier") {
+      if(Atl.equipmentLive)Atl.equipmentLive();
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
     }

@@ -20,6 +20,7 @@
   <style>/* Les éléments de comparaison Atlas ne s’affichent pas en mode classique. */ .atlas-only,.atlas-map-heading,.atlas-map-footer,.atlas-landscape,.atlas-terrain,.atlas-compass{display:none}</style>
   <link id="atlasStylesheet" rel="stylesheet" href="css/design-preview.css">
   <link id="atlasMapStylesheet" rel="stylesheet" href="css/carte-atlas.css">
+  <link rel="stylesheet" href="css/atelier-equipe.css">
 </head>
 <body>
   <div id="app">
@@ -103,11 +104,14 @@
     })();
   </script>
   <script src="js/config.js"></script>
+  <script>window.ECLAT_CRAFT_PREVIEW = new URLSearchParams(location.search).get("atelier") !== "classique";</script>
   <script src="js/data.js"></script>
   <script src="js/recit.js"></script>
   <script src="js/signes.js"></script>
   <script src="js/constellations.js"></script>
   <script src="js/transmission.js"></script>
+  <script src="js/atelier-economie.js"></script>
+  <script src="js/equipements.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/stockage.js"></script>
   <script src="js/audio.js"></script>
@@ -130,6 +134,7 @@
   <script src="js/arbre.js"></script>
   <script src="js/carnet.js"></script>
   <script src="js/atelier.js"></script>
+  <script src="js/atelier-equipe.js"></script>
   <script src="js/ecouteurs.js"></script>
   <script src="js/fenetres.js"></script>
   <script src="js/ui.js"></script>

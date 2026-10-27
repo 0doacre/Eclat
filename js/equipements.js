@@ -60,7 +60,7 @@
       if (keys.has(key)) throw new Error("Recettes ambiguës pour cet équipement : " + key);
       keys.add(key);
     }
-    D.CRAFT_EQUIPMENT = { equipment, recipes, legacyInputs, startEquipment: options.gentleStart === false ? {} : { percuteur_pierre: 1 } };
+    D.CRAFT_EQUIPMENT = { equipment, recipes, legacyInputs, fullGame:options.fullGame===true, startEquipment: options.gentleStart === false ? {} : { percuteur_pierre: 1 } };
     // Le parcours strict teste l'amorçage du percuteur. Le parcours progressif
     // conserve le manche comme premier objectif et fournit cet outil de départ.
     if (options.gentleStart === false) D.OBJECTIVES.unshift(["percuteur_pierre", "Assemble deux cailloux de la Lisière pour préparer ton percuteur."]);

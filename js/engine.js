@@ -36,7 +36,7 @@
     if (it.r) {
       const k = keyOf(it.r[0], Object.keys(it.r[1]));
       if (RECIPES[k] && !D.CRAFT_EQUIPMENT) throw new Error("Recette en double : " + k + " (" + RECIPES[k] + " / " + id + ")");
-      if (!RECIPES[k]) RECIPES[k] = id;
+      if (!RECIPES[k] || (D.CRAFT_EQUIPMENT?.fullGame && it.a > 3)) RECIPES[k] = id;
     }
   }
   const ZONES = {};
@@ -1052,9 +1052,13 @@
       // flûte et une aiguille, ou une tunique et des gants.
       let selectedRecipe = null;
       if (D.CRAFT_EQUIPMENT) {
-        if (!selection || !E.equipmentRecipe) return { kind: "equipment", why: "selection" };
-        selectedRecipe = E.equipmentRecipe(selection.equipment, selection.mode, ids);
-        if (!selectedRecipe || item(selectedRecipe).r[0] !== g) return { kind: "equipment", why: "incompatible" };
+        const historical = RECIPES[keyOf(g, ids)];
+        const later = D.CRAFT_EQUIPMENT.fullGame && !selection && (!historical || item(historical).a > 3);
+        if (!later) {
+          if (!selection || !E.equipmentRecipe) return { kind: "equipment", why: "selection" };
+          selectedRecipe = E.equipmentRecipe(selection.equipment, selection.mode, ids);
+          if (!selectedRecipe || item(selectedRecipe).r[0] !== g) return { kind: "equipment", why: "incompatible" };
+        }
       }
       S.stats.tries++;
       if (g === "tailler" && ids.includes("os") && (ids.includes("eclat") || ids.includes("silex")) && rand() < 1 / 20000) {
