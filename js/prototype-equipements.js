@@ -9,6 +9,7 @@
   const $ = s => document.querySelector(s), name = id => D.ITEMS[id]?.n || id;
   const actionName = (equipment, id, fallback) => ({doux:"Chauffer doucement",vif:"Cuire",etouffee:"Carboniser",cuisson:"Cuire",fonte:"Fondre"})[id] || fallback;
   const seconds = n => n.toLocaleString("fr-FR",{maximumFractionDigits:2})+" s";
+  const money=n=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" écus";
   const text = (tag, value, cls) => { const e = document.createElement(tag); e.textContent = value; if (cls) e.className = cls; return e; };
   function button(label, fn, cls, disabled) { const e=text("button",label,cls);e.type="button";e.disabled=!!disabled;e.onclick=fn;return e; }
   function notice(value) { $("#notice").textContent=value; }
@@ -24,7 +25,13 @@
   function reset(demo) {
     if(!confirm("Remplacer uniquement cette partie d’essai ?"))return;
     E=Engine.createEngine();eq="mains";mode="assembler";slots=[];place="etabli";prepared=null;saveOK=true;
-    if(demo){
+    if(demo==="chain"){
+      const s=E.state;s.age=2;s.introSeen=true;s.flags.economyTrial=true;
+      for(const z of ["plaine","riviere"]){s.zones[z]=true;s.pass[z]={done:true,paid:{}};}
+      for(const id of ["manche","corde","eclat","laniere","racloir_os","couteau","etabli_amenage"])E.learn(id,true);
+      for(const[id,n]of Object.entries({bois:30,fibre:20,corde:3,caillou:20,os:15,cuir:60,silex:10}))E.add(id,n);
+      eq="percuteur_pierre";mode="tailler";slots=["os","caillou"];E.recalc();
+    }else if(demo){
       const s=E.state;s.age=3;s.cycle=2;s.flags.extDone=true;s.flags.lineDone=true;s.introSeen=true;
       for(const z of ["plaine","riviere","collines"]){s.zones[z]=true;s.pass[z]={done:true,paid:{}};}
       for(const[id,it]of Object.entries(D.ITEMS))if(it.a<=3){if(it.r)E.learn(id,true);E.add(id,["res","comp"].includes(it.t)?100:1);if(it.r)s.made[id]=1;}
@@ -33,6 +40,15 @@
     signature="";notice(demo?"Exemple au Cuivre chargé.":"Nouvelle partie d’essai.");draw(true);save();
   }
   $("#fresh").onclick=()=>reset(false);$("#demo").onclick=()=>reset(true);
+  $("#chain-demo").onclick=()=>reset("chain");
+  $("#build-post").onclick=()=>{E.learn("etabli_amenage",true);const r=E.order("etabli_amenage",1);notice(r.ok?"L’établi est en cours d’aménagement.":"L’aménagement attend des matériaux ou une place dans les commandes.");draw(true);save();};
+  $("#hire-worker").onclick=()=>{const r=E.workerHire();notice(r.ok?"Un ouvrier rejoint ton établi.":r.why==="ecus"?"Vends quelques lanières pour financer l’embauche.":"Aménage d’abord l’établi et prépare un outil de découpe.");draw(true);save();};
+  $("#fund-worker").onclick=()=>{notice(E.workerFund(1).ok?"Un écu mis de côté pour les salaires.":"Il te faut un ouvrier et un écu disponible.");draw(true);save();};
+  $("#toggle-worker").onclick=()=>{E.workerSet(!E.atelierEconomyInfo().working);draw(true);save();};
+  $("#withdraw-worker").onclick=()=>{E.workerWithdraw();draw(true);save();};
+  const configureMerchant=()=>{E.merchantConfigure($("#merchant-on").checked,$("#merchant-reserve").value);draw(true);save();};
+  $("#merchant-on").onchange=configureMerchant;$("#merchant-reserve").onchange=configureMerchant;
+  $("#sell-surplus").onclick=()=>{const r=E.merchantSell(E.count("laniere"));notice(r.ok?"Vendu : "+r.n+" lanières · "+money(r.net)+" après taxe.":"Aucun surplus au-dessus de ta réserve.");draw(true);save();};
   function select(id,nextMode) {
     const item=E.equipmentList().find(x=>x.id===id&&x.ready);if(!item)return;
     eq=id;mode=Object.hasOwn(item.modes,nextMode)?nextMode:Object.keys(item.modes)[0];
@@ -63,8 +79,8 @@
   $("#forge").onclick=()=>perform(mode);
   $("#batch").onclick=()=>{
     const id=E.equipmentRecipe(eq,mode,slots);if(id!=="laniere"||!E.state.known[id])return;
-    const r=E.queue(id,10,false,undefined,{equipment:eq,mode});
-    notice(r.ok?"Découpe lancée : "+(D.ITEMS[id].r[2]*10)+" lanières avec "+name(eq)+".":r.why==="qty"?"Pas assez de matières pour dix fabrications.":"Impossible de lancer cette découpe pour le moment.");draw(true);save();
+    const times=E.equipmentList().find(x=>x.id===eq)?.batch||1,r=E.queue(id,times,false,undefined,{equipment:eq,mode});
+    notice(r.ok?"Découpe lancée : "+(D.ITEMS[id].r[2]*times)+" lanières avec "+name(eq)+".":r.why==="qty"?"Pas assez de matières pour cette série.":"Impossible de lancer cette découpe pour le moment.");draw(true);save();
   };
   function draw(force) {
     const available=E.equipmentList(),ready=available.filter(x=>x.ready);
@@ -74,7 +90,8 @@
     if(!tools.some(x=>x.id===eq)){eq=tools[0].id;mode=Object.keys(tools[0].modes)[0];prepared=null;}
     const selected=ready.find(x=>x.id===eq);if(!Object.hasOwn(selected.modes,mode))mode=Object.keys(selected.modes)[0];
     const s=E.state,info=E.handInfo();
-    const structural=[place,prepared,eq,mode,slots.join(),s.age,Object.keys(s.seen).join(),Object.keys(s.known).join(),ready.map(x=>x.id).join(),info.jobs.map(j=>j.id).join(),JSON.stringify(s.zones),JSON.stringify(s.pass),s.exp.active?.z,s.exp.done&&JSON.stringify(s.exp.done)].join("|");
+    const economy=E.atelierEconomyInfo();
+    const structural=[economy.hired,economy.produced>0,s.ecus>=economy.hire,E.count("etabli_amenage")>=1,place,prepared,eq,mode,slots.join(),s.age,Object.keys(s.seen).join(),Object.keys(s.known).join(),ready.map(x=>x.id).join(),info.jobs.map(j=>j.id).join(),JSON.stringify(s.zones),JSON.stringify(s.pass),s.exp.active?.z,s.exp.done&&JSON.stringify(s.exp.done)].join("|");
     if(force||structural!==signature){
       signature=structural;
       $("#workplaces").replaceChildren(...workplaces.map(x=>{const b=button(x.n,()=>{place=x.id;prepared=null;draw(true);save();},x.id===place?"on":"");b.dataset.workplace=x.id;b.setAttribute("aria-pressed",String(x.id===place));return b;}));
@@ -83,6 +100,10 @@
       const hint=id&&id!==goal?.ob?.id?D.ITEMS[id].h:null;
       const end=id&&D.ITEMS[id].a>3;
       $("#goal").replaceChildren(text("b",end?"Atelier au Cuivre":id?name(id):D.AGES[s.age].n),text("p",end?"Le prototype s’arrête au Cuivre. Tu peux explorer les recettes et les équipements de ces quatre âges.":hint||goal?.ob?.txt||"Explore les possibilités de ton atelier."));
+      if(s.flags.economyTrial){
+        const step=E.count("racloir_os")<1?["Un premier outil","Os + pierre, au percuteur : taille ton racloir."]:E.count("etabli_amenage")<1?["Un poste pour travailler","Aménage l’établi avec le bouton ci-dessous."]:!economy.hired?["Financer l’embauche","Coupe des lanières au racloir. Vends le surplus pour payer l’embauche puis une avance de salaire. Ajuste la réserve du marchand."]:E.count("couteau")<1?["Améliorer l’outillage","Avance un écu et mets l’ouvrier au travail. Fabrique ensuite le couteau depuis les recettes connues : il accélérera aussi sa découpe."]:["L’atelier travaille","Active le marchand, choisis ta réserve et surveille l’avance. Récolte des peaux pour alimenter la production."];
+        $("#goal").replaceChildren(text("b",step[0]),text("p",step[1]));
+      }
       const toolNames={feu:"Braises du foyer",four:"Chambre de cuisson",enclume_pierre:"Enclume et percuteur",polissoir:"Dalle de polissage"};
       $("#tool-title").textContent=place==="etabli"?"Tes outils":"Au poste";
       $("#tools").replaceChildren(...tools.map(x=>{const b=button(toolNames[x.id]||x.n,()=>select(x.id),x.id===eq?"on":"");b.append(text("small",Object.values(x.modes).map((n,i)=>actionName(x.id,Object.keys(x.modes)[i],n)).join(" · ")));if(x.benefit)b.append(text("small",x.benefit));b.dataset.equipment=x.id;b.setAttribute("aria-pressed",String(x.id===eq));return b;}));
@@ -111,10 +132,22 @@
     const recipe=E.equipmentRecipe(eq,mode,slots),cutting=recipe==="laniere"&&s.known.laniere;
     $("#batch").hidden=!cutting;$("#tool-benefit").hidden=!cutting;
     if(cutting){
-      const times=10,selection={equipment:eq,mode},time=E.batchTime(recipe,times,selection);
+      const times=selected.batch||1,selection={equipment:eq,mode},time=E.batchTime(recipe,times,selection);
+      $("#batch").textContent="Couper ×"+times;
       const baseline=E.batchTime(recipe,times,{equipment:"racloir_os",mode:"couper"});
       $("#tool-benefit").textContent=(D.ITEMS[recipe].r[2]*times)+" lanières · "+seconds(time)+" avec "+name(eq)+(eq==="couteau"?" · 2× plus vite qu’au racloir.":E.count("couteau")>=1?" · Le couteau les coupe en "+seconds(baseline/2)+".":".");
     }
+    const eco=E.atelierEconomyInfo();$("#economy-card").hidden=!s.known.laniere;
+    $("#economy-wallet").textContent="Bourse : "+money(s.ecus);
+    $("#build-post").hidden=E.count("etabli_amenage")>=1;
+    $("#hire-worker").hidden=eco.hired;$("#hire-worker").textContent="Embaucher · "+money(eco.hire);
+    for(const id of ["fund-worker","toggle-worker","withdraw-worker"])$("#"+id).hidden=!eco.hired;
+    $("#withdraw-worker").disabled=eco.working||eco.budget<=0;
+    $("#toggle-worker").textContent=eco.working?"Mettre en pause":"Mettre au travail";
+    $("#worker-info").textContent=eco.status+" · Salaire : "+money(eco.wage)+" par fabrication · Avance restante : "+money(eco.budget)+(eco.hired?" · Outil : "+name(eco.tool||"aucun")+" · "+eco.produced+" lanières produites":"");
+    $("#merchant-on").checked=eco.merchant;if(document.activeElement!==$("#merchant-reserve"))$("#merchant-reserve").value=eco.reserve;
+    $("#merchant-tariff").textContent="Par minute : 10 % sur les "+eco.quota+" premières lanières, puis 20 %, 30 %, 40 % par tranche de "+eco.quota+", et 50 % au-delà. Seuil lié à la capacité de production, fixé pour la minute. Prochaine vente : tranche à "+eco.nextRate+" %. Remise à zéro dans "+Math.ceil(eco.period-eco.clock)+" s.";
+    $("#merchant-info").textContent=eco.totalSold+" vendues · Brut : "+money(eco.gross)+" · Taxes : "+money(eco.tax)+" · Net : "+money(eco.net)+" · Salaires versés : "+money(eco.wages);
     document.querySelectorAll("[data-count]").forEach(e=>{e.textContent=Math.floor(E.count(e.dataset.count)).toLocaleString("fr-FR");e.parentElement.disabled=E.count(e.dataset.count)<1||slots.includes(e.dataset.count);});
     $("#job-card").hidden=!info.jobs.length;
     $("#jobs").replaceChildren(...info.jobs.map((j,i)=>{const selected=E.state.hand.q[i].equipmentSelection;const box=text("div",name(j.id)+" · "+(j.wait?"En attente":"En cours · "+seconds(j.left))+(selected?" · "+name(selected.equipment):""),"job"),p=document.createElement("progress");p.max=1;p.value=j.frac;p.setAttribute("aria-label","Avancement de "+name(j.id));box.append(p,button("Annuler",()=>{E.cancelJob(i);draw(true);save();}));return box;}));

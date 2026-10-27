@@ -23,12 +23,13 @@
     I.polissoir = { n: "Dalle de polissage", a: 3, t: "tool", ic: "🪨",
       r: ["assembler", { caillou: 8, bois: 4 }, 1], u: "Travaille les surfaces avec du sable, consommé comme abrasif.",
       h: "Une pierre stable sur un support de bois : le sable fera le reste." };
+    I.etabli_amenage = {n:"Établi aménagé",a:0,t:"tool",ic:"🪵",r:["assembler",{bois:10,corde:3,caillou:4},1],u:"Un poste stable où installer un ouvrier.",h:"Du bois lié par des cordes, calé sur quelques pierres."};
 
     const equipment = {
       mains: { n: "Mains", family: "main", modes: { assembler: "Assembler", tresser: "Tresser" } },
       percuteur_pierre: { n: "Percuteur de pierre", item: "percuteur_pierre", family: "taille", modes: { tailler: "Tailler" } },
-      racloir_os: { n: "Racloir en os", item: "racloir_os", family: "coupe", modes: { couper: "Couper" } },
-      couteau: { n: "Couteau de silex", item: "couteau", family: "coupe", modes: { couper: "Couper", entailler: "Entailler" }, speed: { laniere: 2 }, benefit: "Couper : 2× plus vite" },
+      racloir_os: { n: "Racloir en os", item: "racloir_os", family: "coupe", modes: { couper: "Couper" },batch:5 },
+      couteau: { n: "Couteau de silex", item: "couteau", family: "coupe", modes: { couper: "Couper", entailler: "Entailler" }, batch:10,speed: { laniere: 2 }, benefit: "Couper : 2× plus vite" },
       aiguille: { n: "Aiguille en os", item: "aiguille", family: "couture", modes: { coudre: "Coudre", percer: "Percer" } },
       feu: { n: "Feu de camp", item: "feu", family: "chauffe", modes: { doux: "Chauffe douce", vif: "Cuisson vive", etouffee: "À l’étouffée" } },
       four: { n: "Four en argile", item: "four", family: "chauffe", modes: { cuisson: "Cuisson", fonte: "Fonte" } },
@@ -70,6 +71,7 @@
     const cfg = E.D.CRAFT_EQUIPMENT;
     if (!cfg) return;
     const equipmentItems = new Set(Object.values(cfg.equipment).map(eq => eq.item).filter(Boolean));
+    equipmentItems.add("etabli_amenage");
     E.isEquipmentItem = id => equipmentItems.has(id);
     const requirements = (id) => {
       const eq = cfg.equipment[id];
@@ -108,7 +110,7 @@
     E.equipmentList = () => Object.entries(cfg.equipment).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
     const fixed = new Set(["feu", "four", "enclume_pierre", "polissoir"]);
     E.workplaceFor = id => fixed.has(id) ? id : "etabli";
-    E.workplaceList = () => [{ id: "etabli", n: "Établi", ready: true }, ...E.equipmentList().filter(x => fixed.has(x.id)).map(x => ({ ...x, n: x.id === "feu" ? "Foyer" : x.n }))];
+    E.workplaceList = () => [{ id: "etabli", n: E.count("etabli_amenage")>=1?"Établi aménagé":"Établi", ready: true }, ...E.equipmentList().filter(x => fixed.has(x.id)).map(x => ({ ...x, n: x.id === "feu" ? "Foyer" : x.n }))];
     const matching = (place, ids) => {
       const parts = Array.from(new Set(ids.filter(Boolean))).sort().join(",");
       return Object.keys(cfg.recipes).filter(id => E.ageOK(id) && Object.keys(E.item(id).r[1]).sort().join(",") === parts)
@@ -149,6 +151,7 @@
       // ni dépenser de matière, ni contaminer les souvenirs du geste.
       return E.attempt(E.item(recipe).r[0], parts, { equipment, mode });
     };
+    (root.EclatAtelierEconomy||require("./atelier-economie.js")).attach(E);
   }
   const API = { createData, attach };
   root.EclatEquipements = API;

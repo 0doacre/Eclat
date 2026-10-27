@@ -22,7 +22,7 @@ function prepared(api = Proto) {
 }
 
 test("le profil conserve toutes les recettes et isole ses transformations", () => {
-  assert.equal(Object.keys(Base.ITEMS).length,267); assert.equal(Object.keys(D.ITEMS).length,270);
+  assert.equal(Object.keys(Base.ITEMS).length,267); assert.equal(Object.keys(D.ITEMS).length,271);
   const before = Object.keys(Base.ITEMS).filter(id=>Base.ITEMS[id].r&&Base.ITEMS[id].a<=3);
   assert.equal(before.length,54);
   for (const id of before) { assert.ok(D.ITEMS[id].r); assert.ok(D.CRAFT_EQUIPMENT.recipes[id]?.length); }

@@ -79,8 +79,8 @@ async function run(){
     const strips=await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("laniere"));
     await p.locator("#batch").click();
     ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.state.hand.q.some(j=>j.id==="laniere"&&j.equipmentSelection?.equipment==="racloir_os")),width+" : série respecte le racloir sélectionné");
-    await p.waitForFunction(n=>window.__eclatEquipmentPrototype.E.count("laniere")===n+20,strips);checks++;
-    ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("cuir"))===leather-10,width+" : coût réel de dix découpes");
+    await p.waitForFunction(n=>window.__eclatEquipmentPrototype.E.count("laniere")===n+10,strips);checks++;
+    ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("cuir"))===leather-5,width+" : coût réel des cinq découpes au racloir");
     await p.locator('[data-equipment="couteau"]').click();
     const rack=await p.locator(".tool-rack").boundingBox(),slots=await p.locator("#slots").boundingBox();
     ok(width>600?rack.x>slots.x+slots.width:rack.y>=slots.y+slots.height,width+" : outils à droite sur bureau et sous les matières sur mobile");
@@ -89,6 +89,26 @@ async function run(){
     ok(await p.evaluate(raw=>localStorage.getItem("eclat.save.v1")===raw,normal),width+" : partie habituelle intacte");
     await p.evaluate(()=>window.dispatchEvent(new Event("pagehide")));await p.reload();await p.waitForFunction(()=>!!window.__eclatEquipmentPrototype);
     ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("flute"))===1,width+" : partie d’essai rechargée");
+    await p.locator("#chain-demo").click();
+    ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.state.ecus)===0,width+" : chaîne sans écus gratuits");
+    await p.locator("#forge").click();await p.waitForFunction(()=>window.__eclatEquipmentPrototype.E.count("racloir_os")===1);checks++;
+    await p.evaluate(()=>window.__eclatEquipmentPrototype.prepare("laniere"));
+    ok(await p.locator("#batch").textContent()==="Couper ×5",width+" : capacité du racloir");
+    await p.locator("#build-post").click();await p.waitForFunction(()=>window.__eclatEquipmentPrototype.E.count("etabli_amenage")===1);checks++;
+    for(let i=0;i<4;i++){const before=await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("laniere"));await p.locator("#batch").click();await p.waitForFunction(n=>window.__eclatEquipmentPrototype.E.count("laniere")>=n+10,before);}
+    await p.locator("#merchant-reserve").fill("0");await p.locator("#merchant-reserve").press("Tab");await p.locator("#sell-surplus").click();
+    ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.state.ecus)>4.12,width+" : premières ventes financent l’embauche et l’avance");
+    await p.locator("#hire-worker").click();await p.locator("#fund-worker").click();await p.locator("#toggle-worker").click();await p.locator("#merchant-on").check();
+    await p.waitForFunction(()=>window.__eclatEquipmentPrototype.E.atelierEconomyInfo().produced>0);checks++;
+    ok((await p.locator("#worker-info").textContent()).includes("Avance restante"),width+" : suivi du salaire");
+    await p.locator("#recipes .row").filter({has:p.getByRole("button",{name:"Couteau de silex",exact:true})}).getByRole("button",{name:"Commander",exact:true}).click();
+    await p.waitForFunction(()=>window.__eclatEquipmentPrototype.E.count("couteau")===1);checks++;
+    ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.atelierEconomyInfo().tool)==="couteau",width+" : ouvrier bénéficie de l’amélioration fabriquée");
+    await geometry(p,width+"/économie");
+    if(process.env.EQUIPMENT_SHOTS&&width===390){await p.locator("#economy-card").scrollIntoViewIfNeeded();await p.screenshot({path:path.join(process.env.EQUIPMENT_SHOTS,"economie-390.png")});}
+    await p.evaluate(()=>window.dispatchEvent(new Event("pagehide")));await p.reload();await p.waitForFunction(()=>!!window.__eclatEquipmentPrototype);
+    ok(await p.evaluate(()=>{const e=window.__eclatEquipmentPrototype.E.atelierEconomyInfo();return e.hired&&e.merchant&&e.totalSold>0;}),width+" : contrat et marchand rechargés");
+    ok(await p.evaluate(raw=>localStorage.getItem("eclat.save.v1")===raw,normal),width+" : économie isolée du jeu habituel");
     await p.goto("http://127.0.0.1:"+server.address().port+"/index.html");await p.waitForFunction(()=>!!window.__eclat);
     ok(await p.evaluate(()=>window.__eclat.E.SAVE_VERSION===12&&window.__eclat.E.equipmentChoices===undefined&&Object.keys(window.__eclat.E.D.ITEMS).length===267),width+" : jeu habituel distinct et fonctionnel");
     ok(!errors.length,width+" : erreurs "+errors.join(";"));console.log("✓ "+width);await ctx.close();

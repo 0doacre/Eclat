@@ -4428,6 +4428,7 @@
       pullOrderInputs();
       runAct(dt, offline);
       workStep(dt, offline);
+      if(E.atelierEconomyStep)E.atelierEconomyStep(dt);
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];

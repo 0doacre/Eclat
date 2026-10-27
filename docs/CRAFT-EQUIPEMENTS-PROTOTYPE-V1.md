@@ -16,21 +16,38 @@ Les postes fixes (foyer, four, poste de frappe, dalle de polissage) ne figurent 
 
 Cliquer une recette connue prépare ses matières, son atelier, son outil et son geste. Le bouton conserve le verbe correspondant ; une fabrication connue rejoint la file des mains. Le bouton distinct « Commander » conserve la préparation automatique des composants et outils connus par le planificateur. Un outil encore absent est signalé plutôt que remplacé silencieusement.
 
-Une première amélioration est testée : le couteau de silex découpe les lanières deux fois plus vite que le racloir, à coût et quantité produite identiques. Le racloir reste utilisable. Le bénéfice figure sur le couteau ; pour une recette de lanières connue, les matières posées et l’outil choisi affichent une estimation pour dix fabrications (vingt lanières), avec un bouton « Couper ×10 ». Aucun raccourci de série ne révèle une recette inconnue. Les autres recettes gardent leurs temps antérieurs ; les machines ne reçoivent pas ce bonus.
+Une première amélioration est testée : le couteau de silex découpe les lanières deux fois plus vite que le racloir, à coût et quantité produite identiques. Le racloir reste utilisable. Le bénéfice figure sur le couteau ; pour une recette de lanières connue, les matières posées et l’outil choisi affichent une estimation pour la série de l’outil : cinq fabrications au racloir (dix lanières), dix au couteau (vingt lanières). Aucun raccourci de série ne révèle une recette inconnue. Les autres recettes gardent leurs temps antérieurs ; les machines ne reçoivent pas ce bonus.
 
 Une fabrication lancée par un geste conserve son outil dans `equipmentSelection`, y compris après rechargement et changement d’outil dans l’interface. Si cet outil disparaît, elle attend son retour. Les lots explicitement lancés avec des outils différents ne fusionnent pas. Les commandes automatiques et la préparation d’une recette connue privilégient le meilleur outil compatible disponible. Les anciennes commandes d’avant la refonte gardent leur rythme antérieur.
 
 L’interface d’essai n’est pas encore l’intégration graphique dans le jeu : elle n’inclut pas le guide complet, la relève et les écrans des âges suivants. Elle n’est pas une nouvelle version du jeu publiée sur la prévisualisation.
 
+## Premier circuit économique
+
+Le bouton « Essai ouvrier + marchand » remplace uniquement la partie d’essai après confirmation. Il prépare des terres et des stocks à l’âge 2, sans écus, racloir, établi aménagé ou couteau offerts. Quelques recettes sont connues pour concentrer le test sur la chaîne : racloir → poste aménagé → découpe et vente → recrutement et salaire → couteau. Ce scénario ne mesure pas le rythme normal depuis le Bois.
+
+`js/atelier-economie.js` est attaché uniquement au profil expérimental. Son état `atelierEconomy` est sauvegardé et avancé dans les pas normaux du moteur, y compris le rattrapage hors ligne plafonné.
+
+- Un ouvrier, affecté aux lanières connues, exige un établi aménagé et un outil compatible. Il prend le meilleur outil disponible et travaille en parallèle des mains du joueur. Sa cadence est cinq fois le temps unitaire manuel ; le couteau réduit donc ce temps de moitié.
+- L’établi aménagé est une recette : 10 bois, 3 cordes et 4 pierres. Il améliore le poste existant, sans ajouter un onglet supplémentaire.
+- Recrutement : valeur brute de vingt lanières, soit 3,125 écus actuellement. Salaire : 25 % du brut d’une fabrication, soit 0,078125 écu pour deux lanières. L’affichage arrondit à deux décimales ; le calcul conserve les fractions.
+- L’avance est soustraite de la bourse et mise de côté. Le salaire est débité uniquement après travail achevé. Sans budget ou matières, la production s’arrête : aucune dette. L’avance non utilisée est récupérable en pause et n’est pas réalimentée automatiquement.
+- Le marchand vend uniquement le surplus de lanières au-dessus de la réserve choisie, sur activation explicite, toutes les cinq secondes. Une vente immédiate du surplus permet de financer le recrutement. Le prix de référence est `E.value`, sans la saturation des ventes classiques.
+- Taxe marginale par périodes de soixante secondes : 10 %, 20 %, 30 %, 40 %, puis 50 % maximum. Une tranche représente au moins vingt lanières ; sa taille est calculée selon la capacité théorique de l’ouvrier embauché et la production automatique de lanières. Ce n’est pas le volume réellement fabriqué pendant la minute. Le seuil reste fixe pendant la période. Fractionner les ventes ou désactiver le marchand ne réinitialise pas le compteur.
+- Les ventes alimentent les écus, sans appeler `sell` ni modifier `comptoir.sold`, les demandes ou la réputation du troqueur. Brut, taxes, net et salaires sont suivis séparément.
+
+Tarifs, cadence, réserve et période sont provisoires. Le bilan net moins salaires ne valorise pas le coût d’opportunité des peaux ni le recrutement initial. Rentabilité globale, diversification, plusieurs recettes/ouvriers et effets de la taxe sur une longue partie restent à éprouver.
+
 ## Contenu
 
-Les 54 recettes existantes des âges Bois, Os, Pierre et Cuivre sont conservées. Trois recettes de prototype sont ajoutées :
+Les 54 recettes existantes des âges Bois, Os, Pierre et Cuivre sont conservées. Quatre recettes de prototype sont ajoutées :
 
 | Équipement | Âge | Fabrication | Usage |
 |---|---:|---|---|
 | Percuteur de pierre | Bois | Mains, assembler 2 pierres | Préparer manches, aiguilles et éclats |
 | Racloir en os | Os | Percuteur, tailler 3 os + 1 pierre | Couper les premières lanières avant la Rivière |
 | Dalle de polissage | Cuivre | Mains, assembler 8 pierres + 4 bois | Polir le miroir avec le sable consommé |
+| Établi aménagé | Bois | Mains, assembler 10 bois + 3 cordes + 4 pierres | Accueillir un ouvrier |
 
 Ces prix sont des valeurs de prototype, pas un équilibrage définitif.
 
@@ -75,7 +92,8 @@ Les migrations de recettes 0.20 et 0.35 restent distinctes et prises en charge.
 ## Vérifications
 
 - `npm run test:equipements` : 38 scénarios, dont fabrication initiale, distinction des recettes, préparation et partage des outils, migrations, chemin jusqu’à la Rivière et apprentissage progressif. L’amélioration du couteau est vérifiée par la durée réelle et la production, la conservation du choix après chargement, l’attente d’un outil manquant et la non-fusion des lots utilisant des outils différents.
-- `npm run test:equipements-ui` : 164 contrôles sur 320, 360, 390 et 980 px : outils visibles, gestes annoncés avant essai, premier manche au percuteur, outils propres au poste, aucune résolution automatique ni filtrage par les ingrédients, gestes secondaires directs, disposition mobile/bureau, conservation de l’aiguille, comparaison des outils, séries de découpe et rechargement. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
+- `npm run test:economie` : 13 scénarios sur les taxes marginales, la réserve, l’indépendance du troqueur, la construction, les salaires, les outils, les sauvegardes et le hors ligne.
+- `npm run test:equipements-ui` : parcours complet de fabrication, vente, embauche et amélioration, en plus des contrôles sur 320, 360, 390 et 980 px : outils visibles, gestes annoncés avant essai, premier manche au percuteur, outils propres au poste, aucune résolution automatique ni filtrage par les ingrédients, gestes secondaires directs, disposition mobile/bureau, conservation de l’aiguille, comparaison des outils, séries de découpe et rechargement. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
 - `npm test` : suite du jeu normal et nouveaux contrôles moteur. Le profil ne modifie pas les recettes ni les comptes de contenu de la partie normale.
 
 ## Prochain travail
