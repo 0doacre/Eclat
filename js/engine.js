@@ -4,14 +4,18 @@
  */
 (function (root) {
   "use strict";
-  const D = root.ECLAT_DATA || (typeof require !== "undefined" ? require("./data.js") : null);
+  const BASE_DATA = root.ECLAT_DATA || (typeof require !== "undefined" ? require("./data.js") : null);
+
+  // Un jeu de données isolé permet d'essayer un autre atelier sans modifier la
+  // partie normale, ses index de recettes ni ses règles de sauvegarde.
+  function withData(D) {
 
   const BASE_GESTES = ["assembler", "tresser", "tailler"];
   const UNIQUE = { tool: 1, stat: 1, upg: 1, curio: 1 };
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
   const MASTERY = [10, 50, 250, 1000];
-  const SAVE_VERSION = 12;
+  const SAVE_VERSION = D.CRAFT_EQUIPMENT ? 13 : 12;
   // Les commandes préparées avant la 0.21 terminent au prix de leur recette d’origine.
   const INPUTS_020 = {
     moteur_vapeur: { chaudiere: 1, piston: 2, engrenage_acier: 4 },
@@ -31,8 +35,8 @@
     it.id = id;
     if (it.r) {
       const k = keyOf(it.r[0], Object.keys(it.r[1]));
-      if (RECIPES[k]) throw new Error("Recette en double : " + k + " (" + RECIPES[k] + " / " + id + ")");
-      RECIPES[k] = id;
+      if (RECIPES[k] && !D.CRAFT_EQUIPMENT) throw new Error("Recette en double : " + k + " (" + RECIPES[k] + " / " + id + ")");
+      if (!RECIPES[k]) RECIPES[k] = id;
     }
   }
   const ZONES = {};
@@ -96,6 +100,7 @@
   function freshState(now) {
     return {
       v: SAVE_VERSION, t: now, start: now,
+      ...(D.CRAFT_EQUIPMENT ? { craftProfile: "equipements-v1" } : {}),
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
@@ -119,6 +124,7 @@
    * de donnée du joueur : ce qui n’a plus d’usage est rangé dans `orphans`. */
   function migrate(o) {
     const from = o.v || 1;
+    if (o.craftProfile && (!D.CRAFT_EQUIPMENT || o.craftProfile !== "equipements-v1")) throw new Error("Cette partie d’essai appartient à un autre atelier.");
     if (from > SAVE_VERSION) throw new Error("Sauvegarde d’une version plus récente du jeu (v" + from + ")");
     if (from < 2) {
       // v1 : les « chaînes d’assemblage » automatisaient des recettes via `auto`.
@@ -246,6 +252,26 @@
       });
       o.v = 12;
     }
+    if (D.CRAFT_EQUIPMENT && from < 13) {
+      const q = o.hand && o.hand.q;
+      if (Array.isArray(q)) q.forEach(j => {
+        if (!j || !Array.isArray(j.s)) return;
+        j.ancienAtelier = true;
+        if (j.s.some(s => Array.isArray(s) && D.CRAFT_EQUIPMENT.legacyInputs[s[0]])) j.recettesEquipements = true;
+      });
+      // Rattrapage des équipements de départ pour une partie déjà jouée.
+      // Aucun stock existant ni âge n'est retiré pour financer ce rattrapage.
+      if (o.stats && o.stats.crafts > 0) {
+        for (const id of ["percuteur_pierre"].concat(o.zones && o.zones.plaine ? ["racloir_os"] : [])) {
+          for (const key of ["inv", "made", "known", "seen"]) {
+            o[key] = o[key] || {};
+            if (!o[key][id]) o[key][id] = key === "inv" || key === "made" ? 1 : true;
+          }
+        }
+      }
+      o.v = 13;
+    }
+    if (D.CRAFT_EQUIPMENT) o.craftProfile = "equipements-v1";
     return o;
   }
 
@@ -794,11 +820,15 @@
     E.totalCost = totalCost;
 
     /* Pourquoi une recette ne peut-elle pas être réalisée ? */
-    function blocker(id) {
+    function blocker(id, job) {
       const it = item(id), r = it.r, o = r[3] || {};
       if (!gesteOK(r[0])) return { why: "geste", g: r[0] };
       if (o.heat && E.heat() < o.heat) return { why: "heat", heat: o.heat };
       if (o.lvl && E.level(r[0]) < o.lvl) return { why: "lvl", lvl: o.lvl };
+      if (E.equipmentCheck && !(job && job.ancienAtelier)) {
+        const equipment = E.equipmentCheck(id, k => count(k) + (job && job.b && job.b[k] || 0));
+        if (equipment) return equipment;
+      }
       if (isUnique(it) && (S.made[id] || 0) > 0) return { why: "owned" };
       return null;
     }
@@ -808,6 +838,7 @@
       b = b || blocker(id);
       const g = item(id).r[0];
       if (!b) return null;
+      if (b.why === "equipment") return b.required;
       if (b.why === "heat") return stationFor("chauffer", b.heat, 0);
       if (b.why === "lvl") return stationFor(g, 0, b.lvl);
       if (b.why === "geste" && !(D.GESTES[g] && D.GESTES[g].secret)) return stationFor(g, 0, 0);
@@ -1003,10 +1034,19 @@
 
     /* Tentative libre à l’Atelier : le cœur du jeu.
      * Retourne {kind: craft|learn|blocked|owned|fail, ...} */
-    E.attempt = function (g, ids) {
+    E.attempt = function (g, ids, selection) {
       ids = Array.from(new Set(ids.filter(Boolean)));
       if (!ids.length) return { kind: "empty" };
       if (!gesteOK(g)) return { kind: "nogeste" };
+      // L'identité d'une recette du prototype comprend son équipement et son
+      // mode : retirer une aiguille des ingrédients ne doit pas confondre une
+      // flûte et une aiguille, ou une tunique et des gants.
+      let selectedRecipe = null;
+      if (D.CRAFT_EQUIPMENT) {
+        if (!selection || !E.equipmentRecipe) return { kind: "equipment", why: "selection" };
+        selectedRecipe = E.equipmentRecipe(selection.equipment, selection.mode, ids);
+        if (!selectedRecipe || item(selectedRecipe).r[0] !== g) return { kind: "equipment", why: "incompatible" };
+      }
       S.stats.tries++;
       if (g === "tailler" && ids.includes("os") && (ids.includes("eclat") || ids.includes("silex")) && rand() < 1 / 20000) {
         add("de_vingt", 1);
@@ -1019,7 +1059,7 @@
           addCurio("fouet");
         }
       }
-      let id = RECIPES[keyOf(g, ids)];
+      let id = selectedRecipe || RECIPES[keyOf(g, ids)];
       if (id && !ageOK(id)) id = null; // un objet d’un âge trop lointain ne se découvre pas : l’essai ne donne rien
       if (id) {
         const b = blocker(id);
@@ -1132,7 +1172,7 @@
     E.plan = function (id, times) {
       times = Math.max(1, Math.floor(times || 1));
       const avail = Object.assign({}, S.inv);
-      const crafts = {}, depth = {}, missing = {}, blocked = {}, locked = {}, used = {};
+      const crafts = {}, depth = {}, missing = {}, blocked = {}, locked = {}, used = {}, toolEdges = {};
       let guard = 0;
       function need(x, qty, d, root) {
         if (++guard > 5000 || d > 40) return;
@@ -1149,7 +1189,15 @@
         const gather = !root && it.t === "res" && zid && zoneOpen(zid); // le charbon se récolte, mais « Fabriquer » le fabrique
         if (!it.r || gather) { missing[x] = (missing[x] || 0) + qty; return; }
         if (!S.known[x]) { locked[x] = true; missing[x] = (missing[x] || 0) + qty; return; }
-        const b = blocker(x);
+        if (E.equipmentCheck) {
+          const eq = E.equipmentCheck(x, k => count(k) + (crafts[k] || 0));
+          if (eq) {
+            toolEdges[x] = Object.keys(eq.missing);
+            for (const k of toolEdges[x]) if (count(k) < eq.missing[k]) need(k, eq.missing[k] - count(k), d + 1, true);
+          }
+        }
+        let b = blocker(x);
+        if (b && b.why === "equipment" && !E.equipmentCheck(x, k => count(k) + (crafts[k] || 0))) b = null;
         if (b) { blocked[x] = b; if (b.why !== "owned") missing[x] = (missing[x] || 0) + qty; return; }
         const n = root ? qty : Math.ceil(qty / it.r[2]);
         crafts[x] = (crafts[x] || 0) + n;
@@ -1167,7 +1215,7 @@
         if (seenO[x]) return;
         seenO[x] = true;
         const it = item(x);
-        Object.keys(it.r[1]).filter((i) => crafts[i]).sort((a, b) => depth[b] - depth[a]).forEach(visit);
+        Object.keys(it.r[1]).concat(toolEdges[x] || []).filter((i) => crafts[i]).sort((a, b) => depth[b] - depth[a]).forEach(visit);
         order.push(x);
       };
       Object.keys(crafts).sort((a, b) => depth[b] - depth[a]).forEach(visit);
@@ -1253,10 +1301,13 @@
       const M = item(m);
       return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") : 0;
     }
-    function machReadyFor(m, rec) {
-      if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
+    function machReadyFor(m, rec, job) {
+      const fits = job && job.ancienAtelier
+        ? Object.keys(jobInputs(job, rec)).length <= (item(m).ing !== undefined ? item(m).ing : 1)
+        : E.machCan(m, rec);
+      if (!E.automatable(rec) || !fits) return false;
       if (!E.hasEchoFin("retour") && D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
-      if (blocker(rec)) return false;
+      if (blocker(rec, job)) return false;
       return true;
     }
     function anyOwnedMachReadyFor(rec) {
@@ -1368,11 +1419,12 @@
     /* combien d’unités de l’étape (j, sIdx) peuvent être alimentées par l’établi (après
      * ce qui est déjà réservé par d’autres étapes en cours sur j) */
     function jobInputs(j, rec) {
-      return (j.recettes020 && INPUTS_020[rec]) || (j.recettes035 && INPUTS_035[rec]) || item(rec).r[1];
+      return (j.recettes020 && INPUTS_020[rec]) || (j.recettes035 && INPUTS_035[rec]) ||
+        (j.recettesEquipements && D.CRAFT_EQUIPMENT && D.CRAFT_EQUIPMENT.legacyInputs[rec]) || item(rec).r[1];
     }
     function affordableUnits(j, sIdx, reserved) {
       const rec = j.s[sIdx][0], it = item(rec);
-      const b = blocker(rec);
+      const b = blocker(rec, j);
       if (b && b.why !== "owned") return 0;
       const cost = isScaled(it) ? costFor(rec, count(rec)) : jobInputs(j, rec);
       let maxU = j.s[sIdx][1] - j.done[sIdx];
@@ -1403,7 +1455,7 @@
           const j = S.hand.q[jIdx], resv = jobResv[jIdx];
           for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
             const rec = j.s[sIdx][0];
-            if (!machReadyFor(w.m, rec)) continue;
+            if (!machReadyFor(w.m, rec, j)) continue;
             const aff = affordableUnits(j, sIdx, resv);
             if (aff < 1) continue;
             w.job = j; w.sIdx = sIdx; w.rec = rec;
@@ -1423,6 +1475,7 @@
           for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
             const rec = j.s[sIdx][0];
             if (j.done[sIdx] >= j.s[sIdx][1]) continue;
+            if (E.equipmentCheck && !j.ancienAtelier && E.equipmentCheck(rec, k => count(k) + (j.b[k] || 0))) continue;
             if (pass === 0 && anyOwnedMachReadyFor(rec)) continue;
             // Sur une étape où des machines travaillent déjà, les mains peuvent aider sur la même unité
             const checkResv = stepMachs[jIdx][sIdx] > 0 ? {} : resv;
@@ -1454,7 +1507,7 @@
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
       if (!ageOK(id)) return { ok: false, why: "age" };
       const b = blocker(id);
-      if (b) return { ok: false, why: b.why, info: b };
+      if (b && b.why !== "equipment") return { ok: false, why: b.why, info: b };
       if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
       if (isUnique(it)) {
         times = 1;
@@ -1473,7 +1526,7 @@
       const miss = {};
       for (const i in p.missing) if (p.missing[i] > 0) miss[i] = p.missing[i];
       const last = S.hand.q[S.hand.q.length - 1];
-      if (p.steps.length === 1 && last && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (p.steps.length === 1 && last && !last.ancienAtelier && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         last.miss = last.miss || {};
@@ -1527,7 +1580,7 @@
       for (const i in bench) add(i, -bench[i]);
       // la même pièce, déjà en attente juste avant : on l’allonge au lieu d’empiler (taper vite = ×N)
       const last = S.hand.q[S.hand.q.length - 1];
-      if (steps.length === 1 && last && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
+      if (steps.length === 1 && last && !last.ancienAtelier && !last.recettes020 && !last.recettes035 && S.hand.q.length > 1 && last.id === id && last.s.length === 1 && !stepDone(last, 0) && !isScaled(it) && !isUnique(it) && (last.to || null) === (to || null)) {
         last.s[0][1] += times;
         for (const i in bench) last.b[i] = (last.b[i] || 0) + bench[i];
         assignWorkers();
@@ -1924,6 +1977,8 @@
           if (req && req[0] !== "@") return walk(req, d + 1, 1) || (S.pass[zid] && !S.pass[zid].done ? { id: req, why: "pass", z: zid } : { id: req, why: "zone", z: zid });
           return null;
         }
+        const equipment = E.equipmentCheck && E.equipmentCheck(id);
+        if (equipment && equipment.required !== id) return walk(equipment.required, d + 1, 1) || { id: equipment.required, why: "equipment" };
         // sinon (y compris le charbon avant les Profondeurs) : on la fabrique
         if (isUnique(it) && (S.made[id] || 0) > 0) return null;
         const g = it.r[0], o = it.r[3] || {};
@@ -4755,6 +4810,10 @@
         if (!ok || keep.length >= D.HAND.max) { refund(j && j.b); return; }
         for (const i in j.b) if (!D.ITEMS[i] || !(Number(j.b[i]) > 0)) { refund({ [i]: j.b[i] }); delete j.b[i]; }
         j.s = j.s.map((s) => [s[0], Math.floor(s[1])]);
+        if (D.CRAFT_EQUIPMENT) {
+          j.ancienAtelier = j.ancienAtelier === true;
+          j.recettesEquipements = j.recettesEquipements === true && j.s.some(s => !!D.CRAFT_EQUIPMENT.legacyInputs[s[0]]);
+        }
         j.recettes020 = j.recettes020 === true && j.s.some((s) => !!INPUTS_020[s[0]]);
         j.recettes035 = j.recettes035 === true && j.s.some((s) => !!INPUTS_035[s[0]]);
         if (Array.isArray(j.done) && j.done.length === j.s.length) {
@@ -5133,12 +5192,16 @@
     };
     E.importSave = (txt) => E.load(E.decodeSave(txt));
 
+    if (D.CRAFT_EQUIPMENT) (root.EclatEquipements || require("./equipements.js")).attach(E);
     (root.EclatTransmission || require("./transmission.js")).attach(E);
     recalc();
     return E;
   }
 
-  const API = { createEngine, freshState, migrate, SAVE_VERSION };
+  return { createEngine, freshState, migrate, SAVE_VERSION, withData };
+  }
+
+  const API = withData(BASE_DATA);
   root.EclatEngine = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof window !== "undefined" ? window : globalThis);
