@@ -101,7 +101,10 @@
     return {
       v: SAVE_VERSION, t: now, start: now,
       ...(D.CRAFT_EQUIPMENT ? { craftProfile: "equipements-v1" } : {}),
-      inv: {}, seen: {}, made: {}, known: {}, hints: {},
+      inv: { ...D.CRAFT_EQUIPMENT?.startEquipment },
+      seen: Object.fromEntries(Object.keys(D.CRAFT_EQUIPMENT?.startEquipment || {}).map(id => [id, true])),
+      made: { ...D.CRAFT_EQUIPMENT?.startEquipment },
+      known: Object.fromEntries(Object.keys(D.CRAFT_EQUIPMENT?.startEquipment || {}).map(id => [id, true])), hints: {},
       intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
       exp: { active: null, done: {} }, age: 0,
       dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
@@ -272,6 +275,12 @@
       o.v = 13;
     }
     if (D.CRAFT_EQUIPMENT) o.craftProfile = "equipements-v1";
+    for (const [id, n] of Object.entries(D.CRAFT_EQUIPMENT?.startEquipment || {})) {
+      for (const key of ["inv", "made", "known", "seen"]) {
+        o[key] = o[key] || {};
+        if (!o[key][id]) o[key][id] = key === "inv" || key === "made" ? n : true;
+      }
+    }
     return o;
   }
 

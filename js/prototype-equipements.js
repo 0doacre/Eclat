@@ -4,22 +4,24 @@
   const D = window.EclatEquipements.createData(window.ECLAT_DATA);
   const Engine = window.EclatEngine.withData(D), KEY = "eclat.prototype.equipements.v1";
   let E = Engine.createEngine(), eq = "mains", mode = "assembler", slots = [], signature = "", saveOK = true;
+  let place = "etabli", manual = false, prepared = null, pendingChoices = [];
+  const consumed = new Set(Object.values(D.ITEMS).filter(it=>it.r).flatMap(it=>Object.keys(it.r[1])));
   const $ = s => document.querySelector(s), name = id => D.ITEMS[id]?.n || id;
   const text = (tag, value, cls) => { const e = document.createElement(tag); e.textContent = value; if (cls) e.className = cls; return e; };
   function button(label, fn, cls, disabled) { const e=text("button",label,cls);e.type="button";e.disabled=!!disabled;e.onclick=fn;return e; }
   function notice(value) { $("#notice").textContent=value; }
   function save() {
     if(!saveOK)return;
-    try { localStorage.setItem(KEY,JSON.stringify({save:E.serialize(),eq,mode,slots})); }
+    try { localStorage.setItem(KEY,JSON.stringify({save:E.serialize(),eq,mode,slots,place,prepared})); }
     catch (_) { saveOK=false;notice("La partie d’essai ne peut pas être enregistrée sur cet appareil."); }
   }
   try {
     const stored=JSON.parse(localStorage.getItem(KEY)||"null");
-    if(stored){E.load(stored.save);eq=stored.eq;mode=stored.mode;slots=Array.isArray(stored.slots)?stored.slots.filter(id=>D.ITEMS[id]).slice(0,3):[];}
+    if(stored){E.load(stored.save);eq=stored.eq;mode=stored.mode;slots=Array.isArray(stored.slots)?stored.slots.filter(id=>D.ITEMS[id]).slice(0,3):[];place=stored.place||E.workplaceFor(eq);prepared=E.state.known[stored.prepared]?stored.prepared:null;}
   } catch (_) {saveOK=false;notice("La partie d’essai enregistrée est illisible. Elle reste conservée ; tu peux démarrer un nouvel essai.");}
   function reset(demo) {
     if(!confirm("Remplacer uniquement cette partie d’essai ?"))return;
-    E=Engine.createEngine();eq="mains";mode="assembler";slots=[];saveOK=true;
+    E=Engine.createEngine();eq="mains";mode="assembler";slots=[];place="etabli";manual=false;prepared=null;pendingChoices=[];saveOK=true;$("#equipment-details").open=false;
     if(demo){
       const s=E.state;s.age=3;s.cycle=2;s.flags.extDone=true;s.flags.lineDone=true;s.introSeen=true;
       for(const z of ["plaine","riviere","collines"]){s.zones[z]=true;s.pass[z]={done:true,paid:{}};}
@@ -32,8 +34,10 @@
   function select(id,nextMode) {
     const item=E.equipmentList().find(x=>x.id===id&&x.ready);if(!item)return;
     eq=id;mode=Object.hasOwn(item.modes,nextMode)?nextMode:Object.keys(item.modes)[0];
+    place=E.workplaceFor(eq);manual=true;prepared=null;pendingChoices=[];
     draw(true);save();
   }
+  $("#auto-tools").onclick=()=>{manual=false;prepared=null;pendingChoices=[];draw(true);save();};
   function family(all) {
     const available=E.equipmentList(),current=available.find(x=>x.id===eq);
     const choices=available.filter(x=>x.ready&&(all||x.family===current.family));
@@ -46,13 +50,17 @@
   $("#current").onpointerdown=event=>{if(event.button===0)press=setTimeout(()=>{press=null;family();},550);};
   for(const event of ["pointerup","pointercancel","pointerleave"])$("#current").addEventListener(event,()=>{clearTimeout(press);press=null;});
   function prepare(id) {
+    if(!E.state.known[id]||!D.CRAFT_EQUIPMENT.recipes[id])return;
     const choices=E.equipmentChoices(id),choice=choices.find(x=>x.ready);
-    if(!choice){const b=E.equipmentCheck(id);notice(b?"Prépare d’abord : "+name(b.required)+".":"Cette recette est hors de la tranche d’essai.");return;}
-    slots=Object.keys(D.ITEMS[id].r[1]);select(choice.equipment,choice.mode);notice("Prêt à essayer : "+name(id)+".");
+    const target=choice||choices[0];
+    eq=target.equipment;mode=target.mode;place=E.workplaceFor(eq);manual=false;prepared=id;pendingChoices=[];
+    slots=Object.keys(D.ITEMS[id].r[1]);notice("Prêt à fabriquer : "+name(id)+".");draw(true);save();
   }
-  $("#forge").onclick=()=>{
-    const result=E.attemptWith(eq,mode,slots);
-    if(result.kind==="equipment")notice(result.why==="missing"?"Cet équipement n’est plus disponible.":"Cet équipement et ce mode ne conviennent pas à cette combinaison.");
+  function finish(result) {
+    pendingChoices=[];
+    if(result.equipment&&result.mode){eq=result.equipment;mode=result.mode;}
+    if(result.kind==="choice"){pendingChoices=result.options;notice("Comment veux-tu travailler ces matières ?");}
+    else if(result.kind==="equipment")notice(result.why==="missing"?"Il te faut : "+(E.equipmentList().find(x=>x.id===result.equipment)?.n||"un équipement adapté")+".":"Ces matières ne donnent rien ici avec ce geste.");
     else if(result.kind==="empty")notice("Pose des matières sur l’établi.");
     else if(result.kind==="craft")notice("Fabriqué : "+name(result.id)+".");
     else if(result.kind==="queued")notice("En cours : "+name(result.id)+".");
@@ -61,15 +69,28 @@
     else if(result.kind==="blocked")notice("Recette trouvée : "+name(result.id)+". Prépare d’abord "+name(E.blockStation(result.id,result.info))+".");
     else notice("Cette fabrication ne peut pas encore être lancée.");
     draw(true);save();
+  }
+  $("#forge").onclick=()=>{
+    if(prepared){const r=E.order(prepared,1);notice(r.ok?"Commande lancée : "+name(prepared)+".":"Il manque un équipement ou une recette intermédiaire pour cette commande.");draw(true);save();return;}
+    finish(manual?E.attemptWith(eq,mode,slots):E.attemptAt(place,slots));
   };
   function draw(force) {
     const available=E.equipmentList(),ready=available.filter(x=>x.ready);
     if(!ready.some(x=>x.id===eq)){eq="mains";mode="assembler";}
     const selected=ready.find(x=>x.id===eq);if(!Object.hasOwn(selected.modes,mode))mode=Object.keys(selected.modes)[0];
     const s=E.state,info=E.handInfo();
-    const structural=[eq,mode,slots.join(),s.age,Object.keys(s.seen).join(),Object.keys(s.known).join(),ready.map(x=>x.id).join(),info.jobs.map(j=>j.id).join(),JSON.stringify(s.zones),JSON.stringify(s.pass),s.exp.active?.z,s.exp.done&&JSON.stringify(s.exp.done)].join("|");
+    const structural=[place,manual,prepared,JSON.stringify(pendingChoices),eq,mode,slots.join(),s.age,Object.keys(s.seen).join(),Object.keys(s.known).join(),ready.map(x=>x.id).join(),info.jobs.map(j=>j.id).join(),JSON.stringify(s.zones),JSON.stringify(s.pass),s.exp.active?.z,s.exp.done&&JSON.stringify(s.exp.done)].join("|");
     if(force||structural!==signature){
       signature=structural;
+      const workplaces=E.workplaceList().filter(x=>x.ready);
+      $("#workplaces").hidden=workplaces.length<2;
+      $("#workplaces").replaceChildren(...workplaces.map(x=>{const b=button(x.n,()=>{place=x.id;manual=false;prepared=null;pendingChoices=[];draw(true);save();},x.id===place?"on":"");b.dataset.workplace=x.id;b.setAttribute("aria-pressed",String(x.id===place));return b;}));
+      $("#equipment-title").textContent=workplaces.find(x=>x.id===place)?.n||"Établi";
+      $("#equipment-details").hidden=s.stats.crafts===0&&s.age===0;
+      $("#automatic").textContent=manual?"Tu choisis l’outil et le geste.":"L’outil adapté est utilisé automatiquement.";
+      $("#auto-tools").hidden=!manual;
+      $("#choices").hidden=!pendingChoices.length;
+      $("#choices").replaceChildren(...pendingChoices.map(c=>button(c.action,()=>finish(E.attemptWith(c.equipment,c.mode,slots)))));
       const goal=E.guide(),id=goal?.step;
       const hint=id&&id!==goal?.ob?.id?D.ITEMS[id].h:null;
       const end=id&&D.ITEMS[id].a>3;
@@ -78,12 +99,12 @@
       $("#tools").replaceChildren(...quick.map(x=>{const b=button(x.n,()=>select(x.id),x.id===eq?"on":"");b.dataset.equipment=x.id;b.setAttribute("aria-pressed",String(x.id===eq));return b;}));
       $("#current").textContent=selected.n;
       $("#modes").replaceChildren(...Object.entries(selected.modes).map(([id,n])=>{const b=button(n,()=>select(eq,id),id===mode?"on":"");b.dataset.mode=id;b.setAttribute("aria-pressed",String(id===mode));return b;}));
-      $("#slots").replaceChildren(...[0,1,2].map(i=>{const b=button(slots[i]?name(slots[i]):"+",()=>{slots.splice(i,1);draw(true);save();});b.setAttribute("aria-label",slots[i]?"Retirer : "+name(slots[i]):"Emplacement libre");return b;}));
-      $("#forge").textContent=selected.modes[mode];
+      $("#slots").replaceChildren(...[0,1,2].map(i=>{const b=button(slots[i]?name(slots[i]):"+",()=>{slots.splice(i,1);prepared=null;pendingChoices=[];draw(true);save();});b.setAttribute("aria-label",slots[i]?"Retirer : "+name(slots[i]):"Emplacement libre");return b;}));
+      $("#forge").textContent=prepared?"Fabriquer · "+name(prepared):manual?selected.modes[mode]:"Essayer";
       const raw=[...new Set(D.ZONES.filter(z=>E.zoneOpen(z.id)).flatMap(z=>z.res))];
-      const items=Object.keys(D.ITEMS).filter(id=>raw.includes(id)||s.seen[id]||E.count(id)>0);
+      const items=Object.keys(D.ITEMS).filter(id=>(!E.isEquipmentItem(id)||consumed.has(id))&&(raw.includes(id)||s.seen[id]||E.count(id)>0));
       $("#inventory").replaceChildren(...items.map(id=>{
-        const box=text("div","","resource"),b=button(name(id),()=>{if(!slots.includes(id)&&slots.length<3){slots.push(id);draw(true);save();}},"wide",E.count(id)<1||slots.includes(id));b.dataset.item=id;
+        const box=text("div","","resource"),b=button(name(id),()=>{if(!slots.includes(id)&&slots.length<3){slots.push(id);prepared=null;pendingChoices=[];draw(true);save();}},"wide",E.count(id)<1||slots.includes(id));b.dataset.item=id;
         const count=text("b","0");count.dataset.count=id;b.append(count);box.append(b);
         if(raw.includes(id))box.append(button(s.act?.res===id?"Arrêter":"Récolter",()=>{if(E.state.act?.res===id)E.stopAct();else E.startAct({k:"harv",z:E.RES_ZONE[id],res:id});draw(true);save();}));
         if(D.ITEMS[id].t==="ext"&&E.count(id)>0)box.append(button("Installer",()=>{notice(E.domAutoExt(id)?"Exploitation installée.":"Aucun emplacement disponible.");draw(true);save();}));

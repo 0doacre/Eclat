@@ -6,7 +6,7 @@
   const clone = (x) => Array.isArray(x) ? x.map(clone) : x && typeof x === "object"
     ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, clone(v)])) : x;
 
-  function createData(base) {
+  function createData(base, options = {}) {
     const D = clone(base), I = D.ITEMS;
     const legacyInputs = {};
     for (const id of ["outre", "tunique", "flute", "engrenage_bois"]) legacyInputs[id] = clone(I[id].r[1]);
@@ -59,10 +59,10 @@
       if (keys.has(key)) throw new Error("Recettes ambiguës pour cet équipement : " + key);
       keys.add(key);
     }
-    D.CRAFT_EQUIPMENT = { equipment, recipes, legacyInputs };
-    // Le premier objectif conduit au nouvel outil ; le racloir sera indiqué
-    // comme prérequis des lanières, pas comme un détour dans une terre future.
-    D.OBJECTIVES.unshift(["percuteur_pierre", "Assemble deux cailloux de la Lisière pour préparer ton percuteur."]);
+    D.CRAFT_EQUIPMENT = { equipment, recipes, legacyInputs, startEquipment: options.gentleStart === false ? {} : { percuteur_pierre: 1 } };
+    // Le parcours strict teste l'amorçage du percuteur. Le parcours progressif
+    // conserve le manche comme premier objectif et fournit cet outil de départ.
+    if (options.gentleStart === false) D.OBJECTIVES.unshift(["percuteur_pierre", "Assemble deux cailloux de la Lisière pour préparer ton percuteur."]);
     return D;
   }
 
@@ -95,6 +95,30 @@
       return { why: "equipment", equipment: c.equipment, required: Object.keys(c.missing)[0], missing: c.missing };
     };
     E.equipmentList = () => Object.entries(cfg.equipment).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
+    E.workplaceFor = id => id === "feu" || id === "four" ? id : "etabli";
+    E.workplaceList = () => [{ id: "etabli", n: "Établi", ready: true }, ...E.equipmentList().filter(x => x.id === "feu" || x.id === "four")];
+    const matching = (place, ids) => {
+      const parts = Array.from(new Set(ids.filter(Boolean))).sort().join(",");
+      return Object.keys(cfg.recipes).filter(id => E.ageOK(id) && Object.keys(E.item(id).r[1]).sort().join(",") === parts)
+        .flatMap(id => E.equipmentChoices(id).filter(c => E.workplaceFor(c.equipment) === place).map(c => ({ ...c, recipe: id })));
+    };
+    E.workplaceOptions = (place, ids) => {
+      const seen = new Set();
+      return matching(place, ids).filter(c => c.ready && !seen.has(c.recipe) && seen.add(c.recipe));
+    };
+    E.attemptAt = (place, ids) => {
+      if (!ids.filter(Boolean).length) return { kind: "empty" };
+      if (!E.workplaceList().some(x => x.id === place && x.ready)) return { kind: "equipment", why: "missing", equipment: place };
+      const choices = E.workplaceOptions(place, ids);
+      if (!choices.length) {
+        const unavailable = matching(place, ids)[0];
+        return unavailable ? { kind: "equipment", why: "missing", equipment: unavailable.equipment } : { kind: "equipment", why: "incompatible" };
+      }
+      // Une ambiguïté réelle demande un geste, sans révéler les recettes à découvrir.
+      if (choices.length > 1) return { kind: "choice", options: choices.map(c => ({ equipment: c.equipment, mode: c.mode, action: cfg.equipment[c.equipment].modes[c.mode] })) };
+      const c = choices[0];
+      return { ...E.attemptWith(c.equipment, c.mode, ids), equipment: c.equipment, mode: c.mode };
+    };
     E.equipmentRecipe = (equipment, mode, ids) => {
       const eq = cfg.equipment[equipment];
       if (!eq || !Object.hasOwn(eq.modes, mode) || Object.keys(missing(equipment, E.count)).length) return null;

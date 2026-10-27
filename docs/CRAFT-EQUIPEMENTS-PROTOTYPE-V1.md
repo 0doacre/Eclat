@@ -8,7 +8,11 @@ Servir le dépôt avec son serveur local habituel, puis ouvrir **`prototype-equi
 
 La page propose une partie neuve et un exemple au Cuivre. Elle utilise exclusivement la clé locale `eclat.prototype.equipements.v1` ; elle ne charge, ne modifie ni n’exporte la partie habituelle. Le bouton de remise à zéro ne remplace que la partie d’essai, après confirmation. Le marqueur `craftProfile: equipements-v1` interdit l’importation silencieuse du prototype par le moteur normal, indépendamment du numéro de version de la sauvegarde.
 
-L’appui long sur le nom de l’équipement actif et le bouton « Changer d’outil » ouvrent les mêmes variantes de sa famille. Le catalogue « Tous les équipements » permet de changer de famille. Deux raccourcis évitent d’afficher onze outils en permanence sur mobile. Les modes apparaissent sous l’outil ; les matières restent sur l’établi lors d’un changement.
+Le départ fournit un percuteur : le premier manche demande seulement de poser du bois et d’essayer. La recette du percuteur reste présente. Le choix du lieu apparaît avec le premier feu, puis le four devient un troisième lieu après sa construction. Les outils et réglages restent automatiques lorsqu’une combinaison ne donne qu’un résultat compatible avec le lieu choisi.
+
+Lorsque plusieurs résultats sont possibles, le bouton « Essayer » propose les gestes correspondants, sans nommer les recettes à découvrir et sans consommer de matière avant le choix. Deux outils donnant le même résultat ne provoquent pas de choix supplémentaire. Une recette déjà connue prépare sa commande, y compris les outils et composants connus nécessaires.
+
+Après la première fabrication, un volet replié « Les outils de l’atelier » donne accès à la sélection manuelle. L’appui long sur le nom de l’équipement actif et le bouton « Changer d’outil » ouvrent les mêmes variantes de sa famille. Le catalogue permet de changer de famille. Le retour au choix automatique est explicite. Les outils qui ne servent jamais d’ingrédients sont retirés de la grille des matières, mais restent dans ce catalogue et les recettes connues.
 
 L’interface d’essai n’est pas encore l’intégration graphique dans le jeu : elle n’inclut pas le guide complet, la relève et les écrans des âges suivants. Elle n’est pas une nouvelle version du jeu publiée sur la prévisualisation.
 
@@ -34,6 +38,12 @@ Le feu propose chauffe douce, cuisson vive et carbonisation à l’étouffée. L
 
 `EclatEquipements.createData(base)` copie les données pour le prototype. Le contenu de base et son index normal ne sont pas mutés. `EclatEngine.withData(data)` crée une fabrique de moteurs indépendante ; `createEngine()` normal conserve ses données et sa version de sauvegarde.
 
+L’option `{ gentleStart: false }` conserve l’amorçage strict pour les tests de dépendances. Par défaut, le percuteur est présent dès le départ sans augmenter les statistiques de fabrication. Une sauvegarde d’essai existante reçoit cet outil s’il lui manque, sans perdre ses stocks ni sa progression.
+
+- `workplaceList()` et `workplaceFor(equipmentId)` : lieux et appartenance des outils.
+- `attemptAt(workplaceId, ingredients)` : résolution automatique dans le seul lieu choisi ; renvoie `choice` si plusieurs résultats sont possibles. Les options publiques ne contiennent que l’équipement, le mode et le nom du geste.
+- `workplaceOptions(workplaceId, ingredients)` : candidats internes utilisables, dédoublonnés par résultat ; leurs identifiants de recettes ne sont pas affichés avant découverte.
+
 Le moteur du profil expose :
 
 - `equipmentList()` : équipements, modes et disponibilité ;
@@ -58,8 +68,8 @@ Les migrations de recettes 0.20 et 0.35 restent distinctes et prises en charge.
 
 ## Vérifications
 
-- `npm run test:equipements` : 26 scénarios, dont fabrication initiale, distinction des recettes, mauvais outil/mode sans consommation ni révélation, préparation des outils dans les chaînes, partage de l’outil malgré une commande en attente, trente briques avant le four, enclume avant le martelage, outils conservés et matériaux incorporés, migrations, remboursement, non-fusion, anciennes machines et chemin jusqu’à la Rivière avec respect des âges et des terres accessibles.
-- `npm run test:equipements-ui` : 76 contrôles sur 320, 360, 390 et 980 px : fabrication effective, modes, catalogue, appui long, commandes, conservation de l’aiguille, rechargement de l’essai et partie habituelle inchangée. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
+- `npm run test:equipements` : 32 scénarios, dont fabrication initiale, distinction des recettes, mauvais outil/mode sans consommation ni révélation, préparation et partage des outils, migrations, anciennes machines, chemin jusqu’à la Rivière et apprentissage progressif (départ, lieux, ambiguïtés et dédoublonnage).
+- `npm run test:equipements-ui` : 120 contrôles sur 320, 360, 390 et 980 px : départ sans réglages, révélation des lieux, fabrication automatique, choix contextuel, modes facultatifs, catalogue, appui long, commandes, conservation de l’aiguille, rechargement de l’essai et partie habituelle inchangée. Le jeu habituel est ensuite ouvert dans le même profil : son moteur reste en v12, avec ses 267 objets et sans règles d’équipements expérimentales.
 - `npm test` : suite du jeu normal et nouveaux contrôles moteur. Le profil ne modifie pas les recettes ni les comptes de contenu de la partie normale.
 
 ## Prochain travail

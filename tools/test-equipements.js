@@ -2,7 +2,7 @@
 "use strict";
 const assert = require("assert/strict"), fs = require("fs"), path = require("path");
 const Base = require("../js/data"), Normal = require("../js/engine"), Eq = require("../js/equipements");
-const D = Eq.createData(Base), Proto = Normal.withData(D);
+const D = Eq.createData(Base, { gentleStart: false }), Proto = Normal.withData(D);
 let checks = 0;
 function test(name, f) { try { f(); checks++; console.log("  ✓ " + name); } catch(e) { process.exitCode = 1; console.error("  ✗ " + name + "\n" + e.stack); } }
 function mk(api = Proto) {
@@ -213,5 +213,45 @@ test("partie neuve : toutes les fabrications jusqu’à l’outre utilisent des 
   open("plaine");
   for(const id of ["aiguille","racloir_os","laniere","collets","outre"])produce(id,1);
   assert.equal(E.count("outre"),1);assert.equal(E.count("silex"),0);open("riviere");assert.equal(E.zoneOpen("riviere"),true);assert.equal(E.state.age,1);
+});
+const Gentle = Normal.withData(Eq.createData(Base));
+test("départ progressif : percuteur fourni, premier objectif inchangé, aucune fabrication comptée", () => {
+  const E=mk(Gentle);assert.equal(E.count("percuteur_pierre"),1);assert.equal(E.state.stats.crafts,0);
+  assert.equal(E.guide().step,"manche");stock(E,{bois:3});
+  assert.equal(E.attemptAt("etabli",["bois"]).id,"manche");assert.equal(E.count("manche"),1);
+  E.reset();assert.equal(E.count("percuteur_pierre"),1);assert.equal(E.count("manche"),0);
+  assert.deepEqual(mk(Normal).state.inv,{});
+});
+test("une ancienne partie d’essai reçoit le percuteur sans perdre sa progression", () => {
+  const old=mk();stock(old,{bois:12});const E=mk(Gentle);E.load(old.serialize());
+  assert.equal(E.count("percuteur_pierre"),1);assert.equal(E.count("bois"),12);
+  E.load(E.serialize());assert.equal(E.count("percuteur_pierre"),1);
+});
+test("le feu apparaît après sa construction et choisit seul la chauffe adaptée", () => {
+  const E=mk(Gentle);stock(E,{bois:20,manche:2});
+  assert.deepEqual(E.workplaceList().filter(x=>x.ready).map(x=>x.id),["etabli"]);
+  assert.equal(E.attemptAt("feu",["bois"]).why,"missing");owns(E,"feu");
+  assert.deepEqual(E.workplaceList().filter(x=>x.ready).map(x=>x.id),["etabli","feu"]);
+  const r=E.attemptAt("feu",["manche"]);assert.equal(r.id,"epieu");assert.equal(r.mode,"doux");
+  const c=E.attemptAt("feu",["bois"]);assert.equal(c.id,"charbon");assert.equal(c.mode,"etouffee");
+});
+test("une ambiguïté demande un geste sans révélation ni dépense", () => {
+  const E=mk(Gentle);E.state.age=1;stock(E,{os:20});owns(E,"aiguille");
+  const before=E.serialize(),r=E.attemptAt("etabli",["os"]);
+  assert.equal(r.kind,"choice");assert.equal(E.serialize(),before);
+  assert.deepEqual(r.options.map(x=>x.action),["Tailler","Percer"]);
+  assert.ok(!JSON.stringify(r).includes("flute"));
+  assert.equal(E.attemptWith(r.options[1].equipment,r.options[1].mode,["os"]).id,"flute");
+  assert.equal(E.count("aiguille"),1);
+});
+test("deux outils pour le même résultat ne créent pas un choix artificiel", () => {
+  const E=prepared(Gentle);owns(E,"aiguille");stock(E,{cuir:20});
+  assert.equal(E.workplaceOptions("etabli",["cuir"]).filter(x=>x.recipe==="laniere").length,1);
+  assert.equal(E.attemptAt("etabli",["cuir"]).id,"laniere");
+});
+test("le lieu automatique ne substitue pas le four au feu et ne révèle pas les recettes lointaines", () => {
+  const E=mk(Gentle);owns(E,"four");stock(E,{manche:3});
+  const before=E.serialize();assert.equal(E.attemptAt("four",["manche"]).why,"incompatible");assert.equal(E.serialize(),before);
+  assert.equal(E.workplaceOptions("etabli",["cuivre"]).length,0);
 });
 console.log(checks+" contrôles du profil équipements réussis.");
