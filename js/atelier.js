@@ -573,6 +573,14 @@
       const etapes = E.milestones()[g.age] || [], faites = etapes.filter((x) => x.done).length;
       const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
       const f = U.arbreFiltre || "tout";
+      const totalParAge = {};
+      for (const id in I) {
+        const it = I[id];
+        if (it.r && !it.path) {
+          const a = it.a || 0;
+          totalParAge[a] = (totalParAge[a] || 0) + 1;
+        }
+      }
       let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
         '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
       if (objectif) h += '<h3>Prochain objectif</h3>' + arbreCarte(objectif, false);
@@ -584,10 +592,11 @@
         const ouverts = U.arbreAges || {};
         const visibles = f === "tout" ? ns : ns.filter((n) => arbrePassPortee(n, f));
         const ouvert = ouverts[a] !== undefined ? ouverts[a] : (f !== "tout" ? visibles.length > 0 : a === Math.min(g.age, g.max));
+        const c = ns.filter((n) => n.etat === 'allume').length, tot = totalParAge[a] || 0;
         const compteTxt = f === "tout" ?
-          (ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '')) :
+          (tot > 0 ? c + ' / ' + tot : (c + ' connue' + (c > 1 ? 's' : ''))) :
           (visibles.length + ' ' + (f === 'pret' ? 'prête' + (visibles.length > 1 ? 's' : '') : f === 'portee' ? 'à portée' : 'verrouillée' + (visibles.length > 1 ? 's' : '')));
-        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + compteTxt + '</span></summary>';
+        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte"' + (f === 'tout' && tot > 0 ? ' aria-label="' + c + ' sur ' + tot + ' recettes connues"' : '') + '>' + compteTxt + '</span></summary>';
         const rang = new Map(visibles.map((n) => [n.cle, arbreRang(n, g)]));
         visibles.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
         h += (visibles.length ? '<div class="arb-frise">' + visibles.map(arbrePastille).join('') + '</div>' : '<p class="small muted">' + (ns.length ? 'Aucune recette pour ce filtre.' : 'Rien découvert pour l’instant.') + '</p>') + '</details>';

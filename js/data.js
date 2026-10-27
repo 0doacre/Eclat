@@ -721,7 +721,7 @@
         d: "Une fosse où l’on pellette le sable, qu’on passe ensuite à la claie.", h: "Un tamis de fibres tendu au bord du banc recueille les grains de sable les plus fins." },
       { id: "sable_2", n: "Tamis à sable", sn: "tamis", pl: "tamis", ic: "🕸️", de: "tamis", taux: 1.8, r: ["assembler", { manche: 25, plaque_bronze: 6, fibre: 60 }, 1],
         d: "Un cadre qui laisse passer le sable fin et garde le reste.", h: "Une grille fine sépare la poussière de quartz des graviers du fleuve." },
-      { id: "sable_3", n: "Suceuse à sable", sn: "suceuse", pl: "suceuses", ic: "⚓", de: "drague", r: ["assembler", { moteur_vapeur: 2, piston: 6, roue: 8 }, 1],
+      { id: "sable_3", n: "Pompe à sable", sn: "pompe à sable", pl: "pompes à sable", ic: "⚓", de: "drague", r: ["assembler", { moteur_vapeur: 2, piston: 6, roue: 8 }, 1],
         d: "Un gros tuyau aspire le sable du fond et le crache sur la rive.", h: "Une pompe à vapeur aspire le sable humide et l'envoie dans les bacs de décantation." },
       { id: "sable_4", n: "Pelleteuse à sable", sn: "pelleteuse à sable", pl: "pelleteuses à sable", ic: "🚜", de: "excavatrice", r: ["assembler", { moteur_elec: 4, plaque_fer: 30, vis: 40 }, 1],
         d: "Une large benne charge du sable à chaque passage.", h: "Une pelle mécanique articulée par des moteurs électriques charge les bennes de sable." }] },
