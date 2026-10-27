@@ -1736,7 +1736,7 @@ test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plo
   assert.strictEqual(s.id, "galene_1", JSON.stringify(s));
   // des étapes pour l’âge, dans l’ordre
   const m = E.milestones()[9];
-  assert.deepStrictEqual(m.filter((x) => x.ob.k === "craft").map((x) => x.ob.id), ["uranium_1", "lingot_plomb", "barre_combustible", "centrale_fission"]);
+  assert.deepStrictEqual(m.filter((x) => x.ob.k === "craft").map((x) => x.ob.id), ["uranium_1", "galene_1", "lingot_plomb", "barre_combustible", "centrale_fission"]);
   // des ingrédients d’âge égal ou antérieur
   Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].a === 9 && D.ITEMS[i].r).forEach((i) => { for (const g in D.ITEMS[i].r[1]) assert.ok(D.ITEMS[g].a <= 9, i + " demande " + g); });
   // l’extracteur d’uranium récolte une fois posé

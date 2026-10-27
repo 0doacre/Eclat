@@ -24,7 +24,7 @@ test("non-régression : 30 min sans option", () => {
 });
 test("non-régression : 30 min avec une mémoire", () => {
   assert.deepStrictEqual(lignes(jouer("--minutes", "30", "--mem", "recolte=2,extr=2,mains=2")),
-    [["plaine", 0.785, 2, 0], ["riviere", 6.743, 5, 0], ["collines", 13.11, 10, 0], ["mine", 21.452, 18, 0]]);
+    [["plaine", 0.785, 2, 0], ["riviere", 6.743, 5, 0], ["collines", 13.11, 10, 0], ["mine", 21.452, 18, 0], ["desert", 29.268, 30, 0]]);
 });
 test("non-régression : --offline 2 après chaque passage", () => {
   const r = jouer("--minutes", "40", "--offline", "2");
