@@ -1,0 +1,1305 @@
+{
+  "date": "2026-10-27",
+  "commitReference": "9ed78d9f190982797902451d3f2ee2eb46d4fbcb",
+  "references": [
+    {
+      "profil": "base",
+      "options": [
+        "--minutes",
+        "360"
+      ],
+      "minutesActives": 360,
+      "minutesEcoulees": 360,
+      "ages": [
+        {
+          "age": "bois",
+          "entree": 0,
+          "duree": 5.861666666666858,
+          "termine": true
+        },
+        {
+          "age": "os",
+          "entree": 5.861666666666858,
+          "duree": 11.65333333333547,
+          "termine": true
+        },
+        {
+          "age": "pierre",
+          "entree": 17.515000000002328,
+          "duree": 17.41666666665083,
+          "termine": true
+        },
+        {
+          "age": "cuivre",
+          "entree": 34.93166666665316,
+          "duree": 1.1016666666656647,
+          "termine": true
+        },
+        {
+          "age": "bronze",
+          "entree": 36.03333333331882,
+          "duree": 23.929999999978236,
+          "termine": true
+        },
+        {
+          "age": "fer",
+          "entree": 59.96333333329706,
+          "duree": 4.53333333332921,
+          "termine": true
+        },
+        {
+          "age": "acier",
+          "entree": 64.49666666662627,
+          "duree": 3.689999999996644,
+          "termine": true
+        },
+        {
+          "age": "vapeur",
+          "entree": 68.18666666662291,
+          "duree": 5.318333333352314,
+          "termine": true
+        },
+        {
+          "age": "elec",
+          "entree": 73.50499999997523,
+          "duree": 3.42500000001246,
+          "termine": true
+        },
+        {
+          "age": "atome",
+          "entree": 76.92999999998769,
+          "duree": 4.796666666684104,
+          "termine": true
+        },
+        {
+          "age": "silicium",
+          "entree": 81.72666666667179,
+          "duree": 16.566666666726945,
+          "termine": true
+        },
+        {
+          "age": "polymeres",
+          "entree": 98.29333333339873,
+          "duree": 41.70166666681838,
+          "termine": true
+        },
+        {
+          "age": "composites",
+          "entree": 139.99500000021712,
+          "duree": 220.00499999978288,
+          "termine": false
+        }
+      ],
+      "passages": [
+        {
+          "terre": "plaine",
+          "actif": 5.835,
+          "ecoule": 5.835,
+          "age": "bois",
+          "objetClePret": 2.3566666666666665,
+          "depuisObjetCle": 3.4783333333333335
+        },
+        {
+          "terre": "riviere",
+          "actif": 17.485,
+          "ecoule": 17.485,
+          "age": "os",
+          "objetClePret": 6.996666666666667,
+          "depuisObjetCle": 10.488333333333333
+        },
+        {
+          "terre": "collines",
+          "actif": 33.876666666666665,
+          "ecoule": 33.876666666666665,
+          "age": "pierre",
+          "objetClePret": 18.015,
+          "depuisObjetCle": 15.861666666666665
+        },
+        {
+          "terre": "mine",
+          "actif": 55.251666666666665,
+          "ecoule": 55.251666666666665,
+          "age": "bronze",
+          "objetClePret": 39.43333333333333,
+          "depuisObjetCle": 15.818333333333335
+        },
+        {
+          "terre": "desert",
+          "actif": 59.71,
+          "ecoule": 59.71,
+          "age": "bronze",
+          "objetClePret": 57.62833333333333,
+          "depuisObjetCle": 2.0816666666666706
+        },
+        {
+          "terre": "gisement",
+          "actif": 97.85166666666667,
+          "ecoule": 97.85166666666667,
+          "age": "silicium",
+          "objetClePret": 89.67833333333333,
+          "depuisObjetCle": 8.173333333333346
+        },
+        {
+          "terre": "montagnes",
+          "actif": 131.89333333333335,
+          "ecoule": 131.89333333333335,
+          "age": "polymeres",
+          "objetClePret": 102.16333333333333,
+          "depuisObjetCle": 29.730000000000018
+        }
+      ],
+      "objectif": {
+        "i": 75,
+        "k": "pass",
+        "z": "orbite",
+        "n": "Vers l’Orbite",
+        "txt": "Il faut une rampe de lancement, et de quoi repartir."
+      },
+      "passageRestant": {
+        "z": "orbite",
+        "info": {
+          "z": "orbite",
+          "P": {
+            "n": "La Rampe",
+            "t": "Il faut une rampe de lancement, et de quoi repartir.",
+            "cost": {
+              "aluminium": 4500,
+              "titane": 900,
+              "composite": 900
+            },
+            "tr": 40
+          },
+          "cost": {
+            "aluminium": 4500,
+            "titane": 900,
+            "composite": 900
+          },
+          "paid": {
+            "aluminium": 4500,
+            "titane": 900,
+            "composite": 438
+          },
+          "left": {
+            "composite": 462
+          },
+          "lieux": {
+            "z": "montagnes",
+            "n": "Les Pics Fracturés",
+            "done": 1,
+            "total": 1,
+            "left": []
+          },
+          "ready": true,
+          "done": false,
+          "frac": 0.9266666666666666,
+          "can": false
+        },
+        "objectif": "Vers l’Orbite"
+      },
+      "gels": 0
+    },
+    {
+      "profil": "memoire",
+      "options": [
+        "--minutes",
+        "240",
+        "--mem",
+        "recolte=2,extr=2,mains=2"
+      ],
+      "minutesActives": 240,
+      "minutesEcoulees": 240,
+      "ages": [
+        {
+          "age": "bois",
+          "entree": 0,
+          "duree": 0.8083333333333403,
+          "termine": true
+        },
+        {
+          "age": "os",
+          "entree": 0.8083333333333403,
+          "duree": 5.96000000000039,
+          "termine": true
+        },
+        {
+          "age": "pierre",
+          "entree": 6.7683333333337306,
+          "duree": 6.575000000001495,
+          "termine": true
+        },
+        {
+          "age": "cuivre",
+          "entree": 13.343333333335226,
+          "duree": 0.10666666666669045,
+          "termine": true
+        },
+        {
+          "age": "bronze",
+          "entree": 13.450000000001916,
+          "duree": 15.98166666665624,
+          "termine": true
+        },
+        {
+          "age": "fer",
+          "entree": 29.431666666658156,
+          "duree": 2.919999999997348,
+          "termine": true
+        },
+        {
+          "age": "acier",
+          "entree": 32.351666666655504,
+          "duree": 3.511666666663473,
+          "termine": true
+        },
+        {
+          "age": "vapeur",
+          "entree": 35.86333333331898,
+          "duree": 4.806666666662295,
+          "termine": true
+        },
+        {
+          "age": "elec",
+          "entree": 40.66999999998127,
+          "duree": 3.8399999999965075,
+          "termine": true
+        },
+        {
+          "age": "atome",
+          "entree": 44.50999999997778,
+          "duree": 3.4866666666634956,
+          "termine": true
+        },
+        {
+          "age": "silicium",
+          "entree": 47.996666666641275,
+          "duree": 11.424999999989609,
+          "termine": true
+        },
+        {
+          "age": "polymeres",
+          "entree": 59.421666666630884,
+          "duree": 25.183333333384724,
+          "termine": true
+        },
+        {
+          "age": "composites",
+          "entree": 84.60500000001561,
+          "duree": 70.4000000002561,
+          "termine": true
+        },
+        {
+          "age": "spatial",
+          "entree": 155.0050000002717,
+          "duree": 84.9949999997283,
+          "termine": false
+        }
+      ],
+      "passages": [
+        {
+          "terre": "plaine",
+          "actif": 0.785,
+          "ecoule": 0.785,
+          "age": "bois",
+          "objetClePret": 0.20166666666666666,
+          "depuisObjetCle": 0.5833333333333334
+        },
+        {
+          "terre": "riviere",
+          "actif": 6.743333333333333,
+          "ecoule": 6.743333333333333,
+          "age": "os",
+          "objetClePret": 0.91,
+          "depuisObjetCle": 5.833333333333333
+        },
+        {
+          "terre": "collines",
+          "actif": 13.11,
+          "ecoule": 13.11,
+          "age": "pierre",
+          "objetClePret": 6.888333333333334,
+          "depuisObjetCle": 6.221666666666666
+        },
+        {
+          "terre": "mine",
+          "actif": 21.451666666666668,
+          "ecoule": 21.451666666666668,
+          "age": "bronze",
+          "objetClePret": 13.923333333333334,
+          "depuisObjetCle": 7.528333333333334
+        },
+        {
+          "terre": "desert",
+          "actif": 29.268333333333334,
+          "ecoule": 29.268333333333334,
+          "age": "bronze",
+          "objetClePret": 22.333333333333332,
+          "depuisObjetCle": 6.935000000000002
+        },
+        {
+          "terre": "gisement",
+          "actif": 58.97666666666667,
+          "ecoule": 58.97666666666667,
+          "age": "silicium",
+          "objetClePret": 52.653333333333336,
+          "depuisObjetCle": 6.323333333333331
+        },
+        {
+          "terre": "montagnes",
+          "actif": 78.57666666666667,
+          "ecoule": 78.57666666666667,
+          "age": "polymeres",
+          "objetClePret": 62.406666666666666,
+          "depuisObjetCle": 16.17
+        },
+        {
+          "terre": "orbite",
+          "actif": 141.71,
+          "ecoule": 141.71,
+          "age": "composites",
+          "objetClePret": 108.785,
+          "depuisObjetCle": 32.92500000000001
+        }
+      ],
+      "objectif": {
+        "i": 77,
+        "k": "pass",
+        "z": "lune",
+        "n": "Vers la Lune",
+        "txt": "Pour rester sur la Lune, il faut de quoi s’y abriter."
+      },
+      "passageRestant": {
+        "z": "lune",
+        "info": {
+          "z": "lune",
+          "P": {
+            "n": "La Base avancée",
+            "t": "Pour rester sur la Lune, il faut de quoi s’y abriter.",
+            "cost": {
+              "titane": 4500,
+              "composite": 2700,
+              "debris": 6000
+            },
+            "tr": 60
+          },
+          "cost": {
+            "titane": 4500,
+            "composite": 2700,
+            "debris": 6000
+          },
+          "paid": {
+            "titane": 4500,
+            "composite": 1669,
+            "debris": 3535
+          },
+          "left": {
+            "composite": 1031,
+            "debris": 2465
+          },
+          "lieux": null,
+          "ready": true,
+          "done": false,
+          "frac": 0.7351515151515151,
+          "can": true
+        },
+        "objectif": "Vers la Lune"
+      },
+      "gels": 0
+    }
+  ],
+  "experiences": [
+    {
+      "variante": "A",
+      "profil": "memoire",
+      "options": [
+        "--minutes",
+        "240",
+        "--mem",
+        "recolte=2,extr=2,mains=2"
+      ],
+      "ages": [
+        {
+          "age": "bois",
+          "entree": 0,
+          "duree": 0.8083333333333403,
+          "termine": true
+        },
+        {
+          "age": "os",
+          "entree": 0.8083333333333403,
+          "duree": 5.96000000000039,
+          "termine": true
+        },
+        {
+          "age": "pierre",
+          "entree": 6.7683333333337306,
+          "duree": 6.575000000001495,
+          "termine": true
+        },
+        {
+          "age": "cuivre",
+          "entree": 13.343333333335226,
+          "duree": 0.1550000000000349,
+          "termine": true
+        },
+        {
+          "age": "bronze",
+          "entree": 13.49833333333526,
+          "duree": 8.989999999995877,
+          "termine": true
+        },
+        {
+          "age": "fer",
+          "entree": 22.488333333331138,
+          "duree": 8.063333333326,
+          "termine": true
+        },
+        {
+          "age": "acier",
+          "entree": 30.551666666657137,
+          "duree": 3.8533333333298323,
+          "termine": true
+        },
+        {
+          "age": "vapeur",
+          "entree": 34.40499999998697,
+          "duree": 4.2483333333294695,
+          "termine": true
+        },
+        {
+          "age": "elec",
+          "entree": 38.65333333331644,
+          "duree": 3.889999999996462,
+          "termine": true
+        },
+        {
+          "age": "atome",
+          "entree": 42.5433333333129,
+          "duree": 3.4949999999968213,
+          "termine": true
+        },
+        {
+          "age": "silicium",
+          "entree": 46.03833333330972,
+          "duree": 12.4249999999887,
+          "termine": true
+        },
+        {
+          "age": "polymeres",
+          "entree": 58.46333333329842,
+          "duree": 21.010000000031837,
+          "termine": true
+        },
+        {
+          "age": "composites",
+          "entree": 79.47333333333026,
+          "duree": 66.1233333335739,
+          "termine": true
+        },
+        {
+          "age": "spatial",
+          "entree": 145.59666666690416,
+          "duree": 94.40333333309584,
+          "termine": false
+        }
+      ],
+      "passages": [
+        {
+          "z": "plaine",
+          "t": 0.785,
+          "age": "bois"
+        },
+        {
+          "z": "riviere",
+          "t": 6.743333333333333,
+          "age": "os"
+        },
+        {
+          "z": "collines",
+          "t": 13.11,
+          "age": "pierre"
+        },
+        {
+          "z": "mine",
+          "t": 21.393333333333334,
+          "age": "bronze"
+        },
+        {
+          "z": "desert",
+          "t": 28.46,
+          "age": "fer"
+        },
+        {
+          "z": "gisement",
+          "t": 58.085,
+          "age": "silicium"
+        },
+        {
+          "z": "montagnes",
+          "t": 74.20166666666667,
+          "age": "polymeres"
+        },
+        {
+          "z": "orbite",
+          "t": 132.21,
+          "age": "composites"
+        }
+      ],
+      "mur": {
+        "z": "lune",
+        "info": {
+          "z": "lune",
+          "P": {
+            "n": "La Base avancée",
+            "t": "Pour rester sur la Lune, il faut de quoi s’y abriter.",
+            "cost": {
+              "titane": 4500,
+              "composite": 2700,
+              "debris": 6000
+            },
+            "tr": 60
+          },
+          "cost": {
+            "titane": 4500,
+            "composite": 2700,
+            "debris": 6000
+          },
+          "paid": {
+            "titane": 4500,
+            "composite": 1867,
+            "debris": 4007
+          },
+          "left": {
+            "composite": 833,
+            "debris": 1993
+          },
+          "lieux": null,
+          "ready": true,
+          "done": false,
+          "frac": 0.7859090909090909,
+          "can": false
+        },
+        "objectif": "Vers la Lune"
+      },
+      "objectif": {
+        "i": 81,
+        "k": "pass",
+        "z": "lune",
+        "n": "Vers la Lune",
+        "txt": "Pour rester sur la Lune, il faut de quoi s’y abriter."
+      },
+      "gels": 0
+    },
+    {
+      "variante": "B",
+      "profil": "memoire",
+      "options": [
+        "--minutes",
+        "240",
+        "--mem",
+        "recolte=2,extr=2,mains=2"
+      ],
+      "ages": [
+        {
+          "age": "bois",
+          "entree": 0,
+          "duree": 0.8083333333333403,
+          "termine": true
+        },
+        {
+          "age": "os",
+          "entree": 0.8083333333333403,
+          "duree": 5.96000000000039,
+          "termine": true
+        },
+        {
+          "age": "pierre",
+          "entree": 6.7683333333337306,
+          "duree": 6.575000000001495,
+          "termine": true
+        },
+        {
+          "age": "cuivre",
+          "entree": 13.343333333335226,
+          "duree": 0.1550000000000349,
+          "termine": true
+        },
+        {
+          "age": "bronze",
+          "entree": 13.49833333333526,
+          "duree": 8.989999999995877,
+          "termine": true
+        },
+        {
+          "age": "fer",
+          "entree": 22.488333333331138,
+          "duree": 8.644999999992137,
+          "termine": true
+        },
+        {
+          "age": "acier",
+          "entree": 31.133333333323275,
+          "duree": 3.7133333333299596,
+          "termine": true
+        },
+        {
+          "age": "vapeur",
+          "entree": 34.846666666653235,
+          "duree": 4.239999999996144,
+          "termine": true
+        },
+        {
+          "age": "elec",
+          "entree": 39.08666666664938,
+          "duree": 4.396666666662668,
+          "termine": true
+        },
+        {
+          "age": "atome",
+          "entree": 43.483333333312046,
+          "duree": 2.8349999999974216,
+          "termine": true
+        },
+        {
+          "age": "silicium",
+          "entree": 46.31833333330947,
+          "duree": 12.236666666655537,
+          "termine": true
+        },
+        {
+          "age": "polymeres",
+          "entree": 58.554999999965005,
+          "duree": 21.096666666699235,
+          "termine": true
+        },
+        {
+          "age": "composites",
+          "entree": 79.65166666666424,
+          "duree": 66.1116666669072,
+          "termine": true
+        },
+        {
+          "age": "spatial",
+          "entree": 145.76333333357144,
+          "duree": 94.23666666642856,
+          "termine": false
+        }
+      ],
+      "passages": [
+        {
+          "z": "plaine",
+          "t": 0.785,
+          "age": "bois"
+        },
+        {
+          "z": "riviere",
+          "t": 6.743333333333333,
+          "age": "os"
+        },
+        {
+          "z": "collines",
+          "t": 13.11,
+          "age": "pierre"
+        },
+        {
+          "z": "mine",
+          "t": 21.393333333333334,
+          "age": "bronze"
+        },
+        {
+          "z": "desert",
+          "t": 28.46,
+          "age": "fer"
+        },
+        {
+          "z": "gisement",
+          "t": 58.17666666666667,
+          "age": "silicium"
+        },
+        {
+          "z": "montagnes",
+          "t": 74.51,
+          "age": "polymeres"
+        },
+        {
+          "z": "orbite",
+          "t": 132.37666666666667,
+          "age": "composites"
+        }
+      ],
+      "mur": {
+        "z": "lune",
+        "info": {
+          "z": "lune",
+          "P": {
+            "n": "La Base avancée",
+            "t": "Pour rester sur la Lune, il faut de quoi s’y abriter.",
+            "cost": {
+              "titane": 4500,
+              "composite": 2700,
+              "debris": 6000
+            },
+            "tr": 60
+          },
+          "cost": {
+            "titane": 4500,
+            "composite": 2700,
+            "debris": 6000
+          },
+          "paid": {
+            "titane": 4500,
+            "composite": 1861,
+            "debris": 4000
+          },
+          "left": {
+            "composite": 839,
+            "debris": 2000
+          },
+          "lieux": null,
+          "ready": true,
+          "done": false,
+          "frac": 0.7849242424242424,
+          "can": false
+        },
+        "objectif": "Vers la Lune"
+      },
+      "objectif": {
+        "i": 82,
+        "k": "pass",
+        "z": "lune",
+        "n": "Vers la Lune",
+        "txt": "Pour rester sur la Lune, il faut de quoi s’y abriter."
+      },
+      "gels": 0
+    },
+    {
+      "variante": "C",
+      "profil": "memoire",
+      "options": [
+        "--minutes",
+        "240",
+        "--mem",
+        "recolte=2,extr=2,mains=2"
+      ],
+      "ages": [
+        {
+          "age": "bois",
+          "entree": 0,
+          "duree": 0.8083333333333403,
+          "termine": true
+        },
+        {
+          "age": "os",
+          "entree": 0.8083333333333403,
+          "duree": 5.96000000000039,
+          "termine": true
+        },
+        {
+          "age": "pierre",
+          "entree": 6.7683333333337306,
+          "duree": 6.575000000001495,
+          "termine": true
+        },
+        {
+          "age": "cuivre",
+          "entree": 13.343333333335226,
+          "duree": 0.1550000000000349,
+          "termine": true
+        },
+        {
+          "age": "bronze",
+          "entree": 13.49833333333526,
+          "duree": 8.989999999995877,
+          "termine": true
+        },
+        {
+          "age": "fer",
+          "entree": 22.488333333331138,
+          "duree": 8.644999999992137,
+          "termine": true
+        },
+        {
+          "age": "acier",
+          "entree": 31.133333333323275,
+          "duree": 3.7133333333299596,
+          "termine": true
+        },
+        {
+          "age": "vapeur",
+          "entree": 34.846666666653235,
+          "duree": 4.239999999996144,
+          "termine": true
+        },
+        {
+          "age": "elec",
+          "entree": 39.08666666664938,
+          "duree": 4.396666666662668,
+          "termine": true
+        },
+        {
+          "age": "atome",
+          "entree": 43.483333333312046,
+          "duree": 2.8349999999974216,
+          "termine": true
+        },
+        {
+          "age": "silicium",
+          "entree": 46.31833333330947,
+          "duree": 12.236666666655537,
+          "termine": true
+        },
+        {
+          "age": "polymeres",
+          "entree": 58.554999999965005,
+          "duree": 21.096666666699235,
+          "termine": true
+        },
+        {
+          "age": "composites",
+          "entree": 79.65166666666424,
+          "duree": 54.38666666686454,
+          "termine": true
+        },
+        {
+          "age": "spatial",
+          "entree": 134.03833333352878,
+          "duree": 105.96166666647122,
+          "termine": false
+        }
+      ],
+      "passages": [
+        {
+          "z": "plaine",
+          "t": 0.785,
+          "age": "bois"
+        },
+        {
+          "z": "riviere",
+          "t": 6.743333333333333,
+          "age": "os"
+        },
+        {
+          "z": "collines",
+          "t": 13.11,
+          "age": "pierre"
+        },
+        {
+          "z": "mine",
+          "t": 21.393333333333334,
+          "age": "bronze"
+        },
+        {
+          "z": "desert",
+          "t": 28.46,
+          "age": "fer"
+        },
+        {
+          "z": "gisement",
+          "t": 58.17666666666667,
+          "age": "silicium"
+        },
+        {
+          "z": "montagnes",
+          "t": 74.51,
+          "age": "polymeres"
+        },
+        {
+          "z": "orbite",
+          "t": 120.535,
+          "age": "composites"
+        }
+      ],
+      "mur": {
+        "z": "lune",
+        "info": {
+          "z": "lune",
+          "P": {
+            "n": "La Base avancée",
+            "t": "Pour rester sur la Lune, il faut de quoi s’y abriter.",
+            "cost": {
+              "titane": 4500,
+              "composite": 1800,
+              "debris": 6000
+            },
+            "tr": 60
+          },
+          "cost": {
+            "titane": 4500,
+            "composite": 1800,
+            "debris": 6000
+          },
+          "paid": {
+            "debris": 5597,
+            "titane": 4500,
+            "composite": 1626
+          },
+          "left": {
+            "composite": 174,
+            "debris": 403
+          },
+          "lieux": null,
+          "ready": true,
+          "done": false,
+          "frac": 0.953089430894309,
+          "can": true
+        },
+        "objectif": "Vers la Lune"
+      },
+      "objectif": {
+        "i": 82,
+        "k": "pass",
+        "z": "lune",
+        "n": "Vers la Lune",
+        "txt": "Pour rester sur la Lune, il faut de quoi s’y abriter."
+      },
+      "gels": 0
+    },
+    {
+      "variante": "B",
+      "profil": "base",
+      "options": [
+        "--minutes",
+        "360"
+      ],
+      "ages": [
+        {
+          "age": "bois",
+          "entree": 0,
+          "duree": 5.861666666666858,
+          "termine": true
+        },
+        {
+          "age": "os",
+          "entree": 5.861666666666858,
+          "duree": 11.65333333333547,
+          "termine": true
+        },
+        {
+          "age": "pierre",
+          "entree": 17.515000000002328,
+          "duree": 17.41666666665083,
+          "termine": true
+        },
+        {
+          "age": "cuivre",
+          "entree": 34.93166666665316,
+          "duree": 2.108333333331416,
+          "termine": true
+        },
+        {
+          "age": "bronze",
+          "entree": 37.03999999998457,
+          "duree": 20.88666666664767,
+          "termine": true
+        },
+        {
+          "age": "fer",
+          "entree": 57.926666666632244,
+          "duree": 7.581666666659771,
+          "termine": true
+        },
+        {
+          "age": "acier",
+          "entree": 65.50833333329201,
+          "duree": 3.4366666666666106,
+          "termine": true
+        },
+        {
+          "age": "vapeur",
+          "entree": 68.94499999995863,
+          "duree": 5.316666666686018,
+          "termine": true
+        },
+        {
+          "age": "elec",
+          "entree": 74.26166666664464,
+          "duree": 3.540000000012867,
+          "termine": true
+        },
+        {
+          "age": "atome",
+          "entree": 77.80166666665751,
+          "duree": 4.786666666684084,
+          "termine": true
+        },
+        {
+          "age": "silicium",
+          "entree": 82.5883333333416,
+          "duree": 18.55500000006751,
+          "termine": true
+        },
+        {
+          "age": "polymeres",
+          "entree": 101.1433333334091,
+          "duree": 43.74166666682579,
+          "termine": true
+        },
+        {
+          "age": "composites",
+          "entree": 144.8850000002349,
+          "duree": 215.1149999997651,
+          "termine": false
+        }
+      ],
+      "passages": [
+        {
+          "z": "plaine",
+          "t": 5.835,
+          "age": "bois"
+        },
+        {
+          "z": "riviere",
+          "t": 17.485,
+          "age": "os"
+        },
+        {
+          "z": "collines",
+          "t": 33.876666666666665,
+          "age": "pierre"
+        },
+        {
+          "z": "mine",
+          "t": 55.67666666666667,
+          "age": "bronze"
+        },
+        {
+          "z": "desert",
+          "t": 60.86833333333333,
+          "age": "fer"
+        },
+        {
+          "z": "gisement",
+          "t": 100.30166666666666,
+          "age": "silicium"
+        },
+        {
+          "z": "montagnes",
+          "t": 138.06,
+          "age": "polymeres"
+        }
+      ],
+      "mur": {
+        "z": "orbite",
+        "info": {
+          "z": "orbite",
+          "P": {
+            "n": "La Rampe",
+            "t": "Il faut une rampe de lancement, et de quoi repartir.",
+            "cost": {
+              "aluminium": 4500,
+              "titane": 900,
+              "composite": 900
+            },
+            "tr": 40
+          },
+          "cost": {
+            "aluminium": 4500,
+            "titane": 900,
+            "composite": 900
+          },
+          "paid": {
+            "aluminium": 4500,
+            "titane": 900,
+            "composite": 426
+          },
+          "left": {
+            "composite": 474
+          },
+          "lieux": {
+            "z": "montagnes",
+            "n": "Les Pics Fracturés",
+            "done": 1,
+            "total": 1,
+            "left": []
+          },
+          "ready": true,
+          "done": false,
+          "frac": 0.9247619047619048,
+          "can": false
+        },
+        "objectif": "Vers l’Orbite"
+      },
+      "objectif": {
+        "i": 80,
+        "k": "pass",
+        "z": "orbite",
+        "n": "Vers l’Orbite",
+        "txt": "Il faut une rampe de lancement, et de quoi repartir."
+      },
+      "gels": 0
+    },
+    {
+      "variante": "C",
+      "profil": "base",
+      "options": [
+        "--minutes",
+        "360"
+      ],
+      "ages": [
+        {
+          "age": "bois",
+          "entree": 0,
+          "duree": 5.861666666666858,
+          "termine": true
+        },
+        {
+          "age": "os",
+          "entree": 5.861666666666858,
+          "duree": 11.65333333333547,
+          "termine": true
+        },
+        {
+          "age": "pierre",
+          "entree": 17.515000000002328,
+          "duree": 17.41666666665083,
+          "termine": true
+        },
+        {
+          "age": "cuivre",
+          "entree": 34.93166666665316,
+          "duree": 2.108333333331416,
+          "termine": true
+        },
+        {
+          "age": "bronze",
+          "entree": 37.03999999998457,
+          "duree": 20.88666666664767,
+          "termine": true
+        },
+        {
+          "age": "fer",
+          "entree": 57.926666666632244,
+          "duree": 7.581666666659771,
+          "termine": true
+        },
+        {
+          "age": "acier",
+          "entree": 65.50833333329201,
+          "duree": 3.4366666666666106,
+          "termine": true
+        },
+        {
+          "age": "vapeur",
+          "entree": 68.94499999995863,
+          "duree": 5.316666666686018,
+          "termine": true
+        },
+        {
+          "age": "elec",
+          "entree": 74.26166666664464,
+          "duree": 3.540000000012867,
+          "termine": true
+        },
+        {
+          "age": "atome",
+          "entree": 77.80166666665751,
+          "duree": 4.786666666684084,
+          "termine": true
+        },
+        {
+          "age": "silicium",
+          "entree": 82.5883333333416,
+          "duree": 18.55500000006751,
+          "termine": true
+        },
+        {
+          "age": "polymeres",
+          "entree": 101.1433333334091,
+          "duree": 43.74166666682579,
+          "termine": true
+        },
+        {
+          "age": "composites",
+          "entree": 144.8850000002349,
+          "duree": 215.1149999997651,
+          "termine": false
+        }
+      ],
+      "passages": [
+        {
+          "z": "plaine",
+          "t": 5.835,
+          "age": "bois"
+        },
+        {
+          "z": "riviere",
+          "t": 17.485,
+          "age": "os"
+        },
+        {
+          "z": "collines",
+          "t": 33.876666666666665,
+          "age": "pierre"
+        },
+        {
+          "z": "mine",
+          "t": 55.67666666666667,
+          "age": "bronze"
+        },
+        {
+          "z": "desert",
+          "t": 60.86833333333333,
+          "age": "fer"
+        },
+        {
+          "z": "gisement",
+          "t": 100.30166666666666,
+          "age": "silicium"
+        },
+        {
+          "z": "montagnes",
+          "t": 138.06,
+          "age": "polymeres"
+        }
+      ],
+      "mur": {
+        "z": "orbite",
+        "info": {
+          "z": "orbite",
+          "P": {
+            "n": "La Rampe",
+            "t": "Il faut une rampe de lancement, et de quoi repartir.",
+            "cost": {
+              "aluminium": 4500,
+              "titane": 900,
+              "composite": 600
+            },
+            "tr": 40
+          },
+          "cost": {
+            "aluminium": 4500,
+            "titane": 900,
+            "composite": 600
+          },
+          "paid": {
+            "aluminium": 4500,
+            "titane": 900,
+            "composite": 534
+          },
+          "left": {
+            "composite": 66
+          },
+          "lieux": {
+            "z": "montagnes",
+            "n": "Les Pics Fracturés",
+            "done": 1,
+            "total": 1,
+            "left": []
+          },
+          "ready": true,
+          "done": false,
+          "frac": 0.989,
+          "can": false
+        },
+        "objectif": "Vers l’Orbite"
+      },
+      "objectif": {
+        "i": 80,
+        "k": "pass",
+        "z": "orbite",
+        "n": "Vers l’Orbite",
+        "txt": "Il faut une rampe de lancement, et de quoi repartir."
+      },
+      "gels": 0
+    }
+  ]
+}
