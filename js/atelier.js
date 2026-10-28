@@ -41,6 +41,13 @@
           : '<span>Il te faut ' + firstWood + ' bois pour commencer.</span><button class="btn pri" data-hloop="lisiere:bois">▶ Récolter du bois</button>') + '</div>';
       }
       h += goalHint();
+      const sugRel = E.shouldSuggestReleve && E.shouldSuggestReleve();
+      if (sugRel) {
+        h += '<div class="card acc releve-alerte" style="border-left:3px solid var(--acc);background:var(--panel2);margin-bottom:10px">' +
+          '<div class="row between items-center"><span class="step-badge">✦ Passer le relais</span><b class="mgain">+' + sugRel.gain + ' ✦</b></div>' +
+          '<p class="small" style="margin:6px 0 8px">' + esc(sugRel.texte) + '</p>' +
+          '<button class="btn pri small" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+      }
       // l’explication des niveaux se lit une fois ; ensuite le bouton « Niveaux » rejoint l’établi et ne prend plus de ligne
       const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;
       if (niveauxTip) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button><button class="btn small ghost" data-tip="tip_niveaux" title="Fermer cette astuce">Compris</button></div>';
@@ -1181,7 +1188,13 @@
             '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span>" + lim + "</span>" +
             '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
         }).join("") +
-        '</div><p class="tiny muted">Annuler une commande rend ses ressources à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+        '</div>' +
+        (() => {
+          const sugRel = E.shouldSuggestReleve && E.shouldSuggestReleve();
+          if (!sugRel) return '';
+          return '<div class="card acc releve-alerte" style="margin-top:10px;border-left:3px solid var(--acc)"><div class="small"><b>⏳ Commandes lentes :</b> ce Semeur approche du bout de son éveil. Passer le relais (+' + sugRel.gain + ' ✦) accélérera tes futures fabrications.</div><button class="btn pri small" style="margin-top:6px" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+        })() +
+        '<p class="tiny muted">Annuler une commande rend ses ressources à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
     }
     function openHands() {
       openModal({

@@ -1418,8 +1418,11 @@
    * Durée d’une pièce (s) : (base + age × âge de l’objet) × (1 − star × étoiles de maîtrise)
    * × old^(âges d’écart avec l’objet), multipliée pour les objets uniques (outils,
    * stations…) et pour ceux dont le prix monte à chaque exemplaire (extracteurs, machines).
-   * n pièces d’affilée : durée d’une pièce × n^batch. max : fabrications dans la file. */
-  D.HAND = { base: 0.5, age: 0.2, star: 0.1, old: 0.75, batch: 0.6, unique: 3, scaled: 2, max: 8 };
+   * n pièces d’affilée : durée d’une pièce × n^batch. max : fabrications dans la file.
+   * ageCurve : progression non-linéaire sur les âges avancés (les pièces complexes demandent du soin).
+   * fatigueBase : pénalité arbitraire de fatigue du cycle quand le Semeur s'aventure trop loin sans relève.
+   * machDecay : ralentissement des machines sur les objets d'âges élevés (aide sans annuler l'effort). */
+  D.HAND = { base: 0.5, age: 0.2, star: 0.1, old: 0.75, batch: 0.6, unique: 3, scaled: 2, max: 8, ageCurve: 1.08, fatigueBase: 1.15, machDecay: 1.08 };
 
   /* Les gestes, et la récolte à la main, sont des compétences : chaque pièce faite à la
    * main (pas par une machine) et chaque récolte rapportent de l’expérience. Un niveau
