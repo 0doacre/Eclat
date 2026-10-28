@@ -1,0 +1,143 @@
+{
+  "generator": "imagegen intégré",
+  "masters": "PNG originaux intacts",
+  "assets": [
+    {
+      "file": "assets/art/mercure-landscape.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2846513,
+      "sha256": "de4dc4dc415b939a1ca607b5f410736f66996d99a1ad24a67e5435d56cb4aafe",
+      "alphaRange": [
+        0,
+        254
+      ],
+      "subjectBounds": [
+        0,
+        6,
+        1536,
+        1024
+      ]
+    },
+    {
+      "file": "assets/art/metal-mercurien.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 2712053,
+      "sha256": "078d29e0ef97152edd1d59b7742cd96b925dc6c81f253860de5a06224a73e2ee",
+      "alphaRange": [
+        0,
+        254
+      ],
+      "subjectBounds": [
+        0,
+        0,
+        1535,
+        1024
+      ]
+    },
+    {
+      "file": "assets/ui/button-night.png",
+      "width": 2103,
+      "height": 748,
+      "bytes": 2256135,
+      "sha256": "bd3505a20c1b53dc0bd5a46e44a24115952bf5a22d0d3a478a43299b4c1a35fc",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "subjectBounds": [
+        0,
+        21,
+        2089,
+        748
+      ]
+    },
+    {
+      "file": "assets/ui/button-paper.png",
+      "width": 1983,
+      "height": 793,
+      "bytes": 1903489,
+      "sha256": "133ddc059f449a882820747dc65dfb23ade7d206d1c747ecd23f31d5965c8450",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "subjectBounds": [
+        15,
+        19,
+        1969,
+        793
+      ]
+    },
+    {
+      "file": "assets/ui/button-pigment.png",
+      "width": 2172,
+      "height": 724,
+      "bytes": 2435787,
+      "sha256": "01e8d13bd68d180cf5ea6d241e89d507740bf607a5eea03a679d4f95ff2d17d3",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "subjectBounds": [
+        39,
+        29,
+        2120,
+        724
+      ]
+    },
+    {
+      "file": "assets/ui/frame-chalk.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 455450,
+      "sha256": "86e0e4604319435d6e324f36eedc2f26c3e7147def349f2b6b3456d9ece20a30",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "subjectBounds": [
+        0,
+        31,
+        1240,
+        1254
+      ]
+    },
+    {
+      "file": "assets/ui/frame-ink.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 498743,
+      "sha256": "853ea06afe81f0bb9ad9826ba744969812568e7fd52de203bb4d6a1dbf489e82",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "subjectBounds": [
+        33,
+        23,
+        1224,
+        1254
+      ]
+    },
+    {
+      "file": "assets/ui/paper-day.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 2688166,
+      "sha256": "1172bcfc3942a8c7381fc648ec80af67854008340f4e5366fcef664c73e9d111",
+      "alphaRange": null,
+      "subjectBounds": null
+    },
+    {
+      "file": "assets/ui/paper-night.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 3160253,
+      "sha256": "cb7a9b2bd9c86806e5533d9e2289e4c23ff273b9285f72b9d70f2c9a69fd603f",
+      "alphaRange": null,
+      "subjectBounds": null
+    }
+  ]
+}

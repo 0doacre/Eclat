@@ -1,0 +1,14 @@
+{
+  "checks": 118,
+  "widths": [
+    320,
+    390,
+    1280
+  ],
+  "themes": [
+    "clair",
+    "veillee"
+  ],
+  "status": "passed",
+  "fullPageCapture": "Navigation placée en fin de document uniquement pour la planche complète ; captures -ecran et prototype gardent la navigation fixe."
+}
