@@ -29,4 +29,3 @@ try{for(const width of [320,390,1280])for(const age of ['bois','vapeur','stellai
 check(new Set(Object.values(titleFonts)).size===3,'trois écritures de titre distinctes');
 const p=await browser.newPage({viewport:{width:390,height:1000}});await p.goto(pathToFileURL(path.join(ROOT,'composants.html')).href);check(await p.locator('button:disabled').isDisabled(),'composant indisponible');check(await p.locator('#theme').count()===0,'composants sans thème sombre');await p.close();
 fs.writeFileSync(path.join(__dirname,'report.json'),JSON.stringify({checks,widths:[320,390,1280],ages:['bois','vapeur','stellaire'],titleFonts,permanentPaper:true,status:'passed'},null,2));console.log(checks+' contrôles réussis.');}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
-
