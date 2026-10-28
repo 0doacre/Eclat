@@ -4,15 +4,14 @@ Intègre le premier lot d'illustrations produit par Codex et ImageGen dans le mo
 
 ## Récupérer le lot
 
-L'archive est versionnée dans ce dépôt :
+L'archive est versionnée dans ce dépôt sous forme de deux parties (pour respecter la limite Cloudflare Pages de 25 Mo) :
 
-`docs/art-direction/age-bois-v1/da-age-bois-v1.zip`
+`docs/art-direction/age-bois-v1/da-age-bois-v1-part1.zip`
+`docs/art-direction/age-bois-v1/da-age-bois-v1-part2.zip`
 
-- Taille : **29 213 972 octets**.
-- SHA-256 : `02ce580dd6b576bdec3c1ed59a2223378f3898ebd288566a4971f6cc668c7f6b`.
-- Elle contient le dossier `da-age-bois-v1/`.
+- Les deux parties contiennent le dossier `da-age-bois-v1/`.
 
-Extrais-la dans un dossier de travail, puis lis d'abord :
+Extrais-les dans un même dossier de travail, puis lis d'abord :
 
 - `README-GEMINI.md` : direction et consignes d'intégration ;
 - `manifest.json` : correspondances avec les identifiants du jeu, dimensions et empreintes ;
