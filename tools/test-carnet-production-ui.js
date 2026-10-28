@@ -1,0 +1,42 @@
+/* Le Carnet dans le moteur réel : parties jetables, migration du style et des thèmes,
+ * actions, menus, âges et cache hors ligne. PW et CHROMIUM facultatifs. */
+"use strict";
+const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert/strict');
+const {chromium}=require(process.env.PW||'playwright'),D=require('../js/data'),Core=require('../js/engine');
+const ROOT=path.resolve(__dirname,'..'),equipped=fs.existsSync(path.join(ROOT,'js/equipements.js'));
+const server=http.createServer((req,res)=>{const file=path.resolve(ROOT,'.'+new URL(req.url,'http://localhost').pathname.replace(/\/$/,'/index.html'));if(!file.startsWith(ROOT+path.sep))return res.writeHead(403).end();fs.readFile(file,(e,b)=>{if(e)return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.woff2':'font/woff2'})[path.extname(file)]||'application/octet-stream');res.end(b);});});
+let browser,checks=0;function ok(v,m){assert.ok(v,m);checks++;}
+function fixture(age){const E=Core.createEngine();if(age>0)E.load(fs.readFileSync(path.join(ROOT,'tools/fixtures/save-v5-age8-usine.json'),'utf8'));const s=E.state;s.age=age;s.cycle=age>0?6:1;s.meta.forcedDone=true;s.introSeen=true;s.t=Date.now();s.flags.ver=D.VERSION;Object.assign(s.settings,{theme:'dark',tuto:false,sound:false,visiteurs:false});if(age>=14){for(const z of D.ZONES){s.zones[z.id]=true;s.pass[z.id]={done:true,paid:{}};}s.inv.metal_mercure=1530000000;s.seen.metal_mercure=true;}return E.serialize();}
+async function close(p){for(let i=0;i<4;i++){await p.waitForTimeout(120);await p.evaluate(()=>window.__eclat.closeModal());}}
+async function layout(p,tag){const r=await p.evaluate(()=>{const v=document.querySelector('.view.on');return {overflow:document.documentElement.scrollWidth>innerWidth,small:[...v.querySelectorAll('button')].filter(e=>{const r=e.getBoundingClientRect();return r.height>0&&r.width>0&&(r.height<43.9||r.width<43.9);}).map(e=>e.textContent.trim()),out:[...v.querySelectorAll('.carnet-terre,.gis-b,.carnet-landscape')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&(r.left<-.5||r.right>innerWidth+.5);}).map(e=>e.className)};});ok(!r.overflow,tag+' largeur de page');ok(!r.out.length,tag+' contenu débordant '+r.out.join(','));ok(!r.small.length,tag+' cibles '+r.small.join(','));}
+async function shot(p,name){if(!process.env.CARNET_SHOTS)return;fs.mkdirSync(process.env.CARNET_SHOTS,{recursive:true});await p.screenshot({path:path.join(process.env.CARNET_SHOTS,name+'.png')});}
+async function run(){await new Promise(r=>server.listen(0,'127.0.0.1',r));browser=await chromium.launch(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{});
+for(const width of [320,390,1280])for(const age of [0,7,14]){
+const context=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block',reducedMotion:'reduce',colorScheme:'dark'}),p=await context.newPage(),errors=[],missing=[];p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()===404)missing.push(r.url());});
+await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.preview.style','vivant');Math.random=()=>.99;},fixture(age));await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);await close(p);await p.evaluate(()=>document.fonts.ready);
+const tag=width+'/'+age;
+ok(await p.locator('#atlasToggle').textContent()==='Carnet',tag+' ancien identifiant conservé, nouveau nom');
+ok(!await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' papier clair avec préférence sombre conservée');ok(await p.evaluate(()=>window.__eclat.E.state.settings.theme)==='dark',tag+' préférence non réécrite');
+ok(await p.locator('.carnet-terre').count()>0,tag+' feuilles réelles');await layout(p,tag+'/domaine');
+const expected=age===0?'encre':age===7?'registre':'releves';ok(await p.locator('body').getAttribute('data-carnet-era')===expected,tag+' écriture de l’époque');
+await p.waitForFunction(()=>[...document.querySelectorAll('.carnet-landscape img')].every(e=>{const r=e.getBoundingClientRect();return r.top>innerHeight||!r.height||(e.complete&&e.naturalWidth>0);}));
+await shot(p,'domaine-'+width+'-age'+age);
+if(age===0){const count=await p.evaluate(()=>window.__eclat.E.count('bois'));await p.locator('[data-hloop="lisiere:bois"]').click();await p.waitForFunction(n=>window.__eclat.E.count('bois')>n,count);await p.locator('[data-hloop="lisiere:bois"]').click();ok(await p.evaluate(()=>!window.__eclat.E.state.act),tag+' récolte réelle puis arrêt');}
+if(age===14){await p.locator('#dt-mercure').scrollIntoViewIfNeeded();await p.locator('#dt-mercure .carnet-landscape img').evaluate(async e=>{await e.decode();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});await shot(p,'mercure-'+width);ok(await p.locator('#dt-mercure [data-c="metal_mercure"]').count()>0,tag+' réserve de Mercure du moteur');}
+await p.locator('#menuBtn').click();ok(await p.locator('[data-m="theme"]').count()===0,tag+' pas de bascule sombre dans le menu Carnet');await shot(p,'menu-'+width+'-age'+age);await p.keyboard.press('Escape');await p.evaluate(()=>window.__eclat.closeModal());
+await p.locator('[data-tab="atelier"]').click();await layout(p,tag+'/atelier');await shot(p,'atelier-'+width+'-age'+age);
+await p.locator('[data-tab="domaine"]').click();
+await p.locator('#atlasToggle').click();ok(await p.locator('html').getAttribute('data-style-mode')==='classique',tag+' mode classique');ok(await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' thème sombre restauré hors Carnet');
+await p.locator('#atlasToggle').click();await p.locator('#atlasToggle').click();ok(await p.locator('#atlasToggle').textContent()==='Carnet',tag+' retour Carnet');ok(!await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' papier stable au retour');
+ok(!errors.length,tag+' erreurs JS '+errors.join(';'));ok(!missing.length,tag+' ressources absentes '+missing.join(';'));await context.close();console.log('✓ '+tag);
+}
+const offline=await browser.newContext({viewport:{width:390,height:1000},reducedMotion:'reduce'}),p=await offline.newPage();
+await p.addInitScript(raw=>{if(!localStorage.getItem('eclat.save.v1'))localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.preview.style','vivant');},fixture(14));
+await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);await close(p);
+await p.evaluate(()=>navigator.serviceWorker.register('sw.js'));await p.evaluate(()=>navigator.serviceWorker.ready);await p.waitForFunction(()=>!!navigator.serviceWorker.controller);
+const cached=await p.evaluate(async()=>{const files=['css/carnet-peint.css','assets/carnet/ui/paper.webp','assets/carnet/ui/paint-button.webp','assets/carnet/lands/lisiere.webp','assets/carnet/lands/riviere-vapeur.webp','assets/carnet/lands/mercure.webp','assets/terres/lune-decor.webp'];return (await Promise.all(files.map(f=>caches.match(new URL(f,location.href).href)))).every(Boolean);});
+ok(cached,'les papiers, commandes et paysages sont en cache');
+await offline.setOffline(true);await p.reload();await p.waitForFunction(()=>!!window.__eclat);await close(p);await p.locator('#dt-mercure').scrollIntoViewIfNeeded();await p.locator('#dt-mercure .carnet-landscape img').evaluate(e=>e.decode());
+ok(await p.locator('#atlasToggle').textContent()==='Carnet','rechargement hors ligne du Carnet');ok(await p.locator('#dt-mercure .carnet-landscape img').evaluate(e=>e.naturalWidth>0),'paysage de Mercure hors ligne');await offline.close();
+console.log(checks+' contrôles du Carnet de production réussis.');}
+run().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();server.close();});
