@@ -1,0 +1,118 @@
+/* Le Carnet du Semeur : papier permanent, pièces peintes et titres au fil des âges.
+ * Identifiant "vivant" conservé pour les préférences et les parties existantes. */
+html[data-style-mode="vivant"] body[data-ep] {
+  --bg:#f4ecda;--bg2:#e8ddc5;--panel:#f4ecda;--panel2:#e9dec8;
+  --text:#30271e;--muted:#60513f;--dim:#655541;--line:#79694a44;--line2:#79694a80;
+  --acc-base:#813f2a;--acc:#813f2a;--acc-dark:0%;--acc-ink:#fff8e9;
+  --good:#345239;--bad:#812b26;--intu:#73501f;--serif:"IM Fell English",Georgia,serif;
+  --label:"Alegreya Sans",sans-serif;--paper:none;--title-size:1;
+  --paint-paper:url("../assets/carnet/ui/paper.webp");--paint-frame:url("../assets/carnet/ui/page-frame.webp");
+  --paint-button:url("../assets/carnet/ui/paper-button.webp");--paint-primary:url("../assets/carnet/ui/paint-button.webp");
+  --drawn-frame:var(--paint-frame);--drawn-button:var(--paint-button);
+  --drawn-paper:#f4ecda;--drawn-paper-deep:#e9dec8;--drawn-ink:#30271e;--drawn-muted:#60513f;
+  --drawn-pigment:#813f2a;--drawn-pigment-ink:#fff8e9;
+  --atelier-frame:var(--paint-frame);--atelier-button:var(--paint-button);
+  color-scheme:light;
+}
+html[data-style-mode="vivant"] :is(#app,#views,#top,#tabs,.modal-box){background:var(--paint-paper) center/cover var(--bg);color:var(--text)}
+html[data-style-mode="vivant"] #app{font-family:var(--sans)}
+html[data-style-mode="vivant"] #views{padding-top:8px}
+html[data-style-mode="vivant"] :is(#top,#tabs){box-shadow:none;border-color:var(--line2)}
+html[data-style-mode="vivant"] #orn{opacity:.18}
+html[data-style-mode="vivant"] #ageName{color:var(--text)}
+html[data-style-mode="vivant"] #tabs button{background:transparent;color:var(--muted);border-color:var(--line)}
+html[data-style-mode="vivant"] #tabs button.on{color:var(--acc)}
+html[data-style-mode="vivant"] #tabs button.on::before{height:6px;background:var(--paint-primary) center/100% 100%;box-shadow:none}
+/* Le dessin porte le fond. Le texte et le contour de focus gardent leurs hitboxes. */
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn,.mini,.forge-btn,.mforge,.icon-btn,.resume-btn){
+  position:relative;isolation:isolate;min-height:44px;min-width:44px;
+  border:0!important;border-image:none!important;border-radius:0!important;
+  background:transparent!important;color:var(--text)!important;box-shadow:none!important;
+  mask:none!important;-webkit-mask:none!important;font-family:var(--serif);text-shadow:none;
+  padding:12px 18px;
+}
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn,.mini,.forge-btn,.mforge,.icon-btn,.resume-btn)::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:var(--paint-button) center/100% 100% no-repeat;border:0!important;
+  width:auto;height:auto;mask:none!important;transform:none;
+}
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn.pri,.forge-btn,.mforge,.resume-btn,.mini.harvest,.mini.harvest.on){color:#fff8e9!important}
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn.pri,.forge-btn,.mforge,.resume-btn,.mini.harvest,.mini.harvest.on)::before{content:"";position:absolute;inset:0;width:auto;height:auto;background:var(--paint-primary) center/100% 100% no-repeat;filter:brightness(.73) saturate(.8);mask:none;pointer-events:none}
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn,.mini,.forge-btn,.mforge,.resume-btn):hover:not(:disabled)::before{filter:brightness(.92)}
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn.pri,.mini.harvest,.forge-btn):hover:not(:disabled)::before{filter:brightness(.69) saturate(.8)}
+html[data-style-mode="vivant"] :is(#app,#modal) button:active:not(:disabled){transform:translateY(1px)}
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn,.mini,.forge-btn,.mforge):disabled{opacity:1;color:var(--muted)!important}
+html[data-style-mode="vivant"] :is(#app,#modal) :is(.btn,.mini,.forge-btn,.mforge):disabled::before{background-image:var(--paint-button);filter:grayscale(.8);opacity:.65}
+html[data-style-mode="vivant"] :is(button,input,select,summary,a,[tabindex]):focus-visible{outline:2px solid var(--text)!important;outline-offset:3px}
+html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw{padding:10px 16px!important;min-height:44px;height:auto}
+html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw.on{background:var(--panel2)!important}
+/* Les anciens interrupteurs n'utilisent plus le pseudo-élément comme curseur. */
+html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw::before{left:0!important;top:0!important;right:0!important;bottom:0!important}
+html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw.on::before{background:var(--paint-primary) center/100% 100% no-repeat;filter:brightness(.73)}
+html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw.on{color:#fff8e9!important}
+html[data-style-mode="vivant"] :is(.modal-box,.menu-modal .modal-box){border:20px solid transparent!important;border-image:var(--paint-frame) 78/20px/0 stretch!important;border-radius:0!important;background:var(--paint-paper) center/cover var(--bg)!important;color:var(--text)!important;box-shadow:0 14px 44px #30271e44!important}
+html[data-style-mode="vivant"] :is(#v-atelier,#v-carnet) :is(.card,.age-sec){border-image-source:var(--paint-frame)!important;border-image-slice:78!important}
+html[data-style-mode="vivant"] #v-atelier .bench{--atelier-frame:var(--paint-frame);--atelier-button:var(--paint-button)}
+html[data-style-mode="vivant"] #v-atelier .bench{--work-top:#e9dec8;--work-bottom:#f4ecda;background:var(--panel2)!important;color:var(--text);border-image:var(--paint-frame) 78/8px/0 stretch}
+html[data-style-mode="vivant"] #v-atelier .bench :is(.heat,.slot .sn,.slot .tiny.muted,.slot .plus,.plus-sep){color:var(--text);text-shadow:none}
+html[data-style-mode="vivant"] #v-atelier .slot{background:var(--paint-paper) center/cover!important;border-image:var(--paint-frame) 78/6px/0 stretch!important}
+html[data-style-mode="vivant"] #v-atelier .slot.full{background:var(--panel)!important}
+html[data-style-mode="vivant"] #v-atelier .ae-slots>.btn{border-image:var(--paint-frame) 78/9px/0 stretch!important;background:var(--panel2)!important}
+html[data-style-mode="vivant"] #v-atelier .ae-slots>.btn::before,html[data-style-mode="vivant"] #v-atelier .ae-resource>.btn::before{content:none}
+html[data-style-mode="vivant"] #v-atelier .ae-resource>.btn{padding:10px 6px}
+html[data-style-mode="vivant"] #v-atelier .ae-resource>.btn.ae-selected{background:var(--panel2)!important}
+html[data-style-mode="vivant"] #v-atelier .ae-mini{border-image:var(--paint-frame) 78/8px/0 stretch}
+/* Une feuille de terrain, ses observations, puis les gisements réels du moteur. */
+html[data-style-mode="vivant"] #v-domaine{max-width:1220px;margin-inline:auto;width:100%;padding:0 12px calc(var(--nav) + var(--safe-b) + 32px)}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre{padding:28px 30px;margin:24px 0 36px;border:0!important;border-radius:0;background:var(--paint-paper) center/cover var(--bg);box-shadow:none;isolation:isolate;position:relative}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre::before{content:"";display:block;position:absolute;inset:0;padding:0;border:22px solid transparent!important;border-image:var(--paint-frame) 78/22px/0 stretch!important;pointer-events:none;z-index:-1;background:none}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre::after{content:none}
+.carnet-running{display:flex;justify-content:space-between;gap:12px;font:12px/1.4 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:0 4px 12px}
+.carnet-land-header{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.35fr);align-items:center;gap:10px;min-height:340px}
+.carnet-land-header.sans-paysage{grid-template-columns:1fr;min-height:0}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:0;padding:18px 6px;margin:0;border:0;background:none;gap:14px}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th h3{font:400 clamp(42px,5.8vw,76px)/1.06 var(--serif);color:var(--text);letter-spacing:-.035em;text-shadow:none;margin:0;overflow-wrap:break-word}
+.carnet-observation{font:700 25px/1.25 "Caveat",cursive;color:var(--muted);margin:4px 0 12px;max-width:34ch}
+.carnet-landscape{margin:0 -12px 0 -22px;min-width:0;text-align:center}
+.carnet-landscape img{display:block;width:100%;height:auto;max-height:440px;object-fit:contain;mix-blend-mode:multiply}
+.carnet-landscape-existing img{max-height:320px;mask-image:radial-gradient(ellipse 64% 60% at center,#000 40%,transparent 83%);filter:saturate(.6)}
+.carnet-landscape figcaption{font:14px var(--serif);color:var(--muted);padding:8px 0 16px}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{display:grid!important;grid-template-columns:106px minmax(0,1fr) auto!important;align-items:center;gap:12px!important;min-height:112px;padding:18px 4px!important;margin:0!important;border:0!important;border-bottom:8px solid transparent!important;border-image:var(--paint-frame) 0 0 78 0/0 0 8px 0/0 stretch!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{grid-column:1;width:96px!important;height:96px!important;min-width:44px;flex:none!important;padding:4px;margin:0!important;border:0!important;border-image:none!important;background:none!important;box-shadow:none!important;border-radius:0!important;justify-self:center}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic::after{content:none}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic :is(.living-carnet-img,.ic){width:100%!important;height:100%!important;object-fit:contain;border:0;background:none;box-shadow:none}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-body{grid-column:2;padding:8px 0;min-width:0;min-height:44px;background:none;border:0;color:var(--text);text-align:left}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{display:flex;align-items:baseline;gap:8px 16px;flex-wrap:wrap;font:400 28px/1.25 var(--serif)}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1 b{font:inherit;color:var(--text)}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{display:block;font:16px/1.45 var(--sans);margin-top:8px;color:var(--muted)}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-rate{font:16px/1.4 var(--sans);border:0;background:none;box-shadow:none;color:var(--muted);padding:0}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b{grid-column:3;display:flex;flex-direction:column;gap:6px;min-width:0;max-width:210px}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{width:100%;font-size:18px;line-height:1.25;white-space:normal;max-width:100%;padding:14px 20px}
+html[data-style-mode="vivant"] #v-domaine :is(.goal-card,.dom-card,.dom-tip,.releve-alerte){background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;border-bottom:1px solid var(--line2)!important;color:var(--text);padding:18px 16px!important;margin:8px 0 16px}
+html[data-style-mode="vivant"] #v-domaine :is(.dom-card,.releve-alerte,.goal-card) h3{font:400 28px/1.2 var(--serif);color:var(--text)}
+html[data-style-mode="vivant"] #v-domaine .dom-regle{border:0;background:none;padding:8px;font:16px/1.5 var(--sans)}
+html[data-style-mode="vivant"] #v-domaine .territoire-maitrise{background:transparent;border-color:var(--line2);border-radius:0}
+html[data-style-mode="vivant"] #v-domaine .dom-more{border-color:var(--line2);background:transparent;color:var(--text);min-height:44px}
+html[data-style-mode="vivant"] :is(.dom-epi,.amb-txt){color:var(--muted);text-shadow:none}
+html[data-style-mode="vivant"] body[data-carnet-era="registre"] #v-domaine .carnet-terre .dom-th h3{font-family:"Playfair Display",Georgia,serif;font-weight:800;font-size:clamp(38px,4.8vw,62px)}
+html[data-style-mode="vivant"] body[data-carnet-era="releves"] #v-domaine .carnet-terre .dom-th h3{font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:clamp(38px,5.2vw,66px)}
+@media(max-width:680px){
+  html[data-style-mode="vivant"] #v-domaine{padding-inline:5px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre{padding:24px 18px;margin-top:16px}
+  .carnet-running{font-size:10px;letter-spacing:.08em}
+  .carnet-land-header{display:flex;flex-direction:column;align-items:stretch;min-height:0;gap:0}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th{padding:12px 4px;gap:10px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th h3{font-size:46px}
+  .carnet-observation{font-size:23px;margin-bottom:2px}
+  .carnet-landscape{margin:0 -10px 10px}.carnet-landscape img{max-height:300px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{grid-template-columns:74px minmax(0,1fr)!important;gap:8px 12px!important;padding:14px 0!important}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{width:74px!important;height:74px!important}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;max-width:none;width:100%;gap:6px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{flex:1 1 100px;font-size:17px;min-height:48px;padding:14px 16px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:24px;gap:6px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{font-size:15px}
+  html[data-style-mode="vivant"] #v-domaine :is(.goal-card,.dom-card,.dom-tip,.releve-alerte){padding-inline:10px!important}
+  html[data-style-mode="vivant"] #modal .modal-box{padding:16px 10px!important;border-width:12px!important;border-image-width:12px!important}
+}
+@media(prefers-reduced-motion:reduce){html[data-style-mode="vivant"] button{transition:none!important}}
+@media(forced-colors:active){html[data-style-mode="vivant"] :is(#app,#modal) :is(button,input,select,.modal-box){border:1px solid CanvasText!important;border-image:none!important;background:Canvas!important;color:CanvasText!important}html[data-style-mode="vivant"] :is(#app,#modal) button::before{display:none}}

@@ -135,7 +135,19 @@
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
       const decor = DECORS[z] ? ' style="--decor:url(' + new URL('assets/terres/' + z + '-decor.webp', document.baseURI).href + ')"' : "";
-      let h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
+      const carnet = window.EclatStyleMode === "vivant";
+      let h;
+      if (carnet) {
+        const painted = z === "lisiere" ? "lisiere" : z === "mercure" ? "mercure" : z === "riviere" && st.age >= 7 ? "riviere-vapeur" : null;
+        const scene = painted ? "assets/carnet/lands/" + painted + ".webp" : DECORS[z] ? "assets/terres/" + z + "-decor.webp" : null;
+        const number = D.ZONES.findIndex((land) => land.id === z) + 1;
+        h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>Les terres traversées</span><span>Terre ' + number + '</span></div>' +
+          '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' +
+          '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
+          (scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + '</figcaption></figure>' : '') + '</div>';
+      } else {
+        h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
+      }
       h += regleHTML(z);
       h += E.territoiresHTML(z, esc, U.terresOpen && U.terresOpen[z]);
       deps.forEach((d) => { h += gisHTML(z, d); });
@@ -371,8 +383,9 @@
         btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + esc(projTip) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
       }
       const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
+      const illustratedSource = isVivant && window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasSource(res);
       return '<div class="gis' + (isVivant && d.hand ? " gis-vivant" : "") + '" data-gis="' + key + '">' +
-        '<button class="gis-ic' + (d.hand ? " hand" : "") + (isVivant && d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + (isVivant && d.hand ? livingNode(res) : icon(res)) + "</button>" +
+        '<button class="gis-ic' + (d.hand ? " hand" : "") + (isVivant && d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + (isVivant && (d.hand || illustratedSource) ? livingNode(res) : icon(res)) + "</button>" +
         '<button class="gis-body" data-gsheet="' + key + '" aria-label="Gisement : ' + esc(I[res].n) + '"><span class="gis-l1"><b>' + esc(I[res].n) + "</b>" + right + "</span>" +
         '<span class="gis-l2 tiny muted">' + sub + "</span></button>" +
         (btns ? '<div class="gis-b">' + btns + "</div>" : "") + "</div>";

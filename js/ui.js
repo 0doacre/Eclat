@@ -739,6 +739,7 @@
   const ROMAN = (n) => [["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1]].reduce((o, [r, v]) => { while (n >= v) { o += r; n -= v; } return o; }, "");
   function applyAge() {
     const a = S().age, ag = D.AGES[a], ep = EPOCH[a] || "pigments", body = document.body;
+    body.dataset.carnetEra = a >= 13 ? "releves" : a >= 6 ? "registre" : "encre";
     document.documentElement.style.setProperty("--age", ag.c);
     const ok = ep + (a === D.AGES.length - 1 ? ":stellaire" : "");
     if (body.dataset.orn !== ok) {
@@ -1105,6 +1106,7 @@
     else if (typeof window !== "undefined" && window.matchMedia) {
       dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
+    if (window.EclatStyleMode === "vivant") dark = false;
     document.body.classList.toggle("theme-dark", dark);
     document.body.setAttribute("data-theme", dark ? "dark" : "light");
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -1351,7 +1353,7 @@
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
     U.itemPill = itemPill;
-    window.__eclat = { E, U, Stk, demanderPersistance, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal, itemPill };
+    window.__eclat = { E, U, Stk, demanderPersistance, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal, itemPill, applyTheme };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
