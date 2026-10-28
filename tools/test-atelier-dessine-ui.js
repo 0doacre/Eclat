@@ -3,7 +3,8 @@
 "use strict";
 const fs=require("fs"),path=require("path"),http=require("http"),assert=require("assert/strict");
 const {chromium}=require(process.env.PW||"playwright");
-const D=require("../js/data"),Core=require("../js/engine"),Equip=require("../js/equipements");
+const D=require("../js/data"),Core=require("../js/engine");
+const Equip=fs.existsSync(path.join(__dirname,"../js/equipements.js"))?require("../js/equipements"):null;
 const ROOT=path.resolve(__dirname,".."),MIME={".html":"text/html",".js":"text/javascript",".css":"text/css",".svg":"image/svg+xml",".webp":"image/webp",".woff2":"font/woff2"};
 const server=http.createServer((req,res)=>{
   const file=path.resolve(ROOT,"."+new URL(req.url,"http://localhost").pathname.replace(/\/$/,"/index.html"));
@@ -39,7 +40,7 @@ async function shot(p,name,reset=true){if(!process.env.DRAWN_SHOTS)return;fs.mkd
 async function run(){
   await new Promise(r=>server.listen(0,"127.0.0.1",r));
   browser=await chromium.launch(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{});
-  for(const width of [320,390,1280])for(const dark of [false,true])for(const equipped of [true,false]){
+  for(const width of [320,390,1280])for(const dark of [false,true])for(const equipped of (Equip?[true,false]:[false])){
     const ctx=await browser.newContext({viewport:{width,height:950},serviceWorkers:"block",reducedMotion:"reduce"}),p=await ctx.newPage(),errors=[],missing=[];
     p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()===404)missing.push(r.url());});
     await p.addInitScript(({raw,equipped})=>{const key=equipped?'eclat.preview.craft.v1':'eclat.save.v1';if(!localStorage.getItem(key))localStorage.setItem(key,raw);if(!localStorage.getItem('eclat.preview.style'))localStorage.setItem('eclat.preview.style','vivant');Math.random=()=>.99;},{raw:fixture(equipped,dark),equipped});
@@ -63,7 +64,12 @@ async function run(){
       await p.locator('#ae-item-bois').click();await p.locator('#ae-forge-tailler').click();
       await p.waitForFunction(()=>window.__eclat.E.count('manche')>=1);checks++;
       await shot(p,'atelier-'+width+(dark?'-veillee':''));
-    }else await shot(p,'procedes-'+width+(dark?'-veillee':''));
+    }else {
+      await p.locator('[data-g="tailler"]').click();await p.locator('[data-inv="bois"]').click();
+      ok(await p.locator('.slot.full').count()===1,tag+' : poser du bois');
+      await p.locator('#forge').click();await p.waitForFunction(()=>window.__eclat.E.count('manche')>=1);checks++;
+      await shot(p,'procedes-'+width+(dark?'-veillee':''));
+    }
     await p.locator('[data-tab="carnet"]').click();await p.waitForSelector('[data-rec="manche"]',{state:'attached'});
     const age=p.locator('.age-sec').filter({has:p.locator('[data-rec="manche"]')});
     if(!await age.evaluate(e=>e.open))await age.locator('summary').click();
