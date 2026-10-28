@@ -668,7 +668,7 @@
   "ecran": "Journal · fins",
   "label": "✦ Mémoire des mains",
   "repere": "button[data-cycle=\"\"].btn",
-  "explique": "info-bulle : Voir les améliorations conservées entre les Semeurs",
+  "explique": "info-bulle : Voir tes améliorations permanentes et préparer la relève",
   "tag": "button"
  },
  {
@@ -1058,7 +1058,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+15/min8,73 k",
+  "label": "Bois+13/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -1378,9 +1378,17 @@
  {
   "partie": "avancée",
   "ecran": "Atelier",
+  "label": "Étudier les matières · 70",
+  "repere": "button#ae-study-0[data-ae=\"study\"][data-value=\"\"].btn.ghost",
+  "explique": "info-bulle : Étudier les matières déjà vues en dépensant l’Intuition indiquée",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
   "label": "Bois 8,80 k",
   "repere": "button#ae-item-bois[data-ae=\"item\"][data-value=\"bois\"].btn",
-  "explique": "info-bulle : Bois · 8 808,546 ; lecteur d’écran : Bois, 8 808,546 en stock ; guide (#ae-item-bois)",
+  "explique": "info-bulle : Bois · 8 805,643 ; lecteur d’écran : Bois, 8 805,643 en stock ; guide (#ae-item-bois)",
   "tag": "button"
  },
  {
@@ -1388,7 +1396,7 @@
   "ecran": "Atelier",
   "label": "Fibres 6,43 k",
   "repere": "button#ae-item-fibre[data-ae=\"item\"][data-value=\"fibre\"].btn",
-  "explique": "info-bulle : Fibres · 6 435,998 ; lecteur d’écran : Fibres, 6 435,998 en stock",
+  "explique": "info-bulle : Fibres · 6 434,45 ; lecteur d’écran : Fibres, 6 434,45 en stock",
   "tag": "button"
  },
  {
@@ -1396,7 +1404,7 @@
   "ecran": "Atelier",
   "label": "Pierre 4,21 k",
   "repere": "button#ae-item-caillou[data-ae=\"item\"][data-value=\"caillou\"].btn",
-  "explique": "info-bulle : Pierre · 4 219,148 ; lecteur d’écran : Pierre, 4 219,148 en stock",
+  "explique": "info-bulle : Pierre · 4 218,181 ; lecteur d’écran : Pierre, 4 218,181 en stock",
   "tag": "button"
  },
  {
@@ -1428,7 +1436,7 @@
   "ecran": "Atelier",
   "label": "Charbon 1,35 k",
   "repere": "button#ae-item-charbon[data-ae=\"item\"][data-value=\"charbon\"].btn",
-  "explique": "info-bulle : Charbon · 1 351,783 ; lecteur d’écran : Charbon, 1 351,783 en stock",
+  "explique": "info-bulle : Charbon · 1 351,374 ; lecteur d’écran : Charbon, 1 351,374 en stock",
   "tag": "button"
  },
  {
@@ -1460,7 +1468,7 @@
   "ecran": "Atelier",
   "label": "Os 2,85 k",
   "repere": "button#ae-item-os[data-ae=\"item\"][data-value=\"os\"].btn",
-  "explique": "info-bulle : Os · 2 855,499 ; lecteur d’écran : Os, 2 855,499 en stock",
+  "explique": "info-bulle : Os · 2 854,854 ; lecteur d’écran : Os, 2 854,854 en stock",
   "tag": "button"
  },
  {
@@ -1468,7 +1476,7 @@
   "ecran": "Atelier",
   "label": "Peau 2,16 k",
   "repere": "button#ae-item-cuir[data-ae=\"item\"][data-value=\"cuir\"].btn",
-  "explique": "info-bulle : Peau · 2 167,583 ; lecteur d’écran : Peau, 2 167,583 en stock",
+  "explique": "info-bulle : Peau · 2 167,045 ; lecteur d’écran : Peau, 2 167,045 en stock",
   "tag": "button"
  },
  {
@@ -1516,7 +1524,7 @@
   "ecran": "Atelier",
   "label": "Argile 1,10 k",
   "repere": "button#ae-item-argile[data-ae=\"item\"][data-value=\"argile\"].btn",
-  "explique": "info-bulle : Argile · 1 102,025 ; lecteur d’écran : Argile, 1 102,025 en stock",
+  "explique": "info-bulle : Argile · 1 101,734 ; lecteur d’écran : Argile, 1 101,734 en stock",
   "tag": "button"
  },
  {
@@ -1524,7 +1532,7 @@
   "ecran": "Atelier",
   "label": "Silex 1,68 k",
   "repere": "button#ae-item-silex[data-ae=\"item\"][data-value=\"silex\"].btn",
-  "explique": "info-bulle : Silex · 1 681,399 ; lecteur d’écran : Silex, 1 681,399 en stock",
+  "explique": "info-bulle : Silex · 1 681,012 ; lecteur d’écran : Silex, 1 681,012 en stock",
   "tag": "button"
  },
  {
@@ -1532,7 +1540,7 @@
   "ecran": "Atelier",
   "label": "Sable 1,24 k",
   "repere": "button#ae-item-sable[data-ae=\"item\"][data-value=\"sable\"].btn",
-  "explique": "info-bulle : Sable · 1 245,025 ; lecteur d’écran : Sable, 1 245,025 en stock",
+  "explique": "info-bulle : Sable · 1 244,734 ; lecteur d’écran : Sable, 1 244,734 en stock",
   "tag": "button"
  },
  {
@@ -1588,7 +1596,7 @@
   "ecran": "Atelier",
   "label": "Malachite 662",
   "repere": "button#ae-item-malachite[data-ae=\"item\"][data-value=\"malachite\"].btn",
-  "explique": "info-bulle : Malachite · 662,466 ; lecteur d’écran : Malachite, 662,466 en stock",
+  "explique": "info-bulle : Malachite · 662,294 ; lecteur d’écran : Malachite, 662,294 en stock",
   "tag": "button"
  },
  {
@@ -1596,7 +1604,7 @@
   "ecran": "Atelier",
   "label": "Cassitérite 388",
   "repere": "button#ae-item-cassiterite[data-ae=\"item\"][data-value=\"cassiterite\"].btn",
-  "explique": "info-bulle : Cassitérite · 388,733 ; lecteur d’écran : Cassitérite, 388,733 en stock",
+  "explique": "info-bulle : Cassitérite · 388,647 ; lecteur d’écran : Cassitérite, 388,647 en stock",
   "tag": "button"
  },
  {
@@ -1732,7 +1740,7 @@
   "ecran": "Atelier",
   "label": "Minerai de fer 548",
   "repere": "button#ae-item-fer_min[data-ae=\"item\"][data-value=\"fer_min\"].btn",
-  "explique": "info-bulle : Minerai de fer · 548,366 ; lecteur d’écran : Minerai de fer, 548,366 en stock",
+  "explique": "info-bulle : Minerai de fer · 548,194 ; lecteur d’écran : Minerai de fer, 548,194 en stock",
   "tag": "button"
  },
  {
@@ -2708,7 +2716,7 @@
   "ecran": "Journal · fins",
   "label": "✦ Mémoire des mains",
   "repere": "button[data-cycle=\"\"].btn",
-  "explique": "info-bulle : Voir les améliorations conservées entre les Semeurs",
+  "explique": "info-bulle : Voir tes améliorations permanentes et préparer la relève",
   "tag": "button"
  },
  {

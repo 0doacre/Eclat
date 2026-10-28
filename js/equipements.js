@@ -108,6 +108,13 @@
       return { why: "equipment", equipment: c.equipment, required: Object.keys(c.missing)[0], missing: c.missing };
     };
     E.equipmentList = () => Object.entries(cfg.equipment).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
+    // Même information que l'étude classique, limitée au geste exact de l'outil.
+    E.equipmentHasDiscovery = (id, equipment, mode) => {
+      const eq = cfg.equipment[equipment];
+      if (!E.state.studied[id] || !eq || !Object.hasOwn(eq.modes, mode) || Object.keys(missing(equipment, E.count)).length) return false;
+      const reactions = E.reactions(id, recipe => (cfg.recipes[recipe] || []).some(c => c.equipment === equipment && c.mode === mode));
+      return Object.values(reactions).some(n => n > 0);
+    };
     const fixed = new Set(["feu", "four", "enclume_pierre", "polissoir"]);
     E.workplaceFor = id => fixed.has(id) ? id : "etabli";
     E.workplaceList = () => [{ id: "etabli", n: E.count("etabli_amenage")>=1?"Établi aménagé":"Établi", ready: true }, ...E.equipmentList().filter(x => fixed.has(x.id)).map(x => ({ ...x, n: x.id === "feu" ? "Foyer" : x.n }))];
