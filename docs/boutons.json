@@ -1321,6 +1321,14 @@
  },
  {
   "partie": "avancée",
+  "ecran": "Atelier · filtres",
+  "label": "✦ À découvrir 0",
+  "repere": "button[data-if=\"tryg\"]",
+  "explique": "info-bulle : Les matières étudiées qui cachent encore une recette avec le geste choisi",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
   "ecran": "Arbre",
   "label": "Progression",
   "repere": "button[data-arb=\"ensemble\"].btn",
