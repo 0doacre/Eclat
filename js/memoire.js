@@ -330,7 +330,7 @@
     const ACHATS_FERMES = "Les Traces se dépensent au réveil d’un nouveau Semeur : passe le relais, puis achète ici.";
     function memHTML() {
       const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
-      let h = '<div class="kicker">✦ La Mémoire des mains</div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
+      let h = '<div class="kicker">✦ La Mémoire des mains <button type="button" class="btn-aide mini" data-aide="releve" title="Comprendre la relève des Semeurs" aria-label="Comprendre la relève des Semeurs">?</button></div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
         '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
       h += donCycleHTML();
       h += E.achatsOuverts()
@@ -411,8 +411,6 @@
       if (signes) keep.push("<b>" + signes + "</b> signe" + (signes > 1 ? "s" : "") + " compris");
       if (memLv) keep.push("<b>" + memLv + "</b> niveau" + (memLv > 1 ? "x" : "") + " de la Mémoire des mains");
       if (ech) keep.push("<b>" + ech + "</b> Écho" + (ech > 1 ? "s" : "") + " : +" + ech * 50 + " % de récolte et de production");
-      const terres = E.terresMaitrise().filter(t => t.bonus || t.gagne);
-      if (terres.length) keep.push("La maîtrise transmise de <b>" + terres.length + "</b> terre" + (terres.length > 1 ? "s" : "") + " : bonus permanents de production");
       const reset = ["Ta Réserve"];
       if (n("ext")) reset.push("Tes <b>" + n("ext") + "</b> extracteur" + (n("ext") > 1 ? "s" : "") + " : ils restent en ruine, à réparer pour une fraction de leur coût");
       if (n("mach")) reset.push("Tes <b>" + n("mach") + "</b> machine" + (n("mach") > 1 ? "s" : ""));
@@ -425,10 +423,10 @@
     /* deux colonnes de chiffres : ce qui est conservé, ce qui est remis à zéro */
     function leftHTML(gain, ecus, ecusTr) {
       const { keep, reset, traces, rec } = releveListes(gain);
-      if (traces > 0) keep.splice(rec ? 1 : 0, 0, "<b>" + fmt(traces) + " ✦</b> Traces à dépenser dans la Mémoire des mains");
-      return '<div class="rel-cols"><div class="rel-h">Conservé</div>' + listeHTML("rel-keep", keep) +
+      if (traces > 0) keep.splice(rec ? 1 : 0, 0, "<b>" + fmt(traces) + " ✦</b> Traces disponibles à dépenser");
+      return '<div class="rel-cols"><div class="rel-h">Acquis conservés</div>' + listeHTML("rel-keep", keep) +
         '<div class="rel-h">Remis à zéro</div>' + listeHTML("rel-reset", reset) + "</div>" +
-        '<p class="rel-gain">La relève donne <b>+' + fmt(gain || 0) + " ✦</b> Trace" + ((gain || 0) > 1 ? "s" : "") + (ecusTr ? " (" + fmt(ecus) + " écus en font " + ecusTr + ")" : "") + ", à dépenser dans la Mémoire des mains.</p>";
+        '<p class="rel-gain">La relève donne <b>+' + fmt(gain || 0) + " ✦</b> Trace" + ((gain || 0) > 1 ? "s" : "") + (ecusTr ? " (" + fmt(ecus) + " écus convertis en " + ecusTr + " ✦)" : "") + " (à dépenser dans la Mémoire des mains au réveil : aucun achat n’est fait d’avance).</p>";
     }
     /* la fenêtre de la première relève : ce qu’on gagne, ce qu’on garde, ce qui repart de zéro, pourquoi. Le langage d’une interface de jeu, sans récit. */
     function forcedReleveHTML() {
