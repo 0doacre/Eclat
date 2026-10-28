@@ -252,10 +252,12 @@
           // une absence courte (une autre application, l’écran éteint) : un mot, pas une fenêtre qui bloque
           if (top.length) toast("Pendant ton absence : " + top.slice(0, 2).map((k) => "+" + fmt(o.gains[k]) + " " + esc(I[k].n)).join(", "), { key: "absence" });
           if (o.exp) toast("Exploration terminée.", { key: "absence-exp" });
+          if (o.resume?.completed.length) toast("Commande terminée : " + esc(o.resume.completed[0].label) + ".", { key: "absence-commandes" });
           return;
         }
-        if (!top.length && !o.exp && o.dt < 600) return;
-        U.offline = { dt: o.dt, top, gains: o.gains, exp: o.exp };
+        const reprise = o.resume && (o.resume.completed.length || o.resume.waiting.length || o.resume.worker?.blocked || o.resume.workerProduced);
+        if (!top.length && !o.exp && !reprise && o.dt < 600) return;
+        U.offline = { dt: o.dt, top, gains: o.gains, exp: o.exp, resume: o.resume };
       });
     }
 
