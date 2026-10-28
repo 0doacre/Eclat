@@ -1,0 +1,10 @@
+.assistance-list{padding:0;list-style:none;margin:12px 0}
+.assistance-list li{padding:12px 0;border-bottom:1px solid var(--line2,#8a806333);overflow-wrap:anywhere}
+.assistance-list li p{margin:6px 0}
+.assistance-list .btn{min-height:44px;max-width:100%;white-space:normal}
+.assistance-launcher{flex:1 0 100%;margin-top:8px}
+.assistance-reprise{margin:14px 0;padding-top:12px;border-top:1px solid var(--line2,#8a806333)}
+.assistance-field{display:block;margin:12px 0;font-size:.9rem}
+.assistance-field textarea{display:block;width:100%;box-sizing:border-box;margin-top:5px;min-height:70px;resize:vertical;font:inherit}
+.assistance-check{display:flex;align-items:center;gap:8px;min-height:44px;font-size:.9rem}
+.assistance-check input{flex:0 0 auto;width:18px;height:18px}

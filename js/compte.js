@@ -683,6 +683,8 @@
           sec("systeme", "⚙️", "Système &amp; Sauvegardes",
             '<div class="menu-grid">' +
               '<button class="btn m-card-btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie"><span class="m-card-icon">💾</span><b>Sauvegardes</b></button>' +
+              '<button class="btn m-card-btn" data-assistance="diagnostic" title="Comprendre pourquoi une commande ou un ouvrier attend"><span class="m-card-icon">⏳</span><b>État des productions</b></button>' +
+              '<button class="btn m-card-btn" data-assistance="report" title="Préparer un rapport local à transmettre avec ton retour"><span class="m-card-icon">🐞</span><b>Signaler un problème</b></button>' +
               '<button class="btn m-card-btn" data-m="account" title="Retrouver ta partie sur tous tes appareils"><span class="m-card-icon">☁️</span><b>Compte en ligne</b></button>' +
               (App.installable() ? '<button class="btn m-card-btn" data-m="installer" title="Ajouter Éclat à l’écran d’accueil de ton appareil"><span class="m-card-icon">📲</span><b>Installer le jeu</b></button>' : "") +
               '<button class="btn m-card-btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran"><span class="m-card-icon">❓</span><b>Comment jouer</b></button>' +

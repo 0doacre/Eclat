@@ -122,6 +122,14 @@
  {
   "partie": "neuve",
   "ecran": "Aide",
+  "label": "⏳ État des productions",
+  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
+  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
   "label": "Compte en ligne",
   "repere": "button[data-m=\"account\"].btn.m-card-btn",
   "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
@@ -642,6 +650,14 @@
  {
   "partie": "avancée",
   "ecran": "Aide",
+  "label": "⏳ État des productions",
+  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
+  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Compte en ligne",
   "repere": "button[data-m=\"account\"].btn.m-card-btn",
   "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
@@ -818,7 +834,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Minerai de fer +48/min Tu en as 543 · 1 mine de fer",
+  "label": "Minerai de fer +48/min Tu en as 544 · 1 mine de fer",
   "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
   "explique": "lecteur d’écran : Gisement : Minerai de fer",
   "tag": "button"
@@ -890,7 +906,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+11/min8,73 k",
+  "label": "Bois+16/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
