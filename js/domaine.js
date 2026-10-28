@@ -162,6 +162,171 @@
       }
       return '<button class="btn small" data-exp="' + z + '" title="Lancer cette exploration : elle avance toute seule">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
     }
+    function livingNodeSVG(res) {
+      if (res === "bois") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-tree">' +
+          '<ellipse cx="33" cy="61" rx="22" ry="5" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M26 60 C26 50 24 40 22 34 C25 36 29 36 32 30 C35 36 40 37 44 33 C42 41 40 50 40 60 Z" fill="#6a4427"/>' +
+          '<path d="M27 60 C28 52 27 45 25 38" stroke="#4a2e18" stroke-width="2" stroke-linecap="round"/>' +
+          '<path d="M34 60 C35 48 35 40 33 34" stroke="#4a2e18" stroke-width="2" stroke-linecap="round"/>' +
+          '<circle cx="21" cy="28" r="14" fill="#245a33"/>' +
+          '<circle cx="45" cy="28" r="14" fill="#245a33"/>' +
+          '<circle cx="33" cy="18" r="16" fill="#2e703f"/>' +
+          '<circle cx="26" cy="25" r="13" fill="#36864c"/>' +
+          '<circle cx="40" cy="25" r="13" fill="#36864c"/>' +
+          '<circle cx="33" cy="23" r="14" fill="#44a05d"/>' +
+          '<ellipse cx="30" cy="15" rx="7" ry="4" fill="#5fc07b" opacity="0.75"/>' +
+          '<ellipse cx="40" cy="20" rx="5" ry="3" fill="#5fc07b" opacity="0.6"/>' +
+          '</g></svg>';
+      }
+      if (res === "caillou") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-rock">' +
+          '<ellipse cx="33" cy="59" rx="26" ry="6" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M9 57 L16 46 L24 49 L27 58 Z" fill="#4b5563"/>' +
+          '<path d="M16 46 L24 49 L22 57 L13 58 Z" fill="#6b7280"/>' +
+          '<path d="M41 58 L46 48 L56 52 L59 58 Z" fill="#4b5563"/>' +
+          '<path d="M46 48 L56 52 L53 58 L44 58 Z" fill="#6b7280"/>' +
+          '<path d="M17 58 L22 30 L35 15 L48 27 L50 58 Z" fill="#374151"/>' +
+          '<path d="M22 30 L35 15 L32 38 L19 50 Z" fill="#6b7280"/>' +
+          '<path d="M35 15 L48 27 L39 34 L32 38 Z" fill="#9ca3af"/>' +
+          '<path d="M32 38 L39 34 L43 58 L29 58 Z" fill="#4b5563"/>' +
+          '<path d="M39 34 L48 27 L50 58 L43 58 Z" fill="#2d3748"/>' +
+          '<path d="M32 23 L28 32 L31 42" stroke="#1f2937" stroke-width="1.5" stroke-linecap="round"/>' +
+          '</g></svg>';
+      }
+      if (res === "silex") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-flint">' +
+          '<ellipse cx="33" cy="59" rx="23" ry="5" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M13 56 C11 44 19 32 28 26 C37 20 51 25 54 39 C56 49 51 57 38 58 Z" fill="#d8dee9"/>' +
+          '<path d="M16 54 C15 47 20 37 27 31 C34 25 46 29 49 40 C51 48 47 55 37 56 Z" fill="#e5e9f0"/>' +
+          '<path d="M21 52 L26 33 L39 28 L47 38 L42 53 L29 55 Z" fill="#1e2430"/>' +
+          '<path d="M26 33 L39 28 L35 44 L25 45 Z" fill="#3b4252"/>' +
+          '<path d="M39 28 L47 38 L40 47 L35 44 Z" fill="#2e3440"/>' +
+          '<path d="M25 45 L35 44 L31 54 L23 52 Z" fill="#434c5e"/>' +
+          '<path d="M26 33 L39 28" stroke="#eceff4" stroke-width="1.8" stroke-linecap="round"/>' +
+          '<polygon points="39,24 41,27 44,28 41,29 39,32 37,29 34,28 37,27" fill="#ffd36b"/>' +
+          '</g></svg>';
+      }
+      if (res === "fibre") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-fiber">' +
+          '<ellipse cx="33" cy="60" rx="24" ry="5" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M18 60 Q16 42 12 25" stroke="#2e6f40" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+          '<path d="M24 60 Q25 38 21 18" stroke="#3b874e" stroke-width="2.8" fill="none" stroke-linecap="round"/>' +
+          '<path d="M33 60 Q34 35 33 14" stroke="#48a25e" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+          '<path d="M42 60 Q41 38 45 19" stroke="#3b874e" stroke-width="2.8" fill="none" stroke-linecap="round"/>' +
+          '<path d="M48 60 Q50 42 54 26" stroke="#2e6f40" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+          '<path d="M15 42 Q10 38 8 40 Q13 45 16 43" fill="#48a25e"/>' +
+          '<path d="M23 46 Q28 40 31 43 Q26 48 23 47" fill="#5fc07b"/>' +
+          '<path d="M34 32 Q39 28 42 30 Q38 35 34 34" fill="#74d890"/>' +
+          '<circle cx="12" cy="24" r="3.5" fill="#60a5fa"/>' +
+          '<circle cx="21" cy="17" r="4" fill="#93c5fd"/>' +
+          '<circle cx="33" cy="13" r="4.5" fill="#ffd36b"/>' +
+          '<circle cx="45" cy="18" r="4" fill="#93c5fd"/>' +
+          '<circle cx="54" cy="25" r="3.5" fill="#60a5fa"/>' +
+          '</g></svg>';
+      }
+      if (res === "eau") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-water">' +
+          '<ellipse cx="33" cy="45" rx="28" ry="16" fill="#1e3a5f"/>' +
+          '<ellipse cx="33" cy="45" rx="24" ry="13" fill="#2563eb"/>' +
+          '<ellipse cx="33" cy="46" rx="19" ry="9" fill="#38bdf8"/>' +
+          '<ellipse cx="33" cy="46" rx="14" ry="6" fill="none" stroke="#e0f2fe" stroke-width="1.6" opacity="0.8"/>' +
+          '<ellipse cx="33" cy="46" rx="8" ry="3.5" fill="none" stroke="#ffffff" stroke-width="1.8"/>' +
+          '<path d="M33 21 C33 21 30.5 25 30.5 27 C30.5 28.5 31.6 29.5 33 29.5 C34.4 29.5 35.5 28.5 35.5 27 C35.5 25 33 21 33 21 Z" fill="#bae6fd"/>' +
+          '<circle cx="23" cy="30" r="2.2" fill="#bae6fd" opacity="0.85"/>' +
+          '<circle cx="43" cy="29" r="2.2" fill="#bae6fd" opacity="0.85"/>' +
+          '</g></svg>';
+      }
+      if (res === "sable") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-rock">' +
+          '<ellipse cx="33" cy="58" rx="27" ry="6" fill="#0d1117" opacity="0.5"/>' +
+          '<path d="M10 56 Q22 36 33 42 Q44 48 56 56 Z" fill="#b48326"/>' +
+          '<path d="M14 56 Q26 32 38 38 Q50 44 54 56 Z" fill="#d4a34b"/>' +
+          '<path d="M18 56 Q30 26 42 34 Q52 42 50 56 Z" fill="#ecc94b"/>' +
+          '<path d="M24 38 Q34 32 44 38" stroke="#fff1b0" stroke-width="1.5" fill="none"/>' +
+          '</g></svg>';
+      }
+      if (res === "argile") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-rock">' +
+          '<ellipse cx="33" cy="58" rx="26" ry="6" fill="#0d1117" opacity="0.5"/>' +
+          '<path d="M12 56 Q16 42 28 38 Q40 34 52 46 Q56 50 54 56 Z" fill="#7c2d12"/>' +
+          '<path d="M16 54 Q20 38 32 34 Q44 30 50 44 Q52 50 48 54 Z" fill="#9a3412"/>' +
+          '<path d="M20 50 Q24 34 36 32 Q44 30 46 42 Z" fill="#c2410c"/>' +
+          '<ellipse cx="32" cy="40" rx="6" ry="2.5" fill="#ea580c" opacity="0.8"/>' +
+          '</g></svg>';
+      }
+      return icon(res);
+    }
+
+    function spawnLivingParticles(x, y, res) {
+      if (typeof motionOK === "function" && !motionOK()) return;
+      const count = 5 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement("div");
+        p.className = "vivant-particle";
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 28 + Math.random() * 46;
+        const dur = 420 + Math.random() * 260;
+
+        let content = "✦";
+        if (res === "bois") {
+          content = Math.random() > 0.4 ? "🍃" : "🪵";
+          p.style.fontSize = (11 + Math.random() * 7) + "px";
+        } else if (res === "caillou") {
+          content = Math.random() > 0.5 ? "🪨" : "•";
+          p.style.color = "#a0aec0";
+          p.style.fontSize = (14 + Math.random() * 8) + "px";
+        } else if (res === "silex") {
+          content = "✦";
+          p.style.color = Math.random() > 0.3 ? "#ffd36b" : "#ffffff";
+          p.style.fontSize = (12 + Math.random() * 8) + "px";
+        } else if (res === "fibre") {
+          content = "🌿";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
+        } else if (res === "eau") {
+          content = "💧";
+          p.style.fontSize = (11 + Math.random() * 7) + "px";
+        } else if (res === "sable") {
+          content = "•";
+          p.style.color = "#ecc94b";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
+        } else {
+          content = "✦";
+          p.style.color = "#ffd36b";
+          p.style.fontSize = "14px";
+        }
+
+        p.textContent = content;
+        p.style.left = x + "px";
+        p.style.top = y + "px";
+        const fx = document.getElementById("fx");
+        if (fx) fx.appendChild(p);
+        else document.body.appendChild(p);
+
+        const destX = Math.cos(angle) * dist;
+        const destY = Math.sin(angle) * dist + 22;
+
+        if (p.animate) {
+          p.animate([
+            { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1 },
+            { transform: "translate(" + destX + "px, " + destY + "px) scale(0.6) rotate(" + (Math.random() * 360) + "deg)", opacity: 0 }
+          ], {
+            duration: dur,
+            easing: "cubic-bezier(0.25, 1, 0.5, 1)"
+          }).onfinish = () => p.remove();
+        } else {
+          setTimeout(() => p.remove(), dur);
+        }
+      }
+    }
+
     function gisHTML(z, d) {
       const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
       const ch = E.extChoice(res, z), q = E.domQueued("x:" + key);
@@ -183,8 +348,9 @@
         const projTip = pAdd ? ' (débit : ' + perTime(pAdd.curRate) + ' → ' + perTime(pAdd.projRate) + ')' : '';
         btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + esc(projTip) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
       }
-      return '<div class="gis" data-gis="' + key + '">' +
-        '<button class="gis-ic' + (d.hand ? " hand" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + icon(res) + "</button>" +
+      const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
+      return '<div class="gis' + (isVivant && d.hand ? " gis-vivant" : "") + '" data-gis="' + key + '">' +
+        '<button class="gis-ic' + (d.hand ? " hand" : "") + (isVivant && d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + (isVivant && d.hand ? livingNodeSVG(res) : icon(res)) + "</button>" +
         '<button class="gis-body" data-gsheet="' + key + '" aria-label="Gisement : ' + esc(I[res].n) + '"><span class="gis-l1"><b>' + esc(I[res].n) + "</b>" + right + "</span>" +
         '<span class="gis-l2 tiny muted">' + sub + "</span></button>" +
         (btns ? '<div class="gis-b">' + btns + "</div>" : "") + "</div>";
@@ -742,11 +908,16 @@
       if (!n) return;
       const crit = E.lastCrit;
       A.tap(res); vibe(crit ? [8, 30, 14] : 5);
+      const rc = btn.getBoundingClientRect(), x = rc.left + rc.width / 2, y = rc.top + rc.height / 2;
       if (crit) {
-        const rc = btn.getBoundingClientRect(), x = rc.left + rc.width / 2, y = rc.top + rc.height / 2;
         sparks(x, y, 16, "#ffd36b");
         floater("×2 !", x, y - 26, "#ffd36b");
         if (A.discover) A.discover();
+      }
+      const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
+      if (isVivant) {
+        btn.classList.remove("hit"); void btn.offsetWidth; btn.classList.add("hit");
+        spawnLivingParticles(x, y, res);
       }
       const row = btn.closest(".gis");
       let c = row && row.querySelector(".hcount");
