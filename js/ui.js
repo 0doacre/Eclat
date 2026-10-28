@@ -481,7 +481,7 @@
   }
   document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("gestes")) U.gScroll = e.target.scrollLeft; }, true);
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
-  const fresh = () => Date.now() - (U.mAt || 0) < 450;
+  const fresh = () => Date.now() - (U.mAt || 0) < 140;
   function setupModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     box.addEventListener("click", (ev) => {
@@ -494,7 +494,14 @@
       const zb = ev.target.closest("[data-gz]");
       if (zb && U.mcur && !fresh()) { const z = zb.dataset.gz; A.click(); U.zone = z; closeModal(); setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
-      if (gb && U.mcur && !fresh()) { const from = U.mcur.reopen || null; closeModal(); setTimeout(() => { U.rfrom = from; goto(gb.dataset.goto); }, 80); return; }
+      if (gb && U.mcur) {
+        A.click();
+        vibe(8);
+        const from = U.mcur.reopen || null;
+        U.rfrom = from;
+        goto(gb.dataset.goto);
+        return;
+      }
       const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
       if (sb && U.mcur && !fresh()) { A.click(); openSigneModal(sb.dataset.s); return; }
       const b = ev.target.closest("[data-m]");
@@ -728,8 +735,12 @@
     const box = $("#modal .modal-box");
     U.mcur = o;
     $("#modal").className = "modal " + (o.cls || "");
-    box.innerHTML = o.html;
+    box.innerHTML = (o.persistent ? "" : '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>') + o.html;
+    const ttl = $("h2", box);
+    if (ttl) { ttl.id = "modalTitle"; box.setAttribute("aria-labelledby", "modalTitle"); box.removeAttribute("aria-label"); }
+    else { box.removeAttribute("aria-labelledby"); box.setAttribute("aria-label", "Fenêtre"); }
     iconize(box);
+    box.scrollTop = 0;
     if (o.onOpen) o.onOpen(box);
   }
 

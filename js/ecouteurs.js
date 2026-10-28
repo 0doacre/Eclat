@@ -299,6 +299,10 @@
         }
         if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("[data-goto]")) {
           ev.preventDefault();
+          A.click();
+          vibe(8);
+          if (U.mcur) U.rfrom = U.mcur.reopen || null;
+          else U.rfrom = null;
           goto(document.activeElement.dataset.goto);
           return;
         }
@@ -516,7 +520,13 @@
         }
         if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
         if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
-        if ((b = t.closest("[data-goto]"))) { U.rfrom = null; goto(b.dataset.goto); return; }
+        if ((b = t.closest("[data-goto]"))) {
+          A.click();
+          vibe(8);
+          U.rfrom = null;
+          goto(b.dataset.goto);
+          return;
+        }
         if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
         if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
         if ((b = t.closest("[data-trans-delete]"))) { if (E.transmissionEffacerNote(Number(b.dataset.transDelete))) { save(); render(true); } return; }

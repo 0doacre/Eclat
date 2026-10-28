@@ -189,7 +189,7 @@
         '<div class="passcost small">' +
         Object.keys(p.cost).map((i) => {
           const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
-          return '<div class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '">' + icon(i, "sm") + "<b>" + esc(I[i].n) + "</b> " + fmt(got) + " / " + fmt(p.cost[i]) + " déposés" +
+          return '<div class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '" role="button" tabindex="0" title="' + esc(I[i].n) + ' (toucher pour voir la fiche)">' + icon(i, "sm") + "<b>" + esc(I[i].n) + "</b> " + fmt(got) + " / " + fmt(p.cost[i]) + " déposés" +
             (ok ? " ✓" : ' <span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? " : de quoi finir" : eta ? " · encore " + eta : "") + "</span>") + "</div>";
         }).join("") + "</div></div>";
     }
@@ -396,6 +396,7 @@
       const modalObj = {
         html: makeHTML(),
         refresh: makeHTML,
+        reopen: () => openQuestsModal(),
         on: {
           claimrit: (b) => {
             const idx = Number(b.dataset.idx);
