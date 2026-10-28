@@ -45,6 +45,13 @@
           : '<span>Il te faut ' + firstWood + ' bois pour commencer.</span><button class="btn pri" data-hloop="lisiere:bois">▶ Récolter du bois</button>') + '</div>';
       }
       h += goalHint();
+      const sugRel = E.shouldSuggestReleve && E.shouldSuggestReleve();
+      if (sugRel) {
+        h += '<div class="card acc releve-alerte" style="border-left:3px solid var(--acc);background:var(--panel2);margin-bottom:10px">' +
+          '<div class="row between items-center"><span class="step-badge">✦ Passer le relais</span><b class="mgain">+' + sugRel.gain + ' ✦</b></div>' +
+          '<p class="small" style="margin:6px 0 8px">' + esc(sugRel.texte) + '</p>' +
+          '<button class="btn pri small" data-m="releve" title="Voir les gains et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+      }
       h += pinsHTML();
       // une seule rangée, qu’on fait glisser : le haut de l’Atelier laisse la place aux ressources
       const nG = D.GESTE_ORDER.filter((g) => E.gesteOK(g)).length + 1, wG = ($("#views") && $("#views").clientWidth || 360) - 24;
@@ -573,6 +580,14 @@
       const etapes = E.milestones()[g.age] || [], faites = etapes.filter((x) => x.done).length;
       const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
       const f = U.arbreFiltre || "tout";
+      const totalParAge = {};
+      for (const id in I) {
+        const it = I[id];
+        if (it.r && !it.path) {
+          const a = it.a || 0;
+          totalParAge[a] = (totalParAge[a] || 0) + 1;
+        }
+      }
       let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
         '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
       if (objectif) h += '<h3>Prochain objectif</h3>' + arbreCarte(objectif, false);
@@ -584,10 +599,11 @@
         const ouverts = U.arbreAges || {};
         const visibles = f === "tout" ? ns : ns.filter((n) => arbrePassPortee(n, f));
         const ouvert = ouverts[a] !== undefined ? ouverts[a] : (f !== "tout" ? visibles.length > 0 : a === Math.min(g.age, g.max));
+        const c = ns.filter((n) => n.etat === 'allume').length, tot = totalParAge[a] || 0;
         const compteTxt = f === "tout" ?
-          (ns.filter((n) => n.etat === 'allume').length + ' connue' + (ns.filter((n) => n.etat === 'allume').length > 1 ? 's' : '')) :
+          (tot > 0 ? c + ' / ' + tot : (c + ' connue' + (c > 1 ? 's' : ''))) :
           (visibles.length + ' ' + (f === 'pret' ? 'prête' + (visibles.length > 1 ? 's' : '') : f === 'portee' ? 'à portée' : 'verrouillée' + (visibles.length > 1 ? 's' : '')));
-        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte">' + compteTxt + '</span></summary>';
+        h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte"' + (f === 'tout' && tot > 0 ? ' aria-label="' + c + ' sur ' + tot + ' recettes connues"' : '') + '>' + compteTxt + '</span></summary>';
         const rang = new Map(visibles.map((n) => [n.cle, arbreRang(n, g)]));
         visibles.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
         h += (visibles.length ? '<div class="arb-frise">' + visibles.map(arbrePastille).join('') + '</div>' : '<p class="small muted">' + (ns.length ? 'Aucune recette pour ce filtre.' : 'Rien découvert pour l’instant.') + '</p>') + '</details>';
@@ -1173,7 +1189,13 @@
             '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span>" + lim + "</span>" +
             '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
         }).join("") +
-        '</div><p class="tiny muted">Annuler une commande rend ses ressources à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+        '</div>' +
+        (() => {
+          const sugRel = E.shouldSuggestReleve && E.shouldSuggestReleve();
+          if (!sugRel) return '';
+          return '<div class="card acc releve-alerte" style="margin-top:10px;border-left:3px solid var(--acc)"><div class="small"><b>⏳ Commandes lentes :</b> ce Semeur approche du bout de son éveil. Passer le relais (+' + sugRel.gain + ' ✦) accélérera tes futures fabrications.</div><button class="btn pri small" style="margin-top:6px" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+        })() +
+        '<p class="tiny muted">Annuler une commande rend ses ressources à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
     }
     function openHands() {
       openModal({

@@ -5,6 +5,7 @@
 (function (root) {
   "use strict";
   const BASE_DATA = root.ECLAT_DATA || (typeof require !== "undefined" ? require("./data.js") : null);
+  const Territoires = root.EclatTerritoires || require("./territoires.js");
 
   // Un jeu de données isolé permet d'essayer un autre atelier sans modifier la
   // partie normale, ses index de recettes ni ses règles de sauvegarde.
@@ -106,7 +107,7 @@
       made: { ...D.CRAFT_EQUIPMENT?.startEquipment },
       known: Object.fromEntries(Object.keys(D.CRAFT_EQUIPMENT?.startEquipment || {}).map(id => [id, true])), hints: {},
       intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
-      exp: { active: null, done: {} }, age: 0,
+      exp: { active: null, done: {} }, age: 0, territoires: { produit: {}, accompli: {} },
       dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
       hand: { q: [], p: 0 }, studied: {}, skills: {}, act: null,
       proj: {}, endings: {},
@@ -1273,9 +1274,35 @@
     /* une pièce seule ; les gestes d’un âge passé vont plus vite */
     function handTime(id, selection) {
       const it = item(id);
+      const a = it.a || 0;
       const k = isUnique(it) ? H.unique : isScaled(it) ? H.scaled : 1;
-      const old = Math.pow(H.old, Math.max(0, S.age - (it.a || 0)));
-      return (H.base + H.age * (it.a || 0)) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / (it.r ? skillSpeed(it.r[0]) : 1) / (E.equipmentSpeed ? E.equipmentSpeed(id, selection) : 1);
+      const old = Math.pow(H.old, Math.max(0, S.age - a));
+
+      // 1. Progression selon l’âge : linéaire sur les deux premiers âges (0-1), courbée au-delà
+      let baseT = H.base + H.age * a;
+      if (a >= 2) {
+        baseT = (H.base + H.age * a) * Math.pow(H.ageCurve || 1.08, a - 1);
+      }
+
+      // 2. Fatigue arbitraire du cycle : pousse activement à la relève
+      // Ne s'applique que si une relève est possible (Traces en attente) et que l'objet est complexe (âge >= 2)
+      let fatigue = 1;
+      const gain = E.releveGain ? E.releveGain() : 0;
+      if (gain > 0 && a >= 2) {
+        // Chaque Trace non récoltée alourdit le geste
+        fatigue *= (1 + 0.12 * Math.min(10, gain));
+        // Si le Semeur s'aventure bien au-delà de son horizon de cycle
+        const reach = 1 + (S.cycle || 1) * 2;
+        const depassement = Math.max(0, a - reach);
+        if (depassement > 0) {
+          fatigue *= Math.pow(H.fatigueBase || 1.15, Math.min(6, depassement));
+        }
+      }
+
+      // 3. Élan des Semeurs : chaque cycle passé rend les gestes plus vifs
+      const elan = Math.pow(1.2, Math.min(5, Math.max(0, (S.cycle || 1) - 1)));
+
+      return (baseT * fatigue / elan) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / ((it.r ? skillSpeed(it.r[0]) : 1) * E.recetteTerreBonus(id) * (E.equipmentSpeed ? E.equipmentSpeed(id, selection) : 1));
     }
     E.handTime = handTime;
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
@@ -1311,9 +1338,18 @@
     }
     E.queued = queued;
 
-    function machUnitRate(m, c) {
+    function machUnitRate(m, c, rec) {
       const M = item(m);
-      return M ? (M.spd / 60) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") : 0;
+      if (!M) return 0;
+      let decay = 1;
+      if (rec) {
+        const it = item(rec);
+        const recAge = it ? (it.a || 0) : 0;
+        if (recAge >= 2) {
+          decay = Math.pow(H.machDecay || 1.08, recAge - 1);
+        }
+      }
+      return ((M.spd / 60) / decay) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
     }
     function machReadyFor(m, rec, job) {
       const fits = job && job.ancienAtelier
@@ -1336,7 +1372,7 @@
         MACHINES.forEach((m) => {
           if (!E.machCan(m, x)) return;
           const cnt = freeOnly ? freeMach(m) : Math.floor(count(m));
-          if (cnt > 0) mRate += cnt * machUnitRate(m, c);
+          if (cnt > 0) mRate += cnt * machUnitRate(m, c, x);
         });
       }
       if (!(mRate > 0)) return stepTime(x, n, selection);
@@ -1699,7 +1735,7 @@
             const hOn = hWork.job === j && hWork.sIdx === sIdx;
             let mRate = 0, mCnt = 0;
             machPool.forEach((w) => {
-              if (w.job === j && w.sIdx === sIdx) { mRate += machUnitRate(w.m, c); mCnt++; }
+              if (w.job === j && w.sIdx === sIdx) { mRate += machUnitRate(w.m, c, rec); mCnt++; }
             });
             if (!hOn && !mCnt) return;
             let hRate = 0, hDur = 0;
@@ -3208,7 +3244,7 @@
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[e.z || it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
       if (E.hasEchoFin("brasier")) r *= 1.25;
-      return r * f * donExt(e.z) * seuilMult(e);
+      return r * f * donExt(e.z) * seuilMult(e) * E.terreBonus(e.z);
     }
     E.extOut = (e) => extOut(e, E.cache());
     /* ---- Les seuils par gisement (D.SEUILS) : 10, 25, 50, 100 extracteurs, chacun ×1,25 ---- */
@@ -3359,7 +3395,7 @@
     E.freeMach = freeMach;
     E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) ||
       Object.keys(S.dom.ext).length > 0 || S.hand.q.length > 0;
-    E.machRate = (m) => (item(m) && item(m).t === "mach" ? machUnitRate(m) : 0);
+    E.machRate = (m, rec) => (item(m) && item(m).t === "mach" ? machUnitRate(m, null, rec) : 0);
     E.machCan = function (m, r) {
       const it = item(r), M = item(m);
       if (!it || !it.r || !M) return false;
@@ -3425,6 +3461,7 @@
       if (!(rate > 0)) return done("idle");
       made = rate * dt;
       add(e.res, made);
+      E.terreProduire(e.z, made);
       if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
       return done("ok");
     }
@@ -3474,7 +3511,7 @@
         if (w.job === null || !w.rec) return;
         const it = item(w.rec);
         if (!it || !it.r) return;
-        const r = machUnitRate(w.m);
+        const r = machUnitRate(w.m, null, w.rec);
         prod[w.rec] = (prod[w.rec] || 0) + r * it.r[2];
         for (const i in it.r[1]) cons[i] = (cons[i] || 0) + r * it.r[1][i];
       });
@@ -4348,6 +4385,31 @@
       return true;
     };
 
+    /* Détermine si la relève doit être activement proposée au joueur :
+     * - Traces disponibles à la relève
+     * - ET fatigue ressentie (âge dépassé pour le cycle, commande longue, ou gain conséquent) */
+    E.shouldSuggestReleve = function () {
+      if (!E.canReleve || !E.canReleve()) return null;
+      const gain = E.releveGain ? E.releveGain() : 0;
+      if (!(gain > 0)) return null;
+
+      const hi = E.handInfo ? E.handInfo() : { left: 0, jobs: [] };
+      const reach = 1 + (S.cycle || 1) * 2;
+      const ageDepasse = (S.age || 0) > reach;
+      const longJob = hi.left > 15 || (hi.jobs && hi.jobs.length && hi.jobs[0].left > 10);
+      const beaucoupTraces = gain >= 6;
+
+      if (ageDepasse || longJob || beaucoupTraces) {
+        return {
+          gain,
+          reason: ageDepasse ? "age" : longJob ? "duree" : "traces",
+          titre: "Les mains s’alourdissent",
+          texte: "Ce Semeur s’essouffle. En passant le relais maintenant (+ " + gain + " ✦), le prochain Semeur repartira avec tes Traces, des récoltes démultipliées et des gestes plus vifs."
+        };
+      }
+      return null;
+    };
+
     /* Les ruines : ce qu’un Semeur a construit attend le suivant */
     E.ruins = function () {
       const out = {};
@@ -4448,6 +4510,7 @@
         if (S.intuAcc >= 1) { const k = Math.floor(S.intuAcc); S.intu += k; S.intuAcc -= k; }
       }
       if (!offline) S.stats.play += dt; // le temps passé à jouer, pas l’absence
+      E.terresCheck();
     }
     E.step = step;
 
@@ -4891,6 +4954,7 @@
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
       o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} }, o.meta);
+      Territoires.normalize(o);
       if (!o.meta.curios || typeof o.meta.curios !== "object" || Array.isArray(o.meta.curios)) o.meta.curios = {};
       if (!o.meta.trans || typeof o.meta.trans !== "object" || Array.isArray(o.meta.trans)) o.meta.trans = {};
       if (!o.meta.hints_endings || typeof o.meta.hints_endings !== "object" || Array.isArray(o.meta.hints_endings)) o.meta.hints_endings = {};
@@ -5218,6 +5282,7 @@
 
     if (D.CRAFT_EQUIPMENT) (root.EclatEquipements || require("./equipements.js")).attach(E);
     (root.EclatTransmission || require("./transmission.js")).attach(E);
+    Territoires.attach(E);
     recalc();
     return E;
   }

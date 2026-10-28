@@ -17,4 +17,17 @@ test("le seuil se renouvelle par période, pas en désactivant le marchand",()=>
 test("rechargement conserve budget, taxes et commandes ; ancienne sauvegarde acceptée",()=>{const E=ready();E.workerHire();E.workerFund(1);E.workerSet(true);E.merchantConfigure(true,20);E.tick(8);const R=mk();R.load(E.serialize());assert.deepEqual(R.atelierEconomyInfo(),E.atelierEconomyInfo());const old=JSON.parse(E.serialize());delete old.atelierEconomy;R.load(JSON.stringify(old));assert.equal(R.atelierEconomyInfo().hired,false);});
 test("rattrapage hors ligne limité par les stocks et l’avance",()=>{const E=ready();E.workerHire();E.workerFund(1);E.workerSet(true);E.merchantConfigure(true,0);E.tick(3600);const s=E.atelierEconomyInfo();assert.ok(s.produced>0&&s.produced<=26);assert.ok(E.count("cuir")>=87);close(s.budget+s.wages,1);assert.ok(s.net>=0);});
 test("production, vente et salaire forment une boucle rentable sans crédit gratuit",()=>{const E=ready();E.state.ecus=0;E.add("laniere",50);E.merchantConfigure(true,10);assert.equal(E.merchantSell(50).ok,true);assert.equal(E.workerHire().ok,true);assert.equal(E.workerFund(1).ok,true);E.workerSet(true);E.tick(60);assert.ok(E.atelierEconomyInfo().produced>0);assert.ok(E.atelierEconomyInfo().net>E.atelierEconomyInfo().wages);assert.ok(E.state.ecus>=0);});
+test("le bonus territorial se combine avec le couteau et accélère la production réelle de l’ouvrier",()=>{
+  const A=ready(),B=ready();A.add("couteau",1);B.add("couteau",1);
+  const base=A.atelierEconomyInfo().duration;B.state.meta.terres.plaine=10;
+  close(B.atelierEconomyInfo().duration,base/1.5);
+  for(const E of [A,B]){E.workerHire();E.workerFund(1);E.workerSet(true);E.tick(base*2.1);}
+  assert.ok(B.atelierEconomyInfo().produced>A.atelierEconomyInfo().produced);
+  assert.equal(B.count("couteau"),1);assert.ok(B.atelierEconomyInfo().budget>=0);
+});
+test("les bonus territoriaux survivent à la sauvegarde équipée et à son nouveau cycle",()=>{
+  const E=ready();E.state.meta.terres.plaine=3;const raw=E.serialize(),F=mk();F.load(raw);
+  close(F.terreBonus("plaine"),1.15);assert.equal(F.SAVE_VERSION,13);
+  F.newCycle();close(F.terreBonus("plaine"),1.15);assert.ok(F.equipmentList().some(x=>x.id==="percuteur_pierre"&&x.ready));
+});
 console.log(checks+" scénarios économiques réussis.");

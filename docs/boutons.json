@@ -210,7 +210,7 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "✦ NOUVELLE RECETTE « Prends du bois et retire tout ce qui dépasse. »",
+  "label": "✦ NOUVELLE RECETTE « Une branche bien droite, écorcée au caillou, tient bien en main. »",
   "repere": "div[data-goto=\"manche\"].grow",
   "explique": "guide (.goal-card)",
   "tag": "div"
@@ -230,6 +230,14 @@
   "repere": "button[data-exp=\"lisiere\"].btn",
   "explique": "info-bulle : Lancer cette exploration : elle avance toute seule",
   "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Maîtrise · 0 %",
+  "repere": "summary",
+  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
+  "tag": "summary"
  },
  {
   "partie": "neuve",
@@ -277,6 +285,22 @@
   "label": "Atelier",
   "repere": "button[data-tab=\"atelier\"]",
   "explique": "info-bulle : Poser tes ressources, lancer une action",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Arbre",
+  "repere": "button[data-tab=\"arbre\"]",
+  "explique": "info-bulle : Qui sert à quoi : une recette, ses ingrédients, ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Carnet",
+  "repere": "button[data-tab=\"carnet\"]",
+  "explique": "info-bulle : Toutes tes recettes, avec la quantité et les commandes",
   "tag": "button"
  },
  {
@@ -354,81 +378,233 @@
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "▶ Récolter du bois",
-  "repere": "button[data-hloop=\"lisiere:bois\"].btn",
-  "explique": "guide ([data-hloop=\"lisiere:bois\"])",
+  "label": "+",
+  "repere": "button#ae-slot-0[data-ae=\"slot\"][data-value=\"0\"].btn.ae-empty",
+  "explique": "info-bulle : Poser ou retirer une matière dans cet emplacement",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "Assembler",
-  "repere": "button[data-g=\"assembler\"].geste",
-  "explique": "guide (.gestes)",
+  "label": "+",
+  "repere": "button#ae-slot-1[data-ae=\"slot\"][data-value=\"1\"].btn.ae-empty",
+  "explique": "info-bulle : Poser ou retirer une matière dans cet emplacement",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "Tresser",
-  "repere": "button[data-g=\"tresser\"].geste",
-  "explique": "guide (.gestes)",
+  "label": "+",
+  "repere": "button#ae-slot-2[data-ae=\"slot\"][data-value=\"2\"].btn.ae-empty",
+  "explique": "info-bulle : Poser ou retirer une matière dans cet emplacement",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
   "label": "Tailler",
-  "repere": "button[data-g=\"tailler\"].geste",
-  "explique": "guide (.gestes)",
+  "repere": "button#ae-forge-tailler[data-ae=\"forge\"][data-value=\"tailler\"].btn",
+  "explique": "guide (#ae-forge-tailler)",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "? ???",
-  "repere": "button[data-lock=\"chauffer\"].geste.lock",
-  "explique": "guide (.gestes)",
+  "label": "Mains Assembler · Tresser",
+  "repere": "button#ae-tool-mains[data-ae=\"tool\"][data-value=\"mains\"].btn",
+  "explique": "info-bulle : MainsAssembler · Tresser ; guide (.ae-tools)",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "+",
-  "repere": "button[data-slot=\"0\"].slot",
-  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "label": "Percuteur de pierre Tailler",
+  "repere": "button#ae-tool-percuteur_pierre[data-ae=\"tool\"][data-value=\"percuteur_pierre\"].btn",
+  "explique": "info-bulle : Percuteur de pierreTailler ; guide (.ae-tools)",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "+",
-  "repere": "button[data-slot=\"1\"].slot",
-  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "label": "Bois 0",
+  "repere": "button#ae-item-bois[data-ae=\"item\"][data-value=\"bois\"].btn",
+  "explique": "info-bulle : Bois · 0 ; lecteur d’écran : Bois, 0 en stock ; guide (#ae-item-bois)",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "+",
-  "repere": "button[data-slot=\"2\"].slot",
-  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "label": "Fibres 0",
+  "repere": "button#ae-item-fibre[data-ae=\"item\"][data-value=\"fibre\"].btn",
+  "explique": "info-bulle : Fibres · 0 ; lecteur d’écran : Fibres, 0 en stock",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "TAILLER",
-  "repere": "button#forge.forge-btn",
-  "explique": "guide (#forge)",
+  "label": "Pierre 0",
+  "repere": "button#ae-item-caillou[data-ae=\"item\"][data-value=\"caillou\"].btn",
+  "explique": "info-bulle : Pierre · 0 ; lecteur d’écran : Pierre, 0 en stock",
   "tag": "button"
  },
  {
   "partie": "neuve",
-  "ecran": "Atelier",
-  "label": "ⓘ Fiches",
-  "repere": "button[data-fichemode=\"\"].btn.ghost",
-  "explique": "info-bulle : Un appui sur une ressource ouvre sa fiche (comme un appui long)",
+  "ecran": "Arbre",
+  "label": "Progression",
+  "repere": "button[data-arb=\"ensemble\"].btn",
+  "explique": "info-bulle : Ta progression : ton âge, tes étapes et le prochain objectif",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Arbre",
+  "label": "Objectif",
+  "repere": "button[data-arb=\"centre\"].btn",
+  "explique": "info-bulle : Ton objectif du moment, et ce qu’il demande",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Arbre",
+  "label": "(sans mot)",
+  "repere": "button[data-arb=\"chercher\"].btn.ghost",
+  "explique": "lecteur d’écran : Chercher dans l’arbre",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Arbre",
+  "label": "Toutes 2",
+  "repere": "button[data-arb-f=\"tout\"]",
+  "explique": "info-bulle : Afficher toutes les pastilles",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Arbre",
+  "label": "? Recette à découvrir À découvrir Objectif",
+  "repere": "button[data-arbsel=\"f1\"][data-arbn=\"f1\"].arb-card.fantome",
+  "explique": "info-bulle : Ouvrir cette branche : ses ingrédients et ses usages",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Arbre",
+  "label": "🪨 Percuteur de pierre",
+  "repere": "button[data-arbsel=\"percuteur_pierre\"][data-arbn=\"percuteur_pierre\"].arb-pas.allume",
+  "explique": "info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Percuteur de pierre, déjà fabriqué",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Arbre",
+  "label": "? ?",
+  "repere": "button[data-arbsel=\"f1\"][data-arbn=\"f1\"].arb-pas.fantome",
+  "explique": "info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Recette à découvrir, à découvrir, objectif",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Arbre · une branche",
+  "label": "Chemin",
+  "repere": "button[data-chemin=\"manche\"].btn",
+  "explique": "info-bulle : Chemin : la route complète jusqu’à l’objet",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Compris",
+  "repere": "button[data-tip=\"tip_carnet\"].btn.ghost",
+  "explique": "info-bulle : Fermer cette astuce",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "×1",
+  "repere": "button[data-qty=\"1\"].chipq",
+  "explique": "info-bulle : Un seul exemplaire",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "…",
+  "repere": "button[data-qty-custom=\"\"].chipq",
+  "explique": "info-bulle : Saisir une quantité libre ; lecteur d’écran : Quantité libre",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Apprises",
+  "repere": "button[data-cf=\"tout\"]",
+  "explique": "info-bulle : Toutes les recettes que tu connais",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Prêtes",
+  "repere": "button[data-cf=\"pret\"]",
+  "explique": "info-bulle : Celles que ta Réserve couvre entièrement, pièces comprises",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Réalisables",
+  "repere": "button[data-cf=\"craft\"]",
+  "explique": "info-bulle : Celles dont les pièces manquantes peuvent encore être fabriquées",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "À découvrir",
+  "repere": "button[data-cf=\"unk\"]",
+  "explique": "info-bulle : Celles qu’il te reste à découvrir",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Extracteurs",
+  "repere": "button[data-cf=\"ext\"]",
+  "explique": "info-bulle : Les bâtiments qui récoltent à ta place",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Outils",
+  "repere": "button[data-cf=\"tool\"]",
+  "explique": "info-bulle : Les outils et leurs améliorations",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Machines",
+  "repere": "button[data-cf=\"mach\"]",
+  "explique": "info-bulle : Les machines qui fabriquent seules",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "★ Épinglées",
+  "repere": "button[data-cf=\"pin\"]",
+  "explique": "info-bulle : Tes épingles, en haut de l’Atelier",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Carnet",
+  "label": "Voir les 1 objets déjà possédés",
+  "repere": "button[data-owned=\"\"].btn.ghost",
+  "explique": "info-bulle : Masquer ou montrer les objets déjà fabriqués",
   "tag": "button"
  },
  {
@@ -483,7 +659,7 @@
   "partie": "neuve",
   "ecran": "Journal · signes",
   "label": "1 endroit",
-  "repere": "button[data-s=\"faire\"].signe-card",
+  "repere": "button[data-s=\"nourrice\"].signe-card",
   "explique": "info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais",
   "tag": "button"
  },
@@ -754,7 +930,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "✦ NOUVELLE RECETTE « En battant le bronze autour d’un fil de cuivre, tu pourrais former une spirale qui reprend sa forme après un effort. »",
+  "label": "✦ NOUVELLE RECETTE « Une bande de bronze enroulée en spirale restitue l'effort quand on la relâche. »",
   "repere": "div[data-goto=\"ressort\"].grow",
   "explique": "guide (.goal-card)",
   "tag": "div"
@@ -778,10 +954,26 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
+  "label": "Passer le relais (+18 ✦)",
+  "repere": "button[data-m=\"releve\"].btn",
+  "explique": "info-bulle : Voir les gains de Traces et les bonus de la prochaine relève",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
   "label": "Voir : Torche",
   "repere": "button[data-goto=\"torche\"].btn",
   "explique": "guide (.dom-regle.gene)",
   "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Maîtrise · 80 %",
+  "repere": "summary",
+  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
+  "tag": "summary"
  },
  {
   "partie": "avancée",
@@ -866,15 +1058,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Tout ce qui entre et sort, par ressource",
-  "repere": "summary",
-  "explique": "info-bulle : Plier ou déplier le tableau",
-  "tag": "summary"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Bois+13/min8,73 k",
+  "label": "Bois+15/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -1074,233 +1258,1129 @@
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "Assembler 1",
-  "repere": "button[data-g=\"assembler\"].geste",
-  "explique": "guide (.gestes)",
+  "label": "Préparer la relève",
+  "repere": "button[data-releve=\"\"].btn",
+  "explique": "info-bulle : Voir les gains et les bonus permanents de la prochaine relève",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "Tresser 1",
-  "repere": "button[data-g=\"tresser\"].geste",
-  "explique": "guide (.gestes)",
+  "label": "Établi",
+  "repere": "button#ae-place-etabli[data-ae=\"place\"][data-value=\"etabli\"].btn",
+  "explique": "info-bulle : Choisir ce poste de travail",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "Tailler 1",
-  "repere": "button[data-g=\"tailler\"].geste",
-  "explique": "guide (.gestes)",
+  "label": "Foyer",
+  "repere": "button#ae-place-feu[data-ae=\"place\"][data-value=\"feu\"].btn",
+  "explique": "info-bulle : Choisir ce poste de travail",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "Chauffer 1",
-  "repere": "button[data-g=\"chauffer\"].geste",
-  "explique": "guide (.gestes)",
+  "label": "Four en argile",
+  "repere": "button#ae-place-four[data-ae=\"place\"][data-value=\"four\"].btn",
+  "explique": "info-bulle : Choisir ce poste de travail",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "Marteler 1",
-  "repere": "button[data-g=\"marteler\"].geste",
-  "explique": "guide (.gestes)",
+  "label": "Poste de frappe",
+  "repere": "button#ae-place-enclume_pierre[data-ae=\"place\"][data-value=\"enclume_pierre\"].btn",
+  "explique": "info-bulle : Choisir ce poste de travail",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "Allier 1",
-  "repere": "button[data-g=\"allier\"].geste",
-  "explique": "guide (.gestes)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Atelier",
-  "label": "Tremper 1",
-  "repere": "button[data-g=\"tremper\"].geste",
-  "explique": "guide (.gestes)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Atelier",
-  "label": "Usiner 1",
-  "repere": "button[data-g=\"usiner\"].geste",
-  "explique": "guide (.gestes)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Atelier",
-  "label": "? ???",
-  "repere": "button[data-lock=\"electriser\"].geste.lock",
-  "explique": "guide (.gestes)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Atelier",
-  "label": "Niveaux",
-  "repere": "button[data-skills=\"\"].bench-clear",
-  "explique": "info-bulle : Le niveau de chaque action et de la récolte",
+  "label": "Procédés après le Cuivre",
+  "repere": "button#ae-legacy-1[data-ae=\"legacy\"][data-value=\"1\"].btn.ghost",
+  "explique": "info-bulle : Utiliser les procédés des âges après le Cuivre",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
   "label": "+",
-  "repere": "button[data-slot=\"0\"].slot",
-  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "repere": "button#ae-slot-0[data-ae=\"slot\"][data-value=\"0\"].btn.ae-empty",
+  "explique": "info-bulle : Poser ou retirer une matière dans cet emplacement",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
   "label": "+",
-  "repere": "button[data-slot=\"1\"].slot",
-  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "repere": "button#ae-slot-1[data-ae=\"slot\"][data-value=\"1\"].btn.ae-empty",
+  "explique": "info-bulle : Poser ou retirer une matière dans cet emplacement",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
   "label": "+",
-  "repere": "button[data-slot=\"2\"].slot",
-  "explique": "info-bulle : Poser une ressource ici ; lecteur d’écran : Emplacement libre : poser une ressource",
+  "repere": "button#ae-slot-2[data-ae=\"slot\"][data-value=\"2\"].btn.ae-empty",
+  "explique": "info-bulle : Poser ou retirer une matière dans cet emplacement",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "TAILLER",
-  "repere": "button#forge.forge-btn",
-  "explique": "guide (#forge)",
+  "label": "Tailler",
+  "repere": "button#ae-forge-tailler[data-ae=\"forge\"][data-value=\"tailler\"].btn",
+  "explique": "guide (#ae-forge-tailler)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "ⓘ Fiches",
-  "repere": "button[data-fichemode=\"\"].btn.ghost",
-  "explique": "info-bulle : Un appui sur une ressource ouvre sa fiche (comme un appui long)",
+  "label": "Mains Assembler · Tresser",
+  "repere": "button#ae-tool-mains[data-ae=\"tool\"][data-value=\"mains\"].btn",
+  "explique": "info-bulle : MainsAssembler · Tresser ; guide (.ae-tools)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "Filtres ▾",
-  "repere": "button[data-filtres=\"\"].btn.ghost",
-  "explique": "lecteur d’écran : Tri et filtres",
+  "label": "Percuteur de pierre Tailler",
+  "repere": "button#ae-tool-percuteur_pierre[data-ae=\"tool\"][data-value=\"percuteur_pierre\"].btn",
+  "explique": "info-bulle : Percuteur de pierreTailler ; guide (.ae-tools)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "8,80 k +810/min Bois",
-  "repere": "button[data-inv=\"bois\"].inv",
-  "explique": "info-bulle : Bois : ouvrir sa fiche ; lecteur d’écran : Bois : ouvrir sa fiche ; guide ([data-inv=\"bois\"])",
+  "label": "Racloir en os Couper",
+  "repere": "button#ae-tool-racloir_os[data-ae=\"tool\"][data-value=\"racloir_os\"].btn",
+  "explique": "info-bulle : Racloir en osCouper ; guide (.ae-tools)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "0 Archet à feu",
-  "repere": "button[data-inv=\"archet\"].inv.zero",
-  "explique": "info-bulle : Archet à feu : ouvrir sa fiche ; lecteur d’écran : Archet à feu : ouvrir sa fiche",
+  "label": "Pioche de pierre Équarrir",
+  "repere": "button#ae-tool-pioche_pierre[data-ae=\"tool\"][data-value=\"pioche_pierre\"].btn",
+  "explique": "info-bulle : Pioche de pierreÉquarrir ; guide (.ae-tools)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "1 Tablette des astres",
-  "repere": "button[data-inv=\"tablette\"].inv.relic",
-  "explique": "info-bulle : Tablette des astres : ouvrir sa fiche ; lecteur d’écran : Tablette des astres : ouvrir sa fiche",
+  "label": "Ciseau de cuivre Refendre",
+  "repere": "button#ae-tool-ciseau[data-ae=\"tool\"][data-value=\"ciseau\"].btn",
+  "explique": "info-bulle : Ciseau de cuivreRefendre ; guide (.ae-tools)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "✕",
-  "repere": "button.toast-x",
-  "explique": "lecteur d’écran : Fermer",
+  "label": "Bois 8,80 k",
+  "repere": "button#ae-item-bois[data-ae=\"item\"][data-value=\"bois\"].btn",
+  "explique": "info-bulle : Bois · 8 808,546 ; lecteur d’écran : Bois, 8 808,546 en stock ; guide (#ae-item-bois)",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "Par âge Plus nombreuses ⚡ Flux actifs ⚠️ En déficit Nom (A → Z) Dernières trouvées",
-  "repere": "select#isort",
-  "explique": "info-bulle : Trier les ressources ; lecteur d’écran : Trier les ressources",
-  "tag": "select"
- },
- {
-  "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "Tout 46",
-  "repere": "button[data-if=\"tout\"]",
-  "explique": "info-bulle : Toutes tes ressources",
+  "ecran": "Atelier",
+  "label": "Fibres 6,43 k",
+  "repere": "button#ae-item-fibre[data-ae=\"item\"][data-value=\"fibre\"].btn",
+  "explique": "info-bulle : Fibres · 6 435,998 ; lecteur d’écran : Fibres, 6 435,998 en stock",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "En flux 12",
-  "repere": "button[data-if=\"flow\"]",
-  "explique": "info-bulle : Celles qui entrent ou sortent en ce moment",
+  "ecran": "Atelier",
+  "label": "Pierre 4,21 k",
+  "repere": "button#ae-item-caillou[data-ae=\"item\"][data-value=\"caillou\"].btn",
+  "explique": "info-bulle : Pierre · 4 219,148 ; lecteur d’écran : Pierre, 4 219,148 en stock",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "🪨 Brutes 12",
-  "repere": "button[data-if=\"res\"]",
-  "explique": "info-bulle : Les ressources brutes, récoltées telles quelles",
+  "ecran": "Atelier",
+  "label": "Manche 134",
+  "repere": "button#ae-item-manche[data-ae=\"item\"][data-value=\"manche\"].btn",
+  "explique": "info-bulle : Manche · 134 ; lecteur d’écran : Manche, 134 en stock",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "Pièces 34",
-  "repere": "button[data-if=\"comp\"]",
-  "explique": "info-bulle : Les pièces fabriquées à l’Atelier",
+  "ecran": "Atelier",
+  "label": "Corde 4",
+  "repere": "button#ae-item-corde[data-ae=\"item\"][data-value=\"corde\"].btn",
+  "explique": "info-bulle : Corde · 4 ; lecteur d’écran : Corde, 4 en stock",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "✦ Action 9",
-  "repere": "button[data-if=\"geste\"]",
-  "explique": "info-bulle : Celles qui servent à l’action choisie",
+  "ecran": "Atelier",
+  "label": "Archet à feu 0",
+  "repere": "button#ae-item-archet[data-ae=\"item\"][data-value=\"archet\"].btn",
+  "explique": "info-bulle : Archet à feu · 0 ; lecteur d’écran : Archet à feu, 0 en stock",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "♥ Favoris 0",
-  "repere": "button[data-if=\"fav\"]",
-  "explique": "info-bulle : Celles que tu as marquées d’un ♥",
+  "ecran": "Atelier",
+  "label": "Charbon 1,35 k",
+  "repere": "button#ae-item-charbon[data-ae=\"item\"][data-value=\"charbon\"].btn",
+  "explique": "info-bulle : Charbon · 1 351,783 ; lecteur d’écran : Charbon, 1 351,783 en stock",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "Inutilisées 4",
-  "repere": "button[data-if=\"new\"]",
-  "explique": "info-bulle : Celles qu’aucune recette connue n’utilise encore",
+  "ecran": "Atelier",
+  "label": "Épieu durci 1",
+  "repere": "button#ae-item-epieu[data-ae=\"item\"][data-value=\"epieu\"].btn",
+  "explique": "info-bulle : Épieu durci · 1 ; lecteur d’écran : Épieu durci, 1 en stock",
   "tag": "button"
  },
  {
   "partie": "avancée",
-  "ecran": "Atelier · filtres",
-  "label": "À tenter 0",
-  "repere": "button[data-if=\"try\"]",
-  "explique": "info-bulle : Les ressources étudiées qui cachent encore une recette",
+  "ecran": "Atelier",
+  "label": "Cabane de bûcheron 0",
+  "repere": "button#ae-item-cabane[data-ae=\"item\"][data-value=\"cabane\"].btn",
+  "explique": "info-bulle : Cabane de bûcheron · 0 ; lecteur d’écran : Cabane de bûcheron, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Torche 0",
+  "repere": "button#ae-item-torche[data-ae=\"item\"][data-value=\"torche\"].btn",
+  "explique": "info-bulle : Torche · 0 ; lecteur d’écran : Torche, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Os 2,85 k",
+  "repere": "button#ae-item-os[data-ae=\"item\"][data-value=\"os\"].btn",
+  "explique": "info-bulle : Os · 2 855,499 ; lecteur d’écran : Os, 2 855,499 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Peau 2,16 k",
+  "repere": "button#ae-item-cuir[data-ae=\"item\"][data-value=\"cuir\"].btn",
+  "explique": "info-bulle : Peau · 2 167,583 ; lecteur d’écran : Peau, 2 167,583 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Aiguille en os 0",
+  "repere": "button#ae-item-aiguille[data-ae=\"item\"][data-value=\"aiguille\"].btn",
+  "explique": "info-bulle : Aiguille en os · 0 ; lecteur d’écran : Aiguille en os, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lanières 0",
+  "repere": "button#ae-item-laniere[data-ae=\"item\"][data-value=\"laniere\"].btn",
+  "explique": "info-bulle : Lanières · 0 ; lecteur d’écran : Lanières, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Outre en peau 1",
+  "repere": "button#ae-item-outre[data-ae=\"item\"][data-value=\"outre\"].btn",
+  "explique": "info-bulle : Outre en peau · 1 ; lecteur d’écran : Outre en peau, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Collets 1",
+  "repere": "button#ae-item-collets[data-ae=\"item\"][data-value=\"collets\"].btn",
+  "explique": "info-bulle : Collets · 1 ; lecteur d’écran : Collets, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Tunique de peau 1",
+  "repere": "button#ae-item-tunique[data-ae=\"item\"][data-value=\"tunique\"].btn",
+  "explique": "info-bulle : Tunique de peau · 1 ; lecteur d’écran : Tunique de peau, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Argile 1,10 k",
+  "repere": "button#ae-item-argile[data-ae=\"item\"][data-value=\"argile\"].btn",
+  "explique": "info-bulle : Argile · 1 102,025 ; lecteur d’écran : Argile, 1 102,025 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Silex 1,68 k",
+  "repere": "button#ae-item-silex[data-ae=\"item\"][data-value=\"silex\"].btn",
+  "explique": "info-bulle : Silex · 1 681,399 ; lecteur d’écran : Silex, 1 681,399 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Sable 1,24 k",
+  "repere": "button#ae-item-sable[data-ae=\"item\"][data-value=\"sable\"].btn",
+  "explique": "info-bulle : Sable · 1 245,025 ; lecteur d’écran : Sable, 1 245,025 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Éclat de silex 0",
+  "repere": "button#ae-item-eclat[data-ae=\"item\"][data-value=\"eclat\"].btn",
+  "explique": "info-bulle : Éclat de silex · 0 ; lecteur d’écran : Éclat de silex, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Automate de bois 4",
+  "repere": "button#ae-item-automate_bois[data-ae=\"item\"][data-value=\"automate_bois\"].btn",
+  "explique": "info-bulle : Automate de bois · 4 ; lecteur d’écran : Automate de bois, 4 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Hache de pierre 1",
+  "repere": "button#ae-item-hache_pierre[data-ae=\"item\"][data-value=\"hache_pierre\"].btn",
+  "explique": "info-bulle : Hache de pierre · 1 ; lecteur d’écran : Hache de pierre, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Brique 0",
+  "repere": "button#ae-item-brique[data-ae=\"item\"][data-value=\"brique\"].btn",
+  "explique": "info-bulle : Brique · 0 ; lecteur d’écran : Brique, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Argilière 1",
+  "repere": "button#ae-item-nasse[data-ae=\"item\"][data-value=\"nasse\"].btn",
+  "explique": "info-bulle : Argilière · 1 ; lecteur d’écran : Argilière, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Hutte de bûcheron 0",
+  "repere": "button#ae-item-hutte[data-ae=\"item\"][data-value=\"hutte\"].btn",
+  "explique": "info-bulle : Hutte de bûcheron · 0 ; lecteur d’écran : Hutte de bûcheron, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Malachite 662",
+  "repere": "button#ae-item-malachite[data-ae=\"item\"][data-value=\"malachite\"].btn",
+  "explique": "info-bulle : Malachite · 662,466 ; lecteur d’écran : Malachite, 662,466 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Cassitérite 388",
+  "repere": "button#ae-item-cassiterite[data-ae=\"item\"][data-value=\"cassiterite\"].btn",
+  "explique": "info-bulle : Cassitérite · 388,733 ; lecteur d’écran : Cassitérite, 388,733 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lingot de cuivre 0",
+  "repere": "button#ae-item-lingot_cuivre[data-ae=\"item\"][data-value=\"lingot_cuivre\"].btn",
+  "explique": "info-bulle : Lingot de cuivre · 0 ; lecteur d’écran : Lingot de cuivre, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Plaque de cuivre 0",
+  "repere": "button#ae-item-plaque_cuivre[data-ae=\"item\"][data-value=\"plaque_cuivre\"].btn",
+  "explique": "info-bulle : Plaque de cuivre · 0 ; lecteur d’écran : Plaque de cuivre, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fil de cuivre 3",
+  "repere": "button#ae-item-fil_cuivre[data-ae=\"item\"][data-value=\"fil_cuivre\"].btn",
+  "explique": "info-bulle : Fil de cuivre · 3 ; lecteur d’écran : Fil de cuivre, 3 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lingot d’étain 1",
+  "repere": "button#ae-item-lingot_etain[data-ae=\"item\"][data-value=\"lingot_etain\"].btn",
+  "explique": "info-bulle : Lingot d’étain · 1 ; lecteur d’écran : Lingot d’étain, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Creuset 1",
+  "repere": "button#ae-item-creuset[data-ae=\"item\"][data-value=\"creuset\"].btn",
+  "explique": "info-bulle : Creuset · 1 ; lecteur d’écran : Creuset, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Mine de cuivre 1",
+  "repere": "button#ae-item-puits[data-ae=\"item\"][data-value=\"puits\"].btn",
+  "explique": "info-bulle : Mine de cuivre · 1 ; lecteur d’écran : Mine de cuivre, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Meule de charbonnier 2",
+  "repere": "button#ae-item-charbonniere[data-ae=\"item\"][data-value=\"charbonniere\"].btn",
+  "explique": "info-bulle : Meule de charbonnier · 2 ; lecteur d’écran : Meule de charbonnier, 2 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lingot de bronze 0",
+  "repere": "button#ae-item-lingot_bronze[data-ae=\"item\"][data-value=\"lingot_bronze\"].btn",
+  "explique": "info-bulle : Lingot de bronze · 0 ; lecteur d’écran : Lingot de bronze, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Plaque de bronze 1",
+  "repere": "button#ae-item-plaque_bronze[data-ae=\"item\"][data-value=\"plaque_bronze\"].btn",
+  "explique": "info-bulle : Plaque de bronze · 1 ; lecteur d’écran : Plaque de bronze, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Engrenage de bronze 0",
+  "repere": "button#ae-item-engrenage[data-ae=\"item\"][data-value=\"engrenage\"].btn",
+  "explique": "info-bulle : Engrenage de bronze · 0 ; lecteur d’écran : Engrenage de bronze, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Automate de bronze 4",
+  "repere": "button#ae-item-automate_bronze[data-ae=\"item\"][data-value=\"automate_bronze\"].btn",
+  "explique": "info-bulle : Automate de bronze · 4 ; lecteur d’écran : Automate de bronze, 4 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Pioche de bronze 1",
+  "repere": "button#ae-item-pioche_bronze[data-ae=\"item\"][data-value=\"pioche_bronze\"].btn",
+  "explique": "info-bulle : Pioche de bronze · 1 ; lecteur d’écran : Pioche de bronze, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Enclume de bronze 1",
+  "repere": "button#ae-item-enclume_bronze[data-ae=\"item\"][data-value=\"enclume_bronze\"].btn",
+  "explique": "info-bulle : Enclume de bronze · 1 ; lecteur d’écran : Enclume de bronze, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Roue cerclée 0",
+  "repere": "button#ae-item-roue[data-ae=\"item\"][data-value=\"roue\"].btn",
+  "explique": "info-bulle : Roue cerclée · 0 ; lecteur d’écran : Roue cerclée, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Soufflet 0",
+  "repere": "button#ae-item-soufflet[data-ae=\"item\"][data-value=\"soufflet\"].btn",
+  "explique": "info-bulle : Soufflet · 0 ; lecteur d’écran : Soufflet, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Moulin à eau 1",
+  "repere": "button#ae-item-moulin[data-ae=\"item\"][data-value=\"moulin\"].btn",
+  "explique": "info-bulle : Moulin à eau · 1 ; lecteur d’écran : Moulin à eau, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Minerai de fer 548",
+  "repere": "button#ae-item-fer_min[data-ae=\"item\"][data-value=\"fer_min\"].btn",
+  "explique": "info-bulle : Minerai de fer · 548,366 ; lecteur d’écran : Minerai de fer, 548,366 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Bas-fourneau 1",
+  "repere": "button#ae-item-bas_fourneau[data-ae=\"item\"][data-value=\"bas_fourneau\"].btn",
+  "explique": "info-bulle : Bas-fourneau · 1 ; lecteur d’écran : Bas-fourneau, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Loupe de fer 0",
+  "repere": "button#ae-item-loupe[data-ae=\"item\"][data-value=\"loupe\"].btn",
+  "explique": "info-bulle : Loupe de fer · 0 ; lecteur d’écran : Loupe de fer, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lingot de fer 0",
+  "repere": "button#ae-item-lingot_fer[data-ae=\"item\"][data-value=\"lingot_fer\"].btn",
+  "explique": "info-bulle : Lingot de fer · 0 ; lecteur d’écran : Lingot de fer, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Plaque de fer 6",
+  "repere": "button#ae-item-plaque_fer[data-ae=\"item\"][data-value=\"plaque_fer\"].btn",
+  "explique": "info-bulle : Plaque de fer · 6 ; lecteur d’écran : Plaque de fer, 6 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Clous 9",
+  "repere": "button#ae-item-clous[data-ae=\"item\"][data-value=\"clous\"].btn",
+  "explique": "info-bulle : Clous · 9 ; lecteur d’écran : Clous, 9 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Outils de fer 1",
+  "repere": "button#ae-item-outils_fer[data-ae=\"item\"][data-value=\"outils_fer\"].btn",
+  "explique": "info-bulle : Outils de fer · 1 ; lecteur d’écran : Outils de fer, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Mine de fer 1",
+  "repere": "button#ae-item-galerie[data-ae=\"item\"][data-value=\"galerie\"].btn",
+  "explique": "info-bulle : Mine de fer · 1 ; lecteur d’écran : Mine de fer, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Enclos d’élevage 1",
+  "repere": "button#ae-item-enclos[data-ae=\"item\"][data-value=\"enclos\"].btn",
+  "explique": "info-bulle : Enclos d’élevage · 1 ; lecteur d’écran : Enclos d’élevage, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Verre 0",
+  "repere": "button#ae-item-verre[data-ae=\"item\"][data-value=\"verre\"].btn",
+  "explique": "info-bulle : Verre · 0 ; lecteur d’écran : Verre, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lentille 0",
+  "repere": "button#ae-item-lentille[data-ae=\"item\"][data-value=\"lentille\"].btn",
+  "explique": "info-bulle : Lentille · 0 ; lecteur d’écran : Lentille, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lunette astronomique 1",
+  "repere": "button#ae-item-lunette[data-ae=\"item\"][data-value=\"lunette\"].btn",
+  "explique": "info-bulle : Lunette astronomique · 1 ; lecteur d’écran : Lunette astronomique, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Brique réfractaire 0",
+  "repere": "button#ae-item-brique_refr[data-ae=\"item\"][data-value=\"brique_refr\"].btn",
+  "explique": "info-bulle : Brique réfractaire · 0 ; lecteur d’écran : Brique réfractaire, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Haut-fourneau 1",
+  "repere": "button#ae-item-haut_fourneau[data-ae=\"item\"][data-value=\"haut_fourneau\"].btn",
+  "explique": "info-bulle : Haut-fourneau · 1 ; lecteur d’écran : Haut-fourneau, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lingot d’acier 0",
+  "repere": "button#ae-item-lingot_acier[data-ae=\"item\"][data-value=\"lingot_acier\"].btn",
+  "explique": "info-bulle : Lingot d’acier · 0 ; lecteur d’écran : Lingot d’acier, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Bac de trempe 1",
+  "repere": "button#ae-item-bac_trempe[data-ae=\"item\"][data-value=\"bac_trempe\"].btn",
+  "explique": "info-bulle : Bac de trempe · 1 ; lecteur d’écran : Bac de trempe, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Acier trempé 0",
+  "repere": "button#ae-item-acier_trempe[data-ae=\"item\"][data-value=\"acier_trempe\"].btn",
+  "explique": "info-bulle : Acier trempé · 0 ; lecteur d’écran : Acier trempé, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lame trempée 0",
+  "repere": "button#ae-item-lame[data-ae=\"item\"][data-value=\"lame\"].btn",
+  "explique": "info-bulle : Lame trempée · 0 ; lecteur d’écran : Lame trempée, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Tour d’usinage 1",
+  "repere": "button#ae-item-tour[data-ae=\"item\"][data-value=\"tour\"].btn",
+  "explique": "info-bulle : Tour d’usinage · 1 ; lecteur d’écran : Tour d’usinage, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Piston 0",
+  "repere": "button#ae-item-piston[data-ae=\"item\"][data-value=\"piston\"].btn",
+  "explique": "info-bulle : Piston · 0 ; lecteur d’écran : Piston, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Engrenage d’acier 2",
+  "repere": "button#ae-item-engrenage_acier[data-ae=\"item\"][data-value=\"engrenage_acier\"].btn",
+  "explique": "info-bulle : Engrenage d’acier · 2 ; lecteur d’écran : Engrenage d’acier, 2 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Chaudière 0",
+  "repere": "button#ae-item-chaudiere[data-ae=\"item\"][data-value=\"chaudiere\"].btn",
+  "explique": "info-bulle : Chaudière · 0 ; lecteur d’écran : Chaudière, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Moteur à vapeur 0",
+  "repere": "button#ae-item-moteur_vapeur[data-ae=\"item\"][data-value=\"moteur_vapeur\"].btn",
+  "explique": "info-bulle : Moteur à vapeur · 0 ; lecteur d’écran : Moteur à vapeur, 0 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Presse à vapeur 2",
+  "repere": "button#ae-item-presse_vapeur[data-ae=\"item\"][data-value=\"presse_vapeur\"].btn",
+  "explique": "info-bulle : Presse à vapeur · 2 ; lecteur d’écran : Presse à vapeur, 2 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Scierie à vapeur 1",
+  "repere": "button#ae-item-scierie[data-ae=\"item\"][data-value=\"scierie\"].btn",
+  "explique": "info-bulle : Scierie à vapeur · 1 ; lecteur d’écran : Scierie à vapeur, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Bobine de cuivre 20",
+  "repere": "button#ae-item-bobine[data-ae=\"item\"][data-value=\"bobine\"].btn",
+  "explique": "info-bulle : Bobine de cuivre · 20 ; lecteur d’écran : Bobine de cuivre, 20 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Aimant 4",
+  "repere": "button#ae-item-aimant[data-ae=\"item\"][data-value=\"aimant\"].btn",
+  "explique": "info-bulle : Aimant · 4 ; lecteur d’écran : Aimant, 4 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Tablette des astres 1",
+  "repere": "button#ae-item-tablette[data-ae=\"item\"][data-value=\"tablette\"].btn",
+  "explique": "info-bulle : Tablette des astres · 1 ; lecteur d’écran : Tablette des astres, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "🪺 Rouissoir 2",
+  "repere": "button#ae-item-fibre_2[data-ae=\"item\"][data-value=\"fibre_2\"].btn",
+  "explique": "info-bulle : Rouissoir · 2 ; lecteur d’écran : Rouissoir, 2 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "🪨 Carrière à main 2",
+  "repere": "button#ae-item-caillou_1[data-ae=\"item\"][data-value=\"caillou_1\"].btn",
+  "explique": "info-bulle : Carrière à main · 2 ; lecteur d’écran : Carrière à main, 2 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "⛰️ Carrière à coins 1",
+  "repere": "button#ae-item-caillou_2[data-ae=\"item\"][data-value=\"caillou_2\"].btn",
+  "explique": "info-bulle : Carrière à coins · 1 ; lecteur d’écran : Carrière à coins, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "🧶 Fosse de tannage 1",
+  "repere": "button#ae-item-cuir_1[data-ae=\"item\"][data-value=\"cuir_1\"].btn",
+  "explique": "info-bulle : Fosse de tannage · 1 ; lecteur d’écran : Fosse de tannage, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Tannerie 1",
+  "repere": "button#ae-item-cuir_2[data-ae=\"item\"][data-value=\"cuir_2\"].btn",
+  "explique": "info-bulle : Tannerie · 1 ; lecteur d’écran : Tannerie, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "🕳️ Gravière 2",
+  "repere": "button#ae-item-silex_1[data-ae=\"item\"][data-value=\"silex_1\"].btn",
+  "explique": "info-bulle : Gravière · 2 ; lecteur d’écran : Gravière, 2 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "🏖️ Sablière 1",
+  "repere": "button#ae-item-sable_1[data-ae=\"item\"][data-value=\"sable_1\"].btn",
+  "explique": "info-bulle : Sablière · 1 ; lecteur d’écran : Sablière, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Mine d’étain 1",
+  "repere": "button#ae-item-cassiterite_1[data-ae=\"item\"][data-value=\"cassiterite_1\"].btn",
+  "explique": "info-bulle : Mine d’étain · 1 ; lecteur d’écran : Mine d’étain, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Mine de charbon 1",
+  "repere": "button#ae-item-charbon_2[data-ae=\"item\"][data-value=\"charbon_2\"].btn",
+  "explique": "info-bulle : Mine de charbon · 1 ; lecteur d’écran : Mine de charbon, 1 en stock",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Manche",
+  "repere": "button#ae-prepare-manche[data-ae=\"prepare\"][data-value=\"manche\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Manche",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-manche[data-ae=\"order\"][data-value=\"manche\"].btn",
+  "explique": "info-bulle : Fabriquer : Manche, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Corde",
+  "repere": "button#ae-prepare-corde[data-ae=\"prepare\"][data-value=\"corde\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Corde",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-corde[data-ae=\"order\"][data-value=\"corde\"].btn",
+  "explique": "info-bulle : Fabriquer : Corde, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Cabane de bûcheron",
+  "repere": "button#ae-prepare-cabane[data-ae=\"prepare\"][data-value=\"cabane\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Cabane de bûcheron",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-cabane[data-ae=\"order\"][data-value=\"cabane\"].btn",
+  "explique": "info-bulle : Fabriquer : Cabane de bûcheron, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Archet à feu",
+  "repere": "button#ae-prepare-archet[data-ae=\"prepare\"][data-value=\"archet\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Archet à feu",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-archet[data-ae=\"order\"][data-value=\"archet\"].btn",
+  "explique": "info-bulle : Fabriquer : Archet à feu, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Lanières",
+  "repere": "button#ae-prepare-laniere[data-ae=\"prepare\"][data-value=\"laniere\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Lanières",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-laniere[data-ae=\"order\"][data-value=\"laniere\"].btn",
+  "explique": "info-bulle : Fabriquer : Lanières, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Aiguille en os",
+  "repere": "button#ae-prepare-aiguille[data-ae=\"prepare\"][data-value=\"aiguille\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Aiguille en os",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-aiguille[data-ae=\"order\"][data-value=\"aiguille\"].btn",
+  "explique": "info-bulle : Fabriquer : Aiguille en os, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Éclat de silex",
+  "repere": "button#ae-prepare-eclat[data-ae=\"prepare\"][data-value=\"eclat\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Éclat de silex",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-eclat[data-ae=\"order\"][data-value=\"eclat\"].btn",
+  "explique": "info-bulle : Fabriquer : Éclat de silex, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Collets",
+  "repere": "button#ae-prepare-collets[data-ae=\"prepare\"][data-value=\"collets\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Collets",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-collets[data-ae=\"order\"][data-value=\"collets\"].btn",
+  "explique": "info-bulle : Fabriquer : Collets, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Argilière",
+  "repere": "button#ae-prepare-nasse[data-ae=\"prepare\"][data-value=\"nasse\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Argilière",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-nasse[data-ae=\"order\"][data-value=\"nasse\"].btn",
+  "explique": "info-bulle : Fabriquer : Argilière, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Hutte de bûcheron",
+  "repere": "button#ae-prepare-hutte[data-ae=\"prepare\"][data-value=\"hutte\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Hutte de bûcheron",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-hutte[data-ae=\"order\"][data-value=\"hutte\"].btn",
+  "explique": "info-bulle : Fabriquer : Hutte de bûcheron, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Torche",
+  "repere": "button#ae-prepare-torche[data-ae=\"prepare\"][data-value=\"torche\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Torche",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-torche[data-ae=\"order\"][data-value=\"torche\"].btn",
+  "explique": "info-bulle : Fabriquer : Torche, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Meule de charbonnier",
+  "repere": "button#ae-prepare-charbonniere[data-ae=\"prepare\"][data-value=\"charbonniere\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Meule de charbonnier",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-charbonniere[data-ae=\"order\"][data-value=\"charbonniere\"].btn",
+  "explique": "info-bulle : Fabriquer : Meule de charbonnier, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Mine de cuivre",
+  "repere": "button#ae-prepare-puits[data-ae=\"prepare\"][data-value=\"puits\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Mine de cuivre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-puits[data-ae=\"order\"][data-value=\"puits\"].btn",
+  "explique": "info-bulle : Fabriquer : Mine de cuivre, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fil de cuivre",
+  "repere": "button#ae-prepare-fil_cuivre[data-ae=\"prepare\"][data-value=\"fil_cuivre\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Fil de cuivre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-fil_cuivre[data-ae=\"order\"][data-value=\"fil_cuivre\"].btn",
+  "explique": "info-bulle : Fabriquer : Fil de cuivre, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Rouissoir",
+  "repere": "button#ae-prepare-fibre_2[data-ae=\"prepare\"][data-value=\"fibre_2\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Rouissoir",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-fibre_2[data-ae=\"order\"][data-value=\"fibre_2\"].btn",
+  "explique": "info-bulle : Fabriquer : Rouissoir, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Carrière à coins",
+  "repere": "button#ae-prepare-caillou_2[data-ae=\"prepare\"][data-value=\"caillou_2\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Carrière à coins",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-caillou_2[data-ae=\"order\"][data-value=\"caillou_2\"].btn",
+  "explique": "info-bulle : Fabriquer : Carrière à coins, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Carrière à main",
+  "repere": "button#ae-prepare-caillou_1[data-ae=\"prepare\"][data-value=\"caillou_1\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Carrière à main",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-caillou_1[data-ae=\"order\"][data-value=\"caillou_1\"].btn",
+  "explique": "info-bulle : Fabriquer : Carrière à main, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fosse de tannage",
+  "repere": "button#ae-prepare-cuir_1[data-ae=\"prepare\"][data-value=\"cuir_1\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Fosse de tannage",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-cuir_1[data-ae=\"order\"][data-value=\"cuir_1\"].btn",
+  "explique": "info-bulle : Fabriquer : Fosse de tannage, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Sablière",
+  "repere": "button#ae-prepare-sable_1[data-ae=\"prepare\"][data-value=\"sable_1\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Sablière",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-sable_1[data-ae=\"order\"][data-value=\"sable_1\"].btn",
+  "explique": "info-bulle : Fabriquer : Sablière, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Gravière",
+  "repere": "button#ae-prepare-silex_1[data-ae=\"prepare\"][data-value=\"silex_1\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Gravière",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-silex_1[data-ae=\"order\"][data-value=\"silex_1\"].btn",
+  "explique": "info-bulle : Fabriquer : Gravière, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Mine d’étain",
+  "repere": "button#ae-prepare-cassiterite_1[data-ae=\"prepare\"][data-value=\"cassiterite_1\"].btn",
+  "explique": "info-bulle : Préparer les matières, le poste et l’outil pour : Mine d’étain",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Fabriquer",
+  "repere": "button#ae-order-cassiterite_1[data-ae=\"order\"][data-value=\"cassiterite_1\"].btn",
+  "explique": "info-bulle : Fabriquer : Mine d’étain, en préparant les composants manquants",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Aménager : 10 bois, 3 cordes, 4 pierres",
+  "repere": "button#ae-build-0[data-ae=\"build\"][data-value=\"\"].btn",
+  "explique": "info-bulle : Aménager l’établi pour accueillir un ouvrier",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Embaucher · 3,13 écus",
+  "repere": "button#ae-hire-0[data-ae=\"hire\"][data-value=\"\"].btn",
+  "explique": "info-bulle : Recruter un ouvrier avec les écus de ta bourse",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Vendre le surplus maintenant",
+  "repere": "button#ae-sell-0[data-ae=\"sell\"][data-value=\"\"].btn",
+  "explique": "info-bulle : Vendre les lanières au-delà de ta réserve et recevoir le montant après taxe",
   "tag": "button"
  },
  {
@@ -1330,7 +2410,7 @@
  {
   "partie": "avancée",
   "ecran": "Arbre",
-  "label": "Toutes 83",
+  "label": "Toutes 85",
   "repere": "button[data-arb-f=\"tout\"]",
   "explique": "info-bulle : Afficher toutes les pastilles",
   "tag": "button"
@@ -1365,6 +2445,14 @@
   "label": "??",
   "repere": "button[data-arbsel=\"f1\"][data-arbn=\"f1\"].arb-pas.fantome",
   "explique": "info-bulle : Ouvrir : ses ingrédients et ses usages ; lecteur d’écran : Recette à découvrir, à découvrir, objectif",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Arbre",
+  "label": "✕",
+  "repere": "button.toast-x",
+  "explique": "lecteur d’écran : Fermer",
   "tag": "button"
  },
  {
@@ -1530,7 +2618,7 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Voir les 19 objets déjà possédés",
+  "label": "Voir les 21 objets déjà possédés",
   "repere": "button[data-owned=\"\"].btn.ghost",
   "explique": "info-bulle : Masquer ou montrer les objets déjà fabriqués",
   "tag": "button"
@@ -1565,14 +2653,6 @@
   "label": "Questions",
   "repere": "button[data-jt=\"questions\"]",
   "explique": "info-bulle : Ce que tu peux demander au Livre",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Journal",
-  "label": "Signes",
-  "repere": "button[data-jt=\"signes\"]",
-  "explique": "info-bulle : Les mots des Anciens et leur sens",
   "tag": "button"
  },
  {
@@ -1621,14 +2701,6 @@
   "label": "Réfléchir : 45 (manque d’Intuition)",
   "repere": "button[data-askhelp=\"q_porte\"].btn.dis",
   "explique": "info-bulle : Il te manque de l’Intuition : elle vient des recettes, des fragments et des secrets",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Journal · signes",
-  "label": "1 endroit",
-  "repere": "button[data-s=\"faire\"].signe-card",
-  "explique": "info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais",
   "tag": "button"
  },
  {

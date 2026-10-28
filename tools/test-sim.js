@@ -24,16 +24,18 @@ test("non-régression : 30 min sans option", () => {
 });
 test("non-régression : 30 min avec une mémoire", () => {
   assert.deepStrictEqual(lignes(jouer("--minutes", "30", "--mem", "recolte=2,extr=2,mains=2")),
-    [["plaine", 0.785, 2, 0], ["riviere", 6.743, 5, 0], ["collines", 13.11, 10, 0], ["mine", 21.393, 18, 0], ["desert", 28.46, 30, 0]]);
+    [["plaine", 0.785, 2, 0], ["riviere", 6.727, 5, 0], ["collines", 13.143, 10, 0], ["mine", 26.277, 18, 0]]);
 });
 test("non-régression : --offline 2 après chaque passage", () => {
   const r = jouer("--minutes", "40", "--offline", "2");
-  assert.deepStrictEqual(lignes(r), [["plaine", 5.835, 2, 0], ["riviere", 11.035, 5, 0], ["collines", 27.86, 10, 0]]);
+  assert.deepStrictEqual(lignes(r), [["plaine", 5.835, 2, 0], ["riviere", 11.035, 5, 0], ["collines", 27.877, 10, 0]]);
   assert.strictEqual(Math.round(r.absent), 6, "trois passages, deux heures chacun : six heures d’absence");
 });
 test("non-régression : deux cycles", () => {
   const r = jouer("--minutes", "20", "--cycles", "2");
-  assert.deepStrictEqual(r.cycles.map((c) => c.rows.map((x) => [x.z, r3(x.t)])), [[["plaine", 5.835], ["riviere", 17.485]], [["plaine", 1.427], ["riviere", 14.468]]]);
+  // La Lisière est maîtrisée au premier cycle : +5 % de débit transmis au second.
+  assert.strictEqual(r.E.state.meta.terres.lisiere, 1);
+  assert.deepStrictEqual(r.cycles.map((c) => c.rows.map((x) => [x.z, r3(x.t)])), [[["plaine", 5.835], ["riviere", 17.485]], [["plaine", 1.418], ["riviere", 15.185]]]);
 });
 
 test("les types de joueur sont bien formés", () => {

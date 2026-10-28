@@ -411,6 +411,7 @@
         if (t.closest("[data-open-quests]")) { A.click(); openQuestsModal(); return; }
         if (t.closest("[data-miles]")) { A.click(); openMilestones(); return; }
         if (t.closest("[data-cycle]")) { A.click(); openMemoire(); return; }
+        if (t.closest("[data-releve], [data-m='releve']")) { A.click(); if (U.mcur) closeModal(); confirmCycle(); return; }
         if (t.closest("[data-dons]")) { A.click(); openDons(); return; }
         if ((b = t.closest("[data-pour]"))) { pour(b.dataset.pour, b); return; }
         if ((b = t.closest("[data-gotab]"))) { A.click(); setTab(b.dataset.gotab); return; }

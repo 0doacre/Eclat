@@ -207,6 +207,7 @@
             ? "<p>Tu gagnes <b>" + totalGain + " ✦ Trace" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg
             : leftHTML(totalGain, ecus, ecusTr)) +
           '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (Menu → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
+          E.territoiresTransmissionHTML(esc) +
           releveExtrasHTML() +
           '<div class="acts"><button class="btn" data-m="close">Pas encore</button><button class="btn pri" data-m="go">Passer le relais ✦</button>' + releveBtnSigne() + '</div>',
         onOpen: armTrait,
@@ -340,6 +341,7 @@
         : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
         (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : nextPassHTML()) + "</div>";
       h += memArbreHTML();
+      h += E.territoiresTransmissionHTML(esc);
       h += '<details class="mem-liste"><summary>Voir en liste</summary>';
       h += '<div class="mems">' + D.MEMOIRE.map((x) => {
         const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
@@ -409,6 +411,8 @@
       if (signes) keep.push("<b>" + signes + "</b> signe" + (signes > 1 ? "s" : "") + " compris");
       if (memLv) keep.push("<b>" + memLv + "</b> niveau" + (memLv > 1 ? "x" : "") + " de la Mémoire des mains");
       if (ech) keep.push("<b>" + ech + "</b> Écho" + (ech > 1 ? "s" : "") + " : +" + ech * 50 + " % de récolte et de production");
+      const terres = E.terresMaitrise().filter(t => t.bonus || t.gagne);
+      if (terres.length) keep.push("La maîtrise transmise de <b>" + terres.length + "</b> terre" + (terres.length > 1 ? "s" : "") + " : bonus permanents de production");
       const reset = ["Ta Réserve"];
       if (n("ext")) reset.push("Tes <b>" + n("ext") + "</b> extracteur" + (n("ext") > 1 ? "s" : "") + " : ils restent en ruine, à réparer pour une fraction de leur coût");
       if (n("mach")) reset.push("Tes <b>" + n("mach") + "</b> machine" + (n("mach") > 1 ? "s" : ""));
@@ -437,6 +441,7 @@
         '<div class="rel-h">Tu gardes</div>' + listeHTML("rel-keep", keep) +
         '<div class="rel-h">Repart de zéro</div>' + listeHTML("rel-reset", reset) + "</div>" +
         '<p class="small">À chaque relève, tu repars plus vite : tu connais déjà tes recettes, et la Mémoire des mains garde tes améliorations.</p>' +
+        E.territoiresTransmissionHTML(esc) +
         releveExtrasHTML() +
         '<div class="acts"><button class="btn pri wide" data-m="go">Passer le relais</button>' + releveBtnSigne() + "</div>";
     }
