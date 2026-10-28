@@ -1108,14 +1108,16 @@
       if (!h.jobs.length) return '<span class="hh">✋</span><span class="grow tiny muted">Aucune commande en cours.</span>';
       const j = h.jobs[0], it = I[j.id];
       const missTxt = jobMissTag(j);
-      const what = missTxt ? '<span style="color:var(--bad)">' + esc(missTxt) + "</span>"
+      const what = j.paused ? '<span class="paused" style="color:var(--muted);font-weight:bold">⏸ En pause</span>'
+        : missTxt ? '<span style="color:var(--bad)">' + esc(missTxt) + "</span>"
         : j.wait ? '<span style="color:var(--bad)">en attente de mains ou de machines</span>'
         : j.steps.length > 1 ? "étape " + (j.i + 1) + "/" + j.steps.length + " · " + esc(I[j.step].n) : E.isUnique(it) ? "" : fmt(j.done) + "/" + fmt(j.n);
       const pct = Math.min(100, 100 * (j.frac || 0));
+      const timeTxt = j.paused ? '<span class="tiny muted" data-hl="0">⏸ En pause</span>' : '<span class="tiny muted" data-hl="0">' + fmtTime(j.left) + "</span>";
       return '<span class="hh">✋</span>' + icon(j.id, "sm") + '<div class="grow hmain" data-hopen><div class="small ell"><b>' + esc(it.n) + "</b>" + (E.isUnique(it) ? "" : " ×" + fmt(j.n)) +
         ' <span class="tiny muted">' + what + '</span></div><div class="bar"><i data-hp style="width:' + pct.toFixed(1) + '%"></i></div></div>' +
-        '<span class="tiny muted" data-hl="0">' + fmtTime(j.left) + "</span>" + (h.jobs.length > 1 ? '<button class="hmore" data-hopen>+' + (h.jobs.length - 1) + "</button>" : "") +
-        '<button class="hx" data-hcancel="0" aria-label="Annuler">✕</button>';
+        timeTxt + (h.jobs.length > 1 ? '<button class="hmore" data-hopen title="Voir toutes les commandes">+' + (h.jobs.length - 1) + "</button>" : "") +
+        '<button class="hx" data-hcancel="' + esc(j.uid || 0) + '" aria-label="Annuler" title="Annuler cette commande">✕</button>';
     }
     /* ------------------------------------------------------------ l’action qui tourne */
     function startHarvest(key) {
@@ -1136,9 +1138,9 @@
       let sig, frac, line;
       if (hi.jobs.length) {
         const j = hi.jobs[0], w = jobWorkersTag(j), miss = jobMissTag(j);
-        sig = "j:" + j.id + ":" + j.n + ":" + w + ":" + miss + ":" + hi.jobs.length + (a ? ":h" : "");
-        frac = j.frac !== undefined ? j.frac : (j.tot ? 1 - j.left / j.tot : 0);
-        line = E.isUnique(I[j.id]) ? fmtTime(j.left) : fmt(j.done) + "/" + fmt(j.n) + (miss ? " · " + miss : "");
+        sig = "j:" + (j.uid || j.id) + ":" + (j.paused ? "p" : "a") + ":" + j.n + ":" + w + ":" + miss + ":" + hi.jobs.length + (a ? ":h" : "");
+        frac = j.frac !== undefined ? j.frac : (j.tot ? 1 - (j.left || 0) / j.tot : 0);
+        line = j.paused ? "⏸ En pause" : (E.isUnique(I[j.id]) ? fmtTime(j.left) : fmt(j.done) + "/" + fmt(j.n) + (miss ? " · " + miss : ""));
       } else {
         sig = "h:" + a.z + ":" + a.res; frac = a.frac; line = "+" + fmt(a.got);
       }
@@ -1149,6 +1151,7 @@
           const j = hi.jobs[0], w = jobWorkersTag(j);
           ic = icon(j.id, "sm");
           name = "Commande · " + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n)) +
+            (j.paused ? ' <span class="tiny" style="color:var(--muted)">[⏸ En pause]</span>' : "") +
             (w ? " · " + esc(w) : "") +
             (hi.jobs.length > 1 ? ' <span class="tiny muted">+' + (hi.jobs.length - 1) + "</span>" : "");
         } else {
@@ -1179,20 +1182,29 @@
     /* la liste des commandes en détail : ce qui est en cours, qui y travaille, ce qui manque, et de quoi annuler */
     function handsSheet() {
       const hi = E.handInfo();
-      if (!hi.jobs.length) return '<div class="kicker">Commandes</div><h2>Aucune commande en cours</h2><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
-      return '<div class="kicker">Commandes</div><h2>' + (hi.left > 0 ? "Fin estimée dans ~" + fmtTime(hi.left) : "Commandes en cours") + '</h2><div class="picklist">' +
+      const aideBtn = '<button type="button" class="btn-aide mini" data-aide="commandes" title="Comprendre les commandes et réservations" aria-label="Comprendre les commandes et réservations">?</button>';
+      if (!hi.jobs.length) return '<div class="kicker">Commandes ' + aideBtn + '</div><h2>Aucune commande en cours</h2><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+      const activeJobs = hi.jobs.filter((j) => !j.paused);
+      const title = hi.left > 0 ? "Fin estimée dans ~" + fmtTime(hi.left) : (activeJobs.length === 0 ? "Toutes les commandes sont en pause" : "Commandes en cours");
+      return '<div class="kicker">Commandes ' + aideBtn + '</div><h2>' + title + '</h2><div class="picklist">' +
         hi.jobs.map((j, i) => {
           const w = jobWorkersTag(j), miss = jobMissTag(j);
           const sub = [];
-          if (w) sub.push(w);
+          if (j.paused) sub.push("⏸ en pause");
+          else if (w) sub.push(w);
           if (miss) sub.push(miss);
+          else if (j.paused) sub.push("matières réservées conservées");
           else if (j.wait) sub.push("en attente de mains ou de machines");
           else sub.push("fin estimée dans ~" + fmtTime(i ? j.at : j.left));
           // ce qui bloque : d’où vient la ressource qui manque, et un accès à son gisement
           const lim = Object.keys(j.miss || {}).filter((k) => j.miss[k] > 1e-9).slice(0, 2).map((k) => limitHTML(k, j.miss[k])).join("");
-          return '<div class="pick">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
+          const prioBtn = i > 0 ? '<button class="mini" data-m="hprio" data-uid="' + esc(j.uid) + '" title="Passer en tête de file sans changer les ingrédients" aria-label="Passer en priorité">⭡ Priorité</button>' : '';
+          const pauseBtn = '<button class="mini" data-m="hpause" data-uid="' + esc(j.uid) + '" title="' + (j.paused ? "Reprendre la fabrication" : "Mettre en pause et libérer les ouvriers") + '" aria-label="' + (j.paused ? "Reprendre" : "Mettre en pause") + '">' + (j.paused ? "▶ Reprendre" : "⏸ Pause") + '</button>';
+          return '<div class="pick' + (j.paused ? " paused" : "") + '">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
+            (j.paused ? ' <span class="tiny" style="color:var(--muted)">[En pause]</span>' : "") +
             '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span>" + lim + "</span>" +
-            '<button class="mini" data-m="hc" data-i="' + i + '" aria-label="Annuler">✕</button></div>';
+            '<div class="pick-acts">' + prioBtn + pauseBtn +
+            '<button class="mini" data-m="hc" data-uid="' + esc(j.uid) + '" data-i="' + i + '" aria-label="Annuler" title="Annuler la commande">✕</button></div></div>';
         }).join("") +
         '</div>' +
         (() => {
@@ -1200,15 +1212,44 @@
           if (!sugRel) return '';
           return '<div class="card acc releve-alerte" style="margin-top:10px;border-left:3px solid var(--acc)"><div class="small"><b>⏳ Commandes lentes :</b> ce Semeur approche du bout de son éveil. Passer le relais (+' + sugRel.gain + ' ✦) accélérera tes futures fabrications.</div><button class="btn pri small" style="margin-top:6px" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
         })() +
-        '<p class="tiny muted">Annuler une commande rend ses ressources à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+        '<p class="tiny muted">Mettre en pause conserve l’avancement et libère les mains. Annuler une commande rend ses matières réservées à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
     }
     function openHands() {
       openModal({
         html: handsSheet(), refresh: handsSheet,
         on: {
+          hprio: (b) => {
+            const uid = b.dataset.uid;
+            if (uid && E.prioritizeJob(uid)) {
+              A.click();
+              toast("Commande passée en priorité.");
+            }
+            const box = $("#modal .modal-box");
+            box.innerHTML = handsSheet(); iconize(box);
+            render(true);
+            return true;
+          },
+          hpause: (b) => {
+            const uid = b.dataset.uid;
+            if (uid) {
+              const res = E.togglePauseJob(uid);
+              const j = E.findJob(uid);
+              A.click();
+              if (j && j.paused) toast("Commande mise en pause. Mains et machines libérées.");
+              else toast("Commande reprise.");
+            }
+            const box = $("#modal .modal-box");
+            box.innerHTML = handsSheet(); iconize(box);
+            render(true);
+            return true;
+          },
           hc: (b) => {
-            const i = Number(b.dataset.i), j = S().hand.q[i];
-            if (j && E.cancelJob(i)) { A.click(); toast("Commande annulée : " + esc(I[j.id].n) + ". Ressources restituées."); }
+            const uid = b.dataset.uid;
+            const i = Number(b.dataset.i);
+            const target = uid || i;
+            const j = E.findJob ? E.findJob(target) : S().hand.q[i];
+            const name = j ? esc(I[j.id].n) : "en cours";
+            if (E.cancelJob(target)) { A.click(); toast("Commande annulée : " + name + ". Ressources restituées."); }
             const box = $("#modal .modal-box");
             box.innerHTML = handsSheet(); iconize(box);
             render(true);
@@ -1220,12 +1261,13 @@
     const handSig = () => S().hand.q.map((j) => j.id + ":" + j.i + ":" + j.k + ":" + (j.w ? 1 : 0) + ":" + JSON.stringify(j.miss)).join("|");
     function studyHTML(id) {
       const st = S();
+      const aideBtn = '<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des matières" aria-label="Comprendre l’étude des matières">?</button>';
       if (!st.studied[id]) {
         const c = E.studyCost(id);
-        return '<div class="study"><button class="btn small" data-m="study"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button><span class="tiny muted">Pour savoir avec quelles actions la tenter.</span></div>';
+        return '<div class="study"><button class="btn small" data-m="study"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button>' + aideBtn + '<span class="tiny muted">Pour savoir avec quelles actions la tenter.</span></div>';
       }
       const r = E.reactions(id), gs = D.GESTE_ORDER.filter((g) => r[g]);
-      return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + gIc(g) + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
+      return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + aideBtn + ' ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + gIc(g) + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
         : '<span class="tiny muted">Rien de plus à tenter avec tes actions et tes ressources, pour l’instant.</span>') + "</div>";
     }
     /* Chemin complet vers une cible : échelle verticale des marches, de la plus profonde à la cible. */
@@ -1421,7 +1463,44 @@
             }
             if (E.automatable(id)) {
               const mneed = E.machFor(id);
-              if (mneed && I[mneed]) h += '<p class="small muted">Machine : ' + esc(I[mneed].n) + " ou mieux</p>";
+              if (mneed && I[mneed]) {
+                const pm = E.projectMachineOnRecipe ? E.projectMachineOnRecipe(mneed, id) : null;
+                const compTxt = pm ? ' · ' + fmtTime(pm.hTime) + ' aux mains → <b>' + fmtTime(pm.mTime) + ' en machine</b> (~' + fmtNum(pm.ratePerMin) + '/min)' : '';
+                h += '<p class="small muted">Machine : ' + esc(I[mneed].n) + " ou mieux" + compTxt + ' <span class="tiny dim">(dès qu’une machine libre y est affectée)</span></p>';
+              }
+            }
+            if (it.t === "ext") {
+              const ez = it.z || (E.extZones && E.extZones(id) && E.extZones(id)[0]);
+              const eres = Object.keys(it.p || {})[0];
+              if (ez && eres && E.zoneOpen(ez) && E.projectExtractor) {
+                const pe = E.projectExtractor(ez, eres, id, 1);
+                h += '<div class="card proj-box" style="margin:8px 0;padding:8px 10px;background:var(--bg-card,rgba(255,255,255,0.04));border-radius:6px">' +
+                  '<div class="tiny kicker" style="color:var(--pri)">Bénéfice mesuré · ' + esc(E.ZONES[ez].n) + '</div>' +
+                  '<div class="small"><b>' + esc(I[eres].n) + '</b> : débit actuel ' + perTime(pe.curRate) + ' → <b>' + perTime(pe.projRate) + '</b> (+' + perTime(pe.gainRate) + ')</div>' +
+                  (E.isScaled(it) ? '<div class="tiny muted">Coût réel pour le ' + fmt(E.count(id) + 1) + 'e exemplaire (croissance d’échelle incluse).</div>' : '') +
+                  '</div>';
+              }
+            }
+            if (it.t === "tool" && E.projectToolBenefit) {
+              const tb = E.projectToolBenefit(id);
+              if (tb && tb.list && tb.list.length) {
+                h += '<div class="card proj-box" style="margin:8px 0;padding:8px 10px;background:var(--bg-card,rgba(255,255,255,0.04));border-radius:6px">' +
+                  '<div class="tiny kicker" style="color:var(--pri)">Bénéfice mesuré</div>' +
+                  tb.list.map((b) => {
+                    if (b.curT !== undefined && b.projT !== undefined) {
+                      return '<div class="small">' + esc(b.n || b.recipe) + ' : <b>' + fmtTime(b.curT) + ' → ' + fmtTime(b.projT) + '</b> (' + b.mult + '× plus vite)</div>';
+                    }
+                    return '<div class="small">' + esc(b.label) + ' : <b>×' + b.mult + '</b></div>';
+                  }).join("") +
+                  '</div>';
+              }
+            }
+            if (it.t === "mach") {
+              h += '<div class="card proj-box" style="margin:8px 0;padding:8px 10px;background:var(--bg-card,rgba(255,255,255,0.04));border-radius:6px">' +
+                '<div class="tiny kicker" style="color:var(--pri)">Capacité de la machine</div>' +
+                '<div class="small">Automatise les recettes à ' + it.ing + ' ingrédient' + (it.ing > 1 ? 's' : '') + ' au plus · <b>' + fmtNum(it.spd) + ' op/min</b> dès qu’une commande lui est confiée.</div>' +
+                (E.isScaled(it) ? '<div class="tiny muted">Coût réel pour le ' + fmt(E.count(id) + 1) + 'e exemplaire (croissance d’échelle incluse).</div>' : '') +
+                '</div>';
             }
             if (!owned && !b) {
               h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +

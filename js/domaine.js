@@ -179,7 +179,9 @@
       }
       if (ch) {
         const free = E.freeExt(ch.t), can = free >= 1 || E.plan(ch.t, 1).ok;
-        btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
+        const pAdd = E.projectExtractor ? E.projectExtractor(z, res, ch.t, 1) : null;
+        const projTip = pAdd ? ' (débit : ' + perTime(pAdd.curRate) + ' → ' + perTime(pAdd.projRate) + ')' : '';
+        btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + esc(projTip) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
       }
       return '<div class="gis" data-gis="' + key + '">' +
         '<button class="gis-ic' + (d.hand ? " hand" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + icon(res) + "</button>" +
@@ -690,8 +692,17 @@
         h += '<p class="tiny muted">' + (L ? "<b>" + esc(L.n) + "</b> : " : "") + "un bâtiment par ressource, qui monte de niveau. Chaque exemplaire récolte seulement ce gisement ; « Améliorer » en remplace un par le niveau d’après.</p>";
         h += '<div class="sheet-rows">' + types.map((t) => {
           const own = us[t].own, free = own - us[t].used, cur = (e && e.u[t]) || 0, nx = E.extNext(t);
-          const up = cur && nx && S().known[nx] && I[nx].a <= S().age ? '<button class="mini lbl" data-m="eup" data-t="' + t + '" aria-label="Améliorer un exemplaire : ' + esc(I[nx].n) + '" style="margin-top:6px">↑ Niveau ' + I[nx].lv + "</button>" : "";
-          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small"><span class="tiny muted">Niveau ' + I[t].lv + "</span> " + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par exemplaire · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span>" + (up ? "<br>" + up : "") + "</span>" +
+          const pAdd = E.projectExtractor ? E.projectExtractor(z, res, t, 1) : null;
+          const pUp = cur && nx && S().known[nx] && E.projectExtractorUpgrade ? E.projectExtractorUpgrade(z, res, t) : null;
+          let up = "";
+          if (cur && nx && S().known[nx] && I[nx].a <= S().age) {
+            const upCostTxt = pUp ? (pUp.alreadyFree ? ' <span class="tiny" style="color:var(--good)">✓ disponible en réserve</span>' : ' <span class="tiny muted">· Coût : ' + Object.keys(pUp.cost).map((k) => itemPill(k, { qty: pUp.cost[k], lack: (S().inv[k] || 0) < pUp.cost[k] })).join(" ") + '</span>') : "";
+            const upRateTxt = pUp ? '<div class="tiny" style="margin-top:2px">Débit après amélioration : <b>' + perTime(pUp.curRate) + ' → ' + perTime(pUp.projRate) + '</b>' + upCostTxt + '</div>' : "";
+            up = '<button class="mini lbl" data-m="eup" data-t="' + t + '" aria-label="Améliorer un exemplaire : ' + esc(I[nx].n) + '" title="Remplacer 1 exemplaire par le niveau d’après (' + (pUp ? perTime(pUp.curRate) + ' → ' + perTime(pUp.projRate) : '') + ')" style="margin-top:6px">↑ Niveau ' + I[nx].lv + '</button>' + upRateTxt;
+          }
+          const addCostTxt = pAdd ? (pAdd.alreadyFree ? ' <span class="tiny" style="color:var(--good)">✓ 1 disponible à poser</span>' : ' <span class="tiny muted">· Coût cet exemplaire : ' + Object.keys(pAdd.cost).map((k) => itemPill(k, { qty: pAdd.cost[k], lack: (S().inv[k] || 0) < pAdd.cost[k] })).join(" ") + '</span>') : "";
+          const addRateTxt = pAdd ? '<div class="tiny" style="margin-top:2px">Débit : <b>' + perTime(pAdd.curRate) + ' → ' + perTime(pAdd.projRate) + '</b>' + addCostTxt + '</div>' : "";
+          return '<div class="u-row">' + icon(t, "sm") + '<span class="grow small"><span class="tiny muted">Niveau ' + I[t].lv + "</span> " + esc(I[t].n) + '<br><span class="tiny muted">' + perTime(E.extRate(t, res)) + " par exemplaire · " + (own ? "tu en as " + own + ", " + free + " à poser" : "à fabriquer : touche +") + "</span>" + addRateTxt + (up ? "<br>" + up : "") + "</span>" +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
