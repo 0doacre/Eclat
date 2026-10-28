@@ -6,6 +6,7 @@
   "use strict";
 
   const ITEMS = {
+    metal_mercure: "assets/carnet/items/metal_mercure.webp",
     // Âge du Bois (indice 0)
     bois: "assets/carnet/items/bois.webp",
     fibre: "assets/carnet/items/fibre.webp",
@@ -42,6 +43,7 @@
   };
 
   const SOURCES = {
+    eau: "assets/carnet/sources/source_eau.webp",
     // Sources de la Forêt (Âge du Bois)
     bois: "assets/carnet/sources/source_bois.webp",
     fibre: "assets/carnet/sources/source_fibre.webp",

@@ -25,6 +25,7 @@
   <link id="vivantStylesheet" rel="stylesheet" href="css/domaine-vivant.css">
   <link rel="stylesheet" href="css/atelier-equipe.css">
   <link rel="stylesheet" href="css/atelier-dessine.css">
+  <link rel="stylesheet" href="css/carnet-peint.css">
 </head>
 <body>
   <div id="app">
@@ -93,6 +94,7 @@
 
         const game = window.__eclat;
         if (game) {
+          if (game.applyTheme) game.applyTheme();
           game.render(true);
           const map = document.querySelector("#v-carte .carte-svg");
           const views = document.getElementById("views");
@@ -106,14 +108,14 @@
 
         if (mode === "atlas") {
           button.textContent = "Atlas";
-          button.setAttribute("aria-label", "Activer le style Vivant immersif");
+          button.setAttribute("aria-label", "Activer le Carnet du Semeur");
           button.setAttribute("aria-pressed", "true");
-          button.title = "Style Atlas actif — toucher pour Vivant";
+          button.title = "Style Atlas actif — toucher pour Carnet";
         } else if (mode === "vivant") {
-          button.textContent = "Vivant";
+          button.textContent = "Carnet";
           button.setAttribute("aria-label", "Revenir au style classique");
           button.setAttribute("aria-pressed", "true");
-          button.title = "Style Vivant actif — toucher pour Classique";
+          button.title = "Carnet du Semeur actif — toucher pour Classique";
         } else {
           button.textContent = "Class.";
           button.setAttribute("aria-label", "Activer le style Atlas vivant");
