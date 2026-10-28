@@ -309,6 +309,14 @@
           content = "•";
           p.style.color = "#ecc94b";
           p.style.fontSize = (12 + Math.random() * 6) + "px";
+        } else if (res === "os") {
+          content = Math.random() > 0.4 ? "🦴" : "•";
+          p.style.color = "#e5dfd3";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
+        } else if (res === "cuir") {
+          content = Math.random() > 0.4 ? "🌾" : "•";
+          p.style.color = "#c29b68";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
         } else {
           content = "✦";
           p.style.color = "#ffd36b";
