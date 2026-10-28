@@ -288,3 +288,222 @@
   border-color: #fff;
   box-shadow: 0 0 16px rgba(255, 211, 107, 0.7);
 }
+
+/* Maintien continu sur l'entité vivante (récolte appuyée) */
+[data-style-mode="vivant"] .gis-ic.gis-ic-vivant.holding {
+  animation: vivant-holding-exertion 0.16s ease-in-out infinite alternate;
+  box-shadow: 0 0 16px rgba(255, 211, 107, 0.45), inset 0 0 12px rgba(255, 211, 107, 0.2);
+  border-color: #ffd36b;
+}
+
+@keyframes vivant-holding-exertion {
+  0% { transform: scale(0.93) rotate(-1.5deg); }
+  100% { transform: scale(0.91) rotate(1.5deg); }
+}
+
+/* Gisements automatisés en production active */
+[data-style-mode="vivant"] .gis.gis-producing {
+  border-left: 3px solid var(--good);
+}
+
+[data-style-mode="vivant"] .gis.gis-producing .dom-rate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+[data-style-mode="vivant"] .gis.gis-producing .dom-rate::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--good);
+  box-shadow: 0 0 8px var(--good);
+  animation: vivant-pulse-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes vivant-pulse-dot {
+  0%, 100% { transform: scale(0.85); opacity: 0.6; }
+  50% { transform: scale(1.25); opacity: 1; }
+}
+
+/* Entêtes de Terres et paysages en Mode Vivant */
+[data-style-mode="vivant"] .dom-th {
+  padding-block: 6px 8px;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--acc) 25%, var(--line2));
+}
+
+[data-style-mode="vivant"] .dom-th h3 {
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+[data-style-mode="vivant"] .dom-terre.a-decor::before {
+  opacity: 0.32;
+  filter: saturate(1.2);
+}
+
+body.theme-dark[data-style-mode="vivant"] .dom-terre.a-decor::before {
+  opacity: 0.42;
+  filter: saturate(1.3);
+}
+
+/* Barre de fabrication et progression vivante dans l'Atelier */
+[data-style-mode="vivant"] #actbar {
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+  border: 1px solid color-mix(in srgb, var(--acc) 40%, var(--line2));
+}
+
+[data-style-mode="vivant"] #actbar .ab-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  position: relative;
+}
+
+[data-style-mode="vivant"] #actbar .ab-bar i {
+  position: relative;
+  background: linear-gradient(90deg, var(--acc), #ffd36b);
+  box-shadow: 0 0 10px rgba(255, 211, 107, 0.5);
+  border-radius: 999px;
+  transition: width 0.15s ease-out;
+}
+
+[data-style-mode="vivant"] #actbar .ab-bar i::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background: #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 0 8px #ffffff;
+  animation: vivant-bar-lead 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes vivant-bar-lead {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* ------------------------------------------------------------ Illustrations du Carnet du Semeur (Mode Vivant) */
+[data-style-mode="vivant"] .ic.carnet-ic {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-style-mode="vivant"] .carnet-ic .carnet-img {
+  max-width: 86%;
+  max-height: 86%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Formats spécifiques */
+[data-style-mode="vivant"] .ic.sm.carnet-ic .carnet-img {
+  max-width: 88%;
+  max-height: 88%;
+}
+
+[data-style-mode="vivant"] .slot .ic.carnet-ic .carnet-img {
+  max-width: 88%;
+  max-height: 88%;
+}
+
+[data-style-mode="vivant"] .ic.lg.carnet-ic .carnet-img {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+[data-style-mode="vivant"] .ic.xl.carnet-ic .carnet-img {
+  max-width: 92%;
+  max-height: 92%;
+}
+
+/* Sujets allongés (manche, épieu) : préserver les proportions naturelles sans étirement */
+[data-style-mode="vivant"] .carnet-ic[data-item="epieu"] .carnet-img,
+[data-style-mode="vivant"] .carnet-ic[data-item="manche"] .carnet-img {
+  transform: rotate(-12deg);
+  max-width: 92%;
+  max-height: 92%;
+}
+
+/* Lisibilité du charbon en thème sombre */
+body.theme-dark .carnet-ic[data-item="charbon"] {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 62%, transparent 75%);
+}
+
+body.theme-dark .carnet-ic[data-item="charbon"] .carnet-img {
+  filter: drop-shadow(0 0 1px rgba(255, 240, 220, 0.35)) contrast(1.1) brightness(1.18);
+}
+
+/* Sources de récolte illustrées du Carnet dans le Domaine */
+[data-style-mode="vivant"] .living-carnet-img {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Les sources végétales sont montrées généreusement */
+[data-style-mode="vivant"] .living-carnet-img.source-bois {
+  width: 74px;
+  height: 74px;
+}
+
+[data-style-mode="vivant"] .living-carnet-img.source-fibre {
+  width: 72px;
+  height: 72px;
+}
+
+[data-style-mode="vivant"] .living-carnet-img.source-caillou {
+  width: 66px;
+  height: 66px;
+}
+
+/* Animations de repos des sources illustrées */
+@media (prefers-reduced-motion: no-preference) {
+  [data-style-mode="vivant"] .living-carnet-img.source-bois {
+    transform-origin: 50% 88%;
+    animation: vivant-tree-breathe 4.5s ease-in-out infinite;
+  }
+
+  [data-style-mode="vivant"] .living-carnet-img.source-fibre {
+    transform-origin: 50% 92%;
+    animation: vivant-fiber-sway 3.4s ease-in-out infinite;
+  }
+
+  [data-style-mode="vivant"] .living-carnet-img.source-caillou {
+    transform-origin: 50% 80%;
+  }
+
+  /* Animations d'impact lors de la récolte */
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-bois {
+    animation: vivant-tree-chop 0.38s cubic-bezier(0.25, 1.4, 0.5, 1) !important;
+  }
+
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-fibre {
+    animation: vivant-fiber-reap 0.4s cubic-bezier(0.25, 1.3, 0.5, 1) !important;
+  }
+
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-caillou {
+    animation: vivant-rock-smash 0.32s cubic-bezier(0.2, 1.5, 0.4, 1) !important;
+  }
+}
