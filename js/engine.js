@@ -5284,6 +5284,7 @@
     if (D.CRAFT_EQUIPMENT) (root.EclatEquipements || require("./equipements.js")).attach(E);
     (root.EclatTransmission || require("./transmission.js")).attach(E);
     Territoires.attach(E);
+    (root.EclatReprise || require("./reprise.js")).attach(E, createEngine);
     recalc();
     return E;
   }

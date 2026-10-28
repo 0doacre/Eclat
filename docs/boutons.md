@@ -97,7 +97,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Voir : Torche | `button[data-goto="torche"].btn` | guide (.dom-regle.gene) |
 | avancée | Maîtrise · 80 % | `summary` | info-bulle : Voir les objectifs de cette terre et son bonus à la relève |
 | avancée | (sans mot) | `button[data-harv="mine:fer_min"].gis-ic.hand` | lecteur d’écran : Récolter : Minerai de fer |
-| avancée | Minerai de fer +48/min Tu en as 544 · 1 mine de fer | `button[data-gsheet="mine:fer_min"].gis-body` | lecteur d’écran : Gisement : Minerai de fer |
+| avancée | Minerai de fer +48/min Tu en as 543 · 1 mine de fer | `button[data-gsheet="mine:fer_min"].gis-body` | lecteur d’écran : Gisement : Minerai de fer |
 | avancée | ▶ Récolter | `button[data-hloop="mine:fer_min"].mini.harvest` | info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer |
 | avancée | + mine de fer | `button[data-xadd="mine:fer_min"][data-n="1"].mini.lbl` | info-bulle : Poser : Mine de fer ; lecteur d’écran : Poser : Mine de fer |
 | avancée | 3 autre terres · +2,16 k/min en tout voir ▾ | `button[data-dall=""].dom-more` | info-bulle : Afficher ou replier les autres terres |
@@ -106,7 +106,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Supraconducteur 0 / 380 | `div[data-goto="supra"].cost-row` | info-bulle : Supraconducteur (toucher pour inspecter) |
 | avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
 | avancée | Alimenté ✓ | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
-| avancée | Bois+16/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
+| avancée | Bois+14/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 | avancée | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | avancée | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | avancée | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
@@ -170,34 +170,34 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Pioche de pierre Équarrir | `button#ae-tool-pioche_pierre[data-ae="tool"][data-value="pioche_pierre"].btn` | info-bulle : Pioche de pierreÉquarrir ; guide (.ae-tools) |
 | avancée | Ciseau de cuivre Refendre | `button#ae-tool-ciseau[data-ae="tool"][data-value="ciseau"].btn` | info-bulle : Ciseau de cuivreRefendre ; guide (.ae-tools) |
 | avancée | Étudier les matières · 70 | `button#ae-study-0[data-ae="study"][data-value=""].btn.ghost` | info-bulle : Étudier les matières déjà vues en dépensant l’Intuition indiquée |
-| avancée | Bois 8,80 k | `button#ae-item-bois[data-ae="item"][data-value="bois"].btn` | info-bulle : Bois · 8 806,291 ; lecteur d’écran : Bois, 8 806,291 en stock ; guide (#ae-item-bois) |
-| avancée | Fibres 6,43 k | `button#ae-item-fibre[data-ae="item"][data-value="fibre"].btn` | info-bulle : Fibres · 6 434,795 ; lecteur d’écran : Fibres, 6 434,795 en stock |
-| avancée | Pierre 4,21 k | `button#ae-item-caillou[data-ae="item"][data-value="caillou"].btn` | info-bulle : Pierre · 4 218,397 ; lecteur d’écran : Pierre, 4 218,397 en stock |
+| avancée | Bois 8,80 k | `button#ae-item-bois[data-ae="item"][data-value="bois"].btn` | info-bulle : Bois · 8 805,684 ; lecteur d’écran : Bois, 8 805,684 en stock ; guide (#ae-item-bois) |
+| avancée | Fibres 6,43 k | `button#ae-item-fibre[data-ae="item"][data-value="fibre"].btn` | info-bulle : Fibres · 6 434,471 ; lecteur d’écran : Fibres, 6 434,471 en stock |
+| avancée | Pierre 4,21 k | `button#ae-item-caillou[data-ae="item"][data-value="caillou"].btn` | info-bulle : Pierre · 4 218,194 ; lecteur d’écran : Pierre, 4 218,194 en stock |
 | avancée | Manche 134 | `button#ae-item-manche[data-ae="item"][data-value="manche"].btn` | info-bulle : Manche · 134 ; lecteur d’écran : Manche, 134 en stock |
 | avancée | Corde 4 | `button#ae-item-corde[data-ae="item"][data-value="corde"].btn` | info-bulle : Corde · 4 ; lecteur d’écran : Corde, 4 en stock |
 | avancée | Archet à feu 0 | `button#ae-item-archet[data-ae="item"][data-value="archet"].btn` | info-bulle : Archet à feu · 0 ; lecteur d’écran : Archet à feu, 0 en stock |
-| avancée | Charbon 1,35 k | `button#ae-item-charbon[data-ae="item"][data-value="charbon"].btn` | info-bulle : Charbon · 1 351,465 ; lecteur d’écran : Charbon, 1 351,465 en stock |
+| avancée | Charbon 1,35 k | `button#ae-item-charbon[data-ae="item"][data-value="charbon"].btn` | info-bulle : Charbon · 1 351,38 ; lecteur d’écran : Charbon, 1 351,38 en stock |
 | avancée | Épieu durci 1 | `button#ae-item-epieu[data-ae="item"][data-value="epieu"].btn` | info-bulle : Épieu durci · 1 ; lecteur d’écran : Épieu durci, 1 en stock |
 | avancée | Cabane de bûcheron 0 | `button#ae-item-cabane[data-ae="item"][data-value="cabane"].btn` | info-bulle : Cabane de bûcheron · 0 ; lecteur d’écran : Cabane de bûcheron, 0 en stock |
 | avancée | Torche 0 | `button#ae-item-torche[data-ae="item"][data-value="torche"].btn` | info-bulle : Torche · 0 ; lecteur d’écran : Torche, 0 en stock |
-| avancée | Os 2,85 k | `button#ae-item-os[data-ae="item"][data-value="os"].btn` | info-bulle : Os · 2 854,998 ; lecteur d’écran : Os, 2 854,998 en stock |
-| avancée | Peau 2,16 k | `button#ae-item-cuir[data-ae="item"][data-value="cuir"].btn` | info-bulle : Peau · 2 167,165 ; lecteur d’écran : Peau, 2 167,165 en stock |
+| avancée | Os 2,85 k | `button#ae-item-os[data-ae="item"][data-value="os"].btn` | info-bulle : Os · 2 854,863 ; lecteur d’écran : Os, 2 854,863 en stock |
+| avancée | Peau 2,16 k | `button#ae-item-cuir[data-ae="item"][data-value="cuir"].btn` | info-bulle : Peau · 2 167,052 ; lecteur d’écran : Peau, 2 167,052 en stock |
 | avancée | Aiguille en os 0 | `button#ae-item-aiguille[data-ae="item"][data-value="aiguille"].btn` | info-bulle : Aiguille en os · 0 ; lecteur d’écran : Aiguille en os, 0 en stock |
 | avancée | Lanières 0 | `button#ae-item-laniere[data-ae="item"][data-value="laniere"].btn` | info-bulle : Lanières · 0 ; lecteur d’écran : Lanières, 0 en stock |
 | avancée | Outre en peau 1 | `button#ae-item-outre[data-ae="item"][data-value="outre"].btn` | info-bulle : Outre en peau · 1 ; lecteur d’écran : Outre en peau, 1 en stock |
 | avancée | Collets 1 | `button#ae-item-collets[data-ae="item"][data-value="collets"].btn` | info-bulle : Collets · 1 ; lecteur d’écran : Collets, 1 en stock |
 | avancée | Tunique de peau 1 | `button#ae-item-tunique[data-ae="item"][data-value="tunique"].btn` | info-bulle : Tunique de peau · 1 ; lecteur d’écran : Tunique de peau, 1 en stock |
-| avancée | Argile 1,10 k | `button#ae-item-argile[data-ae="item"][data-value="argile"].btn` | info-bulle : Argile · 1 101,799 ; lecteur d’écran : Argile, 1 101,799 en stock |
-| avancée | Silex 1,68 k | `button#ae-item-silex[data-ae="item"][data-value="silex"].btn` | info-bulle : Silex · 1 681,099 ; lecteur d’écran : Silex, 1 681,099 en stock |
-| avancée | Sable 1,24 k | `button#ae-item-sable[data-ae="item"][data-value="sable"].btn` | info-bulle : Sable · 1 244,799 ; lecteur d’écran : Sable, 1 244,799 en stock |
+| avancée | Argile 1,10 k | `button#ae-item-argile[data-ae="item"][data-value="argile"].btn` | info-bulle : Argile · 1 101,738 ; lecteur d’écran : Argile, 1 101,738 en stock |
+| avancée | Silex 1,68 k | `button#ae-item-silex[data-ae="item"][data-value="silex"].btn` | info-bulle : Silex · 1 681,018 ; lecteur d’écran : Silex, 1 681,018 en stock |
+| avancée | Sable 1,24 k | `button#ae-item-sable[data-ae="item"][data-value="sable"].btn` | info-bulle : Sable · 1 244,738 ; lecteur d’écran : Sable, 1 244,738 en stock |
 | avancée | Éclat de silex 0 | `button#ae-item-eclat[data-ae="item"][data-value="eclat"].btn` | info-bulle : Éclat de silex · 0 ; lecteur d’écran : Éclat de silex, 0 en stock |
 | avancée | Automate de bois 4 | `button#ae-item-automate_bois[data-ae="item"][data-value="automate_bois"].btn` | info-bulle : Automate de bois · 4 ; lecteur d’écran : Automate de bois, 4 en stock |
 | avancée | Hache de pierre 1 | `button#ae-item-hache_pierre[data-ae="item"][data-value="hache_pierre"].btn` | info-bulle : Hache de pierre · 1 ; lecteur d’écran : Hache de pierre, 1 en stock |
 | avancée | Brique 0 | `button#ae-item-brique[data-ae="item"][data-value="brique"].btn` | info-bulle : Brique · 0 ; lecteur d’écran : Brique, 0 en stock |
 | avancée | Argilière 1 | `button#ae-item-nasse[data-ae="item"][data-value="nasse"].btn` | info-bulle : Argilière · 1 ; lecteur d’écran : Argilière, 1 en stock |
 | avancée | Hutte de bûcheron 0 | `button#ae-item-hutte[data-ae="item"][data-value="hutte"].btn` | info-bulle : Hutte de bûcheron · 0 ; lecteur d’écran : Hutte de bûcheron, 0 en stock |
-| avancée | Malachite 662 | `button#ae-item-malachite[data-ae="item"][data-value="malachite"].btn` | info-bulle : Malachite · 662,333 ; lecteur d’écran : Malachite, 662,333 en stock |
-| avancée | Cassitérite 388 | `button#ae-item-cassiterite[data-ae="item"][data-value="cassiterite"].btn` | info-bulle : Cassitérite · 388,666 ; lecteur d’écran : Cassitérite, 388,666 en stock |
+| avancée | Malachite 662 | `button#ae-item-malachite[data-ae="item"][data-value="malachite"].btn` | info-bulle : Malachite · 662,297 ; lecteur d’écran : Malachite, 662,297 en stock |
+| avancée | Cassitérite 388 | `button#ae-item-cassiterite[data-ae="item"][data-value="cassiterite"].btn` | info-bulle : Cassitérite · 388,648 ; lecteur d’écran : Cassitérite, 388,648 en stock |
 | avancée | Lingot de cuivre 0 | `button#ae-item-lingot_cuivre[data-ae="item"][data-value="lingot_cuivre"].btn` | info-bulle : Lingot de cuivre · 0 ; lecteur d’écran : Lingot de cuivre, 0 en stock |
 | avancée | Plaque de cuivre 0 | `button#ae-item-plaque_cuivre[data-ae="item"][data-value="plaque_cuivre"].btn` | info-bulle : Plaque de cuivre · 0 ; lecteur d’écran : Plaque de cuivre, 0 en stock |
 | avancée | Fil de cuivre 3 | `button#ae-item-fil_cuivre[data-ae="item"][data-value="fil_cuivre"].btn` | info-bulle : Fil de cuivre · 3 ; lecteur d’écran : Fil de cuivre, 3 en stock |
@@ -214,7 +214,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Roue cerclée 0 | `button#ae-item-roue[data-ae="item"][data-value="roue"].btn` | info-bulle : Roue cerclée · 0 ; lecteur d’écran : Roue cerclée, 0 en stock |
 | avancée | Soufflet 0 | `button#ae-item-soufflet[data-ae="item"][data-value="soufflet"].btn` | info-bulle : Soufflet · 0 ; lecteur d’écran : Soufflet, 0 en stock |
 | avancée | Moulin à eau 1 | `button#ae-item-moulin[data-ae="item"][data-value="moulin"].btn` | info-bulle : Moulin à eau · 1 ; lecteur d’écran : Moulin à eau, 1 en stock |
-| avancée | Minerai de fer 548 | `button#ae-item-fer_min[data-ae="item"][data-value="fer_min"].btn` | info-bulle : Minerai de fer · 548,233 ; lecteur d’écran : Minerai de fer, 548,233 en stock |
+| avancée | Minerai de fer 548 | `button#ae-item-fer_min[data-ae="item"][data-value="fer_min"].btn` | info-bulle : Minerai de fer · 548,197 ; lecteur d’écran : Minerai de fer, 548,197 en stock |
 | avancée | Bas-fourneau 1 | `button#ae-item-bas_fourneau[data-ae="item"][data-value="bas_fourneau"].btn` | info-bulle : Bas-fourneau · 1 ; lecteur d’écran : Bas-fourneau, 1 en stock |
 | avancée | Loupe de fer 0 | `button#ae-item-loupe[data-ae="item"][data-value="loupe"].btn` | info-bulle : Loupe de fer · 0 ; lecteur d’écran : Loupe de fer, 0 en stock |
 | avancée | Lingot de fer 0 | `button#ae-item-lingot_fer[data-ae="item"][data-value="lingot_fer"].btn` | info-bulle : Lingot de fer · 0 ; lecteur d’écran : Lingot de fer, 0 en stock |

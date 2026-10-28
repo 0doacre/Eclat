@@ -22,6 +22,10 @@
         return st.flags.arche ? '<div class="card acc goal-card compact"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Il t’attend dans le Domaine, et dans l’onglet Cosmos du Journal.</div></div>' : "";
       }
       const ob = g.ob;
+      const reprise = E.repriseGoal && E.repriseGoal(g);
+      if (reprise) {
+        return '<div class="card acc goal-card"><div class="lbl">Terre familière · reprise</div><div class="name">Rétablir ' + esc(reprise.n) + '</div><p class="small">' + reprise.done + ' / ' + reprise.steps.length + ' équipements rétablis. Les recettes déjà réalisées sont regroupées ; les nouvelles découvertes gardent leur place.</p>' + nextAction(g) + '<details><summary>Voir les étapes connues</summary><ul class="small">' + reprise.steps.map(m => '<li>' + (m.done ? '✓ ' : '') + esc(I[m.ob.id].n) + '</li>').join('') + '</ul></details></div>';
+      }
       const open = goalOpen();
       const title = ob.k === "craft" ? esc(I[ob.id].n) : esc(ob.n);
       // le compteur suit toujours l’âge où l’on est, même quand l’objectif vise déjà le suivant
@@ -128,7 +132,8 @@
       if (!g || g.ob.k !== "craft") return g ? g.ob.k + (g.ob.z || "") + (S().exp.active ? 1 : 0) : "";
       const p = I[g.step] && S().known[g.step] ? E.plan(g.step, 1) : null;
       const a = S().act;
-      return g.step + ":" + (S().hints[g.step] || 0) + (p ? (p.ok ? 1 : Object.keys(p.missing).join()) : "?") + E.queued(g.step) + goalOpen() + (a ? a.k + (a.id || a.res) : "");
+      const reprise = E.repriseGoal && E.repriseGoal(g);
+      return g.step + ":" + (S().hints[g.step] || 0) + (p ? (p.ok ? 1 : Object.keys(p.missing).join()) : "?") + E.queued(g.step) + goalOpen() + (reprise ? ":reprise:" + reprise.done : "") + (a ? a.k + (a.id || a.res) : "");
     }
     /* l’objectif déplié ou non : pendant un Suivi, il reste replié (on peut le rouvrir un moment) pour laisser voir le Domaine */
     function goalOpen() {
