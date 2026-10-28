@@ -4,14 +4,36 @@
 
 /* Cartes de gisement manuel en mode Vivant */
 [data-style-mode="vivant"] .gis.gis-vivant {
-  min-height: 84px;
-  padding: 10px 12px;
-  gap: 14px;
+  display: grid !important;
+  grid-template-columns: 82px minmax(0, 1fr) auto !important;
+  gap: 12px !important;
+  align-items: center;
+  min-height: 86px;
+  padding: 8px 12px !important;
   border-radius: 16px;
   background: color-mix(in srgb, var(--panel) 94%, var(--acc) 6%);
   border: 1px solid color-mix(in srgb, var(--line2) 80%, var(--acc) 20%);
   margin-block: 6px;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+[data-style-mode="vivant"] .gis.gis-vivant .gis-ic {
+  grid-column: 1 !important;
+  width: 76px !important;
+  height: 76px !important;
+  flex: 0 0 76px !important;
+  margin: 0 !important;
+  justify-self: center;
+}
+
+[data-style-mode="vivant"] .gis.gis-vivant .gis-body {
+  grid-column: 2 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+
+[data-style-mode="vivant"] .gis.gis-vivant .gis-b {
+  grid-column: 3 !important;
 }
 
 [data-style-mode="vivant"] .gis.gis-vivant:hover {
@@ -54,6 +76,36 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
+/* Onde de choc lumineuse à l'impact */
+[data-style-mode="vivant"] .gis-ic.gis-ic-vivant::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  pointer-events: none;
+  opacity: 0;
+}
+
+[data-style-mode="vivant"] .gis-ic.gis-ic-vivant.hit::after {
+  animation: vivant-ripple 0.36s cubic-bezier(0.2, 0.8, 0.4, 1);
+}
+
+@keyframes vivant-ripple {
+  0% {
+    inset: 0px;
+    border-color: #ffd36b;
+    opacity: 0.95;
+    box-shadow: 0 0 12px rgba(255, 211, 107, 0.7);
+  }
+  100% {
+    inset: -14px;
+    border-color: rgba(255, 211, 107, 0);
+    opacity: 0;
+    box-shadow: 0 0 0px transparent;
+  }
+}
+
 /* SVG de l'entité vivante */
 .living-svg {
   width: 68px;
@@ -90,6 +142,24 @@
   @keyframes vivant-water-pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.03); }
+  }
+
+  .anim-sand {
+    transform-origin: 50% 80%;
+    animation: vivant-sand-breathe 4s ease-in-out infinite;
+  }
+  @keyframes vivant-sand-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  .anim-clay {
+    transform-origin: 50% 80%;
+    animation: vivant-clay-breathe 3.8s ease-in-out infinite;
+  }
+  @keyframes vivant-clay-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scaleY(1.03) scaleX(0.98); }
   }
 }
 
@@ -152,6 +222,28 @@
     60% { transform: scale(0.92); }
     100% { transform: scale(1); }
   }
+
+  /* Pelletée sur le Sable */
+  .hit .anim-sand {
+    animation: vivant-sand-dig 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) !important;
+  }
+  @keyframes vivant-sand-dig {
+    0% { transform: scale(1); }
+    25% { transform: scale(0.9) translateY(4px); }
+    50% { transform: scale(1.06) translateY(-2px); }
+    100% { transform: scale(1); }
+  }
+
+  /* Malaxage sur l'Argile */
+  .hit .anim-clay {
+    animation: vivant-clay-squish 0.34s cubic-bezier(0.2, 1.3, 0.4, 1) !important;
+  }
+  @keyframes vivant-clay-squish {
+    0% { transform: scale(1); }
+    25% { transform: scaleY(0.82) scaleX(1.15) translateY(4px); }
+    50% { transform: scaleY(1.1) scaleX(0.95); }
+    100% { transform: scale(1); }
+  }
 }
 
 /* ------------------------------------------------------------ Particules et copeaux dans #fx */
@@ -164,23 +256,35 @@
   line-height: 1;
 }
 
-/* Compteur de frappe flottant en mode Vivant */
+/* Compteur de frappe flottant en mode Vivant : centré au-dessus du nœud */
 [data-style-mode="vivant"] .gis > .hcount {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 800;
   border-radius: 999px;
   padding: 3px 10px;
-  background: color-mix(in srgb, var(--panel) 90%, #ffd36b 10%);
+  background: color-mix(in srgb, var(--panel) 92%, #ffd36b 12%);
   border: 1.5px solid #ffd36b;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   top: -10px;
-  left: 82px;
+  left: 53px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+[data-style-mode="vivant"] .gis > .hcount.bump {
+  animation: vivant-hbump 0.24s cubic-bezier(0.18, 1.4, 0.4, 1);
+}
+
+@keyframes vivant-hbump {
+  0% { transform: translateX(-50%) scale(0.85); }
+  50% { transform: translateX(-50%) scale(1.16) translateY(-4px); }
+  100% { transform: translateX(-50%) scale(1) translateY(0); }
 }
 
 [data-style-mode="vivant"] .gis > .hcount.crit {
   background: #ffd36b;
   color: #1a1e24;
   border-color: #fff;
-  transform: scale(1.1);
-  box-shadow: 0 0 16px rgba(255, 211, 107, 0.6);
+  box-shadow: 0 0 16px rgba(255, 211, 107, 0.7);
 }
