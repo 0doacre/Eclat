@@ -377,6 +377,14 @@
       return icon(res);
     }
 
+    function livingNode(res) {
+      if (window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasSource(res)) {
+        const src = window.ECLAT_ILLUSTRATIONS.getSource(res);
+        return '<img class="living-carnet-img source-' + esc(res) + '" src="' + src + '" alt="" draggable="false" />';
+      }
+      return livingNodeSVG(res);
+    }
+
     function spawnLivingParticles(x, y, res) {
       if (typeof motionOK === "function" && !motionOK()) return;
       const count = 5 + Math.floor(Math.random() * 4);
@@ -499,7 +507,7 @@
       const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
       const isProducing = rate > 0;
       return '<div class="gis' + (isVivant && d.hand ? " gis-vivant" : "") + (isVivant && isProducing ? " gis-producing" : "") + '" data-gis="' + key + '">' +
-        '<button class="gis-ic' + (d.hand ? " hand" : "") + (isVivant && d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + (isVivant && d.hand ? livingNodeSVG(res) : icon(res)) + "</button>" +
+        '<button class="gis-ic' + (d.hand ? " hand" : "") + (isVivant && d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + (isVivant && d.hand ? livingNode(res) : icon(res)) + "</button>" +
         '<button class="gis-body" data-gsheet="' + key + '" aria-label="Gisement : ' + esc(I[res].n) + '"><span class="gis-l1"><b>' + esc(I[res].n) + "</b>" + right + "</span>" +
         '<span class="gis-l2 tiny muted">' + sub + "</span></button>" +
         (btns ? '<div class="gis-b">' + btns + "</div>" : "") + "</div>";

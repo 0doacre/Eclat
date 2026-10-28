@@ -390,3 +390,120 @@ body.theme-dark[data-style-mode="vivant"] .dom-terre.a-decor::before {
   0% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+/* ------------------------------------------------------------ Illustrations du Carnet du Semeur (Mode Vivant) */
+[data-style-mode="vivant"] .ic.carnet-ic {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-style-mode="vivant"] .carnet-ic .carnet-img {
+  max-width: 86%;
+  max-height: 86%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Formats spécifiques */
+[data-style-mode="vivant"] .ic.sm.carnet-ic .carnet-img {
+  max-width: 88%;
+  max-height: 88%;
+}
+
+[data-style-mode="vivant"] .slot .ic.carnet-ic .carnet-img {
+  max-width: 88%;
+  max-height: 88%;
+}
+
+[data-style-mode="vivant"] .ic.lg.carnet-ic .carnet-img {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+[data-style-mode="vivant"] .ic.xl.carnet-ic .carnet-img {
+  max-width: 92%;
+  max-height: 92%;
+}
+
+/* Sujets allongés (manche, épieu) : préserver les proportions naturelles sans étirement */
+[data-style-mode="vivant"] .carnet-ic[data-item="epieu"] .carnet-img,
+[data-style-mode="vivant"] .carnet-ic[data-item="manche"] .carnet-img {
+  transform: rotate(-12deg);
+  max-width: 92%;
+  max-height: 92%;
+}
+
+/* Lisibilité du charbon en thème sombre */
+body.theme-dark .carnet-ic[data-item="charbon"] {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 62%, transparent 75%);
+}
+
+body.theme-dark .carnet-ic[data-item="charbon"] .carnet-img {
+  filter: drop-shadow(0 0 1px rgba(255, 240, 220, 0.35)) contrast(1.1) brightness(1.18);
+}
+
+/* Sources de récolte illustrées du Carnet dans le Domaine */
+[data-style-mode="vivant"] .living-carnet-img {
+  width: 66px;
+  height: 66px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Les sources végétales sont montrées généreusement */
+[data-style-mode="vivant"] .living-carnet-img.source-bois {
+  width: 74px;
+  height: 74px;
+}
+
+[data-style-mode="vivant"] .living-carnet-img.source-fibre {
+  width: 72px;
+  height: 72px;
+}
+
+[data-style-mode="vivant"] .living-carnet-img.source-caillou {
+  width: 66px;
+  height: 66px;
+}
+
+/* Animations de repos des sources illustrées */
+@media (prefers-reduced-motion: no-preference) {
+  [data-style-mode="vivant"] .living-carnet-img.source-bois {
+    transform-origin: 50% 88%;
+    animation: vivant-tree-breathe 4.5s ease-in-out infinite;
+  }
+
+  [data-style-mode="vivant"] .living-carnet-img.source-fibre {
+    transform-origin: 50% 92%;
+    animation: vivant-fiber-sway 3.4s ease-in-out infinite;
+  }
+
+  [data-style-mode="vivant"] .living-carnet-img.source-caillou {
+    transform-origin: 50% 80%;
+  }
+
+  /* Animations d'impact lors de la récolte */
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-bois {
+    animation: vivant-tree-chop 0.38s cubic-bezier(0.25, 1.4, 0.5, 1) !important;
+  }
+
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-fibre {
+    animation: vivant-fiber-reap 0.4s cubic-bezier(0.25, 1.3, 0.5, 1) !important;
+  }
+
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-caillou {
+    animation: vivant-rock-smash 0.32s cubic-bezier(0.2, 1.5, 0.4, 1) !important;
+  }
+}
