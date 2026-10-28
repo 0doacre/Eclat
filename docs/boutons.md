@@ -4,12 +4,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 
 | | |
 |---|---|
-| Boutons relevés | 229 |
+| Boutons relevés | 231 |
 | Sans explication | 0 |
 | Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |
 
-## Aide (43 boutons, 0 sans explication)
+## Aide (45 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -28,6 +28,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | neuve | ACTIVÉ | `button[data-m="sound"].btn.sw` | info-bulle : Couper ou remettre la musique et les bruitages |
 | neuve | ACTIVÉ | `button[data-m="vibe"].btn.sw` | info-bulle : Faire vibrer l’appareil lors des actions importantes |
 | neuve | Sauvegardes | `button[data-m="saves"].btn.m-card-btn` | info-bulle : Télécharger ta partie, la recharger ou restaurer une copie |
+| neuve | ⏳ État des productions | `button[data-assistance="diagnostic"].btn.m-card-btn` | info-bulle : Comprendre pourquoi une commande ou un ouvrier attend |
 | neuve | Compte en ligne | `button[data-m="account"].btn.m-card-btn` | info-bulle : Retrouver ta partie sur tous tes appareils |
 | neuve | Comment jouer | `button[data-m="help"].btn.m-card-btn` | info-bulle : Les mots du jeu et le rôle de chaque écran |
 | neuve | 📰 Nouveautés | `button[data-m="news"].btn.m-card-btn` | info-bulle : Ce qui a changé dans cette version |
@@ -50,6 +51,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | ACTIVÉ | `button[data-m="sound"].btn.sw` | info-bulle : Couper ou remettre la musique et les bruitages |
 | avancée | ACTIVÉ | `button[data-m="vibe"].btn.sw` | info-bulle : Faire vibrer l’appareil lors des actions importantes |
 | avancée | Sauvegardes | `button[data-m="saves"].btn.m-card-btn` | info-bulle : Télécharger ta partie, la recharger ou restaurer une copie |
+| avancée | ⏳ État des productions | `button[data-assistance="diagnostic"].btn.m-card-btn` | info-bulle : Comprendre pourquoi une commande ou un ouvrier attend |
 | avancée | Compte en ligne | `button[data-m="account"].btn.m-card-btn` | info-bulle : Retrouver ta partie sur tous tes appareils |
 | avancée | Comment jouer | `button[data-m="help"].btn.m-card-btn` | info-bulle : Les mots du jeu et le rôle de chaque écran |
 | avancée | 📰 Nouveautés | `button[data-m="news"].btn.m-card-btn` | info-bulle : Ce qui a changé dans cette version |
@@ -93,7 +95,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Voir : Torche | `button[data-goto="torche"].btn` | guide (.dom-regle.gene) |
 | avancée | Maîtrise · 80 % | `summary` | info-bulle : Voir les objectifs de cette terre et son bonus à la relève |
 | avancée | (sans mot) | `button[data-harv="mine:fer_min"].gis-ic.hand` | lecteur d’écran : Récolter : Minerai de fer |
-| avancée | Minerai de fer +48/min Tu en as 543 · 1 mine de fer | `button[data-gsheet="mine:fer_min"].gis-body` | lecteur d’écran : Gisement : Minerai de fer |
+| avancée | Minerai de fer +48/min Tu en as 544 · 1 mine de fer | `button[data-gsheet="mine:fer_min"].gis-body` | lecteur d’écran : Gisement : Minerai de fer |
 | avancée | ▶ Récolter | `button[data-hloop="mine:fer_min"].mini.harvest` | info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer |
 | avancée | + mine de fer | `button[data-xadd="mine:fer_min"][data-n="1"].mini.lbl` | info-bulle : Poser : Mine de fer ; lecteur d’écran : Poser : Mine de fer |
 | avancée | 3 autre terres · +2,16 k/min en tout voir ▾ | `button[data-dall=""].dom-more` | info-bulle : Afficher ou replier les autres terres |
@@ -102,7 +104,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Supraconducteur 0 / 380 | `div[data-goto="supra"].cost-row` | info-bulle : Supraconducteur (toucher pour inspecter) |
 | avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
 | avancée | Alimenté ✓ | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
-| avancée | Bois+11/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
+| avancée | Bois+16/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 | avancée | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | avancée | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | avancée | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
