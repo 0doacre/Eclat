@@ -2,10 +2,9 @@
 
 Poursuivre l’intégration du Carnet du Semeur avec le deuxième lot, en préservant le travail en cours sur l’interface dessinée.
 
-Archive : `docs/art-direction/age-os-v1/da-age-os-v1.zip`.
+Archive : `docs/art-direction/age-os-v1/da-age-os-v1-part1.zip` et `da-age-os-v1-part2.zip` (scindée pour respecter la limite Cloudflare Pages de 25 Mo).
 
-- Taille : 26 466 929 octets.
-- SHA-256 : `4780660a6a6bb3f238ca14486217c8bbd595fd55d53f435e6d6536a696b96d38`.
+- Les deux parties contiennent le dossier `da-age-os-v1/`.
 - Génération : outil imagegen intégré ; PNG maîtres intacts, fond transparent.
 
 Extraire dans un dossier de travail. Lire `README-GEMINI.md`, `manifest.json` et `qa/visual-review.md`, puis ouvrir `preview.html` et `continuite.html`. Les quatre images dans `references-bois/` servent uniquement à la comparaison avec le lot déjà livré. Les prompts reproductibles sont dans `prompt-commun.txt` et `asset-specs.json`.
