@@ -10,6 +10,11 @@ function complete(E, z) {
   for (const p of t.phases) for (const id of p.ids || []) E.state.made[id] = p.cible || 1;
   E.state.exp.done[z] = Math.max(...r.lieux.map(x => E.ZONES[z].exps.findIndex(e => e.id === x))) + 1;
   E.state.territoires.produit[z] = t.phases[3].cible;
+  if (t.rang > 0) {
+    const dep = E.zoneDeps(z).find(d => E.extFor(d.res, z).length);
+    const id = E.extFor(dep.res, z)[0];
+    E.state.inv[id] = 1; E.recalc(); E.domExtSet(z, dep.res, id, 1);
+  }
 }
 function relevePossible(E) { E.state.pass.plaine = { done: true, paid: {} }; }
 function extractor(E, z = "lisiere", res = "bois", id = "cabane") {
@@ -122,10 +127,38 @@ test("les données importées sont bornées et les identifiants inconnus ignoré
 test("les objectifs du Désert évoluent après transmission, sans exiger les secrets", () => {
   const E = mk(); E.state.zones.desert = true;
   assert.equal(E.terreMaitrise("desert").chapitre, "Première installation");
-  for (const [rang, name, id] of [[1, "La précision", "acier_trempe"], [4, "La vapeur", "moteur_vapeur"], [7, "Les circuits", "ordinateur"]]) {
+  for (const [rang, name, id] of [[1, "La précision", "acier_trempe"], [4, "La vapeur", "recuperation_vapeur"], [7, "Les circuits", "ordinateur"]]) {
     E.state.meta.terres.desert = rang; const t = E.terreMaitrise("desert");
     assert.equal(t.chapitre, name); assert.ok(t.phases[2].ids.includes(id)); assert.ok(!t.pret);
   }
+});
+test("les explorations et séries de base restent acquises sans attribuer le palier suivant", () => {
+  const E = mk(); complete(E, "lisiere"); relevePossible(E); E.newCycle();
+  let t = E.terreMaitrise("lisiere");
+  assert.ok(t.phases[1].done && t.phases[4].done);
+  assert.equal(t.pret, false); assert.equal(E.state.made.corde || 0, 0);
+  assert.equal(E.state.exp.done.lisiere || 0, 0);
+  assert.equal(t.phases[3].cible, T.RULES.lisiere.production);
+  const F = mk(); F.load(E.serialize()); t = F.terreMaitrise("lisiere");
+  assert.ok(t.phases[1].done && t.phases[4].done && !t.pret);
+});
+test("les ouvrages changent aux neuf retours et ne dévoilent pas les recettes inconnues", () => {
+  const E = mk();
+  for (const [z, ids] of Object.entries(T.RETOURS)) {
+    assert.equal(new Set(ids).size, 9);
+    for (const [i, id] of ids.entries()) {
+      assert.ok(D.ITEMS[id] && D.ITEMS[id].r && !D.ITEMS[id].sec && !D.ITEMS[id].path);
+      E.state.meta.terres[z] = i + 1; E.state.zones[z] = true;
+      const t = E.terreMaitrise(z); assert.equal(t.phases[2].ids[0], id);
+      assert.ok(t.phases[2].texte.includes("à découvrir"));
+    }
+  }
+});
+test("les fragments des anciennes explorations attestent des lieux déjà visités", () => {
+  const E = mk(); E.state.frags.chene2 = 1; E.state.frags.grotte = 1;
+  const t = E.terreMaitrise("lisiere");
+  assert.equal(t.phases[1].done, true); assert.equal(t.phases[4].done, false);
+  assert.equal(t.pret, false); assert.equal(E.terreBonus("lisiere"), 1);
 });
 test("le bilan annonce le même gain que le moteur et le garde après rechargement", () => {
   const E = mk(); relevePossible(E); complete(E, "desert");
