@@ -1,0 +1,186 @@
+/* Le Carnet du Semeur — Atelier et recettes.
+ * Les tracés SVG se déploient en neuf parties : texte, focus et hitbox restent natifs.
+ * Feuilles pour les groupes ; filets pour les lignes. Aucun dessin ne porte de texte. */
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) {
+  --atelier-frame: var(--drawn-frame);
+  --atelier-button: var(--drawn-button);
+  --atelier-divider: var(--drawn-divider);
+}
+/* Le dernier support est sombre même sans la préférence Veillée. */
+[data-style-mode="vivant"] body[data-ep="bord"] :is(#v-atelier, #v-carnet) {
+  --atelier-frame: url("../assets/ui/frame-chalk.svg");
+  --atelier-button: url("../assets/ui/button-chalk.svg");
+  --atelier-divider: url("../assets/ui/divider-chalk.svg");
+}
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(.card, .age-sec) {
+  border: 10px solid transparent;
+  border-image: var(--atelier-frame) 20 / 10px / 0 stretch;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--panel);
+  padding: 12px;
+}
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(h2, h3.sub, .ae-stock h3, .ae-tools h3) {
+  font-family: var(--serif);
+  letter-spacing: .015em;
+  text-transform: none;
+}
+[data-style-mode="vivant"] #v-atelier .ae-bench h2 {
+  font-size: 28px;
+  font-weight: 400;
+  padding-bottom: 14px;
+  background: var(--atelier-divider) bottom / 100% 8px no-repeat;
+}
+/* Contours discrets des commandes, lavis réservé à l'action et à la sélection. */
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(.btn, .geste, .filters button, .qtybar button, .age-nav button, .mforge, .mslot) {
+  position: relative;
+  isolation: isolate;
+  border: 6px solid transparent;
+  border-image: var(--atelier-button) 12 / 6px / 0 stretch;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+  min-height: 44px;
+}
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(.btn.pri, .geste.on, .filters button.on, .qtybar button.on, .age-nav button.on, .age-pill.cur) {
+  background: color-mix(in srgb, var(--acc-base) 13%, var(--panel));
+  color: var(--text);
+  font-weight: 700;
+  box-shadow: none;
+}
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(.btn.pri, .geste.on, .filters button.on, .qtybar button.on, .age-nav button.on, .age-pill.cur)::before {
+  content: "";
+  position: absolute;
+  inset: auto 4px 1px;
+  height: 4px;
+  background: var(--acc-base);
+  mask: var(--wash-mask) center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) button:disabled {
+  opacity: 1;
+  color: var(--muted);
+  background: var(--panel2);
+  cursor: default;
+}
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) button:disabled::before { opacity: .25; }
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(button, input, select, summary):focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(input[type="search"], input[type="number"], select) {
+  border: 6px solid transparent;
+  border-image: var(--atelier-button) 12 / 6px / 0 stretch;
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--text);
+  min-height: 44px;
+  font-size: 16px;
+}
+/* Postes et outils : une annotation choisie, sans effet de carte flottante. */
+[data-style-mode="vivant"] #v-atelier .ae-posts { gap: 6px; }
+[data-style-mode="vivant"] #v-atelier .ae-tools { padding-left: 12px; }
+[data-style-mode="vivant"] #v-atelier .ae-tools .btn { line-height: 1.35; }
+[data-style-mode="vivant"] #v-atelier .ae-tools small { font-weight: 400; }
+[data-style-mode="vivant"] #v-atelier .ae-slots > .btn {
+  border: 9px solid transparent !important;
+  border-image: var(--atelier-frame) 20 / 9px / 0 stretch !important;
+  background: var(--panel2);
+  padding: 8px 2px;
+  overflow-wrap: normal;
+}
+[data-style-mode="vivant"] #v-atelier .ae-slots > .ae-empty { color: var(--muted); font: 28px var(--serif); }
+[data-style-mode="vivant"] #v-atelier .ae-slots > .ae-filled { background: color-mix(in srgb, var(--acc-base) 10%, var(--panel)); }
+[data-style-mode="vivant"] #v-atelier .ae-slots .ic { width: 44px; height: 44px; min-width: 44px; }
+[data-style-mode="vivant"] #v-atelier .ae-stock { padding-top: 8px; }
+[data-style-mode="vivant"] #v-atelier .ae-stock h3 { font-size: 24px; font-weight: 400; margin: 0 0 12px; }
+[data-style-mode="vivant"] #v-atelier .ae-discovery { gap: 4px 12px; }
+[data-style-mode="vivant"] #v-atelier :is(.ae-discovery, .ae-economy) input[type="checkbox"] {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 0;
+  background: var(--drawn-checkbox) center / contain no-repeat;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+[data-style-mode="vivant"] #v-atelier :is(.ae-discovery, .ae-economy) input[type="checkbox"]:checked::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--text);
+  mask: var(--check-mask) center / contain no-repeat;
+}
+[data-style-mode="vivant"] #v-atelier .ae-inventory { gap: 2px; padding: 4px; }
+[data-style-mode="vivant"] #v-atelier .ae-resource > .btn {
+  grid-template-columns: 44px minmax(0, 1fr) minmax(3ch, auto);
+  border: 0;
+  border-bottom: 8px solid transparent;
+  border-image: var(--atelier-divider) 0 0 12 0 / 0 0 8px 0 / 0 stretch;
+  padding: 7px 4px;
+  min-height: 64px;
+}
+[data-style-mode="vivant"] #v-atelier .ae-resource :is(.ic, .ic.sm) { width: 40px; height: 40px; min-width: 40px; }
+[data-style-mode="vivant"] #v-atelier .ae-resource > .btn.ae-selected {
+  background: color-mix(in srgb, var(--acc-base) 13%, var(--panel));
+  box-shadow: inset 3px 0 0 var(--acc-base);
+}
+[data-style-mode="vivant"] #v-atelier .ae-resource > .btn:disabled { background: transparent; }
+[data-style-mode="vivant"] #v-atelier .ae-economy-grid > section { border-radius: 0; background: transparent; }
+[data-style-mode="vivant"] #v-atelier .ae-mini {
+  border: 8px solid transparent;
+  border-image: var(--atelier-frame) 20 / 8px / 0 stretch;
+  border-radius: 0;
+  background: var(--panel);
+  box-shadow: 0 3px 14px #0002;
+  padding: 4px;
+}
+/* Le Carnet rassemble les recettes sur une feuille par âge, séparées à l'encre. */
+[data-style-mode="vivant"] #v-carnet .carnet-head {
+  border-bottom: 10px solid transparent;
+  border-image: var(--atelier-divider) 0 0 12 0 / 0 0 10px 0 / 0 stretch;
+}
+[data-style-mode="vivant"] #v-carnet .age-sec > summary { padding: 4px 0 12px; min-height: 44px; }
+[data-style-mode="vivant"] #v-carnet #clist .rec {
+  background: transparent;
+  border: 0;
+  border-bottom: 8px solid transparent;
+  border-image: var(--atelier-divider) 0 0 12 0 / 0 0 8px 0 / 0 stretch;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 14px 4px;
+}
+[data-style-mode="vivant"] #v-carnet #clist .rec .rt { font-family: var(--serif); font-size: 23px; line-height: 1.2; }
+[data-style-mode="vivant"] #v-carnet #clist .rec .rh > .ic { flex-basis: 48px; width: 48px; height: 48px; min-width: 48px; }
+[data-style-mode="vivant"] #v-carnet #clist .rec .carnet-lot { background: var(--panel2); border-radius: 0; }
+[data-style-mode="vivant"] #v-carnet #clist .rec.unknown { opacity: 1; background: transparent; border-style: solid; }
+[data-style-mode="vivant"] #v-carnet #clist .rec.unknown .rt { color: var(--muted); }
+/* Les procédés historiques utilisent les mêmes contours, gardent leur établi. */
+[data-style-mode="vivant"] #v-atelier :is(.bench, .slot, .inv, .mbench) {
+  border: 7px solid transparent;
+  border-image: var(--atelier-frame) 20 / 7px / 0 stretch;
+  border-radius: 0;
+  outline: 0;
+  box-shadow: none;
+}
+[data-style-mode="vivant"] #v-atelier .bench {
+  --atelier-frame: url("../assets/ui/frame-chalk.svg");
+  --atelier-button: url("../assets/ui/button-chalk.svg");
+}
+[data-style-mode="vivant"] #v-atelier .inv { padding: 4px 2px; }
+[data-style-mode="vivant"] #v-atelier .inv.sel { background: color-mix(in srgb, var(--acc-base) 15%, var(--panel)); }
+@media (max-width: 1100px) {
+  [data-style-mode="vivant"] #v-atelier .ae-tools { padding: 10px 0 0; }
+}
+@media (max-width: 360px) {
+  [data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(.card, .age-sec) { padding: 8px 4px; }
+  [data-style-mode="vivant"] #v-atelier .ae-mini { left: 4px; right: 4px; }
+  [data-style-mode="vivant"] #v-atelier .ae-mini-tool { display: none; }
+}
+@media (forced-colors: active) {
+  [data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(button, input, select, .card, .rec) { border-image: none !important; border: 1px solid CanvasText !important; }
+  [data-style-mode="vivant"] #v-atelier input[type="checkbox"] { appearance: auto; }
+}
