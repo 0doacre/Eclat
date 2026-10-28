@@ -265,6 +265,115 @@
           '<path d="M26 44 Q32 43 38 46" stroke="#fdba74" stroke-width="1.2" fill="none" opacity="0.75"/>' +
           '</g></svg>';
       }
+      if (res === "os") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-sand">' +
+          '<ellipse cx="33" cy="58" rx="26" ry="6" fill="#0d1117" opacity="0.5"/>' +
+          '<path d="M12 56 Q24 48 38 52 Q50 50 56 56 Z" fill="#927142"/>' +
+          '<path d="M16 46 Q28 32 44 38 Q36 44 22 48 Z" fill="#e2e8f0"/>' +
+          '<circle cx="16" cy="45" r="4.5" fill="#f8fafc"/>' +
+          '<circle cx="18" cy="50" r="4" fill="#cbd5e1"/>' +
+          '<path d="M28 50 C32 30 46 22 52 30" stroke="#f1f5f9" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+          '<path d="M38 52 C41 36 50 28 54 36" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round" fill="none"/>' +
+          '<path d="M12 56 Q14 42 10 36" stroke="#65a30d" stroke-width="2" fill="none"/>' +
+          '<path d="M52 56 Q55 44 58 40" stroke="#84cc16" stroke-width="2" fill="none"/>' +
+          '</g></svg>';
+      }
+      if (res === "cuir") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-fiber">' +
+          '<ellipse cx="33" cy="58" rx="25" ry="6" fill="#0d1117" opacity="0.5"/>' +
+          '<line x1="16" y1="56" x2="24" y2="18" stroke="#78350f" stroke-width="3" stroke-linecap="round"/>' +
+          '<line x1="50" y1="56" x2="42" y2="18" stroke="#78350f" stroke-width="3" stroke-linecap="round"/>' +
+          '<path d="M21 24 Q33 20 45 24 Q48 36 44 48 Q33 52 22 48 Q18 36 21 24 Z" fill="#9a3412"/>' +
+          '<path d="M24 26 Q33 23 42 26 Q45 36 41 46 Q33 49 25 46 Q21 36 24 26 Z" fill="#c2410c"/>' +
+          '<line x1="20" y1="26" x2="23" y2="26" stroke="#fef08a" stroke-width="1.2"/>' +
+          '<line x1="43" y1="26" x2="46" y2="26" stroke="#fef08a" stroke-width="1.2"/>' +
+          '<line x1="21" y1="46" x2="24" y2="46" stroke="#fef08a" stroke-width="1.2"/>' +
+          '<line x1="42" y1="46" x2="45" y2="46" stroke="#fef08a" stroke-width="1.2"/>' +
+          '</g></svg>';
+      }
+      if (res === "malachite") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-rock">' +
+          '<ellipse cx="33" cy="59" rx="26" ry="6" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M12 58 L18 32 L36 22 L52 35 L54 58 Z" fill="#27272a"/>' +
+          '<path d="M18 32 L36 22 L33 42 L16 52 Z" fill="#3f3f46"/>' +
+          '<path d="M36 22 L52 35 L42 45 L33 42 Z" fill="#52525b"/>' +
+          '<path d="M22 36 Q30 28 40 32 Q44 42 36 46 Q26 44 22 36 Z" fill="#064e3b"/>' +
+          '<path d="M25 38 Q30 32 37 35 Q40 41 35 44 Q28 42 25 38 Z" fill="#059669"/>' +
+          '<path d="M28 39 Q31 35 35 37 Q37 40 33 42 Q30 41 28 39 Z" fill="#34d399"/>' +
+          '<polygon points="34,31 36,35 40,36 36,37 34,41 32,37 28,36 32,35" fill="#a7f3d0"/>' +
+          '</g></svg>';
+      }
+      if (res === "cassiterite") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-rock">' +
+          '<ellipse cx="33" cy="59" rx="26" ry="6" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M14 58 L20 38 L35 44 L32 58 Z" fill="#18181b"/>' +
+          '<path d="M20 38 L28 20 L38 28 L35 44 Z" fill="#3f3f46"/>' +
+          '<path d="M28 20 L38 28 L32 14 Z" fill="#71717a"/>' +
+          '<path d="M38 28 L52 36 L44 52 L35 44 Z" fill="#27272a"/>' +
+          '<path d="M38 28 L50 24 L52 36 Z" fill="#52525b"/>' +
+          '<polygon points="28,20 32,14 38,28" fill="#a1a1aa"/>' +
+          '<polygon points="30,16 32,14 34,18" fill="#f4f4f5"/>' +
+          '</g></svg>';
+      }
+      if (res === "fer_min") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-flint">' +
+          '<ellipse cx="33" cy="59" rx="26" ry="6" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M14 58 L20 32 L34 16 L48 26 L52 58 Z" fill="#1c1917"/>' +
+          '<path d="M20 32 L34 16 L32 38 L18 52 Z" fill="#44403c"/>' +
+          '<path d="M34 16 L48 26 L38 36 L32 38 Z" fill="#78716c"/>' +
+          '<path d="M24 34 L32 26 L36 32 L28 42 Z" fill="#c2410c"/>' +
+          '<path d="M32 26 L38 22 L42 28 L36 32 Z" fill="#ea580c"/>' +
+          '<path d="M28 42 L36 32 L40 44 L32 50 Z" fill="#9a3412"/>' +
+          '<path d="M33 24 L36 22 L37 25" stroke="#fed7aa" stroke-width="1.5" stroke-linecap="round"/>' +
+          '</g></svg>';
+      }
+      if (res === "charbon") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-rock">' +
+          '<ellipse cx="33" cy="59" rx="26" ry="6" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M12 58 L18 36 L30 30 L40 38 L36 58 Z" fill="#09090b"/>' +
+          '<path d="M18 36 L30 30 L26 48 L15 54 Z" fill="#18181b"/>' +
+          '<path d="M30 30 L44 24 L54 36 L40 38 Z" fill="#27272a"/>' +
+          '<path d="M44 24 L54 36 L52 58 L36 58 Z" fill="#09090b"/>' +
+          '<path d="M26 34 L30 30 L38 34" stroke="#52525b" stroke-width="1.8" stroke-linecap="round"/>' +
+          '<circle cx="28" cy="42" r="1.5" fill="#f97316" opacity="0.75"/>' +
+          '<circle cx="38" cy="44" r="1.2" fill="#ef4444" opacity="0.8"/>' +
+          '</g></svg>';
+      }
+      if (res === "quartz") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-flint">' +
+          '<ellipse cx="33" cy="59" rx="26" ry="6" fill="#0d1117" opacity="0.6"/>' +
+          '<path d="M14 58 L20 44 L32 50 L30 58 Z" fill="#475569"/>' +
+          '<path d="M36 58 L42 46 L54 52 L52 58 Z" fill="#475569"/>' +
+          '<polygon points="22,50 26,26 33,32 30,54" fill="#cbd5e1"/>' +
+          '<polygon points="26,26 31,18 36,24 33,32" fill="#f8fafc"/>' +
+          '<polygon points="33,32 36,24 43,30 40,54" fill="#94a3b8"/>' +
+          '<polygon points="32,48 37,20 44,24 42,50" fill="#e2e8f0"/>' +
+          '<polygon points="37,20 42,12 47,18 44,24" fill="#ffffff"/>' +
+          '<polygon points="44,24 47,18 51,26 48,50" fill="#cbd5e1"/>' +
+          '<polygon points="41,11 43,14 46,15 43,16 41,19 39,16 36,15 39,14" fill="#ffd36b"/>' +
+          '</g></svg>';
+      }
+      if (res === "petrole") {
+        return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+          '<g class="anim-water">' +
+          '<ellipse cx="33" cy="50" rx="27" ry="14" fill="#09090b"/>' +
+          '<ellipse cx="33" cy="50" rx="23" ry="11" fill="#18181b"/>' +
+          '<ellipse cx="33" cy="51" rx="17" ry="7" fill="#27272a"/>' +
+          '<path d="M22 50 Q33 46 44 50" stroke="#818cf8" stroke-width="1.5" fill="none" opacity="0.7"/>' +
+          '<path d="M25 53 Q33 49 41 53" stroke="#34d399" stroke-width="1.3" fill="none" opacity="0.6"/>' +
+          '<circle cx="33" cy="36" r="5" fill="#18181b"/>' +
+          '<circle cx="31.5" cy="34.5" r="1.5" fill="#6366f1" opacity="0.8"/>' +
+          '<circle cx="24" cy="42" r="2.5" fill="#27272a"/>' +
+          '<circle cx="42" cy="40" r="3" fill="#27272a"/>' +
+          '</g></svg>';
+      }
       return icon(res);
     }
 
@@ -291,7 +400,7 @@
           p.style.color = Math.random() > 0.3 ? "#ffd36b" : "#ffffff";
           p.style.fontSize = (12 + Math.random() * 8) + "px";
         } else if (res === "fibre") {
-          content = "🌿";
+          content = Math.random() > 0.5 ? "🌿" : "🌾";
           p.style.fontSize = (12 + Math.random() * 6) + "px";
         } else if (res === "eau") {
           content = "💧";
@@ -299,6 +408,40 @@
         } else if (res === "sable") {
           content = "•";
           p.style.color = "#ecc94b";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
+        } else if (res === "argile") {
+          content = "•";
+          p.style.color = "#c2410c";
+          p.style.fontSize = (14 + Math.random() * 6) + "px";
+        } else if (res === "os") {
+          content = "🦴";
+          p.style.fontSize = (13 + Math.random() * 6) + "px";
+        } else if (res === "cuir") {
+          content = "🪢";
+          p.style.fontSize = (13 + Math.random() * 6) + "px";
+        } else if (res === "malachite") {
+          content = "✦";
+          p.style.color = "#10b981";
+          p.style.fontSize = (13 + Math.random() * 7) + "px";
+        } else if (res === "cassiterite") {
+          content = "✦";
+          p.style.color = "#94a3b8";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
+        } else if (res === "fer_min") {
+          content = "✦";
+          p.style.color = Math.random() > 0.4 ? "#f97316" : "#ffd36b";
+          p.style.fontSize = (13 + Math.random() * 7) + "px";
+        } else if (res === "charbon") {
+          content = Math.random() > 0.5 ? "•" : "✦";
+          p.style.color = Math.random() > 0.3 ? "#334155" : "#ef4444";
+          p.style.fontSize = (12 + Math.random() * 7) + "px";
+        } else if (res === "quartz") {
+          content = "✦";
+          p.style.color = Math.random() > 0.5 ? "#c084fc" : "#ffffff";
+          p.style.fontSize = (14 + Math.random() * 8) + "px";
+        } else if (res === "petrole") {
+          content = "💧";
+          p.style.color = "#312e81";
           p.style.fontSize = (12 + Math.random() * 6) + "px";
         } else {
           content = "✦";
@@ -354,7 +497,8 @@
         btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + esc(projTip) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
       }
       const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
-      return '<div class="gis' + (isVivant && d.hand ? " gis-vivant" : "") + '" data-gis="' + key + '">' +
+      const isProducing = rate > 0;
+      return '<div class="gis' + (isVivant && d.hand ? " gis-vivant" : "") + (isVivant && isProducing ? " gis-producing" : "") + '" data-gis="' + key + '">' +
         '<button class="gis-ic' + (d.hand ? " hand" : "") + (isVivant && d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + (isVivant && d.hand ? livingNodeSVG(res) : icon(res)) + "</button>" +
         '<button class="gis-body" data-gsheet="' + key + '" aria-label="Gisement : ' + esc(I[res].n) + '"><span class="gis-l1"><b>' + esc(I[res].n) + "</b>" + right + "</span>" +
         '<span class="gis-l2 tiny muted">' + sub + "</span></button>" +
@@ -952,6 +1096,7 @@
       try { btn.setPointerCapture(ev.pointerId); } catch (e) { /* pas de capture possible */ }
       A.init && A.init();
       U.holding = true;
+      if (btn.classList.contains("gis-ic-vivant")) btn.classList.add("holding");
       harvest(btn);
       const h = { id: ev.pointerId, btn };
       h.tm = setTimeout(function rep() { if (hold !== h) return; harvest(btn); h.tm = setTimeout(rep, 140); }, 380);
@@ -960,6 +1105,7 @@
     }
     function up(ev) {
       if (!hold || (ev && ev.pointerId !== hold.id)) return;
+      if (hold.btn) hold.btn.classList.remove("holding");
       clearTimeout(hold.tm);
       hold = null;
       U.holding = false;

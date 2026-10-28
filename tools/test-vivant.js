@@ -25,9 +25,23 @@ assert(domCode.includes("anim-rock"), "domaine.js doit contenir anim-rock pour l
 assert(domCode.includes("anim-flint"), "domaine.js doit contenir anim-flint pour le silex");
 assert(domCode.includes("anim-fiber"), "domaine.js doit contenir anim-fiber pour la fibre");
 assert(domCode.includes("anim-water"), "domaine.js doit contenir anim-water pour l'eau");
+assert(domCode.includes("anim-sand"), "domaine.js doit contenir anim-sand pour le sable");
+assert(domCode.includes("anim-clay"), "domaine.js doit contenir anim-clay pour l'argile");
+assert(domCode.includes('res === "malachite"'), "domaine.js doit contenir malachite");
+assert(domCode.includes('res === "fer_min"'), "domaine.js doit contenir fer_min");
+assert(domCode.includes('res === "charbon"'), "domaine.js doit contenir charbon");
+assert(domCode.includes('res === "quartz"'), "domaine.js doit contenir quartz");
+assert(domCode.includes('res === "petrole"'), "domaine.js doit contenir petrole");
 assert(domCode.includes("spawnLivingParticles"), "domaine.js doit définir spawnLivingParticles");
 
-// 3. Simulation du cycle des modes
+// 3. Vérification des styles CSS du mode Vivant
+const vivantCSS = fs.readFileSync(path.join(ROOT, "css/domaine-vivant.css"), "utf8");
+assert(vivantCSS.includes("gis-producing"), "domaine-vivant.css doit styliser les gisements en production");
+assert(vivantCSS.includes("vivant-holding-exertion"), "domaine-vivant.css doit animer le maintien continu");
+assert(vivantCSS.includes("vivant-ripple"), "domaine-vivant.css doit contenir l'onde de choc");
+assert(vivantCSS.includes("vivant-bar-lead"), "domaine-vivant.css doit animer la barre de fabrication");
+
+// 4. Simulation du cycle des modes
 const MODES = ["atlas", "vivant", "classique"];
 function nextMode(cur) {
   const idx = MODES.indexOf(cur);
