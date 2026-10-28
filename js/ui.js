@@ -156,6 +156,11 @@
   function icon(id, cls) {
     const it = I[id];
     if (!it) return "";
+    const isVivant = (window.EclatStyleMode === "vivant" || (typeof document !== "undefined" && document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
+    if (isVivant && window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasItem(id)) {
+      const src = window.ECLAT_ILLUSTRATIONS.getItem(id);
+      return '<span class="ic carnet-ic ' + (cls || "") + '" data-item="' + esc(id) + '"><img class="carnet-img" src="' + src + '" alt="" loading="lazy" decoding="async" /></span>';
+    }
     if (GI.items[id]) return '<span class="ic gic ' + (cls || "") + '">' + gi(GI.items[id]) + "</span>";
     if (it.sym) return '<span class="ic sym ' + (cls || "") + '" style="--c:' + it.col + ";--ink:" + ink(it.col) + '">' + esc(it.sym) + "</span>";
     return '<span class="ic ' + (cls || "") + '">' + it.ic + "</span>";
