@@ -500,7 +500,7 @@
   "ecran": "Journal · fins",
   "label": "✦ Mémoire des mains",
   "repere": "button[data-cycle=\"\"].btn",
-  "explique": "rien",
+  "explique": "info-bulle : Voir tes améliorations permanentes et préparer la relève",
   "tag": "button"
  },
  {
@@ -1652,7 +1652,7 @@
   "ecran": "Journal · fins",
   "label": "✦ Mémoire des mains",
   "repere": "button[data-cycle=\"\"].btn",
-  "explique": "rien",
+  "explique": "info-bulle : Voir tes améliorations permanentes et préparer la relève",
   "tag": "button"
  },
  {

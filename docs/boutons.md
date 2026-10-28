@@ -5,7 +5,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | | |
 |---|---|
 | Boutons relevés | 228 |
-| Sans explication | 2 |
+| Sans explication | 0 |
 | Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |
 
@@ -200,12 +200,12 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | neuve | 1 endroit | `button[data-s="faire"].signe-card` | info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais |
 | avancée | 1 endroit | `button[data-s="faire"].signe-card` | info-bulle : Ouvrir la fiche de ce signe : où tu l’as vu, et ce que tu en sais |
 
-## Journal · fins (2 boutons, 2 sans explication)
+## Journal · fins (2 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
-| neuve | ✦ Mémoire des mains | `button[data-cycle=""].btn` | rien |
-| avancée | ✦ Mémoire des mains | `button[data-cycle=""].btn` | rien |
+| neuve | ✦ Mémoire des mains | `button[data-cycle=""].btn` | info-bulle : Voir tes améliorations permanentes et préparer la relève |
+| avancée | ✦ Mémoire des mains | `button[data-cycle=""].btn` | info-bulle : Voir tes améliorations permanentes et préparer la relève |
 
 ## Journal · stats (2 boutons, 0 sans explication)
 
