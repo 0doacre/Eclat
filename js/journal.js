@@ -398,7 +398,7 @@
         if (st.term.length) h += '<div class="l">────────</div>' + st.term.map((l) => '<div class="l' + (l.startsWith("> ") || l.startsWith("REG > ") || l.startsWith("ARCHE > ") ? " u" : "") + '">' + (l.startsWith("REG · ") ? recitInline(l, "Le Registre") + lectureHTML(l) : esc(l)) + "</div>").join("");
         h += "</div>";
         if (E.cache().term) h += '<form class="term-in" id="termForm" autocomplete="off"><span class="term-pfx">' + esc(pfx) + '</span><input id="termIn" placeholder="tape une commande…" autocapitalize="off" spellcheck="false"><button class="btn" type="submit" title="Envoyer la commande" aria-label="Envoyer la commande">⏎</button></form>';
-        else h += '<p class="small muted">Un ordinateur te permettrait de dialoguer avec ' + (isReg ? "le Registre" : "ARCHE") + '.</p>';
+        else h += '<p class="small muted">Il te faudrait un ordinateur pour dialoguer avec ' + (isReg ? "le Registre" : "ARCHE") + '.</p>';
       } else {
         h += '<p class="small muted">Un Grand Œuvre se bâtit avec ce que tu verses depuis la Réserve, ou ce qu’il y prend seul quand tu l’alimentes. Il en demande des quantités énormes.</p>';
         for (const pid in D.PROJECTS) if (E.projVisible(pid)) h += projCard(pid);

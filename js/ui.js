@@ -196,7 +196,7 @@
     res: "Une ressource : elle se récolte sur un gisement.",
     comp: "Une pièce : elle sert à fabriquer d’autres objets.",
     tool: "Un outil : renforce tes récoltes à la main ou ouvre de nouveaux chemins.",
-    stat: "Une station : elle reste à l’Atelier et débloque une action ou une chaleur.",
+    stat: "Une station : elle reste à l’Atelier et ouvre une action ou une chaleur.",
     ext: "Récolte automatique (active hors ligne). À poser sur un gisement de la terre indiquée.",
     upg: "Une amélioration : son effet est permanent dès son obtention.",
     mach: "Une machine : elle reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire.",
@@ -230,7 +230,7 @@
       const g = D.GESTES[s.g].n;
       if (s.heat) out.push(s.g === "chauffer" ? "Chauffer jusqu’à " + fmtHeat(s.heat) : g);
       else if ((s.lvl || 1) > 1) out.push(g + " les ressources plus dures");
-      else out.push("Débloque l’action " + g);
+      else out.push("Ouvre l’action " + g);
     });
     if (e.tap) for (const k in e.tap) out.push("Récolte à la main " + (k === "*" ? "partout" : E.ZONES[k] ? deZone(k).replace(/^de la /, "à la ").replace(/^du /, "au ").replace(/^des /, "aux ").replace(/^de l’/, "à l’") : ": " + targetName(k)) + " " + fmtMul(e.tap[k]));
     if (e.auto) for (const k in e.auto) out.push("Extracteurs " + (k === "*" ? "de toutes les terres" : deZone(k)) + " " + fmtMul(e.auto[k]));
@@ -248,11 +248,11 @@
     if (e.exp) out.push("Explorations " + fmtMul(e.exp));
     if (e.sky) out.push("Ouvre le Cosmos");
     if (e.arche) out.push("Capte les ondes radio");
-    if (e.term) out.push("Débloque le terminal");
-    if (e.signal) out.push("Permet d’écouter le ciel");
+    if (e.term) out.push("Ouvre le terminal");
+    if (e.signal) out.push("Écoute les signaux du ciel");
     if (e.aspd) out.push("Machines " + fmtMul(e.aspd));
     if (e.pip) out.push("Récolte seul " + perMin(e.pip));
-    if (e.flute) out.push("Débloque la flûte");
+    if (e.flute) out.push("Donne la flûte");
     if (e.decode) out.push("Décode le signal de Kher");
     return out;
   }

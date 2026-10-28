@@ -154,6 +154,12 @@ test("les ouvrages changent aux neuf retours et ne dévoilent pas les recettes i
     }
   }
 });
+test("les fragments des anciennes explorations attestent des lieux déjà visités", () => {
+  const E = mk(); E.state.frags.chene2 = 1; E.state.frags.grotte = 1;
+  const t = E.terreMaitrise("lisiere");
+  assert.equal(t.phases[1].done, true); assert.equal(t.phases[4].done, false);
+  assert.equal(t.pret, false); assert.equal(E.terreBonus("lisiere"), 1);
+});
 test("le bilan annonce le même gain que le moteur et le garde après rechargement", () => {
   const E = mk(); relevePossible(E); complete(E, "desert");
   assert.match(T.transmissionHTML(E, String), /\+0 % → \+5 %/);

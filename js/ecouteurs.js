@@ -58,7 +58,7 @@
         if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
           "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
-          '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent d’acheter.</p>', "Compris"), 2200);
+          '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles offrent.</p>', "Compris"), 2200);
       });
       E.on("zone", (z) => {
         U.zone = z;
@@ -491,8 +491,27 @@
         }
         if ((b = t.closest("[data-owned]"))) { U.showOwned = !U.showOwned; render(true); return; }
         if ((b = t.closest("[data-hcancel]"))) {
-          const j = S().hand.q[Number(b.dataset.hcancel)];
-          if (j && E.cancelJob(Number(b.dataset.hcancel))) { A.click(); toast("Commande annulée : " + esc(I[j.id].n) + ". Ressources restituées."); render(true); }
+          const target = b.dataset.hcancel;
+          const j = E.findJob(target);
+          const name = j ? I[j.id].n : "Commande";
+          if (j && E.cancelJob(target)) { A.click(); toast("Commande annulée : " + esc(name) + ". Ressources restituées."); render(true); }
+          return;
+        }
+        if ((b = t.closest("[data-aide]"))) {
+          const k = b.dataset.aide;
+          const aide = E.AIDES && E.AIDES[k];
+          if (aide) {
+            A.click();
+            const prevOpener = document.activeElement || b;
+            openModal({
+              html: '<div class="kicker">' + esc(aide.kicker) + '</div><h2>' + esc(aide.titre) + '</h2><p>' + esc(aide.texte) + '</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>',
+              onClose: () => {
+                if (prevOpener && prevOpener.isConnected && typeof prevOpener.focus === "function") {
+                  setTimeout(() => prevOpener.focus({ preventScroll: true }), 40);
+                }
+              }
+            });
+          }
           return;
         }
         if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }

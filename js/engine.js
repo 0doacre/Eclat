@@ -1260,6 +1260,11 @@
       if (!j.sp || j.sp.length !== j.s.length) j.sp = j.s.map(() => 0);
       if (!j.mAcc || j.mAcc.length !== j.s.length) j.mAcc = j.s.map(() => 0);
       if (!j.miss || typeof j.miss !== "object") j.miss = {};
+      if (!j.uid) {
+        S.hand.nextUid = (S.hand.nextUid || 0) + 1;
+        j.uid = "j" + S.hand.nextUid;
+      }
+      if (j.paused === undefined) j.paused = false;
       let i = 0;
       while (i < j.s.length && j.done[i] >= j.s[i][1]) i++;
       j.i = i;
@@ -1362,6 +1367,7 @@
       let units = null; // extracteurs libres, calculés une fois et seulement s’il manque quelque chose
       S.hand.q.forEach((j) => {
         syncJobPos(j);
+        if (j.paused) return;
         for (const res in j.miss) {
           const pull = Math.min(j.miss[res], S.inv[res] || 0);
           if (pull > 1e-9) {
@@ -1437,6 +1443,7 @@
         idle[w.m] = true;
         for (let jIdx = 0; jIdx < S.hand.q.length; jIdx++) {
           const j = S.hand.q[jIdx], resv = jobResv[jIdx];
+          if (j.paused) continue;
           for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
             const rec = j.s[sIdx][0];
             if (!machReadyFor(w.m, rec)) continue;
@@ -1456,6 +1463,7 @@
       for (let pass = 0; pass < 2 && !hWork.job; pass++) {
         for (let jIdx = 0; jIdx < S.hand.q.length && !hWork.job; jIdx++) {
           const j = S.hand.q[jIdx], resv = jobResv[jIdx];
+          if (j.paused) continue;
           for (let sIdx = 0; sIdx < j.s.length; sIdx++) {
             const rec = j.s[sIdx][0];
             if (j.done[sIdx] >= j.s[sIdx][1]) continue;
@@ -1478,7 +1486,7 @@
       S.hand.q.forEach((j, jIdx) => {
         const anyM = stepMachs[jIdx].some((n) => n > 0);
         const anyH = hWork.job === j;
-        j.w = anyM || anyH ? 0 : 1;
+        j.w = j.paused ? 0 : (anyM || anyH ? 0 : 1);
       });
     }
 
@@ -1519,7 +1527,12 @@
         E.emit("hand", { kind: "add", job: last });
         return { ok: true, job: last, time: jobTime(last, false), missing: Object.keys(last.miss).length ? Object.assign({}, last.miss) : null, merged: true };
       }
+      const nextUid = () => {
+        S.hand.nextUid = (S.hand.nextUid || 0) + 1;
+        return "j" + S.hand.nextUid;
+      };
       const j = {
+        uid: nextUid(), paused: false,
         id, s: p.steps, i: 0, k: 0,
         done: p.steps.map(() => 0), hMade: p.steps.map(() => 0), sp: p.steps.map(() => 0), mAcc: p.steps.map(() => 0),
         b: bench, miss
@@ -1570,7 +1583,12 @@
         E.emit("hand", { kind: "add", job: last });
         return { ok: true, job: last, time: jobTime(last, false), merged: true };
       }
+      const nextUid = () => {
+        S.hand.nextUid = (S.hand.nextUid || 0) + 1;
+        return "j" + S.hand.nextUid;
+      };
       const j = {
+        uid: nextUid(), paused: false,
         id, s: steps, i: 0, k: 0,
         done: steps.map(() => 0), hMade: steps.map(() => 0), sp: steps.map(() => 0), mAcc: steps.map(() => 0),
         b: bench, miss: {}
@@ -1581,9 +1599,62 @@
       E.emit("hand", { kind: "add", job: j });
       return { ok: true, job: j, time: jobTime(j, S.hand.q.length === 1) };
     };
-    E.cancelJob = function (idx) {
+    function findJobIndex(target) {
+      if (typeof target === "number") return target >= 0 && target < S.hand.q.length ? target : -1;
+      if (typeof target === "string") {
+        const byUid = S.hand.q.findIndex((x) => x.uid === target);
+        if (byUid >= 0) return byUid;
+        const n = Number(target);
+        if (Number.isInteger(n) && n >= 0 && n < S.hand.q.length) return n;
+        return -1;
+      }
+      if (target && typeof target === "object") return S.hand.q.findIndex((x) => x === target || (x.uid && x.uid === target.uid));
+      return -1;
+    }
+    E.findJobIndex = findJobIndex;
+    E.findJob = (target) => {
+      const idx = findJobIndex(target);
+      return idx >= 0 ? S.hand.q[idx] : null;
+    };
+    E.pauseJob = function (target) {
+      const j = E.findJob(target);
+      if (!j || j.paused) return false;
+      j.paused = true;
+      assignWorkers();
+      E.emit("hand", { kind: "pause", job: j });
+      return true;
+    };
+    E.resumeJob = function (target) {
+      const j = E.findJob(target);
+      if (!j || !j.paused) return false;
+      j.paused = false;
+      assignWorkers();
+      E.emit("hand", { kind: "resume", job: j });
+      return true;
+    };
+    E.togglePauseJob = function (target) {
+      const j = E.findJob(target);
+      if (!j) return null;
+      j.paused = !j.paused;
+      assignWorkers();
+      E.emit("hand", { kind: j.paused ? "pause" : "resume", job: j });
+      return j.paused;
+    };
+    E.prioritizeJob = function (target) {
+      const idx = findJobIndex(target);
+      if (idx <= 0) return false;
       const j = S.hand.q[idx];
-      if (!j) return false;
+      S.hand.q.splice(idx, 1);
+      S.hand.q.unshift(j);
+      S.hand.p = 0;
+      assignWorkers();
+      E.emit("hand", { kind: "priority", job: j });
+      return true;
+    };
+    E.cancelJob = function (target) {
+      const idx = findJobIndex(target);
+      if (idx < 0) return false;
+      const j = S.hand.q[idx];
       for (const i in j.b) add(i, j.b[i]);
       S.hand.q.splice(idx, 1);
       if (idx === 0) S.hand.p = 0;
@@ -1598,7 +1669,7 @@
       const jobs = S.hand.q.map((j, n) => {
         syncJobPos(j);
         const s = j.s[Math.min(j.i, j.s.length - 1)], left = jobTime(j, n === 0);
-        t += left;
+        if (!j.paused) t += left;
         const tot = Math.max(1e-6, j.s.reduce((a, x) => a + estStepTime(x[0], x[1], false), 0));
         const totalCrafts = j.s.reduce((a, x) => a + x[1], 0);
         const doneCrafts = j.s.reduce((a, x, idx) => a + j.done[idx] + (j.sp[idx] || 0), 0);
@@ -1623,12 +1694,14 @@
         const activeStep = (hWork.job === j && hWork.rec) || (Object.values(machs)[0] && Object.values(machs)[0].rec) || s[0];
         const miss = j.miss && Object.keys(j.miss).length ? Object.assign({}, j.miss) : null;
         return {
+          uid: j.uid,
+          paused: !!j.paused,
           id: j.id, n: j.s[j.s.length - 1][1],
           done: j.done[j.s.length - 1], finalDone: j.done[j.s.length - 1],
           total: totalCrafts, doneCrafts,
           step: activeStep, k: j.k, of: s[1], i: j.i, steps: stepList,
           frac: totalCrafts ? Math.min(1, doneCrafts / totalCrafts) : 0,
-          left, at: t, wait: !!j.w, tot, miss,
+          left: j.paused ? null : left, remTime: left, at: j.paused ? null : t, wait: !!j.w, tot, miss,
           hand: hWork.job === j ? hWork.rec : null,
           machs
         };
@@ -3275,6 +3348,158 @@
       e.on = on === undefined ? !e.on : !!on;
       domChanged();
       return e;
+    };
+    /* Projections en lecture seule : bénéfice réel avant investissement */
+    E.projectExtractor = function (z, res, t, countDelta) {
+      countDelta = countDelta || 1;
+      const key = extKey(z, res);
+      const e = S.dom.ext[key];
+      const curRate = e && machStat[key] && machStat[key].s === "ok" ? extOut(e, E.cache()) : 0;
+      const simU = Object.assign({}, e ? e.u : {});
+      simU[t] = (simU[t] || 0) + countDelta;
+      const simE = { z, res, u: simU, on: true };
+      const projRate = extOut(simE, E.cache());
+      const free = freeExt(t);
+      const needCraft = Math.max(0, countDelta - free);
+      const cost = needCraft > 0 ? totalCost(t, needCraft, count(t)) : {};
+      const missing = {};
+      for (const k in cost) {
+        const diff = cost[k] - (S.inv[k] || 0);
+        if (diff > 1e-9) missing[k] = diff;
+      }
+      const b = blocker(t);
+      return {
+        z, res, t,
+        curRate,
+        projRate,
+        gainRate: Math.max(0, projRate - curRate),
+        cost,
+        alreadyFree: free >= countDelta,
+        free,
+        missing: Object.keys(missing).length ? missing : null,
+        blocker: b && b.why !== "owned" ? b : null
+      };
+    };
+
+    E.projectExtractorUpgrade = function (z, res, fromType) {
+      const nx = E.extNext(fromType);
+      if (!nx || !S.known[nx]) return null;
+      const key = extKey(z, res);
+      const e = S.dom.ext[key];
+      const curRate = e && machStat[key] && machStat[key].s === "ok" ? extOut(e, E.cache()) : 0;
+      const simU = Object.assign({}, e ? e.u : {});
+      simU[fromType] = Math.max(0, (simU[fromType] || 0) - 1);
+      if (simU[fromType] === 0) delete simU[fromType];
+      simU[nx] = (simU[nx] || 0) + 1;
+      const simE = { z, res, u: simU, on: true };
+      const projRate = extOut(simE, E.cache());
+      const free = freeExt(nx);
+      const cost = free >= 1 ? {} : costFor(nx, count(nx));
+      const missing = {};
+      for (const k in cost) {
+        const diff = cost[k] - (S.inv[k] || 0);
+        if (diff > 1e-9) missing[k] = diff;
+      }
+      const b = blocker(nx);
+      return {
+        z, res, from: fromType, to: nx,
+        curRate,
+        projRate,
+        gainRate: Math.max(0, projRate - curRate),
+        cost,
+        alreadyFree: free >= 1,
+        free,
+        missing: Object.keys(missing).length ? missing : null,
+        blocker: b && b.why !== "owned" ? b : null
+      };
+    };
+
+    E.projectToolBenefit = function (toolId) {
+      const it = item(toolId);
+      if (!it || it.t !== "tool") return null;
+      if (typeof E.equipmentSpeed === "function") {
+        const pcfg = typeof E.equipmentCfg === "function" ? E.equipmentCfg() : null;
+        const eq = pcfg && pcfg.equipment && pcfg.equipment[toolId];
+        if (eq && eq.speed) {
+          const list = [];
+          for (const rec in eq.speed) {
+            if (!S.known[rec]) continue;
+            const curChoice = E.equipmentChoices(rec).find((c) => c.ready);
+            const curT = handTime(rec, curChoice);
+            const projT = handTime(rec, { equipment: toolId, mode: Object.keys(eq.modes || {})[0] });
+            list.push({ recipe: rec, n: (item(rec) || {}).n, curT, projT, mult: eq.speed[rec] });
+          }
+          if (list.length) return { kind: "equipment", list };
+        }
+      }
+      if (it.e) {
+        const list = [];
+        if (it.e.tap) {
+          for (const k in it.e.tap) {
+            const mult = it.e.tap[k];
+            if (k === "*") list.push({ label: "Toutes les récoltes à la main", mult });
+            else if (ZONES[k]) list.push({ label: "Récolte à la main (" + ZONES[k].n + ")", mult, zone: k });
+            else if (item(k)) list.push({ label: "Récolte de " + item(k).n + " à la main", mult, res: k });
+          }
+        }
+        if (it.e.auto) {
+          for (const k in it.e.auto) {
+            const mult = it.e.auto[k];
+            list.push({ label: k === "*" ? "Débit de tous les extracteurs" : "Extracteurs (" + (ZONES[k]?.n || k) + ")", mult, auto: true });
+          }
+        }
+        if (list.length) return { kind: "tool", list };
+      }
+      return null;
+    };
+
+    E.projectMachineOnRecipe = function (machId, recId) {
+      if (!machReadyFor(machId, recId)) return null;
+      const mRate = machUnitRate(machId, E.cache(), recId);
+      if (!(mRate > 0)) return null;
+      const hTime = handTime(recId);
+      const mTime = 1 / mRate;
+      return {
+        mach: machId,
+        rec: recId,
+        mRate,
+        hTime,
+        mTime,
+        ratePerMin: mRate * 60 * ((item(recId) && item(recId).r && item(recId).r[2]) || 1)
+      };
+    };
+
+    E.AIDES = {
+      etude: {
+        kicker: "Atelier",
+        titre: "L’étude des matières",
+        texte: "Observer une ressource (icône 👁️) permet d’étudier ses caractéristiques. L’étude révèle les gestes compatibles (tailler, chauffer, tresser...) sans détruire la matière. C’est à partir de ces gestes que tu découvriras les nouvelles recettes de ton Carnet."
+      },
+      commandes: {
+        kicker: "Atelier",
+        titre: "Commandes et réservations",
+        texte: "Quand tu lances une commande, les ingrédients nécessaires disponibles en Réserve sont réservés sur ton établi. Ce qui manque est extrait ou préparé au fur et à mesure. Les mains et les machines libres s’y consacrent. Mettre en pause une commande libère les travailleurs pour les autres ordres sans perdre la progression ni les matières réservées. Passer en priorité place la commande en tête de file."
+      },
+      maitrise: {
+        kicker: "Domaine & Terres",
+        titre: "Maîtrise des terres et transmission",
+        texte: "Chaque terre propose cinq étapes d’accomplissement : équipement initial ou installation, exploration des lieux, grand ouvrage, production automatique et série de fabrications. Quand les cinq étapes sont franchies, la terre est maîtrisée : la relève transmet alors +5 % de débit permanent pour cette terre et ses recettes (jusqu’à +50 %). Les explorations et le savoir restent acquis entre les relèves."
+      },
+      releve: {
+        kicker: "Mémoire des mains",
+        titre: "La relève des Semeurs",
+        texte: "Quand les mains s’alourdissent ou que ton horizon est atteint, passer le relais éveille un nouveau Semeur. Le monde matériel repart de la Lisière, mais tout ton savoir est préservé : recettes du Carnet, Journal, signes compris, Mémoire des mains, Échos et bonus de terres transmises. Chaque passage franchi rapporte des Traces à investir au réveil dans de nouvelles améliorations permanentes."
+      },
+      ouvrier: {
+        kicker: "Atelier équipé",
+        titre: "L’ouvrier et ses salaires",
+        texte: "L’ouvrier travaille à ton établi aménagé pour découper des lanières à ta place tant qu’il a des peaux et une avance sur salaire. Tu lui verses des écus à l’avance ; chaque découpe prélève sa rémunération. S’il n’a plus d’avance ou de peaux, il attend sans rien perdre. Le marchand vend des équipements, tandis que le troqueur échange des ressources rares contre des surplus."
+      },
+      outils: {
+        kicker: "Atelier équipé",
+        titre: "Outils et postes de travail",
+        texte: "Chaque recette requiert un geste précis (couper, tailler, coudre...) et souvent un outil ou un poste adapté. L’équipement choisi influe sur la vitesse : un outil spécialisé (comme le couteau de silex pour découper les lanières) réalise l’opération deux fois plus vite que l’outil rudimentaire. Préparer le bon outil décuple le débit de tes fabrications."
+      }
     };
     /* Pose un extracteur libre sur le gisement de sa terre où il manque le plus.
      * Sert au bot de simulation et aux parties d’avant la v4, dont les extracteurs
