@@ -3,10 +3,12 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "97f17354e2";
+const BUILD = "c48c388e59";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
+  "assets/carnet/items/os.webp", "assets/carnet/items/cuir.webp", "assets/carnet/items/aiguille.webp", "assets/carnet/items/laniere.webp", "assets/carnet/items/colle_os.webp", "assets/carnet/items/arc.webp", "assets/carnet/items/fronde.webp", "assets/carnet/items/outre.webp", "assets/carnet/items/pic_os.webp", "assets/carnet/items/collets.webp", "assets/carnet/items/tunique.webp", "assets/carnet/items/encre.webp", "assets/carnet/items/cuir_1.webp", "assets/carnet/items/racloir_os.webp",
+  "assets/carnet/sources/source_os.webp", "assets/carnet/sources/source_cuir.webp",
   "js/equipements.js", "js/atelier-economie.js", "js/atelier-equipe.js", "css/atelier-equipe.css", "css/atelier-dessine.css",
   "js/assistance.js", "css/assistance.css",
   "js/territoires.js", "css/territoires.css",

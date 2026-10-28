@@ -2,6 +2,8 @@
 
 Cette itération prolonge l’intégration de Gemini dans la preview (`39a7b0e`, menu et Domaine). Elle habille les véritables écrans Atelier et Carnet lorsque le style **Vivant** est actif.
 
+L’habillage est également porté sur `main`. Le test navigateur détecte la présence du module d’équipements : il exerce l’Atelier historique sur `main`, et les deux parcours sur la preview. Les captures ci-dessous proviennent de la preview équipée ; `main` conserve son moteur et ses sauvegardes habituels.
+
 ## Composition
 
 Les feuilles regroupent le poste et les matières ; les lignes de réserve et les recettes sont séparées par des filets d’encre. Les emplacements reçoivent un cadre dessiné. Un lavis et un trait de pigment désignent les outils et les commandes sélectionnés. Les matières gardent leurs couleurs et prennent davantage de place : 40 px dans la réserve équipée, 44 px sur l’établi et 48 px en tête des recettes.

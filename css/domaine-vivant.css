@@ -478,6 +478,16 @@ body.theme-dark .carnet-ic[data-item="charbon"] .carnet-img {
   height: 66px;
 }
 
+[data-style-mode="vivant"] .living-carnet-img.source-os {
+  width: 70px;
+  height: 70px;
+}
+
+[data-style-mode="vivant"] .living-carnet-img.source-cuir {
+  width: 76px;
+  height: 76px;
+}
+
 /* Animations de repos des sources illustrées */
 @media (prefers-reduced-motion: no-preference) {
   [data-style-mode="vivant"] .living-carnet-img.source-bois {
@@ -494,6 +504,34 @@ body.theme-dark .carnet-ic[data-item="charbon"] .carnet-img {
     transform-origin: 50% 80%;
   }
 
+  [data-style-mode="vivant"] .living-carnet-img.source-cuir {
+    transform-origin: 50% 90%;
+    animation: vivant-beast-breathe 4.2s ease-in-out infinite;
+  }
+
+  [data-style-mode="vivant"] .living-carnet-img.source-os {
+    transform-origin: 50% 85%;
+  }
+
+  @keyframes vivant-beast-breathe {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-1.5px) scale(1.015, 1.02); }
+  }
+
+  @keyframes vivant-beast-startle {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.93, 0.96) translateY(2px); }
+    65% { transform: scale(1.05, 1.03) translateY(-3px); }
+    100% { transform: scale(1) translateY(0); }
+  }
+
+  @keyframes vivant-bone-forage {
+    0% { transform: scale(1); }
+    35% { transform: scale(0.94, 0.94) rotate(-2deg); }
+    70% { transform: scale(1.03, 1.03) rotate(1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
   /* Animations d'impact lors de la récolte */
   [data-style-mode="vivant"] .hit .living-carnet-img.source-bois {
     animation: vivant-tree-chop 0.38s cubic-bezier(0.25, 1.4, 0.5, 1) !important;
@@ -505,6 +543,14 @@ body.theme-dark .carnet-ic[data-item="charbon"] .carnet-img {
 
   [data-style-mode="vivant"] .hit .living-carnet-img.source-caillou {
     animation: vivant-rock-smash 0.32s cubic-bezier(0.2, 1.5, 0.4, 1) !important;
+  }
+
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-cuir {
+    animation: vivant-beast-startle 0.36s cubic-bezier(0.2, 1.4, 0.45, 1) !important;
+  }
+
+  [data-style-mode="vivant"] .hit .living-carnet-img.source-os {
+    animation: vivant-bone-forage 0.34s cubic-bezier(0.2, 1.3, 0.5, 1) !important;
   }
 }
 

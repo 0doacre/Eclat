@@ -60,9 +60,13 @@ const illCode = fs.readFileSync(path.join(ROOT, "js/illustrations.js"), "utf8");
 assert(illCode.includes("bois.webp") && illCode.includes("source_bois.webp"), "illustrations.js doit référencer les variantes");
 
 const EXPECTED_ITEMS = [
+  // Âge du Bois
   "bois", "fibre", "caillou", "manche", "corde", "panier", "archet",
   "feu", "charbon", "epieu", "cabane", "torche", "fibre_1", "caillou_1",
-  "percuteur_pierre", "etabli_amenage"
+  "percuteur_pierre", "etabli_amenage",
+  // Âge de l'Os
+  "os", "cuir", "aiguille", "laniere", "colle_os", "arc", "fronde",
+  "outre", "pic_os", "collets", "tunique", "encre", "cuir_1", "racloir_os"
 ];
 for (const id of EXPECTED_ITEMS) {
   const p = path.join(ROOT, "assets/carnet/items", `${id}.webp`);
@@ -70,7 +74,10 @@ for (const id of EXPECTED_ITEMS) {
   assert(sw.includes(`assets/carnet/items/${id}.webp`), `sw.js doit cacher items/${id}.webp`);
 }
 
-const EXPECTED_SOURCES = ["source_bois", "source_fibre", "source_caillou"];
+const EXPECTED_SOURCES = [
+  "source_bois", "source_fibre", "source_caillou",
+  "source_os", "source_cuir"
+];
 for (const id of EXPECTED_SOURCES) {
   const p = path.join(ROOT, "assets/carnet/sources", `${id}.webp`);
   assert(fs.existsSync(p), `L'illustration source ${id}.webp doit exister`);
@@ -98,5 +105,5 @@ assert(cssVivant.includes("--drawn-divider"), "css/domaine-vivant.css doit défi
 console.log("  ✓ structure et intégration du cycle 3 modes valides");
 console.log("  ✓ entités vectorielles vivantes (bois, caillou, silex, fibre, eau, sable, argile) présentes");
 console.log("  ✓ système de particules de frappe et recul d'impact configurés");
-console.log("  ✓ 19 variantes WebP du Carnet du Semeur (16 objets, 3 sources) vérifiées et en cache");
+console.log("  ✓ 35 variantes WebP du Carnet du Semeur (30 objets, 5 sources — Bois & Os) vérifiées et en cache");
 console.log("  ✓ 10 composants SVG de l'interface dessinée (cadres, boutons, filets, coches) vérifiés et en cache");

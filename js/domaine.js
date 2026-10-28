@@ -423,11 +423,13 @@
           p.style.color = "#c2410c";
           p.style.fontSize = (14 + Math.random() * 6) + "px";
         } else if (res === "os") {
-          content = "🦴";
-          p.style.fontSize = (13 + Math.random() * 6) + "px";
+          content = Math.random() > 0.4 ? "🦴" : "•";
+          p.style.color = "#e5dfd3";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
         } else if (res === "cuir") {
-          content = "🪢";
-          p.style.fontSize = (13 + Math.random() * 6) + "px";
+          content = Math.random() > 0.4 ? "🌾" : "•";
+          p.style.color = "#c29b68";
+          p.style.fontSize = (12 + Math.random() * 6) + "px";
         } else if (res === "malachite") {
           content = "✦";
           p.style.color = "#10b981";
