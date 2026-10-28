@@ -507,3 +507,389 @@ body.theme-dark .carnet-ic[data-item="charbon"] .carnet-img {
     animation: vivant-rock-smash 0.32s cubic-bezier(0.2, 1.5, 0.4, 1) !important;
   }
 }
+
+/* ================================================================ INTERFACE DESSINÉE (Carnet du Semeur) */
+:root {
+  --drawn-canvas: #e9e5db;
+  --drawn-paper: #f8f2e4;
+  --drawn-paper-deep: #ece2ca;
+  --drawn-ink: #40382d;
+  --drawn-muted: #706652;
+  --drawn-pigment: #8e4e35;
+  --drawn-pigment-ink: #fff8e9;
+  --drawn-rule: #998b70;
+  --drawn-frame: url("../assets/ui/frame-ink.svg");
+  --drawn-button: url("../assets/ui/button-ink.svg");
+  --drawn-divider: url("../assets/ui/divider-ink.svg");
+  --drawn-checkbox: url("../assets/ui/checkbox-ink.svg");
+  --wash-mask: url("../assets/ui/pigment-wash.svg");
+  --check-mask: url("../assets/ui/check-mark.svg");
+}
+
+body.theme-dark {
+  --drawn-canvas: #21241f;
+  --drawn-paper: #2c3029;
+  --drawn-paper-deep: #383d31;
+  --drawn-ink: #e5dcc9;
+  --drawn-muted: #c4baa2;
+  --drawn-pigment: #d1a778;
+  --drawn-pigment-ink: #252b23;
+  --drawn-rule: #908f7a;
+  --drawn-frame: url("../assets/ui/frame-chalk.svg");
+  --drawn-button: url("../assets/ui/button-chalk.svg");
+  --drawn-divider: url("../assets/ui/divider-chalk.svg");
+  --drawn-checkbox: url("../assets/ui/checkbox-chalk.svg");
+}
+
+/* 1. Fenêtres et feuilles dessinées */
+[data-style-mode="vivant"] .menu-modal .modal-box,
+[data-style-mode="vivant"] .modal-box.drawn-frame {
+  position: relative;
+  border: 15px solid transparent !important;
+  border-image-source: var(--drawn-frame) !important;
+  border-image-slice: 20 !important;
+  border-image-width: 15px !important;
+  border-image-repeat: stretch !important;
+  background: var(--drawn-paper) !important;
+  color: var(--drawn-ink) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45) !important;
+  border-radius: 4px !important;
+  padding: 24px 20px 18px !important;
+  isolation: isolate;
+}
+
+[data-style-mode="vivant"] .menu-modal .modal-box::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  background: radial-gradient(ellipse at 0 18%, color-mix(in srgb, var(--drawn-paper-deep) 40%, transparent), transparent 28%),
+              radial-gradient(ellipse at 100% 85%, color-mix(in srgb, var(--drawn-paper-deep) 38%, transparent), transparent 26%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Vignette héroïque du Menu en Mode Vivant */
+.vivant-menu-hero {
+  height: 110px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 10px;
+}
+.vivant-menu-hero > img:first-child {
+  transform: rotate(-4deg) translate(-22px, -2px);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
+}
+.vivant-menu-hero .hero-log {
+  position: absolute;
+  left: 50%;
+  top: 28px;
+  transform: rotate(-8deg);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.22));
+}
+.vivant-menu-hero .margin-stroke {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 28px;
+  height: 60px;
+  background: var(--drawn-divider) center/60px 8px no-repeat;
+  transform: rotate(-73deg);
+  opacity: 0.35;
+}
+
+/* En-tête du menu façon carnet */
+[data-style-mode="vivant"] .menu-game-header {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 12px solid transparent !important;
+  border-image-source: var(--drawn-divider) !important;
+  border-image-slice: 0 0 12 0 !important;
+  border-image-width: 0 0 10px 0 !important;
+  border-image-repeat: stretch !important;
+  border-radius: 0 !important;
+  padding: 0 0 12px !important;
+  box-shadow: none !important;
+}
+
+[data-style-mode="vivant"] .m-title-text {
+  font-family: var(--serif) !important;
+  font-size: 28px !important;
+  letter-spacing: 0.1em !important;
+  color: var(--drawn-ink) !important;
+  text-shadow: none !important;
+}
+
+[data-style-mode="vivant"] .m-version-badge {
+  border: 7px solid transparent !important;
+  border-image-source: var(--drawn-button) !important;
+  border-image-slice: 12 !important;
+  border-image-width: 7px !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  color: var(--drawn-muted) !important;
+  border-radius: 0 !important;
+}
+
+[data-style-mode="vivant"] .m-cell-lbl {
+  color: var(--drawn-muted) !important;
+}
+[data-style-mode="vivant"] .m-cell-val {
+  color: var(--drawn-ink) !important;
+}
+[data-style-mode="vivant"] .m-cell-val.m-acc {
+  color: var(--drawn-pigment) !important;
+}
+
+/* 2. Boutons d'encre dessinés */
+[data-style-mode="vivant"] .ink-button,
+[data-style-mode="vivant"] .menu-modal .btn,
+[data-style-mode="vivant"] .menu-grid .btn.m-card-btn,
+[data-style-mode="vivant"] .btn.m-close-btn {
+  position: relative;
+  isolation: isolate;
+  min-height: 44px;
+  border: 9px solid transparent !important;
+  border-image-source: var(--drawn-button) !important;
+  border-image-slice: 12 !important;
+  border-image-width: 9px !important;
+  border-image-repeat: stretch !important;
+  background: transparent !important;
+  color: var(--drawn-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-align: center;
+  font-family: inherit;
+  transition: transform 0.12s ease;
+}
+
+[data-style-mode="vivant"] .menu-modal .btn:active,
+[data-style-mode="vivant"] .ink-button:active {
+  transform: translateY(1px);
+}
+
+/* Boutons principaux avec lavis pigmenté */
+[data-style-mode="vivant"] .menu-modal .btn.pri,
+[data-style-mode="vivant"] .btn.m-close-btn,
+[data-style-mode="vivant"] .resume-btn,
+[data-style-mode="vivant"] .ink-button.primary {
+  color: var(--drawn-pigment-ink) !important;
+  background: var(--drawn-pigment) !important;
+  mask: var(--wash-mask) center/100% 100% no-repeat !important;
+  -webkit-mask: var(--wash-mask) center/100% 100% no-repeat !important;
+  border-color: transparent !important;
+  font-weight: 700;
+}
+
+/* Bouton Reprendre en tête du menu */
+[data-style-mode="vivant"] .resume-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: var(--serif);
+  font-size: 20px;
+  min-height: 52px;
+  margin-bottom: 14px;
+  cursor: pointer;
+}
+[data-style-mode="vivant"] .resume-btn span {
+  font-size: 24px;
+}
+
+/* 3. Séparateurs et filets d'encre */
+[data-style-mode="vivant"] .ink-rule {
+  height: 12px;
+  margin: 10px 0;
+  background-image: var(--drawn-divider);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 10px;
+}
+
+/* 4. Onglets dessinés */
+[data-style-mode="vivant"] .menu-nav-bar {
+  background: transparent !important;
+  border: 9px solid transparent !important;
+  border-image-source: var(--drawn-button) !important;
+  border-image-slice: 12 !important;
+  border-image-width: 9px !important;
+  border-image-repeat: stretch !important;
+  border-radius: 0 !important;
+  padding: 2px !important;
+  gap: 0 !important;
+  margin-bottom: 14px !important;
+  position: static !important;
+}
+
+[data-style-mode="vivant"] .m-nav-tab {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  color: var(--drawn-muted) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  position: relative;
+  min-height: 42px;
+}
+
+[data-style-mode="vivant"] .m-nav-tab + .m-nav-tab {
+  border-left: 1px solid color-mix(in srgb, var(--drawn-rule) 45%, transparent) !important;
+}
+
+[data-style-mode="vivant"] .m-nav-tab.on,
+[data-style-mode="vivant"] .m-nav-tab[aria-selected="true"] {
+  color: var(--drawn-ink) !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-style-mode="vivant"] .m-nav-tab.on::after,
+[data-style-mode="vivant"] .m-nav-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 3px;
+  height: 4px;
+  background: var(--drawn-pigment);
+  mask: var(--wash-mask) center/100% 100% no-repeat;
+  -webkit-mask: var(--wash-mask) center/100% 100% no-repeat;
+}
+
+/* 5. Sections du Menu */
+[data-style-mode="vivant"] .menu-sec {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 10px 0 !important;
+  border-bottom: 1px dashed color-mix(in srgb, var(--drawn-rule) 40%, transparent) !important;
+}
+[data-style-mode="vivant"] .menu-sec:last-of-type {
+  border-bottom: none !important;
+}
+
+[data-style-mode="vivant"] .menu-sec-head {
+  border-bottom: 10px solid transparent !important;
+  border-image-source: var(--drawn-divider) !important;
+  border-image-slice: 0 0 10 0 !important;
+  border-image-width: 0 0 8px 0 !important;
+  border-image-repeat: stretch !important;
+  margin-bottom: 10px !important;
+  padding-bottom: 4px !important;
+}
+
+[data-style-mode="vivant"] .menu-sec-head .sub {
+  font-family: var(--serif) !important;
+  font-size: 16px !important;
+  letter-spacing: 0.04em !important;
+  color: var(--drawn-ink) !important;
+  text-transform: none !important;
+}
+
+/* 6. Interrupteurs et Toggles dessinés */
+[data-style-mode="vivant"] .toggle {
+  color: var(--drawn-ink);
+  min-height: 44px;
+}
+
+[data-style-mode="vivant"] .btn.sw {
+  min-width: 94px;
+  height: 36px;
+  border: 8px solid transparent !important;
+  border-image-source: var(--drawn-button) !important;
+  border-image-slice: 12 !important;
+  border-image-width: 8px !important;
+  border-image-repeat: stretch !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--drawn-muted) !important;
+  font-size: 11px;
+}
+
+[data-style-mode="vivant"] .btn.sw.on {
+  color: var(--drawn-ink) !important;
+  background: color-mix(in srgb, var(--drawn-pigment) 18%, transparent) !important;
+}
+
+[data-style-mode="vivant"] .btn.sw::before {
+  border-radius: 0 !important;
+  width: 14px !important;
+  height: 14px !important;
+  border: 5px solid transparent !important;
+  border-image-source: var(--drawn-button) !important;
+  border-image-slice: 12 !important;
+  border-image-width: 5px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-style-mode="vivant"] .btn.sw.on::before {
+  background: var(--drawn-ink) !important;
+  mask: var(--check-mask) center/contain no-repeat !important;
+  -webkit-mask: var(--check-mask) center/contain no-repeat !important;
+  border: none !important;
+}
+
+/* 7. Cartes de raccourcis dans le menu */
+[data-style-mode="vivant"] .menu-grid .btn.m-card-btn {
+  background: color-mix(in srgb, var(--drawn-paper-deep) 25%, transparent) !important;
+}
+[data-style-mode="vivant"] .menu-grid .btn.m-card-btn:hover {
+  background: color-mix(in srgb, var(--drawn-paper-deep) 50%, transparent) !important;
+}
+
+/* 8. Contrôles de récolte du Domaine en Mode Vivant */
+[data-style-mode="vivant"] .gis.gis-vivant {
+  border: 12px solid transparent !important;
+  border-image-source: var(--drawn-frame) !important;
+  border-image-slice: 20 !important;
+  border-image-width: 12px !important;
+  border-image-repeat: stretch !important;
+  border-radius: 0 !important;
+  background: var(--drawn-paper) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+  color: var(--drawn-ink) !important;
+}
+
+[data-style-mode="vivant"] .gis-ic.gis-ic-vivant {
+  border: 9px solid transparent !important;
+  border-image-source: var(--drawn-button) !important;
+  border-image-slice: 12 !important;
+  border-image-width: 9px !important;
+  border-image-repeat: stretch !important;
+  border-radius: 0 !important;
+  background: color-mix(in srgb, var(--drawn-paper-deep) 30%, transparent) !important;
+  box-shadow: none !important;
+}
+
+[data-style-mode="vivant"] .gis.gis-vivant .mini.harvest {
+  border: 8px solid transparent !important;
+  border-image-source: var(--drawn-button) !important;
+  border-image-slice: 12 !important;
+  border-image-width: 8px !important;
+  border-image-repeat: stretch !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--drawn-ink) !important;
+}
+
+[data-style-mode="vivant"] .gis.gis-vivant .mini.harvest.on {
+  background: var(--drawn-pigment) !important;
+  color: var(--drawn-pigment-ink) !important;
+  mask: var(--wash-mask) center/100% 100% no-repeat !important;
+  -webkit-mask: var(--wash-mask) center/100% 100% no-repeat !important;
+}
+
+/* Filet sous le titre de terre du Domaine */
+[data-style-mode="vivant"] .dom-terre {
+  border-bottom: 12px solid transparent !important;
+  border-image-source: var(--drawn-divider) !important;
+  border-image-slice: 0 0 12 0 !important;
+  border-image-width: 0 0 10px 0 !important;
+  border-image-repeat: stretch !important;
+  padding-bottom: 10px !important;
+}

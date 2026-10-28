@@ -79,7 +79,24 @@ for (const id of EXPECTED_SOURCES) {
 
 assert(domCode.includes("livingNode"), "domaine.js doit définir livingNode");
 
+// 5. Interface dessinée v1 (Composants Carnet du Semeur)
+const EXPECTED_UI_SVGS = [
+  "button-chalk.svg", "button-ink.svg", "check-mark.svg", "checkbox-chalk.svg", "checkbox-ink.svg",
+  "divider-chalk.svg", "divider-ink.svg", "frame-chalk.svg", "frame-ink.svg", "pigment-wash.svg"
+];
+for (const svg of EXPECTED_UI_SVGS) {
+  const p = path.join(ROOT, "assets/ui", svg);
+  assert(fs.existsSync(p), `L'asset UI ${svg} doit exister`);
+  assert(sw.includes(`assets/ui/${svg}`), `sw.js doit cacher ${svg}`);
+}
+
+const cssVivant = fs.readFileSync(path.join(ROOT, "css/domaine-vivant.css"), "utf8");
+assert(cssVivant.includes("--drawn-frame"), "css/domaine-vivant.css doit définir --drawn-frame");
+assert(cssVivant.includes("--drawn-button"), "css/domaine-vivant.css doit définir --drawn-button");
+assert(cssVivant.includes("--drawn-divider"), "css/domaine-vivant.css doit définir --drawn-divider");
+
 console.log("  ✓ structure et intégration du cycle 3 modes valides");
 console.log("  ✓ entités vectorielles vivantes (bois, caillou, silex, fibre, eau, sable, argile) présentes");
 console.log("  ✓ système de particules de frappe et recul d'impact configurés");
 console.log("  ✓ 19 variantes WebP du Carnet du Semeur (16 objets, 3 sources) vérifiées et en cache");
+console.log("  ✓ 10 composants SVG de l'interface dessinée (cadres, boutons, filets, coches) vérifiés et en cache");
