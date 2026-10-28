@@ -3,6 +3,23 @@
   "masters": "PNG originaux intacts",
   "assets": [
     {
+      "file": "assets/art/lisiere-landscape.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 3467439,
+      "sha256": "af8af21e7f7e6e1bf6ca921ed7b6b582842df17049c5da8dbca829732c25be8b",
+      "alphaRange": [
+        0,
+        253
+      ],
+      "subjectBounds": [
+        0,
+        0,
+        1536,
+        1024
+      ]
+    },
+    {
       "file": "assets/art/mercure-landscape.png",
       "width": 1536,
       "height": 1024,
@@ -33,6 +50,40 @@
         0,
         0,
         1535,
+        1024
+      ]
+    },
+    {
+      "file": "assets/art/pompe-etude.png",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 1389819,
+      "sha256": "f269b1422fb10db6fd55d360fb8876410ab5e3e352ea59aa1066fe106e165633",
+      "alphaRange": [
+        0,
+        255
+      ],
+      "subjectBounds": [
+        47,
+        21,
+        1234,
+        1230
+      ]
+    },
+    {
+      "file": "assets/art/riviere-vapeur-landscape.png",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 3622540,
+      "sha256": "aa67b9348c165e27b870fed8679c49285b0087756fdae4d146174568a9aaa773",
+      "alphaRange": [
+        0,
+        254
+      ],
+      "subjectBounds": [
+        0,
+        0,
+        1536,
         1024
       ]
     },

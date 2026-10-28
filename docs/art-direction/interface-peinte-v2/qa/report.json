@@ -1,14 +1,20 @@
 {
-  "checks": 118,
+  "checks": 237,
   "widths": [
     320,
     390,
     1280
   ],
-  "themes": [
-    "clair",
-    "veillee"
+  "ages": [
+    "bois",
+    "vapeur",
+    "stellaire"
   ],
-  "status": "passed",
-  "fullPageCapture": "Navigation placée en fin de document uniquement pour la planche complète ; captures -ecran et prototype gardent la navigation fixe."
+  "titleFonts": {
+    "bois": "\"IM Fell English\", Georgia, serif",
+    "vapeur": "\"Carnet Registre\", Georgia, serif",
+    "stellaire": "\"Carnet Releves\", sans-serif"
+  },
+  "permanentPaper": true,
+  "status": "passed"
 }

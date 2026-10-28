@@ -1,33 +1,34 @@
-# Éclat — Interface peinte v2
+# Éclat — Le Carnet du Semeur : trois époques
 
-Page témoin autonome du Domaine, avec des assets raster peints et de vrais contrôles HTML. Travail de direction artistique avant généralisation dans le jeu. Les valeurs de partie sont des données de démonstration inspirées de l’écran avancé fourni ; aucune sauvegarde du jeu n’est lue ou modifiée.
+Le thème porte le nom court **Carnet**. Un seul papier et les mêmes commandes peintes accompagnent tous les âges. Le mode clair/sombre de la première étude est abandonné.
 
-## Ouvrir
+## Comparer
 
-Ouvrir `index.html` pour le Domaine de Mercure, et `composants.html` pour éprouver les boutons et les pièces. Les pages fonctionnent depuis un dossier local et un serveur statique. Aucun service externe ni dépendance à installer pour les consulter.
+- `index.html?age=bois` : La Lisière, premiers gestes, observations naturalistes, titres à l’encre.
+- `index.html?age=vapeur` : La Rivière Lente, relevés de débit, étude d’une pompe, titres de registre.
+- `index.html?age=stellaire` : Mercure, observations astronomiques, titres plus sobres.
+- `composants.html` : boutons et pièces peints, sans bascule de thème.
 
-Le bouton **Veillée** change le support et les encres. **Le carnet** ouvre le menu et le réglage de grand texte. Récolte, ajout de réplicateur, maîtrise, relève et navigation ouvrent des interactions explicites de démonstration ; aucune partie réelle n’est chargée. Échap ferme les fenêtres, Tab parcourt les contrôles.
+Les liens en haut permettent de passer d’une époque à l’autre. La typographie du texte, des commandes et des quantités reste stable. Seuls le titre principal, quelques annotations et les illustrations évoluent. Les chiffres de partie sont des exemples ; aucune sauvegarde du jeu n’est lue, écrite ou transmise. Les commandes de récolte et de construction sont simulées et les fenêtres se ferment avec Échap.
 
-## Dessin et composition
+## Images et provenance
 
-Neuf PNG originaux ont été produits avec l’outil intégré imagegen : trois fonds de boutons (pigment, papier clair, papier de veillée), deux cadres à centre transparent, deux papiers, une vignette de paysage de Mercure et un spécimen de métal. Les fichiers sous `assets/` sont des copies intactes des sorties générées. Les prompts exacts sont dans `prompts.json` ; les dimensions, empreintes et informations alpha dans `manifest.json`.
+Les PNG sont les sorties intactes de l’outil intégré imagegen. Les prompts de la première étude sont dans `prompts.json`, ceux des trois nouveaux dessins dans `prompts-ages.json`. La bûche WebP vient du lot Bois déjà intégré dans Éclat. Le paysage de rivière et la pompe sont des propositions artistiques, sans nouvelle règle de jeu ; l’eau et ses pompes existent déjà à l’âge de la Vapeur.
 
-Les boutons peints portent du texte HTML. Leurs états de survol et d’appui modulent la luminosité et la position ; l’état indisponible est désaturé et utilise l’attribut natif `disabled`. Ces états ne sont pas des illustrations générées séparément. Les cadres utilisent une bordure en neuf parties, les papiers restent continus, et les images de paysage et de matière gardent leur ratio. Une teinte légère réduit le contraste du grain nocturne ; les PNG eux-mêmes ne sont pas retouchés.
+Les trois PNG nocturnes de la première étude sont conservés comme sources historiques, mais ne sont plus utilisés. `manifest.json` décrit les PNG et leurs empreintes. Les maîtres restent lourds : exporter et comparer des variantes web avant l’intégration au jeu ; ne pas mettre tous les maîtres ni ces documents dans le cache de production.
 
-La proposition réserve une grande feuille à une terre, ses matières et ses annotations. Elle rassemble l’information de maîtrise et la note de relève sans reproduire la pile de cartes de l’écran courant. Le Caveau reste présent comme rappel d’une terre traversée. Ce choix de composition est à juger avant de définir l’affichage simultané de toutes les terres.
+Les bordures utilisent des parties extensibles ; les illustrations gardent leurs proportions. Les libellés restent du HTML. Les états de survol et d’appui sont des variations d’affichage des fonds peints, et non des images distinctes.
 
-## Contrôles et limites
+## Validation
 
-`qa/check-page.js` vérifie les deux thèmes à 320, 390 et 1280 px, les chargements, l’absence de débordement, les cibles d’au moins 44 px, le clavier, les fenêtres, la récolte et la construction simulées, ainsi que le grand texte. Le résultat est dans `qa/report.json`. Les captures `*-ecran.png` montrent le comportement normal avec navigation fixe ; pour les grandes planches `clair-*.png` et `veillee-*.png`, la navigation est temporairement placée en fin de document uniquement le temps de la capture.
+`node qa/check-ages.js` (ou `node qa/check-page.js`) : 237 contrôles réussis à 320, 390 et 1280 px, sur les trois époques. Vérifications : images chargées, absence de débordement, cibles tactiles, focus et clavier, fenêtres, grand texte, commandes simulées et navigation entre époques. Le test compare aussi le papier, les boutons et la police de lecture entre âges et vérifie trois écritures de titre différentes.
 
-Ces contrôles concernent le prototype autonome. Ils ne sont pas une validation du moteur du jeu ou du rendu de chaque terre. Les PNG maîtres sont volontairement lourds (environ 19 Mo au total) ; prévoir des exports de diffusion comparés visuellement avant intégration et mise en cache. Les textes d’ambiance de cette étude ne remplacent pas les textes du jeu.
+Captures courantes : `qa/bois-1280.png`, `qa/vapeur-1280.png`, `qa/stellaire-1280.png`. Pour ces planches de bureau, la navigation est temporairement placée en fin de document pendant la capture. Le prototype conserve sa navigation fixe. Les anciennes captures clair/sombre documentent uniquement la première étude.
 
-## Intégration après revue artistique
+## Déploiement envisagé après validation
 
-Conserver la même composition de référence, les matières peintes et le texte natif. Préparer les variantes web et leurs tranches sans déformer les coins ni aplatir les irrégularités. Raccorder chaque contrôle aux valeurs et interactions existantes du moteur. Étudier les états de production en cours, les longues listes, les autres terres et la densité en fin de partie. Ne pas appliquer cette étude par une simple surcharge globale de cadres.
-
-Reporter ensuite le rendu commun sur `main` et `prewiew-design`, en conservant les différences de leurs ateliers et de leurs sauvegardes. Les deux branches jouables restent intactes pendant cette phase de proposition.
+L’intégration au jeu remplacera l’habillage du mode **Vivant**, qui pourra afficher **Carnet**, en conservant son identifiant interne pour les préférences existantes. Elle devra reprendre les vrais objectifs, débits, extracteurs, maîtrises et relèves, puis appliquer le même rendu commun sur `main` et `prewiew-design`. L’atelier expérimental et ses sauvegardes resteront propres à la preview. Cette PR est une proposition graphique, pas une activation de production.
 
 ## Polices
 
-Fichiers locaux issus du dépôt Éclat, sous SIL Open Font License 1.1 : IM Fell English — Igino Marini ; Caveat — Impallari Type ; Alegreya Sans — Juan Pablo del Peral / Huerta Tipográfica. Crédits de référence : `docs/CREDITS.md` du jeu.
+Polices locales du dépôt sous SIL Open Font License 1.1 : IM Fell English — Igino Marini ; Caveat — Impallari Type ; Alegreya Sans — Juan Pablo del Peral / Huerta Tipográfica ; Playfair Display — Claus Eggers Sørensen ; Space Grotesk — Florian Karsten. Les deux dernières sont réservées aux titres des pages témoins.

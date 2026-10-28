@@ -1,0 +1,18 @@
+{
+  "tool": "imagegen intégré",
+  "common": "Use case: stylized-concept. One production illustration for Éclat, Le Carnet du Semeur. A hand-painted naturalist field notebook, true sepia-black ink contours, dry graphite, granular muted watercolor on TRANSPARENT background, no embedded paper. Quiet mysterious tactile handmade style. No text, numbers, frame, letters, logo, UI, labels, watermark or neon. All sides have irregular watercolor edges dissolving into genuine transparency; no rectangular background. Wide readable composition, no photorealism or glossy 3D.",
+  "assets": [
+    {
+      "id": "lisiere-landscape",
+      "subject": "Wide 3:2 landscape vignette of the forest edge at the dawn of tool making. A magnificent old oak rises on the right, exposed roots, small stones and muted olive grass in foreground, a quiet open clearing to left, distant blue gray conifers barely sketched in mist. Rich ink drawing of bark and botanical observation, muted olive, ochre and smoke gray watercolor. Same handmade watercolor quality as the user's Le Carnet du Semeur moodboard. No buildings, machines, people, fantasy or saturated green. Ground, foliage and canopy dissolve softly into transparent margins, entire tree silhouette not clipped."
+    },
+    {
+      "id": "riviere-vapeur-landscape",
+      "subject": "Wide 3:2 field notebook landscape of a slow river at the age of steam. Quiet river bends from distant left to foreground, muted reeds, rocky bank and a small practical nineteenth-century iron steam-powered pump with flywheel and pipe on the right bank. Compact boiler with a faint soft puff of steam, no giant factory or smoke pollution. Broad natural scene, the mechanism a small readable part of its landscape. Sepia and graphite linework, muted sage-gray water and warm gray iron, brown ochre land, pale copper details. Some visible construction pencil lines on mechanism, not an overly technical blueprint. No writing, ticks, labels, diagram dimensions or bright steampunk ornament. Watercolor vignette fading into alpha on all sides."
+    },
+    {
+      "id": "pompe-etude",
+      "subject": "One isolated compact nineteenth-century steam water pump as a field engineer's study. Small iron flywheel connected to a horizontal cylinder, short outlet pipe and simple curved intake tube. Real economical ink and graphite contours, visible pencil construction arcs but no text, thin watercolor shading in warm iron-gray and a few muted copper/ochre fittings. Three-quarter frontal view with readable silhouette at 100 pixels, fully inside square canvas with generous transparent margins. No pedestal block, ground, arrows, ticks or dimension labels, no cartoon face, ornate steampunk or exaggerated gears. A modest practical machine drawn by the same naturalist who once drew a log."
+    }
+  ]
+}
