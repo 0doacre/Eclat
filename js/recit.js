@@ -696,7 +696,7 @@
       q_noms: {
         titre: "Les noms",
         quand: { any: [{ frag: "berceuse" }, { frag: "quai" }] },
-        aides: ["Le numéro de ton iris peut se retrouver à côté d’un nom, ailleurs dans le monde.", "Compare-le aux lits de la Chambre ou aux papiers du Quai. Le Journal, dans Mémoire, permet de donner un nom.", "{nom} est le nom associé à la cuve {cuve}, celle de cet éveil."],
+        aides: ["Le numéro de ton iris peut se retrouver à côté d’un nom, ailleurs dans le monde.", "Compare-le aux lits de la Chambre ou aux papiers du Quai. Le Journal, dans Mémoire, sert à donner un nom.", "{nom} est le nom associé à la cuve {cuve}, celle de cet éveil."],
         resolu: { secret: "noms" }
       },
       q_message: {
@@ -1321,7 +1321,7 @@
           id: "h2", th: "mains", rang: 0, renouv: true, cond: { age: 1 },
           stage: "Il laisse tomber une poignée de sciure sur le plateau.",
           q: "« À quoi ça sert d’étudier une ressource ? »",
-          t: "« Étudie une ressource pour savoir quelles actions tenter avec. L’Atelier permet de toutes les étudier d’un coup, contre de l’Intuition. »",
+          t: "« Étudie une ressource pour savoir quelles actions tenter avec. L’Atelier peut toutes les étudier d’un coup, contre de l’Intuition. »",
           choix: [
             { k: "a", q: "« Comment tu sais ce que j’ai étudié ? »", t: "« Tu portes moins, tu choisis mieux. Un objet qu’on connaît, on le pose au bon endroit. »" },
             { k: "b", q: "« L’Intuition est précieuse ? »", t: "« Elle éclaire les réactions cachées. Dépense-la pour gagner du temps sur l’établi. »" },
@@ -1640,8 +1640,8 @@
         titre: "Fouiller de nouveau",
         aide: "Progression active hors ligne. Butin à récupérer sur la Carte en fin de fouille.",
         busy: "Fouille déjà active. Butin à récupérer avant le prochain départ.",
-        avant1: "Termine « Un tour » et récupère le butin pour débloquer « Une fouille ».",
-        avant2: "Termine « Une fouille » et récupère le butin pour débloquer le dernier niveau.",
+        avant1: "Termine « Un tour » et récupère le butin pour ouvrir « Une fouille ».",
+        avant2: "Termine « Une fouille » et récupère le butin pour ouvrir le dernier niveau.",
         fait: "Déjà fait",
         parti: "Fouille lancée (continue hors ligne).",
         chip: "Fouille",

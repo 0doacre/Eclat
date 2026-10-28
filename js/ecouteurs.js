@@ -58,7 +58,7 @@
         if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
           "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
-          '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent d’acheter.</p>', "Compris"), 2200);
+          '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles offrent.</p>', "Compris"), 2200);
       });
       E.on("zone", (z) => {
         U.zone = z;

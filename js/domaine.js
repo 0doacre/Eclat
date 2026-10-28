@@ -114,7 +114,7 @@
       const open = U.ruinesOpen && U.ruinesOpen[key] !== undefined ? U.ruinesOpen[key] : ready.length > 0;
       return '<details class="dom-ruines" data-ruines="' + key + '"' + (open ? " open" : "") + '><summary data-ruines-sum="' + key + '">🛖 ' + total + (total > 1 ? " ruines" : " ruine") + " à relever" +
         (ready.length ? ' · <b>' + ready.length + " à portée</b>" : "") + "</summary>" +
-        (ready.length > 1 ? '<div class="dom-ruines-all"><button class="btn small pri" data-repair-all="' + ids.join(",") + '" title="Réparer tout ce que ta Réserve permet de relever">Tout réparer</button></div>' : "") +
+        (ready.length > 1 ? '<div class="dom-ruines-all"><button class="btn small pri" data-repair-all="' + ids.join(",") + '" title="Réparer tout ce que ta Réserve peut relever">Tout réparer</button></div>' : "") +
         ids.map((id) => ruinHTML(id, ruins[id])).join("") + "</details>";
     }
 
