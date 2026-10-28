@@ -5425,6 +5425,7 @@
 
     (root.EclatTransmission || require("./transmission.js")).attach(E);
     Territoires.attach(E);
+    (root.EclatReprise || require("./reprise.js")).attach(E, createEngine);
     recalc();
     return E;
   }
