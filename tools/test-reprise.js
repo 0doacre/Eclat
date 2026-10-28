@@ -35,6 +35,14 @@ test("les constructions commandées ne sont pas dupliquées ni achevées instant
   assert.ok(E.repriseApply(q).applied > 0); assert.ok(E.queued("cabane") > 0); assert.equal(E.count("cabane"), 0);
   assert.equal(E.repriseQuote().actions.length, 0);
 });
+test("les commandes mises en pause par le lot 2 gardent leurs matières et ne sont pas dupliquées", () => {
+  const E = prepared(); E.state.meta.ruins = {}; fund(E);
+  E.repriseApply(E.repriseQuote());
+  const job = E.state.hand.q[0]; assert.ok(job);
+  E.pauseJob(job.uid); const before = E.serialize();
+  assert.equal(E.repriseQuote().actions.length, 0); assert.equal(E.serialize(), before);
+  assert.equal(job.paused, true);
+});
 test("terres fermées, commandes et installations personnelles sont préservées", () => {
   const E = prepared(); fund(E); E.add("fibre_1", 1); E.domExtSet("lisiere", "fibre", "fibre_1", 1);
   const q = E.repriseQuote(); E.repriseApply(q);

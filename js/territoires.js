@@ -88,7 +88,11 @@
       s.meta.terresLieux = s.meta.terresLieux || {};
       s.meta.terresSavoir = s.meta.terresSavoir || {};
       const remembered = new Set(s.meta.terresLieux[z] || []);
-      for (const id of r.lieux) if (level > 0 || (s.exp.done[z] || 0) > E.ZONES[z].exps.findIndex(e => e.id === id)) remembered.add(id);
+      for (const id of r.lieux) {
+        const index = E.ZONES[z].exps.findIndex(e => e.id === id), exp = E.ZONES[z].exps[index];
+        const fragment = E.RECIT.expFrag && E.RECIT.expFrag[z + ":" + id];
+        if (level > 0 || (s.exp.done[z] || 0) > index || fragment && s.frags[fragment] || exp.rw && s.frags[exp.rw.frag]) remembered.add(id);
+      }
       s.meta.terresLieux[z] = [...remembered];
       if (level > 0 || (s.made[series] || 0) >= qty) s.meta.terresSavoir[z] = true;
       const savoir = s.meta.terresSavoir[z] === true;
@@ -128,7 +132,7 @@
   function html(E, z, esc, open) {
     const t = E.terreMaitrise(z);
     if (!t || !t.ouvert) return "";
-    let h = '<details class="terre-maitrise" data-terre-maitrise="' + z + '"' + (open ? ' open' : '') + '><summary title="Voir les objectifs de cette terre et son bonus à la relève">Maîtrise · ' + t.pourcent + ' %' + (t.bonus ? ' · Débit +' + t.bonus + ' %' : '') + (t.gagne ? ' · +5 % à la relève' : '') + '</summary>';
+    let h = '<details class="terre-maitrise" data-terre-maitrise="' + z + '"' + (open ? ' open' : '') + '><summary title="Voir les objectifs de cette terre et son bonus à la relève">Maîtrise · ' + t.pourcent + ' %' + (t.bonus ? ' · Débit +' + t.bonus + ' %' : '') + (t.gagne ? ' · +5 % à la relève' : '') + ' <button type="button" class="btn-aide mini" data-aide="maitrise" title="Comprendre la maîtrise des terres et la transmission" aria-label="Comprendre la maîtrise des terres et la transmission">?</button></summary>';
     h += '<p class="small">' + esc(t.chapitre) + ' · Explorations et savoir-faire restent acquis. À chaque retour : une installation active, une production locale et un ouvrage différent. Les secrets sont facultatifs.</p><ol>';
     for (const p of t.phases) {
       h += '<li' + (p.done || t.pret ? ' class="done"' : '') + '><b>' + esc(p.n) + (p.done || t.pret ? ' · accompli' : '') + '</b><span>' + esc(p.texte) + (p.cible ? ' · <span data-terre-compteur="' + z + ':' + (p.n === PHASES[3] ? 'production' : 'serie') + '">' + p.actuel + '</span> / ' + p.cible : '') + '</span></li>';
@@ -148,7 +152,7 @@
   function transmissionHTML(E, esc) {
     const list = E.terresMaitrise().filter(t => t.bonus || t.gagne);
     if (!list.length) return "";
-    return '<section class="terres-transmission"><h3>Terres transmises</h3><p class="small">Bonus permanents de débit : extraction locale et recettes associées, aux mains et aux machines. +5 points par terre maîtrisée et par relève, jusqu’à +50 %.</p><ul>' + list.map(t => '<li>' + esc(t.n) + ' : <b>+' + t.bonus + ' %' + (t.gagne ? ' → +' + t.prochainBonus + ' % à cette relève' : '') + '</b>' + (!t.gagne && t.rang < MAX ? ' · maîtrise à refaire dans ce cycle' : '') + '</li>').join('') + '</ul></section>';
+    return '<section class="terres-transmission"><h3>Terres transmises <button type="button" class="btn-aide mini" data-aide="maitrise" title="Comprendre la maîtrise des terres et la transmission" aria-label="Comprendre la maîtrise des terres et la transmission">?</button></h3><p class="small">Bonus permanents de débit : extraction locale et recettes associées, aux mains et aux machines. +5 points par terre maîtrisée et par relève, jusqu’à +50 %.</p><ul>' + list.map(t => '<li>' + esc(t.n) + ' : <b>+' + t.bonus + ' %' + (t.gagne ? ' → +' + t.prochainBonus + ' % à cette relève' : '') + '</b>' + (!t.gagne && t.rang < MAX ? ' · maîtrise à refaire dans ce cycle' : '') + '</li>').join('') + '</ul></section>';
   }
   const API = { RULES, RETOURS, MAX, STEP, normalize, attach, html, transmissionHTML };
   root.EclatTerritoires = API;

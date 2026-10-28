@@ -50,20 +50,36 @@
       h+='</div>'+(w.prepared?'<p class="ae-prepared">'+esc(name(w.prepared))+'</p>':'')+'<div class="ae-actions">';
       h+=Object.entries(tool.modes).map(([id,n])=>button("forge",id,esc(label(id,n)),id===w.mode?"pri":"",!w.slots.length)).join("");
       if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode]))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
-      h+='</div><p id="ae-result" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><h3>Tes outils</h3>'+tools.map(t=>button("tool",t.id,(t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n)+'<small>'+esc(Object.entries(t.modes).map(([m,n])=>label(m,n)).join(" · "))+(t.benefit?' · '+esc(t.benefit):"")+'</small>',t.id===w.eq?"pri":"")).join("")+'</aside></div></section>';
+      const toolBenefitText = (t) => {
+        if (t.speed) {
+          for (const rec in t.speed) {
+            if (s.known[rec]) {
+              const choices = (typeof E.equipmentChoices === "function" && E.equipmentChoices(rec)) || [];
+              const otherChoice = choices.find(c => c.equipment !== t.id && c.ready) || choices.find(c => c.equipment !== t.id);
+              if (otherChoice) {
+                const curT = E.handTime(rec, otherChoice);
+                const projT = E.handTime(rec, { equipment: t.id, mode: Object.keys(t.modes)[0] });
+                return label(Object.keys(t.modes)[0], t.modes[Object.keys(t.modes)[0]]) + " ces " + esc(name(rec).toLowerCase()) + " : " + fmtTime(curT) + " → " + fmtTime(projT);
+              }
+            }
+          }
+        }
+        return t.benefit ? esc(t.benefit) : "";
+      };
+      h+='</div><p id="ae-result" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><h3>Tes outils <button type="button" class="btn-aide mini" data-aide="outils" title="Comprendre les outils et postes" aria-label="Comprendre les outils et postes">?</button></h3>'+tools.map(t=>{const ben=toolBenefitText(t);return button("tool",t.id,(t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n)+'<small>'+esc(Object.entries(t.modes).map(([m,n])=>label(m,n)).join(" · "))+(ben?' · '+ben:"")+'</small>',t.id===w.eq?"pri":"");}).join("")+'</aside></div></section>';
       h+='<section class="card ae-stock"><h3>Tes matières</h3><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'">';
       h+='<div class="ae-discovery"><label><input id="ae-discovery-only" type="checkbox"'+(s.settings.equipmentDiscoveryOnly===true?' checked':'')+' title="Montrer uniquement les matières étudiées qui cachent une recette avec cet outil et ce geste"> À découvrir</label>';
       if(Object.keys(tool.modes).length>1)h+='<label class="ae-discovery-mode">Geste <select id="ae-discovery-mode" aria-label="Geste à explorer" title="Choisir le geste du filtre sans lancer de fabrication">'+Object.entries(tool.modes).map(([mode,n])=>'<option value="'+esc(mode)+'"'+(mode===w.mode?' selected':'')+'>'+esc(label(mode,n))+'</option>').join('')+'</select></label>';
       else h+='<span class="small">'+esc(label(w.mode,tool.modes[w.mode]))+'</span>';
       const study=E.studyAllCost();
-      if(study.n)h+=button("study","","Étudier les matières · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c);
+      if(study.n)h+=button("study","","Étudier les matières · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des matières" aria-label="Comprendre l’étude des matières">?</button>';
       h+='</div><p id="ae-discovery-empty" class="small muted" hidden></p><div class="ae-inventory">';
       for(const id of ids){const picked=w.slots.includes(id);h+='<div class="ae-resource" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span><b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
       if(known.length)h+='<section class="card"><h3>Recettes</h3><div class="ae-known">'+known.map(id=>'<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+'</div>').join("")+'</div></section>';
-      if(s.known.laniere){h+='<section class="card ae-economy"><h2>Faire vivre l’atelier</h2><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton ouvrier</h3>';
+      if(s.known.laniere){h+='<section class="card ae-economy"><h2>Faire vivre l’atelier</h2><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton ouvrier <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et les salaires de l’ouvrier" aria-label="Comprendre le rôle et les salaires de l’ouvrier">?</button></h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
         h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Fabrication de l’ouvrier"></progress><p id="ae-worker-pay" class="small"></p>';
         h+=e.hired?button("fund","","Avancer 1 écu")+button("worker","",e.working?"Mettre en pause":"Mettre au travail")+button("withdraw","","Récupérer l’avance","",e.working||e.budget<=0):button("hire","","Embaucher · "+money(e.hire));
