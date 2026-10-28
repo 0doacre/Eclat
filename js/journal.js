@@ -296,7 +296,7 @@
           '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b> immuable (+50 % de récolte et production par Écho) et éveille une <b>Règle d’Écho majeure</b> pour toujours.</p>' +
           '<div class="stat"><span class="muted">Ce Semeur</span><b>' + (st.cycle + 6) + "e · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
           '<div class="stat"><span class="muted">À la relève</span><b>+' + E.releveGain() + " ✦ · " + ech + " Écho" + (ech > 1 ? "s" : "") + "</b></div>" +
-          '<button class="btn small pri" data-cycle title="Voir les améliorations conservées entre les Semeurs" style="margin-top:8px">✦ Mémoire des mains</button></div>';
+          '<button class="btn small pri" data-cycle title="Voir tes améliorations permanentes et préparer la relève" style="margin-top:8px">✦ Mémoire des mains</button></div>';
         h += '<h3 class="sub" style="margin:16px 0 8px">Les Dénouements &amp; Règles d’Écho</h3>';
         let reste = false;
         Object.keys(D.ENDINGS).forEach((k) => {

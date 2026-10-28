@@ -96,12 +96,12 @@
       const o = invOpts();
       const counts = invCounts();
       // recherche, tri et filtres quand il y a de quoi chercher
-      const many = Object.keys(st.seen).length >= 8 || !!U.iq || o.filter !== "tout";
+      const many = Object.keys(st.seen).length >= 8 || Object.keys(st.studied).length > 0 || !!U.iq || o.filter !== "tout";
       const nAct = (o.filter !== "tout" ? 1 : 0) + (o.sort !== "age" ? 1 : 0), filtreNom = (INV_FILTERS.find(([k]) => k === o.filter) || ["", ""])[1];
       const totalStock = Object.keys(st.inv).reduce((acc, k) => acc + (st.inv[k] || 0), 0);
       const inv = invItems();
       h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3><button type="button" class="btn small ghost' + (U.invFiche ? " on" : "") + '" data-fichemode aria-pressed="' + (U.invFiche ? "true" : "false") + '" title="Un appui sur une ressource ouvre sa fiche (comme un appui long)">ⓘ Fiches</button>' +
-        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + (o.filter !== "tout" ? " · " + esc(filtreNom) : "") + " · " + fmt(totalStock) + " au total</span>" : "") +
+        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + (o.filter !== "tout" ? " · " + esc(filtreNom) + (o.filter === "tryg" ? " · " + esc(G.n) : "") : "") + " · " + fmt(totalStock) + " au total</span>" : "") +
         "</div>" + studyAllHTML() +
         // la recherche reste affichée ; le tri et les filtres se rangent derrière « Filtres » (le chiffre dit combien sont actifs) et s’ouvrent sur place
         (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" aria-label="Chercher une ressource" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
@@ -142,7 +142,8 @@
         });
       } else h += '<div class="inv-grid">' + inv.map(tile).join("") + "</div>";
       if (!inv.length) {
-        const emptyMsg = o.filter === "fav" ? "Aucune ressource favorite. Appui long sur une ressource pour la marquer d’un ♥."
+        const emptyMsg = o.filter === "tryg" ? "Aucune matière étudiée ne cache de recette à découvrir avec ce geste, pour l’instant. Tu peux étudier d’autres matières ou changer de geste."
+          : o.filter === "fav" ? "Aucune ressource favorite. Appui long sur une ressource pour la marquer d’un ♥."
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
           : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans le Domaine pour remplir ta Réserve.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
@@ -173,7 +174,8 @@
       geste: "Celles qui servent à l’action choisie",
       fav: "Celles que tu as marquées d’un ♥",
       new: "Celles qu’aucune recette connue n’utilise encore",
-      try: "Les ressources étudiées qui cachent encore une recette"
+      try: "Les ressources étudiées qui cachent encore une recette",
+      tryg: "Les matières étudiées qui cachent encore une recette avec le geste choisi"
     };
     const INV_FILTERS = [
       ["tout", "Tout", ""],
@@ -183,7 +185,8 @@
       ["geste", "Action", "✦"],
       ["fav", "Favoris", "♥"],
       ["new", "Inutilisées", "✨"],
-      ["try", "À tenter", "🔍"]
+      ["try", "À tenter", "🔍"],
+      ["tryg", "À découvrir", "✦"]
     ];
     function invCounts() {
       const st = S(), fv = favs(), flows = E.flows();
@@ -197,7 +200,7 @@
         const it = I[id];
         return it && (st.inv[id] >= 1 || st.seen[id]) && !E.isUnique(it) && !E.isScaled(it);
       });
-      const c = { tout: all.length, flow: 0, res: 0, comp: 0, geste: 0, fav: 0, new: 0, try: 0 };
+      const c = { tout: all.length, flow: 0, res: 0, comp: 0, geste: 0, fav: 0, new: 0, try: 0, tryg: 0 };
       for (const id of all) {
         const it = I[id];
         const hasFlow = (E.rate(id) + (flows.prod[id] || 0) > 1e-4) || ((flows.cons[id] || 0) > 1e-4);
@@ -208,6 +211,7 @@
         if (fv[id]) c.fav++;
         if (!used[id]) c.new++;
         if (st.studied[id] && E.usesLeft(id)) c.try++;
+        if (st.studied[id] && E.reactions(id)[U.geste] > 0) c.tryg++;
       }
       return c;
     }
@@ -268,6 +272,7 @@
         if (o.filter === "comp") return it.t !== "res";
         if (o.filter === "new") return !used[id];
         if (o.filter === "try") return !!st.studied[id] && E.usesLeft(id) > 0;
+        if (o.filter === "tryg") return !!st.studied[id] && E.reactions(id)[U.geste] > 0;
         return true;
       }).sort((a, b) => (o.sort !== "age" ? (fv[b] ? 1 : 0) - (fv[a] ? 1 : 0) : 0) || (sorts[o.sort] || byAge)(a, b));
     }

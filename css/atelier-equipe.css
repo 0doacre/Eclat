@@ -1,5 +1,10 @@
 /* Postes et outils dans l’Atelier principal ; couleurs héritées du thème du jeu. */
 .atelier-equipe{min-width:0}
+.ae-discovery{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin:10px 0}
+.ae-discovery label{display:flex;align-items:center;gap:6px;min-height:44px;max-width:100%;font-size:.9rem}
+.ae-discovery input[type=checkbox]{width:18px;height:18px;flex:0 0 auto}
+.ae-discovery select{min-height:44px;max-width:100%;min-width:0}
+.ae-discovery-mode{flex:1 1 160px}
 .atelier-equipe .btn{min-height:44px;white-space:normal;overflow-wrap:anywhere;max-width:100%}
 .ae-posts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .ae-posts .btn{flex:1 1 120px}
