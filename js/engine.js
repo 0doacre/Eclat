@@ -1818,11 +1818,12 @@
     };
     /* Nombre de recettes encore à trouver avec cette ressource, toutes actions confondues. */
     E.usesLeft = (id) => { const r = E.reactions(id); let n = 0; for (const g in r) n += r[g]; return n; };
-    E.reactions = function (id) {
+    E.reactions = function (id, eligible) {
       const out = {};
       for (const k in RECIPES) {
         const rid = RECIPES[k], it = item(rid);
         if (S.known[rid] || it.r[1][id] === undefined) continue;
+        if (eligible && !eligible(rid)) continue;
         if (it.path && !gesteOK("accorder")) continue;
         if (!gesteOK(it.r[0]) || !Object.keys(it.r[1]).every((i) => S.seen[i])) continue;
         out[it.r[0]] = (out[it.r[0]] || 0) + 1;
