@@ -1,0 +1,11 @@
+.terre-maitrise { margin: 8px 0 12px; padding: 10px 12px; border: 1px solid var(--line, #8a806333); border-radius: 10px; }
+.terre-maitrise > summary { cursor: pointer; font-size: .85rem; font-weight: 700; overflow-wrap: anywhere; }
+.terre-maitrise > summary:focus-visible { outline: 2px solid var(--acc); outline-offset: 4px; }
+.terre-maitrise ol { padding-left: 22px; margin: 10px 0; }
+.terre-maitrise li { margin: 8px 0; font-size: .85rem; }
+.terre-maitrise li > span { display: block; overflow-wrap: anywhere; opacity: .8; }
+.terre-maitrise li.done > b { color: var(--acc); }
+.terre-maitrise p, .terres-transmission li { overflow-wrap: anywhere; }
+.terres-transmission { margin: 12px 0; padding: 12px; border: 1px solid var(--line, #8a806333); border-radius: 10px; }
+.terres-transmission ul { padding-left: 20px; }
+.terres-transmission li { margin: 6px 0; font-size: .9rem; }

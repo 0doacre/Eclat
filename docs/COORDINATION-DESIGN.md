@@ -1,5 +1,11 @@
 # Coordination — chantier de direction artistique « L’Atlas vivant »
 
+## Synchronisation de la progression — 28 octobre 2026
+
+À la demande du joueur, la preview reprend les derniers commits de `main`, jusqu'à `93ff145` (durées de production, fatigue et élan des Semeurs), ainsi que la maîtrise territoriale et les bonus de transmission décrits dans `MAITRISE-TERRES.md`. Les améliorations des outils continuent de multiplier le débit propre à l'équipement ; les ouvriers bénéficient des mêmes gains territoriaux via la durée réelle de leur recette. Le nouvel Atelier affiche également la proposition de relève de Gemini. Le stockage expérimental, les postes et les outils sont conservés.
+
+Cette synchronisation de `main` vers la preview ne fusionne pas la refonte expérimentale dans `main`.
+
 ## Extension du chantier : intégration du craft — 27 octobre 2026
 
 Sur cette branche uniquement, le périmètre inclut désormais l’intégration dans le vrai jeu de la boucle de craft validée avec le joueur. La branche réutilisée est **`prewiew-design`**, orthographe historique conservée. **`main` reste la référence inchangée** ; aucune fusion vers `main` n’est prévue dans ce chantier.

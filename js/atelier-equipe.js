@@ -8,7 +8,11 @@
     const name=id=>I[id]?.n||id;
     const label=(id,n)=>({doux:"Chauffer doucement",vif:"Cuire",etouffee:"Carboniser",cuisson:"Cuire",fonte:"Fondre"})[id]||n;
     const root=()=>document.getElementById("atelier-equipe");
-    const button=(action,value,title,cls="",disabled=false)=>'<button type="button" id="ae-'+action+'-'+esc(value||"0")+'" class="btn '+cls+'" data-ae="'+action+'" data-value="'+esc(value||"")+'"'+(disabled?' disabled':'')+'>'+title+'</button>';
+    const button=(action,value,title,cls="",disabled=false)=>{
+      const help={place:"Choisir ce poste de travail",legacy:"Utiliser les procédés des âges après le Cuivre",slot:"Poser ou retirer une matière dans cet emplacement",prepare:"Préparer les matières, le poste et l’outil pour : "+name(value),order:"Fabriquer : "+name(value)+", en préparant les composants manquants",build:"Aménager l’établi pour accueillir un ouvrier",hire:"Recruter un ouvrier avec les écus de ta bourse",fund:"Réserver un écu pour payer le travail de l’ouvrier",worker:"Démarrer ou mettre en pause le travail de l’ouvrier",withdraw:"Récupérer l’avance non utilisée quand l’ouvrier est en pause",sell:"Vendre les lanières au-delà de ta réserve et recevoir le montant après taxe"};
+      const explanation=help[action]||title.replace(/<[^>]*>/g,"");
+      return '<button type="button" id="ae-'+action+'-'+esc(value||"0")+'" class="btn '+cls+'" data-ae="'+action+'" data-value="'+esc(value||"")+'" title="'+esc(explanation)+'"'+(disabled?' disabled':'')+'>'+title+'</button>';
+    };
     const consumed=new Set(Object.values(I).filter(x=>x.r).flatMap(x=>Object.keys(x.r[1])));
     function work(){
       const s=E.state,f=s.flags;
@@ -35,6 +39,8 @@
       const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id)));
       const known=Object.keys(s.known).filter(id=>D.CRAFT_EQUIPMENT.recipes[id]?.some(c=>E.workplaceFor(c.equipment)===w.place)&&(!E.isUnique(I[id])||!(s.made[id]>0)));
       let h='';
+      const releve=E.shouldSuggestReleve&&E.shouldSuggestReleve();
+      if(releve)h+='<section class="card releve-alerte"><b>✦ Passer le relais · +'+releve.gain+' Traces</b><p class="small">'+esc(releve.texte)+'</p><button class="btn pri small" data-releve title="Voir les gains et les bonus permanents de la prochaine relève">Préparer la relève</button></section>';
       if(places.length>1)h+='<nav class="ae-posts" aria-label="Postes de travail">'+places.map(p=>button("place",p.id,esc(p.n),p.id===w.place?"pri":"")).join("")+'</nav>';
       if(s.age>=3)h+='<p class="small">'+button("legacy","1","Procédés après le Cuivre","ghost")+'</p>';
       h+='<div class="ae-layout"><section class="card ae-bench"><h2>'+esc(places.find(x=>x.id===w.place).n)+'</h2><div class="ae-work"><div><div class="ae-slots">';
@@ -59,7 +65,7 @@
       }
       return h;
     }
-    function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo();return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0]);}
+    function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve();return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason]);}
     function redraw(){U.dirty=true;render(true);live();save();}
     function view(){signature=sig();return api.subTabs("atelier","machines","Découvrir","Machines")+api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
     function live(){const r=root();if(!r||U.tab!=="atelier"||U.equipmentLegacy)return;

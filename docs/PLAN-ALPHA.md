@@ -1,5 +1,7 @@
 # Plan de l’alpha
 
+> Mise à jour du 28 octobre 2026 : le plan ci-dessous décrit l'état historique 0.21. Les équipements de protection, les extracteurs uranium/galène et les jalons Acier/Silicium ont été traités depuis. La production et la relève ont été rééquilibrées sur `main` à `93ff145`. La maîtrise territoriale et ses bonus de transmission sont décrits dans [MAITRISE-TERRES.md](MAITRISE-TERRES.md). La priorité avant les tests d'alpha est désormais de valider le rythme des terres, les reprises et l'intérêt réel des relèves avec ces règles, puis de finaliser le guidage et l'accueil des testeurs. Les anciennes durées et tâches ci-dessous ne sont plus un état d'avancement actuel.
+
 État au 25 octobre 2026, version 0.21.0.
 
 ## Où en est le contenu
