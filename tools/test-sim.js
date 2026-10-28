@@ -33,7 +33,9 @@ test("non-régression : --offline 2 après chaque passage", () => {
 });
 test("non-régression : deux cycles", () => {
   const r = jouer("--minutes", "20", "--cycles", "2");
-  assert.deepStrictEqual(r.cycles.map((c) => c.rows.map((x) => [x.z, r3(x.t)])), [[["plaine", 5.835], ["riviere", 17.485]], [["plaine", 1.427], ["riviere", 15.293]]]);
+  // La Lisière est maîtrisée au premier cycle : +5 % de débit transmis au second.
+  assert.strictEqual(r.E.state.meta.terres.lisiere, 1);
+  assert.deepStrictEqual(r.cycles.map((c) => c.rows.map((x) => [x.z, r3(x.t)])), [[["plaine", 5.835], ["riviere", 17.485]], [["plaine", 1.418], ["riviere", 15.185]]]);
 });
 
 test("les types de joueur sont bien formés", () => {
