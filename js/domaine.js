@@ -244,22 +244,25 @@
       }
       if (res === "sable") {
         return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-          '<g class="anim-rock">' +
+          '<g class="anim-sand">' +
           '<ellipse cx="33" cy="58" rx="27" ry="6" fill="#0d1117" opacity="0.5"/>' +
           '<path d="M10 56 Q22 36 33 42 Q44 48 56 56 Z" fill="#b48326"/>' +
           '<path d="M14 56 Q26 32 38 38 Q50 44 54 56 Z" fill="#d4a34b"/>' +
           '<path d="M18 56 Q30 26 42 34 Q52 42 50 56 Z" fill="#ecc94b"/>' +
           '<path d="M24 38 Q34 32 44 38" stroke="#fff1b0" stroke-width="1.5" fill="none"/>' +
+          '<circle cx="28" cy="30" r="1.5" fill="#fff" opacity="0.8"/>' +
+          '<circle cx="38" cy="27" r="1.2" fill="#fff" opacity="0.9"/>' +
           '</g></svg>';
       }
       if (res === "argile") {
         return '<svg class="living-svg" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
-          '<g class="anim-rock">' +
+          '<g class="anim-clay">' +
           '<ellipse cx="33" cy="58" rx="26" ry="6" fill="#0d1117" opacity="0.5"/>' +
           '<path d="M12 56 Q16 42 28 38 Q40 34 52 46 Q56 50 54 56 Z" fill="#7c2d12"/>' +
           '<path d="M16 54 Q20 38 32 34 Q44 30 50 44 Q52 50 48 54 Z" fill="#9a3412"/>' +
           '<path d="M20 50 Q24 34 36 32 Q44 30 46 42 Z" fill="#c2410c"/>' +
           '<ellipse cx="32" cy="40" rx="6" ry="2.5" fill="#ea580c" opacity="0.8"/>' +
+          '<path d="M26 44 Q32 43 38 46" stroke="#fdba74" stroke-width="1.2" fill="none" opacity="0.75"/>' +
           '</g></svg>';
       }
       return icon(res);
@@ -310,16 +313,18 @@
         if (fx) fx.appendChild(p);
         else document.body.appendChild(p);
 
+        const midY = -14 - Math.random() * 22;
         const destX = Math.cos(angle) * dist;
-        const destY = Math.sin(angle) * dist + 22;
+        const destY = Math.abs(Math.sin(angle)) * dist * 0.75 + 12;
 
         if (p.animate) {
           p.animate([
-            { transform: "translate(0, 0) scale(1) rotate(0deg)", opacity: 1 },
-            { transform: "translate(" + destX + "px, " + destY + "px) scale(0.6) rotate(" + (Math.random() * 360) + "deg)", opacity: 0 }
+            { transform: "translate(0, 0) scale(0.6) rotate(0deg)", opacity: 1 },
+            { transform: "translate(" + (destX * 0.45) + "px, " + midY + "px) scale(1.15) rotate(" + (Math.random() * 100 - 50) + "deg)", opacity: 0.95, offset: 0.35 },
+            { transform: "translate(" + destX + "px, " + destY + "px) scale(0.65) rotate(" + (Math.random() * 360) + "deg)", opacity: 0 }
           ], {
             duration: dur,
-            easing: "cubic-bezier(0.25, 1, 0.5, 1)"
+            easing: "cubic-bezier(0.25, 1, 0.4, 1)"
           }).onfinish = () => p.remove();
         } else {
           setTimeout(() => p.remove(), dur);
