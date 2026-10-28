@@ -994,6 +994,7 @@
     } else mini.classList.add("hidden");
     Tuto.tick();
     const hi = E.handInfo();
+    Help.refresh();
     actBar();
     const hb = U.tab === "atelier" && $("#hands");
     if (hb) {
@@ -1159,6 +1160,7 @@
         : '<p class="small">Rien n’a été récolté ni fabriqué pendant ton absence.' + (auto ? "" : " Pose une cabane sur un gisement : elle récolte même quand le jeu est fermé.") + "</p>") +
       (full.length ? '<p class="small">📦 La Réserve s’est remplie de ' + full.map((k) => esc(I[k].n.toLowerCase())).join(", ") + " : " + (full.length > 1 ? "leurs extracteurs se sont arrêtés" : "son extracteur s’est arrêté") + ". Une machine qui " + (full.length > 1 ? "les" : "le") + " transforme ferait de la place.</p>" : "") +
       (o.exp ? '<p class="small">🧭 Exploration terminée. Consulte le Journal.</p>' : "") +
+        Help.resumeHTML(o.resume) +
         '<div class="acts">' + suite + '<button class="btn pri" data-m="close">Continuer</button></div>'
     });
   }
@@ -1262,6 +1264,11 @@
     handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty,
     promptCraftQty
   } = Atl;
+
+  const Help = window.EclatAssistance.create({
+    E, D, U, esc, fmt, fmtTime, openModal, closeModal, setTab, goto, Dom, openHands,
+    openGoals: () => openQuestsModal()
+  });
 
   /* les écouteurs : le moteur et les gestes du joueur */
   const Ecu = window.EclatEcouteurs.create({

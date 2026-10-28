@@ -122,6 +122,14 @@
  {
   "partie": "neuve",
   "ecran": "Aide",
+  "label": "⏳ État des productions",
+  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
+  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Aide",
   "label": "Compte en ligne",
   "repere": "button[data-m=\"account\"].btn.m-card-btn",
   "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
@@ -810,6 +818,14 @@
  {
   "partie": "avancée",
   "ecran": "Aide",
+  "label": "⏳ État des productions",
+  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
+  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
   "label": "Compte en ligne",
   "repere": "button[data-m=\"account\"].btn.m-card-btn",
   "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
@@ -986,7 +1002,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Minerai de fer +48/min Tu en as 543 · 1 mine de fer",
+  "label": "Minerai de fer +48/min Tu en as 544 · 1 mine de fer",
   "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
   "explique": "lecteur d’écran : Gisement : Minerai de fer",
   "tag": "button"
@@ -1058,7 +1074,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+13/min8,73 k",
+  "label": "Bois+16/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -1388,7 +1404,7 @@
   "ecran": "Atelier",
   "label": "Bois 8,80 k",
   "repere": "button#ae-item-bois[data-ae=\"item\"][data-value=\"bois\"].btn",
-  "explique": "info-bulle : Bois · 8 805,643 ; lecteur d’écran : Bois, 8 805,643 en stock ; guide (#ae-item-bois)",
+  "explique": "info-bulle : Bois · 8 806,291 ; lecteur d’écran : Bois, 8 806,291 en stock ; guide (#ae-item-bois)",
   "tag": "button"
  },
  {
@@ -1396,7 +1412,7 @@
   "ecran": "Atelier",
   "label": "Fibres 6,43 k",
   "repere": "button#ae-item-fibre[data-ae=\"item\"][data-value=\"fibre\"].btn",
-  "explique": "info-bulle : Fibres · 6 434,45 ; lecteur d’écran : Fibres, 6 434,45 en stock",
+  "explique": "info-bulle : Fibres · 6 434,795 ; lecteur d’écran : Fibres, 6 434,795 en stock",
   "tag": "button"
  },
  {
@@ -1404,7 +1420,7 @@
   "ecran": "Atelier",
   "label": "Pierre 4,21 k",
   "repere": "button#ae-item-caillou[data-ae=\"item\"][data-value=\"caillou\"].btn",
-  "explique": "info-bulle : Pierre · 4 218,181 ; lecteur d’écran : Pierre, 4 218,181 en stock",
+  "explique": "info-bulle : Pierre · 4 218,397 ; lecteur d’écran : Pierre, 4 218,397 en stock",
   "tag": "button"
  },
  {
@@ -1436,7 +1452,7 @@
   "ecran": "Atelier",
   "label": "Charbon 1,35 k",
   "repere": "button#ae-item-charbon[data-ae=\"item\"][data-value=\"charbon\"].btn",
-  "explique": "info-bulle : Charbon · 1 351,374 ; lecteur d’écran : Charbon, 1 351,374 en stock",
+  "explique": "info-bulle : Charbon · 1 351,465 ; lecteur d’écran : Charbon, 1 351,465 en stock",
   "tag": "button"
  },
  {
@@ -1468,7 +1484,7 @@
   "ecran": "Atelier",
   "label": "Os 2,85 k",
   "repere": "button#ae-item-os[data-ae=\"item\"][data-value=\"os\"].btn",
-  "explique": "info-bulle : Os · 2 854,854 ; lecteur d’écran : Os, 2 854,854 en stock",
+  "explique": "info-bulle : Os · 2 854,998 ; lecteur d’écran : Os, 2 854,998 en stock",
   "tag": "button"
  },
  {
@@ -1476,7 +1492,7 @@
   "ecran": "Atelier",
   "label": "Peau 2,16 k",
   "repere": "button#ae-item-cuir[data-ae=\"item\"][data-value=\"cuir\"].btn",
-  "explique": "info-bulle : Peau · 2 167,045 ; lecteur d’écran : Peau, 2 167,045 en stock",
+  "explique": "info-bulle : Peau · 2 167,165 ; lecteur d’écran : Peau, 2 167,165 en stock",
   "tag": "button"
  },
  {
@@ -1524,7 +1540,7 @@
   "ecran": "Atelier",
   "label": "Argile 1,10 k",
   "repere": "button#ae-item-argile[data-ae=\"item\"][data-value=\"argile\"].btn",
-  "explique": "info-bulle : Argile · 1 101,734 ; lecteur d’écran : Argile, 1 101,734 en stock",
+  "explique": "info-bulle : Argile · 1 101,799 ; lecteur d’écran : Argile, 1 101,799 en stock",
   "tag": "button"
  },
  {
@@ -1532,7 +1548,7 @@
   "ecran": "Atelier",
   "label": "Silex 1,68 k",
   "repere": "button#ae-item-silex[data-ae=\"item\"][data-value=\"silex\"].btn",
-  "explique": "info-bulle : Silex · 1 681,012 ; lecteur d’écran : Silex, 1 681,012 en stock",
+  "explique": "info-bulle : Silex · 1 681,099 ; lecteur d’écran : Silex, 1 681,099 en stock",
   "tag": "button"
  },
  {
@@ -1540,7 +1556,7 @@
   "ecran": "Atelier",
   "label": "Sable 1,24 k",
   "repere": "button#ae-item-sable[data-ae=\"item\"][data-value=\"sable\"].btn",
-  "explique": "info-bulle : Sable · 1 244,734 ; lecteur d’écran : Sable, 1 244,734 en stock",
+  "explique": "info-bulle : Sable · 1 244,799 ; lecteur d’écran : Sable, 1 244,799 en stock",
   "tag": "button"
  },
  {
@@ -1596,7 +1612,7 @@
   "ecran": "Atelier",
   "label": "Malachite 662",
   "repere": "button#ae-item-malachite[data-ae=\"item\"][data-value=\"malachite\"].btn",
-  "explique": "info-bulle : Malachite · 662,294 ; lecteur d’écran : Malachite, 662,294 en stock",
+  "explique": "info-bulle : Malachite · 662,333 ; lecteur d’écran : Malachite, 662,333 en stock",
   "tag": "button"
  },
  {
@@ -1604,7 +1620,7 @@
   "ecran": "Atelier",
   "label": "Cassitérite 388",
   "repere": "button#ae-item-cassiterite[data-ae=\"item\"][data-value=\"cassiterite\"].btn",
-  "explique": "info-bulle : Cassitérite · 388,647 ; lecteur d’écran : Cassitérite, 388,647 en stock",
+  "explique": "info-bulle : Cassitérite · 388,666 ; lecteur d’écran : Cassitérite, 388,666 en stock",
   "tag": "button"
  },
  {
@@ -1740,7 +1756,7 @@
   "ecran": "Atelier",
   "label": "Minerai de fer 548",
   "repere": "button#ae-item-fer_min[data-ae=\"item\"][data-value=\"fer_min\"].btn",
-  "explique": "info-bulle : Minerai de fer · 548,194 ; lecteur d’écran : Minerai de fer, 548,194 en stock",
+  "explique": "info-bulle : Minerai de fer · 548,233 ; lecteur d’écran : Minerai de fer, 548,233 en stock",
   "tag": "button"
  },
  {
