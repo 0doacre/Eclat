@@ -629,6 +629,7 @@
       const echosList = E.activeEchoesFins ? E.activeEchoesFins() : Object.keys((st.meta && st.meta.endings) || {});
       const nbEchos = echosList.length;
       const hasComptoir = E.zoneOpen(D.COMPTOIR.zone);
+      const isVivant = (typeof window !== "undefined" && (window.EclatStyleMode === "vivant" || (typeof document !== "undefined" && document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant")));
 
       /* un réglage qui s’active ou se coupe : toujours le même interrupteur, toujours les mêmes mots */
       const sw = (k, label, on, title) => '<div class="toggle"><span id="mt-' + k + '">' + label + '</span><button class="btn small sw' + (on ? " on" : "") + '" role="switch" aria-checked="' + !!on + '" aria-labelledby="mt-' + k + '" data-m="' + k + '" title="' + esc(title) + '">' + (on ? "Activé" : "Désactivé") + "</button></div>";
@@ -650,6 +651,13 @@
               '<div class="m-hero-cell"><span class="m-cell-lbl">Échos</span><b class="m-cell-val m-echo">🌅 ' + nbEchos + '/5</b></div>' +
             '</div>' +
           '</div>' +
+          (isVivant ? '<div class="vivant-menu-hero">' +
+            '<img src="assets/carnet/items/panier.webp" alt="Panier tressé" width="92" height="92" loading="lazy">' +
+            '<img class="hero-log" src="assets/carnet/items/bois.webp" alt="" width="74" height="74" loading="lazy">' +
+            '<div class="margin-stroke" aria-hidden="true"></div>' +
+          '</div>' +
+          '<p class="chapter tiny center muted" style="margin:2px 0 10px;font-family:var(--serif);font-size:16px">Le Carnet du Semeur</p>' +
+          '<button class="btn pri wide resume-btn" data-m="close" title="Fermer le menu et reprendre la partie">Reprendre <span aria-hidden="true">›</span></button>' : "") +
           '<nav class="menu-nav-bar" role="tablist" aria-label="Catégories du menu">' +
             '<button class="m-nav-tab on" data-mjump="jeu" role="tab" aria-selected="true" title="Aller à la section Jeu"><span class="m-nav-ic">🎮</span> Jeu</button>' +
             '<button class="m-nav-tab" data-mjump="affichage" role="tab" aria-selected="false" title="Aller à la section Affichage"><span class="m-nav-ic">🖥️</span> Affichage</button>' +
@@ -696,18 +704,30 @@
           '<p class="tiny dim center menu-footer">Éclat · du silex aux étoiles · version ' + esc(D.VERSION) + " · ⏱️ " + fmtTime(st.stats.play) + "</p>" +
         '</div>',
         onOpen: (box) => {
-          $$("[data-mjump]", box).forEach((tabBtn) => {
+          const navTabs = $$(".m-nav-tab", box);
+          navTabs.forEach((tabBtn) => {
             tabBtn.addEventListener("click", () => {
               const target = box.querySelector("#msec-" + tabBtn.dataset.mjump);
               if (target) {
                 target.scrollIntoView({ behavior: "smooth", block: "start" });
-                $$(".m-nav-tab", box).forEach((b) => {
+                navTabs.forEach((b) => {
                   const on = b === tabBtn;
                   b.classList.toggle("on", on);
                   b.setAttribute("aria-selected", String(on));
                 });
                 A.init(); A.click();
               }
+            });
+            tabBtn.addEventListener("keydown", (e) => {
+              let idx = navTabs.indexOf(tabBtn);
+              if (e.key === "ArrowRight") idx = (idx + 1) % navTabs.length;
+              else if (e.key === "ArrowLeft") idx = (idx + navTabs.length - 1) % navTabs.length;
+              else if (e.key === "Home") idx = 0;
+              else if (e.key === "End") idx = navTabs.length - 1;
+              else return;
+              e.preventDefault();
+              navTabs[idx].focus();
+              navTabs[idx].click();
             });
           });
           $$("[data-vol]", box).forEach((r) => {
