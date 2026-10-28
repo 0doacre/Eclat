@@ -5,7 +5,7 @@
   "description": "Éclat — du silex aux étoiles. Un jeu de craft mobile : découvre les recettes par le geste, bâtis ton usine, traverse les âges, perce le secret de l’étoile rouge.",
   "scripts": {
     "start": "npx --yes serve -l 8080 .",
-    "test": "node tools/syntax.js && node tools/validate.js && node tools/test.js && node tools/test-guidage.js && node tools/test-filtre-decouverte.js && node tools/test-assistance.js && node tools/test-equilibrage-b.js && node tools/test-transmission.js && node tools/test-territoires.js && node tools/test-ambiance.js && node tools/test-gestes.js && node tools/test-prestige-fins.js && node tools/test-menu-ui.js && node tools/arbre-mesures.js --check && node tools/test-sim.js && node tools/test-recit.js && node tools/test-build.js && node tools/test-boutons.js && node --no-warnings server/test.js && node tools/build.js --check",
+    "test": "node tools/syntax.js && node tools/validate.js && node tools/test.js && node tools/test-guidage.js && node tools/test-filtre-decouverte.js && node tools/test-assistance.js && node tools/test-qol-lot2.js && node tools/test-equilibrage-b.js && node tools/test-transmission.js && node tools/test-territoires.js && node tools/test-ambiance.js && node tools/test-gestes.js && node tools/test-prestige-fins.js && node tools/test-menu-ui.js && node tools/arbre-mesures.js --check && node tools/test-sim.js && node tools/test-recit.js && node tools/test-build.js && node tools/test-boutons.js && node --no-warnings server/test.js && node tools/build.js --check",
     "sim": "node tools/sim.js 3 dyson",
     "sim:parcours": "node tools/sim-parcours.js",
     "sim:joueurs": "node tools/sim-passages.js --joueurs",
