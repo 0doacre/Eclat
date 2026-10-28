@@ -28,6 +28,19 @@
     mercure: { outils: ["replicateur", "forge_stellaire"], lieux: ["bras"], ouvrage: ["metamateriau"], serie: "panneau_dyson", quantite: 5, production: 200,
       recettes: ["replicateur", "forge_stellaire", "metamateriau", "matiere_exotique", "antimatiere", "panneau_dyson"] }
   };
+  const RETOURS = {
+    lisiere: ["hutte", "fibre_2", "caillou_2", "scierie", "fibre_3", "caillou_3", "locomotive", "robots", "drones"],
+    plaine: ["cuir_2", "enclos", "outils_fer", "outils_acier", "eclairage", "convoyeurs", "robots", "drones", "ia"],
+    riviere: ["nasse", "automate_bronze", "drague", "silex_2", "sable_3", "pompe", "refroidissement", "robots", "ia"],
+    collines: ["cassiterite_1", "treuil", "cassiterite_2", "galene_1", "soufre_1", "galene_2", "convoyeurs", "robots", "drones"],
+    mine: ["outils_acier", "charbon_2", "foreuse_elec", "charbon_3", "uranium_1", "centrale_fission", "uranium_2", "capteurs", "robots"],
+    desert: ["acier_trempe", "roulement", "moteur_vapeur", "recuperation_vapeur", "excavatrice", "capteurs", "ordinateur", "robots", "chaine"],
+    gisement: ["joint_souple", "echangeur", "refroidissement", "plateforme", "convoyeurs", "drones", "robots", "ia", "assembleur"],
+    montagnes: ["ilmenite_2", "excavateur", "terres_2", "drones", "bouclier_th", "moteur_fusee", "assembleur", "ia", "vaisseau"],
+    orbite: ["alliage_ancien", "alunisseur", "base_lunaire", "reacteur_fusion", "propulseur", "vaisseau", "ia", "assembleur", "forge_stellaire"],
+    lune: ["regolithe_1", "propulseur", "vaisseau", "ia", "assembleur", "forge_stellaire", "metamateriau", "matiere_exotique", "antimatiere"],
+    mercure: ["matiere_exotique", "metamateriau", "antimatiere", "panneau_dyson", "replicateur", "forge_stellaire", "reacteur_fusion", "ia", "assembleur"]
+  };
   const MAX = 10, STEP = 5;
   const PHASES = ["Premiers équipements", "Exploration", "Ouvrage", "Production", "Maîtrise"];
   const obj = v => !!v && typeof v === "object" && !Array.isArray(v);
@@ -35,6 +48,12 @@
     s.meta = obj(s.meta) ? s.meta : {};
     const ranks = obj(s.meta.terres) ? s.meta.terres : {};
     s.meta.terres = Object.fromEntries(Object.keys(RULES).map(z => [z, Math.max(0, Math.min(MAX, Number.isFinite(ranks[z]) ? Math.floor(ranks[z]) : 0))]));
+    const lieux = obj(s.meta.terresLieux) ? s.meta.terresLieux : {}, savoir = obj(s.meta.terresSavoir) ? s.meta.terresSavoir : {};
+    s.meta.terresLieux = {}; s.meta.terresSavoir = {};
+    for (const z in RULES) {
+      s.meta.terresLieux[z] = RULES[z].lieux.filter(id => s.meta.terres[z] > 0 || Array.isArray(lieux[z]) && lieux[z].includes(id));
+      if (s.meta.terres[z] > 0 || savoir[z] === true) s.meta.terresSavoir[z] = true;
+    }
     const t = obj(s.territoires) ? s.territoires : {};
     const produced = obj(t.produit) ? t.produit : {}, done = obj(t.accompli) ? t.accompli : {};
     s.territoires = { produit: {}, accompli: {} };
@@ -62,16 +81,24 @@
       if (!Object.hasOwn(RULES, z)) return null;
       const s = state(), r = RULES[z], level = rank(z), open = E.zoneOpen(z);
       const retour = (r.retours || []).filter(x => level >= x.rang).slice(-1)[0];
-      const scale = 1 + Math.min(2, Math.floor(level / 4));
-      const series = retour ? retour.serie : r.serie, qty = r.quantite * scale;
+      const scale = 1;
+      const series = r.serie, qty = r.quantite;
       const made = id => (s.made[id] || 0) > 0;
-      const build = retour ? [retour.ouvrage] : r.ouvrage;
+      const build = level > 0 ? [RETOURS[z][Math.min(8, level - 1)]] : r.ouvrage;
+      s.meta.terresLieux = s.meta.terresLieux || {};
+      s.meta.terresSavoir = s.meta.terresSavoir || {};
+      const remembered = new Set(s.meta.terresLieux[z] || []);
+      for (const id of r.lieux) if (level > 0 || (s.exp.done[z] || 0) > E.ZONES[z].exps.findIndex(e => e.id === id)) remembered.add(id);
+      s.meta.terresLieux[z] = [...remembered];
+      if (level > 0 || (s.made[series] || 0) >= qty) s.meta.terresSavoir[z] = true;
+      const savoir = s.meta.terresSavoir[z] === true;
+      const installed = open && Object.values(s.dom.ext).some(e => e.z === z && e.on && Object.values(e.u).some(n => n > 0) && E.extOut(e) > 0);
       const phases = [
-        { n: PHASES[0], done: r.outils.every(made), texte: "Fabriquer ou réparer : " + r.outils.map(id => I[id].n).join(", "), ids: r.outils },
-        { n: PHASES[1], done: r.lieux.every(x => (s.exp.done[z] || 0) > E.ZONES[z].exps.findIndex(e => e.id === x)), texte: r.lieux.length > 1 ? "Explorer les " + r.lieux.length + " lieux principaux" : "Explorer le lieu principal", lieux: r.lieux },
-        { n: PHASES[2], done: build.every(made), texte: "Réaliser : " + build.map(id => I[id].n).join(", "), ids: build },
+        level > 0 ? { n: "Installation", done: installed, texte: "Remettre un extracteur en production dans cette terre" } : { n: PHASES[0], done: r.outils.every(made), texte: "Fabriquer ou réparer : " + r.outils.map(id => I[id].n).join(", "), ids: r.outils },
+        { n: PHASES[1], done: r.lieux.every(x => remembered.has(x)), texte: r.lieux.every(x => remembered.has(x)) ? "Lieux principaux déjà explorés · acquis conservé" : "Explorer les lieux principaux une première fois", lieux: r.lieux, permanent: true },
+        { n: level > 0 ? "Ouvrage du retour" : PHASES[2], done: build.every(made), texte: "Réaliser : " + build.map(id => level > 0 && !s.known[id] && !s.seen[id] && !made(id) ? "une technique à découvrir" : I[id].n).join(", "), ids: build },
         { n: PHASES[3], done: (s.territoires.produit[z] || 0) >= r.production * scale, texte: "Extraire automatiquement " + r.production * scale + " matières dans cette terre", actuel: Math.min(r.production * scale, Math.floor(s.territoires.produit[z] || 0)), cible: r.production * scale },
-        { n: PHASES[4], done: (s.made[series] || 0) >= qty, texte: "Achever " + qty + " fabrications : " + I[series].n, actuel: Math.min(qty, Math.floor(s.made[series] || 0)), cible: qty, ids: [series] }
+        savoir ? { n: PHASES[4], done: true, texte: "Savoir-faire acquis · aucune série de base à refaire", permanent: true } : { n: PHASES[4], done: false, texte: "Achever une première série de " + qty + " fabrications : " + I[series].n, actuel: Math.min(qty, Math.floor(s.made[series] || 0)), cible: qty, ids: [series] }
       ];
       const complete = open && phases.every(p => p.done);
       if (complete && latch && !s.territoires.accompli[z]) { s.territoires.accompli[z] = true; E.emit("terreMaitrisee", { z }); }
@@ -79,7 +106,7 @@
       const order = Object.keys(RULES), next = order[order.indexOf(z) + 1];
       const percent = ready ? 100 : Math.floor(phases.filter(p => p.done).length / phases.length * 100);
       return { z, n: E.ZONES[z].n, ouvert: open, rang: level, bonus: level * STEP, prochainBonus: Math.min(MAX, level + 1) * STEP,
-        chapitre: retour ? retour.n : "Première installation", phases, pourcent: open ? percent : 0, pret: ready, gagne: ready && level < MAX,
+        chapitre: level > 0 ? retour ? retour.n : "Retour " + (level + 1) : "Première installation", phases, pourcent: open ? percent : 0, pret: ready, gagne: ready && level < MAX,
         prochaine: next || null, apercu: ready && !!next, frontiere: !!next && E.zoneOpen(next) };
     }
     E.terreMaitrise = z => info(z, true);
@@ -102,7 +129,7 @@
     const t = E.terreMaitrise(z);
     if (!t || !t.ouvert) return "";
     let h = '<details class="terre-maitrise" data-terre-maitrise="' + z + '"' + (open ? ' open' : '') + '><summary title="Voir les objectifs de cette terre et son bonus à la relève">Maîtrise · ' + t.pourcent + ' %' + (t.bonus ? ' · Débit +' + t.bonus + ' %' : '') + (t.gagne ? ' · +5 % à la relève' : '') + '</summary>';
-    h += '<p class="small">' + esc(t.chapitre) + ' · Les secrets sont facultatifs. Les objectifs peuvent avancer en parallèle.</p><ol>';
+    h += '<p class="small">' + esc(t.chapitre) + ' · Explorations et savoir-faire restent acquis. À chaque retour : une installation active, une production locale et un ouvrage différent. Les secrets sont facultatifs.</p><ol>';
     for (const p of t.phases) {
       h += '<li' + (p.done || t.pret ? ' class="done"' : '') + '><b>' + esc(p.n) + (p.done || t.pret ? ' · accompli' : '') + '</b><span>' + esc(p.texte) + (p.cible ? ' · <span data-terre-compteur="' + z + ':' + (p.n === PHASES[3] ? 'production' : 'serie') + '">' + p.actuel + '</span> / ' + p.cible : '') + '</span></li>';
     }
@@ -123,7 +150,7 @@
     if (!list.length) return "";
     return '<section class="terres-transmission"><h3>Terres transmises</h3><p class="small">Bonus permanents de débit : extraction locale et recettes associées, aux mains et aux machines. +5 points par terre maîtrisée et par relève, jusqu’à +50 %.</p><ul>' + list.map(t => '<li>' + esc(t.n) + ' : <b>+' + t.bonus + ' %' + (t.gagne ? ' → +' + t.prochainBonus + ' % à cette relève' : '') + '</b>' + (!t.gagne && t.rang < MAX ? ' · maîtrise à refaire dans ce cycle' : '') + '</li>').join('') + '</ul></section>';
   }
-  const API = { RULES, MAX, STEP, normalize, attach, html, transmissionHTML };
+  const API = { RULES, RETOURS, MAX, STEP, normalize, attach, html, transmissionHTML };
   root.EclatTerritoires = API;
   if (typeof module !== "undefined" && module.exports) module.exports = API;
 })(typeof window !== "undefined" ? window : globalThis);
