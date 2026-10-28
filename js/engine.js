@@ -5,6 +5,7 @@
 (function (root) {
   "use strict";
   const D = root.ECLAT_DATA || (typeof require !== "undefined" ? require("./data.js") : null);
+  const Territoires = root.EclatTerritoires || require("./territoires.js");
 
   const BASE_GESTES = ["assembler", "tresser", "tailler"];
   const UNIQUE = { tool: 1, stat: 1, upg: 1, curio: 1 };
@@ -98,7 +99,7 @@
       v: SAVE_VERSION, t: now, start: now,
       inv: {}, seen: {}, made: {}, known: {}, hints: {},
       intu: 3, zones: { lisiere: true }, flags: { ages: {} }, frags: {}, secrets: {},
-      exp: { active: null, done: {} }, age: 0,
+      exp: { active: null, done: {} }, age: 0, territoires: { produit: {}, accompli: {} },
       dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
       hand: { q: [], p: 0 }, studied: {}, skills: {}, act: null,
       proj: {}, endings: {},
@@ -1240,7 +1241,7 @@
       // 3. Élan des Semeurs : chaque cycle passé rend les gestes plus vifs
       const elan = Math.pow(1.2, Math.min(5, Math.max(0, (S.cycle || 1) - 1)));
 
-      return (baseT * fatigue / elan) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / (it.r ? skillSpeed(it.r[0]) : 1);
+      return (baseT * fatigue / elan) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / ((it.r ? skillSpeed(it.r[0]) : 1) * E.recetteTerreBonus(id));
     }
     E.handTime = handTime;
     /* répéter le même geste va de plus en plus vite : n pièces d’affilée prennent t × n^batch */
@@ -1286,7 +1287,7 @@
           decay = Math.pow(H.machDecay || 1.08, recAge - 1);
         }
       }
-      return ((M.spd / 60) / decay) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach");
+      return ((M.spd / 60) / decay) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
     }
     function machReadyFor(m, rec) {
       if (!E.automatable(rec) || !E.machCan(m, rec)) return false;
@@ -3168,7 +3169,7 @@
         if (it) r += e.u[t] * extRate(t, e.res) * (c.auto[e.z || it.z] || 1) * (c.auto["*"] || 1) * c.echo * memV("extr") * transV("trans_terre");
       }
       if (E.hasEchoFin("brasier")) r *= 1.25;
-      return r * f * donExt(e.z) * seuilMult(e);
+      return r * f * donExt(e.z) * seuilMult(e) * E.terreBonus(e.z);
     }
     E.extOut = (e) => extOut(e, E.cache());
     /* ---- Les seuils par gisement (D.SEUILS) : 10, 25, 50, 100 extracteurs, chacun ×1,25 ---- */
@@ -3385,6 +3386,7 @@
       if (!(rate > 0)) return done("idle");
       made = rate * dt;
       add(e.res, made);
+      E.terreProduire(e.z, made);
       if (!S.flags.extDone) { S.flags.extDone = true; checkAges(); E.emit("struct"); }
       return done("ok");
     }
@@ -4432,6 +4434,7 @@
         if (S.intuAcc >= 1) { const k = Math.floor(S.intuAcc); S.intu += k; S.intuAcc -= k; }
       }
       if (!offline) S.stats.play += dt; // le temps passé à jouer, pas l’absence
+      E.terresCheck();
     }
     E.step = step;
 
@@ -4868,6 +4871,7 @@
       const base = freshState(now());
       for (const k in base) if (o[k] === undefined || o[k] === null && k !== "track") o[k] = base[k];
       o.meta = Object.assign({ endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {} }, o.meta);
+      Territoires.normalize(o);
       if (!o.meta.curios || typeof o.meta.curios !== "object" || Array.isArray(o.meta.curios)) o.meta.curios = {};
       if (!o.meta.trans || typeof o.meta.trans !== "object" || Array.isArray(o.meta.trans)) o.meta.trans = {};
       if (!o.meta.hints_endings || typeof o.meta.hints_endings !== "object" || Array.isArray(o.meta.hints_endings)) o.meta.hints_endings = {};
@@ -5194,6 +5198,7 @@
     E.importSave = (txt) => E.load(E.decodeSave(txt));
 
     (root.EclatTransmission || require("./transmission.js")).attach(E);
+    Territoires.attach(E);
     recalc();
     return E;
   }

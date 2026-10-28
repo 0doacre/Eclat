@@ -64,7 +64,7 @@
         h += '<div class="card acc releve-alerte" style="margin:8px 0 10px;border-left:3px solid var(--acc);background:var(--panel2)">' +
           '<div class="row between items-center"><span class="step-badge">✦ Relais conseillé</span><b class="mgain">+' + sugRel.gain + ' ✦</b></div>' +
           '<p class="small" style="margin:6px 0 8px">Les matières deviennent lourdes à arracher et les mains fatiguent. En passant le relais maintenant, tu transmettras <b>+' + sugRel.gain + ' Traces</b> pour éveiller un Semeur aux récoltes démultipliées.</p>' +
-          '<button class="btn pri small" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+          '<button class="btn pri small" data-m="releve" title="Voir les gains de Traces et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
       }
       const all = U.domAll || zs.length <= SHOWN + 1;
       zs.forEach((z, i) => { if (all || i < SHOWN || U.domOpen === z) h += terreHTML(z); });
@@ -136,6 +136,7 @@
       const decor = DECORS[z] ? ' style="--decor:url(' + new URL('assets/terres/' + z + '-decor.webp', document.baseURI).href + ')"' : "";
       let h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
       h += regleHTML(z);
+      h += E.territoiresHTML(z, esc, U.terresOpen && U.terresOpen[z]);
       deps.forEach((d) => { h += gisHTML(z, d); });
       h += ruinsBlock(z, Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "ext" && E.extZones(id)[0] === z));
       if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ces ressources nécessitent des extracteurs pour être récoltées.</p>';
@@ -781,6 +782,12 @@
     /* ------------------------------------------------------------ clics */
     function click(t, ev) {
       let b;
+      if ((b = t.closest("[data-terre-maitrise] > summary"))) {
+        const details = b.parentElement;
+        U.terresOpen = U.terresOpen || {};
+        U.terresOpen[details.dataset.terreMaitrise] = !details.open;
+        return false;
+      }
       if ((b = t.closest("[data-harv]"))) {
         // Le pointeur récolte à l’appui ; clavier et technologies d’assistance au clic.
         if (ev && ev.detail === 0) { A.init(); harvest(b); }
@@ -875,6 +882,10 @@
     /* ------------------------------------------------------------ rafraîchir sans redessiner */
     function live(root) {
       if (!root) return;
+      root.querySelectorAll("[data-terre-compteur]").forEach((el) => {
+        const [z, type] = el.dataset.terreCompteur.split(":"), t = E.terreMaitrise(z);
+        if (t) el.textContent = t.phases[type === "production" ? 3 : 4].actuel;
+      });
       root.querySelectorAll("[data-rate]").forEach((el) => {
         const key = el.dataset.rate, i = key.indexOf(":"), r = depRate(key.slice(0, i), key.slice(i + 1));
         el.textContent = r > 0 ? "+" + perTime(r) : "";
@@ -892,7 +903,7 @@
     /* signature de ce qui change la mise en page : on ne redessine que si elle change */
     function sig() {
       const st = S(), ms = E.machines();
-      return [api.topSig ? api.topSig() : "", openZones().join(), JSON.stringify(st.dom.ext),
+      return [api.topSig ? api.topSig() : "", E.terresSignature(), openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
         st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
