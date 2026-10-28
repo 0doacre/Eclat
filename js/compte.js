@@ -692,7 +692,7 @@
               '<button class="btn m-card-btn" data-m="credits" title="Les icônes, les polices et la musique"><span class="m-card-icon">📜</span><b>Crédits</b></button>' +
             "</div>" +
             '<div class="menu-danger-zone"><button class="btn ghost danger-btn" data-m="reset" style="color:var(--bad)" title="Effacer ta progression et repartir de zéro">🗑️ Recommencer la partie</button></div>') +
-          '<div class="acts"><button class="btn pri m-close-btn" data-m="close">Fermer</button></div>' +
+          '<div class="acts"><button class="btn pri m-close-btn" data-m="close" title="Fermer le menu et revenir au jeu">Fermer</button></div>' +
           '<p class="tiny dim center menu-footer">Éclat · du silex aux étoiles · version ' + esc(D.VERSION) + " · ⏱️ " + fmtTime(st.stats.play) + "</p>" +
         '</div>',
         onOpen: (box) => {

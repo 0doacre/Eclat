@@ -27,10 +27,12 @@ function save() {
     if (it.a > 6 || it.sec || it.path || !it.r) continue;
     E.learn(id, true); S.inv[id] = 1;
   }
-  // Le Désert au deuxième passage : 4 objectifs sur 5, série de verre trempé à terminer.
+  // Au retour : explorations acquises, installation active ; production à terminer.
   const t = E.terreMaitrise("desert"), r = T.RULES.desert;
   for (const p of t.phases.slice(0, 3)) for (const id of p.ids || []) S.made[id] = 1;
-  S.exp.done.desert = r.lieux.length; S.territoires.produit.desert = t.phases[3].cible;
+  S.exp.done.desert = 0; S.territoires.produit.desert = 0;
+  E.domExtSet("desert", "quartz", "tamis", 1);
+  S.territoires.produit.desert = t.phases[3].cible; delete S.made.acier_trempe;
   E.recalc(); return E.serialize();
 }
 async function main() {
@@ -53,13 +55,10 @@ async function main() {
       check(await details.getAttribute("open") !== null, "objectifs dépliables à " + width);
       const text = await details.innerText();
       check(text.includes("80 %") && text.includes("La précision"), "progression et chapitre à " + width);
-      check(text.includes("Verre trempé") && !text.includes("Le Quai"), "objectif concret et secrets absents à " + width);
+      check(text.includes("Acier trempé") && text.includes("acquis conservé") && !text.includes("Le Quai"), "ouvrage du retour et explorations acquises à " + width);
       check(text.includes("jusqu") || text.includes("plafond"), "règle du bonus lisible à " + width);
-      const material = p.locator('[data-terre-compteur="desert:serie"]');
-      await p.evaluate(() => { const E = window.__eclat.E; E.state.made.verre_trempe = 3; });
-      await p.waitForFunction(() => document.querySelector('[data-terre-compteur="desert:serie"]').textContent === "3");
-      check(await material.innerText() === "3", "compteur actualisé à " + width);
-      await p.evaluate(() => { const E = window.__eclat.E; E.state.made.verre_trempe = 10; E.terresCheck(); E.emit("struct"); });
+      check(await p.locator('[data-terre-compteur="desert:serie"]').count() === 0, "aucune série de base à refaire à " + width);
+      await p.evaluate(() => { const E = window.__eclat.E; E.state.made.acier_trempe = 1; E.domExtToggle("desert", "quartz", true); E.terresCheck(); E.emit("struct"); });
       await p.waitForFunction(() => document.querySelector('[data-terre-maitrise="desert"] > summary').textContent.includes("100 %"));
       check(await details.getAttribute("open") !== null, "ouverture conservée après progression à " + width);
       check((await details.innerText()).includes("Horizon") && (await details.innerText()).includes("Gisement Noir"), "aperçu après maîtrise à " + width);
