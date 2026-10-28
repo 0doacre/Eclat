@@ -154,4 +154,9 @@ test("l'interface du Domaine est compatible avec un ancien module de test et cha
   assert.equal(typeof ctx.window.EclatDomaine.create, "function");
   assert.match(fs.readFileSync(require.resolve("../index.html"), "utf8"), /js\/territoires.js/);
 });
+test("un nouveau départ efface les bonus puis permet une nouvelle transmission", () => {
+  const E = mk(); E.state.meta.terres.lisiere = 5; E.reset();
+  assert.equal(E.terreBonus("lisiere"), 1); assert.equal(E.terreMaitrise("lisiere").pourcent, 0);
+  relevePossible(E); complete(E, "lisiere"); E.newCycle(); assert.equal(E.terreBonus("lisiere"), 1.05);
+});
 console.log(count + " tests de maîtrise territoriale réussis.");

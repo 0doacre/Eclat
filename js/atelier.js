@@ -46,7 +46,7 @@
         h += '<div class="card acc releve-alerte" style="border-left:3px solid var(--acc);background:var(--panel2);margin-bottom:10px">' +
           '<div class="row between items-center"><span class="step-badge">✦ Passer le relais</span><b class="mgain">+' + sugRel.gain + ' ✦</b></div>' +
           '<p class="small" style="margin:6px 0 8px">' + esc(sugRel.texte) + '</p>' +
-          '<button class="btn pri small" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+          '<button class="btn pri small" data-m="releve" title="Voir les gains et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
       }
       // l’explication des niveaux se lit une fois ; ensuite le bouton « Niveaux » rejoint l’établi et ne prend plus de ligne
       const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;

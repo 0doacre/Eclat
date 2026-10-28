@@ -51,7 +51,7 @@
     }
     normalize(E.state);
     const state = () => E.state;
-    const rank = z => Math.max(0, Math.min(MAX, state().meta.terres[z] || 0));
+    const rank = z => Math.max(0, Math.min(MAX, (state().meta.terres || {})[z] || 0));
     E.terreBonus = z => Object.hasOwn(RULES, z) ? 1 + rank(z) * STEP / 100 : 1;
     E.recetteTerre = id => ownership[id] || null;
     E.recetteTerreBonus = id => E.terreBonus(ownership[id]);
@@ -89,6 +89,7 @@
     const newCycle = E.newCycle;
     E.newCycle = function () {
       const earned = E.canReleve() ? E.terresTransmission() : [];
+      state().meta.terres = state().meta.terres || {};
       for (const t of earned) state().meta.terres[t.z] = t.rang + 1;
       newCycle();
     };
@@ -100,7 +101,7 @@
   function html(E, z, esc, open) {
     const t = E.terreMaitrise(z);
     if (!t || !t.ouvert) return "";
-    let h = '<details class="terre-maitrise" data-terre-maitrise="' + z + '"' + (open ? ' open' : '') + '><summary>Maîtrise · ' + t.pourcent + ' %' + (t.bonus ? ' · Débit +' + t.bonus + ' %' : '') + (t.gagne ? ' · +5 % à la relève' : '') + '</summary>';
+    let h = '<details class="terre-maitrise" data-terre-maitrise="' + z + '"' + (open ? ' open' : '') + '><summary title="Voir les objectifs de cette terre et son bonus à la relève">Maîtrise · ' + t.pourcent + ' %' + (t.bonus ? ' · Débit +' + t.bonus + ' %' : '') + (t.gagne ? ' · +5 % à la relève' : '') + '</summary>';
     h += '<p class="small">' + esc(t.chapitre) + ' · Les secrets sont facultatifs. Les objectifs peuvent avancer en parallèle.</p><ol>';
     for (const p of t.phases) {
       h += '<li' + (p.done || t.pret ? ' class="done"' : '') + '><b>' + esc(p.n) + (p.done || t.pret ? ' · accompli' : '') + '</b><span>' + esc(p.texte) + (p.cible ? ' · <span data-terre-compteur="' + z + ':' + (p.n === PHASES[3] ? 'production' : 'serie') + '">' + p.actuel + '</span> / ' + p.cible : '') + '</span></li>';
@@ -114,7 +115,7 @@
       h += '<p class="small"><b>Horizon · ' + esc(next.n) + '</b> — ' + esc(next.d) + '</p><p class="small">Frontière · ' + (t.frontiere ? 'franchie' : pass && pass.ready ? Math.floor(pass.frac * 100) + ' % du passage fourni' : 'préparer le moyen de passage') + '. La maîtrise ne conditionne pas le passage.</p>';
     }
     const known = RULES[z].recettes.filter(id => E.state.known[id] || E.state.made[id] > 0);
-    if (known.length) h += '<details><summary>Recettes associées déjà connues · ' + known.length + '</summary><p class="small">' + known.map(id => esc(E.D.ITEMS[id].n)).join(', ') + '</p></details>';
+    if (known.length) h += '<details><summary title="Voir les recettes connues qui bénéficient du bonus de cette terre">Recettes associées déjà connues · ' + known.length + '</summary><p class="small">' + known.map(id => esc(E.D.ITEMS[id].n)).join(', ') + '</p></details>';
     return h + '</details>';
   }
   function transmissionHTML(E, esc) {

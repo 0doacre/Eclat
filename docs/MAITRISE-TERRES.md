@@ -50,7 +50,7 @@ La branche de prévisualisation de l'Atelier par équipements n'est pas fusionn�
 
 ## Vérification
 
-- `npm test` inclut les vingt tests de maîtrise : transmission, plafond, attribution unique, production réelle, hors ligne, périmètre des bonus, anciennes sauvegardes et objectifs sans secrets.
+- `npm test` inclut les vingt et un tests de maîtrise : transmission, plafond, attribution unique, production réelle, hors ligne, périmètre des bonus, anciennes sauvegardes, nouveau départ et objectifs sans secrets.
 - `npm run test:territoires-ui` vérifie le Domaine, les compteurs, la maîtrise du Désert, l'aperçu, le bilan, la relève et sa persistance en 320, 390 et 980 px.
 - Le scénario existant de deux cycles maîtrise la Lisière au premier cycle : le second atteint la Plaine à 1,418 min et la Rivière à 15,185 min, contre 1,427 et 15,293 auparavant. Ces mesures concernent ce scénario de bot, pas les joueurs humains.
 

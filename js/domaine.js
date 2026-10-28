@@ -64,7 +64,7 @@
         h += '<div class="card acc releve-alerte" style="margin:8px 0 10px;border-left:3px solid var(--acc);background:var(--panel2)">' +
           '<div class="row between items-center"><span class="step-badge">✦ Relais conseillé</span><b class="mgain">+' + sugRel.gain + ' ✦</b></div>' +
           '<p class="small" style="margin:6px 0 8px">Les matières deviennent lourdes à arracher et les mains fatiguent. En passant le relais maintenant, tu transmettras <b>+' + sugRel.gain + ' Traces</b> pour éveiller un Semeur aux récoltes démultipliées.</p>' +
-          '<button class="btn pri small" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+          '<button class="btn pri small" data-m="releve" title="Voir les gains de Traces et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
       }
       const all = U.domAll || zs.length <= SHOWN + 1;
       zs.forEach((z, i) => { if (all || i < SHOWN || U.domOpen === z) h += terreHTML(z); });
