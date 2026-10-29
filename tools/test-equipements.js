@@ -322,8 +322,8 @@ test("le thermomètre équipé distingue Brûlant, Chaud, Tiède et Froid sans r
   assert.equal(c.why,"incompatible");assert.equal(c.thermo.heat,"brulant"); // bois sur l'Établi = manche avec percuteur (même poste, autre outil)
   const cOther=E.attemptWith("feu","doux",["caillou"]);
   assert.equal(cOther.thermo.heat,"chaud"); // caillou = percuteur sur l'Établi (autre poste)
-  // Tiède : une matière fait partie d'une recette de cet outil/mode (archet = manche + corde avec mains/assembler)
-  const t=E.attemptWith("mains","assembler",["manche"]);
+  // Tiède : une matière fait partie d'une recette de cet outil/mode (archet = manche + corde avec mains/assembler) sans être une recette complète ailleurs
+  const t=E.attemptWith("mains","assembler",["corde"]);
   assert.equal(t.thermo.heat,"tiede");
   // Froid : aucune correspondance
   const f=E.attemptWith("feu","etouffee",["caillou","manche"]);
