@@ -56,7 +56,8 @@
       const dense = U.compact();
       let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
       h += api.top();
-      if (E.repriseRows && E.repriseRows().length) h += '<section class="dom-card"><div class="kicker">Héritage du Semeur</div><h3>Reprendre l’installation</h3><p class="small">Réparer, poser et commander les équipements de ton plan, avec les ressources disponibles.</p><button class="btn small" data-reprise title="Choisir les équipements et vérifier le coût avant de reconstruire">Voir le plan de reprise</button></section>';
+      const reprise = E.reprisePending ? E.reprisePending() : [];
+      if (reprise.length) h += '<section class="dom-card dom-reprise"><div class="row wrap"><span class="grow small"><b>Reprendre l’installation</b> · ' + reprise.length + ' équipement(s) restant(s)</span><button class="btn small" data-reprise title="Choisir les équipements et vérifier le coût avant de reconstruire">Plan de reprise</button></div></section>';
       h += nouveauxGisementsHTML();
       const tip = hint();
       if (tip) h += '<div class="dom-tip">' + tip + "</div>";
@@ -79,6 +80,8 @@
       h += domaineMachinesSummary();
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
+        const g = E.guide();
+        if (g && g.ob.k === "pass" && g.ob.z === z) return; // déjà dans l’objectif
         const p = E.passInfo(z);
         if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + z + '"><h3>Vers ' + esc(E.ZONES[z].n) + "</h3>" + passHTML(z) + "</section>";
       });
@@ -998,13 +1001,17 @@
 
     function repriseSheet() {
       let quote = E.repriseQuote(), result = "";
+      const signature = () => JSON.stringify(E.reprisePending().map(r => [r.i, r.left, E.repriseStatus(r)]));
+      let last = signature();
       function html() {
         const p = S().meta.reprise;
         let h = '<h2 id="modalTitle">Plan de reprise</h2><p class="small">' + (p.inferred ? 'Plan proposé à partir des ruines conservées. Les emplacements pourront être ajustés dans le Domaine.' : 'Installation de référence · Semeur ' + esc(String(p.cycle))) + '</p><p class="small">Choisis les équipements à reconstruire. Les terres fermées et les prérequis manquants attendent. Aucune dépense automatique plus tard.</p>';
-        h += '<div class="reprise-rows">' + E.repriseRows().map((r, i) => {
+        if (!E.reprisePending().length) return h + '<p role="status">Installation reconstituée.</p>' + (result ? '<p class="small">' + esc(result) + '</p>' : '') + '<button class="btn pri" data-m="close">Fermer</button>';
+        h += '<div class="reprise-rows">' + E.reprisePending().map(r => {
+          const i = r.i;
           const actions = quote.actions.filter(a => a.i === i), names = { place: 'poser', repair: 'réparer', order: 'commander' };
           const ready = Object.keys(names).map(k => { const n = actions.filter(a => a.kind === k).length; return n ? names[k] + ' ×' + n : ''; }).filter(Boolean).join(', ');
-          return '<div class="row wrap" style="padding:8px 0;border-bottom:1px solid var(--line)"><button class="btn small ghost" data-m="repriseSelect" data-i="' + i + '" aria-pressed="' + r.selected + '" aria-label="' + esc((r.selected ? 'Retirer ' : 'Inclure ') + I[r.id].n) + '">' + (r.selected ? '☑' : '☐') + '</button><span class="grow small">' + esc(I[r.id].n) + ' ×' + r.n + (r.z ? ' · ' + esc(E.ZONES[r.z].n) + ' / ' + esc(I[r.res].n) : '') + '<br><span class="tiny muted">' + esc(E.repriseStatus(r)) + (ready ? '<br>Ce lancement : ' + ready : '') + '</span></span></div>';
+          return '<div class="row wrap reprise-row"><button class="btn small ghost" data-m="repriseSelect" data-i="' + i + '" aria-pressed="' + r.selected + '" aria-label="' + esc((r.selected ? 'Retirer ' : 'Inclure ') + I[r.id].n) + '">' + (r.selected ? '☑' : '☐') + '</button><span class="grow small">' + esc(I[r.id].n) + ' · reste ' + r.left + ' / ' + r.n + (r.z ? ' · ' + esc(E.ZONES[r.z].n) + ' / ' + esc(I[r.res].n) : '') + '<br><span class="tiny muted">' + esc(E.repriseStatus(r)) + (ready ? ' · ' + ready : '') + '</span></span></div>';
         }).join('') + '</div>';
         const costs = Object.entries(quote.cost).map(([id, n]) => esc(I[id].n) + ' ×' + fmt(n)).join(', ');
         h += '<p class="small"><b>Ce lancement : ' + quote.actions.length + ' opération(s)</b> · jusqu’à 24 par lancement. Réparations et poses sont immédiates ; les fabrications rejoignent les commandes.</p><p class="small">À dépenser ou réserver : <b>' + (costs || 'aucune matière') + '</b>.</p>';
@@ -1012,8 +1019,11 @@
         if (result) h += '<p role="status" class="small">' + esc(result) + '</p>';
         return h + '<div class="row wrap"><button class="btn pri" data-m="repriseApply" title="Exécuter uniquement les réparations, poses et commandes détaillées dans ce devis"' + (quote.actions.length ? '' : ' disabled') + '>Lancer ces travaux</button><button class="btn ghost" data-m="repriseRefresh" title="Recalculer les travaux possibles avec les ressources disponibles maintenant">Actualiser le devis</button></div>';
       }
-      function redraw() { const box = document.querySelector('#modal .modal-box'); if (box) box.innerHTML = '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>' + html(); render(true); return true; }
-      openModal({ html: html(), on: {
+      function redraw() { last = signature(); const box = document.querySelector('#modal .modal-box'); if (box) box.innerHTML = '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>' + html(); render(true); return true; }
+      openModal({ html: html(), repriseLive: () => {
+        if (signature() === last) return;
+        quote = E.repriseQuote(); redraw();
+      }, on: {
         repriseSelect: b => { E.repriseSelect(Number(b.dataset.i), !E.repriseRows()[Number(b.dataset.i)].selected); quote = E.repriseQuote(); result = ""; return redraw(); },
         repriseRefresh: () => { quote = E.repriseQuote(); result = "Devis actualisé."; return redraw(); },
         repriseApply: () => {
@@ -1128,6 +1138,7 @@
     /* ------------------------------------------------------------ rafraîchir sans redessiner */
     function live(root) {
       if (!root) return;
+      if (U.mcur && U.mcur.repriseLive) U.mcur.repriseLive();
       root.querySelectorAll("[data-terre-compteur]").forEach((el) => {
         const [z, type] = el.dataset.terreCompteur.split(":"), t = E.terreMaitrise(z);
         if (t) el.textContent = t.phases[type === "production" ? 3 : 4].actuel;
@@ -1152,7 +1163,7 @@
       return [api.topSig ? api.topSig() : "", E.terresSignature(), openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
         st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
-        (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins())].join("|");
+        (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins()), E.reprisePending ? E.reprisePending().map(r => r.i + ":" + r.left).join() : ""].join("|");
     }
 
     /* une terre précise : on la déplie et on la montre */

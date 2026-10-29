@@ -1259,6 +1259,8 @@
     ["plastique", "Le naphta peut devenir une pièce moulée : essaie de le synthétiser."],
     ["soufre_1", "Le soufre des Collines donne de l’élasticité au caoutchouc. Construis une soufrière pour le récolter."],
     ["refroidissement", "Des tuyaux souples et des joints étanches font circuler l’eau fraîche autour des machines."],
+    ["masque", "Les vapeurs du Gisement Noir sont toxiques. Fabrique un masque filtrant pour explorer la Plateforme Rouillée."],
+    { k: "exp", z: "gisement", x: "plateforme_r", n: "Explorer la Plateforme Rouillée", txt: "Ton masque filtrant te protège des vapeurs. Explore la plateforme dans le Gisement Noir." },
     ["dynamite", "Les Pics Fracturés ne s’ouvriront qu’à l’explosif."],
     { k: "pass", z: "montagnes", n: "Vers les Pics Fracturés", txt: "Les Pics n’ont qu’un col. Il faut l’ouvrir, puis le tenir." },
     ["titane", "Le métal le plus noble des montagnes."],

@@ -485,6 +485,11 @@
   function setupModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     box.addEventListener("click", (ev) => {
+      if (ev.target.closest("[data-hopen]") && U.mcur && !fresh()) { closeModal(); openHands(); return; }
+      const custom = ev.target.closest("[data-cr-custom]");
+      if (custom && U.mcur && !fresh()) { closeModal(); promptCraftQty(custom.dataset.crCustom); return; }
+      const craft = ev.target.closest("[data-tree]");
+      if (craft && U.mcur && !fresh()) { openTree(craft.dataset.tree, Number(craft.dataset.n) || 1); return; }
       // un passage à verser, une matière à voir, depuis une fiche
       const pb = ev.target.closest("[data-pour]");
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
@@ -1045,14 +1050,14 @@
         b.classList.toggle("nope", max < 1);
         b.textContent = (b.dataset.lbl ? b.dataset.lbl + " " : "") + "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
       } else {
-        const p = E.plan(id, 1);
-        const ok = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length;
+        const ok = E.orderStatus(id, Number(n) || 1).ok;
         b.classList.toggle("nope", !ok);
+        b.title = ok ? "Fabriquer avec les mains et les machines disponibles, pièces intermédiaires comprises" : whyNot(id, Number(n) || 1, true);
       }
     });
     $$("[data-chain]", view).forEach((b) => {
-      const id = b.dataset.chain, p = E.plan(id, 1);
-      b.classList.toggle("nope", !(!E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length));
+      const id = b.dataset.chain;
+      b.classList.toggle("nope", !E.orderStatus(id, 1).ok);
     });
     $$("[data-gleft]", view).forEach((el) => { el.textContent = fmt(Math.max(0, Number(el.dataset.q) - (st.inv[el.dataset.gleft] || 0))); });
     $$("[data-exp]", view).forEach((b) => b.classList.toggle("nope", !!expWhy(b.dataset.exp)));

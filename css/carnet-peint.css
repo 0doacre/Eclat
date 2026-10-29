@@ -115,4 +115,23 @@ html[data-style-mode="vivant"] body[data-carnet-era="releves"] #v-domaine .carne
   html[data-style-mode="vivant"] #modal .modal-box{padding:16px 10px!important;border-width:12px!important;border-image-width:12px!important}
 }
 @media(prefers-reduced-motion:reduce){html[data-style-mode="vivant"] button{transition:none!important}}
+/* Sur téléphone, les dessins gardent leurs proportions sans repousser les actions. */
+@media(max-width:680px){
+  .carnet-landscape{margin:0;max-width:100%}
+  .carnet-landscape img{width:100%;height:auto;max-height:180px;object-fit:contain}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre{padding:16px 12px;margin:12px 0 18px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th h3{font-size:clamp(28px,8vw,40px)}
+  .carnet-observation{font-size:20px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{min-height:0;grid-template-columns:56px minmax(0,1fr)!important;padding:8px 0!important;gap:6px 8px!important}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{width:56px!important;height:56px!important}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:21px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{margin-top:3px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{padding:8px 10px;font-size:16px;min-height:44px}
+}
+/* Les règles peintes ne doivent pas neutraliser le réglage compact. */
+html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-terre .gis{min-height:0;padding:4px 0!important;grid-template-columns:44px minmax(0,1fr)!important;gap:4px 8px!important}
+html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-terre .gis-ic{width:44px!important;height:44px!important}
+html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-terre .gis-l1{font-size:18px}
+html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-landscape img{max-height:120px}
+html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-land-header{min-height:0}
 @media(forced-colors:active){html[data-style-mode="vivant"] :is(#app,#modal) :is(button,input,select,.modal-box){border:1px solid CanvasText!important;border-image:none!important;background:Canvas!important;color:CanvasText!important}html[data-style-mode="vivant"] :is(#app,#modal) button::before{display:none}}

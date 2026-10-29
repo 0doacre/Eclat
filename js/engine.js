@@ -1492,7 +1492,8 @@
 
     /* Lance une commande (avec planification récursive des sous-composants).
      * Démarre même s’il manque des matières premières : elles seront tirées de la Réserve. */
-    E.order = function (id, times, to) {
+    // Même décision pour tous les boutons et pour l'exécution ; consulter ne dépense rien.
+    E.orderStatus = function (id, times) {
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
@@ -1509,6 +1510,13 @@
       if (!p.steps.length) return { ok: false, why: "none" };
       // un extracteur ou une machine coûte plus cher à chaque exemplaire : pas de commande à crédit
       if (isScaled(it) && !p.ok) return { ok: false, why: "plan", plan: p };
+      return { ok: true, plan: p, times };
+    };
+    E.order = function (id, times, to) {
+      const status = E.orderStatus(id, times);
+      if (!status.ok) return status;
+      times = status.times;
+      const it = item(id), p = status.plan;
       const bench = {};
       for (const i in p.used) {
         bench[i] = p.used[i];
@@ -2056,6 +2064,19 @@
     E.guide = function () {
       const ob = E.objective();
       if (!ob) return null;
+      if (ob.k === "exp") {
+        const nx = E.nextExp(ob.z), need = nx && nx.x.need;
+        const ids = typeof need === "string" ? [need] : Array.isArray(need) ? need : [];
+        for (const id of ids) if (item(id) && item(id).r && !hasExpReq(id)) {
+          const s = nextStep(id);
+          return { ob, step: s.id, why: s.why, pour: id };
+        }
+        for (const [id, n] of Object.entries(nx && nx.x.cost || {})) if (item(id) && item(id).r && count(id) < n) {
+          const s = nextStep(id);
+          return { ob, step: s.id, why: s.why, pour: id };
+        }
+        return { ob, step: null };
+      }
       if (ob.k === "pass") {
         // le passage ne s’ouvre qu’une fois les lieux de la terre explorés, et un lieu peut demander un objet (la torche de la grotte) : le guide y mène
         const l = ob.z && E.passLieux(ob.z), nx = l && l.left.length ? E.nextExp(l.z) : null, cost = (nx && !nx.locked && nx.x.cost) || {};
