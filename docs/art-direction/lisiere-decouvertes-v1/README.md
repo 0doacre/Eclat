@@ -2,6 +2,7 @@
 
 Le Domaine du thème Carnet conserve un camp précis devant une forêt encore esquissée.
 L’exploration du Grand Chêne révèle la planche existante. La Grotte aux Mains ajoute une étude de paroi dans la marge, consultable en grand.
+Le Cercle de Pierres ajoute une troisième étude, vue depuis les airs après l’exploration au cerf-volant. La grotte et le paysage restent visibles. Le cerf-volant seul et la page des mains ne débloquent pas cette illustration.
 
 Les durées, coûts (dont la torche), récompenses et textes du récit restent ceux du moteur.
 Les acquis sont lus dans les explorations, fragments et pages existants ; ils suivent la relève et l’import sans nouveau format de sauvegarde.
@@ -11,7 +12,7 @@ Les autres terres et le thème classique gardent leur présentation.
 
 ## Illustrations
 
-Trois originaux PNG ImageGen dans `masters/`, prompts exacts dans `prompts.json`.
+Quatre originaux PNG ImageGen dans `masters/`, prompts exacts dans `prompts.json` et `prompt-cercle.json`.
 `tools/export-decouvertes-carnet.py` produit les WebP transparents sans retouche artistique.
 La planche en couleurs de la Lisière, le papier et les boutons sont les assets Carnet existants.
 
