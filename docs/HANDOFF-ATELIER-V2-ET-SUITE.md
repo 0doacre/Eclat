@@ -72,17 +72,21 @@ Suite aux playtests des 6 personas (Martine, Léa, Enzo, Thomas, Julien, Chloé)
 
 ---
 
-## 4. Prochaines étapes recommandées pour l'agent suivant (Gemini Flash / Claude)
+## 4. La Vision Directrice du Créateur : « L'Atelier-Laboratoire (Vintage Story / Valheim en 2D Mobile Idle/Clicker) »
 
-Selon le choix du Lead après test du prototype `gemini/prototype-atelier-unifie-v2` :
+> **Citation clé du Lead (à garder au cœur de toutes les décisions de design suivantes)** :
+> *« Mon objectif c'est d'avoir un système de craft lisible, fun mais créatif et original. Une fois la recette découverte, la fabrication est simplifiée, l'automatisation finit par prendre le relais. Finalement notre atelier de craft, c'est un laboratoire. Peut-être qu'une fois étudiées, les matières sont automatiquement filtrées pour ne pas que la liste soit longue comme le bras. Mon idée c'est presque d'être dans un jeu comme Vintage Story ou Valheim, mais en 2D sur une interface mobile de clicker et idle game. »*
 
-1. **Option A — Valider et fusionner le prototype V2 amélioré dans `prewiew-design`** :
-   - Merger la PR de `gemini/prototype-atelier-unifie-v2` dans `prewiew-design`.
-   - Décider s'il faut conserver ou supprimer complètement l'encart *« Faire vivre l'atelier »* (`js/atelier-economie.js`) au profit des **Cadences d'atelier** (Lot 2) et du **Comptoir du Troqueur**.
-2. **Option B — Étendre les outils catalyseurs (vitesse ×2) aux Âges 4 à 10 (Piste 2 mi-partie)** :
-   - Ajouter dans `js/equipements.js` (ou nativement dans `js/data.js` + `js/engine.js`) 1 outil durable par grande ère après le Cuivre :
-     - Âge 4–5 (Bronze/Fer) : *Tenaille de forge* / *Filière d'acier* (×2 vitesse sur plaques, tiges, engrenages et câbles).
-     - Âge 6–7 (Vapeur/Chimie) : *Chalumeau* / *Verrerie de précision* (×2 vitesse sur verre, caoutchouc, tuyaux).
-     - Âge 8–9 (Électricité/Électronique) : *Fer à souder* (×2 vitesse sur bobines, lampes, circuits).
-3. **Option C — Préparation de la sortie Alpha** :
-   - Une fois la décision tranchée sur l'Atelier V1 vs V2 unifié, unifier `SAVE_VERSION` et la clé `localStorage` pour que toutes les sauvegardes soient 100 % compatibles.
+### Ce que cette vision implique concrètement pour la suite (Cahier des charges pour Gemini Flash / Claude) :
+
+1. **L'Atelier = Un Laboratoire d'expérimentation tactile (et non un entrepôt ni une usine)** :
+   - Dans *Vintage Story* (tailler le silex éclat par éclat, cuire l'argile sous la braise, couler le métal en fusion dans un moule) ou *Valheim* (améliorer son établi avec un billot, un chevalet de tannage, une herminette), **chaque découverte est un moment artisanal fort lié à un poste et un outil**.
+   - Mais une fois que le Semeur a compris comment façonner l'objet (« Eurêka ! »), **il n'a plus à refaire la manipulation de recherche** : la recette passe dans le **Carnet / Fabrication rapide (1 clic)**, puis est prise en charge par **les Machines et les Cadences d'atelier** (maintien automatique du stock).
+2. **Filtrage automatique des matières étudiées (Zéro liste « longue comme le bras »)** :
+   - Dès qu'une matière est **étudiée** (`S.studied[id]`) :
+     - Si elle cache encore une recette avec l'outil et le geste en main, elle remonte **tout en haut du plateau** avec le badge **`✦ Piste`**.
+     - Si elle a déjà livré tous ses secrets (plus aucune réaction inconnue), elle est **automatiquement écartée du plateau de recherche** (accessible uniquement via un petit bouton discret *« Tout voir »* si le joueur veut la consulter), pour que le plateau du Laboratoire ne contienne jamais plus de **4 à 8 matières pertinentes**.
+3. **Ce qu'il reste à faire pour parachever cette vision (Feuille de route pour le prochain agent)** :
+   - **Étape 1 (Élagage de l'Atelier)** : Retirer de l'onglet `Découvrir` tout ce qui relève de la gestion d'usine répétitive (déplacer ou fusionner l'encart *Faire vivre l'atelier* / *Marchand taxé* vers le Domaine ou les Machines, pour que l'onglet `Découvrir` soit 100 % un Laboratoire pur et immersif).
+   - **Étape 2 (Toucher « Vintage Story / Valheim 2D »)** : Enrichir chaque Poste du Laboratoire (`Billot & Établi`, `Foyer de braises`, `Four d'argile`, `Enclume de frappe`, `Dalle de polissage`, puis `Creuset de fonderie`, `Alambic`, `Banc électrique`) avec un retour visuel/sonore de geste artisanal (petite jauge de frappe/chauffe ou retour thermique immédiat via `E.equipmentThermometer`).
+   - **Étape 3 (Relais d'automatisation fluide)** : Quand une recette vient d'être découverte au Laboratoire et fabriquée quelques fois à la main (étoiles de maîtrise ★), proposer directement un bouton **« Confier aux Machines (Cadence) »** qui configure son maintien de stock en 1 clic sans même quitter l'écran.

@@ -52,7 +52,12 @@
     function body(){
       const {w,places,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();
       const raw=[...new Set(D.ZONES.filter(z=>E.zoneOpen(z.id)).flatMap(z=>z.res))];
-      const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id)));
+      const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id))).sort((a,b)=>{
+        const da=E.equipmentHasDiscovery(a,w.eq,w.mode)?1:0,db=E.equipmentHasDiscovery(b,w.eq,w.mode)?1:0;
+        if(da!==db)return db-da;
+        const ua=!s.studied[a]?1:0,ub=!s.studied[b]?1:0;
+        return ub-ua;
+      });
       const known=Object.keys(s.known).filter(id=>(w.place==="grand_atelier"?(I[id]?.r&&I[id].a>=4):D.CRAFT_EQUIPMENT.recipes[id]?.some(c=>E.workplaceFor(c.equipment)===w.place))&&(!E.isUnique(I[id])||!(s.made[id]>0)));
       let h='';
       const releve=E.shouldSuggestReleve&&E.shouldSuggestReleve();
@@ -89,12 +94,12 @@
       else h+='<span class="small">'+esc(label(w.mode,tool.modes[w.mode]))+'</span>';
       const study=E.studyAllCost();
       if(study.n)h+=button("study","","Étudier les matières · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des matières" aria-label="Comprendre l’étude des matières">?</button>';
-      h+='</div><p id="ae-discovery-empty" class="small muted" hidden></p><div class="ae-inventory">';
-      for(const id of ids){const picked=w.slots.includes(id);h+='<div class="ae-resource" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span><b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
+      h+='</div><p id="ae-discovery-empty" class="small muted" hidden></p><p id="ae-exhausted-note" class="small muted" hidden></p><div class="ae-inventory">';
+      for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+(reacts?' <small class="ae-react-pill">✦ Piste</small>':'')+'</span><b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
-      if(known.length)h+='<section class="card"><h3>Recettes</h3><div class="ae-known">'+known.map(id=>'<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+'</div>').join("")+'</div></section>';
+      if(known.length)h+='<section class="card"><details class="ae-known-details" open><summary class="ae-eco-summary"><h3>Recettes déjà maîtrisées sur ce poste ('+known.length+')</h3><span class="small muted">Fabrication rapide</span></summary><div class="ae-known">'+known.map(id=>'<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+'</div>').join("")+'</div></details></section>';
       if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details" open><summary class="ae-eco-summary"><h2>Faire vivre l’atelier</h2><span class="small muted">Bourse, ouvrier &amp; surplus de lanières</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton ouvrier <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et les salaires de l’ouvrier" aria-label="Comprendre le rôle et les salaires de l’ouvrier">?</button></h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
         h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Fabrication de l’ouvrier"></progress><p id="ae-worker-pay" class="small"></p>';
@@ -111,7 +116,29 @@
       const {w}=work(),e=E.atelierEconomyInfo(),query=(U.equipmentSearch||"").toLocaleLowerCase();
       let visible=0;
       const discoveryOnly=E.state.settings.equipmentDiscoveryOnly===true;
-      r.querySelectorAll("[data-ae-resource]").forEach(el=>{const id=el.dataset.aeResource,picked=w.slots.includes(id),b=el.querySelector('[data-ae="item"]'),n=E.count(id);el.hidden=!el.dataset.name.includes(query)||(discoveryOnly&&!E.equipmentHasDiscovery(id,w.eq,w.mode));if(!el.hidden)visible++;b.disabled=!picked&&(n<1||w.slots.length>=3);b.classList.toggle("ae-selected",picked);b.setAttribute("aria-pressed",String(picked));b.setAttribute("aria-label",name(id)+', '+n.toLocaleString('fr-FR')+' en stock'+(picked?', sur l’établi':''));b.title=name(id)+' · '+n.toLocaleString('fr-FR');el.querySelector("[data-ae-count]").textContent=api.fmt(n);});
+      const autoHideExhausted=E.state.settings.equipmentShowAll!==true;
+      let exhaustedCount=0;
+      r.querySelectorAll("[data-ae-resource]").forEach(el=>{
+        const id=el.dataset.aeResource,picked=w.slots.includes(id),b=el.querySelector('[data-ae="item"]'),n=E.count(id);
+        const allExhausted=E.state.studied[id]&&!Object.values(E.reactions(id)).some(v=>v>0);
+        const isExhaustedStudied=!picked&&!discoveryOnly&&autoHideExhausted&&allExhausted;
+        if(isExhaustedStudied)exhaustedCount++;
+        el.hidden=!el.dataset.name.includes(query)||(discoveryOnly&&!E.equipmentHasDiscovery(id,w.eq,w.mode))||isExhaustedStudied;
+        if(!el.hidden)visible++;
+        b.disabled=!picked&&(n<1||w.slots.length>=3);
+        b.classList.toggle("ae-selected",picked);
+        b.setAttribute("aria-pressed",String(picked));
+        b.setAttribute("aria-label",name(id)+', '+n.toLocaleString('fr-FR')+' en stock'+(picked?', sur l’établi':''));
+        b.title=name(id)+' · '+n.toLocaleString('fr-FR');
+        el.querySelector("[data-ae-count]").textContent=api.fmt(n);
+      });
+      const exhNote=r.querySelector('#ae-exhausted-note');
+      if(exhNote){
+        exhNote.hidden=exhaustedCount===0&&E.state.settings.equipmentShowAll!==true;
+        exhNote.innerHTML=exhaustedCount>0
+          ? '<span class="tiny muted">'+exhaustedCount+' matière'+(exhaustedCount>1?'s':'')+' étudiée'+(exhaustedCount>1?'s':'')+' sans piste pour ce geste masquée'+(exhaustedCount>1?'s':'')+' · </span><button type="button" class="btn mini ghost" data-ae="showall" data-value="1" title="Afficher aussi les matières étudiées qui n’ont plus rien à révéler avec cet outil">Tout voir</button>'
+          : (E.state.settings.equipmentShowAll===true?'<button type="button" class="btn mini ghost" data-ae="showall" data-value="0" title="Masquer automatiquement les matières étudiées qui n’ont plus de secret avec cet outil">Masquer les matières épuisées</button>':'');
+      }
       const empty=r.querySelector('#ae-discovery-empty');
       if(empty){empty.hidden=visible>0;empty.textContent=discoveryOnly?(query?'Aucune matière ne correspond à cette recherche et à ce geste.':'Aucune matière étudiée ne cache de recette avec cet outil et ce geste, pour l’instant. Étudie d’autres matières ou change de geste.'):'Aucune matière ne correspond à cette recherche.';}
       const bench=r.querySelector('.ae-bench'),views=document.getElementById('views'),mini=r.querySelector('.ae-mini');
@@ -152,6 +179,7 @@
       if(!root()?.contains(b))return;
       const {w,tools,tool}=work();A.init();
       if(action==="place"){w.place=id;w.prepared=null;}
+      else if(action==="showall"){E.state.settings.equipmentShowAll=id==="1";live();save();return;}
       else if(action==="study"){const n=E.studyAll();message=n?n+' matières étudiées.':'Il manque de l’Intuition pour étudier ces matières.';}
       else if(action==="tool"){w.eq=id;const t=tools.find(x=>x.id===id)||D.CRAFT_EQUIPMENT.equipment[id];if(t)w.mode=Object.keys(t.modes)[0];w.prepared=null;}
       else if(action==="item"){if(w.slots.includes(id))w.slots.splice(w.slots.indexOf(id),1);else if(w.slots.length<3&&E.count(id)>=1)w.slots.push(id);w.prepared=null;}
