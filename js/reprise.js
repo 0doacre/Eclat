@@ -14,7 +14,7 @@
           if (it.t === "ext") {
             const z = D.ZONES.find(z => !z.secret && E.zoneDeps(z.id).some(d => E.extOk(id, z.id, d.res)));
             if (z) inferred.push({ id, n, z: z.id, res: E.zoneDeps(z.id).find(d => E.extOk(id, z.id, d.res)).res });
-          } else if (["auto", "mach"].includes(it.t)) inferred.push({ id, n });
+          } else if (["auto", "mach", "stat"].includes(it.t)) inferred.push({ id, n });
         }
         state().meta.reprise = { inferred: true, cycle: state().cycle - 1, depth: 0, rows: inferred, objectifs: [] };
       }
@@ -77,7 +77,12 @@
     function candidate(r) {
       if (!r.selected || r.z && !E.zoneOpen(r.z) || !remaining(r)) return null;
       if (r.z && E.freeExt(r.id) > 0) return { kind: "place", cost: {} };
-      if (E.ruins()[r.id] && Object.entries(E.ruinCost(r.id)).every(([id, n]) => E.count(id) >= n)) return { kind: "repair", cost: E.ruinCost(r.id) };
+      if (E.ruins()[r.id]) {
+        const rep = E.ruinResolve ? E.ruinResolve(r.id) : null;
+        if (rep && rep.ok) return { kind: "repair", cost: rep.cost };
+        if (Object.entries(E.ruinCost(r.id)).every(([id, n]) => E.count(id) >= n)) return { kind: "repair", cost: E.ruinCost(r.id) };
+        return null;
+      }
       if (!state().known[r.id] || E.blocker(r.id)) return null;
       const p = E.plan(r.id, 1);
       return p.ok ? { kind: "order", cost: p.used } : null;

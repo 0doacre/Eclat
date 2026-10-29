@@ -1248,8 +1248,8 @@
 
   /* la relève, les dons et la Mémoire des mains */
   const Mem = window.EclatMemoire.create({
-    E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render,
-    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal, render,
+    save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto, applyLargeText
   });
   const {
     intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip

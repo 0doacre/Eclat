@@ -1318,7 +1318,7 @@
     { id: "mach", n: "Rouages huilés", ic: "⚙️", d: "Vitesse des machines ×{v}.", v: (l) => 1 + 0.25 * l, cost: [5, 8, 13, 21, 36, 60, 98, 160, 290, 530, 960, 1750] },
     { id: "chemins", n: "Chemins connus", ic: "🚧", d: "Prix des passages ×{v}.", v: (l) => Math.round(Math.pow(0.9, l) * 100) / 100, cost: [4, 8, 16, 34, 70, 140, 270, 520] },
     { id: "paquetage", n: "Le paquetage", ic: "🎒", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "du bois, des fibres, des cailloux, 4 manches et 4 cordes", "la même chose, et une cabane", "la même chose, trois cabanes et un feu de camp"][l], cost: [2, 6, 15] },
-    { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes"][l], cost: [6, 15] },
+    { id: "raccourci", n: "Raccourci", ic: "🗺️", next: true, d: "Au réveil : {v}.", v: (l) => ["rien", "la Plaine déjà ouverte, et ton épieu", "la Plaine et la Rivière déjà ouvertes", "jusqu’aux Collines déjà ouvertes, avec leurs outils", "jusqu’aux Profondeurs déjà ouvertes, avec leurs outils"][l], cost: [6, 15, 35, 75] },
     { id: "oeil", n: "Coup d’œil", ic: "✨", d: "Récolte à la main : {v} de chances de récolter le double.", v: (l) => Math.round((0.06 + 0.04 * l) * 100) + " %", cost: [3, 6, 12, 26, 52, 100, 190, 360] },
     { id: "veille", n: "Longues nuits", ic: "🌙", d: "Jeu fermé, le temps continue de compter jusqu’à {v} h.", v: (l) => 12 + 6 * l, cost: [4, 10, 30, 80] }
   ];
@@ -1483,7 +1483,31 @@
   /* Les ruines : ce qu’un Semeur a construit attend le suivant */
   D.RUINES = {
     cap: 3,           // nombre maximum d’exemplaires en ruine par machine ou extracteur
-    part: 0.1         // fraction du coût de base de la recette pour réparer
+    part: 0.1,        // fraction du coût de base de la recette pour réparer
+    echos: {
+      cabane: "Les perches de frêne tenaient encore ; un nœud neuf suffit à tendre le toit.",
+      carriere: "Le treuil grince puis reprend son pli, là où d’autres mains l’avaient laissé.",
+      argiliere: "Sous la croûte sèche, la tranchée garde encore l’empreinte des pelles d’avant.",
+      silo: "Les clayonnages ont blanchi au soleil, mais le fond est resté sec.",
+      pecherie: "Les pieux de rive ont résisté au courant ; la nasse retrouve sa place.",
+      pompe: "Un joint neuf amorce le cylindre : l’eau remonte aussitôt, claire et régulière.",
+      charbonniere: "La meule froide sent encore la fumée lente du dernier Semeur.",
+      mine_cuivre: "Les étais avaient fléchi sans rompre ; la galerie s’ouvre à nouveau.",
+      mine_fer: "Sur le rail rouillé, la benne attendait à mi-pente.",
+      mine_or: "Le tamis de bois porte encore quelques paillettes oubliées dans ses rainures.",
+      sabliere: "Le vent avait recouvert la rampe, mais le châssis est intact.",
+      mine_plomb: "La lampe accrochée à l’entrée avait gardé une mèche sèche.",
+      soufriere: "Les conduits de pierre jaune fument dès qu’on dégage la bouche.",
+      puits: "Le balancier d’acier repart d’un coup d’épaule, lourd et fidèle.",
+      foreuse: "Les tiges de forage vibrent et retrouvent la veine profonde.",
+      automate_bois: "Le contrepoids attendait à mi-course : sitôt tendu, l’échappement repart.",
+      presse_mecanique: "Sous la graisse figée, la vis sans fin tourne sans jeu.",
+      tour_vapeur: "La chaudière garde la trace des anciennes chauffes ; la soupape chante au premier souffle.",
+      automate_elec: "Une étincelle franche au collecteur, et le bobinage reprend son ronronnement.",
+      ligne_assemblage: "Les bras articulés s’alignent un à un sur leurs repères d’atelier.",
+      ext: "Les fondations tenaient bon : quelques pièces suffisent à remettre l’ouvrage en route.",
+      mach: "Sous la poussière du cycle passé, les engrenages n’attendaient qu’une main."
+    }
   };
 
   /* Les commandes : le joueur commande un objet et une quantité, ses machines libres s’y mettent */

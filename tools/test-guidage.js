@@ -267,4 +267,80 @@ test("le passage propose le solde à fabriquer et retire les matières déposée
   assert.ok(!h.includes('data-goto="caillou"'));
   assert.ok(h.includes('data-goto="argile"'));
 });
+test("le passage propose directement de fabriquer l’objet connu requis par le prochain lieu inexploré", () => {
+  const fs = require("fs"), vm = require("vm"), ctx = { window: {} };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/quetes.js"), "utf8"), ctx);
+  const E = createEngine({ now: () => 2e12, rand: () => 0.99 }), S = E.state;
+  for (const id of ["manche", "corde", "archet", "feu", "cabane", "epieu", "charbon", "torche"]) { S.known[id] = true; }
+  S.inv.feu = 1;
+  S.flags.extDone = true;
+  S.exp.done.lisiere = 1; // Le Grand Chêne fait, reste La Grotte aux Mains (cost: { torche: 1 })
+  S.pass.plaine = { done: false, paid: E.passCost("plaine") };
+  const api = new Proxy({ E, D, U: {}, esc: String, fmt: String, icon: () => "", zoneName: z => z }, { get: (o, k) => k in o ? o[k] : () => "" });
+  const Q = ctx.window.EclatQuetes.create(api), h = Q.passHTML("plaine");
+  assert.ok(h.includes('data-chain="torche"'), "le passage propose directement de fabriquer la torche requise par la Grotte");
+});
+test("découverte accompagnée : la carte d’objectif et l’établi indiquent le nombre de ressources et les actions d’indice", () => {
+  const fs = require("fs"), vm = require("vm"), ctx = { window: {}, document: { querySelector: () => null, addEventListener: () => {} } };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/quetes.js"), "utf8"), ctx);
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/atelier.js"), "utf8"), ctx);
+  const E = createEngine();
+  E.state.intu = 10;
+  E.state.hints.manche = 1;
+  E.state.gt = { id: "manche", p: 6 };
+  const U = { geste: "tresser", slots: [null, null, null], openAges: {} };
+  const api = new Proxy({
+    E, D, U, Tuto: { active: () => false },
+    esc: String, fmt: String, icon: () => "", gIc: () => "", gesteChip: (id) => D.ITEMS[id].r[0],
+    mainIngredient: (id) => Object.keys(D.ITEMS[id].r[1])[0],
+    memoryHTML: (m) => m ? '<div class="memo-bar">' + m.p + '/' + m.next + '</div>' : ""
+  }, { get: (o, k) => k in o ? o[k] : () => "" });
+  const Q = ctx.window.EclatQuetes.create(api);
+  const Atel = ctx.window.EclatAtelier.create(api);
+  const card = Q.goalCard();
+  assert.ok(card.includes("1 ressource"), "la carte d’objectif indique le nombre de ressources");
+  const atel = Atel.viewAtelier();
+  assert.ok(atel.includes("1 ressource"), "l’encart de l’Atelier indique le nombre de ressources");
+  assert.ok(atel.includes('data-apply-hint="manche"'), "le bouton Poser l’indice sur l’établi est proposé dès le niveau d’indice 1");
+  assert.ok(atel.includes('data-goal-decipher="manche"'), "le bouton Déchiffrer est accessible directement depuis l’Atelier");
+  assert.ok(atel.includes("memo-bar"), "la jauge de réminiscence reste visible dans l’encart d’objectif de l’Atelier");
+});
+test("cadences d’atelier : les machines au repos maintiennent le stock jusqu’au seuil et cèdent la priorité aux commandes", () => {
+  const E = createEngine();
+  E.learn("manche", true);
+  E.learn("corde", true);
+  E.state.made.manche = 1;
+  E.state.made.corde = 1;
+  E.state.inv.automate_bois = 1;
+  E.state.inv.bois = 200;
+  E.state.inv.fibre = 200;
+  E.state.inv.manche = 48;
+
+  const r = E.setCadence("manche", 50, true);
+  assert.equal(r.ok, true, "la cadence est activée");
+  assert.equal(E.machines().automate_bois.used, 1, "l’automate au repos prend la cadence");
+  assert.equal(E.machines().automate_bois.cad, 1, "compté comme affecté à une cadence");
+  assert.ok(E.flows().prod.manche > 0, "le flux de production reflète la cadence active");
+
+  // Une commande manuelle prend immédiatement la priorité sur la machine
+  E.order("corde", 5);
+  assert.equal(E.machines().automate_bois.cad, 0, "la commande prioritaire reprend la machine");
+  assert.equal(E.machines().automate_bois.byRec.corde, 1, "la machine travaille sur la commande");
+  E.cancelJob(0);
+  assert.equal(E.machines().automate_bois.cad, 1, "une fois la commande annulée ou finie, la machine reprend la cadence");
+
+  // Avancer le temps jusqu'à atteindre le plafond de 50 manches
+  E.step(30);
+  assert.ok(E.state.inv.manche >= 50, "le stock a atteint le plafond de 50");
+  const cadInfo = E.cadences().find((c) => c.id === "manche");
+  assert.equal(cadInfo.status, "full", "la cadence passe à l’état seuil atteint");
+  assert.equal(E.machines().automate_bois.used, 0, "la machine retourne au repos une fois le seuil atteint");
+
+  // Sauvegarde et rechargement préservent la cadence
+  const saved = E.serialize();
+  const E2 = createEngine();
+  E2.load(saved);
+  assert.equal(E2.cadences().length, 1);
+  assert.equal(E2.cadences()[0].cap, 50);
+});
 console.log(passed + " tests du guidage réussis.");
