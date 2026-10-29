@@ -37,6 +37,8 @@
     pic_os: "assets/carnet/items/pic_os.webp",
     collets: "assets/carnet/items/collets.webp",
     tunique: "assets/carnet/items/tunique.webp",
+    flute: "assets/carnet/items/flute.webp",
+    statuette: "assets/carnet/items/statuette.webp",
     encre: "assets/carnet/items/encre.webp",
     cuir_1: "assets/carnet/items/cuir_1.webp",
     racloir_os: "assets/carnet/items/racloir_os.webp"

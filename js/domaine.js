@@ -15,6 +15,7 @@
     const itemPill = api.itemPill || ((id) => esc(id));
     const I = D.ITEMS;
     const Decouvertes = window.EclatDecouvertesCarnet.create({ E, A, esc, openModal });
+    const Plaine = window.EclatDecouvertesCarnet.create({ E, A, esc, openModal, zone: "plaine" });
     const S = () => E.state;
     const perTime = perMin;
     const plural = (n, w) => n + " " + w + (n > 1 ? "s" : "");
@@ -153,8 +154,9 @@
         h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>Les terres traversées</span><span>Terre ' + number + '</span></div>' +
           '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' +
           '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
-          (z === "lisiere" ? Decouvertes.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + '</figcaption></figure>' : '') + '</div>';
+          (z === "lisiere" ? Decouvertes.sceneHTML() : z === "plaine" ? Plaine.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + '</figcaption></figure>' : '') + '</div>';
         if (z === "lisiere") h += Decouvertes.studyHTML();
+        if (z === "plaine") h += Plaine.studyHTML();
       } else {
         h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
       }
@@ -1222,6 +1224,7 @@
     /* ------------------------------------------------------------ clics */
     function click(t, ev) {
       if (Decouvertes.click(t)) return true;
+      if (Plaine.click(t)) return true;
       let b;
       if (t.closest("[data-reprise]")) { repriseSheet(); return true; }
       if ((b = t.closest("[data-terre-maitrise] > summary"))) {
@@ -1348,6 +1351,7 @@
     function live(root) {
       if (!root) return;
       Decouvertes.live();
+      Plaine.live();
       if (U.mcur && U.mcur.repriseLive) U.mcur.repriseLive();
       root.querySelectorAll("[data-terre-compteur]").forEach((el) => {
         const [z, type] = el.dataset.terreCompteur.split(":"), t = E.terreMaitrise(z);

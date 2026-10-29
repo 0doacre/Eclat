@@ -1,0 +1,24 @@
+{
+  "tool": "image_gen.imagegen (built-in)",
+  "prompts": [
+    {
+      "id": "plaine-esquisse",
+      "prompt": "Edit target: the provided panoramic watercolor plain. Preserve EXACT composition and aspect ratio, rolling horizon, tree and deer on upper right, large rocks and two bones on lower right, grasses across foreground. Redraw as an unfinished observational graphite landscape: loose confident curved pencil outlines, unfinished grasses, faint hills, only very pale straw/olive wash. Large negative spaces between pencil marks. No blur filter, no added objects, no labels, no camp. Preserve genuine transparency around the entire irregular silhouette. This sketch will align beneath the original color painting for a gradual discovery reveal.",
+      "referenced_image_paths": [
+        "C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/alpha-main/assets/carnet/lands/plaine.webp"
+      ]
+    },
+    {
+      "id": "tumulus",
+      "prompt": "Use case: illustration-story. Asset for Éclat, Le Carnet du Semeur. Human sepia ink, delicate dry graphite and granular muted natural watercolor, ivory bone/ochre/olive/stone-gray palette, quiet contemplative field-journal art. Genuine transparent background with irregular broken painted edges, no paper, no rectangle, no frame, no labels or text, no glow, no symbols, no modern objects. Subject: a small ancient grassy burial mound in a windswept temperate plain of golden tall grasses. A low rounded earthen hill with a few rough gray stones edging a narrow dark passage entrance. View from close three-quarter eye-level. Weathered stone and dry grass, subtle warm light on entrance lip suggesting a torch held outside the picture; the interior remains entirely dark and unknown. No human remains, no graves opened, no treasure, no carved writing, no statues, no archaeological finds, no invented story details. Just an exterior study of the mound and entrance, recognizable at 150 pixels. Slightly wider than tall isolated vignette, finely painted natural materials."
+    },
+    {
+      "id": "flute",
+      "prompt": "Use case: illustration-story. Asset for Éclat, Le Carnet du Semeur. Human sepia ink, delicate dry graphite and granular muted natural watercolor, ivory bone/ochre/olive/stone-gray palette, quiet contemplative field-journal art. Genuine transparent background with irregular broken painted edges, no paper, no rectangle, no frame, no labels or text, no glow, no symbols, no modern objects. Subject: ONE small prehistoric flute carved from an ivory animal bone, a slender slightly curved hollow bone tube with a simple row of finger holes and a dark open mouth. Diagonal lower-left to upper-right, entire instrument in frame with generous transparent margin. Anatomically plausible bone with subtle porous texture, carefully smoothed by human hands, no modern metal keys, no bindings, no carvings. Strong dark ink contour and only 3–4 broad watercolor values for recognition at 48 pixels. Isolated inventory object, no ground or surrounding decorations."
+    },
+    {
+      "id": "statuette",
+      "prompt": "Use case: illustration-story. Asset for Éclat, Le Carnet du Semeur. Human sepia ink, delicate dry graphite and granular muted natural watercolor, ivory bone/ochre/olive/stone-gray palette, quiet contemplative field-journal art. Genuine transparent background with irregular broken painted edges, no paper, no rectangle, no frame, no labels or text, no glow, no symbols, no modern objects. Subject: ONE small simple prehistoric figurine carved from pale animal bone, a modest palm-sized abstract human silhouette with a rounded featureless head, short torso and simplified folded limbs. Hand-worked irregular surface and a few restrained graphite marks describing the carving, no identifiable person, no face detail, no inscription, no pedestal, no religious attributes, no jewelry. Three-quarter view with solid readable silhouette and 3–4 broad values for recognition at 48 pixels. Isolated inventory object centered with generous transparent margin, no ground or decorations."
+    }
+  ]
+}
