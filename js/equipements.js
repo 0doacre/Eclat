@@ -146,6 +146,50 @@
       const parts = Array.from(new Set(ids.filter(Boolean))).sort().join(",");
       return Object.keys(cfg.recipes).find(id => cfg.recipes[id].some(c => c.equipment === equipment && c.mode === mode) && Object.keys(E.item(id).r[1]).sort().join(",") === parts) || null;
     };
+    E.equipmentThermometer = (equipment, mode, ids) => {
+      const parts = Array.from(new Set((ids || []).filter(Boolean))).sort();
+      if (!parts.length) return null;
+      const key = parts.join(",");
+      const place = E.workplaceFor(equipment);
+      // 1. Exact ingredient match on the same workplace (different mode or different tool of that workplace)
+      const samePlace = Object.keys(cfg.recipes).filter(id => E.ageOK(id) && Object.keys(E.item(id).r[1]).sort().join(",") === key && cfg.recipes[id].some(c => E.workplaceFor(c.equipment) === place));
+      if (samePlace.length) {
+        const c = cfg.recipes[samePlace[0]].find(x => E.workplaceFor(x.equipment) === place) || cfg.recipes[samePlace[0]][0];
+        const diffTool = c.equipment !== equipment;
+        return {
+          heat: "brulant",
+          label: "🔥 Brûlant",
+          text: diffTool
+            ? "Les matières sont exactes sur ce poste, mais il te faut un autre outil (" + cfg.equipment[c.equipment].n + ")."
+            : "Les matières et l’outil sont exacts : essaie une autre allure ou un autre geste de cet outil."
+        };
+      }
+      // 2. Exact ingredient match on another workplace (or in post-Copper recipes)
+      const otherPlace = Object.keys(cfg.recipes).filter(id => E.ageOK(id) && Object.keys(E.item(id).r[1]).sort().join(",") === key);
+      if (otherPlace.length) {
+        const c = cfg.recipes[otherPlace[0]][0];
+        const targetPlace = E.workplaceList().find(x => x.id === E.workplaceFor(c.equipment))?.n || cfg.equipment[c.equipment].n;
+        return {
+          heat: "chaud",
+          label: "🌡️ Chaud",
+          text: "Ces matières forment bien une recette de ton âge, mais sur un autre poste (" + targetPlace + ")."
+        };
+      }
+      // 3. Partial ingredient match for this exact (equipment, mode)
+      const partial = Object.keys(cfg.recipes).filter(id => E.ageOK(id) && !E.state.known[id] && cfg.recipes[id].some(c => c.equipment === equipment && c.mode === mode) && parts.some(p => E.item(id).r[1][p]));
+      if (partial.length) {
+        return {
+          heat: "tiede",
+          label: "🌤️ Tiède",
+          text: "Cet outil et ce geste travaillent bien l’une de ces matières, mais la combinaison d’ingrédients est incomplète."
+        };
+      }
+      return {
+        heat: "froid",
+        label: "❄️ Froid",
+        text: "Ce geste ne donne rien avec ces matières. Essaie un autre outil ou une autre combinaison."
+      };
+    };
     E.attemptWith = (equipment, mode, ids) => {
       const eq = cfg.equipment[equipment];
       if (!eq || !Object.hasOwn(eq.modes, mode)) return { kind: "equipment", why: "mode" };
@@ -153,7 +197,7 @@
       const parts = Array.from(new Set(ids.filter(Boolean))).sort();
       if (!parts.length) return { kind: "empty" };
       const recipe = E.equipmentRecipe(equipment, mode, parts);
-      if (!recipe) return { kind: "equipment", why: "incompatible", equipment, mode };
+      if (!recipe) return { kind: "equipment", why: "incompatible", equipment, mode, thermo: E.equipmentThermometer(equipment, mode, parts) };
       // Une mauvaise sélection ne doit ni révéler une recette incompatible,
       // ni dépenser de matière, ni contaminer les souvenirs du geste.
       return E.attempt(E.item(recipe).r[0], parts, { equipment, mode });
