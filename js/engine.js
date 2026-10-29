@@ -108,7 +108,7 @@
       stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
       visiteur: { next: 0, clins: {} },
       don: null, donsOffre: [],
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null }, gestes: {}, gestesVu: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, maxAge: 0, passEver: {}, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null }, gestes: {}, gestesVu: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -572,6 +572,7 @@
     E.passCost = function (zid) {
       let k = memV("chemins") * donMul("pass");
       if (E.hasEchoFin("brasier")) k *= 0.85;
+      if ((S.cycle || 1) > 1 && ((S.meta && S.meta.maxAge) || 0) >= 3 && S.meta && S.meta.passEver && S.meta.passEver[zid]) k *= 0.7;
       for (const z in REG) {
         const m = REG[z].remise;
         if (m && m.vers === zid) k *= 1 - m.par * Math.min(m.max, (S.exp && S.exp.done && S.exp.done[z]) || 0);
@@ -949,6 +950,7 @@
     E.ageOK = ageOK;
     function onFirstCraft(id) {
       const it = item(id);
+      if (isUnique(it) && S.meta && S.meta.ruins && S.meta.ruins[id]) delete S.meta.ruins[id];
       stamp("m:" + id);
       const e = it.e || {};
       if (!it.sec && !it.path) avancerAge(id); // un âge à la fois, et seulement quand ses étapes sont faites
@@ -1223,23 +1225,26 @@
         baseT = (H.base + H.age * a) * Math.pow(H.ageCurve || 1.08, a - 1);
       }
 
-      // 2. Fatigue arbitraire du cycle : pousse activement à la relève
-      // Ne s'applique que si une relève est possible (Traces en attente) et que l'objet est complexe (âge >= 2)
+      // 2. Fatigue du cycle : ne s'applique que sur le front pionnier (au-delà du record des cycles précédents)
       let fatigue = 1;
       const gain = E.releveGain ? E.releveGain() : 0;
-      if (gain > 0 && a >= 2) {
-        // Chaque Trace non récoltée alourdit le geste
+      const maxAge = (S.meta && S.meta.maxAge) || 0;
+      if (gain > 0 && a >= 2 && a > maxAge) {
+        // Chaque Trace non récoltée alourdit le geste au-delà du dernier jalon connu
         fatigue *= (1 + 0.12 * Math.min(10, gain));
-        // Si le Semeur s'aventure bien au-delà de son horizon de cycle
-        const reach = 1 + (S.cycle || 1) * 2;
+        const reach = Math.max(1 + (S.cycle || 1) * 2, maxAge > 0 ? maxAge + 1 : 0);
         const depassement = Math.max(0, a - reach);
         if (depassement > 0) {
           fatigue *= Math.pow(H.fatigueBase || 1.15, Math.min(6, depassement));
         }
       }
 
-      // 3. Élan des Semeurs : chaque cycle passé rend les gestes plus vifs
-      const elan = Math.pow(1.2, Math.min(5, Math.max(0, (S.cycle || 1) - 1)));
+      // 3. Élan des Semeurs : chaque cycle passé rend les gestes plus vifs,
+      // et la Mémoire fraîche accélère le rattrapage des âges déjà conquis aux cycles précédents
+      let elan = Math.pow(1.2, Math.min(5, Math.max(0, (S.cycle || 1) - 1)));
+      if (maxAge >= 3 && a >= 2 && a <= maxAge) {
+        elan *= 1 + 0.15 * Math.min(6, maxAge - a + 1);
+      }
 
       return (baseT * fatigue / elan) * Math.max(0.3, 1 - H.star * E.stars(id)) * k * old * memV("mains") * donMul("mains") / ((it.r ? skillSpeed(it.r[0]) : 1) * E.recetteTerreBonus(id));
     }
@@ -1288,8 +1293,10 @@
       if (rec) {
         const it = item(rec);
         const recAge = it ? (it.a || 0) : 0;
-        if (recAge >= 2) {
-          decay = Math.pow(H.machDecay || 1.08, recAge - 1);
+        const maxAge = (S.meta && S.meta.maxAge) || 0;
+        const effAge = maxAge >= 3 && recAge <= maxAge ? Math.max(1, recAge - 2) : recAge;
+        if (effAge >= 2) {
+          decay = Math.pow(H.machDecay || 1.08, effAge - 1);
         }
       }
       return ((M.spd / 60) / decay) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
@@ -4478,6 +4485,7 @@
     let jourVu = 0;
 
     /* Nouveau cycle : le Semeur suivant s’éveille. On garde le savoir. */
+    const STATIONS = Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].t === "stat" && !D.ITEMS[k].sec && !D.ITEMS[k].path);
     E.newCycle = function () {
       const old = S;
       const gain = E.releveGain();
@@ -4485,12 +4493,20 @@
       const totalGain = gain + ecusGain;
       old.meta.traces = (old.meta.traces || 0) + totalGain;
       old.meta.tracesTotal = (old.meta.tracesTotal || 0) + totalGain;
+      old.meta.maxAge = Math.max(old.meta.maxAge || 0, old.age || 0);
+      old.meta.passEver = Object.assign({}, old.meta.passEver || {});
+      for (const z in old.pass || {}) {
+        if (old.pass[z] && old.pass[z].done && !old.pass[z].free && PASS[z]) old.meta.passEver[z] = true;
+      }
+      for (const z in old.zones || {}) {
+        if (old.zones[z] && PASS[z] && !(old.pass && old.pass[z] && old.pass[z].free)) old.meta.passEver[z] = true;
+      }
       if (old.comptoir) { old.comptoir.asks = []; old.comptoir.next = 0; }
       const cap = (D.RUINES && D.RUINES.cap) || 3;
       const ruins = {};
-      EXTS.concat(MACHINES).forEach((id) => {
+      EXTS.concat(MACHINES).concat(STATIONS).forEach((id) => {
         const cnt = Math.floor(old.inv[id] || 0);
-        if (cnt > 0) ruins[id] = Math.min(cnt, cap);
+        if (cnt > 0) ruins[id] = Math.min(cnt, isUnique(item(id)) ? 1 : cap);
       });
       old.meta.ruins = ruins;
       const n = freshState(now());
@@ -4524,14 +4540,18 @@
       S.meta.achats = true; // les Traces se dépensent maintenant, au réveil du nouveau Semeur
       // la Mémoire des mains : le paquetage, et les terres déjà connues
       // ce que le paquetage donne compte comme déjà fait (les étapes « manche », « corde »… passent)
-      D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); } });
-      ["plaine", "riviere"].slice(0, memLvl("raccourci")).forEach((z) => {
+      D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); if (isUnique(item(i)) && S.meta.ruins && S.meta.ruins[i]) delete S.meta.ruins[i]; } });
+      const racLvl = memLvl("raccourci");
+      ["plaine", "riviere", "collines", "mine"].slice(0, racLvl).forEach((z) => {
         const tool = ZONES[z].req;
         S.inv[tool] = 1; S.made[tool] = 1; markSeen(tool);
         S.age = Math.max(S.age, item(tool).a || 0);
         S.pass[z] = { paid: {}, done: true, free: true };
         S.zones[z] = true;
       });
+      if (racLvl >= 3 && D.ITEMS.hache_pierre) {
+        S.inv.hache_pierre = 1; S.made.hache_pierre = 1; markSeen("hache_pierre");
+      }
       // les dons de la relève : trois dons tirés pour ce cycle, aucun gardé du précédent
       if (!(n.meta.graine >= 1)) n.meta.graine = 1 + Math.floor(rand() * 2147483000);
       n.don = null;
@@ -4557,19 +4577,41 @@
       return true;
     };
 
+    /* Indique si le Semeur actuel est encore en train de rattraper l’avancée de ses prédécesseurs */
+    E.isCatchingUp = function () {
+      if ((S.cycle || 1) <= 1) return false;
+      const maxAge = (S.meta && S.meta.maxAge) || 0;
+      const passEver = (S.meta && S.meta.passEver) || {};
+      const everKeys = Object.keys(passEver).filter((z) => PASS[z]);
+      if (!maxAge && !everKeys.length) return false;
+      const newPass = Object.keys(S.pass || {}).some((z) => S.pass[z].done && !S.pass[z].free && !passEver[z]);
+      if (newPass && (S.age || 0) >= maxAge) return false;
+      const ratifyLeft = everKeys.some((z) => !zoneOpen(z));
+      return (S.age || 0) < maxAge || (ratifyLeft && !newPass);
+    };
+
     /* Détermine si la relève doit être activement proposée au joueur :
      * - Traces disponibles à la relève
-     * - ET fatigue ressentie (âge dépassé pour le cycle, commande longue, ou gain conséquent) */
+     * - Le joueur a rejoint puis dépassé son front pionnier (plus jamais en plein rattrapage)
+     * - ET fatigue ressentie sur l’avancée nouvelle (âge dépassé, effort unitaire long, ou gain significatif) */
     E.shouldSuggestReleve = function () {
       if (!E.canReleve || !E.canReleve()) return null;
       const gain = E.releveGain ? E.releveGain() : 0;
       if (!(gain > 0)) return null;
+      if (E.isCatchingUp && E.isCatchingUp()) return null;
+
+      const maxAge = (S.meta && S.meta.maxAge) || 0;
+      const passEver = (S.meta && S.meta.passEver) || {};
+      const newPass = Object.keys(S.pass || {}).some((z) => S.pass[z].done && !S.pass[z].free && !passEver[z]);
+      const reach = Math.max(1 + (S.cycle || 1) * 2, maxAge > 0 ? maxAge + 1 : 0);
+      const ageDepasse = (S.age || 0) > reach;
+
+      const traceSeuil = Math.max(6, Math.ceil(((S.meta && S.meta.tracesTotal) || 0) * 0.35));
+      const beaucoupTraces = gain >= traceSeuil && (maxAge === 0 || newPass || (S.age || 0) > maxAge);
 
       const hi = E.handInfo ? E.handInfo() : { left: 0, jobs: [] };
-      const reach = 1 + (S.cycle || 1) * 2;
-      const ageDepasse = (S.age || 0) > reach;
-      const longJob = hi.left > 15 || (hi.jobs && hi.jobs.length && hi.jobs[0].left > 10);
-      const beaucoupTraces = gain >= 6;
+      const j0 = hi.jobs && hi.jobs.length ? hi.jobs[0] : null;
+      const longJob = !!(j0 && !j0.paused && !j0.wait && j0.n === 1 && (!j0.steps || j0.steps.length <= 1) && (item(j0.id).a || 0) > Math.max(1, maxAge) && j0.left > 30);
 
       if (ageDepasse || longJob || beaucoupTraces) {
         return {
@@ -4612,6 +4654,7 @@
     E.repair = function (id) {
       const it = item(id);
       if (!it || !(S.meta && S.meta.ruins && S.meta.ruins[id] > 0)) return { ok: false, why: "noruin" };
+      if (isUnique(it) && (S.inv[id] || 0) >= 1) { delete S.meta.ruins[id]; return { ok: false, why: "owned" }; }
       const cost = E.ruinCost(id);
       const missing = {};
       for (const k in cost) {
@@ -4623,9 +4666,15 @@
       add(id, 1);
       S.meta.ruins[id] -= 1;
       if (S.meta.ruins[id] <= 0) delete S.meta.ruins[id];
-      // réparer vaut fabriquer : l’étape « fabrique une cabane » est faite (comme pour ce que donne le paquetage)
+      // réparer vaut fabriquer : l’étape « fabrique une cabane » ou une station est faite (comme pour ce que donne le paquetage)
+      const wasMade = (S.made[id] || 0) > 0;
       S.made[id] = Math.max(S.made[id] || 0, 1);
       markSeen(id);
+      if (!wasMade && !it.sec && !it.path) {
+        avancerAge(id);
+        if (it.e && it.e.zone) reachZone(it.e.zone);
+        checkAges();
+      }
       S.repaired = S.repaired || {};
       const firstRepair = !S.repaired[id];
       S.repaired[id] = (S.repaired[id] || 0) + 1;
@@ -5195,6 +5244,37 @@
           }
         }
         o.meta.ruins = ruins;
+      }
+      // Front pionnier (maxAge et passEver) : nettoyage et reconstruction pour les parties déjà au-delà du cycle 1
+      {
+        let ma = Number.isFinite(Number(o.meta.maxAge)) ? Math.max(0, Math.floor(Number(o.meta.maxAge))) : 0;
+        const pe = {};
+        if (o.meta.passEver && typeof o.meta.passEver === "object" && !Array.isArray(o.meta.passEver)) {
+          for (const z in o.meta.passEver) if (o.meta.passEver[z] && D.PASSAGES[z]) pe[z] = true;
+        }
+        if ((o.cycle || 1) > 1) {
+          for (const id in o.meta.ev || {}) if (o.meta.ev[id] && D.ITEMS[id]) ma = Math.max(ma, D.ITEMS[id].a || 0);
+          for (const id in o.meta.ruins || {}) if (D.ITEMS[id]) ma = Math.max(ma, D.ITEMS[id].a || 0);
+          if (o.meta.reprise && typeof o.meta.reprise === "object") {
+            for (const r of o.meta.reprise.rows || []) {
+              if (r && D.ITEMS[r.id]) ma = Math.max(ma, D.ITEMS[r.id].a || 0);
+              if (r && r.z && D.PASSAGES[r.z]) pe[r.z] = true;
+            }
+            for (const id of o.meta.reprise.objectifs || []) if (D.ITEMS[id]) ma = Math.max(ma, D.ITEMS[id].a || 0);
+          }
+          for (const z in (o.exp && o.exp.done) || {}) if (o.exp.done[z] > 0 && D.PASSAGES[z]) pe[z] = true;
+          for (const z in o.meta.terres || {}) if (o.meta.terres[z] > 0 && D.PASSAGES[z]) pe[z] = true;
+          let maxZIdx = -1;
+          D.ZONES.forEach((z, idx) => { if (!z.secret && pe[z.id]) maxZIdx = Math.max(maxZIdx, idx); });
+          if (maxZIdx > 0) {
+            for (let i = 1; i <= maxZIdx; i++) {
+              const zid = D.ZONES[i].id;
+              if (!D.ZONES[i].secret && D.PASSAGES[zid]) pe[zid] = true;
+            }
+          }
+        }
+        o.meta.maxAge = ma;
+        o.meta.passEver = pe;
       }
       // avant les passages : chaque terre déjà ouverte compte comme passage franchi
       if (!hadPass) {

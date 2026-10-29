@@ -336,9 +336,14 @@
       h += E.achatsOuverts()
         ? '<p class="small mem-achats">C’est le moment de dépenser tes Traces. Les achats se ferment quand tu touches « Terminé », ou au premier passage franchi. Les Traces non dépensées attendent la prochaine relève.</p>'
         : '<p class="small muted mem-achats">Les achats sont fermés en cours de partie. Ils rouvrent au réveil du prochain Semeur, après la relève. Tu peux consulter tes améliorations ici.</p>';
+      const catchingUp = E.isCatchingUp && E.isCatchingUp();
+      const catchUpNote = catchingUp && m.maxAge > 0
+        ? '<p class="tiny good" style="margin:6px 0 0">✦ Mémoire fraîche active : façonnage et passages déjà connus accélérés jusqu’à l’Âge ' + m.maxAge + '.</p>'
+        : "";
       h += '<div class="card memrel">' + (can
-        ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
+        ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn' + (catchingUp ? "" : " pri") + ' grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
         : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
+        catchUpNote +
         (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : nextPassHTML()) + "</div>";
       h += memArbreHTML();
       h += E.territoiresTransmissionHTML(esc);
@@ -413,7 +418,7 @@
       if (ech) keep.push("<b>" + ech + "</b> Écho" + (ech > 1 ? "s" : "") + " : +" + ech * 50 + " % de récolte et de production");
       const reset = ["Ta Réserve"];
       if (n("ext")) reset.push("Tes <b>" + n("ext") + "</b> extracteur" + (n("ext") > 1 ? "s" : "") + " : ils restent en ruine, à réparer pour une fraction de leur coût");
-      if (n("mach")) reset.push("Tes <b>" + n("mach") + "</b> machine" + (n("mach") > 1 ? "s" : ""));
+      if (n("mach")) reset.push("Tes <b>" + n("mach") + "</b> machine" + (n("mach") > 1 ? "s" : "") + " : elles restent aussi en ruine");
       reset.push("Tes terres : tu repars de la Lisière");
       if (paid.length) reset.push("Le passage vers " + paid.map((z) => esc(zoneName(z))).join(" et ") + ", payé à " + Math.floor((E.passInfo(paid[0]).frac || 0) * 100) + " %");
       if (st.hand.q.length) reset.push("Tes <b>" + st.hand.q.length + "</b> commande" + (st.hand.q.length > 1 ? "s" : "") + " en cours");
@@ -610,7 +615,10 @@
       const canBuyHint = Object.keys(D.ENDINGS || {}).some((k) => !((m.endings || {})[k]) && !E.hasEndingHint(k) && pot >= (D.HINT_ENDING_COST || 75) && Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
       const hasPurchase = canBuyBase || canBuyTrans || canBuyHint;
 
-      b.classList.toggle("ready", hasPurchase && (can && gain > 0 || m.traces >= 2));
+      const suggest = E.achatsOuverts()
+        ? m.traces > 0
+        : Boolean(can && gain > 0 && E.shouldSuggestReleve && E.shouldSuggestReleve());
+      b.classList.toggle("ready", Boolean(hasPurchase && suggest));
     }
 
     return { intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip };
