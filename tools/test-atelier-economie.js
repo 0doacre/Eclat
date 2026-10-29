@@ -30,4 +30,13 @@ test("les bonus territoriaux survivent à la sauvegarde équipée et à son nouv
   close(F.terreBonus("plaine"),1.15);assert.equal(F.SAVE_VERSION,13);
   F.newCycle();close(F.terreBonus("plaine"),1.15);assert.ok(F.equipmentList().some(x=>x.id==="percuteur_pierre"&&x.ready));
 });
+test("le réapprovisionnement automatique de l’avance maintient l’ouvrier actif tant que la bourse a au moins 1 écu",()=>{
+  const E=ready();E.add("couteau",1);E.add("cuir",300);E.state.ecus=10;
+  E.workerHire();E.workerFund(1);E.workerAutoFund(true);E.workerSet(true);E.merchantConfigure(true,10);
+  E.tick(120);
+  const info=E.atelierEconomyInfo();
+  assert.equal(info.autoFund,true);
+  assert.equal(info.status,"Découpe des lanières");
+  assert.ok(info.wages>1,"l’ouvrier a continué au-delà du premier écu d’avance grâce au réapprovisionnement automatique");
+});
 console.log(checks+" scénarios économiques réussis.");

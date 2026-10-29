@@ -54,5 +54,7 @@
 .atelier-equipe .ae-mini .btn{flex-shrink:0;min-width:44px;min-height:44px;padding:7px}
 .atelier-equipe .ae-mini [data-ae=forge]{flex:0 1 100px;max-width:110px}
 .ae-mini .ic{width:24px;height:24px;min-width:24px;margin:0}
-@media(max-width:1100px){.ae-layout{grid-template-columns:minmax(0,1fr)}.ae-inventory{max-height:350px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}.ae-work{grid-template-columns:minmax(0,1fr)}.ae-tools{border-left:0;border-top:1px solid var(--line2);padding:10px 0 0;display:flex;overflow:auto;gap:8px}.ae-tools h3{display:none}.ae-tools .btn{flex:0 0 145px;width:145px}}
+.ae-eco-summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;cursor:pointer;list-style:none}
+.ae-eco-summary h2{margin:0;font-size:20px}
+@media(max-width:1100px){.ae-layout{grid-template-columns:minmax(0,1fr)}.ae-inventory{max-height:350px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}.ae-work{grid-template-columns:minmax(0,1fr)}.ae-tools{order:-1;border-left:0;border-bottom:1px solid var(--line2);padding:0 0 10px;margin-bottom:6px;display:flex;overflow:auto;gap:8px}.ae-tools h3{display:none}.ae-tools .btn{flex:0 0 145px;width:145px;margin-bottom:0}}
 @media(max-width:650px){.ae-slots .btn{min-height:95px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}}
