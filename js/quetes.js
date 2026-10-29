@@ -105,7 +105,7 @@
       const p = E.plan(id, 1);
       if (p.ok) {
         const parts = p.steps.filter((x) => x[0] !== id).map((x) => esc(I[x[0]].n.toLowerCase()));
-        return line('<button class="btn pri gmake" data-chain="' + id + '">Fabriquer : ' + esc(it.n) + (parts.length ? ' <span class="tiny">(avec ' + parts.join(", ") + ")</span>" : "") + "</button>");
+        return line('<button class="btn pri gmake" data-chain="' + id + '" title="' + (parts.length ? 'Composants compris : ' + parts.join(', ') : 'Fabriquer cette recette') + '">Fabriquer : ' + esc(it.n) + '</button>' + (parts.length ? '<span class="tiny muted">Composants compris.</span>' : ''));
       }
       // ce qui manque : d’abord ce qui se ramasse à la main, ici même
       const miss = Object.keys(p.missing);
