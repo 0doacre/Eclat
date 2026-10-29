@@ -3,10 +3,11 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "6b002fc997";
+const BUILD = "33d577bc0a";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
+  "assets/carnet/lands/plaine.webp", "assets/carnet/lands/riviere.webp", "assets/carnet/lands/collines.webp", "assets/carnet/lands/mine.webp", "assets/carnet/lands/desert.webp", "assets/carnet/lands/gisement.webp", "assets/carnet/lands/montagnes.webp", "assets/carnet/lands/orbite.webp", "assets/carnet/lands/lune.webp", "assets/carnet/lands/caveau.webp",
   "assets/terres/lisiere-decor.webp", "assets/terres/plaine-decor.webp", "assets/terres/riviere-decor.webp", "assets/terres/collines-decor.webp", "assets/terres/mine-decor.webp", "assets/terres/desert-decor.webp", "assets/terres/gisement-decor.webp", "assets/terres/montagnes-decor.webp", "assets/terres/orbite-decor.webp", "assets/terres/lune-decor.webp", "assets/terres/mercure-decor.webp",
   "css/carnet-peint.css", "assets/carnet/ui/paint-button.webp", "assets/carnet/ui/paper-button.webp", "assets/carnet/ui/page-frame.webp", "assets/carnet/ui/paper.webp",
   "assets/carnet/lands/lisiere.webp", "assets/carnet/lands/riviere-vapeur.webp", "assets/carnet/lands/mercure.webp", "assets/carnet/items/metal_mercure.webp", "assets/carnet/sources/source_eau.webp",

@@ -1,0 +1,56 @@
+{
+  "generator": "imagegen intégré",
+  "common": "Use case: stylized-concept. Asset type: one production landscape vignette for Éclat, Le Carnet du Semeur. Match a naturalist field notebook: authentic sepia-black ink, visible dry graphite contours, granular restrained watercolor, sober old-world observation even for space subjects. Real hand-painted drawing, not a glossy game render, not photorealistic. WIDE LANDSCAPE 3:2 composition, subject spread horizontally and recognizable at mobile display width 280px and height 150px. The terrain and drawing dissolve into genuine TRANSPARENCY on ALL four sides with irregular dry-brush edges; no rectangular sky/background, no embedded parchment, no border or drop shadow. Keep central silhouettes solid enough to read on cream paper. Muted ochre, warm stone gray, olive, slate, occasional quiet blue. No text, letters, glyphs, numbers, annotations, labels, logo, watermark, UI, human figures, faces, neon, frame or vignette rectangle. No hidden narrative revelations. Entire landscape contained with clean transparent margins.",
+  "assets": [
+    {
+      "id": "plaine",
+      "name": "La Plaine des Hautes Herbes",
+      "subject": "A broad open grassland, tall straw and sage grasses in the foreground and rolling muted grassland to the horizon. A single distant oak and two very small calm deer partly obscured by grass. Small weathered animal bone fragments in one foreground patch, not a grave or human skeleton, no gore. Wind moving tall grasses, mysterious quiet natural landscape. Open left-center and slightly denser dry brush observation at right. Rich illustrative ink hatching and soft watercolor volume."
+    },
+    {
+      "id": "riviere",
+      "name": "La Rivière Lente — premiers âges",
+      "subject": "An untouched slow broad river curving between low banks of reeds, rounded dark pebbles and gray sand bars. A few low willow branches and distant soft woodland. Natural river before machinery: absolutely no pump, pipes, wheel, bridges, boats or buildings. Clay-colored bank and flint-dark stones visible, quiet sage-gray water. Same terrain spirit as the steam-era river but without technology. Water and bank dissolve into clean transparent uneven brush edges."
+    },
+    {
+      "id": "collines",
+      "name": "Les Collines Vertes",
+      "subject": "Round low grassy hills crossed by subtle dark and malachite-green exposed mineral veins. Rounded scattered warm gray rocks, patches of sage grass and a few muted shrubs. A small green mineral outcrop in the foreground, not giant fantasy crystals. Hills are rolling and gentle rather than alpine mountains. Broad field observation of geology, quiet muted olive and ochre palette."
+    },
+    {
+      "id": "mine",
+      "name": "Les Profondeurs",
+      "subject": "A wide underground natural cavern seen from within: rough iron-streaked stone walls and low branching galleries receding into darkness. Warm rusty iron seams and one dark coal seam. Charcoal-gray and quiet ochre watercolor, readable rock structures through restrained warm reflected light. No miners, machinery, portal, sealed door, inscriptions, blue futuristic chamber or narrative objects. Organic horizontal cavern vignette that fades into alpha even around the dark ceiling; no solid black rectangular background."
+    },
+    {
+      "id": "desert",
+      "name": "Le Désert de Verre",
+      "subject": "A vast quiet desert of low golden-gray dunes. In the foreground patches of sand have melted into broad uneven slabs of smoky translucent glass, fractured and half-buried, catching gentle pale highlights. Subtle quartz fragments, glass should read like fused silica on sand, not blue ice or giant crystals. Low horizon, beautifully observed eroded dunes. No buried city, observatory, boats, architecture or narrative discoveries."
+    },
+    {
+      "id": "gisement",
+      "name": "Le Gisement Noir",
+      "subject": "A broad dry plain of bitumen where black oil seeps naturally through cracked earth, small irregular dark reflective pools and thick black mineral seams. Warm stone and charcoal-gray with a little muted ochre, sparse dry vegetation at the edges. Natural geological observation, no oil rigs, barrels, factories, signs, toxic neon or smoke. Horizontal quiet composition with pools that do not resemble a river or lake."
+    },
+    {
+      "id": "montagnes",
+      "name": "Les Pics Fracturés",
+      "subject": "A broad horizontal panorama of mountains split by ancient upheaval: two jagged broken rock masses, fractured cliffs and deep irregular chasms, gray-brown shattered slabs in foreground. Small restrained reddish bauxite stains and slate mineral patches. Sparse mist in deep fissures, warm stone gray and muted ochre. No snow postcard, crater revealing catastrophe origin, alien machinery, ruins, silos or radar. A field notebook study of fractured geology, strong broad silhouette."
+    },
+    {
+      "id": "orbite",
+      "name": "L’Orbite Basse",
+      "subject": "A low Earth orbit naturalist sketch translated into ink and watercolor: the pale curved limb of Earth occupies the lower left, a few scattered small old satellite fragments and broken solar panel pieces trace a quiet loose arc across the wide composition. Space itself remains TRANSPARENT, no black rectangle or painted star field. Muted blue-gray Earth edge, graphite debris and pale ochre metal. No intact station, giant spaceship, astronauts, futuristic HUD or writing. Restrained sense of silence and abandoned material, not an action scene."
+    },
+    {
+      "id": "lune",
+      "name": "La Lune",
+      "subject": "A silent gray lunar plain with shallow round craters, low jagged ridge and dusty regolith stones in foreground. A small pale Earth crescent hangs over the left horizon with no painted sky behind it. Graphite geology, subdued gray-blue and pale ochre washes, no vegetation, water, lunar bases, vehicles, flags, glowing lights, human footprints or narrative clues. WIDE horizontal moon surface study fading into genuine transparency on all sides, not a vertical illustration."
+    },
+    {
+      "id": "caveau",
+      "name": "Le Caveau des Semeurs",
+      "subject": "An immense quiet underground hall formed in rough blue-gray rock, broad horizontal cavern view with low layered stone floor and mineral veins emitting a very restrained soft blue reflected light. Pale blue and warm graphite watercolors with brown-black hand ink contours. Suggest scale and mystery through rock recesses, not technology. No people, bodies, tanks, pods, cradles, glyphs, doors, computers, machines, artifacts, architecture or narrative revelations. The blue light must remain subtle on cream paper, not neon. Soft irregular edges transparent all around."
+    }
+  ]
+}
