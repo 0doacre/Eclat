@@ -924,7 +924,7 @@
         const ing = Object.keys(it.r[1]);
         const big = mainIngredient(id);
         const shown = nameShown(id, U.named);
-        return '<div class="rec unknown" data-rec="' + id + '" data-goto="' + id + '" title="Ouvrir sa fiche : ce qu’il faut pour la trouver"><div class="rh"><span class="ic unk">?</span><div class="grow" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + badgeHTML(id) + '</div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
+        return '<div class="rec unknown" data-rec="' + id + '" data-goto="' + id + '" title="Ouvrir sa fiche : ce qu’il faut pour la trouver"><div class="rh"><span class="ic unk">?</span><div class="grow" title="Voir la recette et ses usages" data-goto="' + id + '"><div class="rt">' + (shown ? esc(it.n) : '<span class="hid">???</span>') + badgeHTML(id) + '</div><div class="tiny muted">' + esc(fxText(id)) + "</div></div></div>" +
           (it.h ? '<div class="riddle small" style="margin-top:6px">« ' + esc(it.h) + " »</div>" : "") +
           '<div class="rl tiny muted">Action : ' + (lvl >= 1 ? gesteChip(id) : "?") + " · Ressource : " + (lvl >= 2 ? '<span class="ing">' + icon(big, "sm") + esc(I[big].n) + "</span>" : "?") + " · " + ing.length + " ressource" + (ing.length > 1 ? "s" : "") + "</div></div>";
       }
@@ -933,7 +933,7 @@
       const stars = E.stars(id);
       const lot = window.EclatCarnet.lot(E, D, id, cqNow());
       const readyCraft = !owned && lot.n > 0 && E.orderStatus(id, lot.n).ok && lot.plan.ok;
-      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-order-state="' + (lot.n > 0 && E.orderStatus(id, lot.n).ok) + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Lot prêt</span>' : '') + "</div>" +
+      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-order-state="' + (lot.n > 0 && E.orderStatus(id, lot.n).ok) + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" title="Voir la recette et ses usages" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Lot prêt</span>' : '') + "</div>" +
         (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div>' +
         (readyCraft && cqFor(it) !== 1 ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
         '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +

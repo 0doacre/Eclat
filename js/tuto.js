@@ -72,7 +72,7 @@
         when: () => U.tab === "domaine" && has("cabane") && !anyExt(),
         still: () => !S().flags.extDone,
         steps: [
-          { tab: "domaine", at: '[data-xadd="lisiere:bois"]', text: "Ta cabane récolte à ta place, même quand le jeu est fermé. Touche « + cabane » sur le bois pour la poser.", done: anyExt },
+          { tab: "domaine", at: '[data-world-manage="lisiere:bois"], [data-xadd="lisiere:bois"]', text: "Ta cabane récolte à ta place, même quand le jeu est fermé. Le + du bois ouvre la gestion du gisement pour la poser.", done: anyExt },
           { tab: "domaine", text: "Les ressources récoltées rejoignent directement ta Réserve. Utilise à nouveau « + cabane » pour en ajouter. Si aucune cabane n’est disponible, une commande la fabrique puis la pose sur ce gisement.", next: true }
         ] },
       // la première lecture d’un morceau d’histoire : la joueuse ne sait pas qu’il est fait pour intriguer
