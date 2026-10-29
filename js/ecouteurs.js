@@ -434,6 +434,32 @@
           A.click(); render(true); return;
         }
         if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
+        if ((b = t.closest("[data-apply-hint]"))) {
+          const id = b.dataset.applyHint, it = I[id], lvl = S().hints[id] || 0;
+          if (it && it.r && lvl >= 1 && E.gesteOK(it.r[0])) {
+            U.geste = it.r[0];
+            if (lvl >= 2) {
+              const big = mainIngredient(id);
+              U.slots = [big || null, null, null];
+            }
+            U.last = null;
+            A.click();
+            toast(lvl >= 2 ? "💭 Action et ressource posées sur l’établi." : "💭 Action sélectionnée sur l’établi.");
+            render(true);
+          }
+          return;
+        }
+        if ((b = t.closest("[data-goal-decipher]"))) {
+          const id = b.dataset.goalDecipher;
+          const r = E.decipher(id);
+          if (r && r.ok) {
+            if (r.lvl >= 3) { A.discover(); toast("✨ Recette déchiffrée : <b>" + esc(I[id].n) + "</b> !"); }
+            else { A.click(); toast(r.lvl === 1 ? "💭 Indice révélé : l’action est connue." : "💭 Indice révélé : une ressource est connue."); }
+            save();
+            render(true);
+          }
+          return;
+        }
         if ((b = t.closest("[data-lock]"))) { toast("Action verrouillée. Station nécessaire : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
         if ((b = t.closest("[data-qty]"))) { S().flags.carnetQty = b.dataset.qty === "max" ? "max" : Number(b.dataset.qty); A.click(); render(true); return; }

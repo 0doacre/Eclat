@@ -474,6 +474,44 @@
         h += '<p class="small muted" style="padding:6px 0 12px">Aucune commande en cours. Commandes disponibles dans l’Atelier ou le Carnet (×10, ×50, ×100, ×1000).</p>';
       }
 
+      const cads = E.cadences ? E.cadences() : [];
+      const elig = E.cadenceEligible ? E.cadenceEligible() : [];
+      if (owned.length || cads.length) {
+        h += '<h3 class="sub" style="margin-top:16px">🔄 Maintien de stock (machines au repos)</h3>';
+        h += '<p class="tiny muted" style="margin-top:-4px;margin-bottom:8px">Quand aucune commande ne les réclame, tes machines libres maintiennent ces réserves jusqu’au seuil choisi.</p>';
+        if (cads.length) {
+          cads.forEach((c) => {
+            const it = I[c.id];
+            const stBadge = c.status === "ok"
+              ? '<span class="tiny good">▸ ' + c.machs + (c.machs > 1 ? " machines" : " machine") + " · +" + perTime(c.rate) + '</span>'
+              : c.status === "full"
+                ? '<span class="tiny good">✓ seuil atteint (' + fmt(c.cap) + ')</span>'
+                : c.status === "starved"
+                  ? '<span class="tiny warn">manque : ' + c.miss.map((k) => esc(I[k].n.toLowerCase())).join(", ") + '</span>'
+                  : c.status === "busy"
+                    ? '<span class="tiny muted">machines occupées sur les commandes</span>'
+                    : '<span class="tiny muted">⏸ en pause</span>';
+            h += '<section class="dom-card mach-card" data-cad-row="' + c.id + '" style="margin-bottom:8px">' +
+              '<div class="row between" style="align-items:center;gap:8px">' +
+              '<div class="row grow" style="align-items:center;gap:8px">' + icon(c.id, "sm") +
+              '<div class="grow"><b>' + esc(it.n) + '</b> <span class="tiny muted">· <span data-c="' + c.id + '">' + fmt(c.have) + '</span> / ' + fmt(c.cap) + '</span>' +
+              '<div>' + stBadge + '</div></div></div>' +
+              '<div class="row wrap" style="gap:4px;align-items:center">' +
+              [50, 100, 250, 500].map((q) => '<button class="btn mini' + (c.cap === q ? " pri" : " ghost") + '" data-cad-cap="' + c.id + '" data-n="' + q + '" title="Maintenir le stock jusqu’à ' + q + '">' + q + '</button>').join("") +
+              '<button class="btn mini ghost" data-cad-toggle="' + c.id + '" title="' + (c.on ? "Mettre en pause ce maintien de stock" : "Reprendre ce maintien de stock") + '">' + (c.on ? "⏸" : "▶") + '</button>' +
+              '<button class="btn mini ghost" data-cad-del="' + c.id + '" title="Retirer ce maintien de stock" aria-label="Retirer ' + esc(it.n) + '">✕</button>' +
+              '</div></div></section>';
+          });
+        }
+        if (elig.length) {
+          h += '<div class="row wrap" style="gap:6px;margin-top:6px;align-items:center"><span class="tiny muted">Ajouter :</span>' +
+            elig.map((id) => '<button class="btn mini ghost" data-cad-add="' + id + '" title="Maintenir automatiquement un stock de ' + esc(I[id].n.toLowerCase()) + '">+ ' + icon(id, "sm") + " " + esc(I[id].n) + '</button>').join("") +
+            '</div>';
+        } else if (!cads.length) {
+          h += '<p class="tiny muted">Fabrique au moins une fois une recette automatisable pour la confier à tes machines au repos.</p>';
+        }
+      }
+
       h += '<h3 class="sub" style="margin-top:16px">Tes machines</h3>';
       if (owned.length) {
         owned.forEach((m) => {
@@ -1078,6 +1116,28 @@
         render(true);
         return true;
       }
+      if ((b = t.closest("[data-cad-add]"))) {
+        const rec = b.dataset.cadAdd;
+        const r = E.setCadence && E.setCadence(rec, 100, true);
+        if (r && r.ok) { A.click(); toast("🔄 Maintien de stock : <b>" + esc(I[rec].n) + "</b> (jusqu’à 100)."); render(true); }
+        return true;
+      }
+      if ((b = t.closest("[data-cad-cap]"))) {
+        const rec = b.dataset.cadCap, q = Number(b.dataset.n) || 100;
+        if (E.setCadence && E.setCadence(rec, q).ok) { A.click(); render(true); }
+        return true;
+      }
+      if ((b = t.closest("[data-cad-toggle]"))) {
+        const rec = b.dataset.cadToggle;
+        const cur = S().dom.cadence && S().dom.cadence[rec];
+        if (cur && E.setCadence && E.setCadence(rec, cur.cap, cur.on === false).ok) { A.click(); render(true); }
+        return true;
+      }
+      if ((b = t.closest("[data-cad-del]"))) {
+        const rec = b.dataset.cadDel;
+        if (E.setCadence && E.setCadence(rec, null).ok) { A.click(); render(true); }
+        return true;
+      }
       if ((b = t.closest("[data-comptoir]"))) { A.click(); comptoirSheet(b.dataset.comptoir || "vendre"); return true; }
       if (t.closest("[data-dall]")) { U.domAll = !U.domAll; U.domOpen = null; A.click(); render(true); return true; }
       if ((b = t.closest("[data-feed]"))) {
@@ -1189,10 +1249,11 @@
     }
 
     function machSig() {
-      const ms = E.machines(), hi = E.handInfo();
+      const ms = E.machines(), hi = E.handInfo(), cads = E.cadences ? E.cadences() : [];
       return [
         (hi ? hi.jobs.map((j) => j.id + ":" + j.n + ":" + j.finalDone + ":" + j.wait + ":" + JSON.stringify(j.miss) + ":" + j.steps.map((s) => s.done + ":" + (s.hands ? 1 : 0) + ":" + s.machs).join(",")).join(";") : ""),
         E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used + ":" + JSON.stringify(ms[m].byRec)).join(),
+        cads.map((c) => c.id + ":" + c.cap + ":" + (c.on ? 1 : 0) + ":" + c.status + ":" + c.machs).join(";"),
         JSON.stringify(E.ruins())
       ].join("|");
     }

@@ -93,8 +93,8 @@
       const id = g.step, it = I[id];
       if (!it) return "";
       if (!st.known[id]) {
-        const lvl = st.hints[id] || 0;
-        return line('<div class="grow" data-goto="' + id + '"><div class="small"><span class="step-badge">✦ Nouvelle recette</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
+        const lvl = st.hints[id] || 0, nIng = it.r ? Object.keys(it.r[1]).length : 0;
+        return line('<div class="grow" data-goto="' + id + '"><div class="small"><span class="step-badge">✦ Nouvelle recette' + (nIng ? ' · ' + nIng + ' ressource' + (nIng > 1 ? 's' : '') : '') + '</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
           (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
           (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
           '</div><button class="btn small pri" data-gotab="atelier">Atelier</button>');
