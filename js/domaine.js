@@ -134,6 +134,7 @@
     }
     /* les terres qui ont un décor illustré (assets/terres/<id>-decor.webp) */
     const DECORS = { lisiere: 1, plaine: 1, riviere: 1, collines: 1, mine: 1, desert: 1, gisement: 1, montagnes: 1, orbite: 1, lune: 1, mercure: 1 };
+    const CARNET_DECORS = { lisiere: "lisiere", plaine: "plaine", riviere: "riviere", collines: "collines", mine: "mine", desert: "desert", gisement: "gisement", montagnes: "montagnes", orbite: "orbite", lune: "lune", mercure: "mercure", caveau: "caveau" };
     function terreHTML(z) {
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
@@ -141,7 +142,7 @@
       const carnet = window.EclatStyleMode === "vivant";
       let h;
       if (carnet) {
-        const painted = z === "lisiere" ? "lisiere" : z === "mercure" ? "mercure" : z === "riviere" && st.age >= 7 ? "riviere-vapeur" : null;
+        const painted = z === "riviere" && st.age >= 7 ? "riviere-vapeur" : CARNET_DECORS[z] || null;
         const scene = painted ? "assets/carnet/lands/" + painted + ".webp" : DECORS[z] ? "assets/terres/" + z + "-decor.webp" : null;
         const number = D.ZONES.findIndex((land) => land.id === z) + 1;
         h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>Les terres traversées</span><span>Terre ' + number + '</span></div>' +
