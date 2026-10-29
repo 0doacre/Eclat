@@ -1,0 +1,51 @@
+{
+  "tool": "imagegen intégré",
+  "common": "Use case: stylized-concept. Production-ready raster UI asset for Éclat, Le Carnet du Semeur, hand illustrated naturalist field notebook spanning stone age to space. Style reference is the user's attached moodboard: real uneven brown ink, dry graphite, watercolor granulation and restrained terracotta/ochre pigment; sensitive paper fibers. This must look painted by a human at 1:1 UI size, not clean vector or CSS rounded rectangles, not glossy videogame metal. NO text, letters, numbers, icons, watermark, mockup, drop shadow outside the asset, perspective or extra objects. Flat frontal orthographic surface.",
+  "assets": [
+    {
+      "id": "button-pigment",
+      "alpha": true,
+      "subject": "A SINGLE wide horizontal terracotta watercolor button background, nominal canvas 1200x400, object occupying central 1120x300 with clear transparent surrounding margins. Long horizontal rectangle, slightly clipped irregular corners, warm umber double ink contour visibly wobbly and scuffed; rich muted burnt sienna pigment fills the entire center, translucent overlapping brush strokes, lighter dry brush edges and subtle paper tooth showing through. Broad quiet center reserved for a dynamic white text label added later. No graphic in the center. Shape should have real handmade character, not an ornate frame. Four corners intact; center not transparent. Authentic handpainted equivalent of the red Choisi and Récolter buttons in the reference."
+    },
+    {
+      "id": "button-paper",
+      "alpha": true,
+      "subject": "A SINGLE wide horizontal neutral ivory paper button background, nominal canvas 1200x400, occupying central 1120x300 with clear transparent margins. Long horizontal rectangle with small bevelled irregular corners, two imperfect fine sepia ink outlines, slight graphite retracing at corners; cream translucent watercolor inside with pale ochre dry brush edge. Large calm light center for dynamic dark text. Real tactile paper and handdrawn imperfection visible at normal UI size. No decoration, text or symbols. All corners intact."
+    },
+    {
+      "id": "frame-ink",
+      "alpha": true,
+      "subject": "ONE empty large square hand-inked field notebook page FRAME on fully transparent background, nominal 1024 square. Frame extends from approximately x48 y48 to x976 y976. Entire huge central area must be transparent. Two irregular thin dark umber ink outlines 7px apart with small chamfered corners, visible pencil construction traces, dry scratches and occasional sepia wash only along the narrow rim, no corner ornaments or doodles. Edges approximately straight but subtly uneven and visibly handdrawn, with small breaks and retracing. Border narrow, approx 24 pixels total, must be usable for nine-slice UI resizing. No filled paper inside, no cast shadow."
+    },
+    {
+      "id": "paper-day",
+      "alpha": false,
+      "subject": "A single full-bleed square high resolution blank warm ivory rag paper surface, uniformly lit, no objects or border. Real fine uneven fibers, restrained pale ochre watercolor blooms towards distant corners, tiny pigment flecks and soft erased graphite traces, subtle enough behind small black UI text. Main 85 percent clean pale cream #f4ecda. Matte paper, no dark stains, strong creases, handwriting, ornament, vignetting or canvas weave. Edge to edge paper suitable as a repeatable background, understated yet materially rich."
+    },
+    {
+      "id": "frame-chalk",
+      "alpha": true,
+      "subject": "ONE empty large square hand-drawn field notebook page FRAME on fully transparent background, nominal 1024 square. Outer contour approximately x48 y48 to x976 y976. Entire huge central area fully transparent. Two irregular thin warm pale ivory and faded stone-gray pencil outlines 7px apart with small chamfered corners, graphite/chalk dust, retracing, dry scratches, some tiny warm ochre wash only at rim. Visible against dark slate #242d30. Not glowing white, not metallic. Narrow border total 24 pixels, suitable for nine-slice UI resizing. No filled center, no background, no cast shadow, no ornaments."
+    },
+    {
+      "id": "paper-night",
+      "alpha": false,
+      "subject": "A single full-bleed square high resolution blank dark slate-blue charcoal artist paper surface, #253236, for the nocturnal version of a naturalist notebook. Real fine uneven fibers, subtle charcoal rubbing, erased chalk traces at distant edges, faint warm gray dusty specks. Matte, tactile, quiet and consistently dark behind pale small UI text. No stars, sky, objects, text, borders, radial gradients, strong vignette, tiles or canvas weave. Full-bleed repeating texture with no obvious dark/light edges. Same handmade material as ivory rag paper but naturally dark, not a photograph of a sheet on a table."
+    },
+    {
+      "id": "button-night",
+      "alpha": true,
+      "subject": "A SINGLE wide horizontal dark slate-blue charcoal paper button background, nominal canvas 1200x400, object occupying central 1120x300 with clear transparent surrounding margins. Long horizontal rectangle with small bevelled irregular corners, two imperfect warm ivory/gray pencil outlines, slightly retraced and scuffed. Center has desaturated dark blue-gray watercolor pigment #2e3a3d, visible fibers and dry brush texture, reserved for dynamic ivory text. Flat hand-painted paper button, no light cream fill, no glow, no text or symbols. All corners intact."
+    },
+    {
+      "id": "mercure-landscape",
+      "alpha": true,
+      "subject": "A large handpainted naturalist field notebook landscape vignette of the planet Mercury's surface, wide composition 3:2. Real sepia-black ink drawing, dry pencil contours, watercolor muted stone gray, dusty ochre and burnt sienna, matching a thoughtful naturalist's sketchbook. Ancient airless rocky crater basin with subtle metallic mineral seams and a low broken ridge, tiny distant sun with a pale unpainted halo, no Earth trees/plants/water or blue sky. A quiet mysterious landscape, gentle sense of scale, no buildings, vehicles, human or futuristic HUD. Strong fine ink geology but broad values for small display. Irregular watercolor feathered edges dissolve naturally into FULL transparency on all sides; no rectangular border, no embedded paper, no text. Center composition denser on right, left more open with low terrain, horizon halfway down. No photorealism, glossy game rendering, neon, vibrant orange or picturesque fantasy mountains."
+    },
+    {
+      "id": "metal-mercurien",
+      "alpha": true,
+      "subject": "ONE isolated naturalist specimen illustration of metallic ore collected on the planet Mercury. A low cluster of three irregular dense silvery iron-gray metal stones, subtle warm ochre mineral seams, raw scratched fractured surfaces, small restrained reflective highlights. Real brown-black ink contour, dry graphite shading and translucent watercolor washes, field notebook drawing matching the reference. Large recognizable silhouette at 64 pixels, no fine decorative machinery. Object centered, fully inside canvas with generous clean TRANSPARENT margins. No label, ground, paper, grid, shadow plate, glow, crystals, gems, neon, tools or fantasy flourishes. Hand painted matter, not photorealistic 3D render."
+    }
+  ]
+}

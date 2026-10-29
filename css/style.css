@@ -719,12 +719,18 @@ textarea.save { width: 100%; min-height: 110px; background: var(--bg2); color: v
   padding: 4px 8px;
   border-radius: 8px;
   transition: all .15s ease;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .cost-row[data-goto]:hover {
   background: color-mix(in srgb, var(--acc) 10%, var(--bg2));
 }
 .cost-row[data-goto]:active {
   transform: scale(0.99);
+}
+[data-goto] {
+  user-select: none;
+  -webkit-user-select: none;
 }
 .u-pr[data-goto] {
   cursor: pointer;
@@ -1144,7 +1150,8 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .passcost { display: flex; flex-direction: column; gap: 4px; }
 .passcost .ing { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 /* une ligne de passage porte une phrase entière : elle peut aller à la ligne, ce n’est pas une pastille */
-.passcost .ing.link { white-space: normal; border-radius: 10px; padding: 4px 8px; margin: 0; }
+.passcost .ing.link { white-space: normal; border-radius: 10px; padding: 4px 8px; margin: 0; user-select: none; -webkit-user-select: none; }
+.passcost .ing.link:active { transform: scale(0.98); }
 
 /* ---------------------------------------------------------------- comptoir */
 .dom-comptoir { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 8%, var(--panel)); }
@@ -2322,4 +2329,8 @@ body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 .proj-rate {
   color: var(--acc, #c58d4e);
 }
-
+/* Le passage garde uniquement les ressources à déposer et leurs actions utiles. */
+.pass-resource{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;padding:4px 0}
+.pass-resource>.ing{flex:1 1 180px;min-width:0;text-align:left;white-space:normal}
+.pass-resource>.btn{flex:0 1 auto;max-width:100%}
+.reprise-row{padding:6px 0;border-bottom:1px solid var(--line)}

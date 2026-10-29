@@ -66,4 +66,27 @@ test("une ancienne partie retrouve ses ruines et les identifiants invalides sont
   E.state.meta.reprise.rows.push(null, { id: "inconnu", n: 10 }, { id: "cabane", n: Infinity, z: "lisiere", res: "bois" });
   const F = mk(); F.load(E.serialize()); assert.equal(F.repriseRows().length, 1);
 });
+test("la liste se raccourcit sans déplacer les indices du devis ni effacer la référence", () => {
+  const E = prepared(); fund(E);
+  E.state.meta.reprise.rows.push({ id: "automate_bois", n: 2 });
+  const original = E.repriseRows();
+  E.add("cabane", 1); E.domExtSet("lisiere", "bois", "cabane", 1);
+  assert.equal(E.reprisePending()[0].left, 1);
+  E.add("cabane", 1); E.domExtSet("lisiere", "bois", "cabane", 2);
+  assert.deepEqual(E.reprisePending().map(r => r.i), [1]);
+  E.repriseSelect(1, false);
+  assert.equal(E.repriseRows()[1].selected, false);
+  E.add("automate_bois", 2);
+  assert.deepEqual(E.reprisePending(), []);
+  assert.deepEqual(E.repriseRows().map(r => [r.id, r.n]), original.map(r => [r.id, r.n]));
+  const F = mk(); F.load(E.serialize()); assert.deepEqual(F.reprisePending(), []);
+});
+test("les travaux en cours restent dans le plan jusqu'à leur livraison", () => {
+  const E = prepared(); E.state.meta.ruins = {}; fund(E);
+  E.repriseApply(E.repriseQuote());
+  assert.equal(E.reprisePending().length, 1);
+  assert.equal(E.repriseStatus(E.reprisePending()[0]), "Commandes en cours");
+  E.catchUp(3600);
+  assert.equal(E.reprisePending().length, 0);
+});
 console.log(count + " tests de reprise réussis.");

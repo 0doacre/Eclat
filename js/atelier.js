@@ -15,13 +15,12 @@
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
-    const Equipped = E.equipmentList && window.EclatAtelierEquipe ? window.EclatAtelierEquipe.create({...api,goalHint,handsHTML}) : null;
 
     /* ------------------------------------------------------------ ATELIER */
     /* l’étape clé de l’objectif, quand sa recette reste à trouver : la piste déjà donnée dans le Domaine (rien de plus) reste sous les yeux à l’établi */
     function goalHint() {
       const g = E.guide();
-      if (!g || g.ob.k !== "craft") return "";
+      if (!g || !g.step) return "";
       const id = g.step, it = I[id], lvl = S().hints[id] || 0;
       if (!it || S().known[id]) return "";
       return '<div class="card acc goal-hint"><div class="small"><span class="step-badge">✦ Nouvelle recette</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
@@ -29,11 +28,8 @@
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") + "</div>";
     }
     function viewAtelier() {
-      if(Equipped&&S().age<3)U.equipmentLegacy=false;
-      if(Equipped&&!U.equipmentLegacy)return Equipped.view();
       const st = S();
-      let h = '<header class="atlas-workshop-heading atlas-only"><h2>Atelier</h2></header>' + subTabs("atelier", "machines", "Découvrir", "Machines");
-      if(Equipped)h+='<div class="card"><button type="button" class="btn pri" data-ae="legacy" data-value="0">← Postes et outils</button><p class="small muted">Procédés historiques pour les recettes après le Cuivre. Les recettes des premiers âges se travaillent avec leurs outils.</p></div>';
+      let h = '<header class="atlas-workshop-heading atlas-only"><h2>Atelier</h2><span>Le geste et la matière</span></header>' + subTabs("atelier", "machines", "Découvrir", "Machines");
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
       if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Pose des <b>ressources</b> sur l’établi. 3. Lance l’action. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       // Le premier essai reste possible sans un aller-retour au Domaine.
@@ -52,6 +48,9 @@
           '<p class="small" style="margin:6px 0 8px">' + esc(sugRel.texte) + '</p>' +
           '<button class="btn pri small" data-m="releve" title="Voir les gains et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
       }
+      // l’explication des niveaux se lit une fois ; ensuite le bouton « Niveaux » rejoint l’établi et ne prend plus de ligne
+      const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;
+      if (niveauxTip) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button><button class="btn small ghost" data-tip="tip_niveaux" title="Fermer cette astuce">Compris</button></div>';
       h += pinsHTML();
       // une seule rangée, qu’on fait glisser : le haut de l’Atelier laisse la place aux ressources
       const nG = D.GESTE_ORDER.filter((g) => E.gesteOK(g)).length + 1, wG = ($("#views") && $("#views").clientWidth || 360) - 24;
@@ -69,12 +68,12 @@
       }
       h += "</div>";
       const G = D.GESTES[U.geste];
-      let heat = U.geste === "tailler" ? "Fendre, découper, affûter." : G.d;
+      let heat = G.d;
       if (U.geste === "chauffer" || U.geste === "allier") heat = "🌡️ Ta meilleure chaleur : " + fmtHeat(E.heat());
       else if ((U.geste === "marteler" || U.geste === "electriser") && E.level(U.geste) > 1) heat = G.d + " (niveau " + E.level(U.geste) + ")";
       const mat = st.age >= 11 ? " m-labo" : st.age >= 6 ? " m-metal" : st.age >= 3 ? " m-pierre" : "";
       h += '<div class="card bench' + mat + '" id="bench"><div class="heat small"><span>' + esc(heat) + "</span>" +
-        (st.stats.crafts > 0 ? '<button class="bench-clear" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button>' : "") +
+        (st.stats.crafts > 0 && !niveauxTip ? '<button class="bench-clear" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button>' : "") +
         (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") + '</div><div class="slots">';
       U.slots.forEach((id, i) => {
         if (i) h += '<span class="plus-sep">+</span>';
@@ -147,6 +146,8 @@
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
           : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans le Domaine pour remplir ta Réserve.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
+      } else if (Object.keys(st.known).length >= 3 && !st.flags.tip_inv_lp) {
+        h += '<div class="sub-row" style="margin-top:8px"><span class="tiny dim">Appui long sur une ressource (ou « ⓘ Fiches », ou la touche « i ») : ouvre sa fiche (♥ favori, 🔍 étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</span><button class="btn small ghost" data-tip="tip_inv_lp">Compris</button></div>';
       }
       return h;
     }
@@ -295,7 +296,6 @@
       return body && U.last && S().stats.crafts >= 3 ? body + '<button class="btn small ghost result-x" data-resclose aria-label="Réduire le résultat">▴ Réduire</button>' : body;
     }
     function resultBody(r) {
-      if(r&&r.kind==="equipment")return '<p>Choisis le poste et l’outil dans « Postes et outils » pour cette fabrication.</p>';
       if (!r && S().stats.crafts >= 3) return ""; // déjà appris : la carte vide ne garde pas sa place (voir .result:empty)
       if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis lance l’action choisie. Le <b>thermomètre</b> indique si tu approches d’une recette.</p>';
       if (r.kind === "craft") {
@@ -356,10 +356,13 @@
     }
     function craftBtns(id) {
       const it = I[id];
+      const status = E.orderStatus(id, 1);
+      if (status.why === "queued" || status.why === "full") return '<span class="small muted">' + (status.why === "queued" ? 'Fabrication en cours.' : 'File de commandes pleine.') + '</span><button class="btn small ghost" data-hopen>Voir les commandes</button>';
+      if (!status.ok) return '<button class="btn small ghost" data-tree="' + id + '" data-n="1" title="Voir les étapes et ce qui bloque la fabrication">Voir les prérequis</button>';
       if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="Commander 1 exemplaire, pièces comprises">Fabriquer</button>';
       // le prix d’un extracteur ou d’une machine monte à chaque exemplaire : pas de ×1000
       const sizes = E.isScaled(it) ? [10] : (D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000];
-      const lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
+      const lbl = "Fabriquer";
       return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="Commander 1 exemplaire, pièces comprises">' + lbl + "</button>" +
         sizes.map((sz) => '<button class="btn small" data-cr="' + id + '" data-n="' + sz + '" title="Commander ' + sz + ' exemplaires d’un coup, pièces comprises">×' + sz + "</button>").join("") +
         '<button class="btn small" data-cr="' + id + '" data-n="max" title="Tout ce que ta Réserve permet, pièces comprises">Max</button>' +
@@ -886,8 +889,10 @@
       document.querySelectorAll('#v-carnet [data-carnet-lot]').forEach((el) => {
         if (!el.getClientRects().length) return;
         const id = el.dataset.carnetLot, lot = window.EclatCarnet.lot(E, D, id, cqNow()), h = carnetLotHTML(id, lot);
+        const card = el.closest('.rec'), state = String(lot.n > 0 && E.orderStatus(id, lot.n).ok);
+        if (card.dataset.orderState !== state) { card.outerHTML = recCard(id); iconize(document.getElementById('clist')); return; }
         if (el._lotHTML !== h) { el.innerHTML = h; el._lotHTML = h; iconize(el); }
-        const rec = el.closest('.rec'), ready = lot.n > 0 && E.ageOK(id) && !E.blocker(id) && lot.plan.ok, badge = rec.querySelector('.badge-ready');
+        const rec = el.closest('.rec'), ready = lot.n > 0 && E.orderStatus(id, lot.n).ok && lot.plan.ok, badge = rec.querySelector('.badge-ready');
         rec.classList.toggle('can-craft', ready);
         if (ready && !badge) rec.querySelector('.rt').insertAdjacentHTML('beforeend', '<span class="badge-ready">⚡ Lot prêt</span>');
         else if (!ready && badge) badge.remove();
@@ -908,8 +913,8 @@
       const owned = uniq && (st.made[id] || 0) > 0;
       const stars = E.stars(id);
       const lot = window.EclatCarnet.lot(E, D, id, cqNow());
-      const readyCraft = !owned && E.ageOK(id) && lot.n > 0 && lot.plan.ok;
-      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Lot prêt</span>' : '') + "</div>" +
+      const readyCraft = !owned && lot.n > 0 && E.orderStatus(id, lot.n).ok && lot.plan.ok;
+      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-order-state="' + (lot.n > 0 && E.orderStatus(id, lot.n).ok) + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Lot prêt</span>' : '') + "</div>" +
         (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div>' +
         (readyCraft && cqFor(it) !== 1 ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
         '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
@@ -918,16 +923,17 @@
       if (fx) h += '<div class="fx">' + esc(fx) + (E.isScaled(it) ? ' · <span class="muted">Construits : ' + Math.floor(st.inv[id] || 0) + "</span>" : "") + "</div>";
       else if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:3px">Construits : ' + Math.floor(st.inv[id] || 0) + "</div>";
       if (!owned) h += '<div class="carnet-lot" data-carnet-lot="' + id + '">' + carnetLotHTML(id) + '</div>';
-      const situerBtn = arbreVisible(id) ? '<button type="button" class="btn small ghost icon-act carnet-situer" data-situer="' + id + '" title="Situer dans l’Arbre" aria-label="Situer dans l’Arbre">🌿</button>' : "";
+      const situerBtn = arbreVisible(id) ? '<button type="button" class="btn small ghost carnet-situer" data-situer="' + id + '" title="Situer dans l’Arbre" aria-label="Situer dans l’Arbre">Arbre</button>' : "";
       if (!owned) {
         const b = E.blocker(id);
         if (!E.ageOK(id)) h += '<div class="rec-foot"><div class="why">Recette conservée. Fabrication disponible : ' + esc(D.AGES[it.a].n) + '.</div>' + (situerBtn ? '<div class="acts carnet-acts">' + situerBtn + '</div>' : '') + '</div>';
-        else if (b && b.why !== "owned") h += '<div class="rec-foot"><div class="why">' + cap1(needText(id, b, true)) + "</div>" + (situerBtn ? '<div class="acts carnet-acts">' + situerBtn + '</div>' : '') + "</div>";
+        else if (b && b.why !== "owned") h += '<div class="rec-foot"><div class="why">' + cap1(needText(id, b, true)) + '</div><div class="acts carnet-acts">' + craftBtns(id) + situerBtn + '</div></div>';
         else {
-          const qn = cqFor(it), lbl = E.isScaled(it) ? "Construire" : "Fabriquer";
+          const qn = cqFor(it), lbl = "Fabriquer";
           const treeLbl = lot.n ? "Détail du lot" : "Détail de la recette";
-          h += '<div class="acts carnet-acts"><button class="btn small pri make" data-cr="' + id + '" data-n="' + qn + '" data-lbl="' + lbl + '" title="Commander cette quantité, pièces comprises">' + lbl + (qn === 1 ? "" : qn === "max" ? " Max" : " ×" + qn) + "</button>" +
-            '<button class="btn small ghost icon-act" data-tree="' + id + '" data-n="' + qn + '" title="Les étapes de cette commande, et ce qu’il manque" aria-label="' + treeLbl + '">🌳</button>' +
+          const canOrder = lot.n > 0 && E.orderStatus(id, lot.n).ok;
+          h += '<div class="acts carnet-acts">' + (canOrder ? '<button class="btn small pri make" data-cr="' + id + '" data-n="' + qn + '" data-lbl="' + lbl + '" title="Mains et machines disponibles, pièces intermédiaires comprises">' + lbl + (qn === 1 ? "" : qn === "max" ? " Max" : " ×" + qn) + '</button>' : '') +
+            '<button class="btn small ghost" data-tree="' + id + '" data-n="' + qn + '" title="Les étapes de cette commande, et ce qu’il manque" aria-label="' + treeLbl + '">Détail</button>' +
             (st.track && st.track.id === id ? '<button class="btn small ghost icon-act auto-on" data-untrack title="Ne plus suivre" aria-label="Suivi">🎯</button>' : '<button class="btn small ghost icon-act" data-track="' + id + '" title="Suivre cette recette" aria-label="Suivre">🎯</button>') +
             situerBtn + "</div>";
         }
@@ -971,7 +977,6 @@
     }
 
     function forge() {
-      if(Equipped&&!U.equipmentLegacy){Equipped.forge();return;}
       A.init();
       const ids = U.slots.filter(Boolean);
       if (!ids.length) return;
@@ -1057,10 +1062,11 @@
     function craftFrom(btn) {
       const id = btn.dataset.cr;
       const n = btn.dataset.n === "max" ? E.maxPlan(id) : Number(btn.dataset.n);
-      if (n > 0) handQueue(btn, id, n, true);
-      else toast(whyNot(id, 1, true), { key: "nope" });
+      if (n > 0) return handQueue(btn, id, n, true);
+      openTree(id, 1);
+      return false;
     }
-    function chainCraft(btn, id, times) { handQueue(btn, id, times || 1, true); }
+    function chainCraft(btn, id, times) { return handQueue(btn, id, times || 1, true); }
     /* toute commande part dans la file des commandes, où mains et machines avancent ensemble */
     function handQueue(btn, id, n) {
       A.init();
@@ -1068,7 +1074,7 @@
       if (n >= 10) S().flags.cmdBig = true;
       const r = E.order(id, n);
       if (!r.ok) {
-        if (r.why === "plan") { openTree(id, n); return false; }
+        if (["plan", "age", "geste", "heat", "lvl"].includes(r.why)) { openTree(id, n); return false; }
         A.fail(0);
         toast(r.why === "full" ? "Limite atteinte : " + D.HAND.max + " commandes au maximum." : r.why === "queued" ? esc(I[id].n) + " : déjà en cours." : whyNot(id, n, true));
         return false;
@@ -1190,21 +1196,22 @@
         hi.jobs.map((j, i) => {
           const w = jobWorkersTag(j), miss = jobMissTag(j);
           const sub = [];
-          if (j.paused) sub.push("⏸ en pause");
-          else if (w) sub.push(w);
-          if (miss) sub.push(miss);
-          else if (j.paused) sub.push("matières réservées conservées");
-          else if (j.wait) sub.push("en attente de mains ou de machines");
-          else sub.push("fin estimée dans ~" + fmtTime(i ? j.at : j.left));
+          if (j.paused) sub.push("en pause · libère les mains et les machines");
+          else {
+            if (w) sub.push(w);
+            if (miss) sub.push(miss);
+            else if (j.wait) sub.push("en attente de mains ou de machines");
+            else sub.push("fin estimée dans ~" + fmtTime(i ? j.at : j.left));
+          }
           // ce qui bloque : d’où vient la ressource qui manque, et un accès à son gisement
           const lim = Object.keys(j.miss || {}).filter((k) => j.miss[k] > 1e-9).slice(0, 2).map((k) => limitHTML(k, j.miss[k])).join("");
-          const prioBtn = i > 0 ? '<button class="mini" data-m="hprio" data-uid="' + esc(j.uid) + '" title="Passer en tête de file sans changer les ingrédients" aria-label="Passer en priorité">⭡ Priorité</button>' : '';
-          const pauseBtn = '<button class="mini" data-m="hpause" data-uid="' + esc(j.uid) + '" title="' + (j.paused ? "Reprendre la fabrication" : "Mettre en pause et libérer les ouvriers") + '" aria-label="' + (j.paused ? "Reprendre" : "Mettre en pause") + '">' + (j.paused ? "▶ Reprendre" : "⏸ Pause") + '</button>';
-          return '<div class="pick' + (j.paused ? " paused" : "") + '">' + icon(j.id, "sm") + '<span class="grow">' + esc(I[j.id].n) + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") +
-            (j.paused ? ' <span class="tiny" style="color:var(--muted)">[En pause]</span>' : "") +
+          const pausedBadge = j.paused ? ' <span class="badge paused" style="color:var(--muted);font-weight:bold">[⏸ En pause]</span>' : "";
+          const prioBtn = i > 0 ? '<button class="mini" data-m="hprio" data-uid="' + esc(j.uid) + '" title="Passer en tête de file" aria-label="Passer en priorité : ' + esc(I[j.id].n) + '">⭡ Priorité</button>' : "";
+          const pauseBtn = '<button class="mini" data-m="hpause" data-uid="' + esc(j.uid) + '" title="' + (j.paused ? "Reprendre cette commande" : "Mettre en pause cette commande") + '" aria-label="' + (j.paused ? "Reprendre : " : "Mettre en pause : ") + esc(I[j.id].n) + '">' + (j.paused ? "▶ Reprendre" : "⏸ Pause") + '</button>';
+          const cancelBtn = '<button class="mini" data-m="hc" data-uid="' + esc(j.uid) + '" data-i="' + i + '" title="Annuler cette commande" aria-label="Annuler : ' + esc(I[j.id].n) + '">✕</button>';
+          return '<div class="pick' + (j.paused ? " paused" : "") + '" data-jid="' + esc(j.uid) + '">' + icon(j.id, "sm") + '<span class="grow"><b>' + esc(I[j.id].n) + '</b>' + (E.isUnique(I[j.id]) ? "" : " ×" + fmt(j.n) + " (" + fmt(j.done) + "/" + fmt(j.n) + ")") + pausedBadge +
             '<br><span class="tiny muted">' + esc(sub.join(" · ")) + "</span>" + lim + "</span>" +
-            '<div class="pick-acts">' + prioBtn + pauseBtn +
-            '<button class="mini" data-m="hc" data-uid="' + esc(j.uid) + '" data-i="' + i + '" aria-label="Annuler" title="Annuler la commande">✕</button></div></div>';
+            '<div class="pick-acts row gap" style="align-items:center;gap:4px">' + prioBtn + pauseBtn + cancelBtn + '</div></div>';
         }).join("") +
         '</div>' +
         (() => {
@@ -1212,7 +1219,7 @@
           if (!sugRel) return '';
           return '<div class="card acc releve-alerte" style="margin-top:10px;border-left:3px solid var(--acc)"><div class="small"><b>⏳ Commandes lentes :</b> ce Semeur approche du bout de son éveil. Passer le relais (+' + sugRel.gain + ' ✦) accélérera tes futures fabrications.</div><button class="btn pri small" style="margin-top:6px" data-m="releve">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
         })() +
-        '<p class="tiny muted">Mettre en pause conserve l’avancement et libère les mains. Annuler une commande rend ses matières réservées à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
+        '<p class="tiny muted">Annuler une commande rend ses ressources réservées à la Réserve.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>';
     }
     function openHands() {
       openModal({
@@ -1220,10 +1227,7 @@
         on: {
           hprio: (b) => {
             const uid = b.dataset.uid;
-            if (uid && E.prioritizeJob(uid)) {
-              A.click();
-              toast("Commande passée en priorité.");
-            }
+            if (E.prioritizeJob(uid)) { A.click(); toast("Commande passée en priorité."); }
             const box = $("#modal .modal-box");
             box.innerHTML = handsSheet(); iconize(box);
             render(true);
@@ -1231,25 +1235,18 @@
           },
           hpause: (b) => {
             const uid = b.dataset.uid;
-            if (uid) {
-              const res = E.togglePauseJob(uid);
-              const j = E.findJob(uid);
-              A.click();
-              if (j && j.paused) toast("Commande mise en pause. Mains et machines libérées.");
-              else toast("Commande reprise.");
-            }
+            const res = E.togglePauseJob(uid);
+            if (res !== null) { A.click(); toast(res ? "Commande mise en pause." : "Commande reprise."); }
             const box = $("#modal .modal-box");
             box.innerHTML = handsSheet(); iconize(box);
             render(true);
             return true;
           },
           hc: (b) => {
-            const uid = b.dataset.uid;
-            const i = Number(b.dataset.i);
-            const target = uid || i;
-            const j = E.findJob ? E.findJob(target) : S().hand.q[i];
-            const name = j ? esc(I[j.id].n) : "en cours";
-            if (E.cancelJob(target)) { A.click(); toast("Commande annulée : " + name + ". Ressources restituées."); }
+            const target = b.dataset.uid || Number(b.dataset.i);
+            const j = E.findJob(target);
+            const name = j ? I[j.id].n : "Commande";
+            if (E.cancelJob(target)) { A.click(); toast("Commande annulée : " + esc(name) + ". Ressources restituées."); }
             const box = $("#modal .modal-box");
             box.innerHTML = handsSheet(); iconize(box);
             render(true);
@@ -1258,7 +1255,7 @@
         }
       });
     }
-    const handSig = () => S().hand.q.map((j) => j.id + ":" + j.i + ":" + j.k + ":" + (j.w ? 1 : 0) + ":" + JSON.stringify(j.miss)).join("|");
+    const handSig = () => S().hand.q.map((j) => j.id + ":" + j.i + ":" + j.k + ":" + (j.paused ? "p" : "a") + ":" + (j.w ? 1 : 0) + ":" + JSON.stringify(j.miss)).join("|");
     function studyHTML(id) {
       const st = S();
       const aideBtn = '<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des matières" aria-label="Comprendre l’étude des matières">?</button>';
@@ -1343,7 +1340,7 @@
         const box = document.querySelector("#modal .modal-box");
         if (box) { box.innerHTML = treeHTML(id, times); iconize(box); }
       };
-      openModal({
+      swapModal({
         html: treeHTML(id, times),
         cls: "arb-chemin-modal",
         on: {
@@ -1351,7 +1348,7 @@
           tmax: () => { times = Math.max(1, E.maxPlan(id)); renderChemin(); return true; },
           track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id] ? I[id].n : "Objet") + "</b> (en haut du Domaine)"); render(true); renderChemin(); return true; },
           untrack: () => { E.setTrack(null); render(true); renderChemin(); return true; },
-          go: (b) => { chainCraft(b, id, times); closeModal(); }
+          go: (b) => { if (chainCraft(b, id, times) !== false) closeModal(); return true; }
         }
       });
     }
@@ -1502,7 +1499,7 @@
                 (E.isScaled(it) ? '<div class="tiny muted">Coût réel pour le ' + fmt(E.count(id) + 1) + 'e exemplaire (croissance d’échelle incluse).</div>' : '') +
                 '</div>';
             }
-            if (!owned && !b) {
+            if (!owned) {
               h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +
                 '<button class="btn small ghost" data-m="tree" title="Détail : les étapes de la commande et ce qu’il manque">🌳 Détail</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track" title="Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé">🎯 Suivre</button>') + "</div>";
             }
@@ -1549,7 +1546,7 @@
           back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
           rfrom: () => { const f = U.rfrom; U.rfrom = null; closeModal(); if (f) setTimeout(f, 80); return true; },
           zone: (b) => { const z = b.dataset.z; if (E.zoneOpen(z)) { U.zone = z; setTimeout(() => { setTab("domaine"); Dom.focusZone(z); }, 60); } else { toast("Terre non atteinte."); return true; } },
-          cr: (b) => { craftFrom(b); redraw(); return true; },
+          cr: (b) => { if (craftFrom(b) !== false) redraw(); return true; },
           chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
           tree: () => { setTimeout(() => openTree(id, 1), 60); },
           track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (en haut du Domaine)"); redraw(); return true; },
@@ -1573,7 +1570,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
+    return { arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
   }
 
   window.EclatAtelier = { create };

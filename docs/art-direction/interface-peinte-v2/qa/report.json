@@ -1,0 +1,20 @@
+{
+  "checks": 237,
+  "widths": [
+    320,
+    390,
+    1280
+  ],
+  "ages": [
+    "bois",
+    "vapeur",
+    "stellaire"
+  ],
+  "titleFonts": {
+    "bois": "\"IM Fell English\", Georgia, serif",
+    "vapeur": "\"Carnet Registre\", Georgia, serif",
+    "stellaire": "\"Carnet Releves\", sans-serif"
+  },
+  "permanentPaper": true,
+  "status": "passed"
+}

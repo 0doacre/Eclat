@@ -58,7 +58,7 @@
         if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
           "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
-          '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles permettent d’acheter.</p>', "Compris"), 2200);
+          '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles offrent.</p>', "Compris"), 2200);
       });
       E.on("zone", (z) => {
         U.zone = z;
@@ -299,6 +299,10 @@
         }
         if ((ev.key === "Enter" || ev.key === " ") && document.activeElement && document.activeElement.matches("[data-goto]")) {
           ev.preventDefault();
+          A.click();
+          vibe(8);
+          if (U.mcur) U.rfrom = U.mcur.reopen || null;
+          else U.rfrom = null;
           goto(document.activeElement.dataset.goto);
           return;
         }
@@ -395,11 +399,6 @@
         }
         if (t.closest("[data-fichemode]")) { U.invFiche = !U.invFiche; A.click(); render(true); return; }
         if ((b = t.closest("[data-pin]"))) { const on = E.togglePin(b.dataset.pin); A.click(); toast(on ? "★ Épinglée : visible en haut de l’Atelier." : "Recette désépinglée."); render(true); return; }
-        if ((b = t.closest(".nope[data-chain], .nope[data-cr]"))) {
-          A.fail(0);
-          toast(whyNot(b.dataset.chain || b.dataset.cr, b.dataset.n === "max" ? 1 : Number(b.dataset.n) || 1, true), { key: "nope" });
-          return;
-        }
         if ((b = t.closest("[data-hopen]"))) { A.init(); openHands(); return; }
         if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
         if ((b = t.closest("[data-chemin], [data-tree]"))) { openTree(b.dataset.chemin || b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.chemin || b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
@@ -516,7 +515,13 @@
         }
         if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
         if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
-        if ((b = t.closest("[data-goto]"))) { U.rfrom = null; goto(b.dataset.goto); return; }
+        if ((b = t.closest("[data-goto]"))) {
+          A.click();
+          vibe(8);
+          U.rfrom = null;
+          goto(b.dataset.goto);
+          return;
+        }
         if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
         if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
         if ((b = t.closest("[data-trans-delete]"))) { if (E.transmissionEffacerNote(Number(b.dataset.transDelete))) { save(); render(true); } return; }

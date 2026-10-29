@@ -1068,7 +1068,6 @@ body.large-text .rwin :is(.rdesc,.riddle) { font-size: 21px; }
 body.large-text #v-journal .frag .tiny, body.large-text #v-journal .signe-card-lieux { font-size: 15px; }
 body.large-text #v-journal .livre-titre { font-size: 21px; }
 body.large-text #v-cosmos .term { font-size: 16px; }
-
 /* Retours V7 : arrondis communs, décor bord à bord, mots utiles. */
 #v-domaine .dom-terre.a-decor { padding-top: 0; border-radius: 12px; }
 #v-domaine .dom-terre.a-decor::before { display: none; }
@@ -1101,4 +1100,10 @@ body.large-text #v-cosmos .term { font-size: 16px; }
   #v-atelier .sub-row { margin-block: 2px; }
   #v-atelier .inv-tools { margin-bottom: 4px; }
   #v-atelier .inv-age { padding-top: 2px; }
+}
+/* Garder les actions proches des paysages sur les écrans étroits. */
+@media(max-width:680px){
+  html[data-style-mode="atlas"] #v-domaine .dom-terre.a-decor::after{height:140px;background-size:cover}
+  html[data-style-mode="atlas"] #v-domaine .dom-terre.a-decor .dom-th{min-height:140px;padding-top:20px;margin-bottom:6px}
+  html[data-style-mode="atlas"] #v-domaine .dom-terre{margin-block:12px 18px}
 }

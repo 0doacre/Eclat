@@ -805,7 +805,7 @@
         "<dt>Action, recette</dt><dd>Une recette associe une action (Tailler, Tresser…) à une ou plusieurs ressources. Tu les découvres à l’Atelier, en faisant des tentatives.</dd>" +
         "<dt>Pièce</dt><dd>Un objet fabriqué qui sert à en fabriquer d’autres (manche, corde…).</dd>" +
         "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
-        "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et débloque une action, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
+        "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et ouvre une action, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
         "<dt>Extracteur</dt><dd>Un bâtiment par ressource : le Bûcheron pour le bois, le Carrier pour la pierre, le Tanneur pour la peau… Il se pose sur un gisement de sa ressource (bouton « + cabane » sur le bois) et récolte seul, même quand le jeu est fermé. Il monte de niveau avec les âges : « Améliorer » remplace un exemplaire par le niveau d’après.</dd>" +
         "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce fabriquée à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
         "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les ressources sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +

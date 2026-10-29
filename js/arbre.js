@@ -526,7 +526,7 @@
     }
 
     const faites = marches.filter((m) => m.etat === "fait").length;
-    const canLaunch = targetKnown && !E.blocker(targetId) && !p.locked.length && !Object.keys(p.blocked).length && (p.ok || !(E.isScaled && E.isScaled(it)));
+    const canLaunch = targetKnown && !!it.r && E.orderStatus(targetId, times).ok;
 
     const incCible = estInconnu(targetId);
     const cible = {

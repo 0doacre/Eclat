@@ -203,7 +203,7 @@
     res: "Une ressource : elle se récolte sur un gisement.",
     comp: "Une pièce : elle sert à fabriquer d’autres objets.",
     tool: "Un outil : renforce tes récoltes à la main ou ouvre de nouveaux chemins.",
-    stat: "Une station : elle reste à l’Atelier et débloque une action ou une chaleur.",
+    stat: "Une station : elle reste à l’Atelier et ouvre une action ou une chaleur.",
     ext: "Récolte automatique (active hors ligne). À poser sur un gisement de la terre indiquée.",
     upg: "Une amélioration : son effet est permanent dès son obtention.",
     mach: "Une machine : elle reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire.",
@@ -237,7 +237,7 @@
       const g = D.GESTES[s.g].n;
       if (s.heat) out.push(s.g === "chauffer" ? "Chauffer jusqu’à " + fmtHeat(s.heat) : g);
       else if ((s.lvl || 1) > 1) out.push(g + " les ressources plus dures");
-      else out.push("Débloque l’action " + g);
+      else out.push("Ouvre l’action " + g);
     });
     if (e.tap) for (const k in e.tap) out.push("Récolte à la main " + (k === "*" ? "partout" : E.ZONES[k] ? deZone(k).replace(/^de la /, "à la ").replace(/^du /, "au ").replace(/^des /, "aux ").replace(/^de l’/, "à l’") : ": " + targetName(k)) + " " + fmtMul(e.tap[k]));
     if (e.auto) for (const k in e.auto) out.push("Extracteurs " + (k === "*" ? "de toutes les terres" : deZone(k)) + " " + fmtMul(e.auto[k]));
@@ -255,11 +255,11 @@
     if (e.exp) out.push("Explorations " + fmtMul(e.exp));
     if (e.sky) out.push("Ouvre le Cosmos");
     if (e.arche) out.push("Capte les ondes radio");
-    if (e.term) out.push("Débloque le terminal");
-    if (e.signal) out.push("Permet d’écouter le ciel");
+    if (e.term) out.push("Ouvre le terminal");
+    if (e.signal) out.push("Écoute les signaux du ciel");
     if (e.aspd) out.push("Machines " + fmtMul(e.aspd));
     if (e.pip) out.push("Récolte seul " + perMin(e.pip));
-    if (e.flute) out.push("Débloque la flûte");
+    if (e.flute) out.push("Donne la flûte");
     if (e.decode) out.push("Décode le signal de Kher");
     return out;
   }
@@ -483,10 +483,15 @@
   }
   document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("gestes")) U.gScroll = e.target.scrollLeft; }, true);
   /* une fenêtre qui vient de s’ouvrir sous le doigt ne se referme pas sur le même appui */
-  const fresh = () => Date.now() - (U.mAt || 0) < 450;
+  const fresh = () => Date.now() - (U.mAt || 0) < 140;
   function setupModal() {
     const m = $("#modal"), box = $(".modal-box", m);
     box.addEventListener("click", (ev) => {
+      if (ev.target.closest("[data-hopen]") && U.mcur && !fresh()) { closeModal(); openHands(); return; }
+      const custom = ev.target.closest("[data-cr-custom]");
+      if (custom && U.mcur && !fresh()) { closeModal(); promptCraftQty(custom.dataset.crCustom); return; }
+      const craft = ev.target.closest("[data-tree]");
+      if (craft && U.mcur && !fresh()) { openTree(craft.dataset.tree, Number(craft.dataset.n) || 1); return; }
       // un passage à verser, une matière à voir, depuis une fiche
       const pb = ev.target.closest("[data-pour]");
       if (pb && U.mcur && !fresh()) { pour(pb.dataset.pour, pb); if (U.mcur && U.mcur.refresh) box.innerHTML = U.mcur.refresh(); return; }
@@ -496,7 +501,14 @@
       const zb = ev.target.closest("[data-gz]");
       if (zb && U.mcur && !fresh()) { const z = zb.dataset.gz; A.click(); U.zone = z; closeModal(); setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return; }
       const gb = !ev.target.closest("[data-m]") && ev.target.closest("[data-goto]");
-      if (gb && U.mcur && !fresh()) { const from = U.mcur.reopen || null; closeModal(); setTimeout(() => { U.rfrom = from; goto(gb.dataset.goto); }, 80); return; }
+      if (gb && U.mcur) {
+        A.click();
+        vibe(8);
+        const from = U.mcur.reopen || null;
+        U.rfrom = from;
+        goto(gb.dataset.goto);
+        return;
+      }
       const sb = !ev.target.closest("[data-m]") && ev.target.closest("[data-s]");
       if (sb && U.mcur && !fresh()) { A.click(); openSigneModal(sb.dataset.s); return; }
       const b = ev.target.closest("[data-m]");
@@ -736,8 +748,12 @@
     const box = $("#modal .modal-box");
     U.mcur = o;
     $("#modal").className = "modal " + (o.cls || "");
-    box.innerHTML = o.html;
+    box.innerHTML = (o.persistent ? "" : '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>') + o.html;
+    const ttl = $("h2", box);
+    if (ttl) { ttl.id = "modalTitle"; box.setAttribute("aria-labelledby", "modalTitle"); box.removeAttribute("aria-label"); }
+    else { box.removeAttribute("aria-labelledby"); box.setAttribute("aria-label", "Fenêtre"); }
     iconize(box);
+    box.scrollTop = 0;
     if (o.onOpen) o.onOpen(box);
   }
 
@@ -1042,14 +1058,14 @@
         b.classList.toggle("nope", max < 1);
         b.textContent = (b.dataset.lbl ? b.dataset.lbl + " " : "") + "Max" + (max > 1 ? " (" + fmt(max) + ")" : "");
       } else {
-        const p = E.plan(id, 1);
-        const ok = !E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length;
+        const ok = E.orderStatus(id, Number(n) || 1).ok;
         b.classList.toggle("nope", !ok);
+        b.title = ok ? "Fabriquer avec les mains et les machines disponibles, pièces intermédiaires comprises" : whyNot(id, Number(n) || 1, true);
       }
     });
     $$("[data-chain]", view).forEach((b) => {
-      const id = b.dataset.chain, p = E.plan(id, 1);
-      b.classList.toggle("nope", !(!E.blocker(id) && !p.locked.length && !Object.keys(p.blocked).length));
+      const id = b.dataset.chain;
+      b.classList.toggle("nope", !E.orderStatus(id, 1).ok);
     });
     $$("[data-gleft]", view).forEach((el) => { el.textContent = fmt(Math.max(0, Number(el.dataset.q) - (st.inv[el.dataset.gleft] || 0))); });
     $$("[data-exp]", view).forEach((b) => b.classList.toggle("nope", !!expWhy(b.dataset.exp)));

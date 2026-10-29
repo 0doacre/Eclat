@@ -39,7 +39,9 @@ async function main() {
       await p.locator('[data-m="repriseApply"]').click();
       check((await p.locator("#modal").innerText()).includes("2 opération(s) lancée(s)"), "validation et retour lisible " + width);
       check(await p.evaluate(() => window.__eclat.E.domExt("lisiere", "bois").u.cabane === 2), "pose correcte " + width);
-      check(await p.locator('[data-m="repriseApply"]').isDisabled(), "double lancement empêché " + width);
+      check(await p.locator('[data-m="repriseApply"]').count() === 0, "travaux terminés retirés " + width);
+      check(await p.locator('.reprise-row').count() === 0, "liste terminée vide " + width);
+      check(await p.locator('[data-reprise]').count() === 0, "plan terminé retiré du Domaine " + width);
       check(await p.locator("#modal .modal-box").evaluate(el => el.scrollWidth <= el.clientWidth + 1), "fenêtre contenue " + width);
       check(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "page contenue " + width);
       if (process.env.REPRISE_SHOTS) { fs.mkdirSync(process.env.REPRISE_SHOTS, { recursive: true }); await p.locator("#modal").screenshot({ path: path.join(process.env.REPRISE_SHOTS, (preview ? "equipe" : "classique") + "-reprise-" + width + ".png") }); }

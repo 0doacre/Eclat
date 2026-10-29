@@ -1327,6 +1327,11 @@
       if (!j.sp || j.sp.length !== j.s.length) j.sp = j.s.map(() => 0);
       if (!j.mAcc || j.mAcc.length !== j.s.length) j.mAcc = j.s.map(() => 0);
       if (!j.miss || typeof j.miss !== "object") j.miss = {};
+      if (!j.uid) {
+        S.hand.nextUid = (S.hand.nextUid || 0) + 1;
+        j.uid = "j" + S.hand.nextUid;
+      }
+      if (j.paused === undefined) j.paused = false;
       let i = 0;
       while (i < j.s.length && j.done[i] >= j.s[i][1]) i++;
       j.i = i;
@@ -1554,13 +1559,14 @@
         if (j.paused) { j.w = 0; return; }
         const anyM = stepMachs[jIdx].some((n) => n > 0);
         const anyH = hWork.job === j;
-        j.w = anyM || anyH ? 0 : 1;
+        j.w = j.paused ? 0 : (anyM || anyH ? 0 : 1);
       });
     }
 
     /* Lance une commande (avec planification récursive des sous-composants).
      * Démarre même s’il manque des matières premières : elles seront tirées de la Réserve. */
-    E.order = function (id, times, to) {
+    // Même décision pour tous les boutons et pour l'exécution ; consulter ne dépense rien.
+    E.orderStatus = function (id, times) {
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
@@ -1577,6 +1583,13 @@
       if (!p.steps.length) return { ok: false, why: "none" };
       // un extracteur ou une machine coûte plus cher à chaque exemplaire : pas de commande à crédit
       if (isScaled(it) && !p.ok) return { ok: false, why: "plan", plan: p };
+      return { ok: true, plan: p, times };
+    };
+    E.order = function (id, times, to) {
+      const status = E.orderStatus(id, times);
+      if (!status.ok) return status;
+      times = status.times;
+      const it = item(id), p = status.plan;
       const bench = {};
       for (const i in p.used) {
         bench[i] = p.used[i];
@@ -1595,7 +1608,12 @@
         E.emit("hand", { kind: "add", job: last });
         return { ok: true, job: last, time: jobTime(last, false), missing: Object.keys(last.miss).length ? Object.assign({}, last.miss) : null, merged: true };
       }
+      const nextUid = () => {
+        S.hand.nextUid = (S.hand.nextUid || 0) + 1;
+        return "j" + S.hand.nextUid;
+      };
       const j = {
+        uid: nextUid(), paused: false,
         id, s: p.steps, i: 0, k: 0,
         done: p.steps.map(() => 0), hMade: p.steps.map(() => 0), sp: p.steps.map(() => 0), mAcc: p.steps.map(() => 0),
         b: bench, miss
@@ -1652,8 +1670,7 @@
         return "j" + S.hand.nextUid;
       };
       const j = {
-        uid: nextUid(),
-        paused: false,
+        uid: nextUid(), paused: false,
         id, s: steps, i: 0, k: 0,
         done: steps.map(() => 0), hMade: steps.map(() => 0), sp: steps.map(() => 0), mAcc: steps.map(() => 0),
         b: bench, miss: {}
@@ -1665,14 +1682,21 @@
       E.emit("hand", { kind: "add", job: j });
       return { ok: true, job: j, time: jobTime(j, S.hand.q.length === 1) };
     };
-    E.findJobIndex = function (target) {
+    function findJobIndex(target) {
       if (typeof target === "number") return target >= 0 && target < S.hand.q.length ? target : -1;
-      if (typeof target === "string") return S.hand.q.findIndex((x) => x.uid === target);
-      if (target && typeof target === "object" && target.uid) return S.hand.q.findIndex((x) => x.uid === target.uid);
+      if (typeof target === "string") {
+        const byUid = S.hand.q.findIndex((x) => x.uid === target);
+        if (byUid >= 0) return byUid;
+        const n = Number(target);
+        if (Number.isInteger(n) && n >= 0 && n < S.hand.q.length) return n;
+        return -1;
+      }
+      if (target && typeof target === "object") return S.hand.q.findIndex((x) => x === target || (x.uid && x.uid === target.uid));
       return -1;
-    };
-    E.findJob = function (target) {
-      const idx = E.findJobIndex(target);
+    }
+    E.findJobIndex = findJobIndex;
+    E.findJob = (target) => {
+      const idx = findJobIndex(target);
       return idx >= 0 ? S.hand.q[idx] : null;
     };
     E.pauseJob = function (target) {
@@ -1695,21 +1719,24 @@
     };
     E.togglePauseJob = function (target) {
       const j = E.findJob(target);
-      if (!j) return false;
-      return j.paused ? E.resumeJob(target) : E.pauseJob(target);
+      if (!j) return null;
+      if (j.paused) E.resumeJob(target);
+      else E.pauseJob(target);
+      return j.paused;
     };
     E.prioritizeJob = function (target) {
-      const idx = E.findJobIndex(target);
+      const idx = findJobIndex(target);
       if (idx <= 0) return false;
-      const [j] = S.hand.q.splice(idx, 1);
+      const j = S.hand.q[idx];
+      S.hand.q.splice(idx, 1);
       S.hand.q.unshift(j);
       S.hand.p = 0;
       assignWorkers();
-      E.emit("hand", { kind: "prioritize", job: j });
+      E.emit("hand", { kind: "priority", job: j });
       return true;
     };
     E.cancelJob = function (target) {
-      const idx = E.findJobIndex(target);
+      const idx = findJobIndex(target);
       if (idx < 0) return false;
       const j = S.hand.q[idx];
       for (const i in j.b) add(i, j.b[i]);
@@ -2119,6 +2146,19 @@
     E.guide = function () {
       const ob = E.objective();
       if (!ob) return null;
+      if (ob.k === "exp") {
+        const nx = E.nextExp(ob.z), need = nx && nx.x.need;
+        const ids = typeof need === "string" ? [need] : Array.isArray(need) ? need : [];
+        for (const id of ids) if (item(id) && item(id).r && !hasExpReq(id)) {
+          const s = nextStep(id);
+          return { ob, step: s.id, why: s.why, pour: id };
+        }
+        for (const [id, n] of Object.entries(nx && nx.x.cost || {})) if (item(id) && item(id).r && count(id) < n) {
+          const s = nextStep(id);
+          return { ob, step: s.id, why: s.why, pour: id };
+        }
+        return { ob, step: null };
+      }
       if (ob.k === "pass") {
         // le passage ne s’ouvre qu’une fois les lieux de la terre explorés, et un lieu peut demander un objet (la torche de la grotte) : le guide y mène
         const l = ob.z && E.passLieux(ob.z), nx = l && l.left.length ? E.nextExp(l.z) : null, cost = (nx && !nx.locked && nx.x.cost) || {};
@@ -3481,7 +3521,7 @@
       const it = item(toolId);
       if (!it || it.t !== "tool") return null;
       if (typeof E.equipmentSpeed === "function") {
-        const pcfg = D.CRAFT_EQUIPMENT;
+        const pcfg = D.CRAFT_EQUIPMENT || (typeof E.equipmentCfg === "function" ? E.equipmentCfg() : null);
         const eq = pcfg && pcfg.equipment && pcfg.equipment[toolId];
         if (eq && eq.speed) {
           const list = [];
@@ -3564,7 +3604,6 @@
         texte: "Chaque poste et outil propose des modes de travail précis (tailler, couper, cuire, polir). Choisir un outil plus affûté ou adapté — comme le couteau de silex pour les lanières — divise le temps de fabrication sans exiger plus de matières par pièce."
       }
     };
-
     /* Pose un extracteur libre sur le gisement de sa terre où il manque le plus.
      * Sert au bot de simulation et aux parties d’avant la v4, dont les extracteurs
      * ne travaillaient sur aucun gisement. */

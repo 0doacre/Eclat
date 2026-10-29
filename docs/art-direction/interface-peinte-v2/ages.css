@@ -1,0 +1,14 @@
+/* Le papier, les commandes et le texte de lecture restent communs aux âges. */
+@font-face{font-family:'Carnet Registre';font-weight:800;font-display:swap;src:url('assets/fonts/playfair-display-800.woff2') format('woff2')}
+@font-face{font-family:'Carnet Releves';font-weight:700;font-display:swap;src:url('assets/fonts/space-grotesk-700.woff2') format('woff2')}
+.age-studies{max-width:1140px;margin:0 auto 26px;display:flex;gap:12px 24px;align-items:center;flex-wrap:wrap;font:16px var(--serif)}
+.age-studies>span{font-family:var(--sans);font-size:14px;color:var(--muted)}
+.age-studies>div{display:flex;gap:4px 18px;flex-wrap:wrap}.age-studies a{position:relative;min-width:60px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;padding:8px}
+.age-studies a[aria-current]{color:var(--accent)}.age-studies a[aria-current]:after{content:'';position:absolute;bottom:2px;left:4px;right:4px;height:5px;background:url('assets/ui/button-pigment.png') center/100% 100%}
+.age-studies>p{flex-basis:100%;margin:0;color:var(--muted);font-size:15px}
+.land-note,.other-land .handwritten,.other-land h2{white-space:pre-line}
+body[data-age='vapeur'] h1{font-family:'Carnet Registre',Georgia,serif;font-weight:800;font-size:clamp(50px,5.5vw,72px);letter-spacing:-.025em}
+body[data-age='stellaire'] h1{font-family:'Carnet Releves',sans-serif;font-weight:700;font-size:clamp(60px,6.5vw,88px);letter-spacing:-.04em}
+body[data-age='vapeur'] .land-copy .eyebrow,body[data-age='stellaire'] .land-copy .eyebrow{letter-spacing:.17em}
+body[data-age='bois'] .land-note{transform:rotate(-2deg)}body[data-age='vapeur'] .land-note{transform:rotate(-1deg)}body[data-age='stellaire'] .land-note{transform:none}
+@media(max-width:580px){.age-studies{margin:0 20px 18px;gap:4px}.age-studies>span{flex-basis:100%;font-size:12px}.age-studies>p{font-size:13px}.age-studies>div{gap:5px}.age-studies a{font-size:17px;padding-inline:12px}.land-copy h1{font-size:66px}body[data-age='vapeur'] h1{font-size:46px}body[data-age='stellaire'] h1{font-size:54px}}
