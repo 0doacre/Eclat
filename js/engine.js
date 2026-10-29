@@ -591,7 +591,7 @@
       if (!z || !z.exps) return null;
       const done = (S.exp && S.exp.done && S.exp.done[z.id]) || 0;
       const req = z.exps.map((x, k) => ({ x, k })).filter((o) => !o.x.hidden && !o.x.need && !o.x.cote); // pas les lieux d’à côté, qui s’ouvrent par une fouille
-      const left = req.filter((o) => o.k >= done).map((o) => ({ id: o.x.id, n: o.x.n, dur: o.x.dur }));
+      const left = req.filter((o) => o.k >= done).map((o) => ({ id: o.x.id, n: o.x.n, dur: o.x.dur, cost: o.x.cost }));
       return { z: z.id, n: z.n, done: req.length - left.length, total: req.length, left };
     };
     /* où en est un passage : possible (l’objet est fait), payé, ce qui reste */
@@ -639,8 +639,12 @@
       return { ok: Object.keys(gave).length > 0, gave, done };
     };
     /* ------------------------------------------------------ la relève
-     * Ce qu’un nouveau Semeur gagnerait maintenant : les Traces des passages franchis. */
-    E.releveGain = () => Object.keys(S.pass || {}).reduce((a, z) => a + (S.pass[z].done && !S.pass[z].free && PASS[z] ? PASS[z].tr : 0), 0);
+     * Ce qu’un nouveau Semeur gagnerait maintenant : les Traces des passages franchis.
+     * Dès qu’au moins un passage non offert est franchi dans le cycle, les passages ouverts par Raccourci comptent aussi. */
+    E.releveGain = () => {
+      const hasPaid = Object.keys(S.pass || {}).some((z) => S.pass[z].done && !S.pass[z].free && PASS[z]);
+      return hasPaid ? Object.keys(S.pass || {}).reduce((a, z) => a + (S.pass[z].done && PASS[z] ? PASS[z].tr : 0), 0) : 0;
+    };
     E.canReleve = () => E.releveGain() > 0 || Object.keys(S.endings || {}).length > 0;
 
     /* ------------------------------------------------------ récolte */
@@ -4598,6 +4602,44 @@
       for (const k in it.r[1]) cost[k] = Math.ceil(it.r[1][k] * part);
       return cost;
     };
+    /* Résout le coût d’une ruine depuis la Réserve : pièces directes d’abord, ou matières premières des sous-pièces connues */
+    E.ruinResolve = function (id) {
+      const it = item(id);
+      if (!it || !(S.meta && S.meta.ruins && S.meta.ruins[id] > 0)) return { ok: false, why: "noruin" };
+      const cost = E.ruinCost(id);
+      const directMissing = {};
+      for (const k in cost) {
+        const have = S.inv[k] || 0;
+        if (have < cost[k]) directMissing[k] = cost[k] - have;
+      }
+      if (!Object.keys(directMissing).length) return { ok: true, cost: Object.assign({}, cost), crafts: {} };
+      const avail = Object.assign({}, S.inv);
+      const used = {}, crafts = {};
+      let failed = false, guard = 0;
+      function need(x, qty, d) {
+        if (failed || ++guard > 2000 || d > 40) { failed = true; return; }
+        const have = Math.floor(avail[x] || 0);
+        const use = Math.min(have, qty);
+        if (use > 0) {
+          used[x] = (used[x] || 0) + use;
+          avail[x] = have - use;
+          qty -= use;
+        }
+        if (qty <= 1e-9) return;
+        const ix = item(x);
+        const zid = RES_ZONE[x];
+        const gather = ix && ix.t === "res" && zid && zoneOpen(zid);
+        if (!ix || !ix.r || gather || !S.known[x] || blocker(x)) { failed = true; return; }
+        const n = Math.ceil(qty / (ix.r[2] || 1));
+        crafts[x] = (crafts[x] || 0) + n;
+        for (const i in ix.r[1]) need(i, ix.r[1][i] * n, d + 1);
+        const surplus = n * (ix.r[2] || 1) - qty;
+        if (surplus > 0) avail[x] = (avail[x] || 0) + surplus;
+      }
+      for (const k in cost) need(k, cost[k], 0);
+      if (failed) return { ok: false, why: "missing", missing: directMissing };
+      return { ok: true, cost: used, crafts };
+    };
     /* relève tout ce que la Réserve permet, parmi `ids` (ou toutes les ruines), une réparation à la fois ; renvoie combien */
     E.repairAll = function (ids) {
       let n = 0;
@@ -4611,15 +4653,13 @@
     };
     E.repair = function (id) {
       const it = item(id);
-      if (!it || !(S.meta && S.meta.ruins && S.meta.ruins[id] > 0)) return { ok: false, why: "noruin" };
-      const cost = E.ruinCost(id);
-      const missing = {};
-      for (const k in cost) {
-        const have = S.inv[k] || 0;
-        if (have < cost[k]) missing[k] = cost[k] - have;
+      const res = E.ruinResolve(id);
+      if (!res.ok) return res;
+      for (const k in res.cost) S.inv[k] -= res.cost[k];
+      for (const c in res.crafts) {
+        S.made[c] = (S.made[c] || 0) + res.crafts[c] * (item(c).r[2] || 1);
+        markSeen(c);
       }
-      if (Object.keys(missing).length > 0) return { ok: false, why: "missing", missing };
-      for (const k in cost) S.inv[k] -= cost[k];
       add(id, 1);
       S.meta.ruins[id] -= 1;
       if (S.meta.ruins[id] <= 0) delete S.meta.ruins[id];
@@ -4646,7 +4686,7 @@
       recalc();
       domChanged();
       E.emit("struct");
-      return { ok: true, id, cost };
+      return { ok: true, id, cost: res.cost };
     };
     E.ruinName = function (id) {
       const it = item(id);

@@ -89,4 +89,31 @@ test("les travaux en cours restent dans le plan jusqu'à leur livraison", () => 
   E.catchUp(3600);
   assert.equal(E.reprisePending().length, 0);
 });
+test("une ruine se répare à 10 % depuis les matières premières sans jamais basculer sur une commande plein tarif", () => {
+  const E = prepared();
+  // Le joueur n'a ni manche ni corde fabriqués en stock, seulement du bois et des fibres bruts
+  E.add("bois", 50);
+  E.add("fibre", 50);
+  const q = E.repriseQuote();
+  assert.equal(q.actions.length, 2, "deux réparations de cabane");
+  assert.ok(q.actions.every(a => a.kind === "repair"), "toutes les actions sont des réparations à 10 %, pas des commandes à 100 %");
+  assert.deepEqual(q.cost, { bois: 6, fibre: 10 }, "coût total 10 % (2 × 3 bois + 2 × 5 fibres)");
+  assert.deepEqual(E.repriseApply(q), { ok: true, applied: 2, skipped: 0 });
+  assert.equal(E.domExt("lisiere", "bois").u.cabane, 2);
+  assert.equal(Object.keys(E.ruins()).length, 0);
+});
+test("Raccourci ne pénalise plus le gain de Traces dès qu’un passage actif est franchi dans le cycle", () => {
+  const E = mk();
+  E.state.meta.traces = 100;
+  E.state.meta.achats = true;
+  assert.ok(E.memBuy("raccourci"));
+  E.newCycle();
+  assert.equal(E.zoneOpen("plaine"), true);
+  assert.equal(E.canReleve(), false, "pas de relève à 0 s sur un passage offert seul");
+  assert.equal(E.releveGain(), 0, "0 Trace tant qu’aucun passage actif n’est franchi");
+  // Le joueur franchit la Rivière dans son cycle
+  E.state.pass.riviere = { paid: {}, done: true };
+  assert.equal(E.canReleve(), true);
+  assert.equal(E.releveGain(), D.PASSAGES.plaine.tr + D.PASSAGES.riviere.tr, "les Traces de la Plaine (Raccourci) et de la Rivière sont bien cumulées");
+});
 console.log(count + " tests de reprise réussis.");

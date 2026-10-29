@@ -299,6 +299,7 @@
       const branches = MEM_BRANCHES.map((b) => ({ n: b.n, ids: b.ids.filter((id) => D.MEMOIRE.some((x) => x.id === id)) }));
       if (D.TRANSCENDANCE && D.TRANSCENDANCE.length) branches.push({ n: "Les résonances", ids: D.TRANSCENDANCE.map((x) => x.id), inf: true });
       if (!memNode(U.memSel)) U.memSel = null;
+      if (!U.memSel && E.achatsOuverts() && E.memLvl("recolte") === 0 && m.traces >= (E.memCost("recolte") || 0)) U.memSel = "recolte";
       const info = (id) => {
         const x = memNode(id), inf = (D.TRANSCENDANCE || []).some((t) => t.id === id);
         const l = inf ? E.transLvl(id) : E.memLvl(id), c = inf ? E.transCost(id) : E.memCost(id), max = !inf && c === undefined;
@@ -319,7 +320,8 @@
       if (!id) return h + '<p class="tiny muted center">Sélectionne une amélioration pour consulter ses effets.</p>';
       const n = info(id), x = n.x;
       const now = memDesc(x, n.l).replace(/\.$/, ""), next = n.max ? "" : memDesc(x, n.l + 1).replace(/\.$/, "");
-      h += '<div class="mem sel"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + (n.inf ? "Niveau " + n.l : n.l + "/" + x.cost.length) + "</span></div>" +
+      const tip1 = id === "recolte" && E.achatsOuverts() && n.l === 0 ? ' <span class="tiny good">✦ Conseillé au 1er éveil</span>' : "";
+      h += '<div class="mem sel"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + (n.inf ? "Niveau " + n.l : n.l + "/" + x.cost.length) + "</span>" + tip1 + "</div>" +
         '<div class="tiny muted">' + (n.l ? esc(now) : "") + (n.l && !n.max ? " → " : "") + (n.max ? "" : esc(next)) + "</div>" +
         (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : "") + "</div>" +
         (n.max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (n.ok ? " pri" : " nope") + (n.soon ? " soon" : "") + '" data-m="' + (n.inf ? "buytrans" : "buy") + '" data-id="' + id + '">' + fmt(n.c) + " ✦" + (n.soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
@@ -347,7 +349,8 @@
         const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
         const now = memDesc(x, l), next = max ? "" : memDesc(x, l + 1);
         const soon = !max && can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c); // possible juste après la relève
-        return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
+        const tip1 = x.id === "recolte" && E.achatsOuverts() && l === 0 ? ' <span class="tiny good">✦ Conseillé au 1er éveil</span>' : "";
+        return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span>" + tip1 + "</div>" +
           '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
           (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
           (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (E.achatsOuverts() && m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
@@ -519,7 +522,17 @@
             swapModal(Object.assign(o, { html: memHTML() }));
             return true;
           },
-          fin: () => { E.fermerAchats(); save(); return false; },
+          fin: (btn) => {
+            const m = S().meta;
+            const zeroBought = Object.values(m.mem || {}).every((v) => !v);
+            const canAfford = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && m.traces >= c; });
+            if (E.achatsOuverts() && zeroBought && canAfford && !(btn && btn.dataset && btn.dataset.confirm === "1")) {
+              if (btn && btn.dataset) btn.dataset.confirm = "1";
+              toast("Tu peux déjà acheter une amélioration (ex. Mains calleuses). Touche à nouveau « Terminé » si tu préfères garder tes Traces.", { key: "mem_fin" });
+              return true;
+            }
+            E.fermerAchats(); save(); return false;
+          },
           dons: () => { setTimeout(() => openDons(), 80); },
           releve: () => { setTimeout(confirmCycle, 80); }
         }
