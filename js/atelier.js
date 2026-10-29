@@ -21,11 +21,30 @@
     function goalHint() {
       const g = E.guide();
       if (!g || !g.step) return "";
-      const id = g.step, it = I[id], lvl = S().hints[id] || 0;
-      if (!it || S().known[id]) return "";
-      return '<div class="card acc goal-hint"><div class="small"><span class="step-badge">✦ Nouvelle recette</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
+      const id = g.step, it = I[id], st = S(), lvl = st.hints[id] || 0;
+      if (!it || st.known[id]) return "";
+      const nIng = it.r ? Object.keys(it.r[1]).length : 0;
+      const m = E.memory();
+      const memBar = (m && m.id === id && m.p > 0) ? memoryHTML(m) : "";
+      const dc = E.decipherCost(id);
+      const canApply = lvl >= 1 && it.r && E.gesteOK(it.r[0]);
+      let acts = "";
+      if (canApply || dc !== null) {
+        acts = '<div class="row wrap" style="gap:6px;margin-top:6px">';
+        if (canApply) {
+          acts += '<button class="btn small ghost" data-apply-hint="' + id + '" title="Sélectionner l’action et poser les indices connus sur l’établi">Poser l’indice sur l’établi</button>';
+        }
+        if (dc !== null) {
+          const okIntu = (st.intu || 0) >= dc;
+          const rev = ["Révéler l’action", "Révéler une ressource", "Révéler la recette entière"][lvl] || "Déchiffrer";
+          acts += '<button class="btn small' + (okIntu ? "" : " ghost") + '" data-goal-decipher="' + id + '"' + (okIntu ? "" : " disabled") + ' title="' + rev + ' contre ' + dc + ' Intuition">✨ Déchiffrer · ' + dc + ' ✨</button>';
+        }
+        acts += '</div>';
+      }
+      return '<div class="card acc goal-hint"><div class="small"><span class="step-badge">✦ Nouvelle recette' + (nIng ? ' · ' + nIng + ' ressource' + (nIng > 1 ? 's' : '') : '') + '</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
         (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
-        (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") + "</div>";
+        (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
+        memBar + acts + "</div>";
     }
     function viewAtelier() {
       const st = S();

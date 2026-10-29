@@ -54,7 +54,10 @@
       });
       E.on("passdone", (o) => {
         const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
-        fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève", tier: 2 });
+        const zn = zoneName(o.z);
+        const resList = (E.ZONES[o.z] && E.ZONES[o.z].res || []).map((r) => I[r] && I[r].n.toLowerCase()).filter(Boolean).slice(0, 3).join(", ");
+        const sub = "+" + o.tr + " ✦ Traces à ta prochaine relève" + (resList ? " · " + resList : "");
+        fete({ ic: "🧭", kick: "Passage franchi · " + D.PASSAGES[o.z].n, title: zn, sub, tier: 2 });
         if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
           "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
@@ -63,9 +66,15 @@
       E.on("zone", (z) => {
         U.zone = z;
         // la nouvelle terre s’allume dans le Domaine
-        setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) { el.classList.add("born"); setTimeout(() => el.classList.remove("born"), 1800); } }, 320);
+        setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) { el.classList.add("born"); setTimeout(() => el.classList.remove("born"), 2400); } }, 320);
         // la découverte qui ouvre cette terre le dit déjà (« Débloque : … ») : pas de second message
-        setTimeout(() => { if (Date.now() - (U.lastDiscover || 0) > 1500) toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans le Domaine."); }, 80);
+        setTimeout(() => {
+          if (Date.now() - (U.lastDiscover || 0) > 1500) {
+            const st = S(), cur = st.stats && st.stats.splits && st.stats.splits[z], prev = st.meta && st.meta.lastSplits && st.meta.lastSplits[z];
+            const pace = cur > 0 && prev > cur + 5 ? " <b>(×" + String(Math.round((prev / cur) * 10) / 10).replace(".", ",") + " plus vite qu’au cycle précédent)</b>" : "";
+            toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans le Domaine." + pace);
+          }
+        }, 80);
         badge("carte");
         setTimeout(() => { if (U.tab === "domaine") Dom.focusZone(z); else U.domOpen = z; }, 50);
       });
@@ -425,6 +434,45 @@
           A.click(); render(true); return;
         }
         if ((b = t.closest("[data-g]"))) { U.geste = b.dataset.g; A.click(); U.last = null; render(true); return; }
+        if ((b = t.closest("[data-apply-hint]"))) {
+          const id = b.dataset.applyHint, it = I[id], lvl = S().hints[id] || 0;
+          if (it && it.r && lvl >= 1 && E.gesteOK(it.r[0])) {
+            U.geste = it.r[0];
+            if (lvl >= 2) {
+              const big = mainIngredient(id);
+              U.slots = [big || null, null, null];
+            }
+            if (typeof E.equipmentChoices === "function" && S().flags) {
+              const c = E.equipmentChoices(id).find((x) => x.ready);
+              if (c) {
+                const wb = S().flags.equipmentBench || (S().flags.equipmentBench = { place: "etabli", eq: "percuteur_pierre", mode: "tailler", slots: [] });
+                wb.place = E.workplaceFor(c.equipment);
+                wb.eq = c.equipment;
+                wb.mode = c.mode;
+                if (lvl >= 2) {
+                  const big = mainIngredient(id);
+                  wb.slots = big ? [big] : [];
+                }
+              }
+            }
+            U.last = null;
+            A.click();
+            toast(lvl >= 2 ? "💭 Action et ressource posées sur l’établi." : "💭 Action sélectionnée sur l’établi.");
+            render(true);
+          }
+          return;
+        }
+        if ((b = t.closest("[data-goal-decipher]"))) {
+          const id = b.dataset.goalDecipher;
+          const r = E.decipher(id);
+          if (r && r.ok) {
+            if (r.lvl >= 3) { A.discover(); toast("✨ Recette déchiffrée : <b>" + esc(I[id].n) + "</b> !"); }
+            else { A.click(); toast(r.lvl === 1 ? "💭 Indice révélé : l’action est connue." : "💭 Indice révélé : une ressource est connue."); }
+            save();
+            render(true);
+          }
+          return;
+        }
         if ((b = t.closest("[data-lock]"))) { toast("Action verrouillée. Station nécessaire : feu, enclume, creuset…"); return; }
         if ((b = t.closest("[data-slot]"))) { const i = Number(b.dataset.slot); if (U.slots[i]) { U.slots[i] = null; A.click(); render(true); } else toast("Touche une ressource ci-dessous pour la poser ici."); return; }
         if ((b = t.closest("[data-qty]"))) { S().flags.carnetQty = b.dataset.qty === "max" ? "max" : Number(b.dataset.qty); A.click(); render(true); return; }

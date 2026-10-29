@@ -1630,12 +1630,23 @@ h2 + .stamp { margin: -4px 0 8px; }
 .mbn { max-width: 100%; overflow-wrap: anywhere; } .mchain { max-width: 100%; }
 /* ===== 0.10 : la relève expliquée, et ce qui vient de s’allumer ===== */
 .chip.born, .age.born { animation: born 1.6s ease-out; }
-.dom-terre.born { animation: land-born 1.8s ease-out; }
+.dom-terre.born { animation: land-born 2.4s ease-out; }
 @keyframes land-born {
-  0% { box-shadow: inset 0 0 0 2px transparent; }
-  30% { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--acc) 65%, transparent); }
-  100% { box-shadow: inset 0 0 0 2px transparent; }
+  0% { box-shadow: inset 0 0 0 2px transparent, 0 0 0 0 transparent; transform: scale(0.99); }
+  25% { box-shadow: inset 0 0 0 2.5px var(--acc), 0 0 22px color-mix(in srgb, var(--acc) 45%, transparent); transform: scale(1.008); }
+  65% { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--acc) 70%, transparent), 0 0 12px color-mix(in srgb, var(--acc) 25%, transparent); transform: none; }
+  100% { box-shadow: inset 0 0 0 2px transparent, 0 0 0 0 transparent; transform: none; }
 }
+.cycle-mirror { margin: 10px 0; padding: 10px 12px; border-left: 3px solid var(--acc); }
+.cycle-mirror .cm-list { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; font-size: 13px; }
+.cycle-mirror .cm-row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; padding: 2px 0; border-bottom: 1px dashed var(--line); }
+.cycle-mirror .cm-row:last-child { border-bottom: 0; }
+.cycle-mirror .cm-zone { font-weight: 600; color: var(--text); }
+.cycle-mirror .cm-val { color: var(--muted); text-align: right; }
+.cycle-mirror .cm-val b { color: var(--text); }
+.cycle-mirror .cm-val .good { color: var(--good); font-weight: 600; }
+.cycle-mirror .badge-rec { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: color-mix(in srgb, var(--intu) 20%, var(--panel)); color: var(--intu); border: 1px solid color-mix(in srgb, var(--intu) 40%, transparent); }
+.ruin-echo { font-style: italic; margin-top: 2px; line-height: 1.35; }
 .rel-cols { margin: 10px 0 6px; }
 .rel-h { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 10px 0 2px; }
 .rel-list { list-style: none; margin: 0; padding: 0; font-size: 13px; }

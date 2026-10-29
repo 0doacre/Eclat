@@ -6,12 +6,52 @@
 
   function create(api) {
     const {
-      E, A, D, U, esc, fmt, fmtNum, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal,
-      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto
+      E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, zoneName, toast, vibe, openModal, closeModal, swapModal, simpleModal,
+      render, save, setTab, pushBackup, recitInline, loreHTML, uiSigne, ornementHTML, playNote, Tuto, applyLargeText
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
+
+    function fmtDur(s) {
+      if (typeof fmtTime === "function") return fmtTime(s);
+      s = Math.max(0, Math.round(s || 0));
+      if (s < 60) return s + " s";
+      const m = Math.floor(s / 60), r = s % 60;
+      if (m < 60) return m + " min" + (r ? " " + r + " s" : "");
+      const h = Math.floor(m / 60), rm = m % 60;
+      return h + " h" + (rm ? " " + rm + " min" : "");
+    }
+    function cycleMirrorHTML() {
+      if (typeof E.cycleMirror !== "function") return "";
+      const cm = E.cycleMirror();
+      if (!cm || !cm.rows || !cm.rows.length) return "";
+      const shown = cm.rows.filter((r) => r.cur > 0 || r.prev > 0);
+      if (!shown.length) return "";
+      const title = cm.isJustWoken
+        ? "⏱️ Bilan du Semeur " + (cm.cycle + 6)
+        : "⏱️ Miroir du cycle · Semeur " + (cm.cycle + 6);
+      const items = shown.map((r) => {
+        const curTxt = r.cur > 0 ? "<b>" + esc(fmtDur(r.cur)) + "</b>" : '<span class="muted">non franchi</span>';
+        const cmp = [];
+        if (r.prev > 0 && r.cur > 0) {
+          const diff = r.prev - r.cur;
+          if (diff > 5) {
+            const mult = r.speedup >= 1.2 ? " (×" + String(r.speedup).replace(".", ",") + ")" : "";
+            cmp.push('<span class="good">−' + esc(fmtDur(diff)) + mult + " vs cycle précédent</span>");
+          } else if (diff < -5) {
+            cmp.push('<span class="muted">cycle précédent : ' + esc(fmtDur(r.prev)) + "</span>");
+          } else {
+            cmp.push('<span class="muted">même rythme (' + esc(fmtDur(r.prev)) + ")</span>");
+          }
+        } else if (r.prev > 0 && !r.cur) {
+          cmp.push('<span class="muted">cycle précédent : ' + esc(fmtDur(r.prev)) + "</span>");
+        }
+        if (r.isRecord) cmp.push('<span class="badge-rec">★ Record</span>');
+        return '<div class="cm-row"><span class="cm-zone">' + esc(r.n) + '</span><span class="cm-val">' + curTxt + (cmp.length ? " · " + cmp.join(" ") : "") + "</span></div>";
+      }).join("");
+      return '<div class="card cycle-mirror"><div class="small"><b>' + title + '</b></div><div class="cm-list">' + items + "</div></div>";
+    }
 
     function intro(onDone) {
       const st = S();
@@ -21,17 +61,30 @@
       const lines = linesRaw.map((l) => (E.interpolate ? E.interpolate(l) : l));
       // en tête des éveils, un signe ; à la fin de la scène, l’ornement (s’il est dans les données)
       const lieu = isLibere ? "Le réveil libre" : (st.cycle > 1 ? "Les éveils" : "Le premier réveil");
+      const firstWake = !isLibere && st.cycle === 1 && !st.stats.crafts;
       const html = () => '<div class="lore" style="padding:10px 0">' +
         (!isLibere && st.cycle > 1 && uiSigne("eveil") ? '<p class="scene-signe" style="opacity:0;animation:fadeup 1.2s 0.1s forwards">' + uiSigne("eveil", lieu) + "</p>" : "") +
         lines.map((l, i) => '<p style="opacity:0;animation:fadeup 1.2s ' + (0.3 + i * 1.1) + 's forwards">' + recitInline(l, lieu) + "</p>").join("") +
         (!isLibere ? ornementHTML(lieu, 0.3 + lines.length * 1.1) : "") +
         '</div><div class="acts"><button class="btn pri wide" data-m="close">Ouvrir les yeux</button>' +
-        (!isLibere && st.cycle === 1 && !st.stats.crafts ? '<button class="btn ghost wide" data-m="sansguide" title="Jouer sans les bulles d’explication (réactivable dans le Menu)">Sans guide</button>' : "") + "</div>";
+        (firstWake ? '<button class="btn ghost wide" data-m="largetext" title="Agrandir les textes de tout le jeu pour une lecture plus confortable (modifiable dans le Menu)">Aa Grand texte : ' + (st.settings && st.settings.largeText ? "Activé" : "Désactivé") + '</button>' : "") +
+        (firstWake ? '<button class="btn ghost wide" data-m="sansguide" title="Jouer sans les bulles d’explication (réactivable dans le Menu)">Sans guide</button>' : "") + "</div>";
       openModal({
         persistent: true,
         html: html(),
         refresh: html,
-        on: { sansguide: () => { Tuto.setEnabled(false); } },
+        on: {
+          largetext: (b) => {
+            st.settings = st.settings || {};
+            st.settings.largeText = !st.settings.largeText;
+            if (typeof applyLargeText === "function") applyLargeText();
+            else if (U && typeof U.applyLargeText === "function") U.applyLargeText();
+            if (b) b.textContent = "Aa Grand texte : " + (st.settings.largeText ? "Activé" : "Désactivé");
+            save();
+            return true;
+          },
+          sansguide: () => { Tuto.setEnabled(false); }
+        },
         onClose: () => {
           st.introSeen = true; st.flags.news = null; st.flags.ver = D.VERSION; save(); A.init();
           if (st.flags.capsuleMsg) {
@@ -206,6 +259,7 @@
           (isLibere
             ? "<p>Tu gagnes <b>" + totalGain + " ✦ Trace" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg
             : leftHTML(totalGain, ecus, ecusTr)) +
+          cycleMirrorHTML() +
           '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (Menu → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
           E.territoiresTransmissionHTML(esc) +
           releveExtrasHTML() +
@@ -299,6 +353,7 @@
       const branches = MEM_BRANCHES.map((b) => ({ n: b.n, ids: b.ids.filter((id) => D.MEMOIRE.some((x) => x.id === id)) }));
       if (D.TRANSCENDANCE && D.TRANSCENDANCE.length) branches.push({ n: "Les résonances", ids: D.TRANSCENDANCE.map((x) => x.id), inf: true });
       if (!memNode(U.memSel)) U.memSel = null;
+      if (!U.memSel && E.achatsOuverts() && E.memLvl("recolte") === 0 && m.traces >= (E.memCost("recolte") || 0)) U.memSel = "recolte";
       const info = (id) => {
         const x = memNode(id), inf = (D.TRANSCENDANCE || []).some((t) => t.id === id);
         const l = inf ? E.transLvl(id) : E.memLvl(id), c = inf ? E.transCost(id) : E.memCost(id), max = !inf && c === undefined;
@@ -319,7 +374,8 @@
       if (!id) return h + '<p class="tiny muted center">Sélectionne une amélioration pour consulter ses effets.</p>';
       const n = info(id), x = n.x;
       const now = memDesc(x, n.l).replace(/\.$/, ""), next = n.max ? "" : memDesc(x, n.l + 1).replace(/\.$/, "");
-      h += '<div class="mem sel"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + (n.inf ? "Niveau " + n.l : n.l + "/" + x.cost.length) + "</span></div>" +
+      const tip1 = id === "recolte" && E.achatsOuverts() && n.l === 0 ? ' <span class="tiny good">✦ Conseillé au 1er éveil</span>' : "";
+      h += '<div class="mem sel"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + (n.inf ? "Niveau " + n.l : n.l + "/" + x.cost.length) + "</span>" + tip1 + "</div>" +
         '<div class="tiny muted">' + (n.l ? esc(now) : "") + (n.l && !n.max ? " → " : "") + (n.max ? "" : esc(next)) + "</div>" +
         (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : "") + "</div>" +
         (n.max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (n.ok ? " pri" : " nope") + (n.soon ? " soon" : "") + '" data-m="' + (n.inf ? "buytrans" : "buy") + '" data-id="' + id + '">' + fmt(n.c) + " ✦" + (n.soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
@@ -336,10 +392,16 @@
       h += E.achatsOuverts()
         ? '<p class="small mem-achats">C’est le moment de dépenser tes Traces. Les achats se ferment quand tu touches « Terminé », ou au premier passage franchi. Les Traces non dépensées attendent la prochaine relève.</p>'
         : '<p class="small muted mem-achats">Les achats sont fermés en cours de partie. Ils rouvrent au réveil du prochain Semeur, après la relève. Tu peux consulter tes améliorations ici.</p>';
+      const catchingUp = E.isCatchingUp && E.isCatchingUp();
+      const catchUpNote = catchingUp && m.maxAge > 0
+        ? '<p class="tiny good" style="margin:6px 0 0">✦ Mémoire fraîche active : façonnage et passages déjà connus accélérés jusqu’à l’Âge ' + m.maxAge + '.</p>'
+        : "";
       h += '<div class="card memrel">' + (can
-        ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn pri grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
+        ? '<div class="row between"><span class="small">Passer le relais maintenant</span><b class="mgain">+' + gain + " ✦</b></div>" + '<div class="row" style="margin-top:8px;align-items:center"><button class="btn' + (catchingUp ? "" : " pri") + ' grow" data-m="releve">Passer le relais ✦</button>' + releveBtnSigne() + "</div>"
         : '<p class="small muted">Franchis un passage vers une nouvelle terre (🚧) pour pouvoir passer le relais.</p>') +
+        catchUpNote +
         (E.passPending().length ? '<p class="tiny muted">Un passage en cours rapporterait +' + E.passPending().map((z) => D.PASSAGES[z].tr).join(", +") + " ✦ de plus.</p>" : nextPassHTML()) + "</div>";
+      h += cycleMirrorHTML();
       h += memArbreHTML();
       h += E.territoiresTransmissionHTML(esc);
       h += '<details class="mem-liste"><summary>Voir en liste</summary>';
@@ -347,7 +409,8 @@
         const l = E.memLvl(x.id), c = E.memCost(x.id), max = c === undefined;
         const now = memDesc(x, l), next = max ? "" : memDesc(x, l + 1);
         const soon = !max && can && m.traces + gain >= c && (!E.achatsOuverts() || m.traces < c); // possible juste après la relève
-        return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span></div>" +
+        const tip1 = x.id === "recolte" && E.achatsOuverts() && l === 0 ? ' <span class="tiny good">✦ Conseillé au 1er éveil</span>' : "";
+        return '<div class="mem' + (l ? " on" : "") + '"><span class="mic">' + x.ic + '</span><div class="grow"><div class="small"><b>' + esc(x.n) + '</b> <span class="tiny muted">' + l + "/" + x.cost.length + "</span>" + tip1 + "</div>" +
           '<div class="tiny muted">' + (l ? esc(now) : "") + (l && !max ? " → " : "") + (max ? "" : esc(next)) + "</div>" +
           (x.next ? '<div class="tiny dim">S’applique au prochain Semeur, après la relève.</div>' : (max ? "" : (memPreview(x) ? '<div class="tiny dim">' + memPreview(x) + "</div>" : ""))) + "</div>" +
           (max ? '<span class="tiny muted">max</span>' : '<button class="btn small' + (E.achatsOuverts() && m.traces >= c ? " pri" : " nope") + (soon ? " soon" : "") + '" data-m="buy" data-id="' + x.id + '">' + c + " ✦" + (soon ? '<small class="tiny">après la relève</small>' : "") + "</button>") + "</div>";
@@ -413,7 +476,7 @@
       if (ech) keep.push("<b>" + ech + "</b> Écho" + (ech > 1 ? "s" : "") + " : +" + ech * 50 + " % de récolte et de production");
       const reset = ["Ta Réserve"];
       if (n("ext")) reset.push("Tes <b>" + n("ext") + "</b> extracteur" + (n("ext") > 1 ? "s" : "") + " : ils restent en ruine, à réparer pour une fraction de leur coût");
-      if (n("mach")) reset.push("Tes <b>" + n("mach") + "</b> machine" + (n("mach") > 1 ? "s" : ""));
+      if (n("mach")) reset.push("Tes <b>" + n("mach") + "</b> machine" + (n("mach") > 1 ? "s" : "") + " : elles restent aussi en ruine");
       reset.push("Tes terres : tu repars de la Lisière");
       if (paid.length) reset.push("Le passage vers " + paid.map((z) => esc(zoneName(z))).join(" et ") + ", payé à " + Math.floor((E.passInfo(paid[0]).frac || 0) * 100) + " %");
       if (st.hand.q.length) reset.push("Tes <b>" + st.hand.q.length + "</b> commande" + (st.hand.q.length > 1 ? "s" : "") + " en cours");
@@ -519,7 +582,17 @@
             swapModal(Object.assign(o, { html: memHTML() }));
             return true;
           },
-          fin: () => { E.fermerAchats(); save(); return false; },
+          fin: (btn) => {
+            const m = S().meta;
+            const zeroBought = Object.values(m.mem || {}).every((v) => !v);
+            const canAfford = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && m.traces >= c; });
+            if (E.achatsOuverts() && zeroBought && canAfford && !(btn && btn.dataset && btn.dataset.confirm === "1")) {
+              if (btn && btn.dataset) btn.dataset.confirm = "1";
+              toast("Tu peux déjà acheter une amélioration (ex. Mains calleuses). Touche à nouveau « Terminé » si tu préfères garder tes Traces.", { key: "mem_fin" });
+              return true;
+            }
+            E.fermerAchats(); save(); return false;
+          },
           dons: () => { setTimeout(() => openDons(), 80); },
           releve: () => { setTimeout(confirmCycle, 80); }
         }
@@ -610,7 +683,10 @@
       const canBuyHint = Object.keys(D.ENDINGS || {}).some((k) => !((m.endings || {})[k]) && !E.hasEndingHint(k) && pot >= (D.HINT_ENDING_COST || 75) && Object.keys(D.PROJECTS).some((p) => D.PROJECTS[p].end === k && E.projVisible(p)));
       const hasPurchase = canBuyBase || canBuyTrans || canBuyHint;
 
-      b.classList.toggle("ready", hasPurchase && (can && gain > 0 || m.traces >= 2));
+      const suggest = E.achatsOuverts()
+        ? m.traces > 0
+        : Boolean(can && gain > 0 && E.shouldSuggestReleve && E.shouldSuggestReleve());
+      b.classList.toggle("ready", Boolean(hasPurchase && suggest));
     }
 
     return { intro, openStillnessScene, showEnding, confirmCycle, donsRepere, reveilRepere, openDons, openMemoire, openForcedReleve, memChip };
