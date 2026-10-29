@@ -1,0 +1,15 @@
+"use strict";
+const assert=require('assert/strict'),D=require('../js/data'),Core=require('../js/engine'),M=require('../js/monde'),W=require('../js/world-layout');
+let E=Core.createEngine(),m=M.model(E,D);
+assert.deepEqual(m.zones,['lisiere']);assert.deepEqual(m.nodes.filter(n=>n.kind==='resource').map(n=>n.res).sort(),['bois','caillou','fibre']);
+assert.deepEqual(m.nodes.filter(n=>n.kind==='place').map(n=>n.id),['chene']);assert.ok(!m.nodes.some(n=>n.z==='plaine'));
+E.state.frags.grotte=true;m=M.model(E,D);const remembered=m.nodes.find(n=>n.id==='grotte');assert.ok(remembered.acquired);assert.equal(remembered.canStart,false);assert.equal(remembered.complete,false);
+const side=E.coteEtat;E.coteEtat=(z,id)=>z==='lisiere'&&id==='ronds'?2:side(z,id);assert.ok(M.model(E,D).nodes.some(n=>n.id==='ronds'&&n.complete&&!n.canStart),'lieu d’à côté achevé');
+E.state.exp.done.lisiere=2;E.state.inv.epieu=1;E.state.made.epieu=1;E.state.pass.plaine={done:false,paid:{}};m=M.model(E,D);assert.ok(m.nodes.some(n=>n.kind==='pass'&&n.target==='plaine'));assert.ok(!m.zones.includes('plaine'));
+E=Core.createEngine();for(const z of D.ZONES){assert.ok(W.regions[z.id]);E.state.zones[z.id]=true;E.state.pass[z.id]={done:true,paid:{}};}for(const id in D.ITEMS){E.state.known[id]=true;E.state.made[id]=1;E.state.inv[id]=1;}E.state.age=14;E.load(E.serialize());m=M.model(E,D);assert.ok(m.zones.length>=10);assert.ok(m.nodes.every(n=>Number.isFinite(n.x)&&Number.isFinite(n.y)));assert.equal(new Set(m.nodes.map(n=>n.key)).size,m.nodes.length);
+const extra={charbon:'lisiere',eau:'riviere',soufre:'collines',galene:'collines',uranium:'mine'};
+for(const n of m.nodes.filter(n=>n.kind==='resource'))assert.ok(E.ZONES[n.z].res.includes(n.res)||extra[n.res]===n.z,'gisement sur sa vraie terre : '+n.res);
+for(const id of Object.keys(extra))assert.ok(m.nodes.some(n=>n.kind==='resource'&&n.res===id&&n.z===extra[id]&&!n.hand),'gisement automatisé conservé : '+id);
+assert.ok(M.area('orbite')[1]<-5000);assert.deepEqual(M.area('lisiere'),W.regions.lisiere.bounds);
+E.state.settings.worldCamera={cycle:1,camera:'camp',view:[400,300,700,700]};E.load(E.serialize());assert.deepEqual(E.state.settings.worldCamera.view,[400,300,700,700]);
+console.log('✓ Monde : progression réelle, mémoire des découvertes, terres tardives, coordonnées, sauvegarde et absence de révélations prématurées.');

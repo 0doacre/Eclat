@@ -156,6 +156,7 @@ const COLLECT = ([sels, aide]) => {
       o.t = Date.now();
       await p.addInitScript((s) => { if (!sessionStorage.getItem("seeded")) { localStorage.setItem("eclat.save.v1", s); sessionStorage.setItem("seeded", "1"); } }, JSON.stringify(o));
     }
+    await p.addInitScript(() => localStorage.setItem("eclat.preview.style", "vivant"));
     await p.goto(URL);
     await p.waitForTimeout(1200);
     await dismiss(p);
@@ -188,6 +189,9 @@ const COLLECT = ([sels, aide]) => {
     await dismiss(p);
 
     await grab("Domaine");
+    if (await clic('[data-world-zone-list]', true)) { await grab("Domaine · terres et cadrage"); await clic('[data-world-close-drawer]', true); }
+    if (await clic('[data-world-panel="gestion"]', true)) { await grab("Domaine · gestion"); }
+
     // le Comptoir : ses onglets et sa boutique
     if (await clic("[data-comptoir]", true)) {
       await p.waitForTimeout(500); await grab("Comptoir");

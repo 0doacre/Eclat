@@ -25,6 +25,13 @@
     /* « Âge de l’Électricité » → « Électricité » */
     const ageShort = (a) => D.AGES[a].n.replace(/^Âge (du |de la |de l’|des |de )?/, "");
 
+    const worldActive = () => !!window.EclatMonde && window.EclatStyleMode === "vivant";
+    const Monde = window.EclatMonde && window.EclatMonde.create({E,D,U,A,esc,fmt,fmtTime,toast,openModal,render,vibe,icon,
+      extSheet,stopHold:()=>up(),legacyView:classicView,legacySig:sig,
+      explore:(z,x)=>api.explore(z,x),pour:(z,b)=>api.pour(z,b),setTab:t=>api.setTab(t)});
+    function view() { return worldActive() ? Monde.html() : classicView(); }
+    function renderWorld(container) { Monde.mount(container); }
+
     /* ------------------------------------------------------------ données */
     function openZones() { return D.ZONES.filter((z) => E.zoneOpen(z.id)).map((z) => z.id); }
     /* un gisement se montre s’il se récolte à la main, s’il est exploité, ou si on connaît de quoi l’exploiter */
@@ -53,7 +60,7 @@
     function zoneRate(z) { return E.zoneDeps(z).reduce((a, d) => a + depRate(z, d.res), 0); }
 
     /* ------------------------------------------------------------ la page */
-    function view() {
+    function classicView() {
       const st = S(), zs = openZones().reverse();
       const dense = U.compact();
       let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
@@ -1131,6 +1138,7 @@
       const n = E.tap(res, z);
       if (!n) return;
       const crit = E.lastCrit;
+      if (worldActive() && Monde.harvest(btn,n,crit)) return;
       A.tap(res); vibe(crit ? [8, 30, 14] : 5);
       const rc = btn.getBoundingClientRect(), x = rc.left + rc.width / 2, y = rc.top + rc.height / 2;
       if (crit) {
@@ -1167,6 +1175,7 @@
     function down(ev) {
       const btn = ev.target.closest("[data-harv]");
       if (!btn) return false;
+      if (ev.button !== 0 || hold) return true;
       ev.preventDefault();
       try { btn.setPointerCapture(ev.pointerId); } catch (e) { /* pas de capture possible */ }
       A.init && A.init();
@@ -1174,7 +1183,7 @@
       if (btn.classList.contains("gis-ic-vivant")) btn.classList.add("holding");
       harvest(btn);
       const h = { id: ev.pointerId, btn };
-      h.tm = setTimeout(function rep() { if (hold !== h) return; harvest(btn); h.tm = setTimeout(rep, 140); }, 380);
+      h.tm = setTimeout(function rep() { if (hold !== h) return; if (!btn.isConnected || U.tab !== "domaine" || document.hidden || U.mcur) { up(); return; } harvest(btn); h.tm = setTimeout(rep, 140); }, 380);
       hold = h;
       return true;
     }
@@ -1351,6 +1360,7 @@
     /* ------------------------------------------------------------ rafraîchir sans redessiner */
     function live(root) {
       if (!root) return;
+      if (worldActive()) Monde.live();
       Decouvertes.live();
       Plaine.live();
       if (U.mcur && U.mcur.repriseLive) U.mcur.repriseLive();
@@ -1383,6 +1393,7 @@
 
     /* une terre précise : on la déplie et on la montre */
     function focusZone(z) {
+      if (worldActive()) { render(true); Monde.focus(z); return; }
       U.domOpen = z;
       render(true);
       setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30);
@@ -1407,7 +1418,8 @@
       ].join("|");
     }
 
-    return { view, live, sig, machSig, click, down, up, focusZone, placeExt, placeMach, extSheet, comptoirSheet, machinesView };
+    document.addEventListener("visibilitychange", () => { if (document.hidden) up(); });
+    return { worldActive,renderWorld,Monde,suspendWorld:()=>{up();if(Monde)Monde.suspend();},view, live, sig, machSig, click, down, up, focusZone, placeExt, placeMach, extSheet, comptoirSheet, machinesView };
   }
 
   window.EclatDomaine = { create };
