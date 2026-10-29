@@ -11,8 +11,9 @@
   const A = window.EclatAudio;
   const Sky = window.EclatSky;
   /* Clé historique conservée : c’est là que vivent les parties en cours. */
-  const SAVE_KEY = CRAFT_PREVIEW ? "eclat.preview.craft.v1" : "eclat.save.v1";
-  const BACKUP_KEY = CRAFT_PREVIEW ? "eclat.preview.craft.backups" : "eclat.backups";
+  const TEST_CONFIG = window.EclatModeTest.config(window.ECLAT_CRAFT_PREVIEW === true, location.href);
+  const SAVE_KEY = TEST_CONFIG.key;
+  const BACKUP_KEY = TEST_CONFIG.backups;
   const MAX_BACKUPS = 5;
   const S = () => E.state;
   const I = D.ITEMS;
@@ -622,7 +623,7 @@
    * n’écrase rien, et un échec d’écriture laisse la partie en mémoire en le disant (barre #saveBar). */
   const Stk = window.EclatStockage.create({
     storage: { getItem: (k) => localStorage.getItem(k), setItem: (k, v) => localStorage.setItem(k, v) },
-    key: SAVE_KEY, lockName:CRAFT_PREVIEW?"eclat-preview-craft":"eclat-partie", liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
+    key: SAVE_KEY, lockName: TEST_CONFIG.lock, liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
   });
   U.peutEcrire = () => Stk.peutEcrire();
   /* l’affichage resserré (Domaine et Carnet) : un seul réglage, dans le menu. Les anciennes parties avaient deux réglages. */
@@ -636,7 +637,7 @@
     let raw = null;
     try { raw = localStorage.getItem(SAVE_KEY); } catch (e) { Stk.lire(null); return "none"; }
     Stk.lire(raw);
-    if (!raw && CRAFT_PREVIEW) {
+    if (!raw && CRAFT_PREVIEW && !TEST_CONFIG.active) {
       try {
         const original=localStorage.getItem("eclat.save.v1");
         if(original){E.load(original);return "ok";}
@@ -741,7 +742,8 @@
     setItem: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* stockage bloqué */ } },
     removeItem: (k) => { try { localStorage.removeItem(k); } catch (e) { /* stockage bloqué */ } }
   };
-  const Cloud = window.EclatCloud.create({ storage: CRAFT_PREVIEW ? {getItem:k=>safeStore.getItem("preview."+k),setItem:(k,v)=>safeStore.setItem("preview."+k,v),removeItem:k=>safeStore.removeItem("preview."+k)} : safeStore, server: () => CRAFT_PREVIEW ? "" : safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
+  const CLOUD_PREFIX = TEST_CONFIG.active ? (CRAFT_PREVIEW ? "test.preview." : "test.") : CRAFT_PREVIEW ? "preview." : "";
+  const Cloud = window.EclatCloud.create({ storage: CLOUD_PREFIX ? {getItem:k=>safeStore.getItem(CLOUD_PREFIX+k),setItem:(k,v)=>safeStore.setItem(CLOUD_PREFIX+k,v),removeItem:k=>safeStore.removeItem(CLOUD_PREFIX+k)} : safeStore, server: () => TEST_CONFIG.active || CRAFT_PREVIEW ? "" : safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
   U.sync = { busy: false, conflict: null, err: null };
   /* remplace le contenu de la fenêtre ouverte (ou en ouvre une) */
   function swapModal(o) {
@@ -1269,7 +1271,9 @@
   /* le menu, les sauvegardes et le compte en ligne */
   /* le jeu dans l’appareil : le bouton Retour, l’installation, le titre, l’écran allumé, le clavier (js/appareil.js) */
   const App = window.EclatAppareil.create({ E, U, toast, closeModal, setTab, tabVisible: (t) => tabAvailable(t) });
+  const TestMode = window.EclatModeTest.create({E, D, config: TEST_CONFIG, esc, openModal, closeModal, save, render, setTab, canWrite: () => !U.saveLocked && Stk.peutEcrire()});
   const Cpt = window.EclatCompte.create({
+    openTestMode: TestMode.open,
     E, ENGINE, A, D, U, Cloud, Tuto, esc, fmt, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
     backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
   });
@@ -1375,8 +1379,8 @@
     }, 10000);
     setupSW();
     App.demarrer();
-    cloudTimers();
-    setTimeout(cloudCheck, 1500);
+    TestMode.mount();
+    if (!TEST_CONFIG.active) { cloudTimers(); setTimeout(cloudCheck, 1500); }
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
     U.itemPill = itemPill;
