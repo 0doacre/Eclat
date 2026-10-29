@@ -26,9 +26,9 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "Atlas",
+  "label": "Carnet",
   "repere": "button#atlasToggle.icon-btn",
-  "explique": "info-bulle : Style Atlas actif — toucher pour Vivant ; lecteur d’écran : Activer le style Vivant immersif",
+  "explique": "info-bulle : Carnet du Semeur actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique",
   "tag": "button"
  },
  {
@@ -50,73 +50,65 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "OBJECTIF Manche ▾",
-  "repere": "button[data-goalt=\"\"].ghead",
-  "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "NOUVELLE RECETTE « Une branche bien droite, écorcée au caillou, tient bien en main. »",
-  "repere": "div[data-goto=\"manche\"].grow",
-  "explique": "guide (.goal-card)",
-  "tag": "div"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "Atelier",
-  "repere": "button[data-gotab=\"atelier\"].btn",
-  "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "Explorer · Le Grand Chêne",
-  "repere": "button[data-exp=\"lisiere\"].btn",
-  "explique": "info-bulle : Lancer cette exploration : elle avance toute seule",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "Maîtrise · 0 % ?",
-  "repere": "summary",
-  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
-  "tag": "summary"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "?",
-  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
-  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
+  "label": "Le camp",
+  "repere": "button#mw-camp[data-world-camera=\"camp\"].mw-marker.mw-camp-label",
+  "explique": "info-bulle : Se rapprocher : Le camp",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Domaine",
   "label": "(sans mot)",
-  "repere": "button[data-harv=\"lisiere:bois\"].gis-ic.hand",
-  "explique": "lecteur d’écran : Récolter : Bois",
+  "repere": "button[data-harv=\"lisiere:bois\"].mw-gather",
+  "explique": "info-bulle : Bois · maintenir pour récolter ; lecteur d’écran : Récolter Bois · 0 en réserve",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "Bois 🖐️ à la main Tu en as 0",
-  "repere": "button[data-gsheet=\"lisiere:bois\"].gis-body",
-  "explique": "lecteur d’écran : Gisement : Bois",
+  "label": "+",
+  "repere": "button[data-world-manage=\"lisiere:bois\"].mw-manage",
+  "explique": "info-bulle : Installer ou améliorer les extracteurs : Bois ; lecteur d’écran : Gérer les extracteurs : Bois ; guide ([data-world-manage=\"lisiere:bois\"], [data-xadd=\"lisiere:bois\"])",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "Récolter",
-  "repere": "button[data-hloop=\"lisiere:bois\"].mini.harvest",
-  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Bois ; guide ([data-hloop=\"lisiere:bois\"])",
+  "label": "◇",
+  "repere": "button#mw-p-lisiere-0[data-world-place=\"p:lisiere:0\"].mw-marker.mw-place-hit",
+  "explique": "info-bulle : Le Grand Chêne ; lecteur d’écran : Le Grand Chêne",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "◇",
+  "repere": "button[data-world-goal=\"\"]",
+  "explique": "info-bulle : Voir l’objectif et retrouver le prochain lieu ; lecteur d’écran : Objectif et prochaine trace",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "⌘",
+  "repere": "button[data-world-zone-list=\"\"]",
+  "explique": "info-bulle : Choisir une terre connue et régler le cadrage ; lecteur d’écran : Terres connues et cadrage",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "⌂",
+  "repere": "button[data-world-camera=\"camp\"]",
+  "explique": "info-bulle : Revenir au camp ; lecteur d’écran : Revenir au camp",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "⚒",
+  "repere": "button[data-world-panel=\"gestion\"]",
+  "explique": "info-bulle : Installations, ruines, Comptoir et Grands Œuvres ; lecteur d’écran : Gestion du Domaine",
   "tag": "button"
  },
  {
@@ -149,6 +141,110 @@
   "label": "Journal",
   "repere": "button[data-tab=\"journal\"].born",
   "explique": "info-bulle : Ce que tu as trouvé et compris ; guide (#tabs [data-tab=\"journal\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · terres et cadrage",
+  "label": "(sans mot)",
+  "repere": "button[data-world-close-drawer=\"\"]",
+  "explique": "info-bulle : Fermer les détails ; lecteur d’écran : Fermer les détails",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · terres et cadrage",
+  "label": "Vue d’ensemble ↗",
+  "repere": "button[data-world-camera=\"all\"].btn.mw-zone-link",
+  "explique": "info-bulle : Voir l’ensemble des terres connues",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "Illustrations",
+  "repere": "button[data-world-pages=\"\"].btn",
+  "explique": "info-bulle : Consulter les illustrations découvertes",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "Vue d’ensemble",
+  "repere": "button[data-world-camera=\"all\"].btn",
+  "explique": "info-bulle : Voir les terres connues",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "+",
+  "repere": "button[data-world-zoom=\"in\"].btn",
+  "explique": "info-bulle : Se rapprocher ; lecteur d’écran : Se rapprocher",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "📜 OBJECTIF Manche ▾",
+  "repere": "button[data-goalt=\"\"].ghead",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "Atelier",
+  "repere": "button[data-gotab=\"atelier\"].btn",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "🧭 Explorer · Le Grand Chêne",
+  "repere": "button[data-exp=\"lisiere\"].btn",
+  "explique": "info-bulle : Lancer cette exploration : elle avance toute seule",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "Maîtrise · 0 % ?",
+  "repere": "summary",
+  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
+  "tag": "summary"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "?",
+  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
+  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "(sans mot)",
+  "repere": "button[data-harv=\"lisiere:bois\"].gis-ic.hand",
+  "explique": "lecteur d’écran : Récolter : Bois",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "Bois 🖐️ à la main Tu en as 0",
+  "repere": "button[data-gsheet=\"lisiere:bois\"].gis-body",
+  "explique": "lecteur d’écran : Gisement : Bois",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine · gestion",
+  "label": "▶ Récolter",
+  "repere": "button[data-hloop=\"lisiere:bois\"].mini.harvest",
+  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Bois ; guide ([data-hloop=\"lisiere:bois\"])",
   "tag": "button"
  },
  {
@@ -213,6 +309,14 @@
   "label": "Récolter du bois",
   "repere": "button[data-hloop=\"lisiere:bois\"].btn",
   "explique": "guide ([data-hloop=\"lisiere:bois\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Atelier",
+  "label": "Déchiffrer · 3",
+  "repere": "button[data-goal-decipher=\"manche\"].btn",
+  "explique": "info-bulle : Révéler l’action contre 3 Intuition",
   "tag": "button"
  },
  {
@@ -362,6 +466,14 @@
  {
   "partie": "neuve",
   "ecran": "Menu ☰",
+  "label": "Reprendre ›",
+  "repere": "button[data-m=\"close\"].btn.wide",
+  "explique": "info-bulle : Fermer le menu et reprendre la partie",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Menu ☰",
   "label": "🎮 Jeu",
   "repere": "button[data-mjump=\"jeu\"].m-nav-tab",
   "explique": "info-bulle : Aller à la section Jeu",
@@ -397,14 +509,6 @@
   "label": "ACTIVÉ",
   "repere": "button[data-m=\"visiteurs\"].btn.sw",
   "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
-  "label": "Auto",
-  "repere": "button[data-m=\"theme\"].btn.m-theme-btn",
-  "explique": "info-bulle : Changer de thème : clair, sombre ou celui de ton appareil",
   "tag": "button"
  },
  {
@@ -461,6 +565,14 @@
   "label": "ACTIVÉ",
   "repere": "button[data-m=\"vibe\"].btn.sw",
   "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Menu ☰",
+  "label": "✎ Mode test",
+  "repere": "button[data-m=\"modeTest\"].btn.m-card-btn",
+  "explique": "info-bulle : Créer une copie locale pour tester librement la progression",
   "tag": "button"
  },
  {
@@ -538,177 +650,9 @@
  {
   "partie": "avancée",
   "ecran": "Aide",
-  "label": "🎮 Jeu",
-  "repere": "button[data-mjump=\"jeu\"].m-nav-tab",
-  "explique": "info-bulle : Aller à la section Jeu",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Mémoire des mains 1 Traces disponibles",
-  "repere": "button[data-m=\"mem\"].btn.m-card-btn",
-  "explique": "info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "🪙 Le Comptoir Troc & commandes",
-  "repere": "button[data-m=\"comptoir\"].btn.m-card-btn",
-  "explique": "info-bulle : Vendre, acheter et répondre aux demandes du Troqueur",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Revoir",
-  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
-  "explique": "info-bulle : Revoir les explications du guide depuis le début",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"tuto\"].btn.sw",
-  "explique": "info-bulle : Afficher ou masquer les explications du guide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"visiteurs\"].btn.sw",
-  "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Auto",
-  "repere": "button[data-m=\"theme\"].btn.m-theme-btn",
-  "explique": "info-bulle : Changer de thème : clair, sombre ou celui de ton appareil",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"largeText\"].btn.sw",
-  "explique": "info-bulle : Agrandir les textes de tout le jeu",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"compact\"].btn.sw",
-  "explique": "info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"carnet2\"].btn.sw",
-  "explique": "info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"ambiance\"].btn.sw",
-  "explique": "info-bulle : Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"ecran\"].btn.sw",
-  "explique": "info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"sound\"].btn.sw",
-  "explique": "info-bulle : Couper ou remettre la musique et les bruitages",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"vibe\"].btn.sw",
-  "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Sauvegardes",
-  "repere": "button[data-m=\"saves\"].btn.m-card-btn",
-  "explique": "info-bulle : Télécharger ta partie, la recharger ou restaurer une copie",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "État des productions",
-  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
-  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Compte en ligne",
-  "repere": "button[data-m=\"account\"].btn.m-card-btn",
-  "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Comment jouer",
-  "repere": "button[data-m=\"help\"].btn.m-card-btn",
-  "explique": "info-bulle : Les mots du jeu et le rôle de chaque écran",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "📰 Nouveautés",
-  "repere": "button[data-m=\"news\"].btn.m-card-btn",
-  "explique": "info-bulle : Ce qui a changé dans cette version",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Crédits",
-  "repere": "button[data-m=\"credits\"].btn.m-card-btn",
-  "explique": "info-bulle : Les icônes, les polices et la musique",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Recommencer la partie",
-  "repere": "button[data-m=\"reset\"].btn.ghost",
-  "explique": "info-bulle : Effacer ta progression et repartir de zéro",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Aide",
-  "label": "Fermer",
-  "repere": "button[data-m=\"close\"].btn.m-close-btn",
-  "explique": "info-bulle : Fermer le menu et revenir au jeu",
+  "label": "Compris",
+  "repere": "button[data-m=\"close\"].btn",
+  "explique": "fiche Aide",
   "tag": "button"
  },
  {
@@ -722,9 +666,9 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Atlas",
+  "label": "Carnet",
   "repere": "button#atlasToggle.icon-btn",
-  "explique": "info-bulle : Style Atlas actif — toucher pour Vivant ; lecteur d’écran : Activer le style Vivant immersif",
+  "explique": "info-bulle : Carnet du Semeur actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique",
   "tag": "button"
  },
  {
@@ -762,170 +706,82 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "OBJECTIF Régulateur à boules ▾",
-  "repere": "button[data-goalt=\"\"].ghead",
-  "explique": "guide (.goal-card)",
+  "label": "✓",
+  "repere": "button#mw-p-collines-1[data-world-place=\"p:collines:1\"].mw-marker.mw-place-hit",
+  "explique": "info-bulle : Le Sommet ; lecteur d’écran : Le Sommet",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Arbre",
-  "repere": "button[data-arbre-obj=\"\"].gmiles",
-  "explique": "info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Âge de l’Électricité · 0/3 étapes",
-  "repere": "button[data-miles=\"\"].gprog-row",
-  "explique": "info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "NOUVELLE RECETTE « Une bande de bronze enroulée en spirale restitue l'effort quand on la relâche. »",
-  "repere": "div[data-goto=\"ressort\"].grow",
-  "explique": "guide (.goal-card)",
-  "tag": "div"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Atelier",
-  "repere": "button[data-gotab=\"atelier\"].btn",
-  "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Compris",
-  "repere": "button[data-tip=\"tip_site\"].btn.ghost",
-  "explique": "info-bulle : Fermer cette astuce",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Passer le relais (+18 )",
-  "repere": "button[data-m=\"releve\"].btn",
-  "explique": "info-bulle : Voir les gains de Traces et les bonus de la prochaine relève",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Voir : Torche",
-  "repere": "button[data-goto=\"torche\"].btn",
-  "explique": "guide (.dom-regle.gene)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Maîtrise · 80 % ?",
-  "repere": "summary",
-  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
-  "tag": "summary"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "?",
-  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
-  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
+  "label": "◇",
+  "repere": "button#mw-p-collines-2[data-world-place=\"p:collines:2\"].mw-marker.mw-place-hit",
+  "explique": "info-bulle : Un lieu à découvrir ; lecteur d’écran : Un lieu à découvrir",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
   "label": "(sans mot)",
-  "repere": "button[data-harv=\"mine:fer_min\"].gis-ic.hand",
-  "explique": "lecteur d’écran : Récolter : Minerai de fer",
+  "repere": "button[data-harv=\"mine:fer_min\"].mw-gather",
+  "explique": "info-bulle : Minerai de fer · maintenir pour récolter ; lecteur d’écran : Récolter Minerai de fer · 543 en réserve",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Minerai de fer +48/min Tu en as 544 · 1 mine de fer",
-  "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
-  "explique": "lecteur d’écran : Gisement : Minerai de fer",
+  "label": "+",
+  "repere": "button[data-world-manage=\"mine:fer_min\"].mw-manage",
+  "explique": "info-bulle : Installer ou améliorer les extracteurs : Minerai de fer ; lecteur d’écran : Gérer les extracteurs : Minerai de fer",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Récolter",
-  "repere": "button[data-hloop=\"mine:fer_min\"].mini.harvest",
-  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer",
+  "label": "✓",
+  "repere": "button#mw-p-mine-0[data-world-place=\"p:mine:0\"].mw-marker.mw-place-hit",
+  "explique": "info-bulle : Le Filon Profond ; lecteur d’écran : Le Filon Profond",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "+ mine de fer",
-  "repere": "button[data-xadd=\"mine:fer_min\"][data-n=\"1\"].mini.lbl",
-  "explique": "info-bulle : Poser : Mine de fer (débit : 48/min → 96/min) ; lecteur d’écran : Poser : Mine de fer",
+  "label": "◇",
+  "repere": "button#mw-p-mine-1[data-world-place=\"p:mine:1\"].mw-marker.mw-place-hit",
+  "explique": "info-bulle : Un lieu à découvrir ; lecteur d’écran : Un lieu à découvrir",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "3 autre terres · +2,16 k/min en tout voir ▾",
-  "repere": "button[data-dall=\"\"].dom-more",
-  "explique": "info-bulle : Afficher ou replier les autres terres",
+  "label": "◇",
+  "repere": "button[data-world-goal=\"\"]",
+  "explique": "info-bulle : Voir l’objectif et retrouver le prochain lieu ; lecteur d’écran : Objectif et prochaine trace",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "0 machine au travail · 10 au repos · voir ▸",
-  "repere": "button[data-tab2=\"machines\"][data-dmach=\"\"].dom-more.dom-mach-link",
-  "explique": "guide ([data-tab2=\"machines\"])",
+  "label": "⌘",
+  "repere": "button[data-world-zone-list=\"\"]",
+  "explique": "info-bulle : Choisir une terre connue et régler le cadrage ; lecteur d’écran : Terres connues et cadrage",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Ouvrir le Comptoir",
-  "repere": "button[data-comptoir=\"\"].btn",
-  "explique": "guide (#dcomptoir)",
+  "label": "⌂",
+  "repere": "button[data-world-camera=\"camp\"]",
+  "explique": "info-bulle : Revenir au camp ; lecteur d’écran : Revenir au camp",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Supraconducteur 0 / 380",
-  "repere": "div[data-goto=\"supra\"].cost-row",
-  "explique": "info-bulle : Supraconducteur (toucher pour inspecter)",
-  "tag": "div"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Fournir",
-  "repere": "button[data-contrib=\"dyson\"].btn",
-  "explique": "info-bulle : Déposer depuis ta Réserve ce qu’il demande",
+  "label": "⚒",
+  "repere": "button[data-world-panel=\"gestion\"]",
+  "explique": "info-bulle : Installations, ruines, Comptoir et Grands Œuvres ; lecteur d’écran : Gestion du Domaine",
   "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Alimenté",
-  "repere": "button[data-feed=\"dyson\"].btn",
-  "explique": "guide (.dom-oeuvre [data-feed])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine",
-  "label": "Bois+31/min8,73 k",
-  "repere": "div[data-goto=\"bois\"].u-pr",
-  "explique": "info-bulle : Bois (toucher pour inspecter)",
-  "tag": "div"
  },
  {
   "partie": "avancée",
@@ -977,6 +833,206 @@
  },
  {
   "partie": "avancée",
+  "ecran": "Domaine · terres et cadrage",
+  "label": "(sans mot)",
+  "repere": "button[data-world-close-drawer=\"\"]",
+  "explique": "info-bulle : Fermer les détails ; lecteur d’écran : Fermer les détails",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · terres et cadrage",
+  "label": "Vue d’ensemble ↗",
+  "repere": "button[data-world-camera=\"all\"].btn.mw-zone-link",
+  "explique": "info-bulle : Voir l’ensemble des terres connues",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Illustrations",
+  "repere": "button[data-world-pages=\"\"].btn",
+  "explique": "info-bulle : Consulter les illustrations découvertes",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Vue d’ensemble",
+  "repere": "button[data-world-camera=\"all\"].btn",
+  "explique": "info-bulle : Voir les terres connues",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "+",
+  "repere": "button[data-world-zoom=\"in\"].btn",
+  "explique": "info-bulle : Se rapprocher ; lecteur d’écran : Se rapprocher",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "📜 OBJECTIF Régulateur à boules ▾",
+  "repere": "button[data-goalt=\"\"].ghead",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "🌳 Arbre",
+  "repere": "button[data-arbre-obj=\"\"].gmiles",
+  "explique": "info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "🏁 Âge de l’Électricité · 0/3 étapes",
+  "repere": "button[data-miles=\"\"].gprog-row",
+  "explique": "info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Atelier",
+  "repere": "button[data-gotab=\"atelier\"].btn",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Compris",
+  "repere": "button[data-tip=\"tip_site\"].btn.ghost",
+  "explique": "info-bulle : Fermer cette astuce",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Passer le relais (+18 ✦)",
+  "repere": "button[data-m=\"releve\"].btn",
+  "explique": "info-bulle : Voir les gains de Traces et les bonus de la prochaine relève",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Voir : Torche",
+  "repere": "button[data-goto=\"torche\"].btn",
+  "explique": "guide (.dom-regle.gene)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Maîtrise · 80 % ?",
+  "repere": "summary",
+  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
+  "tag": "summary"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "?",
+  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
+  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "(sans mot)",
+  "repere": "button[data-harv=\"mine:fer_min\"].gis-ic.hand",
+  "explique": "lecteur d’écran : Récolter : Minerai de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Minerai de fer +48/min Tu en as 546 · 1 mine de fer",
+  "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
+  "explique": "lecteur d’écran : Gisement : Minerai de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "▶ Récolter",
+  "repere": "button[data-hloop=\"mine:fer_min\"].mini.harvest",
+  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "+ mine de fer",
+  "repere": "button[data-xadd=\"mine:fer_min\"][data-n=\"1\"].mini.lbl",
+  "explique": "info-bulle : Poser : Mine de fer (débit : 48/min → 96/min) ; lecteur d’écran : Poser : Mine de fer",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "3 autre terres · +2,16 k/min en tout voir ▾",
+  "repere": "button[data-dall=\"\"].dom-more",
+  "explique": "info-bulle : Afficher ou replier les autres terres",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "⚙️ 0 machine au travail · 10 au repos · voir ▸",
+  "repere": "button[data-tab2=\"machines\"][data-dmach=\"\"].dom-more.dom-mach-link",
+  "explique": "guide ([data-tab2=\"machines\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Ouvrir le Comptoir",
+  "repere": "button[data-comptoir=\"\"].btn",
+  "explique": "guide (#dcomptoir)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Supraconducteur 0 / 380",
+  "repere": "div[data-goto=\"supra\"].cost-row",
+  "explique": "info-bulle : Supraconducteur (toucher pour inspecter)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Fournir",
+  "repere": "button[data-contrib=\"dyson\"].btn",
+  "explique": "info-bulle : Déposer depuis ta Réserve ce qu’il demande",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Alimenté ✓",
+  "repere": "button[data-feed=\"dyson\"].btn",
+  "explique": "guide (.dom-oeuvre [data-feed])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine · gestion",
+  "label": "Bois+538/min8,77 k",
+  "repere": "div[data-goto=\"bois\"].u-pr",
+  "explique": "info-bulle : Bois (toucher pour inspecter)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Vendre",
   "repere": "button[data-m=\"ctab\"][data-t=\"vendre\"]",
@@ -1010,7 +1066,7 @@
  {
   "partie": "avancée",
   "ecran": "Comptoir",
-  "label": "Minerai de fer · tu en as 544 9,8 écu l’unité",
+  "label": "Minerai de fer · tu en as 546 9,8 écu l’unité",
   "repere": "div[data-goto=\"fer_min\"].comptoir-head",
   "explique": "info-bulle : Minerai de fer (toucher pour inspecter)",
   "tag": "div"
@@ -1037,14 +1093,6 @@
   "label": "La moitié +126",
   "repere": "button[data-m=\"sell\"][data-id=\"bobine\"][data-n=\"10\"].btn.mini",
   "explique": "info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m=\"sell\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Comptoir",
-  "label": "Fermer",
-  "repere": "button[data-m=\"close\"].btn",
-  "explique": "fiche Aide",
   "tag": "button"
  },
  {
@@ -1117,6 +1165,14 @@
   "label": "Machines",
   "repere": "button[data-tab2=\"machines\"]",
   "explique": "info-bulle : Tes machines et ce qu’elles fabriquent ; guide ([data-tab2=\"machines\"])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Atelier",
+  "label": "Déchiffrer · 30",
+  "repere": "button[data-goal-decipher=\"ressort\"].btn.ghost",
+  "explique": "info-bulle : Révéler l’action contre 30 Intuition",
   "tag": "button"
  },
  {
@@ -1250,7 +1306,7 @@
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "8,81 k +810/min Bois",
+  "label": "8,84 k +810/min Bois",
   "repere": "button[data-inv=\"bois\"].inv",
   "explique": "info-bulle : Bois : ouvrir sa fiche ; lecteur d’écran : Bois : ouvrir sa fiche ; guide ([data-inv=\"bois\"])",
   "tag": "button"
@@ -1530,6 +1586,14 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
+  "label": "Bobine de cuivrePIÈCE Lot prêt",
+  "repere": "div[data-goto=\"bobine\"].grow",
+  "explique": "info-bulle : Voir la recette et ses usages",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Carnet",
   "label": "☆",
   "repere": "button[data-pin=\"bobine\"].pinb",
   "explique": "info-bulle : Épingler cette recette en haut de l’Atelier ; lecteur d’écran : Épingler cette recette en haut de l’Atelier ; guide ([data-pin])",
@@ -1548,13 +1612,13 @@
   "ecran": "Carnet",
   "label": "Fabriquer",
   "repere": "button[data-cr=\"bobine\"][data-n=\"1\"][data-lbl=\"Fabriquer\"].btn.make",
-  "explique": "info-bulle : Commander cette quantité, pièces comprises",
+  "explique": "info-bulle : Fabriquer avec les mains et les machines disponibles, pièces intermédiaires comprises",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "(sans mot)",
+  "label": "Détail",
   "repere": "button[data-tree=\"bobine\"][data-n=\"1\"].btn.ghost",
   "explique": "info-bulle : Les étapes de cette commande, et ce qu’il manque ; lecteur d’écran : Détail du lot",
   "tag": "button"
@@ -1570,7 +1634,7 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "🌿",
+  "label": "Arbre",
   "repere": "button[data-situer=\"bobine\"].btn.ghost",
   "explique": "info-bulle : Situer dans l’Arbre ; lecteur d’écran : Situer dans l’Arbre",
   "tag": "button"
@@ -1733,6 +1797,190 @@
   "label": "Grands Œuvres",
   "repere": "button[data-ct=\"oeuvres\"]",
   "explique": "info-bulle : Les Grands Œuvres, ce qu’il reste à bâtir",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Reprendre ›",
+  "repere": "button[data-m=\"close\"].btn.wide",
+  "explique": "info-bulle : Fermer le menu et reprendre la partie",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "🎮 Jeu",
+  "repere": "button[data-mjump=\"jeu\"].m-nav-tab",
+  "explique": "info-bulle : Aller à la section Jeu",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Mémoire des mains 1 Traces disponibles",
+  "repere": "button[data-m=\"mem\"].btn.m-card-btn",
+  "explique": "info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "🪙 Le Comptoir Troc & commandes",
+  "repere": "button[data-m=\"comptoir\"].btn.m-card-btn",
+  "explique": "info-bulle : Vendre, acheter et répondre aux demandes du Troqueur",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Revoir",
+  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
+  "explique": "info-bulle : Revoir les explications du guide depuis le début",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"tuto\"].btn.sw",
+  "explique": "info-bulle : Afficher ou masquer les explications du guide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"visiteurs\"].btn.sw",
+  "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"largeText\"].btn.sw",
+  "explique": "info-bulle : Agrandir les textes de tout le jeu",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"compact\"].btn.sw",
+  "explique": "info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"carnet2\"].btn.sw",
+  "explique": "info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"ambiance\"].btn.sw",
+  "explique": "info-bulle : Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"ecran\"].btn.sw",
+  "explique": "info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"sound\"].btn.sw",
+  "explique": "info-bulle : Couper ou remettre la musique et les bruitages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"vibe\"].btn.sw",
+  "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "✎ Mode test",
+  "repere": "button[data-m=\"modeTest\"].btn.m-card-btn",
+  "explique": "info-bulle : Créer une copie locale pour tester librement la progression",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Sauvegardes",
+  "repere": "button[data-m=\"saves\"].btn.m-card-btn",
+  "explique": "info-bulle : Télécharger ta partie, la recharger ou restaurer une copie",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "État des productions",
+  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
+  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Compte en ligne",
+  "repere": "button[data-m=\"account\"].btn.m-card-btn",
+  "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Comment jouer",
+  "repere": "button[data-m=\"help\"].btn.m-card-btn",
+  "explique": "info-bulle : Les mots du jeu et le rôle de chaque écran",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "📰 Nouveautés",
+  "repere": "button[data-m=\"news\"].btn.m-card-btn",
+  "explique": "info-bulle : Ce qui a changé dans cette version",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Crédits",
+  "repere": "button[data-m=\"credits\"].btn.m-card-btn",
+  "explique": "info-bulle : Les icônes, les polices et la musique",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Recommencer la partie",
+  "repere": "button[data-m=\"reset\"].btn.ghost",
+  "explique": "info-bulle : Effacer ta progression et repartir de zéro",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Menu ☰",
+  "label": "Fermer",
+  "repere": "button[data-m=\"close\"].btn.m-close-btn",
+  "explique": "info-bulle : Fermer le menu et revenir au jeu",
   "tag": "button"
  },
  {
