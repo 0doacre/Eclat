@@ -14,6 +14,7 @@
     const recitInline = api.recitInline || ((t) => esc(t));
     const itemPill = api.itemPill || ((id) => esc(id));
     const I = D.ITEMS;
+    const Decouvertes = window.EclatDecouvertesCarnet.create({ E, A, esc, openModal });
     const S = () => E.state;
     const perTime = perMin;
     const plural = (n, w) => n + " " + w + (n > 1 ? "s" : "");
@@ -148,7 +149,8 @@
         h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>Les terres traversées</span><span>Terre ' + number + '</span></div>' +
           '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' +
           '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
-          (scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + '</figcaption></figure>' : '') + '</div>';
+          (z === "lisiere" ? Decouvertes.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + '</figcaption></figure>' : '') + '</div>';
+        if (z === "lisiere") h += Decouvertes.studyHTML();
       } else {
         h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
       }
@@ -1037,6 +1039,7 @@
 
     /* ------------------------------------------------------------ clics */
     function click(t, ev) {
+      if (Decouvertes.click(t)) return true;
       let b;
       if (t.closest("[data-reprise]")) { repriseSheet(); return true; }
       if ((b = t.closest("[data-terre-maitrise] > summary"))) {
@@ -1139,6 +1142,7 @@
     /* ------------------------------------------------------------ rafraîchir sans redessiner */
     function live(root) {
       if (!root) return;
+      Decouvertes.live();
       if (U.mcur && U.mcur.repriseLive) U.mcur.repriseLive();
       root.querySelectorAll("[data-terre-compteur]").forEach((el) => {
         const [z, type] = el.dataset.terreCompteur.split(":"), t = E.terreMaitrise(z);
@@ -1161,7 +1165,7 @@
     /* signature de ce qui change la mise en page : on ne redessine que si elle change */
     function sig() {
       const st = S(), ms = E.machines();
-      return [api.topSig ? api.topSig() : "", E.terresSignature(), openZones().join(), JSON.stringify(st.dom.ext),
+      return [api.topSig ? api.topSig() : "", E.terresSignature(), JSON.stringify(st.exp.done), openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
         st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins()), E.reprisePending ? E.reprisePending().map(r => r.i + ":" + r.left).join() : ""].join("|");

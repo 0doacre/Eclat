@@ -140,7 +140,8 @@ test('un ancien passage du Désert partiellement payé garde ses dépôts', () =
 });
 test('une ligne construite propose un premier lot avec une action de navigation existante', () => {
   const fs = require('fs'), vm = require('vm');
-  const ctx = { window: {}, URL, document: { baseURI: 'http://localhost/' } };
+  const ctx = { window: {}, URL, document: { baseURI: 'http://localhost/', addEventListener() {} } };
+  vm.runInNewContext(fs.readFileSync(require.resolve('../js/decouvertes-carnet'), 'utf8'), ctx);
   vm.runInNewContext(fs.readFileSync(require.resolve('../js/domaine'), 'utf8'), ctx);
   const E = setup(10); E.add('chaine', 1); E.state.made.chaine = 1;
   const api = new Proxy({ E, D, U: { compact: () => false }, top: () => '', esc: String, icon: () => '', fmt: String, perMin: String, fmtTime: String, itemPill: id => id }, { get: (o, k) => k in o ? o[k] : () => '' });

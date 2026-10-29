@@ -178,7 +178,8 @@ test("les Quêtes proposent la sous-recette guidée, pas une cible finale imposs
 });
 test("une mine libre signale son gisement au-dessus des terres anciennes masquées, même après rechargement", () => {
   const fs = require("fs"), vm = require("vm");
-  const ctx = { window: {}, URL, document: { baseURI: "http://localhost/" } };
+  const ctx = { window: {}, URL, document: { baseURI: "http://localhost/", addEventListener() {} } };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/decouvertes-carnet.js"), "utf8"), ctx);
   vm.runInNewContext(fs.readFileSync(require.resolve("../js/domaine.js"), "utf8"), ctx);
   const initial = avant("lingot_plomb", 9);
   for (const z of ["gisement", "montagnes", "orbite", "lune", "mercure", "caveau"]) initial.state.zones[z] = false;
