@@ -1,0 +1,167 @@
+{
+  "generator": "imagegen intégré",
+  "masters": "Sorties PNG intactes",
+  "assets": [
+    {
+      "id": "plaine",
+      "name": "La Plaine des Hautes Herbes",
+      "master": "masters/plaine.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "14f74c6f3e45cbd7cd236a8b6818cf60d31f78e70fde555e1fc4e7cf962feaa5",
+      "masterBytes": 2941166,
+      "runtime": "assets/carnet/lands/plaine.webp",
+      "runtimeBytes": 396284,
+      "runtimeSHA256": "7df6bb8ee1a7c028d4541618515657c444f7a7c0548fdb60581e884de8a612ef"
+    },
+    {
+      "id": "riviere",
+      "name": "La Rivière Lente — premiers âges",
+      "master": "masters/riviere.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "09fee515fb8542c1f71b06c98530f30e0eba5a3f2a8c6fa3895d39deef5aeb97",
+      "masterBytes": 3257754,
+      "runtime": "assets/carnet/lands/riviere.webp",
+      "runtimeBytes": 433958,
+      "runtimeSHA256": "002e863ca8c7330d80c5a60ab29b4417e45eec60b053ad24d44e59db120cfc08"
+    },
+    {
+      "id": "collines",
+      "name": "Les Collines Vertes",
+      "master": "masters/collines.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "d04ce06adb371b790d6dc5295d72f68e0ace08f220bff260ab4550f3a2402303",
+      "masterBytes": 2891146,
+      "runtime": "assets/carnet/lands/collines.webp",
+      "runtimeBytes": 352466,
+      "runtimeSHA256": "cc248a6aa2802389b7e0bf3b7a0a713daa2dafc3e18d1ed9951366abd0ff12b4"
+    },
+    {
+      "id": "mine",
+      "name": "Les Profondeurs",
+      "master": "masters/mine.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "2b66cd2fed357c3d12e4d473d120c0f5dd75a8777d64196b8765f5ccd606047d",
+      "masterBytes": 3332007,
+      "runtime": "assets/carnet/lands/mine.webp",
+      "runtimeBytes": 404734,
+      "runtimeSHA256": "c61401a29e5aabddbdb7a2f5f8f01e67159450e8f9f150c2a52ea794b809acc5"
+    },
+    {
+      "id": "desert",
+      "name": "Le Désert de Verre",
+      "master": "masters/desert.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "584690c254a4a357d4c64516bdffa6fd26c764fbb31279e8ce59d59cd3c2fb18",
+      "masterBytes": 2938361,
+      "runtime": "assets/carnet/lands/desert.webp",
+      "runtimeBytes": 345534,
+      "runtimeSHA256": "fa47db2ec9a95ad73ec774351fea6dfc3e3e502ece32e4b7937a6c9c8fb31b81"
+    },
+    {
+      "id": "gisement",
+      "name": "Le Gisement Noir",
+      "master": "masters/gisement.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "6756a6b38ef94d36d35611d98653dbcda69e686fbf340989cf7d1e6d18c12b29",
+      "masterBytes": 2883917,
+      "runtime": "assets/carnet/lands/gisement.webp",
+      "runtimeBytes": 332532,
+      "runtimeSHA256": "d06c33dc1f93cd314b53a654050e30fa258ac3522218cf3920fa5e3b055081ac"
+    },
+    {
+      "id": "montagnes",
+      "name": "Les Pics Fracturés",
+      "master": "masters/montagnes.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "c4d56cf4f64bf95f4445a1c23a809dae9b8a6233a8e9c12fa4f5ebfa1bda2554",
+      "masterBytes": 3081648,
+      "runtime": "assets/carnet/lands/montagnes.webp",
+      "runtimeBytes": 365826,
+      "runtimeSHA256": "ee3e9c12ad5fd88c86924e681649db1f272b069f0f005b47bfcbd7b9a0509741"
+    },
+    {
+      "id": "orbite",
+      "name": "L’Orbite Basse",
+      "master": "masters/orbite.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "d1d32b048bc2ca950d6a74f0fc8d3380e72f44b99a53f0cbddf41fb4c259d4da",
+      "masterBytes": 2335392,
+      "runtime": "assets/carnet/lands/orbite.webp",
+      "runtimeBytes": 297656,
+      "runtimeSHA256": "12197e0a506a0f13b12edf18f1705ba234b2216ee7a806fa3951cc11a1eeea5d"
+    },
+    {
+      "id": "lune",
+      "name": "La Lune",
+      "master": "masters/lune.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "2ced5101ce162e6f2dd9ae891a2fcb4b2110a2f26eb84d7a1d2f3ada554ca27c",
+      "masterBytes": 2579256,
+      "runtime": "assets/carnet/lands/lune.webp",
+      "runtimeBytes": 307178,
+      "runtimeSHA256": "8e0c8b6bcfcfc4dd83f085d1e51fe570259e6e69111dc6e1a66a958a6b2747ba"
+    },
+    {
+      "id": "caveau",
+      "name": "Le Caveau des Semeurs",
+      "master": "masters/caveau.png",
+      "width": 1536,
+      "height": 1024,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "sha256": "63ce54da62d27a5bfa322d5f64f9159378085adad7aa5fb9f4f1e58311675fb2",
+      "masterBytes": 3027692,
+      "runtime": "assets/carnet/lands/caveau.webp",
+      "runtimeBytes": 360070,
+      "runtimeSHA256": "55fe3df9b531dcdd5c31e5a847d3bb4581eaa7ce3bfa07f90fb53db12a22f9e2"
+    }
+  ],
+  "webBytes": 3596238
+}
