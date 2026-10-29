@@ -311,4 +311,23 @@ test("les recettes de chaque âge suivant restent identifiables dans les procéd
     const r=E.attempt(data.ITEMS[id].r[0],Object.keys(data.ITEMS[id].r[1]));assert.notEqual(r.kind,"equipment",id);assert.equal(r.id,id,id+" "+JSON.stringify(r));
   }
 });
+test("le thermomètre équipé distingue Brûlant, Chaud, Tiède et Froid sans révéler ni muter l’état", () => {
+  const E=mk(Gentle);owns(E,"feu");stock(E,{bois:10,manche:4,caillou:4});
+  const before=E.serialize();
+  // Brûlant : bonnes matières sur le bon poste (Foyer), mais mauvaise allure (vif au lieu de doux pour l'épieu)
+  const b=E.attemptWith("feu","vif",["manche"]);
+  assert.equal(b.why,"incompatible");assert.equal(b.thermo.heat,"brulant");
+  // Chaud : bonnes matières d'une recette de l'âge (charbon = bois au Foyer), mais tentées sur l'Établi avec Mains
+  const c=E.attemptWith("mains","assembler",["bois"]);
+  assert.equal(c.why,"incompatible");assert.equal(c.thermo.heat,"brulant"); // bois sur l'Établi = manche avec percuteur (même poste, autre outil)
+  const cOther=E.attemptWith("feu","doux",["caillou"]);
+  assert.equal(cOther.thermo.heat,"chaud"); // caillou = percuteur sur l'Établi (autre poste)
+  // Tiède : une matière fait partie d'une recette de cet outil/mode (archet = manche + corde avec mains/assembler) sans être une recette complète ailleurs
+  const t=E.attemptWith("mains","assembler",["corde"]);
+  assert.equal(t.thermo.heat,"tiede");
+  // Froid : aucune correspondance
+  const f=E.attemptWith("feu","etouffee",["caillou","manche"]);
+  assert.equal(f.thermo.heat,"froid");
+  assert.equal(E.serialize(),before);
+});
 console.log(checks+" contrôles du profil équipements réussis.");
