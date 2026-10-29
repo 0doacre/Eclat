@@ -3,7 +3,7 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "eef0037ed3";
+const BUILD = "07b1832b7f";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
@@ -20,7 +20,7 @@ const FILES = [
   "js/territoires.js", "css/territoires.css",
   "js/reprise.js",
   "./", "index.html", "manifest.webmanifest", "css/fonts.css", "css/style.css", "css/theme.css", "css/arbre.css", "css/design-preview.css", "css/domaine-vivant.css",
-  "js/config.js", "js/data.js", "js/recit.js", "js/signes.js", "js/constellations.js", "js/engine.js", "js/transmission.js", "js/stockage.js", "js/audio.js", "js/juice.js", "js/appareil.js", "js/sky.js", "js/scenes.js", "js/icons.js", "js/illustrations.js", "js/domaine.js", "js/carte.js", "js/tuto.js", "js/fenetres.js", "js/cloud.js", "js/visiteurs.js", "js/ambiance.js", "js/journal.js", "js/quetes.js", "js/memoire.js", "js/compte.js", "js/arbre.js", "js/carnet.js", "js/atelier.js", "js/ecouteurs.js", "js/ui.js",
+  "js/config.js", "js/data.js", "js/recit.js", "js/signes.js", "js/constellations.js", "js/engine.js", "js/transmission.js", "js/stockage.js", "js/audio.js", "js/juice.js", "js/appareil.js", "js/sky.js", "js/scenes.js", "js/icons.js", "js/illustrations.js", "js/domaine.js", "js/carte.js", "js/tuto.js", "js/fenetres.js", "js/cloud.js", "js/visiteurs.js", "js/ambiance.js", "js/journal.js", "js/quetes.js", "js/memoire.js", "js/compte.js", "js/arbre.js", "js/carnet.js", "js/atelier.js", "js/ecouteurs.js", "js/mode-test.js", "js/ui.js",
   "assets/carnet/items/bois.webp", "assets/carnet/items/fibre.webp", "assets/carnet/items/caillou.webp", "assets/carnet/items/manche.webp", "assets/carnet/items/corde.webp", "assets/carnet/items/panier.webp", "assets/carnet/items/archet.webp", "assets/carnet/items/feu.webp", "assets/carnet/items/charbon.webp", "assets/carnet/items/epieu.webp", "assets/carnet/items/cabane.webp", "assets/carnet/items/torche.webp", "assets/carnet/items/fibre_1.webp", "assets/carnet/items/caillou_1.webp", "assets/carnet/items/percuteur_pierre.webp", "assets/carnet/items/etabli_amenage.webp",
   "assets/carnet/items/os.webp", "assets/carnet/items/cuir.webp", "assets/carnet/items/aiguille.webp", "assets/carnet/items/laniere.webp", "assets/carnet/items/colle_os.webp", "assets/carnet/items/arc.webp", "assets/carnet/items/fronde.webp", "assets/carnet/items/outre.webp", "assets/carnet/items/pic_os.webp", "assets/carnet/items/collets.webp", "assets/carnet/items/tunique.webp", "assets/carnet/items/encre.webp", "assets/carnet/items/cuir_1.webp", "assets/carnet/items/racloir_os.webp",
   "assets/carnet/sources/source_bois.webp", "assets/carnet/sources/source_fibre.webp", "assets/carnet/sources/source_caillou.webp",

@@ -10,8 +10,9 @@
   const A = window.EclatAudio;
   const Sky = window.EclatSky;
   /* Clé historique conservée : c’est là que vivent les parties en cours. */
-  const SAVE_KEY = "eclat.save.v1";
-  const BACKUP_KEY = "eclat.backups";
+  const TEST_CONFIG = window.EclatModeTest.config(window.ECLAT_CRAFT_PREVIEW === true, location.href);
+  const SAVE_KEY = TEST_CONFIG.key;
+  const BACKUP_KEY = TEST_CONFIG.backups;
   const MAX_BACKUPS = 5;
   const S = () => E.state;
   const I = D.ITEMS;
@@ -620,7 +621,7 @@
    * n’écrase rien, et un échec d’écriture laisse la partie en mémoire en le disant (barre #saveBar). */
   const Stk = window.EclatStockage.create({
     storage: { getItem: (k) => localStorage.getItem(k), setItem: (k, v) => localStorage.setItem(k, v) },
-    key: SAVE_KEY, liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
+    key: SAVE_KEY, lockName: TEST_CONFIG.lock, liberer: libererBackups, notify: (evt, info) => surStockage(evt, info)
   });
   U.peutEcrire = () => Stk.peutEcrire();
   /* l’affichage resserré (Domaine et Carnet) : un seul réglage, dans le menu. Les anciennes parties avaient deux réglages. */
@@ -733,7 +734,7 @@
     setItem: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* stockage bloqué */ } },
     removeItem: (k) => { try { localStorage.removeItem(k); } catch (e) { /* stockage bloqué */ } }
   };
-  const Cloud = window.EclatCloud.create({ storage: safeStore, server: () => safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
+  const Cloud = window.EclatCloud.create({ storage: TEST_CONFIG.active ? {getItem: k => safeStore.getItem("test." + k), setItem: (k,v) => safeStore.setItem("test." + k,v), removeItem: k => safeStore.removeItem("test." + k)} : safeStore, server: () => TEST_CONFIG.active ? "" : safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
   U.sync = { busy: false, conflict: null, err: null };
   /* remplace le contenu de la fenêtre ouverte (ou en ouvre une) */
   function swapModal(o) {
@@ -1260,7 +1261,9 @@
   /* le menu, les sauvegardes et le compte en ligne */
   /* le jeu dans l’appareil : le bouton Retour, l’installation, le titre, l’écran allumé, le clavier (js/appareil.js) */
   const App = window.EclatAppareil.create({ E, U, toast, closeModal, setTab, tabVisible: (t) => tabAvailable(t) });
+  const TestMode = window.EclatModeTest.create({E, D, config: TEST_CONFIG, esc, openModal, closeModal, save, render, setTab, canWrite: () => !U.saveLocked && Stk.peutEcrire()});
   const Cpt = window.EclatCompte.create({
+    openTestMode: TestMode.open,
     E, ENGINE, A, D, U, Cloud, Tuto, esc, fmt, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
     backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
   });
@@ -1366,8 +1369,8 @@
     }, 10000);
     setupSW();
     App.demarrer();
-    cloudTimers();
-    setTimeout(cloudCheck, 1500);
+    TestMode.mount();
+    if (!TEST_CONFIG.active) { cloudTimers(); setTimeout(cloudCheck, 1500); }
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
     U.itemPill = itemPill;
