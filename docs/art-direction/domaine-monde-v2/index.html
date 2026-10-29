@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3ecd9">
+  <base href="../../../">
+  <title>Éclat · Le monde autour du camp — V2</title>
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="docs/art-direction/domaine-monde-v2/style.css">
+</head>
+<body>
+  <main id="app" aria-label="Prototype du Domaine d’Éclat">
+    <header id="top"><div class="identity"><span class="brand">Éclat</span><span id="era">Âge du Bois</span></div><div class="top-actions"><button id="goal" class="icon-btn" aria-label="Retrouver le prochain lieu à explorer" title="Retrouver la prochaine trace">◇</button><button id="sound" class="icon-btn" aria-label="Activer le son" aria-pressed="false" title="Activer les sons du jeu">♪<span class="slash" aria-hidden="true">╱</span></button><button id="menu" class="icon-btn" aria-label="Options du prototype" title="Options et chapitres de démonstration">☰</button></div></header>
+    <section id="viewport" tabindex="0" aria-label="Le monde autour du camp. Déplacer en faisant glisser ou avec les flèches du clavier.">
+      <svg id="world" viewBox="350 350 800 650" preserveAspectRatio="none" aria-label="La Lisière autour du camp ; la Plaine plus loin, à gauche.">
+        <defs>
+          <radialGradient id="soft"><stop offset="62%" stop-color="white"/><stop offset="100%" stop-color="black"/></radialGradient>
+          <mask id="forestMask"><ellipse cx="780" cy="765" rx="590" ry="460" fill="url(#soft)"/></mask>
+          <mask id="plaineMask"><ellipse cx="360" cy="365" rx="470" ry="390" fill="url(#soft)"/></mask>
+        </defs>
+        <image href="docs/art-direction/domaine-monde-v2/assets/monde.webp" width="1500" height="1000" class="world-sketch"/>
+        <image href="docs/art-direction/domaine-monde-v2/assets/monde.webp" width="1500" height="1000" mask="url(#forestMask)" id="forestPaint"/>
+        <image href="docs/art-direction/domaine-monde-v2/assets/monde.webp" width="1500" height="1000" mask="url(#plaineMask)" id="plainePaint"/>
+        <path class="land-outline" data-terrain="lisiere" d="M280 708 C298 570 467 471 660 441 S1152 457 1231 680 Q1284 865 1090 935 Q748 1006 418 925 Q257 871 280 708Z"/>
+        <path class="land-outline" data-terrain="plaine" d="M128 316 C149 186 278 149 434 176 S666 296 576 465 Q528 558 332 563 Q82 545 128 316Z"/>
+        <path id="trailBase" d="M733 841 C650 814 603 773 564 721 S522 646 487 612 S433 529 422 470 S401 399 400 369"/>
+        <path id="trail" d="M733 841 C650 814 603 773 564 721 S522 646 487 612 S433 529 422 470 S401 399 400 369" pathLength="1"/>
+        <g id="brambles"><image href="assets/carnet/passages/ronces-gauche.webp" x="405" y="508" width="143" height="96"/><image href="assets/carnet/passages/ronces-droite.webp" x="472" y="517" width="136" height="91"/></g>
+        <image id="campArt" href="assets/carnet/discoveries/camp.webp" x="650" y="746" width="210" height="142"/>
+        <g id="campGrowth" class="camp-growth"><image href="assets/carnet/items/outre.webp" x="839" y="826" width="45" height="44"/><image href="assets/carnet/items/encre.webp" x="655" y="853" width="36" height="36"/></g>
+        <g id="installations"></g>
+        <g id="placeContours"></g>
+        <path id="pencilRoute" fill="none" stroke="#655a49" stroke-width="2.2" stroke-linecap="round" pathLength="1"/>
+      </svg>
+      <div id="mapHeading"><span id="mapTitle">La Lisière</span><span id="mapCaption">Auprès du camp</span></div>
+      <div id="hotspots"></div>
+      <canvas id="matter" aria-hidden="true"></canvas><div id="feedback" aria-hidden="true"></div>
+      <div id="placeCard" hidden><p class="kicker" id="placeKicker">Une trace à suivre</p><h2 id="placeName"></h2><p id="placeDetail"></p><button id="explore" class="paint-button">Explorer →</button><button id="dismissPlace" class="card-close" aria-label="Fermer les détails du lieu">✕</button></div>
+      <div id="cameraTools" aria-label="Cadrage"><button data-camera="camp" class="icon-btn" aria-label="Revenir au camp" title="Revenir au camp">⌂</button><button data-camera="all" class="icon-btn" aria-label="Voir les terres connues" title="Vue d’ensemble">↗</button><button data-zoom="in" class="icon-btn" aria-label="Se rapprocher" title="Se rapprocher">+</button><button data-zoom="out" class="icon-btn" aria-label="Prendre du recul" title="Prendre du recul">−</button></div>
+      <aside id="drawer" hidden aria-labelledby="drawerTitle"><header><div><p class="kicker" id="drawerKicker"></p><h2 id="drawerTitle"></h2></div><button id="closeDrawer" class="icon-btn" aria-label="Fermer le tiroir">✕</button></header><div id="drawerContent"></div></aside>
+      <button id="discovery" hidden aria-label="Ouvrir la page découverte"><img id="discoveryArt" alt=""><span><small>Une page du carnet</small><strong id="discoveryName"></strong></span></button>
+      <div id="toast" role="status" aria-live="polite"></div>
+      <span id="a11yGain" class="sr-only" role="status" aria-live="polite"></span>
+    </section>
+    <nav id="tabs" aria-label="Navigation du prototype"><button id="domainTab" aria-current="page"><span aria-hidden="true">⌂</span>Domaine</button><button id="notebook"><span aria-hidden="true">▤</span>Carnet <small id="pageCount">0</small></button><button id="instructions"><span aria-hidden="true">?</span>Repères</button></nav>
+  </main>
+  <dialog id="options" aria-labelledby="optionsTitle"><header><h2 id="optionsTitle">Étude du Domaine · V2</h2><button data-close-dialog class="icon-btn" aria-label="Fermer les options">✕</button></header><p>Copie de démonstration indépendante. Les explorations durent 6 secondes ; les matériaux du sentier et quelques installations sont fournis.</p><p class="kicker">Parcourir les étapes</p><div class="chapters"><button data-stage="0">Le réveil au camp</button><button data-stage="1">Le Grand Chêne découvert</button><button data-stage="2">La Grotte découverte</button><button data-stage="3">La Plaine ouverte</button></div><p>Les chapitres recréent uniquement la démonstration.</p><div class="links"><a href="docs/art-direction/domaine-monde-v1/">Comparer avec la V1</a><a href="index.html">Revenir au jeu</a></div></dialog>
+  <dialog id="study" aria-labelledby="studyTitle"><header><h2 id="studyTitle"></h2><button data-close-dialog class="icon-btn" aria-label="Fermer la page du carnet">✕</button></header><img id="studyArt" alt=""><p id="studyNote"></p></dialog>
+  <script src="js/data.js"></script><script src="js/recit.js"></script><script src="js/signes.js"></script><script src="js/constellations.js"></script><script src="js/transmission.js"></script><script src="js/territoires.js"></script><script src="js/reprise.js"></script><script src="js/engine.js"></script><script src="js/audio.js"></script><script src="docs/art-direction/domaine-monde-v2/world-layout.js"></script><script src="docs/art-direction/domaine-monde-v2/prototype.js"></script>
+</body>
+</html>
