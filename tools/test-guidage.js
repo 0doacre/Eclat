@@ -266,4 +266,17 @@ test("le passage propose le solde à fabriquer et retire les matières déposée
   assert.ok(!h.includes('data-goto="caillou"'));
   assert.ok(h.includes('data-goto="argile"'));
 });
+test("le passage propose directement de fabriquer l’objet connu requis par le prochain lieu inexploré", () => {
+  const fs = require("fs"), vm = require("vm"), ctx = { window: {} };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/quetes.js"), "utf8"), ctx);
+  const E = createEngine({ now: () => 2e12, rand: () => 0.99 }), S = E.state;
+  for (const id of ["manche", "corde", "archet", "feu", "cabane", "epieu", "charbon", "torche"]) { S.known[id] = true; }
+  S.inv.feu = 1;
+  S.flags.extDone = true;
+  S.exp.done.lisiere = 1; // Le Grand Chêne fait, reste La Grotte aux Mains (cost: { torche: 1 })
+  S.pass.plaine = { done: false, paid: E.passCost("plaine") };
+  const api = new Proxy({ E, D, U: {}, esc: String, fmt: String, icon: () => "", zoneName: z => z }, { get: (o, k) => k in o ? o[k] : () => "" });
+  const Q = ctx.window.EclatQuetes.create(api), h = Q.passHTML("plaine");
+  assert.ok(h.includes('data-chain="torche"'), "le passage propose directement de fabriquer la torche requise par la Grotte");
+});
 console.log(passed + " tests du guidage réussis.");

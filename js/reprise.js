@@ -77,7 +77,12 @@
     function candidate(r) {
       if (!r.selected || r.z && !E.zoneOpen(r.z) || !remaining(r)) return null;
       if (r.z && E.freeExt(r.id) > 0) return { kind: "place", cost: {} };
-      if (E.ruins()[r.id] && Object.entries(E.ruinCost(r.id)).every(([id, n]) => E.count(id) >= n)) return { kind: "repair", cost: E.ruinCost(r.id) };
+      if (E.ruins()[r.id]) {
+        const rep = E.ruinResolve ? E.ruinResolve(r.id) : null;
+        if (rep && rep.ok) return { kind: "repair", cost: rep.cost };
+        if (Object.entries(E.ruinCost(r.id)).every(([id, n]) => E.count(id) >= n)) return { kind: "repair", cost: E.ruinCost(r.id) };
+        return null;
+      }
       if (!state().known[r.id] || E.blocker(r.id)) return null;
       const p = E.plan(r.id, 1);
       return p.ok ? { kind: "order", cost: p.used } : null;

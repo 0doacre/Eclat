@@ -179,12 +179,19 @@
       if (!p || !p.ready) return "";
       // les lieux de la terre actuelle : le passage ne s’ouvre qu’une fois qu’on les connaît
       const lieux = p.lieux && p.lieux.left.length ? p.lieux : null;
+      const l0 = lieux && lieux.left[0], expCost = (l0 && l0.cost) || {};
+      const reqId = l0 ? Object.keys(expCost).find((k) => I[k] && I[k].r && st.known[k] && (st.inv[k] || 0) < expCost[k]) : null;
+      const reqAct = reqId
+        ? (E.queued(reqId) > 0
+          ? '<span class="tiny muted">✋ En cours : ' + esc(I[reqId].n.toLowerCase()) + "</span>"
+          : '<button class="btn small pri" data-chain="' + reqId + '">Fabriquer : ' + esc(I[reqId].n) + "</button>")
+        : "";
       const explore = !p.done && lieux
         ? '<div class="small">Il reste ' + lieux.left.length + " lieu" + (lieux.left.length > 1 ? "x" : "") + " à explorer dans " + esc(zoneName(lieux.z)) + ".</div>" +
           '<div class="row wrap" style="margin:6px 0">' +
           (st.exp.active
             ? '<span class="tiny muted">🧭 En route…</span>'
-            : '<button class="btn small pri" data-exp="' + lieux.z + '">🧭 Explorer</button><span class="tiny muted">' + esc(lieux.left[0].n) + "</span>") +
+            : reqAct + '<button class="btn small' + (reqId ? " ghost" : " pri") + '" data-exp="' + lieux.z + '">🧭 Explorer</button><span class="tiny muted">' + esc(lieux.left[0].n) + "</span>") +
           '<span class="tiny muted">' + lieux.done + " sur " + lieux.total + "</span></div>"
         : "";
       return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +

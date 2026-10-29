@@ -95,8 +95,10 @@
     function ruinHTML(id, count) {
       const st = S(), it = I[id];
       const cost = E.ruinCost(id);
-      const can = Object.keys(cost).every((k) => (st.inv[k] || 0) >= cost[k]);
-      const costTxt = Object.keys(cost).map((k) => itemPill(k, { qty: cost[k], lack: (st.inv[k] || 0) < cost[k] })).join(" ");
+      const res = E.ruinResolve ? E.ruinResolve(id) : null;
+      const can = res ? res.ok : Object.keys(cost).every((k) => (st.inv[k] || 0) >= cost[k]);
+      const shownCost = res && res.ok ? res.cost : cost;
+      const costTxt = Object.keys(shownCost).map((k) => itemPill(k, { qty: shownCost[k], lack: (st.inv[k] || 0) < shownCost[k] })).join(" ");
       const name = E.ruinName(id);
       return '<div class="dom-ruine" data-druin="' + id + '">' +
         '<div class="grow"><div class="small"><b>' + esc(name) + "</b> · réparer : " + costTxt + "</div>" +
@@ -112,7 +114,7 @@
       const st = S(), ruins = E.ruins();
       ids = ids.filter((id) => ruins[id] > 0);
       if (!ids.length) return "";
-      const can = (id) => Object.keys(E.ruinCost(id)).every((k) => (st.inv[k] || 0) >= E.ruinCost(id)[k]);
+      const can = (id) => E.ruinResolve ? E.ruinResolve(id).ok : Object.keys(E.ruinCost(id)).every((k) => (st.inv[k] || 0) >= E.ruinCost(id)[k]);
       const total = ids.reduce((n, id) => n + ruins[id], 0), ready = ids.filter(can);
       ids = ready.concat(ids.filter((id) => !ready.includes(id)));
       const open = U.ruinesOpen && U.ruinesOpen[key] !== undefined ? U.ruinesOpen[key] : ready.length > 0;
