@@ -8,13 +8,15 @@ Le papier, les commandes peintes et les encres restent stables à travers les â
 
 Les feuilles affichent les terres ouvertes du moteur : noms et descriptions, explorations, règles locales, maîtrise, stocks, débits, récolte continue, extracteurs et ruines. Les terres anciennes restent repliables. Objectifs, demandes du Comptoir, projets et proposition de relève conservent leurs conditions et leurs actions. Aucune valeur ou action du prototype de démonstration n’est utilisée dans le jeu.
 
-Les paysages peints validés couvrent La Lisière, La Rivière Lente à partir de la Vapeur et Mercure. Les autres terres reprennent leur décor existant avec un bord fondu dans le papier ; le Caveau conserve sa feuille sans inventer de paysage. Les outils, matières et sources déjà livrés restent présents. Deux images supplémentaires représentent le métal mercurien et la pompe à eau.
+Les douze terres disposent de paysages peints, y compris le Caveau. La Rivière possède deux états : naturel aux premiers âges, équipé de sa pompe à partir de la Vapeur. Les illustrations respectent les découvertes du joueur et ne montrent pas les secrets du récit. Le lot et ses prompts sont dans `docs/art-direction/paysages-carnet-v1/`. Les outils, matières et sources déjà livrés restent présents.
 
 Les boutons peints et les fenêtres sont partagés avec les autres écrans en mode Carnet, y compris les ateliers des deux branches. Leurs événements et libellés restent natifs. Les maîtres validés et prompts de référence sont conservés dans la PR artistique et `docs/art-direction/interface-peinte-v2/` sur main.
 
 ## Diffusion et cache
 
 `tools/export-interface-peinte.py` produit neuf variantes WebP, environ 1,62 Mo au total. Les originaux ne sont pas modifiés. Sur un checkout dépourvu des maîtres, utiliser `--source` avec le dossier de la page témoin récupéré depuis main. Le service worker cache les variantes utilisées et les décors existants nécessaires aux autres terres. Aucun PNG maître, capture ou document de revue n’est ajouté à son cache.
+
+`tools/export-paysages-carnet.py` ajoute les dix paysages complémentaires, environ 3,6 Mo de WebP au total, également en cache hors ligne. Leurs PNG maîtres restent intacts.
 
 ## Validation
 
