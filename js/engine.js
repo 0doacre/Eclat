@@ -1403,7 +1403,7 @@
       machPool.length = want.length;
       for (let i = 0; i < want.length; i++) {
         if (!machPool[i] || machPool[i].m !== want[i]) {
-          machPool[i] = { m: want[i], job: null, sIdx: -1, rec: null };
+          machPool[i] = { m: want[i], job: null, sIdx: -1, rec: null, cad: null };
         }
       }
     }
@@ -1426,12 +1426,43 @@
       }
       return Math.max(0, maxU);
     }
+    /* affecte les machines restées libres après les commandes aux cadences de maintien de stock */
+    function assignCadenceWorkers() {
+      const cads = (S.dom && S.dom.cadence) || {};
+      const keys = Object.keys(cads).filter((rec) => {
+        const cd = cads[rec], it = item(rec);
+        if (!cd || cd.on === false || !it || !it.r) return false;
+        if ((S.inv[rec] || 0) >= (cd.cap || 0) - 1e-9) return false;
+        const cost = it.r[1];
+        for (const i in cost) if ((S.inv[i] || 0) + 1e-9 < cost[i]) return false;
+        return true;
+      });
+      if (!keys.length) return;
+      const assigned = {};
+      keys.forEach((k) => { assigned[k] = 0; });
+      machPool.forEach((w) => {
+        if (w.job !== null) return;
+        let best = null, bestCnt = Infinity;
+        for (const rec of keys) {
+          if (!machReadyFor(w.m, rec)) continue;
+          if (assigned[rec] < bestCnt) { best = rec; bestCnt = assigned[rec]; }
+        }
+        if (best) {
+          w.cad = best;
+          w.rec = best;
+          assigned[best]++;
+        }
+      });
+    }
     /* répartit les machines possédées et les mains sur les étapes prêtes des commandes */
     function assignWorkers() {
       syncMachPool();
-      machPool.forEach((w) => { w.job = null; w.sIdx = -1; w.rec = null; });
+      machPool.forEach((w) => { w.job = null; w.sIdx = -1; w.rec = null; w.cad = null; });
       hWork = { job: null, sIdx: -1, rec: null };
-      if (!S.hand.q.length) return;
+      if (!S.hand.q.length) {
+        assignCadenceWorkers();
+        return;
+      }
 
       const jobResv = S.hand.q.map(() => ({}));
       const stepMachs = S.hand.q.map((j) => { syncJobPos(j); return j.s.map(() => 0); });
@@ -1488,6 +1519,9 @@
         const anyH = hWork.job === j;
         j.w = j.paused ? 0 : (anyM || anyH ? 0 : 1);
       });
+
+      // 4. Les machines restées libres après les commandes maintiennent les stocks configurés
+      assignCadenceWorkers();
     }
 
     /* Lance une commande (avec planification récursive des sous-composants).
@@ -3554,10 +3588,11 @@
     E.machines = function () {
       assignWorkers();
       const out = {};
-      MACHINES.forEach((m) => (out[m] = { own: Math.floor(count(m)), used: 0, spd: item(m).spd, byRec: {} }));
+      MACHINES.forEach((m) => (out[m] = { own: Math.floor(count(m)), used: 0, cad: 0, spd: item(m).spd, byRec: {} }));
       machPool.forEach((w) => {
-        if (w.job !== null && out[w.m]) {
+        if ((w.job !== null || w.cad !== null) && out[w.m]) {
           out[w.m].used++;
+          if (w.cad) out[w.m].cad++;
           if (w.rec) out[w.m].byRec[w.rec] = (out[w.m].byRec[w.rec] || 0) + 1;
         }
       });
@@ -3565,6 +3600,69 @@
     };
     const freeMach = (m) => { const x = E.machines()[m]; return x ? Math.max(0, x.own - x.used) : 0; };
     E.freeMach = freeMach;
+    /* Cadences d’atelier : maintien de stock automatique par les machines restées libres */
+    E.setCadence = function (rec, cap, on) {
+      const it = item(rec);
+      if (!rec || !it || !it.r) return { ok: false, why: "none" };
+      S.dom.cadence = S.dom.cadence || {};
+      if (cap === null || cap === 0 || cap === false) {
+        delete S.dom.cadence[rec];
+        if (!Object.keys(S.dom.cadence).length) delete S.dom.cadence;
+        assignWorkers();
+        domChanged();
+        E.emit("struct");
+        return { ok: true, removed: true };
+      }
+      if (!E.automatable(rec)) return { ok: false, why: "not_automatable" };
+      if (!E.hasEchoFin("retour") && D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return { ok: false, why: "first_by_hand" };
+      const cur = S.dom.cadence[rec] || { cap: 100, on: true, acc: 0 };
+      if (typeof cap === "number" && cap > 0) cur.cap = Math.max(1, Math.min(100000, Math.floor(cap)));
+      if (on !== undefined) cur.on = !!on;
+      S.dom.cadence[rec] = cur;
+      assignWorkers();
+      domChanged();
+      E.emit("struct");
+      return { ok: true, cadence: Object.assign({ id: rec }, cur) };
+    };
+    E.cadences = function () {
+      assignWorkers();
+      const cads = (S.dom && S.dom.cadence) || {};
+      const c = E.cache();
+      return Object.keys(cads).filter((rec) => item(rec) && item(rec).r).map((rec) => {
+        const cd = cads[rec], it = item(rec);
+        const have = Math.floor(S.inv[rec] || 0);
+        const cap = cd.cap || 100;
+        const on = cd.on !== false;
+        let machs = 0, rate = 0;
+        machPool.forEach((w) => {
+          if (w.cad === rec) {
+            machs++;
+            rate += machUnitRate(w.m, c, rec) * (it.r[2] || 1);
+          }
+        });
+        const miss = [];
+        for (const i in it.r[1]) {
+          if ((S.inv[i] || 0) + 1e-9 < it.r[1][i]) miss.push(i);
+        }
+        const hasCapableMach = anyOwnedMachReadyFor(rec);
+        let status = "ok";
+        if (!on) status = "off";
+        else if (have >= cap) status = "full";
+        else if (!hasCapableMach) status = "nomach";
+        else if (miss.length) status = "starved";
+        else if (machs === 0) status = "busy";
+        return { id: rec, cap, on, have, machs, rate, miss, status };
+      });
+    };
+    E.cadenceEligible = function () {
+      const cads = (S.dom && S.dom.cadence) || {};
+      return Object.keys(D.ITEMS).filter((rec) => {
+        if (cads[rec]) return false;
+        if (!E.automatable(rec)) return false;
+        if (!E.hasEchoFin("retour") && D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
+        return anyOwnedMachReadyFor(rec);
+      });
+    };
     E.hasFactory = () => EXTS.some((t) => count(t) > 0 || S.known[t]) || MACHINES.some((m) => count(m) > 0) ||
       Object.keys(S.dom.ext).length > 0 || S.hand.q.length > 0;
     E.machRate = (m, rec) => (item(m) && item(m).t === "mach" ? machUnitRate(m, null, rec) : 0);
@@ -3669,6 +3767,36 @@
       }
       st.s = got > 0 ? "ok" : "starved";
     }
+    function runCadences(dt, c) {
+      const cads = (S.dom && S.dom.cadence) || {};
+      const keys = Object.keys(cads);
+      if (!keys.length) return;
+      assignWorkers();
+      keys.forEach((rec) => {
+        const cd = cads[rec], it = item(rec);
+        if (!cd || cd.on === false || !it || !it.r) return;
+        let mRate = 0;
+        machPool.forEach((w) => {
+          if (w.cad === rec) mRate += machUnitRate(w.m, c, rec);
+        });
+        if (!(mRate > 0)) return;
+        const outPerOp = it.r[2] || 1, cost = it.r[1];
+        const room = Math.max(0, (cd.cap || 0) - (S.inv[rec] || 0));
+        if (room <= 1e-9) { cd.acc = 0; return; }
+        let maxOps = Math.ceil(room / outPerOp);
+        for (const i in cost) maxOps = Math.min(maxOps, Math.floor(((S.inv[i] || 0) + 1e-9) / cost[i]));
+        if (maxOps < 1) return;
+        cd.acc = (cd.acc || 0) + mRate * dt;
+        const k = Math.min(maxOps, Math.floor(cd.acc + 1e-9));
+        if (k >= 1) {
+          cd.acc = Math.max(0, cd.acc - k);
+          for (const i in cost) add(i, -cost[i] * k);
+          const out = produce(rec, k);
+          add(rec, out);
+          if ((S.inv[rec] || 0) >= (cd.cap || 0) - 1e-9) cd.acc = 0;
+        }
+      });
+    }
     function runDom(dt) {
       const c = E.cache();
       for (const k in S.dom.ext) runExt(k, S.dom.ext[k], dt, c);
@@ -3680,7 +3808,7 @@
       const prod = {}, cons = {};
       assignWorkers();
       machPool.forEach((w) => {
-        if (w.job === null || !w.rec) return;
+        if ((w.job === null && w.cad === null) || !w.rec) return;
         const it = item(w.rec);
         if (!it || !it.r) return;
         const r = machUnitRate(w.m, null, w.rec);
@@ -4666,6 +4794,8 @@
       pullOrderInputs();
       runAct(dt, offline);
       workStep(dt, offline);
+      runCadences(dt, c);
+      pullOrderInputs();
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
         const open = [];
@@ -5042,6 +5172,18 @@
       for (const p in d.site) {
         if (!D.PROJECTS[p]) { aside("site:" + p, d.site[p]); delete d.site[p]; } else d.site[p] = { on: !!d.site[p] && d.site[p].on !== false };
       }
+      const cleanCad = {};
+      if (d.cadence && typeof d.cadence === "object" && !Array.isArray(d.cadence)) {
+        for (const rec in d.cadence) {
+          const cd = d.cadence[rec], it = D.ITEMS[rec];
+          if (cd && typeof cd === "object" && it && it.r && !isUnique(it) && !isScaled(it)) {
+            const cap = Math.max(1, Math.min(100000, Math.floor(Number(cd.cap)) || 100));
+            cleanCad[rec] = { cap, on: cd.on !== false, acc: Math.max(0, Number(cd.acc) || 0) };
+          }
+        }
+      }
+      if (Object.keys(cleanCad).length) d.cadence = cleanCad;
+      else delete d.cadence;
       o.dom = d;
     }
     /* File des commandes d’une sauvegarde : une commande illisible est annulée et
