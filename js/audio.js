@@ -307,6 +307,13 @@
   A.tick = function () { if (ready()) tone({ f: 1300 + Math.random() * 200, type: "triangle", d: 0.018, v: 0.03 }); };
   A.place = function () { if (!ready()) return; tone({ f: 160, f2: 110, type: "triangle", d: 0.12, v: 0.2 }); noise({ f: 1200, d: 0.06, v: 0.1, q: 2 }); tone({ f: 640, t: 0.05, d: 0.08, v: 0.04 }); };
   A.remove = function () { if (!ready()) return; noise({ f: 900, f2: 300, d: 0.18, v: 0.12, q: 1.5 }); tone({ f: 240, f2: 120, type: "triangle", d: 0.12, v: 0.08 }); };
+  A.pathWork = function (p) {
+    if (!ready()) return;
+    for (let i = 0; i < 4; i++) {
+      noise({ ft: "bandpass", f: p < .35 ? 1800 : 650, t: i * .23, d: .16, v: .055, q: .65, a: .025 });
+      if (p >= .35) tone({ f: 100, f2: 65, type: "triangle", t: i * .23 + .06, d: .07, v: .035 });
+    }
+  };
   A.err = function () { if (ready()) { tone({ f: 220, type: "square", d: 0.08, v: 0.04, lp: 1200 }); tone({ f: 180, type: "square", t: 0.09, d: 0.1, v: 0.04, lp: 1200 }); } };
   A.page = function () { if (ready()) noise({ f: 2400, f2: 1200, d: 0.22, v: 0.05, q: 0.7, a: 0.03 }); };
   A.explore = function () { if (!ready()) return; for (let i = 0; i < 4; i++) noise({ ft: "lowpass", f: 500, t: i * 0.28, d: 0.08, v: 0.12 }); };
