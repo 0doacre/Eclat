@@ -65,6 +65,7 @@
       const line = (inner) => '<div class="gact">' + inner + "</div>";
       if (ob.k === "exp") {
         if (st.exp.active) return line('<span class="small">🧭 En route… <b data-xl></b></span>');
+        if (g.step) return line('<span class="small">Pour explorer : ' + esc(I[g.pour].n) + '.</span>') + nextAction({ ...g, ob: { k: "craft", id: g.pour } });
         return line('<button class="btn small pri" data-exp="' + ob.z + '">🧭 Explorer</button><span class="tiny muted">' + esc(E.ZONES[ob.z].n) + "</span>");
       }
       if (ob.k === "pass") {
@@ -100,9 +101,12 @@
       }
       if (E.queued(id) > 0) return line('<span class="small">✋ En cours : ' + esc(it.n.toLowerCase()) + ".</span>");
       const b = E.blocker(id);
-      if (b && b.why !== "owned") return line('<span class="small">' + cap1(needText(id, b, true)) + ".</span>");
+      if (b && b.why !== "owned") return line('<span class="small">' + cap1(needText(id, b, true)) + '.</span><button class="btn small ghost" data-tree="' + id + '">Voir les prérequis</button>');
       if (b && b.why === "owned") return "";
       const p = E.plan(id, 1);
+      const commande = E.orderStatus(id, 1).ok
+        ? line('<button class="btn small pri" data-chain="' + id + '" title="Mains et machines disponibles, pièces intermédiaires comprises">Fabriquer : ' + esc(it.n) + '</button><span class="tiny muted">La commande attendra les matières manquantes.</span>')
+        : line('<button class="btn small ghost" data-tree="' + id + '">Voir les prérequis</button>');
       if (p.ok) {
         const parts = p.steps.filter((x) => x[0] !== id).map((x) => esc(I[x[0]].n.toLowerCase()));
         return line('<button class="btn pri gmake" data-chain="' + id + '">Fabriquer : ' + esc(it.n) + (parts.length ? ' <span class="tiny">(avec ' + parts.join(", ") + ")</span>" : "") + "</button>");
@@ -112,7 +116,7 @@
       const hand = miss.find((k) => isRawGather(k) && E.ZONES[E.RES_ZONE[k]].res.includes(k));
       if (hand) {
         const z = E.RES_ZONE[hand], tot = Math.ceil((st.inv[hand] || 0) + p.missing[hand]);
-        return '<div class="gis gact">' + '<button class="gis-ic hand" data-harv="' + z + ":" + hand + '" aria-label="Récolter : ' + esc(I[hand].n) + '">' + icon(hand) + "</button>" +
+        return commande + '<div class="gis gact">' + '<button class="gis-ic hand" data-harv="' + z + ":" + hand + '" aria-label="Récolter : ' + esc(I[hand].n) + '">' + icon(hand) + "</button>" +
           '<div class="grow"><div class="small">Il manque <b data-gleft="' + hand + '" data-q="' + tot + '">' + fmt(p.missing[hand]) + "</b> " + esc(I[hand].n.toLowerCase()) + " pour " + esc(it.n.toLowerCase()) + '.</div><div class="tiny muted">Touche l’icône, ou ▶ pour récolter en continu.</div></div>' +
           (st.act && st.act.k === "harv" && st.act.res === hand ? '<span class="tiny muted">en cours…</span>' : '<button class="btn small" data-hloop="' + z + ":" + hand + '">▶</button>') + "</div>";
       }
@@ -120,16 +124,17 @@
       if (ext) {
         // l’extracteur est déjà à toi : il ne tourne pas sur ce gisement (jamais posé, ou éteint)
         const ee = E.extEtat(ext), manque = '<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque ' + itemPill(ext, { qty: p.missing[ext], lack: true });
-        if (ee && ee.etat === "libre") return line(manque + " : " + esc(I[ee.t].n.toLowerCase()) + " attend d’être posé.</span>" + '<button class="btn small pri" data-xadd="' + ee.key + '" data-n="1">Poser</button>');
-        if (ee && ee.etat === "arret") return line(manque + " : ton extracteur est arrêté.</span>" + '<button class="btn small pri" data-xrun="' + ee.key + '">Relancer</button>');
-        return line(manque + " : cette ressource ne se récolte pas à la main. Pose un extracteur sur son gisement.</span>");
+        if (ee && ee.etat === "libre") return commande + line(manque + " : " + esc(I[ee.t].n.toLowerCase()) + " attend d’être posé.</span>" + '<button class="btn small pri" data-xadd="' + ee.key + '" data-n="1">Poser</button>');
+        if (ee && ee.etat === "arret") return commande + line(manque + " : ton extracteur est arrêté.</span>" + '<button class="btn small pri" data-xrun="' + ee.key + '">Relancer</button>');
+        return commande + line(manque + " : cette ressource ne se récolte pas à la main. Pose un extracteur sur son gisement.</span>");
       }
-      return line('<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque : ' + miss.map((k) => itemPill(k, { qty: p.missing[k], lack: true })).join("") + ".</span>");
+      return commande + line('<span class="small" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px">Il manque : ' + miss.map((k) => itemPill(k, { qty: p.missing[k], lack: true })).join("") + ".</span>");
     }
     /* ce qui change la carte d’objectif (pour la redessiner au bon moment) */
     function goalSig() {
       const g = E.guide();
-      if (!g || g.ob.k !== "craft") return g ? g.ob.k + (g.ob.z || "") + (S().exp.active ? 1 : 0) : "";
+      if (!g) return "";
+      if (g.ob.k !== "craft") return [g.ob.k, g.ob.z, S().exp.active ? 1 : 0, g.step, g.step && S().known[g.step], g.step && E.queued(g.step), JSON.stringify(S().exp.done), goalOpen()].join(":");
       const p = I[g.step] && S().known[g.step] ? E.plan(g.step, 1) : null;
       const a = S().act;
       const reprise = E.repriseGoal && E.repriseGoal(g);
@@ -189,8 +194,11 @@
         '<div class="passcost small">' +
         Object.keys(p.cost).map((i) => {
           const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
-          return '<div class="ing link' + (ok ? " paid" : "") + '" data-goto="' + i + '" role="button" tabindex="0" title="' + esc(I[i].n) + ' (toucher pour voir la fiche)">' + icon(i, "sm") + "<b>" + esc(I[i].n) + "</b> " + fmt(got) + " / " + fmt(p.cost[i]) + " déposés" +
-            (ok ? " ✓" : ' <span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? " : de quoi finir" : eta ? " · encore " + eta : "") + "</span>") + "</div>";
+          if (ok) return "";
+          const manque = Math.max(0, p.cost[i] - got - have - E.queued(i));
+          const times = I[i].r ? Math.ceil(manque / (I[i].r[2] || 1)) : 0;
+          return '<div class="pass-resource"><button type="button" class="ing link" data-goto="' + i + '" title="' + esc(I[i].n) + ' : voir la fiche">' + icon(i, "sm") + '<span><b>' + esc(I[i].n) + '</b> ' + fmt(got) + ' / ' + fmt(p.cost[i]) + ' déposés <span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? ' : de quoi finir' : eta ? ' · encore ' + eta : '') + '</span></span></button>' +
+            (times && st.known[i] ? '<button type="button" class="btn small ghost" data-tree="' + i + '" data-n="' + times + '" title="Préparer les ressources manquantes du passage, avec leurs ingrédients">Préparer ×' + fmt(times * (I[i].r[2] || 1)) + '</button>' : '') + '</div>';
         }).join("") + "</div></div>";
     }
     /* combien de temps avant d’avoir de quoi payer une matière, à la production actuelle (extracteurs, machines) */
@@ -316,6 +324,7 @@
         '<button class="btn pri" data-m="qresume" data-tab="atelier">Découvrir à l’Atelier</button>';
       let h = sc.missKeys.length ? '<div class="small row wrap"><span class="muted">Il manque :</span> ' +
         sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '';
+      if (it && it.r && E.orderStatus(id, 1).ok) h += '<button class="btn pri" data-m="qmake" data-id="' + id + '">Fabriquer : ' + esc(it.n) + '</button><p class="tiny muted">Mains et machines disponibles · attendra les matières manquantes.</p>';
       const res = sc.missKeys.find((k) => E.isRawRes(k) && E.zoneOpen(E.RES_ZONE[k]));
       if (res) {
         const ee = E.extEtat(res);

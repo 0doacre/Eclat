@@ -61,6 +61,11 @@
       return E.queued(r.id);
     }
     function remaining(r) { return Math.max(0, r.n - (r.z ? placed(r) : E.count(r.id)) - pending(r)); }
+    // Garder la référence et ses indices stables pour les devis et les relèves suivantes.
+    // Seule la vue de travail se raccourcit ; une commande reste visible jusqu'à sa livraison.
+    E.reprisePending = () => rows().map((r, i) => ({ ...r, i,
+      left: Math.max(0, r.n - (r.z ? placed(r) : E.count(r.id)))
+    })).filter(r => r.left > 0);
     E.repriseStatus = r => {
       if (r.z && !E.zoneOpen(r.z)) return "Terre à rouvrir";
       if (!remaining(r)) return (r.z ? placed(r) : E.count(r.id)) >= r.n ? "Reconstitué" : "Commandes en cours";

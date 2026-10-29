@@ -2329,3 +2329,8 @@ body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 .proj-rate {
   color: var(--acc, #c58d4e);
 }
+/* Le passage garde uniquement les ressources à déposer et leurs actions utiles. */
+.pass-resource{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;padding:4px 0}
+.pass-resource>.ing{flex:1 1 180px;min-width:0;text-align:left;white-space:normal}
+.pass-resource>.btn{flex:0 1 auto;max-width:100%}
+.reprise-row{padding:6px 0;border-bottom:1px solid var(--line)}

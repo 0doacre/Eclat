@@ -399,11 +399,6 @@
         }
         if (t.closest("[data-fichemode]")) { U.invFiche = !U.invFiche; A.click(); render(true); return; }
         if ((b = t.closest("[data-pin]"))) { const on = E.togglePin(b.dataset.pin); A.click(); toast(on ? "★ Épinglée : visible en haut de l’Atelier." : "Recette désépinglée."); render(true); return; }
-        if ((b = t.closest(".nope[data-chain], .nope[data-cr]"))) {
-          A.fail(0);
-          toast(whyNot(b.dataset.chain || b.dataset.cr, b.dataset.n === "max" ? 1 : Number(b.dataset.n) || 1, true), { key: "nope" });
-          return;
-        }
         if ((b = t.closest("[data-hopen]"))) { A.init(); openHands(); return; }
         if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
         if ((b = t.closest("[data-chemin], [data-tree]"))) { openTree(b.dataset.chemin || b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.chemin || b.dataset.tree)) : Number(b.dataset.n) || 1); return; }

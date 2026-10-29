@@ -220,4 +220,50 @@ test("la fenêtre Quêtes mène à l’Atelier puis au gisement, avec des comman
   assert.ok(modal.html.includes('data-gz="collines"'));
   assert.ok(modal.html.includes('attend d’être posé'));
 });
+test("le Gisement guide le masque puis la Plateforme avant les Pics", () => {
+  const E = avant("masque", 11), S = E.state;
+  assert.equal(E.objective().id, "masque");
+  S.made.masque = 1;
+  assert.equal(E.objective().x, "plateforme_r");
+  assert.equal(E.guide().step, null);
+  assert.equal(E.startExp("gisement").ok, true);
+  E.state.exp.active.t0 -= E.state.exp.active.dur;
+  E.catchUp(1);
+  assert.equal(E.objective().id, "dynamite");
+});
+test("un lieu avec un équipement absent mène à sa recette même si elle est déjà connue", () => {
+  const E = avant("masque", 11);
+  // Une sauvegarde a sauté l'étape du masque mais doit encore explorer.
+  delete E.state.made.masque;
+  const original = E.objective;
+  E.objective = () => ({ k: "exp", z: "gisement", x: "plateforme_r" });
+  const g = E.guide();
+  assert.equal(g.pour, "masque");
+  assert.ok(g.step);
+  E.objective = original;
+});
+test("disponibilité de fabrication : mêmes règles que la commande, sans dépense", () => {
+  const E = createEngine(); E.learn("manche", true);
+  const before = E.serialize(), status = E.orderStatus("manche", 10);
+  assert.equal(status.ok, true, "les matières premières peuvent arriver plus tard");
+  assert.equal(E.serialize(), before);
+  assert.equal(E.order("manche", 10).ok, status.ok);
+  E.learn("cabane", true);
+  const blocked = E.orderStatus("cabane", 10);
+  assert.equal(blocked.ok, false, "les constructions croissantes demandent leurs matières");
+  assert.equal(E.order("cabane", 10).why, blocked.why);
+  assert.equal(E.orderStatus("radio", 1).ok, false, "une recette inconnue reste à découvrir");
+});
+test("le passage propose le solde à fabriquer et retire les matières déposées", () => {
+  const fs = require("fs"), vm = require("vm"), ctx = { window: {} };
+  vm.runInNewContext(fs.readFileSync(require.resolve("../js/quetes.js"), "utf8"), ctx);
+  const E = avant("collines", 2), cost = E.passCost("collines");
+  E.state.pass.collines = { done: false, paid: { caillou: cost.caillou, brique: cost.brique - 12 } };
+  E.state.inv.brique = 3; E.state.known.brique = true;
+  const api = new Proxy({ E, D, U: {}, esc: String, fmt: String, icon: () => "", zoneName: z => z }, { get: (o, k) => k in o ? o[k] : () => "" });
+  const Q = ctx.window.EclatQuetes.create(api), h = Q.passHTML("collines");
+  assert.ok(h.includes('data-tree="brique" data-n="9"'));
+  assert.ok(!h.includes('data-goto="caillou"'));
+  assert.ok(h.includes('data-goto="argile"'));
+});
 console.log(passed + " tests du guidage réussis.");

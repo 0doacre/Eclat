@@ -1068,3 +1068,9 @@ body.large-text .rwin :is(.rdesc,.riddle) { font-size: 21px; }
 body.large-text #v-journal .frag .tiny, body.large-text #v-journal .signe-card-lieux { font-size: 15px; }
 body.large-text #v-journal .livre-titre { font-size: 21px; }
 body.large-text #v-cosmos .term { font-size: 16px; }
+/* Garder les actions proches des paysages sur les écrans étroits. */
+@media(max-width:680px){
+  html[data-style-mode="atlas"] #v-domaine .dom-terre.a-decor::after{height:140px;background-size:cover}
+  html[data-style-mode="atlas"] #v-domaine .dom-terre.a-decor .dom-th{min-height:140px;padding-top:20px;margin-bottom:6px}
+  html[data-style-mode="atlas"] #v-domaine .dom-terre{margin-block:12px 18px}
+}
