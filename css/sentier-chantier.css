@@ -1,0 +1,18 @@
+.sentier-chantier{margin:10px 0 14px;min-width:0}
+.sentier-scene{position:relative;aspect-ratio:1.5;overflow:hidden;isolation:isolate;contain:paint;mask-image:linear-gradient(to top,transparent,#000 8%,#000 96%,transparent),linear-gradient(to right,transparent,#000 4%,#000 96%,transparent);mask-composite:intersect}
+.sentier-scene img{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.sentier-left{transform-origin:5% 100%;transform:translateX(calc(-22% * var(--sentier-bramble))) rotate(calc(-9deg * var(--sentier-bramble)));opacity:calc(1 - var(--sentier-bramble))}
+.sentier-right{transform-origin:95% 100%;transform:translateX(calc(22% * var(--sentier-bramble))) rotate(calc(9deg * var(--sentier-bramble)));opacity:calc(1 - var(--sentier-bramble))}
+.sentier-grass{transform-origin:50% 100%;transform:translateY(calc(17% * var(--sentier-grass))) scaleY(calc(1 - .25 * var(--sentier-grass)));opacity:calc(1 - var(--sentier-grass))}
+.sentier-chantier figcaption{display:flex;justify-content:space-between;gap:8px;font:22px/1.2 'Caveat',cursive;color:var(--muted);padding:5px 2px}
+.sentier-percent{font:12px/1.6 var(--sans);white-space:nowrap;align-self:center}
+html[data-style-mode="vivant"] .passbox:has(>.sentier-chantier){background:transparent;border:0;padding:0}
+.sentier-soil{position:absolute;left:32%;right:25%;bottom:8%;height:25%;opacity:0;pointer-events:none}
+.sentier-soil i{position:absolute;bottom:0;left:20%;width:4px;height:3px;border-radius:45%;background:#857052}
+.sentier-soil i:nth-child(2){left:38%;animation-delay:.12s!important}.sentier-soil i:nth-child(3){left:55%;animation-delay:.24s!important}.sentier-soil i:nth-child(4){left:68%;animation-delay:.4s!important}.sentier-soil i:nth-child(5){left:82%;animation-delay:.56s!important}
+.sentier-chantier.is-working .sentier-soil{opacity:1}.sentier-chantier.is-working .sentier-soil i{animation:sentier-earth 1s ease-out infinite}
+@keyframes sentier-earth{0%{opacity:0;transform:translate(0,0)}20%{opacity:.7}100%{opacity:0;transform:translate(-12px,-36px) rotate(90deg)}}
+.sentier-retained{max-width:570px;margin:8px auto 16px}.sentier-retained .sentier-chantier{margin-bottom:3px}.sentier-retained .row{justify-content:center}
+.dom-dense .sentier-retained{max-width:300px}
+@media(max-width:680px){.sentier-chantier{margin-block:6px 9px}.sentier-chantier figcaption{font-size:20px}.sentier-retained{max-width:370px}.dom-dense .sentier-retained{max-width:240px}}
+@media(prefers-reduced-motion:reduce){.sentier-soil{display:none!important}}

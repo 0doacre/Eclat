@@ -83,9 +83,9 @@
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
         const g = E.guide();
-        if (g && g.ob.k === "pass" && g.ob.z === z) return; // déjà dans l’objectif
+        if (g && g.ob.k === "pass" && g.ob.z === z && !(z === "plaine" && window.EclatStyleMode === "vivant")) return; // le chantier peint garde sa scène dans le Domaine
         const p = E.passInfo(z);
-        if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + z + '"><h3>Vers ' + esc(E.ZONES[z].n) + "</h3>" + passHTML(z) + "</section>";
+        if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + z + '"><h3>Vers ' + esc(E.ZONES[z].n) + "</h3>" + passHTML(z, { chantier: true }) + "</section>";
       });
       for (const pid in D.PROJECTS) if (E.projVisible(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length) h += oeuvreHTML(pid);
       h += prodHTML();
@@ -156,6 +156,7 @@
           '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
           (z === "lisiere" ? Decouvertes.sceneHTML() : z === "plaine" ? Plaine.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + '</figcaption></figure>' : '') + '</div>';
         if (z === "lisiere") h += Decouvertes.studyHTML();
+        if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small" data-gz="plaine">Emprunter le sentier</button><button class="btn small ghost" data-sentier-replay>Revoir les travaux</button></div></div>';
         if (z === "plaine") h += Plaine.studyHTML();
       } else {
         h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";

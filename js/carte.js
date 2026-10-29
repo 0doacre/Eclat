@@ -328,7 +328,7 @@
     }
     const fmtDuree = (s) => (s >= 3600 ? Math.round(s / 3600) + " h" : Math.round(s / 60) + " min");
     function passSheet(z) {
-      const html = () => '<div class="kicker">Passage</div><h2>Vers ' + esc(E.ZONES[z].n) + "</h2>" + passHTML(z) + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
+      const html = () => '<div class="kicker">Passage</div><h2>Vers ' + esc(E.ZONES[z].n) + "</h2>" + passHTML(z, { chantier: true }) + '<div class="acts"><button class="btn" data-m="close">Fermer</button></div>';
       openModal({ html: html(), refresh: html, reopen: () => passSheet(z), cls: "modal-pass" });
     }
     function fogSheet(z) {
