@@ -1,4 +1,5 @@
-/* ÉCLAT — le son, entièrement synthétisé avec WebAudio (aucun fichier à charger).
+/* ÉCLAT — le son : musique et ambiances synthétisées avec WebAudio,
+ * complétées par de courts bruitages de graphite.
  * Trois voies : les effets, la musique (générée, elle change avec les âges) et
  * l’ambiance (le vent, l’eau, les oiseaux, les machines…, selon l’endroit). */
 (function (root) {
@@ -89,6 +90,28 @@
   };
   /* le geste de la commande en cours (ou rien) : l’atelier au travail */
   A.work = (g) => workUpdate(g);
+
+  /* Un vrai geste de graphite, court et raccordé au bus des effets : les
+   * réglages de son, le volume et la suspension en arrière-plan s’appliquent. */
+  let pencilBuffer = null;
+  A.pencil = function (duration) {
+    let cancelled = false, source = null;
+    if (ready() && vol.sfx > 0) {
+      if (!pencilBuffer) pencilBuffer = fetch("assets/carnet/audio/crayon.mp3")
+        .then((r) => { if (!r.ok) throw new Error("crayon indisponible"); return r.arrayBuffer(); })
+        .then((b) => ctx.decodeAudioData(b)).catch(() => { pencilBuffer = null; return null; });
+      pencilBuffer.then((buffer) => {
+        if (!buffer || cancelled || !ready() || vol.sfx <= 0) return;
+        source = ctx.createBufferSource(); source.buffer = buffer;
+        const gain = ctx.createGain(), t = ctx.currentTime, d = Math.min(duration || 2, buffer.duration);
+        gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(.24, t + .08);
+        gain.gain.setValueAtTime(.24, t + Math.max(.09, d - .15)); gain.gain.linearRampToValueAtTime(0, t + d);
+        source.connect(gain); gain.connect(sfxBus); source.start(t); source.stop(t + d);
+        source.onended = () => { source.disconnect(); gain.disconnect(); };
+      });
+    }
+    return () => { cancelled = true; if (source) { try { source.stop(); } catch (_) { /* déjà terminé */ } } };
+  };
 
   /* ------------------------------------------------------------ briques */
   function tone(o) {
