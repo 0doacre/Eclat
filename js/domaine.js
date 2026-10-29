@@ -403,7 +403,7 @@
     function domaineMachinesSummary() {
       const st = S(), ms = E.machines();
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
-      const machRuins = Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "mach");
+      const machRuins = Object.keys(E.ruins()).filter((id) => I[id] && ["mach", "stat"].includes(I[id].t));
       const qLen = st.hand.q.length;
       if (!owned.length && !qLen && !machRuins.length) return "";
       const work = E.MACHINES.reduce((a, m) => a + ms[m].used, 0);
@@ -438,7 +438,7 @@
       let h = '<div class="dom dom-mach-tab">';
       h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
       h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Commandes compatibles accélérées par les machines, en complément des mains.</p>';
-      h += ruinsBlock("machines", Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "mach"));
+      h += ruinsBlock("machines", Object.keys(E.ruins()).filter((id) => I[id] && ["mach", "stat"].includes(I[id].t)));
 
       h += '<h3 class="sub" style="margin-top:8px">Commandes en cours</h3>';
       if (hi && hi.jobs.length) {

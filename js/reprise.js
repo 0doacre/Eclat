@@ -14,7 +14,7 @@
           if (it.t === "ext") {
             const z = D.ZONES.find(z => !z.secret && E.zoneDeps(z.id).some(d => E.extOk(id, z.id, d.res)));
             if (z) inferred.push({ id, n, z: z.id, res: E.zoneDeps(z.id).find(d => E.extOk(id, z.id, d.res)).res });
-          } else if (["auto", "mach"].includes(it.t)) inferred.push({ id, n });
+          } else if (["auto", "mach", "stat"].includes(it.t)) inferred.push({ id, n });
         }
         state().meta.reprise = { inferred: true, cycle: state().cycle - 1, depth: 0, rows: inferred, objectifs: [] };
       }
