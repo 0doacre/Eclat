@@ -174,9 +174,10 @@
     }
     const WHY_STEP = { station: "Requis :", zone: "Nouvelle terre, ouverte par :", pass: "Passage à ouvrir :", unknown: "À faire :" };
     /* un passage vers une terre : ce qu’il coûte, ce qui est déjà déposé, et le bouton pour déposer */
-    function passHTML(z) {
+    function passHTML(z, options = {}) {
       const p = E.passInfo(z), st = S();
       if (!p || !p.ready) return "";
+      const chantier = z === "plaine" && window.EclatStyleMode === "vivant";
       // les lieux de la terre actuelle : le passage ne s’ouvre qu’une fois qu’on les connaît
       const lieux = p.lieux && p.lieux.left.length ? p.lieux : null;
       const l0 = lieux && lieux.left[0], expCost = (l0 && l0.cost) || {};
@@ -196,15 +197,16 @@
         : "";
       return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
         '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
+        (chantier && options.chantier ? window.EclatSentier.html(E) : "") +
         explore +
-        (p.done || lieux ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '">🚧 Déposer</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
+        (p.done || lieux ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '"' + (chantier ? ' title="Utiliser les matériaux disponibles pour faire avancer ces travaux"' : '') + '>🚧 ' + (chantier ? p.frac < .35 ? "Dégager le passage" : p.frac < .75 ? "Aménager le chemin" : "Marquer le sentier" : "Déposer") + '</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
         '<div class="passcost small">' +
         Object.keys(p.cost).map((i) => {
           const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
           if (ok) return "";
           const manque = Math.max(0, p.cost[i] - got - have - E.queued(i));
           const times = I[i].r ? Math.ceil(manque / (I[i].r[2] || 1)) : 0;
-          return '<div class="pass-resource"><button type="button" class="ing link" data-goto="' + i + '" title="' + esc(I[i].n) + ' : voir la fiche">' + icon(i, "sm") + '<span><b>' + esc(I[i].n) + '</b> ' + fmt(got) + ' / ' + fmt(p.cost[i]) + ' déposés <span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? ' : de quoi finir' : eta ? ' · encore ' + eta : '') + '</span></span></button>' +
+          return '<div class="pass-resource"><button type="button" class="ing link" data-goto="' + i + '" title="' + esc(I[i].n) + ' : voir la fiche">' + icon(i, "sm") + '<span><b>' + esc(I[i].n) + '</b> ' + fmt(got) + ' / ' + fmt(p.cost[i]) + (chantier ? ' utilisés ' : ' déposés ') + '<span class="tiny muted">· tu en as ' + fmt(have) + (eta === "prêt" ? ' : de quoi finir' : eta ? ' · encore ' + eta : '') + '</span></span></button>' +
             (times && st.known[i] ? '<button type="button" class="btn small ghost" data-tree="' + i + '" data-n="' + times + '" title="Préparer les ressources manquantes du passage, avec leurs ingrédients">Préparer ×' + fmt(times * (I[i].r[2] || 1)) + '</button>' : '') + '</div>';
         }).join("") + "</div></div>";
     }
@@ -216,6 +218,7 @@
       return r > 1e-6 ? "≈ " + fmtTime(need / r) : "";
     }
     function pour(z, btn) {
+      const before = E.passInfo(z);
       const r = E.passPour(z), p = E.passInfo(z);
       if (!r.ok && r.why === "lieux") {
         A.fail(0);
@@ -229,6 +232,7 @@
         return;
       }
       A.click(); vibe(10);
+      if (z === "plaine" && window.EclatStyleMode === "vivant") E.emit("sentierwork", { from: before.frac, to: r.done ? 1 : p.frac, focus: !!btn.closest('#v-domaine') });
       const pt = elCenter(btn);
       if (!r.done) floater("🚧 " + Math.floor(p.frac * 100) + " %", pt.x, pt.y - 16, "var(--good)");
       render(true);

@@ -523,16 +523,17 @@
       '<div class="acts"><button class="btn pri" data-m="close">' + (btn || "Continuer") + "</button></div>" });
   }
   const Scenes = window.EclatScenes;
+  const Sentier = window.EclatSentier.create({ E, A });
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z) => passHTML(z), uiSigne, recitInline,
+    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z, options) => passHTML(z, options), uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => donsRepere() + reveilRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length + "|" + (reveilRepere() ? "r" : "")
   });
   const Carte = window.EclatCarte.create({
-    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML: (z) => passHTML(z), expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
+    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML: (z, options) => passHTML(z, options), expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
     goDomaine: (z) => { U.zone = z; setTab("domaine"); Dom.focusZone(z); }
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */
@@ -987,6 +988,7 @@
     else fete({ add: "🏁 Étape accomplie · " + k + " sur " + list.length, title: name, sub: k + " sur " + list.length + " pour " + where });
   }
   function refresh() {
+    Sentier.live();
     const st = S();
     iconize($("#top"));
     iconize(document.querySelector(".tu-bub"));
