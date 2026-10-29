@@ -267,13 +267,18 @@ body.large-text {
   --title-size: 1.15;
   --dim: var(--muted);
 }
-body.large-text .small { font-size: 14.5px; }
-body.large-text .tiny { font-size: 12.5px; }
+body.large-text .small { font-size: 15px; line-height: 1.5; }
+body.large-text .tiny { font-size: 13px; line-height: 1.45; }
 body.large-text .gis-l1 b { font-size: 17px; }
 body.large-text #top .age { font-size: 15px; }
 body.large-text #tabs button span { font-size: 12px; }
 body.large-text .btn { min-height: 44px; font-size: 15px; }
 body.large-text .btn.small { min-height: 38px; font-size: 13.5px; }
+body.large-text .lore, body.large-text .lore p { font-size: 17.5px; line-height: 1.65; }
+body.large-text .goal-card .gname { font-size: 18px; }
+body.large-text .passbox, body.large-text .dom-ruine, body.large-text .dom-regle, body.large-text .reprise-row { font-size: 15.5px; line-height: 1.5; }
+body.large-text .item-pill, body.large-text .ing { font-size: 14px; padding: 4px 9px; }
+body.large-text .rel-list li { font-size: 15px; line-height: 1.5; }
 
 /* ---------------------------------------------------------------- RÉDUCTION DES MOUVEMENTS */
 @media (prefers-reduced-motion: reduce) {

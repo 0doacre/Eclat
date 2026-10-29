@@ -105,10 +105,10 @@
       proj: {}, endings: {},
       ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
       arche: [], term: [], notes: [],
-      stats: { taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
+      stats: { taps: 0, crafts: 0, tries: 0, play: 0, cyclePlay: 0, splits: {}, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
       visiteur: { next: 0, clins: {} },
       don: null, donsOffre: [],
-      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null }, gestes: {}, gestesVu: {} },
+      cycle: 1, echoes: 0, meta: { endings: {}, capsule: false, capsuleText: "", traces: 0, tracesTotal: 0, mem: {}, ev: {}, ruins: {}, lastSplits: {}, bestSplits: {}, prevBestSplits: {}, lastCycle: null, curios: {}, curioHearts: 0, trans: {}, hints_endings: {}, troqueurDelivered: 0, rituals: {}, fouilles: {}, cotes: {}, exlong: null, jours: { n: 0, dernier: "", cadeau: null }, gestes: {}, gestesVu: {} },
       livre: { p: {}, vu: {} }, revus: {}, questions: {}, repaired: {}, signes: {}, boosts: {},
       eventsSeen: {}, termMode: "arche",
       settings: { sound: true, vibe: true, theme: "auto", largeText: false },
@@ -445,9 +445,19 @@
     function zoneOpen(zid) { return !!S.zones[zid]; }
     E.zoneOpen = zoneOpen;
     E.openZones = () => D.ZONES.filter((z) => zoneOpen(z.id));
+    function recordSplit(zid) {
+      if (!zid || zid === "lisiere") return;
+      S.stats = S.stats || {};
+      S.stats.splits = S.stats.splits || {};
+      if (!S.stats.splits[zid]) {
+        const cp = Number(S.stats.cyclePlay);
+        S.stats.splits[zid] = Math.max(1, Math.round(Number.isFinite(cp) && cp > 0 ? cp : (S.stats.play || 1)));
+      }
+    }
     function unlockZone(zid) {
       if (S.zones[zid]) return;
       S.zones[zid] = true;
+      recordSplit(zid);
       E.emit("zone", zid);
       E.emit("struct");
     }
@@ -631,6 +641,7 @@
       if (done) {
         p.done = true;
         if (S.meta.achats) S.meta.achats = false; // le premier passage du cycle ferme les achats
+        recordSplit(zid);
         E.emit("passdone", { z: zid, tr: PASS[zid].tr });
         unlockZone(zid);
         checkAges();
@@ -4493,6 +4504,20 @@
         if (cnt > 0) ruins[id] = Math.min(cnt, cap);
       });
       old.meta.ruins = ruins;
+      const curSplits = (old.stats && old.stats.splits && typeof old.stats.splits === "object") ? old.stats.splits : {};
+      old.meta.bestSplits = (old.meta.bestSplits && typeof old.meta.bestSplits === "object") ? old.meta.bestSplits : {};
+      const prevBest = Object.assign({}, old.meta.bestSplits);
+      for (const z in curSplits) {
+        const t = Math.floor(Number(curSplits[z]));
+        if (t > 0 && (!old.meta.bestSplits[z] || t < old.meta.bestSplits[z])) old.meta.bestSplits[z] = t;
+      }
+      old.meta.lastSplits = Object.assign({}, curSplits);
+      old.meta.prevBestSplits = prevBest;
+      old.meta.lastCycle = {
+        cycle: old.cycle || 1,
+        play: Math.max(1, Math.round((old.stats && old.stats.cyclePlay) || (old.stats && old.stats.play) || 0)),
+        zones: Object.keys(old.zones || {}).length
+      };
       const n = freshState(now());
       n.known = old.known; n.hints = old.hints; n.frags = old.frags; n.secrets = old.secrets; n.studied = old.studied || {};
       n.seen = old.seen; n.meta = old.meta; n.meta.ruins = Object.assign({}, ruins); n.settings = old.settings; n.pins = old.pins || {};
@@ -4508,7 +4533,7 @@
       // les mains se souviennent un peu : une part de l’expérience reste
       for (const g in old.skills || {}) n.skills[g] = Math.floor((old.skills[g] || 0) * D.SKILL.keep);
       n.introSeen = true;
-      n.stats = Object.assign({}, old.stats);
+      n.stats = Object.assign({}, old.stats, { cyclePlay: 0, splits: {} });
       // le tutoriel déjà vu, les conseils déjà lus et la version vue ne reviennent pas
       for (const k in old.flags) if (k === "tuto" || k === "ver" || k === "milesSeen" || k === "roueSeen" || k.indexOf("tip_") === 0) n.flags[k] = old.flags[k];
       if (old.flags && (old.flags.registre || (old.secrets && old.secrets.cregistre))) n.flags.registre = true;
@@ -4629,6 +4654,10 @@
       S.repaired = S.repaired || {};
       const firstRepair = !S.repaired[id];
       S.repaired[id] = (S.repaired[id] || 0) + 1;
+      S.flags = S.flags || {};
+      S.flags.repairedCycle = S.flags.repairedCycle || {};
+      const firstInCycle = !S.flags.repairedCycle[id];
+      S.flags.repairedCycle[id] = 1;
       if (firstRepair && RECIT.pages) {
         for (const pid in RECIT.pages) {
           if (S.livre && S.livre.p && S.livre.p[pid]) continue;
@@ -4646,7 +4675,11 @@
       recalc();
       domChanged();
       E.emit("struct");
-      return { ok: true, id, cost };
+      return { ok: true, id, cost, echo: E.ruinEcho(id), firstInCycle };
+    };
+    E.ruinEcho = function (id) {
+      const it = item(id), ec = (D.RUINES && D.RUINES.echos) || {};
+      return ec[id] || (it && ec[it.t]) || "";
     };
     E.ruinName = function (id) {
       const it = item(id);
@@ -4654,6 +4687,37 @@
       if (it.ruine) return it.ruine;
       if (it.t === "mach") return (it.sn || it.n) + " rouillé";
       return (it.sn || it.n) + " en ruine";
+    };
+    /* Miroir du cycle : compare le rythme d’ouverture des terres entre le cycle actuel (ou celui qui vient de s’achever)
+     * et les cycles précédents. */
+    E.cycleMirror = function () {
+      const curMap = (S.stats && S.stats.splits) || {};
+      const lastMap = (S.meta && S.meta.lastSplits) || {};
+      const bestMap = (S.meta && S.meta.bestSplits) || {};
+      const prevBestMap = (S.meta && S.meta.prevBestSplits) || {};
+      const hasCur = Object.keys(curMap).length > 0;
+      const activeSplits = hasCur ? curMap : lastMap;
+      const refSplits = hasCur ? lastMap : prevBestMap;
+      const recSplits = hasCur ? bestMap : prevBestMap;
+      const rows = [];
+      for (const z of D.ZONES) {
+        if (z.id === "lisiere") continue;
+        const cur = activeSplits[z.id] || 0;
+        const prev = refSplits[z.id] || 0;
+        const best = recSplits[z.id] || 0;
+        if (!cur && !prev && !best) continue;
+        const ref = prev || best;
+        const speedup = cur > 0 && ref > cur ? Math.round((ref / cur) * 10) / 10 : 0;
+        const isRecord = cur > 0 && ref > 0 && cur < (best || Infinity);
+        rows.push({ z: z.id, n: z.n, cur, prev, best: best ? Math.min(best, cur || Infinity) : cur, speedup, isRecord });
+      }
+      return {
+        cycle: hasCur ? (S.cycle || 1) : Math.max(1, (S.cycle || 2) - 1),
+        isJustWoken: !hasCur && Object.keys(lastMap).length > 0,
+        cyclePlay: Math.round((S.stats && S.stats.cyclePlay) || 0),
+        lastCycle: (S.meta && S.meta.lastCycle) || null,
+        rows
+      };
     };
 
     /* ------------------------------------------------------ temps */
@@ -4680,7 +4744,10 @@
         S.intuAcc += (c.intu / 60) * dt;
         if (S.intuAcc >= 1) { const k = Math.floor(S.intuAcc); S.intu += k; S.intuAcc -= k; }
       }
-      if (!offline) S.stats.play += dt; // le temps passé à jouer, pas l’absence
+      if (!offline) {
+        S.stats.play += dt; // le temps passé à jouer, pas l’absence
+        S.stats.cyclePlay = (S.stats.cyclePlay || 0) + dt;
+      }
       E.terresCheck();
     }
     E.step = step;
@@ -5206,7 +5273,13 @@
       if (!o.visiteur || typeof o.visiteur !== "object") o.visiteur = { next: 0, clins: {} };
       o.stats = Object.assign({ visiteurs: 0, visiteursVus: 0, visiteursClins: 0 }, o.stats);
       o.exp = Object.assign({ active: null, done: {} }, o.exp);
-      o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0, caillouMined: 0 }, o.stats);
+      o.stats = Object.assign({ taps: 0, crafts: 0, tries: 0, play: 0, cyclePlay: 0, splits: {}, caillouMined: 0 }, o.stats);
+      if (!o.stats.splits || typeof o.stats.splits !== "object" || Array.isArray(o.stats.splits)) o.stats.splits = {};
+      if (!Number.isFinite(Number(o.stats.cyclePlay)) || o.stats.cyclePlay < 0) o.stats.cyclePlay = o.stats.play || 0;
+      for (const k of ["lastSplits", "bestSplits", "prevBestSplits"]) {
+        if (!o.meta[k] || typeof o.meta[k] !== "object" || Array.isArray(o.meta[k])) o.meta[k] = {};
+      }
+      if (!o.meta.lastCycle || typeof o.meta.lastCycle !== "object" || Array.isArray(o.meta.lastCycle)) o.meta.lastCycle = null;
       o.gt = { id: o.gt && o.gt.id || null, p: (o.gt && o.gt.p) || 0 };
       if (!o.tried || typeof o.tried !== "object") o.tried = {};
       const ec = Number(o.ecus);
