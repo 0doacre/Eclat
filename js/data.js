@@ -1483,7 +1483,31 @@
   /* Les ruines : ce qu’un Semeur a construit attend le suivant */
   D.RUINES = {
     cap: 3,           // nombre maximum d’exemplaires en ruine par machine ou extracteur
-    part: 0.1         // fraction du coût de base de la recette pour réparer
+    part: 0.1,        // fraction du coût de base de la recette pour réparer
+    echos: {
+      cabane: "Les perches de frêne tenaient encore ; un nœud neuf suffit à tendre le toit.",
+      carriere: "Le treuil grince puis reprend son pli, là où d’autres mains l’avaient laissé.",
+      argiliere: "Sous la croûte sèche, la tranchée garde encore l’empreinte des pelles d’avant.",
+      silo: "Les clayonnages ont blanchi au soleil, mais le fond est resté sec.",
+      pecherie: "Les pieux de rive ont résisté au courant ; la nasse retrouve sa place.",
+      pompe: "Un joint neuf amorce le cylindre : l’eau remonte aussitôt, claire et régulière.",
+      charbonniere: "La meule froide sent encore la fumée lente du dernier Semeur.",
+      mine_cuivre: "Les étais avaient fléchi sans rompre ; la galerie s’ouvre à nouveau.",
+      mine_fer: "Sur le rail rouillé, la benne attendait à mi-pente.",
+      mine_or: "Le tamis de bois porte encore quelques paillettes oubliées dans ses rainures.",
+      sabliere: "Le vent avait recouvert la rampe, mais le châssis est intact.",
+      mine_plomb: "La lampe accrochée à l’entrée avait gardé une mèche sèche.",
+      soufriere: "Les conduits de pierre jaune fument dès qu’on dégage la bouche.",
+      puits: "Le balancier d’acier repart d’un coup d’épaule, lourd et fidèle.",
+      foreuse: "Les tiges de forage vibrent et retrouvent la veine profonde.",
+      automate_bois: "Le contrepoids attendait à mi-course : sitôt tendu, l’échappement repart.",
+      presse_mecanique: "Sous la graisse figée, la vis sans fin tourne sans jeu.",
+      tour_vapeur: "La chaudière garde la trace des anciennes chauffes ; la soupape chante au premier souffle.",
+      automate_elec: "Une étincelle franche au collecteur, et le bobinage reprend son ronronnement.",
+      ligne_assemblage: "Les bras articulés s’alignent un à un sur leurs repères d’atelier.",
+      ext: "Les fondations tenaient bon : quelques pièces suffisent à remettre l’ouvrage en route.",
+      mach: "Sous la poussière du cycle passé, les engrenages n’attendaient qu’une main."
+    }
   };
 
   /* Les commandes : le joueur commande un objet et une quantité, ses machines libres s’y mettent */

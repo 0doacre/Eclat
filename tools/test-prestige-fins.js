@@ -152,4 +152,49 @@ test("Persistance immuable à travers la relève des Semeurs", () => {
   assert.strictEqual(ESuivant.heat(), 600, "Chauffer toujours actif après relève");
 });
 
+test("Miroir du cycle : jalons de vitesse par terre, comparaison au cycle précédent et record", () => {
+  const E = createEngine();
+  const S = E.state;
+  E.step(1800, false); // 30 min de jeu actif au cycle 1
+  S.exp.done.lisiere = 2;
+  S.pass.plaine = { paid: {}, done: false };
+  const cost1 = E.passCost("plaine");
+  for (const k in cost1) S.inv[k] = cost1[k];
+  E.passPour("plaine");
+  assert.strictEqual(S.stats.splits.plaine, 1800, "La Plaine est franchie à 1800 s au cycle 1");
+
+  E.newCycle();
+  assert.strictEqual(E.state.meta.lastSplits.plaine, 1800, "Le temps du cycle 1 est archivé dans lastSplits");
+  assert.strictEqual(E.state.meta.bestSplits.plaine, 1800, "Le record initial est de 1800 s");
+  const mWake = E.cycleMirror();
+  assert.strictEqual(mWake.isJustWoken, true, "Juste après la relève, le miroir affiche le bilan du cycle achevé");
+
+  E.step(720, false); // 12 min au cycle 2
+  E.state.pass.plaine = { paid: {}, done: false };
+  const cost2 = E.passCost("plaine");
+  for (const k in cost2) E.state.inv[k] = cost2[k];
+  E.passPour("plaine");
+  const m2 = E.cycleMirror();
+  const rPlaine = m2.rows.find((r) => r.z === "plaine");
+  assert.ok(rPlaine, "La ligne de la Plaine figure dans le miroir du cycle 2");
+  assert.strictEqual(rPlaine.cur, 720);
+  assert.strictEqual(rPlaine.prev, 1800);
+  assert.strictEqual(rPlaine.speedup, 2.5, "Accélération ×2,5 calculée entre 1800 s et 720 s");
+  assert.strictEqual(rPlaine.isRecord, true, "Nouveau record détecté");
+});
+
+test("Récit d’éveil sur les ruines : chaque ruine réparée livre son écho atmosphérique", () => {
+  const E = createEngine();
+  E.state.meta.ruins.cabane = 2;
+  const cost = E.ruinCost("cabane");
+  for (const k in cost) E.state.inv[k] = cost[k] * 2;
+  const r1 = E.repair("cabane");
+  assert.strictEqual(r1.ok, true);
+  assert.ok(r1.echo && r1.echo.includes("frêne"), "Écho atmosphérique propre à la cabane");
+  assert.strictEqual(r1.firstInCycle, true, "Première réparation du cycle signalée");
+  const r2 = E.repair("cabane");
+  assert.strictEqual(r2.ok, true);
+  assert.strictEqual(r2.firstInCycle, false, "Seconde réparation du même ouvrage dans le cycle ne répète pas le toast");
+});
+
 console.log("✓ Tous les tests de la deuxième couche de prestige sont réussis.");

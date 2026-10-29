@@ -100,8 +100,10 @@
       const shownCost = res && res.ok ? res.cost : cost;
       const costTxt = Object.keys(shownCost).map((k) => itemPill(k, { qty: shownCost[k], lack: (st.inv[k] || 0) < shownCost[k] })).join(" ");
       const name = E.ruinName(id);
+      const echo = E.ruinEcho ? E.ruinEcho(id) : "";
       return '<div class="dom-ruine" data-druin="' + id + '">' +
         '<div class="grow"><div class="small"><b>' + esc(name) + "</b> · réparer : " + costTxt + "</div>" +
+        (echo ? '<div class="tiny dim serif ruin-echo">« ' + esc(echo) + " »</div>" : "") +
         (count > 1 ? '<div class="tiny muted">' + count + " ruines à cet endroit</div>" : "") +
         "</div>" +
         '<button class="btn small' + (can ? " pri" : " nope") + '" data-repair="' + id + '">Réparer</button>' +
@@ -1124,8 +1126,9 @@
         if (r.ok) {
           A.init(); A.click(); vibe([10, 30]);
           const it = I[id];
-          if (it.t === "ext") toast("<b>" + esc(I[id].n) + "</b> : réparation faite, de nouveau au travail.", { key: "repair" });
-          else toast("<b>" + esc(I[id].n) + "</b> : réparation faite. Elle est au repos, dans l’onglet Machines.", { key: "repair" });
+          const echoTxt = r.echo && r.firstInCycle ? ' <i>« ' + esc(r.echo) + ' »</i>' : "";
+          if (it.t === "ext") toast("<b>" + esc(I[id].n) + "</b> : réparation faite, de nouveau au travail." + echoTxt, { key: "repair" });
+          else toast("<b>" + esc(I[id].n) + "</b> : réparation faite. Elle est au repos, dans l’onglet Machines." + echoTxt, { key: "repair" });
         } else {
           A.fail(0);
           if (r.missing) toast("Il manque encore : " + Object.keys(r.missing).map((m) => r.missing[m] + " " + esc(I[m].n.toLowerCase())).join(", ") + ".", { key: "repair" });

@@ -54,7 +54,10 @@
       });
       E.on("passdone", (o) => {
         const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
-        fete({ ic: "🚧", kick: "Passage franchi", title: D.PASSAGES[o.z].n, sub: "+" + o.tr + " ✦ Traces à ta prochaine relève", tier: 2 });
+        const zn = zoneName(o.z);
+        const resList = (E.ZONES[o.z] && E.ZONES[o.z].res || []).map((r) => I[r] && I[r].n.toLowerCase()).filter(Boolean).slice(0, 3).join(", ");
+        const sub = "+" + o.tr + " ✦ Traces à ta prochaine relève" + (resList ? " · " + resList : "");
+        fete({ ic: "🧭", kick: "Passage franchi · " + D.PASSAGES[o.z].n, title: zn, sub, tier: 2 });
         if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
           "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
@@ -63,9 +66,15 @@
       E.on("zone", (z) => {
         U.zone = z;
         // la nouvelle terre s’allume dans le Domaine
-        setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) { el.classList.add("born"); setTimeout(() => el.classList.remove("born"), 1800); } }, 320);
+        setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) { el.classList.add("born"); setTimeout(() => el.classList.remove("born"), 2400); } }, 320);
         // la découverte qui ouvre cette terre le dit déjà (« Débloque : … ») : pas de second message
-        setTimeout(() => { if (Date.now() - (U.lastDiscover || 0) > 1500) toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans le Domaine."); }, 80);
+        setTimeout(() => {
+          if (Date.now() - (U.lastDiscover || 0) > 1500) {
+            const st = S(), cur = st.stats && st.stats.splits && st.stats.splits[z], prev = st.meta && st.meta.lastSplits && st.meta.lastSplits[z];
+            const pace = cur > 0 && prev > cur + 5 ? " <b>(×" + String(Math.round((prev / cur) * 10) / 10).replace(".", ",") + " plus vite qu’au cycle précédent)</b>" : "";
+            toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans le Domaine." + pace);
+          }
+        }, 80);
         badge("carte");
         setTimeout(() => { if (U.tab === "domaine") Dom.focusZone(z); else U.domOpen = z; }, 50);
       });
