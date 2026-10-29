@@ -1,0 +1,20 @@
+{
+  "tool": "image_gen.imagegen (built-in)",
+  "prompts": [
+    {
+      "id": "lisiere-esquisse",
+      "prompt": "Edit target: attached landscape of La Lisière. Preserve EXACT landscape composition, aspect ratio, tree placement on right, clearing on left, and irregular transparent outer silhouette so this can crossfade perfectly with the existing color painting. Transform into a delicate unfinished graphite field sketch: faint distant tree silhouettes, sparse loose confident curved pencil lines, unfinished oak on right, much white/transparent negative space, only a few extremely pale olive watercolor hints. No blur filter; actually redraw as an unfinished observational pencil sketch with pressure variation and lost-and-found edges. No labels or text, no new objects, no extra camp. Entire exterior remains genuinely transparent.",
+      "referenced_image_paths": [
+        "C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/alpha-main/assets/carnet/lands/lisiere.webp"
+      ]
+    },
+    {
+      "id": "camp",
+      "prompt": "Use case: illustration-story. Small isolated naturalist watercolor vignette for Éclat, Le Carnet du Semeur. A very modest prehistoric bivouac at the forest edge: a low lean-to of branches and a muted tan cloth, a tiny stone fire ring with embers, a tied bundle of sticks. Three-quarter eye-level view, soft daylight from upper left. Ground-level composition wider than tall. Fine human sepia ink, dry graphite and granular muted olive/ochre watercolor, restrained realistic field journal illustration matching a botanical landscape. Soft broken edges fade to actual transparency around ground, no rectangular background, no text, no people, no fantasy runes, no modern camping gear. Keep the camp simple, warm and welcoming; it occupies the foreground of a landscape."
+    },
+    {
+      "id": "grotte",
+      "prompt": "Use case: illustration-story. A beautiful small collectible field-journal study for Éclat, Le Carnet du Semeur: fragment of the interior limestone wall of 'La Grotte aux Mains'. Broad irregular natural stone surface with THREE ancient red-ochre negative hand stencils (palm silhouettes with five plausible fingers), one softly faded, differing sizes, spaced naturally. Not freshly painted: ancient mineral pigment weathered into the rock. Warm oblique torchlight from lower left reveals limestone texture and shallow fissures, right edge falls into cool brown shadow. Hand-drawn sepia/graphite contour and granular subdued watercolor, realistic archaeological notebook study, delicate intentional human marks. Vignette wider than tall, isolated irregular feathery outer edges to genuine transparency, no rectangular card, no paper background, no frame, no text, no stars, no symbols, no people, no severed hands, no creatures, no invented narrative. Paint the stone wall and the stencils as one intact image; they will be revealed together in the journal."
+    }
+  ]
+}
