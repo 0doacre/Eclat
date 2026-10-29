@@ -4,6 +4,7 @@
   "private": true,
   "description": "Éclat — du silex aux étoiles. Un jeu de craft mobile : découvre les recettes par le geste, bâtis ton usine, traverse les âges, perce le secret de l’étoile rouge.",
   "scripts": {
+    "test:domaine-monde-ui": "node tools/test-domaine-monde-ui.js",
     "test:mode-test-ui": "node tools/test-mode-test-ui.js",
     "test:sentier-chantier-ui": "node tools/test-sentier-chantier-ui.js",
     "test:age-os-carnet-ui": "node tools/test-age-os-carnet-ui.js",
