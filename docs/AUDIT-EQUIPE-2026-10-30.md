@@ -6,9 +6,9 @@ Rédigé le 30 octobre 2026 par Claude. Version 0.37.0 (`main` et `prewiew-desig
 
 ## 1. Ce que j'ai vu, et ce que je n'ai pas vu
 
-- **[J]** La preview `https://craftgame-wrr.pages.dev/` (branche `prewiew-design`), à 390 × 812, dans les deux styles « Atlas » (sombre) et « Carnet » (papier). Environ 10 minutes : carte d'ouverture, guide « Premiers pas », récolte, premier manche, Domaine, Atelier, Carte, Carnet, Arbre, Journal, menu. **Je n'ai pas dépassé l'âge du Bois.**
+- **[J]** La preview `https://craftgame-wrr.pages.dev/` (branche `prewiew-design`), à 390 × 812, dans les deux styles « Atlas » (sombre) et « Carnet » (papier). Environ 10 minutes en partie neuve (carte d'ouverture, guide « Premiers pas », récolte, premier manche, Domaine, Atelier, Carte, Carnet, Arbre, Journal, menu), puis une visite en **mode test** à l'âge de l'Acier (7/15, recettes et matières données) pour juger la densité du milieu de partie. **Je n'ai pas joué les âges un à un** : le milieu est jugé sur une copie préparée, pas sur une progression vécue.
 - **[M]** `npm test` vert sur l'ancienne branche ; `tools/sim.js` et `tools/sim-passages.js` lancés sur cette même branche. Les rythmes cités viennent de `docs/PLAN-ALPHA.md` pour la 0.37 : fin du bot en 1 h 18 (4 appuis/s), plus de 2 h 50 avec les durées manuelles.
-- **Non vu** : tout ce qui est après l'âge du Bois, le mode « Classique », le mode test, les comptes, le son, un vrai téléphone, un lecteur d'écran. **Aucun joueur observé.**
+- **Non vu** : le jeu au-delà de l'Acier, une progression réelle du milieu, le mode « Classique », le mode test, les comptes, le son, un vrai téléphone, un lecteur d'écran. **Aucun joueur observé.**
 - Rien du jeu n'a été modifié. Seuls des documents sont ajoutés.
 
 ## 2. Le jeu aujourd'hui
@@ -36,6 +36,17 @@ Rédigé le 30 octobre 2026 par Claude. Version 0.37.0 (`main` et `prewiew-desig
 5. Barre du haut : un bouton de style qui s'appelle « Carnet » alors qu'un onglet du bas s'appelle aussi « Carnet » ; deux pastilles sans nom (« 0/3 », « 1 »).
 6. Onglet Carnet : le texte d'aide prend la moitié de l'écran avant la première recette.
 7. Console : des appels `navigator.vibrate` avant le premier appui.
+
+## 3 bis. Le milieu de partie, vu à l'âge de l'Acier [J, mode test]
+
+- **Le haut de l'écran est pris par du « chrome » [J].** À 390 × 812, la zone de contenu ne fait que 588 px quand s'empilent l'en-tête, la ligne d'ambiance, la bannière « Une nouvelle version d'Éclat est prête » et (en mode test seulement) la barre « Mode test ». Même sans ces deux bandeaux, l'objectif, la carte « Gisement à exploiter », la carte « Relais conseillé » et la ligne d'étape passent avant le premier gisement.
+- **Le Domaine est très long [M].** 3 044 px de haut (5 écrans) pour 4 gisements de 130 px : chaque terre déroule une grande planche (ici le Désert de Verre) avant ses ressources. C'est beau, mais on ne voit pas ce qui produit.
+- **L'Atelier est très long [M].** 3 071 px. Le poste de travail (Établi, Foyer, Four, Poste de frappe) est sous les cartes « Passer le relais » et « Déchiffrer · 54 ». « Tes matières » énumère tout, y compris les objets à 0 ou à 1.
+- **Le Carnet [M].** 1 338 px, 30 recettes apprises, rangées par âge repliables : la structure est bonne. Le texte d'aide en tête reste le défaut déjà noté.
+- **Les offres de relève (« Relais conseillé », « Passer le relais ») s'affichent à l'Atelier et au Domaine à l'âge de l'Acier [J].** À ce stade le joueur de mon test n'avait rien fait ; **[H]** un vrai joueur peut l'ignorer ou, pire, la déclencher trop tôt. À observer.
+- **Cinq pastilles dans l'en-tête** (style, quêtes « 0/3 », Traces « +30 », Intuition, ☰) : lisibles par icône, mais sans noms.
+- **Le Journal [J]** : 2/38 fragments ; les listes « Encore à découvrir » sont claires et donnent envie.
+- **La bannière « nouvelle version prête » est apparue immédiatement après la création de la copie de test [J].** C'est peut-être un effet du mode test ; à vérifier qu'un joueur qui vient d'ouvrir le jeu ne la voit pas.
 
 ## 4. Audit « joueur ou joueuse »
 
@@ -70,7 +81,7 @@ Ta mission est de **propager le papier** et de **finir le Carnet** sans rien cha
 
 ### Pour moi (ni l'un ni l'autre)
 
-- **Jouer le milieu et la fin en mode Carnet** (sauvegarde avancée ou mode test), puis rouvrir cet audit avec ce que j'y vois.
+- **Jouer le milieu et la fin en mode Carnet** : le milieu est vu une première fois (section 3 bis), reste à jouer une vraie progression de l'Acier aux fins, et à relire les offres de relève.
 - **Préparer et mener le test de 5 à 8 joueurs observés** (grille, consigne, mesures : premier objet en moins de 2 min sans aide ; ce que la personne dit faire ensuite à la 10e minute ; moment d'arrêt). Cible : 80 % fabriquent leur premier objet en moins de 2 min, la moitié reviennent le lendemain.
 - **Relire et fusionner** les branches de Gemini et de Codex, tester chaque lot dans le jeu, jamais sur la foi du compte rendu.
 - **Équilibrage et rythme** : relancer `tools/sim-passages.js` sur la 0.37 avec les profils de joueur (lot F), vérifier les âges à une minute, proposer la liste des gestes à rééquilibrer. L'auteur tranche.
