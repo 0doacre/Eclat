@@ -4,7 +4,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 
 | | |
 |---|---|
-| Boutons relevés | 250 |
+| Boutons relevés | 223 |
 | Sans explication | 0 |
 | Écrans | le Domaine, la Carte, l’Atelier et ses pages, le Carnet, l’Arbre, le Journal et ses onglets, le Cosmos, une fiche, le Comptoir, le menu, la fiche d’aide |
 | Parties | une neuve, une avancée (`save-v5-age8-usine`), la même en écran large |
@@ -18,7 +18,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | (sans mot) | `button[data-m="close"].modal-x` | lecteur d’écran : Fermer |
 | avancée | Compris | `button[data-m="close"].btn` | fiche Aide |
 
-## Domaine (38 boutons, 0 sans explication)
+## Domaine (50 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -26,14 +26,15 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | neuve | Carnet | `button#atlasToggle.icon-btn` | info-bulle : Carnet du Semeur actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique |
 | neuve | 1 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | neuve | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
-| neuve | Le camp | `button#mw-camp[data-world-camera="camp"].mw-marker.mw-camp-label` | info-bulle : Se rapprocher : Le camp |
-| neuve | (sans mot) | `button[data-harv="lisiere:bois"].mw-gather` | info-bulle : Bois · maintenir pour récolter ; lecteur d’écran : Récolter Bois · 0 en réserve |
-| neuve | + | `button[data-world-manage="lisiere:bois"].mw-manage` | info-bulle : Installer ou améliorer les extracteurs : Bois ; lecteur d’écran : Gérer les extracteurs : Bois ; guide ([data-world-manage="lisiere:bois"], [data-xadd="lisiere:bois"]) |
-| neuve | ◇ | `button#mw-p-lisiere-0[data-world-place="p:lisiere:0"].mw-marker.mw-place-hit` | info-bulle : Le Grand Chêne ; lecteur d’écran : Le Grand Chêne |
-| neuve | ◇ | `button[data-world-goal=""]` | info-bulle : Voir l’objectif et retrouver le prochain lieu ; lecteur d’écran : Objectif et prochaine trace |
-| neuve | ⌘ | `button[data-world-zone-list=""]` | info-bulle : Choisir une terre connue et régler le cadrage ; lecteur d’écran : Terres connues et cadrage |
-| neuve | ⌂ | `button[data-world-camera="camp"]` | info-bulle : Revenir au camp ; lecteur d’écran : Revenir au camp |
-| neuve | ⚒ | `button[data-world-panel="gestion"]` | info-bulle : Installations, ruines, Comptoir et Grands Œuvres ; lecteur d’écran : Gestion du Domaine |
+| neuve | OBJECTIF Manche ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
+| neuve | NOUVELLE RECETTE · 1 RESSOURCE « Une branche bien droite, écorcée au caillou, tient bien en main. » | `div[data-goto="manche"].grow` | guide (.goal-card) |
+| neuve | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
+| neuve | Explorer · Le Grand Chêne | `button[data-exp="lisiere"].btn` | info-bulle : Lancer cette exploration : elle avance toute seule |
+| neuve | Maîtrise · 0 % ? | `summary` | info-bulle : Voir les objectifs de cette terre et son bonus à la relève |
+| neuve | ? | `button[data-aide="maitrise"].btn-aide.mini` | info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission |
+| neuve | (sans mot) | `button[data-harv="lisiere:bois"].gis-ic.hand` | lecteur d’écran : Récolter : Bois |
+| neuve | Bois 🖐️ à la main Tu en as 0 | `button[data-gsheet="lisiere:bois"].gis-body` | lecteur d’écran : Gisement : Bois |
+| neuve | Récolter | `button[data-hloop="lisiere:bois"].mini.harvest` | info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Bois ; guide ([data-hloop="lisiere:bois"]) |
 | neuve | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | neuve | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | neuve | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
@@ -44,70 +45,33 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | +18 | `button#memBtn.chip.mem` | lecteur d’écran : Traces et Mémoire des mains ; guide (#memBtn) |
 | avancée | 22 | `button#intuBtn.chip.intu` | lecteur d’écran : Intuition ; guide (#intuBtn) |
 | avancée | ☰ | `button#menuBtn.icon-btn` | lecteur d’écran : Menu |
-| avancée | ✓ | `button#mw-p-collines-1[data-world-place="p:collines:1"].mw-marker.mw-place-hit` | info-bulle : Le Sommet ; lecteur d’écran : Le Sommet |
-| avancée | ◇ | `button#mw-p-collines-2[data-world-place="p:collines:2"].mw-marker.mw-place-hit` | info-bulle : Un lieu à découvrir ; lecteur d’écran : Un lieu à découvrir |
-| avancée | (sans mot) | `button[data-harv="mine:fer_min"].mw-gather` | info-bulle : Minerai de fer · maintenir pour récolter ; lecteur d’écran : Récolter Minerai de fer · 543 en réserve |
-| avancée | + | `button[data-world-manage="mine:fer_min"].mw-manage` | info-bulle : Installer ou améliorer les extracteurs : Minerai de fer ; lecteur d’écran : Gérer les extracteurs : Minerai de fer |
-| avancée | ✓ | `button#mw-p-mine-0[data-world-place="p:mine:0"].mw-marker.mw-place-hit` | info-bulle : Le Filon Profond ; lecteur d’écran : Le Filon Profond |
-| avancée | ◇ | `button#mw-p-mine-1[data-world-place="p:mine:1"].mw-marker.mw-place-hit` | info-bulle : Un lieu à découvrir ; lecteur d’écran : Un lieu à découvrir |
-| avancée | ◇ | `button[data-world-goal=""]` | info-bulle : Voir l’objectif et retrouver le prochain lieu ; lecteur d’écran : Objectif et prochaine trace |
-| avancée | ⌘ | `button[data-world-zone-list=""]` | info-bulle : Choisir une terre connue et régler le cadrage ; lecteur d’écran : Terres connues et cadrage |
-| avancée | ⌂ | `button[data-world-camera="camp"]` | info-bulle : Revenir au camp ; lecteur d’écran : Revenir au camp |
-| avancée | ⚒ | `button[data-world-panel="gestion"]` | info-bulle : Installations, ruines, Comptoir et Grands Œuvres ; lecteur d’écran : Gestion du Domaine |
+| avancée | OBJECTIF Régulateur à boules ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
+| avancée | Arbre | `button[data-arbre-obj=""].gmiles` | info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card) |
+| avancée | Âge de l’Électricité · 0/3 étapes | `button[data-miles=""].gprog-row` | info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card) |
+| avancée | NOUVELLE RECETTE · 2 RESSOURCES « Une bande de bronze enroulée en spirale restitue l'effort quand on la relâche. » | `div[data-goto="ressort"].grow` | guide (.goal-card) |
+| avancée | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
+| avancée | Compris | `button[data-tip="tip_site"].btn.ghost` | info-bulle : Fermer cette astuce |
+| avancée | Passer le relais (+18 ) | `button[data-m="releve"].btn` | info-bulle : Voir les gains de Traces et les bonus de la prochaine relève |
+| avancée | Voir : Torche | `button[data-goto="torche"].btn` | guide (.dom-regle.gene) |
+| avancée | Maîtrise · 80 % ? | `summary` | info-bulle : Voir les objectifs de cette terre et son bonus à la relève |
+| avancée | ? | `button[data-aide="maitrise"].btn-aide.mini` | info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission |
+| avancée | (sans mot) | `button[data-harv="mine:fer_min"].gis-ic.hand` | lecteur d’écran : Récolter : Minerai de fer |
+| avancée | Minerai de fer +48/min Tu en as 543 · 1 mine de fer | `button[data-gsheet="mine:fer_min"].gis-body` | lecteur d’écran : Gisement : Minerai de fer |
+| avancée | Récolter | `button[data-hloop="mine:fer_min"].mini.harvest` | info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer |
+| avancée | + mine de fer | `button[data-xadd="mine:fer_min"][data-n="1"].mini.lbl` | info-bulle : Poser : Mine de fer (débit : 48/min → 96/min) ; lecteur d’écran : Poser : Mine de fer |
+| avancée | 3 autre terres · +2,16 k/min en tout voir ▾ | `button[data-dall=""].dom-more` | info-bulle : Afficher ou replier les autres terres |
+| avancée | 0 machine au travail · 10 au repos · voir ▸ | `button[data-tab2="machines"][data-dmach=""].dom-more.dom-mach-link` | guide ([data-tab2="machines"]) |
+| avancée | Ouvrir le Comptoir | `button[data-comptoir=""].btn` | guide (#dcomptoir) |
+| avancée | Supraconducteur 0 / 380 | `div[data-goto="supra"].cost-row` | info-bulle : Supraconducteur (toucher pour inspecter) |
+| avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
+| avancée | Alimenté | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
+| avancée | Bois+14/min8,73 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 | avancée | Domaine | `button[data-tab="domaine"]` | info-bulle : Tes terres, tes gisements et ce qu’ils produisent |
 | avancée | Carte | `button[data-tab="carte"]` | info-bulle : Le monde, terre par terre, et ce qu’il reste à explorer |
 | avancée | Atelier | `button[data-tab="atelier"]` | info-bulle : Poser tes ressources, lancer une action |
 | avancée | Arbre | `button[data-tab="arbre"]` | info-bulle : Qui sert à quoi : une recette, ses ingrédients, ses usages |
 | avancée | Carnet | `button[data-tab="carnet"]` | info-bulle : Toutes tes recettes, avec la quantité et les commandes |
 | avancée | Journal | `button[data-tab="journal"]` | info-bulle : Ce que tu as trouvé et compris ; guide (#tabs [data-tab="journal"]) |
-
-## Domaine · terres et cadrage (4 boutons, 0 sans explication)
-
-| Partie | Bouton | Repère | Expliqué par |
-|---|---|---|---|
-| neuve | (sans mot) | `button[data-world-close-drawer=""]` | info-bulle : Fermer les détails ; lecteur d’écran : Fermer les détails |
-| neuve | Vue d’ensemble ↗ | `button[data-world-camera="all"].btn.mw-zone-link` | info-bulle : Voir l’ensemble des terres connues |
-| avancée | (sans mot) | `button[data-world-close-drawer=""]` | info-bulle : Fermer les détails ; lecteur d’écran : Fermer les détails |
-| avancée | Vue d’ensemble ↗ | `button[data-world-camera="all"].btn.mw-zone-link` | info-bulle : Voir l’ensemble des terres connues |
-
-## Domaine · gestion (34 boutons, 0 sans explication)
-
-| Partie | Bouton | Repère | Expliqué par |
-|---|---|---|---|
-| neuve | Illustrations | `button[data-world-pages=""].btn` | info-bulle : Consulter les illustrations découvertes |
-| neuve | Vue d’ensemble | `button[data-world-camera="all"].btn` | info-bulle : Voir les terres connues |
-| neuve | + | `button[data-world-zoom="in"].btn` | info-bulle : Se rapprocher ; lecteur d’écran : Se rapprocher |
-| neuve | 📜 OBJECTIF Manche ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
-| neuve | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
-| neuve | 🧭 Explorer · Le Grand Chêne | `button[data-exp="lisiere"].btn` | info-bulle : Lancer cette exploration : elle avance toute seule |
-| neuve | Maîtrise · 0 % ? | `summary` | info-bulle : Voir les objectifs de cette terre et son bonus à la relève |
-| neuve | ? | `button[data-aide="maitrise"].btn-aide.mini` | info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission |
-| neuve | (sans mot) | `button[data-harv="lisiere:bois"].gis-ic.hand` | lecteur d’écran : Récolter : Bois |
-| neuve | Bois 🖐️ à la main Tu en as 0 | `button[data-gsheet="lisiere:bois"].gis-body` | lecteur d’écran : Gisement : Bois |
-| neuve | ▶ Récolter | `button[data-hloop="lisiere:bois"].mini.harvest` | info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Bois ; guide ([data-hloop="lisiere:bois"]) |
-| avancée | Illustrations | `button[data-world-pages=""].btn` | info-bulle : Consulter les illustrations découvertes |
-| avancée | Vue d’ensemble | `button[data-world-camera="all"].btn` | info-bulle : Voir les terres connues |
-| avancée | + | `button[data-world-zoom="in"].btn` | info-bulle : Se rapprocher ; lecteur d’écran : Se rapprocher |
-| avancée | 📜 OBJECTIF Régulateur à boules ▾ | `button[data-goalt=""].ghead` | guide (.goal-card) |
-| avancée | 🌳 Arbre | `button[data-arbre-obj=""].gmiles` | info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card) |
-| avancée | 🏁 Âge de l’Électricité · 0/3 étapes | `button[data-miles=""].gprog-row` | info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card) |
-| avancée | Atelier | `button[data-gotab="atelier"].btn` | guide (.goal-card) |
-| avancée | Compris | `button[data-tip="tip_site"].btn.ghost` | info-bulle : Fermer cette astuce |
-| avancée | Passer le relais (+18 ✦) | `button[data-m="releve"].btn` | info-bulle : Voir les gains de Traces et les bonus de la prochaine relève |
-| avancée | Voir : Torche | `button[data-goto="torche"].btn` | guide (.dom-regle.gene) |
-| avancée | Maîtrise · 80 % ? | `summary` | info-bulle : Voir les objectifs de cette terre et son bonus à la relève |
-| avancée | ? | `button[data-aide="maitrise"].btn-aide.mini` | info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission |
-| avancée | (sans mot) | `button[data-harv="mine:fer_min"].gis-ic.hand` | lecteur d’écran : Récolter : Minerai de fer |
-| avancée | Minerai de fer +48/min Tu en as 546 · 1 mine de fer | `button[data-gsheet="mine:fer_min"].gis-body` | lecteur d’écran : Gisement : Minerai de fer |
-| avancée | ▶ Récolter | `button[data-hloop="mine:fer_min"].mini.harvest` | info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer |
-| avancée | + mine de fer | `button[data-xadd="mine:fer_min"][data-n="1"].mini.lbl` | info-bulle : Poser : Mine de fer (débit : 48/min → 96/min) ; lecteur d’écran : Poser : Mine de fer |
-| avancée | 3 autre terres · +2,16 k/min en tout voir ▾ | `button[data-dall=""].dom-more` | info-bulle : Afficher ou replier les autres terres |
-| avancée | ⚙️ 0 machine au travail · 10 au repos · voir ▸ | `button[data-tab2="machines"][data-dmach=""].dom-more.dom-mach-link` | guide ([data-tab2="machines"]) |
-| avancée | Ouvrir le Comptoir | `button[data-comptoir=""].btn` | guide (#dcomptoir) |
-| avancée | Supraconducteur 0 / 380 | `div[data-goto="supra"].cost-row` | info-bulle : Supraconducteur (toucher pour inspecter) |
-| avancée | Fournir | `button[data-contrib="dyson"].btn` | info-bulle : Déposer depuis ta Réserve ce qu’il demande |
-| avancée | Alimenté ✓ | `button[data-feed="dyson"].btn` | guide (.dom-oeuvre [data-feed]) |
-| avancée | Bois+538/min8,77 k | `div[data-goto="bois"].u-pr` | info-bulle : Bois (toucher pour inspecter) |
 
 ## Carte (12 boutons, 0 sans explication)
 
@@ -167,7 +131,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | TAILLER | `button#forge.forge-btn` | guide (#forge) |
 | avancée | ⓘ Fiches | `button[data-fichemode=""].btn.ghost` | info-bulle : Un appui sur une ressource ouvre sa fiche (comme un appui long) |
 | avancée | Filtres ▾ | `button[data-filtres=""].btn.ghost` | lecteur d’écran : Tri et filtres |
-| avancée | 8,84 k +810/min Bois | `button[data-inv="bois"].inv` | info-bulle : Bois : ouvrir sa fiche ; lecteur d’écran : Bois : ouvrir sa fiche ; guide ([data-inv="bois"]) |
+| avancée | 8,81 k +810/min Bois | `button[data-inv="bois"].inv` | info-bulle : Bois : ouvrir sa fiche ; lecteur d’écran : Bois : ouvrir sa fiche ; guide ([data-inv="bois"]) |
 | avancée | 0 Archet à feu | `button[data-inv="archet"].inv.zero` | info-bulle : Archet à feu : ouvrir sa fiche ; lecteur d’écran : Archet à feu : ouvrir sa fiche |
 | avancée | 1 Tablette des astres | `button[data-inv="tablette"].inv.relic` | info-bulle : Tablette des astres : ouvrir sa fiche ; lecteur d’écran : Tablette des astres : ouvrir sa fiche |
 | avancée | (sans mot) | `button.toast-x` | lecteur d’écran : Fermer |
@@ -272,7 +236,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Acheter | `button[data-m="ctab"][data-t="acheter"]` | info-bulle : Acheter la ressource qui te manque |
 | avancée | Demandes | `button[data-m="ctab"][data-t="demandes"]` | guide (.modal:not(.hidden) [data-t="demandes"]) |
 | avancée | Parler | `button[data-m="ctab"][data-t="parler"]` | guide (.modal:not(.hidden) [data-t="parler"]) |
-| avancée | Minerai de fer · tu en as 546 9,8 écu l’unité | `div[data-goto="fer_min"].comptoir-head` | info-bulle : Minerai de fer (toucher pour inspecter) |
+| avancée | Minerai de fer · tu en as 544 9,8 écu l’unité | `div[data-goto="fer_min"].comptoir-head` | info-bulle : Minerai de fer (toucher pour inspecter) |
 | avancée | 10 % +520 | `button[data-m="sell"][data-id="fer_min"][data-n="54"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | 10 % +201 | `button[data-m="sell"][data-id="aimant"][data-n="1"].btn.mini` | info-bulle : Vendre 10 % ; guide (.modal:not(.hidden) [data-m="sell"]) |
 | avancée | La moitié +126 | `button[data-m="sell"][data-id="bobine"][data-n="10"].btn.mini` | info-bulle : Vendre la moitié ; guide (.modal:not(.hidden) [data-m="sell"]) |
@@ -311,7 +275,7 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 |---|---|---|---|
 | avancée | Chemin | `button[data-chemin="regulateur"].btn` | info-bulle : Chemin : la route complète jusqu’à l’objet |
 
-## Carnet (21 boutons, 0 sans explication)
+## Carnet (20 boutons, 0 sans explication)
 
 | Partie | Bouton | Repère | Expliqué par |
 |---|---|---|---|
@@ -327,7 +291,6 @@ Fichier généré par `node tools/boutons.js` (Playwright, chromium, 390×844 pu
 | avancée | Épinglées | `button[data-cf="pin"]` | info-bulle : Tes épingles, en haut de l’Atelier |
 | avancée | ▴ Plier | `button[data-age-all=""].age-pill.age-all` | info-bulle : Replier tous les âges ; lecteur d’écran : Replier tous les âges |
 | avancée | Âge 1 | `button[data-age-jump="0"].age-pill` | info-bulle : Âge du Bois ; lecteur d’écran : Aller à : Âge du Bois |
-| avancée | Bobine de cuivrePIÈCE Lot prêt | `div[data-goto="bobine"].grow` | info-bulle : Voir la recette et ses usages |
 | avancée | ☆ | `button[data-pin="bobine"].pinb` | info-bulle : Épingler cette recette en haut de l’Atelier ; lecteur d’écran : Épingler cette recette en haut de l’Atelier ; guide ([data-pin]) |
 | avancée | 6 Fil de cuivre | `span[data-need="fil_cuivre"][data-q="6"][data-goto="fil_cuivre"].ing.link` | info-bulle : Ouvrir sa fiche |
 | avancée | Fabriquer | `button[data-cr="bobine"][data-n="1"][data-lbl="Fabriquer"].btn.make` | info-bulle : Fabriquer avec les mains et les machines disponibles, pièces intermédiaires comprises |
