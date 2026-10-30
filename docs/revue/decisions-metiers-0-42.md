@@ -48,3 +48,9 @@ Risques : les recettes sont aujourd'hui indexées par couple outil et mode (`D.C
 - **Emplacements pour les textes du porteur** : `D.SAVEUR.<recette>` et `D.SAVEUR_GESTE.<geste>` dans `js/data.js` (220 signes au plus, vérifié par test). Tant qu'un texte manque, la description de la recette (`d`) ou du geste sert de repli : aucune fenêtre n'est vide.
 - **Liste du travail** : `node tools/saveur-a-ecrire.js` écrit `docs/revue/saveur-a-ecrire.md` (218 recettes par métier et par âge, avec le texte actuel, et les gestes à introduire).
 - Rien ne change dans la partie : pas de coût, pas d'âge, pas de sauvegarde. Une partie ancienne qui a déjà fabriqué avec un geste ne revoit pas son introduction.
+
+## 6. Étape 3 livrée (0.43.2)
+
+- **Renommage** : « Artistique » devient **Arts et lettres** (choix du porteur). Seul le nom affiché change ; l'identifiant interne `artistique` reste, donc rien ne bouge dans les sauvegardes.
+- **Maîtrisé** : la carte d'un métier dans l'Atelier dit « N sur T recettes » tant qu'il reste à trouver, puis « maîtrisé » quand toutes les recettes (hors secrètes, uniques et à échelle) sont trouvées. Le métier reste utilisable. Un métier maîtrisé ne change rien au rythme du jeu.
+- **À faire ensuite** : l'énergie (0.44).

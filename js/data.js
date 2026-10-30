@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.43.1";
+  D.VERSION = "0.43.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1470,7 +1470,7 @@
     { id: "chimie", n: "Chimie et matériaux", ic: "⚗️", d: "Le pétrole, les plastiques, les composites." },
     { id: "centrales", n: "Centrales", ic: "⚡", d: "L’énergie, de la bête de trait à la fusion." },
     { id: "electronique", n: "Électronique", ic: "🔌", d: "Des circuits aux processeurs et aux robots." },
-    { id: "artistique", n: "Artistique", ic: "✒️", d: "L’écriture, l’encre, la musique." }
+    { id: "artistique", n: "Arts et lettres", ic: "✒️", d: "L’écriture, l’encre, la musique." }
   ],
     de: {
     artisanat: "manche corde archet torche eclat engrenage_bois brique brique_refr verre poudre_quartz lentille verre_trempe roue",
@@ -1602,13 +1602,14 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✒️ Le métier Artistique devient Arts et lettres. Un métier dont toutes les recettes sont trouvées est maîtrisé : sa carte, dans l’Atelier, le dit (il reste utilisable). Ses recettes comptent « trouvées sur total » tant qu’il reste à découvrir.",
     "📜 Chaque recette trouvée dit sa saveur dans la fenêtre de découverte : une ou deux phrases, et la première fois qu’un geste nouveau (Marteler, Allier, Graver…) entre en jeu, ce qu’il veut dire. En attendant les textes définitifs, la description de la recette sert de texte.",
     "🏗️ Un seul modèle : un outil et un geste. Tout ce qui se bâtit (extracteurs, machines, installations, améliorations) se construit désormais : nouveau geste Construire et nouveau métier Construction. Au feu, plus de réglages : un seul geste, Chauffer, les recettes se distinguent par l’ingrédient. Le four reprend les recettes du feu, le couteau celles du racloir, et l’outil le plus haut cache le plus bas. La pioche, le poste de frappe, le ciseau et la dalle ne sont plus des outils de départ : leurs recettes passent par l’Atelier.",
     "🔥 Au Labo, l’outil se choisit à son icône (le nom s’affiche dessous) ; ses gestes apparaissent en un mot quand il en a plusieurs. Les gestes du feu changent de nom : Griller, Cuire, Étouffer ; le four : Cuire, Fondre.",
     "🔧 Au Labo, l’outil et le geste ne font plus qu’un seul choix (« Mains · Tresser », « Feu de camp · Cuire »), en puces qui passent à la ligne. Le Carnet est allégé : une ligne d’aide, la recherche, et deux boutons (quantité, filtres) qui s’ouvrent à la demande. Dans l’Atelier, la jauge d’énergie s’ouvre et détaille ce qui consomme et ce qui fournit.",
-    "⚗️ Le Labo suit tes métiers : Artisanat, Élevage, Métallurgie, Centrales, Électronique, Artistique. Chaque métier a ses outils et ses gestes, les mêmes branches que les ateliers de l’Atelier. Les écrans prennent toute la largeur, et le thermomètre se lit mieux sur le papier.",
+    "⚗️ Le Labo suit tes métiers : Artisanat, Élevage, Métallurgie, Centrales, Électronique, Arts et lettres. Chaque métier a ses outils et ses gestes, les mêmes branches que les ateliers de l’Atelier. Les écrans prennent toute la largeur, et le thermomètre se lit mieux sur le papier.",
     "👷 Les ateliers embauchent : un apprenti (dès le Cuivre) travaille à la moitié de la vitesse des mains, un ouvrier (dès l’Acier) à la même vitesse, pour les recettes de son atelier. Embaucher coûte des écus, de plus en plus à chaque embauche, sans salaire ensuite. L’ancienne vente automatique de lanières disparaît : ton apprenti de l’établi devient celui de l’Élevage, et son avance te revient.",
-    "🏭 L’Atelier montre tes ateliers : Artisanat, Élevage, Métallurgie, Chimie, Centrales, Électronique, Artistique, chacun avec son échelle : à la main, apprenti, ouvriers, machines, robots. Une jauge d’énergie en chevaux compare ce que tes machines demandent à ce que tu produis ; pour l’instant, elle ne ralentit encore rien.",
+    "🏭 L’Atelier montre tes ateliers : Artisanat, Élevage, Métallurgie, Chimie, Centrales, Électronique, Arts et lettres, chacun avec son échelle : à la main, apprenti, ouvriers, machines, robots. Une jauge d’énergie en chevaux compare ce que tes machines demandent à ce que tu produis ; pour l’instant, elle ne ralentit encore rien.",
     "🗺️ Cinq onglets : Terres, Labo, Atelier, Arbre, Journal. Les Terres montrent une terre à la fois, avec son illustration en fond : glisse ou touche les médaillons pour passer de l’une à l’autre, et récolte d’un appui. La Carte devient l’Atlas, rangé sous les Terres.",
     "⚗️ Le Labo est l’établi pour essayer : tu peux poser toute matière déjà vue, même sans en avoir, et la première pièce d’une trouvaille t’est offerte. L’Atelier sert à produire : choisis une recette et une quantité, fabrique à la main ou confie-la à un apprenti. « Ce qui tourne » montre ce qui produit et ce qui bloque. Le Carnet et les Machines s’ouvrent depuis l’Atelier.",
     "🔨 Dans l’Atelier, les ressources s’affichent en tuiles compactes et épurées sous forme d’icônes et de réserves. Dans le Domaine, les terres déjà traversées se replient pour laisser place à leurs gisements sous forme de vignettes directes.",

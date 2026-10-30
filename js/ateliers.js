@@ -51,6 +51,8 @@
       });
     }
 
+    /* les recettes du métier à trouver (hors secrètes, uniques et à échelle) : maîtrisé quand toutes sont trouvées */
+    const totalDe = (f) => Object.keys(I).filter((id) => ordinaire(id) && !I[id].sec && famille(id) === f).length;
     function carte(f) {
       const F = T.familles.find((x) => x.id === f);
       const rec = connues(f), age = S().age;
@@ -82,7 +84,7 @@
         etat: i < echelon ? "fait" : i === echelon ? "courant" : age >= e.age ? "dispo" : "ferme"
       }));
       return {
-        id: f, n: F.n, ic: F.ic, d: F.d, recettes: rec, ordres: cads, machines: machs, apprentis: a.app || 0, ouvriers: a.ouv || 0,
+        id: f, n: F.n, ic: F.ic, d: F.d, recettes: rec, total: totalDe(f), maitrise: rec.length >= totalDe(f) && rec.length > 0, ordres: cads, machines: machs, apprentis: a.app || 0, ouvriers: a.ouv || 0,
         echelon, echelles, cadence, etat, cause, embauches: embauches(f)
       };
     }

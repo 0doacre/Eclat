@@ -1689,7 +1689,7 @@
       const etat = c.etat === "bloque" ? '<span class="atel-etat is-bloque">à l’arrêt · ' + esc(c.cause) + "</span>"
         : c.etat === "marche" ? '<span class="atel-etat is-marche">+' + perMin(c.cadence / 60) + "</span>"
         : c.etat === "plein" ? '<span class="atel-etat">plein</span>' : "";
-      const equipe = [c.apprentis ? c.apprentis + " apprenti" + (c.apprentis > 1 ? "s" : "") : "", c.ouvriers ? c.ouvriers + " ouvrier" + (c.ouvriers > 1 ? "s" : "") : "", c.machines ? c.machines + " machine" + (c.machines > 1 ? "s" : "") : "", c.recettes.length + " recette" + (c.recettes.length > 1 ? "s" : "")].filter(Boolean).join(" · ");
+      const equipe = [c.apprentis ? c.apprentis + " apprenti" + (c.apprentis > 1 ? "s" : "") : "", c.ouvriers ? c.ouvriers + " ouvrier" + (c.ouvriers > 1 ? "s" : "") : "", c.machines ? c.machines + " machine" + (c.machines > 1 ? "s" : "") : "", (c.maitrise ? "maîtrisé" : c.recettes.length + " sur " + c.total + " recettes")].filter(Boolean).join(" · ");
       return '<button type="button" class="atel-carte is-' + c.etat + '" data-atelier="' + c.id + '"><span class="atel-ic" aria-hidden="true">' + c.ic + '</span><span class="atel-corps"><span class="atel-ligne"><b>' + esc(c.n) + '</b><span class="tiny muted">' + esc(equipe) + "</span>" + etat + '</span><span class="atel-echelle">' + ech + '</span></span><span class="atel-chev" aria-hidden="true">›</span></button>';
     }
     /* les boutons d'embauche d'un atelier (page de l'atelier) */
