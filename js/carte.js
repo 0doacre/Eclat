@@ -32,7 +32,7 @@
   const DECO = { lisiere: 5, plaine: 4, riviere: 0, collines: 3, mine: 2, desert: 3, gisement: 2, montagnes: 3, caveau: 1 };
 
   function create(api) {
-    const { E, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, goDomaine, expWhy } = api;
+    const { E, D, U, esc, fmt, fmtTime, toast, openModal, passHTML, goDomaine, expWhy, Dom } = api;
     const I = D.ITEMS;
     const S = () => E.state;
     const GI = window.ECLAT_ICONS || { zones: {}, places: {}, ui: {} };
@@ -240,6 +240,7 @@
         s += use(dz, g.x + Math.cos(a) * g.rx * r, g.y + Math.sin(a) * g.ry * r * 0.8, 16 + (k % 2) * 6, "c-deco");
       }
       s += '<text class="c-name" x="' + g.x + '" y="' + (g.y - g.ry - 10) + '" role="button" tabindex="0" aria-label="' + esc(Z.n) + ' : ouvrir dans le Domaine">' + esc(Z.n) + "</text>";
+      s += '<g class="c-contempler-btn" data-contempler="' + z + '" role="button" tabindex="0" aria-label="Contempler l’aquarelle : ' + esc(Z.n) + '" title="Contempler l’aquarelle : ' + esc(Z.n) + '"><rect x="' + (g.x + g.rx * 0.72) + '" y="' + (g.y - g.ry - 24) + '" width="24" height="20" rx="4" class="c-contempler-bg"/><text x="' + (g.x + g.rx * 0.72 + 12) + '" y="' + (g.y - g.ry - 10) + '" text-anchor="middle" class="c-contempler-ico">🖼️</text></g>';
       if (z === "lisiere") s += '<g class="c-camp" data-camp role="button" tabindex="0" aria-label="Ton camp : ouvrir le Domaine">' + use(GI.items.feu || "campfire", g.x + 4, g.y + 26, 26) + '<text class="c-small" x="' + (g.x + 4) + '" y="' + (g.y + 52) + '">ton camp</text></g>';
       (Z.exps || []).forEach((x, k) => { s += lieuArt(z, k); });
       return s + "</g>";
@@ -373,6 +374,11 @@
       if ((b = t.closest("[data-cl]"))) { const [z, i] = b.dataset.cl.split(":"); api.A.click(); lieuSheet(z, Number(i)); return true; }
       if ((b = t.closest("[data-cp]"))) { api.A.click(); passSheet(b.dataset.cp); return true; }
       if ((b = t.closest("[data-cf]"))) { api.A.click(); fogSheet(b.dataset.cf); return true; }
+      if ((b = t.closest("[data-contempler]"))) {
+        if (api.A && api.A.page) api.A.page();
+        if (Dom && Dom.openContemplation) Dom.openContemplation(b.dataset.contempler);
+        return true;
+      }
       if (t.closest("[data-camp]")) { api.A.click(); goDomaine("lisiere"); return true; }
       if ((b = t.closest("[data-cz]"))) { api.A.click(); goDomaine(b.dataset.cz); return true; }
       return false;

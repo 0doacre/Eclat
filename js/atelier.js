@@ -861,9 +861,10 @@
         if (!ids.length) continue;
         const ag = D.AGES[sec.age];
         const kn = sec.ids.filter((id) => st.known[id] && !I[id].sec).length;
+        const freshCount = sec.ids.filter((id) => st.known[id] && !I[id].sec && !(st.made[id] > 0)).length;
         const open = U.carnetFilter !== "tout" || (U.openAges[sec.age] !== undefined ? U.openAges[sec.age] : sec.age >= st.age);
         h += '<details class="card age-sec" data-age="' + sec.age + '"' + (open ? " open" : "") + '><summary><span class="ic" style="background:' + ag.c + "22;border-color:" + ag.c + '66">' + (sec.age + 1) +
-          '</span><span class="an">' + ag.n + '</span><span class="cnt">' + (U.carnetFilter === 'unk' ? ids.length + ' à découvrir' : kn + ' apprises') + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
+          '</span><span class="an">' + ag.n + '</span>' + (freshCount > 0 && U.carnetFilter !== 'unk' ? '<span class="badge-neuf mini-neuf" title="' + freshCount + ' nouvelle(s) recette(s)">' + freshCount + ' nouv.</span>' : '') + '<span class="cnt">' + (U.carnetFilter === 'unk' ? ids.length + ' à découvrir' : kn + ' apprises') + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
       }
       const secrets = Object.keys(I).filter((id) => I[id].sec && st.known[id] && I[id].r).filter(keep);
       if (secrets.length) h += '<details class="card age-sec"' + (U.carnetFilter !== "tout" ? " open" : "") + '><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recCard).join("") + "</div></details>";
@@ -938,7 +939,8 @@
       const stars = E.stars(id);
       const lot = window.EclatCarnet.lot(E, D, id, cqNow());
       const readyCraft = !owned && lot.n > 0 && E.orderStatus(id, lot.n).ok && lot.plan.ok;
-      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-order-state="' + (lot.n > 0 && E.orderStatus(id, lot.n).ok) + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" title="Voir la recette et ses usages" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (readyCraft ? '<span class="badge-ready">⚡ Lot prêt</span>' : '') + "</div>" +
+      const isNew = !owned && !(st.made[id] > 0);
+      let h = '<div class="rec' + (owned ? " owned" : "") + (readyCraft ? " can-craft" : "") + '" data-order-state="' + (lot.n > 0 && E.orderStatus(id, lot.n).ok) + '" data-rec="' + id + '"><div class="rh">' + icon(id) + '<div class="grow" title="Voir la recette et ses usages" data-goto="' + id + '"><div class="rt">' + esc(it.n) + badgeHTML(id) + (isNew ? '<span class="badge badge-neuf" title="Nouvelle recette découverte">✦ Nouveau</span>' : '') + (readyCraft ? '<span class="badge-ready">⚡ Lot prêt</span>' : '') + "</div>" +
         (stars ? '<div class="stars">' + "★".repeat(stars) + "</div>" : "") + '</div>' +
         (readyCraft && cqFor(it) !== 1 ? '<button class="btn mini pri quick-make" data-cr="' + id + '" data-n="1" title="Fabriquer 1 exemplaire">⚡ +1</button>' : '') +
         '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +

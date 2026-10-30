@@ -277,6 +277,35 @@ if (fs.existsSync(path.join(__dirname, "../js/equipements.js"))) {
     assert.strictEqual(j.paused, false);
     assert.deepStrictEqual(j.equipmentSelection, { equipment: "racloir_os", mode: "couper" }, "Le choix d'équipement doit être préservé à la reprise");
   });
+
+  test("pack 2 : notification d'apprentissage et pastilles de découverte", () => {
+    const E = equipped();
+    let learnEmitted = null;
+    E.on("learn", (id) => { learnEmitted = id; });
+    
+    // Découverte d'une recette
+    E.learn("manche");
+    assert.strictEqual(learnEmitted, "manche", "L'événement learn doit être émis pour notifier le carnet");
+    assert.strictEqual(E.state.made.manche || 0, 0, "Une nouvelle recette n'a pas encore été fabriquée (pastille Nouveau active)");
+
+    // Après fabrication
+    E.add("bois", 5);
+    const res = E.craft("manche", 1);
+    assert.ok(res.ok, "Fabrication réussie");
+    assert.ok((E.state.made.manche || 0) >= 1, "Après fabrication, made >= 1 (la pastille Nouveau se dissipe)");
+  });
+
+  test("pack 2 : présence des aquarelles et planches d'atlas pour chaque territoire", () => {
+    const root = path.resolve(__dirname, "..");
+    for (const z of D.ZONES) {
+      const painted = path.join(root, "assets", "carnet", "lands", `${z.id}.webp`);
+      const decor = path.join(root, "assets", "terres", `${z.id}-decor.webp`);
+      const carte = path.join(root, "assets", "terres", `${z.id}-carte.webp`);
+      const exists = fs.existsSync(painted) || fs.existsSync(decor) || fs.existsSync(carte);
+      assert.ok(exists, `La terre ${z.id} doit posséder au moins une illustration peinte pour la contemplation`);
+      assert.ok(z.n && z.n.length > 0, `La terre ${z.id} doit posséder un nom poétique`);
+    }
+  });
 }
 
 console.log(`${passed} tests du Lot 2 réussis.`);

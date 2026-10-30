@@ -536,7 +536,7 @@
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length + "|" + (reveilRepere() ? "r" : "")
   });
   const Carte = window.EclatCarte.create({
-    E, A, D, U, esc, fmt, fmtTime, toast, openModal, passHTML: (z, options) => passHTML(z, options), expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
+    E, A, D, U, Dom, esc, fmt, fmtTime, toast, openModal, passHTML: (z, options) => passHTML(z, options), expWhy: (z) => expWhy(z), explore: (z, xid) => explore(z, xid), goto: (id) => goto(id), fouiller: (z, i, l) => fouiller(z, i, l), recolter: () => recolterFouille(), A,
     goDomaine: (z) => { U.zone = z; setTab("domaine"); Dom.focusZone(z); }
   });
   /* le tutoriel : des souvenirs qui guident la main, chapitre par chapitre */

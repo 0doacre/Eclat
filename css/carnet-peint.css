@@ -191,3 +191,12 @@ html[data-style-mode="vivant"] #v-domaine .terre-maitrise>summary{min-height:44p
   html[data-style-mode="vivant"] #tabs{min-height:calc(56px + var(--safe-b));height:calc(56px + var(--safe-b))}
 }
 @media(forced-colors:active){html[data-style-mode="vivant"] :is(#app,#modal) :is(button,input,select,.modal-box){border:1px solid CanvasText!important;border-image:none!important;background:Canvas!important;color:CanvasText!important}html[data-style-mode="vivant"] :is(#app,#modal) button::before{display:none}}
+
+html[data-style-mode="vivant"] .modal.modal-contemplation .modal-box {
+  background: var(--paint-paper) center/cover var(--bg)!important;
+  color: var(--text)!important;
+}
+html[data-style-mode="vivant"] .contemplation-canvas {
+  background: rgba(48,39,30,0.08);
+  border-color: var(--line);
+}

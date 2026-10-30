@@ -141,25 +141,80 @@
     /* les terres qui ont un décor illustré (assets/terres/<id>-decor.webp) */
     const DECORS = { lisiere: 1, plaine: 1, riviere: 1, collines: 1, mine: 1, desert: 1, gisement: 1, montagnes: 1, orbite: 1, lune: 1, mercure: 1 };
     const CARNET_DECORS = { lisiere: "lisiere", plaine: "plaine", riviere: "riviere", collines: "collines", mine: "mine", desert: "desert", gisement: "gisement", montagnes: "montagnes", orbite: "orbite", lune: "lune", mercure: "mercure", caveau: "caveau" };
+
+    function openContemplation(z) {
+      const Z = E.ZONES[z];
+      if (!Z) return;
+      const st = S();
+      const number = D.ZONES.findIndex((land) => land.id === z) + 1;
+      const painted = z === "riviere" && st.age >= 7 ? "riviere-vapeur" : CARNET_DECORS[z] || null;
+      const scene = painted ? "assets/carnet/lands/" + painted + ".webp" : DECORS[z] ? "assets/terres/" + z + "-decor.webp" : "assets/terres/" + z + "-carte.webp";
+      const exps = Z.exps || [];
+      const done = (st.exp && st.exp.done && st.exp.done[z]) || 0;
+      const total = exps.length;
+      const resList = (Z.res || []).map((r) => (icon(r, "sm") || "") + " <span>" + esc(I[r]?.n || r) + "</span>").join(" · ");
+      const ageName = D.AGES[st.age]?.n || "";
+
+      const html = '<div class="contemplation-modal">' +
+        '<div class="kicker">Planche ' + number + ' · ' + esc(ageName) + '</div>' +
+        '<h2>' + esc(Z.n) + '</h2>' +
+        '<div class="contemplation-canvas" data-zoom="fit" id="contemplationCanvas" role="region" aria-label="Aquarelle de ' + esc(Z.n) + '">' +
+          '<img class="contemplation-img" id="contemplationImg" src="' + scene + '" alt="Aquarelle grand format : ' + esc(Z.n) + '" decoding="async">' +
+          '<button type="button" class="btn mini ghost contemplation-zoom-btn" id="contemplationZoomBtn" title="Agrandir les détails de l’aquarelle" aria-label="Agrandir les détails de l’aquarelle">🔍 Agrandir</button>' +
+        '</div>' +
+        '<p class="contemplation-desc">« ' + esc(Z.d || "") + ' »</p>' +
+        '<div class="contemplation-meta">' +
+          '<div class="contemplation-res"><small>Matières de la terre :</small><div>' + (resList || "<span>Aucune</span>") + '</div></div>' +
+          '<div class="contemplation-exp"><small>Lieux explorés :</small> <b>' + done + ' / ' + total + '</b></div>' +
+        '</div>' +
+        '<div class="acts carnet-acts">' +
+          '<button class="btn pri" data-m="close">Refermer</button>' +
+        '</div>' +
+      '</div>';
+
+      openModal({
+        cls: "modal-contemplation",
+        html,
+        onOpen: (box) => {
+          const canvas = box.querySelector("#contemplationCanvas");
+          const img = box.querySelector("#contemplationImg");
+          const btn = box.querySelector("#contemplationZoomBtn");
+          if (!canvas || !img || !btn) return;
+          const toggleZoom = () => {
+            const isFull = canvas.getAttribute("data-zoom") === "full";
+            const next = isFull ? "fit" : "full";
+            canvas.setAttribute("data-zoom", next);
+            btn.textContent = isFull ? "🔍 Agrandir" : "🔎 Ajuster";
+            btn.setAttribute("title", isFull ? "Agrandir les détails de l’aquarelle" : "Ajuster la vue d’ensemble");
+            btn.setAttribute("aria-label", isFull ? "Agrandir les détails de l’aquarelle" : "Ajuster la vue d’ensemble");
+            if (A && A.click) A.click();
+          };
+          btn.addEventListener("click", toggleZoom);
+          img.addEventListener("click", toggleZoom);
+        }
+      });
+    }
+
     function terreHTML(z) {
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
       const decor = DECORS[z] ? ' style="--decor:url(' + new URL('assets/terres/' + z + '-decor.webp', document.baseURI).href + ')"' : "";
       const carnet = window.EclatStyleMode === "vivant";
+      const number = D.ZONES.findIndex((land) => land.id === z) + 1;
+      const painted = z === "riviere" && st.age >= 7 ? "riviere-vapeur" : CARNET_DECORS[z] || null;
+      const scene = painted ? "assets/carnet/lands/" + painted + ".webp" : DECORS[z] ? "assets/terres/" + z + "-decor.webp" : null;
+      const btnContempler = '<button type="button" class="btn mini ghost btn-contempler" data-contempler="' + z + '" title="Contempler l’aquarelle de cette terre : ' + esc(Z.n) + '" aria-label="Contempler l’aquarelle de cette terre : ' + esc(Z.n) + '">🖼️ Contempler</button>';
       let h;
       if (carnet) {
-        const painted = z === "riviere" && st.age >= 7 ? "riviere-vapeur" : CARNET_DECORS[z] || null;
-        const scene = painted ? "assets/carnet/lands/" + painted + ".webp" : DECORS[z] ? "assets/terres/" + z + "-decor.webp" : null;
-        const number = D.ZONES.findIndex((land) => land.id === z) + 1;
         h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>Les terres traversées</span><span>Terre ' + number + '</span></div>' +
-          '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' +
+          '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' + btnContempler +
           '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
-          (z === "lisiere" ? Decouvertes.sceneHTML() : z === "plaine" ? Plaine.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + '</figcaption></figure>' : '') + '</div>';
+          (z === "lisiere" ? Decouvertes.sceneHTML() : z === "plaine" ? Plaine.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '" data-contempler="' + z + '" tabindex="0" role="button" aria-label="Contempler l’aquarelle de ' + esc(Z.n) + '" title="Agrandir et contempler l’aquarelle de ' + esc(Z.n) + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + ' · 🔍 Agrandir</figcaption></figure>' : '') + '</div>';
         if (z === "lisiere") h += Decouvertes.studyHTML();
         if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small" data-gz="plaine">Emprunter le sentier</button><button class="btn small ghost" data-sentier-replay>Revoir les travaux</button></div></div>';
         if (z === "plaine") h += Plaine.studyHTML();
       } else {
-        h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
+        h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + btnContempler + lieuHTML(z) + "</div>";
       }
       h += regleHTML(z);
       h += E.territoiresHTML(z, esc, U.terresOpen && U.terresOpen[z]);
@@ -1227,6 +1282,11 @@
       if (Decouvertes.click(t)) return true;
       if (Plaine.click(t)) return true;
       let b;
+      if ((b = t.closest("[data-contempler]"))) {
+        if (A && A.page) A.page();
+        openContemplation(b.dataset.contempler);
+        return true;
+      }
       if (t.closest("[data-reprise]")) { repriseSheet(); return true; }
       if ((b = t.closest("[data-terre-maitrise] > summary"))) {
         const details = b.parentElement;
@@ -1407,7 +1467,7 @@
       ].join("|");
     }
 
-    return { view, live, sig, machSig, click, down, up, focusZone, placeExt, placeMach, extSheet, comptoirSheet, machinesView };
+    return { view, live, sig, machSig, click, down, up, focusZone, placeExt, placeMach, extSheet, comptoirSheet, machinesView, openContemplation };
   }
 
   window.EclatDomaine = { create };

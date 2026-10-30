@@ -111,3 +111,21 @@ Suite aux playtests des 6 personas (Martine, Léa, Enzo, Thomas, Julien, Chloé)
    - Ajout d'une case à cocher à côté de *« À découvrir »* : permet de n'afficher que les matières dont le joueur possède au moins 1 exemplaire en stock (idéal pour les sessions de craft rapide sans bruit visuel).
 4. **Réglage direct du plafond de cadence (ction: "cadence_cap")** :
    - Un bouton rotatif Max [cap] ▾ permet de cycler le plafond de maintien automatique à travers les paliers usuels [25, 50, 100, 250, 500] directement depuis la recette dans l'Atelier, sans jamais quitter l'établi.
+
+---
+
+## 6. Pack 2 QoL : « L'Atlas & la Contemplation » (Déployé)
+
+1. **Pastille de découverte & notification sur le Carnet (#tabs button[data-tab="carnet"] .dot)** :
+   - Lorsqu'une nouvelle recette ou note est apprise (E.learn(id) / E.emit("learn")), la pastille sur l'icône du Carnet s'anime d'un halo ambre chaleureux (dot-carnet-pulse) au lieu d'un rouge d'erreur générique.
+   - Dans le Carnet (ecCard et sommaire par âge dans js/atelier.js) :
+     - Les recettes nouvellement découvertes et pas encore fabriquées (!(st.made[id] > 0)) reçoivent une pastille dorée ✦ Nouveau.
+     - Les en-têtes d'âge affichent un compteur clair N nouv. pour repérer en un clin d'œil les nouveautés sans avoir à dérouler tous les chapitres.
+     - Dès la première fabrication de l'objet, la pastille disparaît naturellement.
+2. **Zoom & Contemplation plein écran des aquarelles de territoires (openContemplation(z))** :
+   - Un bouton 🖼️ Contempler est ajouté sur chaque terre ouverte dans le Domaine (js/domaine.js) et sur la Carte Atlas (js/carte.js).
+   - Le clic direct sur les illustrations de paysages (.carnet-landscape / .carnet-discovery-land) ouvre une modale grand format immersive :
+     - Planche aquarelle haute définition issue des masterworks peints (ssets/carnet/lands/.webp ou iviere-vapeur.webp).
+     - Bascule interactive de zoom 🔍 Agrandir / 🔎 Ajuster pour examiner les détails des lavis, du papier et de l'encre à 150 % avec panoramique fluide.
+     - Cartouche poétique avec citation d'observation de la terre, ressources locales et état des explorations.
+     - Son doux de feuilletage (A.page()) à l'ouverture.

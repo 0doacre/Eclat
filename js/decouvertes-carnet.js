@@ -38,7 +38,7 @@
       const s = state();
       const paths = { [primary.id]: primary.path, ...Object.fromEntries(Object.entries(STUDIES).map(([id, study]) => [id, study.path])) };
       const sketch = new URL(BASE + zone + '-esquisse.webp', document.baseURI).href;
-      return '<figure class="carnet-landscape carnet-discovery-land carnet-' + zone + '" data-carnet-scene="' + zone + '" style="--carnet-sketch:url(' + esc(sketch) + ')">' +
+      return '<figure class="carnet-landscape carnet-discovery-land carnet-' + zone + '" data-carnet-scene="' + zone + '" data-contempler="' + zone + '" tabindex="0" role="button" aria-label="Contempler l’aquarelle : ' + esc(primary.name) + '" title="Agrandir et contempler l’aquarelle : ' + esc(primary.name) + '" style="--carnet-sketch:url(' + esc(sketch) + ')">' +
         '<div class="lisiere-scene" role="img" aria-label="' + esc(s[primary.id] ? primary.known : primary.unknown) + '">' +
         '<div class="lisiere-sketch" aria-hidden="true"></div><img class="lisiere-color" src="assets/carnet/lands/' + zone + '.webp" alt="" decoding="async" style="opacity:' + (s[primary.id] ? 1 : 0) + '">' +
         (zone === "lisiere" ? '<div class="lisiere-camp" aria-hidden="true"></div>' : '') +

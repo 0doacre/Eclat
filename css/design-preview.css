@@ -1107,3 +1107,170 @@ body.large-text #v-cosmos .term { font-size: 16px; }
   html[data-style-mode="atlas"] #v-domaine .dom-terre.a-decor .dom-th{min-height:140px;padding-top:20px;margin-bottom:6px}
   html[data-style-mode="atlas"] #v-domaine .dom-terre{margin-block:12px 18px}
 }
+
+/* --- Pack 2 QoL : L'Atlas & la Contemplation --- */
+#tabs button[data-tab="carnet"] .dot {
+  background: var(--acc, #d4a359);
+  box-shadow: 0 0 0 2px var(--bg2), 0 0 8px color-mix(in srgb, var(--acc) 75%, transparent);
+  animation: dot-carnet-pulse 2.2s ease-in-out infinite alternate;
+}
+@keyframes dot-carnet-pulse {
+  0% { transform: scale(0.9); opacity: 0.85; }
+  100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 0 2px var(--bg2), 0 0 12px var(--acc); }
+}
+
+.badge-neuf {
+  background: color-mix(in srgb, var(--acc) 22%, transparent);
+  color: var(--acc);
+  border: 1px solid color-mix(in srgb, var(--acc) 50%, transparent);
+  font-weight: 700;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+}
+.mini-neuf {
+  margin-left: 6px;
+  font-size: 9px;
+  padding: 0 5px;
+}
+
+.btn-contempler {
+  margin-left: 8px;
+  padding: 3px 8px;
+  font-size: 12px;
+  color: var(--acc);
+  border-color: color-mix(in srgb, var(--acc) 40%, transparent);
+  border-radius: 6px;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.btn-contempler:hover {
+  background: color-mix(in srgb, var(--acc) 15%, transparent);
+  border-color: var(--acc);
+}
+
+.carnet-landscape[data-contempler] {
+  cursor: zoom-in;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+.carnet-landscape[data-contempler]:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.22));
+}
+
+.modal.modal-contemplation .modal-box {
+  max-width: min(94vw, 860px);
+  max-height: 94vh;
+  padding: 20px 22px 22px;
+  background: var(--panel) center/cover;
+  border: 1.5px solid var(--line2);
+  border-radius: 18px;
+  box-shadow: 0 20px 52px rgba(0,0,0,0.55);
+}
+.contemplation-modal h2 {
+  margin: 4px 0 10px;
+  font-family: var(--serif);
+  font-size: 26px;
+}
+.contemplation-canvas {
+  position: relative;
+  overflow: auto;
+  border-radius: 12px;
+  margin: 12px 0;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-height: 56vh;
+  cursor: zoom-in;
+  touch-action: pan-x pan-y;
+}
+.contemplation-canvas[data-zoom="full"] {
+  cursor: zoom-out;
+  display: block;
+}
+.contemplation-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.25s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.contemplation-canvas[data-zoom="full"] .contemplation-img {
+  max-width: none;
+  width: 155%;
+}
+.contemplation-zoom-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line2);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 2;
+  cursor: pointer;
+}
+.contemplation-desc {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text);
+  margin: 8px 0 12px;
+  text-align: center;
+}
+.contemplation-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.contemplation-res small, .contemplation-exp small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+.contemplation-res div {
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.c-contempler-btn {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.c-contempler-btn:hover {
+  opacity: 0.85;
+}
+.c-contempler-bg {
+  fill: var(--panel, #222);
+  stroke: var(--line, #555);
+  stroke-width: 1;
+}
+.c-contempler-ico {
+  font-size: 12px;
+}
