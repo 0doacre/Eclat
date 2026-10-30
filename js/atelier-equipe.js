@@ -3,7 +3,7 @@
   "use strict";
   function create(api){
     const {E,D,U,A,esc,icon,render,save,toast,fmtTime}=api,I=D.ITEMS;
-    let signature="",message="",lastSale=null,observedState=null;
+    let signature="",message="",lastHeat=null,lastSale=null,observedState=null;
     const currencyName=age=>{
       const a=age!==undefined?age:(E.state?.age||0);
       if(a<=1)return "rations de troc";
@@ -15,10 +15,34 @@
     const money=(n,age)=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+currencyName(age);
     const name=id=>I[id]?.n||id;
     const label=(id,n)=>({doux:"Chauffer doucement",vif:"Cuire",etouffee:"Carboniser",cuisson:"Cuire",fonte:"Fondre"})[id]||n;
+    const soundGesture=m=>({
+      doux:"chauffer",vif:"chauffer",cuisson:"chauffer",fonte:"chauffer",chauffe:"chauffer",etouffee:"chauffer",
+      decoupe:"tailler",tailler:"tailler",racler:"tailler",
+      assembler:"assembler",tisser:"tresser",tresser:"tresser",
+      marteler:"marteler",frappe:"marteler",battre:"marteler",
+      polir:"usiner",tremper:"tremper",allier:"allier",
+      distiller:"chauffer",electriser:"electriser",synthetiser:"synthetiser"
+    })[m]||"assembler";
     const root=()=>document.getElementById("atelier-equipe");
     const button=(action,value,title,cls="",disabled=false)=>{
       const cur=currencyName();
-      const help={study:"Étudier les matières déjà vues en dépensant l’Intuition indiquée",place:"Choisir ce poste de travail",legacy:"Utiliser les procédés des âges après le Cuivre",slot:"Poser ou retirer une matière dans cet emplacement",prepare:"Préparer les matières, le poste et l’outil pour : "+name(value),order:"Fabriquer : "+name(value)+", en préparant les composants manquants",build:"Aménager l’établi pour accueillir un apprenti",hire:"Inviter un apprenti avec les "+cur+" de ta bourse",fund:"Réserver 1 part pour l’apprenti",fund5:"Réserver 5 parts pour l’apprenti",worker:"Démarrer ou mettre en pause l’aide de l’apprenti",withdraw:"Récupérer la part réservée non utilisée quand l’apprenti est en pause",sell:"Troquer les lanières au-delà de ta réserve"};
+      const help={
+        study:"Étudier les matières déjà vues en dépensant l’Intuition indiquée",
+        place:"Choisir ce poste de travail",
+        legacy:"Utiliser les procédés des âges après le Cuivre",
+        slot:"Poser ou retirer une matière dans cet emplacement",
+        prepare:"Préparer les matières, le poste et l’outil pour : "+name(value),
+        order:"Fabriquer : "+name(value)+", en préparant les composants manquants",
+        cadence:"Maintenir un stock de 100 "+name(value)+" avec les machines au repos",
+        cadence_toggle:"Mettre en pause ou réactiver la cadence automatique pour : "+name(value),
+        build:"Aménager l’établi pour accueillir un apprenti",
+        hire:"Inviter un apprenti avec les "+cur+" de ta bourse",
+        fund:"Réserver 1 part pour l’apprenti",
+        fund5:"Réserver 5 parts pour l’apprenti",
+        worker:"Démarrer ou mettre en pause l’aide de l’apprenti",
+        withdraw:"Récupérer la part réservée non utilisée quand l’apprenti est en pause",
+        sell:"Troquer les lanières au-delà de ta réserve"
+      };
       const explanation=help[action]||title.replace(/<[^>]*>/g,"");
       return '<button type="button" id="ae-'+action+'-'+esc(value||"0")+'" class="btn '+cls+'" data-ae="'+action+'" data-value="'+esc(value||"")+'" title="'+esc(explanation)+'"'+(disabled?' disabled':'')+'>'+title+'</button>';
     };
@@ -96,7 +120,8 @@
         }
         return t.benefit ? esc(t.benefit) : "";
       };
-      h+='</div><p id="ae-result" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><h3>Tes outils <button type="button" class="btn-aide mini" data-aide="outils" title="Comprendre les outils et postes" aria-label="Comprendre les outils et postes">?</button></h3>'+tools.map(t=>{const ben=toolBenefitText(t);return button("tool",t.id,(t.geste?api.gIc(t.geste):t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n)+'<small>'+esc(Object.entries(t.modes).map(([m,n])=>label(m,n)).join(" · "))+(ben?' · '+ben:"")+'</small>',t.id===w.eq?"pri":"");}).join("")+'</aside></div></section>';
+      const heatCls=lastHeat?' ae-heat-'+lastHeat:'';
+      h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><h3>Tes outils <button type="button" class="btn-aide mini" data-aide="outils" title="Comprendre les outils et postes" aria-label="Comprendre les outils et postes">?</button></h3>'+tools.map(t=>{const ben=toolBenefitText(t);return button("tool",t.id,(t.geste?api.gIc(t.geste):t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n)+'<small>'+esc(Object.entries(t.modes).map(([m,n])=>label(m,n)).join(" · "))+(ben?' · '+ben:"")+'</small>',t.id===w.eq?"pri":"");}).join("")+'</aside></div></section>';
       h+='<section class="card ae-stock"><h3>Tes matières</h3><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'">';
       h+='<div class="ae-discovery"><label><input id="ae-discovery-only" type="checkbox"'+(s.settings.equipmentDiscoveryOnly===true?' checked':'')+' title="Montrer uniquement les matières étudiées qui cachent une recette avec cet outil et ce geste"> À découvrir</label>';
       if(Object.keys(tool.modes).length>1)h+='<label class="ae-discovery-mode">Geste <select id="ae-discovery-mode" aria-label="Geste à explorer" title="Choisir le geste du filtre sans lancer de fabrication">'+Object.entries(tool.modes).map(([mode,n])=>'<option value="'+esc(mode)+'"'+(mode===w.mode?' selected':'')+'>'+esc(label(mode,n))+'</option>').join('')+'</select></label>';
@@ -108,8 +133,18 @@
       }
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
-      if(known.length)h+='<section class="card"><details class="ae-known-details" open><summary class="ae-eco-summary" title="Afficher ou replier les recettes déjà maîtrisées sur ce poste"><h3>Recettes déjà maîtrisées sur ce poste ('+known.length+')</h3><span class="small muted">Fabrication rapide</span></summary><div class="ae-known">'+known.map(id=>'<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+'</div>').join("")+'</div></details></section>';
-      if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details" open><summary class="ae-eco-summary" title="Afficher ou replier la bourse, l’apprenti et les surplus de lanières"><h2>Faire vivre l’atelier</h2><span class="small muted">Bourse, apprenti &amp; surplus de lanières</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
+      if(known.length)h+='<section class="card"><details class="ae-known-details" open><summary class="ae-eco-summary" title="Afficher ou replier les recettes déjà maîtrisées sur ce poste"><h3>Recettes déjà maîtrisées sur ce poste ('+known.length+')</h3><span class="small muted">Fabrication rapide</span></summary><div class="ae-known">'+known.map(id=>{
+        const canCadence=E.automatable&&E.automatable(id)&&(E.hasEchoFin("retour")||!(D.COMMANDES?.firstByHand)||(s.made[id]>0));
+        const cad=s.dom?.cadence?.[id];
+        let cadBtn='';
+        if(canCadence){
+          if(cad&&cad.on!==false)cadBtn=button("cadence_toggle",id,"⚙️ "+(cad.cap||100),"small pri",false);
+          else if(cad&&cad.on===false)cadBtn=button("cadence_toggle",id,"⏸️ En pause","small ghost",false);
+          else cadBtn=button("cadence",id,"⚙️ Cadencer","small ghost",false);
+        }
+        return '<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+cadBtn+'</div>';
+      }).join("")+'</div></details></section>';
+      if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details"><summary class="ae-eco-summary" title="Afficher ou replier la bourse, l’apprenti et les surplus de lanières"><h2>Faire vivre l’atelier</h2><span class="small muted">'+(e.hired?(e.working?'Apprenti actif':'Apprenti en pause'):'Apprenti')+' · '+money(E.state.ecus)+'</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
         h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Travail de l’apprenti"></progress><p id="ae-worker-pay" class="small"></p>';
         h+=e.hired?button("fund","","Réserver 1 part")+button("fund5","","Réserver 5 parts")+button("worker","",e.working?"Mettre en pause":"Mettre au travail")+button("withdraw","","Reprendre la part","",e.working||e.budget<=0)+'<label class="small"><input id="ae-autofund" type="checkbox"'+(e.autoFund?' checked':'')+' title="Réserver automatiquement 1 part dans ta bourse quand l’apprenti a tout consommé"> Réapprovisionner la part</label>':button("hire","","Accueillir · "+money(e.hire));
@@ -117,7 +152,7 @@
       }
       return h;
     }
-    function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve();return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentDiscoveryOnly===true,s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason]);}
+    function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve();return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentDiscoveryOnly===true,s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,lastHeat]);}
     function redraw(){U.dirty=true;render(true);live();save();}
     function view(){signature=sig();return api.subTabs("atelier","machines","Découvrir","Machines")+api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
     function live(){const r=root();if(!r||U.tab!=="atelier"||U.equipmentLegacy)return;
@@ -175,16 +210,35 @@
       }
       const c=E.equipmentChoices(id).find(c=>c.ready);if(!c){message="Il faut d’abord : "+name(E.equipmentCheck(id)?.required||"un outil adapté");return;}Object.assign(work().w,{eq:c.equipment,mode:c.mode,place:E.workplaceFor(c.equipment),slots:Object.keys(I[id].r[1]),prepared:id});message="Recette préparée : "+name(id);}
     function forge(mode){const {w}=work();if(!w.slots.length)return;w.mode=mode||w.mode;work();U.forging=true;let result;try{result=w.place==="grand_atelier"?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
-      if(result.kind==="craft"||result.kind==="queued"){message=(result.kind==="craft"?"Fabriqué : ":"En cours : ")+name(result.id);A.craft(U.geste);}
-      else if(result.kind==="learn"||result.kind==="blocked"){message="Recette trouvée : "+name(result.id)+(result.missing?" · Il manque "+Object.entries(result.missing).map(([id,n])=>n+' '+name(id)).join(', '):result.info?' · '+api.needText(result.id,result.info):' · Inscrite dans le Carnet');A.discover();}
+      if(result.kind==="craft"||result.kind==="queued"){
+        lastHeat="success";
+        message=(result.kind==="craft"?"Fabriqué : ":"En cours : ")+name(result.id);
+        A.craft(soundGesture(w.mode));
+      }
+      else if(result.kind==="learn"||result.kind==="blocked"){
+        lastHeat="discover";
+        message="Recette trouvée : "+name(result.id)+(result.missing?" · Il manque "+Object.entries(result.missing).map(([id,n])=>n+' '+name(id)).join(', '):result.info?' · '+api.needText(result.id,result.info):' · Inscrite dans le Carnet');
+        A.discover();
+      }
       else if(result.thermo){
+        lastHeat=result.thermo.heat;
         if(typeof E.remember==="function"&&(result.thermo.heat==="brulant"||result.thermo.heat==="chaud")){
           E.remember(w.mode,w.slots);
         }
-        message=result.thermo.label+" · "+result.thermo.text;A.fail(result.thermo.heat==="brulant"?3:result.thermo.heat==="chaud"?2:result.thermo.heat==="tiede"?1:0);
+        message=result.thermo.label+" · "+result.thermo.text;
+        A.fail(result.thermo.heat==="brulant"?3:result.thermo.heat==="chaud"?2:result.thermo.heat==="tiede"?1:0);
       }
-      else if(result.kind==="fail"&&result.heat!==undefined){const hLbl=["❄️ Froid","🌤️ Tiède","🌡️ Chaud","🔥 Brûlant"][result.heat]||"❄️ Froid";message=hLbl+(result.text?" · "+result.text:" · Aucune réaction avec ces matières.");A.fail(result.heat||0);}
-      else {message=result.kind==="owned"?"Tu possèdes déjà cet objet.":"Ce geste ne donne rien avec ces matières. Essaie un autre outil ou une autre combinaison.";A.fail(0);}
+      else if(result.kind==="fail"&&result.heat!==undefined){
+        lastHeat=["froid","tiede","chaud","brulant"][result.heat]||"froid";
+        const hLbl=["❄️ Froid","🌤️ Tiède","🌡️ Chaud","🔥 Brûlant"][result.heat]||"❄️ Froid";
+        message=hLbl+(result.text?" · "+result.text:" · Aucune réaction avec ces matières.");
+        A.fail(result.heat||0);
+      }
+      else {
+        lastHeat="froid";
+        message=result.kind==="owned"?"Tu possèdes déjà cet objet.":"Ce geste ne donne rien avec ces matières. Essaie un autre outil ou une autre combinaison.";
+        A.fail(0);
+      }
       if(result.fresh&&(result.kind==="craft"||result.kind==="learn"))api.fete({id:result.id,kick:"Nouvelle découverte",title:name(result.id),sub:I[result.id].u||""});
       redraw();
     }
@@ -202,6 +256,26 @@
       else if(action==="prepare")prepare(id);
       else if(action==="order"){const result=E.order(id,1);message=result.ok?"Commande lancée : "+name(id):"Il manque une recette ou un équipement : consulte le Carnet.";}
       else if(action==="batch"){const result=E.queue(id,tool.batch||1,false,undefined,{equipment:w.eq,mode:w.mode});message=result.ok?"Série lancée avec "+name(w.eq):"Pas assez de matières ou de place dans les commandes.";}
+      else if(action==="cadence"){
+        if(E.setCadence){
+          const r=E.setCadence(id,100,true);
+          if(r.ok){
+            message="Cadence activée : maintien de 100 "+name(id)+" par les machines libres.";
+            if(typeof toast==="function")toast(message);
+          }
+        }
+      }
+      else if(action==="cadence_toggle"){
+        if(E.setCadence){
+          const cur=E.state.dom?.cadence?.[id];
+          if(cur){
+            const nextOn=!cur.on;
+            E.setCadence(id,cur.cap,nextOn);
+            message=nextOn?"Cadence réactivée pour "+name(id)+" ("+cur.cap+" max).":"Cadence mise en pause pour "+name(id)+".";
+            if(typeof toast==="function")toast(message);
+          }
+        }
+      }
       else if(action==="build"){E.learn("etabli_amenage",true);message=E.order("etabli_amenage",1).ok?"Aménagement en cours.":"Consulte les matériaux requis dans le Carnet.";}
       else if(action==="hire")message=E.workerHire().ok?"L’apprenti rejoint ton établi.":"Aménage le poste, prépare l’outil et prépare l’accueil avec tes surplus.";
       else if(action==="fund")message=E.workerFund(1).ok?"1 part réservée pour l’apprenti.":"Il faut 1 part disponible dans ta bourse.";

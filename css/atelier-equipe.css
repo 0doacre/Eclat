@@ -20,7 +20,15 @@
 .ae-filled{border-color:var(--acc)!important}
 .ae-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .ae-actions .btn{flex:1 1 110px}
+#ae-result{margin:10px 0 6px;min-height:38px;display:flex;align-items:center;border-radius:8px;transition:all .25s ease}
 #ae-result:empty{display:none}
+#ae-result.ae-heat-brulant{color:#ff6b35;background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.45);padding:8px 12px;box-shadow:0 0 12px rgba(255,107,53,.25);animation:aePulseWarm .35s ease-out}
+#ae-result.ae-heat-chaud{color:#f7a072;background:rgba(247,160,114,.1);border:1px solid rgba(247,160,114,.35);padding:8px 12px;box-shadow:0 0 10px rgba(247,160,114,.18);animation:aePulseWarm .35s ease-out}
+#ae-result.ae-heat-tiede{color:#eed7a1;background:rgba(238,215,161,.08);border:1px solid rgba(238,215,161,.25);padding:8px 12px}
+#ae-result.ae-heat-froid{color:#90a4ae;background:rgba(144,164,174,.08);border:1px solid rgba(144,164,174,.2);padding:8px 12px}
+#ae-result.ae-heat-success,#ae-result.ae-heat-discover{color:var(--good);background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.4);padding:8px 12px;box-shadow:0 0 14px rgba(76,175,80,.25);animation:aePulseCraft .35s ease-out}
+@keyframes aePulseCraft{0%{transform:scale(.98)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+@keyframes aePulseWarm{0%{transform:translateY(-2px);filter:brightness(1.2)}100%{transform:translateY(0);filter:brightness(1)}}
 .ae-tools{border-left:1px solid var(--line2);padding-left:10px;min-width:0}
 .ae-tools h3{margin:0 0 10px}
 .ae-tools .btn{display:block;width:100%;text-align:left;margin-bottom:7px}
@@ -35,8 +43,8 @@
 .ae-resource .ae-selected{border:2px solid var(--acc);background:var(--panel2)}
 .ae-resource .ic{vertical-align:middle}
 .ae-resource .ic,.ae-resource .ic.sm{margin:0;width:28px;height:28px;min-width:28px}
-.ae-known>div{display:flex;gap:8px;margin:6px 0}
-.ae-known>div>.btn:first-child{flex:1;text-align:left}
+.ae-known>div{display:flex;gap:6px;margin:6px 0;align-items:center;flex-wrap:wrap}
+.ae-known>div>.btn:first-child{flex:1 1 170px;text-align:left}
 .ae-economy-grid{display:grid;grid-template-columns:.8fr 1fr 1.2fr;gap:14px}
 .ae-economy-grid>section{min-width:0;padding:12px;border:1px solid var(--line2);border-radius:12px;background:var(--panel2)}
 .ae-economy-grid h3{margin:0 0 10px}

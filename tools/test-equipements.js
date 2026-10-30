@@ -336,4 +336,19 @@ test("le thermomètre équipé distingue Brûlant, Chaud, Tiède et Froid sans r
   assert.ok(t.thermo.text.includes("matières attendues"));
   assert.equal(E.serialize(),before);
 });
+test("l'atelier permet de cadencer directement une recette automatisable maîtrisée", () => {
+  const E = mk(Gentle);
+  stock(E, { bois: 50, manche: 20 });
+  E.learn("manche", true);
+  E.state.made.manche = 1;
+  assert.ok(E.automatable("manche"));
+  // Activation de la cadence
+  const r = E.setCadence("manche", 100, true);
+  assert.ok(r.ok);
+  assert.equal(E.state.dom.cadence.manche.cap, 100);
+  assert.equal(E.state.dom.cadence.manche.on, true);
+  // Mise en pause
+  E.setCadence("manche", 100, false);
+  assert.equal(E.state.dom.cadence.manche.on, false);
+});
 console.log(checks+" contrôles du profil équipements réussis.");
