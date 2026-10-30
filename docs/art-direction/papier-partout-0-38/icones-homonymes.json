@@ -1,0 +1,158 @@
+[
+  {
+    "name": "bone-knife",
+    "scores": [
+      {
+        "file": "lorc/bone-knife.svg",
+        "error": 0.000015318627450980392
+      },
+      {
+        "file": "delapouite/bone-knife.svg",
+        "error": 0.23846746706495098
+      }
+    ]
+  },
+  {
+    "name": "cauldron",
+    "scores": [
+      {
+        "file": "lorc/cauldron.svg",
+        "error": 0
+      },
+      {
+        "file": "darkzaitzev/cauldron.svg",
+        "error": 0.2539548387714461
+      }
+    ]
+  },
+  {
+    "name": "drill",
+    "scores": [
+      {
+        "file": "lorc/drill.svg",
+        "error": 0
+      },
+      {
+        "file": "delapouite/drill.svg",
+        "error": 0.4001024433210784
+      }
+    ]
+  },
+  {
+    "name": "gas-mask",
+    "scores": [
+      {
+        "file": "skoll/gas-mask.svg",
+        "error": 0
+      },
+      {
+        "file": "lorc/gas-mask.svg",
+        "error": 0.2203203986672794
+      }
+    ]
+  },
+  {
+    "name": "hand",
+    "scores": [
+      {
+        "file": "sbed/hand.svg",
+        "error": 0
+      },
+      {
+        "file": "lorc/hand.svg",
+        "error": 0.33914388020833336
+      }
+    ]
+  },
+  {
+    "name": "key",
+    "scores": [
+      {
+        "file": "sbed/key.svg",
+        "error": 0
+      },
+      {
+        "file": "lorc/key.svg",
+        "error": 0.28135124655330884
+      }
+    ]
+  },
+  {
+    "name": "molecule",
+    "scores": [
+      {
+        "file": "skoll/molecule.svg",
+        "error": 0
+      },
+      {
+        "file": "lorc/molecule.svg",
+        "error": 0.37342170266544117
+      }
+    ]
+  },
+  {
+    "name": "rock",
+    "scores": [
+      {
+        "file": "lorc/rock.svg",
+        "error": 0
+      },
+      {
+        "file": "john-redman/rock.svg",
+        "error": 0.3194922353707108
+      }
+    ]
+  },
+  {
+    "name": "screw",
+    "scores": [
+      {
+        "file": "lorc/screw.svg",
+        "error": 0
+      },
+      {
+        "file": "delapouite/screw.svg",
+        "error": 0.3221325444240196
+      }
+    ]
+  },
+  {
+    "name": "smartphone",
+    "scores": [
+      {
+        "file": "skoll/smartphone.svg",
+        "error": 0
+      },
+      {
+        "file": "delapouite/smartphone.svg",
+        "error": 0.0655984317555147
+      }
+    ]
+  },
+  {
+    "name": "stopwatch",
+    "scores": [
+      {
+        "file": "skoll/stopwatch.svg",
+        "error": 0
+      },
+      {
+        "file": "lorc/stopwatch.svg",
+        "error": 0.3075425091911765
+      }
+    ]
+  },
+  {
+    "name": "tesla-coil",
+    "scores": [
+      {
+        "file": "lorc/tesla-coil.svg",
+        "error": 0
+      },
+      {
+        "file": "caro-asercion/tesla-coil.svg",
+        "error": 0.29516649433210784
+      }
+    ]
+  }
+]

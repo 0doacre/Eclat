@@ -34,3 +34,15 @@ html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-discovery-land{max-
   .carnet-studies figcaption{font-size:18px}
   .carnet-study-button img{max-height:130px}
 }
+
+@media(max-width:680px){
+  html[data-style-mode="vivant"] #v-domaine .carnet-discovery-land{max-width:180px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-discovery-land figcaption{font-size:17px;padding-block:2px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-studies{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px;margin-block:2px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-studies figure{display:flex;align-items:center;gap:4px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-studies .carnet-study-button{flex:0 0 54px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-study-button img{max-height:54px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-fieldnote{font-size:17px;margin:2px;line-height:1.1}
+  html[data-style-mode="vivant"] #v-domaine .carnet-studies figcaption{font-size:16px;padding-block:0}
+  html[data-style-mode="vivant"] #v-domaine .carnet-study-wide .carnet-study-button img{max-height:90px}
+}

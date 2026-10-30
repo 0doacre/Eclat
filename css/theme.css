@@ -356,3 +356,29 @@ body.theme-dark[data-ep="enluminure"] { --good: #7091c7; --bad: #e36a68; }
 body.theme-dark[data-ep="registre"] { --good: #5594d2; --bad: #e36c58; }
 body.theme-dark[data-ep="quadrille"] { --bad: #e36c5a; }
 body.theme-dark[data-ep="bord"] { --good: #7289f0; --bad: #e36c5a; }
+
+/* Lot 0.38 : jetons de finition, communs aux six papiers. */
+:root {
+  --finish-radius: 0;
+  --finish-shadow: none;
+  --finish-clear: transparent;
+  --finish-paper: #f4ecda;
+  --finish-paper-deep: #e9dec8;
+  --finish-ink: #30271e;
+  --finish-secondary: #60513f;
+  --finish-pigment: #813f2a;
+  --finish-on-pigment: #fff8e9;
+  --finish-success: #345239;
+  --finish-danger: #812b26;
+  --finish-rule: #79694a;
+  --finish-night: #101d29;
+  --finish-stars: #f0e9d8;
+  --finish-overlay: #30271e80;
+  --finish-window-shadow: 0 14px 44px #30271e44;
+  --finish-ink-shadow: none;
+}
+/* Le petit texte partage l'encre secondaire, jamais une encre pâlie. */
+body[data-ep] { --dim: var(--muted); }
+html:not([data-style-mode="vivant"]) body.theme-dark[data-ep] {
+  --acc:color-mix(in srgb,var(--acc-base) 50%,var(--text));
+}

@@ -1274,3 +1274,13 @@ body.large-text #v-cosmos .term { font-size: 16px; }
 .c-contempler-ico {
   font-size: 12px;
 }
+
+/* Contempler : le bouton occupe son rang, jamais une colonne hors du tableau. */
+.contemplation-canvas{display:grid;grid-template-columns:minmax(0,1fr);align-content:start;min-width:0}
+.contemplation-img{width:100%;min-width:0}
+.contemplation-zoom-btn{position:relative;inset:auto;justify-self:end;margin:4px;max-width:calc(100% - 8px);white-space:normal;min-height:44px}
+.contemplation-canvas[data-zoom="full"]{display:block}
+.contemplation-modal,.contemplation-meta>div{min-width:0;max-width:100%;overflow-wrap:break-word}
+.modal-box :is(figure,img,video,svg){max-width:100%}
+.modal-box :is(h2,h3,p,.kicker){overflow-wrap:break-word}
+@media(prefers-reduced-motion:reduce){.contemplation-img,.contemplation-canvas{transition:none}}

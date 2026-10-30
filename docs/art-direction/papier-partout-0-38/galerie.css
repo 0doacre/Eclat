@@ -1,0 +1,12 @@
+body{margin:0;background:var(--finish-paper);color:var(--finish-ink);font:18px/1.5 "Alegreya Sans",sans-serif}
+main{max-width:1040px;margin:auto;padding:24px}
+h1,h2,h3{font-family:"IM Fell English",Georgia,serif;font-weight:400;line-height:1.2}
+h1{font-size:46px}h2{font-size:32px}h3{font-size:26px}
+a{color:var(--finish-pigment);text-underline-offset:3px}
+nav{display:flex;flex-wrap:wrap;gap:12px 24px}
+aside,details{padding:16px;margin-block:24px;border:1px solid var(--finish-rule);background:var(--finish-paper-deep);border-radius:var(--finish-radius);box-shadow:var(--finish-shadow)}
+summary{min-height:44px;cursor:pointer;font-weight:700}
+.paire{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:24px}
+figure{min-width:0;margin:0;text-align:center}img{display:block;width:100%;max-width:430px;height:auto;margin:auto}figcaption{margin:8px}
+section{margin-block:32px}
+@media(max-width:600px){main{padding:12px}.paire{gap:10px}body{font-size:16px}aside,details{padding:10px}h1{font-size:36px}}

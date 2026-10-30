@@ -1,0 +1,772 @@
+[
+  {
+    "screen": "domaine-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-320-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "320-clair",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  },
+  {
+    "screen": "domaine-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-320-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "320-sombre",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  },
+  {
+    "screen": "domaine-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-360-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "360-clair",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  },
+  {
+    "screen": "domaine-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-360-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "360-sombre",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  },
+  {
+    "screen": "domaine-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "390-clair",
+    "densityAt812": 0
+  },
+  {
+    "screen": "domaine-390-812-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-390-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "390-clair",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  },
+  {
+    "screen": "domaine-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "390-sombre",
+    "densityAt812": 0
+  },
+  {
+    "screen": "domaine-390-812-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-390-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "390-sombre",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  },
+  {
+    "screen": "domaine-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-430-clair",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "430-clair",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  },
+  {
+    "screen": "domaine-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-jeu-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-affichage-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-audio-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "menu-systeme-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "sauvegardes-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "memoire-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "contempler-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "recette-erreur-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objet-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "objectif-passage-deplie-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "passage-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "lieu-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "releve-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "absence-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "journal-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "screen": "cosmos-430-sombre",
+    "overflow": false,
+    "modalOverflow": false
+  },
+  {
+    "tag": "430-sombre",
+    "errors": [
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "console: Blocked call to navigator.vibrate because user hasn't tapped on the frame or any embedded frame yet: https://www.chromestatus.com/feature/5644273861001216.",
+      "fmtNum is not defined"
+    ]
+  }
+]
