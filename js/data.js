@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.43.2";
+  D.VERSION = "0.44.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1518,6 +1518,8 @@
     { id: "reacteur", ch: 5000 }, { id: "reacteur_fusion", ch: 20000 }
   ],
     baseCh: 10,
+    /* 0.44 : l'énergie agit. Machines et travailleurs tournent à offre / demande de leur vitesse, jamais en dessous de ce plancher (0,5 : la moitié). 1 : l'énergie ne ralentit rien. */
+    plancherEnergie: 0.5,
     /* Construction : tout ce qui se bâtit (extracteur, machine, installation, amélioration), sauf ce qui appartient à un métier d'énergie,
      * de chimie, d'électronique ou de lettres (le moulin, la centrale, le réacteur, la presse…). */
     construction: { types: ["ext", "mach", "stat", "upg"], garde: ["centrales", "electronique", "chimie", "artistique"] }
@@ -1602,6 +1604,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⚡ L’énergie agit. Quand tes machines, tes apprentis et tes ouvriers demandent plus de chevaux que tu n’en produis, ils tournent plus lentement, jusqu’à la moitié de leur vitesse au plus. Tes mains ne sont jamais ralenties. Construis un moulin, une chaudière ou une centrale : la jauge de l’Atelier montre ce qui manque.",
     "✒️ Le métier Artistique devient Arts et lettres. Un métier dont toutes les recettes sont trouvées est maîtrisé : sa carte, dans l’Atelier, le dit (il reste utilisable). Ses recettes comptent « trouvées sur total » tant qu’il reste à découvrir.",
     "📜 Chaque recette trouvée dit sa saveur dans la fenêtre de découverte : une ou deux phrases, et la première fois qu’un geste nouveau (Marteler, Allier, Graver…) entre en jeu, ce qu’il veut dire. En attendant les textes définitifs, la description de la recette sert de texte.",
     "🏗️ Un seul modèle : un outil et un geste. Tout ce qui se bâtit (extracteurs, machines, installations, améliorations) se construit désormais : nouveau geste Construire et nouveau métier Construction. Au feu, plus de réglages : un seul geste, Chauffer, les recettes se distinguent par l’ingrédient. Le four reprend les recettes du feu, le couteau celles du racloir, et l’outil le plus haut cache le plus bas. La pioche, le poste de frappe, le ciseau et la dalle ne sont plus des outils de départ : leurs recettes passent par l’Atelier.",

@@ -17,13 +17,7 @@ EngineMod.createEngine = function (opts) {
   const A = Ateliers.create({ E, D });
   const up = E.update;
   let n = 0, cache = 1, tourne = false;
-  if (plancher !== null) E.energieFacteur = function () {
-    if (tourne) return cache;
-    if (n % 10 !== 0 && cache !== undefined && E._fac === n) return cache;
-    tourne = true;
-    try { cache = Math.max(plancher, A.energie().ratio); } finally { tourne = false; }
-    E._fac = n; return cache;
-  };
+  if (plancher !== null) D.ATELIERS.plancherEnergie = plancher; // le jeu applique lui-même l’énergie depuis la 0.44 ; null : plancher du jeu
   E.update = function () {
     const r = up.apply(this, arguments);
     if (sonde && ++n % 100 === 0) { // 100 pas de 100 ms
@@ -49,7 +43,7 @@ if (planchers.length) {
   for (const nom of noms) {
     const lignes = {};
     for (const p of [null].concat(planchers)) {
-      plancher = p; sonde = [];
+      plancher = p === null ? 1 : p; sonde = [];
       const r = Sim.play(Sim.appliquerJoueur(Object.assign({}, Sim.lire(["--minutes", String(minutes)])), nom, {}));
       lignes[p === null ? "aucun" : "plancher " + p] = r.rows.filter((x) => !x.offert).map((x) => x.z + " " + x.t.toFixed(1));
     }

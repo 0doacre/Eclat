@@ -62,3 +62,12 @@ Banc : `node tools/sim-energie.js [--minutes 120] [--planchers 0.5,0.25,0.1]` (j
 - **Le manque existe, il est court et précoce.** Aux âges 4 à 8 la demande (13 à 63 ch) dépasse l'offre de base (10 ch) tant que le joueur n'a pas bâti de source : rapport de 0,77 à 0,16 selon le joueur ; dès l'âge 8-9 une source donne 200 ch et le rapport revient à 1. Les joueurs à séances espacées y passent le plus de temps (jusqu'à 60 % des relevés des âges 4 à 7).
 - **Effet sur le rythme : nul.** Aucun passage ne bouge de plus de 2 minutes, que le plancher soit 0,5, 0,25 ou 0,1 (ex. tapeur : désert 76,0 → 74,3 min ; les autres passages à l'identique). Les joueurs automatiques tirent presque tout de leurs mains ; ils n'embauchent personne (travailleurs : 0 sur tous les relevés).
 - **Conséquence** : on peut faire agir l'énergie sans toucher à l'équilibre mesuré, mais les bots ne la ressentent pas. Le ressenti doit se juger à la main, sur une partie réelle avec machines et ouvriers.
+
+## 8. Étape 4 livrée (0.44.0) : l'énergie agit
+
+- **Règle** : offre = 10 ch de base + les sources bâties ; demande = machines, apprentis et ouvriers **au travail**. Facteur = offre / demande, plafonné à 1, **plancher 0,5** (`D.ATELIERS.plancherEnergie`, choix du porteur après la simulation du §7). Il multiplie la vitesse des machines et des travailleurs ; les mains ne sont jamais ralenties.
+- **Où** : `energieRecalc` dans `js/engine.js`, recalculé chaque seconde de jeu à partir du pool déjà assigné (pas d'appel récursif), appliqué dans `machUnitRate`. Rien dans la sauvegarde.
+- **Écran** : la jauge de l'Atelier dit « tes machines et tes ouvriers tournent à N % de leur vitesse (jamais moins de 50 %) » et la feuille d'aide n'annonce plus une simple information.
+- **Mesure** : `node tools/sim-energie.js --planchers 0.5` : aucun passage ne bouge de plus de 2 minutes (voir §7). Test : `tools/test-energie.js`.
+- **À juger à la main** : le ressenti d'un manque d'énergie en partie réelle, avec machines et ouvriers.
+- **Seul écart mesuré** : la référence « 30 min avec une mémoire » de `tools/test-sim.js` passe la Mine à 26,452 min au lieu de 26,277 (+0,7 %), le joueur à mémoire ayant déjà des machines en manque d'énergie ; la référence est mise à jour.

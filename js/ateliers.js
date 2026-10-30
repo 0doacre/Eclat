@@ -35,7 +35,7 @@
         if (tr[f].usedOuv) conso.push({ id: "ouv:" + f, n: "Ouvriers · " + (F ? F.n : f), nombre: tr[f].usedOuv, ch: tr[f].usedOuv * TR.ouvrier.ch });
       }
       const aConstruire = T.sources.filter((s) => E.count(s.id) <= 0 && E.state.known[s.id]).map((s) => ({ id: s.id, n: I[s.id].n, ch: s.ch }));
-      return { offre, demande, ratio, sources, conso, aConstruire };
+      return { offre, demande, ratio, facteur: Math.max(Math.min(1, T.plancherEnergie === undefined ? 1 : T.plancherEnergie), ratio), plancher: T.plancherEnergie, sources, conso, aConstruire };
     }
 
     /* ce que le joueur peut embaucher dans cet atelier, et pourquoi il ne le peut pas */

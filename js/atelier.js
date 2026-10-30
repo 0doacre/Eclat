@@ -1671,13 +1671,13 @@
       const fmtc = (n) => fmt(Math.round(n));
       return '<button type="button" class="energie' + (e.ratio < 1 ? " is-juste" : "") + '" data-energie="1" aria-expanded="' + (U.energieSheet ? "true" : "false") + '" aria-label="Énergie : ' + fmtc(e.demande) + ' chevaux demandés sur ' + fmtc(e.offre) + ' disponibles. Ouvrir le détail">' +
         '<span class="energie-t">Énergie</span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v">' + fmtc(e.demande) + " / " + fmtc(e.offre) + ' ch ⓘ</span></button>' +
-        '<p class="tiny muted energie-note">' + (e.ratio < 1 ? "Il manque de l’énergie : tes ateliers tourneraient à " + Math.round(100 * e.ratio) + " %. " : "") + "Pour l’instant, c’est une information : l’énergie ne ralentit rien. Touche la jauge pour le détail.</p>";
+        '<p class="tiny muted energie-note">' + (e.ratio < 1 ? "Il manque de l’énergie : tes machines et tes ouvriers tournent à " + Math.round(100 * e.facteur) + " % de leur vitesse" + (e.facteur > e.ratio ? " (jamais moins de " + Math.round(100 * e.plancher) + " %)" : "") + ". Tes mains ne sont pas ralenties. " : "") + "Touche la jauge pour le détail.</p>";
     }
     /* le détail de l'énergie : ce qui consomme, ce qui fournit */
     function energieFeuille() {
       const e = Atel.energie(), c = (n) => fmt(Math.round(n));
       let h = '<div class="auto-feuille energie-feuille" role="dialog" aria-label="Énergie"><div class="auto-tete"><b>Énergie · ' + c(e.demande) + " / " + c(e.offre) + ' ch</b><button type="button" class="btn small" data-energie="0">Fermer</button></div><div class="auto-corps">';
-      h += '<p class="small">Un <b>cheval</b> (ch) est une unité de force. Tes machines, tes apprentis et tes ouvriers en consomment <b>quand ils travaillent</b> ; tes mains n’en consomment pas. Ce que tu produis (la bête de trait, le moulin, plus tard la vapeur et l’électricité) fournit l’énergie à tous tes ateliers. <b>Pour l’instant, c’est une information : manquer d’énergie ne ralentit encore rien.</b></p>';
+      h += '<p class="small">Un <b>cheval</b> (ch) est une unité de force. Tes machines, tes apprentis et tes ouvriers en consomment <b>quand ils travaillent</b> ; tes mains n’en consomment pas. Ce que tu produis (la bête de trait, le moulin, plus tard la vapeur et l’électricité) fournit l’énergie à tous tes ateliers. <b>Si tu en manques, ils ralentissent proportionnellement, sans jamais descendre sous la moitié de leur vitesse.</b></p>';
       h += '<h3 class="sub">Ce qui consomme</h3>';
       h += e.conso.length ? e.conso.map((x) => '<div class="auto-ligne"><span class="grow">' + esc(x.n) + ' <span class="tiny muted">×' + x.nombre + "</span></span><b>" + c(x.ch) + " ch</b></div>").join("") : '<p class="small muted">Rien ne consomme : aucune machine ni aucun travailleur n’est au travail en ce moment.</p>';
       h += '<h3 class="sub">Ce qui fournit</h3>' + e.sources.map((x) => '<div class="auto-ligne"><span class="grow">' + esc(x.n) + "</span><b>+" + c(x.ch) + " ch</b></div>").join("");

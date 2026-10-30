@@ -1407,10 +1407,30 @@
       if (i < 0 || !TRAV[m.slice(0, i)]) return null;
       return { kind: m.slice(0, i), fam: m.slice(i + 1), def: TRAV[m.slice(0, i)] };
     }
-    /* E.energieFacteur : crochet du banc d’essai tools/sim-energie.js (0.44). Absent dans le jeu : facteur 1, rien ne change. */
+    /* L'énergie (0.44) : offre = chevaux de base + sources bâties ; demande = machines et travailleurs au travail. Le facteur
+     * (offre / demande, au plus 1, au moins D.ATELIERS.plancherEnergie) ralentit machines et travailleurs, jamais les mains.
+     * Recalculé une fois par seconde de jeu à partir du pool déjà assigné (pas d'appel à assignWorkers : pas de récursion). */
+    let energieCache = 1, energieT = 0;
+    function energieRecalc() {
+      const T = D.ATELIERS;
+      let offre = T.baseCh;
+      T.sources.forEach((s) => { if (count(s.id) > 0) offre += s.ch; });
+      const ch = {};
+      T.paliers.forEach((p) => { ch[p.id] = p.ch; });
+      let demande = 0;
+      machPool.forEach((w) => {
+        if (w.job === null && w.cad === null) return;
+        const wk = workerOf(w.m);
+        demande += wk ? D.TRAVAILLEURS[wk.kind].ch : ch[w.m] || 0;
+      });
+      energieCache = demande <= 0 ? 1 : Math.max(Math.min(1, T.plancherEnergie === undefined ? 1 : T.plancherEnergie), Math.min(1, offre / demande));
+      return energieCache;
+    }
+    E.energieFacteur = () => energieCache;
+    E.energieRecalc = energieRecalc;
     function machUnitRate(m, c, rec) {
       const wk = workerOf(m);
-      if (wk) return rec ? wk.def.mult / Math.max(0.2, handTime(rec)) * (E.energieFacteur ? E.energieFacteur() : 1) * E.recetteTerreBonus(rec) : 0;
+      if (wk) return rec ? wk.def.mult / Math.max(0.2, handTime(rec)) * energieCache * E.recetteTerreBonus(rec) : 0;
       const M = item(m);
       if (!M) return 0;
       let decay = 1;
@@ -1423,7 +1443,7 @@
           decay = Math.pow(H.machDecay || 1.08, effAge - 1);
         }
       }
-      return ((M.spd / 60) / decay) * (E.energieFacteur ? E.energieFacteur() : 1) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
+      return ((M.spd / 60) / decay) * energieCache * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
     }
     function machReadyFor(m, rec, job) {
       const wk = workerOf(m);
@@ -5328,6 +5348,7 @@
       const t = now();
       const dt = (t - S.t) / 1000;
       S.t = t;
+      if (t - energieT > 1000) { energieT = t; energieRecalc(); }
       if (t - lastAgeCheck > 1500) { lastAgeCheck = t; avancerAge(); } // une étape finie peut ouvrir l’âge suivant
       if (S.boosts) {
         let boostExpired = false;
