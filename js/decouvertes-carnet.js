@@ -14,6 +14,16 @@
     },
     plaine: {
       tumulus: { index: 1, number: "II", name: "Le Tumulus", note: "Une entrée de pierre, sous les herbes de la plaine.", alt: "Étude d’un tumulus herbeux et de son entrée sombre bordée de pierres.", path: "M350 306 C323 282 311 251 275 237 S224 219 185 216" }
+    },
+    riviere: {
+      gue: { index: 0, number: "I", wide: true, name: "Le Gué", note: "Entre les galets, le courant laisse un passage.", alt: "Un passage de pierres dans la rivière et un galet percé sur la berge." },
+      carcasse: { index: 1, number: "II", wide: true, name: "La Carcasse", note: "Le métal s’efface dans la berge. La pince n’a pas lâché.", alt: "Une machine d’entretien rouillée et ensevelie, sa pince tenant un minuscule squelette d’oiseau." },
+      escalier: { index: 2, number: "III", wide: true, name: "L’Escalier Noyé", note: "Sous l’eau sombre, un angle trop droit pour être naturel.", alt: "Des marches de pierre régulières s’enfoncent sous les eaux de la rivière." }
+    },
+    collines: {
+      rails: { index: 0, number: "I", wide: true, name: "Les Rails Rouillés", note: "Rien ne retient le wagonnet. Il ne roule pas.", alt: "Un wagonnet rouillé chargé de minerai vert reste immobile dans la pente." },
+      sommet: { index: 1, number: "II", wide: true, name: "La Vue du Sommet", note: "Des tours brisées, au-delà des collines. Une tablette parmi les pierres.", alt: "Une tablette gravée au premier plan et des tours brisées dans la brume à l’horizon." },
+      nid: { index: 2, number: "III", wide: true, name: "Le Replat", note: "Quatre pierres tournées vers le même coin du ciel.", alt: "Quatre pierres plates sur un replat abrité, avec de petits groupes de cailloux sur une dalle." }
     }
   };
   function create({ E, A, esc, openModal, zone = "lisiere" }) {
@@ -27,14 +37,15 @@
       return (s.exp.done[zone] || 0) > index || !!(s.frags[id] || s.frags[reward] || (f && s.frags[f])) ||
         Object.entries(E.RECIT && E.RECIT.pages || {}).some(([pid, page]) => s.livre && s.livre.p && s.livre.p[pid] && (page.src || []).some((src) => src.k === "exp" && src.at === key));
     }
-    function state() { return { [primary.id]: acquired(primary.id, 0), ...Object.fromEntries(Object.entries(STUDIES).map(([id, study]) => [id, acquired(id, study.index)])) }; }
+    function state() { return { ...(primary ? { [primary.id]: acquired(primary.id, 0) } : {}), ...Object.fromEntries(Object.entries(STUDIES).map(([id, study]) => [id, acquired(id, study.index)])) }; }
     E.on("expdone", (r) => {
-      if (r.z === zone && (r.x.id === primary.id || STUDIES[r.x.id]) && !r.silent && !r.revisit && r.fragNew) {
+      if (r.z === zone && ((primary && r.x.id === primary.id) || STUDIES[r.x.id]) && !r.silent && !r.revisit && r.fragNew) {
         recent = { id: r.x.id, at: 0, expires: Date.now() + 60000 };
       }
     });
     E.on("cycle", () => { recent = null; });
     function sceneHTML() {
+      if (!primary) return "";
       const s = state();
       const paths = { [primary.id]: primary.path, ...Object.fromEntries(Object.entries(STUDIES).map(([id, study]) => [id, study.path])) };
       const sketch = new URL(BASE + zone + '-esquisse.webp', document.baseURI).href;
@@ -50,7 +61,7 @@
       return Object.entries(STUDIES).map(([id, study]) => {
         if (!s[id] && !(active && active.z === zone && active.i === study.index)) return "";
         const reveal = recent && recent.id === id && !reduced() ? ' style="clip-path:inset(100% 0 0 0)"' : "";
-        return '<div class="carnet-studies" data-carnet-study="' + id + '"' + (s[id] ? '' : ' data-pending="true"') + '>' +
+        return '<div class="carnet-studies' + (study.wide ? ' carnet-study-wide' : '') + '" data-carnet-study="' + id + '"' + (s[id] ? '' : ' data-pending="true"') + '>' +
           '<p class="carnet-fieldnote">' + esc(s[id] ? study.note : "Une nouvelle étude se prépare dans la marge…") + '</p>' +
           (s[id] ? '<figure' + reveal + '><button class="carnet-study-button" data-carnet-plate="' + id + '" aria-label="Examiner la planche : ' + esc(study.name) + '"><img src="' + BASE + id + '.webp" alt="' + esc(study.alt) + '" loading="lazy" decoding="async"></button><figcaption>' + study.number + ' · ' + esc(study.name) + '</figcaption></figure>' : '<div class="carnet-study-pending" aria-hidden="true"></div>') + '</div>';
       }).join("");
@@ -63,9 +74,9 @@
     }
     function update() {
       frame = 0;
-      const el = document.querySelector('#v-domaine:not(.hidden) [data-carnet-scene="' + zone + '"]');
+      const el = document.querySelector(primary ? '#v-domaine:not(.hidden) [data-carnet-scene="' + zone + '"]' : '#v-domaine:not(.hidden) #dt-' + zone);
       const land = el && el.closest('.carnet-terre');
-      const s = state(), xp = E.expProgress(), active = xp && xp.z === zone && xp.i <= Object.keys(STUDIES).length ? xp : null;
+      const s = state(), xp = E.expProgress(), active = xp && xp.z === zone && ((primary && xp.i === 0) || Object.values(STUDIES).some(study => study.index === xp.i)) ? xp : null;
       const studyId = recent ? recent.id : active && Object.keys(STUDIES).find((id) => STUDIES[id].index === active.i);
       const target = studyId && land && land.querySelector('[data-carnet-study="' + studyId + '"]');
       if (window.EclatStyleMode !== "vivant" || !el || !visible(target || el)) { hush(); return; }
@@ -74,6 +85,7 @@
       if (recent && !recent.at) recent.at = performance.now();
       let reveal = recent && !reduced() ? clamp((performance.now() - recent.at) / 4000) : 1;
       const finishing = recent && reveal < 1;
+      if (primary) {
       const paint = s[primary.id] ? (finishing && recent.id === primary.id ? .6 + .4 * reveal : 1) : active && active.i === 0 ? .6 * active.p : 0;
       const image = el.querySelector('.lisiere-color');
       image.style.opacity = paint ? "1" : "0";
@@ -84,6 +96,7 @@
         const p = done ? 1 : working ? active.p : 0;
         path.style.strokeDashoffset = String(1 - p); path.style.opacity = p ? ".7" : "0";
       });
+      }
       land.querySelectorAll('[data-carnet-study] figure').forEach((study) => {
         const p = finishing && recent.id === study.parentElement.dataset.carnetStudy ? reveal : 1;
         study.style.clipPath = p >= 1 ? "none" : 'inset(' + ((1 - p) * 100).toFixed(1) + '% 0 0 0)';
