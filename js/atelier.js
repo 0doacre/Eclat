@@ -56,7 +56,7 @@
     function viewLabo() {
       const st = S();
       if (Equipped && st.age < 3) U.equipmentLegacy = false;
-      if (Equipped && !U.equipmentLegacy) return Equipped.view();
+      if (Equipped && !U.equipmentLegacy) return Equipped.laboView();
       const rt = recettesTrouvees();
       let h = '<div class="labo"><div class="labo-tete">' + (Equipped ? '<button type="button" class="btn small ghost" data-ae="legacy" data-value="0">← Postes et outils</button>' : "") + '<button type="button" class="labo-compteur" data-tab2="carnet" title="Ouvrir le Carnet : toutes tes recettes trouvées">Recettes trouvées · ' + rt.n + " / " + rt.total + "</button></div>";
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
@@ -1662,8 +1662,8 @@
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
       if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette au Labo : elle apparaît ici.</p></div>' + (U.autoSheet ? autoFeuille() : "");
-      h += '<div class="prod-choix" role="group" aria-label="Recettes connues">';
-      liste.slice(0, 30).forEach((id) => {
+      h += '<div class="prod-choix" role="group" aria-label="Recettes connues"' + (U.prodTout ? " data-tout" : "") + ">";
+      liste.slice(0, 80).forEach((id) => {
         const can = E.maxCraftable(id, 1000) > 0;
         h += '<button type="button" class="prod-recette' + (id === U.prodSel ? " on" : "") + (can ? "" : " zero") + '" data-prodsel="' + id + '" aria-pressed="' + (id === U.prodSel) + '">' + icon(id) + '<span class="n">' + esc(I[id].n) + '</span><span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
       });
@@ -1675,19 +1675,21 @@
       h += '<section class="prod-fiche"><div class="row">' + icon(id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + ' <span class="muted">×' + fmt(q) + "</span></div>" +
         '<div class="tiny muted">' + gesteChip(id) + " · à la main : " + fmtTime(E.handTime(id) * q) + "</div></div></div>" +
         '<div class="row wrap small" style="margin-top:6px">' + ingHTML(cost, { check: true, link: true }) + "</div>" +
-        '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["max", "Max"]].map(([k, l]) => '<button type="button" data-prodq="' + k + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + "</div></section>";
+        '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["50", "×50"], ["100", "×100"], ["500", "×500"], ["1000", "×1000"], ["max", "Max"]].map(([k, l]) => '<button type="button" data-prodq="' + k + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + "</div></section>";
       h += '<div class="prod-qui"><button type="button" class="btn pri" data-prod="main">À la main</button>' +
-        '<button type="button" title="Confier à un apprenti : il refabrique seul jusqu’à la cible en Réserve" class="btn' + (why ? " ghost" : "") + '" data-prod="apprenti"' + (ordre ? " disabled" : "") + ">" + (ordre ? "Confié · " + fmt(ordre.have) + "/" + fmt(ordre.cap) : "Apprenti") + "</button>" +
+        '<button type="button" title="Automatiser : les machines refabriquent seules jusqu’à la cible en Réserve" class="btn' + (why ? " ghost" : "") + '" data-prod="apprenti"' + (ordre ? " disabled" : "") + ">" + (ordre ? "Automatisé · " + fmt(ordre.have) + "/" + fmt(ordre.cap) : "Automatiser") + "</button>" +
         '<button type="button" class="btn ghost" data-tab2="machines">Machines</button></div>';
       if (why && !ordre) h += '<p class="tiny muted prod-why">' + esc(why) + "</p>";
-      h += '<div class="prod-file" id="hands">' + handsHTML() + "</div></div>";
+      h += '<div class="prod-file" id="hands">' + handsHTML() + "</div>";
+      if (Equipped && S().known.laniere) h += '<details class="prod-apprenti"' + (U.prodApprenti ? " open" : "") + '><summary data-prodapprenti>L’apprenti de l’établi · bourse et troc</summary>' + Equipped.ecoView() + "</details>";
+      h += "</div>";
       return h + (U.autoSheet ? autoFeuille() : "");
     }
     /* « Ce qui tourne » : chaque ordre permanent, son état en mots, ses réglages */
     function autoFeuille() {
       const ap = E.apprentis();
       let h = '<div class="auto-feuille" role="dialog" aria-label="Ce qui tourne"><div class="auto-tete"><b>Ce qui tourne</b><button type="button" class="btn small" data-autosheet="0">Fermer</button></div><div class="auto-corps">';
-      if (!ap.ordres.length) h += '<p class="small muted">Aucun apprenti au travail. Choisis une recette, puis « Confier à un apprenti » : il la refabrique seul jusqu’à la cible en Réserve.</p>';
+      if (!ap.ordres.length) h += '<p class="small muted">Rien n’est automatisé. Choisis une recette, puis « Automatiser » : les machines la refabriquent seules jusqu’à la cible en Réserve.</p>';
       ap.ordres.forEach((o) => {
         const cls = o.status === "ok" ? "is-ok" : o.status === "full" ? "is-plein" : o.status === "off" ? "" : "is-bloque";
         const txt = o.status === "starved" && o.miss.length ? "manque : " + o.miss.map((i) => I[i].n).join(", ") : PROD_ETAT[o.status] || o.status;
@@ -1704,6 +1706,7 @@
     /* les appuis de l’Atelier et du Labo */
     function prodClick(t) {
       let b;
+      if (t.closest("[data-prodapprenti]")) { U.prodApprenti = !U.prodApprenti; return false; }
       if ((b = t.closest("[data-labsearch]"))) { A.click(); U.labSearch = b.dataset.labsearch === "1"; render(true); return true; }
       if ((b = t.closest("[data-autosheet]"))) { A.click(); U.autoSheet = b.dataset.autosheet === "1" ? !U.autoSheet : false; render(true); return true; }
       if ((b = t.closest("[data-prodsel]"))) { A.click(); U.prodSel = b.dataset.prodsel; render(true); return true; }
@@ -1717,7 +1720,7 @@
           else { A.fail(0); toast(q.why === "full" ? "Commandes au maximum." : q.why === "queued" ? "Déjà en cours." : "Il manque des matières : récolte d’abord, ou lance « Tout fabriquer » depuis le Carnet.", { key: "prod" }); }
         } else if (b.dataset.prod === "apprenti") {
           const r = E.setCadence(id, Math.max(10, Math.floor(S().inv[id] || 0) + prodQty(id)), true);
-          if (r.ok) { A.click(); toast("🛠️ Un apprenti refabrique " + esc(I[id].n.toLowerCase()) + " jusqu’à la cible.", { key: "prod" }); }
+          if (r.ok) { A.click(); toast("⚙️ Les machines refabriquent " + esc(I[id].n.toLowerCase()) + " jusqu’à la cible.", { key: "prod" }); }
           else { A.fail(0); toast(esc(prodWhy(id) || "Impossible pour l’instant."), { key: "prod" }); }
         }
         render(true); return true;

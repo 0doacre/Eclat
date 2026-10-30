@@ -86,8 +86,9 @@
       U.geste=reference?I[reference].r[0]:"assembler";
       return {w,places,tools,tool,recipe};
     }
-    function body(){
+    function body(mode){
       const {w,places,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();
+      if(mode==="eco")return economy(s,e);
       const raw=[...new Set(D.ZONES.filter(z=>E.zoneOpen(z.id)).flatMap(z=>z.res))];
       const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id))).sort((a,b)=>{
         const da=E.equipmentHasDiscovery(a,w.eq,w.mode)?1:0,db=E.equipmentHasDiscovery(b,w.eq,w.mode)?1:0;
@@ -97,7 +98,7 @@
       });
       const known=Object.keys(s.known).filter(id=>(w.place==="grand_atelier"?(I[id]?.r&&I[id].a>=4):D.CRAFT_EQUIPMENT.recipes[id]?.some(c=>E.workplaceFor(c.equipment)===w.place))&&(!E.isUnique(I[id])||!(s.made[id]>0)));
       let h='';
-      const releve=E.shouldSuggestReleve&&E.shouldSuggestReleve();
+      const releve=!mode&&E.shouldSuggestReleve&&E.shouldSuggestReleve();
       if(releve)h+='<section class="card releve-alerte"><b>✦ Passer le relais · +'+releve.gain+' Traces</b><p class="small">'+esc(releve.texte)+'</p><button class="btn pri small" data-releve title="Voir les gains et les bonus permanents de la prochaine relève">Préparer la relève</button></section>';
       if(places.length>1)h+='<nav class="ae-posts" aria-label="Postes de travail">'+places.map(p=>button("place",p.id,esc(p.n),p.id===w.place?"pri":"")).join("")+'</nav>';
       if(s.age>=3)h+='<p class="small">'+button("legacy","1","Procédés après le Cuivre","ghost")+'</p>';
@@ -138,6 +139,7 @@
       }
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
+      if(mode==="labo")return h;
       const cads=E.cadences?E.cadences():[];
       const cadsMap=Object.fromEntries(cads.map(c=>[c.id,c]));
       if(cads.length){
@@ -174,6 +176,11 @@
         }
         return '<div class="ae-cad-item-row"><div class="ae-cad-item-btns">'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+cadBtn+'</div>'+stLine+'</div>';
       }).join("")+'</div></details></section>';
+      if(!mode)h+=economy(s,e);
+      return h;
+    }
+    function economy(s,e){
+      let h='';
       if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details" open><summary class="ae-eco-summary" title="Afficher ou replier la bourse, l’apprenti et les surplus de lanières"><h2>Faire vivre l’atelier</h2><span class="small muted">'+(e.hired?(e.working?'Apprenti actif':'Apprenti en pause'):'Apprenti')+' · '+money(E.state.ecus)+'</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
         h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Travail de l’apprenti"></progress><p id="ae-worker-pay" class="small"></p>';
@@ -185,8 +192,12 @@
     function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve(),cadsSnap=E.cadences?E.cadences().map(c=>c.id+':'+c.have+':'+c.machs+':'+c.status).join(';'):'';return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentDiscoveryOnly===true,s.settings.equipmentStockOnly===true,s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,cadsSnap,lastHeat]);}
     function redraw(){U.dirty=true;render(true);live();save();}
     function view(){signature=sig();return api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
-    function live(){const r=root();if(!r||U.tab!=="labo"||U.equipmentLegacy)return;
-      const next=sig();if(next!==signature){const ae=document.activeElement,focus=ae&&r.contains(ae)&&ae.id?{id:ae.id,start:ae.selectionStart,end:ae.selectionEnd}:null;const scroll=r.querySelector(".ae-inventory")?.scrollTop||0;r.innerHTML=body();signature=next;const stock=r.querySelector(".ae-inventory");if(stock)stock.scrollTop=scroll;if(focus){const el=document.getElementById(focus.id);if(el){el.focus({preventScroll:true});try{el.setSelectionRange(focus.start,focus.end);}catch(_){}}}}
+    function laboView(){signature=sig();return '<div class="atelier-equipe ae-lab" id="atelier-equipe">'+body("labo")+'</div>';}
+    function ecoView(){signature=sig();return '<div class="atelier-equipe ae-prod" id="atelier-equipe">'+body("eco")+'</div>';}
+    const rootMode=r=>r&&r.classList.contains("ae-lab")?"labo":r&&r.classList.contains("ae-prod")?"eco":undefined;
+    const tabOK=()=>U.tab==="labo"||U.tab==="atelier";
+    function live(){const r=root();if(!r||!tabOK()||U.equipmentLegacy)return;
+      const next=sig();if(next!==signature){const ae=document.activeElement,focus=ae&&r.contains(ae)&&ae.id?{id:ae.id,start:ae.selectionStart,end:ae.selectionEnd}:null;const scroll=r.querySelector(".ae-inventory")?.scrollTop||0;r.innerHTML=body(rootMode(r));signature=next;const stock=r.querySelector(".ae-inventory");if(stock)stock.scrollTop=scroll;if(focus){const el=document.getElementById(focus.id);if(el){el.focus({preventScroll:true});try{el.setSelectionRange(focus.start,focus.end);}catch(_){}}}}
       const {w}=work(),e=E.atelierEconomyInfo(),query=(U.equipmentSearch||"").toLocaleLowerCase();
       let visible=0;
       const discoveryOnly=E.state.settings.equipmentDiscoveryOnly===true;
@@ -273,7 +284,7 @@
       if(result.fresh&&(result.kind==="craft"||result.kind==="learn"))api.fete({id:result.id,kick:"Nouvelle découverte",title:name(result.id),sub:I[result.id].u||""});
       redraw();
     }
-    document.addEventListener("click",ev=>{const b=ev.target.closest("[data-ae]");if(!b||U.tab!=="labo"||!document.getElementById("v-labo").contains(b)||b.disabled)return;const action=b.dataset.ae,id=b.dataset.value;
+    document.addEventListener("click",ev=>{const b=ev.target.closest("[data-ae]");if(!b||!tabOK()||!b.closest("#v-labo,#v-atelier")||b.disabled)return;const action=b.dataset.ae,id=b.dataset.value;
       if(action==="legacy"){U.equipmentLegacy=id==="1";redraw();return;}
       if(!root()?.contains(b))return;
       const {w,tools,tool}=work();A.init();
@@ -347,7 +358,7 @@
       if(ev.target.id==="ae-autofund"&&E.workerAutoFund){E.workerAutoFund(ev.target.checked);live();save();return;}
       if(ev.target.id==="ae-merchant"||ev.target.id==="ae-reserve"){const on=document.getElementById("ae-merchant"),reserve=document.getElementById("ae-reserve");E.merchantConfigure(on.checked,reserve.value);live();save();}
     });
-    return {view,live,forge,prepare};
+    return {view,laboView,ecoView,live,forge,prepare};
   }
   window.EclatAtelierEquipe={create};
 })();

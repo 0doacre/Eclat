@@ -89,8 +89,45 @@
 .labo-mat { min-height: 66px; }
 .carte-retour { padding: 6px 10px 0; }
 
-/* Labo, établi des premiers âges (postes et outils) : l'établi garde sa taille, la liste des matières défile seule */
-#v-labo .atelier-equipe { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
-#v-labo .ae-layout { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
-#v-labo .ae-bench { flex: none; }
-#v-labo .ae-stock { flex: 1 1 auto; min-height: 140px; overflow-y: auto; overscroll-behavior: contain; }
+/* Labo : l'établi des premiers âges, seul. Les matières défilent dans leur cadre, jamais dans la page. */
+#v-labo .ae-lab { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 6px 8px; color: #30271e; }
+#v-labo .ae-lab .ae-posts { flex: none; display: flex; gap: 6px; flex-wrap: wrap; }
+#v-labo .ae-lab > p { margin: 0; flex: none; }
+#v-labo .ae-layout { display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; min-height: 0; }
+#v-labo .ae-bench { flex: none; margin: 0; padding: 8px; }
+#v-labo .ae-work { display: flex; flex-direction: column; gap: 6px; }
+#v-labo .ae-tools { order: -1; }
+#v-labo .ae-tools-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+#v-labo .ae-tools-list .btn { flex: none; white-space: nowrap; min-height: 44px; }
+#v-labo .ae-slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+#v-labo .ae-slots .btn { min-height: 68px; display: grid; place-items: center; align-content: center; gap: 2px; padding: 4px; font-size: 13px; }
+#v-labo .ae-actions .btn { width: 100%; min-height: 48px; }
+#v-labo .ae-bench-subbar { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+#v-labo .ae-stock { flex: 1 1 auto; min-height: 150px; display: flex; flex-direction: column; margin: 0; padding: 6px 8px; overflow: hidden; }
+#v-labo .ae-stock-search input { width: 100%; box-sizing: border-box; min-height: 40px; }
+#v-labo .ae-discovery { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 13px; }
+#v-labo .ae-inventory { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px; align-content: start; padding-top: 6px; }
+#v-labo .ae-resource .btn { width: 100%; min-height: 56px; display: grid; place-items: center; gap: 2px; padding: 4px; font-size: 12px; }
+
+/* Atelier : recettes en grille, quantités sur deux lignes */
+.prod-choix { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 6px; overflow-y: auto; max-height: 30vh; overscroll-behavior: contain; flex: none; }
+.prod-qty { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.prod-apprenti { flex: none; margin-top: 8px; border-top: 1px solid #79694a55; padding-top: 6px; }
+.prod-apprenti summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+#v-labo .ae-bench, #v-labo .ae-work, #v-labo .ae-work > div, #v-labo .ae-tools, #v-labo .ae-tools-list, #v-labo .ae-slots, #v-labo .ae-stock { min-width: 0; max-width: 100%; box-sizing: border-box; }
+#v-labo .ae-bench { overflow: hidden; }
+#v-labo .ae-lab { flex-direction: column; }
+#v-labo .ae-posts .btn, #v-labo .ae-lab > p .btn { min-height: 36px; padding: 0 10px; font-size: 13px; }
+#v-labo .ae-lab > p.small { display: block; margin: 0; }
+#v-labo .ae-stock-search input { min-height: 36px; }
+#v-labo .ae-discovery { gap: 2px 10px; }
+#v-labo .ae-discovery .btn, #v-labo .ae-discovery .btn-aide { min-height: 36px; }
+#v-labo .ae-slots .btn { min-height: 60px; }
+#v-labo .ae-lab { padding-top: 0; gap: 4px; }
+#v-labo .ae-bench { padding: 6px; }
+#v-labo .ae-slots .btn { min-height: 52px; }
+#v-labo .ae-actions .btn { min-height: 44px; }
+#v-labo .ae-stock { padding: 4px 8px; gap: 2px; }
+#v-labo .ae-tools-list .btn { min-height: 40px; }
+#v-labo .ae-lab > p.small { margin-top: -2px; }
+#v-labo .ae-stock { min-height: 200px; }

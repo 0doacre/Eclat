@@ -110,7 +110,7 @@
         (E.zoneOpen(D.COMPTOIR.zone) ? pastilleHTML("comptoir", "⚖️ Comptoir") : "") +
         (oeuvres.length ? pastilleHTML("oeuvre", "🏗️ Œuvre") : "") +
         (E.hasFactory && E.hasFactory() ? pastilleHTML("prod", "⚙️ Production") : "") +
-        '<button type="button" class="pastille terres-pastille" data-tab2="carte" title="L’Atlas : le monde d’un coup d’œil, les passages">🗺️ Atlas</button></div>';
+        "</div>";
       h += nouveauxGisementsHTML();
       // la rangée des terres
       h += '<nav class="terres-rangee" aria-label="Les terres">';

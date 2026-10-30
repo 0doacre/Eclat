@@ -849,6 +849,8 @@
     }
     U.tab = t;
     $$(".view").forEach((v) => { v.classList.toggle("on", v.id === "v-" + t); delete v.dataset.sig; });
+    // le Labo et l’Atelier partagent des identifiants (#atelier-equipe, #hands) : la vue qu’on quitte est vidée
+    ["v-labo", "v-atelier"].forEach((id) => { if (id !== "v-" + t) { const v = document.getElementById(id); if (v) v.innerHTML = ""; } });
     document.body.dataset.tab = t;
     $$("#tabs button").forEach((b) => { const on = b.dataset.tab === (PARENT[t] || t); b.classList.toggle("on", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     if (U.badges[t]) { U.badges[t] = false; updateBadges(); }
@@ -1113,7 +1115,7 @@
     if (U.tab === "domaine") { Dom.live($("#v-domaine")); soundScene(); }
     if (U.tab === "machines") { Dom.live($("#v-machines")); soundScene(); }
     if (U.tab === "carte") Carte.live($("#v-carte"));
-    if (U.tab === "labo" && Atl.equipmentLive) Atl.equipmentLive();
+    if ((U.tab === "labo" || U.tab === "atelier") && Atl.equipmentLive) Atl.equipmentLive();
     if (U.tab === "labo") {
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
