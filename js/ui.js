@@ -529,7 +529,6 @@
   const Dom = window.EclatDomaine.create({
     E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z, options) => passHTML(z, options), uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
-    explore:(z,x)=>explore(z,x),pour:(z,b)=>pour(z,b),setTab:t=>setTab(t),
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => donsRepere() + reveilRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",
     topSig: () => goalSig() + "|" + (S().track ? S().track.id : "") + "|" + E.donsOffre().length + "|" + (reveilRepere() ? "r" : "")
@@ -805,7 +804,6 @@
     if (!tabAvailable(t)) t = "domaine";
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
     const was = U.tab;
-    if (was === "domaine" && t !== was) Dom.suspendWorld();
     if (t === 'arbre' && was !== 'arbre' && !U.arbreVoirId) { U.arbreSel = null; U.arbreHistorique = []; }
     const views = $("#views");
     U.viewScroll = U.viewScroll || {};
@@ -866,7 +864,6 @@
     if (!force && now - U.lastRender < 120) { U.dirty = true; return; }
     if ((U.holding || pressing()) && !force) { U.dirty = true; return; }
     U.dirty = false; U.lastRender = now;
-    document.body.classList.toggle("monde-on", U.tab === "domaine" && Dom.worldActive());
     applyAge();
     updateBadges();
     const el = $("#v-" + U.tab);
@@ -888,7 +885,7 @@
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
     else if (U.tab === "arbre") Atl.arbreRendre(el); // l’arbre se redessine lui-même (js/arbre.js), seulement s’il a changé
     else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
-    else if (U.tab === "domaine") { if (Dom.worldActive()) Dom.renderWorld(el); else { const g = Dom.sig(); if (force || el.dataset.sig !== g || el.querySelector("#monde")) { el.innerHTML = Dom.view(); el.dataset.sig = g; } } }
+    else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") {
