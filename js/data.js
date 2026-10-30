@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.44.2";
+  D.VERSION = "0.44.3";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -147,7 +147,7 @@
   I.engrenage_bois = { n: "Rouage de bois", sym: "⚙", col: "#9a6b3c", a: 2, t: "comp", r: ["tailler", { manche: 2, eclat: 1 }, 2],
     u: "Sert dans l’automate de bois.", d: "Une petite roue dentée, taillée dans un bâton.", h: "Des crans réguliers taillés sur un disque de bois transmettent le mouvement d'un axe à l'autre." };
   I.automate_bois = { n: "Automate de bois", sn: "automate de bois", pl: "automates de bois", ic: "🪆", a: 2, t: "mach", s: 1.25, spd: 6, ing: 1, prof: 0, ruine: "Automate rouillé", r: ["assembler", { engrenage_bois: 6, corde: 10, caillou: 40 }, 1],
-    u: "Palier 1. Aide tes commandes sur les recettes à une seule ressource, une fois que tu les as fabriquées à la main.", d: "Il grince à chaque mouvement, mais il ne s’arrête jamais.",
+    u: "Mécanisme. Aide tes commandes sur les recettes à une seule ressource, une fois que tu les as fabriquées à la main.", d: "Il grince à chaque mouvement, mais il ne s’arrête jamais.",
     h: "Le contrepoids d'un bloc de pierre qui descend lentement entraîne une série d'engrenages." };
   I.hache_pierre = { n: "Hache de pierre", ic: "🪓", a: 2, t: "tool", r: ["assembler", { manche: 2, eclat: 4, laniere: 4 }, 1],
     e: { tap: { bois: 3, fibre: 2 } }, u: "Triple ta récolte de bois à la main et double celle de fibres. Pour explorer la Carcasse, à la Rivière.", d: "Les petits arbres tombent en quelques coups.",
@@ -225,7 +225,7 @@
   I.ressort = { n: "Ressort de bronze", sym: "⌇", col: "#c8963e", a: 4, t: "comp", r: ["marteler", { lingot_bronze: 1, fil_cuivre: 2 }, 2],
     u: "Sert à fabriquer l’automate de bronze.", d: "Il veut toujours revenir à sa forme.", h: "Une bande de bronze enroulée en spirale restitue l'effort quand on la relâche." };
   I.automate_bronze = { n: "Automate de bronze", sn: "automate de bronze", pl: "automates de bronze", ic: "🦿", a: 4, t: "mach", s: 1.25, spd: 15, ing: 2, prof: 0, r: ["assembler", { engrenage: 15, ressort: 8, plaque_bronze: 10 }, 1],
-    u: "Palier 2. Aide tes commandes sur les recettes à deux ressources au plus, une fois que tu les as fabriquées à la main. 15 fabrications par minute.", d: "Engrenages, ressorts, corps de bronze. Il ne se fatigue jamais.",
+    u: "Mécanisme. Aide tes commandes sur les recettes à deux ressources au plus, une fois que tu les as fabriquées à la main. 15 fabrications par minute.", d: "Engrenages, ressorts, corps de bronze. Il ne se fatigue jamais.",
     h: "Un jeu d'engrenages et de ressorts enfermés dans un bâti répète son cycle tout seul." };
   I.hache_bronze = { n: "Hache de bronze", ic: "🪓", a: 4, t: "tool", r: ["assembler", { manche: 4, plaque_bronze: 10, laniere: 9 }, 1],
     e: { tap: { lisiere: 2 } }, u: "Double ta récolte à la main dans la Lisière.", d: "Un tranchant qui ne s’émousse presque plus.",
@@ -339,7 +339,7 @@
   I.moteur_vapeur = { n: "Moteur à vapeur", ic: "🚂", a: 7, t: "comp", r: ["assembler", { circuit_vapeur: 1, piston: 2, engrenage_acier: 4 }, 1],
     u: "Sert dans tout ce qui marche à la vapeur : presse, pompe, scierie, drague, treuil, chemin de fer. Et dans la dynamo.", d: "À chaque poussée du piston, les engrenages font un tour de plus.", h: "La bielle reliée au piston transforme la poussée de la vapeur en un mouvement rotatif continu." };
   I.presse_vapeur = { n: "Presse à vapeur", sn: "presse", pl: "presses", ic: "📠", a: 7, t: "mach", s: 1.25, spd: 40, ing: 3, prof: 0, r: ["assembler", { moteur_vapeur: 1, roulement: 8, plaque_fer: 20 }, 1],
-    u: "Palier 3, 40 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Elle siffle et cogne toute la journée.",
+    u: "Vapeur, 40 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Elle siffle et cogne toute la journée.",
     h: "Un vérin à vapeur applique une poussée de plusieurs tonnes sur les matrices de forge." };
   I.pompe = { n: "Pompe d’exhaure", ic: "⛽", a: 7, t: "upg", r: ["assembler", { moteur_vapeur: 4, plaque_fer: 55 }, 1],
     e: { auto: { mine: 1.5, collines: 1.5 } }, u: "Augmente de 50 % la récolte de tes extracteurs dans les Profondeurs et les Collines.", d: "Les galeries inondées se vident. Tu peux creuser plus profond.",
@@ -472,7 +472,7 @@
     e: { auto: { "*": 1.5 } }, u: "Augmente de 50 % la récolte de tous tes extracteurs, dans toutes les terres.", d: "Ils ne dorment jamais.", h: "Des bras mécaniques pilotés par microprocesseur assemblent des pièces avec une précision constante." };
   I.chaine = { n: "Ligne d’assemblage", sn: "ligne d’assemblage", pl: "lignes d’assemblage", ic: "🏗️", a: 10, t: "mach", s: 1.3, spd: 120, ing: 3, prof: 1,
     r: ["assembler", { processeur: 10, moteur_elec: 20, lingot_acier: 150 }, 1],
-    u: "Palier 3, 120 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium.",
+    u: "Chaîne, 120 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium.",
     h: "L'alignement des postes de travail mécanisés fait défiler les sous-ensembles en continu." };
   I.foreuse = { n: "Sonde pétrolière", ic: "🌪️", a: 10, t: "tool", r: ["assembler", { moteur_elec: 15, acier_trempe: 75, engrenage_acier: 90 }, 1],
     e: { zone: "gisement" }, u: "Ouvre le chemin vers le Gisement Noir.", d: "Une longue tige d’acier qui perce jusqu’à l’huile noire. Elle descend bien plus bas que la foreuse des Profondeurs.", h: "Une tête de forage diamantée guidée par capteurs perce jusqu'aux nappes de pétrole." };
@@ -594,7 +594,7 @@
     e: { aspd: 3, intu: 5 }, u: "Tes machines fabriquent trois fois plus vite. Te rapporte 5 ✨ par minute.", d: "Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.",
     h: "Des puces supraconductrices reliées en réseau : la machine apprend de ses erreurs et orchestre les chantiers sans faillir." };
   I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 13, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
-    u: "Palier 3. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main. 600 fabrications par minute.", d: "Il assemble la matière atome par atome.",
+    u: "Robotique. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main. 600 fabrications par minute.", d: "Il assemble la matière atome par atome.",
     h: "Un bras microscopique piloté par laser positionne les structures atomiques une à une." };
 
   /* Âge 14 — Stellaire */
@@ -1499,16 +1499,18 @@
   },
     priorite: ["metallurgie", "chimie", "electronique", "centrales", "elevage", "artistique", "artisanat"],
     echelons: [
-    { id: "main", n: "Main", age: 0 },
-    { id: "apprenti", n: "Apprenti", age: 3 },
-    { id: "ouvriers", n: "Ouvriers", age: 6 },
-    { id: "machines", n: "Machines", age: 7 },
-    { id: "robots", n: "Robots", age: 10 }
+    /* 0.44.3 : l'échelle est celle de la force motrice et du guidage de la machine (les apprentis et les ouvriers sont une autre échelle, celle de la main-d'œuvre).
+     * Deux marches attendent une machine : l'Hydraulique (âge 6, entre l'acier et la vapeur) et la Commande numérique (âge 11, entre le silicium et le spatial). */
+    { id: "manuel", n: "Manuel", age: 0 },
+    { id: "mecanisme", n: "Mécanisme", age: 2 },
+    { id: "vapeur", n: "Vapeur", age: 7 },
+    { id: "chaine", n: "Chaîne", age: 10 },
+    { id: "robotique", n: "Robotique", age: 13 }
   ],
     paliers: [
     { id: "automate_bois", echelon: 1, ch: 3 },
-    { id: "automate_bronze", echelon: 2, ch: 10 },
-    { id: "presse_vapeur", echelon: 3, ch: 50 },
+    { id: "automate_bronze", echelon: 1, ch: 10 },
+    { id: "presse_vapeur", echelon: 2, ch: 50 },
     { id: "chaine", echelon: 3, ch: 200 },
     { id: "assembleur", echelon: 4, ch: 1500 }
   ],
@@ -1604,6 +1606,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⚙️ L’échelle d’un atelier suit la machine : Manuel, Mécanisme, Vapeur, Chaîne, Robotique. Les apprentis et les ouvriers ne la font plus monter : ils sont une autre échelle, celle de la main-d’œuvre. Les descriptions des machines portent leur marche au lieu de « Palier 3 » partout.",
     "📱 Sur un très petit écran (320 px), les trois boutons du haut des Terres tiennent sur la largeur.",
     "⚡ La jauge d’énergie se voit aussi dans la page de chaque atelier (elle n’était que sur la liste des ateliers).",
     "⚡ L’énergie agit. Quand tes machines, tes apprentis et tes ouvriers demandent plus de chevaux que tu n’en produis, ils tournent plus lentement, jusqu’à la moitié de leur vitesse au plus. Tes mains ne sont jamais ralenties. Construis un moulin, une chaudière ou une centrale : la jauge de l’Atelier montre ce qui manque.",

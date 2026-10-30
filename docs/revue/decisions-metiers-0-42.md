@@ -71,3 +71,17 @@ Banc : `node tools/sim-energie.js [--minutes 120] [--planchers 0.5,0.25,0.1]` (j
 - **Mesure** : `node tools/sim-energie.js --planchers 0.5` : aucun passage ne bouge de plus de 2 minutes (voir §7). Test : `tools/test-energie.js`.
 - **À juger à la main** : le ressenti d'un manque d'énergie en partie réelle, avec machines et ouvriers.
 - **Seul écart mesuré** : la référence « 30 min avec une mémoire » de `tools/test-sim.js` passe la Mine à 26,452 min au lieu de 26,277 (+0,7 %), le joueur à mémoire ayant déjà des machines en manque d'énergie ; la référence est mise à jour.
+
+## 9. Paliers de machines (0.44.3)
+
+Proposition du porteur (régime technique et force motrice) retenue pour **l'échelle d'un atelier** ; l'organisation du travail (apprenti, corporation) reste l'autre échelle, celle de la main-d'œuvre, et ne fait plus monter la première.
+
+| Marche | Âge | Machine | Régime |
+|---|---|---|---|
+| Manuel | 0 | (les mains) | force humaine, outil simple |
+| Mécanisme | 2 | Automates de bois et de bronze | force démultipliée par un mécanisme |
+| Vapeur | 7 | Presse à vapeur | énergie thermique centralisée |
+| Chaîne | 10 | Ligne d'assemblage | moteur par poste, flux continu |
+| Robotique | 13 | Assembleur moléculaire | guidage asservi |
+
+Deux marches attendent une machine, sans contenu neuf pour l'instant : **Hydraulique** (âge 6, moulins et martinets, entre l'acier et la vapeur) et **Commande numérique** (âge 11). Aucun coût, aucune vitesse, aucune sauvegarde ne change. Seuls les noms des marches, leur affectation et les textes « Palier N » des machines changent.

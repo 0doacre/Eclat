@@ -64,10 +64,11 @@ test("l’échelle : la main est toujours faite, les échelons suivent l’âge"
   const { A } = jeu(4);
   const c = A.carte("artisanat");
   assert.equal(c.echelles[0].etat, "courant");
-  assert.equal(c.echelles[1].etat, "dispo", "l’apprenti s’ouvre au Cuivre (âge 3)");
-  assert.equal(c.echelles[2].etat, "ferme", "les ouvriers attendent l’Acier");
+  assert.equal(c.echelles[1].etat, "dispo", "le mécanisme s’ouvre dès l’âge 2");
+  assert.equal(c.echelles[2].etat, "ferme", "la vapeur attend l’âge 7");
+  assert.deepEqual(c.echelles.map((e) => e.n), ["Manuel", "Mécanisme", "Vapeur", "Chaîne", "Robotique"]);
   const tard = jeu(11).A.carte("artisanat");
-  assert.equal(tard.echelles[4].etat, "dispo");
+  assert.equal(tard.echelles[3].etat, "dispo");
 });
 test("une machine au travail sur une recette de l’atelier fait monter l’échelon", () => {
   const { E, A } = jeu(8);

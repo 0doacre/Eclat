@@ -128,7 +128,7 @@ test("l'équipe se lit dans la carte de l'atelier", () => {
   E.embaucher("artisanat", "apprenti"); E.embaucher("artisanat", "ouvrier");
   const c = A.carte("artisanat");
   assert.equal(c.apprentis, 1); assert.equal(c.ouvriers, 1);
-  assert.equal(c.echelon, 2, "l'échelon courant est celui des ouvriers");
+  assert.equal(c.echelon, 0, "les travailleurs ne font pas monter l'échelle des machines");
   assert.ok(c.embauches.every((e) => ["apprenti", "ouvrier"].includes(e.kind)));
 });
 test("l'ancienne vente automatique n'existe plus", () => {

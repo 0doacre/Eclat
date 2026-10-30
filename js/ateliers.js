@@ -67,8 +67,6 @@
         if (sur > 0) { machs += sur; echelon = Math.max(echelon, p.echelon); }
       });
       const a = (S().ateliers && S().ateliers[f]) || { app: 0, ouv: 0 };
-      if (a.app > 0) echelon = Math.max(echelon, 1);
-      if (a.ouv > 0) echelon = Math.max(echelon, 2);
       const cadence = cads.reduce((x, c) => x + (c.status === "ok" ? c.rate * 60 : 0), 0);
       const bloques = cads.filter((c) => c.status === "starved" || c.status === "nomach");
       let etat = "repos", cause = "";
