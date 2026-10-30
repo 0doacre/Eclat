@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.46.1";
+  D.VERSION = "0.46.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1635,6 +1635,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🧹 Le menu est plus sobre (plus de grande illustration, les quatre rubriques sur une ligne, des lignes de réglage régulières), le bouton Aspect disparaît de l’en-tête (les styles vont disparaître) et les quatre boutons du haut ont la même taille ; les onglets des fenêtres suivent la forme des filtres des écrans.",
     "🎨 Harmonisation, suite : le Labo reçoit les mêmes cadres peints que l’Atelier et le Carnet, ses filtres suivent la même forme, et le Carnet et les Machines prennent la même marge.",
     "🎨 Passe d’harmonisation des écrans : la même marge sur le Labo, l’Atelier, la Progression et le Journal ; le même titre de page (le Labo en reçoit un) ; les mêmes filtres (rectangles, actif en rouge brique) ; les mêmes cartes peintes.",
     "👋 Tu peux renvoyer un apprenti ou un ouvrier depuis la page de l’atelier (deux touches pour confirmer). Aucun remboursement, et l’embauche suivante ne coûte pas moins cher : renvoyer pour réembaucher ne rapporte rien.",

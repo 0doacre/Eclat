@@ -651,13 +651,7 @@
               '<div class="m-hero-cell"><span class="m-cell-lbl">Échos</span><b class="m-cell-val m-echo">🌅 ' + nbEchos + '/5</b></div>' +
             '</div>' +
           '</div>' +
-          (isVivant ? '<div class="vivant-menu-hero">' +
-            '<img src="assets/carnet/items/panier.webp" alt="Panier tressé" width="92" height="92" loading="lazy">' +
-            '<img class="hero-log" src="assets/carnet/items/bois.webp" alt="" width="74" height="74" loading="lazy">' +
-            '<div class="margin-stroke" aria-hidden="true"></div>' +
-          '</div>' +
-          '<p class="chapter tiny center muted" style="margin:2px 0 10px;font-family:var(--serif);font-size:16px">Le Carnet du Semeur</p>' +
-          '<button class="btn pri wide resume-btn" data-m="close" title="Fermer le menu et reprendre la partie">Reprendre <span aria-hidden="true">›</span></button>' : "") +
+          '<button class="btn pri wide resume-btn" data-m="close" title="Fermer le menu et reprendre la partie">Reprendre <span aria-hidden="true">›</span></button>' +
           '<nav class="menu-nav-bar" role="tablist" aria-label="Catégories du menu">' +
             '<button class="m-nav-tab on" data-mjump="jeu" role="tab" aria-selected="true" title="Aller à la section Jeu"><span class="m-nav-ic">🎮</span> Jeu</button>' +
             '<button class="m-nav-tab" data-mjump="affichage" role="tab" aria-selected="false" title="Aller à la section Affichage"><span class="m-nav-ic">🖥️</span> Affichage</button>' +
@@ -673,7 +667,7 @@
             '<button class="btn small sw' + (Tuto.enabled() ? " on" : "") + '" role="switch" aria-checked="' + Tuto.enabled() + '" aria-labelledby="mt-tuto" data-m="tuto" title="Afficher ou masquer les explications du guide">' + (Tuto.enabled() ? "Activé" : "Désactivé") + "</button></span></div>" +
             sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un traverser le Domaine de temps en temps")) +
           sec("affichage", "🖥️", "Affichage &amp; Écran",
-            (typeof window !== "undefined" && window.EclatStyleMode === "vivant" ? '<p class="small muted">Le Carnet du Semeur garde le même papier à travers les âges.</p>' : '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
+            (isVivant ? "" : '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("compact", "Affichage compact", U.compact(), "Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup") +
             sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)") +

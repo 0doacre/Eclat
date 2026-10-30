@@ -40,3 +40,38 @@
 /* les filtres du Labo (Utiles / Tout / En réserve) suivent la même forme */
 #v-labo .ae-filtres button { border-radius: 3px; min-height: 44px; font-size: 14px; box-shadow: none; padding-left: 12px; padding-right: 12px; background: var(--panel, #f4ecda); color: var(--text); border: 1px solid var(--line2); }
 #v-labo .ae-filtres button.on, #v-labo .ae-filtres button[aria-pressed="true"] { background: var(--acc, #813f2a); border-color: var(--acc, #813f2a); color: var(--acc-ink, #fff8e9); }
+
+/* 5. L'en-tête : le choix de style (Aspect) disparaît bientôt, il est masqué ; les quatre boutons restants ont la même taille. */
+#atlasToggle { display: none !important; }
+#top .top-right { gap: 6px; }
+#top .top-right > :is(.chip, .icon-btn):not(.hidden):not(.exp-mini) { min-width: 44px; width: 44px; height: 44px; min-height: 44px; border-radius: 8px; box-sizing: border-box; }
+#top #menuBtn { font-size: 22px; line-height: 1; }
+
+/* 6. Le menu : sobre. Un en-tête compact, « Reprendre », quatre rubriques sur une ligne, des rubriques à titre simple, des lignes de réglage régulières. */
+#modal .menu-wrap .menu-game-header { padding: 10px 12px 8px; margin-bottom: 10px; border-radius: 4px; box-shadow: none; }
+#modal .menu-wrap .menu-game-title { margin-bottom: 6px; }
+#modal .menu-wrap .m-title-text { font-size: 20px; }
+#modal .menu-wrap .menu-game-banner { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+#modal .menu-wrap .m-cell-lbl { font-size: 11px; }
+#modal .menu-wrap .m-cell-val { font-size: 13px; }
+#modal .menu-wrap .resume-btn { margin: 0 0 10px; }
+#modal .menu-wrap .menu-nav-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; padding: 0; margin: 0 0 12px; border-radius: 0; box-shadow: none; }
+#modal .menu-wrap .m-nav-tab { min-height: 44px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; box-shadow: none; font-size: 14px; text-decoration: none; white-space: nowrap; }
+#modal .menu-wrap .m-nav-tab.on { color: var(--acc); border-bottom-color: var(--acc); text-decoration: none; }
+#modal .menu-wrap .m-nav-ic, #modal .menu-wrap .m-sec-ic { display: none; }
+#modal .menu-wrap .menu-sec { margin: 0 0 14px; padding: 0; background: transparent; border: 0; box-shadow: none; }
+#modal .menu-wrap .menu-sec-head { margin: 0 0 6px; padding: 0 0 4px; border-bottom: 1px solid var(--line2); }
+#modal .menu-wrap .menu-sec-head .sub { margin: 0; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+#modal .menu-wrap .toggle { min-height: 44px; padding: 4px 0; border-bottom: 1px dotted var(--line2); }
+#modal .menu-wrap .menu-grid { gap: 6px; margin: 6px 0; }
+#modal .menu-wrap .menu-grid .m-card-btn { min-height: 48px; border-radius: 4px; }
+#modal .menu-wrap .menu-danger-zone { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line2); }
+#modal .menu-wrap .acts { margin-top: 10px; }
+
+/* 7. Les fenêtres : les onglets et les filtres d'une fenêtre ont la même forme que ceux des écrans. */
+#modal :is(.quest-tabs, .filters) button {
+  border-radius: 3px; min-height: 44px; font-size: 14px; box-shadow: none; padding-left: 12px; padding-right: 12px;
+  background: var(--panel, #f4ecda); color: var(--text); border: 1px solid var(--line2);
+}
+#modal :is(.quest-tabs, .filters) button.on { background: var(--acc, #813f2a); border-color: var(--acc, #813f2a); color: var(--acc-ink, #fff8e9); }
+#modal .quest-tabs { display: flex; gap: 6px; flex-wrap: wrap; }

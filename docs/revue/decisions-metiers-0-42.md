@@ -128,3 +128,10 @@ Banc : `css/harmonie.css`, chargé en dernier, qui fixe le contrat des écrans d
 - **Vérifié** : 320 px (rien ne déborde, tous les boutons à 30 px ou plus), 390, 768, 1280.
 
 Reste à voir : les panneaux des Terres (Comptoir, œuvre, production), la Carte, le Cosmos, les fenêtres, la feuille « Aspect » et le menu ; Playwright et un vrai téléphone n'ont pas encore passé dessus.
+
+## 14. Menu, en-tête, fenêtres (0.46.2)
+
+- **En-tête** : le bouton « Aspect » (choix de style Carnet / Classique) est masqué par `css/harmonie.css` (`#atlasToggle`), le code reste en place jusqu'à la disparition des styles. Quêtes, Traces, Intuition et Menu ont la même taille (44 px, mêmes coins).
+- **Menu** : sans la grande illustration ni l'intitulé décoratif ; « Reprendre » juste sous l'en-tête compact ; les quatre rubriques (Jeu, Affichage, Audio, Système) sur une seule ligne, soulignées quand actives ; titres de rubrique en petites capitales avec un filet ; lignes de réglage de 44 px à filet pointillé ; la phrase sur le style disparaît de l'Affichage. Tous les boutons et leurs `data-m` sont inchangés.
+- **Fenêtres** : les onglets de la fenêtre des Quêtes (et tout `.filters` de fenêtre) prennent la forme des filtres des écrans.
+- **Encore à voir** : les panneaux des Terres hors Comptoir, la Carte, le Cosmos, la feuille des Traces et celle de l'Intuition.
