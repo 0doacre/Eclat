@@ -141,9 +141,9 @@ test("payer en partie ne réclame que le solde, pas le prix total", () => {
   delete S.known.brique; E.add("brique", 1);
   assert.equal(E.guide().step, null);
 });
-test("la mine de plomb précède le lingot et se fabrique avant de quitter le Désert", () => {
+test("la mine de plomb précède le lingot et se pose dans le Gisement Noir", () => {
   const E = avant("galene_1", 9), S = E.state;
-  for (const z of ["gisement", "montagnes", "orbite", "lune", "mercure"]) S.zones[z] = false;
+  for (const z of ["montagnes", "orbite", "lune", "mercure"]) S.zones[z] = false;
   assert.equal(E.objective().id, "galene_1");
   for (const [id, n] of Object.entries(I.galene_1.r[1])) E.add(id, n);
   assert.equal(E.scenarioQuest().targetId, "galene_1");
@@ -151,11 +151,11 @@ test("la mine de plomb précède le lingot et se fabrique avant de quitter le D�
   assert.equal(E.craft("galene_1", 1).ok, true);
   assert.equal(E.objective().id, "lingot_plomb");
   assert.equal(E.extEtat("galene").etat, "libre");
-  assert.equal(E.extEtat("galene").key, "collines:galene");
-  E.domExtSet("collines", "galene", "galene_1", 1); E.catchUp(10);
+  assert.equal(E.extEtat("galene").key, "gisement:galene");
+  E.domExtSet("gisement", "galene", "galene_1", 1); E.catchUp(10);
   assert.ok(E.count("galene") >= 3);
   assert.equal(E.craft("lingot_plomb", 1).ok, true);
-  assert.equal(S.zones.gisement, false, "le pétrole n’est pas requis pour le plomb");
+  assert.equal(S.zones.gisement, true, "la galène se récolte dans le Gisement Noir, ouvert avant l’Atome");
 });
 test("une ancienne partie déjà au lingot retrouve la mine manquante dans les Quêtes", () => {
   const E = avant("lingot_plomb", 9), S = E.state;
@@ -181,9 +181,9 @@ test("une mine libre signale son gisement au-dessus des terres anciennes masqué
   const ctx = { window: {}, URL, document: { baseURI: "http://localhost/", addEventListener() {} } };
   vm.runInNewContext(fs.readFileSync(require.resolve("../js/decouvertes-carnet.js"), "utf8"), ctx);
   vm.runInNewContext(fs.readFileSync(require.resolve("../js/domaine.js"), "utf8"), ctx);
-  const initial = avant("lingot_plomb", 9);
-  for (const z of ["gisement", "montagnes", "orbite", "lune", "mercure", "caveau"]) initial.state.zones[z] = false;
-  initial.add("galene_1", 1);
+  const initial = avant("soufre_1", 11);
+  for (const z of ["montagnes", "orbite", "lune", "mercure", "caveau"]) initial.state.zones[z] = false;
+  initial.add("soufre_1", 1);
   const E = createEngine({ now: () => 2e12, rand: () => 0.99 }); E.load(initial.serialize());
   const U = { compact: () => false, domAll: false, domOpen: null };
   const api = new Proxy({ E, D, U, top: () => "", esc: String, icon: () => "", fmt: String, perMin: String, fmtTime: String, itemPill: (id) => id }, {
@@ -192,13 +192,15 @@ test("une mine libre signale son gisement au-dessus des terres anciennes masqué
   const Dom = ctx.window.EclatDomaine.create(api);
   let h = Dom.view();
   assert.ok(!h.includes('id="dt-collines"'), "les Collines sont masquées dans cet état");
-  assert.ok(h.includes('data-new-deposit="collines:galene"'));
+  assert.ok(h.includes('data-new-deposit="collines:soufre"'));
   assert.ok(h.includes('data-gz="collines"'));
-  assert.ok(h.includes('data-xadd="collines:galene"'));
-  assert.ok(h.indexOf('data-new-deposit="collines:galene"') < h.indexOf('id="dt-desert"'), "le rappel précède les terres");
-  E.domExtSet("collines", "galene", "galene_1", 1);
+  assert.ok(h.includes('data-xadd="collines:soufre"'));
+  // Avec le pager des Terres (0.39), une seule terre est dans la page : le rappel précède la terre quand elle y est.
+  const iDesert = h.indexOf('id="dt-desert"');
+  assert.ok(iDesert < 0 || h.indexOf('data-new-deposit="collines:soufre"') < iDesert, "le rappel précède les terres");
+  E.domExtSet("collines", "soufre", "soufre_1", 1);
   h = Dom.view();
-  assert.ok(!h.includes('data-new-deposit="collines:galene"'), "le rappel disparaît après la pose");
+  assert.ok(!h.includes('data-new-deposit="collines:soufre"'), "le rappel disparaît après la pose");
 });
 test("la fenêtre Quêtes mène au Labo puis au gisement, avec des commandes de modale", () => {
   const fs = require("fs"), vm = require("vm"), ctx = { window: {} };
@@ -218,7 +220,7 @@ test("la fenêtre Quêtes mène au Labo puis au gisement, avec des commandes de 
   E.learn("galene_1", true); Q.openQuestsModal();
   assert.ok(modal.html.includes('data-m="qmake" data-id="galene_1"'));
   E.craft("galene_1", 1); Q.openQuestsModal();
-  assert.ok(modal.html.includes('data-gz="collines"'));
+  assert.ok(modal.html.includes('data-gz="gisement"'));
   assert.ok(modal.html.includes('attend d’être posé'));
 });
 test("le Gisement guide le masque puis la Plateforme avant les Pics", () => {

@@ -382,3 +382,10 @@ Chaque illustration diffusée figure dans `assets/ILLUSTRATIONS-MANIFEST.json`. 
 ## Onglets, lot 0.39
 
 `assets/refonte-0-39/onglets.svg` réemploie sans redessiner les symboles `treasure-map`, `erlenmeyer`, `hammer-nails`, `tree-branch` et `scroll-quill` de `assets/icons.svg`. Les auteurs et la licence CC BY 3.0 sont indiqués dans le tableau Game-icons ci-dessus. Les identifiants exportés sont `gi-terres-039`, `gi-labo-039`, `gi-atelier-039`, `gi-arbre-039`, `gi-journal-039`. Aucune nouvelle image générée.
+## Illustrations du Fer — 30 octobre 2026
+
+24 illustrations produites individuellement avec l’outil intégré OpenAI ImageGen dans Codex ; modèle précis non exposé. Prompts exacts, PNG maîtres et inventaire : `docs/art-direction/age-fer-v1/`. Exports WebP transparents avec Pillow : `assets/carnet/items/` (430 102 octets). Droits d’utilisation soumis aux conditions OpenAI applicables aux images générées ; aucune licence tierce revendiquée. Lot livré pour intégration ultérieure, sans activation dans le jeu.
+
+## Illustrations de l’Acier — 30 octobre 2026
+
+11 illustrations produites individuellement avec l’outil intégré OpenAI ImageGen dans Codex ; modèle précis non exposé. Prompts exacts, PNG maîtres et inventaire : `docs/art-direction/age-acier-v1/`. Exports WebP transparents avec Pillow : `assets/carnet/items/` (164 154 octets). Droits d’utilisation soumis aux conditions OpenAI applicables aux images générées ; aucune licence tierce revendiquée. Ressources livrées pour intégration ultérieure, sans activation dans le jeu.

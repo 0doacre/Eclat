@@ -1722,14 +1722,14 @@ test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plo
   // l’uranium et la galène ne se récoltent pas à la main : aucune terre ne les donne seules
   const E = createEngine();
   D.ZONES.forEach((z) => { assert.ok(!z.res.includes("uranium") && !z.res.includes("galene"), z.id); });
-  assert.strictEqual(E.RES_ZONE.uranium, "mine", "sa terre est celle de son extracteur");
-  assert.strictEqual(E.RES_ZONE.galene, "collines");
-  assert.deepStrictEqual(E.extFor("uranium", "mine"), ["uranium_1", "uranium_2"]);
-  E.state.zones.mine = true; E.state.zones.collines = true;
+  assert.strictEqual(E.RES_ZONE.uranium, "gisement", "sa terre est celle de son extracteur : le Gisement Noir");
+  assert.strictEqual(E.RES_ZONE.galene, "gisement");
+  assert.deepStrictEqual(E.extFor("uranium", "gisement"), ["uranium_1", "uranium_2"]);
+  E.state.zones.gisement = true;
   assert.strictEqual(E.deposits().find((d) => d.res === "uranium").hand, false, "un gisement qui ne se récolte pas à la main");
   // le guide mène à l’extracteur d’abord : pas de galène sans sa mine
   Object.keys(D.ITEMS).forEach((i) => { if (D.ITEMS[i].r && !D.ITEMS[i].sec && !D.ITEMS[i].path) E.learn(i, true); });
-  ["mine", "collines"].forEach((z) => (E.state.zones[z] = true));
+  ["collines", "mine", "desert", "gisement"].forEach((z) => (E.state.zones[z] = true));
   stations(E, Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].t === "stat" && !D.ITEMS[i].sec));
   E.state.age = 9;
   const s = E.nextStep("galene");
@@ -1741,9 +1741,9 @@ test("Âge de l’Atome : entre l’Électricité et le Silicium, uranium et plo
   Object.keys(D.ITEMS).filter((i) => D.ITEMS[i].a === 9 && D.ITEMS[i].r).forEach((i) => { for (const g in D.ITEMS[i].r[1]) assert.ok(D.ITEMS[g].a <= 9, i + " demande " + g); });
   // l’extracteur d’uranium récolte une fois posé
   const F = mk();
-  F.state.age = 9; F.state.zones.mine = true; F.learn("uranium_1", true);
+  F.state.age = 9; F.state.zones.gisement = true; F.learn("uranium_1", true);
   F.add("uranium_1", 2);
-  assert.ok(F.domExtSet("mine", "uranium", "uranium_1", 2), "il se pose sur le gisement d’uranium");
+  assert.ok(F.domExtSet("gisement", "uranium", "uranium_1", 2), "il se pose sur le gisement d’uranium");
   run(F, 30);
   assert.ok(F.count("uranium") > 10, "il récolte : " + F.count("uranium"));
 });

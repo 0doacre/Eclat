@@ -38,7 +38,9 @@ test('les jalons suivent les âges et introduisent le quartz après le chariot',
   const E = mk(), ms = E.milestones();
   assert.deepEqual(ms[3].map(x => x.ob.id), ['lingot_cuivre', 'enclume_pierre', 'plaque_cuivre', 'lingot_etain', 'charbonniere', 'creuset']);
   assert.ok(!ms[4].some(x => x.ob.z === 'desert' || x.ob.id === 'chariot'));
-  assert.deepEqual(ms[5].map(x => x.ob.id || x.ob.z), ['bas_fourneau', 'lingot_fer', 'chariot', 'desert', 'poudre_quartz', 'lunette']);
+  assert.deepEqual(ms[5].map(x => x.ob.id || x.ob.z), ['bas_fourneau', 'lingot_fer', 'chariot', 'poudre_quartz', 'lunette']);
+  assert.ok(ms[7].some(x => x.ob.id === 'locomotive') && ms[7].some(x => x.ob.z === 'desert'), 'le Désert s’ouvre avec le chemin de fer, à la Vapeur');
+  assert.ok(ms[8].some(x => x.ob.id === 'foreuse') && ms[8].some(x => x.ob.z === 'gisement'), 'le Gisement Noir s’ouvre avec l’Électricité');
   let age = 0;
   for (const o of D.OBJECTIVES) if (Array.isArray(o)) { assert.ok(I[o[0]].a >= age, o[0]); age = I[o[0]].a; }
   const ids = D.OBJECTIVES.filter(Array.isArray).map(o => o[0]);

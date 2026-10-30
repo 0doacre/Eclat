@@ -239,7 +239,7 @@
   I.roue = { n: "Roue cerclée", ic: "🛞", a: 4, t: "comp", r: ["assembler", { manche: 4, plaque_bronze: 1 }, 1],
     u: "Sert au chariot, au moulin à eau, aux brouettes et aux courroies.", d: "Des rayons de bois, un cercle de métal.", h: "Une jante de bronze cerclée sur des rayons de bois roule sur les cailloux sans casser." };
   I.chariot = { n: "Chariot", ic: "🐂", a: 5, t: "tool", r: ["assembler", { roue: 6, plaque_bronze: 20, corde: 30 }, 1],
-    e: { zone: "desert", auto: { "*": 1.25 } }, u: "Ouvre le chemin vers le Désert de Verre. Tous tes extracteurs récoltent 1,25 fois plus.", d: "Tu peux enfin emporter tes outils à travers le désert.",
+    e: { auto: { "*": 1.25 } }, u: "Tous tes extracteurs récoltent 1,25 fois plus.", d: "Tu peux enfin emporter tes outils plus loin que le camp.",
     h: "Deux essieux de bronze sous de fortes planches : attelé à une bête, ça roule sans casser sous les grosses charges." };
   I.soufflet = { n: "Soufflet", ic: "🪗", a: 4, t: "comp", r: ["assembler", { cuir: 20, manche: 4, plaque_bronze: 3 }, 1],
     u: "Sert au bas-fourneau, puis au haut-fourneau.", d: "Une poche de peau entre deux planches : elle souffle sur la braise.",
@@ -253,9 +253,9 @@
   I.brouette = { n: "Brouettes", ic: "🛒", a: 4, t: "upg", r: ["assembler", { roue: 3, manche: 15, plaque_bronze: 6 }, 1],
     e: { auto: { lisiere: 1.25, riviere: 1.25, collines: 1.25 } }, u: "Tes extracteurs de la Lisière, de la Rivière et des Collines récoltent 1,25 fois plus.", d: "Une caisse posée sur une roue : chaque voyage rapporte plus.",
     h: "Une roue calée sous une caisse de bois allège la charge des bras." };
-  I.tamis = { n: "Tamis du désert", sn: "tamis", pl: "tamis", ic: "🕸️", a: 5, t: "ext", z: "desert", s: 1.22,
+  I.tamis = { n: "Tamis", sn: "tamis", pl: "tamis", ic: "🕸️", a: 5, t: "ext", z: "desert", s: 1.22,
     r: ["assembler", { manche: 30, plaque_bronze: 9, corde: 20 }, 1], p: { quartz: 0.25, sable: 0.5 },
-    u: "Pose-le sur un gisement du Désert de Verre : il récolte le quartz ou le sable à ta place.", d: "Un grand cadre qui trie le sable des cristaux.", h: "Une grille de fils de bronze retient les éclats de quartz et laisse filer le sable." };
+    u: "Pose-le sur un gisement de quartz : il le récolte à ta place.", d: "Un grand cadre qui trie le sable des cristaux.", h: "Une grille de fils de bronze retient les éclats de quartz et laisse filer le sable." };
   I.anticythere = { n: "Mécanisme d’Anticythère", ic: "🕰️", a: 4, t: "curio", sec: true,
     r: ["assembler", { engrenage: 20, plaque_bronze: 4, tablette: 1 }, 1], e: { intu: 1, sky: true },
     u: "Rapporte 1 ✨ par minute. Ouvre le Ciel, dans le Cosmos.", d: "Des dizaines de roues dentées qui calculent le ciel. Deux aiguilles. L’une suit une étoile marquée d’un nom : Kher. L’autre suit une lueur qui n’est sur aucun cercle." };
@@ -354,7 +354,7 @@
     r: ["assembler", { moteur_vapeur: 2, corde: 70, lingot_acier: 20 }, 1], p: { malachite: 1.2, cassiterite: 0.6 },
     u: "Pose-le sur un gisement des Collines : il récolte malachite ou cassitérite à ta place.", d: "Les wagonnets remontent tout seuls.", h: "Un tambour d'acier enroule les câbles pour hisser les bennes chargées de minerai." };
   I.locomotive = { n: "Chemin de fer", ic: "🛤️", a: 7, t: "upg", r: ["assembler", { moteur_vapeur: 7, roue: 35, plaque_fer: 110 }, 1],
-    e: { auto: { "*": 1.5 } }, u: "Augmente de 50 % la récolte de tous tes extracteurs, dans toutes les terres.", d: "Des rails relient tous tes chantiers.",
+    e: { zone: "desert", auto: { "*": 1.5 } }, u: "Ouvre le chemin vers le Désert de Verre. Augmente de 50 % la récolte de tous tes extracteurs, dans toutes les terres.", d: "Des rails relient tous tes chantiers, jusqu’au désert.",
     h: "Une chaudière montée sur un châssis à essieux tire des convois lourds sur des rails d'acier." };
   I.outils_acier = { n: "Outils d’acier", ic: "🛠️", a: 6, t: "tool", r: ["assembler", { acier_trempe: 35, manche: 20, lame: 10 }, 1],
     e: { tap: { lisiere: 2, plaine: 2, mine: 2, desert: 2 } }, u: "Double ta récolte à la main dans la Lisière, la Plaine, les Profondeurs et le Désert.", d: "Des outils qui ne s’usent plus.", h: "Des ciseaux et mèches en acier trempé percent la roche et usinent le fer ordinaire." };
@@ -474,7 +474,7 @@
     r: ["assembler", { processeur: 10, moteur_elec: 20, lingot_acier: 150 }, 1],
     u: "Chaîne, 120 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium.",
     h: "L'alignement des postes de travail mécanisés fait défiler les sous-ensembles en continu." };
-  I.foreuse = { n: "Sonde pétrolière", ic: "🌪️", a: 10, t: "tool", r: ["assembler", { moteur_elec: 15, acier_trempe: 75, engrenage_acier: 90 }, 1],
+  I.foreuse = { n: "Sonde pétrolière", ic: "🌪️", a: 8, t: "tool", r: ["assembler", { moteur_elec: 15, acier_trempe: 75, engrenage_acier: 90 }, 1],
     e: { zone: "gisement" }, u: "Ouvre le chemin vers le Gisement Noir.", d: "Une longue tige d’acier qui perce jusqu’à l’huile noire. Elle descend bien plus bas que la foreuse des Profondeurs.", h: "Une tête de forage diamantée guidée par capteurs perce jusqu'aux nappes de pétrole." };
   I.derrick = { n: "Derrick", sn: "derrick", pl: "derricks", ic: "🛢️", a: 10, t: "ext", z: "gisement", s: 1.25,
     r: ["assembler", { moteur_elec: 6, lingot_acier: 60, clous: 240 }, 1], p: { petrole: 1 },
@@ -755,7 +755,7 @@
         d: "Des galeries noires, où la poussière colle à la gorge.", h: "La roche noire extraite en profondeur chauffe deux fois plus fort que le bois." },
       { id: "charbon_3", n: "Mine de charbon électrique", sn: "mine électrique", pl: "mines électriques", ic: "🔩", de: "foreuse_elec", r: ["assembler", { moteur_elec: 4, acier_trempe: 12, cable: 60 }, 1],
         d: "Les outils tournent au fond, alimentés par un câble qui court le long de la galerie.", h: "Des haveuses électriques abattent le front de taille sans asphyxier les galeries de fumée." }] },
-    { id: "cristallier", res: "quartz", n: "Cristallier", ic: "💎", ph: "le quartz", zs: ["desert"], niv: [
+    { id: "cristallier", res: "quartz", n: "Cristallier", ic: "💎", ph: "le quartz", zs: ["mine", "desert"], niv: [
       { id: "tamis", n: "Carrière de quartz", sn: "carrière de quartz", pl: "carrières de quartz", ic: "🕸️" },
       { id: "excavatrice", n: "Carrière de quartz mécanisée", sn: "carrière mécanisée", pl: "carrières mécanisées", ic: "🚜" }] },
     { id: "ferrier", res: "fer_min", n: "Mineur de fer", ic: "🔩", ph: "le minerai de fer", zs: ["mine"], niv: [
@@ -790,7 +790,7 @@
     { id: "soufre", res: "soufre", n: "Récolteur de soufre", ic: "🟡", ph: "le soufre", zs: ["collines"], niv: [
       { id: "soufre_1", n: "Soufrière", sn: "soufrière", pl: "soufrières", ic: "🟡", a: 11, s: 1.25, taux: 1.5, r: ["assembler", { acier_trempe: 20, vis: 40, roue: 10 }, 1],
         d: "Des racloirs détachent les croûtes jaunes ; les chariots les descendent de la colline.", h: "Les concrétions jaunes récoltées au bord des fumerolles vulcanisent la résine." }] },
-    { id: "uranium", res: "uranium", n: "Mineur d’uranium", ic: "☢️", ph: "l’uranium", zs: ["mine"], niv: [
+    { id: "uranium", res: "uranium", n: "Mineur d’uranium", ic: "☢️", ph: "l’uranium", zs: ["gisement"], niv: [
       { id: "uranium_1", n: "Mine d’uranium", sn: "mine d’uranium", pl: "mines d’uranium", ic: "☢️", a: 9, s: 1.25, taux: 0.8, r: ["assembler", { moteur_elec: 5, acier_trempe: 25, ampoule: 30 }, 1],
         d: "Un puits étroit, éclairé en continu. On n’y reste jamais longtemps.", h: "Sous des plaques de plomb épaisses, les wagonnets remontent la roche luisante sans nous brûler les poumons." },
       { id: "uranium_2", n: "Puits d’uranium blindé", sn: "puits blindé", pl: "puits blindés", ic: "🛡️", a: 11, s: 1.25, taux: 2.4, de: "uranium_1",
@@ -798,7 +798,7 @@
         d: "Des sas doublés de plomb et des galeries ventilées, pour extraire l’uranium plus vite et plus profond.",
         h: "Des galeries renforcées de plomb et ventilées sécurisent l'extraction d'uranium." }
     ] },
-    { id: "plomb", res: "galene", n: "Mineur de plomb", ic: "🔘", ph: "la galène", zs: ["collines"], niv: [
+    { id: "plomb", res: "galene", n: "Mineur de plomb", ic: "🔘", ph: "la galène", zs: ["gisement"], niv: [
       { id: "galene_1", n: "Mine de plomb", sn: "mine de plomb", pl: "mines de plomb", ic: "⛏️", a: 9, s: 1.25, taux: 1.2, r: ["assembler", { moteur_elec: 3, lingot_acier: 30, roue: 20 }, 1],
         d: "Les galeries suivent des veines grises, si lourdes que les wagons grincent.", h: "Des galeries bien étayées pour extraire le minerai lourd qui protège des rayonnements." },
       { id: "galene_2", n: "Mine de plomb mécanisée", sn: "mine de plomb mécanisée", pl: "mines de plomb mécanisées", ic: "🏗️", a: 11, s: 1.25, taux: 3.6, de: "galene_1",
@@ -862,13 +862,13 @@
         { id: "sommet", n: "Le Sommet", dur: 360, rw: { item: { tablette: 1 }, frag: "vue", intu: 2 } },
         { id: "nid", n: "Le Replat", dur: 100, need: ["flute", "lunette"], show: { any: [{ frag: "vue2" }, { frag: "vue" }] }, hidden: "Un replat rocheux offre un abri contre le vent et une vue dégagée sur le ciel.", rw: { frag: "nid", intu: 2 } }
       ] },
-    { id: "mine", n: "Les Profondeurs", ic: "🦇", res: ["fer_min", "charbon"], req: "pioche_bronze",
+    { id: "mine", n: "Les Profondeurs", ic: "🦇", res: ["fer_min", "charbon", "quartz"], req: "pioche_bronze",
       d: "Des galeries naturelles qui s’enfoncent sous les collines. Il y fait tiède. À cette profondeur, il devrait faire froid.",
       exps: [
         { id: "filon", n: "Le Filon Profond", dur: 60, cost: { torche: 2 }, rw: { inv: { fer_min: 20 }, frag: "porte" } },
         { id: "porte_scellee", n: "La Porte Scellée", dur: 90, need: "boussole", hidden: "Une porte lisse, sans poignée ni serrure. Le fer tremble quand il s’en approche.", rw: { flag: "caveau", frag: "caveau", secret: "caveau" } }
       ] },
-    { id: "desert", n: "Le Désert de Verre", ic: "🏜️", res: ["quartz", "sable"], req: "chariot",
+    { id: "desert", n: "Le Désert de Verre", ic: "🏜️", res: ["quartz", "sable"], req: "locomotive",
       d: "Des dunes à perte de vue. Par endroits, le sable a fondu en dalles de verre.",
       exps: [
         { id: "ville", n: "La Ville Ensevelie", dur: 90, need: "gants", rw: { inv: { quartz: 20 }, frag: "journal" } },
@@ -1235,9 +1235,8 @@
     ["enclume_bronze", "Le fer ne se bat pas sur une simple pierre. Il te faut une enclume plus dure."],
     ["bas_fourneau", "Le minerai de fer demande plus de chaleur. Le bas-fourneau monte jusqu’à 1 300 °C."],
     ["lingot_fer", "Bats le fer."],
-    ["chariot", "Au-delà des collines s’étend un désert de verre. Il te faut de quoi y transporter tes outils."],
-    { k: "pass", z: "desert", n: "Vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
-    ["poudre_quartz", "Le quartz du Désert peut polir le verre : prépare une poudre abrasive pour ta lunette, puis les briques des fours."],
+    ["chariot", "Un chariot porte tes outils plus loin que le camp : tous tes extracteurs récoltent plus."],
+    ["poudre_quartz", "Le quartz des Profondeurs peut polir le verre : prépare une poudre abrasive pour ta lunette, puis les briques des fours."],
     ["lunette", "Une étoile rouge pulse dans le ciel. Il te faut la voir de plus près."],
     ["haut_fourneau", "Pour l’acier, il faut encore plus chaud. Le haut-fourneau monte jusqu’à 1 700 °C."],
     ["lingot_acier", "Fer et carbone, à très haute température."],
@@ -1250,6 +1249,8 @@
     ["eau_1", "Pour alimenter une chaudière, il faut un débit régulier d’eau. Construis une pompe à bras pour la Rivière."],
     ["circuit_vapeur", "De l’eau dans la chaudière, des tuyaux pour conduire la vapeur : le moteur peut prendre forme."],
     ["moteur_vapeur", "Fais travailler la vapeur à ta place."],
+    ["locomotive", "Au-delà des collines s’étend un désert de verre. Une voie de fer le traverserait, et la vapeur y tirerait un convoi."],
+    { k: "pass", z: "desert", n: "Vers le Désert de Verre", txt: "Le verre brûle les roues. Une route le traverserait." },
     ["regulateur", "Un moteur à vapeur qui s’emballe se brise. Quelque chose doit le retenir."],
     ["presse_vapeur", "Une machine-outil à vapeur ferait tourner tes machines bien plus vite."],
     ["recuperation_vapeur", "La vapeur peut redevenir de l’eau dans un condenseur. Raccorde-le aux moteurs pour accélérer tes machines."],
@@ -1257,12 +1258,14 @@
     ["poste_elec", "Un moteur électrique sur chaque poste : plus besoin d’arbre ni de courroie."],
     ["radio", "Quelqu’un émet peut-être encore, quelque part."],
     ["four_arc", "Un éclair permanent, pour fondre ce que rien d’autre ne fond. Le four à arc monte jusqu’à 3 500 °C."],
-    ["uranium_1", "Dans la roche des Profondeurs, quelque chose chauffe sans feu. Un extracteur peut le remonter."],
-    ["galene_1", "Retourne aux Collines Vertes : construis une mine de plomb, puis pose-la sur le gisement de galène. Ce minerai ne se récolte pas à la main."],
-    ["lingot_plomb", "Pour s’en protéger, il faut un métal très lourd. La galène des Collines en donne."],
+    ["foreuse", "Sous le Gisement Noir, l’huile dort, et d’autres roches avec elle. Il te faut une sonde pour l’atteindre."],
+    { k: "pass", z: "gisement", n: "Vers le Gisement Noir", txt: "L’huile dort loin sous la croûte. Il faut y creuser une tranchée." },
+    ["uranium_1", "Dans la roche du Gisement Noir, quelque chose chauffe sans feu. Un extracteur peut le remonter."],
+    ["galene_1", "Le Gisement Noir cache aussi de la galène : construis une mine de plomb, puis pose-la sur ce gisement. Ce minerai ne se récolte pas à la main."],
+    ["lingot_plomb", "Pour s’en protéger, il faut un métal très lourd. La galène du Gisement Noir en donne."],
     ["barre_combustible", "L’uranium cuit, enfermé dans l’acier, devient un combustible."],
     ["centrale_fission", "De la chaleur sans flamme : fais-la travailler à ta place."],
-    ["silicium", "Le cristal du désert cache un métal qui pense."],
+    ["silicium", "Le quartz cache un métal qui pense."],
     ["lithographe", "La lumière peut graver des circuits plus fins qu’un cheveu. Le lithographe ouvre l’action Graver."],
     ["wafer", "Le silicium se taille en plaquettes minces et polies comme des miroirs."],
     ["puce", "La lumière grave des pistes de cuivre microscopiques sur le silicium."],
@@ -1270,8 +1273,6 @@
     ["ordinateur", "Construis une machine qui calcule."],
     ["chaine", "Construis une ligne d’assemblage : ses machines aideront les commandes de recettes déjà fabriquées à la main. Lance ensuite un lot de processeurs ou de pièces pour tes prochains chantiers."],
     ["radiotelescope", "Une coupole géante tournée vers les étoiles pour capter les signaux du Cosmos."],
-    ["foreuse", "L’huile noire dort sous le Gisement Noir. Il te faut une sonde pour l’atteindre."],
-    { k: "pass", z: "gisement", n: "Vers le Gisement Noir", txt: "L’huile dort loin sous la croûte. Il faut y creuser une tranchée." },
     ["reacteur", "Le réacteur chimique ouvre l’action Synthétiser : il recompose les molécules."],
     ["naphta", "Le pétrole contient plusieurs produits. Chauffe-le pour en séparer le naphta."],
     ["plastique", "Le naphta peut devenir une pièce moulée : essaie de le synthétiser."],
@@ -1306,9 +1307,9 @@
     riviere: { n: "La Passerelle", t: "La rivière est large et lente. Une passerelle de bois, liée de cuir et d’os, te mènerait sur l’autre rive.", cost: { bois: 10800, cuir: 1620, os: 2160 }, tr: 3 },
     collines: { n: "Les Marches", t: "Les collines sont raides. Des marches taillées dans la pierre et cuites dans l’argile y monteraient.", cost: { caillou: 48000, argile: 1920, brique: 480 }, tr: 5 },
     mine: { n: "Le Puits d’Entrée", t: "Pour descendre dans les Profondeurs, il faut un puits étayé, et du métal pour le tenir.", cost: { caillou: 64000, plaque_cuivre: 1920, lingot_bronze: 1280 }, tr: 8 },
-    desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 80000, plaque_bronze: 1500, roue: 200 }, tr: 12 },
+    desert: { n: "La Route du Verre", t: "Le désert brûle les roues. Une route de planches, cerclée de bronze, le traverserait.", cost: { bois: 160000, plaque_bronze: 3000, roue: 400 }, tr: 12 },
     gisement: { n: "La Tranchée", t: "Le Gisement Noir dort loin sous la croûte. Une tranchée d’acier et de câbles y descendrait.", cost: { plaque_fer: 4500, lingot_acier: 1800, cable: 600 }, tr: 18 },
-    montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 7500, plastique: 1200, moteur_elec: 180 }, tr: 27 },
+    montagnes: { n: "Le Col", t: "Les Pics Fracturés n’ont qu’un seul col. Il faut l’ouvrir, puis le tenir.", cost: { lingot_acier: 4500, plastique: 720, moteur_elec: 108 }, tr: 27 },
     orbite: { n: "La Rampe", t: "Il faut une rampe de lancement, et de quoi repartir.", cost: { aluminium: 4500, titane: 900, composite: 900 }, tr: 40 },
     lune: { n: "La Base avancée", t: "Pour rester sur la Lune, il faut de quoi s’y abriter.", cost: { titane: 4500, composite: 2700, debris: 6000 }, tr: 60 },
     mercure: { n: "Le Bouclier solaire", t: "Si près du soleil, rien ne tient sans bouclier.", cost: { regolithe: 18000, helium3: 4500, composite: 6000 }, tr: 90 }
@@ -1661,6 +1662,7 @@
     "💡 L’aide en tête du Carnet se replie d’un appui sur « Compris » pour dégager l’écran, et reste rouvrable d’un appui sur « Aide ».",
     "📳 Les vibrations attendent ton premier geste sur l’écran avant de s’activer.",
     "🐞 Un journal de session local conserve tes derniers repères en mémoire et s’ajoute au signalement de problème si tu choisis d’en préparer un.",
+    "🗺️ Les terres suivent mieux les âges. La Route du Verre s’ouvre avec le chemin de fer, à la Vapeur ; le quartz se trouve désormais aussi dans les Profondeurs, pour que l’Acier s’y fabrique. La sonde pétrolière arrive avec l’Électricité, et l’uranium et la galène se récoltent dans le Gisement Noir, où l’Atome et le Silicium se jouent. Le chariot ne ferme plus rien : il augmente toujours la récolte de 25 %. Les passages du Désert et des Pics sont ajustés. Ta partie en cours est conservée.",
     "📖 Une voie facultative relie les supports d’écriture, l’imprimerie et les archives au Livre : notes des Semeurs, registre de copies et recherche locale dans les pages retrouvées. Les découvertes et les recettes acquises restent conservées.",
     "⛏️ Le Cuivre se découvre étape par étape. Le chariot et le Désert arrivent au Fer : le quartz y fournit une poudre pour polir les lentilles et renforcer les briques réfractaires. La ligne d’assemblage prépare les grands chantiers après l’ordinateur.",
     "💾 Tes terres, tes stocks et tes âges acquis sont conservés. Les commandes de lentilles et de briques déjà lancées terminent avec leurs anciens ingrédients ; les nouvelles utilisent la poudre de quartz.",
