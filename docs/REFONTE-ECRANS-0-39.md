@@ -111,3 +111,24 @@ Si Gemini a besoin d'une classe de plus, il l'ajoute à ce tableau dans sa PR (u
 5. Confier une recette à un apprenti : **moins de 4 appuis** depuis l'Atelier.
 6. Une sauvegarde de la 0.38 s'ouvre sans perte, sur l'onglet Terres.
 7. Revue de Claude sur téléphone réel (390 px) avant fusion dans `prewiew-design`.
+
+## 11. État de la livraison (Claude, 30 octobre 2026)
+
+Gemini n'ayant pas livré l'interface (plus de jetons), Claude l'a faite. Mesuré dans un vrai navigateur à 390 × 844 ; les tests Playwright n'ont pas été exécutés.
+
+**Fait**
+- **Cinq onglets** : Terres, Labo, Atelier, Arbre, Journal (`index.html`). L'identifiant interne des Terres reste `domaine` (le guide, les liens et les tests s'y réfèrent). La Carte (Atlas), le Carnet et les Machines restent des sous-pages sans onglet : `PARENT` dans `js/ui.js` les rattache aux Terres et à l'Atelier, avec « ← Terres » sur l'Atlas et des sous-onglets Produire / Carnet / Machines dans l'Atelier.
+- **Terres (A2)** : une terre par écran (`terresView`, `js/domaine.js`), fond illustré translucide, rangée des médaillons, flèches ‹ ›, glissement au doigt, pastilles (objectif, relais, Comptoir, œuvre, production, Atlas) qui ouvrent un panneau. Récolter : un appui sur l'icône. Mesuré : 761/761 px, aucun défilement de page.
+- **Labo** : `viewLabo`. Il montre l'établi des premiers âges (« postes et outils ») quand il est actif, sinon l'établi classique, compacté : une rangée de matières, échantillons marqués, recherche dans un panneau, thermomètre natif, première pièce offerte et chaîne manquante dans le résultat. Mesuré : 753/753 px.
+- **Atelier** : `viewAtelier` (production) : rangée des recettes, fiche, ×1 / ×10 / Max, « À la main », « Apprenti », « Machines », file des commandes, feuille « Ce qui tourne » alimentée par `E.apprentis()`. Vérifié : commande à la main, ordre permanent créé, feuille remplie.
+- Guide d'ouverture, liens de quêtes et d'aide, raccourcis clavier et bouton Retour mis à jour.
+- Version 0.39.0, `D.CHANGES`, cache hors ligne, `tools/serve.js` et `.claude/launch.json` pour l'aperçu local.
+
+**Pas fait, ou à reprendre**
+1. **Arbre : indices de secrets et lien vers le Labo** (chapitre 5) : non commencé. `D.INDICES` n'existe pas encore.
+2. **`tools/test-ux.js` (R4)** : non écrit (Playwright n'est pas installé ici). Les mesures R1 ont été faites à la main : Terres, Labo (établi des premiers âges et classique), Atelier. À 320 × 568 et aux âges 1, 5, 9 : non mesuré.
+3. **Tests Playwright existants** (`tools/test-*-ui.js`) : ils visent l'ancienne structure (Domaine, Carte, Carnet comme onglets) et vont échouer. À adapter dans une session avec Playwright.
+4. **L'établi des premiers âges** (`js/atelier-equipe.js`) est repris tel quel dans le Labo : il garde sa liste de matières et ses blocs « Fabrication rapide » et « apprenti ». Le Labo « épuré » (rangée de matières) n'existe que pour l'établi classique. Un vrai allègement demande de retoucher ce module (Codex pour l'habillage, une passe sur son HTML).
+5. **Habillage** : les CSS de Codex sont chargés, plus un fichier de raccords à moi (`css/refonte-0-39.css`). Pas de passe de finition sur téléphone réel, ni sur `Veillée`, ni sur les styles Atlas et Classique.
+6. **Atlas** : une page, pas une feuille plein cadre ; `aria-current="location"` non posé ; la classe `.terres-icone.is-traversee` est posée mais sans finition.
+7. **Critères de réception 3, 4, 5** : le 3 (récolte en un appui) est vérifié ; 4 (trouvaille en moins de 5 appuis) et 5 (apprenti en moins de 4) le sont à la main seulement, au clic JavaScript, pas à l'écran.

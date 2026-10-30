@@ -55,7 +55,143 @@
     function zoneRate(z) { return E.zoneDeps(z).reduce((a, d) => a + depRate(z, d.res), 0); }
 
     /* ------------------------------------------------------------ la page */
+    /* ------------------------------------------------------------ TERRES (0.39)
+     * Une terre par écran, glissable ; l’illustration de la terre est le fond de la page.
+     * Objectif, relève, Comptoir, production et œuvres sont des pastilles qui ouvrent un panneau. */
+    const FOND_CARTE = { caveau: 1 };
+    const fondDe = (z) => new URL("assets/terres/" + z + (FOND_CARTE[z] ? "-carte" : "-decor") + ".webp", document.baseURI).href;
+    const vignetteDe = (z) => new URL("assets/terres/" + z + "-carte.webp", document.baseURI).href;
+    function terreCourante() {
+      const zs = openZones();
+      if (!zs.length) return null;
+      if (!zs.includes(U.zone)) U.zone = zs[zs.length - 1];
+      return U.zone;
+    }
+    function allerTerre(z) {
+      const zs = openZones();
+      if (!zs.includes(z)) return false;
+      U.zone = z; U.terrePanel = null;
+      render(true);
+      return true;
+    }
+    function terreVoisine(d) {
+      const zs = openZones(), i = zs.indexOf(terreCourante());
+      const j = Math.max(0, Math.min(zs.length - 1, i + d));
+      if (j !== i) allerTerre(zs[j]);
+    }
+    function pastilleHTML(k, label, extra) {
+      return '<button type="button" class="pastille terres-pastille' + (U.terrePanel === k ? " on" : "") + (extra || "") + '" data-terre-panel="' + k + '" aria-expanded="' + (U.terrePanel === k) + '">' + label + "</button>";
+    }
+    /* une ligne de gisement, compacte : un appui sur l’icône récolte, un appui sur le nom ouvre le gisement */
+    function terreGisHTML(z, d) {
+      const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
+      const ch = E.extChoice(res, z), info = E.machInfo(key), rate = depRate(z, res);
+      const can = ch ? (E.freeExt(ch.t) >= 1 || E.plan(ch.t, 1).ok) : false;
+      const rateTxt = rate > 0 ? "+" + perTime(rate) : e && info.s === "off" ? "⏸" : "";
+      const on = st.act && st.act.k === "harv" && st.act.res === res && st.act.z === z;
+      const ic = d.hand ? '<button type="button" class="terre-recolte" data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '">' + icon(res) + "</button>" : '<span class="terre-recolte inerte">' + icon(res) + "</span>";
+      return '<div class="gis gis-compact terre-gis' + (rate > 0 ? " gis-producing" : "") + '" data-gis="' + key + '">' + ic +
+        '<button type="button" class="gis-compact-btn terre-gis-corps" data-gsheet="' + key + '" aria-label="' + esc(I[res].n) + ' : gérer les extracteurs"><span class="gis-compact-info"><span class="gis-compact-name">' + esc(I[res].n) + '</span><span class="terre-gis-ligne"><b class="gis-compact-c" data-c="' + res + '">' + fmt(st.inv[res] || 0) + '</b> <span class="dom-rate gis-compact-rate' + (rateTxt ? "" : " hidden") + '" data-rate="' + key + '">' + rateTxt + "</span>" + (d.hand ? '<span class="tiny muted terre-main">à la main</span>' : "") + "</span></span></button>" +
+        (d.hand ? '<button type="button" class="mini harvest terre-boucle' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter la récolte en continu : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■" : "▶") + "</button>" : "") +
+        (ch ? '<button type="button" class="mini terre-ajout' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" aria-label="Poser ' + esc(nm(ch.t, 1)) + '">+ ' + esc(nm(ch.t, 1)) + "</button>" : "") + "</div>";
+    }
+    function terresView() {
+      const st = S(), z = terreCourante();
+      if (!z) return '<div class="terres"></div>';
+      const Z = E.ZONES[z], zs = openZones();
+      const sugRel = E.shouldSuggestReleve && E.shouldSuggestReleve();
+      const g = E.guide();
+      const goalTitle = g ? (g.ob.k === "craft" ? I[g.ob.id].n : g.ob.n) : "Objectif";
+      const oeuvres = Object.keys(D.PROJECTS).filter((pid) => E.projVisible(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
+      let h = '<div class="dom terres" data-terre-courante="' + z + '">';
+      // les pastilles : une seule ligne de 40 px
+      h += '<div class="terres-pastilles">' + pastilleHTML("obj", "📜 " + esc(goalTitle)) +
+        (sugRel ? pastilleHTML("rel", "✦ Relais +" + sugRel.gain) : "") +
+        (E.zoneOpen(D.COMPTOIR.zone) ? pastilleHTML("comptoir", "⚖️ Comptoir") : "") +
+        (oeuvres.length ? pastilleHTML("oeuvre", "🏗️ Œuvre") : "") +
+        (E.hasFactory && E.hasFactory() ? pastilleHTML("prod", "⚙️ Production") : "") +
+        '<button type="button" class="pastille terres-pastille" data-tab2="carte" title="L’Atlas : le monde d’un coup d’œil, les passages">🗺️ Atlas</button></div>';
+      h += nouveauxGisementsHTML();
+      // la rangée des terres
+      h += '<nav class="terres-rangee" aria-label="Les terres">';
+      D.ZONES.forEach((land) => {
+        const id = land.id;
+        if (!E.zoneOpen(id)) return;
+        const fermee = isZonePassed(id), cur = id === z;
+        h += '<button type="button" class="terres-icone' + (cur ? " is-courante" : "") + (fermee ? " is-traversee" : "") + '" data-terre-go="' + id + '" aria-label="' + esc(E.ZONES[id].n) + (fermee ? ", terre traversée" : "") + '"' + (cur ? ' aria-current="true"' : "") + '><img src="' + vignetteDe(id) + '" alt="" loading="lazy" decoding="async"></button>';
+      });
+      h += "</nav>";
+      // la page de la terre
+      const i = zs.indexOf(z);
+      h += '<section class="dom-terre terre-page" id="dt-' + z + '" data-terre="' + z + '">' +
+        '<img class="terre-fond" src="' + fondDe(z) + '" alt="" decoding="async">' +
+        '<div class="dom-th terre-tete"><button type="button" class="terre-nav" data-terre-nav="-1" aria-label="Terre précédente"' + (i <= 0 ? " disabled" : "") + '>‹</button>' +
+        '<div class="terre-titre"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h2>' + esc(Z.n) + '</h2></div>' +
+        '<button type="button" class="terre-nav" data-terre-nav="1" aria-label="Terre suivante"' + (i >= zs.length - 1 ? " disabled" : "") + '>›</button></div>' +
+        '<div class="terre-corps">';
+      h += (regleHTML(z) || "").replace('class="dom-regle', 'class="terre-regle dom-regle');
+      h += lieuHTML(z);
+      const reprise = E.reprisePending ? E.reprisePending() : [];
+      if (reprise.length) h += '<div class="dom-card dom-reprise"><div class="row wrap"><span class="grow small"><b>Reprendre l’installation</b> · ' + reprise.length + ' équipement(s)</span><button class="btn small" data-reprise>Plan de reprise</button></div></div>';
+      const tip = hint();
+      if (tip) h += '<div class="dom-tip">' + tip + "</div>";
+      const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
+      h += '<div class="terre-gisements">';
+      deps.forEach((d) => { h += terreGisHTML(z, d); });
+      h += "</div>";
+      if (!deps.some((d) => d.hand) && !deps.some((d) => E.domExt(z, d.res)) && deps.length) h += '<p class="tiny muted">Ces ressources nécessitent des extracteurs pour être récoltées.</p>';
+      h += ruinsBlock(z, Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "ext" && E.extZones(id)[0] === z));
+      h += '<div class="terre-bas">';
+      if (z === "lisiere") h += Decouvertes.sceneHTML() + Decouvertes.studyHTML();
+      if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small" data-gz="plaine">Emprunter le sentier</button><button class="btn small ghost" data-sentier-replay>Revoir les travaux</button></div></div>';
+      if (z === "plaine") h += Plaine.sceneHTML() + Plaine.studyHTML();
+      if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small" data-gz="riviere">Emprunter la passerelle</button><button class="btn small ghost" data-passerelle-replay>Revoir les travaux</button></div></div>';
+      if (z === "riviere") h += Riviere.studyHTML();
+      if (z === "collines") h += Collines.studyHTML();
+      if (z === zs[zs.length - 1]) {
+        E.passPending().forEach((pz) => {
+          const gd = E.guide();
+          if (gd && gd.ob.k === "pass" && gd.ob.z === pz && !(["plaine", "riviere"].includes(pz) && window.EclatStyleMode === "vivant")) return;
+          const p = E.passInfo(pz);
+          if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + pz + '"><h3>Vers ' + esc(E.ZONES[pz].n) + "</h3>" + passHTML(pz, { chantier: true }) + "</section>";
+        });
+      }
+      h += E.territoiresHTML(z, esc, U.terresOpen && U.terresOpen[z]);
+      h += '<button type="button" class="btn mini ghost btn-contempler" data-contempler="' + z + '" aria-label="Contempler l’aquarelle de cette terre : ' + esc(Z.n) + '">🖼️ Contempler</button>';
+      h += "</div></div></section>";
+      if (U.terrePanel) h += panneauTerres(U.terrePanel);
+      return h + "</div>";
+    }
+    function panneauTerres(k) {
+      const titres = { obj: "Objectif", rel: "Relais", comptoir: "Comptoir", oeuvre: "Grand Œuvre", prod: "Production" };
+      let corps = "";
+      if (k === "obj") corps = api.top();
+      else if (k === "rel") {
+        const s = E.shouldSuggestReleve && E.shouldSuggestReleve();
+        corps = s ? '<p class="small">Les matières deviennent lourdes à arracher et les mains fatiguent. En passant le relais maintenant, tu transmettras <b>+' + s.gain + ' Traces</b> pour éveiller un Semeur aux récoltes démultipliées.</p><button class="btn pri" data-m="releve">Passer le relais (+' + s.gain + " ✦)</button>" : "";
+      } else if (k === "comptoir") corps = E.zoneOpen(D.COMPTOIR.zone) ? comptoirHTML() : "";
+      else if (k === "oeuvre") corps = Object.keys(D.PROJECTS).filter((pid) => E.projVisible(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length).map(oeuvreHTML).join("");
+      else if (k === "prod") corps = (domaineMachinesSummary() + prodHTML()) || '<p class="small muted">Rien ne tourne encore ici : les machines et les extracteurs apparaîtront dans cette feuille.</p>';
+      return '<div class="terres-panneau" role="dialog" aria-label="' + esc(titres[k] || "") + '"><div class="terres-panneau-tete"><b>' + esc(titres[k] || "") + '</b><button type="button" class="btn small" data-terre-panel="">Fermer</button></div><div class="terres-panneau-corps">' + corps + "</div></div>";
+    }
+    /* glisser à l’horizontale pour passer d’une terre à l’autre (le doigt, pas la souris) */
+    (function swipe() {
+      let x0 = null, y0 = 0;
+      document.addEventListener("touchstart", (ev) => {
+        const t = ev.target.closest && ev.target.closest(".terre-page");
+        x0 = t && ev.touches.length === 1 && !ev.target.closest(".terres-rangee, .terres-panneau") ? ev.touches[0].clientX : null; y0 = ev.touches[0].clientY;
+      }, { passive: true });
+      document.addEventListener("touchend", (ev) => {
+        if (x0 === null || U.tab !== "domaine") { x0 = null; return; }
+        const t = ev.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0;
+        x0 = null;
+        if (Math.abs(dx) > 60 && Math.abs(dy) < 45 && Math.abs(dx) > Math.abs(dy) * 1.8) terreVoisine(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    })();
     function view() {
+      return terresView();
+    }
+    function ancienneView() {
       const st = S(), zs = openZones().reverse();
       const dense = U.compact();
       let h = '<div class="dom' + (dense ? " dom-dense" : "") + '">';
@@ -1350,6 +1486,9 @@
         openContemplation(b.dataset.contempler);
         return true;
       }
+      if ((b = t.closest("[data-terre-go]"))) { A.click(); allerTerre(b.dataset.terreGo); return true; }
+      if ((b = t.closest("[data-terre-nav]"))) { A.click(); terreVoisine(Number(b.dataset.terreNav)); return true; }
+      if ((b = t.closest("[data-terre-panel]"))) { A.click(); const k = b.dataset.terrePanel; U.terrePanel = k && U.terrePanel !== k ? k : null; render(true); return true; }
       if (t.closest("[data-reprise]")) { repriseSheet(); return true; }
       if ((b = t.closest("[data-terre-maitrise] > summary"))) {
         const details = b.parentElement;
@@ -1508,7 +1647,7 @@
     /* signature de ce qui change la mise en page : on ne redessine que si elle change */
     function sig() {
       const st = S(), ms = E.machines();
-      return [api.topSig ? api.topSig() : "", E.terresSignature(), JSON.stringify(st.exp.done), openZones().join(), JSON.stringify(st.dom.ext),
+      return [U.zone, U.terrePanel || "", api.topSig ? api.topSig() : "", E.terresSignature(), JSON.stringify(st.exp.done), openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
         st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, JSON.stringify(U.domLandsOpen || {}), U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins()), E.reprisePending ? E.reprisePending().map(r => r.i + ":" + r.left).join() : ""].join("|");
@@ -1516,11 +1655,7 @@
 
     /* une terre précise : on la déplie et on la montre */
     function focusZone(z) {
-      U.domOpen = z;
-      U.domLandsOpen = U.domLandsOpen || {};
-      U.domLandsOpen[z] = true;
-      render(true);
-      setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30);
+      if (!allerTerre(z)) render(true);
     }
     /* un extracteur vient d’être fabriqué ailleurs (Atelier, Carnet) : on le pose */
     function placeExt(t) {
@@ -1542,7 +1677,7 @@
       ].join("|");
     }
 
-    return { view, live, sig, machSig, click, down, up, focusZone, placeExt, placeMach, extSheet, comptoirSheet, machinesView, openContemplation };
+    return { view, terresView, live, sig, machSig, click, down, up, focusZone, placeExt, placeMach, extSheet, comptoirSheet, machinesView, openContemplation };
   }
 
   window.EclatDomaine = { create };

@@ -10,7 +10,7 @@
       App, E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete,
       fireworks, elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge,
       updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML,
-      FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
+      prodClick, FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
       playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene,
       openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge,
       craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree, promptCarnetQty, promptCraftQty
@@ -115,7 +115,7 @@
         toast("<b>" + esc(skillName(x.g)) + "</b> niveau " + x.lvl + (x.perk ? " : une chance sur " + Math.round(1 / (E.perkChance(x.g) || 1)) + " d’avoir une pièce en plus." : "."), { key: "lvl:" + x.g });
         if (x.perk) A.discover && A.discover();
         void k;
-        if (U.tab === "atelier") render(true);
+        if (U.tab === "atelier" || U.tab === "labo") render(true);
       });
       E.on("actstop", (x) => {
         const a = x.act, n = a.id ? I[a.id].n : I[a.res].n;
@@ -397,7 +397,8 @@
       views.addEventListener("click", (ev) => {
         const t = ev.target;
         let b;
-        if (U.tab === "atelier") { U.anchor = anchorFor(t); U.anchorAt = performance.now(); }
+        if (U.tab === "labo") { U.anchor = anchorFor(t); U.anchorAt = performance.now(); }
+        if (prodClick(t)) return;
         if (U.tab === "carte" && Carte.click(t)) return;
         if (Dom.click(t, ev)) return;
         if ((b = t.closest(".inv"))) {

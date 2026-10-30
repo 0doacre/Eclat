@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.38.0";
+  D.VERSION = "0.39.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1529,6 +1529,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗺️ Cinq onglets : Terres, Labo, Atelier, Arbre, Journal. Les Terres montrent une terre à la fois, avec son illustration en fond : glisse ou touche les médaillons pour passer de l’une à l’autre, et récolte d’un appui. La Carte devient l’Atlas, rangé sous les Terres.",
+    "⚗️ Le Labo est l’établi pour essayer : tu peux poser toute matière déjà vue, même sans en avoir, et la première pièce d’une trouvaille t’est offerte. L’Atelier sert à produire : choisis une recette et une quantité, fabrique à la main ou confie-la à un apprenti. « Ce qui tourne » montre ce qui produit et ce qui bloque. Le Carnet et les Machines s’ouvrent depuis l’Atelier.",
     "🔨 Dans l’Atelier, les ressources s’affichent en tuiles compactes et épurées sous forme d’icônes et de réserves. Dans le Domaine, les terres déjà traversées se replient pour laisser place à leurs gisements sous forme de vignettes directes.",
     "📖 Finitions du Carnet et mesures : le style Carnet (papier) devient l’aspect par défaut des nouveaux joueurs, et le bouton du haut s’appelle désormais « Aspect ». Les pastilles de quêtes et de traces ont un nom explicite.",
     "🖐️ Le bandeau de récolte et de commandes réserve sa place dans le défilement de chaque onglet sans masquer la dernière ligne.",

@@ -184,8 +184,8 @@
     }
     function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve(),cadsSnap=E.cadences?E.cadences().map(c=>c.id+':'+c.have+':'+c.machs+':'+c.status).join(';'):'';return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentDiscoveryOnly===true,s.settings.equipmentStockOnly===true,s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,cadsSnap,lastHeat]);}
     function redraw(){U.dirty=true;render(true);live();save();}
-    function view(){signature=sig();return api.subTabs("atelier","machines","Découvrir","Machines")+api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
-    function live(){const r=root();if(!r||U.tab!=="atelier"||U.equipmentLegacy)return;
+    function view(){signature=sig();return api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
+    function live(){const r=root();if(!r||U.tab!=="labo"||U.equipmentLegacy)return;
       const next=sig();if(next!==signature){const ae=document.activeElement,focus=ae&&r.contains(ae)&&ae.id?{id:ae.id,start:ae.selectionStart,end:ae.selectionEnd}:null;const scroll=r.querySelector(".ae-inventory")?.scrollTop||0;r.innerHTML=body();signature=next;const stock=r.querySelector(".ae-inventory");if(stock)stock.scrollTop=scroll;if(focus){const el=document.getElementById(focus.id);if(el){el.focus({preventScroll:true});try{el.setSelectionRange(focus.start,focus.end);}catch(_){}}}}
       const {w}=work(),e=E.atelierEconomyInfo(),query=(U.equipmentSearch||"").toLocaleLowerCase();
       let visible=0;
@@ -273,7 +273,7 @@
       if(result.fresh&&(result.kind==="craft"||result.kind==="learn"))api.fete({id:result.id,kick:"Nouvelle découverte",title:name(result.id),sub:I[result.id].u||""});
       redraw();
     }
-    document.addEventListener("click",ev=>{const b=ev.target.closest("[data-ae]");if(!b||U.tab!=="atelier"||!document.getElementById("v-atelier").contains(b)||b.disabled)return;const action=b.dataset.ae,id=b.dataset.value;
+    document.addEventListener("click",ev=>{const b=ev.target.closest("[data-ae]");if(!b||U.tab!=="labo"||!document.getElementById("v-labo").contains(b)||b.disabled)return;const action=b.dataset.ae,id=b.dataset.value;
       if(action==="legacy"){U.equipmentLegacy=id==="1";redraw();return;}
       if(!root()?.contains(b))return;
       const {w,tools,tool}=work();A.init();

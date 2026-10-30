@@ -75,7 +75,7 @@
     function update() {
       frame = 0;
       const el = document.querySelector(primary ? '#v-domaine:not(.hidden) [data-carnet-scene="' + zone + '"]' : '#v-domaine:not(.hidden) #dt-' + zone);
-      const land = el && el.closest('.carnet-terre');
+      const land = el && el.closest('.carnet-terre, .terre-page');
       const s = state(), xp = E.expProgress(), active = xp && xp.z === zone && ((primary && xp.i === 0) || Object.values(STUDIES).some(study => study.index === xp.i)) ? xp : null;
       const studyId = recent ? recent.id : active && Object.keys(STUDIES).find((id) => STUDIES[id].index === active.i);
       const target = studyId && land && land.querySelector('[data-carnet-study="' + studyId + '"]');

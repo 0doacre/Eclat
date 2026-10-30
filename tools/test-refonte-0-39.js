@@ -82,3 +82,25 @@ test("la liste des apprentis est cohérente (ordres + machines + blocages)", () 
   assert.equal(a.bloques, 0);
 });
 console.log(passed + " tests de la refonte 0.39 réussis.");
+
+console.log("Refonte 0.39 : la page");
+const fs = require("fs"), path = require("path");
+const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+test("la barre d’onglets a cinq onglets : Terres, Labo, Atelier, Arbre, Journal", () => {
+  const nav = [...html.matchAll(/<nav id="tabs">([\s\S]*?)<\/nav>/g)][0][1];
+  assert.deepEqual(nav.match(/data-tab="(\w+)"/g).map((x) => x.slice(10, -1)), ["domaine", "labo", "atelier", "arbre", "journal"]);
+  assert.deepEqual([...nav.matchAll(/<span>([^<]+)<\/span>/g)].map((x) => x[1]), ["Terres", "Labo", "Atelier", "Arbre", "Journal"]);
+});
+test("chaque onglet a sa vue, et les sous-pages (Atlas, Carnet, Machines) gardent la leur", () => {
+  for (const v of ["domaine", "labo", "atelier", "arbre", "journal", "carte", "carnet", "machines"]) assert.ok(html.includes('id="v-' + v + '"'), v);
+});
+test("les feuilles de style de la refonte sont chargées, dans l’ordre, après celles de la 0.38", () => {
+  const i = (f) => html.indexOf('href="css/' + f + '"');
+  for (const f of ["terres.css", "labo.css", "atelier-production.css", "refonte-0-39.css"]) assert.ok(i(f) > 0, f);
+  assert.ok(i("carnet-peint.css") < i("terres.css") && i("terres.css") < i("labo.css") && i("labo.css") < i("atelier-production.css") && i("atelier-production.css") < i("refonte-0-39.css"));
+});
+test("les icônes d’onglets pointent vers des symboles qui existent", () => {
+  const svg = fs.readFileSync(path.join(__dirname, "..", "assets", "refonte-0-39", "onglets.svg"), "utf8");
+  for (const id of [...html.matchAll(/onglets\.svg#([\w-]+)/g)].map((x) => x[1])) assert.ok(svg.includes('id="' + id + '"'), id);
+});
+console.log(passed + " tests de la refonte 0.39 réussis (au total).");

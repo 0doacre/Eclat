@@ -200,7 +200,7 @@ test("une mine libre signale son gisement au-dessus des terres anciennes masqué
   h = Dom.view();
   assert.ok(!h.includes('data-new-deposit="collines:galene"'), "le rappel disparaît après la pose");
 });
-test("la fenêtre Quêtes mène à l’Atelier puis au gisement, avec des commandes de modale", () => {
+test("la fenêtre Quêtes mène au Labo puis au gisement, avec des commandes de modale", () => {
   const fs = require("fs"), vm = require("vm"), ctx = { window: {} };
   vm.runInNewContext(fs.readFileSync(require.resolve("../js/quetes.js"), "utf8"), ctx);
   const E = avant("galene_1", 9), S = E.state;
@@ -212,9 +212,9 @@ test("la fenêtre Quêtes mène à l’Atelier puis au gisement, avec des comman
   }, { get: (o, k) => k in o ? o[k] : () => "" });
   const Q = ctx.window.EclatQuetes.create(api);
   Q.openQuestsModal();
-  assert.ok(modal.html.includes('data-m="qresume" data-tab="atelier"'));
-  modal.on.qresume({ dataset: { tab: "atelier" } });
-  assert.equal(tab, "atelier"); assert.equal(closed, true);
+  assert.ok(modal.html.includes('data-m="qresume" data-tab="labo"'));
+  modal.on.qresume({ dataset: { tab: "labo" } });
+  assert.equal(tab, "labo"); assert.equal(closed, true);
   E.learn("galene_1", true); Q.openQuestsModal();
   assert.ok(modal.html.includes('data-m="qmake" data-id="galene_1"'));
   E.craft("galene_1", 1); Q.openQuestsModal();
@@ -299,7 +299,7 @@ test("découverte accompagnée : la carte d’objectif et l’établi indiquent 
   const Atel = ctx.window.EclatAtelier.create(api);
   const card = Q.goalCard();
   assert.ok(card.includes("1 ressource"), "la carte d’objectif indique le nombre de ressources");
-  const atel = Atel.viewAtelier();
+  const atel = Atel.viewLabo();
   assert.ok(atel.includes("1 ressource"), "l’encart de l’Atelier indique le nombre de ressources");
   assert.ok(atel.includes('data-apply-hint="manche"'), "le bouton Poser l’indice sur l’établi est proposé dès le niveau d’indice 1");
   assert.ok(atel.includes('data-goal-decipher="manche"'), "le bouton Déchiffrer est accessible directement depuis l’Atelier");

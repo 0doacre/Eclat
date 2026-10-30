@@ -174,8 +174,8 @@
         else if(a.kind==='goal')openGoals();
         else if(a.kind==='item'&&known(E,a.id))goto(a.id);
         else if(a.kind==='zone'&&E.zoneOpen(a.id)){setTab('domaine');Dom.focusZone(a.id);}
-        else if(a.kind==='worker'){U.equipmentLegacy=false;setTab('atelier');setTimeout(()=>document.getElementById('ae-worker-status')?.scrollIntoView({block:'center'}),80);}
-        else if(a.kind==='tab'&&['atelier','domaine','carte'].includes(a.id))setTab(a.id);
+        else if(a.kind==='worker'){U.equipmentLegacy=false;setTab('labo');setTimeout(()=>document.getElementById('ae-worker-status')?.scrollIntoView({block:'center'}),80);}
+        else if(a.kind==='tab'&&['atelier','labo','domaine','carte'].includes(a.id))setTab(a.id==='carte'?'carte':a.id);
       },80);
     }
     document.addEventListener('click',e=>{const b=e.target.closest('[data-assistance]');if(!b||b.disabled)return;

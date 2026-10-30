@@ -78,7 +78,7 @@
             (g.step === g.pour ? "" : "Une recette à trouver. ") + (it0.h ? "<i>« " + esc(it0.h) + " »</i>" : "") + "</div>" +
             (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(g.step) + "</div>" : "") +
             (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(g.step), "sm") + " " + esc(I[mainIngredient(g.step)].n) + "</div>" : "") +
-            '</div><button class="btn small pri" data-gotab="atelier">Atelier</button>') + passHTML(ob.z);
+            '</div><button class="btn small pri" data-gotab="labo">Labo</button>') + passHTML(ob.z);
         }
         return passHTML(ob.z);
       }
@@ -97,7 +97,7 @@
         return line('<div class="grow" data-goto="' + id + '"><div class="small"><span class="step-badge">✦ Nouvelle recette' + (nIng ? ' · ' + nIng + ' ressource' + (nIng > 1 ? 's' : '') : '') + '</span> ' + (it.h ? "<i>« " + esc(it.h) + " »</i>" : "<b>Recette à trouver</b>") + "</div>" +
           (lvl >= 1 ? '<div class="tiny muted">💭 L’action : ' + gesteChip(id) + "</div>" : "") +
           (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
-          '</div><button class="btn small pri" data-gotab="atelier">Atelier</button>');
+          '</div><button class="btn small pri" data-gotab="labo">Labo</button>');
       }
       if (E.queued(id) > 0) return line('<span class="small">✋ En cours : ' + esc(it.n.toLowerCase()) + ".</span>");
       const b = E.blocker(id);
@@ -335,7 +335,7 @@
     function questNextHTML(sc) {
       const id = sc.targetId, it = id && I[id];
       if (it && !S().known[id]) return (it.h ? '<p class="small"><i>« ' + esc(it.h) + ' »</i></p>' : '') +
-        '<button class="btn pri" data-m="qresume" data-tab="atelier">Découvrir à l’Atelier</button>';
+        '<button class="btn pri" data-m="qresume" data-tab="labo">Découvrir au Labo</button>';
       let h = sc.missKeys.length ? '<div class="small row wrap"><span class="muted">Il manque :</span> ' +
         sc.missKeys.map((k) => itemPill(k, { qty: sc.missing[k], lack: true })).join("") + '</div>' : '';
       if (it && it.r && E.orderStatus(id, 1).ok) h += '<button class="btn pri" data-m="qmake" data-id="' + id + '">Fabriquer : ' + esc(it.n) + '</button><p class="tiny muted">Mains et machines disponibles · attendra les matières manquantes.</p>';

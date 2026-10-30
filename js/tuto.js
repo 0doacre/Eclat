@@ -9,7 +9,7 @@
   function create(api) {
     const { E, D, A, U, esc, save, toast } = api;
     const S = () => E.state;
-    const TABS = { domaine: "le Domaine", carte: "la Carte", atelier: "l’Atelier", carnet: "le Carnet", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
+    const TABS = { domaine: "les Terres", labo: "le Labo", carte: "l’Atlas, dans les Terres", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
     const GAP = 150000; // entre deux chapitres : une explication toutes les deux ou trois minutes, jamais en rafale
 
     /* ------------------------------------------------------------ petits repères */
@@ -47,13 +47,13 @@
         steps: [
           { tab: "domaine", at: '[data-hloop="lisiere:bois"]', text: "▶ Récolter : récolte en continu. Touche encore pour arrêter. L’icône du bois récolte un seul coup.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
-          { tab: "atelier", go: "Ouvre l’Atelier.", at: E.equipmentList ? ".ae-tools" : ".gestes",
+          { tab: "labo", go: "Ouvre le Labo.", at: E.equipmentList ? ".ae-tools" : ".gestes",
             text: E.equipmentList ? "Choisis ton outil, pose tes matières, puis utilise son geste. Le percuteur taille, les mains assemblent ou tressent." : "Une recette = une action + des ressources. Actions de départ : Tailler, Tresser, Assembler.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
-          { tab: "atelier", at: () => (U.slots.includes("bois") ? null : E.equipmentList ? '#ae-item-bois' : '[data-inv="bois"]'), text: "Touche le bois pour le poser sur l’établi.",
+          { tab: "labo", at: () => (U.slots.includes("bois") ? null : E.equipmentList ? '#ae-item-bois' : '[data-inv="bois"]'), text: "Touche le bois pour le poser sur l’établi.",
             done: () => U.slots.includes("bois") || S().known.manche },
-          { tab: "atelier", at: () => E.equipmentList ? (U.geste === "tailler" ? '#ae-forge-tailler' : '#ae-tool-percuteur_pierre') : (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Lance Tailler pour fabriquer ton premier objet." : "Choisis l’action Tailler."),
+          { tab: "labo", at: () => E.equipmentList ? (U.geste === "tailler" ? '#ae-forge-tailler' : '#ae-tool-percuteur_pierre') : (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Lance Tailler pour fabriquer ton premier objet." : "Choisis l’action Tailler."),
             done: () => S().known.manche },
-          { tab: "atelier", at: E.equipmentList ? "#ae-result" : "#result", done: () => S().known.corde, text: "Manche fabriqué. Sa recette est dans le Carnet.", next: true },
+          { tab: "labo", at: E.equipmentList ? "#ae-result" : "#result", done: () => S().known.corde, text: "Manche fabriqué. Sa recette est dans le Carnet.", next: true },
           { tab: "domaine", go: "Retour au Domaine.", at: ".goal-card", text: "L’objectif en haut du Domaine indique la suite. 🏁 : les étapes de l’âge.", next: true, done: () => S().known.corde },
           { text: "Objectif : de quoi attacher deux objets. Récolte des fibres, puis essaie des actions à l’Atelier. Le thermomètre montre si tu approches d’une recette.",
             free: true, done: () => S().known.corde },
@@ -89,7 +89,7 @@
           { tab: "domaine", at: "#dt-plaine .dom-th", text: "Une nouvelle terre : d’autres ressources à récolter, et un lieu à explorer.", next: true }
         ] },
       { id: "intuition", n: "L’Intuition",
-        when: () => (U.tab === "domaine" || U.tab === "atelier") && S().intu >= 2 && !modalOpen(),
+        when: () => (U.tab === "domaine" || U.tab === "labo") && S().intu >= 2 && !modalOpen(),
         steps: [
           { at: "#intuBtn", dim: false, text: "Tes découvertes rapportent de l’Intuition ✨. Utilise-la pour étudier des ressources ou déchiffrer des recettes.", next: true }
         ] },
@@ -173,14 +173,14 @@
           { text: "Compris : partout où ce signe apparaît, il se lit désormais en mot. Les autres se trouvent dans le Journal, onglet Signes.", next: true }
         ] },
       { id: "etude", n: "Étudier une ressource",
-        when: () => !E.equipmentList && U.tab === "atelier" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
+        when: () => !E.equipmentList && U.tab === "labo" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
         still: () => !Object.keys(S().studied).length,
         steps: [
-          { tab: "atelier", at: studyTile, text: E.equipmentList?"Ouvre la Fiche d’une matière pour l’étudier et chercher ce qu’elle permet de fabriquer.":"Appuie longuement sur une ressource pour ouvrir sa fiche.",
+          { tab: "labo", at: studyTile, text: E.equipmentList?"Ouvre la Fiche d’une matière pour l’étudier et chercher ce qu’elle permet de fabriquer.":"Appuie longuement sur une ressource pour ouvrir sa fiche.",
             done: () => !!document.querySelector('.modal:not(.hidden) [data-m="study"]') || Object.keys(S().studied).length > 0 },
           { modal: true, at: '.modal:not(.hidden) [data-m="study"]', back: 0,
             text: "Étudie-la contre un peu d’Intuition ✨ : tu sauras avec quelles actions elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },
-          { tab: "atelier", text: "Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie. À toi de trouver la bonne combinaison.", next: true }
+          { tab: "labo", text: "Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie. À toi de trouver la bonne combinaison.", next: true }
         ] },
       { id: "suivre", n: "Suivre une recette",
         when: () => !S().track && U.tab === "carnet" && S().stats.crafts <= 80 && S().age <= 4 && Object.keys(S().known).length >= 5 && !!document.querySelector("[data-track]"),
@@ -464,7 +464,7 @@
       let view;
       if (s.tab && U.tab !== s.tab && !s.modal) {
         // le Carnet et les Machines sont des pages de l’Atelier, le Cosmos une page du Journal
-        const par = { machines: "atelier", cosmos: "journal" }[s.tab];
+        const par = { carte: "domaine", carnet: "atelier", machines: "atelier", cosmos: "journal" }[s.tab];
         const sel = par && U.tab === par ? '[data-tab2="' + s.tab + '"]' : '#tabs [data-tab="' + (par || s.tab) + '"]';
         view = { target: resolve(sel), text: s.go || "Ouvre " + TABS[s.tab] + "." };
       } else {

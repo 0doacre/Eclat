@@ -1,0 +1,96 @@
+/* Raccords de la refonte 0.39 (Claude) : la mise en page des trois vues, sans toucher aux CSS de Codex.
+ * Règle R1 : la vue principale tient dans la hauteur disponible ; ce qui dépasse défile dans son propre conteneur. */
+#v-domaine.on, #v-labo.on, #v-atelier.on { display: flex; flex-direction: column; height: 100%; position: relative; }
+#v-labo.on, #v-atelier.on { overflow-y: auto; }
+#v-domaine .terres, #v-labo .labo, #v-atelier .prod { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+#v-domaine { padding-left: 0; padding-right: 0; padding-top: 0; }
+#v-domaine .terres { max-width: 680px; width: 100%; margin: 0 auto; }
+
+/* Terres */
+.terres-pastilles { padding: 6px 8px 2px; gap: 6px; flex: none; }
+.terres-pastille { min-height: 40px; white-space: nowrap; flex: none; }
+.terres-rangee { flex: none; }
+.terre-page { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow: hidden; margin: 0; border: 0; padding: 4px 10px 8px; }
+.terre-page::before, .terre-page::after { content: none; }
+.terre-fond { pointer-events: none; }
+.terre-tete { display: flex; align-items: center; gap: 6px; flex: none; margin: 0; padding: 0; border: 0; background: transparent; }
+.terre-titre { flex: 1; text-align: center; min-width: 0; }
+.terre-titre .kicker { margin: 0; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #60513f; }
+.terre-titre h2 { margin: 0; font-size: 22px; line-height: 1.15; color: #30271e; }
+.terre-nav { flex: none; width: 44px; height: 44px; border: 1px solid #79694a; border-radius: 50%; background: #fff8e9; color: #30271e; font-size: 22px; line-height: 1; }
+.terre-nav:disabled { opacity: .35; }
+.terre-corps { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-bottom: 8px; }
+.terre-gis { display: flex; align-items: center; gap: 8px; }
+.terre-recolte { flex: none; width: 52px; height: 52px; padding: 4px; border: 1px solid #79694a; border-radius: 10px; background: #fff8e9; display: grid; place-items: center; }
+.terre-recolte.inerte { border-style: dashed; opacity: .8; }
+.terre-recolte img, .terre-recolte svg, .terre-recolte .ic { width: 40px; height: 40px; }
+.terre-recolte:active { background: #e9dec8; transform: scale(.97); }
+.terre-gis-corps { flex: 1 1 auto; min-width: 0; text-align: left; background: transparent; border: 0; padding: 4px 2px; }
+.terre-gis .gis-compact-info, .terre-gis .gis-compact-name { text-align: left; align-items: flex-start; }
+.terre-gis .gis-compact-name { display: block; font-weight: 700; font-size: 16px; }
+.terre-gis-ligne { display: flex; gap: 8px; align-items: baseline; font-size: 14px; color: #60513f; }
+.terre-boucle, .terre-ajout { flex: none; min-height: 44px; min-width: 44px; }
+.terre-bas { margin-top: 6px; }
+.terres-panneau, .labo-recherche, .auto-feuille { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; background: #f4ecda; color: #30271e; }
+.terres-panneau-tete, .labo-recherche-tete, .auto-tete { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #79694a; flex: none; }
+.terres-panneau-corps, .labo-recherche-corps, .auto-corps { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 8px 12px; }
+
+/* Labo */
+.labo { padding: 6px 10px; }
+.labo-tete { flex: none; text-align: right; }
+.labo .gestes { flex: none; }
+.labo #bench { flex: none; margin: 4px 0; }
+.labo .result { flex: 0 1 auto; min-height: 0; overflow-y: auto; max-height: 28vh; }
+.labo-matieres { flex: none; margin-top: auto; }
+.labo-mat { min-width: 64px; position: relative; display: grid; place-items: center; padding: 4px; }
+.labo-mat .c { font-size: 12px; }
+.labo-plus { align-self: center; }
+
+/* Atelier */
+.prod { padding: 6px 10px; }
+.prod-entete { display: flex; gap: 8px; align-items: center; flex: none; margin-bottom: 6px; flex-wrap: wrap; }
+.prod-choix { display: flex; gap: 6px; overflow-x: auto; flex: none; padding-block: 4px; }
+.prod-recette { flex: none; min-width: 64px; min-height: 64px; display: grid; place-items: center; padding: 4px; border: 1px solid #79694a; border-radius: 8px; background: #fff8e9; color: #30271e; }
+.prod-recette.on { outline: 2px solid #813f2a; outline-offset: -2px; }
+.prod-recette.zero { opacity: .6; }
+.prod-recette .n { font-size: 12px; max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prod-fiche { flex: none; padding: 8px 4px; }
+.prod-qty { display: flex; gap: 6px; margin-top: 8px; }
+.prod-qty button { flex: 1; min-height: 44px; border: 1px solid #79694a; border-radius: 6px; background: #fff8e9; color: #30271e; }
+.prod-qty button.on { background: #813f2a; color: #fff8e9; }
+.prod-qui { display: flex; gap: 6px; flex: none; }
+.prod-qui .btn { flex: 1; min-height: 48px; }
+.prod-file { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.auto-ligne { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #79694a55; }
+.auto-act { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.auto-act .btn { min-height: 44px; min-width: 44px; }
+
+/* Labo : un établi sur une seule ligne, le reste défile dans la vue plutôt que d'être coupé */
+.labo { overflow-y: auto; overscroll-behavior: contain; }
+.labo .plus-sep { display: none; }
+.labo .slots.labo-etabli { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 8px; margin: 4px 0; }
+.labo .labo-case { min-height: 64px; border-radius: 40% 40% 6px 6px; }
+.labo #bench { padding: 6px 8px; }
+.labo #bench .heat { font-size: 12px; margin-bottom: 2px; }
+.labo .forge-wrap { margin-top: 4px; }
+.labo .forge-btn { min-height: 48px; }
+.labo .tip, .labo .goal-hint { margin: 2px 0 4px; padding: 6px 8px; }
+.labo .goal-hint .small { font-size: 13px; }
+
+.terre-gis .dom-rate:empty { display: none; }
+.terre-main { font-style: italic; }
+.terre-gis { flex-wrap: nowrap; padding: 4px 0; }
+.terre-gis .terre-ajout, .terre-gis .terre-boucle { width: auto; white-space: nowrap; writing-mode: horizontal-tb; padding: 0 10px; height: 44px; line-height: 1; }
+.terre-gis .terre-ajout { max-width: 34%; overflow: hidden; text-overflow: ellipsis; }
+.terre-page .terre-gis { display: flex; flex-direction: row; align-items: center; gap: 8px; margin: 0; padding: 4px 0; border: 0; border-bottom: 1px solid #79694a55; border-radius: 0; background: transparent; box-shadow: none; min-height: 60px; }
+.terre-page .terre-gis:last-child { border-bottom: 0; }
+.terre-page .terre-gis::before, .terre-page .terre-gis::after { content: none; }
+.labo-mat .n { display: block !important; font-size: 11px; line-height: 1.1; max-width: 62px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.labo-mat { min-height: 66px; }
+.carte-retour { padding: 6px 10px 0; }
+
+/* Labo, établi des premiers âges (postes et outils) : l'établi garde sa taille, la liste des matières défile seule */
+#v-labo .atelier-equipe { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+#v-labo .ae-layout { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+#v-labo .ae-bench { flex: none; }
+#v-labo .ae-stock { flex: 1 1 auto; min-height: 140px; overflow-y: auto; overscroll-behavior: contain; }

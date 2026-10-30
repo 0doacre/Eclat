@@ -3,8 +3,8 @@
 (function (root) {
   "use strict";
 
-  /* L’ordre des onglets pour les raccourcis : 1 = Domaine… (les onglets cachés sont sautés) */
-  const ONGLETS = ["domaine", "carte", "atelier", "arbre", "carnet", "journal"];
+  /* L’ordre des onglets pour les raccourcis : 1 = Terres… (les onglets cachés sont sautés) */
+  const ONGLETS = ["domaine", "labo", "atelier", "arbre", "journal"];
 
   /* Que fait le bouton Retour ? Une fonction pure, pour la tester sans navigateur.
    *   fenetre : { ouverte, fermable } ; onglet : l’onglet courant ; dernierRetour / maintenant : en ms. */

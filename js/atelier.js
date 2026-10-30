@@ -47,12 +47,18 @@
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
         memBar + acts + "</div>";
     }
-    function viewAtelier() {
-      if(Equipped&&S().age<3)U.equipmentLegacy=false;
-      if(Equipped&&!U.equipmentLegacy)return Equipped.view();
+    /* Le Labo (0.39) : l’établi d’essai, rien d’autre. Les matières se choisissent dans une rangée,
+     * la liste complète s’ouvre dans un panneau de la vue. */
+    function recettesTrouvees() {
+      const all = Object.keys(I).filter((id) => I[id].r && !I[id].sec && !I[id].path && !I[id].old && I[id].t !== "curio");
+      return { n: all.filter((id) => S().known[id]).length, total: all.length };
+    }
+    function viewLabo() {
       const st = S();
-      let h = '<header class="atlas-workshop-heading atlas-only"><h2>Atelier</h2><span>Le geste et la matière</span></header>' + subTabs("atelier", "machines", "Découvrir", "Machines");
-      if(Equipped)h+='<div class="card"><button type="button" class="btn pri" data-ae="legacy" data-value="0">← Postes et outils</button><p class="small muted">Procédés historiques pour les recettes après le Cuivre. Les recettes des premiers âges se travaillent avec leurs outils.</p></div>';
+      if (Equipped && st.age < 3) U.equipmentLegacy = false;
+      if (Equipped && !U.equipmentLegacy) return Equipped.view();
+      const rt = recettesTrouvees();
+      let h = '<div class="labo"><div class="labo-tete">' + (Equipped ? '<button type="button" class="btn small ghost" data-ae="legacy" data-value="0">← Postes et outils</button>' : "") + '<button type="button" class="labo-compteur" data-tab2="carnet" title="Ouvrir le Carnet : toutes tes recettes trouvées">Recettes trouvées · ' + rt.n + " / " + rt.total + "</button></div>";
       if (!E.gesteOK(U.geste)) U.geste = "tailler";
       if (!(st.stats.crafts > 0) && !Tuto.active()) h += '<div class="tip">1. Choisis une <b>action</b>. 2. Pose des <b>ressources</b> sur l’établi. 3. Lance l’action. Pour commencer : <b>Tailler</b> + <b>Bois</b>.</div>';
       // Le premier essai reste possible sans un aller-retour au Domaine.
@@ -64,18 +70,10 @@
           : '<span>Il te faut ' + firstWood + ' bois pour commencer.</span><button class="btn pri" data-hloop="lisiere:bois">▶ Récolter du bois</button>') + '</div>';
       }
       h += goalHint();
-      const sugRel = E.shouldSuggestReleve && E.shouldSuggestReleve();
-      if (sugRel) {
-        h += '<div class="card acc releve-alerte" style="border-left:3px solid var(--acc);background:var(--panel2);margin-bottom:10px">' +
-          '<div class="row between items-center"><span class="step-badge">✦ Passer le relais</span><b class="mgain">+' + sugRel.gain + ' ✦</b></div>' +
-          '<p class="small" style="margin:6px 0 8px">' + esc(sugRel.texte) + '</p>' +
-          '<button class="btn pri small" data-m="releve" title="Voir les gains et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
-      }
       // l’explication des niveaux se lit une fois ; ensuite le bouton « Niveaux » rejoint l’établi et ne prend plus de ligne
       const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;
       if (niveauxTip) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button><button class="btn small ghost" data-tip="tip_niveaux" title="Fermer cette astuce">Compris</button></div>';
-      h += pinsHTML();
-      // une seule rangée, qu’on fait glisser : le haut de l’Atelier laisse la place aux ressources
+      // une seule rangée, qu’on fait glisser : le haut du Labo laisse la place à l’établi
       const nG = D.GESTE_ORDER.filter((g) => E.gesteOK(g)).length + 1, wG = ($("#views") && $("#views").clientWidth || 360) - 24;
       h += '<div class="gestes' + (nG * 74 > wG ? " more" : "") + '">';
       let locks = 0;
@@ -97,24 +95,44 @@
       const mat = st.age >= 11 ? " m-labo" : st.age >= 6 ? " m-metal" : st.age >= 3 ? " m-pierre" : "";
       h += '<div class="card bench' + mat + '" id="bench"><div class="heat small"><span>' + esc(heat) + "</span>" +
         (st.stats.crafts > 0 && !niveauxTip ? '<button class="bench-clear" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button>' : "") +
-        (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") + '</div><div class="slots">';
+        (U.slots.some(Boolean) ? '<button class="bench-clear" data-clear aria-label="Vider l’établi">✕ Vider</button>' : "") + '</div><div class="slots labo-etabli">';
       U.slots.forEach((id, i) => {
         if (i) h += '<span class="plus-sep">+</span>';
-        if (id) h += '<button class="slot full" data-slot="' + i + '">' + icon(id) + '<span class="sn">' + esc(I[id].n) + '</span><span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
-        else h += '<button class="slot" data-slot="' + i + '" title="Poser une ressource ici" aria-label="Emplacement libre : poser une ressource"><span class="plus">+</span></button>';
+        if (id) h += '<button class="slot full labo-case" data-slot="' + i + '">' + icon(id) + '<span class="sn">' + esc(I[id].n) + '</span><span class="tiny muted" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
+        else h += '<button class="slot labo-case" data-slot="' + i + '" title="Poser une ressource ici" aria-label="Emplacement libre : poser une ressource"><span class="plus">+</span></button>';
       });
       // le signe gravé sur le bouton reste à toucher même quand le bouton attend des ressources
       const mark = uiSigne("fabriquer", "L’Atelier");
-      h += '</div><div class="forge-wrap"><button class="forge-btn" id="forge">' + gIc(U.geste) + " " + G.n.toUpperCase() + "</button>" +
+      h += '</div><div class="forge-wrap"><button class="forge-btn labo-bouton" id="forge">' + gIc(U.geste) + " " + G.n.toUpperCase() + "</button>" +
         (mark ? '<span class="forge-mark">' + mark + "</span>" : "") + "</div></div>";
       h += '<div id="mbench" class="mbench hidden"><span class="mg">' + gIc(U.geste) + "</span>" +
         U.slots.map((id, i) => '<button class="mslot" data-slot="' + i + '">' + (id ? icon(id, "sm") : "+") + "</button>").join("") +
         '<button class="mforge" data-forge>' + gIc(U.geste) + " " + esc(G.n) + "</button></div>";
       h += '<div class="card result" id="result">' + resultHTML() + "</div>";
-      const sugg = E.knownWith(U.slots).filter((id) => !(U.last && U.last.id === id)).slice(0, 6);
-      if (sugg.length) {
-        h += '<h3 class="sub">Recettes connues avec ces ressources</h3><div class="pins">' + sugg.map(quickRow).join("") + "</div>";
-      }
+      h += labMatieres();
+      return h + "</div>" + (U.labSearch ? labRecherche() : "");
+    }
+    /* la rangée de matières : les favorites, les plus récentes, puis ce qui est en stock */
+    function labMatieres() {
+      const st = S(), fv = favs();
+      const score = (id) => (fv[id] ? 1e6 : 0) + (+st.seen[id] || 0) + (st.inv[id] >= 1 ? 1e3 : 0);
+      const ids = invItems().slice().sort((a, b) => score(b) - score(a)).slice(0, 14);
+      let h = '<div class="labo-matieres" role="group" aria-label="Matières récentes">';
+      ids.forEach((id) => {
+        const sel = U.slots.includes(id), stock = st.inv[id] >= 1;
+        h += '<button class="inv labo-mat' + (sel ? " sel" : "") + (stock ? "" : " zero") + '" data-inv="' + id + '" title="' + esc(I[id].n) + '" aria-label="' + esc(I[id].n) + (stock ? "" : ", échantillon") + '">' + icon(id) +
+          '<span class="n">' + esc(I[id].n) + "</span>" + (stock ? '<span class="c" data-c="' + id + '">' + fmt(st.inv[id]) + "</span>" : '<span class="labo-echantillon">échantillon</span>') + "</button>";
+      });
+      return h + '<button class="btn labo-plus" data-labsearch="1">Rechercher une matière</button></div>';
+    }
+    /* la liste complète, filtres compris, dans un panneau qui défile seul */
+    function labRecherche() {
+      return '<div class="labo-recherche" role="dialog" aria-label="Rechercher une matière"><div class="labo-recherche-tete"><b>Matières</b><button class="btn small" data-labsearch="0">Fermer</button></div><div class="labo-recherche-corps">' + invBlockHTML() + "</div></div>";
+    }
+    function invBlockHTML() {
+      const st = S();
+      const G = D.GESTES[U.geste];
+      let h = "";
       const o = invOpts();
       const counts = invCounts();
       // recherche, tri et filtres quand il y a de quoi chercher
@@ -306,10 +324,17 @@
       trop: "Bonne action, mais l’une de ces ressources est superflue.",
       geste: "Les bonnes ressources, mais pas la bonne action."
     };
+    /* au Labo : la première pièce offerte, et les intermédiaires qu’il reste à découvrir */
+    function labExtra(r) {
+      let h = "";
+      if (r.offered) h += '<p class="small labo-offert">Tu gardes la première pièce : elle est dans ta Réserve.</p>';
+      const manque = E.chaineManquante ? E.chaineManquante(r.id) : [];
+      if (manque.length) h += '<p class="labo-chaine">À découvrir d’abord : ' + manque.slice(0, 3).map((i) => esc(S().known[i] || S().seen[i] ? I[i].n : "une pièce encore inconnue")).join(", ") + "</p>";
+      return h;
+    }
     function thermo(t) {
       const T = D.TEMPS[t];
-      return '<div class="thermo"><div class="row between"><span class="tname" style="color:' + T.c + '">' + T.n + '</span></div><div class="tbar"><i class="tmark" style="left:' +
-        (6 + t * 22) + '%"></i></div></div>';
+      return '<div class="thermo labo-thermo"><span class="tname">' + T.n + '</span><span class="tiny muted">Froid → tiède → brûlant</span><meter min="0" max="4" value="' + t + '" aria-label="Thermomètre : ' + T.n + '">' + T.n + "</meter></div>";
     }
     function resultHTML() {
       const body = resultBody(U.last);
@@ -317,7 +342,7 @@
       return body && U.last && S().stats.crafts >= 3 ? body + '<button class="btn small ghost result-x" data-resclose aria-label="Réduire le résultat">▴ Réduire</button>' : body;
     }
     function resultBody(r) {
-      if(r&&r.kind==="equipment")return '<p>Choisis le poste et l’outil dans « Postes et outils » pour cette fabrication.</p>';
+      if(r&&r.kind==="equipment")return '<p>Pour cette fabrication, choisis le poste et l’outil : touche « ← Postes et outils ».</p>';
       if (!r && S().stats.crafts >= 3) return ""; // déjà appris : la carte vide ne garde pas sa place (voir .result:empty)
       if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis lance l’action choisie. Le <b>thermomètre</b> indique si tu approches d’une recette.</p>';
       if (r.kind === "craft") {
@@ -337,7 +362,7 @@
         const made = (S().made[r.id] || 0) - (r.made0 || 0), q = E.queued(r.id);
         if (made > 0 && !q) { U.last = { kind: "craft", id: r.id, n: made, fresh: !r.made0 }; return resultBody(U.last); }
         const miss = q ? null : E.missingFor(r.id, 1);
-        const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>";
+        const head = '<div class="row">' + icon(r.id, "lg") + '<div class="grow">' + (r.fresh ? '<span class="new">Recette trouvée</span>' : "") + '<div class="rname">' + esc(I[r.id].n) + "</div>" + labExtra(r);
         if (q) return head + '<div class="small">✋ Commande ajoutée · Suivi au-dessus des onglets.</div></div></div>';
         // tout est là : le prix est affiché avant de fabriquer (une découverte ne prend jamais un gros stock d’office)
         if (!miss) return head + descHTML(I[r.id]) + (fxText(r.id) ? '<div class="small" style="color:var(--good);margin-top:4px">' + esc(fxText(r.id)) + "</div>" : "") +
@@ -751,7 +776,7 @@
         if (b.hasAttribute('data-ch-atelier')) {
           e.stopPropagation(); A.click();
           closeModal();
-          setTab('atelier');
+          setTab('labo');
           return;
         }
         if (b.dataset.chemin) { e.stopPropagation(); A.click(); openTree(b.dataset.chemin, 1); return; }
@@ -1595,13 +1620,117 @@
           tree: () => { setTimeout(() => openTree(id, 1), 60); },
           track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (en haut du Domaine)"); redraw(); return true; },
           pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
-          fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier") render(true); return true; },
-          study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier") render(true); } redraw(); return true; },
+          fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier" || U.tab === "labo") render(true); return true; },
+          study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier" || U.tab === "labo") render(true); } redraw(); return true; },
           decipher: () => { const r = E.decipher(id); if (r.ok) { if (r.lvl >= 3) A.discover(); save(); render(true); } redraw(); return true; },
           carnet: () => { setTimeout(() => showInCarnet(id), 60); },
           arbre: () => { setTimeout(() => arbreOuvrir(id), 60); }
         }
       };
+    }
+
+    /* ------------------------------------------------------------ L’ATELIER (production, 0.39)
+     * Quoi produire, en quelle quantité, et qui s’en charge : les mains, un apprenti (un ordre
+     * permanent avec une cible en Réserve) ou une machine. Aucun établi ici : il est au Labo. */
+    const PROD_ETAT = { ok: "produit", full: "plein", starved: "attend une matière", nomach: "pas de machine capable", busy: "attend un travailleur", off: "en pause" };
+    function prodRecettes() {
+      const st = S(), pin = st.pins || {};
+      const ids = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec && !I[id].path && !I[id].old && !E.isUnique(I[id]) && !E.isScaled(I[id]));
+      const can = (id) => (E.maxCraftable(id, 1000) > 0 ? 1 : 0);
+      ids.sort((a, b) => can(b) - can(a) || (pin[b] ? 1 : 0) - (pin[a] ? 1 : 0) || I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
+      return ids;
+    }
+    function prodQty(id) {
+      const m = U.prodQty || "1";
+      if (m === "max") return Math.max(1, Math.floor(E.maxCraftable(id, 1000)) || 1);
+      return Number(m) || 1;
+    }
+    function prodWhy(id) {
+      const ap = E.apprentis();
+      if (ap.ordres.some((o) => o.id === id)) return "";
+      if (!E.automatable(id)) return "Cette pièce ne peut pas encore être confiée.";
+      if (!E.cadenceEligible().includes(id)) return E.machFor(id) ? "Fabrique-la d’abord une fois à la main, ou attends une machine libre." : "Il faut une machine capable de la fabriquer.";
+      return "";
+    }
+    function viewAtelier() {
+      const st = S(), ap = E.apprentis();
+      const liste = prodRecettes();
+      if (!liste.includes(U.prodSel)) U.prodSel = liste[0] || null;
+      const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
+      let h = '<div class="prod">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
+        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
+        (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
+        "</div>";
+      if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette au Labo : elle apparaît ici.</p></div>' + (U.autoSheet ? autoFeuille() : "");
+      h += '<div class="prod-choix" role="group" aria-label="Recettes connues">';
+      liste.slice(0, 30).forEach((id) => {
+        const can = E.maxCraftable(id, 1000) > 0;
+        h += '<button type="button" class="prod-recette' + (id === U.prodSel ? " on" : "") + (can ? "" : " zero") + '" data-prodsel="' + id + '" aria-pressed="' + (id === U.prodSel) + '">' + icon(id) + '<span class="n">' + esc(I[id].n) + '</span><span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
+      });
+      h += "</div>";
+      const id = U.prodSel, it = I[id], q = prodQty(id), mode = U.prodQty || "1";
+      const cost = {}; for (const i in it.r[1]) cost[i] = it.r[1][i] * q;
+      const ordre = ap.ordres.find((o) => o.id === id);
+      const why = prodWhy(id);
+      h += '<section class="prod-fiche"><div class="row">' + icon(id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + ' <span class="muted">×' + fmt(q) + "</span></div>" +
+        '<div class="tiny muted">' + gesteChip(id) + " · à la main : " + fmtTime(E.handTime(id) * q) + "</div></div></div>" +
+        '<div class="row wrap small" style="margin-top:6px">' + ingHTML(cost, { check: true, link: true }) + "</div>" +
+        '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["max", "Max"]].map(([k, l]) => '<button type="button" data-prodq="' + k + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + "</div></section>";
+      h += '<div class="prod-qui"><button type="button" class="btn pri" data-prod="main">À la main</button>' +
+        '<button type="button" title="Confier à un apprenti : il refabrique seul jusqu’à la cible en Réserve" class="btn' + (why ? " ghost" : "") + '" data-prod="apprenti"' + (ordre ? " disabled" : "") + ">" + (ordre ? "Confié · " + fmt(ordre.have) + "/" + fmt(ordre.cap) : "Apprenti") + "</button>" +
+        '<button type="button" class="btn ghost" data-tab2="machines">Machines</button></div>';
+      if (why && !ordre) h += '<p class="tiny muted prod-why">' + esc(why) + "</p>";
+      h += '<div class="prod-file" id="hands">' + handsHTML() + "</div></div>";
+      return h + (U.autoSheet ? autoFeuille() : "");
+    }
+    /* « Ce qui tourne » : chaque ordre permanent, son état en mots, ses réglages */
+    function autoFeuille() {
+      const ap = E.apprentis();
+      let h = '<div class="auto-feuille" role="dialog" aria-label="Ce qui tourne"><div class="auto-tete"><b>Ce qui tourne</b><button type="button" class="btn small" data-autosheet="0">Fermer</button></div><div class="auto-corps">';
+      if (!ap.ordres.length) h += '<p class="small muted">Aucun apprenti au travail. Choisis une recette, puis « Confier à un apprenti » : il la refabrique seul jusqu’à la cible en Réserve.</p>';
+      ap.ordres.forEach((o) => {
+        const cls = o.status === "ok" ? "is-ok" : o.status === "full" ? "is-plein" : o.status === "off" ? "" : "is-bloque";
+        const txt = o.status === "starved" && o.miss.length ? "manque : " + o.miss.map((i) => I[i].n).join(", ") : PROD_ETAT[o.status] || o.status;
+        h += '<div class="auto-ligne apprenti ' + cls + '" data-auto="' + o.id + '">' + icon(o.id, "sm") + '<div class="grow"><b>' + esc(I[o.id].n) + '</b> <span class="tiny muted">' + fmt(o.have) + " / " + fmt(o.cap) + " en Réserve</span>" +
+          '<div class="small auto-etat">' + (o.status === "ok" ? "Produit" : o.status === "full" ? "Plein" : o.status === "off" ? "En pause" : "À voir") + " · " + esc(txt) + (o.rate > 0 ? " · " + perMin(o.rate) : "") + "</div></div>" +
+          '<div class="auto-act"><button type="button" class="btn small ghost" data-autocad="cap:' + o.id + ':-" aria-label="Cible moins dix">−</button><button type="button" class="btn small ghost" data-autocad="cap:' + o.id + ':+" aria-label="Cible plus dix">+</button>' +
+          '<button type="button" class="btn small ghost" data-autocad="toggle:' + o.id + '">' + (o.on ? "Pause" : "Reprendre") + '</button><button type="button" class="btn small ghost" data-autocad="del:' + o.id + '" aria-label="Retirer">✕</button></div></div>';
+      });
+      ap.machines.forEach((m) => {
+        h += '<div class="auto-ligne apprenti' + (m.free ? "" : " is-ok") + '">' + icon(m.id, "sm") + '<div class="grow"><b>' + esc(I[m.id].n) + '</b> <span class="tiny muted">×' + m.own + '</span><div class="small auto-etat">' + (m.free ? m.free + " libre" + (m.free > 1 ? "s" : "") : "Toutes au travail") + "</div></div></div>";
+      });
+      return h + "</div></div>";
+    }
+    /* les appuis de l’Atelier et du Labo */
+    function prodClick(t) {
+      let b;
+      if ((b = t.closest("[data-labsearch]"))) { A.click(); U.labSearch = b.dataset.labsearch === "1"; render(true); return true; }
+      if ((b = t.closest("[data-autosheet]"))) { A.click(); U.autoSheet = b.dataset.autosheet === "1" ? !U.autoSheet : false; render(true); return true; }
+      if ((b = t.closest("[data-prodsel]"))) { A.click(); U.prodSel = b.dataset.prodsel; render(true); return true; }
+      if ((b = t.closest("[data-prodq]"))) { A.click(); U.prodQty = b.dataset.prodq; render(true); return true; }
+      if ((b = t.closest("[data-prod]"))) {
+        const id = U.prodSel; if (!id) return true;
+        A.init();
+        if (b.dataset.prod === "main") {
+          const q = E.queue(id, prodQty(id));
+          if (q.ok) { A.click(); toast("✋ " + esc(I[id].n) + " ×" + fmt(prodQty(id)) + " : fin estimée dans " + fmtTime(q.time) + ".", { key: "prod" }); }
+          else { A.fail(0); toast(q.why === "full" ? "Commandes au maximum." : q.why === "queued" ? "Déjà en cours." : "Il manque des matières : récolte d’abord, ou lance « Tout fabriquer » depuis le Carnet.", { key: "prod" }); }
+        } else if (b.dataset.prod === "apprenti") {
+          const r = E.setCadence(id, Math.max(10, Math.floor(S().inv[id] || 0) + prodQty(id)), true);
+          if (r.ok) { A.click(); toast("🛠️ Un apprenti refabrique " + esc(I[id].n.toLowerCase()) + " jusqu’à la cible.", { key: "prod" }); }
+          else { A.fail(0); toast(esc(prodWhy(id) || "Impossible pour l’instant."), { key: "prod" }); }
+        }
+        render(true); return true;
+      }
+      if ((b = t.closest("[data-autocad]"))) {
+        const [k, id, d] = b.dataset.autocad.split(":"); A.click();
+        const o = E.apprentis().ordres.find((x) => x.id === id); if (!o) return true;
+        if (k === "cap") E.setCadence(id, Math.max(1, o.cap + (d === "+" ? 10 : -10)));
+        else if (k === "toggle") E.setCadence(id, undefined, !o.on);
+        else if (k === "del") E.setCadence(id, null);
+        render(true); return true;
+      }
+      return false;
     }
     function showInCarnet(id) {
       const it = I[id];
@@ -1614,7 +1743,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
+    return { prodClick, viewLabo, equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
   }
 
   window.EclatAtelier = { create };

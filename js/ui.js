@@ -823,12 +823,14 @@
   /* ============================================================ VUES */
   /* les onglets arrivent quand ils ont quelque chose à montrer : l’Arbre et le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
-  /* six onglets : Domaine, Carte, Atelier, Arbre, Carnet, Journal ; les Machines se rangent dans l’Atelier, le Cosmos dans le Journal */
-  const PARENT = { machines: "atelier", cosmos: "journal" };
+  /* cinq onglets : Terres (le Domaine), Labo, Atelier, Arbre, Journal ; la Carte (l’Atlas) se range sous les Terres,
+   * le Carnet et les Machines dans l’Atelier, le Cosmos dans le Journal */
+  const PARENT = { carte: "domaine", carnet: "atelier", machines: "atelier", cosmos: "journal" };
   function tabAvailable(t) {
     const st = S();
     if (t === "cosmos") return E.cache().sky;
     if (t === "journal" && E.cache().sky) return true;
+    if (t === "atelier") return st.stats.crafts > 0 || Object.keys(st.known).length >= 3;
     if (t === "carnet" || t === "arbre") return Object.keys(st.known).length > 0;
     if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
     if (t === "journal") return Object.keys(st.frags).length > 0 || Object.keys(st.exp.done).length > 0 || Object.keys(st.secrets).length > 0 || (E.hasLivre && E.hasLivre()) || (E.hasQuestions && E.hasQuestions()) || (E.hasSignes && E.hasSignes());
@@ -867,7 +869,7 @@
       if (on && !d) { d = document.createElement("i"); d.className = "dot"; b.appendChild(d); }
       if (!on && d) d.remove();
     });
-    for (const k of ["arbre", "carnet", "journal"]) {
+    for (const k of ["atelier", "arbre", "journal"]) {
       const jb = $('#tabs [data-tab="' + k + '"]'), on = tabAvailable(k);
       if (on && jb.classList.contains("hidden") && U.tabsSeen) jb.classList.add("born"); // il vient d’apparaître
       jb.classList.toggle("hidden", !on);
@@ -919,18 +921,19 @@
     }
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
+    else if (U.tab === "labo") el.innerHTML = viewLabo();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
     else if (U.tab === "arbre") Atl.arbreRendre(el); // l’arbre se redessine lui-même (js/arbre.js), seulement s’il a changé
     else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
-    else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = Carte.view(); el.dataset.sig = g; } }
+    else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = '<div class="carte-retour"><button type="button" class="btn small" data-tab2="domaine">← Terres</button></div>' + Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") {
       if (U.cosmosTab === "figures") { const g = figuresSig(); if (el.dataset.sig !== g) { el.innerHTML = viewCosmos(); el.dataset.sig = g; mountCosmos(); } } // sans rien de vivant : on ne redessine que si quelque chose change
       else { delete el.dataset.sig; el.innerHTML = viewCosmos(); mountCosmos(); }
     }
     iconize(el);
-    if (U.tab === "atelier") { // la rangée des actions garde sa place d’un rendu à l’autre, et l’action choisie reste visible
+    if (U.tab === "labo") { // la rangée des actions garde sa place d’un rendu à l’autre, et l’action choisie reste visible
       const gs = $(".gestes", el);
       if (gs) { gs.scrollLeft = U.gScroll || 0; const on = $(".geste.on", gs); if (on && (on.offsetLeft < gs.scrollLeft || on.offsetLeft + on.offsetWidth > gs.scrollLeft + gs.clientWidth)) gs.scrollLeft = Math.max(0, on.offsetLeft - 12); }
     }
@@ -945,7 +948,7 @@
     // ce qu’on vient de toucher ne doit pas sauter : si un bloc s’est inséré au-dessus, on suit
     if (anc) { const a2 = findAnchor(el, U.anchor); if (a2) $("#views").scrollTop += a2.getBoundingClientRect().top - ay; }
     U.anchor = null;
-    if (U.tab === "atelier") { S().flags.bench = { g: U.geste, s: U.slots.slice() }; updMini(); }
+    if (U.tab === "labo") { S().flags.bench = { g: U.geste, s: U.slots.slice() }; updMini(); }
     if (fsel) { const f = el.querySelector(fsel); if (f && f !== document.activeElement) f.focus({ preventScroll: true }); }
     if (fnom) { const f = Array.from(el.querySelectorAll('[role="button"]')).find((x) => x.getAttribute("aria-label") === fnom); if (f) f.focus({ preventScroll: true }); }
     if (focus) { const f = document.getElementById(focus.id); if (f) { f.focus(); try { f.setSelectionRange(focus.s, focus.e); } catch (e) { /* champ sans sélection */ } } }
@@ -981,7 +984,7 @@
     const atlasSheet = document.getElementById("atlasStylesheet");
     if (atlasSheet && !atlasSheet.disabled) m.style.top = Math.ceil($("#top").getBoundingClientRect().bottom + 6) + "px";
     const out = b.getBoundingClientRect().bottom < $("#views").getBoundingClientRect().top + 24;
-    m.classList.toggle("hidden", !(out && U.tab === "atelier" && U.slots.some(Boolean)));
+    m.classList.toggle("hidden", !(out && U.tab === "labo" && U.slots.some(Boolean)));
   }
   /* la musique suit l’âge, l’ambiance suit l’endroit */
   function soundScene() {
@@ -1110,8 +1113,8 @@
     if (U.tab === "domaine") { Dom.live($("#v-domaine")); soundScene(); }
     if (U.tab === "machines") { Dom.live($("#v-machines")); soundScene(); }
     if (U.tab === "carte") Carte.live($("#v-carte"));
-    if (U.tab === "atelier") {
-      if(Atl.equipmentLive)Atl.equipmentLive();
+    if (U.tab === "labo" && Atl.equipmentLive) Atl.equipmentLive();
+    if (U.tab === "labo") {
       const f = $("#forge");
       if (f) f.disabled = !U.slots.some(Boolean);
     }
@@ -1323,7 +1326,7 @@
     uiSigne, memoryHTML
   });
   const {
-    viewAtelier, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML,
+    viewAtelier, viewLabo, prodClick, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML,
     handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty,
     promptCraftQty
   } = Atl;
@@ -1338,7 +1341,7 @@
     App, E, A, D, U, Dom, Carte, esc, fmt, zoneName, deZone, icon, fxText, mainIngredient, floater, sparks, fete, fireworks,
     elCenter, toast, vibe, fresh, openModal, closeModal, simpleModal, render, refresh, save, setTab, badge,
     updateBadges, updMini, anchorFor, applyAge, applyUpdate, showOffline, stampHTML, recitInline, recitHTML, loreHTML,
-    FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
+    prodClick, FOU, explore, goalOpen, openMilestones, openQuestsModal, pour, openSigneModal, confirmFire, listen, skyTap,
     playNote, runTerminal, openMemoire, openDons, openForcedReleve, confirmCycle, showEnding, openStillnessScene,
     openMenu, openAccount, downloadSave, promptCapsuleText, goto, openItemInfo, carnetList, whyNot, putInSlot, forge,
     craftFrom, chainCraft, startHarvest, actBar, skillName, openSkills, openHands, openTree, promptCarnetQty, promptCraftQty
