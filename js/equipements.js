@@ -151,7 +151,7 @@
       if (!parts.length) return null;
       const key = parts.join(",");
       const place = E.workplaceFor(equipment);
-      // 1. Exact ingredient match on the same workplace (different mode or different tool of that workplace)
+      // 1. Correspondance exacte sur le même poste (autre mode ou autre outil)
       const samePlace = Object.keys(cfg.recipes).filter(id => E.ageOK(id) && Object.keys(E.item(id).r[1]).sort().join(",") === key && cfg.recipes[id].some(c => E.workplaceFor(c.equipment) === place));
       if (samePlace.length) {
         const c = cfg.recipes[samePlace[0]].find(x => E.workplaceFor(x.equipment) === place) || cfg.recipes[samePlace[0]][0];
@@ -164,7 +164,7 @@
             : "Les matières et l’outil sont exacts : essaie une autre allure ou un autre geste de cet outil."
         };
       }
-      // 2. Exact ingredient match on another workplace (or in post-Copper recipes)
+      // 2. Correspondance exacte sur un autre poste
       const otherPlace = Object.keys(cfg.recipes).filter(id => E.ageOK(id) && Object.keys(E.item(id).r[1]).sort().join(",") === key);
       if (otherPlace.length) {
         const c = cfg.recipes[otherPlace[0]][0];
@@ -175,13 +175,34 @@
           text: "Ces matières forment bien une recette de ton âge, mais sur un autre poste (" + targetPlace + ")."
         };
       }
-      // 3. Partial ingredient match for this exact (equipment, mode)
+      // 3. Ingrédient superflu : bonnes matières pour cet outil et ce geste, mais matière en trop
+      const exactModeSuper = Object.keys(cfg.recipes).filter(id => {
+        if (!E.ageOK(id) || E.state.known[id]) return false;
+        if (!cfg.recipes[id].some(c => c.equipment === equipment && c.mode === mode)) return false;
+        const req = Object.keys(E.item(id).r[1]);
+        return req.length >= 2 && req.every(r => parts.includes(r)) && parts.length > req.length;
+      });
+      if (exactModeSuper.length) {
+        return {
+          heat: "brulant",
+          label: "🔥 Brûlant",
+          text: "Cet outil et ce geste reconnaissent ces matières, mais l’une d’entre elles est superflue sur l’établi."
+        };
+      }
+      // 5. Ingrédients partiels pour cet outil et ce geste : préciser le nombre attendu
       const partial = Object.keys(cfg.recipes).filter(id => E.ageOK(id) && !E.state.known[id] && cfg.recipes[id].some(c => c.equipment === equipment && c.mode === mode) && parts.some(p => E.item(id).r[1][p]));
       if (partial.length) {
+        const bestCand = partial.map(id => Object.keys(E.item(id).r[1])).sort((a,b) => b.length - a.length)[0];
+        const totalCount = bestCand.length;
+        const matchedCount = parts.filter(p => bestCand.includes(p)).length;
+        const missingCount = Math.max(1, totalCount - matchedCount);
+        const textDetail = totalCount > 1
+          ? "Cet outil et ce geste travaillent bien ces matières, mais il manque " + missingCount + " ingrédient" + (missingCount > 1 ? "s" : "") + " (" + totalCount + " matières attendues)."
+          : "Cet outil et ce geste travaillent bien l’une de ces matières, mais la combinaison d’ingrédients est incomplète.";
         return {
           heat: "tiede",
           label: "🌤️ Tiède",
-          text: "Cet outil et ce geste travaillent bien l’une de ces matières, mais la combinaison d’ingrédients est incomplète."
+          text: textDetail
         };
       }
       return {

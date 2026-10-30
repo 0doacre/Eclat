@@ -18,20 +18,24 @@ flowchart LR
     end
 ```
 
-### Détail des 4 évolutions du prototype :
-1. **Le Thermomètre équipé (`E.equipmentThermometer` dans [`js/equipements.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/equipements.js#L149-L194))** :
+### Détail des 6 évolutions du prototype :
+1. **Le Thermomètre équipé enrichi & Réminiscence ([`js/equipements.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/equipements.js#L149-L210) & [`js/atelier-equipe.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/atelier-equipe.js#L260-L265))** :
    - Sans violer l'isolation stricte des tests (aucune dépense ni révélation prématurée en cas de mauvais outil), tout essai infructueux affiche désormais un vrai retour thermique gradué dans `#ae-result` :
-     - **🔥 Brûlant** : les matières sont exactes pour ce poste, mais il faut changer d'outil sur ce poste ou changer l'allure (ex. *Chauffer doucement* au lieu de *Cuire* sur le Foyer).
+     - **🔥 Brûlant** : matières exactes pour ce poste (mais autre outil ou autre allure), **OU matière superflue** détectée (*« Cet outil et ce geste reconnaissent ces matières, mais l’une d’entre elles est superflue sur l’établi. »*).
      - **🌡️ Chaud** : les matières forment bien une recette de l'âge actuel, mais sur un autre poste de travail (indiqué au joueur).
-     - **🌤️ Tiède** : cet outil et ce geste travaillent bien l'une des matières posées, mais la combinaison d'ingrédients est incomplète.
+     - **🌤️ Tiède** : cet outil et ce geste travaillent bien l'une des matières posées, avec décompte des ingrédients manquants et attendus (*« il manque N ingrédient(s) (M matières attendues). »*).
      - **❄️ Froid** : aucune réaction entre cet outil et ces matières.
+   - **Récompense de Réminiscence** : les essais chauds et brûlants nourrissent l'apprentissage via `E.remember(w.mode, w.slots)`.
 2. **Continuité après le Cuivre : le poste « Grand Atelier (Âges 4+) » intégré dans [`js/atelier-equipe.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/atelier-equipe.js#L17-L56)** :
    - Plus besoin de quitter l'Atelier V2 à l'Âge 4 : un poste **« Grand Atelier (Âges 4+) »** apparaît directement dans la barre des postes `.ae-posts` et permet de fabriquer et découvrir les 180 recettes du Bronze au Stellaire dans la même interface dessinée.
 3. **Ergonomie mobile repensée dans [`css/atelier-equipe.css`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/css/atelier-equipe.css#L57-L60)** :
    - Sur mobile (`<= 1100px`), le sélecteur d'outils `.ae-tools` passe **au-dessus** des 3 emplacements de l'établi (`order: -1`) sous forme de bandeau horizontal compact, suivant l'ordre naturel du geste : **Poste → Outil → Matières → Action**.
-4. **Ouvrier autonome et encart économique repliable ([`js/atelier-economie.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/atelier-economie.js#L53-L63) & [`js/atelier-equipe.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/atelier-equipe.js#L98-L103))** :
-   - Ajout d'une case **« Réapprovisionner l'avance »** (`#ae-autofund`, `E.workerAutoFund`) et d'un bouton **« Avancer 5 écus »** : tant que la bourse contient au moins 1 écu (alimentée par le marchand), l'ouvrier ne tombe plus en panne toutes les 56 secondes.
-   - L'encart *Faire vivre l'atelier* est placé dans un `<details class="ae-eco-details">` repliable pour ne plus repousser les *Commandes* tout en bas de l'écran sur téléphone.
+4. **Rethématisation narrative de l'Apprenti & Monnaie d'époque (`currencyName(age)`)** :
+   - Remplacement du vocabulaire fiscal/industriel anachronique par **Apprenti**, **part réservée** et **accueillir**.
+   - Monnaie dynamique : *rations de troc* (0–1), *coquillages* (2–3), *écus* (4–6), *florins* (7–8), *crédits* (9+).
+5. **Apprenti autonome et encart économique repliable ([`js/atelier-economie.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/atelier-economie.js#L53-L63) & [`js/atelier-equipe.js`](file:///C:/Users/sylva/OneDrive/Documents/ChatGPT/Eclat/gemini-preview/js/atelier-equipe.js#L98-L103))** :
+   - Ajout d'une case **« Réapprovisionner la part réservée »** (`#ae-autofund`, `E.workerAutoFund`) et d'un bouton **« Avancer 5 [monnaie] »** : tant que la bourse contient au moins 1 unité de monnaie (alimentée par le troqueur), l'apprenti ne tombe plus en panne toutes les 56 secondes.
+   - L'encart économique est placé dans un `<details class="ae-eco-details">` repliable pour ne plus repousser les *Commandes* tout en bas de l'écran sur téléphone.
 
 ---
 

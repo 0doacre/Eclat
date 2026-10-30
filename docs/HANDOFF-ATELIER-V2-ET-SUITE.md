@@ -54,20 +54,26 @@ npm test                             # Exécute l'intégralité des suites (synt
 
 Suite aux playtests des 6 personas (Martine, Léa, Enzo, Thomas, Julien, Chloé) sur `prewiew-design`, un prototype fonctionnel a été implémenté sur la branche **`gemini/prototype-atelier-unifie-v2`** (dans `C:\Users\sylva\OneDrive\Documents\ChatGPT\Eclat\gemini-preview`).
 
-### Ce que résout ce prototype (4 améliorations ciblées) :
-1. **Thermomètre d'Atelier équipé rebranché (`E.equipmentThermometer` dans `js/equipements.js` & `js/atelier-equipe.js`)** :
-   - Sans modifier les invariants des tests existants (aucune mutation d'état ni révélation de nom sur un essai incompatible), `E.attemptWith` retourne désormais un objet `thermo` qui distingue 4 niveaux de chaleur :
-     - **🔥 Brûlant (`brulant`)** : matières exactes pour ce poste, mais autre outil du poste ou autre allure (ex. *Foyer* en cuisson vive au lieu de chauffe douce).
+### Ce que résout ce prototype (6 améliorations ciblées) :
+1. **Thermomètre d'Atelier équipé enrichi & Réminiscence (`E.equipmentThermometer` dans `js/equipements.js` & `js/atelier-equipe.js`)** :
+   - Sans modifier les invariants des tests existants (aucune mutation d'état ni révélation de nom sur un essai incompatible), `E.attemptWith` retourne un objet `thermo` précis et gratifiant qui distingue 4 niveaux de chaleur :
+     - **🔥 Brûlant (`brulant`)** :
+       - Matières exactes pour ce poste, mais autre outil du poste ou autre allure (ex. *Foyer* en cuisson vive au lieu de chauffe douce).
+       - **OU ingrédient superflu** : les bonnes matières de la recette sont présentes sur l'établi avec le bon outil et le bon geste, mais une matière en trop a été posée (*« Cet outil et ce geste reconnaissent ces matières, mais l’une d’entre elles est superflue sur l’établi. »*).
      - **🌡️ Chaud (`chaud`)** : matières exactes d'une recette de l'âge, mais sur un autre poste de travail (ex. *Établi* au lieu de *Foyer*).
-     - **🌤️ Tiède (`tiede`)** : au moins une matière posée entre dans une recette inconnue de cet outil et de ce geste, mais la combinaison est incomplète.
+     - **🌤️ Tiède (`tiede`)** : au moins une matière posée entre dans une recette inconnue de cet outil et de ce geste, avec décompte explicite du nombre de matières manquantes et attendues (*« Cet outil et ce geste travaillent bien ces matières, mais il manque N ingrédient(s) (M matières attendues). »*).
      - **❄️ Froid (`froid`)** : aucune réaction avec cet outil et ce geste.
+   - **Récompense de Réminiscence (`E.remember`)** : dans `forge()`, tout essai chaud ou brûlant déclenche la Réminiscence de l'établi, faisant avancer le carnet d'apprentissage du Semeur sans frustration en cas d'échec proche.
 2. **Continuité multi-âges sans quitter l'Atelier V2 (`Grand Atelier (Âges 4+)` dans `js/atelier-equipe.js`)** :
    - Dès `S.age >= 3`, un poste **« Grand Atelier (Âges 4+) »** apparaît directement dans la barre des postes `.ae-posts`.
    - Il expose tous les gestes/procédés débloqués des âges avancés (`Allier`, `Marteler`, `Chauffer`, `Distiller`, `Électriser`, `Synthétiser`, etc.) dans la même interface V2, sans forcer le joueur à basculer vers l'ancien écran V1.
 3. **Ergonomie mobile repensée (`css/atelier-equipe.css`)** :
    - Sur mobile (`@media(max-width:1100px)`), `.ae-tools` passe au-dessus des emplacements (`order: -1`) sous forme de bandeau horizontal compact : l'œil et le pouce suivent l'ordre naturel **Poste → Outil → Emplacements → Action → Matières**.
-4. **Encart « Faire vivre l'atelier » repliable et sans blocage de salaire (`js/atelier-economie.js` & `js/atelier-equipe.js`)** :
-   - Ajout de `E.workerAutoFund(on)` (case à cocher *« Réapprovisionner l'avance »* `#ae-autofund` + bouton *« Avancer 5 écus »* `[data-ae="fund5"]`) : tant que le joueur a au moins 1 écu en bourse (notamment grâce aux ventes du marchand), l'ouvrier renouvelle automatiquement son avance au lieu de tomber en panne toutes les 56 secondes.
+4. **Rethématisation narrative de l'Apprenti & Monnaies d'époque (`currencyName(age)`)** :
+   - Remplacement du vocabulaire fiscal et industriel anachronique : l'« ouvrier » devient un **Apprenti**, son « salaire » devient une **part réservée**, et « embaucher » devient **accueillir**.
+   - La monnaie d'atelier s'adapte dynamiquement selon l'âge : *rations de troc* (Âges 0–1), *coquillages* (Âges 2–3), *écus* (Âges 4–6), *florins* (Âges 7–8), *crédits* (Âges 9+).
+5. **Encart « Part de l'apprenti » repliable et sans blocage de travail (`js/atelier-economie.js` & `js/atelier-equipe.js`)** :
+   - Ajout de `E.workerAutoFund(on)` (case à cocher *« Réapprovisionner la part réservée »* `#ae-autofund` + bouton *« Avancer 5 [monnaie] »* `[data-ae="fund5"]`) : tant que le joueur a au moins 1 unité de monnaie en bourse (alimentée par les ventes du troqueur/marchand), l'apprenti renouvelle automatiquement son avance au lieu de tomber en panne toutes les 56 secondes.
    - L'encart économique est encapsulé dans un `<details class="ae-eco-details">` repliable pour libérer la hauteur d'écran sur mobile.
 
 ---

@@ -328,6 +328,12 @@ test("le thermomètre équipé distingue Brûlant, Chaud, Tiède et Froid sans r
   // Froid : aucune correspondance
   const f=E.attemptWith("feu","etouffee",["caillou","manche"]);
   assert.equal(f.thermo.heat,"froid");
+  // Superflu : bonnes matières d'archet (manche + corde) + intrus (argile)
+  const sup=E.attemptWith("mains","assembler",["manche","corde","argile"]);
+  assert.equal(sup.thermo.heat,"brulant");
+  assert.ok(sup.thermo.text.includes("superflue"));
+  // Indication du nombre d'ingrédients manquants
+  assert.ok(t.thermo.text.includes("matières attendues"));
   assert.equal(E.serialize(),before);
 });
 console.log(checks+" contrôles du profil équipements réussis.");
