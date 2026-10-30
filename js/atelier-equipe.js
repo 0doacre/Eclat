@@ -38,6 +38,7 @@
         cadence:"Maintenir un stock de 100 "+name(value)+" avec les machines au repos",
         cadence_toggle:"Mettre en pause ou réactiver la cadence automatique pour : "+name(value),
         cadence_cap:"Ajuster le plafond de stock maintenu par les machines (25, 50, 100, 250, 500)",
+        cadence_del:"Retirer le maintien automatique de stock pour : "+name(value),
         build:"Aménager l’établi pour accueillir un apprenti",
         hire:"Inviter un apprenti avec les "+cur+" de ta bourse",
         fund:"Réserver 1 part pour l’apprenti",
@@ -153,16 +154,41 @@
       }
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
+      const cads=E.cadences?E.cadences():[];
+      const cadsMap=Object.fromEntries(cads.map(c=>[c.id,c]));
+      if(cads.length){
+        const activeCount=cads.filter(c=>c.on&&c.status!=="off").length;
+        const totalMachs=cads.reduce((acc,c)=>acc+c.machs,0);
+        h+='<section class="card ae-cadences-panel"><details class="ae-cadences-details" open><summary class="ae-eco-summary" title="Afficher ou replier l’état des cadences de machines"><h3>⚙️ Cadences des machines ('+cads.length+')</h3><span class="small muted">'+activeCount+' active(s) · '+totalMachs+' mach.</span></summary><div class="ae-cad-grid">'+cads.map(c=>{
+          let stBadge='';
+          if(c.status==="ok") stBadge='<span class="ae-cad-badge ae-badge-ok">▸ '+c.machs+' mach. · +'+(api.perMin?api.perMin(c.rate):Math.round(c.rate*60)+'/min')+'</span>';
+          else if(c.status==="full") stBadge='<span class="ae-cad-badge ae-badge-full">✓ Plein ('+(api.fmt?api.fmt(c.cap):c.cap)+')</span>';
+          else if(c.status==="starved") stBadge='<span class="ae-cad-badge ae-badge-warn">⚠️ Manque : '+c.miss.map(m=>esc(name(m))).join(', ')+'</span>';
+          else if(c.status==="busy") stBadge='<span class="ae-cad-badge ae-badge-muted">⏳ Machines occupées</span>';
+          else if(c.status==="nomach") stBadge='<span class="ae-cad-badge ae-badge-warn">⚠️ Pas de machine</span>';
+          else stBadge='<span class="ae-cad-badge ae-badge-off">⏸️ En pause</span>';
+          return '<div class="ae-cad-card"><div class="ae-cad-info">'+icon(c.id,"sm")+'<div class="ae-cad-names"><b>'+esc(name(c.id))+'</b><span class="ae-cad-stock">'+(api.fmt?api.fmt(c.have):c.have)+' / '+(api.fmt?api.fmt(c.cap):c.cap)+'</span></div><div>'+stBadge+'</div></div><div class="ae-cad-acts">'+button("cadence_toggle",c.id,c.on?"⏸️":"▶️","mini ghost")+button("cadence_cap",c.id,c.cap+" ▾","mini ghost")+button("cadence_del",c.id,"✕","mini ghost")+'</div></div>';
+        }).join('')+'</div></details></section>';
+      }
       if(known.length)h+='<section class="card"><details class="ae-known-details" open><summary class="ae-eco-summary" title="Afficher ou replier les recettes déjà maîtrisées sur ce poste"><h3>Recettes déjà maîtrisées sur ce poste ('+known.length+')</h3><span class="small muted">Fabrication rapide</span></summary><div class="ae-known">'+known.map(id=>{
         const canCadence=E.automatable&&E.automatable(id)&&(E.hasEchoFin("retour")||!(D.COMMANDES?.firstByHand)||(s.made[id]>0));
         const cad=s.dom?.cadence?.[id];
+        const c=cadsMap[id];
         let cadBtn='';
         if(canCadence){
           if(cad&&cad.on!==false)cadBtn=button("cadence_toggle",id,"⚙️ Actif","small pri",false)+button("cadence_cap",id,(cad.cap||100)+" ▾","small ghost",false);
           else if(cad&&cad.on===false)cadBtn=button("cadence_toggle",id,"⏸️ Pause","small ghost",false)+button("cadence_cap",id,(cad.cap||100)+" ▾","small ghost",false);
           else cadBtn=button("cadence",id,"⚙️ Cadencer","small ghost",false);
         }
-        return '<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+cadBtn+'</div>';
+        let stLine='';
+        if(cad&&c){
+          if(c.status==="starved") stLine='<div class="ae-known-cad-status ae-badge-warn">⚠️ Matières manquantes : '+c.miss.map(m=>esc(name(m))).join(', ')+'</div>';
+          else if(c.status==="ok") stLine='<div class="ae-known-cad-status ae-badge-ok">⚙️ '+c.machs+' mach. · +'+(api.perMin?api.perMin(c.rate):Math.round(c.rate*60)+'/min')+' (stock : '+(api.fmt?api.fmt(c.have):c.have)+'/'+(api.fmt?api.fmt(c.cap):c.cap)+')</div>';
+          else if(c.status==="full") stLine='<div class="ae-known-cad-status ae-badge-full">✓ Réserve pleine ('+(api.fmt?api.fmt(c.have):c.have)+'/'+(api.fmt?api.fmt(c.cap):c.cap)+')</div>';
+          else if(c.status==="busy") stLine='<div class="ae-known-cad-status ae-badge-muted">⏳ Machines occupées sur les commandes ('+(api.fmt?api.fmt(c.have):c.have)+'/'+(api.fmt?api.fmt(c.cap):c.cap)+')</div>';
+          else if(c.status==="off") stLine='<div class="ae-known-cad-status ae-badge-off">⏸️ En pause ('+(api.fmt?api.fmt(c.have):c.have)+'/'+(api.fmt?api.fmt(c.cap):c.cap)+')</div>';
+        }
+        return '<div class="ae-cad-item-row"><div class="ae-cad-item-btns">'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+cadBtn+'</div>'+stLine+'</div>';
       }).join("")+'</div></details></section>';
       if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details"><summary class="ae-eco-summary" title="Afficher ou replier la bourse, l’apprenti et les surplus de lanières"><h2>Faire vivre l’atelier</h2><span class="small muted">'+(e.hired?(e.working?'Apprenti actif':'Apprenti en pause'):'Apprenti')+' · '+money(E.state.ecus)+'</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
@@ -172,7 +198,7 @@
       }
       return h;
     }
-    function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve();return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentDiscoveryOnly===true,s.settings.equipmentStockOnly===true,s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,lastHeat]);}
+    function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve(),cadsSnap=E.cadences?E.cadences().map(c=>c.id+':'+c.have+':'+c.machs+':'+c.status).join(';'):'';return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentDiscoveryOnly===true,s.settings.equipmentStockOnly===true,s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,cadsSnap,lastHeat]);}
     function redraw(){U.dirty=true;render(true);live();save();}
     function view(){signature=sig();return api.subTabs("atelier","machines","Découvrir","Machines")+api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
     function live(){const r=root();if(!r||U.tab!=="atelier"||U.equipmentLegacy)return;
@@ -311,6 +337,13 @@
             message="Plafond de maintien ajusté à "+nextCap+" pour "+name(id)+".";
             if(typeof toast==="function")toast(message);
           }
+        }
+      }
+      else if(action==="cadence_del"){
+        if(E.setCadence){
+          E.setCadence(id,null);
+          message="Maintien de stock retiré pour "+name(id)+".";
+          if(typeof toast==="function")toast(message);
         }
       }
       else if(action==="build"){E.learn("etabli_amenage",true);message=E.order("etabli_amenage",1).ok?"Aménagement en cours.":"Consulte les matériaux requis dans le Carnet.";}

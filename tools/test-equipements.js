@@ -356,5 +356,14 @@ test("l'atelier permet de cadencer directement une recette automatisable maîtri
   E.setCadence("manche", nextCap, true);
   assert.equal(E.state.dom.cadence.manche.cap, nextCap);
   assert.equal(E.state.dom.cadence.manche.on, true);
+  // Diagnostic des cadences (Pack 3 QoL)
+  const cads = E.cadences();
+  assert.ok(Array.isArray(cads));
+  const mancheCad = cads.find(c => c.id === "manche");
+  assert.ok(mancheCad, "La cadence manche doit figurer dans le diagnostic");
+  assert.equal(mancheCad.cap, nextCap);
+  // Retrait de la cadence
+  E.setCadence("manche", null);
+  assert.equal(E.state.dom.cadence?.manche, undefined, "La cadence doit être retirée");
 });
 console.log(checks+" contrôles du profil équipements réussis.");

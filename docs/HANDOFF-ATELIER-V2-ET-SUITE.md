@@ -129,3 +129,21 @@ Suite aux playtests des 6 personas (Martine, Léa, Enzo, Thomas, Julien, Chloé)
      - Bascule interactive de zoom 🔍 Agrandir / 🔎 Ajuster pour examiner les détails des lavis, du papier et de l'encre à 150 % avec panoramique fluide.
      - Cartouche poétique avec citation d'observation de la terre, ressources locales et état des explorations.
      - Son doux de feuilletage (A.page()) à l'ouverture.
+
+---
+
+## 7. Pack 3 QoL : « Diagnostic & Contrôle des Cadences » (Déployé)
+
+1. **Panneau synthétique des cadences actives dans l'établi (.ae-cadences-panel)** :
+   - Dès qu'au moins une recette est cadencée, un panneau dédié apparaît au-dessus des recettes maîtrisées dans l'Atelier.
+   - Présentation claire de chaque flux de maintien automatique :
+     - Nom de l'objet et jauge textuelle temps réel : stock actuel / plafond choisi.
+     - Badge d'état dynamique :
+       - ▸ N mach. · +X/min en vert doux quand la production automatique tourne.
+       - ✓ Plein (cap) quand la réserve a atteint son seuil de consigne.
+       - ⚠️ Manque : [matières] en alerte orange douce lorsque des ingrédients manquent pour approvisionner les machines.
+       - ⏳ Machines occupées lorsque les automates sont réquisitionnés par une commande manuelle prioritaire.
+       - ⏸️ En pause si la cadence est suspendue.
+     - Actions rapides en 1 clic : bascule Pause / Reprendre (⏸️ / ▶️), réglage rotatif du plafond (25, 50, 100, 250, 500), et suppression directe (✕).
+2. **Diagnostic en ligne sous les recettes maîtrisées (.ae-known)** :
+   - Chaque recette maîtrisée cadencée affiche directement sous ses boutons son état opérationnel (alerte de matières manquantes ou débit machine temps réel), évitant tout aller-retour avec le Domaine.
