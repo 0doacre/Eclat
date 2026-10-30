@@ -139,3 +139,8 @@
 .ae-etude { display: flex; gap: 6px; align-items: center; }
 #v-labo .ae-stock { gap: 6px; }
 .atelier-equipe [hidden] { display: none; }
+
+/* Progression : le sélecteur reste en haut, la page défile dessous */
+#v-arbre .prog-sw { flex: none; display: flex; gap: 6px; overflow-x: auto; padding: 6px 8px; border-bottom: 1px solid var(--line2); }
+#v-arbre .prog-sw button { flex: none; min-height: 40px; }
+#v-arbre .prog-corps { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px; }

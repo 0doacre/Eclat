@@ -10,7 +10,7 @@
       E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
       iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
       floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
-      uiSigne, memoryHTML
+      uiSigne, memoryHTML, progSwitchHTML
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -706,7 +706,7 @@
       U.arbreG = Arb.graphe(E, D);
       // une piste (fantôme) change de clé quand l’arbre change : la feuille ouverte sur elle se ferme
       if (U.arbreSel && ((ancien && ancien.etat === 'fantome' && el.dataset.sig !== signature) || !U.arbreG.noeuds.some((n) => n.cle === U.arbreSel))) { U.arbreSel = null; U.arbreHistorique = []; if (U.mcur && U.mcur.arbre) closeModal(); }
-      el.innerHTML = arbreBarre(U.arbreG) + '<div id="arbre" class="arb-vue" tabindex="0" aria-label="Arbre des connaissances, défilement vertical">' + arbreEnsemble(U.arbreG) + '</div>';
+      el.innerHTML = progSwitchHTML() + arbreBarre(U.arbreG) + '<div id="arbre" class="arb-vue" tabindex="0" aria-label="Arbre des connaissances, défilement vertical">' + arbreEnsemble(U.arbreG) + '</div>';
       el.dataset.sig = arbreSignature(U.arbreG);
       el.querySelector('#arbre').scrollTop = scroll;
       el.querySelectorAll('details[data-arbage]').forEach((d) => d.addEventListener('toggle', () => { if (d.isConnected) (U.arbreAges || (U.arbreAges = {}))[d.dataset.arbage] = d.open; }));
@@ -744,7 +744,7 @@
       return Arb.sig(g) + '|' + (E.milestones()[S().age] || []).map((x) => x.done ? 1 : 0).join('') + '|' + (E.objective() || {}).i + '|' + g.noeuds.map((n) => S().made[n.id] > 0 ? 1 : 0).join('');
     }
     function arbreMaj() {
-      const el = arbreEl(); if (!el || !Arb || U.tab !== 'arbre') return;
+      const el = arbreEl(); if (!el || !Arb || U.tab !== 'arbre' || (U.progTab && U.progTab !== 'chemin')) return;
       const g = Arb.graphe(E, D);
       if (el.dataset.sig !== arbreSignature(g)) arbreBati(el);
     }

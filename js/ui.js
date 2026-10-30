@@ -896,6 +896,14 @@
       '<button data-tab2="' + t + '" title="' + (SUBT[t] || "") + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
     ).join("") + "</div>";
   }
+  /* la Progression : le Chemin (l’arbre), puis ce que le joueur a accompli */
+  function progSwitchHTML() {
+    if (!U.progTab) U.progTab = "chemin";
+    const items = [["chemin", "Chemin", "Ce qui est fait, ce qui reste"], ["secrets", "Secrets", "Ce que tu as trouvé, sans rien révéler de plus"], ["gestes", "Gestes" + (E.hasNewGeste && E.hasNewGeste() ? " •" : ""), "Tes gestes remarqués et leurs niveaux"]];
+    if (E.curiosCount && E.curiosCount() > 0) items.push(["curios", "Clins d’œil", "Les petits secrets trouvés en chemin"]);
+    items.push(["fins", "Fins", "Les dénouements atteints et les Échos"], ["stats", "Mémoire", "Tes totaux, ton nom, tes réminiscences"]);
+    return '<div class="filters prog-sw" role="group" aria-label="Progression">' + items.map(([k, n, t]) => '<button type="button" data-pt="' + k + '" title="' + t + '" class="' + (U.progTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+  }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); if (PARENT[t] === U.tab) render(true); } }
 
   /* un doigt reste appuyé sur une matière (sa fiche va s’ouvrir) : on ne redessine pas dessous */
@@ -925,7 +933,10 @@
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "labo") el.innerHTML = viewLabo();
     else if (U.tab === "carnet") el.innerHTML = viewCarnet();
-    else if (U.tab === "arbre") Atl.arbreRendre(el); // l’arbre se redessine lui-même (js/arbre.js), seulement s’il a changé
+    else if (U.tab === "arbre") { // la Progression : le chemin (l’arbre se redessine lui-même, js/arbre.js) ou une page de ce que le joueur a accompli
+      if (!U.progTab || U.progTab === "chemin") Atl.arbreRendre(el);
+      else { delete el.dataset.sig; el.innerHTML = progSwitchHTML() + '<div class="prog-corps">' + viewJournal("progression") + "</div>"; }
+    }
     else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = '<div class="carte-retour"><button type="button" class="btn small" data-tab2="domaine">← Terres</button></div>' + Carte.view(); el.dataset.sig = g; } }
@@ -1325,7 +1336,7 @@
     E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
     iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
     floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
-    uiSigne, memoryHTML
+    uiSigne, memoryHTML, progSwitchHTML
   });
   const {
     viewAtelier, viewLabo, prodClick, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML,

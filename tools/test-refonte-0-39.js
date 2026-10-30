@@ -86,10 +86,10 @@ console.log(passed + " tests de la refonte 0.39 réussis.");
 console.log("Refonte 0.39 : la page");
 const fs = require("fs"), path = require("path");
 const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
-test("la barre d’onglets a cinq onglets : Terres, Labo, Atelier, Arbre, Journal", () => {
+test("la barre d’onglets a cinq onglets : Terres, Labo, Atelier, Progression, Journal", () => {
   const nav = [...html.matchAll(/<nav id="tabs">([\s\S]*?)<\/nav>/g)][0][1];
   assert.deepEqual(nav.match(/data-tab="(\w+)"/g).map((x) => x.slice(10, -1)), ["domaine", "labo", "atelier", "arbre", "journal"]);
-  assert.deepEqual([...nav.matchAll(/<span>([^<]+)<\/span>/g)].map((x) => x[1]), ["Terres", "Labo", "Atelier", "Arbre", "Journal"]);
+  assert.deepEqual([...nav.matchAll(/<span>([^<]+)<\/span>/g)].map((x) => x[1]), ["Terres", "Labo", "Atelier", "Progression", "Journal"]);
 });
 test("chaque onglet a sa vue, et les sous-pages (Atlas, Carnet, Machines) gardent la leur", () => {
   for (const v of ["domaine", "labo", "atelier", "arbre", "journal", "carte", "carnet", "machines"]) assert.ok(html.includes('id="v-' + v + '"'), v);

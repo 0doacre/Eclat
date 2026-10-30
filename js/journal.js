@@ -138,9 +138,10 @@
     }
 
     /* ------------------------------------------------------------ JOURNAL */
-    function viewJournal() {
+    function viewJournal(mode) {
       const st = S();
-      const tabs = [["fragments", "Fragments"]];
+      const prog = mode === "progression";
+      let tabs = [["fragments", "Fragments"]];
       const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
       const gestesNew = E.hasNewGeste ? E.hasNewGeste() : false;
       if ((E.hasLivre && E.hasLivre()) || E.transmission().ecrire) tabs.push(["livre", "Livre" + (livreNew ? " •" : "")]);
@@ -151,10 +152,13 @@
       if (E.has("flute")) tabs.push(["flute", "Flûte"]);
       if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Clins d’œil"]);
       tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
-      if (!tabs.find((t) => t[0] === U.journalTab)) U.journalTab = "fragments";
+      tabs = tabs.filter(([k]) => prog === ["secrets", "gestes", "curios", "fins", "stats"].includes(k));
+      let cur = prog ? U.progTab : U.journalTab;
+      if (!tabs.find((t) => t[0] === cur)) cur = tabs[0][0];
+      if (prog) U.progTab = cur; else U.journalTab = cur;
       const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", gestes: "Les gestes remarqués et accomplis au fil de ta route", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
-      let h = (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (U.journalTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
-      if (U.journalTab === "fragments") {
+      let h = prog ? "" : (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      if (cur === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
         const n = ids.filter((f) => st.frags[f]).length;
         h += '<p class="small muted">' + n + "/" + ids.length + " fragments de l’histoire retrouvés.</p>";
@@ -169,7 +173,7 @@
           h += '<h3 class="sub">Encore à découvrir</h3>';
           for (const k in miss) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow">' + esc(k) + '<div class="tiny muted">' + miss[k] + " fragment" + (miss[k] > 1 ? "s" : "") + "</div></div></div>";
         }
-      } else if (U.journalTab === "livre") {
+      } else if (cur === "livre") {
         h += window.EclatTransmission.html(E, U, esc);
         const cases = E.livre ? E.livre() : [];
         const foundCount = cases.filter((c) => c.page).length;
@@ -194,7 +198,7 @@
           fs.forEach((x) => { h += '<div class="card feuillet' + (x.nouveau ? " has-new" : "") + '"><div class="lore note-main" style="font-family:Caveat,cursive;font-size:19px">' + recitHTML(x.t, "Une feuille volante") + '</div><div class="tiny muted" style="text-align:right">' + recitInline(x.sig, "Une feuille volante") + "</div>" + stampHTML("l:" + x.id, true) + "</div>"; });
           if (fs.some((x) => x.nouveau) && E.readFeuillets) setTimeout(() => E.readFeuillets(), 1500);
         }
-      } else if (U.journalTab === "questions") {
+      } else if (cur === "questions") {
         const list = E.questions ? E.questions() : [];
         const sorted = list.slice().sort((a, b) => (a.resolu === b.resolu ? 0 : a.resolu ? 1 : -1));
         if (!sorted.length) {
@@ -226,7 +230,7 @@
           });
           h += '</div>';
         }
-      } else if (U.journalTab === "signes") {
+      } else if (cur === "signes") {
         const seen = E.seenSignes ? E.seenSignes() : [];
         const compris = seen.filter((s) => s.lu).length;
         h += '<p class="small muted">' + compris + "/" + seen.length + " signes compris.</p>";
@@ -246,7 +250,7 @@
           });
           h += '</div>';
         }
-      } else if (U.journalTab === "secrets") {
+      } else if (cur === "secrets") {
         const n = D.SECRETS.filter((s) => st.secrets[s.id]).length;
         h += '<p class="small muted">' + n + "/" + D.SECRETS.length + " secrets découverts. Relis les fragments : certains cachent un code.</p><div class=\"secret-grid\">";
         const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
@@ -256,7 +260,7 @@
           h += '<div class="sec' + (found ? "" : " unk") + '"><div class="k">' + s.k + "</div>" + (found ? esc(name) : "???") + "</div>";
         });
         h += "</div>";
-      } else if (U.journalTab === "gestes") {
+      } else if (cur === "gestes") {
         if (E.readGestes) E.readGestes();
         const list = E.gestesList ? E.gestesList() : [];
         const doneCount = list.filter((g) => g.done).length;
@@ -270,7 +274,7 @@
           }
         });
         h += '</div>';
-      } else if (U.journalTab === "flute") {
+      } else if (cur === "flute") {
         h += '<div class="card"><p class="small muted center">Un os creux percé de cinq trous. Touche-les pour jouer. Une pause de quelques secondes, et l’air recommence à zéro.</p><div class="flute-body"><div class="flute">' +
           [1, 2, 3, 4, 5].map((n) => '<button class="hole" data-note="' + n + '">' + n + "</button>").join("") + '</div></div><div class="notes" id="notes">' + st.notes.join(" · ") + "</div></div>";
         const known = (typeof E.melodies === "function") ? E.melodies() : Object.keys(D.MELODIES).filter((m) => st.secrets[m]).map((m) => ({ id: m, n: D.MELODIES[m].n, notes: D.MELODIES[m].notes }));
@@ -278,7 +282,7 @@
           h += '<h3 class="sub">Mélodies connues</h3><p class="tiny muted">Touche une mélodie pour la rejouer sur ta flûte.</p>';
           known.forEach((m) => { h += '<button class="frag" data-play="' + m.id + '"><span class="fi">🎶</span><div class="grow"><b>' + esc(m.n) + '</b><div class="tiny muted">' + (m.notes ? m.notes.join(" · ") : "Rejoue-le une fois pour retrouver ses notes.") + "</div></div></button>"; });
         } else h += '<p class="small muted">Tu ne connais encore aucune mélodie. Le monde t’en a peut-être déjà appris une sans que tu y fasses attention.</p>';
-      } else if (U.journalTab === "curios") {
+      } else if (cur === "curios") {
         h += '<p class="small muted">Des clins d’œil trouvés au fil de tes voyages. Ils ne servent à rien.</p><div class="curio-grid">';
         let rest = false;
         for (const id in D.EASTER) {
@@ -288,7 +292,7 @@
         }
         if (rest) h += '<div class="frag unk"><span class="fi">❔</span><div class="grow"><b>?</b><div class="tiny muted">Il y en a peut-être d’autres.</div></div></div>';
         h += '</div>';
-      } else if (U.journalTab === "fins") {
+      } else if (cur === "fins") {
         // le prestige, dit simplement : ce qu’on garde, ce qu’on gagne
         const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
         h += '<div class="card cyc"><b>✦ Relève, Traces et Échos</b><p class="small">Dès qu’un passage vers une nouvelle terre est franchi, tu peux passer le relais : un nouveau Semeur s’éveille. ' +

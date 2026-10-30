@@ -132,3 +132,11 @@ Gemini n'ayant pas livré l'interface (plus de jetons), Claude l'a faite. Mesur�
 5. **Habillage** : les CSS de Codex sont chargés, plus un fichier de raccords à moi (`css/refonte-0-39.css`). Pas de passe de finition sur téléphone réel, ni sur `Veillée`, ni sur les styles Atlas et Classique.
 6. **Atlas** : une page, pas une feuille plein cadre ; `aria-current="location"` non posé ; la classe `.terres-icone.is-traversee` est posée mais sans finition.
 7. **Critères de réception 3, 4, 5** : le 3 (récolte en un appui) est vérifié ; 4 (trouvaille en moins de 5 appuis) et 5 (apprenti en moins de 4) le sont à la main seulement, au clic JavaScript, pas à l'écran.
+
+## 12. Suite de la livraison (retours du porteur du projet, même jour)
+
+- **Atlas** : plus de pastille dans les Terres. La page de la Carte existe encore (lien du bandeau d'exploration), à supprimer ou à garder selon l'usage.
+- **Labo** : refait, établi seul. Un filtre à trois puces : **✦ Utiles** (matières qui peuvent encore donner une recette inconnue, faisable avec ce qui a été vu, avec l'outil et le geste choisis), **Tout**, **En réserve**. Les boutons de geste choisissent le geste quand l'établi est vide. `E.reactions` calcule l'utilité sans étude : l'étude (✨) ne conditionne plus que le ✦ d'une matière ; son intérêt est à repenser.
+- **Atelier** : quantités ×1 à ×1000 et Max, recettes en grille, bouton « Automatiser » (ordre permanent) ; l'apprenti de l'établi, sa bourse et le troc sont repliés en bas.
+- **Progression** (ex-Arbre, identifiant interne `arbre`) : Chemin, Secrets, Gestes, Clins d'œil, Fins, Mémoire. Le Journal garde le récit : Fragments, Livre, Questions, Signes, Flûte, Cosmos. `viewJournal(mode)` sert les deux.
+- Toujours à faire : indices de secrets (contenu du porteur du projet), chaînes de production (étude), tests Playwright (`tools/test-*-ui.js`, dont `test-filtre-decouverte-ui.js` qui vise l'ancien filtre).
