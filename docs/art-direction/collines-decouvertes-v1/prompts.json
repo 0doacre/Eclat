@@ -1,0 +1,41 @@
+[
+  {
+    "id": "rails",
+    "name": "Les Rails Rouillés · le Wagonnet",
+    "type": "plate",
+    "secret": false,
+    "prompt": "Use case: stylized-concept. Project-bound collectible discovery illustration for Éclat, a quiet melancholic explorer's field journal. One landscape 3:2 watercolor vignette, genuine transparent alpha outside softly irregular painted edges, no opaque paper rectangle. Natural brown-black pen drawing with delicate watercolor and drybrush, muted olive-green rounded hills, straw ochre grasses, pale gray rocky outcrops with restrained mineral-green veins. Soft hazy daylight, same coherent geography as gentle grassy hills striated with green and dark mineral seams. Main subject readable at 320px, generous transparent margins. No title, letters, UI, frame, neon, flashy magic, human figures or watermark. Subject from the game's actual story: two rusty parallel rails climb a grassy hillside and disappear into its slope. Halfway up the slope a small ancient rusty four-wheeled mine cart laden with green malachite rocks sits utterly still, moss growing on the load. No wedge, brake lever, stop block, chain, obstruction or stones under its wheels: the absence of anything holding it is the mystery. Three-quarter view looking slightly upslope. Matte reddish rust, worn iron, natural green ore, moss and grass reclaiming the track; this is an abandoned remnant, not a working industrial mine. No locomotive, rail network, people or modern buildings.",
+    "src": "../../../assets/carnet/discoveries/rails.webp",
+    "master": "masters/rails.png",
+    "width": 1280,
+    "height": 853,
+    "bytes": 486868,
+    "alpha": true
+  },
+  {
+    "id": "sommet",
+    "name": "La Vue du Sommet",
+    "type": "plate",
+    "secret": true,
+    "prompt": "Use case: stylized-concept. Project-bound collectible discovery illustration for Éclat, a quiet melancholic explorer's field journal. One landscape 3:2 watercolor vignette, genuine transparent alpha outside softly irregular painted edges, no opaque paper rectangle. Natural brown-black pen drawing with delicate watercolor and drybrush, muted olive-green rounded hills, straw ochre grasses, pale gray rocky outcrops with restrained mineral-green veins. Soft hazy daylight, same coherent geography as gentle grassy hills striated with green and dark mineral seams. Main subject readable at 320px, generous transparent margins. No title, letters, UI, frame, neon, flashy magic, human figures or watermark. Subject: view from a rocky summit over rolling green hills, far beyond them a few very distant broken ivy-covered towers rise softly through pale mist, higher than the hills and entirely without smoke. Foreground rocks shelter a small old gray stone tablet engraved with concentric circles and gear notches; tiny grouped tally cuts along one edge, no letters or legible numerals. The distant city is a faint troubling clue, not a giant skyline dominating the page. Wind-swept ochre grasses, lichen and gray rock in foreground. No intact fantasy castle, mountains replacing the gentle hills, active factories or technological glow.",
+    "src": "../../../assets/carnet/discoveries/sommet.webp",
+    "master": "masters/sommet.png",
+    "width": 1280,
+    "height": 853,
+    "bytes": 491576,
+    "alpha": true
+  },
+  {
+    "id": "nid",
+    "name": "Le Replat",
+    "type": "plate",
+    "secret": true,
+    "prompt": "Use case: stylized-concept. Project-bound collectible discovery illustration for Éclat, a quiet melancholic explorer's field journal. One landscape 3:2 watercolor vignette, genuine transparent alpha outside softly irregular painted edges, no opaque paper rectangle. Natural brown-black pen drawing with delicate watercolor and drybrush, muted olive-green rounded hills, straw ochre grasses, pale gray rocky outcrops with restrained mineral-green veins. Soft hazy daylight, same coherent geography as gentle grassy hills striated with green and dark mineral seams. Main subject readable at 320px, generous transparent margins. No title, letters, UI, frame, neon, flashy magic, human figures or watermark. Subject from the actual lore: a sheltered rocky ledge just below the hill summit, exactly four separate broad flat stones arranged as low seats facing the same distant point on the horizon. On one flat slab lie several deliberate little groups of pebbles separated by a conspicuous larger empty gap. A barely visible edge of folded old leaves of paper tucked beneath the fourth stone, not an open book. Muted grass and lichen around stone, rounded green hills beyond; one extremely faint reddish haze at the distant horizon, no magical beam. No bird nest despite internal id nid, no standing stone ring, fifth seat, temple or human figure.",
+    "src": "../../../assets/carnet/discoveries/nid.webp",
+    "master": "masters/nid.png",
+    "width": 1280,
+    "height": 853,
+    "bytes": 527354,
+    "alpha": true
+  }
+]
