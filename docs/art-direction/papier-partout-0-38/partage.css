@@ -1,0 +1,11 @@
+/* Deux documents statiques. Les zones nommées sont destinées au futur rendu. */
+body{margin:0;background:var(--finish-paper-deep);color:var(--finish-ink);font-family:"Alegreya Sans",sans-serif}
+main{display:flex;gap:32px;flex-wrap:wrap;padding:24px}
+.page-carnet{box-sizing:border-box;width:1080px;height:1350px;flex:none;position:relative;display:grid;grid-template-rows:90px 65px 510px auto auto 1fr 70px;gap:18px;padding:62px 78px;background:url('../../../assets/carnet/ui/paper.webp') center/cover var(--finish-paper);border:24px solid var(--finish-clear);border-image:url('../../../assets/carnet/ui/page-frame.webp') 78/24px/0 stretch;text-align:center;border-radius:var(--finish-radius);box-shadow:var(--finish-shadow)}
+header,footer{display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:2px solid var(--finish-rule);font:36px "IM Fell English",serif}
+header span{font-size:28px}footer{border-top:2px solid var(--finish-rule);border-bottom:0;font-size:30px}
+figure{margin:0;min-height:0}figure img{width:100%;height:100%;object-fit:contain}
+h1{font:64px/1.1 "IM Fell English",serif;margin:0;overflow-wrap:break-word}
+p{font-size:34px;line-height:1.3;margin:0}.recit{font:italic 34px/1.4 "IM Fell English",serif;color:var(--finish-secondary)}
+.annotation{font:40px "Caveat",cursive;color:var(--finish-pigment)}
+.oeuvre figure{padding-inline:60px}

@@ -1,0 +1,5006 @@
+[
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "texte",
+    "ratio": 12.3,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(42, 33, 24)",
+    "backgrounds": [
+      "rgb(242, 234, 218)",
+      "rgb(247, 241, 228)",
+      "rgb(236, 226, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "capitales",
+    "ratio": 5.09,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(107, 91, 71)",
+    "backgrounds": [
+      "rgb(242, 234, 218)",
+      "rgb(247, 241, 228)",
+      "rgb(236, 226, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "secondaire",
+    "ratio": 4.85,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(107, 95, 78)",
+    "backgrounds": [
+      "rgb(242, 234, 218)",
+      "rgb(247, 241, 228)",
+      "rgb(236, 226, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "prêt",
+    "ratio": 4.89,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(62, 107, 45)",
+    "backgrounds": [
+      "rgb(247, 241, 228)",
+      "rgb(236, 226, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "manque",
+    "ratio": 4.87,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(176, 52, 28)",
+    "backgrounds": [
+      "rgb(247, 241, 228)",
+      "rgb(236, 226, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "suivi",
+    "ratio": 5.14,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.600781 0.261638 0.143529)",
+    "backgrounds": [
+      "rgb(247, 241, 228)",
+      "rgb(236, 226, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "principal",
+    "ratio": 5.52,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(242, 234, 218)",
+    "backgrounds": [
+      "color(srgb 0.600781 0.261638 0.143529)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "bordure active",
+    "ratio": 5.87,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.600781 0.261638 0.143529)",
+    "backgrounds": [
+      "rgb(247, 241, 228)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "texte sur illustration",
+    "ratio": 14.04,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(42, 33, 24)",
+    "backgrounds": [
+      "rgb(247, 241, 228)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "icônes libellées",
+    "ratio": 14.04,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(42, 33, 24)",
+    "backgrounds": [
+      "rgb(247, 241, 228)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "texte",
+    "ratio": 9.92,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(59, 42, 23)",
+    "backgrounds": [
+      "rgb(238, 224, 191)",
+      "rgb(243, 232, 204)",
+      "rgb(233, 218, 183)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "capitales",
+    "ratio": 4.94,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(109, 87, 58)",
+    "backgrounds": [
+      "rgb(238, 224, 191)",
+      "rgb(243, 232, 204)",
+      "rgb(233, 218, 183)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "secondaire",
+    "ratio": 4.97,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(107, 87, 60)",
+    "backgrounds": [
+      "rgb(238, 224, 191)",
+      "rgb(243, 232, 204)",
+      "rgb(233, 218, 183)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "prêt",
+    "ratio": 4.94,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(71, 99, 30)",
+    "backgrounds": [
+      "rgb(243, 232, 204)",
+      "rgb(233, 218, 183)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "manque",
+    "ratio": 4.93,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(159, 57, 28)",
+    "backgrounds": [
+      "rgb(243, 232, 204)",
+      "rgb(233, 218, 183)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "suivi",
+    "ratio": 5.24,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.285726 0.360376 0.272925)",
+    "backgrounds": [
+      "rgb(243, 232, 204)",
+      "rgb(233, 218, 183)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "principal",
+    "ratio": 5.54,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(238, 224, 191)",
+    "backgrounds": [
+      "color(srgb 0.285726 0.360376 0.272925)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "bordure active",
+    "ratio": 5.95,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.285726 0.360376 0.272925)",
+    "backgrounds": [
+      "rgb(243, 232, 204)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "texte sur illustration",
+    "ratio": 11.26,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(59, 42, 23)",
+    "backgrounds": [
+      "rgb(243, 232, 204)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "icônes libellées",
+    "ratio": 11.26,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(59, 42, 23)",
+    "backgrounds": [
+      "rgb(243, 232, 204)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "texte",
+    "ratio": 13.5,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(35, 26, 20)",
+    "backgrounds": [
+      "rgb(245, 238, 219)",
+      "rgb(249, 244, 230)",
+      "rgb(237, 228, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "capitales",
+    "ratio": 5.16,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(110, 90, 72)",
+    "backgrounds": [
+      "rgb(245, 238, 219)",
+      "rgb(249, 244, 230)",
+      "rgb(237, 228, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "secondaire",
+    "ratio": 4.78,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(111, 96, 82)",
+    "backgrounds": [
+      "rgb(245, 238, 219)",
+      "rgb(249, 244, 230)",
+      "rgb(237, 228, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "prêt",
+    "ratio": 7.33,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(39, 70, 126)",
+    "backgrounds": [
+      "rgb(249, 244, 230)",
+      "rgb(237, 228, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "manque",
+    "ratio": 6.44,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(155, 28, 28)",
+    "backgrounds": [
+      "rgb(249, 244, 230)",
+      "rgb(237, 228, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "suivi",
+    "ratio": 5.32,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.644078 0.207294 0.152941)",
+    "backgrounds": [
+      "rgb(249, 244, 230)",
+      "rgb(237, 228, 207)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "principal",
+    "ratio": 5.81,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(245, 238, 219)",
+    "backgrounds": [
+      "color(srgb 0.644078 0.207294 0.152941)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "bordure active",
+    "ratio": 6.13,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.644078 0.207294 0.152941)",
+    "backgrounds": [
+      "rgb(249, 244, 230)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "texte sur illustration",
+    "ratio": 15.55,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(35, 26, 20)",
+    "backgrounds": [
+      "rgb(249, 244, 230)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "icônes libellées",
+    "ratio": 15.55,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(35, 26, 20)",
+    "backgrounds": [
+      "rgb(249, 244, 230)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "texte",
+    "ratio": 11.7,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(30, 42, 61)",
+    "backgrounds": [
+      "rgb(243, 239, 228)",
+      "rgb(251, 248, 240)",
+      "rgb(236, 231, 218)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "capitales",
+    "ratio": 4.85,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(91, 100, 114)",
+    "backgrounds": [
+      "rgb(243, 239, 228)",
+      "rgb(251, 248, 240)",
+      "rgb(236, 231, 218)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "secondaire",
+    "ratio": 4.84,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(91, 100, 115)",
+    "backgrounds": [
+      "rgb(243, 239, 228)",
+      "rgb(251, 248, 240)",
+      "rgb(236, 231, 218)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "prêt",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(43, 91, 138)",
+    "backgrounds": [
+      "rgb(251, 248, 240)",
+      "rgb(236, 231, 218)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "manque",
+    "ratio": 4.85,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(177, 58, 42)",
+    "backgrounds": [
+      "rgb(251, 248, 240)",
+      "rgb(236, 231, 218)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "suivi",
+    "ratio": 5.19,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.601042 0.273532 0.20402)",
+    "backgrounds": [
+      "rgb(251, 248, 240)",
+      "rgb(236, 231, 218)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "principal",
+    "ratio": 5.57,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(243, 239, 228)",
+    "backgrounds": [
+      "color(srgb 0.601042 0.273532 0.20402)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "bordure active",
+    "ratio": 6.03,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.601042 0.273532 0.20402)",
+    "backgrounds": [
+      "rgb(251, 248, 240)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "texte sur illustration",
+    "ratio": 13.61,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(30, 42, 61)",
+    "backgrounds": [
+      "rgb(251, 248, 240)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "icônes libellées",
+    "ratio": 13.61,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(30, 42, 61)",
+    "backgrounds": [
+      "rgb(251, 248, 240)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "texte",
+    "ratio": 9.62,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(34, 52, 138)",
+    "backgrounds": [
+      "rgb(251, 251, 247)",
+      "rgb(255, 255, 255)",
+      "rgb(238, 241, 244)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "capitales",
+    "ratio": 4.82,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(91, 107, 125)",
+    "backgrounds": [
+      "rgb(251, 251, 247)",
+      "rgb(255, 255, 255)",
+      "rgb(238, 241, 244)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "secondaire",
+    "ratio": 4.72,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(90, 105, 155)",
+    "backgrounds": [
+      "rgb(251, 251, 247)",
+      "rgb(255, 255, 255)",
+      "rgb(238, 241, 244)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "prêt",
+    "ratio": 4.7,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(31, 122, 74)",
+    "backgrounds": [
+      "rgb(255, 255, 255)",
+      "rgb(238, 241, 244)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "manque",
+    "ratio": 4.8,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(192, 57, 43)",
+    "backgrounds": [
+      "rgb(255, 255, 255)",
+      "rgb(238, 241, 244)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "suivi",
+    "ratio": 5.2,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.235865 0.430825 0.348104)",
+    "backgrounds": [
+      "rgb(255, 255, 255)",
+      "rgb(238, 241, 244)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "principal",
+    "ratio": 5.69,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(251, 251, 247)",
+    "backgrounds": [
+      "color(srgb 0.235865 0.430825 0.348104)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "bordure active",
+    "ratio": 5.9,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.235865 0.430825 0.348104)",
+    "backgrounds": [
+      "rgb(255, 255, 255)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "texte sur illustration",
+    "ratio": 10.9,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(34, 52, 138)",
+    "backgrounds": [
+      "rgb(255, 255, 255)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "icônes libellées",
+    "ratio": 10.9,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(34, 52, 138)",
+    "backgrounds": [
+      "rgb(255, 255, 255)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "texte",
+    "ratio": 14.69,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 25, 31)",
+    "backgrounds": [
+      "rgb(238, 241, 243)",
+      "rgb(248, 250, 251)",
+      "rgb(230, 235, 239)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "capitales",
+    "ratio": 5.01,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(90, 100, 112)",
+    "backgrounds": [
+      "rgb(238, 241, 243)",
+      "rgb(248, 250, 251)",
+      "rgb(230, 235, 239)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "secondaire",
+    "ratio": 4.84,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(95, 102, 111)",
+    "backgrounds": [
+      "rgb(238, 241, 243)",
+      "rgb(248, 250, 251)",
+      "rgb(230, 235, 239)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "prêt",
+    "ratio": 5.24,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(61, 85, 201)",
+    "backgrounds": [
+      "rgb(248, 250, 251)",
+      "rgb(230, 235, 239)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "manque",
+    "ratio": 4.84,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(184, 55, 42)",
+    "backgrounds": [
+      "rgb(248, 250, 251)",
+      "rgb(230, 235, 239)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "suivi",
+    "ratio": 5.1,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.618246 0.286733 0.138742)",
+    "backgrounds": [
+      "rgb(248, 250, 251)",
+      "rgb(230, 235, 239)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "principal",
+    "ratio": 5.4,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(238, 241, 243)",
+    "backgrounds": [
+      "color(srgb 0.618246 0.286733 0.138742)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "bordure active",
+    "ratio": 5.85,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.618246 0.286733 0.138742)",
+    "backgrounds": [
+      "rgb(248, 250, 251)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "texte sur illustration",
+    "ratio": 16.85,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 25, 31)",
+    "backgrounds": [
+      "rgb(248, 250, 251)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "icônes libellées",
+    "ratio": 16.85,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(21, 25, 31)",
+    "backgrounds": [
+      "rgb(248, 250, 251)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "texte",
+    "ratio": 11.37,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "capitales",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "secondaire",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "prêt",
+    "ratio": 5.3,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(98, 170, 72)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "manque",
+    "ratio": 4.71,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(227, 108, 82)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "suivi",
+    "ratio": 6.93,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.894118 0.623529 0.533333)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "principal",
+    "ratio": 8.48,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 19, 17)",
+    "backgrounds": [
+      "color(srgb 0.894118 0.623529 0.533333)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "bordure active",
+    "ratio": 7.64,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.894118 0.623529 0.533333)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "texte sur illustration",
+    "ratio": 12.55,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "icônes libellées",
+    "ratio": 12.55,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "texte",
+    "ratio": 11.37,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "capitales",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "secondaire",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "prêt",
+    "ratio": 5.87,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(108, 179, 59)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "manque",
+    "ratio": 4.72,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(225, 110, 80)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "suivi",
+    "ratio": 8.21,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.605882 0.786275 0.72549)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "principal",
+    "ratio": 10.05,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 19, 17)",
+    "backgrounds": [
+      "color(srgb 0.605882 0.786275 0.72549)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "bordure active",
+    "ratio": 9.06,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.605882 0.786275 0.72549)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "texte sur illustration",
+    "ratio": 12.55,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "icônes libellées",
+    "ratio": 12.55,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "texte",
+    "ratio": 11.37,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "capitales",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "secondaire",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "prêt",
+    "ratio": 4.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(112, 145, 199)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "manque",
+    "ratio": 4.7,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(227, 106, 104)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "suivi",
+    "ratio": 6.52,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.898039 0.586275 0.558824)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "principal",
+    "ratio": 7.99,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 19, 17)",
+    "backgrounds": [
+      "color(srgb 0.898039 0.586275 0.558824)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "bordure active",
+    "ratio": 7.2,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.898039 0.586275 0.558824)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "texte sur illustration",
+    "ratio": 12.55,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "icônes libellées",
+    "ratio": 12.55,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "texte",
+    "ratio": 11.37,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "capitales",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "secondaire",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "prêt",
+    "ratio": 4.72,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(85, 148, 210)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "manque",
+    "ratio": 4.72,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(227, 108, 88)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "suivi",
+    "ratio": 6.87,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.898039 0.615686 0.54902)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "principal",
+    "ratio": 8.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 19, 17)",
+    "backgrounds": [
+      "color(srgb 0.898039 0.615686 0.54902)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "bordure active",
+    "ratio": 7.58,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.898039 0.615686 0.54902)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "texte sur illustration",
+    "ratio": 12.55,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "icônes libellées",
+    "ratio": 12.55,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "texte",
+    "ratio": 11.37,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "capitales",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "secondaire",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "prêt",
+    "ratio": 6.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(56, 194, 120)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "manque",
+    "ratio": 4.72,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(227, 108, 90)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "suivi",
+    "ratio": 8.46,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.564706 0.815686 0.643137)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "principal",
+    "ratio": 10.36,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 19, 17)",
+    "backgrounds": [
+      "color(srgb 0.564706 0.815686 0.643137)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "bordure active",
+    "ratio": 9.34,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.564706 0.815686 0.643137)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "texte sur illustration",
+    "ratio": 12.55,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "icônes libellées",
+    "ratio": 12.55,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "texte",
+    "ratio": 11.37,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "capitales",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "secondaire",
+    "ratio": 5.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(166, 153, 134)",
+    "backgrounds": [
+      "rgb(21, 19, 17)",
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "prêt",
+    "ratio": 4.72,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(114, 137, 240)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "manque",
+    "ratio": 4.72,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(227, 108, 90)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "suivi",
+    "ratio": 7.47,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.954902 0.639216 0.498039)",
+    "backgrounds": [
+      "rgb(34, 29, 25)",
+      "rgb(43, 37, 32)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "principal",
+    "ratio": 9.16,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(21, 19, 17)",
+    "backgrounds": [
+      "color(srgb 0.954902 0.639216 0.498039)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "bordure active",
+    "ratio": 8.25,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.954902 0.639216 0.498039)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "texte sur illustration",
+    "ratio": 12.55,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "classique",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "icônes libellées",
+    "ratio": 12.55,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(232, 222, 208)",
+    "backgrounds": [
+      "rgb(34, 29, 25)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "texte",
+    "ratio": 7.1,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 34, 25)",
+    "backgrounds": [
+      "rgb(198, 173, 133)",
+      "rgb(240, 223, 189)",
+      "rgb(223, 198, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "capitales",
+    "ratio": 5.86,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(63, 48, 34)",
+    "backgrounds": [
+      "rgb(198, 173, 133)",
+      "rgb(240, 223, 189)",
+      "rgb(223, 198, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "secondaire",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(59, 49, 37)",
+    "backgrounds": [
+      "rgb(198, 173, 133)",
+      "rgb(240, 223, 189)",
+      "rgb(223, 198, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "prêt",
+    "ratio": 7.59,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(35, 57, 26)",
+    "backgrounds": [
+      "rgb(240, 223, 189)",
+      "rgb(223, 198, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "manque",
+    "ratio": 7.65,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(95, 28, 15)",
+    "backgrounds": [
+      "rgb(240, 223, 189)",
+      "rgb(223, 198, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "suivi",
+    "ratio": 6.77,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.351724 0.188323 0.12246)",
+    "backgrounds": [
+      "rgb(240, 223, 189)",
+      "rgb(223, 198, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "principal",
+    "ratio": 5.18,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(198, 173, 133)",
+    "backgrounds": [
+      "color(srgb 0.351724 0.188323 0.12246)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "bordure active",
+    "ratio": 8.53,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.351724 0.188323 0.12246)",
+    "backgrounds": [
+      "rgb(240, 223, 189)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "texte sur illustration",
+    "ratio": 11.69,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 34, 25)",
+    "backgrounds": [
+      "rgb(240, 223, 189)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "icônes libellées",
+    "ratio": 11.69,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 34, 25)",
+    "backgrounds": [
+      "rgb(240, 223, 189)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "texte",
+    "ratio": 6.2,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(41, 43, 29)",
+    "backgrounds": [
+      "rgb(189, 168, 121)",
+      "rgb(241, 227, 187)",
+      "rgb(221, 201, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "capitales",
+    "ratio": 6.04,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(43, 45, 31)",
+    "backgrounds": [
+      "rgb(189, 168, 121)",
+      "rgb(241, 227, 187)",
+      "rgb(221, 201, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "secondaire",
+    "ratio": 6.09,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(43, 44, 32)",
+    "backgrounds": [
+      "rgb(189, 168, 121)",
+      "rgb(241, 227, 187)",
+      "rgb(221, 201, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "prêt",
+    "ratio": 8.61,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(26, 49, 26)",
+    "backgrounds": [
+      "rgb(241, 227, 187)",
+      "rgb(221, 201, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "manque",
+    "ratio": 8.58,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(83, 24, 13)",
+    "backgrounds": [
+      "rgb(241, 227, 187)",
+      "rgb(221, 201, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "suivi",
+    "ratio": 7.28,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.178281 0.230969 0.168786)",
+    "backgrounds": [
+      "rgb(241, 227, 187)",
+      "rgb(221, 201, 155)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "principal",
+    "ratio": 5.1,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(189, 168, 121)",
+    "backgrounds": [
+      "color(srgb 0.178281 0.230969 0.168786)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "bordure active",
+    "ratio": 9.28,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.178281 0.230969 0.168786)",
+    "backgrounds": [
+      "rgb(241, 227, 187)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "texte sur illustration",
+    "ratio": 11.28,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(41, 43, 29)",
+    "backgrounds": [
+      "rgb(241, 227, 187)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "icônes libellées",
+    "ratio": 11.28,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(41, 43, 29)",
+    "backgrounds": [
+      "rgb(241, 227, 187)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "texte",
+    "ratio": 7.87,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(43, 33, 28)",
+    "backgrounds": [
+      "rgb(199, 182, 143)",
+      "rgb(248, 238, 213)",
+      "rgb(231, 214, 176)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "capitales",
+    "ratio": 5.67,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(68, 56, 49)",
+    "backgrounds": [
+      "rgb(199, 182, 143)",
+      "rgb(248, 238, 213)",
+      "rgb(231, 214, 176)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "secondaire",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(65, 56, 49)",
+    "backgrounds": [
+      "rgb(199, 182, 143)",
+      "rgb(248, 238, 213)",
+      "rgb(231, 214, 176)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "prêt",
+    "ratio": 7.85,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(28, 65, 57)",
+    "backgrounds": [
+      "rgb(248, 238, 213)",
+      "rgb(231, 214, 176)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "manque",
+    "ratio": 7.96,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(107, 32, 17)",
+    "backgrounds": [
+      "rgb(248, 238, 213)",
+      "rgb(231, 214, 176)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "suivi",
+    "ratio": 7.42,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.404824 0.174471 0.145137)",
+    "backgrounds": [
+      "rgb(248, 238, 213)",
+      "rgb(231, 214, 176)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "principal",
+    "ratio": 5.33,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(199, 182, 143)",
+    "backgrounds": [
+      "color(srgb 0.404824 0.174471 0.145137)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "bordure active",
+    "ratio": 9.21,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.404824 0.174471 0.145137)",
+    "backgrounds": [
+      "rgb(248, 238, 213)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "texte sur illustration",
+    "ratio": 13.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(43, 33, 28)",
+    "backgrounds": [
+      "rgb(248, 238, 213)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "icônes libellées",
+    "ratio": 13.6,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(43, 33, 28)",
+    "backgrounds": [
+      "rgb(248, 238, 213)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "texte",
+    "ratio": 6.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(23, 45, 60)",
+    "backgrounds": [
+      "rgb(174, 184, 180)",
+      "rgb(242, 239, 227)",
+      "rgb(220, 226, 220)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "capitales",
+    "ratio": 5.75,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(44, 58, 67)",
+    "backgrounds": [
+      "rgb(174, 184, 180)",
+      "rgb(242, 239, 227)",
+      "rgb(220, 226, 220)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "secondaire",
+    "ratio": 5.77,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(51, 57, 59)",
+    "backgrounds": [
+      "rgb(174, 184, 180)",
+      "rgb(242, 239, 227)",
+      "rgb(220, 226, 220)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "prêt",
+    "ratio": 8.75,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(22, 64, 55)",
+    "backgrounds": [
+      "rgb(242, 239, 227)",
+      "rgb(220, 226, 220)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "manque",
+    "ratio": 8.78,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(106, 31, 17)",
+    "backgrounds": [
+      "rgb(242, 239, 227)",
+      "rgb(220, 226, 220)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "suivi",
+    "ratio": 8.16,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.319333 0.214736 0.223456)",
+    "backgrounds": [
+      "rgb(242, 239, 227)",
+      "rgb(220, 226, 220)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "principal",
+    "ratio": 5.28,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(174, 184, 180)",
+    "backgrounds": [
+      "color(srgb 0.319333 0.214736 0.223456)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "bordure active",
+    "ratio": 9.33,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.319333 0.214736 0.223456)",
+    "backgrounds": [
+      "rgb(242, 239, 227)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "texte sur illustration",
+    "ratio": 12.34,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(23, 45, 60)",
+    "backgrounds": [
+      "rgb(242, 239, 227)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "icônes libellées",
+    "ratio": 12.34,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(23, 45, 60)",
+    "backgrounds": [
+      "rgb(242, 239, 227)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "texte",
+    "ratio": 7.75,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(23, 61, 87)",
+    "backgrounds": [
+      "rgb(202, 215, 220)",
+      "rgb(245, 248, 246)",
+      "rgb(219, 231, 232)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "capitales",
+    "ratio": 5.68,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(57, 81, 94)",
+    "backgrounds": [
+      "rgb(202, 215, 220)",
+      "rgb(245, 248, 246)",
+      "rgb(219, 231, 232)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "secondaire",
+    "ratio": 5.77,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(64, 79, 87)",
+    "backgrounds": [
+      "rgb(202, 215, 220)",
+      "rgb(245, 248, 246)",
+      "rgb(219, 231, 232)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "prêt",
+    "ratio": 6.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(18, 89, 59)",
+    "backgrounds": [
+      "rgb(245, 248, 246)",
+      "rgb(219, 231, 232)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "manque",
+    "ratio": 6.61,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(143, 42, 23)",
+    "backgrounds": [
+      "rgb(245, 248, 246)",
+      "rgb(219, 231, 232)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "suivi",
+    "ratio": 6.36,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.157758 0.341981 0.353859)",
+    "backgrounds": [
+      "rgb(245, 248, 246)",
+      "rgb(219, 231, 232)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "principal",
+    "ratio": 5.47,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(202, 215, 220)",
+    "backgrounds": [
+      "color(srgb 0.157758 0.341981 0.353859)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "bordure active",
+    "ratio": 7.53,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.157758 0.341981 0.353859)",
+    "backgrounds": [
+      "rgb(245, 248, 246)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "texte sur illustration",
+    "ratio": 10.67,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(23, 61, 87)",
+    "backgrounds": [
+      "rgb(245, 248, 246)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "icônes libellées",
+    "ratio": 10.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(23, 61, 87)",
+    "backgrounds": [
+      "rgb(245, 248, 246)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "texte",
+    "ratio": 9.17,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(244, 238, 226)",
+    "backgrounds": [
+      "rgb(23, 35, 43)",
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "capitales",
+    "ratio": 6.04,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(185, 198, 199)",
+    "backgrounds": [
+      "rgb(23, 35, 43)",
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "secondaire",
+    "ratio": 4.86,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(160, 179, 184)",
+    "backgrounds": [
+      "rgb(23, 35, 43)",
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "prêt",
+    "ratio": 6.14,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(139, 212, 179)",
+    "backgrounds": [
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "manque",
+    "ratio": 5.22,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 155, 142)",
+    "backgrounds": [
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "suivi",
+    "ratio": 4.86,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.913255 0.629412 0.305882)",
+    "backgrounds": [
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "principal",
+    "ratio": 7.34,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(23, 35, 43)",
+    "backgrounds": [
+      "color(srgb 0.913255 0.629412 0.305882)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "bordure active",
+    "ratio": 5.92,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.913255 0.629412 0.305882)",
+    "backgrounds": [
+      "rgb(34, 52, 61)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "texte sur illustration",
+    "ratio": 11.17,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(244, 238, 226)",
+    "backgrounds": [
+      "rgb(34, 52, 61)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "icônes libellées",
+    "ratio": 11.17,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(244, 238, 226)",
+    "backgrounds": [
+      "rgb(34, 52, 61)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "texte",
+    "ratio": 9.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "capitales",
+    "ratio": 6.23,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(189, 200, 184)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "secondaire",
+    "ratio": 5.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(167, 181, 161)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "prêt",
+    "ratio": 4.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(131, 188, 110)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "manque",
+    "ratio": 4.82,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(237, 151, 134)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "suivi",
+    "ratio": 5.26,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.911765 0.647059 0.556863)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "principal",
+    "ratio": 7.71,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(28, 36, 35)",
+    "backgrounds": [
+      "color(srgb 0.911765 0.647059 0.556863)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "bordure active",
+    "ratio": 6.18,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.911765 0.647059 0.556863)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "texte sur illustration",
+    "ratio": 10.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "icônes libellées",
+    "ratio": 10.6,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "texte",
+    "ratio": 9.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "capitales",
+    "ratio": 6.23,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(189, 200, 184)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "secondaire",
+    "ratio": 5.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(167, 181, 161)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "prêt",
+    "ratio": 4.85,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 190, 86)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "manque",
+    "ratio": 4.81,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(235, 152, 132)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "suivi",
+    "ratio": 6.23,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.623529 0.809804 0.74902)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "principal",
+    "ratio": 9.13,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(28, 36, 35)",
+    "backgrounds": [
+      "color(srgb 0.623529 0.809804 0.74902)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "bordure active",
+    "ratio": 7.31,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.623529 0.809804 0.74902)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "texte sur illustration",
+    "ratio": 10.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "icônes libellées",
+    "ratio": 10.6,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "texte",
+    "ratio": 9.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "capitales",
+    "ratio": 6.23,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(189, 200, 184)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "secondaire",
+    "ratio": 5.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(167, 181, 161)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "prêt",
+    "ratio": 4.84,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(148, 175, 219)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "manque",
+    "ratio": 4.86,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(238, 150, 150)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "suivi",
+    "ratio": 4.96,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.915686 0.609804 0.582353)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "principal",
+    "ratio": 7.27,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(28, 36, 35)",
+    "backgrounds": [
+      "color(srgb 0.915686 0.609804 0.582353)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "bordure active",
+    "ratio": 5.82,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.915686 0.609804 0.582353)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "texte sur illustration",
+    "ratio": 10.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "icônes libellées",
+    "ratio": 10.6,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "texte",
+    "ratio": 9.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "capitales",
+    "ratio": 6.23,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(189, 200, 184)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "secondaire",
+    "ratio": 5.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(167, 181, 161)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "prêt",
+    "ratio": 4.84,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(132, 178, 223)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "manque",
+    "ratio": 4.82,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(236, 151, 138)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "suivi",
+    "ratio": 5.21,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.915686 0.639216 0.572549)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "principal",
+    "ratio": 7.64,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(28, 36, 35)",
+    "backgrounds": [
+      "color(srgb 0.915686 0.639216 0.572549)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "bordure active",
+    "ratio": 6.13,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.915686 0.639216 0.572549)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "texte sur illustration",
+    "ratio": 10.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "icônes libellées",
+    "ratio": 10.6,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "texte",
+    "ratio": 9.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "capitales",
+    "ratio": 6.23,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(189, 200, 184)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "secondaire",
+    "ratio": 5.02,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(167, 181, 161)",
+    "backgrounds": [
+      "rgb(28, 36, 35)",
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "prêt",
+    "ratio": 4.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(62, 196, 124)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "manque",
+    "ratio": 4.84,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(237, 151, 140)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "suivi",
+    "ratio": 6.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.582353 0.839216 0.666667)",
+    "backgrounds": [
+      "rgb(43, 53, 48)",
+      "rgb(53, 64, 57)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "principal",
+    "ratio": 9.4,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(28, 36, 35)",
+    "backgrounds": [
+      "color(srgb 0.582353 0.839216 0.666667)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "bordure active",
+    "ratio": 7.53,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.582353 0.839216 0.666667)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "texte sur illustration",
+    "ratio": 10.6,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "icônes libellées",
+    "ratio": 10.6,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(241, 234, 220)",
+    "backgrounds": [
+      "rgb(43, 53, 48)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "texte",
+    "ratio": 9.17,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(244, 238, 226)",
+    "backgrounds": [
+      "rgb(23, 35, 43)",
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "capitales",
+    "ratio": 6.04,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(185, 198, 199)",
+    "backgrounds": [
+      "rgb(23, 35, 43)",
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "secondaire",
+    "ratio": 4.86,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(160, 179, 184)",
+    "backgrounds": [
+      "rgb(23, 35, 43)",
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "prêt",
+    "ratio": 4.87,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(154, 172, 249)",
+    "backgrounds": [
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "manque",
+    "ratio": 4.8,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(238, 152, 142)",
+    "backgrounds": [
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "suivi",
+    "ratio": 5.67,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "color(srgb 0.978431 0.670588 0.533333)",
+    "backgrounds": [
+      "rgb(34, 52, 61)",
+      "rgb(43, 66, 74)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "principal",
+    "ratio": 8.56,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(23, 35, 43)",
+    "backgrounds": [
+      "color(srgb 0.978431 0.670588 0.533333)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "bordure active",
+    "ratio": 6.9,
+    "minimum": 3,
+    "pass": true,
+    "fg": "color(srgb 0.978431 0.670588 0.533333)",
+    "backgrounds": [
+      "rgb(34, 52, 61)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "texte sur illustration",
+    "ratio": 11.17,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(244, 238, 226)",
+    "backgrounds": [
+      "rgb(34, 52, 61)"
+    ]
+  },
+  {
+    "mode": "atlas",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "icônes libellées",
+    "ratio": 11.17,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(244, 238, 226)",
+    "backgrounds": [
+      "rgb(34, 52, 61)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "pigments",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "papyrus",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "enluminure",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "registre",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "quadrille",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "clair",
+    "ep": "bord",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "pigments",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "papyrus",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "enluminure",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "registre",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "quadrille",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "texte",
+    "ratio": 10.98,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "capitales",
+    "ratio": 5.73,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "secondaire",
+    "ratio": 5.38,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(101, 85, 65)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "prêt",
+    "ratio": 6.53,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(52, 82, 57)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "manque",
+    "ratio": 6.83,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 43, 38)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "suivi",
+    "ratio": 5.88,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)",
+      "rgb(233, 222, 200)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "principal",
+    "ratio": 7.41,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "bordure active",
+    "ratio": 6.67,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "texte sur illustration",
+    "ratio": 12.45,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  },
+  {
+    "mode": "vivant",
+    "theme": "sombre",
+    "ep": "bord",
+    "role": "icônes libellées",
+    "ratio": 12.45,
+    "minimum": 3,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ]
+  }
+]

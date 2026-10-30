@@ -200,3 +200,82 @@ html[data-style-mode="vivant"] .contemplation-canvas {
   background: rgba(48,39,30,0.08);
   border-color: var(--line);
 }
+
+/* Papier partout : les feuilles ne reprennent pas les encres locales du Cosmos. */
+html[data-style-mode="vivant"] :is(#modal,#v-journal,#v-cosmos) {
+  --bg:var(--finish-paper);--bg2:var(--finish-paper-deep);
+  --panel:var(--finish-paper);--panel2:var(--finish-paper-deep);
+  --text:var(--finish-ink);--muted:var(--finish-secondary);--dim:var(--finish-secondary);
+  --acc:var(--finish-pigment);--acc-ink:var(--finish-on-pigment);
+  --good:var(--finish-success);--bad:var(--finish-danger);
+  --atlas-ink:var(--finish-ink);--atlas-hairline:var(--finish-rule);
+  --drawn-paper:var(--finish-paper);--drawn-paper-deep:var(--finish-paper-deep);
+  --drawn-ink:var(--finish-ink);--drawn-pigment:var(--finish-pigment);
+  --drawn-muted:var(--finish-secondary);--drawn-rule:var(--finish-rule);
+  --drawn-pigment-ink:var(--finish-on-pigment);
+  color:var(--text);color-scheme:light;
+}
+html[data-style-mode="vivant"] #modal {background:var(--finish-overlay)}
+html[data-style-mode="vivant"] #modal .modal-box {
+  background:var(--paint-paper) center/cover var(--bg)!important;
+  color:var(--text)!important;box-shadow:var(--finish-window-shadow)!important;
+  border-radius:var(--finish-radius)!important;
+}
+html[data-style-mode="vivant"] #modal :is(.menu-game-header,.menu-sec,.menu-nav-bar,.vol-group,.pick,.ring,.riddle,.why,.livre-note,.contemplation-meta,input,select,textarea) {
+  background:var(--panel2);color:var(--text);border-color:var(--line2);
+  box-shadow:var(--finish-shadow);border-radius:var(--finish-radius);
+}
+html[data-style-mode="vivant"] #modal :is(.menu-game-header,.menu-sec,.menu-nav-bar){background:var(--finish-clear)}
+html[data-style-mode="vivant"] #modal :is(.m-title-text,.m-cell-val,.m-cell-val.m-echo,.m-version-badge){color:var(--text);text-shadow:var(--finish-ink-shadow)}
+html[data-style-mode="vivant"] #modal :is(.m-nav-tab,.modal-x){background:var(--panel);color:var(--text);box-shadow:var(--finish-shadow);border-color:var(--line2)}
+html[data-style-mode="vivant"] #modal .m-nav-tab.on{color:var(--acc);border-color:var(--acc);text-decoration:underline;text-underline-offset:4px}
+html[data-style-mode="vivant"] #modal .modal-x{width:44px;height:44px;min-width:44px;min-height:44px;border-radius:var(--finish-radius)}
+html[data-style-mode="vivant"] #modal .m-card-btn {height:auto;min-height:52px;white-space:normal;overflow-wrap:break-word}
+html[data-style-mode="vivant"] #modal :is(.m-card-main,.m-hero-cell,.toggle>span,.fld,.grow){min-width:0}
+html[data-style-mode="vivant"] #modal :is(.m-card-main b,.m-card-main .tiny,.m-cell-val){white-space:normal;overflow-wrap:break-word}
+html[data-style-mode="vivant"] #modal .btn.pri {color:var(--acc-ink)!important;background:var(--finish-clear)!important;mask:none!important}
+html[data-style-mode="vivant"] #modal .btn.pri::before{background-image:var(--paint-primary)}
+/* Les anciennes cases dessinées ne doivent pas réduire le fond du commutateur. */
+html[data-style-mode="vivant"] #modal .btn.sw::before {
+  inset:0!important;width:auto!important;height:auto!important;
+  border:0!important;mask:none!important;-webkit-mask:none!important;
+  background:var(--paint-button) center/100% 100% no-repeat!important;
+}
+html[data-style-mode="vivant"] #modal .btn.sw.on::before {
+  background:var(--paint-primary) center/100% 100% no-repeat!important;
+  filter:brightness(.73) saturate(.8);
+}
+html[data-style-mode="vivant"] :is(#v-journal,#v-cosmos){background:var(--paint-paper) center/cover var(--bg)}
+html[data-style-mode="vivant"] :is(#v-journal,#v-cosmos) :is(.card,.frag,.livre-page,.proj,.term,.term-in input){background:var(--panel);color:var(--text);box-shadow:var(--finish-shadow);border-color:var(--line2)}
+html[data-style-mode="vivant"] #v-cosmos :is(.term .u,.term-pfx,.proj .pi){color:var(--text)}
+/* Seule l'observation du ciel conserve son fond de nuit, à l'intérieur du carnet. */
+html[data-style-mode="vivant"] #v-cosmos :is(.sky-wrap,.fig-wrap){background:var(--finish-night);color:var(--finish-stars)}
+html[data-style-mode="vivant"] #v-cosmos .fig-nom{color:var(--finish-stars)}
+html[data-style-mode="vivant"] #v-cosmos :is(.atlas-sky-caption,.sky-info){color:var(--finish-stars)}
+body[data-ep] :is(.mgain,.memory .gain,.chip.mem b){color:var(--acc)}
+html[data-style-mode="vivant"] .hcount{color:var(--text);background:var(--panel2);text-shadow:var(--finish-ink-shadow)}
+body[data-ep] :is(.ring.ok,.ring.lack,.badge-ready){background:var(--panel2)}
+html:not([data-style-mode="vivant"]) #v-domaine .a-decor .dom-th :is(h3,.small){background:var(--panel);color:var(--text);text-shadow:var(--finish-ink-shadow)}
+@media(max-width:680px){
+  html[data-style-mode="vivant"] #v-domaine .carnet-land-header{gap:0}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th{gap:3px;padding-block:3px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre{padding-block:8px;margin-block:6px 10px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-landscape img{max-height:110px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-landscape-existing img{height:110px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{grid-template-columns:48px minmax(0,1fr) auto!important;gap:4px 6px!important;padding-block:5px!important}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{width:48px!important;height:48px!important}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b{grid-column:3!important;grid-row:1;flex-direction:column;width:auto;max-width:100px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{flex:0 0 auto;padding:6px;font-size:15px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:20px;gap:2px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-body{padding-block:3px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-observation{line-height:1.2;margin-block:2px}
+}
+@media(max-width:360px){
+  html[data-style-mode="vivant"] #modal .toggle{flex-wrap:wrap}
+  html[data-style-mode="vivant"] #modal .toggle>span{max-width:100%}
+}
+@media(min-width:361px) and (max-width:680px){
+  html[data-style-mode="vivant"] #v-domaine .carnet-land-header{display:grid;grid-template-columns:minmax(0,1fr) 110px;align-items:center;gap:6px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-land-header .carnet-landscape{width:100%;margin:0}
+  html[data-style-mode="vivant"] body[data-carnet-era] #v-domaine .carnet-terre .dom-th h3{font-size:28px}
+}

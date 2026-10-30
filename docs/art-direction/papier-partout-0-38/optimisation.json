@@ -1,0 +1,767 @@
+[
+  {
+    "file": "assets/atlas/brume-v1.webp",
+    "before": 416864,
+    "after": 50862,
+    "size": [
+      448,
+      448
+    ]
+  },
+  {
+    "file": "assets/atlas/feuillet-celeste-v1.webp",
+    "before": 438226,
+    "after": 34270,
+    "size": [
+      279,
+      768
+    ]
+  },
+  {
+    "file": "assets/atlas/monde-vivant-v1.webp",
+    "before": 601050,
+    "after": 33634,
+    "size": [
+      213,
+      640
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/camp.webp",
+    "before": 175804,
+    "after": 57352,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/carcasse.webp",
+    "before": 540336,
+    "after": 51576,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/cercle.webp",
+    "before": 332180,
+    "after": 58798,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/escalier.webp",
+    "before": 598104,
+    "after": 57810,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/grotte.webp",
+    "before": 248314,
+    "after": 39608,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/gue.webp",
+    "before": 549804,
+    "after": 53502,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/lisiere-esquisse.webp",
+    "before": 422592,
+    "after": 54724,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/nid.webp",
+    "before": 527354,
+    "after": 52614,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/plaine-esquisse.webp",
+    "before": 293732,
+    "after": 34162,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/rails.webp",
+    "before": 486868,
+    "after": 48480,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/sommet.webp",
+    "before": 491576,
+    "after": 48930,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/discoveries/tumulus.webp",
+    "before": 314144,
+    "after": 52676,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/items/puits.webp",
+    "before": 36458,
+    "after": 23688,
+    "size": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/caveau.webp",
+    "before": 360070,
+    "after": 41088,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/collines.webp",
+    "before": 352466,
+    "after": 41046,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/desert.webp",
+    "before": 345534,
+    "after": 37978,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/gisement.webp",
+    "before": 332532,
+    "after": 38166,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/lisiere.webp",
+    "before": 542136,
+    "after": 67832,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/lune.webp",
+    "before": 307178,
+    "after": 33644,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/mercure.webp",
+    "before": 338600,
+    "after": 36662,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/mine.webp",
+    "before": 404734,
+    "after": 45302,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/montagnes.webp",
+    "before": 365826,
+    "after": 42886,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/orbite.webp",
+    "before": 297656,
+    "after": 41092,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/plaine.webp",
+    "before": 396284,
+    "after": 45500,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/riviere-vapeur.webp",
+    "before": 471084,
+    "after": 52792,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/lands/riviere.webp",
+    "before": 433958,
+    "after": 50356,
+    "size": [
+      448,
+      299
+    ]
+  },
+  {
+    "file": "assets/carnet/passages/base.webp",
+    "before": 464158,
+    "after": 88686,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/carnet/passages/berges.webp",
+    "before": 538302,
+    "after": 53678,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/carnet/passages/herbes-sentier.webp",
+    "before": 289570,
+    "after": 60736,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/carnet/passages/passerelle-charpente.webp",
+    "before": 515000,
+    "after": 51470,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/carnet/passages/passerelle-terminee.webp",
+    "before": 694964,
+    "after": 68492,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/carnet/passages/ronces-droite.webp",
+    "before": 267992,
+    "after": 62872,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/carnet/passages/ronces-gauche.webp",
+    "before": 288582,
+    "after": 64940,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/carnet/sources/source_argile.webp",
+    "before": 78334,
+    "after": 53722,
+    "size": [
+      384,
+      384
+    ]
+  },
+  {
+    "file": "assets/carnet/sources/source_cassiterite.webp",
+    "before": 55358,
+    "after": 36710,
+    "size": [
+      384,
+      384
+    ]
+  },
+  {
+    "file": "assets/carnet/sources/source_malachite.webp",
+    "before": 60754,
+    "after": 41462,
+    "size": [
+      384,
+      384
+    ]
+  },
+  {
+    "file": "assets/carnet/sources/source_sable.webp",
+    "before": 49190,
+    "after": 30938,
+    "size": [
+      384,
+      384
+    ]
+  },
+  {
+    "file": "assets/carnet/sources/source_silex.webp",
+    "before": 59782,
+    "after": 38116,
+    "size": [
+      384,
+      384
+    ]
+  },
+  {
+    "file": "assets/carnet/ui/page-frame.webp",
+    "before": 67032,
+    "after": 28136,
+    "size": [
+      512,
+      512
+    ]
+  },
+  {
+    "file": "assets/carnet/ui/paint-button.webp",
+    "before": 63958,
+    "after": 21904,
+    "size": [
+      640,
+      213
+    ]
+  },
+  {
+    "file": "assets/carnet/ui/paper-button.webp",
+    "before": 47344,
+    "after": 20438,
+    "size": [
+      640,
+      256
+    ]
+  },
+  {
+    "file": "assets/carnet/ui/paper.webp",
+    "before": 52262,
+    "after": 7838,
+    "size": [
+      640,
+      640
+    ]
+  },
+  {
+    "file": "assets/carnet/world/first-lands.webp",
+    "before": 597866,
+    "after": 31218,
+    "size": [
+      512,
+      341
+    ]
+  },
+  {
+    "file": "assets/fonds/atelier.webp",
+    "before": 97850,
+    "after": 33576,
+    "size": [
+      360,
+      640
+    ]
+  },
+  {
+    "file": "assets/fonds/carnet.webp",
+    "before": 118826,
+    "after": 27464,
+    "size": [
+      360,
+      640
+    ]
+  },
+  {
+    "file": "assets/fonds/domaine.webp",
+    "before": 111374,
+    "after": 28292,
+    "size": [
+      288,
+      512
+    ]
+  },
+  {
+    "file": "assets/fonds/journal.webp",
+    "before": 118832,
+    "after": 22082,
+    "size": [
+      360,
+      640
+    ]
+  },
+  {
+    "file": "assets/fonds/memoire.webp",
+    "before": 102370,
+    "after": 26458,
+    "size": [
+      360,
+      640
+    ]
+  },
+  {
+    "file": "assets/fonds/veillee.webp",
+    "before": 109668,
+    "after": 17068,
+    "size": [
+      360,
+      640
+    ]
+  },
+  {
+    "file": "assets/oeuvres/arche13.webp",
+    "before": 102002,
+    "after": 41456,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/brisemonde-1.webp",
+    "before": 65022,
+    "after": 31672,
+    "size": [
+      512,
+      384
+    ]
+  },
+  {
+    "file": "assets/oeuvres/brisemonde-2.webp",
+    "before": 97894,
+    "after": 40374,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/brisemonde-3.webp",
+    "before": 71866,
+    "after": 28836,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/brisemonde-4.webp",
+    "before": 82330,
+    "after": 32762,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/brisemonde.webp",
+    "before": 116600,
+    "after": 36968,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/chant.webp",
+    "before": 98908,
+    "after": 39918,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/dyson-1.webp",
+    "before": 101100,
+    "after": 39982,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/dyson-2.webp",
+    "before": 88514,
+    "after": 33454,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/dyson-3.webp",
+    "before": 104408,
+    "after": 41772,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/dyson-4.webp",
+    "before": 74540,
+    "after": 27870,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/dyson.webp",
+    "before": 108218,
+    "after": 34056,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/oeuvres/silence.webp",
+    "before": 94970,
+    "after": 34218,
+    "size": [
+      448,
+      336
+    ]
+  },
+  {
+    "file": "assets/terres/collines-carte.webp",
+    "before": 46522,
+    "after": 36450,
+    "size": [
+      445,
+      305
+    ]
+  },
+  {
+    "file": "assets/terres/collines-decor.webp",
+    "before": 105742,
+    "after": 30650,
+    "size": [
+      252,
+      448
+    ]
+  },
+  {
+    "file": "assets/terres/desert-carte.webp",
+    "before": 41440,
+    "after": 30882,
+    "size": [
+      438,
+      299
+    ]
+  },
+  {
+    "file": "assets/terres/desert-decor.webp",
+    "before": 78704,
+    "after": 28504,
+    "size": [
+      288,
+      512
+    ]
+  },
+  {
+    "file": "assets/terres/gisement-carte.webp",
+    "before": 47506,
+    "after": 36120,
+    "size": [
+      419,
+      304
+    ]
+  },
+  {
+    "file": "assets/terres/gisement-decor.webp",
+    "before": 104572,
+    "after": 29926,
+    "size": [
+      252,
+      448
+    ]
+  },
+  {
+    "file": "assets/terres/lisiere-carte.webp",
+    "before": 75718,
+    "after": 31588,
+    "size": [
+      512,
+      280
+    ]
+  },
+  {
+    "file": "assets/terres/lisiere-decor.webp",
+    "before": 121924,
+    "after": 27216,
+    "size": [
+      252,
+      448
+    ]
+  },
+  {
+    "file": "assets/terres/lune-carte.webp",
+    "before": 39218,
+    "after": 30142,
+    "size": [
+      374,
+      275
+    ]
+  },
+  {
+    "file": "assets/terres/lune-decor.webp",
+    "before": 96290,
+    "after": 28432,
+    "size": [
+      252,
+      448
+    ]
+  },
+  {
+    "file": "assets/terres/mercure-decor.webp",
+    "before": 101470,
+    "after": 28798,
+    "size": [
+      252,
+      448
+    ]
+  },
+  {
+    "file": "assets/terres/mine-carte.webp",
+    "before": 45606,
+    "after": 35144,
+    "size": [
+      417,
+      326
+    ]
+  },
+  {
+    "file": "assets/terres/mine-decor.webp",
+    "before": 85754,
+    "after": 32704,
+    "size": [
+      288,
+      512
+    ]
+  },
+  {
+    "file": "assets/terres/montagnes-carte.webp",
+    "before": 63348,
+    "after": 44790,
+    "size": [
+      448,
+      362
+    ]
+  },
+  {
+    "file": "assets/terres/montagnes-decor.webp",
+    "before": 103212,
+    "after": 30294,
+    "size": [
+      252,
+      448
+    ]
+  },
+  {
+    "file": "assets/terres/orbite-decor.webp",
+    "before": 83792,
+    "after": 33264,
+    "size": [
+      288,
+      512
+    ]
+  },
+  {
+    "file": "assets/terres/plaine-carte.webp",
+    "before": 66846,
+    "after": 29736,
+    "size": [
+      512,
+      239
+    ]
+  },
+  {
+    "file": "assets/terres/plaine-decor.webp",
+    "before": 92370,
+    "after": 25824,
+    "size": [
+      288,
+      512
+    ]
+  },
+  {
+    "file": "assets/terres/riviere-carte.webp",
+    "before": 40154,
+    "after": 31072,
+    "size": [
+      443,
+      274
+    ]
+  },
+  {
+    "file": "assets/terres/riviere-decor.webp",
+    "before": 86310,
+    "after": 31972,
+    "size": [
+      288,
+      512
+    ]
+  }
+]
