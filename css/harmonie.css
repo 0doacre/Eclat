@@ -1,0 +1,40 @@
+/* 0.46 : passe d'harmonisation. Un seul contrat pour les écrans de l'application (Labo, Atelier, Progression, Journal) :
+ * même gouttière, même titre de page, mêmes cartes. Chargé en dernier ; les écrans-scène (Terres) gardent leur mise en page. */
+:root {
+  --gut: 12px;          /* la marge latérale de tout contenu */
+  --carte-r: 10px;      /* le rayon d'une carte */
+  --titre-page: 24px;   /* la taille d'un titre de page */
+}
+
+/* 1. La gouttière : les vues n'ont pas de marge propre, chaque écran met la sienne, la même. */
+#v-labo, #v-atelier, #v-arbre { padding-left: 0; padding-right: 0; }
+#v-journal { padding-left: var(--gut); padding-right: var(--gut); }
+#v-labo .atelier-equipe.ae-lab { padding-left: var(--gut); padding-right: var(--gut); }
+#v-atelier .atl-page { padding-left: var(--gut); padding-right: var(--gut); }
+#v-arbre > .filters, #v-arbre > .arb-barre { margin-left: 0; margin-right: 0; padding-left: var(--gut); padding-right: var(--gut); }
+#v-journal h3.sub { margin-left: 0; margin-right: 0; }
+/* un titre en tête de vue, hors des conteneurs à gouttière */
+#v-labo > .atl-titre { margin-left: var(--gut); margin-right: var(--gut); }
+
+/* 2. Le titre de page : la même police, la même taille, le même graisse. */
+#v-journal h2.title, .atl-titre h2, .arb-entete h2 {
+  font-family: var(--serif); font-weight: 500; font-size: var(--titre-page); line-height: 1.15; margin: 0; padding: 0; border: 0; color: inherit;
+}
+#v-journal h2.title { margin: 6px 0 10px; }
+.arb-entete { margin: 6px 0 10px; padding: 0 0 8px; border-bottom: 1px solid #79694a; }
+#v-labo > .atl-titre { margin-top: 6px; }
+
+/* 3. Les cartes : le même rayon. */
+.view .card, .atel-carte { border-radius: var(--carte-r); }
+
+/* 4. Les filtres et les pastilles de choix : une seule forme (rectangle de papier, actif en rouge brique), à la même hauteur tactile. */
+:is(#v-arbre, #v-journal, #v-carnet, #v-cosmos, #v-labo, #v-atelier) .filters button {
+  border-radius: 3px; min-height: 44px; font-size: 14px; box-shadow: none; padding-left: 12px; padding-right: 12px;
+  background: var(--panel, #f4ecda); color: var(--text); border: 1px solid var(--line2);
+}
+:is(#v-arbre, #v-journal, #v-carnet, #v-cosmos, #v-labo, #v-atelier) .filters button.on {
+  background: var(--acc, #813f2a); border-color: var(--acc, #813f2a); color: var(--acc-ink, #fff8e9);
+}
+#v-arbre .filters button .f-cnt { font-size: 11px; }
+#v-arbre > .filters { gap: 6px; border-bottom: 0; }
+#v-arbre .prog-sw { border-bottom: 1px solid var(--line2); }

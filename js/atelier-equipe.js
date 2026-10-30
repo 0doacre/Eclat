@@ -237,7 +237,7 @@
     function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve(),cadsSnap=E.cadences?E.cadences().map(c=>c.id+':'+c.have+':'+c.machs+':'+c.status).join(';'):'';return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentFilter||"utiles",s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,cadsSnap,lastHeat]);}
     function redraw(){U.dirty=true;render(true);live();save();}
     function view(){signature=sig();return api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
-    function laboView(){signature=sig();return '<div class="atelier-equipe ae-lab" id="atelier-equipe">'+body("labo")+'</div>';}
+    function laboView(){signature=sig();return '<header class="atl-titre"><h2>Labo</h2><p>Tes outils et tes gestes, métier par métier.</p></header><div class="atelier-equipe ae-lab" id="atelier-equipe">'+body("labo")+'</div>';}
     function ecoView(){signature=sig();return '<div class="atelier-equipe ae-prod" id="atelier-equipe">'+body("eco")+'</div>';}
     const rootMode=r=>r&&r.classList.contains("ae-lab")?"labo":r&&r.classList.contains("ae-prod")?"eco":undefined;
     const tabOK=()=>U.tab==="labo"||U.tab==="atelier";
