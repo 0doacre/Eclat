@@ -144,3 +144,25 @@
 #v-arbre .prog-sw { flex: none; display: flex; gap: 6px; overflow-x: auto; padding: 6px 8px; border-bottom: 1px solid var(--line2); }
 #v-arbre .prog-sw button { flex: none; min-height: 40px; }
 #v-arbre .prog-corps { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px; }
+
+/* 0.42 : le Labo et l'Atelier prennent toute la largeur ; deux colonnes seulement quand la place le permet */
+#v-labo .ae-layout { align-items: stretch; }
+#v-labo .ae-lab .ae-posts.ae-metiers { display: flex; gap: 6px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+#v-labo .ae-lab .ae-posts.ae-metiers .btn { flex: 1 0 auto; white-space: nowrap; min-height: 44px; }
+@media (min-width: 900px) {
+  #v-labo .ae-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 12px; }
+  #v-labo .ae-bench { align-self: start; }
+  #v-labo .ae-stock { min-height: 0; align-self: stretch; }
+  #v-labo .ae-inventory { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+  #v-domaine .terres { max-width: none; }
+  #v-domaine .terre-gisements { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); column-gap: 16px; }
+  .atel-liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 8px; }
+  .prod-choix { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+}
+/* le thermomètre : encre foncée sur papier, la couleur ne porte jamais seule le sens (le texte dit « Brûlant », « Tiède »…) */
+#v-labo #ae-result[class*="ae-heat-"] { box-shadow: none; animation: none; border-width: 1px 1px 1px 5px; }
+#v-labo #ae-result.ae-heat-brulant { color: #6b2410; background: #fbe3d6; border-color: #a8381a; }
+#v-labo #ae-result.ae-heat-chaud { color: #5e3410; background: #fbeadb; border-color: #b4691f; }
+#v-labo #ae-result.ae-heat-tiede { color: #4f4210; background: #f6efd2; border-color: #a0891f; }
+#v-labo #ae-result.ae-heat-froid { color: #25414f; background: #e6eef1; border-color: #5d7f90; }
+#v-labo #ae-result.ae-heat-success, #v-labo #ae-result.ae-heat-discover { color: #1f4a2a; background: #e3f0dc; border-color: #3f7a4c; }

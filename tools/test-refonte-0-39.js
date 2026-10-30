@@ -104,3 +104,19 @@ test("les icônes d’onglets pointent vers des symboles qui existent", () => {
   for (const id of [...html.matchAll(/onglets\.svg#([\w-]+)/g)].map((x) => x[1])) assert.ok(svg.includes('id="' + id + '"'), id);
 });
 console.log(passed + " tests de la refonte 0.39 réussis (au total).");
+
+console.log("Refonte 0.42 : lisibilité");
+test("le thermomètre du Labo : encre foncée sur papier, au moins 4,5 contre 1 pour chaque état", () => {
+  const css = fs.readFileSync(path.join(__dirname, "..", "css", "refonte-0-39.css"), "utf8");
+  const lum = (h) => { const m = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4))); return 0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]; };
+  const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const etats = [...css.matchAll(/#v-labo #ae-result\.ae-heat-([a-z]+)(?:, #v-labo #ae-result\.ae-heat-[a-z]+)? \{ color: (#[0-9a-f]{6}); background: (#[0-9a-f]{6});/g)];
+  assert.ok(etats.length >= 5, "les cinq états sont définis : " + etats.length);
+  for (const [, nom, fg, bg] of etats) assert.ok(ratio(fg, bg) >= 4.5, nom + " : " + ratio(fg, bg).toFixed(2));
+});
+test("le Labo organise les outils par métier, comme les ateliers de l’Atelier", () => {
+  const src = fs.readFileSync(path.join(__dirname, "..", "js", "atelier-equipe.js"), "utf8");
+  assert.ok(src.includes("outilsDuMetier") && src.includes('data-ae="metier"') === false && src.includes('button("metier"'));
+  assert.ok(!/w\.place\b/.test(src), "plus de poste de travail : le métier le remplace");
+});
+console.log(passed + " tests de la refonte 0.39 réussis (au total).");

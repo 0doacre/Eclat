@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.41.0";
+  D.VERSION = "0.42.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1597,6 +1597,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⚗️ Le Labo suit tes métiers : Artisanat, Élevage, Métallurgie, Centrales, Électronique, Artistique. Chaque métier a ses outils et ses gestes, les mêmes branches que les ateliers de l’Atelier. Les écrans prennent toute la largeur, et le thermomètre se lit mieux sur le papier.",
     "👷 Les ateliers embauchent : un apprenti (dès le Cuivre) travaille à la moitié de la vitesse des mains, un ouvrier (dès l’Acier) à la même vitesse, pour les recettes de son atelier. Embaucher coûte des écus, de plus en plus à chaque embauche, sans salaire ensuite. L’ancienne vente automatique de lanières disparaît : ton apprenti de l’établi devient celui de l’Élevage, et son avance te revient.",
     "🏭 L’Atelier montre tes ateliers : Artisanat, Élevage, Métallurgie, Chimie, Centrales, Électronique, Artistique, chacun avec son échelle : à la main, apprenti, ouvriers, machines, robots. Une jauge d’énergie en chevaux compare ce que tes machines demandent à ce que tu produis ; pour l’instant, elle ne ralentit encore rien.",
     "🗺️ Cinq onglets : Terres, Labo, Atelier, Arbre, Journal. Les Terres montrent une terre à la fois, avec son illustration en fond : glisse ou touche les médaillons pour passer de l’une à l’autre, et récolte d’un appui. La Carte devient l’Atlas, rangé sous les Terres.",

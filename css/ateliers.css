@@ -38,3 +38,8 @@
 .atel-embauche .btn { min-height: 44px; }
 .atel-ferme { font-size: 13px; color: #60513f; padding: 8px 4px; }
 .atl-bourse { margin: 0 0 4px; }
+
+/* grand écran : les cartes d'atelier se rangent en colonnes, tout l'écran sert */
+@media (min-width: 900px) {
+  .atel-liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 8px; }
+}

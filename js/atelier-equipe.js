@@ -51,53 +51,77 @@
       return '<button type="button" id="ae-'+action+'-'+esc(value||"0")+'" class="btn '+cls+'" data-ae="'+action+'" data-value="'+esc(value||"")+'" title="'+esc(explanation)+'"'+(disabled?' disabled':'')+'>'+title+'</button>';
     };
     const consumed=new Set(Object.values(I).filter(x=>x.r).flatMap(x=>Object.keys(x.r[1])));
-    function grandAtelierTools(){
-      return (D.GESTE_ORDER||Object.keys(D.GESTES)).filter(g=>E.gesteOK(g)).map(g=>({
-        id:"ga_"+g,
-        n:D.GESTES[g].n,
-        geste:g,
-        ready:true,
-        modes:{[g]:D.GESTES[g].n}
-      }));
+    /* Les métiers (0.42) : l'établi s'organise par branche de métier, les mêmes que les ateliers de l'Atelier.
+     * Un métier a ses outils (ceux qui servent à ses recettes) et ses gestes (ceux de ses recettes). */
+    const isGrand=eq=>typeof eq==="string"&&eq.indexOf("ga_")===0;
+    /* « outil/geste » → les métiers dont une recette l'emploie (calculé une fois) */
+    let paires=null;
+    function pairesDesOutils(){
+      if(!paires){paires={};const R=D.CRAFT_EQUIPMENT.recipes;for(const rid in R)R[rid].forEach(c=>{const k=c.equipment+"/"+c.mode;(paires[k]=paires[k]||new Set()).add(E.atelierDe(rid));});}
+      return paires;
+    }
+    function gestesDuMetier(f){
+      return (D.GESTE_ORDER||Object.keys(D.GESTES)).filter(g=>E.gesteOK(g)&&Object.keys(I).some(id=>I[id].r&&!I[id].sec&&!I[id].path&&I[id].a>=4&&I[id].r[0]===g&&E.atelierDe(id)===f&&E.ageOK(id)));
+    }
+    /* l'atelier du métier : un outil dont les gestes sont ceux des recettes du métier (à partir du Cuivre) */
+    function atelierDuMetier(f){
+      const gestes=E.state.age>=3?gestesDuMetier(f):[];
+      if(!gestes.length)return null;
+      const modes={};gestes.forEach(g=>{modes[g]=D.GESTES[g].n;});
+      return {id:"ga_"+f,n:"Atelier",geste:gestes[0],ready:true,modes};
+    }
+    function outilsDuMetier(f){
+      const P=pairesDesOutils(),out=[];
+      E.equipmentList().filter(x=>x.ready).forEach(x=>{
+        const modes={};
+        for(const m in x.modes)if(P[x.id+"/"+m]&&P[x.id+"/"+m].has(f))modes[m]=x.modes[m];
+        if(Object.keys(modes).length)out.push(Object.assign({},x,{modes}));
+      });
+      const at=atelierDuMetier(f);
+      return at?out.concat([at]):out;
+    }
+    function metiersDispo(){
+      const out=D.ATELIERS.familles.filter(F=>outilsDuMetier(F.id).length>0);
+      return out.length?out:[D.ATELIERS.familles[0]];
     }
     function work(){
       const s=E.state,f=s.flags;
       if(observedState!==s){signature="";message="";lastSale=null;messageSale="";observedState=s;}
-      if(!f.equipmentBench||typeof f.equipmentBench!=="object")f.equipmentBench={place:"etabli",eq:"percuteur_pierre",mode:"tailler",slots:[]};
+      if(!f.equipmentBench||typeof f.equipmentBench!=="object")f.equipmentBench={metier:"artisanat",eq:"percuteur_pierre",mode:"tailler",slots:[]};
       const w=f.equipmentBench;
       w.slots=[...new Set((Array.isArray(w.slots)?w.slots:[]).filter(id=>I[id]))].slice(0,3);
-      const places=E.workplaceList().filter(x=>x.ready);
-      if(s.age>=3)places.push({id:"grand_atelier",n:"Grand Atelier (Âges 4+)",ready:true});
-      if(!places.some(x=>x.id===w.place))w.place="etabli";
-      const tools=w.place==="grand_atelier"?grandAtelierTools():E.equipmentList().filter(x=>x.ready&&E.workplaceFor(x.id)===w.place);
+      const metiers=metiersDispo();
+      if(!metiers.some(m=>m.id===w.metier))w.metier=metiers[0].id;
+      let tools=outilsDuMetier(w.metier);
+      if(!tools.length)tools=E.equipmentList().filter(x=>x.ready).slice(0,1);
       if(!tools.some(x=>x.id===w.eq)){w.eq=tools[0].id;w.prepared=null;}
       const tool=tools.find(x=>x.id===w.eq);
       if(!Object.hasOwn(tool.modes,w.mode))w.mode=Object.keys(tool.modes)[0];
       if(!s.known[w.prepared])w.prepared=null;
       U.slots=[0,1,2].map(i=>w.slots[i]||null);
-      if(w.place==="grand_atelier"){
+      if(isGrand(w.eq)){
         U.geste=w.mode;
         const parts=[...w.slots].sort().join(",");
         const recipe=Object.keys(I).find(id=>I[id].r&&I[id].a>=4&&I[id].r[0]===w.mode&&Object.keys(I[id].r[1]).sort().join(",")===parts)||null;
-        return {w,places,tools,tool,recipe};
+        return {w,metiers,tools,tool,recipe};
       }
       const recipe=E.equipmentRecipe(w.eq,w.mode,w.slots);
       const reference=recipe||Object.keys(D.CRAFT_EQUIPMENT.recipes).find(id=>D.CRAFT_EQUIPMENT.recipes[id].some(c=>c.equipment===w.eq&&c.mode===w.mode));
       U.geste=reference?I[reference].r[0]:"assembler";
-      return {w,places,tools,tool,recipe};
+      return {w,metiers,tools,tool,recipe};
     }
     /* Une matière est « utile » ici si une recette encore inconnue, dont tous les ingrédients ont été vus, la demande
      * avec cet outil et ce geste. Mémorisé par outil, geste et progression : le calcul parcourt les recettes. */
     const memoUtile={cle:"",v:{}};
     function useful(id,w){
-      const s=E.state,cle=[w.place,w.eq,w.mode,Object.keys(s.known).length,Object.keys(s.seen).length].join("|");
+      const s=E.state,cle=[w.metier,w.eq,w.mode,Object.keys(s.known).length,Object.keys(s.seen).length].join("|");
       if(memoUtile.cle!==cle){memoUtile.cle=cle;memoUtile.v={};}
       if(id in memoUtile.v)return memoUtile.v[id];
-      const eligible=w.place==="grand_atelier"?rid=>I[rid].a>=4&&I[rid].r[0]===w.mode:rid=>(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
+      const eligible=isGrand(w.eq)?rid=>I[rid].a>=4&&I[rid].r[0]===w.mode:rid=>(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
       return memoUtile.v[id]=Object.values(E.reactions(id,eligible)).some(n=>n>0);
     }
     function body(mode){
-      const {w,places,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();
+      const {w,metiers,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();
       if(mode==="eco")return economy(s,e);
       const raw=[...new Set(D.ZONES.filter(z=>E.zoneOpen(z.id)).flatMap(z=>z.res))];
       const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id))).sort((a,b)=>{
@@ -105,12 +129,11 @@
         if(da!==db)return db-da;
         return (E.count(b)>=1?1:0)-(E.count(a)>=1?1:0);
       });
-      const known=Object.keys(s.known).filter(id=>(w.place==="grand_atelier"?(I[id]?.r&&I[id].a>=4):D.CRAFT_EQUIPMENT.recipes[id]?.some(c=>E.workplaceFor(c.equipment)===w.place))&&(!E.isUnique(I[id])||!(s.made[id]>0)));
+      const known=Object.keys(s.known).filter(id=>(E.atelierDe(id)===w.metier&&I[id]?.r)&&(!E.isUnique(I[id])||!(s.made[id]>0)));
       let h='';
       const releve=!mode&&E.shouldSuggestReleve&&E.shouldSuggestReleve();
       if(releve)h+='<section class="card releve-alerte"><b>✦ Passer le relais · +'+releve.gain+' Traces</b><p class="small">'+esc(releve.texte)+'</p><button class="btn pri small" data-releve title="Voir les gains et les bonus permanents de la prochaine relève">Préparer la relève</button></section>';
-      if(places.length>1)h+='<nav class="ae-posts" aria-label="Postes de travail">'+places.map(p=>button("place",p.id,esc(p.n),p.id===w.place?"pri":"")).join("")+'</nav>';
-      if(s.age>=3)h+='<p class="small">'+button("legacy","1","Procédés après le Cuivre","ghost")+'</p>';
+      h+='<nav class="ae-posts ae-metiers" aria-label="Métiers">'+metiers.map(m=>button("metier",m.id,m.ic+' '+esc(m.n),m.id===w.metier?"pri":"")).join("")+'</nav>';
       h+='<div class="ae-layout"><section class="card ae-bench"><div class="ae-work"><div><div class="ae-slots">';
       for(let i=0;i<3;i++){const id=w.slots[i],need=w.prepared?I[w.prepared]?.r?.[1][id]:0;
         h+=button("slot",String(i),id?icon(id)+'<span>'+esc(name(id))+'</span><small data-ae-need="'+esc(id)+'" data-need="'+(need||0)+'"></small>':'+',id?"ae-filled":"ae-empty",!id);
@@ -233,12 +256,12 @@
     function prepare(id){if(!E.state.known[id])return;
       if(I[id]?.r&&I[id].a>=4&&!D.CRAFT_EQUIPMENT.recipes[id]){
         const g=I[id].r[0];
-        Object.assign(work().w,{place:"grand_atelier",eq:"ga_"+g,mode:g,slots:Object.keys(I[id].r[1]),prepared:id});
+        Object.assign(work().w,{metier:E.atelierDe(id),eq:"ga_"+E.atelierDe(id),mode:g,slots:Object.keys(I[id].r[1]),prepared:id});
         message="Recette préparée : "+name(id);
         return;
       }
-      const c=E.equipmentChoices(id).find(c=>c.ready);if(!c){message="Il faut d’abord : "+name(E.equipmentCheck(id)?.required||"un outil adapté");return;}Object.assign(work().w,{eq:c.equipment,mode:c.mode,place:E.workplaceFor(c.equipment),slots:Object.keys(I[id].r[1]),prepared:id});message="Recette préparée : "+name(id);}
-    function forge(mode){const {w}=work();if(!w.slots.length){if(mode&&Object.hasOwn(work().tool.modes,mode)){w.mode=mode;w.prepared=null;}return;}w.mode=mode||w.mode;work();U.forging=true;let result;try{result=w.place==="grand_atelier"?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
+      const c=E.equipmentChoices(id).find(c=>c.ready);if(!c){message="Il faut d’abord : "+name(E.equipmentCheck(id)?.required||"un outil adapté");return;}Object.assign(work().w,{eq:c.equipment,mode:c.mode,metier:E.atelierDe(id),slots:Object.keys(I[id].r[1]),prepared:id});message="Recette préparée : "+name(id);}
+    function forge(mode){const {w}=work();if(!w.slots.length){if(mode&&Object.hasOwn(work().tool.modes,mode)){w.mode=mode;w.prepared=null;}return;}w.mode=mode||w.mode;work();U.forging=true;let result;try{result=isGrand(w.eq)?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
       if(result.kind==="craft"||result.kind==="queued"){
         lastHeat="success";
         message=(result.kind==="craft"?"Fabriqué : ":"En cours : ")+name(result.id);
@@ -275,7 +298,7 @@
       if(action==="legacy"){U.equipmentLegacy=id==="1";redraw();return;}
       if(!root()?.contains(b))return;
       const {w,tools,tool}=work();A.init();
-      if(action==="place"){w.place=id;w.prepared=null;}
+      if(action==="metier"){if(D.ATELIERS.familles.some(f=>f.id===id)){w.metier=id;w.prepared=null;}}
       else if(action==="filtre"){E.state.settings.equipmentFilter=["utiles","tout","reserve"].includes(id)?id:"utiles";redraw();return;}
       else if(action==="mode"){if(Object.hasOwn(tool.modes,id)){w.mode=id;w.prepared=null;}}
       else if(action==="study"){const n=E.studyAll();message=n?n+' matières étudiées.':'Il manque de l’Intuition pour étudier ces matières.';}

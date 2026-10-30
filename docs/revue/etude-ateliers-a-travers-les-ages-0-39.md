@@ -130,3 +130,9 @@ Livrable seul, sans règle nouvelle :
 - **Sauvegarde** : un champ, `ateliers` (`{ famille: { app, ouv } }`), nettoyé au chargement ; pas de changement de version.
 - **Énergie** : les travailleurs au travail comptent dans la demande (1 cheval par apprenti, 3 par ouvrier, provisoire). Elle ne ralentit toujours personne.
 - **À mesurer** : le barème des écus (40, 200, × 1,5) n'est pas équilibré ; aucune partie simulée n'a encore été jouée avec des travailleurs.
+
+## 13. Retour du porteur du projet après le 0.41 et correctifs du 0.42
+
+- **Le Labo et l'Atelier parlent des mêmes branches.** Le Labo choisissait un **poste** (Établi, Foyer, Grand Atelier), l'Atelier un **métier** : incompréhensible. Le poste disparaît de l'écran. Le Labo propose maintenant les **métiers** (Artisanat, Élevage, Métallurgie, Centrales, Électronique, Artistique), chacun avec **ses outils** et **ses gestes** : un outil apparaît dans un métier s'il sert à au moins une de ses recettes, et ne montre que les gestes de ces recettes. À partir du Cuivre, chaque métier a en plus son **Atelier**, un outil dont les gestes sont ceux de ses recettes plus tardives. Le moteur, les recettes et les sauvegardes ne changent pas : seul le rangement change (`js/atelier-equipe.js`, `work`, `outilsDuMetier`). Le bouton « Procédés après le Cuivre » est retiré.
+- **Pleine largeur.** Une règle de l'ancienne feuille de style (`align-items: start`) retenait l'établi et la liste des matières à une colonne étroite. Sur grand écran : l'établi et la liste côte à côte, les cartes d'atelier en colonnes, les gisements en colonnes ; sur téléphone : empilés.
+- **Contraste du thermomètre.** Le texte orange sur fond rose faisait 2,4 contre 1. Les cinq états passent à une encre foncée sur papier (8,6 à 9,2 contre 1) avec un liseré de couleur en plus du mot ; un test le garde (`tools/test-refonte-0-39.js`).
