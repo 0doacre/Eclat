@@ -76,6 +76,7 @@ test("les nouveaux objectifs retiennent l’âge courant et ne font pas reculer 
   const { E } = partie(7);
   E.milestones()[7].forEach((x) => { E.state.made[x.ob.id] = 1; });
   E.state.made.dynamo = 1; delete E.state.made.recuperation_vapeur;
+  E.state.pass.desert = { paid: {}, done: true };
   E.avancerAge(); assert.strictEqual(E.state.age, 7);
   assert.strictEqual(E.objective().id, "recuperation_vapeur");
   E.state.made.recuperation_vapeur = 1; E.avancerAge();
