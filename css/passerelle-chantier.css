@@ -1,0 +1,9 @@
+.passerelle-chantier{margin:10px auto 14px;max-width:640px;min-width:0}
+.passerelle-scene{position:relative;aspect-ratio:1.5;isolation:isolate;overflow:hidden}
+.passerelle-scene img{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.passerelle-structure{opacity:var(--passerelle-structure,0)}.passerelle-deck{opacity:var(--passerelle-deck,0)}
+.passerelle-chantier figcaption{display:flex;justify-content:space-between;gap:8px;font:22px/1.2 'Caveat',cursive;color:var(--muted);padding:5px 2px}
+.passerelle-chantier figcaption>span:last-child{font:12px/1.6 var(--sans);white-space:nowrap;align-self:center}
+html[data-style-mode="vivant"] .passbox:has(>.passerelle-chantier){background:transparent;border:0;padding:0}
+.dom-dense .passerelle-chantier{max-width:300px}
+@media(max-width:680px){.passerelle-chantier{margin-block:6px 9px}.passerelle-chantier figcaption{font-size:20px}}
