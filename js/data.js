@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.46.0";
+  D.VERSION = "0.46.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1635,7 +1635,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "🎨 Passe d’harmonisation des écrans : la même marge sur le Labo, l’Atelier, la Progression et le Journal ; le même titre de page (le Labo en reçoit un) ; les mêmes filtres (rectangles, actif en rouge brique) ; les mêmes cartes arrondies.",
+    "🎨 Harmonisation, suite : le Labo reçoit les mêmes cadres peints que l’Atelier et le Carnet, ses filtres suivent la même forme, et le Carnet et les Machines prennent la même marge.",
+    "🎨 Passe d’harmonisation des écrans : la même marge sur le Labo, l’Atelier, la Progression et le Journal ; le même titre de page (le Labo en reçoit un) ; les mêmes filtres (rectangles, actif en rouge brique) ; les mêmes cartes peintes.",
     "👋 Tu peux renvoyer un apprenti ou un ouvrier depuis la page de l’atelier (deux touches pour confirmer). Aucun remboursement, et l’embauche suivante ne coûte pas moins cher : renvoyer pour réembaucher ne rapporte rien.",
     "🪙 Le prix d’une embauche suit le niveau des prix : un apprenti ou un ouvrier coûte toujours à peu près le même nombre de matières de ton âge. Embaucher tôt coûte moins cher qu’embaucher tard.",
     "⚙️ Quatre machines de plus, pour qu’il y en ait une tous les deux âges environ : le Martinet hydraulique (Acier), le Poste à moteur électrique (Électricité), le Centre d’usinage numérique (Composites) et la Matrice de fabrication (Stellaire). L’échelle d’un atelier compte maintenant sept marches : Manuel, Mécanisme, Hydraulique, Vapeur, Chaîne, Robotique, Synthèse.",

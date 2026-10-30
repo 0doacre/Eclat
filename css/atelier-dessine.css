@@ -7,12 +7,12 @@
   --atelier-divider: var(--drawn-divider);
 }
 /* Le dernier support est sombre même sans la préférence Veillée. */
-[data-style-mode="vivant"] body[data-ep="bord"] :is(#v-atelier, #v-carnet) {
+[data-style-mode="vivant"] body[data-ep="bord"] :is(#v-atelier, #v-carnet, #v-labo) {
   --atelier-frame: url("../assets/ui/frame-chalk.svg");
   --atelier-button: url("../assets/ui/button-chalk.svg");
   --atelier-divider: url("../assets/ui/divider-chalk.svg");
 }
-[data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(.card, .age-sec) {
+[data-style-mode="vivant"] :is(#v-atelier, #v-carnet, #v-labo) :is(.card, .age-sec) {
   border: 10px solid transparent;
   border-image: var(--atelier-frame) 20 / 10px / 0 stretch;
   border-radius: 0;
@@ -185,7 +185,7 @@
   [data-style-mode="vivant"] #v-atelier .ae-tools { padding: 10px 0 0; }
 }
 @media (max-width: 360px) {
-  [data-style-mode="vivant"] :is(#v-atelier, #v-carnet) :is(.card, .age-sec) { padding: 8px 4px; }
+  [data-style-mode="vivant"] :is(#v-atelier, #v-carnet, #v-labo) :is(.card, .age-sec) { padding: 8px 4px; }
   [data-style-mode="vivant"] #v-atelier .ae-mini { left: 4px; right: 4px; }
   [data-style-mode="vivant"] #v-atelier .ae-mini-tool { display: none; }
 }

@@ -7,10 +7,10 @@
 }
 
 /* 1. La gouttière : les vues n'ont pas de marge propre, chaque écran met la sienne, la même. */
-#v-labo, #v-atelier, #v-arbre { padding-left: 0; padding-right: 0; }
+#v-labo, #v-atelier, #v-arbre, #v-carnet, #v-machines { padding-left: 0; padding-right: 0; }
 #v-journal { padding-left: var(--gut); padding-right: var(--gut); }
 #v-labo .atelier-equipe.ae-lab { padding-left: var(--gut); padding-right: var(--gut); }
-#v-atelier .atl-page { padding-left: var(--gut); padding-right: var(--gut); }
+#v-atelier .atl-page, #v-carnet .atl-page, #v-machines .atl-page { padding-left: var(--gut); padding-right: var(--gut); }
 #v-arbre > .filters, #v-arbre > .arb-barre { margin-left: 0; margin-right: 0; padding-left: var(--gut); padding-right: var(--gut); }
 #v-journal h3.sub { margin-left: 0; margin-right: 0; }
 /* un titre en tête de vue, hors des conteneurs à gouttière */
@@ -24,8 +24,7 @@
 .arb-entete { margin: 6px 0 10px; padding: 0 0 8px; border-bottom: 1px solid #79694a; }
 #v-labo > .atl-titre { margin-top: 6px; }
 
-/* 3. Les cartes : le même rayon. */
-.view .card, .atel-carte { border-radius: var(--carte-r); }
+/* 3. Les cartes : en mode vivant, le même cadre peint pour le Labo, l'Atelier et le Carnet (atelier-dessine.css, carnet-peint.css). */
 
 /* 4. Les filtres et les pastilles de choix : une seule forme (rectangle de papier, actif en rouge brique), à la même hauteur tactile. */
 :is(#v-arbre, #v-journal, #v-carnet, #v-cosmos, #v-labo, #v-atelier) .filters button {
@@ -38,3 +37,6 @@
 #v-arbre .filters button .f-cnt { font-size: 11px; }
 #v-arbre > .filters { gap: 6px; border-bottom: 0; }
 #v-arbre .prog-sw { border-bottom: 1px solid var(--line2); }
+/* les filtres du Labo (Utiles / Tout / En réserve) suivent la même forme */
+#v-labo .ae-filtres button { border-radius: 3px; min-height: 44px; font-size: 14px; box-shadow: none; padding-left: 12px; padding-right: 12px; background: var(--panel, #f4ecda); color: var(--text); border: 1px solid var(--line2); }
+#v-labo .ae-filtres button.on, #v-labo .ae-filtres button[aria-pressed="true"] { background: var(--acc, #813f2a); border-color: var(--acc, #813f2a); color: var(--acc-ink, #fff8e9); }

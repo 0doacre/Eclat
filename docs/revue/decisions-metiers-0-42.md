@@ -115,3 +115,16 @@ Règle : `cout × D.TRAVAILLEURS.parAge ^ (âge − âge d'ouverture)`, puis ×1
 
 - **Renvoyer** un apprenti ou un ouvrier depuis la page de l'atelier : bouton discret, confirmé par une seconde touche. `E.licencier(fam, kind)`.
 - **Aucun remboursement**, et le prix de l'embauche suivante **ne baisse pas** : le rang d'embauche (`E.rangEmbauche`) compte toutes les embauches faites dans l'atelier, renvois compris (`appH` / `ouvH` dans la partie, remis d'aplomb au chargement). Renvoyer puis réembaucher ne rapporte donc rien ; l'emplacement se libère seulement.
+
+## 13. Passe d'harmonisation des écrans (0.46)
+
+Banc : `css/harmonie.css`, chargé en dernier, qui fixe le contrat des écrans de l'application (Labo, Atelier, Carnet, Machines, Progression, Journal). Les Terres, écran-scène, gardent leur mise en page.
+
+Écarts relevés (390 px, partie à l'âge 8) puis corrigés :
+- **Gouttière** : 18 px au Labo, 10 à l'Atelier, 0 / 8 / 12 (et -4 : une pastille coupée) à la Progression, 12 au Journal → **12 px partout** (`--gut`).
+- **Titre de page** : 28 px au Journal, 24 à l'Atelier, 20 à la Progression, aucun au Labo → **24 px / graisse 500 / filet dessous**, et un titre « Labo » ajouté.
+- **Filtres** : pastilles rondes (Progression, Labo), rectangles sombres (Journal) → **un rectangle de papier de 44 px, actif en rouge brique**.
+- **Cartes** : cadre peint à l'Atelier et au Carnet, cadre plat au Labo → **le cadre peint partout** (mode vivant).
+- **Vérifié** : 320 px (rien ne déborde, tous les boutons à 30 px ou plus), 390, 768, 1280.
+
+Reste à voir : les panneaux des Terres (Comptoir, œuvre, production), la Carte, le Cosmos, les fenêtres, la feuille « Aspect » et le menu ; Playwright et un vrai téléphone n'ont pas encore passé dessus.
