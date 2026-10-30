@@ -104,3 +104,9 @@ Décision du porteur : « une machine pour deux âges ». L'échelle d'un atelie
 - Les vitesses et les chevaux sont interpolés entre les machines voisines ; les coûts suivent l'ordre de grandeur des machines de leur époque. À régler à la main.
 - Mesure : `node tools/sim-energie.js` : les passages sont franchis aux mêmes minutes qu'avant (tapeur : plaine 5,8 · rivière 17,5 · collines 33,9 · mine 60,5 · désert 76,0). Les joueurs automatiques construisent maintenant 3 à 6 machines aux âges 6 à 10 ; le manque d'énergie y est plus fort (rapport 0,1 à 0,3 avant la source du désert), borné par le plancher de 0,5.
 - Nom de la dernière : « Matrice de fabrication » plutôt que « Forge à confinement », pour ne pas la confondre avec la forge stellaire.
+
+## 11. Barème des écus : le prix d'une embauche suit les prix (0.45.1)
+
+Constat : le prix d'une embauche était fixe (apprenti 40, ouvrier 200 écus) alors qu'une matière brute vaut 0,1 écu à l'âge 0 et ×2,5 par âge au Comptoir. Un apprenti valait 26 matières à l'âge 3 mais moins d'une à l'âge 7 ; un ouvrier, 8 matières à l'âge 6 puis rien du tout : l'embauche devenait gratuite.
+
+Règle : `cout × D.TRAVAILLEURS.parAge ^ (âge − âge d'ouverture)`, puis ×1,5 à chaque embauche dans l'atelier (inchangé). `parAge = 2,5`, la hausse du Comptoir. Un apprenti coûte donc toujours environ 25 matières brutes de l'âge, un ouvrier 8. Embaucher tôt coûte moins cher qu'embaucher tard. Rien d'autre ne bouge ; les joueurs automatiques n'embauchent pas, donc le rythme mesuré ne change pas.

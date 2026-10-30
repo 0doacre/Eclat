@@ -32,10 +32,10 @@ test("embaucher coûte des écus, de plus en plus à chaque embauche", () => {
   const { E } = jeu(5);
   E.state.ecus = 1000;
   const c1 = E.coutEmbauche("artisanat", "apprenti");
-  assert.equal(c1, TR.apprenti.cout);
+  assert.equal(c1, Math.round(TR.apprenti.cout * Math.pow(TR.parAge, 5 - TR.apprenti.age)));
   assert.equal(E.embaucher("artisanat", "apprenti").ok, true);
   assert.equal(E.state.ecus, 1000 - c1);
-  assert.equal(E.coutEmbauche("artisanat", "apprenti"), Math.round(TR.apprenti.cout * TR.apprenti.croiss));
+  assert.equal(E.coutEmbauche("artisanat", "apprenti"), Math.round(c1 * TR.apprenti.croiss));
   assert.equal(E.state.ateliers.artisanat.app, 1);
 });
 test("sans assez d'écus : refusé, rien n'est débité", () => {

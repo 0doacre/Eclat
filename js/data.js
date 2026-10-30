@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.45.0";
+  D.VERSION = "0.45.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1553,7 +1553,11 @@
   };
   /* Un apprenti travaille à la moitié de la vitesse des mains, un ouvrier à la même vitesse, pour les recettes de
    * son atelier. Embaucher coûte des écus (de plus en plus cher à chaque embauche), sans salaire ensuite. */
+  /* 0.45.1 : le prix d'une embauche suit le niveau des prix. `cout` est le prix à l'âge où le travailleur s'ouvre ; à chaque âge de plus il est multiplié par
+   * `parAge` (la même hausse que la valeur d'une matière au Comptoir, D.COMPTOIR.rawAge). Un apprenti coûte ainsi toujours une vingtaine de matières brutes
+   * de l'âge, un ouvrier huit : embaucher tôt est moins cher qu'embaucher tard. 1 : prix fixe. */
   D.TRAVAILLEURS = {
+    parAge: 2.5,
     apprenti: { n: "Apprenti", age: 3, mult: 0.5, ing: 2, ch: 1, cout: 40, croiss: 1.5, max: 3 },
     ouvrier: { n: "Ouvrier", age: 6, mult: 1, ing: 3, ch: 3, cout: 200, croiss: 1.5, max: 8 }
   };
@@ -1631,6 +1635,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🪙 Le prix d’une embauche suit le niveau des prix : un apprenti ou un ouvrier coûte toujours à peu près le même nombre de matières de ton âge. Embaucher tôt coûte moins cher qu’embaucher tard.",
     "⚙️ Quatre machines de plus, pour qu’il y en ait une tous les deux âges environ : le Martinet hydraulique (Acier), le Poste à moteur électrique (Électricité), le Centre d’usinage numérique (Composites) et la Matrice de fabrication (Stellaire). L’échelle d’un atelier compte maintenant sept marches : Manuel, Mécanisme, Hydraulique, Vapeur, Chaîne, Robotique, Synthèse.",
     "⚙️ L’échelle d’un atelier suit la machine : Manuel, Mécanisme, Vapeur, Chaîne, Robotique. Les apprentis et les ouvriers ne la font plus monter : ils sont une autre échelle, celle de la main-d’œuvre. Les descriptions des machines portent leur marche au lieu de « Palier 3 » partout.",
     "📱 Sur un très petit écran (320 px), les trois boutons du haut des Terres tiennent sur la largeur.",

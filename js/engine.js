@@ -3888,7 +3888,7 @@
     };
     E.coutEmbauche = function (fam, kind) {
       const d = TRAV[kind], a = (S.ateliers && S.ateliers[fam]) || {};
-      return d ? Math.round(d.cout * Math.pow(d.croiss, a[kind === "apprenti" ? "app" : "ouv"] || 0)) : Infinity;
+      return d ? Math.round(d.cout * Math.pow(TRAV.parAge || 1, Math.max(0, S.age - d.age)) * Math.pow(d.croiss, a[kind === "apprenti" ? "app" : "ouv"] || 0)) : Infinity;
     };
     E.embaucher = function (fam, kind) {
       const d = TRAV[kind];
