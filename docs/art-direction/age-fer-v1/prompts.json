@@ -1,0 +1,482 @@
+[
+  {
+    "id": "fer_min",
+    "name": "Minerai de fer",
+    "type": "res",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One heavy angular raw iron ore rock, deep rusty hematite red with dark charcoal mineral seams and a few pale stone facets. Not polished, no metallic ingot.",
+    "master": "masters/fer_min.png",
+    "src": "../../../assets/carnet/items/fer_min.webp",
+    "master_size": [
+      1305,
+      1206
+    ],
+    "width": 256,
+    "height": 237,
+    "bytes": 24592,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "bas_fourneau",
+    "name": "Bas-fourneau",
+    "type": "stat",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One early bloomery furnace: squat tapering earthen brick chimney, rough clay plaster, open charcoal mouth with subdued embers at bottom, one visible leather bellows with wooden arms feeding a side clay tuyere. Compact complete installation on a tiny irregular patch of ground. No steel blast furnace, factory pipe or modern machinery.",
+    "master": "masters/bas_fourneau.png",
+    "src": "../../../assets/carnet/items/bas_fourneau.webp",
+    "master_size": [
+      1374,
+      1145
+    ],
+    "width": 256,
+    "height": 213,
+    "bytes": 25214,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "loupe",
+    "name": "Loupe de fer",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One cold irregular lump of iron bloom: porous spongy charcoal gray iron tangled with dark brown slag, crude rounded lumpy form. Clearly unrefined metal, not a magnifying glass, not an ingot, no molten glow.",
+    "master": "masters/loupe.png",
+    "src": "../../../assets/carnet/items/loupe.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 14556,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "lingot_fer",
+    "name": "Lingot de fer",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One handmade wrought iron ingot, elongated irregular rectangular bar, cool dark gray with hammered dents and subdued pale gray edges. No rust-red copper, no lettering, no polished steel.",
+    "master": "masters/lingot_fer.png",
+    "src": "../../../assets/carnet/items/lingot_fer.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 9636,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "plaque_fer",
+    "name": "Plaque de fer",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One thick hand-hammered iron plate, slightly uneven rectangular outline, dark cool gray face and thin visible edge, sparse hammer marks, no rivets or holes.",
+    "master": "masters/plaque_fer.png",
+    "src": "../../../assets/carnet/items/plaque_fer.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 9080,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "clous",
+    "name": "Clous",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: Three broad square-headed hand-forged iron nails crossed in a readable fan arrangement, irregular tapered shafts, cold dark gray metal. No screws, threads or bolts.",
+    "master": "masters/clous.png",
+    "src": "../../../assets/carnet/items/clous.webp",
+    "master_size": [
+      1292,
+      1218
+    ],
+    "width": 256,
+    "height": 241,
+    "bytes": 18714,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "chainon",
+    "name": "Chaîne de fer",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One short heavy chain of five visibly interlinked oval hand-forged iron links, loose shallow curve, dark gray with subdued light edges, physically connected links.",
+    "master": "masters/chainon.png",
+    "src": "../../../assets/carnet/items/chainon.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 11648,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "outils_fer",
+    "name": "Outils de fer",
+    "type": "tool",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One compact grouped set of four iron tools: wooden-handled hammer, small hatchet, short chisel and a spade. Handmade gray forged heads and warm plain wooden handles. Separate recognizable silhouettes grouped as one asset, no modern toolbox.",
+    "master": "masters/outils_fer.png",
+    "src": "../../../assets/carnet/items/outils_fer.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 16648,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "galerie",
+    "name": "Galerie étayée",
+    "type": "ext",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One small mine entrance cut into gray brown rock, sturdy wooden uprights and horizontal cap beam bound with rough iron straps and large nails, dark shallow opening. Compact vignette, no rails or mine cart, no industrial light.",
+    "master": "masters/galerie.png",
+    "src": "../../../assets/carnet/items/galerie.webp",
+    "master_size": [
+      1374,
+      1145
+    ],
+    "width": 256,
+    "height": 213,
+    "bytes": 23390,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "palan",
+    "name": "Palan à chaîne",
+    "type": "upg",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One early chain hoist hung from a simple wooden A-frame, two visible wooden pulley blocks, continuous dark iron chain threaded between them and lower iron hook. Readable compact installation, no electric motor or modern enclosed housing.",
+    "master": "masters/palan.png",
+    "src": "../../../assets/carnet/items/palan.webp",
+    "master_size": [
+      1312,
+      1199
+    ],
+    "width": 256,
+    "height": 234,
+    "bytes": 27290,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "enclos",
+    "name": "Enclos d’élevage",
+    "type": "ext",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One compact oval livestock pen built with rough upright wooden posts and horizontal rails fastened with dark iron nails, simple closed gate tied with rope, two small natural goats inside. Three-quarter elevated view, tiny irregular grass patch, no barn.",
+    "master": "masters/enclos.png",
+    "src": "../../../assets/carnet/items/enclos.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 23836,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "verre",
+    "name": "Verre",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One rough translucent pale green-blue chunk of early hand-made glass, irregular broken edges, visible transparency and a few bubbles, broad simple facets, no crystal points or gem jewelry.",
+    "master": "masters/verre.png",
+    "src": "../../../assets/carnet/items/verre.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 14490,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "poudre_quartz",
+    "name": "Poudre de quartz",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One small low mound of finely ground off-white quartz powder with a few tiny pale lavender grains beside it. Restrained gray-brown ink outline and subtle shadows so white powder reads on warm paper, no container, glitter or crystal cluster.",
+    "master": "masters/poudre_quartz.png",
+    "src": "../../../assets/carnet/items/poudre_quartz.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 13476,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "lentille",
+    "name": "Lentille",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One single unmounted convex circular glass lens seen at a three-quarter tilt, gently blue-green transparent thick rim, subtle curved highlight showing the convex profile. No handle, frame, magnifying glass or telescope.",
+    "master": "masters/lentille.png",
+    "src": "../../../assets/carnet/items/lentille.webp",
+    "master_size": [
+      1312,
+      1199
+    ],
+    "width": 256,
+    "height": 234,
+    "bytes": 14586,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "lunette",
+    "name": "Lunette astronomique",
+    "type": "tool",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One early astronomical refracting telescope: long aged bronze tube with simple smaller eyepiece and wide objective lens, resting on a modest wooden tripod with simple tilt cradle. Handmade sober design, no modern knobs, electronics or equatorial mount.",
+    "master": "masters/lunette.png",
+    "src": "../../../assets/carnet/items/lunette.webp",
+    "master_size": [
+      1305,
+      1205
+    ],
+    "width": 256,
+    "height": 236,
+    "bytes": 18110,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "boussole",
+    "name": "Boussole",
+    "type": "curio",
+    "secret": true,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One shallow hand-shaped clay bowl containing damp clay and one dark magnetized iron needle resting obliquely on it, slightly inclined point. An improvised mysterious compass, no dial, letters, compass rose, modern compass housing or map.",
+    "master": "masters/boussole.png",
+    "src": "../../../assets/carnet/items/boussole.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 15182,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "pigment",
+    "name": "Pigment",
+    "type": "curio",
+    "secret": true,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One small mound of earthy dark reddish-brown pigment ground from clay and charcoal, a rough flat grinding stone and short stone pestle smudged with the same powder. No paint palette, brush, paint tubes or bright colors.",
+    "master": "masters/pigment.png",
+    "src": "../../../assets/carnet/items/pigment.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 17468,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "brique_refr",
+    "name": "Brique réfractaire",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One stout handmade refractory brick, warm muted pale terracotta with visible pale quartz-sand grit, rough rectangular edges and porous texture. Distinct pale mineral speckles, no stamp, no text, no modern firebrick label.",
+    "master": "masters/brique_refr.png",
+    "src": "../../../assets/carnet/items/brique_refr.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 17144,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "chariot",
+    "name": "Chariot",
+    "type": "tool",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One sturdy early wooden transport wagon with two bronze axles, four wooden wheels with dull bronze rims, plank cargo bed and long drawbar, pulled by one calm small brown ox in a simple wooden yoke. Entire ox and wagon shown in compact elevated three-quarter composition, no modern tires, no driver or people.",
+    "master": "masters/chariot.png",
+    "src": "../../../assets/carnet/items/chariot.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 20462,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "tamis",
+    "name": "Tamis du désert",
+    "type": "ext",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One large rectangular wooden screening sieve on four low wooden legs, coarse woven bronze wire mesh holding a few pale quartz pieces above a small soft sand pile. Rope-bound wooden frame, dull bronze fittings, no industrial conveyor.",
+    "master": "masters/tamis.png",
+    "src": "../../../assets/carnet/items/tamis.webp",
+    "master_size": [
+      1536,
+      1024
+    ],
+    "width": 256,
+    "height": 171,
+    "bytes": 26722,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "quartz",
+    "name": "Quartz",
+    "type": "res",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One natural cluster of three translucent milky clear quartz crystals with hexagonal prism forms and pointed ends emerging from a little pale sandy matrix, soft pale lavender-gray accents, no colored gems or glass shard.",
+    "master": "masters/quartz.png",
+    "src": "../../../assets/carnet/items/quartz.webp",
+    "master_size": [
+      1223,
+      1286
+    ],
+    "width": 243,
+    "height": 256,
+    "bytes": 19034,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "resonite",
+    "name": "Résonite",
+    "type": "res",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One raw violet resonite mineral crystal cluster, muted amethyst purple with two broad angular crystal points and dark natural mineral base. Handmade ink and watercolor, no glow, sparkles, magic effects, jewelry or label.",
+    "master": "masters/resonite.png",
+    "src": "../../../assets/carnet/items/resonite.webp",
+    "master_size": [
+      1305,
+      1205
+    ],
+    "width": 256,
+    "height": 236,
+    "bytes": 18826,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "diapason",
+    "name": "Diapason",
+    "type": "comp",
+    "secret": false,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One plain bronze tuning fork with two long straight parallel prongs joined by a rounded U bend and one short central stem handle, dull warm aged bronze. No musical symbols, resonite jewel, vibration lines, decorative ornament or modern packaging.",
+    "master": "masters/diapason.png",
+    "src": "../../../assets/carnet/items/diapason.webp",
+    "master_size": [
+      1145,
+      1374
+    ],
+    "width": 213,
+    "height": 256,
+    "bytes": 11098,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  },
+  {
+    "id": "partition",
+    "name": "Vieille partition",
+    "type": "relic",
+    "secret": true,
+    "status": "produit-revu",
+    "prompt": "Use case: stylized-concept. A single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Brown-black ink contours, organic watercolor wash and broad sparse hatching, handmade natural materials, muted pigments, readable silhouette at 48 pixels. Three-quarter view with soft upper-left light, comfortable transparent margins. No paper background, text, letters, labels, frame, badge, UI, photorealism, 3D rendering, glossy fantasy loot, neon, or hard cast shadow. Genuine transparent background. Subject: One old fragile sheet of parchment with uneven torn edges, a few very faint sepia musical stave lines and indistinct worn musical note marks; illegible fragmentary notation only, no letters, words, numerals, title or modern clef. Slightly curled corner, warm subdued paper and brown ink. Isolated complete sheet, not a book.",
+    "master": "masters/partition.png",
+    "src": "../../../assets/carnet/items/partition.webp",
+    "master_size": [
+      1222,
+      1287
+    ],
+    "width": 243,
+    "height": 256,
+    "bytes": 18900,
+    "alpha": true,
+    "tool": "ImageGen intégré",
+    "generation_date": "2026-10-30"
+  }
+]
