@@ -120,6 +120,16 @@
       const eligible=isGrand(w.eq)?rid=>I[rid].a>=4&&I[rid].r[0]===w.mode:rid=>(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
       return memoUtile.v[id]=Object.values(E.reactions(id,eligible)).some(n=>n>0);
     }
+    /* La rangée « outil · geste » : chaque choix est un outil avec l'un de ses gestes ; un appui règle les deux */
+    function actionsHTML(tools,w){
+      const icone=t=>t.geste?api.gIc(t.geste):t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm");
+      let h='<div class="ae-actions-choix" role="group" aria-label="Outil et geste">';
+      tools.forEach(t=>Object.entries(t.modes).forEach(([m,n])=>{
+        const on=t.id===w.eq&&m===w.mode;
+        h+='<button type="button" class="ae-chip ae-action'+(on?' on':'')+'" data-ae="action" data-value="'+esc(t.id+'|'+m)+'" aria-pressed="'+on+'" title="'+esc(t.n+' : '+label(m,n))+'">'+(isGrand(t.id)?api.gIc(m):icone(t))+' <span>'+(isGrand(t.id)?'Atelier':esc(t.n))+' · '+esc(label(m,n))+'</span></button>';
+      }));
+      return h+'</div>';
+    }
     function body(mode){
       const {w,metiers,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();
       if(mode==="eco")return economy(s,e);
@@ -155,10 +165,10 @@
         h+='</div>';
       }
       h+='<div class="ae-actions">';
-      h+=Object.entries(tool.modes).map(([id,n])=>button("forge",id,esc(label(id,n)),id===w.mode?"pri":"")).join("");
+      h+=button("forge",w.mode,esc(label(w.mode,tool.modes[w.mode])),"pri",!w.slots.length);
       if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode]))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
       const heatCls=lastHeat?' ae-heat-'+lastHeat:'';
-      h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><div class="ae-tools-list">'+tools.map(t=>{return button("tool",t.id,(t.geste?api.gIc(t.geste):t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n),t.id===w.eq?"pri":"");}).join("")+'</div></aside></div></section>';
+      h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p></div><aside class="ae-tools">'+actionsHTML(tools,w)+'</aside></div></section>';
       h+='<section class="card ae-stock"><div class="ae-stock-search"><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'"></div>';
       const filtre=s.settings.equipmentFilter||"utiles";
       const chip=(v,l,t)=>'<button type="button" class="ae-chip'+(filtre===v?' on':'')+'" data-ae="filtre" data-value="'+v+'" aria-pressed="'+(filtre===v)+'" title="'+esc(t)+'">'+l+'</button>';
@@ -302,6 +312,7 @@
       else if(action==="filtre"){E.state.settings.equipmentFilter=["utiles","tout","reserve"].includes(id)?id:"utiles";redraw();return;}
       else if(action==="mode"){if(Object.hasOwn(tool.modes,id)){w.mode=id;w.prepared=null;}}
       else if(action==="study"){const n=E.studyAll();message=n?n+' matières étudiées.':'Il manque de l’Intuition pour étudier ces matières.';}
+      else if(action==="action"){const [te,tm]=String(id).split("|"),t=tools.find(x=>x.id===te);if(t&&Object.hasOwn(t.modes,tm)){w.eq=te;w.mode=tm;w.prepared=null;}}
       else if(action==="tool"){w.eq=id;const t=tools.find(x=>x.id===id)||D.CRAFT_EQUIPMENT.equipment[id];if(t)w.mode=Object.keys(t.modes)[0];w.prepared=null;}
       else if(action==="item"){if(w.slots.includes(id))w.slots.splice(w.slots.indexOf(id),1);else if(w.slots.length<3&&E.count(id)>=1)w.slots.push(id);w.prepared=null;}
       else if(action==="slot"){w.slots.splice(Number(id),1);w.prepared=null;}

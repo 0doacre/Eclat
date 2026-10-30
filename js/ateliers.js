@@ -26,7 +26,16 @@
       const tr = E.travailleurs();
       for (const f in tr) demande += tr[f].usedApp * TR.apprenti.ch + tr[f].usedOuv * TR.ouvrier.ch;
       const ratio = demande <= 0 ? 1 : Math.min(1, offre / demande);
-      return { offre, demande, ratio, sources };
+      /* le détail : qui demande combien (machines au travail, apprentis et ouvriers au travail), et ce qui reste à construire */
+      const conso = [];
+      T.paliers.forEach((p) => { const m = ms[p.id]; if (m && m.used > 0) conso.push({ id: p.id, n: I[p.id] ? I[p.id].n : p.id, nombre: m.used, ch: m.used * p.ch }); });
+      for (const f in tr) {
+        const F = T.familles.find((x) => x.id === f);
+        if (tr[f].usedApp) conso.push({ id: "app:" + f, n: "Apprentis · " + (F ? F.n : f), nombre: tr[f].usedApp, ch: tr[f].usedApp * TR.apprenti.ch });
+        if (tr[f].usedOuv) conso.push({ id: "ouv:" + f, n: "Ouvriers · " + (F ? F.n : f), nombre: tr[f].usedOuv, ch: tr[f].usedOuv * TR.ouvrier.ch });
+      }
+      const aConstruire = T.sources.filter((s) => E.count(s.id) <= 0 && E.state.known[s.id]).map((s) => ({ id: s.id, n: I[s.id].n, ch: s.ch }));
+      return { offre, demande, ratio, sources, conso, aConstruire };
     }
 
     /* ce que le joueur peut embaucher dans cet atelier, et pourquoi il ne le peut pas */

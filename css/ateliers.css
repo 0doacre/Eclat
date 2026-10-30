@@ -43,3 +43,12 @@
 @media (min-width: 900px) {
   .atel-liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 8px; }
 }
+
+/* Carnet allégé : une ligne d'outils, les réglages s'ouvrent à la demande */
+.carnet-outils { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
+.carnet-outils .search { flex: 1 1 220px; margin: 0; }
+.carnet-outils .btn { min-height: 44px; white-space: nowrap; }
+.carnet-outils .btn.on { border-color: #813f2a; }
+
+.energie { width: 100%; box-sizing: border-box; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px; }
+.energie-feuille .sub { margin: 12px 0 4px; }

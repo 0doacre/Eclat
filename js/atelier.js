@@ -536,16 +536,22 @@
       const col1 = !!(st.settings && st.settings.carnet1Col);
       const dense = U.compact();
       let h = enteteAtelier("Carnet", all + (all > 1 ? " recettes apprises" : " recette apprise"));
+      if (st.flags.tip_carnet === undefined) st.flags.tip_carnet = true;
       if (!st.flags.tip_carnet) {
         h += '<div class="tip">Retrouve tes recettes et choisis un lot à fabriquer. ×10 répète la recette dix fois ; les pièces intermédiaires sont fabriquées avec la commande. Les indices des autres recettes restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Réduire l’aide du Carnet">Compris</button></div>';
       } else {
         h += '<div class="tip tip-mini"><span class="tiny muted">💡 Retrouve tes recettes et choisis un lot à fabriquer…</span> <button class="btn small ghost" data-tip-open="tip_carnet" title="Rouvrir l’aide du Carnet">Aide</button></div>';
       }
-      h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
-        (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
-      if (U.carnetFilter !== "unk") h += cqBarHTML();
+      const qNow = cqNow(), qTxt = qNow === "max" ? "Max" : "×" + qNow;
+      const FILTRES = [["tout", "Apprises"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]];
+      const fNom = (FILTRES.find(([k]) => k === U.carnetFilter) || FILTRES[0])[1];
+      h += '<div class="carnet-outils"><div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
+        (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>' +
+        (U.carnetFilter !== "unk" ? '<button type="button" class="btn small ghost' + (U.carnetPanel === "qty" ? " on" : "") + '" data-cpanel="qty" aria-expanded="' + (U.carnetPanel === "qty") + '" title="Combien d’exemplaires fabriquer d’un coup">' + qTxt + (U.carnetPanel === "qty" ? " ▴" : " ▾") + "</button>" : "") +
+        '<button type="button" class="btn small ghost' + (U.carnetPanel === "filtres" ? " on" : "") + '" data-cpanel="filtres" aria-expanded="' + (U.carnetPanel === "filtres") + '" title="Choisir ce que la liste montre">' + esc(fNom) + (U.carnetPanel === "filtres" ? " ▴" : " ▾") + "</button></div>";
+      if (U.carnetPanel === "qty" && U.carnetFilter !== "unk") h += cqBarHTML();
       const CF_T = { tout: "Toutes les recettes que tu connais", pret: "Celles que ta Réserve couvre entièrement, pièces comprises", craft: "Celles dont les pièces manquantes peuvent encore être fabriquées", unk: "Celles qu’il te reste à découvrir", ext: "Les bâtiments qui récoltent à ta place", tool: "Les outils et leurs améliorations", mach: "Les machines qui fabriquent seules", pin: "Tes épingles, en haut de l’Atelier" };
-      h += '<div class="filters">' + [["tout", "Apprises"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]].map(([k, n]) =>
+      if (U.carnetPanel === "filtres") h += '<div class="filters">' + FILTRES.map(([k, n]) =>
         '<button data-cf="' + k + '" title="' + (CF_T[k] || "") + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       h += ageNavHTML(carnetBook());
       return h + '<div id="clist" class="' + (col1 ? "cols-1" : "cols-2") + (dense ? " carnet-dense" : "") + '">' + carnetList() + "</div>";
@@ -1663,9 +1669,20 @@
       const e = Atel.energie();
       const pct = e.demande <= 0 ? 0 : Math.min(100, Math.round(100 * e.demande / e.offre));
       const fmtc = (n) => fmt(Math.round(n));
-      return '<div class="energie' + (e.ratio < 1 ? " is-juste" : "") + '" role="img" aria-label="Énergie : ' + fmtc(e.demande) + ' chevaux demandés sur ' + fmtc(e.offre) + ' disponibles">' +
-        '<span class="energie-t">Énergie</span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v">' + fmtc(e.demande) + " / " + fmtc(e.offre) + " ch</span></div>" +
-        (e.ratio < 1 ? '<p class="tiny muted energie-note">Il manque de l’énergie : tes ateliers tourneraient à ' + Math.round(100 * e.ratio) + " %. Pour l’instant, ça ne ralentit encore rien.</p>" : "");
+      return '<button type="button" class="energie' + (e.ratio < 1 ? " is-juste" : "") + '" data-energie="1" aria-expanded="' + (U.energieSheet ? "true" : "false") + '" aria-label="Énergie : ' + fmtc(e.demande) + ' chevaux demandés sur ' + fmtc(e.offre) + ' disponibles. Ouvrir le détail">' +
+        '<span class="energie-t">Énergie</span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v">' + fmtc(e.demande) + " / " + fmtc(e.offre) + ' ch ⓘ</span></button>' +
+        '<p class="tiny muted energie-note">' + (e.ratio < 1 ? "Il manque de l’énergie : tes ateliers tourneraient à " + Math.round(100 * e.ratio) + " %. " : "") + "Pour l’instant, c’est une information : l’énergie ne ralentit rien. Touche la jauge pour le détail.</p>";
+    }
+    /* le détail de l'énergie : ce qui consomme, ce qui fournit */
+    function energieFeuille() {
+      const e = Atel.energie(), c = (n) => fmt(Math.round(n));
+      let h = '<div class="auto-feuille energie-feuille" role="dialog" aria-label="Énergie"><div class="auto-tete"><b>Énergie · ' + c(e.demande) + " / " + c(e.offre) + ' ch</b><button type="button" class="btn small" data-energie="0">Fermer</button></div><div class="auto-corps">';
+      h += '<p class="small">Un <b>cheval</b> (ch) est une unité de force. Tes machines, tes apprentis et tes ouvriers en consomment <b>quand ils travaillent</b> ; tes mains n’en consomment pas. Ce que tu produis (la bête de trait, le moulin, plus tard la vapeur et l’électricité) fournit l’énergie à tous tes ateliers. <b>Pour l’instant, c’est une information : manquer d’énergie ne ralentit encore rien.</b></p>';
+      h += '<h3 class="sub">Ce qui consomme</h3>';
+      h += e.conso.length ? e.conso.map((x) => '<div class="auto-ligne"><span class="grow">' + esc(x.n) + ' <span class="tiny muted">×' + x.nombre + "</span></span><b>" + c(x.ch) + " ch</b></div>").join("") : '<p class="small muted">Rien ne consomme : aucune machine ni aucun travailleur n’est au travail en ce moment.</p>';
+      h += '<h3 class="sub">Ce qui fournit</h3>' + e.sources.map((x) => '<div class="auto-ligne"><span class="grow">' + esc(x.n) + "</span><b>+" + c(x.ch) + " ch</b></div>").join("");
+      if (e.aConstruire.length) h += '<h3 class="sub">À construire</h3>' + e.aConstruire.map((x) => '<div class="auto-ligne"><span class="grow">' + esc(x.n) + '</span><span class="muted">+' + c(x.ch) + " ch</span></div>").join("");
+      return h + "</div></div>";
     }
     function carteHTML(c) {
       const ech = c.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '" title="' + esc(e.n) + (e.etat === "ferme" ? " : à partir de " + D.AGES[e.age].n.toLowerCase() : "") + '">' + esc(e.n) + "</span>").join("");
@@ -1688,7 +1705,7 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       return '<div class="ateliers atl-page">' + enteteAtelier("Ateliers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
-        '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "");
+        '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
     function viewAtelier() {
       if (Atel) {
@@ -1758,6 +1775,9 @@
         render(true); return true;
       }
       if (t.closest("[data-atelier-retour]")) { A.click(); U.atelierSel = null; render(true); return true; }
+      if ((b = t.closest("[data-energie]"))) { A.click(); U.energieSheet = b.dataset.energie === "1" ? !U.energieSheet : false; render(true); return true; }
+      if ((b = t.closest("[data-cpanel]"))) { A.click(); U.carnetPanel = U.carnetPanel === b.dataset.cpanel ? null : b.dataset.cpanel; render(true); return true; }
+      if (t.closest("[data-cf], [data-qty]")) U.carnetPanel = null;
       if (t.closest("[data-prodapprenti]")) { U.prodApprenti = !U.prodApprenti; return false; }
       if ((b = t.closest("[data-labsearch]"))) { A.click(); U.labSearch = b.dataset.labsearch === "1"; render(true); return true; }
       if ((b = t.closest("[data-autosheet]"))) { A.click(); U.autoSheet = b.dataset.autosheet === "1" ? !U.autoSheet : false; render(true); return true; }
