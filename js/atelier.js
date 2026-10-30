@@ -122,8 +122,8 @@
       const nAct = (o.filter !== "tout" ? 1 : 0) + (o.sort !== "age" ? 1 : 0), filtreNom = (INV_FILTERS.find(([k]) => k === o.filter) || ["", ""])[1];
       const totalStock = Object.keys(st.inv).reduce((acc, k) => acc + (st.inv[k] || 0), 0);
       const inv = invItems();
-      h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3><button type="button" class="btn small ghost' + (U.invFiche ? " on" : "") + '" data-fichemode aria-pressed="' + (U.invFiche ? "true" : "false") + '" title="Un appui sur une ressource ouvre sa fiche (comme un appui long)">ⓘ Fiches</button>' +
-        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + (o.filter !== "tout" ? " · " + esc(filtreNom) + (o.filter === "tryg" ? " · " + esc(G.n) : "") : "") + " · " + fmt(totalStock) + " au total</span>" : "") +
+      h += '<div class="sub-row inv-sub-row"><button type="button" class="btn small ghost' + (U.invFiche ? " on" : "") + '" data-fichemode aria-pressed="' + (U.invFiche ? "true" : "false") + '" title="Un appui sur une ressource ouvre sa fiche (comme un appui long)">ⓘ Fiches</button>' +
+        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + (o.filter !== "tout" ? " · " + esc(filtreNom) + (o.filter === "tryg" ? " · " + esc(G.n) : "") : "") + "</span>" : "") +
         "</div>" + studyAllHTML() +
         // la recherche reste affichée ; le tri et les filtres se rangent derrière « Filtres » (le chiffre dit combien sont actifs) et s’ouvrent sur place
         (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" aria-label="Chercher une ressource" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
@@ -169,8 +169,6 @@
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
           : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans le Domaine pour remplir ta Réserve.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
-      } else if (Object.keys(st.known).length >= 3 && !st.flags.tip_inv_lp) {
-        h += '<div class="sub-row" style="margin-top:8px"><span class="tiny dim">Appui long sur une ressource (ou « ⓘ Fiches », ou la touche « i ») : ouvre sa fiche (♥ favori, 🔍 étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</span><button class="btn small ghost" data-tip="tip_inv_lp">Compris</button></div>';
       }
       return h;
     }

@@ -101,7 +101,7 @@
       if(releve)h+='<section class="card releve-alerte"><b>✦ Passer le relais · +'+releve.gain+' Traces</b><p class="small">'+esc(releve.texte)+'</p><button class="btn pri small" data-releve title="Voir les gains et les bonus permanents de la prochaine relève">Préparer la relève</button></section>';
       if(places.length>1)h+='<nav class="ae-posts" aria-label="Postes de travail">'+places.map(p=>button("place",p.id,esc(p.n),p.id===w.place?"pri":"")).join("")+'</nav>';
       if(s.age>=3)h+='<p class="small">'+button("legacy","1","Procédés après le Cuivre","ghost")+'</p>';
-      h+='<div class="ae-layout"><section class="card ae-bench"><h2>'+esc(places.find(x=>x.id===w.place).n)+'</h2><div class="ae-work"><div><div class="ae-slots">';
+      h+='<div class="ae-layout"><section class="card ae-bench"><div class="ae-work"><div><div class="ae-slots">';
       for(let i=0;i<3;i++){const id=w.slots[i],need=w.prepared?I[w.prepared]?.r?.[1][id]:0;
         h+=button("slot",String(i),id?icon(id)+'<span>'+esc(name(id))+'</span><small data-ae-need="'+esc(id)+'" data-need="'+(need||0)+'"></small>':'+',id?"ae-filled":"ae-empty",!id);
       }
@@ -124,25 +124,9 @@
       h+='<div class="ae-actions">';
       h+=Object.entries(tool.modes).map(([id,n])=>button("forge",id,esc(label(id,n)),id===w.mode?"pri":"",!w.slots.length)).join("");
       if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode]))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
-      const toolBenefitText = (t) => {
-        if (t.speed) {
-          for (const rec in t.speed) {
-            if (s.known[rec]) {
-              const choices = (typeof E.equipmentChoices === "function" && E.equipmentChoices(rec)) || [];
-              const otherChoice = choices.find(c => c.equipment !== t.id && c.ready) || choices.find(c => c.equipment !== t.id);
-              if (otherChoice) {
-                const curT = E.handTime(rec, otherChoice);
-                const projT = E.handTime(rec, { equipment: t.id, mode: Object.keys(t.modes)[0] });
-                return label(Object.keys(t.modes)[0], t.modes[Object.keys(t.modes)[0]]) + " ces " + esc(name(rec).toLowerCase()) + " : " + fmtTime(curT) + " → " + fmtTime(projT);
-              }
-            }
-          }
-        }
-        return t.benefit ? esc(t.benefit) : "";
-      };
       const heatCls=lastHeat?' ae-heat-'+lastHeat:'';
-      h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><h3>Tes outils <button type="button" class="btn-aide mini" data-aide="outils" title="Comprendre les outils et postes" aria-label="Comprendre les outils et postes">?</button></h3>'+tools.map(t=>{const ben=toolBenefitText(t);return button("tool",t.id,(t.geste?api.gIc(t.geste):t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n)+'<small>'+esc(Object.entries(t.modes).map(([m,n])=>label(m,n)).join(" · "))+(ben?' · '+ben:"")+'</small>',t.id===w.eq?"pri":"");}).join("")+'</aside></div></section>';
-      h+='<section class="card ae-stock"><h3>Tes matières</h3><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'">';
+      h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p></div><aside class="ae-tools"><div class="ae-tools-list">'+tools.map(t=>{return button("tool",t.id,(t.geste?api.gIc(t.geste):t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm"))+' '+esc(t.n),t.id===w.eq?"pri":"");}).join("")+'</div></aside></div></section>';
+      h+='<section class="card ae-stock"><div class="ae-stock-search"><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'"></div>';
       h+='<div class="ae-discovery"><label><input id="ae-discovery-only" type="checkbox"'+(s.settings.equipmentDiscoveryOnly===true?' checked':'')+' title="Montrer uniquement les matières étudiées qui cachent une recette avec cet outil et ce geste"> À découvrir</label>';
       h+='<label><input id="ae-stock-only" type="checkbox"'+(s.settings.equipmentStockOnly===true?' checked':'')+' title="Montrer uniquement les matières dont au moins 1 exemplaire est en réserve"> En réserve</label>';
       if(Object.keys(tool.modes).length>1)h+='<label class="ae-discovery-mode">Geste <select id="ae-discovery-mode" aria-label="Geste à explorer" title="Choisir le geste du filtre sans lancer de fabrication">'+Object.entries(tool.modes).map(([mode,n])=>'<option value="'+esc(mode)+'"'+(mode===w.mode?' selected':'')+'>'+esc(label(mode,n))+'</option>').join('')+'</select></label>';
@@ -150,7 +134,7 @@
       const study=E.studyAllCost();
       if(study.n)h+=button("study","","Étudier les matières · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des matières" aria-label="Comprendre l’étude des matières">?</button>';
       h+='</div><p id="ae-discovery-empty" class="small muted" hidden></p><p id="ae-exhausted-note" class="small muted" hidden></p><div class="ae-inventory">';
-      for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+(reacts?' <small class="ae-react-pill">✦ Piste</small>':'')+'</span><b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
+      for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span>'+(reacts?'<i class="ae-react-spark" title="Piste disponible">✦</i>':'')+'<b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
@@ -190,7 +174,7 @@
         }
         return '<div class="ae-cad-item-row"><div class="ae-cad-item-btns">'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+cadBtn+'</div>'+stLine+'</div>';
       }).join("")+'</div></details></section>';
-      if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details"><summary class="ae-eco-summary" title="Afficher ou replier la bourse, l’apprenti et les surplus de lanières"><h2>Faire vivre l’atelier</h2><span class="small muted">'+(e.hired?(e.working?'Apprenti actif':'Apprenti en pause'):'Apprenti')+' · '+money(E.state.ecus)+'</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
+      if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details" open><summary class="ae-eco-summary" title="Afficher ou replier la bourse, l’apprenti et les surplus de lanières"><h2>Faire vivre l’atelier</h2><span class="small muted">'+(e.hired?(e.working?'Apprenti actif':'Apprenti en pause'):'Apprenti')+' · '+money(E.state.ecus)+'</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
         h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Travail de l’apprenti"></progress><p id="ae-worker-pay" class="small"></p>';
         h+=e.hired?button("fund","","Réserver 1 part")+button("fund5","","Réserver 5 parts")+button("worker","",e.working?"Mettre en pause":"Mettre au travail")+button("withdraw","","Reprendre la part","",e.working||e.budget<=0)+'<label class="small"><input id="ae-autofund" type="checkbox"'+(e.autoFund?' checked':'')+' title="Réserver automatiquement 1 part dans ta bourse quand l’apprenti a tout consommé"> Réapprovisionner la part</label>':button("hire","","Accueillir · "+money(e.hire));

@@ -36,15 +36,16 @@
 .ae-tools .btn{display:block;width:100%;text-align:left;margin-bottom:7px}
 .ae-tools small{display:block;font-size:12px;font-weight:400;margin-top:5px}
 .ae-stock input[type=search]{width:100%;min-height:44px;min-width:0}
-.ae-inventory{display:flex;flex-direction:column;gap:6px;max-height:64dvh;overflow:auto;padding:3px;margin-top:12px}
+.ae-inventory{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:6px;max-height:280px;overflow:auto;padding:3px;margin-top:8px}
 .ae-resource{min-width:0}
-.atelier-equipe .ae-resource>.btn{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(3ch,auto);gap:10px;align-items:center;min-height:54px;width:100%;padding:9px 12px;text-align:left;opacity:1}
-.atelier-equipe .ae-item-name{word-break:normal;overflow-wrap:normal;white-space:normal;line-height:1.3}
-.ae-resource b{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.atelier-equipe .ae-resource>.btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:56px;width:100%;padding:5px 2px 3px;text-align:center;position:relative;border-radius:8px;opacity:1}
+.atelier-equipe .ae-item-name{display:none}
+.ae-react-spark{position:absolute;top:2px;right:4px;font-style:normal;font-size:11px;color:var(--acc);font-weight:800;line-height:1}
+.ae-resource b{text-align:center;font-variant-numeric:tabular-nums;font-weight:700;font-size:11px;line-height:1}
 .atelier-equipe .ae-resource>.btn:disabled{opacity:1;color:var(--muted);background:var(--panel2);border:1px solid var(--line2)}
 .ae-resource .ae-selected{border:2px solid var(--acc);background:var(--panel2)}
 .ae-resource .ic{vertical-align:middle}
-.ae-resource .ic,.ae-resource .ic.sm{margin:0;width:28px;height:28px;min-width:28px}
+.ae-resource .ic,.ae-resource .ic.sm{margin:0;width:30px;height:30px;min-width:30px}
 .ae-known>div{display:flex;gap:6px;margin:6px 0;align-items:center;flex-wrap:wrap}
 .ae-known>div>.btn:first-child{flex:1 1 170px;text-align:left}
 .ae-economy-grid{display:grid;grid-template-columns:.8fr 1fr 1.2fr;gap:14px}

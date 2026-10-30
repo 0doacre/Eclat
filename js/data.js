@@ -1525,6 +1525,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔨 Dans l’Atelier, les ressources s’affichent en tuiles compactes et épurées sous forme d’icônes et de réserves. Dans le Domaine, les terres déjà traversées se replient pour laisser place à leurs gisements sous forme de vignettes directes.",
     "📖 Finitions du Carnet et mesures : le style Carnet (papier) devient l’aspect par défaut des nouveaux joueurs, et le bouton du haut s’appelle désormais « Aspect ». Les pastilles de quêtes et de traces ont un nom explicite.",
     "🖐️ Le bandeau de récolte et de commandes réserve sa place dans le défilement de chaque onglet sans masquer la dernière ligne.",
     "💡 L’aide en tête du Carnet se replie d’un appui sur « Compris » pour dégager l’écran, et reste rouvrable d’un appui sur « Aide ».",

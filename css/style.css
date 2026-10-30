@@ -336,14 +336,14 @@ p { margin: 0.4em 0; }
 .thermo .tl { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--dim); margin-top: 4px; }
 .tname { font-weight: 800; letter-spacing: .06em; text-transform: uppercase; font-size: 12px; }
 
-.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; }
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
 .inv {
-  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 2px 6px; border-radius: 12px;
-  background: var(--panel); border: 1px solid var(--line); position: relative; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 5px 2px 3px; border-radius: 10px;
+  background: var(--panel); border: 1px solid var(--line); position: relative; min-width: 0; min-height: 56px;
 }
 .inv:active { transform: scale(.95); }
-.inv .n { font-size: 10.5px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 3px; }
-.inv .c { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.inv .n { display: none; }
+.inv .c { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .inv.sel { border-color: var(--acc); background: color-mix(in srgb, var(--acc) 14%, var(--panel)); }
 .inv.relic { border-color: #8a7bd8; }
 .filters { display: flex; gap: 6px; overflow-x: auto; margin: 0 -12px 8px; padding: 0 12px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
@@ -880,6 +880,95 @@ svg.gi { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.14em; f
 .dom-bar { display: flex; justify-content: flex-end; margin: -4px 0 -6px; }
 .dom-tip { padding: 8px 12px; border-radius: 12px; font-size: 13.5px; background: color-mix(in srgb, var(--intu) 10%, var(--panel)); border: 1px solid color-mix(in srgb, var(--intu) 35%, transparent); }
 .dom-terre { display: flex; flex-direction: column; gap: 8px; }
+.dom-terre-fermee { padding-bottom: 8px; }
+.dom-closed-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: nowrap; border-bottom: 1px solid var(--line2); padding-bottom: 4px; }
+.dom-closed-acts { display: flex; align-items: center; gap: 6px; }
+.dom-closed-res {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin: 6px 0;
+}
+.gis-compact {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  padding: 6px 4px 4px;
+  gap: 4px;
+  align-items: stretch;
+  min-width: 0;
+  text-align: center;
+  position: relative;
+}
+.gis-compact-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text);
+  width: 100%;
+}
+.gis-compact-node {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gis-compact-node .living-svg, .gis-compact-node .living-carnet-img {
+  width: 44px;
+  height: 44px;
+}
+.gis-compact-node .ic {
+  width: 32px;
+  height: 32px;
+}
+.gis-compact-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 1px;
+}
+.gis-compact-name {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.gis-compact-c {
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.gis-compact-rate {
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--good);
+  min-height: 14px;
+}
+.gis-compact-rate.hidden { display: none; }
+.gis-compact-add {
+  width: 100%;
+  padding: 6px 4px;
+  font-size: 11px;
+  min-height: 44px;
+  white-space: normal;
+  line-height: 1.1;
+}
+.dom-land-toggle {
+  min-height: 44px;
+  min-width: 44px;
+}
 .dom-ruine { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: color-mix(in srgb, var(--panel) 75%, transparent); border: 1px dashed var(--line2); border-radius: 10px; margin: 2px 0; }
 .dom-th { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--line2); padding-bottom: 4px; }
 .dom-th h3, .dom-card h3 { margin: 0; font: 600 20px/1.2 var(--serif); }

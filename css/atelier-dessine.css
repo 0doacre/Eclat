@@ -114,16 +114,25 @@
   background: var(--text);
   mask: var(--check-mask) center / contain no-repeat;
 }
-[data-style-mode="vivant"] #v-atelier .ae-inventory { gap: 2px; padding: 4px; }
-[data-style-mode="vivant"] #v-atelier .ae-resource > .btn {
-  grid-template-columns: 44px minmax(0, 1fr) minmax(3ch, auto);
-  border: 0;
-  border-bottom: 8px solid transparent;
-  border-image: var(--atelier-divider) 0 0 12 0 / 0 0 8px 0 / 0 stretch;
-  padding: 7px 4px;
-  min-height: 64px;
+[data-style-mode="vivant"] #v-atelier .ae-inventory {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 6px;
+  padding: 4px;
+  max-height: 280px;
 }
-[data-style-mode="vivant"] #v-atelier .ae-resource :is(.ic, .ic.sm) { width: 40px; height: 40px; min-width: 40px; }
+[data-style-mode="vivant"] #v-atelier .ae-resource > .btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 5px 2px 3px;
+  border: 6px solid transparent;
+  border-image: var(--atelier-button) 12 / 6px / 0 stretch;
+}
+[data-style-mode="vivant"] #v-atelier .ae-resource :is(.ic, .ic.sm) { width: 30px; height: 30px; min-width: 30px; }
 [data-style-mode="vivant"] #v-atelier .ae-resource > .btn.ae-selected {
   background: color-mix(in srgb, var(--acc-base) 13%, var(--panel));
   box-shadow: inset 3px 0 0 var(--acc-base);

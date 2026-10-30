@@ -598,9 +598,14 @@ async function run() {
         await p.waitForFunction(n => window.__eclat.E.count("bois") >= n, 3);
         await p.locator('#v-domaine [data-hloop="lisiere:bois"]').first().click();
         await p.locator('#tabs [data-tab="atelier"]').click();
+        const skip = p.locator('.tu-bub [data-t="skip"]');
+        if (await skip.count() > 0 && await skip.first().isVisible()) {
+          await skip.first().click();
+        }
         const aeItem = p.locator('#ae-item-bois');
         if (await aeItem.count() > 0) {
           await aeItem.click();
+          await p.waitForTimeout(100);
           await p.locator('#ae-forge-tailler').click();
         } else {
           await p.locator('[data-inv="bois"]').click();

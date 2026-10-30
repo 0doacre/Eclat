@@ -204,3 +204,76 @@ html[data-style-mode="vivant"] .contemplation-canvas {
   background: rgba(48,39,30,0.08);
   border-color: var(--line);
 }
+html[data-style-mode="vivant"] #v-domaine .carnet-terre.dom-terre-fermee {
+  padding: 14px 16px 14px !important;
+  margin: 12px 0 16px !important;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre.dom-terre-fermee .dom-closed-header {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 4px 0 8px !important;
+  gap: 8px !important;
+  border-bottom: 8px solid transparent !important;
+  border-image: var(--paint-frame) 0 0 78 0 / 0 0 8px 0 / 0 stretch !important;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre.dom-terre-fermee .dom-closed-header h3 {
+  font-size: clamp(22px, 5vw, 32px) !important;
+  margin: 0 !important;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+  padding: 6px 4px 4px !important;
+  border: 6px solid transparent !important;
+  border-image: var(--paint-frame) 78 / 6px / 0 stretch !important;
+  background: var(--paint-paper) center/cover var(--bg) !important;
+  border-radius: 0 !important;
+  gap: 4px !important;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  width: 100% !important;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-node {
+  width: 44px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-node :is(.living-carnet-img, .living-svg, .ic) {
+  width: 44px !important;
+  height: 44px !important;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-name {
+  font-family: var(--serif);
+  font-size: 13px !important;
+  line-height: 1.1;
+  color: var(--text);
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-c {
+  font-size: 12px !important;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--text);
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-rate {
+  font-size: 11px !important;
+  color: var(--good);
+  min-height: 14px;
+}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-add {
+  font-size: 11px !important;
+  padding: 6px 4px !important;
+  min-height: 44px !important;
+  width: 100% !important;
+}

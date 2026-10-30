@@ -17,8 +17,8 @@ async function run(){await new Promise(r=>server.listen(0,"127.0.0.1",r));browse
     ok(await p.locator('#atelier-equipe [data-ae="harvest"], #atelier-equipe [data-goto]').count()===0,"ni récolte ni fiche dans l’Atelier");
     ok(await p.locator('.ae-posts').count()===0,"pas de doublon de l’établi quand c’est le seul poste");
     ok(!(await p.locator('#atelier-equipe').textContent()).includes('Pose tes matières')&&!(await p.locator('#atelier-equipe').textContent()).includes('Un clic pour'),"textes explicatifs retirés");
-    const rows=await p.locator('.ae-resource').evaluateAll(nodes=>nodes.every(n=>{const row=n.querySelector('button').getBoundingClientRect(),text=n.querySelector('.ae-item-name'),r=text.getBoundingClientRect();return row.height>=44&&r.width>=100&&getComputedStyle(text).overflowWrap==='normal';}));
-    ok(rows,"matières en lignes lisibles, sans coupure au milieu des mots");
+    const tiles=await p.locator('.ae-resource').evaluateAll(nodes=>nodes.every(n=>{const btn=n.querySelector('button'),r=btn.getBoundingClientRect(),hasIc=btn.querySelector('.ic')||btn.querySelector('svg'),hasCount=btn.querySelector('[data-ae-count]');return r.height>=44&&r.width>=44&&hasIc&&hasCount;}));
+    ok(tiles,"matières densifiées en tuiles d’icônes avec leur réserve");
     if(process.env.EQUIPMENT_SHOTS){fs.mkdirSync(process.env.EQUIPMENT_SHOTS,{recursive:true});await p.evaluate(()=>document.getElementById('views').scrollTop=0);await p.screenshot({path:path.join(process.env.EQUIPMENT_SHOTS,'atelier-epure-'+width+'.png')});}
     await p.locator('[data-tab="domaine"]').click();
     await p.locator('#v-domaine [data-hloop="lisiere:bois"]').first().click();
