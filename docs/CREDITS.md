@@ -47,3 +47,7 @@ Fichiers : `assets/oeuvres/` (13 illustrations) et `assets/fonds/` (6 fonds). In
 ## Illustrations du Fer — 30 octobre 2026
 
 24 illustrations produites individuellement avec l’outil intégré OpenAI ImageGen dans Codex ; modèle précis non exposé. Prompts exacts, PNG maîtres et inventaire : `docs/art-direction/age-fer-v1/`. Exports WebP transparents avec Pillow : `assets/carnet/items/` (430 102 octets). Droits d’utilisation soumis aux conditions OpenAI applicables aux images générées ; aucune licence tierce revendiquée. Lot livré pour intégration ultérieure, sans activation dans le jeu.
+
+## Illustrations de l’Acier — 30 octobre 2026
+
+11 illustrations produites individuellement avec l’outil intégré OpenAI ImageGen dans Codex ; modèle précis non exposé. Prompts exacts, PNG maîtres et inventaire : `docs/art-direction/age-acier-v1/`. Exports WebP transparents avec Pillow : `assets/carnet/items/` (164 154 octets). Droits d’utilisation soumis aux conditions OpenAI applicables aux images générées ; aucune licence tierce revendiquée. Ressources livrées pour intégration ultérieure, sans activation dans le jeu.
