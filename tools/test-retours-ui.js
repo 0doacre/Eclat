@@ -31,7 +31,7 @@ async function run(){
   for(const width of [320,390,980])for(const dark of [false,true]){
     const ctx=await browser.newContext({viewport:{width,height:width===320?568:900},serviceWorkers:'block',reducedMotion:'reduce'});
     const p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
-    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.preview.style','atlas');},seed(dark));
+    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','atlas');},seed(dark));
     await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<8;i++){await p.waitForTimeout(100);await close(p);}
     const tag=width+'/'+dark;

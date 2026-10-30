@@ -43,7 +43,7 @@ async function run(){
   for(const width of [320,390,1280])for(const dark of [false,true])for(const equipped of (Equip?[true,false]:[false])){
     const ctx=await browser.newContext({viewport:{width,height:950},serviceWorkers:"block",reducedMotion:"reduce"}),p=await ctx.newPage(),errors=[],missing=[];
     p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()===404)missing.push(r.url());});
-    await p.addInitScript(({raw,equipped})=>{const key=equipped?'eclat.preview.craft.v1':'eclat.save.v1';if(!localStorage.getItem(key))localStorage.setItem(key,raw);if(!localStorage.getItem('eclat.preview.style'))localStorage.setItem('eclat.preview.style','vivant');Math.random=()=>.99;},{raw:fixture(equipped,dark),equipped});
+    await p.addInitScript(({raw,equipped})=>{const key=equipped?'eclat.preview.craft.v1':'eclat.save.v1';if(!localStorage.getItem(key))localStorage.setItem(key,raw);if(!localStorage.getItem('eclat.preview.style'))localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','vivant');Math.random=()=>.99;},{raw:fixture(equipped,dark),equipped});
     await p.goto('http://127.0.0.1:'+server.address().port+'/index.html'+(equipped?'':'?atelier=classique'));
     await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<5;i++){await p.waitForTimeout(100);await p.evaluate(()=>window.__eclat.closeModal());}
@@ -83,7 +83,7 @@ async function run(){
       }
     }
     const before=await p.evaluate(()=>window.__eclat.E.state.settings.theme);
-    await p.evaluate(()=>{localStorage.setItem('eclat.preview.style','classique');});
+    await p.evaluate(()=>{localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','classique');});
     await p.reload();await p.waitForFunction(()=>!!window.__eclat);
     ok(await p.evaluate(()=>window.__eclat.E.state.settings.theme)===before,tag+' : thème conservé');
     ok(await p.locator('html').getAttribute('data-style-mode')==='classique',tag+' : retour au style classique');

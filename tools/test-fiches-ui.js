@@ -52,7 +52,7 @@ async function run(){
   for(const width of [320,360,390,430])for(const advanced of [false,true])for(const dark of [false,true]){
     const ctx=await browser.newContext({viewport:{width,height:width===320?568:844},serviceWorkers:'block',reducedMotion:'reduce',acceptDownloads:true});
     const p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
-    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.preview.style','atlas');},seed(advanced,dark));
+    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','atlas');},seed(advanced,dark));
     await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<8;i++){await p.waitForTimeout(100);await close(p);}
     const tag=width+'/'+advanced+'/'+dark;
