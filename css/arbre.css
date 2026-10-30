@@ -1,6 +1,6 @@
 /* Arbre : largeur de l’application, défilement vertical natif. */
 #v-arbre.on { position: absolute; inset: 0; display: flex; flex-direction: column; min-width: 0; padding: 0 0 calc(var(--nav) + var(--safe-b)); background: var(--bg); }
-body.has-act #v-arbre.on { padding-bottom: calc(var(--nav) + var(--safe-b) + 66px); }
+body.has-act #v-arbre.on { padding-bottom: calc(var(--nav) + var(--safe-b) + var(--actbar-h, 54px) + 16px); }
 .arb-barre { display: flex; flex: 0 0 auto; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--line2); }
 .arb-barre .btn { flex: 1 1 auto; min-width: 44px; min-height: 44px; padding: 6px; font-size: 14px; }
 .arb-barre .btn[aria-label] { flex: 0 0 44px; }

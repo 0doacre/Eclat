@@ -189,6 +189,10 @@ html[data-style-mode="vivant"] #v-domaine .terre-maitrise>summary{min-height:44p
   html[data-style-mode="vivant"] #top #ageName{font-size:17px;line-height:1.1}
   html[data-style-mode="vivant"] #top .age-bar-track{margin-top:4px;height:3px}
   html[data-style-mode="vivant"] #tabs{min-height:calc(56px + var(--safe-b));height:calc(56px + var(--safe-b))}
+  html[data-style-mode="vivant"] body.has-act .view{padding-bottom:calc(56px + var(--safe-b) + var(--actbar-h, 54px) + 24px)}
+}
+@media (max-width: 340px) {
+  html[data-style-mode="vivant"] #top #ageName{font-size:16px}
 }
 @media(forced-colors:active){html[data-style-mode="vivant"] :is(#app,#modal) :is(button,input,select,.modal-box){border:1px solid CanvasText!important;border-image:none!important;background:Canvas!important;color:CanvasText!important}html[data-style-mode="vivant"] :is(#app,#modal) button::before{display:none}}
 

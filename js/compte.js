@@ -790,7 +790,7 @@
           news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
           reset: () => setTimeout(() => {
             openModal({ html: '<h2>Recommencer la partie ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans Menu → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" style="background:var(--bad)" data-m="go">Tout effacer</button></div>',
-              on: { go: () => { pushBackup(E.serialize(), "Avant de recommencer la partie"); E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("carte"); intro(); } } });
+              on: { go: () => { pushBackup(E.serialize(), "Avant de recommencer la partie"); if (window.EclatAssistance?.clearSessionLog) window.EclatAssistance.clearSessionLog(); E.reset(); save(); U.slots = [null, null, null]; U.last = null; setTab("carte"); intro(); } } });
           }, 80)
         }
       });

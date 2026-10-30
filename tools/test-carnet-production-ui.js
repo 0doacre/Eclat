@@ -15,7 +15,7 @@ for(const width of [320,390,1280])for(const age of [0,7,14]){
 const context=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block',reducedMotion:'reduce',colorScheme:'dark'}),p=await context.newPage(),errors=[],missing=[];p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()===404)missing.push(r.url());});
 await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.preview.style','vivant');Math.random=()=>.99;},fixture(age));await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);await close(p);await p.evaluate(()=>document.fonts.ready);
 const tag=width+'/'+age;
-ok(await p.locator('#atlasToggle').textContent()==='Carnet',tag+' ancien identifiant conservé, nouveau nom');
+ok(await p.locator('#atlasToggle').textContent()==='Aspect',tag+' ancien identifiant conservé, nouveau nom');
 ok(!await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' papier clair avec préférence sombre conservée');ok(await p.evaluate(()=>window.__eclat.E.state.settings.theme)==='dark',tag+' préférence non réécrite');
 ok(await p.locator('.carnet-terre').count()>0,tag+' feuilles réelles');await layout(p,tag+'/domaine');
 const expected=age===0?'encre':age===7?'registre':'releves';ok(await p.locator('body').getAttribute('data-carnet-era')===expected,tag+' écriture de l’époque');
@@ -29,7 +29,7 @@ ok(await p.evaluate(()=>{const e=document.querySelector('#v-atelier :is(.btn.pri
 await shot(p,'atelier-'+width+'-age'+age);
 await p.locator('[data-tab="domaine"]').click();
 await p.locator('#atlasToggle').click();ok(await p.locator('html').getAttribute('data-style-mode')==='classique',tag+' mode classique');ok(await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' thème sombre restauré hors Carnet');
-await p.locator('#atlasToggle').click();await p.locator('#atlasToggle').click();ok(await p.locator('#atlasToggle').textContent()==='Carnet',tag+' retour Carnet');ok(!await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' papier stable au retour');
+await p.locator('#atlasToggle').click();await p.locator('#atlasToggle').click();ok(await p.locator('#atlasToggle').textContent()==='Aspect',tag+' retour Carnet');ok(!await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' papier stable au retour');
 ok(!errors.length,tag+' erreurs JS '+errors.join(';'));ok(!missing.length,tag+' ressources absentes '+missing.join(';'));await context.close();console.log('✓ '+tag);
 }
 const offline=await browser.newContext({viewport:{width:390,height:1000},reducedMotion:'reduce'}),p=await offline.newPage();
@@ -39,6 +39,6 @@ await p.evaluate(()=>navigator.serviceWorker.register('sw.js'));await p.evaluate
 const cached=await p.evaluate(async()=>{const files=['css/carnet-peint.css','assets/carnet/ui/paper.webp','assets/carnet/ui/paint-button.webp','assets/carnet/lands/lisiere.webp','assets/carnet/lands/riviere-vapeur.webp','assets/carnet/lands/mercure.webp','assets/carnet/lands/plaine.webp','assets/carnet/lands/riviere.webp','assets/carnet/lands/collines.webp','assets/carnet/lands/mine.webp','assets/carnet/lands/desert.webp','assets/carnet/lands/gisement.webp','assets/carnet/lands/montagnes.webp','assets/carnet/lands/orbite.webp','assets/carnet/lands/lune.webp','assets/carnet/lands/caveau.webp'];return (await Promise.all(files.map(f=>caches.match(new URL(f,location.href).href)))).every(Boolean);});
 ok(cached,'les papiers, commandes et paysages sont en cache');
 await offline.setOffline(true);await p.reload();await p.waitForFunction(()=>!!window.__eclat);await close(p);await p.locator('#dt-mercure').scrollIntoViewIfNeeded();await p.locator('#dt-mercure .carnet-landscape img').evaluate(e=>e.decode());
-ok(await p.locator('#atlasToggle').textContent()==='Carnet','rechargement hors ligne du Carnet');ok(await p.locator('#dt-mercure .carnet-landscape img').evaluate(e=>e.naturalWidth>0),'paysage de Mercure hors ligne');await offline.close();
+ok(await p.locator('#atlasToggle').textContent()==='Aspect','rechargement hors ligne du Carnet');ok(await p.locator('#dt-mercure .carnet-landscape img').evaluate(e=>e.naturalWidth>0),'paysage de Mercure hors ligne');await offline.close();
 console.log(checks+' contrôles du Carnet de production réussis.');}
 run().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();server.close();});
