@@ -14,6 +14,21 @@ test('le bilan distingue ce qui reste actif et ce qui attend',()=>{const E=mk();
 test('le rapport exige une description et ne joint pas de sauvegarde par défaut',()=>{const E=mk();assert.throws(()=>A.report(E,{}, {observed:' '},[],null),/Décris/);const r=A.report(E,{tab:'atelier'},{observed:'La commande attend.'},[],null);assert.equal(r.format,'eclat-rapport-v1');assert.equal(r.jeu.profil,'classique');assert.ok(!('sauvegarde'in r));assert.equal(r.jeu.build,null);});
 test('la sauvegarde jointe conserve la progression et retire les données de compte',()=>{const E=mk();E.add('bois',17);E.state.settings.account={token:'IDENTIFIANT_TEST',email:'IDENTIFIANT_TEST@example.test'};E.state.meta.extra={password:'IDENTIFIANT_TEST',utile:1};const r=A.report(E,{tab:'atelier'},{observed:'Un problème',includeSave:true},[],'abc123');assert.equal(r.sauvegarde.inv.bois,17);assert.equal(r.sauvegarde.settings.account,undefined);assert.equal(r.sauvegarde.meta.extra.password,undefined);assert.equal(r.sauvegarde.meta.extra.utile,1);assert.ok(!JSON.stringify(r).includes('IDENTIFIANT_TEST'));const F=mk();assert.equal(F.load(r.sauvegarde),true);assert.equal(F.count('bois'),17);});
 test('les textes sont limités et le journal du rapport est borné',()=>{const E=mk(),r=A.report(E,{}, {observed:'x'.repeat(8000)},Array.from({length:50},(_,i)=>({type:'crafted',i})),null);assert.equal(r.observe.length,4000);assert.equal(r.actionsRecentes.length,20);assert.equal(r.actionsRecentes[0].i,30);});
+test('le journal de session est borné à 200 événements et inclus dans le rapport',()=>{
+  const mem={};global.localStorage={getItem:k=>mem[k]||null,setItem:(k,v)=>{mem[k]=String(v);},removeItem:k=>{delete mem[k];}};
+  A.clearSessionLog();
+  for(let i=0;i<250;i++)A.logSession('test',{i});
+  const log=A.getSessionLog();
+  assert.equal(log.length,200);
+  assert.equal(log[0].i,50);
+  assert.equal(log[199].i,249);
+  const E=mk();
+  const r=A.report(E,{tab:'domaine',style:'vivant',width:390},{observed:'Test journal'},[]);
+  assert.equal(r.jeu.style,'vivant');
+  assert.equal(r.journalSession.length,200);
+  A.clearSessionLog();
+  assert.equal(A.getSessionLog().length,0);
+});
 if(fs.existsSync(path.join(__dirname,'../js/equipements.js'))){
   const equipped=()=>Core.withData(require('../js/equipements').createData(D,{fullGame:true})).createEngine({now:()=>2e12,rand:()=>.99});
   test('la preview distingue une avance de salaire épuisée et une pause volontaire',()=>{const E=equipped();for(const id of ['racloir_os','etabli_amenage'])E.add(id,1);E.learn('laniere',true);Object.assign(E.state.atelierEconomy,{hired:true,working:true,budget:0});assert.equal(A.diagnostics(E).worker.state,'wage');E.workerSet(false);assert.equal(A.diagnostics(E).worker.state,'paused');});

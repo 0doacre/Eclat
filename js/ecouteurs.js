@@ -562,6 +562,7 @@
           return;
         }
         if ((b = t.closest("[data-tip]"))) { S().flags[b.dataset.tip] = true; render(true); return; }
+        if ((b = t.closest("[data-tip-open]"))) { S().flags[b.dataset.tipOpen] = false; render(true); return; }
         if ((b = t.closest("[data-exp]"))) { explore(b.dataset.exp); return; }
         if ((b = t.closest("[data-goto]"))) {
           A.click();

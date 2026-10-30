@@ -7,7 +7,7 @@
 
   function create(api) {
     const {
-      E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
+      E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
       iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
       floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
       uiSigne, memoryHTML
@@ -122,8 +122,8 @@
       const nAct = (o.filter !== "tout" ? 1 : 0) + (o.sort !== "age" ? 1 : 0), filtreNom = (INV_FILTERS.find(([k]) => k === o.filter) || ["", ""])[1];
       const totalStock = Object.keys(st.inv).reduce((acc, k) => acc + (st.inv[k] || 0), 0);
       const inv = invItems();
-      h += '<div class="sub-row"><h3 class="sub">Tes ressources</h3><button type="button" class="btn small ghost' + (U.invFiche ? " on" : "") + '" data-fichemode aria-pressed="' + (U.invFiche ? "true" : "false") + '" title="Un appui sur une ressource ouvre sa fiche (comme un appui long)">ⓘ Fiches</button>' +
-        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + (o.filter !== "tout" ? " · " + esc(filtreNom) + (o.filter === "tryg" ? " · " + esc(G.n) : "") : "") + " · " + fmt(totalStock) + " au total</span>" : "") +
+      h += '<div class="sub-row inv-sub-row"><button type="button" class="btn small ghost' + (U.invFiche ? " on" : "") + '" data-fichemode aria-pressed="' + (U.invFiche ? "true" : "false") + '" title="Un appui sur une ressource ouvre sa fiche (comme un appui long)">ⓘ Fiches</button>' +
+        (many ? '<span class="tiny muted">' + inv.length + (inv.length > 1 ? " ressources" : " ressource") + (o.filter !== "tout" ? " · " + esc(filtreNom) + (o.filter === "tryg" ? " · " + esc(G.n) : "") : "") + "</span>" : "") +
         "</div>" + studyAllHTML() +
         // la recherche reste affichée ; le tri et les filtres se rangent derrière « Filtres » (le chiffre dit combien sont actifs) et s’ouvrent sur place
         (many ? '<div class="inv-tools"><div class="search"><input id="iq" type="search" aria-label="Chercher une ressource" placeholder="Chercher une ressource…" value="' + esc(U.iq || "") + '" autocomplete="off" spellcheck="false">' +
@@ -169,8 +169,6 @@
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
           : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans le Domaine pour remplir ta Réserve.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
-      } else if (Object.keys(st.known).length >= 3 && !st.flags.tip_inv_lp) {
-        h += '<div class="sub-row" style="margin-top:8px"><span class="tiny dim">Appui long sur une ressource (ou « ⓘ Fiches », ou la touche « i ») : ouvre sa fiche (♥ favori, 🔍 étudier). Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie.</span><button class="btn small ghost" data-tip="tip_inv_lp">Compris</button></div>';
       }
       return h;
     }
@@ -514,7 +512,11 @@
       let h = '<div class="carnet-head"><div class="grow"><h2 class="title">Carnet</h2>' +
         '<p class="small muted">' + all + (all > 1 ? " recettes apprises" : " recette apprise") + "</p></div>" +
         "</div>";
-      if (!st.flags.tip_carnet) h += '<div class="tip">Retrouve tes recettes et choisis un lot à fabriquer. ×10 répète la recette dix fois ; les pièces intermédiaires sont fabriquées avec la commande. Les indices des autres recettes restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Fermer cette astuce">Compris</button></div>';
+      if (!st.flags.tip_carnet) {
+        h += '<div class="tip">Retrouve tes recettes et choisis un lot à fabriquer. ×10 répète la recette dix fois ; les pièces intermédiaires sont fabriquées avec la commande. Les indices des autres recettes restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Réduire l’aide du Carnet">Compris</button></div>';
+      } else {
+        h += '<div class="tip tip-mini"><span class="tiny muted">💡 Retrouve tes recettes et choisis un lot à fabriquer…</span> <button class="btn small ghost" data-tip-open="tip_carnet" title="Rouvrir l’aide du Carnet">Aide</button></div>';
+      }
       h += '<div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>';
       if (U.carnetFilter !== "unk") h += cqBarHTML();
@@ -1038,6 +1040,7 @@
       } else {
         A.fail(r.temp || 0);
         vibe(20);
+        if (window.EclatAssistance?.logSessionFail) window.EclatAssistance.logSessionFail({ geste: g, msg: r.msg });
         if (bench) { bench.classList.remove("shake"); void bench.offsetWidth; bench.classList.add("shake"); }
         // « Brûlant » : la bonne combinaison, il ne manque que la chaleur
         if (r.temp === 4) {
@@ -1165,9 +1168,23 @@
     /* la barre au-dessus des onglets : la commande en tête de file, ou la récolte continue */
     function actBar() {
       const bar = $("#actbar"), a = E.actInfo(), hi = E.handInfo();
-      if (!a && !hi.jobs.length) { if (!bar.classList.contains("hidden")) { bar.classList.add("hidden"); bar.dataset.sig = ""; document.body.classList.remove("has-act"); } return; }
+      if (!a && !hi.jobs.length) {
+        if (!bar.classList.contains("hidden")) {
+          bar.classList.add("hidden");
+          bar.dataset.sig = "";
+          document.body.classList.remove("has-act");
+          document.documentElement.style.setProperty("--actbar-h", "0px");
+        }
+        return;
+      }
       bar.classList.remove("hidden");
       document.body.classList.add("has-act");
+      const h = bar.offsetHeight || 52;
+      document.documentElement.style.setProperty("--actbar-h", h + "px");
+      requestAnimationFrame(() => {
+        const h2 = bar.offsetHeight;
+        if (h2 && h2 !== h) document.documentElement.style.setProperty("--actbar-h", h2 + "px");
+      });
       let sig, frac, line;
       if (hi.jobs.length) {
         const j = hi.jobs[0], w = jobWorkersTag(j), miss = jobMissTag(j);

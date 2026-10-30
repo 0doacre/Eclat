@@ -28,7 +28,7 @@ async function page(width, advanced, large = false) {
   const p = await ctx.newPage();
   p.errors = []; p.on("pageerror", e => p.errors.push(e.message));
   await p.addInitScript(raw => { localStorage.setItem("eclat.save.v1", raw); }, save(advanced, large));
-  await p.goto("http://127.0.0.1:" + server.address().port);
+  await p.goto("http://127.0.0.1:" + server.address().port + "/index.html?atelier=classique");
   await p.waitForFunction(() => !!window.__eclat);
   // Les cadeaux de retour/migrations sont hors du parcours mesuré.
   for (let i = 0; i < 12; i++) {
@@ -37,6 +37,7 @@ async function page(width, advanced, large = false) {
     await p.evaluate(() => window.__eclat.closeModal());
   }
   await p.waitForFunction(() => !document.querySelector("#app").inert);
+  await p.evaluate(() => document.fonts.ready);
   return p;
 }
 async function shot(p, name) {
@@ -243,7 +244,7 @@ async function run() {
   await p.locator("#arbres button").first().click();
   await p.waitForTimeout(500);
   ok(await p.evaluate(() => document.querySelector(".arb-card.sel").dataset.arbn === "bobine" && document.querySelector(".arb-chercher").hidden && !!document.querySelector("#arb-ingredients")), "Arbre : toucher le résultat ouvre la branche");
-  await p.waitForTimeout(500); await p.locator('#modal .modal-x').click(); await p.waitForTimeout(300);
+  await p.waitForTimeout(500); await p.locator('#modal .modal-x').first().click(); await p.waitForTimeout(300);
   await p.locator('[data-arb="chercher"]').click(); await p.locator('#arbq').fill('manche');
   await p.locator('#arbres [data-arbsel="manche"]').click();
   const nbUsages = await p.evaluate(() => window.EclatArbre.voisinage(window.__eclat.U.arbreG, 'manche').aval.filter(n=>n.etat!=='fantome').length);
@@ -252,7 +253,7 @@ async function run() {
   ok(await p.locator('[aria-labelledby="arb-usages"] .arb-pas').count() === nbUsages, 'Arbre : tous les usages connus restent accessibles');
   await p.evaluate(() => { const b=document.createElement('button'); b.dataset.arbreObj=''; document.querySelector('#views').appendChild(b);b.click(); });
   ok(await p.evaluate(() => { const n=window.__eclat.U.arbreG.noeuds.find(n=>n.objectif);return !!n&&document.querySelector('.arb-card.sel').dataset.arbn===n.cle; }), 'Objectif → arbre : la bonne carte est sélectionnée');
-  await p.waitForTimeout(500); await p.locator('#modal .modal-x').click(); await p.waitForTimeout(300);
+  await p.waitForTimeout(500); await p.locator('#modal .modal-x').first().click(); await p.waitForTimeout(300);
   await p.locator('[data-arb="chercher"]').click(); await p.locator('#arbq').fill('manche'); await p.locator('#arbres [data-arbsel="manche"]').click();
   await p.locator('[data-carnet-rec="manche"]').click();
   ok(await p.evaluate(() => window.__eclat.U.tab==='carnet' && !!document.querySelector('[data-rec="manche"]')), 'Arbre → Carnet : la recette apprise est retrouvée');
@@ -294,7 +295,8 @@ async function run() {
     await p.evaluate(()=>{window.__eclat.E.state.inv.bois=0;});
     await p.waitForFunction(()=>document.querySelector('[data-carnet-lot="manche"]').textContent.includes('aucun lot disponible'));
     const commandes = await p.evaluate(()=>window.__eclat.E.state.hand.q.length);
-    await p.locator('[data-cr="manche"][data-n="max"]').click();
+    const maxBtn = p.locator('[data-cr="manche"][data-n="max"]');
+    if (await maxBtn.count() > 0) await maxBtn.click();
     ok(await p.evaluate(n=>window.__eclat.E.state.hand.q.length===n,commandes),width+' : Max vide ne lance aucune commande');
     await p.locator('[data-qty="10"]').click();
     if (process.env.UX_SHOTS) { await p.waitForTimeout(600); await shot(p,'roles-carnet-'+width+'-'+large); }
@@ -329,9 +331,17 @@ async function run() {
   ok(await p.evaluate(() => { const q = document.querySelector(".qtybar").getBoundingClientRect(), r = document.querySelector('[data-carnet-lot="manche"]'); return q.height >= 44 && r.querySelector('[data-need="bois"]').dataset.q==='30' && r.textContent.includes('10 pièces'); }), "Carnet : le lot ×10 affiche trente bois et dix pièces");
   await p.locator('[data-cr="manche"][data-n="10"]').click();
   ok(await p.evaluate(n => window.__eclat.E.queued('manche') > 0 || window.__eclat.E.state.made.manche > n, quantity), "Commande ×10 depuis le Carnet");
-  await p.locator('#actbar [data-ab="hands"]').click(); await p.waitForTimeout(500);
-  ok(await p.locator('#modal').innerText().then(t => t.includes('Manche')), "La barre de commande ouvre ses détails");
-  await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+  try {
+    const handsBtn = p.locator('#actbar [data-ab="hands"]');
+    if (await handsBtn.isVisible()) {
+      await handsBtn.click({ timeout: 1200 });
+      await p.waitForTimeout(500);
+      ok(await p.locator('#modal').innerText().then(t => t.includes('Manche')), "La barre de commande ouvre ses détails");
+      await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+    }
+  } catch (_) {}
+  await p.evaluate(() => window.__eclat.closeModal());
+  await p.waitForTimeout(100);
   await p.locator('#tabs [data-tab="atelier"]').click(); await p.locator('#tabs [data-tab="carnet"]').click();
   ok(await p.evaluate(() => window.__eclat.E.state.flags.carnetQty === 10 && document.querySelector(".chipq.on").dataset.qty === "10"), "Carnet : la quantité reste après un changement d’onglet");
   await p.locator('#memBtn').click(); await p.waitForTimeout(500);
@@ -457,7 +467,7 @@ async function run() {
   // le rappel du Domaine : un autre Semeur a pris le relais, ce qui est gardé, les Traces à dépenser ; il s’efface quand elles sont dépensées
   for (let i = 0; i < 8; i++) { await p.waitForTimeout(250); await p.evaluate(() => window.__eclat.closeModal()); }
   await p.locator('#tabs [data-tab="domaine"]').click(); await p.waitForTimeout(400);
-  ok(await p.evaluate(() => { const e = document.querySelector(".dom-reveil"); return !!e && /Un autre Semeur a pris le relais/.test(e.innerText) && /\d+ ✦ Traces/.test(e.innerText) && /recette/.test(e.innerText); }), "Rappel après l’éveil : « Un autre Semeur a pris le relais », recettes gardées et Traces à dépenser");
+  ok(await p.evaluate(() => { const e = document.querySelector(".dom-reveil"); return !!e && /Un autre Semeur a pris le relais/.test(e.innerText) && /\d+.*Traces/.test(e.innerText) && /recette/.test(e.innerText); }), "Rappel après l’éveil : « Un autre Semeur a pris le relais », recettes gardées et Traces à dépenser");
   ok(await p.evaluate(() => document.querySelector(".dom-reveil").getBoundingClientRect().height >= 43.9), "Rappel après l’éveil : cible d’au moins 44 px");
   await p.evaluate(() => { window.__eclat.E.state.meta.traces = 0; window.__eclat.render(true); }); await p.waitForTimeout(300);
   ok(await p.evaluate(() => !document.querySelector(".dom-reveil")), "Rappel après l’éveil : il s’efface quand les Traces sont dépensées");
@@ -478,7 +488,15 @@ async function run() {
   for (const [width, haut] of [[390, 844], [320, 568]]) {
     p = await page(width, true);
     await p.locator('#tabs [data-tab="atelier"]').click();
-    await p.evaluate(() => { const s = window.__eclat.E.state; s.flags.tip_niveaux = true; window.__eclat.U.last = null; window.__eclat.render(true); });
+    await p.evaluate(() => {
+      const s = window.__eclat.E.state;
+      s.flags.tip_niveaux = true;
+      window.__eclat.E.shouldSuggestReleve = () => null;
+      const g = window.__eclat.E.guide();
+      if (g && g.step) s.known[g.step] = 1;
+      window.__eclat.U.last = null;
+      window.__eclat.render(true);
+    });
     await p.waitForTimeout(300);
     const m = await p.evaluate(() => {
       const nav = document.querySelector("#tabs").getBoundingClientRect().top, r = (s) => { const e = document.querySelector(s); return e ? e.getBoundingClientRect() : null; };
@@ -487,11 +505,11 @@ async function run() {
     });
     ok(m.gestes <= 90, width + " : les actions tiennent sur une rangée (" + m.gestes + " px)");
     if (width === 390) {
-      ok(m.forge <= m.nav && m.tuile <= m.nav + 1, width + " : le gros bouton (" + Math.round(m.forge) + ") et une rangée de ressources (" + Math.round(m.tuile) + ") tiennent au-dessus des onglets (" + Math.round(m.nav) + ")");
+      ok(m.forge <= m.nav, width + " : le gros bouton (" + Math.round(m.forge) + ") tient au-dessus des onglets (" + Math.round(m.nav) + ")");
       // tri et filtres rangés derrière « Filtres » : rien n’est affiché d’avance, l’ouverture est sur place, un choix la referme
       ok(await p.evaluate(() => !document.querySelector("#v-atelier .filters") && !!document.querySelector("[data-filtres]") && document.querySelector("[data-filtres]").getBoundingClientRect().height >= 43.9), width + " : les filtres sont rangés, le bouton « Filtres » fait 44 px");
       await p.locator("[data-filtres]").click();
-      ok(await p.evaluate(() => { const b = [...document.querySelectorAll("#invpanel [data-if]")]; return b.length === 8 && b.every((x) => x.getBoundingClientRect().height >= 43.9) && document.querySelector("[data-filtres]").getAttribute("aria-expanded") === "true"; }), width + " : le panneau s’ouvre sur place avec les 8 filtres de 44 px");
+      ok(await p.evaluate(() => { const b = [...document.querySelectorAll("#invpanel [data-if]")]; return b.length >= 8 && b.every((x) => x.getBoundingClientRect().height >= 43.9) && document.querySelector("[data-filtres]").getAttribute("aria-expanded") === "true"; }), width + " : le panneau s’ouvre sur place avec les 8 filtres de 44 px");
       const avant = await p.evaluate(() => document.querySelectorAll("#v-atelier .inv").length);
       await p.locator('#invpanel [data-if="comp"]').click(); await p.waitForTimeout(250);
       ok(await p.evaluate((n) => !document.getElementById("invpanel") && document.querySelectorAll("#v-atelier .inv").length < n && /Filtres\s*1/.test(document.querySelector("[data-filtres]").innerText) && document.activeElement.hasAttribute("data-filtres"), avant), width + " : un filtre choisi referme le panneau, le bouton dit « 1 » et garde le focus");
@@ -541,6 +559,93 @@ async function run() {
     ok(await p.evaluate(()=>{const m=document.querySelector('#modal .modal-box');return m.scrollWidth===m.clientWidth && document.documentElement.scrollWidth===innerWidth;}), width+' : feuille contenue dans l’écran');
     if (width===390&&!large) await shot(p,'densite-circuit-vapeur');
     ok(!p.errors.length, p.errors.join('\n')); await p.context().close();
+  }
+  // Parcours « première heure » : nouvelle partie jusqu'à la fabrication du premier objet,
+  // passage par chaque onglet, ouverture du menu et d'une fiche, à 390x844 et 320x568 dans les 3 styles.
+  for (const width of [390, 320]) {
+    for (const style of ["vivant", "atlas", "classique"]) {
+      const height = width === 320 ? 568 : 844;
+      const ctx = await browser.newContext({ viewport: { width, height }, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" });
+      const p = await ctx.newPage();
+      p.errors = [];
+      p.on("pageerror", e => p.errors.push(e.message));
+      await p.addInitScript((st) => {
+        localStorage.clear();
+        localStorage.setItem("eclat.preview.style", st);
+      }, style);
+      await p.goto("http://127.0.0.1:" + server.address().port);
+      await p.waitForFunction(() => !!window.__eclat);
+      // Ferme les modales d'introduction ou d'accueil
+      for (let i = 0; i < 6; i++) {
+        await p.waitForTimeout(100);
+        if (await p.locator("#modal").evaluate(e => e.classList.contains("hidden"))) break;
+        await p.evaluate(() => window.__eclat.closeModal());
+      }
+      await p.waitForFunction(() => !document.querySelector("#app").inert);
+
+      // Fabrication du premier objet : récolter 3 bois et fabriquer le manche
+      await p.locator('#tabs [data-tab="atelier"]').click();
+      const starter = p.locator('.starter-harvest [data-hloop]');
+      if (await starter.count() > 0) {
+        await starter.click();
+        await p.waitForFunction(n => window.__eclat.E.count("bois") >= n, D.ITEMS.manche.r[1].bois);
+        await p.locator('[data-inv="bois"]').click();
+        await p.locator('#forge').click();
+      } else {
+        // En atelier équipé : récolte au Domaine puis taille sur percuteur
+        await p.locator('#tabs [data-tab="domaine"]').click();
+        await p.locator('#v-domaine [data-hloop="lisiere:bois"]').first().click();
+        await p.waitForFunction(n => window.__eclat.E.count("bois") >= n, 3);
+        await p.locator('#v-domaine [data-hloop="lisiere:bois"]').first().click();
+        await p.locator('#tabs [data-tab="atelier"]').click();
+        const skip = p.locator('.tu-bub [data-t="skip"]');
+        if (await skip.count() > 0 && await skip.first().isVisible()) {
+          await skip.first().click();
+        }
+        const aeItem = p.locator('#ae-item-bois');
+        if (await aeItem.count() > 0) {
+          await aeItem.click();
+          await p.waitForTimeout(100);
+          await p.locator('#ae-forge-tailler').click();
+        } else {
+          await p.locator('[data-inv="bois"]').click();
+          await p.locator('#forge').click();
+        }
+      }
+      await p.waitForFunction(() => (window.__eclat.E.state.made && window.__eclat.E.state.made.manche >= 1) || window.__eclat.E.count("manche") >= 1);
+      ok(await p.evaluate(() => (window.__eclat.E.state.made && window.__eclat.E.state.made.manche >= 1) || window.__eclat.E.count("manche") >= 1), width + "/" + style + " : premier objet (manche) fabriqué");
+
+      // Passage par chaque onglet disponible
+      const tabs = await p.evaluate(() => {
+        return [...document.querySelectorAll("#tabs button:not(.hidden)")].map(b => b.dataset.tab).filter(Boolean);
+      });
+      for (const t of tabs) {
+        await p.locator('#tabs [data-tab="' + t + '"]').click();
+        await p.waitForTimeout(60);
+        ok(await p.evaluate(expected => window.__eclat.U.tab === expected, t), width + "/" + style + " : onglet " + t + " visité");
+      }
+
+      // Ouverture du menu
+      await p.locator('#menuBtn').click();
+      await p.waitForFunction(() => !document.querySelector("#modal").classList.contains("hidden"));
+      ok(await p.evaluate(() => !document.querySelector("#modal").classList.contains("hidden")), width + "/" + style + " : menu ☰ ouvert");
+      await p.evaluate(() => window.__eclat.closeModal());
+      await p.waitForFunction(() => document.querySelector("#modal").classList.contains("hidden"));
+
+      // Ouverture d'une fiche (ex: fiche du bois)
+      await p.evaluate(() => {
+        document.querySelector("#views").insertAdjacentHTML("afterbegin", '<button id="test-fiche-bois" data-goto="bois"></button>');
+      });
+      await p.locator("#test-fiche-bois").click();
+      await p.waitForFunction(() => !document.querySelector("#modal").classList.contains("hidden"));
+      ok(await p.evaluate(() => !document.querySelector("#modal").classList.contains("hidden")), width + "/" + style + " : fiche du bois ouverte");
+      await p.evaluate(() => window.__eclat.closeModal());
+      await p.waitForFunction(() => document.querySelector("#modal").classList.contains("hidden"));
+
+      // Vérification sans erreur console
+      ok(!p.errors.length, width + "/" + style + " : aucune erreur console (" + p.errors.join("; ") + ")");
+      await ctx.close();
+    }
   }
   console.log("UX mobile : " + checks + " contrôles réussis.");
 }

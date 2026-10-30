@@ -431,7 +431,23 @@
     const duration = kind === "gold" ? Math.min(7000, Math.max(4500, 3000 + plainLen * 40)) : Math.min(4800, Math.max(2500, 2200 + plainLen * 30));
     t._tm = setTimeout(dismiss, duration);
   }
-  function vibe(ms) { if (S().settings.vibe && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* ignoré */ } }
+  let userInteracted = false;
+  ["pointerdown", "touchstart", "mousedown", "keydown", "click"].forEach((evt) => {
+    window.addEventListener(evt, () => { userInteracted = true; }, { capture: true, passive: true });
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (window.EclatAssistance?.logSession) {
+      if (document.visibilityState === "hidden") window.EclatAssistance.logSession("départ");
+      else if (document.visibilityState === "visible") window.EclatAssistance.logSession("retour");
+    }
+  });
+  window.addEventListener("pagehide", () => {
+    if (window.EclatAssistance?.logSession) window.EclatAssistance.logSession("départ");
+  });
+  function vibe(ms) {
+    if (!userInteracted && !(typeof navigator !== "undefined" && navigator.userActivation?.hasBeenActive)) return;
+    if (S().settings.vibe && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) { /* ignoré */ }
+  }
   /* le jus : l’appui qui se voit, le choc des moments rares (js/juice.js) */
   const Jus = window.EclatJuice.create({ A, U, S, vibe, motionOK });
   function elCenter(el) {
@@ -458,6 +474,10 @@
     const ttl = $("h2", box);
     if (ttl) { ttl.id = "modalTitle"; box.setAttribute("aria-labelledby", "modalTitle"); box.removeAttribute("aria-label"); }
     else { box.removeAttribute("aria-labelledby"); box.setAttribute("aria-label", "Fenêtre"); }
+    if (window.EclatAssistance?.logSession) {
+      const modalName = ttl ? ttl.textContent.trim() : (o.title || "Fenêtre");
+      window.EclatAssistance.logSession("fenêtre", { titre: modalName });
+    }
     iconize(box);
     box.scrollTop = 0;
     box.tabIndex = -1;
@@ -756,6 +776,10 @@
     const ttl = $("h2", box);
     if (ttl) { ttl.id = "modalTitle"; box.setAttribute("aria-labelledby", "modalTitle"); box.removeAttribute("aria-label"); }
     else { box.removeAttribute("aria-labelledby"); box.setAttribute("aria-label", "Fenêtre"); }
+    if (window.EclatAssistance?.logSession) {
+      const modalName = ttl ? ttl.textContent.trim() : (o.title || "Fenêtre");
+      window.EclatAssistance.logSession("fenêtre", { titre: modalName });
+    }
     iconize(box);
     box.scrollTop = 0;
     if (o.onOpen) o.onOpen(box);
@@ -818,6 +842,9 @@
     const views = $("#views");
     U.viewScroll = U.viewScroll || {};
     if (was !== t) U.viewScroll[was] = views.scrollTop;
+    if (was !== t && window.EclatAssistance?.logSession) {
+      window.EclatAssistance.logSession("onglet", { tab: t });
+    }
     U.tab = t;
     $$(".view").forEach((v) => { v.classList.toggle("on", v.id === "v-" + t); delete v.dataset.sig; });
     document.body.dataset.tab = t;
@@ -1009,6 +1036,11 @@
     if (intuNow > 0 && !U.intuShown) { const ib = $("#intuBtn"); if (ib) { ib.classList.remove("born"); void ib.offsetWidth; ib.classList.add("born"); } }
     U.intuShown = U.intuShown || intuNow > 0;
     $("#intu").textContent = intuNow;
+    const ibEl = $("#intuBtn");
+    if (ibEl) {
+      ibEl.setAttribute("aria-label", "Intuition : " + fmt(intuNow));
+      ibEl.setAttribute("title", "Intuition : " + fmt(intuNow) + " (toucher pour voir le détail)");
+    }
     memChip();
     questChip();
     const xp = E.expProgress();
@@ -1285,7 +1317,7 @@
 
   /* l’Atelier et le Carnet */
   const Atl = window.EclatAtelier.create({
-    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
+    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
     iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
     floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
     uiSigne, memoryHTML

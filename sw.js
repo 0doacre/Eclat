@@ -3,7 +3,7 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "350e2f8772";
+const BUILD = "2d4e93d7b3";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
@@ -20,6 +20,7 @@ const FILES = [
   "assets/carnet/items/miroir.webp", "assets/carnet/items/tablette.webp", "assets/carnet/items/cassiterite_1.webp", "assets/carnet/sources/source_malachite.webp",
   "assets/carnet/sources/source_cassiterite.webp", "assets/carnet/discoveries/gue.webp", "assets/carnet/discoveries/carcasse.webp", "assets/carnet/discoveries/escalier.webp",
   "assets/carnet/discoveries/rails.webp", "assets/carnet/discoveries/sommet.webp", "assets/carnet/discoveries/nid.webp", "assets/carnet/passages/berges.webp",
+  "js/passerelle-chantier.js", "css/passerelle-chantier.css",
   "assets/carnet/passages/passerelle-charpente.webp", "assets/carnet/passages/passerelle-terminee.webp",
 
   "js/sentier-chantier.js", "css/sentier-chantier.css", "assets/carnet/passages/base.webp", "assets/carnet/passages/ronces-gauche.webp", "assets/carnet/passages/ronces-droite.webp", "assets/carnet/passages/herbes-sentier.webp",

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.37.0";
+  D.VERSION = "0.38.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1525,6 +1525,12 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔨 Dans l’Atelier, les ressources s’affichent en tuiles compactes et épurées sous forme d’icônes et de réserves. Dans le Domaine, les terres déjà traversées se replient pour laisser place à leurs gisements sous forme de vignettes directes.",
+    "📖 Finitions du Carnet et mesures : le style Carnet (papier) devient l’aspect par défaut des nouveaux joueurs, et le bouton du haut s’appelle désormais « Aspect ». Les pastilles de quêtes et de traces ont un nom explicite.",
+    "🖐️ Le bandeau de récolte et de commandes réserve sa place dans le défilement de chaque onglet sans masquer la dernière ligne.",
+    "💡 L’aide en tête du Carnet se replie d’un appui sur « Compris » pour dégager l’écran, et reste rouvrable d’un appui sur « Aide ».",
+    "📳 Les vibrations attendent ton premier geste sur l’écran avant de s’activer.",
+    "🐞 Un journal de session local conserve tes derniers repères en mémoire et s’ajoute au signalement de problème si tu choisis d’en préparer un.",
     "📖 Une voie facultative relie les supports d’écriture, l’imprimerie et les archives au Livre : notes des Semeurs, registre de copies et recherche locale dans les pages retrouvées. Les découvertes et les recettes acquises restent conservées.",
     "⛏️ Le Cuivre se découvre étape par étape. Le chariot et le Désert arrivent au Fer : le quartz y fournit une poudre pour polir les lentilles et renforcer les briques réfractaires. La ligne d’assemblage prépare les grands chantiers après l’ordinateur.",
     "💾 Tes terres, tes stocks et tes âges acquis sont conservés. Les commandes de lentilles et de briques déjà lancées terminent avec leurs anciens ingrédients ; les nouvelles utilisent la poudre de quartz.",

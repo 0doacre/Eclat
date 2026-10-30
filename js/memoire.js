@@ -675,6 +675,8 @@
       const txt = can && gain ? "+" + gain : fmt(m.traces);
       const n = $("#memN");
       if (n.textContent !== txt) n.textContent = txt;
+      b.setAttribute("aria-label", can && gain ? "Traces à gagner : +" + gain + " (Mémoire des mains)" : "Traces : " + fmt(m.traces) + " (Mémoire des mains)");
+      b.setAttribute("title", can && gain ? "Relève : +" + gain + " Traces à gagner (toucher pour voir la Mémoire)" : "Traces : " + fmt(m.traces) + " (toucher pour ouvrir la Mémoire des mains)");
 
       // Calcul si un achat réel est possible (maintenant ou après la relève)
       const pot = E.achatsOuverts() ? m.traces : can && gain ? m.traces + gain : 0;

@@ -68,17 +68,62 @@
     for(const [k,v]of Object.entries(value))if(!/token|password|motdepasse|authorization|cookie|credential|session|email|pseudo|account|cloud/i.test(k))out[k]=clean(v);
     return out;
   }
-  function report(E,context,form,actions,build){
+  const SESSION_KEY = "eclat.session.log";
+  function getSessionLog() {
+    try {
+      if (typeof localStorage === "undefined") return [];
+      const raw = localStorage.getItem(SESSION_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (_) { return []; }
+  }
+  function logSession(type, detail = {}) {
+    try {
+      if (typeof localStorage === "undefined") return;
+      const list = getSessionLog();
+      list.push({ date: new Date().toISOString(), type, ...detail });
+      if (list.length > 200) list.splice(0, list.length - 200);
+      localStorage.setItem(SESSION_KEY, JSON.stringify(list));
+    } catch (_) {}
+  }
+  function clearSessionLog() {
+    try {
+      if (typeof localStorage !== "undefined") localStorage.removeItem(SESSION_KEY);
+    } catch (_) {}
+  }
+  let sessionFailed = false;
+  function logSessionFail(detail = {}) {
+    if (sessionFailed) return;
+    sessionFailed = true;
+    logSession("premier échec", detail);
+  }
+
+  function report(E,context,form,actions,build,journalSession){
     const observed=cap(form.observed).trim();
     if(!observed)throw new Error("Décris ce qui s’est passé avant de préparer le rapport.");
     const s=E.state;
-    const r={format:"eclat-rapport-v1",date:new Date().toISOString(),jeu:{version:E.D.VERSION,build:build||null,profil:E.D.CRAFT_EQUIPMENT?"atelier-equipe":"classique",age:E.D.AGES[s.age]?.n,cycle:s.cycle,terre:E.ZONES[context.zone]?.n||null,ecran:cap(context.tab,40),geste:cap(context.geste,40),affichage:{largeur:context.width||null,hauteur:context.height||null},navigateur:cap(context.browser,300)},attendu:cap(form.expected),observe:observed,etapes:cap(form.steps),diagnostic:diagnostics(E),actionsRecentes:actions.slice(-20)};
+    const r={format:"eclat-rapport-v1",date:new Date().toISOString(),jeu:{version:E.D.VERSION,build:build||null,profil:E.D.CRAFT_EQUIPMENT?"atelier-equipe":"classique",age:E.D.AGES[s.age]?.n,cycle:s.cycle,style:context.style||null,terre:E.ZONES[context.zone]?.n||null,ecran:cap(context.tab,40),geste:cap(context.geste,40),affichage:{largeur:context.width||null,hauteur:context.height||null},navigateur:cap(context.browser,300)},attendu:cap(form.expected),observe:observed,etapes:cap(form.steps),diagnostic:diagnostics(E),actionsRecentes:actions.slice(-20),journalSession:(journalSession||getSessionLog()).slice(-200)};
     if(form.includeSave)r.sauvegarde=clean(JSON.parse(E.serialize()));
     return r;
   }
   function create(api){
     const {E,D,U,esc,fmt,fmtTime,openModal,closeModal,setTab,goto,Dom,openHands,openGoals}=api;
     const recent=[];let draft={expected:"",observed:"",steps:"",includeSave:false},before=null;
+    logSession("ouverture", {
+      style: typeof window !== "undefined" && window.EclatStyleMode ? window.EclatStyleMode : "vivant",
+      largeur: typeof innerWidth !== "undefined" ? innerWidth : null,
+      hauteur: typeof innerHeight !== "undefined" ? innerHeight : null,
+      age: E.D.AGES[E.state.age]?.n || null,
+      version: E.D.VERSION
+    });
+    let hasMade = Object.values(E.state.made || {}).some(v => v > 0);
+    E.on("crafted", (v) => {
+      if (!hasMade) {
+        hasMade = true;
+        const id = typeof v === "string" ? v : v?.job?.id || v?.id;
+        logSession("premier objet", { objet: id ? (D.ITEMS[id]?.n || id) : null });
+      }
+    });
     const add=(type,id)=>{recent.push({date:new Date().toISOString(),type,cycle:E.state.cycle,...(D.ITEMS[id]&&known(E,id)?{objet:D.ITEMS[id].n}:E.ZONES[id]&&E.zoneOpen(id)?{terre:E.ZONES[id].n}:{})});if(recent.length>20)recent.shift();};
     for(const evt of ["crafted","learn","zone","cycle","hand"])E.on(evt,(v)=>add(evt+(v?.kind?':'+cap(v.kind,20):''),typeof v==="string"?v:v?.job?.id));
     const catchUp=E.catchUp;
@@ -105,7 +150,7 @@
       return h+'</section>';
     }
     function readForm(box){draft={expected:box.querySelector('#report-expected')?.value||'',observed:box.querySelector('#report-observed')?.value||'',steps:box.querySelector('#report-steps')?.value||'',includeSave:box.querySelector('#report-save')?.checked===true};return draft;}
-    function reportHTML(){return '<div class="kicker">Retour de test</div><h2>Signaler un problème</h2><p class="small">Télécharge un rapport à transmettre avec ton retour. Rien n’est envoyé automatiquement.</p><label class="assistance-field">Ce que tu attendais<textarea id="report-expected" maxlength="4000" rows="2">'+esc(draft.expected)+'</textarea></label><label class="assistance-field">Ce qui s’est passé <span class="tiny">(requis)</span><textarea id="report-observed" maxlength="4000" rows="3" required>'+esc(draft.observed)+'</textarea></label><label class="assistance-field">Comment le reproduire<textarea id="report-steps" maxlength="4000" rows="2">'+esc(draft.steps)+'</textarea></label><label class="assistance-check"><input type="checkbox" id="report-save"'+(draft.includeSave?' checked':'')+'> Joindre ma sauvegarde (progression et notes)</label><p class="tiny muted">Le rapport contient la version du jeu, le contexte, les blocages et les dernières actions. Les identifiants de compte ne sont pas inclus.</p><p id="report-status" class="small" role="status"></p><div class="acts"><button class="btn pri" data-assistance="download" title="Télécharger le rapport de problème">Télécharger le rapport</button><button class="btn" data-assistance="copy" title="Copier le rapport dans le presse-papiers">Copier</button><button class="btn" data-m="close">Fermer</button></div>';}
+    function reportHTML(){return '<div class="kicker">Retour de test</div><h2>Signaler un problème</h2><p class="small">Télécharge un rapport à transmettre avec ton retour. Rien n’est envoyé automatiquement.</p><label class="assistance-field">Ce que tu attendais<textarea id="report-expected" maxlength="4000" rows="2">'+esc(draft.expected)+'</textarea></label><label class="assistance-field">Ce qui s’est passé <span class="tiny">(requis)</span><textarea id="report-observed" maxlength="4000" rows="3" required>'+esc(draft.observed)+'</textarea></label><label class="assistance-field">Comment le reproduire<textarea id="report-steps" maxlength="4000" rows="2">'+esc(draft.steps)+'</textarea></label><label class="assistance-check"><input type="checkbox" id="report-save"'+(draft.includeSave?' checked':'')+'> Joindre ma sauvegarde (progression et notes)</label><p class="tiny muted">Le rapport contient la version du jeu, l’âge, le style, la largeur d’écran, les blocages, le journal de session (au plus 200 événements locaux : ouvertures, premier objet, premier échec, onglets, fenêtres, départs et retours) et les dernières actions. Les identifiants de compte ne sont pas inclus.</p><p id="report-status" class="small" role="status"></p><div class="acts"><button class="btn pri" data-assistance="download" title="Télécharger le rapport de problème">Télécharger le rapport</button><button class="btn" data-assistance="copy" title="Copier le rapport dans le presse-papiers">Copier</button><button class="btn" data-m="close">Fermer</button></div>';}
     function openReport(){openModal({html:reportHTML(),onOpen:box=>{box.addEventListener('input',()=>readForm(box));box.addEventListener('change',()=>readForm(box));}});}
     async function build(){
       let controller;try{controller=navigator.serviceWorker?.controller;}catch(e){return null;}if(!controller||typeof MessageChannel==='undefined')return null;
@@ -116,7 +161,7 @@
       readForm(box);if(!draft.observed.trim()){status.textContent='Décris ce qui s’est passé.';box.querySelector('#report-observed').focus();return;}
       button.disabled=true;status.textContent='Préparation du rapport…';
       try{
-        const data=report(E,{zone:U.zone,tab:U.tab,geste:U.geste,width:innerWidth,height:innerHeight,browser:navigator.userAgent},draft,recent,await build()),text=JSON.stringify(data,null,2);
+        const data=report(E,{zone:U.zone,tab:U.tab,geste:U.geste,width:innerWidth,height:innerHeight,style:window.EclatStyleMode||"vivant",browser:navigator.userAgent},draft,recent,await build(),getSessionLog()),text=JSON.stringify(data,null,2);
         if(copy){await navigator.clipboard.writeText(text);status.textContent='Rapport copié. Tu peux le transmettre avec ton retour.';}
         else{const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='eclat-rapport-'+Date.now()+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);status.textContent='Rapport téléchargé. Tu peux le transmettre avec ton retour.';}
       }catch(e){status.textContent=copy?'Copie impossible ici. Tu peux télécharger le rapport.':'Le rapport n’a pas pu être préparé. Tes réponses restent dans cette fenêtre.';}finally{button.disabled=false;}
@@ -148,6 +193,6 @@
     }
     return {refresh,resumeHTML,openReport,openDiagnostic};
   }
-  const API={diagnostics,snapshot,resume,report,clean,create};root.EclatAssistance=API;
+  const API={diagnostics,snapshot,resume,report,clean,create,getSessionLog,logSession,clearSessionLog,logSessionFail};root.EclatAssistance=API;
   if(typeof module!=='undefined'&&module.exports)module.exports=API;
 })(typeof window!=='undefined'?window:globalThis);

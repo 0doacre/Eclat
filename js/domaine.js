@@ -197,6 +197,40 @@
       });
     }
 
+    function isZonePassed(z) {
+      const idx = D.ZONES.findIndex((land) => land.id === z);
+      if (idx < 0) return false;
+      const nextZ = D.ZONES[idx + 1]?.id;
+      if (!nextZ) return false;
+      const st = S();
+      return !!(E.zoneOpen(nextZ) || (st.pass && st.pass[nextZ] && st.pass[nextZ].done));
+    }
+
+    function compactGisHTML(z, d) {
+      const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
+      const ch = E.extChoice(res, z);
+      const info = E.machInfo(key), rate = depRate(z, res);
+      const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
+      const illustratedSource = isVivant && window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasSource(res);
+      const can = ch ? (E.freeExt(ch.t) >= 1 || E.plan(ch.t, 1).ok) : false;
+      const pAdd = (ch && E.projectExtractor) ? E.projectExtractor(z, res, ch.t, 1) : null;
+      const projTip = pAdd ? ' (débit : ' + perTime(pAdd.curRate) + ' → ' + perTime(pAdd.projRate) + ')' : '';
+      const rateTxt = rate > 0 ? '+' + perTime(rate) : (e && info.s === 'off' ? '⏸' : '');
+      const isProducing = rate > 0;
+
+      return '<div class="gis gis-compact' + (isVivant && isProducing ? ' gis-producing' : '') + '" data-gis="' + key + '">' +
+        '<button type="button" class="gis-compact-btn" data-gsheet="' + key + '" title="' + esc(I[res].n) + ' : gérer les extracteurs" aria-label="' + esc(I[res].n) + ' : gérer les extracteurs">' +
+          '<div class="gis-compact-node' + (d.hand ? ' hand' : '') + '">' + (isVivant && (d.hand || illustratedSource) ? livingNode(res) : icon(res)) + '</div>' +
+          '<div class="gis-compact-info">' +
+            '<span class="gis-compact-name">' + esc(I[res].n) + '</span>' +
+            '<b class="gis-compact-c" data-c="' + res + '">' + fmt(st.inv[res] || 0) + '</b>' +
+            '<span class="dom-rate gis-compact-rate' + (rate > 0 ? '' : ' hidden') + '" data-rate="' + key + '">' + rateTxt + '</span>' +
+          '</div>' +
+        '</button>' +
+        (ch ? '<button type="button" class="mini lbl gis-compact-add' + (can ? '' : ' nope') + '" data-xadd="' + key + '" data-n="1" title="Poser ' + esc(nm(ch.t, 1)) + esc(projTip) + '" aria-label="Poser ' + esc(nm(ch.t, 1)) + '">+ ' + esc(nm(ch.t, 1)) + '</button>' : '') +
+      '</div>';
+    }
+
     function terreHTML(z) {
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
@@ -206,10 +240,32 @@
       const painted = z === "riviere" && st.age >= 7 ? "riviere-vapeur" : CARNET_DECORS[z] || null;
       const scene = painted ? "assets/carnet/lands/" + painted + ".webp" : DECORS[z] ? "assets/terres/" + z + "-decor.webp" : null;
       const btnContempler = '<button type="button" class="btn mini ghost btn-contempler" data-contempler="' + z + '" title="Contempler l’aquarelle de cette terre : ' + esc(Z.n) + '" aria-label="Contempler l’aquarelle de cette terre : ' + esc(Z.n) + '">🖼️ Contempler</button>';
+      const passed = isZonePassed(z);
+      const closed = passed && !U.domAll && !(U.domLandsOpen && U.domLandsOpen[z]);
       let h;
+
+      if (closed) {
+        h = carnet
+          ? '<section class="dom-terre carnet-terre dom-terre-fermee" id="dt-' + z + '">' +
+            '<div class="carnet-running"><span>Terre traversée</span><span>Terre ' + number + '</span></div>' +
+            '<div class="dom-th dom-closed-header"><div><h3>' + esc(Z.n) + '</h3></div>' +
+            '<div class="row items-center dom-closed-acts">' + btnContempler +
+            '<button type="button" class="btn mini ghost dom-land-toggle" data-land-toggle="' + z + '" aria-expanded="false" title="Déplier les détails de cette terre">▾ Déplier</button></div></div>'
+          : '<section class="dom-terre dom-terre-fermee' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '>' +
+            '<div class="dom-th dom-closed-header"><h3>' + esc(Z.n) + '</h3>' +
+            '<div class="row items-center dom-closed-acts">' + btnContempler +
+            '<button type="button" class="btn mini ghost dom-land-toggle" data-land-toggle="' + z + '" aria-expanded="false" title="Déplier les détails de cette terre">▾ Déplier</button></div></div>';
+        h += '<div class="dom-closed-res">';
+        deps.forEach((d) => { h += compactGisHTML(z, d); });
+        h += '</div>';
+        h += ruinsBlock(z, Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "ext" && E.extZones(id)[0] === z));
+        return h + "</section>";
+      }
+
+      const toggleOpenBtn = passed ? '<button type="button" class="btn mini ghost dom-land-toggle" data-land-toggle="' + z + '" aria-expanded="true" title="Replier cette terre">▴ Replier</button>' : '';
       if (carnet) {
-        h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>Les terres traversées</span><span>Terre ' + number + '</span></div>' +
-          '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' + btnContempler +
+        h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>' + (passed ? 'Terre traversée' : 'Les terres traversées') + '</span><span>Terre ' + number + '</span></div>' +
+          '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' + btnContempler + toggleOpenBtn +
           '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
           (z === "lisiere" ? Decouvertes.sceneHTML() : z === "plaine" ? Plaine.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '" data-contempler="' + z + '" tabindex="0" role="button" aria-label="Contempler l’aquarelle de ' + esc(Z.n) + '" title="Agrandir et contempler l’aquarelle de ' + esc(Z.n) + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + ' · 🔍 Agrandir</figcaption></figure>' : '') + '</div>';
         if (z === "lisiere") h += Decouvertes.studyHTML();
@@ -219,7 +275,7 @@
         if (z === "collines") h += Collines.studyHTML();
         if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small" data-gz="riviere">Emprunter la passerelle</button><button class="btn small ghost" data-passerelle-replay>Revoir les travaux</button></div></div>';
       } else {
-        h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + btnContempler + lieuHTML(z) + "</div>";
+        h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + btnContempler + toggleOpenBtn + lieuHTML(z) + "</div>";
       }
       h += regleHTML(z);
       h += E.territoiresHTML(z, esc, U.terresOpen && U.terresOpen[z]);
@@ -1323,6 +1379,14 @@
         render(true);
         return true;
       }
+      if ((b = t.closest("[data-land-toggle]"))) {
+        const z = b.dataset.landToggle;
+        U.domLandsOpen = U.domLandsOpen || {};
+        U.domLandsOpen[z] = !U.domLandsOpen[z];
+        A.click();
+        render(true);
+        return true;
+      }
       if ((b = t.closest("[data-gsheet]"))) { A.click(); extSheet(b.dataset.gsheet); return true; }
       if ((b = t.closest("[data-mcancel]"))) {
         E.cancelJob(Number(b.dataset.mcancel));
@@ -1446,13 +1510,15 @@
       const st = S(), ms = E.machines();
       return [api.topSig ? api.topSig() : "", E.terresSignature(), JSON.stringify(st.exp.done), openZones().join(), JSON.stringify(st.dom.ext),
         Object.keys(st.dom.site).join(), E.EXTS.map((t) => E.freeExt(t)).join(), E.MACHINES.map((m) => ms[m].own + ":" + ms[m].used).join(),
-        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
+        st.hand.q.length, st.exp.active ? st.exp.active.z : "", st.act ? st.act.k + (st.act.res || st.act.id) : "", E.passPending().join(), U.domAll, JSON.stringify(U.domLandsOpen || {}), U.compact(), Object.values(st.dom.ext).map((e) => e.on).join(),
         (E.zoneOpen(D.COMPTOIR.zone) ? "cp" + Math.floor(st.ecus || 0) + "a" + (E.troqueurCount ? E.troqueurCount() : 0) : ""), JSON.stringify(E.ruins()), E.reprisePending ? E.reprisePending().map(r => r.i + ":" + r.left).join() : ""].join("|");
     }
 
     /* une terre précise : on la déplie et on la montre */
     function focusZone(z) {
       U.domOpen = z;
+      U.domLandsOpen = U.domLandsOpen || {};
+      U.domLandsOpen[z] = true;
       render(true);
       setTimeout(() => { const el = document.getElementById("dt-" + z); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30);
     }

@@ -40,13 +40,13 @@
         <span class="age-bar-track"><i id="ageBar" class="age-bar-fill" style="width:0%"></i></span>
       </button>
       <div class="top-right">
-        <button id="atlasToggle" class="icon-btn" type="button" aria-label="Passer au style classique" title="Comparer : Atlas / Classique" style="font-size:12px;font-weight:700;min-width:44px;width:auto;padding:0 6px">Atlas</button>
+        <button id="atlasToggle" class="icon-btn" type="button" aria-label="Aspect : style Carnet actif (toucher pour style Classique)" title="Aspect : style Carnet actif — toucher pour Classique" style="font-size:12px;font-weight:700;min-width:44px;width:auto;padding:0 6px">Aspect</button>
         <button id="tutoMini" class="exp-mini hidden" aria-label="Rouvrir le conseil">💭</button>
         <button id="expMini" class="exp-mini hidden" aria-label="Exploration en cours"></button>
-        <button id="questBtn" class="chip quest" aria-label="Quêtes" title="Quêtes : l’objectif, les rituels, le Troqueur">📜 <span class="cv"><b id="questBadge">Quêtes</b><small id="questSub">0/3</small></span><span id="questDot" class="quest-dot hidden">●</span></button>
+        <button id="questBtn" class="chip quest" aria-label="Quêtes : 0 sur 3" title="Quêtes : l’objectif, les rituels, le Troqueur">📜 <span class="cv"><b id="questBadge">Quêtes</b><small id="questSub">0/3</small></span><span id="questDot" class="quest-dot hidden">●</span></button>
         <button id="cloudBtn" class="icon-btn cloud hidden" aria-label="Compte en ligne">☁️</button>
-        <button id="memBtn" class="chip mem hidden" aria-label="Traces et Mémoire des mains">✦ <span class="cv"><b id="memN">0</b><small>Traces</small></span></button>
-        <button id="intuBtn" class="chip intu" aria-label="Intuition">✨ <span class="cv"><b id="intu">0</b><small>Intuition</small></span></button>
+        <button id="memBtn" class="chip mem hidden" aria-label="Traces et Mémoire des mains" title="Traces et Mémoire des mains">✦ <span class="cv"><b id="memN">0</b><small>Traces</small></span></button>
+        <button id="intuBtn" class="chip intu" aria-label="Intuition" title="Intuition (toucher pour voir le détail)">✨ <span class="cv"><b id="intu">0</b><small>Intuition</small></span></button>
         <button id="menuBtn" class="icon-btn" aria-label="Menu">☰</button>
       </div>
     </header>
@@ -113,24 +113,24 @@
 
         if (mode === "atlas") {
           button.textContent = "Atlas";
-          button.setAttribute("aria-label", "Activer le Carnet du Semeur");
+          button.setAttribute("aria-label", "Aspect : style Atlas actif (toucher pour style Carnet)");
           button.setAttribute("aria-pressed", "true");
-          button.title = "Style Atlas actif — toucher pour Carnet";
+          button.title = "Aspect : style Atlas actif — toucher pour Carnet";
         } else if (mode === "vivant") {
-          button.textContent = "Carnet";
-          button.setAttribute("aria-label", "Revenir au style classique");
+          button.textContent = "Aspect";
+          button.setAttribute("aria-label", "Aspect : style Carnet actif (toucher pour style Classique)");
           button.setAttribute("aria-pressed", "true");
-          button.title = "Carnet du Semeur actif — toucher pour Classique";
+          button.title = "Aspect : style Carnet actif — toucher pour Classique";
         } else {
           button.textContent = "Class.";
-          button.setAttribute("aria-label", "Activer le style Atlas vivant");
+          button.setAttribute("aria-label", "Aspect : style Classique actif (toucher pour style Atlas)");
           button.setAttribute("aria-pressed", "false");
-          button.title = "Style classique actif — toucher pour Atlas";
+          button.title = "Aspect : style Classique actif — toucher pour Atlas";
         }
         try { localStorage.setItem(key, mode); } catch (_) {}
       }
 
-      let mode = "atlas";
+      let mode = "vivant";
       try {
         const saved = localStorage.getItem(key);
         if (MODES.includes(saved)) mode = saved;
