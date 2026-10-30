@@ -12,7 +12,7 @@ Jouée le 30 octobre 2026 sur `https://craftgame-wrr.pages.dev/` (branche `prewi
 
 ## Ce qui a frotté
 
-1. **La bannière « Une nouvelle version d'Éclat est prête »** est restée affichée à chaque écran (environ 110 px sur 812) pendant toute la visite, dans une partie réelle et pas seulement en mode test. Elle prend plus de place que n'importe quelle carte du jeu et ne se ferme pas ; on ne peut que « Mettre à jour » ou « Ma sauvegarde ». Pour un joueur qui n'a rien demandé, c'est du bruit permanent. À reconsidérer (un bandeau d'une ligne, ou une pastille dans le menu).
+1. **La bannière de mise à jour** (« Une nouvelle version d'Éclat est prête ») m'a suivi sur tous les écrans (environ 110 px sur 812) tant que je n'ai pas mis à jour. **Ce n'est pas un défaut** : elle est voulue (le joueur choisit le moment), et elle disparaît dès qu'on appuie sur « Mettre à jour » ; je l'ai fait et ma partie était intacte (étape 3/8, objectif suivant). Ma première version de cette note l'avait présentée à tort comme permanente. Seul point à observer en test : un joueur qui la laisse des jours perd 110 px d'écran en continu.
 2. **Le bandeau de récolte** masque les messages de confirmation : « Fabriqué : Corde » est à moitié sous lui dans l'Atelier. C'est le défaut déjà confié à Gemini.
 3. **Matière résiduelle sur l'établi** : le Bois de mon premier essai est resté sur l'établi pendant que je cherchais la Corde, et le thermomètre l'a compté comme un ingrédient en trop. Un nouveau joueur ne comprendra peut-être pas pourquoi « Tiède » : il faut lui dire quoi retirer, ou vider l'établi à chaque fabrication réussie.
 4. **Chiffres à décimales** : le stock affiche « Fibres 6,4 », « Bois 1,13 k ». Les décimales sur une matière que l'on récolte une par une sont un bruit ; « 1,13 k » est lisible mais surprenant à l'âge du Bois, où le joueur n'a pas encore l'habitude des milliers.
@@ -24,7 +24,7 @@ Jouée le 30 octobre 2026 sur `https://craftgame-wrr.pages.dev/` (branche `prewi
 
 ## À regarder en test de joueurs
 
-- La bannière de mise à jour : la voient-ils, la comprennent-ils, appuient-ils dessus ?
+- La bannière de mise à jour : la comprennent-ils, appuient-ils dessus, ou la laissent-ils ?
 - Le thermomètre quand l'établi garde une matière : comprennent-ils quoi retirer ?
 - Le moment de l'exploration : savent-ils qu'elle avance seule, et combien de temps elle prend ?
 - Les chiffres à décimales sur les stocks : perturbent-ils ou non ?

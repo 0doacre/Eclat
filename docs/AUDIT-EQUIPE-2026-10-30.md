@@ -39,14 +39,14 @@ Rédigé le 30 octobre 2026 par Claude. Version 0.37.0 (`main` et `prewiew-desig
 
 ## 3 bis. Le milieu de partie, vu à l'âge de l'Acier [J, mode test]
 
-- **Le haut de l'écran est pris par du « chrome » [J].** À 390 × 812, la zone de contenu ne fait que 588 px quand s'empilent l'en-tête, la ligne d'ambiance, la bannière « Une nouvelle version d'Éclat est prête » et (en mode test seulement) la barre « Mode test ». Même sans ces deux bandeaux, l'objectif, la carte « Gisement à exploiter », la carte « Relais conseillé » et la ligne d'étape passent avant le premier gisement.
+- **Le haut de l'écran est pris par du « chrome » [J].** À 390 × 812, la zone de contenu ne fait que 588 px quand s'empilent l'en-tête, la ligne d'ambiance, la bannière de mise à jour (temporaire : elle disparaît quand on met à jour) et, en mode test seulement, la barre « Mode test ». Même sans ces deux bandeaux, l'objectif, la carte « Gisement à exploiter », la carte « Relais conseillé » et la ligne d'étape passent avant le premier gisement.
 - **Le Domaine est très long [M].** 3 044 px de haut (5 écrans) pour 4 gisements de 130 px : chaque terre déroule une grande planche (ici le Désert de Verre) avant ses ressources. C'est beau, mais on ne voit pas ce qui produit.
 - **L'Atelier est très long [M].** 3 071 px. Le poste de travail (Établi, Foyer, Four, Poste de frappe) est sous les cartes « Passer le relais » et « Déchiffrer · 54 ». « Tes matières » énumère tout, y compris les objets à 0 ou à 1.
 - **Le Carnet [M].** 1 338 px, 30 recettes apprises, rangées par âge repliables : la structure est bonne. Le texte d'aide en tête reste le défaut déjà noté.
 - **Les offres de relève (« Relais conseillé », « Passer le relais ») s'affichent à l'Atelier et au Domaine à l'âge de l'Acier [J].** À ce stade le joueur de mon test n'avait rien fait ; **[H]** un vrai joueur peut l'ignorer ou, pire, la déclencher trop tôt. À observer.
 - **Cinq pastilles dans l'en-tête** (style, quêtes « 0/3 », Traces « +30 », Intuition, ☰) : lisibles par icône, mais sans noms.
 - **Le Journal [J]** : 2/38 fragments ; les listes « Encore à découvrir » sont claires et donnent envie.
-- **La bannière « nouvelle version prête » est apparue immédiatement après la création de la copie de test [J].** C'est peut-être un effet du mode test ; à vérifier qu'un joueur qui vient d'ouvrir le jeu ne la voit pas.
+- **La bannière de mise à jour [J]** s'affiche quand une nouvelle version est publiée et disparaît dès qu'on met à jour (vérifié : la partie est conservée). C'est voulu (le joueur garde la main sur la mise à jour). Elle ne devient un défaut que si un joueur la laisse des jours : à observer en test, pas à corriger d'avance.
 
 ## 4. Audit « joueur ou joueuse »
 
