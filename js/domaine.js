@@ -25,7 +25,8 @@
     /* « Âge de l’Électricité » → « Électricité » */
     const ageShort = (a) => D.AGES[a].n.replace(/^Âge (du |de la |de l’|des |de )?/, "");
 
-    const worldActive = () => !!window.EclatMonde && window.EclatStyleMode === "vivant";
+    // Monde peint en pause : le Carnet retrouve ses terres et découvertes en pages.
+    const worldActive = () => false;
     const Monde = window.EclatMonde && window.EclatMonde.create({E,D,U,A,esc,fmt,fmtTime,toast,openModal,render,vibe,icon,
       extSheet,stopHold:()=>up(),legacyView:classicView,legacySig:sig,
       explore:(z,x)=>api.explore(z,x),pour:(z,b)=>api.pour(z,b),setTab:t=>api.setTab(t)});
