@@ -1,0 +1,41 @@
+[
+  {
+    "id": "gue",
+    "name": "Le Gué",
+    "type": "plate",
+    "secret": false,
+    "prompt": "Use case: stylized-concept. Project-bound collectible discovery illustration for Éclat, a quiet melancholic explorer's field journal. One landscape 3:2 watercolor vignette with genuinely transparent alpha outside irregular softly feathered painted edges; no opaque rectangle or paper background. Detailed natural brown-black pen contours and muted watercolor, engraved botanical travel journal character, restrained ochre dry grasses, olive reeds and willow, slate gray-green slow river, warm umber earth. Soft diffuse daylight, same geography as a low broad slow river bordered by willow trees, gravel and reeds beside tawny prairie. Main subject clear at 320px wide, grounded natural perspective, generous transparent margins. No title, labels, legible text, UI, frame, neon or glow. No human characters. Subject: a shallow river crossing formed by an irregular natural line of broad dark stepping stones, emerging between long olive reeds and willow-lined banks. Oblique view from the near pebble shore toward the opposite bank. In the near foreground a single smooth gray round pebble with one unusually precise small drilled hole lies among normal gravel; it is a modest discovery, not an enormous donut. Water slips slowly around dark flat stones, distant soft river haze and muted trees. No constructed bridge, buildings or machinery. Calm tangible sense of discovering a way across.",
+    "src": "../../../assets/carnet/discoveries/gue.webp",
+    "master": "masters/gue.png",
+    "width": 1280,
+    "height": 853,
+    "bytes": 549804,
+    "alpha": true
+  },
+  {
+    "id": "carcasse",
+    "name": "La Carcasse",
+    "type": "plate",
+    "secret": true,
+    "prompt": "Use case: stylized-concept. Project-bound collectible discovery illustration for Éclat, a quiet melancholic explorer's field journal. One landscape 3:2 watercolor vignette with genuinely transparent alpha outside irregular softly feathered painted edges; no opaque rectangle or paper background. Detailed natural brown-black pen contours and muted watercolor, engraved botanical travel journal character, restrained ochre dry grasses, olive reeds and willow, slate gray-green slow river, warm umber earth. Soft diffuse daylight, same geography as a low broad slow river bordered by willow trees, gravel and reeds beside tawny prairie. Main subject clear at 320px wide, grounded natural perspective, generous transparent margins. No title, labels, legible text, UI, frame, neon or glow. No human characters. Subject from the actual story: an enormous ancient maintenance machine half-buried and rusted into the riverbank. Low squat wheeled vehicle chassis with SIX wheels total, three per side; three near wheels visible and traces of the far wheels partly buried in mud. One articulated mechanical arm folded low like a dead insect leg. Its partly open gripper gently cradles a tiny bird skeleton, delicate and non-gory, an intimate detail at the front. Corroded matte reddish-brown iron, faded gray plating, sediment, moss and reeds reclaiming the machine. A small corroded identification plaque is present but has NO letters. Still, abandoned, mysterious and tender rather than hostile. Three-quarter view, entire machine and small surrounding bank inside the vignette. Not an animal carcass, not a tank, no weapon, no tracks, no robot face, no bright futuristic lights or chrome.",
+    "src": "../../../assets/carnet/discoveries/carcasse.webp",
+    "master": "masters/carcasse.png",
+    "width": 1280,
+    "height": 853,
+    "bytes": 540336,
+    "alpha": true
+  },
+  {
+    "id": "escalier",
+    "name": "L’Escalier Noyé",
+    "type": "plate",
+    "secret": true,
+    "prompt": "Use case: stylized-concept. Project-bound collectible discovery illustration for Éclat, a quiet melancholic explorer's field journal. One landscape 3:2 watercolor vignette with genuinely transparent alpha outside irregular softly feathered painted edges; no opaque rectangle or paper background. Detailed natural brown-black pen contours and muted watercolor, engraved botanical travel journal character, restrained ochre dry grasses, olive reeds and willow, slate gray-green slow river, warm umber earth. Soft diffuse daylight, same geography as a low broad slow river bordered by willow trees, gravel and reeds beside tawny prairie. Main subject clear at 320px wide, grounded natural perspective, generous transparent margins. No title, labels, legible text, UI, frame, neon or glow. No human characters. Subject: on a quiet mossy willow-lined riverbank, an unnaturally straight sequence of broad ancient gray stone steps descends diagonally into clear shallow gray-green river water, the lower stairs disappearing into muted deeper water. Looking down obliquely from the bank; upper steps overgrown with moss, below-water steps discernible through gentle ripples and refracted edges, dark smooth pebbles and sparse reeds surround the entry. The perfect angles are the subtle mysterious clue. No submerged person, diving equipment or dry underground room; show only the discovered stair entrance as a beautiful collectible study. No ruined castle, temple columns, symbols or treasure chest.",
+    "src": "../../../assets/carnet/discoveries/escalier.webp",
+    "master": "masters/escalier.png",
+    "width": 1280,
+    "height": 853,
+    "bytes": 598104,
+    "alpha": true
+  }
+]
