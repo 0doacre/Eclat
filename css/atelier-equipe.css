@@ -18,6 +18,8 @@
 .ae-slots small{display:block;font-size:12px;text-align:center}
 .ae-empty{border:1px dashed var(--line2)!important;opacity:1;background:var(--panel2)!important}
 .ae-filled{border-color:var(--acc)!important}
+.ae-bench-subbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
+.ae-bench-subbar .ae-prepared{margin:0;font-weight:600}
 .ae-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .ae-actions .btn{flex:1 1 110px}
 #ae-result{margin:10px 0 6px;min-height:38px;display:flex;align-items:center;border-radius:8px;transition:all .25s ease}

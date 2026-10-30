@@ -350,5 +350,11 @@ test("l'atelier permet de cadencer directement une recette automatisable maîtri
   // Mise en pause
   E.setCadence("manche", 100, false);
   assert.equal(E.state.dom.cadence.manche.on, false);
+  // Ajustement du plafond (tiers 25 -> 50 -> 100 -> 250 -> 500)
+  const tiers = [25, 50, 100, 250, 500];
+  const nextCap = tiers[(tiers.indexOf(100) + 1) % tiers.length];
+  E.setCadence("manche", nextCap, true);
+  assert.equal(E.state.dom.cadence.manche.cap, nextCap);
+  assert.equal(E.state.dom.cadence.manche.on, true);
 });
 console.log(checks+" contrôles du profil équipements réussis.");

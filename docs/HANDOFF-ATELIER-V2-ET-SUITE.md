@@ -98,3 +98,16 @@ Suite aux playtests des 6 personas (Martine, Léa, Enzo, Thomas, Julien, Chloé)
      - **Bruits de matière réalistes** : `w.mode` est fidèlement mappé sur les synthétiseurs audio de `A.craft(soundGesture)` (*chauffer* au foyer, *tailler* au silex/couteau, *marteler* l'enclume, *assembler* à la main, *usiner* au polissoir).
      - **Retours thermiques & cinétiques tactiles** : `#ae-result` arbore des auras visuelles animées selon la chaleur du thermomètre (`.ae-heat-brulant` halo rouge-braise, `.ae-heat-chaud` ambre, `.ae-heat-tiede` halo doux, `.ae-heat-froid` brume ardoise, `.ae-heat-success` impulsion verte d'artisanat).
    - **Élagage de l'établi** : l'encart d'intendance de l'apprenti et du troc est désormais replié par défaut dans une barre compacte avec résumé d'état en 1 ligne (*Apprenti actif · N monnaie*), réservant 100 % de l'espace écran tactile à la paillasse de recherche et à la manipulation des matières.
+
+---
+
+## 5. Pack 1 QoL : « Confort d'Établi & Fluidité d'Artisanat » (Déployé)
+
+1. **🧹 Vider l'établi en 1 tap (ction: "clear")** :
+   - Dès qu'au moins une matière est posée sur l'établi, un bouton discret 🧹 Vider apparaît dans .ae-bench-subbar. Un simple clic remet instantanément toutes les matières en réserve et réinitialise la préparation sans manipulation superflue.
+2. **⚡ Façonnage express des sous-composants récursifs (ction: "order_missing")** :
+   - Lorsqu'une recette préparée nécessite un composant intermédiaire manquant mais fabricable depuis les stocks bruts (E.maxPlan(ing) >= besoin), un bouton ⚡ Façonner [nom] apparaît automatiquement pour lancer immédiatement la fabrication récursive sans aller chercher l'ingrédient dans le Carnet.
+3. **Filtre « En réserve » (#ae-stock-only)** :
+   - Ajout d'une case à cocher à côté de *« À découvrir »* : permet de n'afficher que les matières dont le joueur possède au moins 1 exemplaire en stock (idéal pour les sessions de craft rapide sans bruit visuel).
+4. **Réglage direct du plafond de cadence (ction: "cadence_cap")** :
+   - Un bouton rotatif Max [cap] ▾ permet de cycler le plafond de maintien automatique à travers les paliers usuels [25, 50, 100, 250, 500] directement depuis la recette dans l'Atelier, sans jamais quitter l'établi.
