@@ -15,6 +15,7 @@
     const S = () => E.state;
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
+    const Atel = window.EclatAteliers ? window.EclatAteliers.create({ E, D }) : null;
     const Equipped = E.equipmentList && window.EclatAtelierEquipe ? window.EclatAtelierEquipe.create({...api,goalHint,handsHTML}) : null;
 
     /* ------------------------------------------------------------ ATELIER */
@@ -1635,7 +1636,8 @@
     const PROD_ETAT = { ok: "produit", full: "plein", starved: "attend une matière", nomach: "pas de machine capable", busy: "attend un travailleur", off: "en pause" };
     function prodRecettes() {
       const st = S(), pin = st.pins || {};
-      const ids = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec && !I[id].path && !I[id].old && !E.isUnique(I[id]) && !E.isScaled(I[id]));
+      const sel = Atel && U.atelierSel;
+      const ids = Object.keys(st.known).filter((id) => (!sel || Atel.famille(id) === sel) && I[id] && I[id].r && !I[id].sec && !I[id].path && !I[id].old && !E.isUnique(I[id]) && !E.isScaled(I[id]));
       const can = (id) => (E.maxCraftable(id, 1000) > 0 ? 1 : 0);
       ids.sort((a, b) => can(b) - can(a) || (pin[b] ? 1 : 0) - (pin[a] ? 1 : 0) || I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
       return ids;
@@ -1652,12 +1654,42 @@
       if (!E.cadenceEligible().includes(id)) return E.machFor(id) ? "Fabrique-la d’abord une fois à la main, ou attends une machine libre." : "Il faut une machine capable de la fabriquer.";
       return "";
     }
+    /* La vue d'ensemble : l'énergie, puis une carte par atelier que le joueur peut déjà montrer */
+    function energieHTML() {
+      const e = Atel.energie();
+      const pct = e.demande <= 0 ? 0 : Math.min(100, Math.round(100 * e.demande / e.offre));
+      const fmtc = (n) => fmt(Math.round(n));
+      return '<div class="energie' + (e.ratio < 1 ? " is-juste" : "") + '" role="img" aria-label="Énergie : ' + fmtc(e.demande) + ' chevaux demandés sur ' + fmtc(e.offre) + ' disponibles">' +
+        '<span class="energie-t">Énergie</span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v">' + fmtc(e.demande) + " / " + fmtc(e.offre) + " ch</span></div>" +
+        (e.ratio < 1 ? '<p class="tiny muted energie-note">Il manque de l’énergie : tes ateliers tourneraient à ' + Math.round(100 * e.ratio) + " %. Pour l’instant, ça ne ralentit encore rien.</p>" : "");
+    }
+    function carteHTML(c) {
+      const ech = c.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '" title="' + esc(e.n) + (e.etat === "ferme" ? " : à partir de " + D.AGES[e.age].n.toLowerCase() : "") + '">' + esc(e.n) + "</span>").join("");
+      const etat = c.etat === "bloque" ? '<span class="atel-etat is-bloque">à l’arrêt · ' + esc(c.cause) + "</span>"
+        : c.etat === "marche" ? '<span class="atel-etat is-marche">+' + perMin(c.cadence / 60) + "</span>"
+        : c.etat === "plein" ? '<span class="atel-etat">plein</span>' : "";
+      const equipe = (c.machines ? c.machines + " machine" + (c.machines > 1 ? "s" : "") + " · " : "") + c.recettes.length + " recette" + (c.recettes.length > 1 ? "s" : "");
+      return '<button type="button" class="atel-carte is-' + c.etat + '" data-atelier="' + c.id + '"><span class="atel-ic" aria-hidden="true">' + c.ic + '</span><span class="atel-corps"><span class="atel-ligne"><b>' + esc(c.n) + '</b><span class="tiny muted">' + esc(equipe) + "</span>" + etat + '</span><span class="atel-echelle">' + ech + '</span></span><span class="atel-chev" aria-hidden="true">›</span></button>';
+    }
+    function viewAteliers() {
+      const ap = E.apprentis();
+      const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
+      return '<div class="ateliers">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") + energieHTML() +
+        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
+        '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "");
+    }
     function viewAtelier() {
+      if (Atel) {
+        if (U.atelierSel && !Atel.connues(U.atelierSel).length) U.atelierSel = null;
+        if (!U.atelierSel) return viewAteliers();
+      }
       const st = S(), ap = E.apprentis();
       const liste = prodRecettes();
       if (!liste.includes(U.prodSel)) U.prodSel = liste[0] || null;
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
+      const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
@@ -1681,7 +1713,7 @@
         '<button type="button" class="btn ghost" data-tab2="machines">Machines</button></div>';
       if (why && !ordre) h += '<p class="tiny muted prod-why">' + esc(why) + "</p>";
       h += '<div class="prod-file" id="hands">' + handsHTML() + "</div>";
-      if (Equipped && S().known.laniere) h += '<details class="prod-apprenti"' + (U.prodApprenti ? " open" : "") + '><summary data-prodapprenti>L’apprenti de l’établi · bourse et troc</summary>' + Equipped.ecoView() + "</details>";
+      if (Equipped && S().known.laniere && (!Atel || U.atelierSel === "elevage")) h += '<details class="prod-apprenti"' + (U.prodApprenti ? " open" : "") + '><summary data-prodapprenti>L’apprenti de l’établi · bourse et troc</summary>' + Equipped.ecoView() + "</details>";
       h += "</div>";
       return h + (U.autoSheet ? autoFeuille() : "");
     }
@@ -1706,6 +1738,8 @@
     /* les appuis de l’Atelier et du Labo */
     function prodClick(t) {
       let b;
+      if ((b = t.closest("[data-atelier]"))) { A.click(); U.atelierSel = b.dataset.atelier; U.prodSel = null; render(true); return true; }
+      if (t.closest("[data-atelier-retour]")) { A.click(); U.atelierSel = null; render(true); return true; }
       if (t.closest("[data-prodapprenti]")) { U.prodApprenti = !U.prodApprenti; return false; }
       if ((b = t.closest("[data-labsearch]"))) { A.click(); U.labSearch = b.dataset.labsearch === "1"; render(true); return true; }
       if ((b = t.closest("[data-autosheet]"))) { A.click(); U.autoSheet = b.dataset.autosheet === "1" ? !U.autoSheet : false; render(true); return true; }

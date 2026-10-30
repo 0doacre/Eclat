@@ -110,3 +110,14 @@ Livrable seul, sans règle nouvelle :
 4. **Les machines renommées** : « métier », « mécanisme », « machine à vapeur », « ligne », « robot » : ces noms te conviennent-ils ?
 5. **Une machine va dans un atelier** : le joueur choisit lequel, ou le jeu l'installe dans l'atelier de la famille de la dernière recette qu'il lui a donnée ?
 6. **Énergie minimale** : on garde le garde-fou à 50 %, ou on laisse l'énergie tomber à zéro ?
+
+## 11. Décisions du porteur du projet (30 octobre 2026, suite) et livraison du 0.40
+
+1. **Le troc** : c'est la **vente** (l'ancienne boucle de l'argent) qui disparaît, ni le Troqueur ni le Comptoir. À appliquer au 0.41, avec l'embauche.
+2. **Répartition** : sept familles, avec **Chimie et matériaux** (naphta, plastique, résine, dynamite, caoutchouc, composites, céramique, graphène…). Les outils, installations et améliorations ont maintenant aussi une famille choisie à la main (`js/ateliers.js`, test à l'appui).
+3. **Grands Œuvres** : pas un atelier, un **engouement général** (projet collectif, à part).
+4. **Noms des paliers de machines** : proposés, à décider : Métier ou Corporation, Automate, Machine à vapeur, Machine électrique, Ligne d'assemblage, Robotisation. Cela fait **six** noms pour **cinq** paliers existants : soit on fusionne, soit on ajoute un palier « machine électrique » entre la vapeur (âge 7) et la ligne d'assemblage (âge 10), au 0.42, avec son équilibrage. Les noms ne sont pas encore changés.
+5. **Installer une machine** : le joueur le fait lui-même, avec un **glisser-déposer** d'une machine vers un atelier. À faire au 0.42.
+6. **Énergie** : elle peut **tomber à zéro**, mais pas facilement. À régler au 0.43 (plancher à définir, plutôt bas au début, sans filet ensuite).
+
+**0.40 livré** : `js/ateliers.js` (familles, échelle, énergie calculées, rien d'écrit dans la sauvegarde), la page Atelier en cartes avec la jauge d'énergie en lecture seule, le détail d'un atelier (ses recettes, la fiche, ×1 à ×1000 et Max, Automatiser), l'apprenti de l'établi rangé dans l'Élevage. Valeurs provisoires : les chevaux par palier et par source, les âges qui ouvrent chaque échelon (`ECHELONS`, `PALIERS`, `SOURCES` dans `js/ateliers.js`).
