@@ -1407,9 +1407,10 @@
       if (i < 0 || !TRAV[m.slice(0, i)]) return null;
       return { kind: m.slice(0, i), fam: m.slice(i + 1), def: TRAV[m.slice(0, i)] };
     }
+    /* E.energieFacteur : crochet du banc d’essai tools/sim-energie.js (0.44). Absent dans le jeu : facteur 1, rien ne change. */
     function machUnitRate(m, c, rec) {
       const wk = workerOf(m);
-      if (wk) return rec ? wk.def.mult / Math.max(0.2, handTime(rec)) * E.recetteTerreBonus(rec) : 0;
+      if (wk) return rec ? wk.def.mult / Math.max(0.2, handTime(rec)) * (E.energieFacteur ? E.energieFacteur() : 1) * E.recetteTerreBonus(rec) : 0;
       const M = item(m);
       if (!M) return 0;
       let decay = 1;
@@ -1422,7 +1423,7 @@
           decay = Math.pow(H.machDecay || 1.08, effAge - 1);
         }
       }
-      return ((M.spd / 60) / decay) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
+      return ((M.spd / 60) / decay) * (E.energieFacteur ? E.energieFacteur() : 1) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
     }
     function machReadyFor(m, rec, job) {
       const wk = workerOf(m);

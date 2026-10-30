@@ -54,3 +54,11 @@ Risques : les recettes sont aujourd'hui indexées par couple outil et mode (`D.C
 - **Renommage** : « Artistique » devient **Arts et lettres** (choix du porteur). Seul le nom affiché change ; l'identifiant interne `artistique` reste, donc rien ne bouge dans les sauvegardes.
 - **Maîtrisé** : la carte d'un métier dans l'Atelier dit « N sur T recettes » tant qu'il reste à trouver, puis « maîtrisé » quand toutes les recettes (hors secrètes, uniques et à échelle) sont trouvées. Le métier reste utilisable. Un métier maîtrisé ne change rien au rythme du jeu.
 - **À faire ensuite** : l'énergie (0.44).
+
+## 7. Simulation de l'énergie (avant la 0.44)
+
+Banc : `node tools/sim-energie.js [--minutes 120] [--planchers 0.5,0.25,0.1]` (joueurs de `tools/sim-passages.js`). Il lit toutes les 10 s l'écran de l'énergie, et, avec `--planchers`, applique en essai un crochet `E.energieFacteur` (absent du jeu : facteur 1) qui ralentit machines et travailleurs de `max(plancher, offre / demande)`.
+
+- **Le manque existe, il est court et précoce.** Aux âges 4 à 8 la demande (13 à 63 ch) dépasse l'offre de base (10 ch) tant que le joueur n'a pas bâti de source : rapport de 0,77 à 0,16 selon le joueur ; dès l'âge 8-9 une source donne 200 ch et le rapport revient à 1. Les joueurs à séances espacées y passent le plus de temps (jusqu'à 60 % des relevés des âges 4 à 7).
+- **Effet sur le rythme : nul.** Aucun passage ne bouge de plus de 2 minutes, que le plancher soit 0,5, 0,25 ou 0,1 (ex. tapeur : désert 76,0 → 74,3 min ; les autres passages à l'identique). Les joueurs automatiques tirent presque tout de leurs mains ; ils n'embauchent personne (travailleurs : 0 sur tous les relevés).
+- **Conséquence** : on peut faire agir l'énergie sans toucher à l'équilibre mesuré, mais les bots ne la ressentent pas. Le ressenti doit se juger à la main, sur une partie réelle avec machines et ouvriers.
