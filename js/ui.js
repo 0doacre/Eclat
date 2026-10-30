@@ -932,12 +932,12 @@
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "labo") el.innerHTML = viewLabo();
-    else if (U.tab === "carnet") el.innerHTML = viewCarnet();
+    else if (U.tab === "carnet") el.innerHTML = '<div class="atl-page">' + viewCarnet() + "</div>";
     else if (U.tab === "arbre") { // la Progression : le chemin (l’arbre se redessine lui-même, js/arbre.js) ou une page de ce que le joueur a accompli
       if (!U.progTab || U.progTab === "chemin") Atl.arbreRendre(el);
       else { delete el.dataset.sig; el.innerHTML = progSwitchHTML() + '<div class="prog-corps">' + viewJournal("progression") + "</div>"; }
     }
-    else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = viewMachines(); el.dataset.sig = g; } }
+    else if (U.tab === "machines") { const g = Dom.machSig ? Dom.machSig() : ""; if (force || el.dataset.sig !== g) { el.innerHTML = '<div class="atl-page">' + viewMachines() + "</div>"; el.dataset.sig = g; } }
     else if (U.tab === "domaine") { const g = Dom.sig(); if (force || el.dataset.sig !== g) { el.innerHTML = Dom.view(); el.dataset.sig = g; } }
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = '<div class="carte-retour"><button type="button" class="btn small" data-tab2="domaine">← Terres</button></div>' + Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();

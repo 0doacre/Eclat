@@ -535,9 +535,7 @@
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
       const col1 = !!(st.settings && st.settings.carnet1Col);
       const dense = U.compact();
-      let h = '<div class="carnet-head"><div class="grow"><h2 class="title">Carnet</h2>' +
-        '<p class="small muted">' + all + (all > 1 ? " recettes apprises" : " recette apprise") + "</p></div>" +
-        "</div>";
+      let h = enteteAtelier("Carnet", all + (all > 1 ? " recettes apprises" : " recette apprise"));
       if (!st.flags.tip_carnet) {
         h += '<div class="tip">Retrouve tes recettes et choisis un lot à fabriquer. ×10 répète la recette dix fois ; les pièces intermédiaires sont fabriquées avec la commande. Les indices des autres recettes restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Réduire l’aide du Carnet">Compris</button></div>';
       } else {
@@ -820,8 +818,8 @@
     /* fin ARBRE */
 
     function viewMachines() {
-      let h = subTabs("atelier", "machines", "Découvrir", "Machines");
-      h += Dom.machinesView ? Dom.machinesView() : "";
+      let h = enteteAtelier("Machines et commandes", "Les commandes compatibles sont accélérées par les machines, en complément des mains.");
+      h += Dom.machinesView ? Dom.machinesView({ sansTitre: true }) : "";
       return h;
     }
     function visibleRecipes() {
@@ -1654,6 +1652,11 @@
       if (!E.cadenceEligible().includes(id)) return E.machFor(id) ? "Fabrique-la d’abord une fois à la main, ou attends une machine libre." : "Il faut une machine capable de la fabriquer.";
       return "";
     }
+    /* L'en-tête des trois pages de l'Atelier (Produire, Carnet, Machines) : les mêmes sous-onglets, le même titre */
+    function enteteAtelier(titre, sous) {
+      return subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
+        '<header class="atl-titre"><h2>' + esc(titre) + "</h2>" + (sous ? "<p>" + sous + "</p>" : "") + "</header>";
+    }
     /* La vue d'ensemble : l'énergie, puis une carte par atelier que le joueur peut déjà montrer */
     function energieHTML() {
       const e = Atel.energie();
@@ -1674,7 +1677,7 @@
     function viewAteliers() {
       const ap = E.apprentis();
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
-      return '<div class="ateliers">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") + energieHTML() +
+      return '<div class="ateliers atl-page">' + enteteAtelier("Ateliers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "");
     }
@@ -1688,7 +1691,7 @@
       if (!liste.includes(U.prodSel)) U.prodSel = liste[0] || null;
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
-      let h = '<div class="prod">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
+      let h = '<div class="prod atl-page">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
         (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +

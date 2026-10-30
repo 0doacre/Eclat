@@ -832,12 +832,14 @@
       if (!keys.length) return "";
       return "il manque : " + keys.map((k) => fmt(Math.ceil(j.miss[k])) + " " + I[k].n.toLowerCase()).join(", ");
     }
-    function machinesView() {
+    function machinesView(opts) {
       const hi = E.handInfo(), ms = E.machines();
       const owned = E.MACHINES.filter((m) => ms[m].own > 0);
       let h = '<div class="dom dom-mach-tab">';
-      h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
-      h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Commandes compatibles accélérées par les machines, en complément des mains.</p>';
+      if (!(opts && opts.sansTitre)) {
+        h += '<h2 class="title" style="margin-top:0">Machines &amp; commandes</h2>';
+        h += '<p class="small muted" style="margin-top:-8px;margin-bottom:12px">Commandes compatibles accélérées par les machines, en complément des mains.</p>';
+      }
       h += ruinsBlock("machines", Object.keys(E.ruins()).filter((id) => I[id] && ["mach", "stat"].includes(I[id].t)));
 
       h += '<h3 class="sub" style="margin-top:8px">Commandes en cours</h3>';
