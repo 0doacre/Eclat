@@ -183,3 +183,9 @@
 #v-labo .ae-geste { min-height: 40px; padding: 4px 14px; white-space: nowrap; }
 #v-labo .ae-lab .ae-tools { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
 #v-labo .ae-legende { order: 0; }
+
+/* 0.44.2 : à 320 px, les trois pastilles des Terres tiennent sur la largeur (plus de « Production » coupé) */
+@media (max-width: 359px) {
+  .terres-pastilles { padding: 6px 6px 2px; gap: 4px; }
+  .terres-pastille { flex: 1 1 0; min-width: 0; padding-left: 6px; padding-right: 6px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+}
