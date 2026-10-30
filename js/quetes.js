@@ -177,7 +177,8 @@
     function passHTML(z, options = {}) {
       const p = E.passInfo(z), st = S();
       if (!p || !p.ready) return "";
-      const chantier = z === "plaine" && window.EclatStyleMode === "vivant";
+      const chantier = ["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant";
+      const chantierLabel = z === "riviere" ? p.frac < .35 ? "Ancrer les pieux" : p.frac < .75 ? "Lier la charpente" : "Poser le tablier" : p.frac < .35 ? "Dégager le passage" : p.frac < .75 ? "Aménager le chemin" : "Marquer le sentier";
       // les lieux de la terre actuelle : le passage ne s’ouvre qu’une fois qu’on les connaît
       const lieux = p.lieux && p.lieux.left.length ? p.lieux : null;
       const l0 = lieux && lieux.left[0], expCost = (l0 && l0.cost) || {};
@@ -197,9 +198,9 @@
         : "";
       return '<div class="passbox"><div class="small"><b>🚧 ' + esc(p.P.n) + '</b> <span class="tiny muted">' + Math.floor(p.frac * 100) + ' %</span></div><div class="tiny muted">' + esc(p.P.t) + "</div>" +
         '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
-        (chantier && options.chantier ? window.EclatSentier.html(E) : "") +
+        (chantier && options.chantier ? (z === "riviere" ? window.EclatPasserelle.html(E) : window.EclatSentier.html(E)) : "") +
         explore +
-        (p.done || lieux ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '"' + (chantier ? ' title="Utiliser les matériaux disponibles pour faire avancer ces travaux"' : '') + '>🚧 ' + (chantier ? p.frac < .35 ? "Dégager le passage" : p.frac < .75 ? "Aménager le chemin" : "Marquer le sentier" : "Déposer") + '</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
+        (p.done || lieux ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '"' + (chantier ? ' title="Utiliser les matériaux disponibles pour faire avancer ces travaux"' : '') + '>🚧 ' + (chantier ? chantierLabel : "Déposer") + '</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
         '<div class="passcost small">' +
         Object.keys(p.cost).map((i) => {
           const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
@@ -232,7 +233,7 @@
         return;
       }
       A.click(); vibe(10);
-      if (z === "plaine" && window.EclatStyleMode === "vivant") E.emit("sentierwork", { from: before.frac, to: r.done ? 1 : p.frac, focus: !!btn.closest('#v-domaine') });
+      if (["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant") E.emit(z === "riviere" ? "passerellework" : "sentierwork", { from: before.frac, to: r.done ? 1 : p.frac, focus: !!btn.closest('#v-domaine') });
       const pt = elCenter(btn);
       if (!r.done) floater("🚧 " + Math.floor(p.frac * 100) + " %", pt.x, pt.y - 16, "var(--good)");
       render(true);
