@@ -3,11 +3,10 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "dfbc1b3c3f";
+const BUILD = "2f4027ed01";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
-  "js/world-layout.js", "js/monde.js", "css/monde.css", "assets/carnet/world/first-lands.webp",
   "js/sentier-chantier.js", "css/sentier-chantier.css", "assets/carnet/passages/base.webp", "assets/carnet/passages/ronces-gauche.webp", "assets/carnet/passages/ronces-droite.webp", "assets/carnet/passages/herbes-sentier.webp",
   "assets/carnet/discoveries/plaine-esquisse.webp", "assets/carnet/discoveries/tumulus.webp", "assets/carnet/items/flute.webp", "assets/carnet/items/statuette.webp",
   "assets/carnet/discoveries/cercle.webp",
@@ -70,7 +69,14 @@ self.addEventListener("fetch", (e) => {
       if (res.ok) c.put(req, res.clone());
       return res;
     } catch (err) {
-      if (req.mode === "navigate") return (await c.match("index.html")) || Response.error();
+      if (req.mode === "navigate") {
+        // Une étude non mise en cache ne doit pas recevoir le jeu sous son URL
+        // imbriquée : ses chemins css/ et js/ pointeraient au mauvais endroit.
+        const home = new URL("./", self.registration.scope);
+        const target = new URL(req.url);
+        if (target.pathname !== home.pathname && target.pathname !== home.pathname + "index.html") return Response.redirect(home.href, 302);
+        return (await c.match("index.html")) || Response.error();
+      }
       throw err;
     }
   })());

@@ -26,9 +26,9 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "Carnet",
+  "label": "Atlas",
   "repere": "button#atlasToggle.icon-btn",
-  "explique": "info-bulle : Carnet du Semeur actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique",
+  "explique": "info-bulle : Style Atlas actif — toucher pour Vivant ; lecteur d’écran : Activer le style Vivant immersif",
   "tag": "button"
  },
  {
@@ -58,7 +58,7 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "NOUVELLE RECETTE · 1 RESSOURCE « Une branche bien droite, écorcée au caillou, tient bien en main. »",
+  "label": "NOUVELLE RECETTE « Une branche bien droite, écorcée au caillou, tient bien en main. »",
   "repere": "div[data-goto=\"manche\"].grow",
   "explique": "guide (.goal-card)",
   "tag": "div"
@@ -218,14 +218,6 @@
  {
   "partie": "neuve",
   "ecran": "Atelier",
-  "label": "Déchiffrer · 3",
-  "repere": "button[data-goal-decipher=\"manche\"].btn",
-  "explique": "info-bulle : Révéler l’action contre 3 Intuition",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Atelier",
   "label": "Assembler",
   "repere": "button[data-g=\"assembler\"].geste",
   "explique": "guide (.gestes)",
@@ -370,14 +362,6 @@
  {
   "partie": "neuve",
   "ecran": "Menu ☰",
-  "label": "Reprendre ›",
-  "repere": "button[data-m=\"close\"].btn.wide",
-  "explique": "info-bulle : Fermer le menu et reprendre la partie",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
   "label": "🎮 Jeu",
   "repere": "button[data-mjump=\"jeu\"].m-nav-tab",
   "explique": "info-bulle : Aller à la section Jeu",
@@ -413,6 +397,14 @@
   "label": "ACTIVÉ",
   "repere": "button[data-m=\"visiteurs\"].btn.sw",
   "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Menu ☰",
+  "label": "Auto",
+  "repere": "button[data-m=\"theme\"].btn.m-theme-btn",
+  "explique": "info-bulle : Changer de thème : clair, sombre ou celui de ton appareil",
   "tag": "button"
  },
  {
@@ -469,14 +461,6 @@
   "label": "ACTIVÉ",
   "repere": "button[data-m=\"vibe\"].btn.sw",
   "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Menu ☰",
-  "label": "✎ Mode test",
-  "repere": "button[data-m=\"modeTest\"].btn.m-card-btn",
-  "explique": "info-bulle : Créer une copie locale pour tester librement la progression",
   "tag": "button"
  },
  {
@@ -554,9 +538,177 @@
  {
   "partie": "avancée",
   "ecran": "Aide",
-  "label": "Compris",
-  "repere": "button[data-m=\"close\"].btn",
-  "explique": "fiche Aide",
+  "label": "🎮 Jeu",
+  "repere": "button[data-mjump=\"jeu\"].m-nav-tab",
+  "explique": "info-bulle : Aller à la section Jeu",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Mémoire des mains 1 Traces disponibles",
+  "repere": "button[data-m=\"mem\"].btn.m-card-btn",
+  "explique": "info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "🪙 Le Comptoir Troc & commandes",
+  "repere": "button[data-m=\"comptoir\"].btn.m-card-btn",
+  "explique": "info-bulle : Vendre, acheter et répondre aux demandes du Troqueur",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Revoir",
+  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
+  "explique": "info-bulle : Revoir les explications du guide depuis le début",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"tuto\"].btn.sw",
+  "explique": "info-bulle : Afficher ou masquer les explications du guide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"visiteurs\"].btn.sw",
+  "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Auto",
+  "repere": "button[data-m=\"theme\"].btn.m-theme-btn",
+  "explique": "info-bulle : Changer de thème : clair, sombre ou celui de ton appareil",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"largeText\"].btn.sw",
+  "explique": "info-bulle : Agrandir les textes de tout le jeu",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"compact\"].btn.sw",
+  "explique": "info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"carnet2\"].btn.sw",
+  "explique": "info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"ambiance\"].btn.sw",
+  "explique": "info-bulle : Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "DÉSACTIVÉ",
+  "repere": "button[data-m=\"ecran\"].btn.sw",
+  "explique": "info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"sound\"].btn.sw",
+  "explique": "info-bulle : Couper ou remettre la musique et les bruitages",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "ACTIVÉ",
+  "repere": "button[data-m=\"vibe\"].btn.sw",
+  "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Sauvegardes",
+  "repere": "button[data-m=\"saves\"].btn.m-card-btn",
+  "explique": "info-bulle : Télécharger ta partie, la recharger ou restaurer une copie",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "État des productions",
+  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
+  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Compte en ligne",
+  "repere": "button[data-m=\"account\"].btn.m-card-btn",
+  "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Comment jouer",
+  "repere": "button[data-m=\"help\"].btn.m-card-btn",
+  "explique": "info-bulle : Les mots du jeu et le rôle de chaque écran",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "📰 Nouveautés",
+  "repere": "button[data-m=\"news\"].btn.m-card-btn",
+  "explique": "info-bulle : Ce qui a changé dans cette version",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Crédits",
+  "repere": "button[data-m=\"credits\"].btn.m-card-btn",
+  "explique": "info-bulle : Les icônes, les polices et la musique",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Recommencer la partie",
+  "repere": "button[data-m=\"reset\"].btn.ghost",
+  "explique": "info-bulle : Effacer ta progression et repartir de zéro",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Aide",
+  "label": "Fermer",
+  "repere": "button[data-m=\"close\"].btn.m-close-btn",
+  "explique": "info-bulle : Fermer le menu et revenir au jeu",
   "tag": "button"
  },
  {
@@ -570,9 +722,9 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Carnet",
+  "label": "Atlas",
   "repere": "button#atlasToggle.icon-btn",
-  "explique": "info-bulle : Carnet du Semeur actif — toucher pour Classique ; lecteur d’écran : Revenir au style classique",
+  "explique": "info-bulle : Style Atlas actif — toucher pour Vivant ; lecteur d’écran : Activer le style Vivant immersif",
   "tag": "button"
  },
  {
@@ -634,7 +786,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "NOUVELLE RECETTE · 2 RESSOURCES « Une bande de bronze enroulée en spirale restitue l'effort quand on la relâche. »",
+  "label": "NOUVELLE RECETTE « Une bande de bronze enroulée en spirale restitue l'effort quand on la relâche. »",
   "repere": "div[data-goto=\"ressort\"].grow",
   "explique": "guide (.goal-card)",
   "tag": "div"
@@ -698,7 +850,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Minerai de fer +48/min Tu en as 543 · 1 mine de fer",
+  "label": "Minerai de fer +48/min Tu en as 544 · 1 mine de fer",
   "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
   "explique": "lecteur d’écran : Gisement : Minerai de fer",
   "tag": "button"
@@ -770,7 +922,7 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "Bois+14/min8,73 k",
+  "label": "Bois+31/min8,73 k",
   "repere": "div[data-goto=\"bois\"].u-pr",
   "explique": "info-bulle : Bois (toucher pour inspecter)",
   "tag": "div"
@@ -889,6 +1041,14 @@
  },
  {
   "partie": "avancée",
+  "ecran": "Comptoir",
+  "label": "Fermer",
+  "repere": "button[data-m=\"close\"].btn",
+  "explique": "fiche Aide",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
   "ecran": "Carte",
   "label": "Camp",
   "repere": "button[data-map-go=\"lisiere\"]",
@@ -957,14 +1117,6 @@
   "label": "Machines",
   "repere": "button[data-tab2=\"machines\"]",
   "explique": "info-bulle : Tes machines et ce qu’elles fabriquent ; guide ([data-tab2=\"machines\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Atelier",
-  "label": "Déchiffrer · 30",
-  "repere": "button[data-goal-decipher=\"ressort\"].btn.ghost",
-  "explique": "info-bulle : Révéler l’action contre 30 Intuition",
   "tag": "button"
  },
  {
@@ -1396,13 +1548,13 @@
   "ecran": "Carnet",
   "label": "Fabriquer",
   "repere": "button[data-cr=\"bobine\"][data-n=\"1\"][data-lbl=\"Fabriquer\"].btn.make",
-  "explique": "info-bulle : Fabriquer avec les mains et les machines disponibles, pièces intermédiaires comprises",
+  "explique": "info-bulle : Commander cette quantité, pièces comprises",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Détail",
+  "label": "(sans mot)",
   "repere": "button[data-tree=\"bobine\"][data-n=\"1\"].btn.ghost",
   "explique": "info-bulle : Les étapes de cette commande, et ce qu’il manque ; lecteur d’écran : Détail du lot",
   "tag": "button"
@@ -1418,7 +1570,7 @@
  {
   "partie": "avancée",
   "ecran": "Carnet",
-  "label": "Arbre",
+  "label": "🌿",
   "repere": "button[data-situer=\"bobine\"].btn.ghost",
   "explique": "info-bulle : Situer dans l’Arbre ; lecteur d’écran : Situer dans l’Arbre",
   "tag": "button"
@@ -1581,190 +1733,6 @@
   "label": "Grands Œuvres",
   "repere": "button[data-ct=\"oeuvres\"]",
   "explique": "info-bulle : Les Grands Œuvres, ce qu’il reste à bâtir",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Reprendre ›",
-  "repere": "button[data-m=\"close\"].btn.wide",
-  "explique": "info-bulle : Fermer le menu et reprendre la partie",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "🎮 Jeu",
-  "repere": "button[data-mjump=\"jeu\"].m-nav-tab",
-  "explique": "info-bulle : Aller à la section Jeu",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Mémoire des mains 1 Traces disponibles",
-  "repere": "button[data-m=\"mem\"].btn.m-card-btn",
-  "explique": "info-bulle : Ce que tes Traces t’offrent d’une partie à l’autre",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "🪙 Le Comptoir Troc & commandes",
-  "repere": "button[data-m=\"comptoir\"].btn.m-card-btn",
-  "explique": "info-bulle : Vendre, acheter et répondre aux demandes du Troqueur",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Revoir",
-  "repere": "button[data-m=\"tutoAgain\"].btn.ghost",
-  "explique": "info-bulle : Revoir les explications du guide depuis le début",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"tuto\"].btn.sw",
-  "explique": "info-bulle : Afficher ou masquer les explications du guide",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"visiteurs\"].btn.sw",
-  "explique": "info-bulle : Laisser quelqu’un traverser le Domaine de temps en temps",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"largeText\"].btn.sw",
-  "explique": "info-bulle : Agrandir les textes de tout le jeu",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"compact\"].btn.sw",
-  "explique": "info-bulle : Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"carnet2\"].btn.sw",
-  "explique": "info-bulle : Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"ambiance\"].btn.sw",
-  "explique": "info-bulle : Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "DÉSACTIVÉ",
-  "repere": "button[data-m=\"ecran\"].btn.sw",
-  "explique": "info-bulle : Empêcher la mise en veille de l’écran tant que le jeu est ouvert",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"sound\"].btn.sw",
-  "explique": "info-bulle : Couper ou remettre la musique et les bruitages",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "ACTIVÉ",
-  "repere": "button[data-m=\"vibe\"].btn.sw",
-  "explique": "info-bulle : Faire vibrer l’appareil lors des actions importantes",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "✎ Mode test",
-  "repere": "button[data-m=\"modeTest\"].btn.m-card-btn",
-  "explique": "info-bulle : Créer une copie locale pour tester librement la progression",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Sauvegardes",
-  "repere": "button[data-m=\"saves\"].btn.m-card-btn",
-  "explique": "info-bulle : Télécharger ta partie, la recharger ou restaurer une copie",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "État des productions",
-  "repere": "button[data-assistance=\"diagnostic\"].btn.m-card-btn",
-  "explique": "info-bulle : Comprendre pourquoi une commande ou un ouvrier attend",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Compte en ligne",
-  "repere": "button[data-m=\"account\"].btn.m-card-btn",
-  "explique": "info-bulle : Retrouver ta partie sur tous tes appareils",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Comment jouer",
-  "repere": "button[data-m=\"help\"].btn.m-card-btn",
-  "explique": "info-bulle : Les mots du jeu et le rôle de chaque écran",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "📰 Nouveautés",
-  "repere": "button[data-m=\"news\"].btn.m-card-btn",
-  "explique": "info-bulle : Ce qui a changé dans cette version",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Crédits",
-  "repere": "button[data-m=\"credits\"].btn.m-card-btn",
-  "explique": "info-bulle : Les icônes, les polices et la musique",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Recommencer la partie",
-  "repere": "button[data-m=\"reset\"].btn.ghost",
-  "explique": "info-bulle : Effacer ta progression et repartir de zéro",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Menu ☰",
-  "label": "Fermer",
-  "repere": "button[data-m=\"close\"].btn.m-close-btn",
-  "explique": "info-bulle : Fermer le menu et revenir au jeu",
   "tag": "button"
  },
  {
