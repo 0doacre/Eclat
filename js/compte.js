@@ -690,6 +690,7 @@
             sw("vibe", "Vibrations", st.settings.vibe, "Faire vibrer l’appareil lors des actions importantes")) +
           sec("systeme", "⚙️", "Système &amp; Sauvegardes",
             '<div class="menu-grid">' +
+              '<button class="btn m-card-btn" data-m="modeTest" title="Créer une copie locale pour tester librement la progression"><span class="m-card-icon">✎</span><b>Mode test</b></button>' +
               '<button class="btn m-card-btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie"><span class="m-card-icon">💾</span><b>Sauvegardes</b></button>' +
               '<button class="btn m-card-btn" data-assistance="diagnostic" title="Comprendre pourquoi une commande ou un ouvrier attend"><span class="m-card-icon">⏳</span><b>État des productions</b></button>' +
               '<button class="btn m-card-btn" data-assistance="report" title="Préparer un rapport local à transmettre avec ton retour"><span class="m-card-icon">🐞</span><b>Signaler un problème</b></button>' +
@@ -776,6 +777,7 @@
           visiteurs: (b) => { E.setVisiteurs(!E.visiteurActif()); if (!E.visiteurActif()) visiteurFin(); setSw(b, E.visiteurActif()); save(); return true; },
           tuto: (b) => { Tuto.setEnabled(!Tuto.enabled()); setSw(b, Tuto.enabled()); return true; },
           tutoAgain: () => { Tuto.restart(); toast("💭 Guide réactivé. Les chapitres reviennent au fil de ta progression."); },
+          modeTest: () => setTimeout(api.openTestMode, 80),
           saves: () => setTimeout(openSaves, 80),
           credits: () => setTimeout(() => simpleModal("Éclat", "Crédits",
             '<div class="small"><p><b>Icônes</b> : <a href="https://game-icons.net" target="_blank" rel="noopener">game-icons.net</a>, par Lorc, Delapouite et leurs contributeurs, sous licence CC BY 3.0. Recolorées, dessin inchangé.</p>' +
