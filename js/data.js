@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.42.1";
+  D.VERSION = "0.42.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1597,6 +1597,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔥 Au Labo, l’outil se choisit à son icône (le nom s’affiche dessous) ; ses gestes apparaissent en un mot quand il en a plusieurs. Les gestes du feu changent de nom : Griller, Cuire, Étouffer ; le four : Cuire, Fondre.",
     "🔧 Au Labo, l’outil et le geste ne font plus qu’un seul choix (« Mains · Tresser », « Feu de camp · Cuire »), en puces qui passent à la ligne. Le Carnet est allégé : une ligne d’aide, la recherche, et deux boutons (quantité, filtres) qui s’ouvrent à la demande. Dans l’Atelier, la jauge d’énergie s’ouvre et détaille ce qui consomme et ce qui fournit.",
     "⚗️ Le Labo suit tes métiers : Artisanat, Élevage, Métallurgie, Centrales, Électronique, Artistique. Chaque métier a ses outils et ses gestes, les mêmes branches que les ateliers de l’Atelier. Les écrans prennent toute la largeur, et le thermomètre se lit mieux sur le papier.",
     "👷 Les ateliers embauchent : un apprenti (dès le Cuivre) travaille à la moitié de la vitesse des mains, un ouvrier (dès l’Acier) à la même vitesse, pour les recettes de son atelier. Embaucher coûte des écus, de plus en plus à chaque embauche, sans salaire ensuite. L’ancienne vente automatique de lanières disparaît : ton apprenti de l’établi devient celui de l’Élevage, et son avance te revient.",

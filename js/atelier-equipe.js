@@ -14,7 +14,7 @@
     };
     const money=(n,age)=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+currencyName(age);
     const name=id=>I[id]?.n||id;
-    const label=(id,n)=>({doux:"Chauffer doucement",vif:"Cuire",etouffee:"Carboniser",cuisson:"Cuire",fonte:"Fondre"})[id]||n;
+    const label=(id,n)=>({doux:"Griller",vif:"Cuire",etouffee:"Étouffer",cuisson:"Cuire",fonte:"Fondre"})[id]||n;
     const soundGesture=m=>({
       doux:"chauffer",vif:"chauffer",cuisson:"chauffer",fonte:"chauffer",chauffe:"chauffer",etouffee:"chauffer",
       decoupe:"tailler",tailler:"tailler",racler:"tailler",
@@ -120,15 +120,23 @@
       const eligible=isGrand(w.eq)?rid=>I[rid].a>=4&&I[rid].r[0]===w.mode:rid=>(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
       return memoUtile.v[id]=Object.values(E.reactions(id,eligible)).some(n=>n>0);
     }
-    /* La rangée « outil · geste » : chaque choix est un outil avec l'un de ses gestes ; un appui règle les deux */
+    /* L'outil se choisit à l'icône (son nom est la légende) ; si l'outil a plusieurs gestes, ils s'affichent dessous en mots courts.
+     * Le geste ne se redit pas dans le bouton de l'outil : l'icône suffit. */
+    function iconeOutil(t){
+      if(isGrand(t.id))return icon("etabli_amenage","sm");
+      if(I[t.id])return icon(t.id,"sm");
+      return t.item&&I[t.item]?icon(t.item,"sm"):api.gIc(t.geste||"assembler");
+    }
     function actionsHTML(tools,w){
-      const icone=t=>t.geste?api.gIc(t.geste):t.id==="mains"?api.gIc("assembler"):icon(({percuteur_pierre:"caillou",racloir_os:"os",polissoir:"caillou"})[t.id]||t.item,"sm");
-      let h='<div class="ae-actions-choix" role="group" aria-label="Outil et geste">';
-      tools.forEach(t=>Object.entries(t.modes).forEach(([m,n])=>{
-        const on=t.id===w.eq&&m===w.mode;
-        h+='<button type="button" class="ae-chip ae-action'+(on?' on':'')+'" data-ae="action" data-value="'+esc(t.id+'|'+m)+'" aria-pressed="'+on+'" title="'+esc(t.n+' : '+label(m,n))+'">'+(isGrand(t.id)?api.gIc(m):icone(t))+' <span>'+(isGrand(t.id)?'Atelier':esc(t.n))+' · '+esc(label(m,n))+'</span></button>';
-      }));
-      return h+'</div>';
+      const tool=tools.find(x=>x.id===w.eq)||tools[0];
+      let h='<div class="ae-outils" role="group" aria-label="Outil">'+tools.map(t=>{
+        const on=t.id===w.eq,nom=isGrand(t.id)?"Atelier":t.n;
+        return '<button type="button" class="ae-chip ae-outil'+(on?' on':'')+'" data-ae="tool" data-value="'+esc(t.id)+'" aria-pressed="'+on+'" aria-label="'+esc(nom)+'" title="'+esc(nom)+'">'+iconeOutil(t)+'</button>';
+      }).join('')+'</div>';
+      h+='<p class="ae-legende">'+esc(isGrand(tool.id)?"Atelier":tool.n)+'</p>';
+      const modes=Object.entries(tool.modes);
+      if(modes.length>1)h+='<div class="ae-gestes" role="group" aria-label="Geste">'+modes.map(([m,n])=>'<button type="button" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n))+'</button>').join('')+'</div>';
+      return h;
     }
     function body(mode){
       const {w,metiers,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();

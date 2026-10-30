@@ -173,3 +173,13 @@
 #v-labo .ae-action { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; max-width: 100%; padding: 4px 12px; text-align: left; line-height: 1.2; }
 #v-labo .ae-action span { min-width: 0; overflow-wrap: anywhere; }
 #v-labo .ae-action svg, #v-labo .ae-action img, #v-labo .ae-action .gi { flex: none; width: 20px; height: 20px; }
+
+/* 0.42.2 : l'outil en icône (légende dessous), les gestes en mots courts seulement quand l'outil en a plusieurs */
+#v-labo .ae-outils { display: flex; flex-wrap: wrap; gap: 6px; }
+#v-labo .ae-outil { display: inline-grid; place-items: center; width: 52px; height: 52px; min-height: 52px; padding: 0; border-radius: 12px; }
+#v-labo .ae-outil .ic, #v-labo .ae-outil img, #v-labo .ae-outil svg { width: 30px; height: 30px; }
+#v-labo .ae-legende { margin: 2px 0 0; font-size: 13px; color: #60513f; }
+#v-labo .ae-gestes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+#v-labo .ae-geste { min-height: 40px; padding: 4px 14px; white-space: nowrap; }
+#v-labo .ae-lab .ae-tools { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+#v-labo .ae-legende { order: 0; }
