@@ -50,65 +50,73 @@
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "Le camp",
-  "repere": "button#mw-camp[data-world-camera=\"camp\"].mw-marker.mw-camp-label",
-  "explique": "info-bulle : Se rapprocher : Le camp",
+  "label": "OBJECTIF Manche ▾",
+  "repere": "button[data-goalt=\"\"].ghead",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "NOUVELLE RECETTE · 1 RESSOURCE « Une branche bien droite, écorcée au caillou, tient bien en main. »",
+  "repere": "div[data-goto=\"manche\"].grow",
+  "explique": "guide (.goal-card)",
+  "tag": "div"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Atelier",
+  "repere": "button[data-gotab=\"atelier\"].btn",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Explorer · Le Grand Chêne",
+  "repere": "button[data-exp=\"lisiere\"].btn",
+  "explique": "info-bulle : Lancer cette exploration : elle avance toute seule",
+  "tag": "button"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "Maîtrise · 0 % ?",
+  "repere": "summary",
+  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
+  "tag": "summary"
+ },
+ {
+  "partie": "neuve",
+  "ecran": "Domaine",
+  "label": "?",
+  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
+  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Domaine",
   "label": "(sans mot)",
-  "repere": "button[data-harv=\"lisiere:bois\"].mw-gather",
-  "explique": "info-bulle : Bois · maintenir pour récolter ; lecteur d’écran : Récolter Bois · 0 en réserve",
+  "repere": "button[data-harv=\"lisiere:bois\"].gis-ic.hand",
+  "explique": "lecteur d’écran : Récolter : Bois",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "+",
-  "repere": "button[data-world-manage=\"lisiere:bois\"].mw-manage",
-  "explique": "info-bulle : Installer ou améliorer les extracteurs : Bois ; lecteur d’écran : Gérer les extracteurs : Bois ; guide ([data-world-manage=\"lisiere:bois\"], [data-xadd=\"lisiere:bois\"])",
+  "label": "Bois 🖐️ à la main Tu en as 0",
+  "repere": "button[data-gsheet=\"lisiere:bois\"].gis-body",
+  "explique": "lecteur d’écran : Gisement : Bois",
   "tag": "button"
  },
  {
   "partie": "neuve",
   "ecran": "Domaine",
-  "label": "◇",
-  "repere": "button#mw-p-lisiere-0[data-world-place=\"p:lisiere:0\"].mw-marker.mw-place-hit",
-  "explique": "info-bulle : Le Grand Chêne ; lecteur d’écran : Le Grand Chêne",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "◇",
-  "repere": "button[data-world-goal=\"\"]",
-  "explique": "info-bulle : Voir l’objectif et retrouver le prochain lieu ; lecteur d’écran : Objectif et prochaine trace",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "⌘",
-  "repere": "button[data-world-zone-list=\"\"]",
-  "explique": "info-bulle : Choisir une terre connue et régler le cadrage ; lecteur d’écran : Terres connues et cadrage",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "⌂",
-  "repere": "button[data-world-camera=\"camp\"]",
-  "explique": "info-bulle : Revenir au camp ; lecteur d’écran : Revenir au camp",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine",
-  "label": "⚒",
-  "repere": "button[data-world-panel=\"gestion\"]",
-  "explique": "info-bulle : Installations, ruines, Comptoir et Grands Œuvres ; lecteur d’écran : Gestion du Domaine",
+  "label": "Récolter",
+  "repere": "button[data-hloop=\"lisiere:bois\"].mini.harvest",
+  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Bois ; guide ([data-hloop=\"lisiere:bois\"])",
   "tag": "button"
  },
  {
@@ -141,110 +149,6 @@
   "label": "Journal",
   "repere": "button[data-tab=\"journal\"].born",
   "explique": "info-bulle : Ce que tu as trouvé et compris ; guide (#tabs [data-tab=\"journal\"])",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · terres et cadrage",
-  "label": "(sans mot)",
-  "repere": "button[data-world-close-drawer=\"\"]",
-  "explique": "info-bulle : Fermer les détails ; lecteur d’écran : Fermer les détails",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · terres et cadrage",
-  "label": "Vue d’ensemble ↗",
-  "repere": "button[data-world-camera=\"all\"].btn.mw-zone-link",
-  "explique": "info-bulle : Voir l’ensemble des terres connues",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "Illustrations",
-  "repere": "button[data-world-pages=\"\"].btn",
-  "explique": "info-bulle : Consulter les illustrations découvertes",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "Vue d’ensemble",
-  "repere": "button[data-world-camera=\"all\"].btn",
-  "explique": "info-bulle : Voir les terres connues",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "+",
-  "repere": "button[data-world-zoom=\"in\"].btn",
-  "explique": "info-bulle : Se rapprocher ; lecteur d’écran : Se rapprocher",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "📜 OBJECTIF Manche ▾",
-  "repere": "button[data-goalt=\"\"].ghead",
-  "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "Atelier",
-  "repere": "button[data-gotab=\"atelier\"].btn",
-  "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "🧭 Explorer · Le Grand Chêne",
-  "repere": "button[data-exp=\"lisiere\"].btn",
-  "explique": "info-bulle : Lancer cette exploration : elle avance toute seule",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "Maîtrise · 0 % ?",
-  "repere": "summary",
-  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
-  "tag": "summary"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "?",
-  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
-  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "(sans mot)",
-  "repere": "button[data-harv=\"lisiere:bois\"].gis-ic.hand",
-  "explique": "lecteur d’écran : Récolter : Bois",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "Bois 🖐️ à la main Tu en as 0",
-  "repere": "button[data-gsheet=\"lisiere:bois\"].gis-body",
-  "explique": "lecteur d’écran : Gisement : Bois",
-  "tag": "button"
- },
- {
-  "partie": "neuve",
-  "ecran": "Domaine · gestion",
-  "label": "▶ Récolter",
-  "repere": "button[data-hloop=\"lisiere:bois\"].mini.harvest",
-  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Bois ; guide ([data-hloop=\"lisiere:bois\"])",
   "tag": "button"
  },
  {
@@ -706,82 +610,170 @@
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "✓",
-  "repere": "button#mw-p-collines-1[data-world-place=\"p:collines:1\"].mw-marker.mw-place-hit",
-  "explique": "info-bulle : Le Sommet ; lecteur d’écran : Le Sommet",
+  "label": "OBJECTIF Régulateur à boules ▾",
+  "repere": "button[data-goalt=\"\"].ghead",
+  "explique": "guide (.goal-card)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "◇",
-  "repere": "button#mw-p-collines-2[data-world-place=\"p:collines:2\"].mw-marker.mw-place-hit",
-  "explique": "info-bulle : Un lieu à découvrir ; lecteur d’écran : Un lieu à découvrir",
+  "label": "Arbre",
+  "repere": "button[data-arbre-obj=\"\"].gmiles",
+  "explique": "info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Âge de l’Électricité · 0/3 étapes",
+  "repere": "button[data-miles=\"\"].gprog-row",
+  "explique": "info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "NOUVELLE RECETTE · 2 RESSOURCES « Une bande de bronze enroulée en spirale restitue l'effort quand on la relâche. »",
+  "repere": "div[data-goto=\"ressort\"].grow",
+  "explique": "guide (.goal-card)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Atelier",
+  "repere": "button[data-gotab=\"atelier\"].btn",
+  "explique": "guide (.goal-card)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Compris",
+  "repere": "button[data-tip=\"tip_site\"].btn.ghost",
+  "explique": "info-bulle : Fermer cette astuce",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Passer le relais (+18 )",
+  "repere": "button[data-m=\"releve\"].btn",
+  "explique": "info-bulle : Voir les gains de Traces et les bonus de la prochaine relève",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Voir : Torche",
+  "repere": "button[data-goto=\"torche\"].btn",
+  "explique": "guide (.dom-regle.gene)",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Maîtrise · 80 % ?",
+  "repere": "summary",
+  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
+  "tag": "summary"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "?",
+  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
+  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
   "label": "(sans mot)",
-  "repere": "button[data-harv=\"mine:fer_min\"].mw-gather",
-  "explique": "info-bulle : Minerai de fer · maintenir pour récolter ; lecteur d’écran : Récolter Minerai de fer · 543 en réserve",
+  "repere": "button[data-harv=\"mine:fer_min\"].gis-ic.hand",
+  "explique": "lecteur d’écran : Récolter : Minerai de fer",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "+",
-  "repere": "button[data-world-manage=\"mine:fer_min\"].mw-manage",
-  "explique": "info-bulle : Installer ou améliorer les extracteurs : Minerai de fer ; lecteur d’écran : Gérer les extracteurs : Minerai de fer",
+  "label": "Minerai de fer +48/min Tu en as 543 · 1 mine de fer",
+  "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
+  "explique": "lecteur d’écran : Gisement : Minerai de fer",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "✓",
-  "repere": "button#mw-p-mine-0[data-world-place=\"p:mine:0\"].mw-marker.mw-place-hit",
-  "explique": "info-bulle : Le Filon Profond ; lecteur d’écran : Le Filon Profond",
+  "label": "Récolter",
+  "repere": "button[data-hloop=\"mine:fer_min\"].mini.harvest",
+  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "◇",
-  "repere": "button#mw-p-mine-1[data-world-place=\"p:mine:1\"].mw-marker.mw-place-hit",
-  "explique": "info-bulle : Un lieu à découvrir ; lecteur d’écran : Un lieu à découvrir",
+  "label": "+ mine de fer",
+  "repere": "button[data-xadd=\"mine:fer_min\"][data-n=\"1\"].mini.lbl",
+  "explique": "info-bulle : Poser : Mine de fer (débit : 48/min → 96/min) ; lecteur d’écran : Poser : Mine de fer",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "◇",
-  "repere": "button[data-world-goal=\"\"]",
-  "explique": "info-bulle : Voir l’objectif et retrouver le prochain lieu ; lecteur d’écran : Objectif et prochaine trace",
+  "label": "3 autre terres · +2,16 k/min en tout voir ▾",
+  "repere": "button[data-dall=\"\"].dom-more",
+  "explique": "info-bulle : Afficher ou replier les autres terres",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "⌘",
-  "repere": "button[data-world-zone-list=\"\"]",
-  "explique": "info-bulle : Choisir une terre connue et régler le cadrage ; lecteur d’écran : Terres connues et cadrage",
+  "label": "0 machine au travail · 10 au repos · voir ▸",
+  "repere": "button[data-tab2=\"machines\"][data-dmach=\"\"].dom-more.dom-mach-link",
+  "explique": "guide ([data-tab2=\"machines\"])",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "⌂",
-  "repere": "button[data-world-camera=\"camp\"]",
-  "explique": "info-bulle : Revenir au camp ; lecteur d’écran : Revenir au camp",
+  "label": "Ouvrir le Comptoir",
+  "repere": "button[data-comptoir=\"\"].btn",
+  "explique": "guide (#dcomptoir)",
   "tag": "button"
  },
  {
   "partie": "avancée",
   "ecran": "Domaine",
-  "label": "⚒",
-  "repere": "button[data-world-panel=\"gestion\"]",
-  "explique": "info-bulle : Installations, ruines, Comptoir et Grands Œuvres ; lecteur d’écran : Gestion du Domaine",
+  "label": "Supraconducteur 0 / 380",
+  "repere": "div[data-goto=\"supra\"].cost-row",
+  "explique": "info-bulle : Supraconducteur (toucher pour inspecter)",
+  "tag": "div"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Fournir",
+  "repere": "button[data-contrib=\"dyson\"].btn",
+  "explique": "info-bulle : Déposer depuis ta Réserve ce qu’il demande",
   "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Alimenté",
+  "repere": "button[data-feed=\"dyson\"].btn",
+  "explique": "guide (.dom-oeuvre [data-feed])",
+  "tag": "button"
+ },
+ {
+  "partie": "avancée",
+  "ecran": "Domaine",
+  "label": "Bois+14/min8,73 k",
+  "repere": "div[data-goto=\"bois\"].u-pr",
+  "explique": "info-bulle : Bois (toucher pour inspecter)",
+  "tag": "div"
  },
  {
   "partie": "avancée",
@@ -833,206 +825,6 @@
  },
  {
   "partie": "avancée",
-  "ecran": "Domaine · terres et cadrage",
-  "label": "(sans mot)",
-  "repere": "button[data-world-close-drawer=\"\"]",
-  "explique": "info-bulle : Fermer les détails ; lecteur d’écran : Fermer les détails",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · terres et cadrage",
-  "label": "Vue d’ensemble ↗",
-  "repere": "button[data-world-camera=\"all\"].btn.mw-zone-link",
-  "explique": "info-bulle : Voir l’ensemble des terres connues",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Illustrations",
-  "repere": "button[data-world-pages=\"\"].btn",
-  "explique": "info-bulle : Consulter les illustrations découvertes",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Vue d’ensemble",
-  "repere": "button[data-world-camera=\"all\"].btn",
-  "explique": "info-bulle : Voir les terres connues",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "+",
-  "repere": "button[data-world-zoom=\"in\"].btn",
-  "explique": "info-bulle : Se rapprocher ; lecteur d’écran : Se rapprocher",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "📜 OBJECTIF Régulateur à boules ▾",
-  "repere": "button[data-goalt=\"\"].ghead",
-  "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "🌳 Arbre",
-  "repere": "button[data-arbre-obj=\"\"].gmiles",
-  "explique": "info-bulle : Voir ton objectif dans l’arbre ; guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "🏁 Âge de l’Électricité · 0/3 étapes",
-  "repere": "button[data-miles=\"\"].gprog-row",
-  "explique": "info-bulle : Les étapes de cet âge : 0/3 faites ; guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Atelier",
-  "repere": "button[data-gotab=\"atelier\"].btn",
-  "explique": "guide (.goal-card)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Compris",
-  "repere": "button[data-tip=\"tip_site\"].btn.ghost",
-  "explique": "info-bulle : Fermer cette astuce",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Passer le relais (+18 ✦)",
-  "repere": "button[data-m=\"releve\"].btn",
-  "explique": "info-bulle : Voir les gains de Traces et les bonus de la prochaine relève",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Voir : Torche",
-  "repere": "button[data-goto=\"torche\"].btn",
-  "explique": "guide (.dom-regle.gene)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Maîtrise · 80 % ?",
-  "repere": "summary",
-  "explique": "info-bulle : Voir les objectifs de cette terre et son bonus à la relève",
-  "tag": "summary"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "?",
-  "repere": "button[data-aide=\"maitrise\"].btn-aide.mini",
-  "explique": "info-bulle : Comprendre la maîtrise des terres et la transmission ; lecteur d’écran : Comprendre la maîtrise des terres et la transmission",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "(sans mot)",
-  "repere": "button[data-harv=\"mine:fer_min\"].gis-ic.hand",
-  "explique": "lecteur d’écran : Récolter : Minerai de fer",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Minerai de fer +48/min Tu en as 546 · 1 mine de fer",
-  "repere": "button[data-gsheet=\"mine:fer_min\"].gis-body",
-  "explique": "lecteur d’écran : Gisement : Minerai de fer",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "▶ Récolter",
-  "repere": "button[data-hloop=\"mine:fer_min\"].mini.harvest",
-  "explique": "info-bulle : Récolte en continu, même jeu fermé ; lecteur d’écran : Récolter en continu : Minerai de fer",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "+ mine de fer",
-  "repere": "button[data-xadd=\"mine:fer_min\"][data-n=\"1\"].mini.lbl",
-  "explique": "info-bulle : Poser : Mine de fer (débit : 48/min → 96/min) ; lecteur d’écran : Poser : Mine de fer",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "3 autre terres · +2,16 k/min en tout voir ▾",
-  "repere": "button[data-dall=\"\"].dom-more",
-  "explique": "info-bulle : Afficher ou replier les autres terres",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "⚙️ 0 machine au travail · 10 au repos · voir ▸",
-  "repere": "button[data-tab2=\"machines\"][data-dmach=\"\"].dom-more.dom-mach-link",
-  "explique": "guide ([data-tab2=\"machines\"])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Ouvrir le Comptoir",
-  "repere": "button[data-comptoir=\"\"].btn",
-  "explique": "guide (#dcomptoir)",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Supraconducteur 0 / 380",
-  "repere": "div[data-goto=\"supra\"].cost-row",
-  "explique": "info-bulle : Supraconducteur (toucher pour inspecter)",
-  "tag": "div"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Fournir",
-  "repere": "button[data-contrib=\"dyson\"].btn",
-  "explique": "info-bulle : Déposer depuis ta Réserve ce qu’il demande",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Alimenté ✓",
-  "repere": "button[data-feed=\"dyson\"].btn",
-  "explique": "guide (.dom-oeuvre [data-feed])",
-  "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Domaine · gestion",
-  "label": "Bois+538/min8,77 k",
-  "repere": "div[data-goto=\"bois\"].u-pr",
-  "explique": "info-bulle : Bois (toucher pour inspecter)",
-  "tag": "div"
- },
- {
-  "partie": "avancée",
   "ecran": "Comptoir",
   "label": "Vendre",
   "repere": "button[data-m=\"ctab\"][data-t=\"vendre\"]",
@@ -1066,7 +858,7 @@
  {
   "partie": "avancée",
   "ecran": "Comptoir",
-  "label": "Minerai de fer · tu en as 546 9,8 écu l’unité",
+  "label": "Minerai de fer · tu en as 544 9,8 écu l’unité",
   "repere": "div[data-goto=\"fer_min\"].comptoir-head",
   "explique": "info-bulle : Minerai de fer (toucher pour inspecter)",
   "tag": "div"
@@ -1306,7 +1098,7 @@
  {
   "partie": "avancée",
   "ecran": "Atelier",
-  "label": "8,84 k +810/min Bois",
+  "label": "8,81 k +810/min Bois",
   "repere": "button[data-inv=\"bois\"].inv",
   "explique": "info-bulle : Bois : ouvrir sa fiche ; lecteur d’écran : Bois : ouvrir sa fiche ; guide ([data-inv=\"bois\"])",
   "tag": "button"
@@ -1582,14 +1374,6 @@
   "repere": "button[data-age-jump=\"0\"].age-pill",
   "explique": "info-bulle : Âge du Bois ; lecteur d’écran : Aller à : Âge du Bois",
   "tag": "button"
- },
- {
-  "partie": "avancée",
-  "ecran": "Carnet",
-  "label": "Bobine de cuivrePIÈCE Lot prêt",
-  "repere": "div[data-goto=\"bobine\"].grow",
-  "explique": "info-bulle : Voir la recette et ses usages",
-  "tag": "div"
  },
  {
   "partie": "avancée",

@@ -1,5 +1,7 @@
 # Le Domaine peint dans le jeu
 
+Le monde peint est temporairement désactivé en production et en preview. Le thème Carnet utilise à nouveau le Domaine en pages, avec ses illustrations et ses découvertes. Le code et les assets du monde restent conservés pour les prochains essais ; aucune sauvegarde n’est réinitialisée.
+
 Le thème Carnet (identifiant historique `vivant`) utilise `js/monde.js`. Le Domaine classique reste disponible dans les autres styles. Le rendu du monde reste monté pendant la mise à jour du jeu : on ne remplace pas les cibles pendant un appui de récolte.
 
 ## Gestes
