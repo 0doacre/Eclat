@@ -85,3 +85,22 @@ Proposition du porteur (régime technique et force motrice) retenue pour **l'éc
 | Robotique | 13 | Assembleur moléculaire | guidage asservi |
 
 Deux marches attendent une machine, sans contenu neuf pour l'instant : **Hydraulique** (âge 6, moulins et martinets, entre l'acier et la vapeur) et **Commande numérique** (âge 11). Aucun coût, aucune vitesse, aucune sauvegarde ne change. Seuls les noms des marches, leur affectation et les textes « Palier N » des machines changent.
+
+## 10. Quatre machines de plus (0.45.0)
+
+Décision du porteur : « une machine pour deux âges ». L'échelle d'un atelier compte sept marches et chacune a sa machine.
+
+| Marche | Âge | Machine | Fab./min | Chevaux | Coût |
+|---|---|---|---|---|---|
+| Mécanisme | 2 · 4 | Automate de bois · de bronze | 6 · 15 | 3 · 10 | (existent) |
+| **Hydraulique** | 6 | **Martinet hydraulique** | 25 | 25 | 10 engrenages d'acier, 6 roulements, 30 lingots d'acier |
+| Vapeur | 7 | Presse à vapeur | 40 | 50 | (existe) |
+| **Chaîne** | 8 | **Poste à moteur électrique** | 70 | 100 | 5 moteurs électriques, 25 câbles, 40 plaques de fer |
+| Chaîne | 10 | Ligne d'assemblage | 120 | 200 | (existe) |
+| **Robotique** | 12 | **Centre d'usinage numérique** | 300 | 600 | 20 processeurs, 6 supraconducteurs, 20 composites |
+| Robotique | 13 | Assembleur moléculaire | 600 | 1500 | (existe) |
+| **Synthèse** | 14 | **Matrice de fabrication** | 1500 | 5000 | 10 métamatériaux, 5 matières exotiques, 40 supraconducteurs |
+
+- Les vitesses et les chevaux sont interpolés entre les machines voisines ; les coûts suivent l'ordre de grandeur des machines de leur époque. À régler à la main.
+- Mesure : `node tools/sim-energie.js` : les passages sont franchis aux mêmes minutes qu'avant (tapeur : plaine 5,8 · rivière 17,5 · collines 33,9 · mine 60,5 · désert 76,0). Les joueurs automatiques construisent maintenant 3 à 6 machines aux âges 6 à 10 ; le manque d'énergie y est plus fort (rapport 0,1 à 0,3 avant la source du désert), borné par le plancher de 0,5.
+- Nom de la dernière : « Matrice de fabrication » plutôt que « Forge à confinement », pour ne pas la confondre avec la forge stellaire.

@@ -22,7 +22,7 @@ function prepared(api = Proto) {
 }
 
 test("le profil conserve toutes les recettes et isole ses transformations", () => {
-  assert.equal(Object.keys(Base.ITEMS).length,267); assert.equal(Object.keys(D.ITEMS).length,271);
+  assert.equal(Object.keys(Base.ITEMS).length,271); assert.equal(Object.keys(D.ITEMS).length,275);
   const before = Object.keys(Base.ITEMS).filter(id=>Base.ITEMS[id].r&&Base.ITEMS[id].a<=3);
   assert.equal(before.length,54);
   // quatre recettes (Enclume, Plaque et Fil de cuivre, Miroir) passent par l'Atelier : leurs outils ne sont plus des outils de départ

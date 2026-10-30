@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.44.3";
+  D.VERSION = "0.45.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -596,6 +596,21 @@
   I.assembleur = { n: "Assembleur moléculaire", sn: "assembleur", pl: "assembleurs", ic: "🧬", a: 13, t: "mach", s: 1.3, spd: 600, ing: 3, prof: 2, r: ["assembler", { processeur: 30, supra: 10, circuit: 40 }, 1],
     u: "Robotique. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main. 600 fabrications par minute.", d: "Il assemble la matière atome par atome.",
     h: "Un bras microscopique piloté par laser positionne les structures atomiques une à une." };
+
+
+  /* 0.45 : les maillons manquants de l'échelle des machines (une machine tous les deux âges environ). Vitesses et chevaux entre leurs voisines. */
+  I.martinet = { n: "Martinet hydraulique", sn: "martinet", pl: "martinets", ic: "💧", a: 6, t: "mach", s: 1.25, spd: 25, ing: 2, prof: 0, r: ["assembler", { engrenage_acier: 10, roulement: 6, lingot_acier: 30 }, 1],
+    u: "Hydraulique, 25 fabrications par minute. Aide tes commandes sur les recettes à deux ressources au plus, une fois que tu les as fabriquées à la main.", d: "Une roue, une chute d’eau, un marteau qui retombe sans fin.",
+    h: "Une roue à augets entraîne un arbre à cames : la force de l’eau remplace le bras du forgeron." };
+  I.poste_elec = { n: "Poste à moteur électrique", sn: "poste électrique", pl: "postes électriques", ic: "🔌", a: 8, t: "mach", s: 1.3, spd: 70, ing: 3, prof: 1, r: ["assembler", { moteur_elec: 5, cable: 25, plaque_fer: 40 }, 1],
+    u: "Chaîne, 70 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Un moteur à chaque poste : plus d’arbre, plus de courroie, juste un bourdonnement.",
+    h: "Un moteur électrique unitaire entraîne chaque machine : le poste se déplace où l’on veut dans l’atelier." };
+  I.centre_num = { n: "Centre d’usinage numérique", sn: "centre d’usinage", pl: "centres d’usinage", ic: "🖥️", a: 12, t: "mach", s: 1.3, spd: 300, ing: 3, prof: 1, r: ["assembler", { processeur: 20, supra: 6, composite: 20 }, 1],
+    u: "Robotique, 300 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "Il suit un programme au micron près, sans qu’aucune main ne le guide.",
+    h: "Des servomoteurs asservis par un calculateur déplacent l’outil le long de trajectoires programmées." };
+  I.matrice = { n: "Matrice de fabrication", sn: "matrice", pl: "matrices", ic: "✴️", a: 14, t: "mach", s: 1.3, spd: 1500, ing: 3, prof: 2, r: ["assembler", { metamateriau: 10, matiere_exotique: 5, supra: 40 }, 1],
+    u: "Synthèse, 1 500 fabrications par minute. Aide tes commandes sur les recettes à trois ressources au plus, une fois que tu les as fabriquées à la main.", d: "On lui donne de la matière brute ; elle rend l’objet fini.",
+    h: "Un champ de confinement ordonne la matière, particule après particule, jusqu’à l’objet voulu." };
 
   /* Âge 14 — Stellaire */
   I.metal_mercure = { b: 0.5, n: "Métal mercurien", sym: "☿", col: "#c9a24a", a: 14, t: "res", u: "Sert dans le métamatériau, le panneau de Dyson et les Grands Œuvres.", d: "Mercure, démontée boulon par boulon." };
@@ -1231,6 +1246,7 @@
     ["tour", "Le tour d’usinage ouvre l’action Usiner, pour tailler le métal avec la régularité d’une machine."],
     ["engrenage_acier", "Taillés dans l’acier trempé, ces engrenages transmettent la force motrice sans faiblir ni casser."],
     ["roulement", "Des billes d’acier trempé dans leur cage : les roulements réduisent le frottement au cœur des futures machines."],
+    ["martinet", "Une roue à eau peut battre le fer à ta place. Le martinet hydraulique aide tes commandes."],
     ["eau_1", "Pour alimenter une chaudière, il faut un débit régulier d’eau. Construis une pompe à bras pour la Rivière."],
     ["circuit_vapeur", "De l’eau dans la chaudière, des tuyaux pour conduire la vapeur : le moteur peut prendre forme."],
     ["moteur_vapeur", "Fais travailler la vapeur à ta place."],
@@ -1238,6 +1254,7 @@
     ["presse_vapeur", "Une machine-outil à vapeur ferait tourner tes machines bien plus vite."],
     ["recuperation_vapeur", "La vapeur peut redevenir de l’eau dans un condenseur. Raccorde-le aux moteurs pour accélérer tes machines."],
     ["dynamo", "Capture l’étincelle. La dynamo ouvre l’action Électriser."],
+    ["poste_elec", "Un moteur électrique sur chaque poste : plus besoin d’arbre ni de courroie."],
     ["radio", "Quelqu’un émet peut-être encore, quelque part."],
     ["four_arc", "Un éclair permanent, pour fondre ce que rien d’autre ne fond. Le four à arc monte jusqu’à 3 500 °C."],
     ["uranium_1", "Dans la roche des Profondeurs, quelque chose chauffe sans feu. Un extracteur peut le remonter."],
@@ -1267,6 +1284,7 @@
     ["titane", "Le métal le plus noble des montagnes."],
     ["autoclave", "Pour les composites, il faut cuire sous pression. L’autoclave ouvre l’action Stratifier."],
     ["composite", "Il te faut le matériau des fusées : léger, et plus dur que l’acier."],
+    ["centre_num", "Un calculateur peut guider un outil mieux qu’une main. Le centre d’usinage numérique."],
     ["fusee", "Construis une fusée pour monter en orbite."],
     { k: "pass", z: "orbite", n: "Vers l’Orbite", txt: "Il faut une rampe de lancement, et de quoi repartir." },
     ["alunisseur", "Pose le pied sur la Lune."],
@@ -1274,7 +1292,8 @@
     ["reacteur_fusion", "Une étoile en bouteille. Tous tes extracteurs récoltent 1,5 fois plus vite."],
     ["vaisseau", "Cap sur Mercure."],
     { k: "pass", z: "mercure", n: "Vers Mercure", txt: "Si près du soleil, rien ne tient sans bouclier." },
-    ["forge_stellaire", "Le cœur d’une étoile, à 50 000 °C. La forge stellaire ouvre l’action Transmuter."]
+    ["forge_stellaire", "Le cœur d’une étoile, à 50 000 °C. La forge stellaire ouvre l’action Transmuter."],
+    ["matrice", "Il reste à fabriquer sans façonner : donne la matière, la matrice fait l’objet."]
   ];
 
   /* ------------------------------------------------- PASSAGES ET MÉMOIRE (voir docs/PROGRESSION.md)
@@ -1500,19 +1519,25 @@
     priorite: ["metallurgie", "chimie", "electronique", "centrales", "elevage", "artistique", "artisanat"],
     echelons: [
     /* 0.44.3 : l'échelle est celle de la force motrice et du guidage de la machine (les apprentis et les ouvriers sont une autre échelle, celle de la main-d'œuvre).
-     * Deux marches attendent une machine : l'Hydraulique (âge 6, entre l'acier et la vapeur) et la Commande numérique (âge 11, entre le silicium et le spatial). */
+     * 0.45 : chaque marche a sa machine (une tous les deux âges environ). */
     { id: "manuel", n: "Manuel", age: 0 },
     { id: "mecanisme", n: "Mécanisme", age: 2 },
+    { id: "hydraulique", n: "Hydraulique", age: 6 },
     { id: "vapeur", n: "Vapeur", age: 7 },
-    { id: "chaine", n: "Chaîne", age: 10 },
-    { id: "robotique", n: "Robotique", age: 13 }
+    { id: "chaine", n: "Chaîne", age: 8 },
+    { id: "robotique", n: "Robotique", age: 12 },
+    { id: "synthese", n: "Synthèse", age: 14 }
   ],
     paliers: [
     { id: "automate_bois", echelon: 1, ch: 3 },
     { id: "automate_bronze", echelon: 1, ch: 10 },
-    { id: "presse_vapeur", echelon: 2, ch: 50 },
-    { id: "chaine", echelon: 3, ch: 200 },
-    { id: "assembleur", echelon: 4, ch: 1500 }
+    { id: "martinet", echelon: 2, ch: 25 },
+    { id: "presse_vapeur", echelon: 3, ch: 50 },
+    { id: "poste_elec", echelon: 4, ch: 100 },
+    { id: "chaine", echelon: 4, ch: 200 },
+    { id: "centre_num", echelon: 5, ch: 600 },
+    { id: "assembleur", echelon: 5, ch: 1500 },
+    { id: "matrice", echelon: 6, ch: 5000 }
   ],
     sources: [
     { id: "moulin", ch: 20 }, { id: "recuperation_vapeur", ch: 40 }, { id: "chaudiere_tubulaire", ch: 60 },
@@ -1606,6 +1631,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⚙️ Quatre machines de plus, pour qu’il y en ait une tous les deux âges environ : le Martinet hydraulique (Acier), le Poste à moteur électrique (Électricité), le Centre d’usinage numérique (Composites) et la Matrice de fabrication (Stellaire). L’échelle d’un atelier compte maintenant sept marches : Manuel, Mécanisme, Hydraulique, Vapeur, Chaîne, Robotique, Synthèse.",
     "⚙️ L’échelle d’un atelier suit la machine : Manuel, Mécanisme, Vapeur, Chaîne, Robotique. Les apprentis et les ouvriers ne la font plus monter : ils sont une autre échelle, celle de la main-d’œuvre. Les descriptions des machines portent leur marche au lieu de « Palier 3 » partout.",
     "📱 Sur un très petit écran (320 px), les trois boutons du haut des Terres tiennent sur la largeur.",
     "⚡ La jauge d’énergie se voit aussi dans la page de chaque atelier (elle n’était que sur la liste des ateliers).",

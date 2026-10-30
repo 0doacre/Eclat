@@ -10,7 +10,7 @@ const page = E => { const id = Object.keys(E.RECIT.pages)[0]; E.givePage(id, 'te
 test('cinq recettes nouvelles, aucune ne bloque les étapes principales', () => {
   const ids = ['encre','papyrus','papier','presse_imprimer','serveur_archives'];
   for (const id of ids) { assert.ok(D.ITEMS[id].r); assert.ok(!D.OBJECTIVES.some(o => Array.isArray(o) && o[0] === id)); }
-  assert.equal(Object.keys(D.ITEMS).length, 267); assert.equal(Object.values(D.ITEMS).filter(it=>it.r).length, 234);
+  assert.equal(Object.keys(D.ITEMS).length, 271); assert.equal(Object.values(D.ITEMS).filter(it=>it.r).length, 238);
 });
 test('écriture : verrou, limites, suppression et persistance après relève et deux chargements', () => {
   const E = mk(); assert.equal(E.transmissionNote('note').ok, false);
