@@ -131,3 +131,11 @@
 #v-labo .ae-tools-list .btn { min-height: 40px; }
 #v-labo .ae-lab > p.small { margin-top: -2px; }
 #v-labo .ae-stock { min-height: 200px; }
+
+/* Labo : trois puces pour choisir les matières, une rangée de gestes quand l'outil en a plusieurs */
+.ae-filtres, .ae-gestes { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ae-chip { min-height: 38px; padding: 0 12px; border: 1px solid #79694a; border-radius: 999px; background: #fff8e9; color: #30271e; font: inherit; font-size: 14px; cursor: pointer; }
+.ae-chip.on { background: #813f2a; border-color: #813f2a; color: #fff8e9; font-weight: 700; }
+.ae-etude { display: flex; gap: 6px; align-items: center; }
+#v-labo .ae-stock { gap: 6px; }
+.atelier-equipe [hidden] { display: none; }
