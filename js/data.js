@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.44.0";
+  D.VERSION = "0.44.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1604,6 +1604,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⚡ La jauge d’énergie se voit aussi dans la page de chaque atelier (elle n’était que sur la liste des ateliers).",
     "⚡ L’énergie agit. Quand tes machines, tes apprentis et tes ouvriers demandent plus de chevaux que tu n’en produis, ils tournent plus lentement, jusqu’à la moitié de leur vitesse au plus. Tes mains ne sont jamais ralenties. Construis un moulin, une chaudière ou une centrale : la jauge de l’Atelier montre ce qui manque.",
     "✒️ Le métier Artistique devient Arts et lettres. Un métier dont toutes les recettes sont trouvées est maîtrisé : sa carte, dans l’Atelier, le dit (il reste utilisable). Ses recettes comptent « trouvées sur total » tant qu’il reste à découvrir.",
     "📜 Chaque recette trouvée dit sa saveur dans la fenêtre de découverte : une ou deux phrases, et la première fois qu’un geste nouveau (Marteler, Allier, Graver…) entre en jeu, ce qu’il veut dire. En attendant les textes définitifs, la description de la recette sert de texte.",
