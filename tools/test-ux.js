@@ -571,7 +571,7 @@ async function run() {
       p.on("pageerror", e => p.errors.push(e.message));
       await p.addInitScript((st) => {
         localStorage.clear();
-        localStorage.setItem("eclat.preview.style", st);
+        localStorage.setItem("eclat.style.carnet-defaut","1");localStorage.setItem("eclat.preview.style", st);
       }, style);
       await p.goto("http://127.0.0.1:" + server.address().port);
       await p.waitForFunction(() => !!window.__eclat);

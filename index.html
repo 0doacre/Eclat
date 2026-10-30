@@ -89,6 +89,10 @@
      * Trois modes cycliques : "atlas" (défaut actuel) -> "vivant" (nœuds immersifs) -> "classique" (historique). */
     (function () {
       const key = "eclat.preview.style";
+      /* Le Carnet (identifiant interne « vivant ») est le style par défaut de tous les appareils.
+       * Un ancien choix mémorisé (Atlas ou Classique, souvent resté d’avant le Carnet) est écarté une seule fois :
+       * le marqueur ci-dessous dit que le choix enregistré est désormais un vrai choix fait dans les options. */
+      const forcedKey = "eclat.style.carnet-defaut";
       const sheet = document.getElementById("atlasStylesheet");
       const vivantSheet = document.getElementById("vivantStylesheet");
       const button = document.getElementById("atlasToggle");
@@ -138,10 +142,17 @@
 
       let mode = "vivant";
       try {
-        const saved = localStorage.getItem(key);
-        if (MODES.includes(saved)) mode = saved;
+        if (localStorage.getItem(forcedKey) === "1") {
+          const saved = localStorage.getItem(key);
+          if (MODES.includes(saved)) mode = saved;
+        } else {
+          localStorage.setItem(forcedKey, "1");
+          localStorage.setItem(key, "vivant");
+        }
       } catch (_) {}
       apply(mode);
+      /* Les options du jeu (Affichage) s’en servent pour revenir à Atlas ou Classique en cas de souci. */
+      window.EclatSetStyleMode = apply;
 
       button.addEventListener("click", function () {
         const cur = window.EclatStyleMode || "atlas";

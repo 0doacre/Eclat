@@ -629,6 +629,9 @@
       const echosList = E.activeEchoesFins ? E.activeEchoesFins() : Object.keys((st.meta && st.meta.endings) || {});
       const nbEchos = echosList.length;
       const hasComptoir = E.zoneOpen(D.COMPTOIR.zone);
+      const styleLabels = { vivant: "Carnet", atlas: "Atlas", classique: "Classique" };
+      const styleNext = { vivant: "atlas", atlas: "classique", classique: "vivant" };
+      const curStyle = (typeof window !== "undefined" && window.EclatStyleMode) || "vivant";
       const isVivant = (typeof window !== "undefined" && (window.EclatStyleMode === "vivant" || (typeof document !== "undefined" && document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant")));
 
       /* un réglage qui s’active ou se coupe : toujours le même interrupteur, toujours les mêmes mots */
@@ -668,6 +671,7 @@
             sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un traverser le Domaine de temps en temps")) +
           sec("affichage", "🖥️", "Affichage &amp; Écran",
             (isVivant ? "" : '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
+            (typeof window !== "undefined" && window.EclatSetStyleMode ? '<div class="toggle"><span id="mt-style">Style d’affichage</span><button class="btn small m-theme-btn" data-m="styleMode" aria-labelledby="mt-style" title="Carnet est le style du jeu. Atlas et Classique restent disponibles pour revenir à un ancien aspect si quelque chose s’affiche mal.">' + styleLabels[curStyle] + "</button></div>" : "") +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("compact", "Affichage compact", U.compact(), "Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup") +
             sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)") +
@@ -744,6 +748,12 @@
             applyTheme();
             b.textContent = thLabels[st.settings.theme];
             save();
+            return true;
+          },
+          styleMode: (b) => {
+            const cur = window.EclatStyleMode || "vivant";
+            window.EclatSetStyleMode(styleNext[cur] || "vivant");
+            b.textContent = styleLabels[window.EclatStyleMode] || "Carnet";
             return true;
           },
           largeText: (b) => {

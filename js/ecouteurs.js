@@ -388,6 +388,35 @@
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, (ev) => Dom.up(ev)));
       views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } updMini(); }, { passive: true });
+
+      /* Barre du bas : le doigt glisse vers le haut (le contenu défile vers le bas) -> elle descend et libère la place ;
+       * le doigt redescend, on arrive en haut, ou on change d’onglet -> elle revient. Ni dans les Terres ni sur la Carte,
+       * où le glisser sert à autre chose (récolte, passage d’une terre à l’autre, déplacement de la carte). */
+      (() => {
+        const body = document.body, STEP = 28;
+        const geste = () => U.tab !== "domaine" && U.tab !== "carte";
+        const away = (on) => { if (body.classList.contains("nav-away") !== on) body.classList.toggle("nav-away", on); };
+        let y0 = null, dir = 0, run = 0;
+        const move = (dy) => { // dy > 0 : le contenu descend (on remonte) ; dy < 0 : on va vers le bas
+          if (!geste()) { away(false); return; }
+          const d = dy < 0 ? -1 : 1;
+          if (d !== dir) { dir = d; run = 0; }
+          run += Math.abs(dy);
+          if (run >= STEP) away(d < 0);
+        };
+        views.addEventListener("touchstart", (ev) => { y0 = ev.touches[0].clientY; dir = 0; run = 0; }, { passive: true });
+        views.addEventListener("touchmove", (ev) => {
+          if (y0 === null) return;
+          const y = ev.touches[0].clientY;
+          move(y - y0); y0 = y;
+        }, { passive: true });
+        ["touchend", "touchcancel"].forEach((t) => views.addEventListener(t, () => { y0 = null; }, { passive: true }));
+        views.addEventListener("wheel", (ev) => { if (ev.deltaY) move(-ev.deltaY); }, { passive: true });
+        views.addEventListener("scroll", () => { if (views.scrollTop <= 4 || !geste()) away(false); }, { passive: true });
+        const tabs = $("#tabs");
+        tabs.addEventListener("click", () => away(false), true);
+        new MutationObserver(() => away(false)).observe(body, { attributes: true, attributeFilter: ["data-tab"] });
+      })();
       views.addEventListener("contextmenu", (ev) => {
         const iv = ev.target.closest(".inv");
         if (iv) { ev.preventDefault(); openItemInfo(iv.dataset.inv); return; } // clic droit ou touche Menu : la fiche

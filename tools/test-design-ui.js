@@ -45,7 +45,7 @@ async function run() {
     const ctx = await browser.newContext({viewport:{width,height:width===320?568:844},hasTouch:true,serviceWorkers:'block',reducedMotion:'reduce'});
     const p = await ctx.newPage(), errors=[];
     p.on('pageerror', e=>errors.push(e.message));
-    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.preview.style','atlas');}, save(stage,dark));
+    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','atlas');}, save(stage,dark));
     await p.goto('http://127.0.0.1:'+server.address().port);
     await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<8;i++){await p.waitForTimeout(100);await close(p);}
@@ -120,7 +120,7 @@ async function run() {
   if(!baseline) {
     const ctx=await browser.newContext({viewport:{width:900,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
     const p=await ctx.newPage();
-    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.preview.style','atlas');},save('industrie',false));
+    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','atlas');},save('industrie',false));
     await p.goto('http://127.0.0.1:'+server.address().port);
     await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<8;i++){await p.waitForTimeout(100);await close(p);}

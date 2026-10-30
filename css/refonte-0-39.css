@@ -189,3 +189,21 @@
   .terres-pastilles { padding: 6px 6px 2px; gap: 4px; }
   .terres-pastille { flex: 1 1 0; min-width: 0; padding-left: 6px; padding-right: 6px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
 }
+
+/* Le style Carnet est le style du jeu : le bouton « Aspect » de l'en-tête ne sert plus que dans Atlas et Classique.
+ * Pour revenir à un ancien aspect depuis le Carnet : Menu > Affichage > Style d'affichage. */
+html[data-style-mode="vivant"] #atlasToggle { display: none !important; }
+
+/* Barre du bas : elle s'efface quand on fait défiler vers le bas (doigt qui glisse vers le haut) et revient dès qu'on remonte.
+ * --nav tombe à 0 : la vue récupère la place (tous les ingrédients du Labo deviennent atteignables). */
+:root { --nav-reel: var(--nav); }
+body.nav-away { --nav: 0px; }
+body.nav-away #tabs { height: calc(var(--nav-reel) + var(--safe-b)) !important; min-height: 0 !important; transform: translateY(100%); pointer-events: none; }
+#tabs { transition: transform .22s ease; }
+@media (prefers-reduced-motion: reduce) { #tabs { transition: none; } }
+
+/* Labo : la liste des ingrédients ne s'écrase plus (elle tombait à quelques pixels de haut et restait cachée sous la barre du bas).
+ * Elle prend sa hauteur entière ; c'est le Labo qui défile vers le bas pour tout montrer. */
+#v-labo .ae-lab, #v-labo .ae-layout { flex: none; min-height: auto; }
+#v-labo .ae-stock { flex: none; overflow: visible; }
+#v-labo .ae-inventory { flex: none; min-height: 0; overflow: visible; max-height: none; }
