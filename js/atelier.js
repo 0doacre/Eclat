@@ -1695,9 +1695,10 @@
     /* les boutons d'embauche d'un atelier (page de l'atelier) */
     function embaucheHTML(c) {
       return '<div class="atel-embauche">' + c.embauches.map((e) => {
+        const renvoi = e.nombre > 0 ? '<button type="button" class="btn small ghost atel-renvoi' + (U.renvoiAttente === c.id + ":" + e.kind ? " is-confirme" : "") + '" data-renvoyer="' + c.id + ":" + e.kind + '" title="Renvoyer un ' + esc(e.n.toLowerCase()) + ' : aucun remboursement, et le prix de l’embauche suivante ne baisse pas">' + (U.renvoiAttente === c.id + ":" + e.kind ? "Confirmer le renvoi ?" : "Renvoyer") + "</button>" : "";
         if (e.pourquoi === "age") return '<span class="atel-ferme">' + esc(e.n) + " : à partir de " + esc(D.AGES[e.age].n.toLowerCase()) + "</span>";
-        if (e.pourquoi === "max") return '<span class="atel-ferme">' + esc(e.n) + "s : " + e.nombre + " sur " + e.max + " (au complet)</span>";
-        return '<button type="button" class="btn small' + (e.pourquoi ? " ghost" : "") + '" data-embaucher="' + c.id + ":" + e.kind + '" title="' + esc(e.pourquoi === "ecus" ? "Il te manque des écus : vends au Comptoir ou au Troqueur" : "Embaucher") + '">Embaucher un ' + esc(e.n.toLowerCase()) + " · " + fmt(e.cout) + " écus" + (e.nombre ? " (" + e.nombre + ")" : "") + "</button>";
+        if (e.pourquoi === "max") return '<span class="atel-ferme">' + esc(e.n) + "s : " + e.nombre + " sur " + e.max + " (au complet)</span>" + renvoi;
+        return renvoi + '<button type="button" class="btn small' + (e.pourquoi ? " ghost" : "") + '" data-embaucher="' + c.id + ":" + e.kind + '" title="' + esc(e.pourquoi === "ecus" ? "Il te manque des écus : vends au Comptoir ou au Troqueur" : "Embaucher") + '">Embaucher un ' + esc(e.n.toLowerCase()) + " · " + fmt(e.cout) + " écus" + (e.nombre ? " (" + e.nombre + ")" : "") + "</button>";
       }).join("") + "</div>";
     }
     function viewAteliers() {
@@ -1767,7 +1768,16 @@
     function prodClick(t) {
       let b;
       if ((b = t.closest("[data-atelier]"))) { A.click(); U.atelierSel = b.dataset.atelier; U.prodSel = null; render(true); return true; }
+      if ((b = t.closest("[data-renvoyer]"))) {
+        const cle = b.dataset.renvoyer, [fam, kind] = cle.split(":");
+        if (U.renvoiAttente !== cle) { A.click(); U.renvoiAttente = cle; render(true); return true; }
+        U.renvoiAttente = null;
+        const r = E.licencier(fam, kind);
+        if (r.ok) { A.click(); toast("👋 " + esc(TRAVAILLEUR_NOM[kind]) + " renvoyé.", { key: "emb" }); } else A.fail(0);
+        render(true); return true;
+      }
       if ((b = t.closest("[data-embaucher]"))) {
+        U.renvoiAttente = null;
         const [fam, kind] = b.dataset.embaucher.split(":");
         const r = E.embaucher(fam, kind);
         if (r.ok) { A.click(); toast("🛠️ " + esc(TRAVAILLEUR_NOM[kind]) + " embauché : " + fmt(r.cout) + " écus.", { key: "emb" }); }

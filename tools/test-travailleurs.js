@@ -23,6 +23,35 @@ function jeu(age) {
 const avance = (E, s) => { for (let i = 0; i < s; i++) { t += 1000; E.update(); } };
 
 console.log("Travailleurs (0.41)");
+test("renvoyer : personne à renvoyer, un travailleur de moins, aucun remboursement, prix suivant inchangé (0.45.2)", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6;
+  assert.equal(E.licencier("artisanat", "apprenti").why, "personne");
+  assert.equal(E.licencier("artisanat", "nimporte").why, "inconnu");
+  E.embaucher("artisanat", "apprenti"); E.embaucher("artisanat", "apprenti");
+  const prix = E.coutEmbauche("artisanat", "apprenti"), ecus = E.state.ecus;
+  assert.equal(E.licencier("artisanat", "apprenti").ok, true);
+  assert.equal(E.state.ateliers.artisanat.app, 1);
+  assert.equal(E.state.ecus, ecus, "aucun remboursement");
+  assert.equal(E.coutEmbauche("artisanat", "apprenti"), prix, "renvoyer ne baisse pas le prix de l'embauche suivante");
+  E.embaucher("artisanat", "apprenti");
+  assert.equal(E.state.ateliers.artisanat.app, 2);
+  assert.equal(E.coutEmbauche("artisanat", "apprenti"), Math.round(prix * TR.apprenti.croiss), "le rang continue de monter");
+});
+test("le rang d'embauche survit à la sauvegarde ; un travailleur renvoyé ne travaille plus", () => {
+  const { E } = jeu(8);
+  E.state.ecus = 1e6; E.add("bois", 5000); E.state.made.manche = 1;
+  E.embaucher("artisanat", "ouvrier"); E.embaucher("artisanat", "ouvrier");
+  E.setCadence("manche", 10000, true); avance(E, 5);
+  assert.equal(E.travailleurs().artisanat.ouv, 2);
+  E.licencier("artisanat", "ouvrier"); avance(E, 2);
+  assert.equal(E.travailleurs().artisanat.ouv, 1);
+  const prix = E.coutEmbauche("artisanat", "ouvrier");
+  const F = createEngine({ now: () => t, rand: () => 0.99 });
+  F.load(JSON.stringify(E.save ? JSON.parse(E.save()) : E.state));
+  assert.equal(F.coutEmbauche("artisanat", "ouvrier"), prix);
+  assert.equal(F.state.ateliers.artisanat.ouv, 1);
+});
 test("pas d'apprenti avant son âge", () => {
   const { E } = jeu(2);
   E.state.ecus = 1000;

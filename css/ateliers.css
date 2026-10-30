@@ -52,3 +52,7 @@
 
 .energie { width: 100%; box-sizing: border-box; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px; }
 .energie-feuille .sub { margin: 12px 0 4px; }
+
+/* 0.45.2 : le renvoi d'un travailleur, discret, avec une confirmation en deux touches */
+.atel-renvoi { font-size: 12px; }
+.atel-renvoi.is-confirme { border-color: var(--bad, #a33); color: var(--bad, #a33); }

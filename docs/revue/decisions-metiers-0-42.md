@@ -110,3 +110,8 @@ Décision du porteur : « une machine pour deux âges ». L'échelle d'un atelie
 Constat : le prix d'une embauche était fixe (apprenti 40, ouvrier 200 écus) alors qu'une matière brute vaut 0,1 écu à l'âge 0 et ×2,5 par âge au Comptoir. Un apprenti valait 26 matières à l'âge 3 mais moins d'une à l'âge 7 ; un ouvrier, 8 matières à l'âge 6 puis rien du tout : l'embauche devenait gratuite.
 
 Règle : `cout × D.TRAVAILLEURS.parAge ^ (âge − âge d'ouverture)`, puis ×1,5 à chaque embauche dans l'atelier (inchangé). `parAge = 2,5`, la hausse du Comptoir. Un apprenti coûte donc toujours environ 25 matières brutes de l'âge, un ouvrier 8. Embaucher tôt coûte moins cher qu'embaucher tard. Rien d'autre ne bouge ; les joueurs automatiques n'embauchent pas, donc le rythme mesuré ne change pas.
+
+## 12. Licenciement (0.45.2)
+
+- **Renvoyer** un apprenti ou un ouvrier depuis la page de l'atelier : bouton discret, confirmé par une seconde touche. `E.licencier(fam, kind)`.
+- **Aucun remboursement**, et le prix de l'embauche suivante **ne baisse pas** : le rang d'embauche (`E.rangEmbauche`) compte toutes les embauches faites dans l'atelier, renvois compris (`appH` / `ouvH` dans la partie, remis d'aplomb au chargement). Renvoyer puis réembaucher ne rapporte donc rien ; l'emplacement se libère seulement.

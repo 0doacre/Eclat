@@ -3886,9 +3886,14 @@
       for (const f of (D.ATELIERS || {}).priorite || []) if ((votes[f] || 0) > n) { best = f; n = votes[f]; }
       return (famMemo[id] = best);
     };
+    /* le rang d'une embauche : le nombre d'embauches de ce type faites dans l'atelier (renvois compris, au moins le nombre de travailleurs). Renvoyer ne baisse pas le prix de la suivante (0.45.2). */
+    E.rangEmbauche = function (fam, kind) {
+      const a = (S.ateliers && S.ateliers[fam]) || {}, k = kind === "apprenti" ? "app" : "ouv";
+      return Math.max(a[k] || 0, a[k + "H"] || 0);
+    };
     E.coutEmbauche = function (fam, kind) {
       const d = TRAV[kind], a = (S.ateliers && S.ateliers[fam]) || {};
-      return d ? Math.round(d.cout * Math.pow(TRAV.parAge || 1, Math.max(0, S.age - d.age)) * Math.pow(d.croiss, a[kind === "apprenti" ? "app" : "ouv"] || 0)) : Infinity;
+      return d ? Math.round(d.cout * Math.pow(TRAV.parAge || 1, Math.max(0, S.age - d.age)) * Math.pow(d.croiss, E.rangEmbauche(fam, kind))) : Infinity;
     };
     E.embaucher = function (fam, kind) {
       const d = TRAV[kind];
@@ -3903,10 +3908,23 @@
       const a = S.ateliers[fam] || (S.ateliers[fam] = { app: 0, ouv: 0 });
       S.ecus -= cout;
       a[key]++;
+      a[key + "H"] = Math.max(a[key + "H"] || 0, a[key] - 1) + 1; // le rang compte toutes les embauches, renvois compris
       assignWorkers();
       domChanged();
       E.emit("struct");
       return { ok: true, cout };
+    };
+    /* Renvoyer un travailleur : sans remboursement, et le prix de l'embauche suivante ne baisse pas. */
+    E.licencier = function (fam, kind) {
+      const d = TRAV[kind], key = kind === "apprenti" ? "app" : "ouv", a = S.ateliers && S.ateliers[fam];
+      if (!d) return { ok: false, why: "inconnu" };
+      if (!a || !(a[key] > 0)) return { ok: false, why: "personne" };
+      a[key + "H"] = Math.max(a[key + "H"] || 0, a[key]);
+      a[key]--;
+      assignWorkers();
+      domChanged();
+      E.emit("struct");
+      return { ok: true, reste: a[key] };
     };
     /* Ce que font les travailleurs, atelier par atelier (lecture) */
     E.travailleurs = function () {
@@ -5997,7 +6015,8 @@
         if (!a || typeof a !== "object") return;
         const app = Math.max(0, Math.min((D.TRAVAILLEURS || {}).apprenti ? D.TRAVAILLEURS.apprenti.max : 0, Math.floor(Number(a.app) || 0)));
         const ouv = Math.max(0, Math.min((D.TRAVAILLEURS || {}).ouvrier ? D.TRAVAILLEURS.ouvrier.max : 0, Math.floor(Number(a.ouv) || 0)));
-        if (app || ouv) propre[f] = { app, ouv };
+        const appH = Math.max(app, Math.min(99, Math.floor(Number(a.appH) || 0))), ouvH = Math.max(ouv, Math.min(99, Math.floor(Number(a.ouvH) || 0)));
+        if (app || ouv || appH || ouvH) { propre[f] = { app, ouv }; if (appH > app) propre[f].appH = appH; if (ouvH > ouv) propre[f].ouvH = ouvH; }
       });
       S.ateliers = propre;
       const raw = S.atelierEconomy;

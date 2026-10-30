@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.45.1";
+  D.VERSION = "0.45.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1635,6 +1635,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "👋 Tu peux renvoyer un apprenti ou un ouvrier depuis la page de l’atelier (deux touches pour confirmer). Aucun remboursement, et l’embauche suivante ne coûte pas moins cher : renvoyer pour réembaucher ne rapporte rien.",
     "🪙 Le prix d’une embauche suit le niveau des prix : un apprenti ou un ouvrier coûte toujours à peu près le même nombre de matières de ton âge. Embaucher tôt coûte moins cher qu’embaucher tard.",
     "⚙️ Quatre machines de plus, pour qu’il y en ait une tous les deux âges environ : le Martinet hydraulique (Acier), le Poste à moteur électrique (Électricité), le Centre d’usinage numérique (Composites) et la Matrice de fabrication (Stellaire). L’échelle d’un atelier compte maintenant sept marches : Manuel, Mécanisme, Hydraulique, Vapeur, Chaîne, Robotique, Synthèse.",
     "⚙️ L’échelle d’un atelier suit la machine : Manuel, Mécanisme, Vapeur, Chaîne, Robotique. Les apprentis et les ouvriers ne la font plus monter : ils sont une autre échelle, celle de la main-d’œuvre. Les descriptions des machines portent leur marche au lieu de « Palier 3 » partout.",
