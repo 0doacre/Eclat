@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f3ecd9">
+  <title>Éclat · Le monde autour du camp</title>
+  <link rel="stylesheet" href="../../../css/fonts.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="masthead"><a href="../../../" class="brand" aria-label="Revenir à Éclat">Éclat<span>Le Carnet du Semeur</span></a><span class="edition">Étude jouable · Domaine</span></header>
+  <main>
+    <div class="intro"><div><p class="eyebrow">Une terre après l’autre</p><h1>Le monde grandit autour de toi.</h1><p>Un camp, des chemins, puis ce qu’il y a au-delà.</p></div><button id="restart" class="quiet" title="Recommencer uniquement cette démonstration">Recommencer l’étude ↺</button></div>
+    <nav class="chapters" aria-label="Exemples de progression"><button data-stage="0" aria-pressed="true">I · Le camp</button><button data-stage="1" aria-pressed="false">II · Le Grand Chêne</button><button data-stage="2" aria-pressed="false">III · La grotte</button><button data-stage="3" aria-pressed="false">IV · La Plaine</button></nav>
+    <div class="workspace">
+      <section class="map-frame" aria-label="Le Domaine illustré">
+        <div class="map-heading"><span id="mapTitle">La Lisière</span><span id="campEra">Un abri dans les bois</span></div>
+        <div id="viewport" tabindex="0" aria-label="Carte du Domaine. Déplacer en faisant glisser ou avec les flèches du clavier.">
+          <svg id="world" viewBox="0 0 1500 1000" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <radialGradient id="soft"><stop offset="65%" stop-color="white"/><stop offset="100%" stop-color="black"/></radialGradient>
+              <mask id="forestMask"><ellipse cx="535" cy="670" rx="575" ry="490" fill="url(#soft)"/></mask>
+              <mask id="prairieMask"><ellipse cx="1160" cy="300" rx="620" ry="485" fill="url(#soft)"/></mask>
+            </defs>
+            <image href="assets/monde.webp" width="1500" height="1000" class="faint-map"/>
+            <image href="assets/monde.webp" width="1500" height="1000" mask="url(#forestMask)" id="forestPaint"/>
+            <image href="assets/monde.webp" width="1500" height="1000" mask="url(#prairieMask)" id="prairiePaint"/>
+            <path class="territory forest-border" d="M130 520 Q204 359 388 363 T660 464 Q804 559 754 734 T445 923 Q190 924 117 762 T130 520Z"/>
+            <path class="territory prairie-border" d="M758 243 Q849 105 1124 120 T1417 320 Q1425 496 1237 540 T898 583 Q733 541 758 243Z"/>
+            <path id="trailUnder" d="M730 595 C774 602 779 537 817 522 S887 470 914 430 S978 418 1030 356"/>
+            <path id="trail" d="M730 595 C774 602 779 537 817 522 S887 470 914 430 S978 418 1030 356" pathLength="1"/>
+            <g id="brambles" fill="none" stroke="#685b36" stroke-width="3" stroke-linecap="round"><path d="M798 527q-36-45-9-57m7 38 20-26m-23 12-29-13m40 30q45-6 38-39m-22 31 9 20m-45-14-20 21"/><path d="M811 547q-14-34 7-60m-7 33 33-7m-32 24-28 18"/></g>
+            <image id="campSprite" href="../../../assets/carnet/discoveries/camp.webp" x="630" y="505" width="230" height="155"/>
+            <g id="installation"><image href="../../../assets/carnet/items/cabane.webp" x="440" y="490" width="115" height="100"/><path d="M478 513q-9-17 1-25t0-23" fill="none" stroke="#7c7464" stroke-width="3"/></g>
+            <path id="pencilRoute" d="M736 608 Q605 628 557 582 T409 532" fill="none" stroke="#665849" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 8" pathLength="1"/>
+          </svg>
+          <div id="hotspots"></div>
+          <span class="map-note" id="mapNote">Au-delà du camp, quelques traits à peine…</span>
+        </div>
+        <div class="camera"><button data-camera="camp" title="Recentrer sur le camp">⌂ Camp</button><button data-camera="lisiere" title="Voir la Lisière de près">La Lisière</button><button data-camera="plaine" id="plaineCamera" title="Voir la Plaine de près" disabled>La Plaine</button><button data-camera="all" title="Voir l’ensemble des terres connues">Vue d’ensemble ↗</button></div>
+      </section>
+      <aside id="sheet" aria-labelledby="sheetTitle">
+        <p class="eyebrow" id="sheetKicker">Le camp du Semeur</p><h2 id="sheetTitle">Tout commence ici.</h2>
+        <div id="sheetContent"></div>
+      </aside>
+    </div>
+    <section class="journey" aria-labelledby="journeyTitle"><div><p class="eyebrow">La prochaine trace</p><h2 id="journeyTitle">Reconnaître les alentours</h2><p id="journeyText"></p></div><div class="journey-action"><button id="advance" class="primary">Explorer le Grand Chêne →</button><progress id="exploreProgress" max="1" value="0" aria-label="Progression de l’exploration" hidden></progress><span id="activity" role="status" aria-live="polite"></span></div></section>
+    <section class="collection" aria-label="Les études rapportées au carnet"><p class="eyebrow">Les pages rapportées</p><div id="studies"></div></section>
+    <footer><p>Prototype indépendant · explorations abrégées à 6 secondes · aucune modification de ta partie.</p><a href="../../../">Revenir au jeu →</a></footer>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script src="../../../js/data.js"></script><script src="../../../js/recit.js"></script><script src="../../../js/signes.js"></script><script src="../../../js/constellations.js"></script><script src="../../../js/transmission.js"></script><script src="../../../js/territoires.js"></script><script src="../../../js/reprise.js"></script><script src="../../../js/engine.js"></script><script src="prototype.js"></script>
+</body>
+</html>
