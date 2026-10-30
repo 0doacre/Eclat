@@ -25,10 +25,31 @@ test("le profil conserve toutes les recettes et isole ses transformations", () =
   assert.equal(Object.keys(Base.ITEMS).length,267); assert.equal(Object.keys(D.ITEMS).length,271);
   const before = Object.keys(Base.ITEMS).filter(id=>Base.ITEMS[id].r&&Base.ITEMS[id].a<=3);
   assert.equal(before.length,54);
-  for (const id of before) { assert.ok(D.ITEMS[id].r); assert.ok(D.CRAFT_EQUIPMENT.recipes[id]?.length); }
+  // quatre recettes (Enclume, Plaque et Fil de cuivre, Miroir) passent par l'Atelier : leurs outils ne sont plus des outils de départ
+  const atelier = ["enclume_pierre","plaque_cuivre","fil_cuivre","miroir"];
+  for (const id of before) { assert.ok(D.ITEMS[id].r); if (atelier.includes(id)) assert.ok(!D.CRAFT_EQUIPMENT.recipes[id],id); else assert.ok(D.CRAFT_EQUIPMENT.recipes[id]?.length,id); }
+  for (const id of ["pioche_pierre","enclume_pierre","ciseau","polissoir"]) assert.ok(D.CRAFT_EQUIPMENT.equipment[id].hidden,id);
   assert.equal(Base.ITEMS.outre.r[1].aiguille,2); assert.equal(D.ITEMS.outre.r[1].aiguille,undefined);
   assert.equal(Base.ITEMS.engrenage_bois.r[1].eclat,1);
   assert.equal(Normal.SAVE_VERSION,12); assert.equal(Proto.SAVE_VERSION,13);
+});
+test("un seul modèle outil + geste : le mode d'une recette est son geste, chaque outil ne propose que des gestes", () => {
+  for (const [id, eq] of Object.entries(D.CRAFT_EQUIPMENT.equipment)) for (const g of Object.keys(eq.modes)) assert.ok(Base.GESTES[g], id + " : " + g + " n'est pas un geste");
+  for (const [id, cs] of Object.entries(D.CRAFT_EQUIPMENT.recipes)) for (const c of cs) assert.equal(c.mode, D.ITEMS[id].r[0], id);
+  assert.deepEqual(Object.keys(D.CRAFT_EQUIPMENT.equipment.mains.modes).sort(), ["assembler","construire","tresser"]);
+  assert.deepEqual(Object.keys(D.CRAFT_EQUIPMENT.equipment.feu.modes), ["chauffer"]);
+});
+test("Construire : tout ce qui se bâtit se construit, tout le reste garde son geste", () => {
+  for (const [id, it] of Object.entries(Base.ITEMS)) {
+    if (!it.r) continue;
+    if (["ext","mach","stat","upg"].includes(it.t)) assert.notEqual(it.r[0], "assembler", id);
+    if (it.r[0] === "construire") assert.ok(["ext","mach","stat","upg"].includes(it.t), id);
+  }
+});
+test("les anciens modes (doux, vif, couper, coudre…) restent compris comme le geste de la recette", () => {
+  const E=mk();owns(E,"feu");stock(E,{manche:2});
+  assert.equal(E.normMode("etouffee"),"chauffer");assert.equal(E.normMode("couper"),"tailler");assert.equal(E.normMode("tailler"),"tailler");
+  assert.equal(E.attemptWith("feu","doux",["manche"]).id,"epieu");
 });
 test("le moteur normal et deux profils ne partagent pas les recettes modifiées", () => {
   const second = Eq.createData(Base); second.ITEMS.outre.r[1].cuir = 99;
@@ -42,11 +63,11 @@ test("le percuteur démarre avec les cailloux de la Lisière", () => {
   assert.equal(E.attemptWith("percuteur_pierre","tailler",["bois"]).id,"manche");
   assert.equal(E.count("manche"),1);assert.equal(E.count("percuteur_pierre"),1);
 });
-test("la mauvaise station ou le mauvais mode ne révèle ni ne consomme", () => {
-  const E=mk();owns(E,"feu");stock(E,{manche:2,bois:4});
+test("la mauvaise station ou le mauvais outil ne révèle ni ne consomme", () => {
+  const E=mk();owns(E,"feu");stock(E,{manche:2,bois:4,caillou:3});
   const before=JSON.stringify({inv:E.state.inv,known:E.state.known,tries:E.state.stats.tries});
-  assert.equal(E.attemptWith("feu","vif",["manche"]).why,"incompatible");
-  assert.equal(E.attemptWith("feu","doux",["bois"]).why,"incompatible");
+  assert.equal(E.attemptWith("feu","chauffer",["caillou"]).why,"incompatible");
+  assert.equal(E.attemptWith("mains","tresser",["bois"]).why,"incompatible");
   assert.equal(JSON.stringify({inv:E.state.inv,known:E.state.known,tries:E.state.stats.tries}),before);
   assert.equal(E.attempt("chauffer",["manche"]).why,"selection");
 });
@@ -110,13 +131,15 @@ test("une seule aiguille suffit aux nouvelles coutures et n’entre pas dans leu
   stock(E,{cuir:15,fibre:20});assert.equal(E.queue("tunique",1,false).ok,true);E.tick(10);
   assert.equal(E.count("tunique"),1);assert.equal(E.count("aiguille"),1);
 });
-test("le four ne remplace pas automatiquement les procédés du foyer", () => {
+test("le four reprend les recettes du feu : un palier au-dessus, jamais un second système", () => {
   const E=mk();E.state.age=3;owns(E,"four");
   assert.equal(E.equipmentCheck("brique"),null);
-  assert.equal(E.equipmentCheck("charbon").required,"feu");
-  assert.equal(E.equipmentCheck("colle_os").required,"feu");
-  assert.equal(E.equipmentRecipe("four","cuisson",["argile"]),"brique");
-  assert.equal(E.equipmentRecipe("four","cuisson",["bois"]),null);
+  assert.equal(E.equipmentCheck("charbon"),null);
+  assert.equal(E.equipmentCheck("colle_os"),null);
+  assert.equal(E.equipmentRecipe("four","chauffer",["argile"]),"brique");
+  assert.equal(E.equipmentRecipe("four","chauffer",["bois"]),"charbon");
+  assert.equal(E.equipmentRecipe("feu","chauffer",["malachite","charbon"]),null,"le feu ne fond pas le minerai");
+  assert.equal(E.equipmentRecipe("four","chauffer",["malachite","charbon"]),"lingot_cuivre");
 });
 test("les trente premières briques cuisent au feu puis permettent de construire le four", () => {
   const E=mk();E.state.age=2;owns(E,"feu");for(const id of ["brique","four"])E.learn(id,true);
@@ -124,12 +147,12 @@ test("les trente premières briques cuisent au feu puis permettent de construire
   assert.equal(E.count("brique"),30);assert.equal(E.count("four"),0);
   assert.equal(E.craft("four",1,true).ok,true);assert.equal(E.count("four"),1);assert.equal(E.count("feu"),1);
 });
-test("la pioche prépare l’enclume avant la première utilisation du poste de frappe", () => {
+test("l’enclume et la plaque passent par l’Atelier : plus d’outil de départ pour une seule recette", () => {
   const E=mk();E.state.age=3;owns(E,"percuteur_pierre");E.learn("enclume_pierre",true);
-  assert.equal(E.equipmentCheck("enclume_pierre").required,"pioche_pierre");
-  owns(E,"pioche_pierre");stock(E,{caillou:120,lingot_cuivre:2});
+  assert.equal(E.equipmentCheck("enclume_pierre"),null);
+  stock(E,{caillou:120,lingot_cuivre:2});
   assert.equal(E.craft("enclume_pierre",1,true).ok,true);E.learn("plaque_cuivre",true);
-  assert.equal(E.equipmentRecipe("enclume_pierre","marteler",["lingot_cuivre"]),"plaque_cuivre");
+  assert.equal(E.equipmentRecipe("enclume_pierre","marteler",["lingot_cuivre"]),null,"le poste de frappe n'est plus un outil de départ");
   assert.equal(E.queue("plaque_cuivre",2,false).ok,true);E.tick(10);
   assert.equal(E.count("plaque_cuivre"),4);assert.equal(E.count("enclume_pierre"),1);assert.equal(E.count("percuteur_pierre"),1);
 });
@@ -232,14 +255,14 @@ test("le feu apparaît après sa construction et choisit seul la chauffe adapté
   assert.deepEqual(E.workplaceList().filter(x=>x.ready).map(x=>x.id),["etabli"]);
   assert.equal(E.attemptAt("feu",["bois"]).why,"missing");owns(E,"feu");
   assert.deepEqual(E.workplaceList().filter(x=>x.ready).map(x=>x.id),["etabli","feu"]);
-  const r=E.attemptAt("feu",["manche"]);assert.equal(r.id,"epieu");assert.equal(r.mode,"doux");
-  const c=E.attemptAt("feu",["bois"]);assert.equal(c.id,"charbon");assert.equal(c.mode,"etouffee");
+  const r=E.attemptAt("feu",["manche"]);assert.equal(r.id,"epieu");assert.equal(r.mode,"chauffer");
+  const c=E.attemptAt("feu",["bois"]);assert.equal(c.id,"charbon");assert.equal(c.mode,"chauffer");
 });
 test("une ambiguïté demande un geste sans révélation ni dépense", () => {
   const E=mk(Gentle);E.state.age=1;stock(E,{os:20});owns(E,"aiguille");
   const before=E.serialize(),r=E.attemptAt("etabli",["os"]);
   assert.equal(r.kind,"choice");assert.equal(E.serialize(),before);
-  assert.deepEqual(r.options.map(x=>x.action),["Tailler","Percer"]);
+  assert.deepEqual(r.options.map(x=>x.equipment),["percuteur_pierre","aiguille"]);
   assert.ok(!JSON.stringify(r).includes("flute"));
   assert.equal(E.attemptWith(r.options[1].equipment,r.options[1].mode,["os"]).id,"flute");
   assert.equal(E.count("aiguille"),1);
@@ -251,10 +274,10 @@ test("deux outils pour le même résultat ne créent pas un choix artificiel", (
 });
 test("le lieu automatique ne substitue pas le four au feu et ne révèle pas les recettes lointaines", () => {
   const E=mk(Gentle);owns(E,"four");stock(E,{manche:3});
-  const before=E.serialize();assert.equal(E.attemptAt("four",["manche"]).why,"incompatible");assert.equal(E.serialize(),before);
+  const before=E.serialize();assert.equal(E.attemptAt("four",["caillou"]).why,"incompatible");assert.equal(E.serialize(),before);
   assert.equal(E.workplaceOptions("etabli",["cuivre"]).length,0);
 });
-const cut = equipment => ({equipment,mode:"couper"});
+const cut = equipment => ({equipment,mode:"tailler"});
 test("le couteau divise réellement le temps de découpe par deux à coût et production identiques", () => {
   const slow=prepared(),fast=prepared();stock(slow,{cuir:100});stock(fast,{cuir:100});
   const a=slow.queue("laniere",10,false,undefined,cut("racloir_os"));
@@ -312,21 +335,18 @@ test("les recettes de chaque âge suivant restent identifiables dans les procéd
   }
 });
 test("le thermomètre équipé distingue Brûlant, Chaud, Tiède et Froid sans révéler ni muter l’état", () => {
-  const E=mk(Gentle);owns(E,"feu");stock(E,{bois:10,manche:4,caillou:4});
+  const E=mk(Gentle);owns(E,"feu");stock(E,{bois:10,manche:4,caillou:4,cuir:2});
   const before=E.serialize();
-  // Brûlant : bonnes matières sur le bon poste (Foyer), mais mauvaise allure (vif au lieu de doux pour l'épieu)
-  const b=E.attemptWith("feu","vif",["manche"]);
-  assert.equal(b.why,"incompatible");assert.equal(b.thermo.heat,"brulant");
   // Chaud : bonnes matières d'une recette de l'âge (charbon = bois au Foyer), mais tentées sur l'Établi avec Mains
   const c=E.attemptWith("mains","assembler",["bois"]);
   assert.equal(c.why,"incompatible");assert.equal(c.thermo.heat,"brulant"); // bois sur l'Établi = manche avec percuteur (même poste, autre outil)
-  const cOther=E.attemptWith("feu","doux",["caillou"]);
+  const cOther=E.attemptWith("feu","chauffer",["caillou"]);
   assert.equal(cOther.thermo.heat,"chaud"); // caillou = percuteur sur l'Établi (autre poste)
   // Tiède : une matière fait partie d'une recette de cet outil/mode (archet = manche + corde avec mains/assembler) sans être une recette complète ailleurs
   const t=E.attemptWith("mains","assembler",["corde"]);
   assert.equal(t.thermo.heat,"tiede");
   // Froid : aucune correspondance
-  const f=E.attemptWith("feu","etouffee",["caillou","manche"]);
+  const f=E.attemptWith("feu","chauffer",["caillou","cuir"]);
   assert.equal(f.thermo.heat,"froid");
   // Superflu : bonnes matières d'archet (manche + corde) + intrus (argile)
   const sup=E.attemptWith("mains","assembler",["manche","corde","argile"]);
@@ -335,6 +355,8 @@ test("le thermomètre équipé distingue Brûlant, Chaud, Tiède et Froid sans r
   // Indication du nombre d'ingrédients manquants
   assert.ok(t.thermo.text.includes("matières attendues"));
   assert.equal(E.serialize(),before);
+  // Un seul geste au feu : les matières de l'épieu suffisent, sans réglage (et là, on fabrique)
+  assert.equal(E.attemptWith("feu","chauffer",["manche"]).id,"epieu");
 });
 test("l'atelier permet de cadencer directement une recette automatisable maîtrisée", () => {
   const E = mk(Gentle);

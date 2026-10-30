@@ -14,11 +14,11 @@
     };
     const money=(n,age)=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+currencyName(age);
     const name=id=>I[id]?.n||id;
-    const label=(id,n)=>({doux:"Griller",vif:"Cuire",etouffee:"Étouffer",cuisson:"Cuire",fonte:"Fondre"})[id]||n;
+    const label=(id,n)=>(D.GESTES[id]&&D.GESTES[id].n)||n;
     const soundGesture=m=>({
       doux:"chauffer",vif:"chauffer",cuisson:"chauffer",fonte:"chauffer",chauffe:"chauffer",etouffee:"chauffer",
       decoupe:"tailler",tailler:"tailler",racler:"tailler",
-      assembler:"assembler",tisser:"tresser",tresser:"tresser",
+      assembler:"assembler",construire:"assembler",tisser:"tresser",tresser:"tresser",
       marteler:"marteler",frappe:"marteler",battre:"marteler",
       polir:"usiner",tremper:"tremper",allier:"allier",
       distiller:"chauffer",electriser:"electriser",synthetiser:"synthetiser"
@@ -55,17 +55,18 @@
      * Un métier a ses outils (ceux qui servent à ses recettes) et ses gestes (ceux de ses recettes). */
     const isGrand=eq=>typeof eq==="string"&&eq.indexOf("ga_")===0;
     /* « outil/geste » → les métiers dont une recette l'emploie (calculé une fois) */
-    let paires=null;
+    let paires=null,pairesAge=-1;
     function pairesDesOutils(){
-      if(!paires){paires={};const R=D.CRAFT_EQUIPMENT.recipes;for(const rid in R)R[rid].forEach(c=>{const k=c.equipment+"/"+c.mode;(paires[k]=paires[k]||new Set()).add(E.atelierDe(rid));});}
+      /* seulement les recettes à portée de l'âge (un métier ne se dévoile pas avant son heure) */
+      if(!paires||pairesAge!==E.state.age){pairesAge=E.state.age;paires={};const R=D.CRAFT_EQUIPMENT.recipes;for(const rid in R){if(!E.ageOK(rid))continue;R[rid].forEach(c=>{const k=c.equipment+"/"+c.mode;(paires[k]=paires[k]||new Set()).add(E.atelierDe(rid));});}}
       return paires;
     }
     function gestesDuMetier(f){
-      return (D.GESTE_ORDER||Object.keys(D.GESTES)).filter(g=>E.gesteOK(g)&&Object.keys(I).some(id=>I[id].r&&!I[id].sec&&!I[id].path&&I[id].a>=4&&I[id].r[0]===g&&E.atelierDe(id)===f&&E.ageOK(id)));
+      return (D.GESTE_ORDER||Object.keys(D.GESTES)).filter(g=>E.gesteOK(g)&&Object.keys(I).some(id=>I[id].r&&!I[id].sec&&!I[id].path&&!D.CRAFT_EQUIPMENT.recipes[id]&&I[id].r[0]===g&&E.atelierDe(id)===f&&E.ageOK(id)));
     }
     /* l'atelier du métier : un outil dont les gestes sont ceux des recettes du métier (à partir du Cuivre) */
     function atelierDuMetier(f){
-      const gestes=E.state.age>=3?gestesDuMetier(f):[];
+      const gestes=gestesDuMetier(f);
       if(!gestes.length)return null;
       const modes={};gestes.forEach(g=>{modes[g]=D.GESTES[g].n;});
       return {id:"ga_"+f,n:"Atelier",geste:gestes[0],ready:true,modes};
@@ -77,8 +78,11 @@
         for(const m in x.modes)if(P[x.id+"/"+m]&&P[x.id+"/"+m].has(f))modes[m]=x.modes[m];
         if(Object.keys(modes).length)out.push(Object.assign({},x,{modes}));
       });
+      const haut={};
+      out.forEach(t=>{if(t.family&&t.tier&&(!haut[t.family]||t.tier>haut[t.family]))haut[t.family]=t.tier;});
+      const garde=out.filter(t=>!(t.family&&t.tier&&t.tier<haut[t.family]));
       const at=atelierDuMetier(f);
-      return at?out.concat([at]):out;
+      return at?garde.concat([at]):garde;
     }
     function metiersDispo(){
       const out=D.ATELIERS.familles.filter(F=>outilsDuMetier(F.id).length>0);
@@ -102,7 +106,7 @@
       if(isGrand(w.eq)){
         U.geste=w.mode;
         const parts=[...w.slots].sort().join(",");
-        const recipe=Object.keys(I).find(id=>I[id].r&&I[id].a>=4&&I[id].r[0]===w.mode&&Object.keys(I[id].r[1]).sort().join(",")===parts)||null;
+        const recipe=Object.keys(I).find(id=>I[id].r&&!I[id].sec&&!D.CRAFT_EQUIPMENT.recipes[id]&&I[id].r[0]===w.mode&&Object.keys(I[id].r[1]).sort().join(",")===parts)||null;
         return {w,metiers,tools,tool,recipe};
       }
       const recipe=E.equipmentRecipe(w.eq,w.mode,w.slots);
@@ -117,7 +121,7 @@
       const s=E.state,cle=[w.metier,w.eq,w.mode,Object.keys(s.known).length,Object.keys(s.seen).length].join("|");
       if(memoUtile.cle!==cle){memoUtile.cle=cle;memoUtile.v={};}
       if(id in memoUtile.v)return memoUtile.v[id];
-      const eligible=isGrand(w.eq)?rid=>I[rid].a>=4&&I[rid].r[0]===w.mode:rid=>(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
+      const eligible=isGrand(w.eq)?rid=>!D.CRAFT_EQUIPMENT.recipes[rid]&&I[rid].r[0]===w.mode:rid=>(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
       return memoUtile.v[id]=Object.values(E.reactions(id,eligible)).some(n=>n>0);
     }
     /* L'outil se choisit à l'icône (son nom est la légende) ; si l'outil a plusieurs gestes, ils s'affichent dessous en mots courts.
@@ -131,11 +135,11 @@
       const tool=tools.find(x=>x.id===w.eq)||tools[0];
       let h='<div class="ae-outils" role="group" aria-label="Outil">'+tools.map(t=>{
         const on=t.id===w.eq,nom=isGrand(t.id)?"Atelier":t.n;
-        return '<button type="button" class="ae-chip ae-outil'+(on?' on':'')+'" data-ae="tool" data-value="'+esc(t.id)+'" aria-pressed="'+on+'" aria-label="'+esc(nom)+'" title="'+esc(nom)+'">'+iconeOutil(t)+'</button>';
+        return '<button type="button" id="ae-tool-'+esc(t.id)+'" class="ae-chip ae-outil'+(on?' on':'')+'" data-ae="tool" data-value="'+esc(t.id)+'" aria-pressed="'+on+'" aria-label="'+esc(nom)+'" title="'+esc(nom)+'">'+iconeOutil(t)+'</button>';
       }).join('')+'</div>';
       h+='<p class="ae-legende">'+esc(isGrand(tool.id)?"Atelier":tool.n)+'</p>';
       const modes=Object.entries(tool.modes);
-      if(modes.length>1)h+='<div class="ae-gestes" role="group" aria-label="Geste">'+modes.map(([m,n])=>'<button type="button" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n))+'</button>').join('')+'</div>';
+      if(modes.length>1)h+='<div class="ae-gestes" role="group" aria-label="Geste">'+modes.map(([m,n])=>'<button type="button" id="ae-mode-'+esc(m)+'" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n))+'</button>').join('')+'</div>';
       return h;
     }
     function body(mode){
@@ -272,7 +276,7 @@
     }
     let messageSale="";
     function prepare(id){if(!E.state.known[id])return;
-      if(I[id]?.r&&I[id].a>=4&&!D.CRAFT_EQUIPMENT.recipes[id]){
+      if(I[id]?.r&&!D.CRAFT_EQUIPMENT.recipes[id]){
         const g=I[id].r[0];
         Object.assign(work().w,{metier:E.atelierDe(id),eq:"ga_"+E.atelierDe(id),mode:g,slots:Object.keys(I[id].r[1]),prepared:id});
         message="Recette préparée : "+name(id);

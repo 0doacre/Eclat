@@ -41,9 +41,10 @@ test("aucune pièce n’est listée dans deux familles", () => {
   const vu = {};
   for (const f in MAP) { assert.ok(!(f in vu)); vu[f] = 1; }
 });
-test("chaque famille a au moins une pièce (sinon elle n’apparaîtrait jamais)", () => {
+test("chaque famille a au moins une recette (sinon elle n’apparaîtrait jamais)", () => {
   const { A } = jeu(14);
-  for (const F of T.familles) assert.ok(pieces().some((id) => A.famille(id) === F.id), F.id);
+  const toutes = Object.keys(I).filter((id) => I[id].r && !I[id].sec && !I[id].path && !I[id].old);
+  for (const F of T.familles) assert.ok(toutes.some((id) => A.famille(id) === F.id), F.id);
 });
 test("la matière première décide pour une pièce non listée", () => {
   const { A } = jeu(14);

@@ -28,18 +28,21 @@ test("l'étude et le choix de filtre traversent la sauvegarde et la relève",()=
   F.newCycle();assert.equal(F.state.settings.inv.filter,"tryg");assert.equal(F.state.studied.bois,1);
 });
 if(fs.existsSync(path.join(__dirname,"../js/equipements.js"))){
-  test("le filtre équipé exige l'étude et sépare Couper d'Entailler",()=>{
+  test("le filtre équipé exige l'étude et ne montre que les gestes de l'outil",()=>{
     const E=ready(true);E.add("couteau",1);delete E.state.known.laniere;delete E.state.known.engrenage_bois;
-    assert.equal(E.equipmentHasDiscovery("cuir","couteau","couper"),false);
+    assert.equal(E.equipmentHasDiscovery("cuir","couteau","tailler"),false);
     E.state.studied.cuir=1;E.state.studied.manche=1;
-    assert.equal(E.equipmentHasDiscovery("cuir","couteau","couper"),true);assert.equal(E.equipmentHasDiscovery("cuir","couteau","entailler"),false);
-    assert.equal(E.equipmentHasDiscovery("manche","couteau","entailler"),true);assert.equal(E.equipmentHasDiscovery("manche","couteau","couper"),false);
-    E.learn("laniere",true);assert.equal(E.equipmentHasDiscovery("cuir","couteau","couper"),false);
+    assert.equal(E.equipmentHasDiscovery("cuir","couteau","tailler"),true);
+    assert.equal(E.equipmentHasDiscovery("manche","couteau","tailler"),true);
+    assert.equal(E.equipmentHasDiscovery("cuir","couteau","assembler"),false,"un geste que le couteau n'a pas ne donne aucune piste");
+    E.learn("laniere",true);assert.equal(E.equipmentHasDiscovery("cuir","couteau","tailler"),false);
   });
-  test("les modes de chauffe ne se confondent pas et un outil absent ne donne aucune piste",()=>{
+  test("le feu n'a qu'un geste, un outil absent ne donne aucune piste",()=>{
     const E=ready(true);E.add("feu",1);E.recalc();E.state.studied.bois=1;delete E.state.known.charbon;
-    assert.equal(E.equipmentHasDiscovery("bois","feu","etouffee"),true);assert.equal(E.equipmentHasDiscovery("bois","feu","vif"),false);
-    assert.equal(E.equipmentHasDiscovery("bois","four","fonte"),false);assert.equal(E.equipmentHasDiscovery("bois","inconnu","tailler"),false);
+    assert.equal(E.equipmentHasDiscovery("bois","feu","chauffer"),true);
+    assert.equal(E.equipmentHasDiscovery("bois","feu","doux"),true,"les anciens modes restent compris");
+    assert.equal(E.equipmentHasDiscovery("bois","four","chauffer"),false,"le four n'est pas posé");
+    assert.equal(E.equipmentHasDiscovery("bois","inconnu","tailler"),false);
   });
 }
 console.log(checks+" tests des filtres de découverte réussis.");

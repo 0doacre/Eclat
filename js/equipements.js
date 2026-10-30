@@ -25,34 +25,37 @@
       h: "Une pierre stable sur un support de bois : le sable fera le reste." };
     I.etabli_amenage = {n:"Établi aménagé",a:0,t:"tool",ic:"🪵",r:["assembler",{bois:10,corde:3,caillou:4},1],u:"Un poste stable où installer un ouvrier.",h:"Du bois lié par des cordes, calé sur quelques pierres."};
 
+    /* 0.43 : un seul modèle outil + geste. Le geste d'une recette est celui de la recette (assembler, construire, tresser, tailler,
+     * chauffer…) : l'outil dit seulement ce qu'il PERMET. Dans une famille d'outils, le palier le plus haut reprend les recettes du
+     * précédent (Racloir puis Couteau, Feu puis Four) et le plus bas disparaît de l'écran quand on possède le plus haut.
+     * Les anciens « modes » (doux, vif, étouffée, couper, coudre…) restent compris comme des synonymes du geste (MODES_ANCIENS). */
     const equipment = {
-      mains: { n: "Mains", family: "main", modes: { assembler: "Assembler", tresser: "Tresser" } },
-      percuteur_pierre: { n: "Percuteur de pierre", item: "percuteur_pierre", family: "taille", modes: { tailler: "Tailler" } },
-      racloir_os: { n: "Racloir en os", item: "racloir_os", family: "coupe", modes: { couper: "Couper" },batch:5 },
-      couteau: { n: "Couteau de silex", item: "couteau", family: "coupe", modes: { couper: "Couper", entailler: "Entailler" }, batch:10,speed: { laniere: 2 }, benefit: "Couper : 2× plus vite" },
-      aiguille: { n: "Aiguille en os", item: "aiguille", family: "couture", modes: { coudre: "Coudre", percer: "Percer" } },
-      feu: { n: "Feu de camp", item: "feu", family: "chauffe", modes: { doux: "Griller", vif: "Cuire", etouffee: "Étouffer" } },
-      four: { n: "Four en argile", item: "four", family: "chauffe", modes: { cuisson: "Cuire", fonte: "Fondre" } },
-      pioche_pierre: { n: "Pioche de pierre", item: "pioche_pierre", family: "taille", modes: { equarrir: "Équarrir" } },
-      enclume_pierre: { n: "Poste de frappe", item: "enclume_pierre", requires: { percuteur_pierre: 1 }, family: "frappe", modes: { marteler: "Marteler" } },
-      ciseau: { n: "Ciseau de cuivre", item: "ciseau", family: "taille", modes: { refendre: "Refendre" } },
-      polissoir: { n: "Dalle de polissage", item: "polissoir", family: "abrasion", modes: { polir: "Polir" } }
+      mains: { n: "Mains", family: "main" },
+      percuteur_pierre: { n: "Percuteur de pierre", item: "percuteur_pierre", family: "taille" },
+      racloir_os: { n: "Racloir en os", item: "racloir_os", family: "coupe", tier: 1, batch: 5 },
+      couteau: { n: "Couteau de silex", item: "couteau", family: "coupe", tier: 2, batch: 10, speed: { laniere: 2 }, benefit: "Couper : 2× plus vite" },
+      aiguille: { n: "Aiguille en os", item: "aiguille", family: "couture" },
+      feu: { n: "Feu de camp", item: "feu", family: "chauffe", tier: 1 },
+      four: { n: "Four en argile", item: "four", family: "chauffe", tier: 2 },
+      // plus des outils de départ : leurs recettes passent par l'Atelier (un seul usage chacun). Les objets restent des outils.
+      pioche_pierre: { n: "Pioche de pierre", item: "pioche_pierre", family: "taille", hidden: true },
+      enclume_pierre: { n: "Poste de frappe", item: "enclume_pierre", requires: { percuteur_pierre: 1 }, family: "frappe", hidden: true },
+      ciseau: { n: "Ciseau de cuivre", item: "ciseau", family: "taille", hidden: true },
+      polissoir: { n: "Dalle de polissage", item: "polissoir", family: "abrasion", hidden: true }
     };
     const recipes = {};
-    const put = (ids, eq, mode) => ids.split(" ").forEach(id => { (recipes[id] || (recipes[id] = [])).push({ equipment: eq, mode }); });
-    for (const [id, it] of Object.entries(I)) if (it.r && it.a <= 3 && ["assembler", "tresser"].includes(it.r[0])) put(id, "mains", it.r[0]);
+    const put = (ids, eq) => ids.split(" ").forEach(id => { (recipes[id] || (recipes[id] = [])).push({ equipment: eq, mode: I[id].r[0] }); });
+    for (const [id, it] of Object.entries(I)) if (it.r && it.a <= 3 && ["assembler", "construire", "tresser"].includes(it.r[0])) put(id, "mains");
     // Remplacer les choix par défaut, sans modifier le geste des recettes.
-    for (const id of ["outre", "tunique"]) recipes[id] = [{ equipment: "aiguille", mode: "coudre" }];
-    put("manche aiguille eclat racloir_os", "percuteur_pierre", "tailler");
-    put("laniere", "racloir_os", "couper"); put("laniere", "couteau", "couper");
-    put("engrenage_bois", "couteau", "entailler"); put("statuette", "couteau", "entailler");
-    put("flute", "aiguille", "percer");
-    put("charbon", "feu", "etouffee"); put("epieu galette colle_os encre", "feu", "doux");
-    put("brique", "feu", "vif"); put("brique creuset", "four", "cuisson");
-    put("lingot_cuivre lingot_etain", "four", "fonte");
-    put("enclume_pierre", "pioche_pierre", "equarrir");
-    put("plaque_cuivre", "enclume_pierre", "marteler"); put("fil_cuivre", "ciseau", "refendre");
-    put("miroir", "polissoir", "polir");
+    for (const id of ["outre", "tunique"]) recipes[id] = [];
+    put("outre tunique", "aiguille");
+    put("manche aiguille eclat racloir_os", "percuteur_pierre");
+    put("laniere", "racloir_os"); put("laniere engrenage_bois statuette", "couteau");
+    put("flute", "aiguille");
+    put("charbon epieu galette colle_os encre brique", "feu");
+    put("charbon epieu galette colle_os encre brique creuset lingot_cuivre lingot_etain", "four");
+    for (const id in recipes) for (const c of recipes[id]) { const eq = equipment[c.equipment]; (eq.modes || (eq.modes = {}))[c.mode] = D.GESTES[c.mode].n; }
+    for (const id in equipment) equipment[id].modes = equipment[id].modes || {};
     const keys = new Set();
     for (const [id, choices] of Object.entries(recipes)) for (const choice of choices) {
       if (!equipment[choice.equipment] || !Object.hasOwn(equipment[choice.equipment].modes, choice.mode)) throw new Error("Équipement inconnu : " + id);
@@ -67,9 +70,14 @@
     return D;
   }
 
+  /* Les modes d'avant la 0.43, compris comme le geste de la recette qu'ils désignaient (anciennes commandes, anciennes sauvegardes) */
+  const MODES_ANCIENS = { doux: "chauffer", vif: "chauffer", etouffee: "chauffer", cuisson: "chauffer", fonte: "chauffer", couper: "tailler", entailler: "tailler", coudre: "assembler", percer: "tailler", equarrir: "tailler", refendre: "tailler", polir: "tailler" };
+  const normMode = (m) => MODES_ANCIENS[m] || m;
+
   function attach(E) {
     const cfg = E.D.CRAFT_EQUIPMENT;
     if (!cfg) return;
+    E.normMode = normMode;
     const equipmentItems = new Set(Object.values(cfg.equipment).map(eq => eq.item).filter(Boolean));
     equipmentItems.add("etabli_amenage");
     E.isEquipmentItem = id => equipmentItems.has(id);
@@ -89,7 +97,7 @@
     }).sort((a,b) => (cfg.equipment[b.equipment].speed?.[recipe] || 1) - (cfg.equipment[a.equipment].speed?.[recipe] || 1));
     E.equipmentSpeed = (recipe, selection) => {
       if (selection === false) return 1; // Anciennes commandes : conserver leur rythme.
-      const choice = selection ? E.equipmentChoices(recipe).find(c=>c.equipment===selection.equipment&&c.mode===selection.mode&&c.ready) : E.equipmentChoices(recipe).find(c=>c.ready);
+      const choice = selection ? E.equipmentChoices(recipe).find(c=>c.equipment===selection.equipment&&c.mode===normMode(selection.mode)&&c.ready) : E.equipmentChoices(recipe).find(c=>c.ready);
       return choice ? cfg.equipment[choice.equipment].speed?.[recipe] || 1 : 1;
     };
     E.equipmentJobCheck = (recipe, job, available) => {
@@ -107,9 +115,10 @@
       const c = choices[0];
       return { why: "equipment", equipment: c.equipment, required: Object.keys(c.missing)[0], missing: c.missing };
     };
-    E.equipmentList = () => Object.entries(cfg.equipment).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
+    E.equipmentList = () => Object.entries(cfg.equipment).filter(([, eq]) => !eq.hidden).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
     // Même information que l'étude classique, limitée au geste exact de l'outil.
     E.equipmentHasDiscovery = (id, equipment, mode) => {
+      mode = normMode(mode);
       const eq = cfg.equipment[equipment];
       if (!E.state.studied[id] || !eq || !Object.hasOwn(eq.modes, mode) || Object.keys(missing(equipment, E.count)).length) return false;
       const reactions = E.reactions(id, recipe => (cfg.recipes[recipe] || []).some(c => c.equipment === equipment && c.mode === mode));
@@ -141,12 +150,14 @@
       return { ...E.attemptWith(c.equipment, c.mode, ids), equipment: c.equipment, mode: c.mode };
     };
     E.equipmentRecipe = (equipment, mode, ids) => {
+      mode = normMode(mode);
       const eq = cfg.equipment[equipment];
       if (!eq || !Object.hasOwn(eq.modes, mode) || Object.keys(missing(equipment, E.count)).length) return null;
       const parts = Array.from(new Set(ids.filter(Boolean))).sort().join(",");
       return Object.keys(cfg.recipes).find(id => cfg.recipes[id].some(c => c.equipment === equipment && c.mode === mode) && Object.keys(E.item(id).r[1]).sort().join(",") === parts) || null;
     };
     E.equipmentThermometer = (equipment, mode, ids) => {
+      mode = normMode(mode);
       const parts = Array.from(new Set((ids || []).filter(Boolean))).sort();
       if (!parts.length) return null;
       const key = parts.join(",");
@@ -212,6 +223,7 @@
       };
     };
     E.attemptWith = (equipment, mode, ids) => {
+      mode = normMode(mode);
       const eq = cfg.equipment[equipment];
       if (!eq || !Object.hasOwn(eq.modes, mode)) return { kind: "equipment", why: "mode" };
       if (Object.keys(missing(equipment, E.count)).length) return { kind: "equipment", why: "missing", equipment };

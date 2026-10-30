@@ -267,15 +267,15 @@ if (fs.existsSync(path.join(__dirname, "../js/equipements.js"))) {
     assert.ok(res.ok, "commande avec équipement explicite acceptée");
 
     const j = E.state.hand.q[0];
-    assert.deepStrictEqual(j.equipmentSelection, { equipment: "racloir_os", mode: "couper" });
+    assert.deepStrictEqual(j.equipmentSelection, { equipment: "racloir_os", mode: "tailler" });
 
     E.pauseJob(j.uid);
     assert.strictEqual(j.paused, true);
-    assert.deepStrictEqual(j.equipmentSelection, { equipment: "racloir_os", mode: "couper" }, "Le choix d'équipement doit être préservé en pause");
+    assert.deepStrictEqual(j.equipmentSelection, { equipment: "racloir_os", mode: "tailler" }, "Le choix d'équipement doit être préservé en pause");
 
     E.resumeJob(j.uid);
     assert.strictEqual(j.paused, false);
-    assert.deepStrictEqual(j.equipmentSelection, { equipment: "racloir_os", mode: "couper" }, "Le choix d'équipement doit être préservé à la reprise");
+    assert.deepStrictEqual(j.equipmentSelection, { equipment: "racloir_os", mode: "tailler" }, "Le choix d'équipement doit être préservé à la reprise");
   });
 
   test("pack 2 : notification d'apprentissage et pastilles de découverte", () => {

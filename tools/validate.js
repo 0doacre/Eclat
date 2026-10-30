@@ -113,7 +113,7 @@ for (const id in D.EVENTS) if (!I[id]) err("événement pour objet inconnu " + i
 const have = new Set();       // objets obtenus au moins une fois
 const zones = new Set(["lisiere"]);
 const flags = new Set();
-const gestes = new Set(["assembler", "tresser", "tailler"]);
+const gestes = new Set(["assembler", "construire", "tresser", "tailler"]);
 let heat = 0;
 const lvl = {};
 const order = [];

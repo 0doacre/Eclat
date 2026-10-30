@@ -11,7 +11,7 @@
   // partie normale, ses index de recettes ni ses règles de sauvegarde.
   function withData(D) {
 
-  const BASE_GESTES = ["assembler", "tresser", "tailler"];
+  const BASE_GESTES = ["assembler", "construire", "tresser", "tailler"];
   const UNIQUE = { tool: 1, stat: 1, upg: 1, curio: 1 };
   const SCALED = { ext: 1, auto: 1, mach: 1 };
   const OFFLINE_CAP = 12 * 3600; // secondes
@@ -1088,7 +1088,7 @@
       let selectedRecipe = null;
       if (D.CRAFT_EQUIPMENT) {
         const historical = RECIPES[keyOf(g, ids)];
-        const later = D.CRAFT_EQUIPMENT.fullGame && !selection && (!historical || item(historical).a > 3);
+        const later = D.CRAFT_EQUIPMENT.fullGame && !selection && (!historical || !D.CRAFT_EQUIPMENT.recipes[historical]);
         if (!later) {
           if (!selection || !E.equipmentRecipe) return { kind: "equipment", why: "selection" };
           selectedRecipe = E.equipmentRecipe(selection.equipment, selection.mode, ids);
@@ -1719,11 +1719,12 @@
     /* met une fabrication dans la file ; avec `chain`, ses sous-composants aussi.
      * `to` : le gisement ("x:zone:res") où poser ce qui sortira */
     E.queue = function (id, times, chain, to, selection) {
+      if (selection && E.normMode) selection = { equipment: selection.equipment, mode: E.normMode(selection.mode) };
       times = Math.max(1, Math.floor(times || 1));
       const it = item(id);
       if (!it || !it.r || !S.known[id]) return { ok: false, why: "none" };
       if (!ageOK(id)) return { ok: false, why: "age" };
-      if (D.CRAFT_EQUIPMENT && selection && !E.equipmentChoices(id).some(c=>c.ready&&c.equipment===selection.equipment&&c.mode===selection.mode)) return {ok:false,why:"equipment"};
+      if (D.CRAFT_EQUIPMENT && selection && !E.equipmentChoices(id).some(c=>c.ready&&c.equipment===selection.equipment&&c.mode===(E.normMode?E.normMode(selection.mode):selection.mode))) return {ok:false,why:"equipment"};
       if (S.hand.q.length >= H.max) return { ok: false, why: "full" };
       if (isUnique(it)) {
         times = 1;
@@ -1765,7 +1766,7 @@
         done: steps.map(() => 0), hMade: steps.map(() => 0), sp: steps.map(() => 0), mAcc: steps.map(() => 0),
         b: bench, miss: {}
       };
-      if (D.CRAFT_EQUIPMENT && selection) j.equipmentSelection = {equipment:selection.equipment,mode:selection.mode};
+      if (D.CRAFT_EQUIPMENT && selection) j.equipmentSelection = {equipment:selection.equipment,mode:E.normMode?E.normMode(selection.mode):selection.mode};
       if (typeof to === "string") j.to = to;
       S.hand.q.push(j);
       assignWorkers();
@@ -3833,6 +3834,8 @@
     const FAM_DE = {};
     ["de", "deAutres"].forEach((k) => { const t = (D.ATELIERS || {})[k] || {}; for (const f in t) t[f].split(" ").forEach((id) => { FAM_DE[id] = f; }); });
     E.atelierDe = function (id) {
+      const C = (D.ATELIERS || {}).construction, it0 = item(id);
+      if (C && it0 && C.types.includes(it0.t) && C.garde.indexOf(FAM_DE[id]) < 0) return "construction";
       if (FAM_DE[id]) return FAM_DE[id];
       if (id in famMemo) return famMemo[id];
       const votes = {}, BR = (D.ATELIERS || {}).brut || {};
@@ -3855,7 +3858,7 @@
       const d = TRAV[kind];
       if (!d || !((D.ATELIERS || {}).familles || []).some((f) => f.id === fam)) return { ok: false, why: "inconnu" };
       if (S.age < d.age) return { ok: false, why: "age" };
-      if (!Object.keys(S.known).some((id) => item(id) && item(id).r && !item(id).sec && E.atelierDe(id) === fam)) return { ok: false, why: "vide" };
+      if (!Object.keys(S.known).some((id) => item(id) && item(id).r && !item(id).sec && !isUnique(item(id)) && !isScaled(item(id)) && E.atelierDe(id) === fam)) return { ok: false, why: "vide" };
       const key = kind === "apprenti" ? "app" : "ouv";
       if ((((S.ateliers || {})[fam] || {})[key] || 0) >= d.max) return { ok: false, why: "max" };
       const cout = E.coutEmbauche(fam, kind);
@@ -5576,8 +5579,8 @@
         if (D.CRAFT_EQUIPMENT) {
           j.ancienAtelier = j.ancienAtelier === true;
           j.recettesEquipements = j.recettesEquipements === true && j.s.some(s => !!D.CRAFT_EQUIPMENT.legacyInputs[s[0]]);
-          const sel=j.equipmentSelection;
-          if (sel && D.CRAFT_EQUIPMENT.recipes[j.id]?.some(c=>c.equipment===sel.equipment&&c.mode===sel.mode)) j.equipmentSelection={equipment:sel.equipment,mode:sel.mode};
+          const sel=j.equipmentSelection, nm=sel&&E.normMode?E.normMode(sel.mode):sel&&sel.mode;
+          if (sel && D.CRAFT_EQUIPMENT.recipes[j.id]?.some(c=>c.equipment===sel.equipment&&c.mode===nm)) j.equipmentSelection={equipment:sel.equipment,mode:nm};
           else delete j.equipmentSelection;
         }
         j.recettes020 = j.recettes020 === true && j.s.some((s) => !!INPUTS_020[s[0]]);

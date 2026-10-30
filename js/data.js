@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.42.2";
+  D.VERSION = "0.43.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -27,10 +27,11 @@
   ];
 
   /* --------------------------------------------------------------- GESTES */
-  D.GESTE_ORDER = ["assembler", "tresser", "tailler", "chauffer", "marteler", "allier", "tremper", "usiner",
+  D.GESTE_ORDER = ["assembler", "construire", "tresser", "tailler", "chauffer", "marteler", "allier", "tremper", "usiner",
     "electriser", "graver", "synthetiser", "stratifier", "transmuter", "accorder"];
   D.GESTES = {
     assembler: { n: "Assembler", ic: "✋", v: "assembler", d: "Réunir plusieurs ressources en un seul objet." },
+    construire: { n: "Construire", ic: "🏗️", v: "construire", d: "Bâtir ce qui reste en place : un extracteur, une machine, une installation, une amélioration." },
     tresser: { n: "Tresser", ic: "🧶", v: "tresser", d: "Entrelacer ce qui est souple." },
     tailler: { n: "Tailler", ic: "🔪", v: "tailler", d: "Retirer ce qui est en trop : fendre, découper, affûter." },
     chauffer: { n: "Chauffer", ic: "🔥", v: "chauffer", d: "Cuire, fondre, réduire. La température dépend de ton meilleur feu : feu de camp, four, fourneau…" },
@@ -1463,6 +1464,7 @@
   D.ATELIERS = {
     familles: [
     { id: "artisanat", n: "Artisanat", ic: "🪵", d: "Le bois, les fibres, le verre, la brique." },
+    { id: "construction", n: "Construction", ic: "🏗️", d: "Les extracteurs, les machines, les installations, les améliorations." },
     { id: "elevage", n: "Élevage", ic: "🐑", d: "Ce que laissent les bêtes : os, cuir, laine." },
     { id: "metallurgie", n: "Métallurgie", ic: "⚒️", d: "Les métaux, du cuivre à l’uranium." },
     { id: "chimie", n: "Chimie et matériaux", ic: "⚗️", d: "Le pétrole, les plastiques, les composites." },
@@ -1515,7 +1517,10 @@
     { id: "dynamo", ch: 150 }, { id: "centrale", ch: 600 }, { id: "centrale_fission", ch: 2000 },
     { id: "reacteur", ch: 5000 }, { id: "reacteur_fusion", ch: 20000 }
   ],
-    baseCh: 10
+    baseCh: 10,
+    /* Construction : tout ce qui se bâtit (extracteur, machine, installation, amélioration), sauf ce qui appartient à un métier d'énergie,
+     * de chimie, d'électronique ou de lettres (le moulin, la centrale, le réacteur, la presse…). */
+    construction: { types: ["ext", "mach", "stat", "upg"], garde: ["centrales", "electronique", "chimie", "artistique"] }
   };
   /* Un apprenti travaille à la moitié de la vitesse des mains, un ouvrier à la même vitesse, pour les recettes de
    * son atelier. Embaucher coûte des écus (de plus en plus cher à chaque embauche), sans salaire ensuite. */
@@ -1597,6 +1602,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🏗️ Un seul modèle : un outil et un geste. Tout ce qui se bâtit (extracteurs, machines, installations, améliorations) se construit désormais : nouveau geste Construire et nouveau métier Construction. Au feu, plus de réglages : un seul geste, Chauffer, les recettes se distinguent par l’ingrédient. Le four reprend les recettes du feu, le couteau celles du racloir, et l’outil le plus haut cache le plus bas. La pioche, le poste de frappe, le ciseau et la dalle ne sont plus des outils de départ : leurs recettes passent par l’Atelier.",
     "🔥 Au Labo, l’outil se choisit à son icône (le nom s’affiche dessous) ; ses gestes apparaissent en un mot quand il en a plusieurs. Les gestes du feu changent de nom : Griller, Cuire, Étouffer ; le four : Cuire, Fondre.",
     "🔧 Au Labo, l’outil et le geste ne font plus qu’un seul choix (« Mains · Tresser », « Feu de camp · Cuire »), en puces qui passent à la ligne. Le Carnet est allégé : une ligne d’aide, la recherche, et deux boutons (quantité, filtres) qui s’ouvrent à la demande. Dans l’Atelier, la jauge d’énergie s’ouvre et détaille ce qui consomme et ce qui fournit.",
     "⚗️ Le Labo suit tes métiers : Artisanat, Élevage, Métallurgie, Centrales, Électronique, Artistique. Chaque métier a ses outils et ses gestes, les mêmes branches que les ateliers de l’Atelier. Les écrans prennent toute la largeur, et le thermomètre se lit mieux sur le papier.",
@@ -1870,6 +1876,11 @@
   };
 
   root.ECLAT_DATA = D;
+  /* Construire (0.43) : les bâtiments, extracteurs, machines, installations et améliorations ne s'assemblent plus : ils se construisent. */
+  for (const id in D.ITEMS) {
+    const it = D.ITEMS[id];
+    if (it.r && it.r[0] === "assembler" && D.ATELIERS.construction.types.includes(it.t)) it.r[0] = "construire";
+  }
   if (typeof module !== "undefined" && module.exports) module.exports = D;
   if (typeof require !== "undefined") {
     try { require("./recit.js"); } catch (_) {}
