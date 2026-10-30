@@ -1411,6 +1411,10 @@
   /* Découvrir coûte peu : une découverte qui demanderait plus que ça (en tout) ne prend
    * rien ; la recette s’inscrit, et on choisit ensuite de la fabriquer, prix affiché. */
   D.DISCOVER_FREE = 6;
+  /* La première pièce est offerte (le Labo, 0.39) : une trouvaille inscrite sans rien prendre
+   * donne tout de même un exemplaire, si l’ouvrage coûte au plus `max` matières en tout. Le
+   * reste (quantités, temps, extracteurs, apprentis) se joue à l’Atelier. max: 0 désactive. */
+  D.PREMIERE_PIECE = { max: 24 };
 
   /* Un Grand Œuvre alimenté se sert seul dans la Réserve : au plus ça par seconde et
    * par matière, à chaque âge (les améliorations qui accélèrent les machines comptent). */

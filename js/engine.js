@@ -1059,6 +1059,23 @@
     }
     E.addSecret = addSecret;
 
+    /* La première pièce offerte : une trouvaille inscrite sans rien prendre donne un exemplaire,
+     * si l’ouvrage est ordinaire (ni unique, ni à prix croissant) et coûte peu en tout. */
+    function offerFirst(id) {
+      const lim = D.PREMIERE_PIECE && D.PREMIERE_PIECE.max;
+      const it = item(id);
+      if (!(lim > 0) || !it || !it.r || it.sec || it.path || isUnique(it) || isScaled(it)) return false;
+      if (it.t !== "comp" && it.t !== "res") return false;
+      if (S.made[id] > 0 || blocker(id)) return false;
+      const cost = totalCost(id, 1);
+      if (Object.values(cost).reduce((a, b) => a + b, 0) > lim) return false;
+      S.made[id] = 1;
+      add(id, it.r[2] || 1);
+      markSeen(id);
+      onFirstCraft(id);
+      E.emit("crafted", id, { n: it.r[2] || 1, bonus: 0, first: true, offered: true });
+      return true;
+    }
     /* Tentative libre à l’Atelier : le cœur du jeu.
      * Retourne {kind: craft|learn|blocked|owned|fail, ...} */
     E.attempt = function (g, ids, selection) {
@@ -1102,7 +1119,7 @@
         const miss = missingFor(id, 1);
         if (miss) {
           const fresh = learn(id);
-          return { kind: "learn", id, missing: miss, fresh, temp: 4 };
+          return { kind: "learn", id, missing: miss, fresh, temp: 4, offered: fresh && offerFirst(id) };
         }
         // une découverte se fabrique sur-le-champ ; une recette connue part dans la file des mains
         if (S.known[id]) {
@@ -1113,7 +1130,7 @@
         const cost = totalCost(id, 1);
         if (Object.values(cost).reduce((a, b) => a + b, 0) > D.DISCOVER_FREE) {
           learn(id);
-          return { kind: "learn", id, missing: null, fresh: true, temp: 4, cost };
+          return { kind: "learn", id, missing: null, fresh: true, temp: 4, cost, offered: offerFirst(id) };
         }
         learn(id);
         const res = craft(id, 1, true);
@@ -3758,6 +3775,41 @@
         else if (machs === 0) status = "busy";
         return { id: rec, cap, on, have, machs, rate, miss, status };
       });
+    };
+    /* Chaîne manquante (Labo) : les objets intermédiaires qu’une recette demande et qui n’ont jamais
+     * été fabriqués ni découverts, en descendant dans la chaîne. [] : rien ne manque à découvrir. */
+    E.chaineManquante = function (id) {
+      const out = [], seen = new Set();
+      (function walk(x) {
+        const it = item(x);
+        if (!it || !it.r) return;
+        for (const i in it.r[1]) {
+          const ing = item(i);
+          if (!ing || !ing.r || seen.has(i)) continue;
+          seen.add(i);
+          if (!S.known[i] && !(S.made[i] > 0)) out.push(i);
+          walk(i);
+        }
+      })(id);
+      return out;
+    };
+    /* Les apprentis (Atelier, 0.39) : une seule liste des travailleurs automatiques, pour l’affichage.
+     * Un apprenti est soit un ordre permanent (cadence : une recette, une cible en Réserve) qui emploie
+     * des machines, soit une machine libre en attente d’ordre. kind: "ordre" | "machine".
+     * Pas de nouvel état dans la sauvegarde : c’est la lecture des cadences et du parc de machines. */
+    E.apprentis = function () {
+      const lignes = E.cadences().map((c) => ({
+        kind: "ordre", id: c.id, cap: c.cap, have: c.have, on: c.on, status: c.status,
+        machs: c.machs, rate: c.rate, miss: c.miss
+      }));
+      const ms = E.machines();
+      const libres = [];
+      for (const m in ms) {
+        const free = ms[m].own - ms[m].used;
+        if (ms[m].own > 0) libres.push({ kind: "machine", id: m, own: ms[m].own, used: ms[m].used, free, spd: ms[m].spd });
+      }
+      const bloques = lignes.filter((l) => l.status === "starved" || l.status === "nomach").length;
+      return { ordres: lignes, machines: libres, bloques, eligible: E.cadenceEligible().length };
     };
     E.cadenceEligible = function () {
       const cads = (S.dom && S.dom.cadence) || {};
