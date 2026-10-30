@@ -111,7 +111,7 @@
       dom: freshDom(), pins: {}, track: null, gt: { id: null, p: 0 }, tried: {}, pass: {},
       hand: { q: [], p: 0 }, studied: {}, skills: {}, act: null,
       proj: {}, endings: {},
-      ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 },
+      ecus: 0, comptoir: { sold: {}, traces: 0, asks: [], next: 0 }, ateliers: {},
       arche: [], term: [], notes: [],
       stats: { taps: 0, crafts: 0, tries: 0, play: 0, cyclePlay: 0, splits: {}, caillouMined: 0, visiteurs: 0, visiteursVus: 0, visiteursClins: 0 },
       visiteur: { next: 0, clins: {} },
@@ -1385,7 +1385,16 @@
     }
     E.queued = queued;
 
+    /* Les travailleurs d'un atelier (0.41) entrent dans le même parc que les machines, sous un nom « sorte:famille » */
+    const TRAV = D.TRAVAILLEURS || {};
+    function workerOf(m) {
+      const i = typeof m === "string" ? m.indexOf(":") : -1;
+      if (i < 0 || !TRAV[m.slice(0, i)]) return null;
+      return { kind: m.slice(0, i), fam: m.slice(i + 1), def: TRAV[m.slice(0, i)] };
+    }
     function machUnitRate(m, c, rec) {
+      const wk = workerOf(m);
+      if (wk) return rec ? wk.def.mult / Math.max(0.2, handTime(rec)) * E.recetteTerreBonus(rec) : 0;
       const M = item(m);
       if (!M) return 0;
       let decay = 1;
@@ -1401,7 +1410,8 @@
       return ((M.spd / 60) / decay) * (c || E.cache()).aspd * memV("mach") * transV("trans_mach") * donMul("mach") * E.recetteTerreBonus(rec);
     }
     function machReadyFor(m, rec, job) {
-      const fits = job && job.ancienAtelier
+      const wk = workerOf(m);
+      const fits = wk ? !!(item(rec) && item(rec).r && E.atelierDe(rec) === wk.fam && Object.keys(item(rec).r[1]).length <= wk.def.ing) : job && job.ancienAtelier
         ? Object.keys(jobInputs(job, rec)).length <= (item(m).ing !== undefined ? item(m).ing : 1)
         : E.machCan(m, rec);
       if (!E.automatable(rec) || !fits) return false;
@@ -1410,7 +1420,9 @@
       return true;
     }
     function anyOwnedMachReadyFor(rec) {
-      return MACHINES.some((m) => Math.floor(count(m)) >= 1 && machReadyFor(m, rec));
+      if (MACHINES.some((m) => Math.floor(count(m)) >= 1 && machReadyFor(m, rec))) return true;
+      const a = S.ateliers && item(rec) && item(rec).r ? S.ateliers[E.atelierDe(rec)] : null;
+      return !!(a && ((a.ouv > 0 && machReadyFor("ouvrier:" + E.atelierDe(rec), rec)) || (a.app > 0 && machReadyFor("apprenti:" + E.atelierDe(rec), rec))));
     }
     /* durée estimée d’une étape (n unités de x) avec les machines capables disponibles */
     function estStepTime(x, n, freeOnly, selection) {
@@ -1509,6 +1521,11 @@
         const n = Math.floor(count(m));
         for (let i = 0; i < n; i++) want.push(m);
       });
+      for (const fam in S.ateliers || {}) {
+        const a = S.ateliers[fam];
+        for (let i = 0; i < (a.ouv || 0); i++) want.push("ouvrier:" + fam);
+        for (let i = 0; i < (a.app || 0); i++) want.push("apprenti:" + fam);
+      }
       machPool.length = want.length;
       for (let i = 0; i < want.length; i++) {
         if (!machPool[i] || machPool[i].m !== want[i]) {
@@ -3811,6 +3828,62 @@
       const bloques = lignes.filter((l) => l.status === "starved" || l.status === "nomach").length;
       return { ordres: lignes, machines: libres, bloques, eligible: E.cadenceEligible().length };
     };
+    /* La famille d'atelier d'un objet : à la main d'abord (D.ATELIERS.de), sinon la matière première qui domine */
+    const famMemo = {};
+    const FAM_DE = {};
+    ["de", "deAutres"].forEach((k) => { const t = (D.ATELIERS || {})[k] || {}; for (const f in t) t[f].split(" ").forEach((id) => { FAM_DE[id] = f; }); });
+    E.atelierDe = function (id) {
+      if (FAM_DE[id]) return FAM_DE[id];
+      if (id in famMemo) return famMemo[id];
+      const votes = {}, BR = (D.ATELIERS || {}).brut || {};
+      (function walk(x, d) {
+        const it = item(x);
+        if (!it || d > 12) return;
+        if (d > 0 && FAM_DE[x]) { votes[FAM_DE[x]] = (votes[FAM_DE[x]] || 0) + 1; return; }
+        if (!it.r) { if (BR[x]) votes[BR[x]] = (votes[BR[x]] || 0) + 1; return; }
+        for (const i in it.r[1]) walk(i, d + 1);
+      })(id, 0);
+      let best = "artisanat", n = 0;
+      for (const f of (D.ATELIERS || {}).priorite || []) if ((votes[f] || 0) > n) { best = f; n = votes[f]; }
+      return (famMemo[id] = best);
+    };
+    E.coutEmbauche = function (fam, kind) {
+      const d = TRAV[kind], a = (S.ateliers && S.ateliers[fam]) || {};
+      return d ? Math.round(d.cout * Math.pow(d.croiss, a[kind === "apprenti" ? "app" : "ouv"] || 0)) : Infinity;
+    };
+    E.embaucher = function (fam, kind) {
+      const d = TRAV[kind];
+      if (!d || !((D.ATELIERS || {}).familles || []).some((f) => f.id === fam)) return { ok: false, why: "inconnu" };
+      if (S.age < d.age) return { ok: false, why: "age" };
+      if (!Object.keys(S.known).some((id) => item(id) && item(id).r && !item(id).sec && E.atelierDe(id) === fam)) return { ok: false, why: "vide" };
+      const key = kind === "apprenti" ? "app" : "ouv";
+      if ((((S.ateliers || {})[fam] || {})[key] || 0) >= d.max) return { ok: false, why: "max" };
+      const cout = E.coutEmbauche(fam, kind);
+      if ((S.ecus || 0) + 1e-9 < cout) return { ok: false, why: "ecus", cout };
+      S.ateliers = S.ateliers || {};
+      const a = S.ateliers[fam] || (S.ateliers[fam] = { app: 0, ouv: 0 });
+      S.ecus -= cout;
+      a[key]++;
+      assignWorkers();
+      domChanged();
+      E.emit("struct");
+      return { ok: true, cout };
+    };
+    /* Ce que font les travailleurs, atelier par atelier (lecture) */
+    E.travailleurs = function () {
+      assignWorkers();
+      const out = {};
+      for (const fam in S.ateliers || {}) out[fam] = { app: S.ateliers[fam].app || 0, ouv: S.ateliers[fam].ouv || 0, usedApp: 0, usedOuv: 0, byRec: {} };
+      machPool.forEach((w) => {
+        const wk = workerOf(w.m);
+        if (!wk || !out[wk.fam]) return;
+        if (w.job !== null || w.cad !== null) {
+          out[wk.fam][wk.kind === "apprenti" ? "usedApp" : "usedOuv"]++;
+          if (w.rec) out[wk.fam].byRec[w.rec] = (out[wk.fam].byRec[w.rec] || 0) + 1;
+        }
+      });
+      return out;
+    };
     E.cadenceEligible = function () {
       const cads = (S.dom && S.dom.cadence) || {};
       return Object.keys(D.ITEMS).filter((rec) => {
@@ -5873,9 +5946,31 @@
       return o;
     }
     E.parseSave = parseSave;
+    /* 0.41 : les ateliers de la partie sont remis d'aplomb, et l'ancienne boucle de l'argent (apprenti de l'établi,
+     * marchand de lanières, taxes) est retirée : un apprenti embauché devient l'apprenti de l'Élevage, l'avance
+     * non dépensée revient dans la bourse. Rien d'autre n'est perdu. */
+    function migrerAteliers() {
+      const fams = ((D.ATELIERS || {}).familles || []).map((f) => f.id), propre = {};
+      const src = S.ateliers && typeof S.ateliers === "object" ? S.ateliers : {};
+      fams.forEach((f) => {
+        const a = src[f];
+        if (!a || typeof a !== "object") return;
+        const app = Math.max(0, Math.min((D.TRAVAILLEURS || {}).apprenti ? D.TRAVAILLEURS.apprenti.max : 0, Math.floor(Number(a.app) || 0)));
+        const ouv = Math.max(0, Math.min((D.TRAVAILLEURS || {}).ouvrier ? D.TRAVAILLEURS.ouvrier.max : 0, Math.floor(Number(a.ouv) || 0)));
+        if (app || ouv) propre[f] = { app, ouv };
+      });
+      S.ateliers = propre;
+      const raw = S.atelierEconomy;
+      if (raw && typeof raw === "object") {
+        S.ecus = (S.ecus || 0) + Math.max(0, Number(raw.budget) || 0);
+        if (raw.hired === true) { const a = S.ateliers.elevage || (S.ateliers.elevage = { app: 0, ouv: 0 }); a.app = Math.max(a.app, 1); }
+      }
+      delete S.atelierEconomy;
+    }
     E.load = function (src) {
       const o = parseSave(src);
       S = o;
+      migrerAteliers();
       if (!(S.meta.graine >= 1)) S.meta.graine = graineDuJour(); // une ancienne partie n’avait pas de graine avant la première relève
       forgetDom();
       recalc();

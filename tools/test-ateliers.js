@@ -4,7 +4,10 @@ const assert = require("assert/strict");
 const D = require("../js/data.js");
 const { createEngine } = require("../js/engine.js");
 const Ateliers = require("../js/ateliers.js");
+const T = D.ATELIERS;
 const I = D.ITEMS;
+const MAP = {};
+for (const k of ["de", "deAutres"]) for (const f in T[k]) T[k][f].split(" ").forEach((id) => { MAP[id] = f; });
 let passed = 0;
 function test(n, fn) {
   try { fn(); passed++; console.log("  ✓ " + n); }
@@ -22,25 +25,25 @@ function jeu(age) {
 
 console.log("Ateliers (0.40)");
 test("chaque pièce fabriquée appartient à une famille connue", () => {
-  const { A } = jeu(14), ids = new Set(Ateliers.FAMILLES.map((f) => f.id));
+  const { A } = jeu(14), ids = new Set(T.familles.map((f) => f.id));
   for (const id of pieces()) assert.ok(ids.has(A.famille(id)), id);
 });
 test("la liste des pièces de chaque famille ne cite que des objets qui existent", () => {
-  for (const id of Object.keys(Ateliers.MAP)) assert.ok(I[id] && I[id].r, id + " n’existe pas");
+  for (const id of Object.keys(MAP)) assert.ok(I[id] && I[id].r, id + " n’existe pas");
 });
 test("les outils, installations et améliorations ont aussi une famille choisie à la main", () => {
   const { A } = jeu(14);
-  const sans = Object.keys(I).filter((id) => I[id].r && !I[id].sec && !I[id].path && !I[id].old && ["tool", "upg", "stat"].includes(I[id].t) && !Ateliers.MAP[id]);
+  const sans = Object.keys(I).filter((id) => I[id].r && !I[id].sec && !I[id].path && !I[id].old && ["tool", "upg", "stat"].includes(I[id].t) && !MAP[id]);
   assert.deepEqual(sans, [], "à classer : " + sans.join(" "));
   void A;
 });
 test("aucune pièce n’est listée dans deux familles", () => {
   const vu = {};
-  for (const f in Ateliers.MAP) { assert.ok(!(f in vu)); vu[f] = 1; }
+  for (const f in MAP) { assert.ok(!(f in vu)); vu[f] = 1; }
 });
 test("chaque famille a au moins une pièce (sinon elle n’apparaîtrait jamais)", () => {
   const { A } = jeu(14);
-  for (const F of Ateliers.FAMILLES) assert.ok(pieces().some((id) => A.famille(id) === F.id), F.id);
+  for (const F of T.familles) assert.ok(pieces().some((id) => A.famille(id) === F.id), F.id);
 });
 test("la matière première décide pour une pièce non listée", () => {
   const { A } = jeu(14);
@@ -80,7 +83,7 @@ test("l’énergie : sans machine, rien n’est demandé ; la bête de trait fou
   const { A } = jeu(2);
   const e = A.energie();
   assert.equal(e.demande, 0);
-  assert.equal(e.offre, Ateliers.BASE_CH);
+  assert.equal(e.offre, T.baseCh);
   assert.equal(e.ratio, 1);
 });
 test("l’énergie : une source construite augmente l’offre", () => {

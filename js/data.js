@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.40.0";
+  D.VERSION = "0.41.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1456,6 +1456,74 @@
   };
 
   /* Le Comptoir : marché tenu par le Troqueur dans la Plaine */
+
+  /* Les ateliers (0.40) et leurs travailleurs (0.41) : une seule source pour le moteur et l'interface.
+   * Les valeurs (chevaux, âges, coûts) sont PROVISOIRES : elles se règlent ici. Étude :
+   * docs/revue/etude-ateliers-a-travers-les-ages-0-39.md */
+  D.ATELIERS = {
+    familles: [
+    { id: "artisanat", n: "Artisanat", ic: "🪵", d: "Le bois, les fibres, le verre, la brique." },
+    { id: "elevage", n: "Élevage", ic: "🐑", d: "Ce que laissent les bêtes : os, cuir, laine." },
+    { id: "metallurgie", n: "Métallurgie", ic: "⚒️", d: "Les métaux, du cuivre à l’uranium." },
+    { id: "chimie", n: "Chimie et matériaux", ic: "⚗️", d: "Le pétrole, les plastiques, les composites." },
+    { id: "centrales", n: "Centrales", ic: "⚡", d: "L’énergie, de la bête de trait à la fusion." },
+    { id: "electronique", n: "Électronique", ic: "🔌", d: "Des circuits aux processeurs et aux robots." },
+    { id: "artistique", n: "Artistique", ic: "✒️", d: "L’écriture, l’encre, la musique." }
+  ],
+    de: {
+    artisanat: "manche corde archet torche eclat engrenage_bois brique brique_refr verre poudre_quartz lentille verre_trempe roue",
+    elevage: "aiguille laniere colle_os gants soufflet",
+    metallurgie: "lingot_cuivre plaque_cuivre fil_cuivre lingot_etain lingot_bronze plaque_bronze engrenage ressort loupe lingot_fer plaque_fer clous chainon lingot_acier acier_trempe lame engrenage_acier vis roulement piston tuyau_cuivre soupape chaudiere lingot_plomb plaque_plomb pastille_uranium cuivre_pur aluminium titane aimant aimant_neo supra alliage_ancien",
+    chimie: "naphta plastique resine dynamite caoutchouc joint_souple tuyau_souple masque bouteille composite fibre_carbone tissu_carbone ceramique bouclier_th graphene metamateriau",
+    centrales: "moteur_vapeur circuit_vapeur condenseur manometre regulateur bobine batterie moteur_elec barre_combustible graphite echangeur moteur_fusee propulseur panneau_dyson antimatiere matiere_exotique",
+    electronique: "ampoule cable silicium wafer puce processeur cellule circuit",
+    artistique: "papier encre"
+  },
+    deAutres: {
+    artisanat: "panier feu epieu arc fronde hache_pierre pioche_pierre couteau four enclume_pierre creuset chariot brouette palan lampe courroies lunette",
+    elevage: "outre pic_os tunique",
+    metallurgie: "ciseau hache_bronze pioche_bronze enclume_bronze bas_fourneau haut_fourneau bac_trempe tour outils_fer outils_acier marteau_pilon foreuse outillage four_arc forge_stellaire convoyeurs",
+    chimie: "autoclave",
+    centrales: "moulin recuperation_vapeur chaudiere_tubulaire dynamo centrale centrale_fission reacteur reacteur_fusion refroidissement locomotive pompe fusee alunisseur vaisseau compteur_geiger",
+    electronique: "telegraphe radio eclairage reseau capteurs ordinateur robots ia drones lithographe radiotelescope serveur_archives",
+    artistique: "papyrus presse_imprimer"
+  },
+    brut: {
+    os: "elevage", cuir: "elevage",
+    bois: "artisanat", fibre: "artisanat", caillou: "artisanat", argile: "artisanat", silex: "artisanat", sable: "artisanat", quartz: "artisanat", poudre_rouge: "artisanat", resonite: "artisanat",
+    malachite: "metallurgie", cassiterite: "metallurgie", fer_min: "metallurgie", galene: "metallurgie", bauxite: "metallurgie", ilmenite: "metallurgie", terres_rares: "metallurgie", metal_mercure: "metallurgie", uranium: "metallurgie",
+    petrole: "chimie", soufre: "chimie",
+    helium3: "centrales", regolithe: "centrales", debris: "centrales"
+  },
+    priorite: ["metallurgie", "chimie", "electronique", "centrales", "elevage", "artistique", "artisanat"],
+    echelons: [
+    { id: "main", n: "Main", age: 0 },
+    { id: "apprenti", n: "Apprenti", age: 3 },
+    { id: "ouvriers", n: "Ouvriers", age: 6 },
+    { id: "machines", n: "Machines", age: 7 },
+    { id: "robots", n: "Robots", age: 10 }
+  ],
+    paliers: [
+    { id: "automate_bois", echelon: 1, ch: 3 },
+    { id: "automate_bronze", echelon: 2, ch: 10 },
+    { id: "presse_vapeur", echelon: 3, ch: 50 },
+    { id: "chaine", echelon: 3, ch: 200 },
+    { id: "assembleur", echelon: 4, ch: 1500 }
+  ],
+    sources: [
+    { id: "moulin", ch: 20 }, { id: "recuperation_vapeur", ch: 40 }, { id: "chaudiere_tubulaire", ch: 60 },
+    { id: "dynamo", ch: 150 }, { id: "centrale", ch: 600 }, { id: "centrale_fission", ch: 2000 },
+    { id: "reacteur", ch: 5000 }, { id: "reacteur_fusion", ch: 20000 }
+  ],
+    baseCh: 10
+  };
+  /* Un apprenti travaille à la moitié de la vitesse des mains, un ouvrier à la même vitesse, pour les recettes de
+   * son atelier. Embaucher coûte des écus (de plus en plus cher à chaque embauche), sans salaire ensuite. */
+  D.TRAVAILLEURS = {
+    apprenti: { n: "Apprenti", age: 3, mult: 0.5, ing: 2, ch: 1, cout: 40, croiss: 1.5, max: 3 },
+    ouvrier: { n: "Ouvrier", age: 6, mult: 1, ing: 3, ch: 3, cout: 200, croiss: 1.5, max: 8 }
+  };
+
   D.COMPTOIR = {
     zone: "plaine",   // le Comptoir s’ouvre avec cette terre
     raw: 0.1,         // valeur d’une matière première de l’âge 0, en écus
@@ -1529,6 +1597,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "👷 Les ateliers embauchent : un apprenti (dès le Cuivre) travaille à la moitié de la vitesse des mains, un ouvrier (dès l’Acier) à la même vitesse, pour les recettes de son atelier. Embaucher coûte des écus, de plus en plus à chaque embauche, sans salaire ensuite. L’ancienne vente automatique de lanières disparaît : ton apprenti de l’établi devient celui de l’Élevage, et son avance te revient.",
     "🏭 L’Atelier montre tes ateliers : Artisanat, Élevage, Métallurgie, Chimie, Centrales, Électronique, Artistique, chacun avec son échelle : à la main, apprenti, ouvriers, machines, robots. Une jauge d’énergie en chevaux compare ce que tes machines demandent à ce que tu produis ; pour l’instant, elle ne ralentit encore rien.",
     "🗺️ Cinq onglets : Terres, Labo, Atelier, Arbre, Journal. Les Terres montrent une terre à la fois, avec son illustration en fond : glisse ou touche les médaillons pour passer de l’une à l’autre, et récolte d’un appui. La Carte devient l’Atlas, rangé sous les Terres.",
     "⚗️ Le Labo est l’établi pour essayer : tu peux poser toute matière déjà vue, même sans en avoir, et la première pièce d’une trouvaille t’est offerte. L’Atelier sert à produire : choisis une recette et une quantité, fabrique à la main ou confie-la à un apprenti. « Ce qui tourne » montre ce qui produit et ce qui bloque. Le Carnet et les Machines s’ouvrent depuis l’Atelier.",

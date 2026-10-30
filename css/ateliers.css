@@ -33,3 +33,8 @@
 .atl-titre h2 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 24px; line-height: 1.15; color: inherit; border: 0; padding: 0; }
 .atl-titre p { margin: 2px 0 0; font-size: 13px; color: #60513f; line-height: 1.35; }
 .atl-page .subtabs { margin: 0 0 4px; }
+
+.atel-embauche { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 6px; }
+.atel-embauche .btn { min-height: 44px; }
+.atel-ferme { font-size: 13px; color: #60513f; padding: 8px 4px; }
+.atl-bourse { margin: 0 0 4px; }

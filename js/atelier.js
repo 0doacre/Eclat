@@ -1631,6 +1631,7 @@
     /* ------------------------------------------------------------ L’ATELIER (production, 0.39)
      * Quoi produire, en quelle quantité, et qui s’en charge : les mains, un apprenti (un ordre
      * permanent avec une cible en Réserve) ou une machine. Aucun établi ici : il est au Labo. */
+    const TRAVAILLEUR_NOM = { apprenti: "Apprenti", ouvrier: "Ouvrier" };
     const PROD_ETAT = { ok: "produit", full: "plein", starved: "attend une matière", nomach: "pas de machine capable", busy: "attend un travailleur", off: "en pause" };
     function prodRecettes() {
       const st = S(), pin = st.pins || {};
@@ -1671,13 +1672,21 @@
       const etat = c.etat === "bloque" ? '<span class="atel-etat is-bloque">à l’arrêt · ' + esc(c.cause) + "</span>"
         : c.etat === "marche" ? '<span class="atel-etat is-marche">+' + perMin(c.cadence / 60) + "</span>"
         : c.etat === "plein" ? '<span class="atel-etat">plein</span>' : "";
-      const equipe = (c.machines ? c.machines + " machine" + (c.machines > 1 ? "s" : "") + " · " : "") + c.recettes.length + " recette" + (c.recettes.length > 1 ? "s" : "");
+      const equipe = [c.apprentis ? c.apprentis + " apprenti" + (c.apprentis > 1 ? "s" : "") : "", c.ouvriers ? c.ouvriers + " ouvrier" + (c.ouvriers > 1 ? "s" : "") : "", c.machines ? c.machines + " machine" + (c.machines > 1 ? "s" : "") : "", c.recettes.length + " recette" + (c.recettes.length > 1 ? "s" : "")].filter(Boolean).join(" · ");
       return '<button type="button" class="atel-carte is-' + c.etat + '" data-atelier="' + c.id + '"><span class="atel-ic" aria-hidden="true">' + c.ic + '</span><span class="atel-corps"><span class="atel-ligne"><b>' + esc(c.n) + '</b><span class="tiny muted">' + esc(equipe) + "</span>" + etat + '</span><span class="atel-echelle">' + ech + '</span></span><span class="atel-chev" aria-hidden="true">›</span></button>';
+    }
+    /* les boutons d'embauche d'un atelier (page de l'atelier) */
+    function embaucheHTML(c) {
+      return '<div class="atel-embauche">' + c.embauches.map((e) => {
+        if (e.pourquoi === "age") return '<span class="atel-ferme">' + esc(e.n) + " : à partir de " + esc(D.AGES[e.age].n.toLowerCase()) + "</span>";
+        if (e.pourquoi === "max") return '<span class="atel-ferme">' + esc(e.n) + "s : " + e.nombre + " sur " + e.max + " (au complet)</span>";
+        return '<button type="button" class="btn small' + (e.pourquoi ? " ghost" : "") + '" data-embaucher="' + c.id + ":" + e.kind + '" title="' + esc(e.pourquoi === "ecus" ? "Il te manque des écus : vends au Comptoir ou au Troqueur" : "Embaucher") + '">Embaucher un ' + esc(e.n.toLowerCase()) + " · " + fmt(e.cout) + " écus" + (e.nombre ? " (" + e.nombre + ")" : "") + "</button>";
+      }).join("") + "</div>";
     }
     function viewAteliers() {
       const ap = E.apprentis();
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
-      return '<div class="ateliers atl-page">' + enteteAtelier("Ateliers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() +
+      return '<div class="ateliers atl-page">' + enteteAtelier("Ateliers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "");
     }
@@ -1692,7 +1701,7 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
-        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" : "") +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
@@ -1716,7 +1725,6 @@
         '<button type="button" class="btn ghost" data-tab2="machines">Machines</button></div>';
       if (why && !ordre) h += '<p class="tiny muted prod-why">' + esc(why) + "</p>";
       h += '<div class="prod-file" id="hands">' + handsHTML() + "</div>";
-      if (Equipped && S().known.laniere && (!Atel || U.atelierSel === "elevage")) h += '<details class="prod-apprenti"' + (U.prodApprenti ? " open" : "") + '><summary data-prodapprenti>L’apprenti de l’établi · bourse et troc</summary>' + Equipped.ecoView() + "</details>";
       h += "</div>";
       return h + (U.autoSheet ? autoFeuille() : "");
     }
@@ -1742,6 +1750,13 @@
     function prodClick(t) {
       let b;
       if ((b = t.closest("[data-atelier]"))) { A.click(); U.atelierSel = b.dataset.atelier; U.prodSel = null; render(true); return true; }
+      if ((b = t.closest("[data-embaucher]"))) {
+        const [fam, kind] = b.dataset.embaucher.split(":");
+        const r = E.embaucher(fam, kind);
+        if (r.ok) { A.click(); toast("🛠️ " + esc(TRAVAILLEUR_NOM[kind]) + " embauché : " + fmt(r.cout) + " écus.", { key: "emb" }); }
+        else { A.fail(0); toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : r.why === "max" ? "L’atelier est au complet." : r.why === "age" ? "Pas encore : cet échelon arrive plus tard." : "Impossible pour l’instant.", { key: "emb" }); }
+        render(true); return true;
+      }
       if (t.closest("[data-atelier-retour]")) { A.click(); U.atelierSel = null; render(true); return true; }
       if (t.closest("[data-prodapprenti]")) { U.prodApprenti = !U.prodApprenti; return false; }
       if ((b = t.closest("[data-labsearch]"))) { A.click(); U.labSearch = b.dataset.labsearch === "1"; render(true); return true; }

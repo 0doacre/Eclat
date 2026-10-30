@@ -31,7 +31,7 @@ test('le journal de session est borné à 200 événements et inclus dans le rap
 });
 if(fs.existsSync(path.join(__dirname,'../js/equipements.js'))){
   const equipped=()=>Core.withData(require('../js/equipements').createData(D,{fullGame:true})).createEngine({now:()=>2e12,rand:()=>.99});
-  test('la preview distingue une avance de salaire épuisée et une pause volontaire',()=>{const E=equipped();for(const id of ['racloir_os','etabli_amenage'])E.add(id,1);E.learn('laniere',true);Object.assign(E.state.atelierEconomy,{hired:true,working:true,budget:0});assert.equal(A.diagnostics(E).worker.state,'wage');E.workerSet(false);assert.equal(A.diagnostics(E).worker.state,'paused');});
+  test('l’ancienne boucle de l’argent est retirée : plus d’ouvrier d’établi à diagnostiquer',()=>{const E=equipped();for(const id of ['racloir_os','etabli_amenage'])E.add(id,1);E.learn('laniere',true);assert.equal(A.diagnostics(E).worker,null);});
   test('un outil perdu garde son diagnostic propre dans une ancienne commande équipée',()=>{const E=equipped();E.add('racloir_os',1);E.add('cuir',10);E.learn('laniere',true);assert.equal(E.queue('laniere',2,false,undefined,{equipment:'racloir_os',mode:'couper'}).ok,true);E.add('racloir_os',-1);E.recalc();assert.equal(A.diagnostics(E).jobs[0].state,'equipment');});
 }
 console.log(n+' tests d’assistance réussis.');

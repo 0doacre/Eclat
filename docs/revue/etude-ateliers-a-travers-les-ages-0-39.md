@@ -121,3 +121,12 @@ Livrable seul, sans règle nouvelle :
 6. **Énergie** : elle peut **tomber à zéro**, mais pas facilement. À régler au 0.43 (plancher à définir, plutôt bas au début, sans filet ensuite).
 
 **0.40 livré** : `js/ateliers.js` (familles, échelle, énergie calculées, rien d'écrit dans la sauvegarde), la page Atelier en cartes avec la jauge d'énergie en lecture seule, le détail d'un atelier (ses recettes, la fiche, ×1 à ×1000 et Max, Automatiser), l'apprenti de l'établi rangé dans l'Élevage. Valeurs provisoires : les chevaux par palier et par source, les âges qui ouvrent chaque échelon (`ECHELONS`, `PALIERS`, `SOURCES` dans `js/ateliers.js`).
+
+## 12. Livraison du 0.41
+
+- **Apprentis et ouvriers par atelier** : `E.embaucher(famille, "apprenti" | "ouvrier")`, `E.coutEmbauche`, `E.travailleurs`. Ils entrent dans le même parc que les machines (`machPool`, sous le nom « sorte:famille »), travaillent les recettes de leur atelier, servent les commandes **et** les ordres permanents (« Automatiser »). Vitesse : un apprenti à la moitié des mains, un ouvrier aux mains (`D.TRAVAILLEURS`, provisoire). Âges : apprenti dès le Cuivre (3), ouvrier dès l'Acier (6). Maximum : 3 apprentis, 8 ouvriers par atelier.
+- **Coût** : écus, à chaque embauche × 1,5 ; **aucun salaire**. Les écus viennent du Comptoir et du Troqueur, qui restent.
+- **Retiré** : la boucle apprenti de l'établi, marchand de lanières, taxes (`js/atelier-economie.js` ne garde que des réponses neutres), son test et son encart. **Migration** au chargement (`migrerAteliers`) : l'apprenti embauché devient celui de l'Élevage, l'avance de salaire revient dans la bourse.
+- **Sauvegarde** : un champ, `ateliers` (`{ famille: { app, ouv } }`), nettoyé au chargement ; pas de changement de version.
+- **Énergie** : les travailleurs au travail comptent dans la demande (1 cheval par apprenti, 3 par ouvrier, provisoire). Elle ne ralentit toujours personne.
+- **À mesurer** : le barème des écus (40, 200, × 1,5) n'est pas équilibré ; aucune partie simulée n'a encore été jouée avec des travailleurs.

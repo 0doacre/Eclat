@@ -187,16 +187,8 @@
       if(!mode)h+=economy(s,e);
       return h;
     }
-    function economy(s,e){
-      let h='';
-      if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details" open><summary class="ae-eco-summary" title="Afficher ou replier la bourse, l’apprenti et les surplus de lanières"><h2>Faire vivre l’atelier</h2><span class="small muted">'+(e.hired?(e.working?'Apprenti actif':'Apprenti en pause'):'Apprenti')+' · '+money(E.state.ecus)+'</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
-        if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
-        h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Travail de l’apprenti"></progress><p id="ae-worker-pay" class="small"></p>';
-        h+=e.hired?button("fund","","Réserver 1 part")+button("fund5","","Réserver 5 parts")+button("worker","",e.working?"Mettre en pause":"Mettre au travail")+button("withdraw","","Reprendre la part","",e.working||e.budget<=0)+'<label class="small"><input id="ae-autofund" type="checkbox"'+(e.autoFund?' checked':'')+' title="Réserver automatiquement 1 part dans ta bourse quand l’apprenti a tout consommé"> Réapprovisionner la part</label>':button("hire","","Accueillir · "+money(e.hire));
-        h+='</section><section><h3>Le troc de surplus</h3><label><input id="ae-merchant" type="checkbox"'+(e.merchant?' checked':'')+'> Troc automatique</label><label>Garder <input id="ae-reserve" type="number" min="0" max="100000" value="'+e.reserve+'"> lanières</label><progress id="ae-merchant-progress" max="5" value="0" aria-label="Passage du marchand"></progress><p id="ae-quote"></p>'+button("sell","","Troquer le surplus maintenant")+'<details><summary>Troc et contribution</summary><p id="ae-tax" class="small"></p></details></section></div></details></section>';
-      }
-      return h;
-    }
+    /* l'ancienne carte « Faire vivre l'atelier » (bourse, apprenti de l'établi, troc de lanières) est retirée en 0.41 */
+    function economy(){return '';}
     function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve(),cadsSnap=E.cadences?E.cadences().map(c=>c.id+':'+c.have+':'+c.machs+':'+c.status).join(';'):'';return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentFilter||"utiles",s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,cadsSnap,lastHeat]);}
     function redraw(){U.dirty=true;render(true);live();save();}
     function view(){signature=sig();return api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
