@@ -524,5 +524,159 @@
       256
     ],
     "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/haut_fourneau.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One compact complete early blast furnace: tall tapered tower of warm refractory bricks, reinforced with three dark iron hoops, wide brick base with small subdued orange furnace opening, simple side leather bellows and short clay air pipe. Distinct from a short earthen bloomery. Tiny irregular base patch only, no factory hall, electric motor or steel smokestacks.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 22260,
+    "size": [
+      256,
+      234
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/lingot_acier.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One cold early steel ingot: squat tapered rectangular loaf block with clean broad pale blue-gray planes, subtle hammer marks, slightly rounded corners. Visibly more regular and cool than wrought iron, not chrome or silver jewelry, no stamp, no dramatic glow.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 11666,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/bac_trempe.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One large rectangular open quenching trough made from thick wooden planks reinforced by dark iron straps and large nails. Cold blue-gray water clearly visible inside, modest hand-forged steel bar leaning against outer side, no glowing metal, steam or bathtub fixtures. Simple compact isolated installation.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 15506,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/acier_trempe.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One long narrow hardened steel billet, a flat straight rectangular bar with dark slate-blue face, crisp pale blue-gray bevel and a few subtle blue-brown temper marks near one end. Cold and solid, not a blade, no handle, no fire or aura. Distinct long flat silhouette versus a squat steel ingot.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 7986,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/lame.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One long thin straight unmounted hardened steel cutting blade, broad narrow rectangular body tapering very slightly, a single bright beveled cutting edge and flat blunt back, no handle or hilt, no teeth, no fantasy sword or knife. Blue-gray steel with sparse hatching, unmistakably a flat cutting strip rather than a thick ingot.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 5818,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/verre_trempe.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One thick rectangular transparent blue-green tempered glass slab seen tilted in three-quarter view, softly rounded intact corners, clean broad flat surface with restrained cool highlights and clear substantial edge. No cracks, no broken shards, no window frame. Distinct from raw glass chunk and a circular lens.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 10270,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/tour.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One early mechanical metalworking lathe on a sturdy warm wooden workbench: two aligned dark steel headstock and tailstock supports, short horizontal cylindrical metal workpiece held between centers, simple iron cutting tool on a sliding wooden carriage, exposed dull bronze gear and large hand crank at one end. Compact plausible machine, no electric motor, screen, cable or modern enclosed housing.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 21132,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/engrenage_acier.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One machined steel spur gear wheel in three-quarter view, thick circular form with a ring of evenly spaced robust straight teeth, central circular shaft bore and three simple broad spokes. Cool blue-gray steel and restrained pale edges, no bronze color, no tiny nested gears, no steampunk ornament.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 19462,
+    "size": [
+      256,
+      234
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/vis.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: Two early hand-machined iron fastening screws beside a single matching hexagonal nut. Large readable continuous helical threads and broad plain slotted heads, gray iron, simple three-quarter view. No cross-head Phillips or Torx marks, no nails, no packaging.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 14250,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/roulement.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One open steel ball bearing seen in tilted three-quarter view: concentric inner and outer thick gray steel rings, seven large visibly spherical steel balls in the circular race, central hole clearly open. Simple exposed bearing, not a cog, no teeth, no bronze, no decorative hardware.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 19080,
+    "size": [
+      256,
+      246
+    ],
+    "alpha": true
+  },
+  {
+    "file": "assets/carnet/items/outils_acier.webp",
+    "tool": "OpenAI ImageGen intégré",
+    "generation_date": "2026-10-30",
+    "prompt": "Use case: stylized-concept. Single isolated inventory illustration for Éclat's hand-painted explorer's notebook. Match previous raw copper and wrought iron assets: brown-black organic ink contours, muted natural watercolor washes, sparse broad hatching and tactile handmade materials. Strong recognizable silhouette at 48 and 32 pixels, three-quarter view, soft upper-left light, comfortable transparent margins, genuine alpha transparent background. Cool slate and restrained blue-gray steel, warm aged wood and dull bronze where appropriate. No text, letters, numerals, UI, frame, paper rectangle, photorealism, 3D render, glossy fantasy loot, neon, hard shadow or background glow. Subject: One grouped set of hardened steel workshop tools: a sturdy pair of open steel pincers, one broad wood-handled cold chisel and a traditional T-handled spiral auger drill with wooden crossbar. Crisp sober blue-gray steel cutting edges and warm wood. Three clear distinct silhouettes grouped as one inventory asset. No hammer, hatchet, spade, electric drill or toolbox.",
+    "prompt_source": "docs/art-direction/age-acier-v1/prompts.json",
+    "provenance_status": "documentée",
+    "bytes": 16724,
+    "size": [
+      256,
+      171
+    ],
+    "alpha": true
   }
 ]
