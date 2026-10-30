@@ -43,3 +43,7 @@ douze terres, un seul jeu de décors manquant : le Caveau. Images fournies par l
 
 
 Fichiers : `assets/oeuvres/` (13 illustrations) et `assets/fonds/` (6 fonds). Inventaire : `assets/ILLUSTRATIONS-MANIFEST.json`.
+
+## Illustrations du Fer — 30 octobre 2026
+
+24 illustrations produites individuellement avec l’outil intégré OpenAI ImageGen dans Codex ; modèle précis non exposé. Prompts exacts, PNG maîtres et inventaire : `docs/art-direction/age-fer-v1/`. Exports WebP transparents avec Pillow : `assets/carnet/items/` (430 102 octets). Droits d’utilisation soumis aux conditions OpenAI applicables aux images générées ; aucune licence tierce revendiquée. Lot livré pour intégration ultérieure, sans activation dans le jeu.

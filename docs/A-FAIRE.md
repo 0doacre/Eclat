@@ -36,6 +36,10 @@ Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et
 
 ## Plus tard
 
+- **Direction artistique — demande du 30 octobre 2026** : reprendre les autres icônes du jeu pour les harmoniser avec les illustrations du Carnet ; étudier une distinction visuelle de certains boutons selon leur fonction.
+- **Véritable thème sombre du Carnet — priorité du futur lot graphique** : une joueuse préfère encore le thème Classique parce qu’il est sombre. Concevoir une palette sombre complète (fonds, papier, encres, boutons, fenêtres, états et illustrations), lisible et cohérente ; une simple baisse de luminosité ne suffit pas. Travail explicitement reporté : ne pas le mêler à la production des illustrations du Fer.
+
+
 - **Première extension — après l’humanité, un avenir solarpunk** : fin de l’humanité et reconstruction low tech, avec le Livre et la mémoire comme héritage technique. Piste de conception, sans calendrier ni ajout au jeu à ce stade : [note d’intention](EXTENSION-01-SOLARPUNK.md).
 
 - Les trois **terres sans règle** n'existent plus (toutes en ont une) ; à régler à l'usage : les dons « Les
