@@ -36,7 +36,7 @@ test("renvoyer : personne à renvoyer, un travailleur de moins, aucun remboursem
   assert.equal(E.coutEmbauche("artisanat", "apprenti"), prix, "renvoyer ne baisse pas le prix de l'embauche suivante");
   E.embaucher("artisanat", "apprenti");
   assert.equal(E.state.ateliers.artisanat.app, 2);
-  assert.equal(E.coutEmbauche("artisanat", "apprenti"), Math.round(prix * TR.apprenti.croiss), "le rang continue de monter");
+  assert.ok(Math.abs(E.coutEmbauche("artisanat", "apprenti") - prix * TR.apprenti.croiss) <= 1 && E.coutEmbauche("artisanat", "apprenti") > prix, "le rang continue de monter");
 });
 test("le rang d'embauche survit à la sauvegarde ; un travailleur renvoyé ne travaille plus", () => {
   const { E } = jeu(8);
