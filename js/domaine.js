@@ -16,6 +16,8 @@
     const I = D.ITEMS;
     const Decouvertes = window.EclatDecouvertesCarnet.create({ E, A, esc, openModal });
     const Plaine = window.EclatDecouvertesCarnet.create({ E, A, esc, openModal, zone: "plaine" });
+    const Riviere = window.EclatDecouvertesCarnet.create({ E, A, esc, openModal, zone: "riviere" });
+    const Collines = window.EclatDecouvertesCarnet.create({ E, A, esc, openModal, zone: "collines" });
     const S = () => E.state;
     const perTime = perMin;
     const plural = (n, w) => n + " " + w + (n > 1 ? "s" : "");
@@ -83,7 +85,7 @@
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
         const g = E.guide();
-        if (g && g.ob.k === "pass" && g.ob.z === z && !(z === "plaine" && window.EclatStyleMode === "vivant")) return; // le chantier peint garde sa scène dans le Domaine
+        if (g && g.ob.k === "pass" && g.ob.z === z && !(["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant")) return; // le chantier peint garde sa scène dans le Domaine
         const p = E.passInfo(z);
         if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + z + '"><h3>Vers ' + esc(E.ZONES[z].n) + "</h3>" + passHTML(z, { chantier: true }) + "</section>";
       });
@@ -158,6 +160,9 @@
         if (z === "lisiere") h += Decouvertes.studyHTML();
         if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small" data-gz="plaine">Emprunter le sentier</button><button class="btn small ghost" data-sentier-replay>Revoir les travaux</button></div></div>';
         if (z === "plaine") h += Plaine.studyHTML();
+        if (z === "riviere") h += Riviere.studyHTML();
+        if (z === "collines") h += Collines.studyHTML();
+        if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small" data-gz="riviere">Emprunter la passerelle</button><button class="btn small ghost" data-passerelle-replay>Revoir les travaux</button></div></div>';
       } else {
         h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + lieuHTML(z) + "</div>";
       }
@@ -1086,6 +1091,8 @@
     function click(t, ev) {
       if (Decouvertes.click(t)) return true;
       if (Plaine.click(t)) return true;
+      if (Riviere.click(t)) return true;
+      if (Collines.click(t)) return true;
       let b;
       if (t.closest("[data-reprise]")) { repriseSheet(); return true; }
       if ((b = t.closest("[data-terre-maitrise] > summary"))) {
@@ -1213,6 +1220,8 @@
       if (!root) return;
       Decouvertes.live();
       Plaine.live();
+      Riviere.live();
+      Collines.live();
       if (U.mcur && U.mcur.repriseLive) U.mcur.repriseLive();
       root.querySelectorAll("[data-terre-compteur]").forEach((el) => {
         const [z, type] = el.dataset.terreCompteur.split(":"), t = E.terreMaitrise(z);

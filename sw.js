@@ -3,10 +3,25 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "2f4027ed01";
+const BUILD = "51f1a20142";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
+  "js/passerelle-chantier.js", "css/passerelle-chantier.css",
+  "assets/carnet/items/argile.webp", "assets/carnet/items/silex.webp", "assets/carnet/items/sable.webp", "assets/carnet/items/eclat.webp",
+  "assets/carnet/items/engrenage_bois.webp", "assets/carnet/items/automate_bois.webp", "assets/carnet/items/hache_pierre.webp", "assets/carnet/items/couteau.webp",
+  "assets/carnet/items/pioche_pierre.webp", "assets/carnet/items/brique.webp", "assets/carnet/items/four.webp", "assets/carnet/items/nasse.webp",
+  "assets/carnet/items/hutte.webp", "assets/carnet/items/cerf_volant.webp", "assets/carnet/items/poudre_rouge.webp", "assets/carnet/items/torche_rouge.webp",
+  "assets/carnet/items/papyrus.webp", "assets/carnet/items/fibre_2.webp", "assets/carnet/items/caillou_2.webp", "assets/carnet/items/silex_1.webp",
+  "assets/carnet/items/sable_1.webp", "assets/carnet/sources/source_argile.webp", "assets/carnet/sources/source_silex.webp", "assets/carnet/sources/source_sable.webp",
+  "assets/carnet/items/malachite.webp", "assets/carnet/items/cassiterite.webp", "assets/carnet/items/lingot_cuivre.webp", "assets/carnet/items/enclume_pierre.webp",
+  "assets/carnet/items/plaque_cuivre.webp", "assets/carnet/items/fil_cuivre.webp", "assets/carnet/items/lingot_etain.webp", "assets/carnet/items/creuset.webp",
+  "assets/carnet/items/puits.webp", "assets/carnet/items/charbonniere.webp", "assets/carnet/items/ciseau.webp", "assets/carnet/items/lampe.webp",
+  "assets/carnet/items/miroir.webp", "assets/carnet/items/tablette.webp", "assets/carnet/items/cassiterite_1.webp", "assets/carnet/sources/source_malachite.webp",
+  "assets/carnet/sources/source_cassiterite.webp", "assets/carnet/discoveries/gue.webp", "assets/carnet/discoveries/carcasse.webp", "assets/carnet/discoveries/escalier.webp",
+  "assets/carnet/discoveries/rails.webp", "assets/carnet/discoveries/sommet.webp", "assets/carnet/discoveries/nid.webp", "assets/carnet/passages/berges.webp",
+  "assets/carnet/passages/passerelle-charpente.webp", "assets/carnet/passages/passerelle-terminee.webp",
+
   "js/sentier-chantier.js", "css/sentier-chantier.css", "assets/carnet/passages/base.webp", "assets/carnet/passages/ronces-gauche.webp", "assets/carnet/passages/ronces-droite.webp", "assets/carnet/passages/herbes-sentier.webp",
   "assets/carnet/discoveries/plaine-esquisse.webp", "assets/carnet/discoveries/tumulus.webp", "assets/carnet/items/flute.webp", "assets/carnet/items/statuette.webp",
   "assets/carnet/discoveries/cercle.webp",

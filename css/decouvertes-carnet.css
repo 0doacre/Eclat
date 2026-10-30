@@ -16,6 +16,13 @@ html[data-style-mode="vivant"] .carnet-study-button::before,html[data-style-mode
 .carnet-studies figcaption{font:20px/1.2 'Caveat',cursive;color:var(--muted);padding:2px 0 8px;white-space:normal;overflow-wrap:anywhere;max-width:100%;max-inline-size:18ch;margin-inline:auto;text-wrap:balance}
 .carnet-study-pending{min-height:75px;border-bottom:1px solid var(--line2);opacity:.4;transform:rotate(-1deg);margin:12px 25px}
 .carnet-plate-detail{display:block;width:100%;height:auto;max-height:65vh;object-fit:contain;margin:10px auto}
+.carnet-studies.carnet-study-wide{display:block;max-width:640px;margin:12px auto 18px;text-align:center}
+.carnet-study-wide .carnet-fieldnote{margin:6px auto 10px;max-width:34ch}
+.carnet-study-wide .carnet-study-button img{max-height:360px}
+.carnet-study-wide figcaption{max-inline-size:none}
+.dom-dense .carnet-study-wide{max-width:340px}
+.dom-dense .carnet-study-wide .carnet-study-button img{max-height:210px}
+@media(max-width:680px){.carnet-study-wide .carnet-study-button img{max-height:260px}.carnet-studies.carnet-study-wide{margin-block:8px 14px}}
 html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-discovery-land{max-width:330px;margin-inline:auto}
 .dom-dense .carnet-studies{grid-template-columns:minmax(0,1fr) minmax(0,150px)}
 .dom-dense .carnet-study-button img{max-height:100px}

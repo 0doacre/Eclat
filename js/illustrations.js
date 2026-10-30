@@ -41,7 +41,45 @@
     statuette: "assets/carnet/items/statuette.webp",
     encre: "assets/carnet/items/encre.webp",
     cuir_1: "assets/carnet/items/cuir_1.webp",
-    racloir_os: "assets/carnet/items/racloir_os.webp"
+    racloir_os: "assets/carnet/items/racloir_os.webp",
+
+    // Âges de la Pierre et du Cuivre
+    argile: "assets/carnet/items/argile.webp",
+    silex: "assets/carnet/items/silex.webp",
+    sable: "assets/carnet/items/sable.webp",
+    eclat: "assets/carnet/items/eclat.webp",
+    engrenage_bois: "assets/carnet/items/engrenage_bois.webp",
+    automate_bois: "assets/carnet/items/automate_bois.webp",
+    hache_pierre: "assets/carnet/items/hache_pierre.webp",
+    couteau: "assets/carnet/items/couteau.webp",
+    pioche_pierre: "assets/carnet/items/pioche_pierre.webp",
+    brique: "assets/carnet/items/brique.webp",
+    four: "assets/carnet/items/four.webp",
+    nasse: "assets/carnet/items/nasse.webp",
+    hutte: "assets/carnet/items/hutte.webp",
+    cerf_volant: "assets/carnet/items/cerf_volant.webp",
+    poudre_rouge: "assets/carnet/items/poudre_rouge.webp",
+    torche_rouge: "assets/carnet/items/torche_rouge.webp",
+    papyrus: "assets/carnet/items/papyrus.webp",
+    fibre_2: "assets/carnet/items/fibre_2.webp",
+    caillou_2: "assets/carnet/items/caillou_2.webp",
+    silex_1: "assets/carnet/items/silex_1.webp",
+    sable_1: "assets/carnet/items/sable_1.webp",
+    malachite: "assets/carnet/items/malachite.webp",
+    cassiterite: "assets/carnet/items/cassiterite.webp",
+    lingot_cuivre: "assets/carnet/items/lingot_cuivre.webp",
+    enclume_pierre: "assets/carnet/items/enclume_pierre.webp",
+    plaque_cuivre: "assets/carnet/items/plaque_cuivre.webp",
+    fil_cuivre: "assets/carnet/items/fil_cuivre.webp",
+    lingot_etain: "assets/carnet/items/lingot_etain.webp",
+    creuset: "assets/carnet/items/creuset.webp",
+    puits: "assets/carnet/items/puits.webp",
+    charbonniere: "assets/carnet/items/charbonniere.webp",
+    ciseau: "assets/carnet/items/ciseau.webp",
+    lampe: "assets/carnet/items/lampe.webp",
+    miroir: "assets/carnet/items/miroir.webp",
+    tablette: "assets/carnet/items/tablette.webp",
+    cassiterite_1: "assets/carnet/items/cassiterite_1.webp"
   };
 
   const SOURCES = {
@@ -53,7 +91,14 @@
 
     // Sources de la Plaine (Âge de l'Os)
     os: "assets/carnet/sources/source_os.webp",
-    cuir: "assets/carnet/sources/source_cuir.webp"
+    cuir: "assets/carnet/sources/source_cuir.webp",
+
+    // Gisements de la Rivière et des Collines
+    argile: "assets/carnet/sources/source_argile.webp",
+    silex: "assets/carnet/sources/source_silex.webp",
+    sable: "assets/carnet/sources/source_sable.webp",
+    malachite: "assets/carnet/sources/source_malachite.webp",
+    cassiterite: "assets/carnet/sources/source_cassiterite.webp"
   };
 
   const PREVIEW_ONLY = ["percuteur_pierre", "etabli_amenage", "racloir_os"];
