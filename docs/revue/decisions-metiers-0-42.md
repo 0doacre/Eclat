@@ -41,3 +41,10 @@ Risques : les recettes sont aujourd'hui indexées par couple outil et mode (`D.C
 - **L'Atelier du métier** n'est plus réservé à partir du Cuivre : il propose les gestes de toutes les recettes sans voie par un outil de départ, à tout âge. Un métier n'apparaît au Labo que si une de ses recettes est à portée de l'âge (plus de Métallurgie dès l'âge 0).
 - **Rythme** : mesuré avant et après avec `tools/sim-passages.js --joueurs` : mêmes âges atteints, mêmes murs, écarts de fabrications inférieurs à 1 pour mille.
 - **À faire ensuite** : textes de découverte, renommage d'« Artistique », état « maîtrisé », puis l'énergie (0.44).
+
+## 5. Étape 2 livrée (0.43.1)
+
+- **Fenêtre de découverte** : quand une recette est trouvée, le pop-up affiche sa **saveur** (une ou deux phrases, en italique) et, la première fois qu'un geste qui n'est pas de départ entre en jeu (Marteler, Allier, Tremper, Usiner, Graver…), un encart « Nouveau geste » qui dit ce qu'il veut dire. La fenêtre reste affichée plus longtemps quand il y a du texte (de 1,2 s à 6 s en plus selon la longueur).
+- **Emplacements pour les textes du porteur** : `D.SAVEUR.<recette>` et `D.SAVEUR_GESTE.<geste>` dans `js/data.js` (220 signes au plus, vérifié par test). Tant qu'un texte manque, la description de la recette (`d`) ou du geste sert de repli : aucune fenêtre n'est vide.
+- **Liste du travail** : `node tools/saveur-a-ecrire.js` écrit `docs/revue/saveur-a-ecrire.md` (218 recettes par métier et par âge, avec le texte actuel, et les gestes à introduire).
+- Rien ne change dans la partie : pas de coût, pas d'âge, pas de sauvegarde. Une partie ancienne qui a déjà fabriqué avec un geste ne revoit pas son introduction.

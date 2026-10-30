@@ -920,6 +920,21 @@
       return true;
     }
     E.learn = learn;
+    /* La saveur d'une découverte : le texte de la recette (D.SAVEUR, sinon sa description) et, la première fois qu'on emploie un geste
+     * qui n'est pas de départ, ce que ce geste veut dire (D.SAVEUR_GESTE, sinon sa description). Ne change rien dans la partie : une
+     * partie plus ancienne qui a déjà fabriqué quelque chose avec ce geste ne revoit pas son introduction. */
+    E.saveurDecouverte = function (id) {
+      const it = item(id);
+      if (!it) return { recette: "", geste: null };
+      const recette = (D.SAVEUR && D.SAVEUR[id]) || it.d || "";
+      const g = it.r && it.r[0];
+      let geste = null;
+      if (g && D.GESTES[g] && !BASE_GESTES.includes(g)) {
+        const deja = Object.keys(S.made).some((k) => k !== id && S.made[k] > 0 && item(k) && item(k).r && item(k).r[0] === g);
+        if (!deja) geste = { id: g, n: D.GESTES[g].n, texte: (D.SAVEUR_GESTE && D.SAVEUR_GESTE[g]) || D.GESTES[g].d };
+      }
+      return { recette, geste };
+    };
 
     /* chefs-d’œuvre : chance de lot bonus selon la maîtrise */
     function bonusFor(it, times, main) {

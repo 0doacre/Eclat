@@ -327,6 +327,8 @@
       return;
     }
     if (o.add) o = { ic: "🏁", kick: "Étape accomplie", title: o.title || "", sub: o.sub };
+    // une recette trouvée : sa saveur, et le sens du geste la première fois qu'on l'emploie
+    if (o.id && (o.kick === "Nouvelle découverte" || o.kick === "Recette trouvée") && E.saveurDecouverte) { const sv = E.saveurDecouverte(o.id); o.saveur = sv.recette; o.geste = sv.geste; }
     if (cur) cur.remove();
     clearTimeout(U.celeT);
     U.celeAt = performance.now();
@@ -338,13 +340,18 @@
     el.style.setProperty("--cc", col);
     el.innerHTML = (tier >= 3 ? '<div class="crays" aria-hidden="true"></div>' : "") +
       '<div class="cb">' + (o.id ? icon(o.id, "xl") : '<span class="ic xl">' + o.ic + "</span>") + '<div class="ck">' + esc(o.kick) + '</div><div class="cn">' + esc(o.title) + "</div>" +
-      (o.sub ? '<div class="cs">' + esc(o.sub) + "</div>" : "") + "</div>";
+      (o.saveur ? '<div class="cf">' + esc(o.saveur) + "</div>" : "") +
+      (o.sub ? '<div class="cs">' + esc(o.sub) + "</div>" : "") +
+      (o.geste ? '<div class="cg"><b>Nouveau geste · ' + esc(o.geste.n) + "</b> " + esc(o.geste.texte) + "</div>" : "") + "</div>";
+    // le temps de lire : un peu plus long quand il y a du texte
+    const lu = (o.saveur ? o.saveur.length : 0) + (o.geste ? o.geste.texte.length + 14 : 0), plus = lu ? Math.min(6000, 1200 + 28 * lu) : 0;
+    el.style.setProperty("--ms", P.ms + plus + "ms");
     document.body.appendChild(el);
     sparks(innerWidth / 2, innerHeight * 0.4, P.sparks, col);
     if (tier === 1) vibe(P.vibre);
     else Jus.impact(tier, innerWidth / 2, innerHeight * 0.4, col);
     for (let k = 0; k < P.fireworks; k++) setTimeout(() => sparks(innerWidth * (0.2 + Math.random() * 0.6), innerHeight * (0.2 + Math.random() * 0.35), 30, ["#ffd36b", "#ff7ad9", "#5aa0ff", "#7fe08a"][k % 4]), 500 + k * 380);
-    U.celeT = setTimeout(() => el.remove(), P.ms);
+    U.celeT = setTimeout(() => el.remove(), P.ms + plus);
   }
   function fireworks() {
     if (!motionOK()) return;

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.43.0";
+  D.VERSION = "0.43.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1602,6 +1602,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📜 Chaque recette trouvée dit sa saveur dans la fenêtre de découverte : une ou deux phrases, et la première fois qu’un geste nouveau (Marteler, Allier, Graver…) entre en jeu, ce qu’il veut dire. En attendant les textes définitifs, la description de la recette sert de texte.",
     "🏗️ Un seul modèle : un outil et un geste. Tout ce qui se bâtit (extracteurs, machines, installations, améliorations) se construit désormais : nouveau geste Construire et nouveau métier Construction. Au feu, plus de réglages : un seul geste, Chauffer, les recettes se distinguent par l’ingrédient. Le four reprend les recettes du feu, le couteau celles du racloir, et l’outil le plus haut cache le plus bas. La pioche, le poste de frappe, le ciseau et la dalle ne sont plus des outils de départ : leurs recettes passent par l’Atelier.",
     "🔥 Au Labo, l’outil se choisit à son icône (le nom s’affiche dessous) ; ses gestes apparaissent en un mot quand il en a plusieurs. Les gestes du feu changent de nom : Griller, Cuire, Étouffer ; le four : Cuire, Fondre.",
     "🔧 Au Labo, l’outil et le geste ne font plus qu’un seul choix (« Mains · Tresser », « Feu de camp · Cuire »), en puces qui passent à la ligne. Le Carnet est allégé : une ligne d’aide, la recherche, et deux boutons (quantité, filtres) qui s’ouvrent à la demande. Dans l’Atelier, la jauge d’énergie s’ouvre et détaille ce qui consomme et ce qui fournit.",
@@ -1876,6 +1877,13 @@
   };
 
   root.ECLAT_DATA = D;
+  /* La saveur de la découverte (0.43) : le court texte du pop-up quand une recette est trouvée, et celui du premier emploi d'un geste.
+   * Chaque recette a déjà sa description (`d`) : elle sert tant que rien n'est écrit ici. Pour écrire un texte :
+   *   D.SAVEUR.<identifiant de la recette> = "Une ou deux phrases, 220 signes au plus."
+   *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
+   * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
+  D.SAVEUR = {};
+  D.SAVEUR_GESTE = {};
   /* Construire (0.43) : les bâtiments, extracteurs, machines, installations et améliorations ne s'assemblent plus : ils se construisent. */
   for (const id in D.ITEMS) {
     const it = D.ITEMS[id];
