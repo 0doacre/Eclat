@@ -4,12 +4,21 @@
   function create(api){
     const {E,D,U,A,esc,icon,render,save,toast,fmtTime}=api,I=D.ITEMS;
     let signature="",message="",lastSale=null,observedState=null;
-    const money=n=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" écus";
+    const currencyName=age=>{
+      const a=age!==undefined?age:(E.state?.age||0);
+      if(a<=1)return "rations de troc";
+      if(a<=3)return "coquillages";
+      if(a<=6)return "écus";
+      if(a<=8)return "florins";
+      return "crédits";
+    };
+    const money=(n,age)=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+currencyName(age);
     const name=id=>I[id]?.n||id;
     const label=(id,n)=>({doux:"Chauffer doucement",vif:"Cuire",etouffee:"Carboniser",cuisson:"Cuire",fonte:"Fondre"})[id]||n;
     const root=()=>document.getElementById("atelier-equipe");
     const button=(action,value,title,cls="",disabled=false)=>{
-      const help={study:"Étudier les matières déjà vues en dépensant l’Intuition indiquée",place:"Choisir ce poste de travail",legacy:"Utiliser les procédés des âges après le Cuivre",slot:"Poser ou retirer une matière dans cet emplacement",prepare:"Préparer les matières, le poste et l’outil pour : "+name(value),order:"Fabriquer : "+name(value)+", en préparant les composants manquants",build:"Aménager l’établi pour accueillir un ouvrier",hire:"Recruter un ouvrier avec les écus de ta bourse",fund:"Réserver un écu pour payer le travail de l’ouvrier",fund5:"Réserver cinq écus pour payer le travail de l’ouvrier",worker:"Démarrer ou mettre en pause le travail de l’ouvrier",withdraw:"Récupérer l’avance non utilisée quand l’ouvrier est en pause",sell:"Vendre les lanières au-delà de ta réserve et recevoir le montant après taxe"};
+      const cur=currencyName();
+      const help={study:"Étudier les matières déjà vues en dépensant l’Intuition indiquée",place:"Choisir ce poste de travail",legacy:"Utiliser les procédés des âges après le Cuivre",slot:"Poser ou retirer une matière dans cet emplacement",prepare:"Préparer les matières, le poste et l’outil pour : "+name(value),order:"Fabriquer : "+name(value)+", en préparant les composants manquants",build:"Aménager l’établi pour accueillir un apprenti",hire:"Inviter un apprenti avec les "+cur+" de ta bourse",fund:"Réserver 1 part pour l’apprenti",fund5:"Réserver 5 parts pour l’apprenti",worker:"Démarrer ou mettre en pause l’aide de l’apprenti",withdraw:"Récupérer la part réservée non utilisée quand l’apprenti est en pause",sell:"Troquer les lanières au-delà de ta réserve"};
       const explanation=help[action]||title.replace(/<[^>]*>/g,"");
       return '<button type="button" id="ae-'+action+'-'+esc(value||"0")+'" class="btn '+cls+'" data-ae="'+action+'" data-value="'+esc(value||"")+'" title="'+esc(explanation)+'"'+(disabled?' disabled':'')+'>'+title+'</button>';
     };
@@ -100,11 +109,11 @@
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
       if(known.length)h+='<section class="card"><details class="ae-known-details" open><summary class="ae-eco-summary"><h3>Recettes déjà maîtrisées sur ce poste ('+known.length+')</h3><span class="small muted">Fabrication rapide</span></summary><div class="ae-known">'+known.map(id=>'<div>'+button("prepare",id,esc(name(id)))+button("order",id,"Fabriquer","small")+'</div>').join("")+'</div></details></section>';
-      if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details" open><summary class="ae-eco-summary"><h2>Faire vivre l’atelier</h2><span class="small muted">Bourse, ouvrier &amp; surplus de lanières</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton ouvrier <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et les salaires de l’ouvrier" aria-label="Comprendre le rôle et les salaires de l’ouvrier">?</button></h3>';
+      if(s.known.laniere){h+='<section class="card ae-economy"><details class="ae-eco-details" open><summary class="ae-eco-summary"><h2>Faire vivre l’atelier</h2><span class="small muted">Bourse, apprenti &amp; surplus de lanières</span></summary><div class="ae-economy-grid"><section><h3>Ta bourse</h3><strong id="ae-wallet"></strong><p id="ae-sale" role="status"></p><p id="ae-hire-goal" class="small"></p></section><section><h3>Ton apprenti <button type="button" class="btn-aide mini" data-aide="ouvrier" title="Comprendre le rôle et l’aide de l’apprenti" aria-label="Comprendre le rôle et l’aide de l’apprenti">?</button></h3>';
         if(E.count("etabli_amenage")<1)h+=button("build","","Aménager : 10 bois, 3 cordes, 4 pierres");
-        h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Fabrication de l’ouvrier"></progress><p id="ae-worker-pay" class="small"></p>';
-        h+=e.hired?button("fund","","Avancer 1 écu")+button("fund5","","Avancer 5 écus")+button("worker","",e.working?"Mettre en pause":"Mettre au travail")+button("withdraw","","Récupérer l’avance","",e.working||e.budget<=0)+'<label class="small"><input id="ae-autofund" type="checkbox"'+(e.autoFund?' checked':'')+' title="Prélever automatiquement 1 écu dans ta bourse quand l’avance de l’ouvrier est épuisée"> Réapprovisionner l’avance</label>':button("hire","","Embaucher · "+money(e.hire));
-        h+='</section><section><h3>Le marchand de surplus</h3><label><input id="ae-merchant" type="checkbox"'+(e.merchant?' checked':'')+'> Vente automatique</label><label>Garder <input id="ae-reserve" type="number" min="0" max="100000" value="'+e.reserve+'"> lanières</label><progress id="ae-merchant-progress" max="5" value="0" aria-label="Passage du marchand"></progress><p id="ae-quote"></p>'+button("sell","","Vendre le surplus maintenant")+'<details><summary>Taxes et bilan</summary><p id="ae-tax" class="small"></p></details></section></div></details></section>';
+        h+='<p id="ae-worker-status"></p><progress id="ae-worker-progress" max="1" value="0" aria-label="Travail de l’apprenti"></progress><p id="ae-worker-pay" class="small"></p>';
+        h+=e.hired?button("fund","","Réserver 1 part")+button("fund5","","Réserver 5 parts")+button("worker","",e.working?"Mettre en pause":"Mettre au travail")+button("withdraw","","Reprendre la part","",e.working||e.budget<=0)+'<label class="small"><input id="ae-autofund" type="checkbox"'+(e.autoFund?' checked':'')+' title="Réserver automatiquement 1 part dans ta bourse quand l’apprenti a tout consommé"> Réapprovisionner la part</label>':button("hire","","Accueillir · "+money(e.hire));
+        h+='</section><section><h3>Le troc de surplus</h3><label><input id="ae-merchant" type="checkbox"'+(e.merchant?' checked':'')+'> Troc automatique</label><label>Garder <input id="ae-reserve" type="number" min="0" max="100000" value="'+e.reserve+'"> lanières</label><progress id="ae-merchant-progress" max="5" value="0" aria-label="Passage du marchand"></progress><p id="ae-quote"></p>'+button("sell","","Troquer le surplus maintenant")+'<details><summary>Troc et contribution</summary><p id="ae-tax" class="small"></p></details></section></div></details></section>';
       }
       return h;
     }
@@ -146,14 +155,14 @@
       r.querySelectorAll("[data-ae-need]").forEach(el=>{const n=E.count(el.dataset.aeNeed),need=Number(el.dataset.need);el.textContent=need?'×'+need+' requis · '+Math.floor(n)+' disponibles'+(n<need?' · manque '+Math.ceil(need-n):' · prêt'):Math.floor(n)+' disponibles';});
       const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
       set("ae-wallet",money(E.state.ecus));
-      const missing=Math.max(0,e.hire+1-E.state.ecus);set("ae-hire-goal",!e.hired?(missing?'Encore '+money(missing)+' pour embaucher et avancer 1 écu.':'Embauche et première avance finançables.'):'');
-      set("ae-worker-status",e.status+(e.hired?' · '+name(e.tool||"aucun")+' · '+e.produced+' lanières produites':''));set("ae-worker-pay",'Salaire : '+money(e.wage)+' par fabrication · Avance : '+money(e.budget));
+      const missing=Math.max(0,e.hire+1-E.state.ecus);set("ae-hire-goal",!e.hired?(missing?'Encore '+money(missing)+' pour accueillir l’apprenti.':'Accueil de l’apprenti finançable.'):'');
+      set("ae-worker-status",e.status+(e.hired?' · '+name(e.tool||"aucun")+' · '+e.produced+' lanières façonnées':''));set("ae-worker-pay",'Part réservée : '+money(e.wage)+' par pièce · Réserve : '+money(e.budget));
       const wp=document.getElementById("ae-worker-progress");if(wp){wp.hidden=!e.hired;wp.value=e.progress;}
       const mp=document.getElementById("ae-merchant-progress");if(mp)mp.value=e.merchant?e.saleClock:0;
       const surplus=Math.max(0,Math.floor(E.count("laniere")-e.reserve)),quote=E.merchantQuote(surplus);
-      set("ae-quote",(e.merchant?'Prochain passage : '+fmtTime(5-e.saleClock)+'. ':'Ventes en pause. ')+surplus+' lanières → '+money(quote.net)+' nets (taxe : '+money(quote.tax)+').');
-      set("ae-tax",'Tranches marginales de '+e.quota+' lanières : 10 %, 20 %, 30 %, 40 %, puis 50 %. Tranche actuelle : '+e.nextRate+' %. Nouvelle période dans '+Math.ceil(60-e.clock)+' s. Total net : '+money(e.net)+' ; salaires : '+money(e.wages)+'.');
-      if(lastSale&&e.totalSold>lastSale.sold)messageSale='Dernière vente : +'+money(e.net-lastSale.net)+' · '+(e.totalSold-lastSale.sold)+' lanières';
+      set("ae-quote",(e.merchant?'Prochain passage : '+fmtTime(5-e.saleClock)+'. ':'Troc en pause. ')+surplus+' lanières → '+money(quote.net)+' nets (part clan : '+money(quote.tax)+').');
+      set("ae-tax",'Paliers de '+e.quota+' lanières : 10 %, 20 %, 30 %, 40 %, puis 50 % de contribution au clan. Palier actuel : '+e.nextRate+' %. Renouvellement dans '+Math.ceil(60-e.clock)+' s. Net troqué : '+money(e.net)+' ; parts apprenti : '+money(e.wages)+'.');
+      if(lastSale&&e.totalSold>lastSale.sold)messageSale='Dernier troc : +'+money(e.net-lastSale.net)+' · '+(e.totalSold-lastSale.sold)+' lanières';
       lastSale={sold:e.totalSold,net:e.net};set("ae-sale",messageSale);
     }
     let messageSale="";
@@ -168,7 +177,12 @@
     function forge(mode){const {w}=work();if(!w.slots.length)return;w.mode=mode||w.mode;work();U.forging=true;let result;try{result=w.place==="grand_atelier"?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
       if(result.kind==="craft"||result.kind==="queued"){message=(result.kind==="craft"?"Fabriqué : ":"En cours : ")+name(result.id);A.craft(U.geste);}
       else if(result.kind==="learn"||result.kind==="blocked"){message="Recette trouvée : "+name(result.id)+(result.missing?" · Il manque "+Object.entries(result.missing).map(([id,n])=>n+' '+name(id)).join(', '):result.info?' · '+api.needText(result.id,result.info):' · Inscrite dans le Carnet');A.discover();}
-      else if(result.thermo){message=result.thermo.label+" · "+result.thermo.text;A.fail(result.thermo.heat==="brulant"?3:result.thermo.heat==="chaud"?2:result.thermo.heat==="tiede"?1:0);}
+      else if(result.thermo){
+        if(typeof E.remember==="function"&&(result.thermo.heat==="brulant"||result.thermo.heat==="chaud")){
+          E.remember(w.mode,w.slots);
+        }
+        message=result.thermo.label+" · "+result.thermo.text;A.fail(result.thermo.heat==="brulant"?3:result.thermo.heat==="chaud"?2:result.thermo.heat==="tiede"?1:0);
+      }
       else if(result.kind==="fail"&&result.heat!==undefined){const hLbl=["❄️ Froid","🌤️ Tiède","🌡️ Chaud","🔥 Brûlant"][result.heat]||"❄️ Froid";message=hLbl+(result.text?" · "+result.text:" · Aucune réaction avec ces matières.");A.fail(result.heat||0);}
       else {message=result.kind==="owned"?"Tu possèdes déjà cet objet.":"Ce geste ne donne rien avec ces matières. Essaie un autre outil ou une autre combinaison.";A.fail(0);}
       if(result.fresh&&(result.kind==="craft"||result.kind==="learn"))api.fete({id:result.id,kick:"Nouvelle découverte",title:name(result.id),sub:I[result.id].u||""});
@@ -189,12 +203,12 @@
       else if(action==="order"){const result=E.order(id,1);message=result.ok?"Commande lancée : "+name(id):"Il manque une recette ou un équipement : consulte le Carnet.";}
       else if(action==="batch"){const result=E.queue(id,tool.batch||1,false,undefined,{equipment:w.eq,mode:w.mode});message=result.ok?"Série lancée avec "+name(w.eq):"Pas assez de matières ou de place dans les commandes.";}
       else if(action==="build"){E.learn("etabli_amenage",true);message=E.order("etabli_amenage",1).ok?"Aménagement en cours.":"Consulte les matériaux requis dans le Carnet.";}
-      else if(action==="hire")message=E.workerHire().ok?"L’ouvrier rejoint ton établi.":"Aménage le poste, prépare l’outil et finance l’embauche avec tes ventes.";
-      else if(action==="fund")message=E.workerFund(1).ok?"Un écu réservé aux salaires.":"Il faut un écu disponible.";
-      else if(action==="fund5")message=E.workerFund(5).ok?"Cinq écus réservés aux salaires.":"Il faut 5 écus disponibles.";
+      else if(action==="hire")message=E.workerHire().ok?"L’apprenti rejoint ton établi.":"Aménage le poste, prépare l’outil et prépare l’accueil avec tes surplus.";
+      else if(action==="fund")message=E.workerFund(1).ok?"1 part réservée pour l’apprenti.":"Il faut 1 part disponible dans ta bourse.";
+      else if(action==="fund5")message=E.workerFund(5).ok?"5 parts réservées pour l’apprenti.":"Il faut 5 parts disponibles dans ta bourse.";
       else if(action==="worker")E.workerSet(!E.atelierEconomyInfo().working);
       else if(action==="withdraw")E.workerWithdraw();
-      else if(action==="sell"){const result=E.merchantSell(E.count("laniere"));message=result.ok?'Vendu : '+money(result.net)+' nets.':'Aucun surplus au-dessus de ta réserve.';}
+      else if(action==="sell"){const result=E.merchantSell(E.count("laniere"));message=result.ok?'Troqué : '+money(result.net)+' nets.':'Aucun surplus au-delà de ta réserve.';}
       redraw();
     });
     document.addEventListener("input",ev=>{if(ev.target.id==="ae-search"){U.equipmentSearch=ev.target.value;live();}});

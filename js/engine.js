@@ -2264,6 +2264,7 @@
       }
       return pts;
     }
+    E.remember = remember;
     /* où en sont les souvenirs de l’étape en cours : { p, next } (points, seuil suivant) */
     E.memory = function () {
       const gd = E.guide();
@@ -3651,8 +3652,8 @@
       },
       ouvrier: {
         kicker: "Atelier équipé",
-        titre: "L’ouvrier et son salaire",
-        texte: "L’ouvrier travaille de façon autonome à l’établi aménagé tant qu’une avance sur salaire est disponible dans sa réserve. Il est payé à la pièce terminée avec les écus de ta bourse. Tu peux suspendre son travail ou récupérer l’avance non consommée à tout moment."
+        titre: "L’apprenti et sa part réservée",
+        texte: "L’apprenti t’épaule à l’établi aménagé tant qu’une part est réservée pour lui. Il façonne les pièces de façon autonome. Tu peux suspendre son aide ou reprendre la réserve à tout moment."
       },
       outils: {
         kicker: "Atelier équipé",
