@@ -378,3 +378,7 @@ Fichiers : `assets/oeuvres/` (13 illustrations) et `assets/fonds/` (6 fonds). In
 ## Inventaire de provenance, lot 0.38
 
 Chaque illustration diffusée figure dans `assets/ILLUSTRATIONS-MANIFEST.json`. Les dates non documentées ne sont pas déduites des dates de commit. Les prompts absents ne sont pas reconstruits. Les éléments incomplets et les autres fichiers sans auteur établi sont répertoriés dans `docs/art-direction/papier-partout-0-38/PROVENANCE-A-CONFIRMER.md`. Les exports WebP ont été recompressés avec Pillow le 30 octobre 2026 ; les maîtres et prompts archivés sont conservés.
+
+## Onglets, lot 0.39
+
+`assets/refonte-0-39/onglets.svg` réemploie sans redessiner les symboles `treasure-map`, `erlenmeyer`, `hammer-nails`, `tree-branch` et `scroll-quill` de `assets/icons.svg`. Les auteurs et la licence CC BY 3.0 sont indiqués dans le tableau Game-icons ci-dessus. Les identifiants exportés sont `gi-terres-039`, `gi-labo-039`, `gi-atelier-039`, `gi-arbre-039`, `gi-journal-039`. Aucune nouvelle image générée.

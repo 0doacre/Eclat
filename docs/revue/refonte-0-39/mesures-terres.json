@@ -1,0 +1,98 @@
+[
+  {
+    "zone": "lisiere",
+    "width": 252,
+    "height": 448,
+    "ink": 12.277575305643122,
+    "secondary": 6.414092627140045,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "plaine",
+    "width": 288,
+    "height": 512,
+    "ink": 12.280108210660336,
+    "secondary": 6.4154158759894075,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "riviere",
+    "width": 288,
+    "height": 512,
+    "ink": 12.277575305643122,
+    "secondary": 6.414092627140045,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "collines",
+    "width": 252,
+    "height": 448,
+    "ink": 12.27852497913725,
+    "secondary": 6.4145887587951345,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "mine",
+    "width": 288,
+    "height": 512,
+    "ink": 12.278366686398124,
+    "secondary": 6.414506062964265,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "desert",
+    "width": 288,
+    "height": 512,
+    "ink": 12.282008818460254,
+    "secondary": 6.4164087979771,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "gisement",
+    "width": 252,
+    "height": 448,
+    "ink": 12.277575305643122,
+    "secondary": 6.414092627140045,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "montagnes",
+    "width": 252,
+    "height": 448,
+    "ink": 12.277891841357219,
+    "secondary": 6.414257992803823,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "orbite",
+    "width": 288,
+    "height": 512,
+    "ink": 12.277575305643122,
+    "secondary": 6.414092627140045,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "lune",
+    "width": 252,
+    "height": 448,
+    "ink": 12.277575305643122,
+    "secondary": 6.414092627140045,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "mercure",
+    "width": 252,
+    "height": 448,
+    "ink": 12.277575305643122,
+    "secondary": 6.414092627140045,
+    "opacity": "0.32"
+  },
+  {
+    "zone": "caveau",
+    "width": 246,
+    "height": 185,
+    "ink": 12.277575305643122,
+    "secondary": 6.414092627140045,
+    "opacity": "0.32"
+  }
+]

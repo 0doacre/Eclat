@@ -5002,5 +5002,503 @@
     "backgrounds": [
       "rgb(244, 236, 218)"
     ]
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "lisiere",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "lisiere",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "plaine",
+    "role": "texte gisement",
+    "ratio": 12.28,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "plaine",
+    "role": "secondaire gisement",
+    "ratio": 6.415,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "riviere",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "riviere",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "collines",
+    "role": "texte gisement",
+    "ratio": 12.279,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "collines",
+    "role": "secondaire gisement",
+    "ratio": 6.415,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "mine",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "mine",
+    "role": "secondaire gisement",
+    "ratio": 6.415,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "desert",
+    "role": "texte gisement",
+    "ratio": 12.282,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "desert",
+    "role": "secondaire gisement",
+    "ratio": 6.416,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "gisement",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "gisement",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "montagnes",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "montagnes",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "orbite",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "orbite",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "lune",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "lune",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "mercure",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "mercure",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "caveau",
+    "role": "texte gisement",
+    "ratio": 12.278,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "terre": "caveau",
+    "role": "secondaire gisement",
+    "ratio": 6.414,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244 236 218 / .98) sur illustration à .32 sur #f4ecda"
+    ],
+    "method": "Minimum sur chaque pixel source RGBA ; masque pris à son maximum de 1 (borne conservatrice).",
+    "source": "docs/revue/refonte-0-39/mesures-terres.json"
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "role": "Labo texte",
+    "ratio": 13.84,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(255, 248, 233)"
+    ],
+    "method": "Luminance relative sRGB, WCAG."
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "role": "Labo badge",
+    "ratio": 7.23,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(255, 248, 233)"
+    ],
+    "method": "Luminance relative sRGB, WCAG."
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "role": "Labo chaîne",
+    "ratio": 7.415,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(129, 63, 42)",
+    "backgrounds": [
+      "rgb(255, 248, 233)"
+    ],
+    "method": "Luminance relative sRGB, WCAG."
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "role": "Atelier texte bloqué",
+    "ratio": 10.977,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(48, 39, 30)",
+    "backgrounds": [
+      "rgb(233, 222, 200)"
+    ],
+    "method": "Luminance relative sRGB, WCAG."
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "role": "Atelier bouton actif",
+    "ratio": 7.415,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(255, 248, 233)",
+    "backgrounds": [
+      "rgb(129, 63, 42)"
+    ],
+    "method": "Luminance relative sRGB, WCAG."
+  },
+  {
+    "lot": "0.39",
+    "mode": "tous",
+    "theme": "tous (papier Carnet)",
+    "ep": "toutes",
+    "role": "secondaire papier",
+    "ratio": 6.503,
+    "minimum": 4.5,
+    "pass": true,
+    "fg": "rgb(96, 81, 63)",
+    "backgrounds": [
+      "rgb(244, 236, 218)"
+    ],
+    "method": "Luminance relative sRGB, WCAG."
   }
 ]

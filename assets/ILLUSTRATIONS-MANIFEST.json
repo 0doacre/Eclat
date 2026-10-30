@@ -2106,5 +2106,22 @@
       "date": "2026-10-30",
       "drawing_modified": false
     }
+  },
+  {
+    "file": "assets/refonte-0-39/onglets.svg",
+    "tool": "Extraction de symboles SVG existants, sans génération",
+    "generation_date": null,
+    "prompt": null,
+    "prompt_source": null,
+    "provenance_status": "documentee",
+    "source": "assets/icons.svg ; attribution des cinq originaux dans docs/CREDITS.md",
+    "symbols": {
+      "terres": "treasure-map",
+      "labo": "erlenmeyer",
+      "atelier": "hammer-nails",
+      "arbre": "tree-branch",
+      "journal": "scroll-quill"
+    },
+    "bytes": 10268
   }
 ]
