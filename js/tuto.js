@@ -479,6 +479,8 @@
           target.el.scrollIntoView({ block: "center" });
         }
       }
+      // une étape qui montre un onglet : la barre du bas reste sortie
+      if (window.EclatBarreBas) window.EclatBarreBas.garde(!!(view.target && view.target.el && view.target.el.closest && view.target.el.closest("#tabs")));
       if (!stepAt) stepAt = Date.now();
       // une étape où l’on cherche longtemps se fait discrète au bout d’un moment
       if (!view.free) mini = false;

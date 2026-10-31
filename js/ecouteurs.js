@@ -399,33 +399,45 @@
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, (ev) => Dom.up(ev)));
       views.addEventListener("scroll", () => { if (U.lp) { clearTimeout(U.lp.t); U.lp = null; } updMini(); }, { passive: true });
 
-      /* Barre du bas : le doigt glisse vers le haut (le contenu défile vers le bas) -> elle descend et libère la place ;
-       * le doigt redescend, on arrive en haut, ou on change d’onglet -> elle revient. Ni dans les Terres ni sur la Carte,
-       * où le glisser sert à autre chose (récolte, passage d’une terre à l’autre, déplacement de la carte). */
+      /* Barre du bas (0.51.1) : par défaut elle se range et ne laisse qu'une fine poignée. Elle se montre quand la souris approche du bas de
+       * l'écran (ordinateur) ou qu'on touche la poignée (téléphone), puis se range quand la souris s'éloigne, quelques secondes après le dernier
+       * geste, ou une fois l'onglet choisi. Le réglage « Barre du bas » (Menu → Affichage) la laisse toujours visible. */
       (() => {
-        const body = document.body, STEP = 28;
-        const geste = () => U.tab !== "domaine" && U.tab !== "carte";
-        const away = (on) => { if (body.classList.contains("nav-away") !== on) body.classList.toggle("nav-away", on); };
-        let y0 = null, dir = 0, run = 0;
-        const move = (dy) => { // dy > 0 : le contenu descend (on remonte) ; dy < 0 : on va vers le bas
-          if (!geste()) { away(false); return; }
-          const d = dy < 0 ? -1 : 1;
-          if (d !== dir) { dir = d; run = 0; }
-          run += Math.abs(dy);
-          if (run >= STEP) away(d < 0);
+        const body = document.body, tabs = $("#tabs"), poignee = $("#navPoignee");
+        const BAS = 44; // px du bord bas où la souris la fait venir
+        let fermeT = null, garde = false;
+        const auto = () => U.barreAuto();
+        const ouvre = (on) => {
+          if (on && !auto()) return;
+          if (body.classList.contains("nav-open") !== on) body.classList.toggle("nav-open", on);
+          clearTimeout(fermeT);
+          if (on && !garde) fermeT = setTimeout(() => ouvre(false), 6000);
         };
-        views.addEventListener("touchstart", (ev) => { y0 = ev.touches[0].clientY; dir = 0; run = 0; }, { passive: true });
-        views.addEventListener("touchmove", (ev) => {
-          if (y0 === null) return;
-          const y = ev.touches[0].clientY;
-          move(y - y0); y0 = y;
+        U.appliquerBarre = () => { const on = auto(); if (body.classList.contains("nav-auto") !== on) { body.classList.toggle("nav-auto", on); if (!on) body.classList.remove("nav-open"); } };
+        U.appliquerBarre();
+        window.EclatBarreBas = { garde: (on) => { garde = !!on; if (on) ouvre(true); else if (body.classList.contains("nav-open")) ouvre(true); }, ouvre };
+        document.addEventListener("pointermove", (ev) => {
+          if (ev.pointerType !== "mouse" || !auto()) return;
+          const bas = innerHeight - ev.clientY, ouverte = body.classList.contains("nav-open");
+          if (bas <= BAS) ouvre(true);
+          else if (ouverte && !garde && bas > tabs.offsetHeight + 24) { clearTimeout(fermeT); fermeT = setTimeout(() => ouvre(false), 450); }
         }, { passive: true });
-        ["touchend", "touchcancel"].forEach((t) => views.addEventListener(t, () => { y0 = null; }, { passive: true }));
-        views.addEventListener("wheel", (ev) => { if (ev.deltaY) move(-ev.deltaY); }, { passive: true });
-        views.addEventListener("scroll", () => { if (views.scrollTop <= 4 || !geste()) away(false); }, { passive: true });
-        const tabs = $("#tabs");
-        tabs.addEventListener("click", () => away(false), true);
-        new MutationObserver(() => away(false)).observe(body, { attributes: true, attributeFilter: ["data-tab"] });
+        poignee.addEventListener("pointerdown", (ev) => { ev.preventDefault(); ouvre(!body.classList.contains("nav-open")); });
+        poignee.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ouvre(true); tabs.querySelector("button:not(.hidden)").focus(); } });
+        // un glissé vers le haut depuis la poignée la montre aussi
+        let y0 = null;
+        poignee.addEventListener("touchstart", (ev) => { y0 = ev.touches[0].clientY; }, { passive: true });
+        poignee.addEventListener("touchmove", (ev) => { if (y0 !== null && y0 - ev.touches[0].clientY > 10) { y0 = null; ouvre(true); } }, { passive: true });
+        // toucher ailleurs que la barre la range ; toucher la barre prolonge son séjour
+        document.addEventListener("pointerdown", (ev) => {
+          if (!body.classList.contains("nav-open") || garde) return;
+          if (ev.target.closest("#tabs, #navPoignee")) { ouvre(true); return; }
+          ouvre(false);
+        }, true);
+        tabs.addEventListener("click", () => { if (!garde) { clearTimeout(fermeT); fermeT = setTimeout(() => ouvre(false), 250); } }, true);
+        tabs.addEventListener("focusin", () => ouvre(true));
+        tabs.addEventListener("focusout", (ev) => { if (!tabs.contains(ev.relatedTarget) && !garde) ouvre(false); });
+        new MutationObserver(() => { if (!garde) ouvre(false); }).observe(body, { attributes: true, attributeFilter: ["data-tab"] });
       })();
       views.addEventListener("contextmenu", (ev) => {
         const iv = ev.target.closest(".inv");

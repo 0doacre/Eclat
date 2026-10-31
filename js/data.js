@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.51.0";
+  D.VERSION = "0.51.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1653,6 +1653,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⌄ La barre du bas se range d’elle-même et ne laisse qu’une fine poignée. Elle vient quand tu approches la souris du bas de l’écran ou que tu touches la poignée (ou la fais glisser vers le haut), et se range après ton choix. Le défilement ne la fait plus bouger. Menu → Affichage → « Barre du bas masquée » la laisse toujours visible.",
     "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les composants que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier : 0, 10, 20 … 100 % d’un stock de confort qui grandit avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
     "👷 Chaque métier a ses travailleurs, nommés d’après ce qu’ils font : artisan, bâtisseur, éleveur, forgeron, chimiste, centralier, électronicien, lettré (et leurs apprentis). Les boutons d’embauche, les renvois et la jauge d’énergie les nomment ainsi.",
     "🔘 Fin de l’harmonisation des boutons : les flèches des terres, le bouton d’arrêt de la récolte, les pastilles d’ingrédient et d’objet, et la ligne d’âge prennent l’octogone du jeu ; « Arbre » devient « Progression » ; l’aide ne promet plus de raccourcis clavier qui n’existent pas.",

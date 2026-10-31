@@ -655,6 +655,8 @@
   });
   U.peutEcrire = () => Stk.peutEcrire();
   /* l’affichage resserré (Domaine et Carnet) : un seul réglage, dans le menu. Les anciennes parties avaient deux réglages. */
+  /* la barre du bas (0.51.1) : « masquée » par défaut (une poignée, la barre vient au survol ou au toucher), ou « visible » */
+  U.barreAuto = () => (S().settings || {}).barreBas !== "visible";
   U.compact = () => { const s = S().settings || {}; return s.compact !== undefined ? !!s.compact : !!(s.domDense || s.carnetDense); };
   U.setCompact = (on) => { const s = S().settings; s.compact = !!on; delete s.domDense; delete s.carnetDense; };
   function save() {
@@ -920,6 +922,7 @@
   /* un doigt reste appuyé sur une matière (sa fiche va s’ouvrir) : on ne redessine pas dessous */
   const pressing = () => !!(U.lp && !U.lp.up);
   function render(force) {
+    if (U.appliquerBarre) U.appliquerBarre();
     const now = performance.now();
     if (!force && now - U.lastRender < 120) { U.dirty = true; return; }
     if ((U.holding || pressing()) && !force) { U.dirty = true; return; }

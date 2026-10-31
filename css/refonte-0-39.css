@@ -190,13 +190,20 @@
   .terres-pastille { flex: 1 1 0; min-width: 0; padding-left: 6px; padding-right: 6px; font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
 }
 
-/* Barre du bas : elle s'efface quand on fait défiler vers le bas (doigt qui glisse vers le haut) et revient dès qu'on remonte.
- * --nav tombe à 0 : la vue récupère la place (tous les ingrédients du Labo deviennent atteignables). */
-:root { --nav-reel: var(--nav); }
-body.nav-away { --nav: 0px; }
-body.nav-away #tabs { height: calc(var(--nav-reel) + var(--safe-b)) !important; min-height: 0 !important; transform: translateY(100%); pointer-events: none; }
+/* Barre du bas (0.51.1) : en mode « masquée » (réglage par défaut) elle se range sous l'écran et ne laisse qu'une fine poignée ; la vue ne
+ * réserve que la place de la poignée (--nav), la barre sortie recouvre le bas sans faire sauter la page. « Barre du bas masquée » désactivé :
+ * la barre reste toujours là, comme avant. */
+:root { --nav-reel: var(--nav); --poignee: 26px; }
+body.nav-auto { --nav: var(--poignee); }
+body.nav-auto #tabs { height: calc(var(--nav-reel) + var(--safe-b)) !important; min-height: 0 !important; transform: translateY(100%); pointer-events: none; box-shadow: 0 -6px 22px #0004; }
+body.nav-auto.nav-open #tabs { transform: none; pointer-events: auto; }
 #tabs { transition: transform .22s ease; }
-@media (prefers-reduced-motion: reduce) { #tabs { transition: none; } }
+#navPoignee { display: none; }
+body.nav-auto #navPoignee { display: flex; position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; height: calc(var(--poignee) + var(--safe-b)); padding-bottom: var(--safe-b); align-items: center; justify-content: center; cursor: pointer; touch-action: none; transition: opacity .18s ease; }
+body.nav-auto.nav-open #navPoignee { opacity: 0; pointer-events: none; }
+#navPoignee span { width: 46px; height: 5px; border-radius: 3px; background: var(--muted, #8a7a62); opacity: .65; }
+#navPoignee:hover span, #navPoignee:focus-visible span { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { #tabs, #navPoignee { transition: none; } }
 
 /* Labo : la liste des ingrédients ne s'écrase plus (elle tombait à quelques pixels de haut et restait cachée sous la barre du bas).
  * Elle prend sa hauteur entière ; c'est le Labo qui défile vers le bas pour tout montrer. */
