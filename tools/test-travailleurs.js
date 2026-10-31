@@ -302,3 +302,41 @@ test("seuil à 0 dans le métier qui fabrique : le dit ; rien à signaler sans t
   const { E: V } = jeu(5);
   assert.deepEqual(V.goulots(), []);
 });
+
+console.log("Les chantiers des bâtisseurs (0.54)");
+test("un bâtisseur exécute le chantier que le joueur a lancé (un extracteur), pas sans lui", () => {
+  const { E } = jeu(6);
+  E.state.ecus = 1e6;
+  for (const id of ["manche", "corde", "os", "bois", "fibre"]) E.add(id, 500);
+  E.state.made.collets = 1;
+  E.embaucher("construction", "ouvrier");
+  avance(E, 5);
+  assert.equal(E.travailleurs().construction.usedOuv, 0, "pas de chantier : le bâtisseur reste libre");
+  const avant = E.count("collets");
+  const r = E.order("collets", 1);
+  assert.equal(r.ok, true, JSON.stringify(r.why));
+  assert.equal(E.travailleurs().construction.usedOuv, 1, "le bâtisseur prend le chantier");
+  avance(E, 120);
+  assert.equal(E.count("collets"), avant + 1, "l'extracteur est construit");
+  assert.equal(E.state.hand.q.length, 0);
+});
+test("sans l'avoir construit une fois à la main, un bâtisseur ne construit pas ; une machine non plus", () => {
+  const { E } = jeu(6);
+  E.state.ecus = 1e6;
+  for (const id of ["manche", "corde", "os", "bois", "fibre"]) E.add(id, 500);
+  delete E.state.made.collets;
+  E.embaucher("construction", "ouvrier");
+  E.order("collets", 1);
+  assert.equal(E.travailleurs().construction.usedOuv, 0);
+});
+test("le goulot « aucun extracteur » propose le chantier quand un extracteur est connu et déjà construit à la main", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6;
+  for (const [id, it] of Object.entries(D.ITEMS)) if (!it.r && it.a <= 5) E.add(id, 5000);
+  E.state.made.manche = 1; E.state.made.collets = 1;
+  E.embaucher("artisanat", "apprenti");
+  for (const id of Object.keys(D.ITEMS)) if (D.ITEMS[id].r && D.ITEMS[id].t === "comp" && id !== "manche" && E.atelierDe(id) === "artisanat") E.state.inv[id] = 999;
+  E.state.inv.bois = 0;
+  const g = E.goulots().find((x) => x.kind === "extracteur" && x.ing === "bois");
+  if (g) assert.ok(g.action.k === "chantier" || g.action.k === "terres", g.action.k);
+});

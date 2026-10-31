@@ -13,7 +13,7 @@
     const S = () => E.state;
 
     const famille = (id) => E.atelierDe(id);
-    const ordinaire = (id) => { const it = I[id]; return it && it.r && !it.sec && !it.path && !it.old && !E.isUnique(it) && !E.isScaled(it); };
+    const ordinaire = (id) => { const it = I[id]; return it && it.r && !it.sec && !it.path && !it.old && !E.isUnique(it) && (!E.isScaled(it) || famille(id) === "construction"); }; // Construction : ses recettes sont presque toutes à prix croissant (extracteurs, machines), ce sont ses chantiers
     const connues = (f) => Object.keys(S().known).filter((id) => ordinaire(id) && famille(id) === f);
 
     function energie() {

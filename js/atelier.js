@@ -1762,6 +1762,14 @@
         else toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : r.why === "max" ? "Le métier est au complet." : "Pas possible pour l’instant.", { key: "emb" });
         render(true); return;
       }
+      if (a.k === "chantier") {
+        const r = E.order(a.id, 1);
+        if (r.ok) {
+          const bat = (S().ateliers || {}).construction, eq = bat && (bat.app || bat.ouv);
+          toast("🏗️ Chantier lancé : " + esc(I[a.id].n) + (eq ? ". Tes bâtisseurs s’en occupent." : ". Tu le construis à la main ; embauche un bâtisseur pour qu’il s’en charge."), { key: "emb" });
+        } else toast(r.why === "plan" ? "Il manque des matières pour ce chantier : tout est dans la Réserve ou rien ne part." : r.why === "full" ? "La file des commandes est pleine." : "Pas possible pour l’instant.", { key: "emb" });
+        render(true); return;
+      }
       if (a.k === "metier") { U.atelierSel = a.fam; U.prodSel = null; render(true); return; }
       if (a.k === "fabriquer") { U.atelierSel = a.fam; U.prodSel = a.id; render(true); return; }
       if (a.k === "energie") { U.energieSheet = true; render(true); return; }
@@ -1769,7 +1777,20 @@
       setTab("domaine");
     }
     /* le seuil d'un métier (0.51) : jusqu'où ses travailleurs fabriquent seuls, et où ils en sont */
+    /* Construction n'a pas de seuil : ses bâtisseurs exécutent les chantiers que le joueur lance (une construction mise dans sa file) */
+    function chantiersHTML(c) {
+      const jobs = (S().hand && S().hand.q || []).filter((j) => E.atelierDe(j.id) === "construction");
+      const equipe = (c.apprentis || 0) + (c.ouvriers || 0);
+      const lignes = jobs.map((j) => {
+        const tot = j.s.reduce((a, x) => a + x[1], 0), fait = j.done.reduce((a, x) => a + x, 0);
+        return '<li class="atel-seuil-l"><b>' + esc(I[j.id].n) + '</b><span class="tiny muted">' + fait + " / " + tot + " étapes" + (j.paused ? " · en pause" : "") + "</span></li>";
+      }).join("");
+      return '<div class="atel-seuil"><div class="atel-seuil-t"><b>Chantiers</b><span class="tiny muted">' +
+        (equipe ? "Tes bâtisseurs exécutent les constructions que tu lances. Ils ne construisent jamais de leur propre initiative, et seulement ce que tu as déjà construit une fois à la main." : "Embauche un bâtisseur : il exécutera les constructions que tu lances (extracteurs, machines), à ta place.") + "</span></div>" +
+        (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Aucun chantier pour l’instant. Lance une construction depuis Produire, ou depuis un goulot (« Lancer le chantier »).</p>') + "</div>";
+    }
     function seuilHTML(c) {
+      if (c.id === "construction") return chantiersHTML(c);
       if (!E.autoEtat || (D.TRAVAILLEURS || {}).generalistes === false) return "";
       const sel = E.seuilAtelier(c.id), etats = E.autoEtat(c.id);
       const equipe = (c.apprentis || 0) + (c.ouvriers || 0);

@@ -1450,7 +1450,9 @@
       const fits = wk ? !!(item(rec) && item(rec).r && E.atelierDe(rec) === wk.fam && Object.keys(item(rec).r[1]).length <= wk.def.ing) : job && job.ancienAtelier
         ? Object.keys(jobInputs(job, rec)).length <= (item(m).ing !== undefined ? item(m).ing : 1)
         : E.machCan(m, rec);
-      if (!E.automatable(rec) || !fits) return false;
+      /* 0.54 : les bâtisseurs exécutent les chantiers du joueur, c'est-à-dire des constructions à prix croissant (extracteurs, machines) qu'il a lui-même mises dans sa file ; jamais de leur propre initiative */
+      const chantier = !!(wk && wk.fam === "construction" && job && S.known[rec] && isScaled(item(rec)));
+      if ((!E.automatable(rec) && !chantier) || !fits) return false;
       if (!E.hasEchoFin("retour") && D.COMMANDES && D.COMMANDES.firstByHand && !(S.made[rec] > 0)) return false;
       if (blocker(rec, job)) return false;
       return true;
@@ -1801,7 +1803,18 @@
         const lot = g.ings && g.ings.length ? g.ings.slice(0, 3).map(nom).join(", ") + (g.ings.length > 3 ? " et " + (g.ings.length - 3) + " autres" : "") : "";
         const n = g.kind === "main" || g.kind === "personne" ? lot : g.ing ? nom(g.ing) : "";
         let txt = "", action = null;
-        if (g.kind === "extracteur") { txt = "Manque : " + n + ". Aucun extracteur n’en récolte"; action = { k: "terres", id: g.ing, label: "Voir les Terres" }; }
+        if (g.kind === "extracteur") {
+          txt = "Manque : " + n + ". Aucun extracteur n’en récolte";
+          action = { k: "terres", id: g.ing, label: "Voir les Terres" };
+          const cand = E.extFor(g.ing).filter((t) => S.known[t] && S.made[t] > 0).sort((a, b) => extRate(b, g.ing) - extRate(a, g.ing));
+          const ext = cand.find((t) => E.orderStatus(t, 1).ok) || cand[0]; // le plus rapide que tu peux payer maintenant
+          if (ext) {
+            const q = queued(ext) > 0;
+            const bat = S.ateliers && S.ateliers.construction && (S.ateliers.construction.app || S.ateliers.construction.ouv);
+            if (q) { txt += ". Un chantier est en cours"; action = null; }
+            else action = { k: "chantier", id: ext, res: g.ing, label: "Lancer le chantier : " + nom(ext), bat: !!bat };
+          }
+        }
         else if (g.kind === "lent") { txt = maj(n) + " part plus vite qu’il ne se récolte"; action = { k: "terres", id: g.ing, label: "Ajouter un extracteur" }; }
         else if (g.kind === "personne") {
           txt = "Manque : " + n + " (" + F(g.fam) + "). Personne n’y travaille";
@@ -4141,7 +4154,7 @@
       const d = TRAV[kind];
       if (!d || !((D.ATELIERS || {}).familles || []).some((f) => f.id === fam)) return { ok: false, why: "inconnu" };
       if (S.age < d.age) return { ok: false, why: "age" };
-      if (!Object.keys(S.known).some((id) => item(id) && item(id).r && !item(id).sec && !isUnique(item(id)) && !isScaled(item(id)) && E.atelierDe(id) === fam)) return { ok: false, why: "vide" };
+      if (!Object.keys(S.known).some((id) => item(id) && item(id).r && !item(id).sec && !isUnique(item(id)) && (!isScaled(item(id)) || fam === "construction") && E.atelierDe(id) === fam)) return { ok: false, why: "vide" };
       const key = kind === "apprenti" ? "app" : "ouv";
       if ((((S.ateliers || {})[fam] || {})[key] || 0) >= d.max) return { ok: false, why: "max" };
       const cout = E.coutEmbauche(fam, kind);
