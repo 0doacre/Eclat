@@ -67,3 +67,15 @@
 .compte-ic { width: 1.2em; height: 1.2em; vertical-align: -.2em; }
 #cloudBtn .compte-ic { width: 24px; height: 24px; }
 #modal .menu-wrap .m-card-icon .compte-ic { width: 22px; height: 22px; }
+
+/* 9. Mieux occuper l'espace (0.49) : les matières du Labo se serrent (autant de colonnes que la largeur le permet),
+ * et sur grand écran l'établi et la réserve restent en vue pendant que la liste des matières défile dans sa colonne. */
+#v-labo .ae-inventory { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+#v-labo .ae-resource > .btn { min-height: 58px; padding: 4px 2px; }
+#v-labo .ae-resource .ic { transform: none; }
+@media (min-width: 880px) {
+  #v-labo .ae-layout { align-items: start; }
+  #v-labo .ae-bench { position: sticky; top: 8px; }
+  #v-labo .ae-stock { position: sticky; top: 8px; display: flex; flex-direction: column; max-height: calc(100dvh - 262px); min-height: 280px; overflow: hidden; }
+  #v-labo .ae-inventory { flex: 1 1 auto; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain; align-content: start; }
+}

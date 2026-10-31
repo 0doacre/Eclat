@@ -56,3 +56,7 @@ Cinq onglets, une rubrique affichée à la fois (`.menu-sec[hidden]`, onglet ret
 
 - **Décompte d'un âge** : « trouvées / recettes » = les recettes trouvées sur les recettes montrées par la grille (trouvées + cases « ? »). Les matières vues (Os, Peau, Bois…) ne comptent pas : elles ont leur rangée « Matières vues » sous la grille. Une recette secrète n'entre dans le compte qu'une fois trouvée. Les outils cachés du profil d'équipement (établi aménagé, racloir remplacé, polissoir) n'en font plus partie, ce qui faisait paraître « 13 / 14 » alors que la grille montrait autre chose.
 - **Cosmos** : dernière page de la Progression (`Chemin · Secrets · Gestes · Fins · Mémoire · Cosmos`), visible dès qu'un instrument d'observation est possédé. Le Journal revient à une seule page. Le bouton garde `data-tab2="cosmos"`.
+
+## Occuper l'espace (0.49)
+
+Au Labo, les matières se disposent en colonnes automatiques (72 px minimum : quatre colonnes à 390 px, cinq à 800 px, davantage plus large). À partir de 880 px, l'établi et la réserve sont collés en haut de leur colonne (`position: sticky`) et la liste des matières défile dans la réserve (hauteur = écran moins l'en-tête et la barre du bas). Reste à étudier : l'Atelier et la Progression sur très grand écran.
