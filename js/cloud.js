@@ -103,7 +103,11 @@
       if (auth) headers.authorization = "Bearer " + auth;
       let res;
       try { res = await doFetch(C.server() + path, { method, headers, body: body ? JSON.stringify(body) : undefined, keepalive: !!(body && body.keepalive) }); }
-      catch (e) { throw cloudError(0, "network", "Le serveur ne répond pas. Vérifie ta connexion."); }
+      catch (e) {
+        // sans réponse lisible : réseau coupé, serveur arrêté, ou serveur qui refuse l’adresse du jeu (ALLOWED_ORIGIN)
+        const adresse = root.location && root.location.origin && root.location.origin !== "null" ? root.location.origin : "";
+        throw cloudError(0, "network", "Le serveur ne répond pas. Vérifie ta connexion." + (adresse ? " Si elle va bien, le serveur refuse peut-être cette adresse du jeu : " + adresse + " (réglage ALLOWED_ORIGIN du serveur)." : ""));
+      }
       let o = {};
       try { o = await res.json(); } catch (e) { /* réponse vide */ }
       if (!res.ok) {
