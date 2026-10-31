@@ -1,7 +1,7 @@
 # Textes de découverte à écrire
 
 Généré par `node tools/saveur-a-ecrire.js`. Chaque recette affiche, quand on la trouve, sa saveur : le texte de `D.SAVEUR[id]` s'il existe, sinon sa description actuelle (en italique ci-dessous). Pour écrire : ajouter `D.SAVEUR.<id> = "…"` dans `js/data.js` (220 signes au plus).
-Recettes : 0 écrites sur 218.
+Recettes : 25 écrites sur 222.
 
 
 ## Gestes (texte du premier emploi)
@@ -24,33 +24,33 @@ Recettes : 0 écrites sur 218.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 0 | Manche (`manche`) | Tailler | *Un bâton bien droit, écorcé. L’ingrédient de base de tout jeu de survie.* | non |
-| 0 | Corde (`corde`) | Tresser | *Trois brins tordus ensemble. Elle tient ton poids.* | non |
-| 0 | Panier tressé (`panier`) | Tresser | *Enfin de quoi porter plus que deux mains pleines.* | non |
-| 0 | Archet à feu (`archet`) | Assembler | *Un petit arc dont la corde fait tourner un bâton contre du bois. Tourne assez vite, et le bois finit par fumer.* | non |
-| 0 | Charbon (`charbon`) | Chauffer | *Du bois cuit sans flamme. Il brûle bien plus chaud que le bois.* | non |
-| 0 | Épieu durci (`epieu`) | Chauffer | *Une pointe passée au feu, dure comme de l’os. Avec ça en main, tu oses t’avancer dans la plaine.* | non |
-| 0 | Torche (`torche`) | Assembler | *Une flamme que tu peux emporter là où il fait noir.* | non |
-| 1 | Arc de chasse (`arc`) | Assembler | *Plus besoin d’approcher les bêtes.* | non |
-| 1 | Fronde (`fronde`) | Tresser | *Un caillou bien lancé vaut mieux qu’une longue course.* | non |
-| 2 | Éclat de silex (`eclat`) | Tailler | *Un coup sec, au bon angle, et la pierre se fend. Le bord coupe mieux que tout ce que tu as eu en main.* | non |
-| 2 | Rouage de bois (`engrenage_bois`) | Tailler | *Une petite roue dentée, taillée dans un bâton.* | non |
-| 2 | Hache de pierre (`hache_pierre`) | Assembler | *Les petits arbres tombent en quelques coups.* | non |
-| 2 | Couteau de silex (`couteau`) | Assembler | *Une lame assez fine pour dépecer proprement.* | non |
-| 2 | Pioche de pierre (`pioche_pierre`) | Assembler | *Assez lourde pour entamer les collines et leurs veines colorées.* | non |
-| 2 | Brique (`brique`) | Chauffer | *De la boue cuite, dure comme de la pierre.* | non |
-| 4 | Roue cerclée (`roue`) | Assembler | *Des rayons de bois, un cercle de métal.* | non |
-| 5 | Chariot (`chariot`) | Assembler | *Tu peux enfin emporter tes outils à travers le désert.* | non |
-| 5 | Verre (`verre`) | Chauffer | *Du sable, et tu vois au travers.* | non |
-| 5 | Poudre de quartz (`poudre_quartz`) | Tailler | *Un abrasif minéral fin, tiré des cristaux du Désert.* | non |
-| 5 | Lentille (`lentille`) | Tailler | *Elle rapproche ce qui est loin.* | non |
-| 5 | Lunette astronomique (`lunette`) | Assembler | *Pour regarder le ciel.* | non |
-| 5 | Brique réfractaire (`brique_refr`) | Chauffer | *Elle ne craint plus aucune chaleur.* | non |
-| 6 | Verre trempé (`verre_trempe`) | Tremper | *Un verre qui ne se brise plus.* | non |
-| 8 | Cristal chantant (`cristal_chantant`) | Accorder | *Il retient une mélodie et la répète à l’infini.* | non |
-| 10 | Traducteur (`traducteur`) | Accorder | *Il traduit l’intention plus que les mots.* | non |
+| 0 | Manche (`manche`) | Tailler | *Un bâton bien droit, écorcé. L’ingrédient de base de tout jeu de survie.* | oui |
+| 0 | Corde (`corde`) | Tresser | *Trois brins tordus ensemble. Elle tient ton poids.* | oui |
+| 0 | Panier tressé (`panier`) | Tresser | *Enfin de quoi porter plus que deux mains pleines.* | oui |
+| 0 | Archet à feu (`archet`) | Assembler | *Un petit arc dont la corde fait tourner un bâton contre du bois. Tourne assez vite, et le bois finit par fumer.* | oui |
+| 0 | Charbon (`charbon`) | Chauffer | *Du bois cuit sans flamme. Il brûle bien plus chaud que le bois.* | oui |
+| 0 | Épieu durci (`epieu`) | Chauffer | *Une pointe passée au feu, dure comme de l’os. Avec ça en main, tu oses t’avancer dans la plaine.* | oui |
+| 0 | Torche (`torche`) | Assembler | *Une flamme que tu peux emporter là où il fait noir.* | oui |
+| 1 | Arc de chasse (`arc`) | Assembler | *Plus besoin d’approcher les bêtes.* | oui |
+| 1 | Fronde (`fronde`) | Tresser | *Un caillou bien lancé vaut mieux qu’une longue course.* | oui |
+| 2 | Éclat de silex (`eclat`) | Tailler | *Un coup sec, au bon angle, et la pierre se fend. Le bord coupe mieux que tout ce que tu as eu en main.* | oui |
+| 2 | Rouage de bois (`engrenage_bois`) | Tailler | *Une petite roue dentée, taillée dans un bâton.* | oui |
+| 2 | Hache de pierre (`hache_pierre`) | Assembler | *Les petits arbres tombent en quelques coups.* | oui |
+| 2 | Couteau de silex (`couteau`) | Assembler | *Une lame assez fine pour dépecer proprement.* | oui |
+| 2 | Pioche de pierre (`pioche_pierre`) | Assembler | *Assez lourde pour entamer les collines et leurs veines colorées.* | oui |
+| 2 | Brique (`brique`) | Chauffer | *De la boue cuite, dure comme de la pierre.* | oui |
+| 4 | Roue cerclée (`roue`) | Assembler | *Des rayons de bois, un cercle de métal.* | oui |
+| 5 | Chariot (`chariot`) | Assembler | *Tu peux enfin emporter tes outils plus loin que le camp.* | oui |
+| 5 | Verre (`verre`) | Chauffer | *Du sable, et tu vois au travers.* | oui |
+| 5 | Poudre de quartz (`poudre_quartz`) | Tailler | *Un abrasif minéral fin, tiré des cristaux du Désert.* | oui |
+| 5 | Lentille (`lentille`) | Tailler | *Elle rapproche ce qui est loin.* | oui |
+| 5 | Lunette astronomique (`lunette`) | Assembler | *Pour regarder le ciel.* | oui |
+| 5 | Brique réfractaire (`brique_refr`) | Chauffer | *Elle ne craint plus aucune chaleur.* | oui |
+| 6 | Verre trempé (`verre_trempe`) | Tremper | *Un verre qui ne se brise plus.* | oui |
+| 8 | Cristal chantant (`cristal_chantant`) | Accorder | *Il retient une mélodie et la répète à l’infini.* | oui |
+| 10 | Traducteur (`traducteur`) | Accorder | *Il traduit l’intention plus que les mots.* | oui |
 
-## Construction (71 recettes)
+## Bâtiment (75 recettes)
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
@@ -89,6 +89,7 @@ Recettes : 0 écrites sur 218.
 | 6 | Haut-fourneau (`haut_fourneau`) | Construire | *Une tour de feu cerclée de fer.* | non |
 | 6 | Bac de trempe (`bac_trempe`) | Construire | *Un grand bac d’eau froide. Le métal brûlant y durcit d’un coup.* | non |
 | 6 | Tour d’usinage (`tour`) | Construire | *Elle façonne le métal au dixième de millimètre.* | non |
+| 6 | Martinet hydraulique (`martinet`) | Construire | *Une roue, une chute d’eau, un marteau qui retombe sans fin.* | non |
 | 7 | Presse à vapeur (`presse_vapeur`) | Construire | *Elle siffle et cogne toute la journée.* | non |
 | 7 | Scierie à vapeur (`scierie`) | Construire | *La forêt recule en hurlant.* | non |
 | 7 | Drague à godets (`drague`) | Construire | *Elle racle le lit de la rivière.* | non |
@@ -102,6 +103,7 @@ Recettes : 0 écrites sur 218.
 | 8 | Four à arc (`four_arc`) | Construire | *Un éclair permanent enfermé dans des briques.* | non |
 | 8 | Carrière de quartz mécanisée (`excavatrice`) | Construire | *Elle avale les dunes.* | non |
 | 8 | Mine de fer électrique (`foreuse_elec`) | Construire | *Elle perce la roche en chantant.* | non |
+| 8 | Poste à moteur électrique (`poste_elec`) | Construire | *Un moteur à chaque poste : plus d’arbre, plus de courroie, juste un bourdonnement.* | non |
 | 8 | Pelleteuse à sable (`sable_4`) | Construire | *Une large benne charge du sable à chaque passage.* | non |
 | 8 | Mine de charbon électrique (`charbon_3`) | Construire | *Les outils tournent au fond, alimentés par un câble qui court le long de la galerie.* | non |
 | 9 | Mine d’uranium (`uranium_1`) | Construire | *Un puits étroit, éclairé en continu. On n’y reste jamais longtemps.* | non |
@@ -117,16 +119,18 @@ Recettes : 0 écrites sur 218.
 | 11 | Mine de plomb mécanisée (`galene_2`) | Construire | *Des treuils électriques et des convoyeurs remontent les blocs de galène en continu.* | non |
 | 12 | Plateforme pétrolière (`plateforme`) | Construire | *Une ville flottante qui pompe l’huile.* | non |
 | 12 | Mine de bauxite géante (`excavateur`) | Construire | *Un monstre de titane qui mange les montagnes.* | non |
+| 12 | Centre d’usinage numérique (`centre_num`) | Construire | *Il suit un programme au micron près, sans qu’aucune main ne le guide.* | non |
 | 12 | Mine d’ilménite géante (`ilmenite_2`) | Construire | *Des bennes de la taille d’une maison, pour des blocs entiers.* | non |
 | 12 | Mine de terres rares géante (`terres_2`) | Construire | *Des aimants triment les grains utiles et laissent le reste.* | non |
 | 13 | Filet orbital (`station_orbitale`) | Construire | *Un filet qui ramasse les restes des Anciens.* | non |
 | 13 | Base d’hélium-3 (`base_lunaire`) | Construire | *Des dômes sous la lumière de la Terre.* | non |
 | 13 | Assembleur moléculaire (`assembleur`) | Construire | *Il assemble la matière atome par atome.* | non |
 | 13 | Excavatrice lunaire (`regolithe_1`) | Construire | *Des pelles automatiques raclent la poussière grise du sol lunaire.* | non |
+| 14 | Matrice de fabrication (`matrice`) | Construire | *On lui donne de la matière brute ; elle rend l’objet fini.* | non |
 | 14 | Forge stellaire (`forge_stellaire`) | Construire | *Même derrière le verre fumé, tu dois détourner les yeux.* | non |
 | 14 | Réplicateur (`replicateur`) | Construire | *Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.* | non |
 
-## Élevage (8 recettes)
+## Subsistance (8 recettes)
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
@@ -175,10 +179,10 @@ Recettes : 0 écrites sur 218.
 | 7 | Marteau-pilon (`marteau_pilon`) | Assembler | *Un bloc d’acier tombe de haut, à intervalle régulier. Rien ne lui résiste.* | non |
 | 8 | Aimant (`aimant`) | Assembler | *Il attire le fer. Tu passes un moment à jouer avec des clous.* | non |
 | 8 | Cuivre pur (`cuivre_pur`) | Électriser | *Raffiné par le courant, pur à 99,99 %.* | non |
+| 8 | Sonde pétrolière (`foreuse`) | Assembler | *Une longue tige d’acier qui perce jusqu’à l’huile noire. Elle descend bien plus bas que la foreuse des Profondeurs.* | non |
 | 9 | Lingot de plomb (`lingot_plomb`) | Chauffer | *Mou, lourd, gris sombre. Il arrête ce que l’œil ne voit pas.* | non |
 | 9 | Plaque de plomb (`plaque_plomb`) | Marteler | *Épaisse, froide, lourde à porter.* | non |
 | 9 | Pastille d’uranium (`pastille_uranium`) | Chauffer | *Un petit cylindre de céramique noire. Il chauffe tout seul.* | non |
-| 10 | Sonde pétrolière (`foreuse`) | Assembler | *Une longue tige d’acier qui perce jusqu’à l’huile noire. Elle descend bien plus bas que la foreuse des Profondeurs.* | non |
 | 11 | Aluminium (`aluminium`) | Électriser | *Autrefois plus précieux que l’or.* | non |
 | 11 | Titane (`titane`) | Chauffer | *Léger, et il ne rouille pas.* | non |
 | 11 | Aimant néodyme (`aimant_neo`) | Allier | *Petit et terriblement puissant.* | non |
@@ -208,14 +212,14 @@ Recettes : 0 écrites sur 218.
 | 12 | Graphène (`graphene`) | Tailler | *Une couche d’atomes de carbone. Tu l’obtiens en arrachant des feuilles de charbon avec un ruban collant. Sérieusement.* | non |
 | 14 | Métamatériau (`metamateriau`) | Stratifier | *Une matière qui plie la lumière.* | non |
 
-## Centrales (31 recettes)
+## Énergie (31 recettes)
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
 | 4 | Moulin à eau (`moulin`) | Construire | *La rivière fait tourner la roue, jour et nuit.* | non |
 | 7 | Moteur à vapeur (`moteur_vapeur`) | Assembler | *À chaque poussée du piston, les engrenages font un tour de plus.* | non |
 | 7 | Pompe d’exhaure (`pompe`) | Construire | *Les galeries inondées se vident. Tu peux creuser plus profond.* | non |
-| 7 | Chemin de fer (`locomotive`) | Construire | *Des rails relient tous tes chantiers.* | non |
+| 7 | Chemin de fer (`locomotive`) | Construire | *Des rails relient tous tes chantiers, jusqu’au désert.* | non |
 | 7 | Circuit de vapeur (`circuit_vapeur`) | Assembler | *L’eau bout dans la chaudière ; les tuyaux sifflent quand la pression monte.* | non |
 | 7 | Condenseur (`condenseur`) | Assembler | *Le tuyau serpente dans une cuve froide. À la sortie, la vapeur est redevenue de l’eau.* | non |
 | 7 | Récupération de vapeur (`recuperation_vapeur`) | Construire | *Des conduites ramènent l’eau encore chaude vers les chaudières.* | non |
@@ -244,7 +248,7 @@ Recettes : 0 écrites sur 218.
 | 14 | Antimatière (`antimatiere`) | Transmuter | *Un gramme suffit à raser une ville.* | non |
 | 14 | Panneau de Dyson (`panneau_dyson`) | Stratifier | *Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.* | non |
 
-## Électronique (20 recettes)
+## Technologie (20 recettes)
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
@@ -269,7 +273,7 @@ Recettes : 0 écrites sur 218.
 | 12 | Essaim de drones (`drones`) | Construire | *Des milliers de petites hélices bourdonnent au-dessus de tes gisements.* | non |
 | 13 | Intelligence artificielle (`ia`) | Construire | *Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.* | non |
 
-## Artistique (4 recettes)
+## Culture et savoir (4 recettes)
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|

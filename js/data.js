@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.63.0";
+  D.VERSION = "0.64.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1749,6 +1749,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✍️ Les recettes d’Artisanat ont un texte de découverte écrit pour elles : vingt-cinq phrases courtes, à voir et à toucher. Les autres métiers suivront.",
     "🏘️ Ton lieu change de nom avec l’âge : Campement, Halte, Foyer, Hameau, Village, Oppidum, Cité, Ville, Métropole, Complexe, Mégalopole, Conurbation, Arcologie, Spatioport, Essaim. Il remplace « le Domaine » dans le récit et l’ambiance. L’écran, lui, s’appelle toujours les Terres.",
     "🏷️ Les métiers changent de nom : Subsistance (l’ancien Élevage), Bâtiment (Construction), Énergie (Centrales), Technologie (Électronique), Culture et savoir (Arts et lettres). Leurs travailleurs aussi : opérateur, ingénieur, érudit. Artisanat, Métallurgie et Chimie gardent le leur. Ta partie n’est pas touchée.",
     "🏷️ Passe de vocabulaire. Un seul mot par chose : « ressource » partout (plus de « matière »), « essayer » et « essai » (plus de « tenter »), des « consignes » pour garder une réserve (plus de « stock » ni de « cadence »). Les paliers du seuil deviennent « À l’arrêt » et « Quelques provisions », la découverte se fait toujours « au Labo », et les voix des travailleurs ne parlent plus de « l’atelier ». Les anciens textes de l’apprenti à l’établi sont retirés.",
@@ -2073,6 +2074,32 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
+  /* Artisanat (0.64) */
+  D.SAVEUR.manche = "L’écorce part par lanières. Dessous, le bois est blanc, encore humide, tout droit.";
+  D.SAVEUR.corde = "Trois brins serrés en torsade. Pendu au bout, tu l’entends à peine craquer.";
+  D.SAVEUR.panier = "Un tressage serré, un peu de travers. Il sent la fibre verte et il est déjà trop grand pour tes deux mains.";
+  D.SAVEUR.archet = "Le bâton ronronne dans son creux. Une odeur de bois roussi, un fil de fumée, puis tout au fond, ça rougit.";
+  D.SAVEUR.charbon = "Le bois est ressorti noir, léger comme de l’écorce. Les doigts en gardent la suie.";
+  D.SAVEUR.epieu = "La pointe a noirci au feu et sonne comme de l’os. La plaine paraît un peu moins grande.";
+  D.SAVEUR.torche = "Elle fume, elle crache de la résine, et l’ombre recule de trois pas.";
+  D.SAVEUR.arc = "Le bois plie, la corde chante. À vingt pas, la bête ne t’a pas entendu.";
+  D.SAVEUR.fronde = "Un tour, deux tours, le claquement de la lanière. Le caillou est déjà là-bas.";
+  D.SAVEUR.eclat = "La pierre claque et se fend. Le bord est clair, fin, et coupe la peau avant qu’on le sente.";
+  D.SAVEUR.engrenage_bois = "Des dents taillées au couteau, inégales. Contre une autre roue, elles s’accrochent, et ça tourne.";
+  D.SAVEUR.hache_pierre = "Le silex, lié serré au manche. Au premier coup, les copeaux volent, gros comme la main.";
+  D.SAVEUR.couteau = "Une lame de silex, si fine qu’elle laisse passer le jour. La peau s’ouvre d’un trait.";
+  D.SAVEUR.pioche_pierre = "Lourde au bout du bras. Il faut dix coups pour que la roche cède et montre sa veine colorée.";
+  D.SAVEUR.brique = "De la boue séchée au soleil, puis passée au feu. Elle sonne clair sous l’ongle, comme de la pierre.";
+  D.SAVEUR.roue = "Un cercle de métal, serré à chaud sur le bois. Les pierres du chemin ne mordent plus la jante.";
+  D.SAVEUR.chariot = "Deux roues, un plateau, tes sacs dessus. Tu tires sur les bras : toute la charge suit d’un coup.";
+  D.SAVEUR.verre = "Du sable fondu au grand feu. La goutte refroidie est claire, on voit sa main à travers.";
+  D.SAVEUR.poudre_quartz = "Le cristal du Désert, pilé en farine blanche. Entre les doigts, elle crisse.";
+  D.SAVEUR.lentille = "Un disque de verre, poli pendant des heures. Au travers, une fissure dans la pierre paraît large comme le doigt.";
+  D.SAVEUR.lunette = "Deux verres dans un tube. La lune n’est plus lisse : on voit ses creux et ses ombres.";
+  D.SAVEUR.brique_refr = "Plus claire, plus lourde. Le four peut chauffer au blanc, elle reste là.";
+  D.SAVEUR.verre_trempe = "Du feu, puis de l’eau froide, d’un seul coup. Il tinte sous la pierre qu’on lui jette.";
+  D.SAVEUR.cristal_chantant = "On lui siffle trois notes. Posé sur la table, il les rejoue tout bas, sans s’arrêter.";
+  D.SAVEUR.traducteur = "Un cristal tiède dans la paume. Quand on lui parle, il murmure autre chose, et c’est ce qu’on voulait dire.";
   D.SAVEUR_GESTE = {};
   /* Construire (0.43) : les bâtiments, extracteurs, machines, installations et améliorations ne s'assemblent plus : ils se construisent. */
   for (const id in D.ITEMS) {
