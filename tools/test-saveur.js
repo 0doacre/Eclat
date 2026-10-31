@@ -35,15 +35,15 @@ test("un geste nouveau s'introduit la première fois seulement", () => {
   const ids = Object.keys(D.ITEMS).filter((k) => D.ITEMS[k].r && !D.ITEMS[k].sec && D.ITEMS[k].r[0] === "marteler");
   assert.ok(ids.length >= 1);
   const g = E.saveurDecouverte(ids[0]).geste;
-  assert.equal(g.id, "marteler"); assert.equal(g.n, D.GESTES.marteler.n); assert.equal(g.texte, D.GESTES.marteler.d);
+  assert.equal(g.id, "marteler"); assert.equal(g.n, D.GESTES.marteler.n); assert.equal(g.texte, D.SAVEUR_GESTE.marteler || D.GESTES.marteler.d);
   assert.ok(ids.length >= 2);
   E.state.made[ids[0]] = 1;
   assert.notEqual(E.saveurDecouverte(ids[0]).geste, null, "la recette elle-même ne compte pas");
   assert.equal(E.saveurDecouverte(ids[1]).geste, null, "le geste est déjà compris");
 });
 test("un texte de geste écrit remplace sa description", () => {
-  const E = jeu(); D.SAVEUR_GESTE.marteler = "Le métal cède.";
-  try { const id = Object.keys(D.ITEMS).find((k) => D.ITEMS[k].r && !D.ITEMS[k].sec && D.ITEMS[k].r[0] === "marteler"); assert.equal(E.saveurDecouverte(id).geste.texte, "Le métal cède."); } finally { delete D.SAVEUR_GESTE.marteler; }
+  const E = jeu(); const avant = D.SAVEUR_GESTE.marteler; D.SAVEUR_GESTE.marteler = "Le métal cède.";
+  try { const id = Object.keys(D.ITEMS).find((k) => D.ITEMS[k].r && !D.ITEMS[k].sec && D.ITEMS[k].r[0] === "marteler"); assert.equal(E.saveurDecouverte(id).geste.texte, "Le métal cède."); } finally { if (avant === undefined) delete D.SAVEUR_GESTE.marteler; else D.SAVEUR_GESTE.marteler = avant; }
 });
 test("un identifiant inconnu ne casse rien", () => {
   assert.deepEqual(jeu().saveurDecouverte("nimportequoi"), { recette: "", geste: null });

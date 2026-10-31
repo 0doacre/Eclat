@@ -1,7 +1,7 @@
 # Textes de découverte à écrire
 
 Généré par `node tools/saveur-a-ecrire.js`. Chaque recette affiche, quand on la trouve, sa saveur : le texte de `D.SAVEUR[id]` s'il existe, sinon sa description actuelle (en italique ci-dessous). Pour écrire : ajouter `D.SAVEUR.<id> = "…"` dans `js/data.js` (220 signes au plus).
-Recettes : 33 écrites sur 222.
+Recettes : 75 écrites sur 222.
 
 
 ## Gestes (texte du premier emploi)
@@ -9,10 +9,10 @@ Recettes : 33 écrites sur 222.
 | Geste | Texte actuel | Écrit |
 |---|---|---|
 | Chauffer (`chauffer`) | *Cuire, fondre, réduire. La température dépend de ton meilleur feu : feu de camp, four, fourneau…* | non |
-| Marteler (`marteler`) | *Battre le métal sur une enclume.* | non |
-| Allier (`allier`) | *Fondre plusieurs métaux ensemble dans un creuset.* | non |
-| Tremper (`tremper`) | *Refroidir brutalement pour durcir.* | non |
-| Usiner (`usiner`) | *Façonner avec la précision d’une machine.* | non |
+| Marteler (`marteler`) | *Battre le métal sur une enclume.* | oui |
+| Allier (`allier`) | *Fondre plusieurs métaux ensemble dans un creuset.* | oui |
+| Tremper (`tremper`) | *Refroidir brutalement pour durcir.* | oui |
+| Usiner (`usiner`) | *Façonner avec la précision d’une machine.* | oui |
 | Électriser (`electriser`) | *Raffiner et transformer par le courant.* | non |
 | Graver (`graver`) | *Dessiner avec la lumière à l’échelle de l’atome.* | non |
 | Synthétiser (`synthetiser`) | *Recomposer les molécules.* | non |
@@ -147,48 +147,48 @@ Recettes : 33 écrites sur 222.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 3 | Lingot de cuivre (`lingot_cuivre`) | Chauffer | *Ton premier métal, rouge et souple.* | non |
-| 3 | Plaque de cuivre (`plaque_cuivre`) | Marteler | *Du cuivre battu en feuille.* | non |
-| 3 | Fil de cuivre (`fil_cuivre`) | Tailler | *Fin et souple. Il conduit quelque chose, mais tu ne sais pas encore quoi.* | non |
-| 3 | Lingot d’étain (`lingot_etain`) | Chauffer | *Un métal gris et mou, qui crie quand on le plie.* | non |
-| 3 | Ciseau de cuivre (`ciseau`) | Assembler | *Un coin de métal pour fendre la roche le long de ses veines.* | non |
-| 4 | Lingot de bronze (`lingot_bronze`) | Allier | *Plus dur que chacun de ses parents.* | non |
-| 4 | Plaque de bronze (`plaque_bronze`) | Marteler | *Une feuille dorée qui sonne quand on la frappe.* | non |
-| 4 | Engrenage de bronze (`engrenage`) | Tailler | *Une roue qui en fait tourner une autre.* | non |
-| 4 | Ressort de bronze (`ressort`) | Marteler | *Il veut toujours revenir à sa forme.* | non |
-| 4 | Hache de bronze (`hache_bronze`) | Assembler | *Un tranchant qui ne s’émousse presque plus.* | non |
-| 4 | Pioche de bronze (`pioche_bronze`) | Assembler | *Le bronze s’enfonce dans la roche là où la pierre rebondissait.* | non |
-| 5 | Loupe de fer (`loupe`) | Chauffer | *Une éponge de fer pleine de scories. Il faut encore la battre.* | non |
-| 5 | Lingot de fer (`lingot_fer`) | Marteler | *Du fer forgé, gris et têtu.* | non |
-| 5 | Plaque de fer (`plaque_fer`) | Marteler | *Une tôle épaisse.* | non |
-| 5 | Clous (`clous`) | Tailler | *Il en faut toujours plus que prévu.* | non |
-| 5 | Chaîne de fer (`chainon`) | Marteler | *Des maillons de fer, solides et souples à la fois.* | non |
-| 5 | Outils de fer (`outils_fer`) | Assembler | *Marteau, hachette, burin, pelle.* | non |
-| 5 | Diapason (`diapason`) | Accorder | *Il donne la note juste. Toujours la même.* | non |
-| 6 | Lingot d’acier (`lingot_acier`) | Allier | *Du fer avec une pointe de carbone.* | non |
-| 6 | Acier trempé (`acier_trempe`) | Tremper | *Dur, et pourtant il plie sans casser.* | non |
-| 6 | Lame trempée (`lame`) | Tremper | *Son fil entame le bois d’un seul passage.* | non |
-| 6 | Engrenage d’acier (`engrenage_acier`) | Usiner | *Des dents qui ne cassent jamais.* | non |
-| 6 | Vis (`vis`) | Usiner | *Une hélice gravée dans le fer.* | non |
-| 6 | Roulement à billes (`roulement`) | Usiner | *Il fait tourner les machines sans effort.* | non |
-| 6 | Outils d’acier (`outils_acier`) | Assembler | *Des outils qui ne s’usent plus.* | non |
-| 7 | Piston (`piston`) | Usiner | *Il pousse, il tire, il recommence.* | non |
-| 7 | Chaudière (`chaudiere`) | Marteler | *Un ventre de fer. L’eau y bout sous pression.* | non |
-| 7 | Tuyau de cuivre (`tuyau_cuivre`) | Usiner | *Un tube coudé qui se glisse entre les pièces du moteur.* | non |
-| 7 | Soupape de sûreté (`soupape`) | Usiner | *Elle s’ouvre toute seule quand la pression devient dangereuse.* | non |
-| 7 | Marteau-pilon (`marteau_pilon`) | Assembler | *Un bloc d’acier tombe de haut, à intervalle régulier. Rien ne lui résiste.* | non |
-| 8 | Aimant (`aimant`) | Assembler | *Il attire le fer. Tu passes un moment à jouer avec des clous.* | non |
-| 8 | Cuivre pur (`cuivre_pur`) | Électriser | *Raffiné par le courant, pur à 99,99 %.* | non |
-| 8 | Sonde pétrolière (`foreuse`) | Assembler | *Une longue tige d’acier qui perce jusqu’à l’huile noire. Elle descend bien plus bas que la foreuse des Profondeurs.* | non |
-| 9 | Lingot de plomb (`lingot_plomb`) | Chauffer | *Mou, lourd, gris sombre. Il arrête ce que l’œil ne voit pas.* | non |
-| 9 | Plaque de plomb (`plaque_plomb`) | Marteler | *Épaisse, froide, lourde à porter.* | non |
-| 9 | Pastille d’uranium (`pastille_uranium`) | Chauffer | *Un petit cylindre de céramique noire. Il chauffe tout seul.* | non |
-| 11 | Aluminium (`aluminium`) | Électriser | *Autrefois plus précieux que l’or.* | non |
-| 11 | Titane (`titane`) | Chauffer | *Léger, et il ne rouille pas.* | non |
-| 11 | Aimant néodyme (`aimant_neo`) | Allier | *Petit et terriblement puissant.* | non |
-| 11 | Outillage électrique (`outillage`) | Assembler | *Perceuse, tronçonneuse, marteau-piqueur.* | non |
-| 12 | Supraconducteur (`supra`) | Allier | *Le courant y circule sans perte, pour toujours.* | non |
-| 13 | Alliage ancien (`alliage_ancien`) | Usiner | *Un métal que tu ne sais pas fabriquer. Les Anciens, si.* | non |
+| 3 | Lingot de cuivre (`lingot_cuivre`) | Chauffer | *Ton premier métal, rouge et souple.* | oui |
+| 3 | Plaque de cuivre (`plaque_cuivre`) | Marteler | *Du cuivre battu en feuille.* | oui |
+| 3 | Fil de cuivre (`fil_cuivre`) | Tailler | *Fin et souple. Il conduit quelque chose, mais tu ne sais pas encore quoi.* | oui |
+| 3 | Lingot d’étain (`lingot_etain`) | Chauffer | *Un métal gris et mou, qui crie quand on le plie.* | oui |
+| 3 | Ciseau de cuivre (`ciseau`) | Assembler | *Un coin de métal pour fendre la roche le long de ses veines.* | oui |
+| 4 | Lingot de bronze (`lingot_bronze`) | Allier | *Plus dur que chacun de ses parents.* | oui |
+| 4 | Plaque de bronze (`plaque_bronze`) | Marteler | *Une feuille dorée qui sonne quand on la frappe.* | oui |
+| 4 | Engrenage de bronze (`engrenage`) | Tailler | *Une roue qui en fait tourner une autre.* | oui |
+| 4 | Ressort de bronze (`ressort`) | Marteler | *Il veut toujours revenir à sa forme.* | oui |
+| 4 | Hache de bronze (`hache_bronze`) | Assembler | *Un tranchant qui ne s’émousse presque plus.* | oui |
+| 4 | Pioche de bronze (`pioche_bronze`) | Assembler | *Le bronze s’enfonce dans la roche là où la pierre rebondissait.* | oui |
+| 5 | Loupe de fer (`loupe`) | Chauffer | *Une éponge de fer pleine de scories. Il faut encore la battre.* | oui |
+| 5 | Lingot de fer (`lingot_fer`) | Marteler | *Du fer forgé, gris et têtu.* | oui |
+| 5 | Plaque de fer (`plaque_fer`) | Marteler | *Une tôle épaisse.* | oui |
+| 5 | Clous (`clous`) | Tailler | *Il en faut toujours plus que prévu.* | oui |
+| 5 | Chaîne de fer (`chainon`) | Marteler | *Des maillons de fer, solides et souples à la fois.* | oui |
+| 5 | Outils de fer (`outils_fer`) | Assembler | *Marteau, hachette, burin, pelle.* | oui |
+| 5 | Diapason (`diapason`) | Accorder | *Il donne la note juste. Toujours la même.* | oui |
+| 6 | Lingot d’acier (`lingot_acier`) | Allier | *Du fer avec une pointe de carbone.* | oui |
+| 6 | Acier trempé (`acier_trempe`) | Tremper | *Dur, et pourtant il plie sans casser.* | oui |
+| 6 | Lame trempée (`lame`) | Tremper | *Son fil entame le bois d’un seul passage.* | oui |
+| 6 | Engrenage d’acier (`engrenage_acier`) | Usiner | *Des dents qui ne cassent jamais.* | oui |
+| 6 | Vis (`vis`) | Usiner | *Une hélice gravée dans le fer.* | oui |
+| 6 | Roulement à billes (`roulement`) | Usiner | *Il fait tourner les machines sans effort.* | oui |
+| 6 | Outils d’acier (`outils_acier`) | Assembler | *Des outils qui ne s’usent plus.* | oui |
+| 7 | Piston (`piston`) | Usiner | *Il pousse, il tire, il recommence.* | oui |
+| 7 | Chaudière (`chaudiere`) | Marteler | *Un ventre de fer. L’eau y bout sous pression.* | oui |
+| 7 | Tuyau de cuivre (`tuyau_cuivre`) | Usiner | *Un tube coudé qui se glisse entre les pièces du moteur.* | oui |
+| 7 | Soupape de sûreté (`soupape`) | Usiner | *Elle s’ouvre toute seule quand la pression devient dangereuse.* | oui |
+| 7 | Marteau-pilon (`marteau_pilon`) | Assembler | *Un bloc d’acier tombe de haut, à intervalle régulier. Rien ne lui résiste.* | oui |
+| 8 | Aimant (`aimant`) | Assembler | *Il attire le fer. Tu passes un moment à jouer avec des clous.* | oui |
+| 8 | Cuivre pur (`cuivre_pur`) | Électriser | *Raffiné par le courant, pur à 99,99 %.* | oui |
+| 8 | Sonde pétrolière (`foreuse`) | Assembler | *Une longue tige d’acier qui perce jusqu’à l’huile noire. Elle descend bien plus bas que la foreuse des Profondeurs.* | oui |
+| 9 | Lingot de plomb (`lingot_plomb`) | Chauffer | *Mou, lourd, gris sombre. Il arrête ce que l’œil ne voit pas.* | oui |
+| 9 | Plaque de plomb (`plaque_plomb`) | Marteler | *Épaisse, froide, lourde à porter.* | oui |
+| 9 | Pastille d’uranium (`pastille_uranium`) | Chauffer | *Un petit cylindre de céramique noire. Il chauffe tout seul.* | oui |
+| 11 | Aluminium (`aluminium`) | Électriser | *Autrefois plus précieux que l’or.* | oui |
+| 11 | Titane (`titane`) | Chauffer | *Léger, et il ne rouille pas.* | oui |
+| 11 | Aimant néodyme (`aimant_neo`) | Allier | *Petit et terriblement puissant.* | oui |
+| 11 | Outillage électrique (`outillage`) | Assembler | *Perceuse, tronçonneuse, marteau-piqueur.* | oui |
+| 12 | Supraconducteur (`supra`) | Allier | *Le courant y circule sans perte, pour toujours.* | oui |
+| 13 | Alliage ancien (`alliage_ancien`) | Usiner | *Un métal que tu ne sais pas fabriquer. Les Anciens, si.* | oui |
 
 ## Chimie et matériaux (17 recettes)
 

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.1";
+  D.VERSION = "0.64.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1749,7 +1749,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "✍️ Les recettes d’Artisanat et de Subsistance ont un texte de découverte écrit pour elles : trente-trois phrases courtes, à voir et à toucher. Les autres métiers suivront.",
+    "✍️ Les recettes d’Artisanat, de Subsistance et de Métallurgie ont un texte de découverte écrit pour elles, ainsi que quatre gestes : soixante-quinze phrases courtes, à voir et à toucher. Les autres métiers suivront.",
     "🏘️ Ton lieu change de nom avec l’âge : Campement, Halte, Foyer, Hameau, Village, Oppidum, Cité, Ville, Métropole, Complexe, Mégalopole, Conurbation, Arcologie, Spatioport, Essaim. Il remplace « le Domaine » dans le récit et l’ambiance. L’écran, lui, s’appelle toujours les Terres.",
     "🏷️ Les métiers changent de nom : Subsistance (l’ancien Élevage), Bâtiment (Construction), Énergie (Centrales), Technologie (Électronique), Culture et savoir (Arts et lettres). Leurs travailleurs aussi : opérateur, ingénieur, érudit. Artisanat, Métallurgie et Chimie gardent le leur. Ta partie n’est pas touchée.",
     "🏷️ Passe de vocabulaire. Un seul mot par chose : « ressource » partout (plus de « matière »), « essayer » et « essai » (plus de « tenter »), des « consignes » pour garder une réserve (plus de « stock » ni de « cadence »). Les paliers du seuil deviennent « À l’arrêt » et « Quelques provisions », la découverte se fait toujours « au Labo », et les voix des travailleurs ne parlent plus de « l’atelier ». Les anciens textes de l’apprenti à l’établi sont retirés.",
@@ -2074,6 +2074,49 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
+  /* Métallurgie (0.64.2) */
+  D.SAVEUR.lingot_cuivre = "Le minerai vert a coulé dans le moule. Refroidi, le métal est rouge, et la pierre le marque.";
+  D.SAVEUR.plaque_cuivre = "Coup après coup, le lingot s’étale en feuille. Les bords ondulent, et ça sonne de plus en plus clair.";
+  D.SAVEUR.fil_cuivre = "Un fil rouge, fin comme un cheveu, long comme un bras. Il se plie à la main et garde la forme.";
+  D.SAVEUR.lingot_etain = "Gris, mou. Quand on le plie, il crie à l’oreille, un crissement fin.";
+  D.SAVEUR.ciseau = "Un coin de cuivre, frappé au maillet. Il suit la veine et la roche s’ouvre en deux.";
+  D.SAVEUR.lingot_bronze = "L’étain a fondu dans le cuivre. Le métal qui sort est jaune sombre, et la pierre ne le marque plus.";
+  D.SAVEUR.plaque_bronze = "Battu en feuille, il est doré comme du blé. Frappé du doigt, il sonne.";
+  D.SAVEUR.engrenage = "Des dents limées une à une, régulières cette fois. Deux roues se prennent et tournent à la même allure.";
+  D.SAVEUR.ressort = "On le serre dans la main, on lâche : il saute.";
+  D.SAVEUR.hache_bronze = "Le tranchant brille jaune, et le bois blanc part en copeaux nets. Le fil dure presque toute la journée.";
+  D.SAVEUR.pioche_bronze = "Le bronze entre dans la roche là où la pierre éclatait. Le choc remonte moins dans le bras.";
+  D.SAVEUR.loupe = "Une masse spongieuse sortie du four, pleine de cendre et de scories. Elle fume encore. Il faut la battre.";
+  D.SAVEUR.lingot_fer = "Battue, la loupe lâche ses scories en étincelles. Reste un fer gris, lourd, qui plie mal.";
+  D.SAVEUR.plaque_fer = "Une tôle épaisse, bleue aux bords. Il faut deux mains pour la porter.";
+  D.SAVEUR.clous = "Une poignée, et déjà il en manque. Ils tintent au fond du pot.";
+  D.SAVEUR.chainon = "Un maillon passé dans l’autre, puis refermé au marteau. Tirée par les deux bouts, elle ne rompt pas.";
+  D.SAVEUR.outils_fer = "Marteau, hachette, burin, pelle, alignés sur l’établi. Les manches sont neufs, le fer encore bleu du feu.";
+  D.SAVEUR.diapason = "Frappé sur le genou, il chante une seule note. Elle ne change jamais.";
+  D.SAVEUR.lingot_acier = "Le fer a bu un peu de charbon. Au cassé, le grain est fin, presque blanc.";
+  D.SAVEUR.acier_trempe = "Rouge au feu, puis dans l’eau : un sifflement, un nuage. Sorti de là, la lime ne le mord plus.";
+  D.SAVEUR.lame = "Le fil est blanc, droit, sans une dent. Dans le bois, un seul passage suffit.";
+  D.SAVEUR.engrenage_acier = "Des dents si régulières qu’on les compte du pouce sans se tromper. Rien n’y ébrèche.";
+  D.SAVEUR.vis = "Un sillon qui tourne autour du fer. À chaque tour, elle s’enfonce d’un cheveu.";
+  D.SAVEUR.roulement = "Des billes dans une gorge d’acier. Du bout du doigt, on le fait tourner longtemps.";
+  D.SAVEUR.outils_acier = "Même forme que les outils de fer, d’un gris plus clair. Le fil tient des semaines.";
+  D.SAVEUR.piston = "Va, vient, va, vient. Sa tige luit d’huile à chaque course.";
+  D.SAVEUR.chaudiere = "Un ventre de fer rivé de partout. L’eau y gronde, et la paroi chauffe la main de loin.";
+  D.SAVEUR.tuyau_cuivre = "Un tube de cuivre, coudé à la main. Il se faufile entre les pièces du moteur.";
+  D.SAVEUR.soupape = "Quand la pression monte trop, un sifflement. Puis un jet de vapeur, droit vers le plafond.";
+  D.SAVEUR.marteau_pilon = "Un bloc d’acier monte, retombe. Le sol sursaute à chaque coup.";
+  D.SAVEUR.aimant = "Il tire les clous hors de ta main. Tu passes un moment à les lui reprendre.";
+  D.SAVEUR.cuivre_pur = "Raffiné au courant, il a perdu ses taches. Le rouge est net, presque rose.";
+  D.SAVEUR.foreuse = "Une tige d’acier qui descend plus bas que tout ce que tu as creusé. Au bout, une odeur de goudron.";
+  D.SAVEUR.lingot_plomb = "Gris sombre, lourd à ne pas croire pour sa taille. La lame le raye comme du savon.";
+  D.SAVEUR.plaque_plomb = "Épaisse, froide, trop lourde pour une seule main. Elle plie sans bruit.";
+  D.SAVEUR.pastille_uranium = "Un petit cylindre de céramique noire, tiède dans la paume. Hors du four, il chauffe encore.";
+  D.SAVEUR.aluminium = "Gris clair, léger comme du bois sec. Autrefois, on en faisait des couverts pour les rois.";
+  D.SAVEUR.titane = "Gris et léger. Laissé sous la pluie une semaine, il n’a pas bougé.";
+  D.SAVEUR.aimant_neo = "Gros comme un ongle. Il faut les deux mains pour décoller deux d’entre eux.";
+  D.SAVEUR.outillage = "Perceuse, tronçonneuse, marteau-piqueur. Ça ronfle dans la main, la poussière vole.";
+  D.SAVEUR.supra = "Le courant, lancé dans l’anneau givré, y tourne sans rien perdre.";
+  D.SAVEUR.alliage_ancien = "Ni cuivre, ni fer, ni rien de connu. Les Anciens savaient le faire.";
   /* Subsistance (0.64.1) */
   D.SAVEUR.aiguille = "L’os est poli contre une pierre jusqu’à la pointe, puis percé d’un chas. Le fil passe du premier coup.";
   D.SAVEUR.laniere = "Des bandes de peau pendues au vent. Elles raidissent en séchant, et le nœud ne bouge plus.";
@@ -2110,6 +2153,11 @@
   D.SAVEUR.cristal_chantant = "On lui siffle trois notes. Posé sur la table, il les rejoue tout bas, sans s’arrêter.";
   D.SAVEUR.traducteur = "Un cristal tiède dans la paume. Quand on lui parle, il murmure autre chose, et c’est ce qu’on voulait dire.";
   D.SAVEUR_GESTE = {};
+  /* Gestes de métallurgie (0.64.2) */
+  D.SAVEUR_GESTE.marteler = "Le marteau frappe, le métal cède. Chaque coup sonne un peu moins creux que le précédent.";
+  D.SAVEUR_GESTE.allier = "Deux métaux dans le même creuset. Ils se mêlent au fond, et ce qui sort ne ressemble à aucun des deux.";
+  D.SAVEUR_GESTE.tremper = "Du rouge à l’eau, d’un seul geste. Le sifflement monte, la vapeur aussi, et le métal change.";
+  D.SAVEUR_GESTE.usiner = "Le métal tourne contre l’outil et laisse des copeaux fins. La pièce sort lisse, sans un coup de lime.";
   /* Construire (0.43) : les bâtiments, extracteurs, machines, installations et améliorations ne s'assemblent plus : ils se construisent. */
   for (const id in D.ITEMS) {
     const it = D.ITEMS[id];
