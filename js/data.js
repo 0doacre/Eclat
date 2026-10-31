@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.56.2";
+  D.VERSION = "0.57.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1563,14 +1563,22 @@
   D.VOIX = {
     cooldown: 600, manqueApres: 30, previsionSous: 300, retourApres: 300, histoMax: 20,
     metiers: {
-      artisanat: { retour: "Patron, pendant votre absence, l’atelier a fait : {liste}.", manque: "Patron, nous manquons {de} à l’établi !", prevision: "Patron, nous allons bientôt manquer {de}." },
-      construction: { retour: "Chef, le chantier n’a pas chômé : {liste}.", manque: "Chef, le chantier manque {de} !", prevision: "Chef, le chantier va bientôt manquer {de}." },
-      elevage: { retour: "Patron, les bêtes ont donné pendant votre absence : {liste}.", manque: "Patron, l’étable manque {de} !", prevision: "Patron, l’étable va bientôt manquer {de}." },
-      metallurgie: { retour: "Patron, la forge n’a pas refroidi : {liste}.", manque: "Patron, la forge manque {de} !", prevision: "Patron, bientôt la forge manquera {de}." },
-      chimie: { retour: "Patron, les cornues ont travaillé en votre absence : {liste}.", manque: "Patron, nous manquons {de} au laboratoire !", prevision: "Patron, nous allons bientôt manquer {de} au laboratoire." },
-      centrales: { retour: "Patron, la centrale a tourné sans vous : {liste}.", manque: "Patron, la centrale manque {de} !", prevision: "Patron, la centrale va bientôt manquer {de}." },
-      electronique: { retour: "Patron, pendant votre absence, nous avons assemblé : {liste}.", manque: "Patron, il n’y a plus {de} pour les circuits !", prevision: "Patron, nous allons bientôt manquer {de}." },
-      artistique: { retour: "Patron, le scriptorium a produit en votre absence : {liste}.", manque: "Patron, le scriptorium manque {de} !", prevision: "Patron, bientôt le scriptorium manquera {de}." }
+      artisanat: { retour: "Patron, pendant votre absence, l’atelier a fait : {liste}.", manque: "Patron, nous manquons {de} à l’établi !", prevision: "Patron, nous allons bientôt manquer {de}.",
+        fatigue: "Patron, les mains sont lasses : on ne tiendra pas ce rythme longtemps.", greve: "Patron, l’atelier pose les outils : grève, tant qu’on n’a pas soufflé !", reprise: "Patron, l’atelier a repris son souffle et se remet à l’ouvrage." },
+      construction: { retour: "Chef, le chantier n’a pas chômé : {liste}.", manque: "Chef, le chantier manque {de} !", prevision: "Chef, le chantier va bientôt manquer {de}.",
+        fatigue: "Chef, les gars sont sur les rotules.", greve: "Chef, le chantier est à l’arrêt : les bâtisseurs font grève !", reprise: "Chef, le chantier repart." },
+      elevage: { retour: "Patron, les bêtes ont donné pendant votre absence : {liste}.", manque: "Patron, l’étable manque {de} !", prevision: "Patron, l’étable va bientôt manquer {de}.",
+        fatigue: "Patron, les bêtes et les bergers n’en peuvent plus.", greve: "Patron, plus personne à l’étable : grève !", reprise: "Patron, l’étable est de nouveau sur pied." },
+      metallurgie: { retour: "Patron, la forge n’a pas refroidi : {liste}.", manque: "Patron, la forge manque {de} !", prevision: "Patron, bientôt la forge manquera {de}.",
+        fatigue: "Patron, les forgerons n’ont plus de bras : le feu aura leur peau.", greve: "Patron, la forge est éteinte : les forgerons font grève !", reprise: "Patron, la forge se rallume." },
+      chimie: { retour: "Patron, les cornues ont travaillé en votre absence : {liste}.", manque: "Patron, nous manquons {de} au laboratoire !", prevision: "Patron, nous allons bientôt manquer {de} au laboratoire.",
+        fatigue: "Patron, nous avons les mains qui tremblent : il faut ralentir.", greve: "Patron, le laboratoire ferme boutique : grève des chimistes !", reprise: "Patron, le laboratoire reprend ses distillations." },
+      centrales: { retour: "Patron, la centrale a tourné sans vous : {liste}.", manque: "Patron, la centrale manque {de} !", prevision: "Patron, la centrale va bientôt manquer {de}.",
+        fatigue: "Patron, les équipes de la centrale sont à bout.", greve: "Patron, la centrale tourne au ralenti : les centraliers font grève !", reprise: "Patron, la centrale reprend son service." },
+      electronique: { retour: "Patron, pendant votre absence, nous avons assemblé : {liste}.", manque: "Patron, il n’y a plus {de} pour les circuits !", prevision: "Patron, nous allons bientôt manquer {de}.",
+        fatigue: "Patron, les yeux piquent sur les circuits : une pause s’impose.", greve: "Patron, les électroniciens débranchent : grève !", reprise: "Patron, les établis électroniques se rallument." },
+      artistique: { retour: "Patron, le scriptorium a produit en votre absence : {liste}.", manque: "Patron, le scriptorium manque {de} !", prevision: "Patron, bientôt le scriptorium manquera {de}.",
+        fatigue: "Patron, les plumes tremblent : le scriptorium est à bout.", greve: "Patron, le scriptorium se tait : les lettrés font grève !", reprise: "Patron, les lettrés reprennent la plume." }
     },
     /* les planches d'illustration (assets/travailleurs, 2000 × 1116) : origine (x, y) et taille (w, h) de la première case, pas vertical py entre les deux rangées ; 4 cases par rangée */
     planches: {
@@ -1602,6 +1610,11 @@
      * tant que leur stock est sous le seuil du métier (S.ateliers[métier].seuil, en %, par pas de 10) : seuil % du « stock de confort » de la
      * recette = base × parAge^(âge de la recette − 1), au plus max. generalistes: false rend le jeu d'avant (cadences seules). */
     generalistes: true,
+    /* 0.57 : la fatigue et la grève. Chaque métier a une jauge de fatigue de 0 à 1. Elle MONTE pendant que le jeu est ouvert quand ses travailleurs fabriquent seuls (production libre et ordres permanents)
+     * plus des deux tiers du temps (monte : secondes de travail continu pour la remplir ; l'énergie qui manque l'accélère de « energie » fois le manque) et DESCEND
+     * quand ils se reposent (repos : secondes de repos complet pour la vider). À 1, grève : le métier ne fabrique plus rien seul (la file de commandes continue).
+     * Elle s'arrête quand la fatigue retombe sous « reprise », ou tout de suite contre une prime (prime × le prix d'un apprenti de l'âge). Jeu fermé, les travailleurs se reposent. */
+    fatigue: { monte: 1800, repos: 900, energie: 2, alerte: 0.7, reprise: 0.4, prime: 2, apresPrime: 0.3 },
     seuilDefaut: 10,
     /* les paliers du seuil, nommés (le joueur ne voit pas de pourcentage) : p = part du stock de confort jusqu'à laquelle on fabrique */
     paliers: [
@@ -1700,6 +1713,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✊ La fatigue et la grève. Chaque métier a une jauge de fatigue : elle monte quand ses travailleurs fabriquent seuls sans relâche (surtout si l’énergie manque), elle descend quand ils se reposent. Tes travailleurs te préviennent quand ils sont à bout ; à fond de jauge, ils se mettent en grève : plus rien ne se fabrique seul dans ce métier, mais ta file de commandes continue et rien n’est perdu. Ils reprennent quand ils ont soufflé, ou tout de suite contre une prime en écus (sur la page du métier ou depuis un goulot). Jeu fermé, ils se reposent : tu ne retrouves jamais une grève à ton retour.",
     "✒️ Typographie : toutes les apostrophes du jeu sont courbes (l’abri, d’os…), les tirets longs disparaissent des textes, et l’âge affiché dans l’en-tête du menu (« Os » au lieu de « Âge de l’Os ») est enfin raccourci comme prévu.",
     "📖 Passe de cohérence du langage. L’aide du jeu est réécrite : elle décrit les cinq écrans d’aujourd’hui (Terres, Labo, Atelier, Progression, Journal) et explique les métiers, les travailleurs, le seuil, les goulots et l’énergie. Partout, on dit les Terres (plus « le Domaine ») quand on parle de l’écran, la Progression (plus « l’arbre »), un geste (plus « une action »), une pièce (plus « un composant »), et la page des métiers de l’Atelier s’appelle Métiers.",
     "🗣️ Chaque métier parle son langage au Labo : le même geste s’y écrit selon le métier ouvert. « Chauffer » devient Fondre en Métallurgie, Cuire en Artisanat, Distiller en Chimie, Purifier en Électronique ; « Assembler » devient Coudre en Élevage, Monter en Métallurgie ; « Construire » devient Bâtir, Installer… Seul l’affichage change : les recettes et ta partie restent les mêmes, et ailleurs (Carnet, fiches, Progression) le nom général reste.",

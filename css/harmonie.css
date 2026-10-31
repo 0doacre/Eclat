@@ -111,3 +111,12 @@
 .goulot.is-seuil, .goulot.is-seuil0 { border-left-color: var(--acc, #b86a2c); }
 .goulot-txt { flex: 1 1 200px; min-width: 0; }
 .atel-seuil-d { margin: 0 0 6px; font-style: italic; }
+
+/* la fatigue d'un métier (0.57) */
+.atel-fatigue { margin: 8px 0; padding: 10px var(--gut, 12px); border: 1px solid var(--line2, #0002); border-radius: 10px; display: grid; gap: 6px; }
+.atel-fatigue-t { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.atel-fatigue progress { width: 100%; height: 10px; accent-color: var(--acc, #b86a2c); }
+.atel-fatigue.is-epuise progress { accent-color: var(--danger, #a33); }
+.atel-fatigue.is-greve { border-color: var(--danger, #a33); }
+.atel-fatigue.is-greve progress { accent-color: var(--danger, #a33); }
+.atel-fatigue .btn { justify-self: start; }

@@ -1744,7 +1744,7 @@
       if (!gs.length) return fam ? "" : "";
       const nom = (id) => (I[id] ? I[id].n.toLowerCase() : id);
       const lignes = gs.map((g) => {
-        const a = g.action, lib = a ? (a.k === "embaucher" ? "Embaucher un " + esc(Atel.nom(a.fam, a.kind).toLowerCase()) + " · " + fmt(a.cout) + " écus" : esc(a.label)) : "";
+        const a = g.action, lib = a ? (a.k === "prime" ? "Verser une prime · " + fmt(a.cout) + " écus" : a.k === "embaucher" ? "Embaucher un " + esc(Atel.nom(a.fam, a.kind).toLowerCase()) + " · " + fmt(a.cout) + " écus" : esc(a.label)) : "";
         return '<li class="goulot is-' + g.kind + '"><span class="goulot-txt">' + esc(g.txt) + (g.bloque.length ? '<span class="tiny muted"> · bloque : ' + esc(g.bloque.slice(0, 4).map(nom).join(", ")) + (g.bloque.length > 4 ? "…" : "") + "</span>" : "") + "</span>" +
           (a ? '<button type="button" class="btn small" data-goulot="' + esc(g.id) + '">' + lib + "</button>" : "") + "</li>";
       }).join("");
@@ -1770,6 +1770,12 @@
         } else toast(r.why === "plan" ? "Il manque des matières pour ce chantier : tout est dans la Réserve ou rien ne part." : r.why === "full" ? "La file des commandes est pleine." : "Pas possible pour l’instant.", { key: "emb" });
         render(true); return;
       }
+      if (a.k === "prime") {
+        const r = E.primeVerser(a.fam);
+        if (r.ok) toast("💰 Prime versée : " + fmt(r.cout) + " écus. Les travailleurs reprennent.", { key: "emb" });
+        else toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : "Pas besoin de prime pour l’instant.", { key: "emb" });
+        render(true); return;
+      }
       if (a.k === "metier") { U.atelierSel = a.fam; U.prodSel = null; render(true); return; }
       if (a.k === "fabriquer") { U.atelierSel = a.fam; U.prodSel = a.id; render(true); return; }
       if (a.k === "energie") { U.energieSheet = true; render(true); return; }
@@ -1789,13 +1795,28 @@
         (equipe ? "Tes bâtisseurs exécutent les constructions que tu lances. Ils ne construisent jamais de leur propre initiative, et seulement ce que tu as déjà construit une fois à la main." : "Embauche un bâtisseur : il exécutera les constructions que tu lances (extracteurs, machines), à ta place.") + "</span></div>" +
         (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Aucun chantier pour l’instant. Lance une construction depuis Produire, ou depuis un goulot (« Lancer le chantier »).</p>') + "</div>";
     }
+    /* la fatigue d'un métier (0.57) : une jauge, ce que ça veut dire, et le remède quand c'est utile */
+    function fatigueHTML(c) {
+      if (!E.fatigue || !(c.apprentis || c.ouvriers)) return "";
+      const f = E.fatigue(c.id), F = (D.TRAVAILLEURS || {}).fatigue;
+      if (!F) return "";
+      const etat = f.greve ? "En grève" : f.valeur >= F.alerte ? "Épuisés" : f.valeur >= F.reprise ? "Fatigués" : "En forme";
+      const aide = f.greve ? "Ils ne fabriquent plus rien seuls. Ils reprennent quand ils ont soufflé, ou tout de suite contre une prime. Ta file de commandes continue."
+        : f.valeur >= F.alerte ? "Encore un peu et ce sera la grève. Baisse le seuil pour les laisser souffler, embauche du renfort, ou verse une prime."
+        : f.valeur >= F.reprise ? "Ils sentent la fatigue. Quand ils ont peu à faire, ils se reposent."
+        : "Ils tiennent le rythme.";
+      const nec = f.greve || f.valeur >= F.alerte;
+      return '<div class="atel-fatigue is-' + (f.greve ? "greve" : f.valeur >= F.alerte ? "epuise" : "ok") + '"><div class="atel-fatigue-t"><b>Fatigue</b><span class="tiny">' + etat + '</span></div>' +
+        '<progress value="' + Math.min(1, f.valeur).toFixed(3) + '" max="1" aria-label="Fatigue du métier : ' + etat + '"></progress><p class="tiny muted">' + esc(aide) + "</p>" +
+        (nec ? '<button type="button" class="btn small" data-prime="' + c.id + '"' + ((S().ecus || 0) < E.primeCout(c.id) ? ' title="Il te manque des écus"' : "") + ">Verser une prime · " + fmt(E.primeCout(c.id)) + " écus</button>" : "") + "</div>";
+    }
     function seuilHTML(c) {
       if (c.id === "construction") return chantiersHTML(c);
       if (!E.autoEtat || (D.TRAVAILLEURS || {}).generalistes === false) return "";
       const val = E.seuilAtelier(c.id), etats = E.autoEtat(c.id), PAL = (D.TRAVAILLEURS || {}).paliers || [];
       const sel = PAL.reduce((a, x) => (x.p <= val ? x : a), PAL[0] || { p: val, n: "", d: "" }); // le palier qui contient la valeur (une ancienne partie peut avoir 20 %)
       const equipe = (c.apprentis || 0) + (c.ouvriers || 0);
-      const mot = { marche: "en cours", plein: "au seuil", manque: "manque de matière", attend: "en attente" };
+      const mot = { marche: "en cours", plein: "au seuil", manque: "manque de matière", attend: "en attente", greve: "en grève" };
       const lignes = etats.map((x) => '<li class="atel-seuil-l is-' + x.etat + '">' + icon(x.id, "sm") + "<b>" + esc(I[x.id].n) + "</b>" +
         '<span class="tiny muted">' + fmt(x.have) + " / " + fmt(x.cible) + " · " + mot[x.etat] + (x.travailleurs ? " · " + x.travailleurs + " au travail" : "") + "</span></li>").join("");
       return '<div class="atel-seuil"><div class="atel-seuil-t"><b>Seuil de stock</b><span class="tiny muted">' +
@@ -1824,7 +1845,7 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
-        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + fatigueHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
@@ -1879,6 +1900,12 @@
         U.renvoiAttente = null;
         const r = E.licencier(fam, kind);
         if (r.ok) { A.click(); toast("👋 " + esc(Atel.nom(fam, kind)) + " renvoyé.", { key: "emb" }); } else A.fail(0);
+        render(true); return true;
+      }
+      if ((b = t.closest("[data-prime]"))) {
+        const r = E.primeVerser(b.dataset.prime);
+        if (r.ok) { A.click(); toast("💰 Prime versée : " + fmt(r.cout) + " écus. Les travailleurs reprennent." , { key: "emb" }); }
+        else { A.fail(0); toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : "Pas besoin de prime pour l’instant.", { key: "emb" }); }
         render(true); return true;
       }
       if ((b = t.closest("[data-goulots]"))) { U.goulotsOuvert = !U.goulotsOuvert; A.click(); render(true); return true; }

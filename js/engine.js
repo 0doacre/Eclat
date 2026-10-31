@@ -1667,6 +1667,7 @@
         const it = item(rec), have = Math.floor(S.inv[rec] || 0), cible = autoCible(rec);
         let etat = actifs[rec] ? "marche" : "attend";
         if (have >= cible) etat = "plein";
+        else if (S.ateliers[fam] && S.ateliers[fam].greve) etat = "greve";
         else if (!actifs[rec]) for (const i in it.r[1]) if ((S.inv[i] || 0) - (autoReserve[i] || 0) + 1e-9 < it.r[1][i]) { etat = "manque"; break; }
         return { id: rec, have, cible, etat, travailleurs: actifs[rec] || 0 };
       });
@@ -1686,6 +1687,47 @@
       const f = eq().fait[fam] || (eq().fait[fam] = {});
       f[rec] = (f[rec] || 0) + n;
     }
+    /* 0.57 : la fatigue des métiers et la grève (D.TRAVAILLEURS.fatigue). Rien ne bouge quand le jeu est fermé : les travailleurs se reposent (voir catchUp). */
+    function annonce(fam, kind) { const e = eq(); e.annonces = (e.annonces || []).concat({ fam, kind }).slice(-8); }
+    function fatigueStep(dt) {
+      const F = TRAV.fatigue;
+      if (!F || !autoPossible() || !S.ateliers) return;
+      const occ = {}, tot = {};
+      machPool.forEach((w) => {
+        const wk = workerOf(w.m);
+        if (!wk) return;
+        tot[wk.fam] = (tot[wk.fam] || 0) + 1;
+        if (w.job === null && w.cad !== null) occ[wk.fam] = (occ[wk.fam] || 0) + 1; // la fatigue vient de la production libre (le seuil, les ordres permanents), pas de la file que tu as toi-même lancée
+      });
+      for (const fam in S.ateliers) {
+        const a = S.ateliers[fam];
+        if (!(a.app || a.ouv)) continue;
+        const t = (occ[fam] || 0) / Math.max(1, tot[fam] || 0), pression = 1 + F.energie * (1 - energieCache);
+        const avant = a.fatigue || 0;
+        const f = Math.max(0, Math.min(1.2, avant + dt * (t * pression / F.monte - (1 - t) / F.repos)));
+        a.fatigue = f;
+        if (!a.greve && f >= 1) { a.greve = true; a.alerte = true; annonce(fam, "greve"); assignWorkers(); E.emit("greve", { fam }); E.emit("struct"); }
+        else if (a.greve && f <= F.reprise) { a.greve = false; a.alerte = false; annonce(fam, "reprise"); E.emit("reprise", { fam }); E.emit("struct"); }
+        else if (!a.greve && !a.alerte && f >= F.alerte) { a.alerte = true; annonce(fam, "fatigue"); }
+        else if (a.alerte && !a.greve && f < F.alerte - 0.15) a.alerte = false;
+      }
+    }
+    /* le prix d'une prime : un multiple du prix d'un apprenti de l'âge (il suit le niveau des prix) */
+    E.primeCout = (fam) => { const F = TRAV.fatigue || {}, d = TRAV.apprenti; return Math.round((F.prime || 2) * d.cout * Math.pow(TRAV.parAge || 1, Math.max(0, S.age - d.age))); };
+    E.fatigue = (fam) => { const a = S.ateliers && S.ateliers[fam]; return { valeur: Math.min(1, (a && a.fatigue) || 0), greve: !!(a && a.greve), alerte: !!(a && a.alerte) }; };
+    E.primeVerser = function (fam) {
+      const a = S.ateliers && S.ateliers[fam], F = TRAV.fatigue;
+      if (!F || !a || !(a.app || a.ouv)) return { ok: false, why: "personne" };
+      if (!a.greve && (a.fatigue || 0) < F.alerte) return { ok: false, why: "repos" };
+      const cout = E.primeCout(fam);
+      if ((S.ecus || 0) + 1e-9 < cout) return { ok: false, why: "ecus", cout };
+      S.ecus -= cout;
+      const etaitGreve = !!a.greve;
+      a.fatigue = F.apresPrime; a.greve = false; a.alerte = false;
+      if (etaitGreve) annonce(fam, "reprise");
+      assignWorkers(); domChanged(); E.emit("struct");
+      return { ok: true, cout };
+    };
     const manqueDepuis = {};
     const deNom = (id) => { const n = ((item(id) && item(id).n) || id).toLowerCase(); return (/^[aeiouyàâéèêëîïôöûüh]/.test(n) ? "d’" : "de ") + n; };
     const listeFait = (f) => Object.keys(f).sort((a, b) => f[b] - f[a]).slice(0, 4).map((r) => Math.floor(f[r]) + " × " + ((item(r) && item(r).n) || r).toLowerCase()).join(", ");
@@ -1712,6 +1754,8 @@
           .filter((x) => x.tot >= 1).sort((a, b) => b.tot - a.tot).slice(0, 3)
           .forEach((x) => out.push(dire(x.fam, "retour", "-", gabarit(x.fam, "retour").replace("{liste}", listeFait(r.fait[x.fam])), t)));
       }
+      const ann = e.annonces || []; e.annonces = [];
+      ann.forEach((x) => { const g = (V.metiers[x.fam] || V.metiers.artisanat)[x.kind]; if (g) out.push(dire(x.fam, x.kind, "-", g, t)); });
       const prod = {};
       let prodLu = false;
       for (const fam in S.ateliers || {}) {
@@ -1789,6 +1833,7 @@
           }
         });
       }
+      for (const fam in S.ateliers || {}) if (S.ateliers[fam].greve && (S.ateliers[fam].app || S.ateliers[fam].ouv)) liste["greve:" + fam] = { id: "greve:" + fam, kind: "greve", fam, ing: null, ings: [], fams: [fam], bloque: [], poids: 3 };
       E.cadences().forEach((c) => {
         if (c.status !== "starved" || !c.miss.length) return;
         ajoute(causeRacine(c.miss[0], 0, { [c.id]: true }), E.atelierDe(c.id), c.id);
@@ -1825,6 +1870,7 @@
         else if (g.kind === "inconnue") { txt = "La recette de " + n + " n’est pas encore connue"; action = { k: "labo", id: g.ing, label: "Au Labo" }; }
         else if (g.kind === "seuil0") { txt = F(g.fam) + " est au repos : on n’y fabrique rien seul"; action = { k: "metier", fam: g.fam, label: "Régler le seuil" }; }
         else if (g.kind === "seuil") { txt = maj(n) + " est au seuil de " + F(g.fam) + " et il en faut plus"; action = { k: "metier", fam: g.fam, label: "Monter le seuil" }; }
+        else if (g.kind === "greve") { txt = F(g.fam) + " : les travailleurs sont en grève, ils ne fabriquent plus rien seuls"; action = { k: "prime", fam: g.fam, cout: E.primeCout(g.fam), label: "Verser une prime" }; }
         else if (g.kind === "energie") { txt = "L’énergie manque : travailleurs et machines tournent à " + g.pct + " %"; action = { k: "energie", label: "Voir l’énergie" }; }
         return Object.assign(g, { txt, action });
       }).sort((a, b) => (b.kind === "energie") - (a.kind === "energie") || b.poids - a.poids || a.id.localeCompare(b.id));
@@ -1862,6 +1908,7 @@
         if (w.job !== null || w.cad !== null) return;
         const wk = workerOf(w.m);
         if (!wk) return;
+        if (S.ateliers && S.ateliers[wk.fam] && S.ateliers[wk.fam].greve) return; // en grève : rien de libre (la file de commandes, elle, continue)
         const liste = cibles[wk.fam] || (cibles[wk.fam] = autoCibles(wk.fam));
         let best = null, bestCnt = Infinity;
         for (const c of liste) {
@@ -5483,6 +5530,7 @@
       workStep(dt, offline);
       if(E.atelierEconomyStep)E.atelierEconomyStep(dt);
       runCadences(dt, c);
+      if (!offline) fatigueStep(dt);
       pullOrderInputs();
       if (!offline && c.pip > 0) {
         S.pipAcc += c.pip * dt;
@@ -5668,6 +5716,15 @@
       const chunk = dt > 600 ? 10 : 1;
       let left = dt;
       try { while (left > 0) { const d = Math.min(chunk, left); step(d, true); left -= d; } } finally { OFF = false; }
+      if (TRAV.fatigue && S.ateliers) { // pendant l’absence, les travailleurs se reposent
+        for (const fam in S.ateliers) {
+          const a = S.ateliers[fam];
+          if (!a.fatigue) continue;
+          a.fatigue = Math.max(0, a.fatigue - dt / TRAV.fatigue.repos);
+          if (a.greve && a.fatigue <= TRAV.fatigue.reprise) { a.greve = false; a.alerte = false; }
+          if (a.alerte && !a.greve && a.fatigue < TRAV.fatigue.alerte - 0.15) a.alerte = false;
+        }
+      }
       if (absent >= 7200) nuit();
       let exp = null;
       if (S.exp.active && now() >= S.exp.active.t0 + S.exp.active.dur) { exp = S.exp.active; finishExp(true); }
@@ -6294,7 +6351,8 @@
         const ouv = Math.max(0, Math.min((D.TRAVAILLEURS || {}).ouvrier ? D.TRAVAILLEURS.ouvrier.max : 0, Math.floor(Number(a.ouv) || 0)));
         const appH = Math.max(app, Math.min(99, Math.floor(Number(a.appH) || 0))), ouvH = Math.max(ouv, Math.min(99, Math.floor(Number(a.ouvH) || 0)));
         const seuil = Number.isFinite(Number(a.seuil)) && a.seuil !== null ? Math.max(0, Math.min(100, Math.round(Number(a.seuil) / 10) * 10)) : null;
-        if (app || ouv || appH || ouvH || seuil !== null) { propre[f] = { app, ouv }; if (appH > app) propre[f].appH = appH; if (ouvH > ouv) propre[f].ouvH = ouvH; if (seuil !== null) propre[f].seuil = seuil; }
+        const fatigue = Math.max(0, Math.min(1.2, Number(a.fatigue) || 0));
+        if (app || ouv || appH || ouvH || seuil !== null || fatigue > 0 || a.greve) { propre[f] = { app, ouv }; if (fatigue > 0) propre[f].fatigue = Math.round(fatigue * 1000) / 1000; if (a.greve === true && (app || ouv)) { propre[f].greve = true; propre[f].alerte = true; } else if (a.alerte === true) propre[f].alerte = true; if (appH > app) propre[f].appH = appH; if (ouvH > ouv) propre[f].ouvH = ouvH; if (seuil !== null) propre[f].seuil = seuil; }
       });
       S.ateliers = propre;
       const raw = S.atelierEconomy;

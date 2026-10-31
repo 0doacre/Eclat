@@ -349,3 +349,85 @@ test("chaque couple métier × geste utilisé par une recette a son mot, et rien
   for (const f in vus) for (const g of vus[f]) assert.ok(((D.GESTES_METIER || {})[f] || {})[g], f + " / " + g + " n'a pas de mot");
   for (const f in D.GESTES_METIER) { assert.ok(vus[f], f + " inconnu"); for (const g in D.GESTES_METIER[f]) assert.ok(vus[f].has(g), f + " / " + g + " : aucune recette"); }
 });
+
+console.log("La fatigue et la grève (0.57)");
+function jeuFatigue() {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6;
+  for (const [id, it] of Object.entries(D.ITEMS)) if (!it.r && it.a <= 5) E.add(id, 100000);
+  for (const id of Object.keys(D.ITEMS)) if (D.ITEMS[id].r && D.ITEMS[id].t === "comp" && E.atelierDe(id) === "artisanat") E.state.made[id] = 1; // il sait tout faire : il a de quoi travailler longtemps
+  E.embaucher("artisanat", "apprenti");
+  E.setSeuilAtelier("artisanat", 100);
+  return E;
+}
+function avecFatigue(reglages, fn) { const avant = Object.assign({}, TR.fatigue); Object.assign(TR.fatigue, reglages); try { fn(); } finally { Object.assign(TR.fatigue, avant); } }
+const totalLibre = (E) => Object.keys(D.ITEMS).filter((id) => D.ITEMS[id].r && D.ITEMS[id].t === "comp" && E.atelierDe(id) === "artisanat").reduce((a, id) => a + (E.state.inv[id] || 0), 0);
+test("pousser un métier à fond le fatigue, puis la grève : plus rien ne se fabrique seul, la jauge redescend", () => {
+  avecFatigue({ monte: 60, repos: 600 }, () => {
+    const E = jeuFatigue();
+    assert.equal(E.fatigue("artisanat").greve, false);
+    avance(E, 120);
+    assert.ok(E.fatigue("artisanat").greve, "la grève est déclarée : " + JSON.stringify(E.fatigue("artisanat")));
+    const avant = totalLibre(E);
+    avance(E, 20);
+    assert.equal(totalLibre(E), avant, "en grève, rien ne se fabrique seul");
+    assert.ok(E.autoEtat("artisanat").some((x) => x.etat === "greve"));
+    assert.ok(E.goulots().some((g) => g.kind === "greve" && g.fam === "artisanat" && g.action.k === "prime"));
+  });
+});
+test("la prime ou le repos mettent fin à la grève ; rien à verser quand on n'est pas fatigué", () => {
+  avecFatigue({ monte: 60, repos: 600 }, () => {
+    const E = jeuFatigue();
+    assert.equal(E.primeVerser("artisanat").why, "repos");
+    avance(E, 120);
+    assert.ok(E.fatigue("artisanat").greve);
+    const ecus = E.state.ecus, cout = E.primeCout("artisanat");
+    assert.ok(cout > 0);
+    E.state.ecus = cout - 1; assert.equal(E.primeVerser("artisanat").why, "ecus"); assert.ok(E.fatigue("artisanat").greve);
+    E.state.ecus = ecus;
+    assert.equal(E.primeVerser("artisanat").ok, true);
+    assert.equal(E.fatigue("artisanat").greve, false);
+    assert.equal(E.state.ecus, ecus - cout);
+    assert.ok(Math.abs(E.fatigue("artisanat").valeur - TR.fatigue.apresPrime) < 1e-9);
+  });
+});
+test("jeu fermé, les travailleurs se reposent : pas de grève au retour", () => {
+  avecFatigue({ monte: 60, repos: 600 }, () => {
+    const E = jeuFatigue();
+    avance(E, 120);
+    assert.ok(E.fatigue("artisanat").greve);
+    E.catchUp(600);
+    assert.equal(E.fatigue("artisanat").greve, false);
+    assert.ok(E.fatigue("artisanat").valeur < TR.fatigue.reprise + 0.1);
+  });
+});
+test("les travailleurs préviennent (fatigués), puis se mettent en grève, puis reprennent : une seule fois chaque", () => {
+  avecFatigue({ monte: 60, repos: 600 }, () => {
+    const E = jeuFatigue();
+    avance(E, 120);
+    const m = E.voix(8e12).map((x) => x.kind);
+    assert.ok(m.includes("fatigue") && m.includes("greve"), m.join(","));
+    assert.equal(E.voix(8e12 + 1).filter((x) => x.kind === "greve" || x.kind === "fatigue").length, 0);
+    E.primeVerser("artisanat");
+    assert.ok(E.voix(8e12 + 2).some((x) => x.kind === "reprise"));
+  });
+});
+test("la fatigue et la grève survivent à la sauvegarde", () => {
+  avecFatigue({ monte: 60, repos: 600 }, () => {
+    const E = jeuFatigue();
+    avance(E, 120);
+    const v = E.fatigue("artisanat");
+    const F = createEngine({ now: () => t, rand: () => 0.99 });
+    F.load(JSON.stringify(E.save ? JSON.parse(E.save()) : E.state));
+    assert.equal(F.fatigue("artisanat").greve, v.greve);
+    assert.ok(Math.abs(F.fatigue("artisanat").valeur - v.valeur) < 0.01);
+  });
+});
+test("au réglage par défaut (« au jour le jour »), deux heures de jeu ne mènent jamais à la grève", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6;
+  for (const [id, it] of Object.entries(D.ITEMS)) if (!it.r && it.a <= 5) E.add(id, 100000);
+  E.state.made.manche = 1;
+  E.embaucher("artisanat", "apprenti"); E.embaucher("artisanat", "apprenti");
+  for (let i = 0; i < 24; i++) { avance(E, 300); assert.equal(E.fatigue("artisanat").greve, false, "grève à la minute " + i * 5); }
+});

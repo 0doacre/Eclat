@@ -15,11 +15,12 @@ const EngineMod = require("../js/engine.js");
 const D = require("../js/data.js");
 const orig = EngineMod.createEngine;
 const cfg = { generalistes: true, seuil: null, ecus: 80, max: 2, employeur: true };
-let embauches = 0;
+let embauches = 0, greves = 0;
 EngineMod.createEngine = function (opts) {
   const E = orig(opts);
   const up = E.update;
   let n = 0;
+  E.on("greve", () => { greves++; });
   D.TRAVAILLEURS.generalistes = cfg.generalistes;
   if (process.argv.includes("--sans-energie")) D.ATELIERS.plancherEnergie = 1; // l'énergie ne ralentit rien : pour isoler son effet
   E.update = function () {
@@ -50,10 +51,10 @@ const seuils = arg("--seuils", "30,100").split(",").map(Number);
 const json = process.argv.includes("--json");
 
 function jouer(nom, generalistes, seuil) {
-  cfg.generalistes = generalistes; cfg.seuil = seuil; embauches = 0;
+  cfg.generalistes = generalistes; cfg.seuil = seuil; embauches = 0; greves = 0;
   const r = Sim.play(Sim.appliquerJoueur(Object.assign({}, Sim.lire(["--minutes", String(minutes)])), nom, {}));
   const fait = r.E.state.equipe && r.E.state.equipe.fait ? Object.values(r.E.state.equipe.fait).reduce((a, f) => a + Object.values(f).reduce((b, n) => b + n, 0), 0) : 0;
-  return { rows: r.rows.filter((x) => !x.offert), embauches, crafts: r.crafts, age: r.age, fait: Math.round(fait) };
+  return { rows: r.rows.filter((x) => !x.offert), embauches, crafts: r.crafts, age: r.age, fait: Math.round(fait), greves };
 }
 const out = {};
 for (const nom of noms) {
@@ -63,7 +64,7 @@ for (const nom of noms) {
     const avec = jouer(nom, true, s);
     const lignes = sans.rows.map((x) => { const y = avec.rows.find((z) => z.z === x.z); return { z: x.z, sans: x.t, avec: y ? y.t : null, ecart: y ? (y.t / x.t - 1) * 100 : null }; });
     const ok = lignes.filter((l) => l.ecart !== null);
-    res.variantes[s] = { passages: lignes, moyenne: ok.reduce((a, l) => a + l.ecart, 0) / (ok.length || 1), pire: ok.length ? Math.min(...ok.map((l) => l.ecart)) : 0, fabrications: avec.crafts, fabricationsSans: sans.crafts, faitLibre: avec.fait };
+    res.variantes[s] = { passages: lignes, moyenne: ok.reduce((a, l) => a + l.ecart, 0) / (ok.length || 1), pire: ok.length ? Math.min(...ok.map((l) => l.ecart)) : 0, fabrications: avec.crafts, fabricationsSans: sans.crafts, faitLibre: avec.fait, greves: avec.greves };
   }
   out[nom] = res;
 }
@@ -75,7 +76,7 @@ else {
     console.log("\n" + nom + " (" + r.embauches + " embauches)");
     for (const s of seuils) {
       const v = r.variantes[s];
-      console.log("  seuil " + String(s).padStart(3) + " % : moyenne " + v.moyenne.toFixed(1) + " %, plus fort gain " + v.pire.toFixed(1) + " % · fabrications " + v.fabricationsSans + " → " + v.fabrications + " (dont " + v.faitLibre + " par la production libre)");
+      console.log("  seuil " + String(s).padStart(3) + " % : moyenne " + v.moyenne.toFixed(1) + " %, plus fort gain " + v.pire.toFixed(1) + " % · fabrications " + v.fabricationsSans + " → " + v.fabrications + " (dont " + v.faitLibre + " par la production libre) · grèves : " + v.greves);
       console.log("    " + v.passages.map((l) => l.z.slice(0, 6) + " " + l.sans.toFixed(1) + "→" + (l.avec === null ? "—" : l.avec.toFixed(1)) + " (" + (l.ecart === null ? "—" : (l.ecart > 0 ? "+" : "") + l.ecart.toFixed(0) + " %") + ")").join(" · "));
     }
   }
