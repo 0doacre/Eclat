@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.2";
+  D.VERSION = "0.64.3";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1749,6 +1749,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🧑‍🔧 Les portraits des travailleurs réapparaissent aussi sur les appareils qui gardent encore une ancienne version du jeu : leurs anciens fichiers contiennent maintenant les nouveaux visages.",
     "✍️ Les recettes d’Artisanat, de Subsistance et de Métallurgie ont un texte de découverte écrit pour elles, ainsi que quatre gestes : soixante-quinze phrases courtes, à voir et à toucher. Les autres métiers suivront.",
     "🏘️ Ton lieu change de nom avec l’âge : Campement, Halte, Foyer, Hameau, Village, Oppidum, Cité, Ville, Métropole, Complexe, Mégalopole, Conurbation, Arcologie, Spatioport, Essaim. Il remplace « le Domaine » dans le récit et l’ambiance. L’écran, lui, s’appelle toujours les Terres.",
     "🏷️ Les métiers changent de nom : Subsistance (l’ancien Élevage), Bâtiment (Construction), Énergie (Centrales), Technologie (Électronique), Culture et savoir (Arts et lettres). Leurs travailleurs aussi : opérateur, ingénieur, érudit. Artisanat, Métallurgie et Chimie gardent le leur. Ta partie n’est pas touchée.",
@@ -2074,7 +2075,7 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
-  /* Métallurgie (0.64.2) */
+  /* Métallurgie (0.64.3) */
   D.SAVEUR.lingot_cuivre = "Le minerai vert a coulé dans le moule. Refroidi, le métal est rouge, et la pierre le marque.";
   D.SAVEUR.plaque_cuivre = "Le lingot s’étale sous le marteau. À chaque coup, le son monte d’un cran.";
   D.SAVEUR.fil_cuivre = "Rouge, fin comme un cheveu, long comme un bras. Il garde le pli qu’on lui donne.";
@@ -2153,7 +2154,7 @@
   D.SAVEUR.cristal_chantant = "On lui siffle trois notes. Posé sur la table, il les rejoue tout bas, sans s’arrêter.";
   D.SAVEUR.traducteur = "Un cristal tiède dans la paume. Quand on lui parle, il murmure autre chose, et c’est ce qu’on voulait dire.";
   D.SAVEUR_GESTE = {};
-  /* Gestes de métallurgie (0.64.2) */
+  /* Gestes de métallurgie (0.64.3) */
   D.SAVEUR_GESTE.marteler = "Le marteau frappe, le métal cède. Chaque coup sonne un peu moins creux.";
   D.SAVEUR_GESTE.allier = "Deux métaux dans le même creuset. Ce qui en sort ne ressemble à aucun des deux.";
   D.SAVEUR_GESTE.tremper = "Du rouge à l’eau, d’un seul geste. La vapeur monte en sifflant.";
