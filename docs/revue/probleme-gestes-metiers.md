@@ -56,6 +56,12 @@ La piste **C** : le filtre par métier d'abord, puis le vocabulaire. Le reclasse
 3. Faut-il renommer les gestes (piste A) maintenant ou après avoir vu l'effet du filtre ?
 4. Quels métiers faut-il redécouper ? Les Centrales (moteurs, combustible, fusée, vaisseau) sont le premier candidat.
 
+## 5 bis. Décisions (31 octobre 2026) et ce qui est fait
+
+Décisions du porteur du projet : filtre strict (un assemblage d'un autre métier ne donne rien dans le métier ouvert) ; les matières montrées sont celles qui entrent dans les recettes du métier ; on renomme les gestes après avoir vu l'effet du filtre.
+
+Fait en 0.55.0 (`js/atelier-equipe.js`, `js/equipements.js`) : le Labo ne montre dans un métier que les matières de ses recettes (plus celles déjà posées sur l'établi), les pistes ✦ (`E.equipmentHasDiscovery`, nouveau paramètre `metier`) ne comptent que ses recettes, et l'essai d'un assemblage dont toutes les recettes (tout outil confondu) sont d'un autre métier, et pas encore connues, répond « rien » sans lancer l'essai : le thermomètre ne révèle donc pas que l'assemblage existe ailleurs. Une recette déjà connue se fabrique dans n'importe quel métier. Reste : les assemblages partiels (« tiède ») qui peuvent encore refléter une recette d'un autre métier, le renommage des gestes (Centrales d'abord), et un contrôle sur l'ensemble du parcours qu'aucune recette n'est devenue introuvable (le robot de `tools/sim-passages.js` passe par le moteur, pas par le Labo).
+
 ## 6. Plan
 
 1. Mesure : la matrice ci-dessus est produite par un script (`tools/mesure-gestes-metiers.js`) à relancer après chaque reclassement.

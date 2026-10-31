@@ -148,12 +148,31 @@
     }
     /* Une matière est « utile » ici si une recette encore inconnue, dont tous les ingrédients ont été vus, la demande
      * avec cet outil et ce geste. Mémorisé par outil, geste et progression : le calcul parcourt les recettes. */
+    /* 0.55 : le Labo enferme la découverte dans le métier ouvert. Les matières montrées sont celles qui entrent dans au moins une recette du métier
+     * (hors secrètes), jamais celles d'un autre : on sait pourquoi on les pose. Mémorisé par métier et par âge. */
+    const memoMat={age:-1,v:{}};
+    function matieresDuMetier(f){
+      if(memoMat.age!==E.state.age){memoMat.age=E.state.age;memoMat.v={};}
+      if(memoMat.v[f])return memoMat.v[f];
+      const set=new Set();
+      for(const id in I){const it=I[id];if(!it.r||it.sec||it.path||!E.ageOK(id)||E.atelierDe(id)!==f)continue;for(const k in it.r[1])set.add(k);}
+      return memoMat.v[f]=set;
+    }
+    /* un assemblage dont la recette, pas encore trouvée, relève d'un autre métier : ici il ne donne rien (rien n'est révélé de l'autre métier) */
+    function horsMetier(){
+      const {w}=work(),parts=[...new Set(w.slots)].sort().join(",");
+      if(!parts)return false;
+      /* toutes les recettes qui prennent exactement ces matières, avec n'importe quel outil : si aucune n'est du métier ouvert (ni déjà connue), rien ne se passe ici, et le thermomètre ne dit pas qu'elle existe ailleurs */
+      const memes=Object.keys(I).filter(id=>I[id].r&&!I[id].sec&&!I[id].path&&E.ageOK(id)&&Object.keys(I[id].r[1]).sort().join(",")===parts);
+      return memes.length>0&&memes.every(id=>!E.state.known[id]&&E.atelierDe(id)!==w.metier);
+    }
     const memoUtile={cle:"",v:{}};
     function useful(id,w){
       const s=E.state,cle=[w.metier,w.eq,w.mode,Object.keys(s.known).length,Object.keys(s.seen).length].join("|");
       if(memoUtile.cle!==cle){memoUtile.cle=cle;memoUtile.v={};}
       if(id in memoUtile.v)return memoUtile.v[id];
-      const eligible=isGrand(w.eq)?rid=>!D.CRAFT_EQUIPMENT.recipes[rid]&&I[rid].r[0]===w.mode:rid=>(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
+      const dansMetier=rid=>E.atelierDe(rid)===w.metier;
+      const eligible=isGrand(w.eq)?rid=>dansMetier(rid)&&!D.CRAFT_EQUIPMENT.recipes[rid]&&I[rid].r[0]===w.mode:rid=>dansMetier(rid)&&(D.CRAFT_EQUIPMENT.recipes[rid]||[]).some(c=>c.equipment===w.eq&&c.mode===w.mode);
       return memoUtile.v[id]=Object.values(E.reactions(id,eligible)).some(n=>n>0);
     }
     /* L'outil se choisit à l'icône (son nom est la légende) ; si l'outil a plusieurs gestes, ils s'affichent dessous en mots courts.
@@ -178,7 +197,8 @@
       const {w,metiers,tools,tool,recipe}=work(),s=E.state,e=E.atelierEconomyInfo();
       if(mode==="eco")return economy(s,e);
       const raw=[...new Set(D.ZONES.filter(z=>E.zoneOpen(z.id)).flatMap(z=>z.res))];
-      const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id))).sort((a,b)=>{
+      const duMetier=matieresDuMetier(w.metier);
+      const ids=Object.keys(I).filter(id=>(raw.includes(id)||s.seen[id]||E.count(id)>0)&&(!E.isEquipmentItem(id)||consumed.has(id))&&(duMetier.has(id)||w.slots.includes(id))).sort((a,b)=>{
         const da=useful(a,w)?1:0,db=useful(b,w)?1:0;
         if(da!==db)return db-da;
         return (E.count(b)>=1?1:0)-(E.count(a)>=1?1:0);
@@ -219,7 +239,7 @@
       const study=E.studyAllCost();
       if(study.n)h+='<div class="ae-etude">'+button("study","","Étudier · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des matières" aria-label="Comprendre l’étude des matières">?</button></div>';
       h+='<p id="ae-discovery-empty" class="small muted" hidden></p><div class="ae-inventory">';
-      for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span>'+(reacts?'<i class="ae-react-spark" title="Piste disponible">✦</i>':'')+'<b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
+      for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode,w.metier);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span>'+(reacts?'<i class="ae-react-spark" title="Piste disponible">✦</i>':'')+'<b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
       h+='</div></section></div>';
       h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
@@ -315,7 +335,9 @@
         return;
       }
       const c=E.equipmentChoices(id).find(c=>c.ready);if(!c){message="Il faut d’abord : "+name(E.equipmentCheck(id)?.required||"un outil adapté");return;}Object.assign(work().w,{eq:c.equipment,mode:c.mode,metier:E.atelierDe(id),slots:Object.keys(I[id].r[1]),prepared:id});message="Recette préparée : "+name(id);}
-    function forge(mode){const {w}=work();if(!w.slots.length){if(mode&&Object.hasOwn(work().tool.modes,mode)){w.mode=mode;w.prepared=null;}return;}w.mode=mode||w.mode;work();U.forging=true;let result;try{result=isGrand(w.eq)?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
+    function forge(mode){const {w}=work();if(!w.slots.length){if(mode&&Object.hasOwn(work().tool.modes,mode)){w.mode=mode;w.prepared=null;}return;}w.mode=mode||w.mode;work();
+      if(horsMetier()){lastHeat="froid";message="Ce geste ne donne rien avec ces matières. Essaie un autre outil, une autre combinaison, ou un autre métier.";A.fail(0);redraw();return;}
+      U.forging=true;let result;try{result=isGrand(w.eq)?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
       if(result.kind==="craft"||result.kind==="queued"){
         lastHeat="success";
         message=(result.kind==="craft"?"Fabriqué : ":"En cours : ")+name(result.id);

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.54.1";
+  D.VERSION = "0.55.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1688,6 +1688,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔬 Le Labo enferme la découverte dans le métier ouvert. Dans un métier, tu ne vois plus que les matières qui entrent dans ses recettes (et non toutes celles que tu as vues), les pistes ✦ ne comptent que ses recettes, et un assemblage qui relève d’un autre métier ne donne rien ici (le thermomètre ne révèle pas non plus qu’il existe ailleurs) : on le trouve en ouvrant le bon métier. Les recettes que tu connais déjà se fabriquent comme avant.",
     "🏷️ Le seuil de production libre se lit en mots, plus en pourcentages : au repos, au jour le jour, quelques réserves, bien garni, à ras bord. Il démarre à « au jour le jour » (au lieu d’un tiers du stock de confort), pour qu’un travailleur ne vide pas des matières dont tu as besoin sans que tu l’aies voulu. Le goulot « seuil à 0 % » devient « au repos ».",
     "🏗️ Les bâtisseurs ont un rôle : ils exécutent les chantiers que tu lances, c’est-à-dire les constructions à prix croissant (extracteurs, machines) que tu mets dans ta file, à ta place et sans que tu les fasses à la main. Jamais de leur propre initiative, et seulement ce que tu as déjà construit une fois toi-même. Construction apparaît dans les Ateliers dès que tu connais une construction. Dans un goulot « aucun extracteur n’en récolte », un bouton lance directement le chantier.",
     "🚧 Les goulots : quand tes travailleurs n’avancent pas, l’Atelier le dit et remonte à la vraie cause. « Goulots · 2 » en tête de l’Atelier (et sur la page du métier), avec un bouton qui la règle : voir les Terres quand aucun extracteur ne récolte la matière, embaucher quand personne ne fabrique le composant d’un autre métier, fabriquer une fois à la main ce que les travailleurs ne peuvent pas encore, régler un seuil à 0 %, voir l’énergie. Une pastille apparaît sur l’onglet Atelier quand un nouveau goulot se présente.",

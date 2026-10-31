@@ -117,11 +117,12 @@
     };
     E.equipmentList = () => Object.entries(cfg.equipment).filter(([, eq]) => !eq.hidden).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
     // Même information que l'étude classique, limitée au geste exact de l'outil.
-    E.equipmentHasDiscovery = (id, equipment, mode) => {
+    // metier (facultatif, 0.55) : on ne compte que les recettes de ce métier (le Labo enferme la découverte dans le métier ouvert)
+    E.equipmentHasDiscovery = (id, equipment, mode, metier) => {
       mode = normMode(mode);
       const eq = cfg.equipment[equipment];
       if (!E.state.studied[id] || !eq || !Object.hasOwn(eq.modes, mode) || Object.keys(missing(equipment, E.count)).length) return false;
-      const reactions = E.reactions(id, recipe => (cfg.recipes[recipe] || []).some(c => c.equipment === equipment && c.mode === mode));
+      const reactions = E.reactions(id, recipe => (cfg.recipes[recipe] || []).some(c => c.equipment === equipment && c.mode === mode) && (!metier || E.atelierDe(recipe) === metier));
       return Object.values(reactions).some(n => n > 0);
     };
     const fixed = new Set(["feu", "four", "enclume_pierre", "polissoir"]);

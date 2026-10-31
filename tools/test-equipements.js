@@ -388,4 +388,20 @@ test("l'atelier permet de cadencer directement une recette automatisable maîtri
   E.setCadence("manche", null);
   assert.equal(E.state.dom.cadence?.manche, undefined, "La cadence doit être retirée");
 });
+test("le Labo enferme la découverte dans le métier : une piste ne se compte que dans le métier de la recette (0.55)", () => {
+  const E = mk(); E.state.age = 3; E.state.cycle = 2;
+  for (const id of ["feu", "four", "enclume_pierre", "percuteur_pierre", "racloir_os", "couteau", "ciseau", "polissoir", "pioche_pierre"]) owns(E, id);
+  for (const id of Object.keys(E.D.ITEMS)) if (E.D.ITEMS[id].r === undefined) { E.state.seen[id] = 1; E.state.studied[id] = 1; }
+  for (const id of Object.keys(E.D.ITEMS)) if (E.D.ITEMS[id].r) E.state.seen[id] = 1;
+  let trouve = null;
+  for (const eq of E.equipmentList().filter((x) => x.ready)) for (const mode of Object.keys(eq.modes)) for (const id of Object.keys(E.D.ITEMS)) {
+    if (trouve || !E.state.studied[id] || !E.equipmentHasDiscovery(id, eq.id, mode)) continue;
+    const metiers = new Set(Object.keys(E.D.CRAFT_EQUIPMENT.recipes).filter((rid) => !E.state.known[rid] && E.D.ITEMS[rid].r[1][id] !== undefined && E.D.CRAFT_EQUIPMENT.recipes[rid].some((c) => c.equipment === eq.id && c.mode === mode)).map((rid) => E.atelierDe(rid)));
+    if (metiers.size) trouve = { eq: eq.id, mode, id, metiers: [...metiers] };
+  }
+  assert.ok(trouve, "au moins une piste existe");
+  assert.equal(E.equipmentHasDiscovery(trouve.id, trouve.eq, trouve.mode, trouve.metiers[0]), true, "dans son métier");
+  const autre = E.D.ATELIERS.familles.map((f) => f.id).find((f) => !trouve.metiers.includes(f));
+  assert.equal(E.equipmentHasDiscovery(trouve.id, trouve.eq, trouve.mode, autre), false, "pas dans un autre métier");
+});
 console.log(checks+" contrôles du profil équipements réussis.");
