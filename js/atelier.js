@@ -1636,7 +1636,6 @@
     /* ------------------------------------------------------------ L’ATELIER (production, 0.39)
      * Quoi produire, en quelle quantité, et qui s’en charge : les mains, un apprenti (un ordre
      * permanent avec une cible en Réserve) ou une machine. Aucun établi ici : il est au Labo. */
-    const TRAVAILLEUR_NOM = { apprenti: "Apprenti", ouvrier: "Ouvrier" };
     const PROD_ETAT = { ok: "produit", full: "plein", starved: "attend une matière", nomach: "pas de machine capable", busy: "attend un travailleur", off: "en pause" };
     function prodRecettes() {
       const st = S(), pin = st.pins || {};
@@ -1772,14 +1771,14 @@
         if (U.renvoiAttente !== cle) { A.click(); U.renvoiAttente = cle; render(true); return true; }
         U.renvoiAttente = null;
         const r = E.licencier(fam, kind);
-        if (r.ok) { A.click(); toast("👋 " + esc(TRAVAILLEUR_NOM[kind]) + " renvoyé.", { key: "emb" }); } else A.fail(0);
+        if (r.ok) { A.click(); toast("👋 " + esc(Atel.nom(fam, kind)) + " renvoyé.", { key: "emb" }); } else A.fail(0);
         render(true); return true;
       }
       if ((b = t.closest("[data-embaucher]"))) {
         U.renvoiAttente = null;
         const [fam, kind] = b.dataset.embaucher.split(":");
         const r = E.embaucher(fam, kind);
-        if (r.ok) { A.click(); toast("🛠️ " + esc(TRAVAILLEUR_NOM[kind]) + " embauché : " + fmt(r.cout) + " écus.", { key: "emb" }); }
+        if (r.ok) { A.click(); toast("🛠️ " + esc(Atel.nom(fam, kind)) + " embauché : " + fmt(r.cout) + " écus.", { key: "emb" }); }
         else { A.fail(0); toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : r.why === "max" ? "L’atelier est au complet." : r.why === "age" ? "Pas encore : cet échelon arrive plus tard." : "Impossible pour l’instant.", { key: "emb" }); }
         render(true); return true;
       }

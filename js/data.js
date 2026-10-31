@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.50.1";
+  D.VERSION = "0.50.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1559,6 +1559,17 @@
    * de l'âge, un ouvrier huit : embaucher tôt est moins cher qu'embaucher tard. 1 : prix fixe. */
   D.TRAVAILLEURS = {
     parAge: 2.5,
+    /* 0.51 : chaque métier a ses travailleurs, nommés d'après ce qu'ils font (affichage seulement : le jeu garde « apprenti » et « ouvrier ») */
+    noms: {
+      artisanat: { apprenti: "Apprenti artisan", ouvrier: "Artisan" },
+      construction: { apprenti: "Apprenti bâtisseur", ouvrier: "Bâtisseur" },
+      elevage: { apprenti: "Apprenti éleveur", ouvrier: "Éleveur" },
+      metallurgie: { apprenti: "Apprenti forgeron", ouvrier: "Forgeron" },
+      chimie: { apprenti: "Apprenti chimiste", ouvrier: "Chimiste" },
+      centrales: { apprenti: "Apprenti centralier", ouvrier: "Centralier" },
+      electronique: { apprenti: "Apprenti électronicien", ouvrier: "Électronicien" },
+      artistique: { apprenti: "Apprenti copiste", ouvrier: "Lettré" }
+    },
     apprenti: { n: "Apprenti", age: 3, mult: 0.5, ing: 2, ch: 1, cout: 40, croiss: 1.5, max: 3 },
     ouvrier: { n: "Ouvrier", age: 6, mult: 1, ing: 3, ch: 3, cout: 200, croiss: 1.5, max: 8 }
   };
@@ -1636,6 +1647,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "👷 Chaque métier a ses travailleurs, nommés d’après ce qu’ils font : artisan, bâtisseur, éleveur, forgeron, chimiste, centralier, électronicien, lettré (et leurs apprentis). Les boutons d’embauche, les renvois et la jauge d’énergie les nomment ainsi.",
     "🔘 Fin de l’harmonisation des boutons : les flèches des terres, le bouton d’arrêt de la récolte, les pastilles d’ingrédient et d’objet, et la ligne d’âge prennent l’octogone du jeu ; « Arbre » devient « Progression » ; l’aide ne promet plus de raccourcis clavier qui n’existent pas.",
     "✦ Les Traces s’appellent désormais les Souvenirs : ce que laissent les passages franchis, et que la relève transmet au Semeur suivant.",
     "💭 Le guide remis d’aplomb après la refonte : il montre l’objectif, le médaillon d’une nouvelle terre, le bouton Explorer, le Comptoir et le bouton Étudier du Labo (trois chapitres ne démarraient plus), et ses textes parlent des Terres et du Labo.",

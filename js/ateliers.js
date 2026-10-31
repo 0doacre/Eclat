@@ -31,11 +31,17 @@
       T.paliers.forEach((p) => { const m = ms[p.id]; if (m && m.used > 0) conso.push({ id: p.id, n: I[p.id] ? I[p.id].n : p.id, nombre: m.used, ch: m.used * p.ch }); });
       for (const f in tr) {
         const F = T.familles.find((x) => x.id === f);
-        if (tr[f].usedApp) conso.push({ id: "app:" + f, n: "Apprentis · " + (F ? F.n : f), nombre: tr[f].usedApp, ch: tr[f].usedApp * TR.apprenti.ch });
-        if (tr[f].usedOuv) conso.push({ id: "ouv:" + f, n: "Ouvriers · " + (F ? F.n : f), nombre: tr[f].usedOuv, ch: tr[f].usedOuv * TR.ouvrier.ch });
+        if (tr[f].usedApp) conso.push({ id: "app:" + f, n: nom(f, "apprenti", true) + " · " + (F ? F.n : f), nombre: tr[f].usedApp, ch: tr[f].usedApp * TR.apprenti.ch });
+        if (tr[f].usedOuv) conso.push({ id: "ouv:" + f, n: nom(f, "ouvrier", true) + " · " + (F ? F.n : f), nombre: tr[f].usedOuv, ch: tr[f].usedOuv * TR.ouvrier.ch });
       }
       const aConstruire = T.sources.filter((s) => E.count(s.id) <= 0 && E.state.known[s.id]).map((s) => ({ id: s.id, n: I[s.id].n, ch: s.ch }));
       return { offre, demande, ratio, facteur: Math.max(Math.min(1, T.plancherEnergie === undefined ? 1 : T.plancherEnergie), ratio), plancher: T.plancherEnergie, sources, conso, aConstruire };
+    }
+
+    /* le nom d'un travailleur dans son métier : « Forgeron », « Apprenti copiste » (sinon « Ouvrier », « Apprenti ») */
+    function nom(f, kind, pluriel) {
+      const n = ((TR.noms || {})[f] || {})[kind] || TR[kind].n;
+      return pluriel ? n.replace(/^Apprenti /, "Apprentis ").replace(/(\S+)$/, (m) => (/[sx]$/.test(m) ? m : m + "s")) : n;
     }
 
     /* ce que le joueur peut embaucher dans cet atelier, et pourquoi il ne le peut pas */
@@ -47,7 +53,7 @@
         if (S().age < d.age) pourquoi = "age";
         else if (n >= d.max) pourquoi = "max";
         else if ((S().ecus || 0) < E.coutEmbauche(f, kind)) pourquoi = "ecus";
-        return { kind, n: d.n, nombre: n, max: d.max, cout: E.coutEmbauche(f, kind), age: d.age, pourquoi };
+        return { kind, n: nom(f, kind), nombre: n, max: d.max, cout: E.coutEmbauche(f, kind), age: d.age, pourquoi };
       });
     }
 
@@ -92,7 +98,7 @@
       return T.familles.filter((F) => connues(F.id).length > 0).map((F) => carte(F.id));
     }
 
-    return { famille, connues, carte, liste, energie, embauches };
+    return { famille, connues, carte, liste, energie, embauches, nom };
   }
 
   const Ateliers = { create };

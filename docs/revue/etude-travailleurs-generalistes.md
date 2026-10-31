@@ -158,9 +158,11 @@ Les joueurs automatiques de `tools/sim-passages.js` n'embauchent personne. Avant
 
 Décisions du porteur du projet : production continue jusqu'à un seuil fixé par le joueur ; recettes connues seulement ; pas d'arrêt automatique au profit de l'objectif (le joueur calibre) ; une priorité reste dans le métier ; les travailleurs parlent ; il faut un système de goulots.
 
-Questions restantes :
-1. **Le % du seuil** : (a) stock de confort par composant (recommandé) ou (b) vraie capacité de Réserve ?
-2. **Les consignes priorité et objectif** : à garder comme options (étape 6), ou le seuil suffit-il ?
-3. **Les bâtisseurs** : d'accord pour des chantiers que le joueur valide, plutôt que des constructions automatiques ?
-4. **Le ton de la voix** : « Patron » partout, ou une voix par métier (le forgeron parle autrement que l'éleveur) ?
-5. **Les portraits** : placeholders game-icons, ou je cherche une image libre de droits ?
+Réponses (31 octobre 2026) :
+1. **Le % du seuil** : (a), le stock de confort par composant. Le porteur du projet a proposé un ratio lié à la production des matières premières ; plus complexe, il est gardé pour plus tard, une fois (a) testé (le stock de confort pourrait alors se calibrer sur la production plutôt que sur l'âge).
+2. **Les consignes priorité et objectif** : gardées comme options, à tester (étape 6).
+3. **Les bâtisseurs** : oui, des chantiers que le joueur valide.
+4. **La voix** : une voix par métier.
+5. **Les portraits** : placeholders libres de droits. Les packs gratuits trouvés sont médiévaux (CC0 : Medieval Citizens Vol.1 sur OpenGameArt, Medieval Painterly Avatars sur itch.io) et ne couvrent ni l'électronique ni l'espace : pour l'instant, un pictogramme par métier (game-icons.net, déjà crédité), à remplacer métier par métier.
+
+Avancement : l'étape 1 (les noms) est faite en 0.51 : `D.TRAVAILLEURS.noms`, `Atel.nom(métier, genre)`.
