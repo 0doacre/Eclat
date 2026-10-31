@@ -1695,9 +1695,23 @@
       return '<div class="atel-embauche">' + c.embauches.map((e) => {
         const renvoi = e.nombre > 0 ? '<button type="button" class="btn small ghost atel-renvoi' + (U.renvoiAttente === c.id + ":" + e.kind ? " is-confirme" : "") + '" data-renvoyer="' + c.id + ":" + e.kind + '" title="Renvoyer un ' + esc(e.n.toLowerCase()) + ' : aucun remboursement, et le prix de l’embauche suivante ne baisse pas">' + (U.renvoiAttente === c.id + ":" + e.kind ? "Confirmer le renvoi ?" : "Renvoyer") + "</button>" : "";
         if (e.pourquoi === "age") return '<span class="atel-ferme">' + esc(e.n) + " : à partir de " + esc(D.AGES[e.age].n.toLowerCase()) + "</span>";
-        if (e.pourquoi === "max") return '<span class="atel-ferme">' + esc(e.n) + "s : " + e.nombre + " sur " + e.max + " (au complet)</span>" + renvoi;
+        if (e.pourquoi === "max") return '<span class="atel-ferme">' + esc(Atel.nom(c.id, e.kind, true)) + " : " + e.nombre + " sur " + e.max + " (au complet)</span>" + renvoi;
         return renvoi + '<button type="button" class="btn small' + (e.pourquoi ? " ghost" : "") + '" data-embaucher="' + c.id + ":" + e.kind + '" title="' + esc(e.pourquoi === "ecus" ? "Il te manque des écus : vends au Comptoir ou au Troqueur" : "Embaucher") + '">Embaucher un ' + esc(e.n.toLowerCase()) + " · " + fmt(e.cout) + " écus" + (e.nombre ? " (" + e.nombre + ")" : "") + "</button>";
       }).join("") + "</div>";
+    }
+    /* le seuil d'un métier (0.51) : jusqu'où ses travailleurs fabriquent seuls, et où ils en sont */
+    function seuilHTML(c) {
+      if (!E.autoEtat || (D.TRAVAILLEURS || {}).generalistes === false) return "";
+      const sel = E.seuilAtelier(c.id), etats = E.autoEtat(c.id);
+      const equipe = (c.apprentis || 0) + (c.ouvriers || 0);
+      const mot = { marche: "en cours", plein: "au seuil", manque: "manque de matière", attend: "en attente" };
+      const lignes = etats.map((x) => '<li class="atel-seuil-l is-' + x.etat + '">' + icon(x.id, "sm") + "<b>" + esc(I[x.id].n) + "</b>" +
+        '<span class="tiny muted">' + fmt(x.have) + " / " + fmt(x.cible) + " · " + mot[x.etat] + (x.travailleurs ? " · " + x.travailleurs + " au travail" : "") + "</span></li>").join("");
+      return '<div class="atel-seuil"><div class="atel-seuil-t"><b>Seuil de stock</b><span class="tiny muted">' +
+        (equipe ? "Tes travailleurs fabriquent seuls ce que le métier connaît, jusqu’à ce seuil." : "Embauche pour que le métier fabrique seul, jusqu’à ce seuil.") + "</span></div>" +
+        '<div class="filters wrap" role="group" aria-label="Seuil de stock">' + [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((p) =>
+          '<button type="button" data-seuil="' + c.id + ":" + p + '" class="' + (p === sel ? "on" : "") + '" aria-pressed="' + (p === sel) + '">' + p + " %</button>").join("") + "</div>" +
+        (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Rien à fabriquer seul pour l’instant : il faut avoir fait un composant du métier à la main.</p>') + "</div>";
     }
     function viewAteliers() {
       const ap = E.apprentis();
@@ -1717,7 +1731,7 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
-        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
@@ -1772,6 +1786,11 @@
         U.renvoiAttente = null;
         const r = E.licencier(fam, kind);
         if (r.ok) { A.click(); toast("👋 " + esc(Atel.nom(fam, kind)) + " renvoyé.", { key: "emb" }); } else A.fail(0);
+        render(true); return true;
+      }
+      if ((b = t.closest("[data-seuil]"))) {
+        const [fam, pct] = b.dataset.seuil.split(":");
+        if (E.setSeuilAtelier(fam, +pct).ok) A.click();
         render(true); return true;
       }
       if ((b = t.closest("[data-embaucher]"))) {

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.50.2";
+  D.VERSION = "0.51.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1559,6 +1559,12 @@
    * de l'âge, un ouvrier huit : embaucher tôt est moins cher qu'embaucher tard. 1 : prix fixe. */
   D.TRAVAILLEURS = {
     parAge: 2.5,
+    /* 0.51 : les travailleurs d'un métier fabriquent en continu, sans ordre, les composants connus de leur métier (déjà faits une fois à la main)
+     * tant que leur stock est sous le seuil du métier (S.ateliers[métier].seuil, en %, par pas de 10) : seuil % du « stock de confort » de la
+     * recette = base × parAge^(âge de la recette − 1), au plus max. generalistes: false rend le jeu d'avant (cadences seules). */
+    generalistes: true,
+    seuilDefaut: 30,
+    confort: { base: 20, parAge: 1.5, max: 200 },
     /* 0.51 : chaque métier a ses travailleurs, nommés d'après ce qu'ils font (affichage seulement : le jeu garde « apprenti » et « ouvrier ») */
     noms: {
       artisanat: { apprenti: "Apprenti artisan", ouvrier: "Artisan" },
@@ -1647,6 +1653,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les composants que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier : 0, 10, 20 … 100 % d’un stock de confort qui grandit avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
     "👷 Chaque métier a ses travailleurs, nommés d’après ce qu’ils font : artisan, bâtisseur, éleveur, forgeron, chimiste, centralier, électronicien, lettré (et leurs apprentis). Les boutons d’embauche, les renvois et la jauge d’énergie les nomment ainsi.",
     "🔘 Fin de l’harmonisation des boutons : les flèches des terres, le bouton d’arrêt de la récolte, les pastilles d’ingrédient et d’objet, et la ligne d’âge prennent l’octogone du jeu ; « Arbre » devient « Progression » ; l’aide ne promet plus de raccourcis clavier qui n’existent pas.",
     "✦ Les Traces s’appellent désormais les Souvenirs : ce que laissent les passages franchis, et que la relève transmet au Semeur suivant.",

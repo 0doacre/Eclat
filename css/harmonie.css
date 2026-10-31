@@ -82,3 +82,12 @@
 
 /* 10. Le compte se trouve dans le menu (Système → Compte en ligne) : son bouton ne prend plus une seconde ligne dans l'en-tête. */
 #cloudBtn { display: none !important; }
+
+/* le seuil de stock d'un métier (0.51) */
+.atel-seuil { margin: 8px 0 10px; padding: 10px var(--gut, 12px); border: 1px solid var(--line2, #0002); border-radius: 10px; }
+.atel-seuil-t { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.atel-seuil .filters { gap: 4px; margin-bottom: 6px; }
+.atel-seuil-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.atel-seuil-l { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.atel-seuil-l.is-plein { opacity: .6; }
+.atel-seuil-l.is-manque b { color: var(--danger, #a33); }

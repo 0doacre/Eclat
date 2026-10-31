@@ -167,3 +167,56 @@ test("l'ancienne vente automatique n'existe plus", () => {
   assert.equal(E.count("laniere"), 50);
 });
 console.log(passed + " tests des travailleurs réussis.");
+
+console.log("Travailleurs généralistes : seuil par métier (0.51)");
+test("les noms d'un métier : forgeron, apprenti copiste, pluriels", () => {
+  const { A } = jeu(5);
+  assert.equal(A.nom("metallurgie", "ouvrier"), "Forgeron");
+  assert.equal(A.nom("artistique", "apprenti"), "Apprenti copiste");
+  assert.equal(A.nom("metallurgie", "apprenti", true), "Apprentis forgerons");
+  assert.equal(A.nom("inconnu", "ouvrier"), "Ouvrier");
+});
+test("un apprenti fabrique seul un composant connu jusqu'à sa cible, puis s'arrête", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6; E.add("bois", 5000); E.add("pierre", 5000); E.add("fibre", 5000); E.state.made.manche = 1;
+  assert.equal(E.seuilAtelier("artisanat"), TR.seuilDefaut);
+  E.embaucher("artisanat", "apprenti");
+  const cible = E.cibleAuto("manche");
+  assert.ok(cible >= 1 && cible === Math.ceil(E.confort("manche") * TR.seuilDefaut / 100));
+  avance(E, 300);
+  assert.equal(Math.floor(E.state.inv.manche || 0), cible, "il monte jusqu'à la cible");
+  avance(E, 300);
+  assert.equal(Math.floor(E.state.inv.manche || 0), cible, "puis il s'arrête");
+  assert.equal(E.autoEtat("artisanat").find((x) => x.id === "manche").etat, "plein");
+});
+test("le seuil se règle par pas de 10, 0 arrête tout, plus haut fait reprendre", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6; E.add("bois", 5000); E.add("pierre", 5000); E.add("fibre", 5000); E.state.made.manche = 1;
+  E.embaucher("artisanat", "apprenti");
+  assert.equal(E.setSeuilAtelier("artisanat", 0).seuil, 0);
+  avance(E, 120);
+  assert.equal(Math.floor(E.state.inv.manche || 0), 0, "seuil 0 : rien");
+  assert.equal(E.setSeuilAtelier("artisanat", 47).seuil, 50, "arrondi à la dizaine");
+  avance(E, 300);
+  assert.equal(Math.floor(E.state.inv.manche || 0), E.cibleAuto("manche"));
+  assert.equal(E.setSeuilAtelier("nimporte", 10).ok, false);
+});
+test("sans l'avoir fait une fois à la main, un travailleur ne fabrique pas ; sans interrupteur, le jeu d'avant", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6; E.add("bois", 5000); E.add("pierre", 5000); E.add("fibre", 5000); delete E.state.made.manche;
+  E.embaucher("artisanat", "apprenti");
+  avance(E, 60);
+  assert.equal(Math.floor(E.state.inv.manche || 0), 0);
+  E.state.made.manche = 1;
+  TR.generalistes = false;
+  try { avance(E, 60); assert.equal(Math.floor(E.state.inv.manche || 0), 0, "interrupteur éteint : rien sans cadence"); }
+  finally { TR.generalistes = true; }
+});
+test("le seuil survit à la sauvegarde", () => {
+  const { E } = jeu(5);
+  E.setSeuilAtelier("chimie", 70);
+  const F = createEngine({ now: () => t, rand: () => 0.99 });
+  F.load(JSON.stringify(E.save ? JSON.parse(E.save()) : E.state));
+  assert.equal(F.seuilAtelier("chimie"), 70);
+  assert.equal(F.seuilAtelier("artisanat"), TR.seuilDefaut);
+});

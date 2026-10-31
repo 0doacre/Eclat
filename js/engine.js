@@ -1589,7 +1589,87 @@
       }
       return Math.max(0, maxU);
     }
-    /* affecte les machines restées libres après les commandes aux cadences de maintien de stock */
+    /* 0.51 : la production continue des travailleurs d'un métier, jusqu'au seuil du métier. */
+    const autoAcc = {};
+    let autoReserve = {};
+    let composantsMemo = null, autoParFam = null;
+    function autoPossible() { return TRAV.generalistes !== false; }
+    function autoSeuil(fam) {
+      const a = S.ateliers && S.ateliers[fam];
+      return a && typeof a.seuil === "number" ? a.seuil : (TRAV.seuilDefaut === undefined ? 30 : TRAV.seuilDefaut);
+    }
+    /* les composants : ce qui sert d'ingrédient à une autre recette (ni bâtiments, ni machines, ni outils) rangés par métier */
+    function autoRecettesDe(fam) {
+      if (!autoParFam) {
+        composantsMemo = new Set();
+        for (const id in D.ITEMS) { const it = D.ITEMS[id]; if (it.r) for (const k in it.r[1]) composantsMemo.add(k); }
+        autoParFam = {};
+        composantsMemo.forEach((id) => {
+          const it = D.ITEMS[id];
+          if (!it || !it.r || it.sec || (it.t !== "comp" && it.t !== "res")) return;
+          (autoParFam[E.atelierDe(id)] = autoParFam[E.atelierDe(id)] || []).push(id);
+        });
+      }
+      return autoParFam[fam] || [];
+    }
+    function autoConfort(rec) {
+      const c = TRAV.confort || { base: 20, parAge: 1.5, max: 200 }, a = Math.max(1, (item(rec) && item(rec).a) || 1);
+      return Math.min(c.max, Math.round(c.base * Math.pow(c.parAge, a - 1)));
+    }
+    function autoCible(rec) { return Math.ceil(autoConfort(rec) * autoSeuil(E.atelierDe(rec)) / 100 - 1e-9); }
+    /* ce que les commandes en cours de la file ont encore à prendre en Réserve : les travailleurs n'y touchent pas */
+    function autoReserveCalc() {
+      const r = {};
+      S.hand.q.forEach((j) => {
+        if (j.paused) return;
+        j.s.forEach((st, i) => {
+          const left = st[1] - (j.done[i] || 0);
+          if (left <= 0) return;
+          const cost = jobInputs(j, st[0]);
+          for (const k in cost) r[k] = (r[k] || 0) + cost[k] * left;
+        });
+        for (const k in j.b) if (r[k]) r[k] = Math.max(0, r[k] - j.b[k]);
+      });
+      return r;
+    }
+    function autoCibles(fam) {
+      const out = [];
+      autoRecettesDe(fam).forEach((rec) => {
+        const it = item(rec);
+        if (!it || !it.r || !E.automatable(rec)) return;
+        const cible = autoCible(rec), have = S.inv[rec] || 0;
+        if (have >= cible - 1e-9) return;
+        for (const i in it.r[1]) if ((S.inv[i] || 0) - (autoReserve[i] || 0) + 1e-9 < it.r[1][i]) return;
+        out.push({ rec, ratio: have / Math.max(1, cible) });
+      });
+      return out.sort((a, b) => a.ratio - b.ratio);
+    }
+    E.seuilAtelier = autoSeuil;
+    E.setSeuilAtelier = function (fam, pct) {
+      if (!((D.ATELIERS || {}).familles || []).some((f) => f.id === fam)) return { ok: false, why: "inconnu" };
+      const v = Math.max(0, Math.min(100, Math.round((Number(pct) || 0) / 10) * 10));
+      S.ateliers = S.ateliers || {};
+      const a = S.ateliers[fam] || (S.ateliers[fam] = { app: 0, ouv: 0 });
+      a.seuil = v;
+      assignWorkers(); domChanged(); E.emit("struct");
+      return { ok: true, seuil: v };
+    };
+    E.confort = autoConfort;
+    E.cibleAuto = autoCible;
+    /* ce que les travailleurs d'un métier ont à faire : chaque composant connu, son stock, sa cible, et si on le fabrique */
+    E.autoEtat = function (fam) {
+      assignWorkers();
+      const actifs = {};
+      machPool.forEach((w) => { const wk = workerOf(w.m); if (wk && wk.fam === fam && w.cad) actifs[w.cad] = (actifs[w.cad] || 0) + 1; });
+      return autoRecettesDe(fam).filter((rec) => E.automatable(rec)).map((rec) => {
+        const it = item(rec), have = Math.floor(S.inv[rec] || 0), cible = autoCible(rec);
+        let etat = actifs[rec] ? "marche" : "attend";
+        if (have >= cible) etat = "plein";
+        else if (!actifs[rec]) for (const i in it.r[1]) if ((S.inv[i] || 0) - (autoReserve[i] || 0) + 1e-9 < it.r[1][i]) { etat = "manque"; break; }
+        return { id: rec, have, cible, etat, travailleurs: actifs[rec] || 0 };
+      });
+    };
+    /* affecte les machines restées libres après les commandes aux cadences de maintien de stock, puis les travailleurs libres à leur métier */
     function assignCadenceWorkers() {
       const cads = (S.dom && S.dom.cadence) || {};
       const keys = Object.keys(cads).filter((rec) => {
@@ -1600,7 +1680,6 @@
         for (const i in cost) if ((S.inv[i] || 0) + 1e-9 < cost[i]) return false;
         return true;
       });
-      if (!keys.length) return;
       const assigned = {};
       keys.forEach((k) => { assigned[k] = 0; });
       machPool.forEach((w) => {
@@ -1615,6 +1694,22 @@
           w.rec = best;
           assigned[best]++;
         }
+      });
+      if (!autoPossible()) return;
+      autoReserve = autoReserveCalc();
+      const cibles = {}, pris = {};
+      machPool.forEach((w) => {
+        if (w.job !== null || w.cad !== null) return;
+        const wk = workerOf(w.m);
+        if (!wk) return;
+        const liste = cibles[wk.fam] || (cibles[wk.fam] = autoCibles(wk.fam));
+        let best = null, bestCnt = Infinity;
+        for (const c of liste) {
+          if (!machReadyFor(w.m, c.rec)) continue;
+          const n = pris[c.rec] || 0;
+          if (n < bestCnt) { best = c.rec; bestCnt = n; }
+        }
+        if (best) { w.cad = best; w.rec = best; pris[best] = (pris[best] || 0) + 1; }
       });
     }
     /* répartit les machines possédées et les mains sur les étapes prêtes des commandes */
@@ -4057,10 +4152,21 @@
     function runCadences(dt, c) {
       const cads = (S.dom && S.dom.cadence) || {};
       const keys = Object.keys(cads);
-      if (!keys.length) return;
+      const equipe = autoPossible() && Object.keys(S.ateliers || {}).some((f) => S.ateliers[f].app || S.ateliers[f].ouv);
+      if (!keys.length && !equipe) return;
       assignWorkers();
-      keys.forEach((rec) => {
-        const cd = cads[rec], it = item(rec);
+      /* les ordres permanents du joueur, puis ce que les travailleurs fabriquent d'eux-mêmes (cible = seuil du métier, ingrédients hors réserves de la file) */
+      const lignes = keys.map((rec) => ({ rec, cd: cads[rec], auto: false }));
+      if (equipe) {
+        const vus = new Set(keys);
+        machPool.forEach((w) => {
+          if (!w.cad || vus.has(w.cad)) return;
+          vus.add(w.cad);
+          lignes.push({ rec: w.cad, cd: { cap: autoCible(w.cad), on: true, acc: autoAcc[w.cad] || 0 }, auto: true });
+        });
+      }
+      lignes.forEach(({ rec, cd, auto }) => {
+        const it = item(rec);
         if (!cd || cd.on === false || !it || !it.r) return;
         let mRate = 0;
         machPool.forEach((w) => {
@@ -4069,9 +4175,9 @@
         if (!(mRate > 0)) return;
         const outPerOp = it.r[2] || 1, cost = it.r[1];
         const room = Math.max(0, (cd.cap || 0) - (S.inv[rec] || 0));
-        if (room <= 1e-9) { cd.acc = 0; return; }
+        if (room <= 1e-9) { cd.acc = 0; if (auto) autoAcc[rec] = 0; return; }
         let maxOps = Math.ceil(room / outPerOp);
-        for (const i in cost) maxOps = Math.min(maxOps, Math.floor(((S.inv[i] || 0) + 1e-9) / cost[i]));
+        for (const i in cost) maxOps = Math.min(maxOps, Math.floor(((S.inv[i] || 0) - (auto ? autoReserve[i] || 0 : 0) + 1e-9) / cost[i]));
         if (maxOps < 1) return;
         cd.acc = (cd.acc || 0) + mRate * dt;
         const k = Math.min(maxOps, Math.floor(cd.acc + 1e-9));
@@ -4082,6 +4188,7 @@
           add(rec, out);
           if ((S.inv[rec] || 0) >= (cd.cap || 0) - 1e-9) cd.acc = 0;
         }
+        if (auto) autoAcc[rec] = cd.acc;
       });
     }
     function runDom(dt) {
@@ -6016,7 +6123,8 @@
         const app = Math.max(0, Math.min((D.TRAVAILLEURS || {}).apprenti ? D.TRAVAILLEURS.apprenti.max : 0, Math.floor(Number(a.app) || 0)));
         const ouv = Math.max(0, Math.min((D.TRAVAILLEURS || {}).ouvrier ? D.TRAVAILLEURS.ouvrier.max : 0, Math.floor(Number(a.ouv) || 0)));
         const appH = Math.max(app, Math.min(99, Math.floor(Number(a.appH) || 0))), ouvH = Math.max(ouv, Math.min(99, Math.floor(Number(a.ouvH) || 0)));
-        if (app || ouv || appH || ouvH) { propre[f] = { app, ouv }; if (appH > app) propre[f].appH = appH; if (ouvH > ouv) propre[f].ouvH = ouvH; }
+        const seuil = Number.isFinite(Number(a.seuil)) && a.seuil !== null ? Math.max(0, Math.min(100, Math.round(Number(a.seuil) / 10) * 10)) : null;
+        if (app || ouv || appH || ouvH || seuil !== null) { propre[f] = { app, ouv }; if (appH > app) propre[f].appH = appH; if (ouvH > ouv) propre[f].ouvH = ouvH; if (seuil !== null) propre[f].seuil = seuil; }
       });
       S.ateliers = propre;
       const raw = S.atelierEconomy;
