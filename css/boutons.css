@@ -1,0 +1,119 @@
+/* 0.47 : la grammaire des contrôles. Chaque contrôle a un rôle, chaque rôle une seule apparence.
+ *   ACTION        cadre de papier (octogone allongé) : « fais quelque chose ». Variante principale : cadre brique.
+ *   OUVRE-FENÊTRE un cadre de papier suivi d'un chevron › : « ouvre une fenêtre ou un panneau ».
+ *   ONGLET        texte souligné, sans cadre : « change de page ». L'onglet actif est souligné en brique.
+ *   FILTRE        petit cadre de papier ; actif : cadre brique : « trie ce qui est déjà à l'écran ».
+ * Les cadres sont des SVG à neuf zones (border-image) : les quatre coins gardent leurs proportions, les bords et le centre
+ * s'étirent. Aucune déformation, quelle que soit la taille du bouton. Voir docs/DA-BOUTONS.md. */
+html[data-style-mode="vivant"] {
+  --cadre-papier: url("../assets/ui/cadre-papier.svg");
+  --cadre-brique: url("../assets/ui/cadre-brique.svg");
+  --cadre-b: 14px;
+}
+
+/* ---- ACTION, OUVRE-FENÊTRE, FILTRE : tout ce qui a un cadre ---- */
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) {
+  position: relative; isolation: isolate; border: 0 !important; border-radius: 0 !important; background: transparent !important;
+  box-shadow: none !important; color: var(--text) !important; text-shadow: none; font-family: var(--serif);
+}
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.terres-pastille, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) {
+  min-height: 44px; padding: 8px 14px; cursor: pointer;
+}
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.chip, .icon-btn, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) { --cadre-b: 10px; }
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box; width: auto; height: auto;
+  mask: none !important; transform: none; filter: none; background: none !important;
+  border: var(--cadre-b) solid transparent !important;
+  border-image: var(--cadre-papier) 24 fill / var(--cadre-b) / 0 stretch !important;
+}
+/* principal, actif, coché : le cadre brique */
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn.pri, .forge-btn, .mforge, .resume-btn, .mini.harvest, .btn.sw.on, .terres-pastille.on, .arb-filtres button.on, .ae-chip.on, .ae-filtres button.on, #v-carnet .filters button.on, .age-pill.cur, .btn.on:not(.ghost))::before {
+  border-image-source: var(--cadre-brique) !important; filter: none; background: none !important;
+}
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn.pri, .forge-btn, .mforge, .resume-btn, .mini.harvest, .btn.sw.on, .terres-pastille.on, .arb-filtres button.on, .ae-chip.on, .ae-filtres button.on, #v-carnet .filters button.on, .age-pill.cur, .btn.on:not(.ghost)) { color: #fff8e9 !important; }
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .terres-pastille, .arb-filtres button, .ae-chip, .ae-filtres button, .age-pill):hover:not(:disabled)::before { filter: brightness(.95); }
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .terres-pastille, .arb-filtres button, .ae-chip, .ae-filtres button, .age-pill):disabled::before { filter: grayscale(.85); opacity: .6; }
+/* le texte d'un filtre actif ne casse pas la lecture de son compteur */
+html[data-style-mode="vivant"] .arb-filtres button .f-cnt { background: rgba(48, 39, 30, .12); color: inherit; }
+
+/* ---- OUVRE-FENÊTRE : le même cadre, avec un chevron qui dit qu'une fenêtre s'ouvre ---- */
+html[data-style-mode="vivant"] :is(.terres-pastille, .ouvre)::after { content: "›"; margin-left: 6px; font-size: 1.2em; line-height: 1; opacity: .75; }
+
+/* ---- ONGLET : texte souligné, aucun cadre ---- */
+html[data-style-mode="vivant"] #app :is(.subtabs button, #v-arbre .prog-sw button, #v-journal .filters button, #v-cosmos .filters button, #v-labo .ae-metiers .btn) {
+  position: static; min-height: 44px; padding: 8px 12px; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important;
+  background: transparent !important; box-shadow: none !important; color: var(--muted) !important; font-family: var(--serif); font-size: 15px; white-space: nowrap;
+}
+html[data-style-mode="vivant"] #app :is(.subtabs button, #v-arbre .prog-sw button, #v-journal .filters button, #v-cosmos .filters button, #v-labo .ae-metiers .btn)::before,
+html[data-style-mode="vivant"] #app :is(.subtabs button, #v-arbre .prog-sw button, #v-journal .filters button, #v-cosmos .filters button, #v-labo .ae-metiers .btn)::after { display: none !important; }
+html[data-style-mode="vivant"] #app :is(.subtabs button, #v-arbre .prog-sw button, #v-journal .filters button, #v-cosmos .filters button, #v-labo .ae-metiers .btn):is(.on, .pri) {
+  color: var(--acc) !important; border-bottom-color: var(--acc) !important; font-weight: 700;
+}
+html[data-style-mode="vivant"] #v-arbre .prog-sw, html[data-style-mode="vivant"] #v-journal .filters, html[data-style-mode="vivant"] #v-labo .ae-metiers, html[data-style-mode="vivant"] .subtabs {
+  border-bottom: 1px solid var(--line2); gap: 2px;
+}
+html[data-style-mode="vivant"] #modal .quest-tabs button {
+  position: static; min-height: 44px; padding: 8px 12px; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important;
+  background: transparent !important; box-shadow: none !important; color: var(--muted) !important; font-family: var(--serif); font-size: 15px;
+}
+html[data-style-mode="vivant"] #modal .quest-tabs button.on { color: var(--acc) !important; border-bottom-color: var(--acc) !important; font-weight: 700; }
+
+/* les trois boutons du haut des Terres se partagent la largeur (le texte long est tronqué plutôt que rejeté hors de l'écran) */
+@media (max-width: 520px) {
+  html[data-style-mode="vivant"] .terres-pastilles { overflow-x: hidden; }
+  html[data-style-mode="vivant"] :is(#app) .terres-pastille { flex: 1 1 0; min-width: 0; padding: 8px 10px; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html[data-style-mode="vivant"] .terres-pastille::after { margin-left: 4px; }
+}
+
+/* ---- TUILE : les recettes de la Progression (même octogone, la couleur dit l'état) ---- */
+html[data-style-mode="vivant"] #app :is(.arb-pas, .arb-card) {
+  --tuile: url("../assets/ui/cadre-tuile.svg"); --cadre-b: 10px;
+  position: relative; isolation: isolate; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+}
+html[data-style-mode="vivant"] #app :is(.arb-pas, .arb-card).allume { --tuile: url("../assets/ui/cadre-tuile-trouvee.svg"); }
+html[data-style-mode="vivant"] #app :is(.arb-pas, .arb-card).fantome { --tuile: url("../assets/ui/cadre-tuile-fantome.svg"); }
+html[data-style-mode="vivant"] #app .arb-card.sel { --tuile: var(--cadre-brique); }
+html[data-style-mode="vivant"] #app :is(.arb-pas, .arb-card)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box;
+  border: var(--cadre-b) solid transparent; border-image: var(--tuile) 24 fill / var(--cadre-b) / 0 stretch;
+}
+html[data-style-mode="vivant"] #app .arb-pas.obj::before { filter: drop-shadow(0 0 3px var(--intu)); }
+html[data-style-mode="vivant"] #app .arb-pas.p-bloque::before { opacity: .8; }
+html[data-style-mode="vivant"] #app .arb-card.sel { color: #fff8e9; }
+html[data-style-mode="vivant"] #app .arb-card.sel :is(.arb-status, .arb-l) { color: inherit; }
+
+/* ---- PANNEAUX : les conteneurs de la Progression portent le même cadre peint que les cartes du Labo, de l'Atelier et du Carnet ---- */
+html[data-style-mode="vivant"] #v-arbre :is(.arb-age-groupe, .arb-progression) {
+  border: 10px solid transparent !important; border-image: var(--paint-frame) 78 / 10px / 0 stretch !important; border-radius: 0 !important;
+  background: var(--panel) !important; box-shadow: none !important; padding: 4px 6px;
+}
+html[data-style-mode="vivant"] #v-arbre .arb-barre { display: flex; justify-content: flex-start; gap: 8px; }
+html[data-style-mode="vivant"] #v-arbre .arb-barre .btn { flex: 0 0 auto; }
+
+html[data-style-mode="vivant"] #v-labo .ae-metiers, html[data-style-mode="vivant"] #v-arbre .prog-sw, html[data-style-mode="vivant"] .subtabs { scrollbar-width: none; }
+html[data-style-mode="vivant"] #v-labo .ae-metiers::-webkit-scrollbar, html[data-style-mode="vivant"] #v-arbre .prog-sw::-webkit-scrollbar { display: none; }
+html[data-style-mode="vivant"] #app .ae-chip.ae-outil { padding: 6px; min-width: 56px; min-height: 56px; }
+
+/* ---- Atelier : les cartes d'atelier et la jauge d'énergie sont des boutons : même octogone que les tuiles ---- */
+html[data-style-mode="vivant"] #app :is(.atel-carte, .energie) {
+  --tuile: url("../assets/ui/cadre-tuile.svg"); --cadre-b: 12px;
+  position: relative; isolation: isolate; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+}
+html[data-style-mode="vivant"] #app :is(.atel-carte, .energie)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box;
+  border: var(--cadre-b) solid transparent; border-image: var(--tuile) 24 fill / var(--cadre-b) / 0 stretch;
+}
+html[data-style-mode="vivant"] #app .energie.is-juste { --tuile: url("../assets/ui/cadre-tuile-fantome.svg"); }
+html[data-style-mode="vivant"] .prod-pastille-auto::after { content: "›"; margin-left: 6px; font-size: 1.2em; line-height: 1; opacity: .75; }
+html[data-style-mode="vivant"] #app .atel-ech { border-radius: 4px; }
+
+/* ---- Journal : les fragments (trouvés : papier ; à trouver : pointillés) ---- */
+html[data-style-mode="vivant"] #v-journal .frag {
+  --tuile: url("../assets/ui/cadre-tuile.svg"); --cadre-b: 12px;
+  position: relative; isolation: isolate; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+}
+html[data-style-mode="vivant"] #v-journal .frag.unk { --tuile: url("../assets/ui/cadre-tuile-fantome.svg"); }
+html[data-style-mode="vivant"] #v-journal .frag::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box;
+  border: var(--cadre-b) solid transparent; border-image: var(--tuile) 24 fill / var(--cadre-b) / 0 stretch;
+}

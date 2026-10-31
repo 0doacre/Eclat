@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.46.2";
+  D.VERSION = "0.47.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1636,6 +1636,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔘 Une seule grammaire de boutons : l’octogone de papier pour les actions, un chevron › quand un bouton ouvre une fenêtre, des onglets soulignés pour changer de page, de petits octogones pour les filtres, et les recettes de la Progression en tuiles octogonales colorées selon leur état. Les cadres se redimensionnent sans se déformer. Le bouton Progression, qui n’ouvrait rien, n’apparaît plus que pour revenir de la fiche d’une recette.",
     "🧹 Le menu est plus sobre (plus de grande illustration, les quatre rubriques sur une ligne, des lignes de réglage régulières), le bouton Aspect disparaît de l’en-tête (les styles vont disparaître) et les quatre boutons du haut ont la même taille ; les onglets des fenêtres suivent la forme des filtres des écrans.",
     "🎨 Harmonisation, suite : le Labo reçoit les mêmes cadres peints que l’Atelier et le Carnet, ses filtres suivent la même forme, et le Carnet et les Machines prennent la même marge.",
     "🎨 Passe d’harmonisation des écrans : la même marge sur le Labo, l’Atelier, la Progression et le Journal ; le même titre de page (le Labo en reçoit un) ; les mêmes filtres (rectangles, actif en rouge brique) ; les mêmes cartes peintes.",

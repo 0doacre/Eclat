@@ -627,8 +627,9 @@
         else if (p === "presque") { counts.portee++; }
         else { counts.verrouille++; }
       });
-      return '<div class="arb-barre"><button type="button" class="btn small' + (!U.arbreSel ? ' on' : '') + '" data-arb="ensemble" aria-pressed="' + !U.arbreSel + '" title="Ta progression : ton âge, tes étapes et le prochain objectif">Progression</button>' +
-        '<button type="button" class="btn small" data-arb="centre" title="Ton objectif du moment, et ce qu’il demande">Objectif</button>' +
+      return '<div class="arb-barre">' +
+        (U.arbreSel ? '<button type="button" class="btn small" data-arb="ensemble" title="Revenir à ta progression : ton âge, tes étapes et le prochain objectif">← Progression</button>' : '') +
+        '<button type="button" class="btn small ouvre" data-arb="centre" aria-haspopup="dialog" title="Ouvre ton objectif du moment, et ce qu’il demande">Objectif</button>' +
         '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans l’arbre" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
         '<div class="filters arb-filtres" role="toolbar" aria-label="Filtrer les pastilles">' +
         FILTRES.map(([k, lbl, tip]) =>

@@ -26,20 +26,8 @@
 
 /* 3. Les cartes : en mode vivant, le même cadre peint pour le Labo, l'Atelier et le Carnet (atelier-dessine.css, carnet-peint.css). */
 
-/* 4. Les filtres et les pastilles de choix : une seule forme (rectangle de papier, actif en rouge brique), à la même hauteur tactile. */
-:is(#v-arbre, #v-journal, #v-carnet, #v-cosmos, #v-labo, #v-atelier) .filters button {
-  border-radius: 3px; min-height: 44px; font-size: 14px; box-shadow: none; padding-left: 12px; padding-right: 12px;
-  background: var(--panel, #f4ecda); color: var(--text); border: 1px solid var(--line2);
-}
-:is(#v-arbre, #v-journal, #v-carnet, #v-cosmos, #v-labo, #v-atelier) .filters button.on {
-  background: var(--acc, #813f2a); border-color: var(--acc, #813f2a); color: var(--acc-ink, #fff8e9);
-}
-#v-arbre .filters button .f-cnt { font-size: 11px; }
+/* 4. Les filtres, onglets et boutons : voir css/boutons.css (la grammaire des contrôles). */
 #v-arbre > .filters { gap: 6px; border-bottom: 0; }
-#v-arbre .prog-sw { border-bottom: 1px solid var(--line2); }
-/* les filtres du Labo (Utiles / Tout / En réserve) suivent la même forme */
-#v-labo .ae-filtres button { border-radius: 3px; min-height: 44px; font-size: 14px; box-shadow: none; padding-left: 12px; padding-right: 12px; background: var(--panel, #f4ecda); color: var(--text); border: 1px solid var(--line2); }
-#v-labo .ae-filtres button.on, #v-labo .ae-filtres button[aria-pressed="true"] { background: var(--acc, #813f2a); border-color: var(--acc, #813f2a); color: var(--acc-ink, #fff8e9); }
 
 /* 5. L'en-tête : le choix de style (Aspect) disparaît bientôt, il est masqué ; les quatre boutons restants ont la même taille. */
 #atlasToggle { display: none !important; }
@@ -69,10 +57,5 @@
 #modal .menu-wrap .menu-danger-zone { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line2); }
 #modal .menu-wrap .acts { margin-top: 10px; }
 
-/* 7. Les fenêtres : les onglets et les filtres d'une fenêtre ont la même forme que ceux des écrans. */
-#modal :is(.quest-tabs, .filters) button {
-  border-radius: 3px; min-height: 44px; font-size: 14px; box-shadow: none; padding-left: 12px; padding-right: 12px;
-  background: var(--panel, #f4ecda); color: var(--text); border: 1px solid var(--line2);
-}
-#modal :is(.quest-tabs, .filters) button.on { background: var(--acc, #813f2a); border-color: var(--acc, #813f2a); color: var(--acc-ink, #fff8e9); }
+/* 7. Les onglets des fenêtres : voir css/boutons.css. */
 #modal .quest-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
