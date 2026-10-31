@@ -1,7 +1,7 @@
 # Textes de découverte à écrire
 
 Généré par `node tools/saveur-a-ecrire.js`. Chaque recette affiche, quand on la trouve, sa saveur : le texte de `D.SAVEUR[id]` s'il existe, sinon sa description actuelle (en italique ci-dessous). Pour écrire : ajouter `D.SAVEUR.<id> = "…"` dans `js/data.js` (220 signes au plus).
-Recettes : 171 écrites sur 222.
+Recettes : 202 écrites sur 222.
 
 
 ## Gestes (texte du premier emploi)
@@ -216,37 +216,37 @@ Recettes : 171 écrites sur 222.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 4 | Moulin à eau (`moulin`) | Construire | *La rivière fait tourner la roue, jour et nuit.* | non |
-| 7 | Moteur à vapeur (`moteur_vapeur`) | Assembler | *À chaque poussée du piston, les engrenages font un tour de plus.* | non |
-| 7 | Pompe d’exhaure (`pompe`) | Construire | *Les galeries inondées se vident. Tu peux creuser plus profond.* | non |
-| 7 | Chemin de fer (`locomotive`) | Construire | *Des rails relient tous tes chantiers, jusqu’au désert.* | non |
-| 7 | Circuit de vapeur (`circuit_vapeur`) | Assembler | *L’eau bout dans la chaudière ; les tuyaux sifflent quand la pression monte.* | non |
-| 7 | Condenseur (`condenseur`) | Assembler | *Le tuyau serpente dans une cuve froide. À la sortie, la vapeur est redevenue de l’eau.* | non |
-| 7 | Récupération de vapeur (`recuperation_vapeur`) | Construire | *Des conduites ramènent l’eau encore chaude vers les chaudières.* | non |
-| 7 | Manomètre (`manometre`) | Assembler | *Une aiguille qui dit la pression, sans avoir à deviner.* | non |
-| 7 | Régulateur à boules (`regulateur`) | Assembler | *Deux boules tournent plus vite quand le moteur s’emballe, et ferment l’arrivée de vapeur.* | non |
-| 7 | Chaudière tubulaire (`chaudiere_tubulaire`) | Construire | *Plus de surface de chauffe, donc plus de vapeur pour le même feu.* | non |
-| 8 | Bobine de cuivre (`bobine`) | Usiner | *Des kilomètres de fil, enroulés spire contre spire.* | non |
-| 8 | Dynamo (`dynamo`) | Construire | *La vapeur fait tourner des aimants dans des bobines, et le courant passe.* | non |
-| 8 | Batterie (`batterie`) | Électriser | *De l’électricité en boîte.* | non |
-| 8 | Moteur électrique (`moteur_elec`) | Assembler | *Presque silencieux.* | non |
-| 9 | Graphite (`graphite`) | Chauffer | *Du charbon cuit si fort qu’il en devient lisse et glissant.* | non |
-| 9 | Barre de combustible (`barre_combustible`) | Assembler | *Six pastilles empilées dans un tube d’acier fermé.* | non |
-| 9 | Compteur Geiger (`compteur_geiger`) | Construire | *Il crépite quand quelque chose chauffe dans la roche.* | non |
-| 9 | Centrale à fission (`centrale_fission`) | Construire | *Une tour blanche qui fume sans brûler. Elle ne s’arrête jamais.* | non |
-| 11 | Réacteur chimique (`reacteur`) | Construire | *Des cuves, et des tuyaux partout.* | non |
-| 11 | Échangeur thermique (`echangeur`) | Assembler | *L’eau froide longe les conduites chaudes sans jamais s’y mélanger.* | non |
-| 11 | Refroidissement des machines (`refroidissement`) | Construire | *Tu poses la main sur un carter qui était brûlant : il est à peine tiède.* | non |
-| 11 | Centrale électrique (`centrale`) | Construire | *Des turbines géantes tournent jour et nuit.* | non |
-| 12 | Moteur-fusée (`moteur_fusee`) | Assembler | *Une tuyère qui crache le feu.* | non |
-| 12 | Fusée (`fusee`) | Assembler | *Tu t’assieds tout en haut, au-dessus de tonnes de carburant.* | non |
-| 13 | Alunisseur (`alunisseur`) | Assembler | *Un petit pas pour un Semeur.* | non |
-| 13 | Propulseur à fusion (`propulseur`) | Assembler | *Une petite étoile en bouteille.* | non |
-| 13 | Réacteur à fusion (`reacteur_fusion`) | Construire | *De l’énergie, autant que tu en veux.* | non |
-| 13 | Vaisseau interplanétaire (`vaisseau`) | Assembler | *Cette fois, tu pars vers le Soleil.* | non |
-| 14 | Matière exotique (`matiere_exotique`) | Transmuter | *Sa masse est négative. Tu refais la mesure trois fois.* | non |
-| 14 | Antimatière (`antimatiere`) | Transmuter | *Un gramme suffit à raser une ville.* | non |
-| 14 | Panneau de Dyson (`panneau_dyson`) | Stratifier | *Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.* | non |
+| 4 | Moulin à eau (`moulin`) | Construire | *La rivière fait tourner la roue, jour et nuit.* | oui |
+| 7 | Moteur à vapeur (`moteur_vapeur`) | Assembler | *À chaque poussée du piston, les engrenages font un tour de plus.* | oui |
+| 7 | Pompe d’exhaure (`pompe`) | Construire | *Les galeries inondées se vident. Tu peux creuser plus profond.* | oui |
+| 7 | Chemin de fer (`locomotive`) | Construire | *Des rails relient tous tes chantiers, jusqu’au désert.* | oui |
+| 7 | Circuit de vapeur (`circuit_vapeur`) | Assembler | *L’eau bout dans la chaudière ; les tuyaux sifflent quand la pression monte.* | oui |
+| 7 | Condenseur (`condenseur`) | Assembler | *Le tuyau serpente dans une cuve froide. À la sortie, la vapeur est redevenue de l’eau.* | oui |
+| 7 | Récupération de vapeur (`recuperation_vapeur`) | Construire | *Des conduites ramènent l’eau encore chaude vers les chaudières.* | oui |
+| 7 | Manomètre (`manometre`) | Assembler | *Une aiguille qui dit la pression, sans avoir à deviner.* | oui |
+| 7 | Régulateur à boules (`regulateur`) | Assembler | *Deux boules tournent plus vite quand le moteur s’emballe, et ferment l’arrivée de vapeur.* | oui |
+| 7 | Chaudière tubulaire (`chaudiere_tubulaire`) | Construire | *Plus de surface de chauffe, donc plus de vapeur pour le même feu.* | oui |
+| 8 | Bobine de cuivre (`bobine`) | Usiner | *Des kilomètres de fil, enroulés spire contre spire.* | oui |
+| 8 | Dynamo (`dynamo`) | Construire | *La vapeur fait tourner des aimants dans des bobines, et le courant passe.* | oui |
+| 8 | Batterie (`batterie`) | Électriser | *De l’électricité en boîte.* | oui |
+| 8 | Moteur électrique (`moteur_elec`) | Assembler | *Presque silencieux.* | oui |
+| 9 | Graphite (`graphite`) | Chauffer | *Du charbon cuit si fort qu’il en devient lisse et glissant.* | oui |
+| 9 | Barre de combustible (`barre_combustible`) | Assembler | *Six pastilles empilées dans un tube d’acier fermé.* | oui |
+| 9 | Compteur Geiger (`compteur_geiger`) | Construire | *Il crépite quand quelque chose chauffe dans la roche.* | oui |
+| 9 | Centrale à fission (`centrale_fission`) | Construire | *Une tour blanche qui fume sans brûler. Elle ne s’arrête jamais.* | oui |
+| 11 | Réacteur chimique (`reacteur`) | Construire | *Des cuves, et des tuyaux partout.* | oui |
+| 11 | Échangeur thermique (`echangeur`) | Assembler | *L’eau froide longe les conduites chaudes sans jamais s’y mélanger.* | oui |
+| 11 | Refroidissement des machines (`refroidissement`) | Construire | *Tu poses la main sur un carter qui était brûlant : il est à peine tiède.* | oui |
+| 11 | Centrale électrique (`centrale`) | Construire | *Des turbines géantes tournent jour et nuit.* | oui |
+| 12 | Moteur-fusée (`moteur_fusee`) | Assembler | *Une tuyère qui crache le feu.* | oui |
+| 12 | Fusée (`fusee`) | Assembler | *Tu t’assieds tout en haut, au-dessus de tonnes de carburant.* | oui |
+| 13 | Alunisseur (`alunisseur`) | Assembler | *Un petit pas pour un Semeur.* | oui |
+| 13 | Propulseur à fusion (`propulseur`) | Assembler | *Une petite étoile en bouteille.* | oui |
+| 13 | Réacteur à fusion (`reacteur_fusion`) | Construire | *De l’énergie, autant que tu en veux.* | oui |
+| 13 | Vaisseau interplanétaire (`vaisseau`) | Assembler | *Cette fois, tu pars vers le Soleil.* | oui |
+| 14 | Matière exotique (`matiere_exotique`) | Transmuter | *Sa masse est négative. Tu refais la mesure trois fois.* | oui |
+| 14 | Antimatière (`antimatiere`) | Transmuter | *Un gramme suffit à raser une ville.* | oui |
+| 14 | Panneau de Dyson (`panneau_dyson`) | Stratifier | *Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.* | oui |
 
 ## Technologie (20 recettes)
 
