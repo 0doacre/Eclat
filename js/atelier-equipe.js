@@ -325,6 +325,7 @@
       else if(result.kind==="learn"||result.kind==="blocked"){
         lastHeat="discover";
         message="Recette trouvée : "+name(result.id)+(result.missing?" · Il manque "+Object.entries(result.missing).map(([id,n])=>n+' '+name(id)).join(', '):result.info?' · '+api.needText(result.id,result.info):' · Inscrite dans le Carnet');
+        if(result.offered){const o=I[result.id]?.r?.[2]||1;message+=" · Offerte par la maison : "+o+" "+name(result.id)+" dans ta Réserve";}
         A.discover();
       }
       else if(result.thermo){

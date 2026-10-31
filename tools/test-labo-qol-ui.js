@@ -12,7 +12,7 @@ const server = http.createServer((req, res) => {
 });
 let browser, checks = 0;
 const ok = (v, m) => { assert.ok(v, m); checks++; };
-function fixture(toutConnu) {
+function fixture(toutConnu, manche) {
   const E = Core.createEngine(), s = E.state;
   s.age = 6; s.cycle = 2; s.meta.forcedDone = true; s.introSeen = true; s.flags.ver = D.VERSION;
   Object.assign(s.settings, { tuto: false, sound: false, visiteurs: false });
@@ -21,6 +21,7 @@ function fixture(toutConnu) {
     if (it.t === "res") { s.seen[id] = true; s.inv[id] = id === "bois" ? 0 : 20; }
     if (toutConnu && it.r) s.known[id] = true;
   }
+  if (manche) { s.known.manche = true; s.seen.manche = true; s.inv.manche = 2; s.inv.bois = 30; }
   E.recalc();
   return E.serialize();
 }
@@ -51,6 +52,31 @@ async function run() {
     ok(/Il manque/.test(await p.locator("#ae-result").textContent()), "le moteur dit ce qui manque");
     const avant = await choix(p);
     ok(avant.metiers.length >= 4, "au début, tous les métiers ont encore à découvrir : " + avant.metiers.join(","));
+    ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
+  }
+  { // première pièce offerte, même quand la matière manque
+    const { p, ctx, errors } = await ouvre(fixture(false));
+    await p.locator('.ae-chip[data-ae="filtre"][data-value="tout"]').click();
+    await p.locator("#ae-item-bois").click();
+    await p.locator('.ae-actions [data-ae="forge"]').click(); await p.waitForTimeout(250);
+    ok(/Offerte par la maison/.test(await p.locator("#ae-result").textContent()), "le Labo annonce la première pièce offerte");
+    ok(await p.evaluate(() => window.__eclat.E.count("manche")) >= 1, "la pièce est bien en Réserve");
+    ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
+  }
+  { // appui long sur un objet manufacturé : la fiche, avec « Fabriquer »
+    const { p, ctx, errors } = await ouvre(fixture(false, true));
+    await p.locator('.ae-chip[data-ae="filtre"][data-value="tout"]').click();
+    const cible = p.locator("#ae-item-manche");
+    await cible.evaluate(e => e.scrollIntoView({ block: "center" })); await p.waitForTimeout(200);
+    const box = await cible.boundingBox();
+    await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await p.mouse.down(); await p.waitForTimeout(650); await p.mouse.up(); await p.waitForTimeout(300);
+    ok(await p.locator(".modal:not(.hidden) .rwin").count() === 1, "l'appui long ouvre la fiche");
+    ok(await p.locator('.modal:not(.hidden) [data-m="cr"]').count() > 0, "la fiche propose de fabriquer tout de suite");
+    ok(await p.evaluate(() => window.__eclat.E.state.flags.equipmentBench.slots.length) === 0, "l'appui long ne pose pas la matière sur l'établi");
+    await p.evaluate(() => window.__eclat.closeModal()); await p.waitForTimeout(200);
+    await cible.click();
+    ok(await p.evaluate(() => window.__eclat.E.state.flags.equipmentBench.slots.includes("manche")), "un simple appui pose toujours la matière");
     ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
   }
   { // tout est connu : les outils épuisés disparaissent, sauf celui d'une recette préparée

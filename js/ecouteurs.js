@@ -381,9 +381,19 @@
         const inv = ev.target.closest(".inv");
         if (inv) {
           const id = inv.dataset.inv;
-          U.lp = { id, t: setTimeout(() => { U.lp = null; vibe(15); openItemInfo(id); }, 480) };
+          U.lp = { id, t: setTimeout(() => { U.lp = null; U.lpFired = performance.now(); vibe(15); openItemInfo(id); }, 480) };
+        }
+        // Labo : une matière de la liste ou une case de l’établi, appui long = la fiche, avec de quoi la fabriquer tout de suite
+        const lab = !inv && ev.target.closest("[data-ae-resource], .ae-slots .ae-filled");
+        if (lab) {
+          const need = lab.querySelector("[data-ae-need]"), id = lab.dataset.aeResource || (need && need.dataset.aeNeed);
+          if (id) U.lp = { id, t: setTimeout(() => { U.lp = null; U.lpFired = performance.now(); vibe(15); openItemInfo(id); }, 480) };
         }
       });
+      // le relâcher qui suit un appui long ne doit pas aussi choisir la matière (ou la retirer de l’établi)
+      document.addEventListener("click", (ev) => {
+        if (U.lpFired && performance.now() - U.lpFired < 900) { U.lpFired = 0; ev.stopImmediatePropagation(); ev.preventDefault(); }
+      }, true);
       const cancelLp = () => { if (U.lp) { clearTimeout(U.lp.t); U.lp.up = true; } };
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, cancelLp));
       ["pointerup", "pointercancel"].forEach((t) => document.addEventListener(t, (ev) => Dom.up(ev)));
@@ -420,6 +430,13 @@
       views.addEventListener("contextmenu", (ev) => {
         const iv = ev.target.closest(".inv");
         if (iv) { ev.preventDefault(); openItemInfo(iv.dataset.inv); return; } // clic droit ou touche Menu : la fiche
+        const lab = ev.target.closest("[data-ae-resource], .ae-slots .ae-filled");
+        if (lab) { // même chose dans le Labo ; si l’appui long vient d’ouvrir la fiche, on ne la rouvre pas
+          ev.preventDefault();
+          const need = lab.querySelector("[data-ae-need]"), id = lab.dataset.aeResource || (need && need.dataset.aeNeed);
+          if (id && !(U.lpFired && performance.now() - U.lpFired < 900)) openItemInfo(id);
+          return;
+        }
         if (ev.target.closest(".slot, [data-harv]")) ev.preventDefault();
       });
 

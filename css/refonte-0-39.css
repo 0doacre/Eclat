@@ -225,3 +225,6 @@ body.nav-away #tabs { height: calc(var(--nav-reel) + var(--safe-b)) !important; 
 /* Labo : une matière à 0 en stock reste posable sur l'établi (pour voir ce qu'il faudrait réunir) ; on la grise un peu. */
 #v-labo .ae-resource.ae-zero > .btn { opacity: .72; }
 #v-labo .ae-resource.ae-zero > .btn[aria-pressed="true"] { opacity: 1; }
+
+/* Labo : l'appui long ouvre la fiche (avec « Fabriquer ») ; pas de sélection de texte ni de menu du navigateur pendant l'appui. */
+#v-labo .ae-resource, #v-labo .ae-slots .btn { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
