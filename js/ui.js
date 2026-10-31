@@ -1267,9 +1267,29 @@
     reg.waiting.postMessage({ type: "SKIP_WAITING" });
     setTimeout(() => location.reload(), 3000);
   }
+  /* « Chercher une mise à jour » (Menu > Système) : on interroge le serveur tout de suite au lieu d’attendre le
+   * contrôle automatique (toutes les 30 min). Une version trouvée passe par la même barre que d’habitude, donc
+   * avec le choix de télécharger la sauvegarde avant. Rend un des mots : prete, a-jour, hors-ligne, indisponible. */
+  async function checkUpdate() {
+    if (!("serviceWorker" in navigator) || !location.protocol.startsWith("http")) return "indisponible";
+    const reg = U.swReg || await navigator.serviceWorker.getRegistration().catch(() => null);
+    if (!reg) return "indisponible";
+    if (navigator.onLine === false) return "hors-ligne";
+    try { await reg.update(); } catch (_) { return "hors-ligne"; }
+    if (reg.installing) {
+      const w = reg.installing;
+      await new Promise((done) => {
+        const fin = () => { if (w.state === "installed" || w.state === "redundant" || w.state === "activated") done(); };
+        w.addEventListener("statechange", fin); setTimeout(done, 20000); fin();
+      });
+    }
+    if (reg.waiting && navigator.serviceWorker.controller) { showUpdate(reg); return "prete"; }
+    return "a-jour";
+  }
   function setupSW() {
     if (!("serviceWorker" in navigator) || !location.protocol.startsWith("http")) return;
     navigator.serviceWorker.register("sw.js").then((reg) => {
+      U.swReg = reg;
       if (reg.waiting && navigator.serviceWorker.controller) showUpdate(reg);
       reg.addEventListener("updatefound", () => {
         const w = reg.installing;
@@ -1332,7 +1352,8 @@
   const Cpt = window.EclatCompte.create({
     openTestMode: TestMode.open,
     E, ENGINE, A, D, U, Cloud, Tuto, esc, fmt, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal, save,
-    backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
+    backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom,
+    checkUpdate: () => checkUpdate()
   });
   const {
     openMenu, openAccount, downloadSave, showBadSave, showNews, cloudTimers, cloudCheck, promptCapsuleText
