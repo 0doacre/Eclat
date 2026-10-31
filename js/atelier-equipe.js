@@ -61,31 +61,62 @@
       if(!paires||pairesAge!==E.state.age){pairesAge=E.state.age;paires={};const R=D.CRAFT_EQUIPMENT.recipes;for(const rid in R){if(!E.ageOK(rid))continue;R[rid].forEach(c=>{const k=c.equipment+"/"+c.mode;(paires[k]=paires[k]||new Set()).add(E.atelierDe(rid));});}}
       return paires;
     }
-    function gestesDuMetier(f){
-      return (D.GESTE_ORDER||Object.keys(D.GESTES)).filter(g=>E.gesteOK(g)&&Object.keys(I).some(id=>I[id].r&&!I[id].sec&&!I[id].path&&!D.CRAFT_EQUIPMENT.recipes[id]&&I[id].r[0]===g&&E.atelierDe(id)===f&&E.ageOK(id)));
+    /* Ce qu'il reste à découvrir, par métier et par outil/geste (mémorisé : ça parcourt toutes les recettes). */
+    let restes=null,restesCle="";
+    function resteADecouvrir(){
+      const s=E.state,cle=s.age+"|"+Object.keys(s.known).length;
+      if(restes&&restesCle===cle)return restes;
+      restesCle=cle;restes={paires:{},grands:{}};
+      const R=D.CRAFT_EQUIPMENT.recipes;
+      for(const rid in R){
+        if(s.known[rid]||!E.ageOK(rid))continue;
+        const f=E.atelierDe(rid);
+        R[rid].forEach(c=>{restes.paires[f+"|"+c.equipment+"/"+c.mode]=true;});
+      }
+      for(const id in I){
+        if(I[id].r&&!I[id].sec&&!I[id].path&&!R[id]&&!s.known[id]&&E.ageOK(id))restes.grands[E.atelierDe(id)+"|"+I[id].r[0]]=true;
+      }
+      return restes;
+    }
+    function gestesDuMetier(f,filtrer){
+      const R=resteADecouvrir();
+      return (D.GESTE_ORDER||Object.keys(D.GESTES)).filter(g=>E.gesteOK(g)&&Object.keys(I).some(id=>I[id].r&&!I[id].sec&&!I[id].path&&!D.CRAFT_EQUIPMENT.recipes[id]&&I[id].r[0]===g&&E.atelierDe(id)===f&&E.ageOK(id))&&(!filtrer||R.grands[f+"|"+g]));
     }
     /* l'atelier du métier : un outil dont les gestes sont ceux des recettes du métier (à partir du Cuivre) */
-    function atelierDuMetier(f){
-      const gestes=gestesDuMetier(f);
+    function atelierDuMetier(f,filtrer){
+      const gestes=gestesDuMetier(f,filtrer);
       if(!gestes.length)return null;
       const modes={};gestes.forEach(g=>{modes[g]=D.GESTES[g].n;});
       return {id:"ga_"+f,n:"Atelier",geste:gestes[0],ready:true,modes};
     }
-    function outilsDuMetier(f){
-      const P=pairesDesOutils(),out=[];
+    /* filtrer : ne garder que les outils et gestes qui ont encore une recette à découvrir.
+     * garde : l'outil et le geste d'une recette préparée depuis le Carnet restent, même épuisés, pour la fabriquer. */
+    function outilsBruts(f,filtrer,garde){
+      const P=pairesDesOutils(),R=resteADecouvrir(),out=[];
       E.equipmentList().filter(x=>x.ready).forEach(x=>{
         const modes={};
-        for(const m in x.modes)if(P[x.id+"/"+m]&&P[x.id+"/"+m].has(f))modes[m]=x.modes[m];
+        for(const m in x.modes){
+          if(!(P[x.id+"/"+m]&&P[x.id+"/"+m].has(f)))continue;
+          if(filtrer&&!R.paires[f+"|"+x.id+"/"+m]&&!(garde&&garde.metier===f&&garde.eq===x.id&&garde.mode===m))continue;
+          modes[m]=x.modes[m];
+        }
         if(Object.keys(modes).length)out.push(Object.assign({},x,{modes}));
       });
       const haut={};
       out.forEach(t=>{if(t.family&&t.tier&&(!haut[t.family]||t.tier>haut[t.family]))haut[t.family]=t.tier;});
-      const garde=out.filter(t=>!(t.family&&t.tier&&t.tier<haut[t.family]));
-      const at=atelierDuMetier(f);
-      return at?garde.concat([at]):garde;
+      const gardes=out.filter(t=>!(t.family&&t.tier&&t.tier<haut[t.family]));
+      let at=atelierDuMetier(f,filtrer);
+      if(filtrer&&garde&&garde.metier===f&&garde.eq==="ga_"+f&&!(at&&Object.hasOwn(at.modes,garde.mode))){
+        const complet=atelierDuMetier(f,false);
+        if(complet&&Object.hasOwn(complet.modes,garde.mode))at=at?Object.assign({},at,{modes:Object.assign({},at.modes,{[garde.mode]:complet.modes[garde.mode]})}):Object.assign({},complet,{modes:{[garde.mode]:complet.modes[garde.mode]}});
+      }
+      return at?gardes.concat([at]):gardes;
     }
-    function metiersDispo(){
-      const out=D.ATELIERS.familles.filter(F=>outilsDuMetier(F.id).length>0);
+    /* Quand tout est découvert, on remontre tout : le Labo ne doit pas se vider. */
+    function toutDecouvert(){return !D.ATELIERS.familles.some(F=>outilsBruts(F.id,true,null).length>0);}
+    function outilsDuMetier(f,garde){return outilsBruts(f,!toutDecouvert(),garde);}
+    function metiersDispo(garde){
+      const out=D.ATELIERS.familles.filter(F=>outilsDuMetier(F.id,garde).length>0);
       return out.length?out:[D.ATELIERS.familles[0]];
     }
     function work(){
@@ -94,9 +125,10 @@
       if(!f.equipmentBench||typeof f.equipmentBench!=="object")f.equipmentBench={metier:"artisanat",eq:"percuteur_pierre",mode:"tailler",slots:[]};
       const w=f.equipmentBench;
       w.slots=[...new Set((Array.isArray(w.slots)?w.slots:[]).filter(id=>I[id]))].slice(0,3);
-      const metiers=metiersDispo();
+      const garde=w.prepared?{metier:w.metier,eq:w.eq,mode:w.mode}:null;
+      const metiers=metiersDispo(garde);
       if(!metiers.some(m=>m.id===w.metier))w.metier=metiers[0].id;
-      let tools=outilsDuMetier(w.metier);
+      let tools=outilsDuMetier(w.metier,garde);
       if(!tools.length)tools=E.equipmentList().filter(x=>x.ready).slice(0,1);
       if(!tools.some(x=>x.id===w.eq)){w.eq=tools[0].id;w.prepared=null;}
       const tool=tools.find(x=>x.id===w.eq);
@@ -250,7 +282,8 @@
         const id=el.dataset.aeResource,picked=w.slots.includes(id),b=el.querySelector('[data-ae="item"]'),n=E.count(id);
         el.hidden=!el.dataset.name.includes(query)||(!picked&&((filtre==="utiles"&&!useful(id,w))||(filtre==="reserve"&&n<1)));
         if(!el.hidden)visible++;
-        b.disabled=!picked&&(n<1||w.slots.length>=3);
+        b.disabled=!picked&&w.slots.length>=3; // un ingrédient à 0 se pose quand même : on voit ce qu'il faudrait réunir
+        el.classList.toggle("ae-zero",n<1);
         b.classList.toggle("ae-selected",picked);
         b.setAttribute("aria-pressed",String(picked));
         b.setAttribute("aria-label",name(id)+', '+n.toLocaleString('fr-FR')+' en stock'+(picked?', sur l’établi':''));
@@ -326,7 +359,7 @@
       else if(action==="study"){const n=E.studyAll();message=n?n+' matières étudiées.':'Il manque de l’Intuition pour étudier ces matières.';}
       else if(action==="action"){const [te,tm]=String(id).split("|"),t=tools.find(x=>x.id===te);if(t&&Object.hasOwn(t.modes,tm)){w.eq=te;w.mode=tm;w.prepared=null;}}
       else if(action==="tool"){w.eq=id;const t=tools.find(x=>x.id===id)||D.CRAFT_EQUIPMENT.equipment[id];if(t)w.mode=Object.keys(t.modes)[0];w.prepared=null;}
-      else if(action==="item"){if(w.slots.includes(id))w.slots.splice(w.slots.indexOf(id),1);else if(w.slots.length<3&&E.count(id)>=1)w.slots.push(id);w.prepared=null;}
+      else if(action==="item"){if(w.slots.includes(id))w.slots.splice(w.slots.indexOf(id),1);else if(w.slots.length<3)w.slots.push(id);w.prepared=null;}
       else if(action==="slot"){w.slots.splice(Number(id),1);w.prepared=null;}
       else if(action==="clear"){w.slots=[];w.prepared=null;message="Établi débarrassé.";redraw();return;}
       else if(action==="forge"){forge(id);return;}
