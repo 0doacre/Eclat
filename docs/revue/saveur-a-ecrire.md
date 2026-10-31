@@ -1,24 +1,24 @@
 # Textes de découverte à écrire
 
 Généré par `node tools/saveur-a-ecrire.js`. Chaque recette affiche, quand on la trouve, sa saveur : le texte de `D.SAVEUR[id]` s'il existe, sinon sa description actuelle (en italique ci-dessous). Pour écrire : ajouter `D.SAVEUR.<id> = "…"` dans `js/data.js` (220 signes au plus).
-Recettes : 150 écrites sur 222.
+Recettes : 171 écrites sur 222.
 
 
 ## Gestes (texte du premier emploi)
 
 | Geste | Texte actuel | Écrit |
 |---|---|---|
-| Chauffer (`chauffer`) | *Cuire, fondre, réduire. La température dépend de ton meilleur feu : feu de camp, four, fourneau…* | non |
+| Chauffer (`chauffer`) | *Cuire, fondre, réduire. La température dépend de ton meilleur feu : feu de camp, four, fourneau…* | oui |
 | Marteler (`marteler`) | *Battre le métal sur une enclume.* | oui |
 | Allier (`allier`) | *Fondre plusieurs métaux ensemble dans un creuset.* | oui |
 | Tremper (`tremper`) | *Refroidir brutalement pour durcir.* | oui |
 | Usiner (`usiner`) | *Façonner avec la précision d’une machine.* | oui |
 | Électriser (`electriser`) | *Raffiner et transformer par le courant.* | non |
 | Graver (`graver`) | *Dessiner avec la lumière à l’échelle de l’atome.* | non |
-| Synthétiser (`synthetiser`) | *Recomposer les molécules.* | non |
-| Stratifier (`stratifier`) | *Empiler des couches et les cuire sous pression.* | non |
-| Transmuter (`transmuter`) | *Réarranger la matière elle-même. Le vieux rêve des alchimistes.* | non |
-| Accorder (`accorder`) | *Faire vibrer la matière sur une seule note. Un geste oublié.* | non |
+| Synthétiser (`synthetiser`) | *Recomposer les molécules.* | oui |
+| Stratifier (`stratifier`) | *Empiler des couches et les cuire sous pression.* | oui |
+| Transmuter (`transmuter`) | *Réarranger la matière elle-même. Le vieux rêve des alchimistes.* | oui |
+| Accorder (`accorder`) | *Faire vibrer la matière sur une seule note. Un geste oublié.* | oui |
 
 ## Artisanat (25 recettes)
 
@@ -194,23 +194,23 @@ Recettes : 150 écrites sur 222.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 11 | Masque filtrant (`masque`) | Assembler | *Une coque de plastique, un joint de caoutchouc.* | non |
-| 11 | Bouteille d’air (`bouteille`) | Assembler | *Un cylindre d’aluminium, un tuyau de caoutchouc.* | non |
-| 11 | Naphta (`naphta`) | Chauffer | *Un liquide clair recueilli à part pendant la chauffe du pétrole.* | non |
-| 11 | Plastique (`plastique`) | Synthétiser | *Tu peux lui donner toutes les formes et toutes les couleurs.* | non |
-| 11 | Résine époxy (`resine`) | Synthétiser | *Une colle qui durcit comme de la pierre.* | non |
-| 11 | Dynamite (`dynamite`) | Synthétiser | *Tu allumes la mèche, et tu cours.* | non |
-| 11 | Caoutchouc (`caoutchouc`) | Synthétiser | *Tu l’étires entre les doigts ; dès que tu lâches, il reprend sa forme.* | non |
-| 11 | Joint d’étanchéité (`joint_souple`) | Tailler | *Une rondelle qui s’écrase juste assez pour boucher le passage à l’eau.* | non |
-| 11 | Tuyau souple (`tuyau_souple`) | Tresser | *La gaine de fibres empêche le tuyau de gonfler sous la pression.* | non |
-| 12 | Fibre de carbone (`fibre_carbone`) | Chauffer | *Un fil noir, plus solide que l’acier.* | non |
-| 12 | Tissu de carbone (`tissu_carbone`) | Tresser | *Tu tresses du fil noir comme tu tressais les herbes de la Lisière.* | non |
-| 12 | Autoclave (`autoclave`) | Construire | *Il règle la pression et la chaleur au degré près.* | non |
-| 12 | Composite carbone (`composite`) | Stratifier | *Une plaque noire, légère, que rien ne raye.* | non |
-| 12 | Céramique technique (`ceramique`) | Chauffer | *De l’argile, comme tes premières briques. Celle-ci supporte la rentrée dans l’atmosphère.* | non |
-| 12 | Bouclier thermique (`bouclier_th`) | Stratifier | *Il encaisse 3 000 °C sans broncher.* | non |
-| 12 | Graphène (`graphene`) | Tailler | *Une couche d’atomes de carbone. Tu l’obtiens en arrachant des feuilles de charbon avec un ruban collant. Sérieusement.* | non |
-| 14 | Métamatériau (`metamateriau`) | Stratifier | *Une matière qui plie la lumière.* | non |
+| 11 | Masque filtrant (`masque`) | Assembler | *Une coque de plastique, un joint de caoutchouc.* | oui |
+| 11 | Bouteille d’air (`bouteille`) | Assembler | *Un cylindre d’aluminium, un tuyau de caoutchouc.* | oui |
+| 11 | Naphta (`naphta`) | Chauffer | *Un liquide clair recueilli à part pendant la chauffe du pétrole.* | oui |
+| 11 | Plastique (`plastique`) | Synthétiser | *Tu peux lui donner toutes les formes et toutes les couleurs.* | oui |
+| 11 | Résine époxy (`resine`) | Synthétiser | *Une colle qui durcit comme de la pierre.* | oui |
+| 11 | Dynamite (`dynamite`) | Synthétiser | *Tu allumes la mèche, et tu cours.* | oui |
+| 11 | Caoutchouc (`caoutchouc`) | Synthétiser | *Tu l’étires entre les doigts ; dès que tu lâches, il reprend sa forme.* | oui |
+| 11 | Joint d’étanchéité (`joint_souple`) | Tailler | *Une rondelle qui s’écrase juste assez pour boucher le passage à l’eau.* | oui |
+| 11 | Tuyau souple (`tuyau_souple`) | Tresser | *La gaine de fibres empêche le tuyau de gonfler sous la pression.* | oui |
+| 12 | Fibre de carbone (`fibre_carbone`) | Chauffer | *Un fil noir, plus solide que l’acier.* | oui |
+| 12 | Tissu de carbone (`tissu_carbone`) | Tresser | *Tu tresses du fil noir comme tu tressais les herbes de la Lisière.* | oui |
+| 12 | Autoclave (`autoclave`) | Construire | *Il règle la pression et la chaleur au degré près.* | oui |
+| 12 | Composite carbone (`composite`) | Stratifier | *Une plaque noire, légère, que rien ne raye.* | oui |
+| 12 | Céramique technique (`ceramique`) | Chauffer | *De l’argile, comme tes premières briques. Celle-ci supporte la rentrée dans l’atmosphère.* | oui |
+| 12 | Bouclier thermique (`bouclier_th`) | Stratifier | *Il encaisse 3 000 °C sans broncher.* | oui |
+| 12 | Graphène (`graphene`) | Tailler | *Une couche d’atomes de carbone. Tu l’obtiens en arrachant des feuilles de charbon avec un ruban collant. Sérieusement.* | oui |
+| 14 | Métamatériau (`metamateriau`) | Stratifier | *Une matière qui plie la lumière.* | oui |
 
 ## Énergie (31 recettes)
 
@@ -277,7 +277,7 @@ Recettes : 150 écrites sur 222.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 1 | Encre (`encre`) | Chauffer | *Le noir reste sur le doigt longtemps après avoir refermé le pot.* | non |
-| 2 | Feuillet de papyrus (`papyrus`) | Construire | *Tu laisses une place dans la marge pour la main qui viendra après la tienne.* | non |
-| 7 | Papier (`papier`) | Assembler | *Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.* | non |
-| 7 | Presse d’imprimerie (`presse_imprimer`) | Construire | *La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.* | non |
+| 1 | Encre (`encre`) | Chauffer | *Le noir reste sur le doigt longtemps après avoir refermé le pot.* | oui |
+| 2 | Feuillet de papyrus (`papyrus`) | Construire | *Tu laisses une place dans la marge pour la main qui viendra après la tienne.* | oui |
+| 7 | Papier (`papier`) | Assembler | *Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.* | oui |
+| 7 | Presse d’imprimerie (`presse_imprimer`) | Construire | *La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.* | oui |

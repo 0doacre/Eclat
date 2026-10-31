@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.4";
+  D.VERSION = "0.64.5";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -2075,7 +2075,7 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
-  /* Bâtiment (0.64.4) */
+  /* Bâtiment (0.64.5) */
   D.SAVEUR.feu = "Des branches en cône, une braise dessous. La flamme monte, et la nuit recule jusqu’aux arbres.";
   D.SAVEUR.cabane = "Des branches appuyées l’une contre l’autre, un toit de feuilles. Le soir, des lucioles tournent autour.";
   D.SAVEUR.fibre_1 = "Un cadre de bois, des tiges de fibre étalées dessus. Le vent fait le reste.";
@@ -2151,7 +2151,29 @@
   D.SAVEUR.matrice = "On lui donne de la matière brute, elle rend l’objet fini.";
   D.SAVEUR.forge_stellaire = "Même derrière le verre fumé, tu dois détourner les yeux.";
   D.SAVEUR.replicateur = "Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.";
-  /* Métallurgie (0.64.4) */
+  /* Chimie et savoir (0.64.5) */
+  D.SAVEUR.masque = "Une coque souple, un joint de caoutchouc contre la peau. L’air a un goût de plastique neuf.";
+  D.SAVEUR.bouteille = "Un cylindre d’aluminium, froid et léger. Le tuyau siffle quand on ouvre.";
+  D.SAVEUR.naphta = "Un liquide clair, recueilli à part pendant que le pétrole chauffe. Il pique le nez de loin.";
+  D.SAVEUR.plastique = "Chaud, il coule. Froid, il reste comme on l’a moulé, de la couleur qu’on a choisie.";
+  D.SAVEUR.resine = "Une pâte claire qui colle aux doigts. Au bout d’une nuit, elle sonne comme de la pierre.";
+  D.SAVEUR.dynamite = "Un bâton de papier, un peu de graisse qui suinte. On allume la mèche, et on court.";
+  D.SAVEUR.caoutchouc = "Étiré entre les doigts, il se tend. Relâché, il reprend sa forme d’un claquement.";
+  D.SAVEUR.joint_souple = "Une rondelle qui s’écrase juste assez. Plus une goutte ne passe.";
+  D.SAVEUR.tuyau_souple = "Une gaine de fibres autour d’un tube de caoutchouc. Sous la pression, il reste droit.";
+  D.SAVEUR.fibre_carbone = "Un fil noir et mat, si léger qu’on le sent à peine. Aucune main ne le casse.";
+  D.SAVEUR.tissu_carbone = "Tu tresses du fil noir comme tu tressais les herbes de la Lisière.";
+  D.SAVEUR.autoclave = "Une cuve boulonnée, un hublot épais. Tant que l’aiguille bouge, personne n’ouvre.";
+  D.SAVEUR.composite = "Une plaque noire, légère. Aucun clou ne la raye.";
+  D.SAVEUR.ceramique = "De l’argile, comme tes premières briques. Celle-ci supporte la rentrée dans l’atmosphère.";
+  D.SAVEUR.bouclier_th = "Il encaisse 3 000 °C sans broncher.";
+  D.SAVEUR.graphene = "Une couche d’atomes de carbone. Tu l’obtiens en arrachant des feuilles de charbon avec un ruban collant. Sérieusement.";
+  D.SAVEUR.metamateriau = "Une matière qui plie la lumière. Derrière, le décor est décalé d’un pas.";
+  D.SAVEUR.encre = "Le noir reste sur le doigt longtemps après avoir refermé le pot.";
+  D.SAVEUR.papyrus = "Tu laisses une place dans la marge pour la main qui viendra après la tienne.";
+  D.SAVEUR.papier = "Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.";
+  D.SAVEUR.presse_imprimer = "La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.";
+  /* Métallurgie (0.64.5) */
   D.SAVEUR.lingot_cuivre = "Le minerai vert a coulé dans le moule. Refroidi, le métal est rouge, et la pierre le marque.";
   D.SAVEUR.plaque_cuivre = "Le lingot s’étale sous le marteau. À chaque coup, le son monte d’un cran.";
   D.SAVEUR.fil_cuivre = "Rouge, fin comme un cheveu, long comme un bras. Il garde le pli qu’on lui donne.";
@@ -2230,7 +2252,13 @@
   D.SAVEUR.cristal_chantant = "On lui siffle trois notes. Posé sur la table, il les rejoue tout bas, sans s’arrêter.";
   D.SAVEUR.traducteur = "Un cristal tiède dans la paume. Quand on lui parle, il murmure autre chose, et c’est ce qu’on voulait dire.";
   D.SAVEUR_GESTE = {};
-  /* Gestes de métallurgie (0.64.4) */
+  /* Gestes (0.64.5) */
+  D.SAVEUR_GESTE.chauffer = "Au feu, la boue durcit et le bois noircit. Plus il est chaud, plus ça va loin.";
+  D.SAVEUR_GESTE.synthetiser = "On ne cuit plus, on assemble des molécules. Ce qu’on obtient n’existe nulle part dans la nature.";
+  D.SAVEUR_GESTE.stratifier = "Des couches posées l’une sur l’autre, puis cuites sous pression. Elles ne forment plus qu’une plaque.";
+  D.SAVEUR_GESTE.transmuter = "Un métal entre, un autre sort. Les alchimistes en rêvaient depuis toujours.";
+  D.SAVEUR_GESTE.accorder = "Une seule note, tenue longtemps. La matière finit par vibrer avec elle.";
+  /* Gestes de métallurgie (0.64.5) */
   D.SAVEUR_GESTE.marteler = "Le marteau frappe, le métal cède. Chaque coup sonne un peu moins creux.";
   D.SAVEUR_GESTE.allier = "Deux métaux dans le même creuset. Ce qui en sort ne ressemble à aucun des deux.";
   D.SAVEUR_GESTE.tremper = "Du rouge à l’eau, d’un seul geste. La vapeur monte en sifflant.";
