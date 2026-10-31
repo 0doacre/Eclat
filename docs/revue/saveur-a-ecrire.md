@@ -1,7 +1,7 @@
 # Textes de découverte à écrire
 
 Généré par `node tools/saveur-a-ecrire.js`. Chaque recette affiche, quand on la trouve, sa saveur : le texte de `D.SAVEUR[id]` s'il existe, sinon sa description actuelle (en italique ci-dessous). Pour écrire : ajouter `D.SAVEUR.<id> = "…"` dans `js/data.js` (220 signes au plus).
-Recettes : 202 écrites sur 222.
+Recettes : 222 écrites sur 222.
 
 
 ## Gestes (texte du premier emploi)
@@ -13,8 +13,8 @@ Recettes : 202 écrites sur 222.
 | Allier (`allier`) | *Fondre plusieurs métaux ensemble dans un creuset.* | oui |
 | Tremper (`tremper`) | *Refroidir brutalement pour durcir.* | oui |
 | Usiner (`usiner`) | *Façonner avec la précision d’une machine.* | oui |
-| Électriser (`electriser`) | *Raffiner et transformer par le courant.* | non |
-| Graver (`graver`) | *Dessiner avec la lumière à l’échelle de l’atome.* | non |
+| Électriser (`electriser`) | *Raffiner et transformer par le courant.* | oui |
+| Graver (`graver`) | *Dessiner avec la lumière à l’échelle de l’atome.* | oui |
 | Synthétiser (`synthetiser`) | *Recomposer les molécules.* | oui |
 | Stratifier (`stratifier`) | *Empiler des couches et les cuire sous pression.* | oui |
 | Transmuter (`transmuter`) | *Réarranger la matière elle-même. Le vieux rêve des alchimistes.* | oui |
@@ -252,26 +252,26 @@ Recettes : 202 écrites sur 222.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 8 | Ampoule (`ampoule`) | Assembler | *Le premier soir, tu restes longtemps à la regarder briller.* | non |
-| 8 | Câble électrique (`cable`) | Tresser | *Tu tresses comme au premier jour, mais avec du métal.* | non |
-| 8 | Télégraphe (`telegraphe`) | Construire | *Tu tapes des messages dans le vide. Parfois, tu jurerais qu’on te répond.* | non |
-| 8 | Éclairage électrique (`eclairage`) | Construire | *Les galeries s’illuminent d’un bout à l’autre.* | non |
-| 8 | Poste radio (`radio`) | Assembler | *Surtout du bruit. Parfois autre chose.* | non |
-| 8 | Réseau électrique (`reseau`) | Construire | *Des pylônes relient tous tes chantiers.* | non |
-| 10 | Silicium (`silicium`) | Chauffer | *Un métal qui n’en est pas tout à fait un.* | non |
-| 10 | Plaquette de silicium (`wafer`) | Tailler | *Un disque miroir, parfaitement plat.* | non |
-| 10 | Lithographe (`lithographe`) | Construire | *Il dessine avec la lumière des traits plus fins qu’un cheveu.* | non |
-| 10 | Puce (`puce`) | Graver | *Des millions de minuscules interrupteurs.* | non |
-| 10 | Processeur (`processeur`) | Graver | *Un caillou qui pense.* | non |
-| 10 | Cellule photovoltaïque (`cellule`) | Graver | *Tu la tournes vers le soleil, et elle donne du courant.* | non |
-| 10 | Circuit imprimé (`circuit`) | Graver | *Une plaque de cuivre parcourue de pistes minuscules.* | non |
-| 10 | Capteurs de forage (`capteurs`) | Construire | *Tes engins sentent où creuser.* | non |
-| 10 | Ordinateur (`ordinateur`) | Construire | *Il calcule. Et il te parle.* | non |
-| 10 | Robots ouvriers (`robots`) | Construire | *Ils ne dorment jamais.* | non |
-| 10 | Radiotélescope (`radiotelescope`) | Assembler | *Une oreille géante tournée vers les étoiles.* | non |
-| 10 | Serveur d’archives (`serveur_archives`) | Construire | *La machine retrouve en un instant la phrase que tu cherchais depuis trois veillées.* | non |
-| 12 | Essaim de drones (`drones`) | Construire | *Des milliers de petites hélices bourdonnent au-dessus de tes gisements.* | non |
-| 13 | Intelligence artificielle (`ia`) | Construire | *Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.* | non |
+| 8 | Ampoule (`ampoule`) | Assembler | *Le premier soir, tu restes longtemps à la regarder briller.* | oui |
+| 8 | Câble électrique (`cable`) | Tresser | *Tu tresses comme au premier jour, mais avec du métal.* | oui |
+| 8 | Télégraphe (`telegraphe`) | Construire | *Tu tapes des messages dans le vide. Parfois, tu jurerais qu’on te répond.* | oui |
+| 8 | Éclairage électrique (`eclairage`) | Construire | *Les galeries s’illuminent d’un bout à l’autre.* | oui |
+| 8 | Poste radio (`radio`) | Assembler | *Surtout du bruit. Parfois autre chose.* | oui |
+| 8 | Réseau électrique (`reseau`) | Construire | *Des pylônes relient tous tes chantiers.* | oui |
+| 10 | Silicium (`silicium`) | Chauffer | *Un métal qui n’en est pas tout à fait un.* | oui |
+| 10 | Plaquette de silicium (`wafer`) | Tailler | *Un disque miroir, parfaitement plat.* | oui |
+| 10 | Lithographe (`lithographe`) | Construire | *Il dessine avec la lumière des traits plus fins qu’un cheveu.* | oui |
+| 10 | Puce (`puce`) | Graver | *Des millions de minuscules interrupteurs.* | oui |
+| 10 | Processeur (`processeur`) | Graver | *Un caillou qui pense.* | oui |
+| 10 | Cellule photovoltaïque (`cellule`) | Graver | *Tu la tournes vers le soleil, et elle donne du courant.* | oui |
+| 10 | Circuit imprimé (`circuit`) | Graver | *Une plaque de cuivre parcourue de pistes minuscules.* | oui |
+| 10 | Capteurs de forage (`capteurs`) | Construire | *Tes engins sentent où creuser.* | oui |
+| 10 | Ordinateur (`ordinateur`) | Construire | *Il calcule. Et il te parle.* | oui |
+| 10 | Robots ouvriers (`robots`) | Construire | *Ils ne dorment jamais.* | oui |
+| 10 | Radiotélescope (`radiotelescope`) | Assembler | *Une oreille géante tournée vers les étoiles.* | oui |
+| 10 | Serveur d’archives (`serveur_archives`) | Construire | *La machine retrouve en un instant la phrase que tu cherchais depuis trois veillées.* | oui |
+| 12 | Essaim de drones (`drones`) | Construire | *Des milliers de petites hélices bourdonnent au-dessus de tes gisements.* | oui |
+| 13 | Intelligence artificielle (`ia`) | Construire | *Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.* | oui |
 
 ## Culture et savoir (4 recettes)
 

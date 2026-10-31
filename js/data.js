@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.6";
+  D.VERSION = "0.64.7";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1750,7 +1750,7 @@
 
   D.CHANGES = [
     "🧑‍🔧 Les portraits des travailleurs réapparaissent aussi sur les appareils qui gardent encore une ancienne version du jeu : leurs anciens fichiers contiennent maintenant les nouveaux visages.",
-    "✍️ Les recettes d’Artisanat, de Subsistance et de Métallurgie ont un texte de découverte écrit pour elles, ainsi que quatre gestes : soixante-quinze phrases courtes, à voir et à toucher. Les autres métiers suivront.",
+    "✍️ Chaque recette et chaque geste a maintenant son texte de découverte, écrit pour lui : deux cent trente-quatre phrases courtes, à voir et à entendre.",
     "🏘️ Ton lieu change de nom avec l’âge : Campement, Halte, Foyer, Hameau, Village, Oppidum, Cité, Ville, Métropole, Complexe, Mégalopole, Conurbation, Arcologie, Spatioport, Essaim. Il remplace « le Domaine » dans le récit et l’ambiance. L’écran, lui, s’appelle toujours les Terres.",
     "🏷️ Les métiers changent de nom : Subsistance (l’ancien Élevage), Bâtiment (Construction), Énergie (Centrales), Technologie (Électronique), Culture et savoir (Arts et lettres). Leurs travailleurs aussi : opérateur, ingénieur, érudit. Artisanat, Métallurgie et Chimie gardent le leur. Ta partie n’est pas touchée.",
     "🏷️ Passe de vocabulaire. Un seul mot par chose : « ressource » partout (plus de « matière »), « essayer » et « essai » (plus de « tenter »), des « consignes » pour garder une réserve (plus de « stock » ni de « cadence »). Les paliers du seuil deviennent « À l’arrêt » et « Quelques provisions », la découverte se fait toujours « au Labo », et les voix des travailleurs ne parlent plus de « l’atelier ». Les anciens textes de l’apprenti à l’établi sont retirés.",
@@ -2075,7 +2075,7 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
-  /* Bâtiment (0.64.6) */
+  /* Bâtiment (0.64.7) */
   D.SAVEUR.feu = "Des branches en cône, une braise dessous. La flamme monte, et la nuit recule jusqu’aux arbres.";
   D.SAVEUR.cabane = "Des branches appuyées l’une contre l’autre, un toit de feuilles. Le soir, des lucioles tournent autour.";
   D.SAVEUR.fibre_1 = "Un cadre de bois, des tiges de fibre étalées dessus. Le vent fait le reste.";
@@ -2151,7 +2151,7 @@
   D.SAVEUR.matrice = "On lui donne de la matière brute, elle rend l’objet fini.";
   D.SAVEUR.forge_stellaire = "Même derrière le verre fumé, tu dois détourner les yeux.";
   D.SAVEUR.replicateur = "Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.";
-  /* Chimie et savoir (0.64.6) */
+  /* Chimie et savoir (0.64.7) */
   D.SAVEUR.masque = "Une coque souple et, contre le visage, un joint de caoutchouc. L’air sent le plastique neuf.";
   D.SAVEUR.bouteille = "Un cylindre d’aluminium, froid et léger. Quand on ouvre, le tuyau siffle.";
   D.SAVEUR.naphta = "Un liquide clair, recueilli à part pendant que le pétrole chauffe. Il pique le nez de loin.";
@@ -2173,7 +2173,7 @@
   D.SAVEUR.papyrus = "Tu laisses une place dans la marge pour la main qui viendra après la tienne.";
   D.SAVEUR.papier = "Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.";
   D.SAVEUR.presse_imprimer = "La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.";
-  /* Énergie (0.64.6) */
+  /* Énergie (0.64.7) */
   D.SAVEUR.moulin = "La rivière pousse la roue, qui tourne jour et nuit.";
   D.SAVEUR.moteur_vapeur = "À chaque poussée du piston, les engrenages avancent d’un cran. Le sol vibre à chaque course.";
   D.SAVEUR.pompe = "Un balancier lent, et l’eau des galeries baisse.";
@@ -2205,7 +2205,28 @@
   D.SAVEUR.matiere_exotique = "L’aiguille de la balance part du mauvais côté. Tu refais la pesée trois fois.";
   D.SAVEUR.antimatiere = "Un flacon d’apparence vide, suspendu entre des champs. Ce qu’il contient ne touche pas les parois.";
   D.SAVEUR.panneau_dyson = "Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.";
-  /* Métallurgie (0.64.6) */
+  /* Technologie (0.64.7) */
+  D.SAVEUR.ampoule = "Un fil qui rougit puis blanchit dans une bulle de verre.";
+  D.SAVEUR.cable = "Des brins de cuivre tressés sous une gaine de caoutchouc, souples comme une corde.";
+  D.SAVEUR.telegraphe = "Une clef de cuivre, et un fil qui s’en va vers l’horizon. Chaque pression fait un claquement sec.";
+  D.SAVEUR.eclairage = "Une ligne d’ampoules court le long de la galerie, jusqu’au fond.";
+  D.SAVEUR.radio = "Surtout du grésillement. Parfois, une voix.";
+  D.SAVEUR.reseau = "Des pylônes alignés relient les chantiers par des câbles tendus.";
+  D.SAVEUR.silicium = "Gris-bleu et brillant, il casse comme du verre.";
+  D.SAVEUR.wafer = "Un disque de silicium poli, où l’on voit son reflet.";
+  D.SAVEUR.lithographe = "Il dessine avec la lumière des traits plus fins qu’un cheveu.";
+  D.SAVEUR.puce = "Plus petite qu’un ongle, elle compte des millions d’interrupteurs.";
+  D.SAVEUR.processeur = "Un carré de silicium qui calcule. Il chauffe à peine.";
+  D.SAVEUR.cellule = "Tournée vers le soleil, elle donne du courant, sans un bruit.";
+  D.SAVEUR.circuit = "Une plaque verte, des pistes de cuivre fines comme des cheveux.";
+  D.SAVEUR.capteurs = "Une pointe fine au bout du foret mesure la roche avant que l’outil l’attaque.";
+  D.SAVEUR.ordinateur = "Il calcule, et il te parle.";
+  D.SAVEUR.robots = "Ils ne dorment jamais.";
+  D.SAVEUR.radiotelescope = "Une grande coupe tournée vers le ciel, immobile, qui écoute.";
+  D.SAVEUR.serveur_archives = "La phrase que tu cherchais depuis trois veillées apparaît en un instant.";
+  D.SAVEUR.drones = "Des milliers de petites hélices bourdonnent au-dessus des gisements.";
+  D.SAVEUR.ia = "Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.";
+  /* Métallurgie (0.64.7) */
   D.SAVEUR.lingot_cuivre = "Le minerai vert a coulé dans le moule. Refroidi, le métal est rouge, et la pierre le marque.";
   D.SAVEUR.plaque_cuivre = "Le lingot s’étale sous le marteau. À chaque coup, le son monte d’un cran.";
   D.SAVEUR.fil_cuivre = "Rouge, fin comme un cheveu, long comme un bras. Il garde le pli qu’on lui donne.";
@@ -2284,13 +2305,16 @@
   D.SAVEUR.cristal_chantant = "On lui siffle trois notes. Posé sur la table, il les rejoue tout bas, sans s’arrêter.";
   D.SAVEUR.traducteur = "Un cristal tiède dans la paume. Quand on lui parle, il murmure autre chose, et c’est ce qu’on voulait dire.";
   D.SAVEUR_GESTE = {};
-  /* Gestes (0.64.6) */
+  /* Gestes (0.64.7) */
+  D.SAVEUR_GESTE.electriser = "Le courant passe dans la matière, et elle change de couleur.";
+  D.SAVEUR_GESTE.graver = "La lumière trace des lignes plus fines qu’un cheveu, et le silicium garde la trace.";
+  /* Gestes (0.64.7) */
   D.SAVEUR_GESTE.chauffer = "Au feu, la boue durcit et le bois noircit. Plus il est chaud, plus ça va loin.";
   D.SAVEUR_GESTE.synthetiser = "On ne cuit plus, on assemble des molécules. Ce qu’on obtient n’existe nulle part dans la nature.";
   D.SAVEUR_GESTE.stratifier = "Des couches posées l’une sur l’autre, puis cuites sous pression. Elles ne forment plus qu’une plaque.";
   D.SAVEUR_GESTE.transmuter = "Un métal entre, un autre sort. Les alchimistes en rêvaient depuis toujours.";
   D.SAVEUR_GESTE.accorder = "Une seule note, tenue longtemps. La matière finit par vibrer avec elle.";
-  /* Gestes de métallurgie (0.64.6) */
+  /* Gestes de métallurgie (0.64.7) */
   D.SAVEUR_GESTE.marteler = "Le marteau frappe, le métal cède. Chaque coup sonne un peu moins creux.";
   D.SAVEUR_GESTE.allier = "Deux métaux dans le même creuset. Ce qui en sort ne ressemble à aucun des deux.";
   D.SAVEUR_GESTE.tremper = "Du rouge à l’eau, d’un seul geste. La vapeur monte en sifflant.";

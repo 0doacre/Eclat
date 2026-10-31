@@ -103,7 +103,3 @@ Quatre mots seulement, partout : **tes mains**, une **commande**, **en cours**, 
 ## Typographie
 
 Apostrophes courbes (’), pas de tiret long hors des commentaires et du journal des versions, tutoiement quand on s’adresse au joueur.
-
-## En attente de décision
-
-- **Les textes de découverte** (`D.SAVEUR`, `D.SAVEUR_GESTE`) : 0 sur 218 écrits.
