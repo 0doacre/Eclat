@@ -19,7 +19,7 @@
     const Equipped = E.equipmentList && window.EclatAtelierEquipe ? window.EclatAtelierEquipe.create({...api,goalHint,handsHTML}) : null;
 
     /* ------------------------------------------------------------ ATELIER */
-    /* l’étape clé de l’objectif, quand sa recette reste à trouver : la piste déjà donnée dans le Domaine (rien de plus) reste sous les yeux à l’établi */
+    /* l’étape clé de l’objectif, quand sa recette reste à trouver : la piste déjà donnée dans les Terres (rien de plus) reste sous les yeux à l’établi */
     function goalHint() {
       const g = E.guide();
       if (!g || !g.step) return "";
@@ -34,7 +34,7 @@
       if (canApply || dc !== null) {
         acts = '<div class="row wrap" style="gap:6px;margin-top:6px">';
         if (canApply) {
-          acts += '<button class="btn small ghost" data-apply-hint="' + id + '" title="Sélectionner l’action et poser les indices connus sur l’établi">Poser l’indice sur l’établi</button>';
+          acts += '<button class="btn small ghost" data-apply-hint="' + id + '" title="Sélectionner le geste et poser les indices connus sur l’établi">Poser l’indice sur l’établi</button>';
         }
         if (dc !== null) {
           const okIntu = (st.intu || 0) >= dc;
@@ -186,7 +186,7 @@
         const emptyMsg = o.filter === "tryg" ? "Aucune matière étudiée ne cache de recette à découvrir avec ce geste, pour l’instant. Tu peux étudier d’autres matières ou changer de geste."
           : o.filter === "fav" ? "Aucune ressource favorite. Appui long sur une ressource pour la marquer d’un ♥."
           : o.filter === "flow" ? "Aucun flux actif en ce moment. Pose des extracteurs ou lance des machines."
-          : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans le Domaine pour remplir ta Réserve.");
+          : (U.iq || o.filter !== "tout" ? "Aucun résultat pour cette recherche ou ces filtres." : !(st.stats.crafts > 0) ? "Le bois récolté apparaîtra ici." : "Aucune ressource disponible. Récolte dans les Terres pour remplir ta Réserve.");
         h += '<p class="small muted center" style="padding:16px 0">' + emptyMsg + "</p>";
       }
       return h;
@@ -345,7 +345,7 @@
     function resultBody(r) {
       if(r&&r.kind==="equipment")return '<p>Pour cette fabrication, choisis le poste et l’outil : touche « ← Postes et outils ».</p>';
       if (!r && S().stats.crafts >= 3) return ""; // déjà appris : la carte vide ne garde pas sa place (voir .result:empty)
-      if (!r) return '<p class="small muted">Choisis une action, pose jusqu’à trois ressources, puis lance l’action choisie. Le <b>thermomètre</b> indique si tu approches d’une recette.</p>';
+      if (!r) return '<p class="small muted">Choisis un geste, pose jusqu’à trois ressources, puis lance-le. Le <b>thermomètre</b> indique si tu approches d’une recette.</p>';
       if (r.kind === "craft") {
         const it = I[r.id];
         let h = '<div class="row" style="align-items:flex-start">' + icon(r.id, "lg") + '<div class="grow">' +
@@ -1249,7 +1249,7 @@
     function skillsHTML() {
       const st = S();
       const shown = E.SKILLS.filter((g) => g === "recolte" || E.gesteOK(g) || (st.skills[g] || 0) > 0);
-      return '<div class="kicker">Tes mains</div><h2>Actions et récolte</h2><p class="small muted">Fabriquer à la main et récolter rapportent de l’expérience dans l’action correspondante. Chaque niveau rend l’action 1 % plus rapide (pour la récolte : 1 % de ressources en plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", tu gagnes une chance d’avoir une pièce en plus. À la relève, tu gardes un dixième de ta progression.</p>" +
+      return '<div class="kicker">Tes mains</div><h2>Gestes et récolte</h2><p class="small muted">Fabriquer à la main et récolter rapportent de l’expérience dans le geste correspondant. Chaque niveau rend le geste 1 % plus rapide (pour la récolte : 1 % de ressources en plus). Aux niveaux ' + D.SKILL.perks.join(", ") + ", tu gagnes une chance d’avoir une pièce en plus. À la relève, tu gardes un dixième de ta progression.</p>" +
         '<div class="skills">' + shown.map((g) => {
           const k = E.skill(g);
           return '<div class="skill"><span class="sk-ic">' + (g === "recolte" ? gi(GI.ui && GI.ui.recolte || "sickle") : gIc(g)) + '</span><div class="grow"><div class="row between"><b>' + esc(skillName(g)) + '</b><span class="sk-l">niv. ' + k.lvl + "</span></div>" +
@@ -1400,7 +1400,7 @@
       h += '</div>';
 
       h += '<div class="arb-chemin-pied acts"><button class="btn" data-m="close">Fermer</button>' +
-        (st.track && st.track.id === id ? '<button class="btn ghost" data-m="untrack" title="Ne plus suivre cet objet">Ne plus suivre</button>' : '<button class="btn" data-m="track" title="Suivre cet objet en haut du Domaine">🎯 Suivre</button>') +
+        (st.track && st.track.id === id ? '<button class="btn ghost" data-m="untrack" title="Ne plus suivre cet objet">Ne plus suivre</button>' : '<button class="btn" data-m="track" title="Suivre cet objet en haut des Terres">🎯 Suivre</button>') +
         '<button class="btn pri" data-m="go"' + (r.peutToutFabriquer ? '' : ' disabled') + ' title="Lancer la fabrication en chaîne de toutes les étapes">⚡ Tout fabriquer (×' + fmt(times) + ')</button></div>';
       return h;
     }
@@ -1419,7 +1419,7 @@
         on: {
           tn: (b) => { times = Math.max(1, times + Number(b.dataset.d) * (times >= 100 ? 10 : 1)); renderChemin(); return true; },
           tmax: () => { times = Math.max(1, E.maxPlan(id)); renderChemin(); return true; },
-          track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id] ? I[id].n : "Objet") + "</b> (en haut du Domaine)"); render(true); renderChemin(); return true; },
+          track: () => { E.setTrack(id); toast("🎯 Suivi : <b>" + esc(I[id] ? I[id].n : "Objet") + "</b> (en haut des Terres)"); render(true); renderChemin(); return true; },
           untrack: () => { E.setTrack(null); render(true); renderChemin(); return true; },
           go: (b) => { if (chainCraft(b, id, times) !== false) closeModal(); return true; }
         }
@@ -1574,7 +1574,7 @@
             }
             if (!owned) {
               h += '<div class="row wrap rbtns">' + craftBtns(id).replace(/data-cr=/g, 'data-m="cr" data-cr=') +
-                '<button class="btn small ghost" data-m="tree" title="Détail : les étapes de la commande et ce qu’il manque">🌳 Détail</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track" title="Suivre : ce qui manque s’affiche en haut du Domaine, avec le temps estimé">🎯 Suivre</button>') + "</div>";
+                '<button class="btn small ghost" data-m="tree" title="Détail : les étapes de la commande et ce qu’il manque">🌳 Détail</button>' + (st.track && st.track.id === id ? "" : '<button class="btn small ghost" data-m="track" title="Suivre : ce qui manque s’affiche en haut des Terres, avec le temps estimé">🎯 Suivre</button>') + "</div>";
             }
           } else {
             const lvl = st.hints[id] || 0, big = mainIngredient(id), n = Object.keys(it.r[1]).length;
@@ -1608,7 +1608,7 @@
       }
       const back = U.rstack.length > 1;
       h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : U.rfrom ? '<button class="btn" data-m="rfrom">← Retour</button>' : "") +
-        (it.r && known ? '<button class="btn ghost" data-m="carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" title="Voir ses ingrédients et ses usages dans l’arbre">🌳 Voir dans l’arbre</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
+        (it.r && known ? '<button class="btn ghost" data-m="carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
       const redraw = () => { if (U.mcur && U.mcur.rec) swapModal(recipeModal()); };
       return {
         rec: true,
@@ -1622,7 +1622,7 @@
           cr: (b) => { if (craftFrom(b) !== false) redraw(); return true; },
           chain: (b) => { const r = E.plan(id, 1); if (!r.ok) { setTimeout(() => openTree(id, 1), 60); return; } chainCraft(b, id, 1); redraw(); return true; },
           tree: () => { setTimeout(() => openTree(id, 1), 60); },
-          track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (en haut du Domaine)"); redraw(); return true; },
+          track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (en haut des Terres)"); redraw(); return true; },
           pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
           fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier" || U.tab === "labo") render(true); return true; },
           study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier" || U.tab === "labo") render(true); } redraw(); return true; },
@@ -1803,13 +1803,13 @@
         '<div class="filters wrap" role="group" aria-label="Seuil de stock">' + PAL.map((x) =>
           '<button type="button" data-seuil="' + c.id + ":" + x.p + '" class="' + (x.p === sel.p ? "on" : "") + '" aria-pressed="' + (x.p === sel.p) + '">' + esc(x.n) + "</button>").join("") + "</div>" +
         '<p class="tiny muted atel-seuil-d">' + esc(sel.d) + "</p>" +
-        (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Rien à fabriquer seul pour l’instant : il faut avoir fait un composant du métier à la main.</p>') +
+        (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Rien à fabriquer seul pour l’instant : il faut avoir fait une pièce du métier à la main.</p>') +
         (E.voixHisto(c.id).length ? '<div class="atel-voix"><b class="tiny">Ils ont dit</b>' + E.voixHisto(c.id).slice(0, 3).map((m) => '<p class="tiny muted">« ' + esc(m.txt) + " »</p>").join("") + "</div>" : "") + "</div>";
     }
     function viewAteliers() {
       const ap = E.apprentis();
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
-      return '<div class="ateliers atl-page">' + enteteAtelier("Ateliers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() + goulotsHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
+      return '<div class="ateliers atl-page">' + enteteAtelier("Métiers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() + goulotsHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
@@ -1824,7 +1824,7 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
-        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
@@ -1893,7 +1893,7 @@
         const [fam, kind] = b.dataset.embaucher.split(":");
         const r = E.embaucher(fam, kind);
         if (r.ok) { A.click(); toast("🛠️ " + esc(Atel.nom(fam, kind)) + " embauché : " + fmt(r.cout) + " écus.", { key: "emb" }); }
-        else { A.fail(0); toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : r.why === "max" ? "L’atelier est au complet." : r.why === "age" ? "Pas encore : cet échelon arrive plus tard." : "Impossible pour l’instant.", { key: "emb" }); }
+        else { A.fail(0); toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : r.why === "max" ? "Le métier est au complet." : r.why === "age" ? "Pas encore : cet échelon arrive plus tard." : "Impossible pour l’instant.", { key: "emb" }); }
         render(true); return true;
       }
       if (t.closest("[data-atelier-retour]")) { A.click(); U.atelierSel = null; render(true); return true; }

@@ -211,7 +211,7 @@
             text: "Tu as assez d’Intuition ✨ pour déchiffrer la recette de ton objectif. Touche-la pour ouvrir sa fiche.",
             done: () => !!document.querySelector('.modal:not(.hidden) [data-m="decipher"]') },
           { modal: true, at: '.modal:not(.hidden) [data-m="decipher"]', back: 0,
-            text: "Touche « Déchiffrer » pour révéler un indice contre de l’Intuition ✨ : l’action, une ressource, puis la recette entière.",
+            text: "Touche « Déchiffrer » pour révéler un indice contre de l’Intuition ✨ : le geste, une ressource, puis la recette entière.",
             next: true, done: () => !decipherGoal() }
         ] },
       { id: "regle", n: "La règle d’une terre",

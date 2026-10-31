@@ -19,7 +19,7 @@
       const st = S();
       const g = E.guide();
       if (!g) {
-        return st.flags.arche ? '<div class="card acc goal-card compact"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Il t’attend dans le Domaine, et dans l’onglet Cosmos du Journal.</div></div>' : "";
+        return st.flags.arche ? '<div class="card acc goal-card compact"><div class="lbl">Objectif</div><div class="name">Choisis ton Grand Œuvre</div><div class="small">Il t’attend dans les Terres, et dans le Cosmos de la Progression.</div></div>' : "";
       }
       const ob = g.ob;
       const reprise = E.repriseGoal && E.repriseGoal(g);
@@ -344,7 +344,7 @@
         const ee = E.extEtat(res);
         if (ee) h += '<p class="small">' + (ee.etat === "libre" ? esc(I[ee.t].n) + ' attend d’être posé.' : 'Ton extracteur est arrêté.') + '</p>';
         h += '<button class="btn pri" data-gz="' + E.RES_ZONE[res] + '">Aller au gisement · ' + esc(zoneName(E.RES_ZONE[res])) + '</button>';
-      } else h += '<button class="btn pri" data-m="qresume" data-tab="domaine">Reprendre l’objectif dans le Domaine</button>';
+      } else h += '<button class="btn pri" data-m="qresume" data-tab="domaine">Reprendre l’objectif dans les Terres</button>';
       return h;
     }
 

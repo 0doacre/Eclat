@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.56.0";
+  D.VERSION = "0.56.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -615,7 +615,7 @@
   /* Âge 14 — Stellaire */
   I.metal_mercure = { b: 0.5, n: "Métal mercurien", sym: "☿", col: "#c9a24a", a: 14, t: "res", u: "Sert dans le métamatériau, le panneau de Dyson et les Grands Œuvres.", d: "Mercure, démontée boulon par boulon." };
   I.forge_stellaire = { n: "Forge stellaire", ic: "🌟", a: 14, t: "stat", r: ["assembler", { propulseur: 45, graphene: 720, bouclier_th: 280 }, 1],
-    e: { st: [{ g: "transmuter" }, { g: "chauffer", heat: 50000 }] }, u: "Ouvre l’action Transmuter. Chauffer y monte jusqu’à 50 000 °C.", d: "Même derrière le verre fumé, tu dois détourner les yeux.",
+    e: { st: [{ g: "transmuter" }, { g: "chauffer", heat: 50000 }] }, u: "Ouvre le geste Transmuter. Chauffer y monte jusqu’à 50 000 °C.", d: "Même derrière le verre fumé, tu dois détourner les yeux.",
     h: "Bâtie tout contre l'étoile, la station capte le feu solaire pour fondre les matières les plus rebelles." };
   I.replicateur = { n: "Réplicateur", sn: "réplicateur", pl: "réplicateurs", ic: "🦾", a: 14, t: "ext", z: "mercure", s: 1.12,
     r: ["assembler", { processeur: 150, alliage_ancien: 150, propulseur: 9 }, 1], p: { metal_mercure: 3 },
@@ -934,7 +934,7 @@
     alunisseur: "La poussière grise se soulève sans bruit. Au-dessus de toi, la Terre tient derrière ton pouce.",
     vaisseau: "Cap sur le Soleil. La Terre devient un point bleu, puis rien.",
     automate_bois: "La marionnette se met en marche, clac, clac. Elle refait ton geste, puis le refait encore. Ce travail-là se fera sans toi.",
-    presse_vapeur: "La presse siffle et cogne en cadence. Dans le Domaine, toutes les machines s’accélèrent.",
+    presse_vapeur: "La presse siffle et cogne en cadence. Dans les Terres, toutes les machines s’accélèrent.",
     forge_stellaire: "Tu tiens un morceau d’étoile dans une cage d’aimants. À cette chaleur, même le carbone le plus fin deviendrait éternel. ARCHE ne dit rien pendant un moment, puis : « ESTIMATION : TU ES PRÊT. »",
     dynamite: "La mèche crépite. Un souvenir qui n’est pas à toi : du cuivre jeté dans les flammes, et le feu qui vire au vert.",
     moteur_elec: "Le moteur ronronne dans ta main comme un petit animal. Avec un cerveau et une laisse, il te suivrait partout.",
@@ -1043,7 +1043,7 @@
     },
     premier_visiteur: {
       n: "La silhouette fugitive", ic: "🦋",
-      t: "Surprendre un visiteur qui traverse le Domaine.",
+      t: "Surprendre un visiteur qui traverse les Terres.",
       hint: "Toucher quelqu’un qui ne fait que passer.",
       when: (st) => !!(st.stats && (st.stats.visiteurs >= 1 || st.stats.visiteursVus >= 1))
     },
@@ -1206,7 +1206,7 @@
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Explore le Grand Chêne depuis la Lisière. L’exploration avance seule." },
     ["feu", "La nuit tombe. Construis un feu de camp : il ouvre l’action Chauffer."],
     ["cabane", "Une cabane posée sur un gisement récolte à ta place."],
-    { k: "ext", n: "Poser ta cabane", txt: "Dans le Domaine, touche « + cabane » sur le bois : elle récolte même quand le jeu est fermé." },
+    { k: "ext", n: "Poser ta cabane", txt: "Dans les Terres, touche « + cabane » sur le bois : elle récolte même quand le jeu est fermé." },
     ["epieu", "L’épieu ouvre le chemin vers la Plaine."],
     { k: "pass", z: "plaine", n: "Vers la Plaine", txt: "Apporte les ressources du passage, en plusieurs fois si besoin." },
     ["laniere", "Découpe une peau en bandes."],
@@ -1606,10 +1606,10 @@
     /* les paliers du seuil, nommés (le joueur ne voit pas de pourcentage) : p = part du stock de confort jusqu'à laquelle on fabrique */
     paliers: [
       { p: 0, n: "Au repos", d: "Personne ne fabrique seul : les travailleurs ne servent que ta file de commandes." },
-      { p: 10, n: "Au jour le jour", d: "Juste de quoi ne pas être pris de court : un petit stock de chaque composant." },
-      { p: 30, n: "Quelques réserves", d: "Un peu d’avance sur chaque composant, de quoi tenir une absence." },
+      { p: 10, n: "Au jour le jour", d: "Juste de quoi ne pas être pris de court : un petit stock de chaque pièce." },
+      { p: 30, n: "Quelques réserves", d: "Un peu d’avance sur chaque pièce, de quoi tenir une absence." },
       { p: 50, n: "Bien garni", d: "Les étagères se remplissent à moitié : beaucoup de matière part en composants." },
-      { p: 100, n: "À ras bord", d: "Tout composant connu monte jusqu’à son plein stock. Gourmand en matières premières." }
+      { p: 100, n: "À ras bord", d: "Toute pièce connue monte jusqu’à son plein stock. Gourmand en matières premières." }
     ],
     confort: { base: 20, parAge: 1.5, max: 200 },
     /* 0.51 : chaque métier a ses travailleurs, nommés d'après ce qu'ils font (affichage seulement : le jeu garde « apprenti » et « ouvrier ») */
@@ -1700,14 +1700,15 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📖 Passe de cohérence du langage. L’aide du jeu est réécrite : elle décrit les cinq écrans d’aujourd’hui (Terres, Labo, Atelier, Progression, Journal) et explique les métiers, les travailleurs, le seuil, les goulots et l’énergie. Partout, on dit les Terres (plus « le Domaine ») quand on parle de l’écran, la Progression (plus « l’arbre »), un geste (plus « une action »), une pièce (plus « un composant »), et la page des métiers de l’Atelier s’appelle Métiers.",
     "🗣️ Chaque métier parle son langage au Labo : le même geste s’y écrit selon le métier ouvert. « Chauffer » devient Fondre en Métallurgie, Cuire en Artisanat, Distiller en Chimie, Purifier en Électronique ; « Assembler » devient Coudre en Élevage, Monter en Métallurgie ; « Construire » devient Bâtir, Installer… Seul l’affichage change : les recettes et ta partie restent les mêmes, et ailleurs (Carnet, fiches, Progression) le nom général reste.",
     "🔬 Le Labo enferme la découverte dans le métier ouvert. Dans un métier, tu ne vois plus que les matières qui entrent dans ses recettes (et non toutes celles que tu as vues), les pistes ✦ ne comptent que ses recettes, et un assemblage qui relève d’un autre métier ne donne rien ici (le thermomètre ne révèle pas non plus qu’il existe ailleurs) : on le trouve en ouvrant le bon métier. Les recettes que tu connais déjà se fabriquent comme avant.",
     "🏷️ Le seuil de production libre se lit en mots, plus en pourcentages : au repos, au jour le jour, quelques réserves, bien garni, à ras bord. Il démarre à « au jour le jour » (au lieu d’un tiers du stock de confort), pour qu’un travailleur ne vide pas des matières dont tu as besoin sans que tu l’aies voulu. Le goulot « seuil à 0 % » devient « au repos ».",
     "🏗️ Les bâtisseurs ont un rôle : ils exécutent les chantiers que tu lances, c’est-à-dire les constructions à prix croissant (extracteurs, machines) que tu mets dans ta file, à ta place et sans que tu les fasses à la main. Jamais de leur propre initiative, et seulement ce que tu as déjà construit une fois toi-même. Construction apparaît dans les Ateliers dès que tu connais une construction. Dans un goulot « aucun extracteur n’en récolte », un bouton lance directement le chantier.",
-    "🚧 Les goulots : quand tes travailleurs n’avancent pas, l’Atelier le dit et remonte à la vraie cause. « Goulots · 2 » en tête de l’Atelier (et sur la page du métier), avec un bouton qui la règle : voir les Terres quand aucun extracteur ne récolte la matière, embaucher quand personne ne fabrique le composant d’un autre métier, fabriquer une fois à la main ce que les travailleurs ne peuvent pas encore, régler un seuil à 0 %, voir l’énergie. Une pastille apparaît sur l’onglet Atelier quand un nouveau goulot se présente.",
+    "🚧 Les goulots : quand tes travailleurs n’avancent pas, l’Atelier le dit et remonte à la vraie cause. « Goulots · 2 » en tête de l’Atelier (et sur la page du métier), avec un bouton qui la règle : voir les Terres quand aucun extracteur ne récolte la matière, embaucher quand personne ne fabrique la pièce d’un autre métier, fabriquer une fois à la main ce que les travailleurs ne peuvent pas encore, régler un seuil à 0 %, voir l’énergie. Une pastille apparaît sur l’onglet Atelier quand un nouveau goulot se présente.",
     "🗣️ Les travailleurs te parlent : à ton retour d’une absence (« Patron, pendant votre absence, l’atelier a fait : 40 × corde, 12 × manche »), quand ils manquent d’une matière depuis une demi-minute (« la forge manque de charbon ! »), et quand une matière va bientôt manquer. Une voix par métier, une carte à la fois, jamais par-dessus une fenêtre, avec un portrait qui suit l’échelon du métier ; toucher la carte ouvre le métier, où les derniers messages restent lisibles. La barre du bas reste visible par défaut (le masquage devient un réglage).",
     "⌄ La barre du bas peut se ranger d’elle-même et ne laisser qu’une fine poignée. Elle vient quand tu approches la souris du bas de l’écran ou que tu touches la poignée (ou la fais glisser vers le haut), et se range après ton choix. Le défilement ne la fait plus bouger. Menu → Affichage → « Barre du bas masquée » (désactivé par défaut) active ce comportement ; sinon la barre reste visible comme avant.",
-    "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les composants que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier (au repos, au jour le jour, quelques réserves, bien garni, à ras bord), de plus en plus gros avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
+    "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les pièces que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier (au repos, au jour le jour, quelques réserves, bien garni, à ras bord), de plus en plus gros avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
     "👷 Chaque métier a ses travailleurs, nommés d’après ce qu’ils font : artisan, bâtisseur, éleveur, forgeron, chimiste, centralier, électronicien, lettré (et leurs apprentis). Les boutons d’embauche, les renvois et la jauge d’énergie les nomment ainsi.",
     "🔘 Fin de l’harmonisation des boutons : les flèches des terres, le bouton d’arrêt de la récolte, les pastilles d’ingrédient et d’objet, et la ligne d’âge prennent l’octogone du jeu ; « Arbre » devient « Progression » ; l’aide ne promet plus de raccourcis clavier qui n’existent pas.",
     "✦ Les Traces s’appellent désormais les Souvenirs : ce que laissent les passages franchis, et que la relève transmet au Semeur suivant.",

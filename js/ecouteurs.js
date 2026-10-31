@@ -50,7 +50,7 @@
       /* un passage devient possible, puis il est franchi */
       E.on("passage", (z) => {
         badge("domaine");
-        setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", apporte les ressources nécessaires (dans le Domaine ou sur la Carte).", { key: "pass:" + z, p: 2 }), 900);
+        setTimeout(() => toast("🚧 <b>" + esc(D.PASSAGES[z].n) + "</b> : pour entrer dans " + esc(zoneName(z)) + ", apporte les ressources nécessaires (dans les Terres ou sur l’Atlas).", { key: "pass:" + z, p: 2 }), 900);
       });
       E.on("passdone", (o) => {
         const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
@@ -72,7 +72,7 @@
           if (Date.now() - (U.lastDiscover || 0) > 1500) {
             const st = S(), cur = st.stats && st.stats.splits && st.stats.splits[z], prev = st.meta && st.meta.lastSplits && st.meta.lastSplits[z];
             const pace = cur > 0 && prev > cur + 5 ? " <b>(×" + String(Math.round((prev / cur) * 10) / 10).replace(".", ",") + " plus vite qu’au cycle précédent)</b>" : "";
-            toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans le Domaine." + pace);
+            toast("Nouvelle terre : <b>" + esc(zoneName(z)) + "</b>. Ses gisements t’attendent dans les Terres." + pace);
           }
         }, 80);
         badge("carte");
@@ -89,7 +89,7 @@
           if (z) {
             U.domOpen = z;
             badge("domaine");
-            toast("⛏️ <b>" + esc(it.n) + "</b> : un gisement t’attend dans <b>" + esc(E.ZONES[z].n) + "</b>. Ouvre le Domaine pour y poser ton extracteur.", { key: "gisement:" + id, p: 2 });
+            toast("⛏️ <b>" + esc(it.n) + "</b> : un gisement t’attend dans <b>" + esc(E.ZONES[z].n) + "</b>. Ouvre les Terres pour y poser ton extracteur.", { key: "gisement:" + id, p: 2 });
           }
         }
         if (it.t === "mach") badge("domaine");
@@ -214,7 +214,7 @@
         if (I[id] && I[id].t === "ext") {
           badge("domaine");
           // déjà posé par les mains (bouton « + cabane ») : rien à dire
-          setTimeout(() => { if (E.freeExt(id) >= 1) toast("⛏️ <b>" + esc(I[id].n) + "</b> : touche « + " + esc(I[id].sn || I[id].n) + " » sur un gisement " + esc(deZone(I[id].z)) + ", dans le Domaine.", { key: "it:" + id, p: 4 }); }, 900);
+          setTimeout(() => { if (E.freeExt(id) >= 1) toast("⛏️ <b>" + esc(I[id].n) + "</b> : touche « + " + esc(I[id].sn || I[id].n) + " » sur un gisement " + esc(deZone(I[id].z)) + ", dans les Terres.", { key: "it:" + id, p: 4 }); }, 900);
         }
       });
       E.on("decoded", () => {
@@ -470,9 +470,9 @@
         if ((b = t.closest("[data-hopen]"))) { A.init(); openHands(); return; }
         if ((b = t.closest("[data-chain]"))) { if (!b.disabled) chainCraft(b, b.dataset.chain, 1); return; }
         if ((b = t.closest("[data-chemin], [data-tree]"))) { openTree(b.dataset.chemin || b.dataset.tree, b.dataset.n === 'max' ? Math.max(1, E.maxPlan(b.dataset.chemin || b.dataset.tree)) : Number(b.dataset.n) || 1); return; }
-        if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut du Domaine)"); render(true); return; }
+        if ((b = t.closest("[data-track]"))) { E.setTrack(b.dataset.track); A.click(); toast("🎯 Suivi : <b>" + esc(I[b.dataset.track].n) + "</b> (en haut des Terres)"); render(true); return; }
         if ((b = t.closest("[data-untrack]"))) { E.setTrack(null); render(true); return; }
-        if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans le Domaine
+        if ((b = t.closest("[data-gz]"))) { // « Aller au gisement » : la terre, dans les Terres
           const z = b.dataset.gz; A.click(); U.zone = z; if (U.mcur) closeModal();
           setTab("domaine"); setTimeout(() => Dom.focusZone(z), 80); return;
         }
@@ -526,7 +526,7 @@
           const r = E.decipher(id);
           if (r && r.ok) {
             if (r.lvl >= 3) { A.discover(); toast("✨ Recette déchiffrée : <b>" + esc(I[id].n) + "</b> !"); }
-            else { A.click(); toast(r.lvl === 1 ? "💭 Indice révélé : l’action est connue." : "💭 Indice révélé : une ressource est connue."); }
+            else { A.click(); toast(r.lvl === 1 ? "💭 Indice révélé : le geste est connu." : "💭 Indice révélé : une ressource est connue."); }
             save();
             render(true);
           }

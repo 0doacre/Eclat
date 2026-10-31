@@ -239,9 +239,9 @@
         const a = (k / Math.max(1, n)) * Math.PI * 2 + i, r = 0.5 + 0.2 * ((k * 37) % 3) / 2;
         s += use(dz, g.x + Math.cos(a) * g.rx * r, g.y + Math.sin(a) * g.ry * r * 0.8, 16 + (k % 2) * 6, "c-deco");
       }
-      s += '<text class="c-name" x="' + g.x + '" y="' + (g.y - g.ry - 10) + '" role="button" tabindex="0" aria-label="' + esc(Z.n) + ' : ouvrir dans le Domaine">' + esc(Z.n) + "</text>";
+      s += '<text class="c-name" x="' + g.x + '" y="' + (g.y - g.ry - 10) + '" role="button" tabindex="0" aria-label="' + esc(Z.n) + ' : ouvrir dans les Terres">' + esc(Z.n) + "</text>";
       s += '<g class="c-contempler-btn" data-contempler="' + z + '" role="button" tabindex="0" aria-label="Contempler l’aquarelle : ' + esc(Z.n) + '" title="Contempler l’aquarelle : ' + esc(Z.n) + '"><rect x="' + (g.x + g.rx * 0.72) + '" y="' + (g.y - g.ry - 24) + '" width="24" height="20" rx="4" class="c-contempler-bg"/><text x="' + (g.x + g.rx * 0.72 + 12) + '" y="' + (g.y - g.ry - 10) + '" text-anchor="middle" class="c-contempler-ico">🖼️</text></g>';
-      if (z === "lisiere") s += '<g class="c-camp" data-camp role="button" tabindex="0" aria-label="Ton camp : ouvrir le Domaine">' + use(GI.items.feu || "campfire", g.x + 4, g.y + 26, 26) + '<text class="c-small" x="' + (g.x + 4) + '" y="' + (g.y + 52) + '">ton camp</text></g>';
+      if (z === "lisiere") s += '<g class="c-camp" data-camp role="button" tabindex="0" aria-label="Ton camp : ouvrir les Terres">' + use(GI.items.feu || "campfire", g.x + 4, g.y + 26, 26) + '<text class="c-small" x="' + (g.x + 4) + '" y="' + (g.y + 52) + '">ton camp</text></g>';
       (Z.exps || []).forEach((x, k) => { s += lieuArt(z, k); });
       return s + "</g>";
     }
@@ -349,7 +349,7 @@
     function click(t) {
       let b;
       if (t.closest("[data-map-legend]")) {
-        openModal({ html: '<div class="kicker">Atlas vivant</div><h2>Lire la carte</h2><p>Les terres découvertes sont dessinées et nommées. À la frontière, un indice se devine ; au-delà, le monde reste couvert de brume.</p><p>Les repères pleins indiquent les lieux à explorer. Une coche signale un lieu exploré, un cercle pointillé un lieu verrouillé, un double cercle une exploration en cours.</p><p>Touche un lieu pour le consulter, un nom de terre pour ouvrir le Domaine, ou un passage pour y contribuer. Camp et Frontière recentrent la carte.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
+        openModal({ html: '<div class="kicker">Atlas vivant</div><h2>Lire la carte</h2><p>Les terres découvertes sont dessinées et nommées. À la frontière, un indice se devine ; au-delà, le monde reste couvert de brume.</p><p>Les repères pleins indiquent les lieux à explorer. Une coche signale un lieu exploré, un cercle pointillé un lieu verrouillé, un double cercle une exploration en cours.</p><p>Touche un lieu pour le consulter, un nom de terre pour ouvrir les Terres, ou un passage pour y contribuer. Camp et Frontière recentrent la carte.</p><div class="acts"><button class="btn pri" data-m="close">Fermer</button></div>' });
         return true;
       }
       if ((b = t.closest("[data-map-go]"))) {

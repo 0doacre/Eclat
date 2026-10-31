@@ -35,10 +35,10 @@
             text:!l.open?"Une ressource nécessaire vient d’une terre encore fermée.":e?.on===false?"L’extraction de "+name(E,id)+" est en pause.":l.rate>0?"La commande attend "+name(E,id)+" ; l’extraction continue.":"Aucune extraction active de "+name(E,id)+" n’alimente cette commande.",
             action:l.open?{kind:"zone",id:l.z,label:"Voir le gisement"}:{kind:"tab",id:"carte",label:"Voir la carte"}};
         }
-        return {...base,state:"component",resource:id,missing:n,text:"Il manque un composant : "+name(E,id)+".",action:known(E,id)?{kind:"item",id,label:"Voir le composant"}:{kind:"tab",id:"atelier",label:"Chercher la recette"}};
+        return {...base,state:"component",resource:id,missing:n,text:"Il manque une pièce : "+name(E,id)+".",action:known(E,id)?{kind:"item",id,label:"Voir le composant"}:{kind:"tab",id:"atelier",label:"Chercher la recette"}};
       }
       const earlier=hi.jobs.slice(0,index).some(x=>x.hand||Object.keys(x.machs||{}).length);
-      return {...base,state:earlier?"queue":"preparation",text:earlier?"Les mains ou les machines travaillent sur une commande précédente.":"Les composants de cette commande sont encore en préparation."};
+      return {...base,state:earlier?"queue":"preparation",text:earlier?"Les mains ou les machines travaillent sur une commande précédente.":"Les pièces de cette commande sont encore en préparation."};
     });
     let worker=null;
     if(E.atelierEconomyInfo){

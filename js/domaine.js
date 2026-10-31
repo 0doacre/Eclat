@@ -221,7 +221,7 @@
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
         const g = E.guide();
-        if (g && g.ob.k === "pass" && g.ob.z === z && !(["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant")) return; // le chantier peint garde sa scène dans le Domaine
+        if (g && g.ob.k === "pass" && g.ob.z === z && !(["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant")) return; // le chantier peint garde sa scène dans les Terres
         const p = E.passInfo(z);
         if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + z + '"><h3>Vers ' + esc(E.ZONES[z].n) + "</h3>" + passHTML(z, { chantier: true }) + "</section>";
       });
@@ -1351,7 +1351,7 @@
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
       } else h += '<p class="small muted">Extracteur non découvert. Recette à chercher à l’Atelier.</p>';
-      if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans le Domaine, ou garde le doigt dessus.</p>';
+      if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans les Terres, ou garde le doigt dessus.</p>';
       if (z === "mine") {
         const total = e ? Object.values(e.u).reduce((a, b) => a + b, 0) : 0;
         if (total >= 8 && E.addCurio) E.addCurio("tuyau");
@@ -1447,7 +1447,7 @@
       let last = signature();
       function html() {
         const p = S().meta.reprise;
-        let h = '<h2 id="modalTitle">Plan de reprise</h2><p class="small">' + (p.inferred ? 'Plan proposé à partir des ruines conservées. Les emplacements pourront être ajustés dans le Domaine.' : 'Installation de référence · Semeur ' + esc(String(p.cycle))) + '</p><p class="small">Choisis les équipements à reconstruire. Les terres fermées et les prérequis manquants attendent. Aucune dépense automatique plus tard.</p>';
+        let h = '<h2 id="modalTitle">Plan de reprise</h2><p class="small">' + (p.inferred ? 'Plan proposé à partir des ruines conservées. Les emplacements pourront être ajustés dans les Terres.' : 'Installation de référence · Semeur ' + esc(String(p.cycle))) + '</p><p class="small">Choisis les équipements à reconstruire. Les terres fermées et les prérequis manquants attendent. Aucune dépense automatique plus tard.</p>';
         if (!E.reprisePending().length) return h + '<p role="status">Installation reconstituée.</p>' + (result ? '<p class="small">' + esc(result) + '</p>' : '') + '<button class="btn pri" data-m="close">Fermer</button>';
         h += '<div class="reprise-rows">' + E.reprisePending().map(r => {
           const i = r.i;

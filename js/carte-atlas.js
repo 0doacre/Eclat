@@ -61,7 +61,7 @@
       const lines = Z.n === "La Plaine des Hautes Herbes" ? ["La Plaine des", "Hautes Herbes"] : [Z.n];
       const y = g.top + (z === "lisiere" ? 70 : g.sky ? 30 : 27);
       const text = lines.map((line, i) => '<tspan x="200" dy="' + (i ? 21 : 0) + '">' + esc(line) + '</tspan>').join("");
-      return button('data-cz="' + z + '"', Z.n + " : ouvrir dans le Domaine",
+      return button('data-cz="' + z + '"', Z.n + " : ouvrir dans les Terres",
         '<rect class="a-hit" x="35" y="' + (y - 26) + '" width="330" height="' + Math.max(58, lines.length * 25) + '" rx="7"/>' +
         '<text class="a-name" x="200" y="' + y + '">' + text + '</text>', "a-region" + (g.sky ? " a-celestial-node" : ""));
     }
@@ -154,7 +154,7 @@
         s += name(z);
         (E.ZONES[z].exps || []).forEach((_, k) => { s += place(z, k); });
       });
-      s += button('data-camp', "Ton camp : ouvrir le Domaine",
+      s += button('data-camp', "Ton camp : ouvrir les Terres",
         '<circle class="a-hit" cx="204" cy="2500" r="29"/><circle class="a-camp-pin" cx="204" cy="2500" r="17"/>' +
         use("campfire", 204, 2500, 21) + '<text class="a-place-name" x="231" y="2506">Camp</text>', "a-camp");
       E.passPending().forEach(z => { s += passage(z); });

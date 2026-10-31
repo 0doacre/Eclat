@@ -213,8 +213,8 @@
         html: '<div class="kicker">Mise à jour ' + esc(D.VERSION) + "</div><h2>Ta partie a été conservée</h2>" +
           '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>" +
           (st.flags.mach57 ? '<p class="small">Tes machines ne sont plus fixées sur une recette : elles sont au repos et aident tes commandes. Les ressources qu’elles utilisaient sont revenues dans ta Réserve.</p>' : "") +
-          (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Les tapis disparaissent : tes extracteurs sont maintenant rangés dans le <b>Domaine</b>, terre par terre. Ils récoltent autant qu’avant, et ce qui se trouvait sur les tapis est revenu dans ta Réserve.</p>' : "") +
-          (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as fourni est conservé. Dans le Domaine, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
+          (st.flags.news === "6" && Object.keys(st.dom.ext).length ? '<p class="small">Les tapis disparaissent : tes extracteurs sont maintenant rangés dans les <b>Terres</b>, terre par terre. Ils récoltent autant qu’avant, et ce qui se trouvait sur les tapis est revenu dans ta Réserve.</p>' : "") +
+          (st.flags.v5proj ? '<p class="small">Ton Grand Œuvre est commencé, et tout ce que tu y as fourni est conservé. Dans les Terres, touche « Alimenter » pour qu’il se serve seul dans la Réserve.</p>' : "") +
           (hasBackup ? '<p class="small muted">Par précaution, une copie de ton ancienne sauvegarde a été mise de côté. Tu peux la télécharger ici ou plus tard depuis Menu → Sauvegardes.</p>' : "") +
           '<div class="acts">' + (hasBackup ? '<button class="btn" data-m="old">⬇️ Ancienne sauvegarde</button>' : "") + '<button class="btn pri" data-m="close">Continuer</button></div>',
         on: { old: () => { const k = backups().find((b) => b.v < ENGINE.SAVE_VERSION); if (k) download("eclat-ancienne-sauvegarde-v" + k.v + "-" + stamp() + ".json", k.data); return true; } },
@@ -657,7 +657,7 @@
             (typeof window !== "undefined" && window.EclatSetStyleMode ? '<div class="toggle"><span id="mt-style">Style d’affichage</span><button class="btn small m-theme-btn" data-m="styleMode" aria-labelledby="mt-style" title="Carnet est le style du jeu. Atlas et Classique restent disponibles pour revenir à un ancien aspect si quelque chose s’affiche mal.">' + styleLabels[curStyle] + "</button></div>" : "") +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("barreBas", "Barre du bas masquée", st.settings.barreBas === "masquee", "La barre de navigation se range et ne laisse qu’une poignée ; elle vient quand on approche la souris du bas de l’écran ou qu’on touche la poignée. Désactivée (par défaut) : elle reste toujours visible.") +
-            sw("compact", "Affichage compact", U.compact(), "Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup") +
+            sw("compact", "Affichage compact", U.compact(), "Resserrer les Terres et le Carnet pour voir plus de choses d’un coup") +
             sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)") +
             sw("ambiance", "Ligne d’ambiance", st.settings.ambiance !== false, "Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure") +
             (App.ecranPossible() ? sw("ecran", "Garder l’écran allumé", st.settings.ecranAllume, "Empêcher la mise en veille de l’écran tant que le jeu est ouvert") : "")) +
@@ -805,38 +805,43 @@
     function openHelp() {
       simpleModal("Aide", "Comment jouer",
         '<div class="small">' +
-        "<p><b>En bref.</b> Tu récoltes des ressources, tu découvres des recettes à l’Atelier, puis tu poses des extracteurs et des machines qui travaillent pour toi. L’<b>objectif</b>, en haut du Domaine, indique ta prochaine étape.</p>" +
+        "<p><b>En bref.</b> Tu récoltes des ressources dans les Terres, tu découvres des recettes au Labo, puis tu produis à l’Atelier : des extracteurs, des machines et des travailleurs fabriquent pour toi. L’<b>objectif</b>, en haut des Terres, indique ta prochaine étape.</p>" +
         '<h3 class="sub">Les mots du jeu</h3><dl class="lexique">' +
         "<dt>Réserve</dt><dd>Tout ce que tu possèdes. Ce que tu récoltes ou fabriques y arrive, et chaque fabrication y prend ses ressources.</dd>" +
         "<dt>Terre, gisement</dt><dd>Une terre est un lieu du monde (la Lisière, la Plaine…). Chaque terre a ses gisements : un gisement est une ressource à récolter.</dd>" +
         "<dt>Récolter</dt><dd>Toucher l’icône d’un gisement (garder le doigt dessus pour continuer), ou toucher ▶ pour récolter en continu. Un appui rapporte parfois le double : un coup de chance.</dd>" +
-        "<dt>Action, recette</dt><dd>Une recette associe une action (Tailler, Tresser…) à une ou plusieurs ressources. Tu les découvres à l’Atelier, en faisant des tentatives.</dd>" +
+        "<dt>Geste, recette</dt><dd>Une recette associe un geste (Tailler, Tresser…) à une à trois matières. Tu les découvres au Labo, par essais. Chaque métier y a ses outils et ses mots pour les gestes.</dd>" +
         "<dt>Pièce</dt><dd>Un objet fabriqué qui sert à en fabriquer d’autres (manche, corde…).</dd>" +
         "<dt>Outil, amélioration</dt><dd>Ils agissent dès que tu les as : récolte plus forte, terre nouvelle, extracteurs plus rapides. Rien à poser.</dd>" +
-        "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste à l’Atelier et ouvre une action, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
+        "<dt>Station</dt><dd>Feu, four, enclume, creuset… Elle reste au Labo et ouvre un geste, ou une chaleur plus forte. Quand une recette en demande une, le jeu la nomme.</dd>" +
         "<dt>Extracteur</dt><dd>Un bâtiment par ressource : le Bûcheron pour le bois, le Carrier pour la pierre, le Tanneur pour la peau… Il se pose sur un gisement de sa ressource (bouton « + cabane » sur le bois) et récolte seul, même quand le jeu est fermé. Il monte de niveau avec les âges : « Améliorer » remplace un exemplaire par le niveau d’après.</dd>" +
         "<dt>Machine</dt><dd>Automate, presse… Elle reste à l’Atelier et accélère tes commandes de pièces (une fois la pièce fabriquée à la main). Un automate de bois fait les recettes à 1 ingrédient, un automate de bronze jusqu’à 2, une presse ou un réacteur jusqu’à 3.</dd>" +
+        "<dt>Métier</dt><dd>Chaque recette appartient à un métier : Artisanat, Élevage, Métallurgie, Chimie, Centrales, Électronique, Arts et lettres, Construction. Au Labo, un métier ne montre que ses outils, ses gestes et les matières de ses recettes. À l’Atelier, il montre ce qu’il fabrique et qui s’en charge.</dd>" +
+        "<dt>Travailleurs</dt><dd>Des apprentis, puis des ouvriers, que tu embauches en écus dans un métier (forgeron, éleveur, lettré…). Ils aident tes commandes et fabriquent seuls les pièces que le métier connaît, jusqu’au <b>seuil</b> que tu règles (au repos, au jour le jour, quelques réserves, bien garni, à ras bord), pourvu que tu les aies déjà faites une fois à la main. Ils te parlent quand ils manquent de matière. Les bâtisseurs de la Construction exécutent les chantiers que tu lances.</dd>" +
+        "<dt>Goulot</dt><dd>Ce qui empêche tes travailleurs d’avancer. L’Atelier remonte à la vraie cause (pas d’extracteur, personne dans le métier qui fabrique la pièce, énergie qui manque…) et propose un bouton qui la règle.</dd>" +
+        "<dt>Énergie</dt><dd>Tes machines et tes travailleurs au travail consomment des chevaux. Quand tu en produis moins qu’ils n’en demandent, ils ralentissent, jusqu’à moitié vitesse.</dd>" +
         "<dt>Commande</dt><dd>Ce que tu lances depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Les ressources sont prises au fur et à mesure dans la Réserve, et les pièces manquantes sont ajoutées avant la pièce demandée.</dd>" +
-        "<dt>Tes mains</dt><dd>Tout ce que tu fabriques passe par tes commandes (barre ✋ au-dessus des onglets). Tes machines t’y aident.</dd>" +
+        "<dt>Tes mains</dt><dd>Tout ce que tu fabriques passe par tes commandes (barre ✋ au-dessus des onglets). Tes machines et tes travailleurs t’y aident.</dd>" +
         "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis apporter ce que le passage demande.</dd>" +
-        "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource (pour savoir avec quelles actions elle cache des recettes) et à déchiffrer une recette inconnue étape par étape.</dd>" +
-        "<dt>Déchiffrer</dt><dd>Révéler une recette inconnue contre de l’Intuition : d’abord l’action, puis une des ressources, puis la recette entière.</dd>" +
+        "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource (pour savoir avec quels gestes elle cache des recettes) et à déchiffrer une recette inconnue étape par étape.</dd>" +
+        "<dt>Déchiffrer</dt><dd>Révéler une recette inconnue contre de l’Intuition : d’abord le geste, puis une des ressources, puis la recette entière.</dd>" +
         "<dt>Souvenirs ✦, relève</dt><dd>Chaque passage franchi laisse des Souvenirs. La relève recommence le monde en gardant tes recettes. Les Souvenirs servent à acheter des améliorations dans la Mémoire des mains.</dd>" +
         "<dt>Ruine</dt><dd>Ce qu’un Semeur a construit attend le suivant. Une ruine se répare sur place pour une fraction de son coût d’origine, sans repasser par l’Atelier.</dd>" +
-        "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus restants deviennent des Souvenirs à la relève.</dd>" +
+        "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus servent aussi à embaucher. Les écus restants deviennent des Souvenirs à la relève.</dd>" +
         "<dt>Demande du Troqueur</dt><dd>Le Troqueur demande des objets fabriqués contre des Souvenirs. Livrer prend les objets dans la Réserve et donne les Souvenirs tout de suite. Les demandes se renouvellent régulièrement.</dd>" +
         "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
         "<dt>Signe</dt><dd>Un mot de l’écriture des Anciens. Tant que tu ne l’as pas compris, il reste dessiné. Touche-le pour proposer ce qu’il veut dire.</dd>" +
         "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Tu y verses des ressources de la Réserve, ou tu l’alimentes pour qu’il s’y serve seul.</dd></dl>" +
         '<h3 class="sub">Les écrans</h3>' +
-        "<p><b>🏡 Domaine.</b> Tes terres et leurs gisements, les passages et le Grand Œuvre.</p>" +
-        "<p><b>🗺️ Carte.</b> Le monde, avec de la brume sur les terres que tu n’as pas encore atteintes. Touche un lieu 🧭 pour l’explorer : chaque lieu raconte un morceau de l’histoire.</p>" +
-        "<p><b>🔨 Atelier.</b> Choisis une action, pose jusqu’à trois ressources, lance l’action choisie. Si la tentative échoue, le <b>thermomètre</b> indique si tu approches d’une recette. Le <b>Carnet</b> garde tes recettes : <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> montre ce qui manque en haut du Domaine. Les <b>Machines</b> aident tes mains sur les commandes.</p>" +
-        "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
-        "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
-        "<p><b>Jeu fermé.</b> Les extracteurs, les commandes et l’exploration continuent pendant 12 h au plus.</p>" +
-        "<p><b>⌨️ Clavier et bouton Retour.</b> Sur ordinateur, Échap ferme la fenêtre ouverte. Sur téléphone, Retour ferme la fenêtre ouverte, puis ramène aux Terres ; une deuxième fois, il quitte le jeu.</p>" +
-        "<p><b>💾 Sauvegardes.</b> Dans le Menu : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
+        "<p><b>Terres.</b> Tes terres et leurs gisements, l’objectif, les passages et le Grand Œuvre. Des pastilles en haut ouvrent le Comptoir et la production. L’<b>Atlas</b> montre le monde, avec de la brume sur les terres que tu n’as pas encore atteintes : touche un lieu 🧭 pour l’explorer, chaque lieu raconte un morceau de l’histoire.</p>" +
+        "<p><b>Labo.</b> Choisis un métier, un outil, un geste, pose jusqu’à trois matières et lance le geste. Si la tentative échoue, le <b>thermomètre</b> indique si tu approches d’une recette ; ✦ marque une piste. « Étudier » (Intuition) montre les matières qui cachent encore une recette.</p>" +
+        "<p><b>Atelier.</b> <b>Produire</b> : tes métiers, leurs travailleurs, leur seuil, les goulots et l’énergie. <b>Carnet</b> : tes recettes ; <b>Fabriquer, ×10, ×50, ×100, ×1 000, Max</b> lancent des commandes et fabriquent aussi les pièces qui manquent, <b>🎯 Suivre</b> montre ce qui manque en haut des Terres. <b>Machines</b> : elles aident tes mains sur les commandes.</p>" +
+        "<p><b>Progression.</b> Le <b>Chemin</b> (ce qui est fait, ce qui reste), les <b>Secrets</b>, tes <b>Gestes</b> et leurs niveaux, les <b>Fins</b> et la <b>Mémoire</b> (tes totaux). Sa dernière page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
+        "<p><b>Journal.</b> Fragments d’histoire, secrets, mélodies.</p>" +
+        "<p><b>Niveaux.</b> Chaque geste, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
+        "<p><b>Jeu fermé.</b> Les extracteurs, les commandes, tes travailleurs et l’exploration continuent pendant 12 h au plus. À ton retour, ils te disent ce qu’ils ont fait.</p>" +
+        "<p><b>Clavier et bouton Retour.</b> Sur ordinateur, Échap ferme la fenêtre ouverte. Sur téléphone, Retour ferme la fenêtre ouverte, puis ramène aux Terres ; une deuxième fois, il quitte le jeu.</p>" +
+        "<p><b>Sauvegardes.</b> Dans le Menu : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
     }
 
     function promptCapsuleText() {
