@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.48.1";
+  D.VERSION = "0.48.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1636,6 +1636,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🧪 Au Labo, « Vider » rejoint la rangée des gestes (grisé quand l’établi est vide), et le message de l’établi (fabriqué, tiède, chaud, brûlant) prend un cadre de la D.A. dont la couleur dit la température.",
     "📊 Progression : le décompte d’un âge dit « trouvées / recettes » et correspond à la grille (les matières vues ont leur rangée à part, « Matières vues »). Le Cosmos devient la dernière page de la Progression, à côté de Mémoire, dès que tu as un instrument d’observation ; le Journal n’a plus qu’une page.",
     "🗂️ Le menu s’organise en cinq onglets (Jeu, Affichage, Audio, Système, Aide) : une rubrique à la fois, au lieu d’un long écran. Les sauvegardes se simplifient : un fichier à enregistrer, un fichier à reprendre, et les copies de sécurité en une ligne ; l’ancien code texte disparaît. L’icône du compte est une silhouette.",
     "🔲 Les ressources s’affichent nues, sans double cadre. Un bouton garde sa taille quand son état change (la récolte en continu garde la même taille en « ▶ » et en « ■ »), et un texte trop long rétrécit au lieu de déborder. L’objectif des Terres prend sa propre ligne sur téléphone. Les derniers grands nombres passent en k, M, G.",

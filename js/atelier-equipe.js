@@ -171,7 +171,7 @@
       }).join('')+'</div>';
       h+='<p class="ae-legende">'+esc(isGrand(tool.id)?"Atelier":tool.n)+'</p>';
       const modes=Object.entries(tool.modes);
-      if(modes.length>1)h+='<div class="ae-gestes" role="group" aria-label="Geste">'+modes.map(([m,n])=>'<button type="button" id="ae-mode-'+esc(m)+'" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n))+'</button>').join('')+'</div>';
+      h+='<div class="ae-gestes" role="group" aria-label="Geste">'+(modes.length>1?modes.map(([m,n])=>'<button type="button" id="ae-mode-'+esc(m)+'" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n))+'</button>').join(''):'')+button("clear","","Vider","small ghost ae-vider",!w.slots.length)+'</div>';
       return h;
     }
     function body(mode){
@@ -205,7 +205,6 @@
       if(w.prepared||w.slots.length){
         h+='<div class="ae-bench-subbar">'+(w.prepared?'<p class="ae-prepared">'+esc(name(w.prepared))+'</p>':'<span></span>');
         if(missingSub)h+=button("order_missing",missingSub,"⚡ Façonner "+esc(name(missingSub)),"small");
-        if(w.slots.length)h+=button("clear","","🧹 Vider","small ghost");
         h+='</div>';
       }
       h+='<div class="ae-actions">';
