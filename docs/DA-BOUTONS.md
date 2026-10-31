@@ -51,3 +51,8 @@ Les pastilles d'objet (`itemPill`) sont encore des gélules arrondies ; les anci
 ## Le menu (0.48)
 
 Cinq onglets, une rubrique affichée à la fois (`.menu-sec[hidden]`, onglet retenu dans `U.menuOnglet`) : **Jeu** (Mémoire, Comptoir, guide, visiteurs), **Affichage**, **Audio**, **Système** (mode test, sauvegardes, compte, installer, mise à jour, recommencer), **Aide** (état des productions, signaler un problème, comment jouer, nouveautés, crédits). Le bouton « Reprendre » remplace « Fermer ». Les sauvegardes : enregistrer un fichier, reprendre un fichier, copies de sécurité (restaurer) ; l'ancien code texte est retiré. Le compte porte une silhouette (`COMPTE` dans `js/compte.js`).
+
+## Progression (0.48.1)
+
+- **Décompte d'un âge** : « trouvées / recettes » = les recettes trouvées sur les recettes montrées par la grille (trouvées + cases « ? »). Les matières vues (Os, Peau, Bois…) ne comptent pas : elles ont leur rangée « Matières vues » sous la grille. Une recette secrète n'entre dans le compte qu'une fois trouvée. Les outils cachés du profil d'équipement (établi aménagé, racloir remplacé, polissoir) n'en font plus partie, ce qui faisait paraître « 13 / 14 » alors que la grille montrait autre chose.
+- **Cosmos** : dernière page de la Progression (`Chemin · Secrets · Gestes · Fins · Mémoire · Cosmos`), visible dès qu'un instrument d'observation est possédé. Le Journal revient à une seule page. Le bouton garde `data-tab2="cosmos"`.

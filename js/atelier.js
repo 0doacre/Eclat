@@ -645,14 +645,6 @@
       const etapes = E.milestones()[g.age] || [], faites = etapes.filter((x) => x.done).length;
       const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
       const f = U.arbreFiltre || "tout";
-      const totalParAge = {};
-      for (const id in I) {
-        const it = I[id];
-        if (it.r && !it.path) {
-          const a = it.a || 0;
-          totalParAge[a] = (totalParAge[a] || 0) + 1;
-        }
-      }
       let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
         '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
       if (objectif) h += '<h3>Prochain objectif</h3>' + arbreCarte(objectif, false);
@@ -664,14 +656,20 @@
         const ouverts = U.arbreAges || {};
         const visibles = f === "tout" ? ns : ns.filter((n) => arbrePassPortee(n, f));
         const ouvert = ouverts[a] !== undefined ? ouverts[a] : (f !== "tout" ? visibles.length > 0 : a === Math.min(g.age, g.max));
-        const c = ns.filter((n) => n.etat === 'allume').length, tot = totalParAge[a] || 0;
+        /* Le décompte d'un âge = ce que montre la grille : les recettes trouvées, sur les recettes montrées (trouvées + cases « ? »). Les matières vues ont leur propre rangée ; une recette secrète n'entre dans le compte qu'une fois trouvée. */
+        const estRecette = (n) => !(n.id && I[n.id] && !I[n.id].r);
+        const recettesAge = ns.filter(estRecette);
+        const c = recettesAge.filter((n) => n.etat === 'allume').length, tot = recettesAge.length;
         const compteTxt = f === "tout" ?
-          (tot > 0 ? c + ' / ' + tot : (c + ' connue' + (c > 1 ? 's' : ''))) :
+          (tot > 0 ? c + ' / ' + tot + ' recettes' : (c + ' connue' + (c > 1 ? 's' : ''))) :
           (visibles.length + ' ' + (f === 'pret' ? 'prête' + (visibles.length > 1 ? 's' : '') : f === 'portee' ? 'à portée' : 'verrouillée' + (visibles.length > 1 ? 's' : '')));
         h += '<details class="arb-age-groupe" data-arbage="' + a + '"' + (ouvert ? ' open' : '') + '><summary><span>' + esc(D.AGES[a].n) + '</span><span class="arb-age-compte"' + (f === 'tout' && tot > 0 ? ' aria-label="' + c + ' sur ' + tot + ' recettes connues"' : '') + '>' + compteTxt + '</span></summary>';
         const rang = new Map(visibles.map((n) => [n.cle, arbreRang(n, g)]));
         visibles.sort((x, y) => rang.get(x.cle) - rang.get(y.cle) || (x.n || "").localeCompare(y.n || "", "fr"));
-        h += (visibles.length ? '<div class="arb-frise">' + visibles.map(arbrePastille).join('') + '</div>' : '<p class="small muted">' + (ns.length ? 'Aucune recette pour ce filtre.' : 'Rien découvert pour l’instant.') + '</p>') + '</details>';
+        const estMatiere = (n) => n.id && I[n.id] && !I[n.id].r;
+        const matieres = visibles.filter(estMatiere), recettes = visibles.filter((n) => !estMatiere(n));
+        h += (recettes.length ? '<div class="arb-frise">' + recettes.map(arbrePastille).join('') + '</div>' : '<p class="small muted">' + (ns.length ? 'Aucune recette pour ce filtre.' : 'Rien découvert pour l’instant.') + '</p>') +
+          (matieres.length ? '<h4 class="arb-sous">Matières vues</h4><div class="arb-frise arb-matieres">' + matieres.map(arbrePastille).join('') + '</div>' : '') + '</details>';
       }
       if (g.max < D.AGES.length - 1) h += '<p class="small muted">Les autres âges se dévoileront au fil de tes découvertes.</p>';
       return h;

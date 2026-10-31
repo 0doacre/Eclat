@@ -833,7 +833,7 @@
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
   /* cinq onglets : Terres (le Domaine), Labo, Atelier, Arbre, Journal ; la Carte (l’Atlas) se range sous les Terres,
    * le Carnet et les Machines dans l’Atelier, le Cosmos dans le Journal */
-  const PARENT = { carte: "domaine", carnet: "atelier", machines: "atelier", cosmos: "journal" };
+  const PARENT = { carte: "domaine", carnet: "atelier", machines: "atelier", cosmos: "arbre" };
   function tabAvailable(t) {
     const st = S();
     if (t === "cosmos") return E.cache().sky;
@@ -910,7 +910,10 @@
     const items = [["chemin", "Chemin", "Ce qui est fait, ce qui reste"], ["secrets", "Secrets", "Ce que tu as trouvé, sans rien révéler de plus"], ["gestes", "Gestes" + (E.hasNewGeste && E.hasNewGeste() ? " •" : ""), "Tes gestes remarqués et leurs niveaux"]];
     if (E.curiosCount && E.curiosCount() > 0) items.push(["curios", "Clins d’œil", "Les petits secrets trouvés en chemin"]);
     items.push(["fins", "Fins", "Les dénouements atteints et les Échos"], ["stats", "Mémoire", "Tes totaux, ton nom, tes réminiscences"]);
-    return '<div class="filters prog-sw" role="group" aria-label="Progression">' + items.map(([k, n, t]) => '<button type="button" data-pt="' + k + '" title="' + t + '" class="' + (U.progTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+    /* Le Cosmos (le ciel, les figures, ARCHE, les Grands Œuvres) est la dernière page de la Progression ; il apparaît avec le premier instrument d'observation. */
+    if (tabAvailable("cosmos")) items.push(["cosmos", "Cosmos" + (U.badges.cosmos ? " •" : ""), SUBT.cosmos]);
+    const ici = U.tab === "cosmos" ? "cosmos" : U.progTab;
+    return '<div class="filters prog-sw" role="group" aria-label="Progression">' + items.map(([k, n, t]) => '<button type="button" ' + (k === "cosmos" ? 'data-tab2="cosmos"' : 'data-pt="' + k + '"') + ' title="' + t + '" class="' + (ici === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); if (PARENT[t] === U.tab) render(true); } }
 
@@ -950,8 +953,8 @@
     else if (U.tab === "carte") { const g = Carte.sig(); if (el.dataset.sig !== g) { el.innerHTML = '<div class="carte-retour"><button type="button" class="btn small" data-tab2="domaine">← Terres</button></div>' + Carte.view(); el.dataset.sig = g; } }
     else if (U.tab === "journal") el.innerHTML = viewJournal();
     else if (U.tab === "cosmos") {
-      if (U.cosmosTab === "figures") { const g = figuresSig(); if (el.dataset.sig !== g) { el.innerHTML = viewCosmos(); el.dataset.sig = g; mountCosmos(); } } // sans rien de vivant : on ne redessine que si quelque chose change
-      else { delete el.dataset.sig; el.innerHTML = viewCosmos(); mountCosmos(); }
+      if (U.cosmosTab === "figures") { const g = figuresSig(); if (el.dataset.sig !== g) { el.innerHTML = progSwitchHTML() + viewCosmos(); el.dataset.sig = g; mountCosmos(); } } // sans rien de vivant : on ne redessine que si quelque chose change
+      else { delete el.dataset.sig; el.innerHTML = progSwitchHTML() + viewCosmos(); mountCosmos(); }
     }
     iconize(el);
     if (U.tab === "labo") { // la rangée des actions garde sa place d’un rendu à l’autre, et l’action choisie reste visible

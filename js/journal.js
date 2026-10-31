@@ -157,7 +157,7 @@
       if (!tabs.find((t) => t[0] === cur)) cur = tabs[0][0];
       if (prog) U.progTab = cur; else U.journalTab = cur;
       const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", gestes: "Les gestes remarqués et accomplis au fil de ta route", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
-      let h = prog ? "" : (tabAvailable("cosmos") ? subTabs("journal", "cosmos", "Journal", "Cosmos") : '<h2 class="title">Journal</h2>') + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      let h = prog ? "" : '<h2 class="title">Journal</h2>' + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (cur === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
         const n = ids.filter((f) => st.frags[f]).length;
@@ -386,7 +386,7 @@
       if (Object.keys(D.PROJECTS).some(E.projVisible)) tabs.push(["oeuvres", "Grands Œuvres"]);
       if (!tabs.find((t) => t[0] === U.cosmosTab)) U.cosmosTab = "ciel";
       const CTT = { ciel: "Le ciel de la nuit", figures: "Les étoiles et les signes déjà vus", arche: "Le terminal des Anciens", oeuvres: "Les Grands Œuvres, ce qu’il reste à bâtir" };
-      let h = subTabs("journal", "cosmos", "Journal", "Cosmos") + '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" title="' + (CTT[k] || "") + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      let h = '<div class="filters" style="margin-top:4px">' + tabs.map(([k, n]) => '<button data-ct="' + k + '" title="' + (CTT[k] || "") + '" class="' + (U.cosmosTab === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (U.cosmosTab === "figures") {
         h += figuresHTML();
       } else if (U.cosmosTab === "ciel") {

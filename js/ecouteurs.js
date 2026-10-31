@@ -618,7 +618,7 @@
           goto(b.dataset.goto);
           return;
         }
-        if ((b = t.closest("[data-pt]"))) { U.progTab = b.dataset.pt; A.click(); render(true); return; }
+        if ((b = t.closest("[data-pt]"))) { U.progTab = b.dataset.pt; A.click(); if (U.tab === "cosmos") setTab("arbre"); else render(true); return; }
         if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
         if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
         if ((b = t.closest("[data-trans-delete]"))) { if (E.transmissionEffacerNote(Number(b.dataset.transDelete))) { save(); render(true); } return; }

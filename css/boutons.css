@@ -148,3 +148,6 @@ html[data-style-mode="vivant"] #modal .menu-wrap .m-nav-tab.on { color: var(--ac
 /* « Reprendre » suffit : le bouton « Fermer » du bas ferait doublon */
 html[data-style-mode="vivant"] #modal .menu-wrap > .acts { display: none; }
 html[data-style-mode="vivant"] #modal .save-act-card.pri :is(.muted, .tiny) { color: inherit !important; opacity: .9; }
+
+/* ---- Progression : les matières vues sont à part des recettes ---- */
+html[data-style-mode="vivant"] #v-arbre .arb-sous { margin: 8px 8px 4px; font: 700 12px/1.2 var(--serif); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
