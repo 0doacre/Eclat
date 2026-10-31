@@ -236,6 +236,24 @@ test("manque : un travailleur à l'arrêt faute de matière le dit après 30 s, 
   assert.ok(E.voixHisto("artisanat").length >= 1);
   assert.equal(E.voix(t0 + 31000 + 601000).filter((x) => x.kind === "manque").length >= 1, true, "reparle après 10 minutes");
 });
+test("les travailleurs disent « Semeur, » au joueur, mais pas à chaque phrase (0.64.11)", () => {
+  for (const [rv, nomme] of [[0.1, true], [0.99, false]]) {
+    t = 2e12;
+    const E = createEngine({ now: () => t, rand: () => rv });
+    E.state.age = 5;
+    for (const z of D.ZONES) E.state.zones[z.id] = true;
+    for (const [id, it] of Object.entries(D.ITEMS)) if (it.r && it.a <= 5 && !it.sec && !it.path) E.learn(id, true);
+    E.recalc();
+    E.state.ecus = 1e6; E.state.made.manche = 1;
+    E.state.inv.bois = 0; E.state.inv.pierre = 0; E.state.inv.fibre = 0;
+    E.embaucher("artisanat", "apprenti");
+    E.voix(5e12);
+    const m = E.voix(5e12 + 31000);
+    assert.ok(m.length >= 1);
+    assert.equal(/^Semeur, /.test(m[0].txt), nomme, m[0].txt);
+    assert.ok(!/^[a-zé]/.test(m[0].txt), "la phrase commence par une majuscule : " + m[0].txt);
+  }
+});
 test("retour d'absence : le compte rendu de ce que le métier a fabriqué, une seule fois", () => {
   const { E } = jeu(5);
   E.state.ecus = 1e6; E.add("bois", 5000); E.add("pierre", 5000); E.add("fibre", 5000); E.state.made.manche = 1;

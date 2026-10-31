@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.10";
+  D.VERSION = "0.64.11";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1598,22 +1598,22 @@
   D.VOIX = {
     cooldown: 600, manqueApres: 30, previsionSous: 300, retourApres: 300, histoMax: 20,
     metiers: {
-      artisanat: { retour: "Patron, pendant votre absence, nous avons fabriqué : {liste}.", manque: "Patron, nous manquons {de} à l’établi !", prevision: "Patron, nous allons bientôt manquer {de}.",
-        fatigue: "Patron, les mains sont lasses : on ne tiendra pas ce rythme longtemps.", greve: "Patron, on pose les outils : grève, tant qu’on n’a pas soufflé !", reprise: "Patron, nous avons repris notre souffle et nous nous remettons à l’ouvrage." },
-      construction: { retour: "Chef, le chantier n’a pas chômé : {liste}.", manque: "Chef, le chantier manque {de} !", prevision: "Chef, le chantier va bientôt manquer {de}.",
-        fatigue: "Chef, les gars sont sur les rotules.", greve: "Chef, le chantier est à l’arrêt : les bâtisseurs font grève !", reprise: "Chef, le chantier repart." },
-      elevage: { retour: "Patron, les bêtes ont donné pendant votre absence : {liste}.", manque: "Patron, l’étable manque {de} !", prevision: "Patron, l’étable va bientôt manquer {de}.",
-        fatigue: "Patron, les bêtes et les bergers n’en peuvent plus.", greve: "Patron, plus personne à l’étable : grève !", reprise: "Patron, l’étable est de nouveau sur pied." },
-      metallurgie: { retour: "Patron, la forge n’a pas refroidi : {liste}.", manque: "Patron, la forge manque {de} !", prevision: "Patron, bientôt la forge manquera {de}.",
-        fatigue: "Patron, les forgerons n’ont plus de bras : le feu aura leur peau.", greve: "Patron, la forge est éteinte : les forgerons font grève !", reprise: "Patron, la forge se rallume." },
-      chimie: { retour: "Patron, les cornues ont travaillé en votre absence : {liste}.", manque: "Patron, nous manquons {de} au laboratoire !", prevision: "Patron, nous allons bientôt manquer {de} au laboratoire.",
-        fatigue: "Patron, nous avons les mains qui tremblent : il faut ralentir.", greve: "Patron, le laboratoire ferme boutique : grève des chimistes !", reprise: "Patron, le laboratoire reprend ses distillations." },
-      centrales: { retour: "Patron, la centrale a tourné sans vous : {liste}.", manque: "Patron, la centrale manque {de} !", prevision: "Patron, la centrale va bientôt manquer {de}.",
-        fatigue: "Patron, les équipes de la centrale sont à bout.", greve: "Patron, la centrale tourne au ralenti : les opérateurs font grève !", reprise: "Patron, la centrale reprend son service." },
-      electronique: { retour: "Patron, pendant votre absence, nous avons assemblé : {liste}.", manque: "Patron, il n’y a plus {de} pour les circuits !", prevision: "Patron, nous allons bientôt manquer {de}.",
-        fatigue: "Patron, les yeux piquent sur les circuits : une pause s’impose.", greve: "Patron, les ingénieurs débranchent : grève !", reprise: "Patron, les établis électroniques se rallument." },
-      artistique: { retour: "Patron, le scriptorium a produit en votre absence : {liste}.", manque: "Patron, le scriptorium manque {de} !", prevision: "Patron, bientôt le scriptorium manquera {de}.",
-        fatigue: "Patron, les plumes tremblent : le scriptorium est à bout.", greve: "Patron, le scriptorium se tait : les érudits font grève !", reprise: "Patron, les érudits reprennent la plume." }
+      artisanat: { retour: "Semeur, pendant votre absence, nous avons fabriqué : {liste}.", manque: "Semeur, nous manquons {de} à l’établi !", prevision: "Semeur, nous allons bientôt manquer {de}.",
+        fatigue: "Semeur, les mains sont lasses : on ne tiendra pas ce rythme longtemps.", greve: "Semeur, on pose les outils : grève, tant qu’on n’a pas soufflé !", reprise: "Semeur, nous avons repris notre souffle et nous nous remettons à l’ouvrage." },
+      construction: { retour: "Semeur, le chantier n’a pas chômé : {liste}.", manque: "Semeur, le chantier manque {de} !", prevision: "Semeur, le chantier va bientôt manquer {de}.",
+        fatigue: "Semeur, les gars sont sur les rotules.", greve: "Semeur, le chantier est à l’arrêt : les bâtisseurs font grève !", reprise: "Semeur, le chantier repart." },
+      elevage: { retour: "Semeur, les bêtes ont donné pendant votre absence : {liste}.", manque: "Semeur, l’étable manque {de} !", prevision: "Semeur, l’étable va bientôt manquer {de}.",
+        fatigue: "Semeur, les bêtes et les bergers n’en peuvent plus.", greve: "Semeur, plus personne à l’étable : grève !", reprise: "Semeur, l’étable est de nouveau sur pied." },
+      metallurgie: { retour: "Semeur, la forge n’a pas refroidi : {liste}.", manque: "Semeur, la forge manque {de} !", prevision: "Semeur, bientôt la forge manquera {de}.",
+        fatigue: "Semeur, les forgerons n’ont plus de bras : le feu aura leur peau.", greve: "Semeur, la forge est éteinte : les forgerons font grève !", reprise: "Semeur, la forge se rallume." },
+      chimie: { retour: "Semeur, les cornues ont travaillé en votre absence : {liste}.", manque: "Semeur, nous manquons {de} au laboratoire !", prevision: "Semeur, nous allons bientôt manquer {de} au laboratoire.",
+        fatigue: "Semeur, nous avons les mains qui tremblent : il faut ralentir.", greve: "Semeur, le laboratoire ferme boutique : grève des chimistes !", reprise: "Semeur, le laboratoire reprend ses distillations." },
+      centrales: { retour: "Semeur, la centrale a tourné sans vous : {liste}.", manque: "Semeur, la centrale manque {de} !", prevision: "Semeur, la centrale va bientôt manquer {de}.",
+        fatigue: "Semeur, les équipes de la centrale sont à bout.", greve: "Semeur, la centrale tourne au ralenti : les opérateurs font grève !", reprise: "Semeur, la centrale reprend son service." },
+      electronique: { retour: "Semeur, pendant votre absence, nous avons assemblé : {liste}.", manque: "Semeur, il n’y a plus {de} pour les circuits !", prevision: "Semeur, nous allons bientôt manquer {de}.",
+        fatigue: "Semeur, les yeux piquent sur les circuits : une pause s’impose.", greve: "Semeur, les ingénieurs débranchent : grève !", reprise: "Semeur, les établis électroniques se rallument." },
+      artistique: { retour: "Semeur, le scriptorium a produit en votre absence : {liste}.", manque: "Semeur, le scriptorium manque {de} !", prevision: "Semeur, bientôt le scriptorium manquera {de}.",
+        fatigue: "Semeur, les plumes tremblent : le scriptorium est à bout.", greve: "Semeur, le scriptorium se tait : les érudits font grève !", reprise: "Semeur, les érudits reprennent la plume." }
     },
     /* les planches d'illustration (assets/travailleurs, 2000 × 1116) : origine (x, y) et taille (w, h) de la première case, pas vertical py entre les deux rangées ; 4 cases par rangée */
     planches: {
@@ -1749,6 +1749,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗣️ Les travailleurs t’appellent Semeur (plus Patron, ni Chef), et pas à chaque phrase : une fois sur deux, ils vont droit au but.",
     "🧑‍🔧 Les portraits des travailleurs sont livrés avec le jeu (nouveaux fichiers, gardés en mémoire dès l’installation) et gardent un second fichier de secours : ils ne devraient plus rester vides.",
     "🧑‍🔧 Les portraits des travailleurs réapparaissent aussi sur les appareils qui gardent encore une ancienne version du jeu : leurs anciens fichiers contiennent maintenant les nouveaux visages.",
     "✍️ Chaque recette et chaque geste a maintenant son texte de découverte, écrit pour lui : deux cent trente-quatre phrases courtes, à voir et à entendre.",
@@ -1769,7 +1770,7 @@
     "🏷️ Le seuil de production libre se lit en mots, plus en pourcentages : au repos, au jour le jour, quelques réserves, bien garni, à ras bord. Il démarre à « au jour le jour » (au lieu d’un tiers du stock de confort), pour qu’un travailleur ne vide pas des matières dont tu as besoin sans que tu l’aies voulu. Le goulot « seuil à 0 % » devient « au repos ».",
     "🏗️ Les bâtisseurs ont un rôle : ils exécutent les chantiers que tu lances, c’est-à-dire les constructions à prix croissant (extracteurs, machines) que tu mets dans ta file, à ta place et sans que tu les fasses à la main. Jamais de leur propre initiative, et seulement ce que tu as déjà construit une fois toi-même. Construction apparaît dans les Ateliers dès que tu connais une construction. Dans un goulot « aucun extracteur n’en récolte », un bouton lance directement le chantier.",
     "🚧 Les goulots : quand tes travailleurs n’avancent pas, l’Atelier le dit et remonte à la vraie cause. « Goulots · 2 » en tête de l’Atelier (et sur la page du métier), avec un bouton qui la règle : voir les Terres quand aucun extracteur ne récolte la matière, embaucher quand personne ne fabrique la pièce d’un autre métier, fabriquer une fois à la main ce que les travailleurs ne peuvent pas encore, régler un seuil à 0 %, voir l’énergie. Une pastille apparaît sur l’onglet Atelier quand un nouveau goulot se présente.",
-    "🗣️ Les travailleurs te parlent : à ton retour d’une absence (« Patron, pendant votre absence, l’atelier a fait : 40 × corde, 12 × manche »), quand ils manquent d’une matière depuis une demi-minute (« la forge manque de charbon ! »), et quand une matière va bientôt manquer. Une voix par métier, une carte à la fois, jamais par-dessus une fenêtre, avec un portrait qui suit l’échelon du métier ; toucher la carte ouvre le métier, où les derniers messages restent lisibles. La barre du bas reste visible par défaut (le masquage devient un réglage).",
+    "🗣️ Les travailleurs te parlent : à ton retour d’une absence (« Semeur, pendant votre absence, l’atelier a fait : 40 × corde, 12 × manche »), quand ils manquent d’une matière depuis une demi-minute (« la forge manque de charbon ! »), et quand une matière va bientôt manquer. Une voix par métier, une carte à la fois, jamais par-dessus une fenêtre, avec un portrait qui suit l’échelon du métier ; toucher la carte ouvre le métier, où les derniers messages restent lisibles. La barre du bas reste visible par défaut (le masquage devient un réglage).",
     "⌄ La barre du bas peut se ranger d’elle-même et ne laisser qu’une fine poignée. Elle vient quand tu approches la souris du bas de l’écran ou que tu touches la poignée (ou la fais glisser vers le haut), et se range après ton choix. Le défilement ne la fait plus bouger. Menu → Affichage → « Barre du bas masquée » (désactivé par défaut) active ce comportement ; sinon la barre reste visible comme avant.",
     "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les pièces que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier (au repos, au jour le jour, quelques réserves, bien garni, à ras bord), de plus en plus gros avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
     "👷 Chaque métier a ses travailleurs, nommés d’après ce qu’ils font : artisan, bâtisseur, éleveur, forgeron, chimiste, centralier, électronicien, lettré (et leurs apprentis). Les boutons d’embauche, les renvois et la jauge d’énergie les nomment ainsi.",
@@ -2076,7 +2077,7 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
-  /* Bâtiment (0.64.10) */
+  /* Bâtiment (0.64.11) */
   D.SAVEUR.feu = "Une braise sous des branches en cône. La nuit recule jusqu’aux arbres.";
   D.SAVEUR.cabane = "Des branches appuyées l’une contre l’autre sous un toit de feuilles. Le soir, des lucioles tournent autour.";
   D.SAVEUR.fibre_1 = "Des tiges de fibre étalées sur un cadre de bois, et le vent fait le reste.";
@@ -2152,7 +2153,7 @@
   D.SAVEUR.matrice = "On lui donne de la matière brute, elle rend l’objet fini.";
   D.SAVEUR.forge_stellaire = "Même derrière le verre fumé, tu dois détourner les yeux.";
   D.SAVEUR.replicateur = "Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.";
-  /* Chimie et savoir (0.64.10) */
+  /* Chimie et savoir (0.64.11) */
   D.SAVEUR.masque = "Une coque souple et, contre le visage, un joint de caoutchouc. L’air sent le plastique neuf.";
   D.SAVEUR.bouteille = "Un cylindre d’aluminium, froid et léger. Quand on ouvre, le tuyau siffle.";
   D.SAVEUR.naphta = "Un liquide clair, recueilli à part pendant que le pétrole chauffe. Il pique le nez de loin.";
@@ -2174,7 +2175,7 @@
   D.SAVEUR.papyrus = "Tu laisses une place dans la marge pour la main qui viendra après la tienne.";
   D.SAVEUR.papier = "Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.";
   D.SAVEUR.presse_imprimer = "La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.";
-  /* Énergie (0.64.10) */
+  /* Énergie (0.64.11) */
   D.SAVEUR.moulin = "La rivière pousse la roue, qui tourne jour et nuit.";
   D.SAVEUR.moteur_vapeur = "À chaque poussée du piston, les engrenages avancent d’un cran. Le sol vibre à chaque course.";
   D.SAVEUR.pompe = "Un balancier lent, et l’eau des galeries baisse.";
@@ -2206,7 +2207,7 @@
   D.SAVEUR.matiere_exotique = "L’aiguille de la balance part du mauvais côté. Tu refais la pesée trois fois.";
   D.SAVEUR.antimatiere = "Un flacon d’apparence vide, suspendu entre des champs. Ce qu’il contient ne touche pas les parois.";
   D.SAVEUR.panneau_dyson = "Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.";
-  /* Technologie (0.64.10) */
+  /* Technologie (0.64.11) */
   D.SAVEUR.ampoule = "Un fil qui rougit puis blanchit dans une bulle de verre.";
   D.SAVEUR.cable = "Des brins de cuivre tressés sous une gaine de caoutchouc, souples comme une corde.";
   D.SAVEUR.telegraphe = "Une clef de cuivre, et un fil qui s’en va vers l’horizon. Chaque pression fait un claquement sec.";
@@ -2227,7 +2228,7 @@
   D.SAVEUR.serveur_archives = "La phrase que tu cherchais depuis trois veillées apparaît en un instant.";
   D.SAVEUR.drones = "Des milliers de petites hélices bourdonnent au-dessus des gisements.";
   D.SAVEUR.ia = "Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.";
-  /* Métallurgie (0.64.10) */
+  /* Métallurgie (0.64.11) */
   D.SAVEUR.lingot_cuivre = "Le minerai vert a coulé dans le moule. Refroidi, le métal est rouge, et la pierre le marque.";
   D.SAVEUR.plaque_cuivre = "Le lingot s’étale sous le marteau. À chaque coup, le son monte d’un cran.";
   D.SAVEUR.fil_cuivre = "Rouge, fin comme un cheveu, long comme un bras. Il garde le pli qu’on lui donne.";
@@ -2306,16 +2307,16 @@
   D.SAVEUR.cristal_chantant = "On lui siffle trois notes. Posé sur la table, il les rejoue tout bas, sans s’arrêter.";
   D.SAVEUR.traducteur = "Un cristal tiède dans la paume. Quand on lui parle, il murmure autre chose, et c’est ce qu’on voulait dire.";
   D.SAVEUR_GESTE = {};
-  /* Gestes (0.64.10) */
+  /* Gestes (0.64.11) */
   D.SAVEUR_GESTE.electriser = "Le courant passe dans la matière, et elle change de couleur.";
   D.SAVEUR_GESTE.graver = "La lumière trace des lignes plus fines qu’un cheveu, et le silicium garde la trace.";
-  /* Gestes (0.64.10) */
+  /* Gestes (0.64.11) */
   D.SAVEUR_GESTE.chauffer = "Au feu, la boue durcit et le bois noircit. Plus il est chaud, plus ça va loin.";
   D.SAVEUR_GESTE.synthetiser = "On ne cuit plus, on assemble des molécules. Ce qu’on obtient n’existe nulle part dans la nature.";
   D.SAVEUR_GESTE.stratifier = "Des couches posées l’une sur l’autre, puis cuites sous pression. Elles ne forment plus qu’une plaque.";
   D.SAVEUR_GESTE.transmuter = "Un métal entre, un autre sort. Les alchimistes en rêvaient depuis toujours.";
   D.SAVEUR_GESTE.accorder = "Une seule note, tenue longtemps. La matière finit par vibrer avec elle.";
-  /* Gestes de métallurgie (0.64.10) */
+  /* Gestes de métallurgie (0.64.11) */
   D.SAVEUR_GESTE.marteler = "Le marteau frappe, le métal cède. Chaque coup sonne un peu moins creux.";
   D.SAVEUR_GESTE.allier = "Deux métaux dans le même creuset. Ce qui en sort ne ressemble à aucun des deux.";
   D.SAVEUR_GESTE.tremper = "Du rouge à l’eau, d’un seul geste. La vapeur monte en sifflant.";

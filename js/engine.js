@@ -1794,7 +1794,14 @@
     const manqueDepuis = {};
     const deNom = (id) => { const n = ((item(id) && item(id).n) || id).toLowerCase(); return (/^[aeiouyàâéèêëîïôöûüh]/.test(n) ? "d’" : "de ") + n; };
     const listeFait = (f) => Object.keys(f).sort((a, b) => f[b] - f[a]).slice(0, 4).map((r) => Math.floor(f[r]) + " × " + ((item(r) && item(r).n) || r).toLowerCase()).join(", ");
+    /* le travailleur ne nomme pas le Semeur à chaque phrase : une fois sur deux, le « Semeur, » du début tombe */
+    function sansVocatif(txt) {
+      if (txt.indexOf("Semeur, ") !== 0 || rand() < 0.5) return txt;
+      const r = txt.slice(8);
+      return r.charAt(0).toUpperCase() + r.slice(1);
+    }
     function dire(fam, kind, id, txt, t) {
+      txt = sansVocatif(txt);
       const e = eq();
       e.voix[kind + ":" + fam + ":" + id] = t;
       const m = { t, fam, kind, id, txt };

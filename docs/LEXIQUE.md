@@ -40,6 +40,7 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 | **Geste** | Tailler, Tresser, Chauffer, Construire… Partout dans l’interface ; au Labo, chaque métier a ses mots pour les gestes (`D.GESTES_METIER`). Jamais « action » ni « mode ». |
 | **Recette** | Un geste, appliqué à une à trois ressources. On la **découvre** au Labo et on **essaie** : un **essai** réussi la révèle. |
 | **Travailleurs** | Apprentis, puis ouvriers, **embauchés** en écus dans un métier. Nommés d’après ce qu’ils font (`D.TRAVAILLEURS.noms`). |
+| **Semeur** | Le joueur, dans le récit et dans la bouche des travailleurs (« Semeur, la forge manque de lingot de bronze ! »). Le mot tombe une fois sur deux (`sansVocatif` dans `js/engine.js`). Jamais « Patron » ni « Chef ». |
 | **Seuil** | Jusqu’où les travailleurs d’un métier fabriquent seuls. Cinq paliers nommés, sans pourcentage : **À l’arrêt**, **Au jour le jour**, **Quelques provisions**, **Bien garni**, **À ras bord**. |
 | **Consigne** | « Garder N d’une pièce en réserve » : une recette confiée aux machines libres, avec une réserve visée. Jamais « cadence », « maintien de stock », « ordre permanent ». |
 | **Goulot** | Ce qui empêche un travailleur d’avancer, remonté à sa vraie cause, avec un bouton qui la règle. Une étoile ★ marque ceux qui touchent l’objet suivi. |

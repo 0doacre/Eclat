@@ -31,6 +31,8 @@ const INTERDITS = [
   ["poste de travail", "au Labo, on dit station"],
   ["sur ce poste", "au Labo, on dit station"],
   ["sur un autre poste", "au Labo, on dit station"],
+  ["Patron,", "les travailleurs disent Semeur, ou rien"],
+  ["Chef, le chantier", "les travailleurs disent Semeur, ou rien"],
   ["ces matières", "on dit ressources", ["recit.js", "ambiance.js", "journal.js", "visiteurs.js", "memoire.js", "data.js"]],
   ["tes matières", "on dit ressources", ["recit.js", "ambiance.js", "journal.js", "visiteurs.js", "memoire.js", "data.js"]],
   ["les matières", "on dit ressources", ["recit.js", "ambiance.js", "journal.js", "visiteurs.js", "memoire.js", "data.js"]],
