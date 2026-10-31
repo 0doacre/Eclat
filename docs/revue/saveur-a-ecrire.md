@@ -1,7 +1,7 @@
 # Textes de découverte à écrire
 
 Généré par `node tools/saveur-a-ecrire.js`. Chaque recette affiche, quand on la trouve, sa saveur : le texte de `D.SAVEUR[id]` s'il existe, sinon sa description actuelle (en italique ci-dessous). Pour écrire : ajouter `D.SAVEUR.<id> = "…"` dans `js/data.js` (220 signes au plus).
-Recettes : 75 écrites sur 222.
+Recettes : 150 écrites sur 222.
 
 
 ## Gestes (texte du premier emploi)
@@ -54,81 +54,81 @@ Recettes : 75 écrites sur 222.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 0 | Feu de camp (`feu`) | Construire | *Le premier feu que tu allumes toi-même.* | non |
-| 0 | Cabane de bûcheron (`cabane`) | Construire | *Un abri de branches où s’entasse ta cueillette. Le soir, des Lucioles tournent autour.* | non |
-| 0 | Claie de séchage (`fibre_1`) | Construire | *Les tiges de fibre sèchent à l’air, étalées sur un cadre.* | non |
-| 0 | Carrière à main (`caillou_1`) | Construire | *Chaque coup de pic détache un bloc, que tu remontes à la corde.* | non |
-| 1 | Collets (`collets`) | Construire | *Des pièges discrets. Quand tu repasses, il y a souvent quelque chose dedans.* | non |
-| 1 | Fosse de tannage (`cuir_1`) | Construire | *Les peaux trempent des jours dans une eau brune, puis sèchent, souples.* | non |
-| 2 | Automate de bois (`automate_bois`) | Construire | *Il grince à chaque mouvement, mais il ne s’arrête jamais.* | non |
-| 2 | Four en argile (`four`) | Construire | *Une chambre de briques qui garde la chaleur toute la nuit.* | non |
-| 2 | Argilière (`nasse`) | Construire | *Une fosse ouverte au bord de l’eau, où l’argile se découpe en mottes.* | non |
-| 2 | Hutte de bûcheron (`hutte`) | Construire | *Un abri solide, des lames de pierre à portée de main.* | non |
-| 2 | Rouissoir (`fibre_2`) | Construire | *Les tiges trempent dans l’eau stagnante jusqu’à lâcher leurs fibres. Ça sent fort.* | non |
-| 2 | Carrière à coins (`caillou_2`) | Construire | *Des coins de bois enfoncés dans les fentes font éclater la roche en blocs nets.* | non |
-| 2 | Gravière (`silex_1`) | Construire | *Les silex roulés par le courant se ramassent entre les galets.* | non |
-| 2 | Sablière (`sable_1`) | Construire | *Une fosse où l’on pellette le sable, qu’on passe ensuite à la claie.* | non |
-| 3 | Enclume de pierre (`enclume_pierre`) | Tailler | *Un bloc plat et dur, pour battre les métaux tendres.* | non |
-| 3 | Creuset (`creuset`) | Chauffer | *Un pot réfractaire où les métaux fondent ensemble.* | non |
-| 3 | Mine de cuivre (`puits`) | Construire | *Un trou étayé, une poulie, des seaux cerclés de métal.* | non |
-| 3 | Meule de charbonnier (`charbonniere`) | Construire | *Une butte de terre qui fume pendant des jours. Dessous, le bois devient charbon.* | non |
-| 3 | Lampe de cuivre (`lampe`) | Construire | *Une mèche de fibres brûle au creux d’une coupelle de cuivre.* | non |
-| 3 | Mine d’étain (`cassiterite_1`) | Construire | *Le minerai gris est lourd : on le remonte à part, seau après seau.* | non |
-| 4 | Automate de bronze (`automate_bronze`) | Construire | *Engrenages, ressorts, corps de bronze. Il ne se fatigue jamais.* | non |
-| 4 | Enclume de bronze (`enclume_bronze`) | Construire | *Assez dure pour battre les métaux durs.* | non |
-| 4 | Courroies de cuir (`courroies`) | Construire | *Des boucles de cuir tendues d’une roue à l’autre, jusqu’à tes automates.* | non |
-| 4 | Brouettes (`brouette`) | Construire | *Une caisse posée sur une roue : chaque voyage rapporte plus.* | non |
-| 5 | Carrière de quartz (`tamis`) | Construire | *Un grand cadre qui trie le sable des cristaux.* | non |
-| 5 | Bas-fourneau (`bas_fourneau`) | Construire | *Une cheminée de terre où le soufflet fait rugir la braise.* | non |
-| 5 | Mine de fer (`galerie`) | Construire | *Des boisages cloués qui s’enfoncent dans la roche.* | non |
-| 5 | Palan à chaîne (`palan`) | Construire | *Les charges lourdes remontent toutes seules des galeries.* | non |
-| 5 | Enclos d’élevage (`enclos`) | Construire | *Plus besoin de chasser.* | non |
-| 5 | Tannerie (`cuir_2`) | Construire | *Des rangées de cuves, une odeur qui prend à la gorge, et du cuir en continu.* | non |
-| 5 | Tamis à sable (`sable_2`) | Construire | *Un cadre qui laisse passer le sable fin et garde le reste.* | non |
-| 5 | Mine de charbon (`charbon_2`) | Construire | *Des galeries noires, où la poussière colle à la gorge.* | non |
-| 6 | Haut-fourneau (`haut_fourneau`) | Construire | *Une tour de feu cerclée de fer.* | non |
-| 6 | Bac de trempe (`bac_trempe`) | Construire | *Un grand bac d’eau froide. Le métal brûlant y durcit d’un coup.* | non |
-| 6 | Tour d’usinage (`tour`) | Construire | *Elle façonne le métal au dixième de millimètre.* | non |
-| 6 | Martinet hydraulique (`martinet`) | Construire | *Une roue, une chute d’eau, un marteau qui retombe sans fin.* | non |
-| 7 | Presse à vapeur (`presse_vapeur`) | Construire | *Elle siffle et cogne toute la journée.* | non |
-| 7 | Scierie à vapeur (`scierie`) | Construire | *La forêt recule en hurlant.* | non |
-| 7 | Drague à godets (`drague`) | Construire | *Elle racle le lit de la rivière.* | non |
-| 7 | Mine de cuivre à vapeur (`treuil`) | Construire | *Les wagonnets remontent tout seuls.* | non |
-| 7 | Filature à vapeur (`fibre_3`) | Construire | *Les bobines tournent sans s’arrêter et la fibre sort en fils réguliers.* | non |
-| 7 | Carrière à vapeur (`caillou_3`) | Construire | *Un marteau à vapeur frappe la roche à un rythme qui ne faiblit pas.* | non |
-| 7 | Minière à silex (`silex_2`) | Construire | *Un puits profond où l’on descend chercher les gros rognons noirs.* | non |
-| 7 | Pompe à sable (`sable_3`) | Construire | *Un gros tuyau aspire le sable du fond et le crache sur la rive.* | non |
-| 7 | Mine d’étain à vapeur (`cassiterite_2`) | Construire | *Une chaîne sans fin remonte les wagonnets d’étain.* | non |
-| 7 | Pompe à bras (`eau_1`) | Construire | *Un levier remonte l’eau de la rivière dans un réservoir.* | non |
-| 8 | Four à arc (`four_arc`) | Construire | *Un éclair permanent enfermé dans des briques.* | non |
-| 8 | Carrière de quartz mécanisée (`excavatrice`) | Construire | *Elle avale les dunes.* | non |
-| 8 | Mine de fer électrique (`foreuse_elec`) | Construire | *Elle perce la roche en chantant.* | non |
-| 8 | Poste à moteur électrique (`poste_elec`) | Construire | *Un moteur à chaque poste : plus d’arbre, plus de courroie, juste un bourdonnement.* | non |
-| 8 | Pelleteuse à sable (`sable_4`) | Construire | *Une large benne charge du sable à chaque passage.* | non |
-| 8 | Mine de charbon électrique (`charbon_3`) | Construire | *Les outils tournent au fond, alimentés par un câble qui court le long de la galerie.* | non |
-| 9 | Mine d’uranium (`uranium_1`) | Construire | *Un puits étroit, éclairé en continu. On n’y reste jamais longtemps.* | non |
-| 9 | Mine de plomb (`galene_1`) | Construire | *Les galeries suivent des veines grises, si lourdes que les wagons grincent.* | non |
-| 10 | Ligne d’assemblage (`chaine`) | Construire | *Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium.* | non |
-| 10 | Derrick (`derrick`) | Construire | *Il hoche la tête et l’huile monte.* | non |
-| 11 | Tapis convoyeurs (`convoyeurs`) | Construire | *Des bras chargent les pièces tout seuls, et les courroies défilent plus vite.* | non |
-| 11 | Mine de bauxite (`carriere`) | Construire | *Tu ne creuses plus : tu fais sauter.* | non |
-| 11 | Mine d’ilménite (`ilmenite_1`) | Construire | *La roche noire se détache en grandes plaques lourdes.* | non |
-| 11 | Mine de terres rares (`terres_1`) | Construire | *Un filon mince, suivi avec soin sur toute sa longueur.* | non |
-| 11 | Soufrière (`soufre_1`) | Construire | *Des racloirs détachent les croûtes jaunes ; les chariots les descendent de la colline.* | non |
-| 11 | Puits d’uranium blindé (`uranium_2`) | Construire | *Des sas doublés de plomb et des galeries ventilées, pour extraire l’uranium plus vite et plus profond.* | non |
-| 11 | Mine de plomb mécanisée (`galene_2`) | Construire | *Des treuils électriques et des convoyeurs remontent les blocs de galène en continu.* | non |
-| 12 | Plateforme pétrolière (`plateforme`) | Construire | *Une ville flottante qui pompe l’huile.* | non |
-| 12 | Mine de bauxite géante (`excavateur`) | Construire | *Un monstre de titane qui mange les montagnes.* | non |
-| 12 | Centre d’usinage numérique (`centre_num`) | Construire | *Il suit un programme au micron près, sans qu’aucune main ne le guide.* | non |
-| 12 | Mine d’ilménite géante (`ilmenite_2`) | Construire | *Des bennes de la taille d’une maison, pour des blocs entiers.* | non |
-| 12 | Mine de terres rares géante (`terres_2`) | Construire | *Des aimants triment les grains utiles et laissent le reste.* | non |
-| 13 | Filet orbital (`station_orbitale`) | Construire | *Un filet qui ramasse les restes des Anciens.* | non |
-| 13 | Base d’hélium-3 (`base_lunaire`) | Construire | *Des dômes sous la lumière de la Terre.* | non |
-| 13 | Assembleur moléculaire (`assembleur`) | Construire | *Il assemble la matière atome par atome.* | non |
-| 13 | Excavatrice lunaire (`regolithe_1`) | Construire | *Des pelles automatiques raclent la poussière grise du sol lunaire.* | non |
-| 14 | Matrice de fabrication (`matrice`) | Construire | *On lui donne de la matière brute ; elle rend l’objet fini.* | non |
-| 14 | Forge stellaire (`forge_stellaire`) | Construire | *Même derrière le verre fumé, tu dois détourner les yeux.* | non |
-| 14 | Réplicateur (`replicateur`) | Construire | *Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.* | non |
+| 0 | Feu de camp (`feu`) | Construire | *Le premier feu que tu allumes toi-même.* | oui |
+| 0 | Cabane de bûcheron (`cabane`) | Construire | *Un abri de branches où s’entasse ta cueillette. Le soir, des Lucioles tournent autour.* | oui |
+| 0 | Claie de séchage (`fibre_1`) | Construire | *Les tiges de fibre sèchent à l’air, étalées sur un cadre.* | oui |
+| 0 | Carrière à main (`caillou_1`) | Construire | *Chaque coup de pic détache un bloc, que tu remontes à la corde.* | oui |
+| 1 | Collets (`collets`) | Construire | *Des pièges discrets. Quand tu repasses, il y a souvent quelque chose dedans.* | oui |
+| 1 | Fosse de tannage (`cuir_1`) | Construire | *Les peaux trempent des jours dans une eau brune, puis sèchent, souples.* | oui |
+| 2 | Automate de bois (`automate_bois`) | Construire | *Il grince à chaque mouvement, mais il ne s’arrête jamais.* | oui |
+| 2 | Four en argile (`four`) | Construire | *Une chambre de briques qui garde la chaleur toute la nuit.* | oui |
+| 2 | Argilière (`nasse`) | Construire | *Une fosse ouverte au bord de l’eau, où l’argile se découpe en mottes.* | oui |
+| 2 | Hutte de bûcheron (`hutte`) | Construire | *Un abri solide, des lames de pierre à portée de main.* | oui |
+| 2 | Rouissoir (`fibre_2`) | Construire | *Les tiges trempent dans l’eau stagnante jusqu’à lâcher leurs fibres. Ça sent fort.* | oui |
+| 2 | Carrière à coins (`caillou_2`) | Construire | *Des coins de bois enfoncés dans les fentes font éclater la roche en blocs nets.* | oui |
+| 2 | Gravière (`silex_1`) | Construire | *Les silex roulés par le courant se ramassent entre les galets.* | oui |
+| 2 | Sablière (`sable_1`) | Construire | *Une fosse où l’on pellette le sable, qu’on passe ensuite à la claie.* | oui |
+| 3 | Enclume de pierre (`enclume_pierre`) | Tailler | *Un bloc plat et dur, pour battre les métaux tendres.* | oui |
+| 3 | Creuset (`creuset`) | Chauffer | *Un pot réfractaire où les métaux fondent ensemble.* | oui |
+| 3 | Mine de cuivre (`puits`) | Construire | *Un trou étayé, une poulie, des seaux cerclés de métal.* | oui |
+| 3 | Meule de charbonnier (`charbonniere`) | Construire | *Une butte de terre qui fume pendant des jours. Dessous, le bois devient charbon.* | oui |
+| 3 | Lampe de cuivre (`lampe`) | Construire | *Une mèche de fibres brûle au creux d’une coupelle de cuivre.* | oui |
+| 3 | Mine d’étain (`cassiterite_1`) | Construire | *Le minerai gris est lourd : on le remonte à part, seau après seau.* | oui |
+| 4 | Automate de bronze (`automate_bronze`) | Construire | *Engrenages, ressorts, corps de bronze. Il ne se fatigue jamais.* | oui |
+| 4 | Enclume de bronze (`enclume_bronze`) | Construire | *Assez dure pour battre les métaux durs.* | oui |
+| 4 | Courroies de cuir (`courroies`) | Construire | *Des boucles de cuir tendues d’une roue à l’autre, jusqu’à tes automates.* | oui |
+| 4 | Brouettes (`brouette`) | Construire | *Une caisse posée sur une roue : chaque voyage rapporte plus.* | oui |
+| 5 | Carrière de quartz (`tamis`) | Construire | *Un grand cadre qui trie le sable des cristaux.* | oui |
+| 5 | Bas-fourneau (`bas_fourneau`) | Construire | *Une cheminée de terre où le soufflet fait rugir la braise.* | oui |
+| 5 | Mine de fer (`galerie`) | Construire | *Des boisages cloués qui s’enfoncent dans la roche.* | oui |
+| 5 | Palan à chaîne (`palan`) | Construire | *Les charges lourdes remontent toutes seules des galeries.* | oui |
+| 5 | Enclos d’élevage (`enclos`) | Construire | *Plus besoin de chasser.* | oui |
+| 5 | Tannerie (`cuir_2`) | Construire | *Des rangées de cuves, une odeur qui prend à la gorge, et du cuir en continu.* | oui |
+| 5 | Tamis à sable (`sable_2`) | Construire | *Un cadre qui laisse passer le sable fin et garde le reste.* | oui |
+| 5 | Mine de charbon (`charbon_2`) | Construire | *Des galeries noires, où la poussière colle à la gorge.* | oui |
+| 6 | Haut-fourneau (`haut_fourneau`) | Construire | *Une tour de feu cerclée de fer.* | oui |
+| 6 | Bac de trempe (`bac_trempe`) | Construire | *Un grand bac d’eau froide. Le métal brûlant y durcit d’un coup.* | oui |
+| 6 | Tour d’usinage (`tour`) | Construire | *Elle façonne le métal au dixième de millimètre.* | oui |
+| 6 | Martinet hydraulique (`martinet`) | Construire | *Une roue, une chute d’eau, un marteau qui retombe sans fin.* | oui |
+| 7 | Presse à vapeur (`presse_vapeur`) | Construire | *Elle siffle et cogne toute la journée.* | oui |
+| 7 | Scierie à vapeur (`scierie`) | Construire | *La forêt recule en hurlant.* | oui |
+| 7 | Drague à godets (`drague`) | Construire | *Elle racle le lit de la rivière.* | oui |
+| 7 | Mine de cuivre à vapeur (`treuil`) | Construire | *Les wagonnets remontent tout seuls.* | oui |
+| 7 | Filature à vapeur (`fibre_3`) | Construire | *Les bobines tournent sans s’arrêter et la fibre sort en fils réguliers.* | oui |
+| 7 | Carrière à vapeur (`caillou_3`) | Construire | *Un marteau à vapeur frappe la roche à un rythme qui ne faiblit pas.* | oui |
+| 7 | Minière à silex (`silex_2`) | Construire | *Un puits profond où l’on descend chercher les gros rognons noirs.* | oui |
+| 7 | Pompe à sable (`sable_3`) | Construire | *Un gros tuyau aspire le sable du fond et le crache sur la rive.* | oui |
+| 7 | Mine d’étain à vapeur (`cassiterite_2`) | Construire | *Une chaîne sans fin remonte les wagonnets d’étain.* | oui |
+| 7 | Pompe à bras (`eau_1`) | Construire | *Un levier remonte l’eau de la rivière dans un réservoir.* | oui |
+| 8 | Four à arc (`four_arc`) | Construire | *Un éclair permanent enfermé dans des briques.* | oui |
+| 8 | Carrière de quartz mécanisée (`excavatrice`) | Construire | *Elle avale les dunes.* | oui |
+| 8 | Mine de fer électrique (`foreuse_elec`) | Construire | *Elle perce la roche en chantant.* | oui |
+| 8 | Poste à moteur électrique (`poste_elec`) | Construire | *Un moteur à chaque poste : plus d’arbre, plus de courroie, juste un bourdonnement.* | oui |
+| 8 | Pelleteuse à sable (`sable_4`) | Construire | *Une large benne charge du sable à chaque passage.* | oui |
+| 8 | Mine de charbon électrique (`charbon_3`) | Construire | *Les outils tournent au fond, alimentés par un câble qui court le long de la galerie.* | oui |
+| 9 | Mine d’uranium (`uranium_1`) | Construire | *Un puits étroit, éclairé en continu. On n’y reste jamais longtemps.* | oui |
+| 9 | Mine de plomb (`galene_1`) | Construire | *Les galeries suivent des veines grises, si lourdes que les wagons grincent.* | oui |
+| 10 | Ligne d’assemblage (`chaine`) | Construire | *Un tapis roulant et des bras articulés, pilotés par un cerveau de silicium.* | oui |
+| 10 | Derrick (`derrick`) | Construire | *Il hoche la tête et l’huile monte.* | oui |
+| 11 | Tapis convoyeurs (`convoyeurs`) | Construire | *Des bras chargent les pièces tout seuls, et les courroies défilent plus vite.* | oui |
+| 11 | Mine de bauxite (`carriere`) | Construire | *Tu ne creuses plus : tu fais sauter.* | oui |
+| 11 | Mine d’ilménite (`ilmenite_1`) | Construire | *La roche noire se détache en grandes plaques lourdes.* | oui |
+| 11 | Mine de terres rares (`terres_1`) | Construire | *Un filon mince, suivi avec soin sur toute sa longueur.* | oui |
+| 11 | Soufrière (`soufre_1`) | Construire | *Des racloirs détachent les croûtes jaunes ; les chariots les descendent de la colline.* | oui |
+| 11 | Puits d’uranium blindé (`uranium_2`) | Construire | *Des sas doublés de plomb et des galeries ventilées, pour extraire l’uranium plus vite et plus profond.* | oui |
+| 11 | Mine de plomb mécanisée (`galene_2`) | Construire | *Des treuils électriques et des convoyeurs remontent les blocs de galène en continu.* | oui |
+| 12 | Plateforme pétrolière (`plateforme`) | Construire | *Une ville flottante qui pompe l’huile.* | oui |
+| 12 | Mine de bauxite géante (`excavateur`) | Construire | *Un monstre de titane qui mange les montagnes.* | oui |
+| 12 | Centre d’usinage numérique (`centre_num`) | Construire | *Il suit un programme au micron près, sans qu’aucune main ne le guide.* | oui |
+| 12 | Mine d’ilménite géante (`ilmenite_2`) | Construire | *Des bennes de la taille d’une maison, pour des blocs entiers.* | oui |
+| 12 | Mine de terres rares géante (`terres_2`) | Construire | *Des aimants triment les grains utiles et laissent le reste.* | oui |
+| 13 | Filet orbital (`station_orbitale`) | Construire | *Un filet qui ramasse les restes des Anciens.* | oui |
+| 13 | Base d’hélium-3 (`base_lunaire`) | Construire | *Des dômes sous la lumière de la Terre.* | oui |
+| 13 | Assembleur moléculaire (`assembleur`) | Construire | *Il assemble la matière atome par atome.* | oui |
+| 13 | Excavatrice lunaire (`regolithe_1`) | Construire | *Des pelles automatiques raclent la poussière grise du sol lunaire.* | oui |
+| 14 | Matrice de fabrication (`matrice`) | Construire | *On lui donne de la matière brute ; elle rend l’objet fini.* | oui |
+| 14 | Forge stellaire (`forge_stellaire`) | Construire | *Même derrière le verre fumé, tu dois détourner les yeux.* | oui |
+| 14 | Réplicateur (`replicateur`) | Construire | *Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.* | oui |
 
 ## Subsistance (8 recettes)
 
