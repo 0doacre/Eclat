@@ -91,3 +91,15 @@
 .atel-seuil-l { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .atel-seuil-l.is-plein { opacity: .6; }
 .atel-seuil-l.is-manque b { color: var(--danger, #a33); }
+
+/* la voix des travailleurs (0.51) : une carte qui se pose sous l'en-tête, jamais par-dessus une fenêtre */
+.voix-carte { position: fixed; left: 50%; top: calc(var(--safe-t, 0px) + 58px); transform: translateX(-50%); z-index: 62; width: min(94vw, 440px); display: flex; align-items: center; gap: 10px; padding: 8px 34px 8px 8px; background: var(--panel, #f4ead6); border: 1px solid var(--line2, #0003); border-radius: 12px; box-shadow: 0 8px 26px #0005; cursor: pointer; animation: voix-entre .28s ease; }
+.voix-portrait { flex: none; display: block; border-radius: 8px; background-repeat: no-repeat; background-color: #e9dcc0; border: 1px solid var(--line2, #0003); }
+.voix-corps { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.voix-qui { font-size: 12px; letter-spacing: .04em; color: var(--muted, #7a6a52); text-transform: uppercase; }
+.voix-txt { font-size: 15px; line-height: 1.3; color: var(--text); }
+.voix-x { position: absolute; top: 2px; right: 4px; width: 30px; height: 30px; border: 0; background: transparent; color: var(--muted, #7a6a52); font-size: 22px; cursor: pointer; }
+.atel-voix { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--line2, #0003); }
+.atel-voix p { margin: 2px 0; font-style: italic; }
+@keyframes voix-entre { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .voix-carte { animation: none; } }

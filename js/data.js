@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.51.1";
+  D.VERSION = "0.52.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1557,6 +1557,33 @@
   /* 0.45.1 : le prix d'une embauche suit le niveau des prix. `cout` est le prix à l'âge où le travailleur s'ouvre ; à chaque âge de plus il est multiplié par
    * `parAge` (la même hausse que la valeur d'une matière au Comptoir, D.COMPTOIR.rawAge). Un apprenti coûte ainsi toujours une vingtaine de matières brutes
    * de l'âge, un ouvrier huit : embaucher tôt est moins cher qu'embaucher tard. 1 : prix fixe. */
+  /* 0.51 : la voix des travailleurs (E.voix). Une phrase par métier et par sujet ; {de} devient « de bois », « d’éclat de silex » ; {liste} « 40 × corde, 12 × manche ».
+   * cooldown : secondes avant de répéter le même sujet ; manqueApres : secondes d'attente d'une matière avant de le dire ; previsionSous : la Réserve
+   * se viderait en moins de ce nombre de secondes ; retourApres : absence minimale (secondes) pour un compte rendu. */
+  D.VOIX = {
+    cooldown: 600, manqueApres: 30, previsionSous: 300, retourApres: 300, histoMax: 20,
+    metiers: {
+      artisanat: { retour: "Patron, pendant votre absence, l’atelier a fait : {liste}.", manque: "Patron, nous manquons {de} à l’établi !", prevision: "Patron, nous allons bientôt manquer {de}." },
+      construction: { retour: "Chef, le chantier n’a pas chômé : {liste}.", manque: "Chef, le chantier manque {de} !", prevision: "Chef, le chantier va bientôt manquer {de}." },
+      elevage: { retour: "Patron, les bêtes ont donné pendant votre absence : {liste}.", manque: "Patron, l’étable manque {de} !", prevision: "Patron, l’étable va bientôt manquer {de}." },
+      metallurgie: { retour: "Patron, la forge n’a pas refroidi : {liste}.", manque: "Patron, la forge manque {de} !", prevision: "Patron, bientôt la forge manquera {de}." },
+      chimie: { retour: "Patron, les cornues ont travaillé en votre absence : {liste}.", manque: "Patron, nous manquons {de} au laboratoire !", prevision: "Patron, nous allons bientôt manquer {de} au laboratoire." },
+      centrales: { retour: "Patron, la centrale a tourné sans vous : {liste}.", manque: "Patron, la centrale manque {de} !", prevision: "Patron, la centrale va bientôt manquer {de}." },
+      electronique: { retour: "Patron, pendant votre absence, nous avons assemblé : {liste}.", manque: "Patron, il n’y a plus {de} pour les circuits !", prevision: "Patron, nous allons bientôt manquer {de}." },
+      artistique: { retour: "Patron, le scriptorium a produit en votre absence : {liste}.", manque: "Patron, le scriptorium manque {de} !", prevision: "Patron, bientôt le scriptorium manquera {de}." }
+    },
+    /* les planches d'illustration (assets/travailleurs, 2000 × 1116) : origine (x, y) et taille (w, h) de la première case, pas vertical py entre les deux rangées ; 4 cases par rangée */
+    planches: {
+      artisanat: { x: 235, y: 140, w: 385, h: 435, py: 445 },
+      construction: { x: 470, y: 145, w: 375, h: 450, py: 455 },
+      elevage: { x: 40, y: 135, w: 485, h: 430, py: 450 },
+      metallurgie: { x: 70, y: 150, w: 490, h: 410, py: 435 },
+      chimie: { x: 55, y: 145, w: 490, h: 420, py: 450 },
+      centrales: { x: 90, y: 150, w: 460, h: 445, py: 460 },
+      electronique: { x: 40, y: 150, w: 490, h: 410, py: 435 },
+      artistique: { x: 35, y: 140, w: 483, h: 420, py: 430 }
+    }
+  };
   D.TRAVAILLEURS = {
     parAge: 2.5,
     /* 0.51 : les travailleurs d'un métier fabriquent en continu, sans ordre, les composants connus de leur métier (déjà faits une fois à la main)
@@ -1653,7 +1680,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "⌄ La barre du bas se range d’elle-même et ne laisse qu’une fine poignée. Elle vient quand tu approches la souris du bas de l’écran ou que tu touches la poignée (ou la fais glisser vers le haut), et se range après ton choix. Le défilement ne la fait plus bouger. Menu → Affichage → « Barre du bas masquée » la laisse toujours visible.",
+    "🗣️ Les travailleurs te parlent : à ton retour d’une absence (« Patron, pendant votre absence, l’atelier a fait : 40 × corde, 12 × manche »), quand ils manquent d’une matière depuis une demi-minute (« la forge manque de charbon ! »), et quand une matière va bientôt manquer. Une voix par métier, une carte à la fois, jamais par-dessus une fenêtre, avec un portrait qui suit l’échelon du métier ; toucher la carte ouvre le métier, où les derniers messages restent lisibles. La barre du bas reste visible par défaut (le masquage devient un réglage).",
+    "⌄ La barre du bas peut se ranger d’elle-même et ne laisser qu’une fine poignée. Elle vient quand tu approches la souris du bas de l’écran ou que tu touches la poignée (ou la fais glisser vers le haut), et se range après ton choix. Le défilement ne la fait plus bouger. Menu → Affichage → « Barre du bas masquée » (désactivé par défaut) active ce comportement ; sinon la barre reste visible comme avant.",
     "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les composants que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier : 0, 10, 20 … 100 % d’un stock de confort qui grandit avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
     "👷 Chaque métier a ses travailleurs, nommés d’après ce qu’ils font : artisan, bâtisseur, éleveur, forgeron, chimiste, centralier, électronicien, lettré (et leurs apprentis). Les boutons d’embauche, les renvois et la jauge d’énergie les nomment ainsi.",
     "🔘 Fin de l’harmonisation des boutons : les flèches des terres, le bouton d’arrêt de la récolte, les pastilles d’ingrédient et d’objet, et la ligne d’âge prennent l’octogone du jeu ; « Arbre » devient « Progression » ; l’aide ne promet plus de raccourcis clavier qui n’existent pas.",

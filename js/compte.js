@@ -656,7 +656,7 @@
             (isVivant ? "" : '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
             (typeof window !== "undefined" && window.EclatSetStyleMode ? '<div class="toggle"><span id="mt-style">Style d’affichage</span><button class="btn small m-theme-btn" data-m="styleMode" aria-labelledby="mt-style" title="Carnet est le style du jeu. Atlas et Classique restent disponibles pour revenir à un ancien aspect si quelque chose s’affiche mal.">' + styleLabels[curStyle] + "</button></div>" : "") +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
-            sw("barreBas", "Barre du bas masquée", st.settings.barreBas !== "visible", "La barre de navigation se range et ne laisse qu’une poignée ; elle vient quand on approche la souris du bas de l’écran ou qu’on touche la poignée. Désactivée : elle reste toujours visible.") +
+            sw("barreBas", "Barre du bas masquée", st.settings.barreBas === "masquee", "La barre de navigation se range et ne laisse qu’une poignée ; elle vient quand on approche la souris du bas de l’écran ou qu’on touche la poignée. Désactivée (par défaut) : elle reste toujours visible.") +
             sw("compact", "Affichage compact", U.compact(), "Resserrer le Domaine et le Carnet pour voir plus de choses d’un coup") +
             sw("carnet2", "Carnet sur deux colonnes", !st.settings.carnet1Col, "Afficher les recettes du Carnet sur deux colonnes (à partir de 360 px de large)") +
             sw("ambiance", "Ligne d’ambiance", st.settings.ambiance !== false, "Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure") +
@@ -749,7 +749,7 @@
             save();
             return true;
           },
-          barreBas: (b) => { st.settings.barreBas = st.settings.barreBas === "visible" ? "masquee" : "visible"; setSw(b, st.settings.barreBas !== "visible"); save(); if (U.appliquerBarre) U.appliquerBarre(); U.dirty = true; return true; },
+          barreBas: (b) => { st.settings.barreBas = st.settings.barreBas === "masquee" ? "visible" : "masquee"; setSw(b, st.settings.barreBas === "masquee"); save(); if (U.appliquerBarre) U.appliquerBarre(); U.dirty = true; return true; },
           compact: (b) => { U.setCompact(!U.compact()); setSw(b, U.compact()); save(); U.dirty = true; return true; },
           carnet2: (b) => { st.settings.carnet1Col = !st.settings.carnet1Col; setSw(b, !st.settings.carnet1Col); save(); U.dirty = true; return true; },
           ambiance: (b) => { st.settings.ambiance = st.settings.ambiance === false ? true : false; setSw(b, st.settings.ambiance); save(); if (U.Ambiance) U.Ambiance.update(true); return true; },

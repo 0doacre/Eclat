@@ -1699,6 +1699,44 @@
         return renvoi + '<button type="button" class="btn small' + (e.pourquoi ? " ghost" : "") + '" data-embaucher="' + c.id + ":" + e.kind + '" title="' + esc(e.pourquoi === "ecus" ? "Il te manque des écus : vends au Comptoir ou au Troqueur" : "Embaucher") + '">Embaucher un ' + esc(e.n.toLowerCase()) + " · " + fmt(e.cout) + " écus" + (e.nombre ? " (" + e.nombre + ")" : "") + "</button>";
       }).join("") + "</div>";
     }
+    /* la voix des travailleurs (0.51) : une carte à la fois, jamais par-dessus une fenêtre, qui se range seule ; toucher la carte ouvre le métier */
+    const voix = { file: [], cur: null, tLast: 0, t: null };
+    const ECH_PLANCHE = [0, 1, 2, 3, 4, 6, 7]; // les sept échelons du jeu sur les huit cases d'une planche (la case « Atome » est sautée)
+    function voixPortrait(fam) {
+      const P = ((D.VOIX || {}).planches || {})[fam];
+      if (!P) return "";
+      const ech = ECH_PLANCHE[Math.max(0, Math.min(6, (Atel.carte(fam) || {}).echelon || 0))], col = ech % 4, row = Math.floor(ech / 4);
+      const W = 112, s = W / P.w;
+      return '<span class="voix-portrait" aria-hidden="true" style="width:' + W + "px;height:" + Math.round(P.h * s) + "px;background-image:url(assets/travailleurs/planche-" + fam + ".jpg);background-size:" + Math.round(2000 * s) + "px " + Math.round(1116 * s) + "px;background-position:-" + Math.round((P.x + col * P.w) * s) + "px -" + Math.round((P.y + row * P.py) * s) + 'px"></span>';
+    }
+    function voixFerme() {
+      clearTimeout(voix.t);
+      const el = document.getElementById("voixCarte");
+      if (el) el.remove();
+      voix.cur = null;
+    }
+    function voixMontre(m) {
+      voixFerme();
+      voix.cur = m;
+      const a = (S().ateliers || {})[m.fam] || {}, qui = Atel.nom(m.fam, a.ouv > 0 ? "ouvrier" : "apprenti"), F = D.ATELIERS.familles.find((f) => f.id === m.fam);
+      const el = document.createElement("div");
+      el.id = "voixCarte"; el.className = "voix-carte"; el.setAttribute("role", "status");
+      el.innerHTML = voixPortrait(m.fam) + '<span class="voix-corps"><b class="voix-qui">' + esc(qui) + (F ? " · " + esc(F.n) : "") + '</b><span class="voix-txt">' + esc(m.txt) + "</span></span>" +
+        '<button type="button" class="voix-x" aria-label="Fermer">×</button>';
+      el.addEventListener("click", (ev) => {
+        if (ev.target.closest(".voix-x")) { voixFerme(); return; }
+        voixFerme(); U.atelierSel = m.fam; U.prodSel = null; setTab("atelier");
+      });
+      document.body.appendChild(el);
+      voix.t = setTimeout(voixFerme, 14000);
+    }
+    function voixTick() {
+      const now = Date.now();
+      if (!Atel || now - voix.tLast < 3000 || (D.TRAVAILLEURS || {}).generalistes === false) return;
+      voix.tLast = now;
+      E.voix(now).forEach((m) => voix.file.push(m));
+      if (!voix.cur && voix.file.length && !U.mcur && !(U.mq && U.mq.length)) voixMontre(voix.file.shift());
+    }
     /* le seuil d'un métier (0.51) : jusqu'où ses travailleurs fabriquent seuls, et où ils en sont */
     function seuilHTML(c) {
       if (!E.autoEtat || (D.TRAVAILLEURS || {}).generalistes === false) return "";
@@ -1711,7 +1749,8 @@
         (equipe ? "Tes travailleurs fabriquent seuls ce que le métier connaît, jusqu’à ce seuil." : "Embauche pour que le métier fabrique seul, jusqu’à ce seuil.") + "</span></div>" +
         '<div class="filters wrap" role="group" aria-label="Seuil de stock">' + [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((p) =>
           '<button type="button" data-seuil="' + c.id + ":" + p + '" class="' + (p === sel ? "on" : "") + '" aria-pressed="' + (p === sel) + '">' + p + " %</button>").join("") + "</div>" +
-        (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Rien à fabriquer seul pour l’instant : il faut avoir fait un composant du métier à la main.</p>') + "</div>";
+        (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Rien à fabriquer seul pour l’instant : il faut avoir fait un composant du métier à la main.</p>') +
+        (E.voixHisto(c.id).length ? '<div class="atel-voix"><b class="tiny">Ils ont dit</b>' + E.voixHisto(c.id).slice(0, 3).map((m) => '<p class="tiny muted">« ' + esc(m.txt) + " »</p>").join("") + "</div>" : "") + "</div>";
     }
     function viewAteliers() {
       const ap = E.apprentis();
@@ -1845,7 +1884,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { prodClick, viewLabo, equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
+    return { voixTick, prodClick, viewLabo, equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
   }
 
   window.EclatAtelier = { create };

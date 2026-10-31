@@ -655,8 +655,8 @@
   });
   U.peutEcrire = () => Stk.peutEcrire();
   /* l’affichage resserré (Domaine et Carnet) : un seul réglage, dans le menu. Les anciennes parties avaient deux réglages. */
-  /* la barre du bas (0.51.1) : « masquée » par défaut (une poignée, la barre vient au survol ou au toucher), ou « visible » */
-  U.barreAuto = () => (S().settings || {}).barreBas !== "visible";
+  /* la barre du bas (0.51.1) : « visible » par défaut, ou « masquée » (une poignée, la barre vient au survol ou au toucher) */
+  U.barreAuto = () => (S().settings || {}).barreBas === "masquee";
   U.compact = () => { const s = S().settings || {}; return s.compact !== undefined ? !!s.compact : !!(s.domDense || s.carnetDense); };
   U.setCompact = (on) => { const s = S().settings; s.compact = !!on; delete s.domDense; delete s.carnetDense; };
   function save() {
@@ -1401,6 +1401,7 @@
     E.update();
     visiteurTick();
     Amb.update();
+    if (Atl.voixTick) Atl.voixTick();
     if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
     U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();

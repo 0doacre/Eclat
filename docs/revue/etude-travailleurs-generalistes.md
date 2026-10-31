@@ -165,4 +165,4 @@ Réponses (31 octobre 2026) :
 4. **La voix** : une voix par métier.
 5. **Les portraits** : placeholders libres de droits. Les packs gratuits trouvés sont médiévaux (CC0 : Medieval Citizens Vol.1 sur OpenGameArt, Medieval Painterly Avatars sur itch.io) et ne couvrent ni l'électronique ni l'espace : pour l'instant, un pictogramme par métier (game-icons.net, déjà crédité), à remplacer métier par métier.
 
-Avancement : l'étape 1 (les noms) est faite en 0.51 : `D.TRAVAILLEURS.noms`, `Atel.nom(métier, genre)`.
+Avancement : l'étape 1 (les noms) est faite en 0.50.2 (`D.TRAVAILLEURS.noms`, `Atel.nom(métier, genre)`), l'étape 2 (seuil et production continue) en 0.51.0 (`E.seuilAtelier`, `E.autoEtat`), l'étape 3 (la voix) en 0.52.0 : `E.voix(heure)` rend les nouveaux messages (retour d'absence, manque après 30 s, prévision sous 5 minutes ; 10 minutes entre deux messages du même sujet), `D.VOIX` porte les phrases par métier et le découpage des planches, `S.equipe` garde ce qui a été fabriqué et les 20 derniers messages. Les portraits sont les planches de `assets/travailleurs/`, découpées en CSS selon l'échelon du métier (placeholders).

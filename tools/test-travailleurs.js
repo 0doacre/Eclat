@@ -220,3 +220,45 @@ test("le seuil survit à la sauvegarde", () => {
   assert.equal(F.seuilAtelier("chimie"), 70);
   assert.equal(F.seuilAtelier("artisanat"), TR.seuilDefaut);
 });
+
+console.log("La voix des travailleurs (0.51)");
+test("manque : un travailleur à l'arrêt faute de matière le dit après 30 s, une seule fois par 10 minutes", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6; E.state.made.manche = 1;
+  E.state.inv.bois = 0; E.state.inv.pierre = 0; E.state.inv.fibre = 0;
+  E.embaucher("artisanat", "apprenti");
+  const t0 = 5e12;
+  assert.deepEqual(E.voix(t0), [], "rien tout de suite");
+  assert.deepEqual(E.voix(t0 + 10000), [], "pas avant 30 s");
+  const m = E.voix(t0 + 31000);
+  assert.ok(m.length >= 1 && m[0].kind === "manque" && m[0].fam === "artisanat" && /manqu|plus|manque/.test(m[0].txt), m[0] && m[0].txt);
+  assert.deepEqual(E.voix(t0 + 60000), [], "pas de répétition");
+  assert.ok(E.voixHisto("artisanat").length >= 1);
+  assert.equal(E.voix(t0 + 31000 + 601000).filter((x) => x.kind === "manque").length >= 1, true, "reparle après 10 minutes");
+});
+test("retour d'absence : le compte rendu de ce que le métier a fabriqué, une seule fois", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6; E.add("bois", 5000); E.add("pierre", 5000); E.add("fibre", 5000); E.state.made.manche = 1;
+  E.embaucher("artisanat", "apprenti");
+  avance(E, 5);
+  E.setSeuilAtelier("artisanat", 100);
+  E.catchUp(3600);
+  const m = E.voix(6e12).filter((x) => x.kind === "retour");
+  assert.equal(m.length, 1);
+  assert.ok(/×/.test(m[0].txt) && m[0].fam === "artisanat", m[0].txt);
+  assert.equal(E.voix(6e12 + 1).filter((x) => x.kind === "retour").length, 0);
+});
+test("une absence courte ne donne pas de compte rendu ; l'historique survit à la sauvegarde", () => {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6; E.add("bois", 5000); E.add("pierre", 5000); E.add("fibre", 5000); E.state.made.manche = 1;
+  E.embaucher("artisanat", "apprenti");
+  E.catchUp(60);
+  assert.equal(E.voix(7e12).filter((x) => x.kind === "retour").length, 0);
+  E.state.inv.bois = 0; E.state.inv.pierre = 0; E.state.inv.fibre = 0;
+  E.voix(7e12); E.voix(7e12 + 40000);
+  const n = E.voixHisto().length;
+  assert.ok(n >= 1);
+  const F = createEngine({ now: () => t, rand: () => 0.99 });
+  F.load(JSON.stringify(E.save ? JSON.parse(E.save()) : E.state));
+  assert.equal(F.voixHisto().length, n);
+});

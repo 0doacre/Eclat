@@ -1669,6 +1669,81 @@
         return { id: rec, have, cible, etat, travailleurs: actifs[rec] || 0 };
       });
     };
+    /* 0.51 : la voix des travailleurs. S.equipe = { fait: {métier: {recette: nombre}} (ce que leur production libre a fabriqué),
+     * voix: {clé: dernier message} (pour ne pas répéter), histo: les derniers messages, retour: ce qu'ils ont fait pendant une absence }. */
+    function eq() {
+      let e = S.equipe;
+      if (!e || typeof e !== "object") e = S.equipe = {};
+      if (!e.fait || typeof e.fait !== "object") e.fait = {};
+      if (!e.voix || typeof e.voix !== "object") e.voix = {};
+      if (!Array.isArray(e.histo)) e.histo = [];
+      return e;
+    }
+    function noteFait(fam, rec, n) {
+      if (!(n > 0)) return;
+      const f = eq().fait[fam] || (eq().fait[fam] = {});
+      f[rec] = (f[rec] || 0) + n;
+    }
+    const manqueDepuis = {};
+    const deNom = (id) => { const n = ((item(id) && item(id).n) || id).toLowerCase(); return (/^[aeiouyàâéèêëîïôöûüh]/.test(n) ? "d’" : "de ") + n; };
+    const listeFait = (f) => Object.keys(f).sort((a, b) => f[b] - f[a]).slice(0, 4).map((r) => Math.floor(f[r]) + " × " + ((item(r) && item(r).n) || r).toLowerCase()).join(", ");
+    function dire(fam, kind, id, txt, t) {
+      const e = eq();
+      e.voix[kind + ":" + fam + ":" + id] = t;
+      const m = { t, fam, kind, id, txt };
+      e.histo.push(m);
+      const max = (D.VOIX && D.VOIX.histoMax) || 20;
+      while (e.histo.length > max) e.histo.shift();
+      return m;
+    }
+    E.voixHisto = (fam) => eq().histo.filter((m) => !fam || m.fam === fam).slice().reverse();
+    /* ce que les travailleurs ont à dire maintenant (t : l'heure en ms). Chaque appel rend les nouveaux messages, une seule fois. */
+    E.voix = function (t) {
+      const V = D.VOIX;
+      if (!V || !autoPossible()) return [];
+      const e = eq(), out = [];
+      const libre = (kind, fam, id) => !(e.voix[kind + ":" + fam + ":" + id] > t - V.cooldown * 1000);
+      const gabarit = (fam, kind) => ((V.metiers[fam] || V.metiers.artisanat)[kind]);
+      if (e.retour) {
+        const r = e.retour; e.retour = null;
+        Object.keys(r.fait).map((fam) => ({ fam, tot: Object.keys(r.fait[fam]).reduce((a, k) => a + r.fait[fam][k], 0) }))
+          .filter((x) => x.tot >= 1).sort((a, b) => b.tot - a.tot).slice(0, 3)
+          .forEach((x) => out.push(dire(x.fam, "retour", "-", gabarit(x.fam, "retour").replace("{liste}", listeFait(r.fait[x.fam])), t)));
+      }
+      const prod = {};
+      let prodLu = false;
+      for (const fam in S.ateliers || {}) {
+        const a = S.ateliers[fam];
+        if (!(a.app || a.ouv) || autoSeuil(fam) <= 0) continue;
+        // manque : un travailleur attend depuis plus de 30 s une matière
+        const vus = {};
+        E.autoEtat(fam).forEach((x) => {
+          if (x.etat !== "manque") return;
+          for (const i in item(x.id).r[1]) {
+            if ((S.inv[i] || 0) - (autoReserve[i] || 0) + 1e-9 >= item(x.id).r[1][i]) continue;
+            const k = fam + ":" + i; vus[k] = true;
+            if (!manqueDepuis[k]) manqueDepuis[k] = t;
+            if (t - manqueDepuis[k] >= V.manqueApres * 1000 && libre("manque", fam, i)) out.push(dire(fam, "manque", i, gabarit(fam, "manque").replace("{de}", deNom(i)), t));
+            break;
+          }
+        });
+        for (const k in manqueDepuis) if (k.indexOf(fam + ":") === 0 && !vus[k]) delete manqueDepuis[k];
+        // prévision : ce que leur travail consomme viderait la Réserve en moins de 5 minutes
+        const cons = {};
+        machPool.forEach((w) => {
+          const wk = workerOf(w.m);
+          if (!wk || wk.fam !== fam || !w.cad || !w.rec) return;
+          const r = machUnitRate(w.m, null, w.rec);
+          for (const i in item(w.rec).r[1]) cons[i] = (cons[i] || 0) + r * item(w.rec).r[1][i];
+        });
+        for (const i in cons) {
+          if (!prodLu) { E.production().forEach((p) => { prod[p.id] = p.net; }); prodLu = true; }
+          const have = S.inv[i] || 0, net = prod[i];
+          if (have > 0 && net < -1e-9 && have / -net < V.previsionSous && libre("prevision", fam, i) && libre("manque", fam, i)) out.push(dire(fam, "prevision", i, gabarit(fam, "prevision").replace("{de}", deNom(i)), t));
+        }
+      }
+      return out;
+    };
     /* affecte les machines restées libres après les commandes aux cadences de maintien de stock, puis les travailleurs libres à leur métier */
     function assignCadenceWorkers() {
       const cads = (S.dom && S.dom.cadence) || {};
@@ -4186,6 +4261,7 @@
           for (const i in cost) add(i, -cost[i] * k);
           const out = produce(rec, k);
           add(rec, out);
+          if (auto) noteFait(E.atelierDe(rec), rec, out);
           if ((S.inv[rec] || 0) >= (cd.cap || 0) - 1e-9) cd.acc = 0;
         }
         if (auto) autoAcc[rec] = cd.acc;
@@ -5503,6 +5579,7 @@
       dt = Math.min(dt, maxCap);
       OFF = true;
       const before = Object.assign({}, S.inv);
+      const faitAvant = S.equipe && S.equipe.fait ? JSON.parse(JSON.stringify(S.equipe.fait)) : {};
       const chunk = dt > 600 ? 10 : 1;
       let left = dt;
       try { while (left > 0) { const d = Math.min(chunk, left); step(d, true); left -= d; } } finally { OFF = false; }
@@ -5513,6 +5590,14 @@
       for (const k in S.inv) {
         const g = S.inv[k] - (before[k] || 0);
         if (g >= 1) gains[k] = g;
+      }
+      if (absent >= ((D.VOIX && D.VOIX.retourApres) || 300) && S.equipe && S.equipe.fait) {
+        const r = {};
+        for (const fam in S.equipe.fait) for (const rec in S.equipe.fait[fam]) {
+          const d = S.equipe.fait[fam][rec] - (((faitAvant[fam] || {})[rec]) || 0);
+          if (d >= 1) (r[fam] = r[fam] || {})[rec] = d;
+        }
+        if (Object.keys(r).length) S.equipe.retour = { dt: absent, fait: r };
       }
       E.emit("offline", { dt, gains, exp });
       checkTroqueur();
