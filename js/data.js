@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.55.0";
+  D.VERSION = "0.56.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1584,6 +1584,18 @@
       artistique: { x: 35, y: 140, w: 483, h: 420, py: 430 }
     }
   };
+  /* 0.56 : le vocabulaire des gestes, métier par métier (affichage seulement, dans le Labo d'un métier). Les gestes gardent leur identifiant et leur nom général
+   * ailleurs (Carnet, fiches, Progression, guide) ; docs/revue/probleme-gestes-metiers.md. Un geste absent d'un métier garde son nom général. */
+  D.GESTES_METIER = {
+    artisanat: { tailler: "Tailler", tresser: "Tresser", assembler: "Monter", chauffer: "Cuire", tremper: "Tremper" },
+    construction: { construire: "Bâtir", tailler: "Équarrir", chauffer: "Étuver" },
+    elevage: { assembler: "Coudre", tailler: "Tailler", chauffer: "Faire bouillir" },
+    chimie: { assembler: "Conditionner", chauffer: "Distiller", synthetiser: "Synthétiser", tailler: "Découper", tresser: "Tisser", construire: "Monter", stratifier: "Stratifier" },
+    metallurgie: { chauffer: "Fondre", marteler: "Marteler", tailler: "Étirer", assembler: "Monter", allier: "Allier", tremper: "Tremper", usiner: "Usiner", electriser: "Électrolyser" },
+    centrales: { construire: "Bâtir", assembler: "Monter", usiner: "Bobiner", electriser: "Électriser", chauffer: "Pyrolyser", transmuter: "Transmuter", stratifier: "Stratifier" },
+    electronique: { assembler: "Monter", tresser: "Câbler", construire: "Installer", chauffer: "Purifier", tailler: "Trancher", graver: "Graver" },
+    artistique: { chauffer: "Macérer", construire: "Dresser", assembler: "Presser" }
+  };
   D.TRAVAILLEURS = {
     parAge: 2.5,
     /* 0.51 : les travailleurs d'un métier fabriquent en continu, sans ordre, les composants connus de leur métier (déjà faits une fois à la main)
@@ -1688,6 +1700,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗣️ Chaque métier parle son langage au Labo : le même geste s’y écrit selon le métier ouvert. « Chauffer » devient Fondre en Métallurgie, Cuire en Artisanat, Distiller en Chimie, Purifier en Électronique ; « Assembler » devient Coudre en Élevage, Monter en Métallurgie ; « Construire » devient Bâtir, Installer… Seul l’affichage change : les recettes et ta partie restent les mêmes, et ailleurs (Carnet, fiches, Progression) le nom général reste.",
     "🔬 Le Labo enferme la découverte dans le métier ouvert. Dans un métier, tu ne vois plus que les matières qui entrent dans ses recettes (et non toutes celles que tu as vues), les pistes ✦ ne comptent que ses recettes, et un assemblage qui relève d’un autre métier ne donne rien ici (le thermomètre ne révèle pas non plus qu’il existe ailleurs) : on le trouve en ouvrant le bon métier. Les recettes que tu connais déjà se fabriquent comme avant.",
     "🏷️ Le seuil de production libre se lit en mots, plus en pourcentages : au repos, au jour le jour, quelques réserves, bien garni, à ras bord. Il démarre à « au jour le jour » (au lieu d’un tiers du stock de confort), pour qu’un travailleur ne vide pas des matières dont tu as besoin sans que tu l’aies voulu. Le goulot « seuil à 0 % » devient « au repos ».",
     "🏗️ Les bâtisseurs ont un rôle : ils exécutent les chantiers que tu lances, c’est-à-dire les constructions à prix croissant (extracteurs, machines) que tu mets dans ta file, à ta place et sans que tu les fasses à la main. Jamais de leur propre initiative, et seulement ce que tu as déjà construit une fois toi-même. Construction apparaît dans les Ateliers dès que tu connais une construction. Dans un goulot « aucun extracteur n’en récolte », un bouton lance directement le chantier.",

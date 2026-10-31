@@ -62,6 +62,8 @@ Décisions du porteur du projet : filtre strict (un assemblage d'un autre métie
 
 Fait en 0.55.0 (`js/atelier-equipe.js`, `js/equipements.js`) : le Labo ne montre dans un métier que les matières de ses recettes (plus celles déjà posées sur l'établi), les pistes ✦ (`E.equipmentHasDiscovery`, nouveau paramètre `metier`) ne comptent que ses recettes, et l'essai d'un assemblage dont toutes les recettes (tout outil confondu) sont d'un autre métier, et pas encore connues, répond « rien » sans lancer l'essai : le thermomètre ne révèle donc pas que l'assemblage existe ailleurs. Une recette déjà connue se fabrique dans n'importe quel métier. Reste : les assemblages partiels (« tiède ») qui peuvent encore refléter une recette d'un autre métier, le renommage des gestes (Centrales d'abord), et un contrôle sur l'ensemble du parcours qu'aucune recette n'est devenue introuvable (le robot de `tools/sim-passages.js` passe par le moteur, pas par le Labo).
 
+Fait en 0.56.0 : le vocabulaire des gestes par métier (`D.GESTES_METIER`, 42 couples), affiché dans le Labo d'un métier ; les choix viennent de la page de propositions du 31 octobre. Trois choix laissés à deux mots (Équarrir / Façonner, Calorifuger / Étuver, Pyrolyser / Fritter) ont été tranchés : Équarrir (la pierre), Étuver (un creuset ne s'isole pas), Pyrolyser (le graphite). À relire : les textes du guide et des fiches qui nomment un geste.
+
 ## 6. Plan
 
 1. Mesure : la matrice ci-dessus est produite par un script (`tools/mesure-gestes-metiers.js`) à relancer après chaque reclassement.

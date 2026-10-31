@@ -340,3 +340,12 @@ test("le goulot « aucun extracteur » propose le chantier quand un extracteur e
   const g = E.goulots().find((x) => x.kind === "extracteur" && x.ing === "bois");
   if (g) assert.ok(g.action.k === "chantier" || g.action.k === "terres", g.action.k);
 });
+
+console.log("Vocabulaire des gestes par métier (0.56)");
+test("chaque couple métier × geste utilisé par une recette a son mot, et rien n'est en trop", () => {
+  const { E } = jeu(5);
+  const vus = {};
+  for (const [id, it] of Object.entries(D.ITEMS)) { if (!it.r || it.sec || it.path) continue; (vus[E.atelierDe(id)] = vus[E.atelierDe(id)] || new Set()).add(it.r[0]); }
+  for (const f in vus) for (const g of vus[f]) assert.ok(((D.GESTES_METIER || {})[f] || {})[g], f + " / " + g + " n'a pas de mot");
+  for (const f in D.GESTES_METIER) { assert.ok(vus[f], f + " inconnu"); for (const g in D.GESTES_METIER[f]) assert.ok(vus[f].has(g), f + " / " + g + " : aucune recette"); }
+});

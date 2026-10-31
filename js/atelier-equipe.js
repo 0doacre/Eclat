@@ -14,7 +14,7 @@
     };
     const money=(n,age)=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+currencyName(age);
     const name=id=>I[id]?.n||id;
-    const label=(id,n)=>(D.GESTES[id]&&D.GESTES[id].n)||n;
+    const label=(id,n,metier)=>((D.GESTES_METIER||{})[metier]||{})[id]||(D.GESTES[id]&&D.GESTES[id].n)||n; // le geste dans le langage du métier ouvert (0.56)
     const soundGesture=m=>({
       doux:"chauffer",vif:"chauffer",cuisson:"chauffer",fonte:"chauffer",chauffe:"chauffer",etouffee:"chauffer",
       decoupe:"tailler",tailler:"tailler",racler:"tailler",
@@ -190,7 +190,7 @@
       }).join('')+'</div>';
       h+='<p class="ae-legende">'+esc(isGrand(tool.id)?"Atelier":tool.n)+'</p>';
       const modes=Object.entries(tool.modes);
-      h+='<div class="ae-gestes" role="group" aria-label="Geste">'+(modes.length>1?modes.map(([m,n])=>'<button type="button" id="ae-mode-'+esc(m)+'" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n))+'</button>').join(''):'')+button("clear","","Vider","small ghost ae-vider",!w.slots.length)+'</div>';
+      h+='<div class="ae-gestes" role="group" aria-label="Geste">'+(modes.length>1?modes.map(([m,n])=>'<button type="button" id="ae-mode-'+esc(m)+'" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n,w.metier))+'</button>').join(''):'')+button("clear","","Vider","small ghost ae-vider",!w.slots.length)+'</div>';
       return h;
     }
     function body(mode){
@@ -228,8 +228,8 @@
         h+='</div>';
       }
       h+='<div class="ae-actions">';
-      h+=button("forge",w.mode,esc(label(w.mode,tool.modes[w.mode])),"pri",!w.slots.length);
-      if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode]))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
+      h+=button("forge",w.mode,esc(label(w.mode,tool.modes[w.mode],w.metier)),"pri",!w.slots.length);
+      if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode],w.metier))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
       const heatCls=lastHeat?' ae-heat-'+lastHeat:'';
       h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p></div><aside class="ae-tools">'+actionsHTML(tools,w)+'</aside></div></section>';
       h+='<section class="card ae-stock"><div class="ae-stock-search"><input id="ae-search" type="search" aria-label="Chercher une matière" placeholder="Chercher une matière…" value="'+esc(U.equipmentSearch||"")+'"></div>';
@@ -242,7 +242,7 @@
       for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode,w.metier);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span>'+(reacts?'<i class="ae-react-spark" title="Piste disponible">✦</i>':'')+'<b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
       h+='</div></section></div>';
-      h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode]))+'</button></div>';
+      h+='<div class="ae-mini" hidden aria-label="Établi compact"><span class="ae-mini-tool">'+esc(tool.n)+'</span>'+[0,1,2].map(i=>'<button type="button" id="ae-mini-slot-'+i+'" class="btn" data-ae="slot" data-value="'+i+'" aria-label="'+esc(w.slots[i]?'Retirer '+name(w.slots[i]):'Emplacement libre')+'"'+(w.slots[i]?'':' disabled')+'>'+(w.slots[i]?icon(w.slots[i],"sm"):'+')+'</button>').join('')+'<button type="button" id="ae-mini-forge" class="btn pri" data-ae="forge" data-value="'+esc(w.mode)+'">'+esc(label(w.mode,tool.modes[w.mode],w.metier))+'</button></div>';
       if(mode==="labo")return h;
       const cads=E.cadences?E.cadences():[];
       const cadsMap=Object.fromEntries(cads.map(c=>[c.id,c]));
