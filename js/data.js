@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.47.1";
+  D.VERSION = "0.48.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1636,6 +1636,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🗂️ Le menu s’organise en cinq onglets (Jeu, Affichage, Audio, Système, Aide) : une rubrique à la fois, au lieu d’un long écran. Les sauvegardes se simplifient : un fichier à enregistrer, un fichier à reprendre, et les copies de sécurité en une ligne ; l’ancien code texte disparaît. L’icône du compte est une silhouette.",
     "🔲 Les ressources s’affichent nues, sans double cadre. Un bouton garde sa taille quand son état change (la récolte en continu garde la même taille en « ▶ » et en « ■ »), et un texte trop long rétrécit au lieu de déborder. L’objectif des Terres prend sa propre ligne sur téléphone. Les derniers grands nombres passent en k, M, G.",
     "🔘 Une seule grammaire de boutons : l’octogone de papier pour les actions, un chevron › quand un bouton ouvre une fenêtre, des onglets soulignés pour changer de page, de petits octogones pour les filtres, et les recettes de la Progression en tuiles octogonales colorées selon leur état. Les cadres se redimensionnent sans se déformer. Le bouton Progression, qui n’ouvrait rien, n’apparaît plus que pour revenir de la fiche d’une recette.",
     "🧹 Le menu est plus sobre (plus de grande illustration, les quatre rubriques sur une ligne, des lignes de réglage régulières), le bouton Aspect disparaît de l’en-tête (les styles vont disparaître) et les quatre boutons du haut ont la même taille ; les onglets des fenêtres suivent la forme des filtres des écrans.",

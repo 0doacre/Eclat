@@ -181,10 +181,9 @@ test("Structure et lisibilité des fenêtres de Sauvegardes", () => {
   assert.ok(h.includes("saves-actions-grid"), "Grille des actions de sauvegarde présente");
   assert.ok(h.includes('data-m="dl"'), "Bouton télécharger sauvegarde présent");
   assert.ok(h.includes('data-m="up"'), "Bouton charger fichier présent");
-  assert.ok(h.includes('data-m="code"'), "Bouton code texte présent");
+  assert.ok(!h.includes('data-m="code"'), "Plus de code texte (ancien format retiré)");
   assert.ok(h.includes("backup-card"), "Cartes de copies de sauvegarde présentes");
   assert.ok(h.includes("bk-chips"), "Puces d'informations (Âge, Semeur, Temps de jeu) présentes");
-  assert.ok(h.includes('data-m="bdl"'), "Bouton de téléchargement d'une copie présent");
   assert.ok(h.includes('data-m="brs"'), "Bouton de restauration d'une copie présent");
 });
 

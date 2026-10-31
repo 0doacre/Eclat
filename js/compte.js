@@ -73,6 +73,8 @@
       }
     }
 
+    /* l'icône du compte : une silhouette (tête et épaules) */
+    const COMPTE = '<svg class="gi gl compte-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4.2" fill="currentColor"/><path d="M3.5 21c0-4.7 3.8-8.2 8.5-8.2s8.5 3.5 8.5 8.2z" fill="currentColor"/></svg>';
     function openSaves() {
       const list = backups();
       const persistMsg = {
@@ -85,32 +87,29 @@
       openModal({
         cls: "saves-modal",
         html: '<div class="kicker">Partie &amp; Données</div>' +
-          '<h2>💾 Sauvegardes</h2>' +
-          '<p class="small muted">Ta partie est automatiquement conservée sur cet appareil. Tu peux exporter un fichier pour la mettre en lieu sûr ou reprendre une ancienne copie.</p>' +
+          '<h2>Sauvegardes</h2>' +
+          '<p class="small muted">Ta partie est conservée sur cet appareil. Garde un fichier de côté pour la mettre à l’abri.</p>' +
           persistMsg +
           '<div class="saves-actions-grid">' +
             '<button class="btn save-act-card pri" data-m="dl" title="Télécharger un fichier de sauvegarde au format JSON">' +
               '<span class="save-act-ic">⬇️</span>' +
               '<div class="save-act-info">' +
-                '<b>Télécharger ma sauvegarde</b>' +
-                '<span class="tiny muted">Fichier .json à garder sur ton appareil</span>' +
+                '<b>Enregistrer un fichier</b>' +
+                '<span class="tiny muted">Ta partie, à garder sur ton appareil</span>' +
               '</div>' +
             '</button>' +
             '<button class="btn save-act-card" data-m="up" title="Charger un fichier de sauvegarde JSON depuis ton appareil">' +
               '<span class="save-act-ic">⬆️</span>' +
               '<div class="save-act-info">' +
-                '<b>Charger un fichier</b>' +
-                '<span class="tiny muted">Importer une sauvegarde existante</span>' +
+                '<b>Reprendre un fichier</b>' +
+                '<span class="tiny muted">Remplace ta partie par celle du fichier</span>' +
               '</div>' +
             '</button>' +
-          '</div>' +
-          '<div style="text-align:center;margin:6px 0 12px">' +
-            '<button class="btn ghost small" data-m="code" title="Copier ou coller le code texte de sauvegarde">📋 Code texte (ancien format)</button>' +
           '</div>' +
           (list.length ?
             '<div class="saves-backups-section">' +
               '<div class="saves-sec-head">' +
-                '<h3 class="sub">Copies de sécurité automatiques</h3>' +
+                '<h3 class="sub">Copies de sécurité</h3>' +
                 '<span class="tiny dim">' + list.length + ' disponible' + (list.length > 1 ? 's' : '') + '</span>' +
               '</div>' +
               '<div class="backups-list">' +
@@ -127,14 +126,11 @@
                           '<span class="bk-chip age">🌿 ' + esc(m.ageName) + '</span>' +
                           '<span class="bk-chip semeur">Semeur ' + m.semeur + '</span>' +
                           '<span class="bk-chip play">⏱️ ' + m.playTime + '</span>' +
-                          '<span class="bk-chip rec">📖 ' + m.knownCount + ' recettes</span>' +
-                          (m.traces ? '<span class="bk-chip traces">✦ ' + m.traces + '</span>' : '') +
                         '</div>' :
                         '<div class="tiny muted">format v' + b.v + '</div>'
                       ) +
                     '</div>' +
                     '<div class="bk-actions">' +
-                      '<button class="btn small" data-m="bdl" data-i="' + i + '" title="Télécharger cette copie en fichier JSON">⬇️</button>' +
                       '<button class="btn small pri" data-m="brs" data-i="' + i + '" title="Restaurer cette copie de sauvegarde">Restaurer</button>' +
                     '</div>' +
                   '</div>';
@@ -145,7 +141,6 @@
         on: {
           dl: () => { downloadSave(); return true; },
           up: () => { pickFile((txt) => confirmReplace(txt, "Avant le chargement d’un fichier")); return true; },
-          code: () => setTimeout(openCode, 80),
           bdl: (b) => { const k = backups()[Number(b.dataset.i)]; if (k) download("eclat-copie-" + stamp() + ".json", k.data); return true; },
           brs: (b) => { const k = backups()[Number(b.dataset.i)]; if (k) setTimeout(() => confirmReplace(k.data, "Avant la restauration d’une copie"), 80); }
         }
@@ -190,19 +185,6 @@
           '<p class="tiny dim">Ta partie actuelle sera remplacée, mais une copie de sécurité automatique est créée immédiatement avant.</p>' +
           '<div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" data-m="go">Charger</button></div>',
         on: { go: () => { replaceWith(txt, why); } }
-      });
-    }
-    function openCode() {
-      save();
-      const code = E.exportSave();
-      openModal({
-        html: "<h2>Code de sauvegarde</h2><p class=\"small muted\">Copie ce code pour le garder, ou colle un code existant puis charge-le.</p><textarea class=\"save\" id=\"codeTxt\">" + code + "</textarea>" +
-          '<div class="acts"><button class="btn" data-m="copy">Copier</button><button class="btn" data-m="load">Charger le code collé</button><button class="btn pri" data-m="close">Fermer</button></div>',
-        onOpen: (box) => { const t = $("textarea", box); t.focus(); t.select(); },
-        on: {
-          copy: () => { try { navigator.clipboard.writeText($("#codeTxt").value); toast("Copié."); } catch (e) { /* ignoré */ } return true; },
-          load: () => { const v = $("#codeTxt").value; if (v.trim() === code) { toast("Partie actuelle déjà chargée."); return true; } setTimeout(() => confirmReplace(v, "Avant le chargement d’un code"), 80); }
-        }
       });
     }
     function showBadSave() {
@@ -349,7 +331,7 @@
       const c = U.sync.conflict;
       return {
         cls: "account-manage-modal",
-        html: '<div class="kicker">Sauvegarde en ligne</div><h2>☁️ ' + esc(a.pseudo || "") + "</h2>" +
+        html: '<div class="kicker">Sauvegarde en ligne</div><h2>' + COMPTE + " " + esc(a.pseudo || "") + "</h2>" +
           '<div class="account-user-card">' +
             '<div class="auc-avatar">🌌</div>' +
             '<div class="auc-info">' +
@@ -656,10 +638,11 @@
           '</div>' +
           '<button class="btn pri wide resume-btn" data-m="close" title="Fermer le menu et reprendre la partie">Reprendre <span aria-hidden="true">›</span></button>' +
           '<nav class="menu-nav-bar" role="tablist" aria-label="Catégories du menu">' +
-            '<button class="m-nav-tab on" data-mjump="jeu" role="tab" aria-selected="true" title="Aller à la section Jeu"><span class="m-nav-ic">🎮</span> Jeu</button>' +
-            '<button class="m-nav-tab" data-mjump="affichage" role="tab" aria-selected="false" title="Aller à la section Affichage"><span class="m-nav-ic">🖥️</span> Affichage</button>' +
-            '<button class="m-nav-tab" data-mjump="audio" role="tab" aria-selected="false" title="Aller à la section Audio"><span class="m-nav-ic">🔊</span> Audio</button>' +
-            '<button class="m-nav-tab" data-mjump="systeme" role="tab" aria-selected="false" title="Aller à la section Système"><span class="m-nav-ic">⚙️</span> Système</button>' +
+            '<button class="m-nav-tab on" data-mjump="jeu" role="tab" aria-selected="true" title="Ouvrir la rubrique Jeu"><span class="m-nav-ic">🎮</span> Jeu</button>' +
+            '<button class="m-nav-tab" data-mjump="affichage" role="tab" aria-selected="false" title="Ouvrir la rubrique Affichage"><span class="m-nav-ic">🖥️</span> Affichage</button>' +
+            '<button class="m-nav-tab" data-mjump="audio" role="tab" aria-selected="false" title="Ouvrir la rubrique Audio"><span class="m-nav-ic">🔊</span> Audio</button>' +
+            '<button class="m-nav-tab" data-mjump="systeme" role="tab" aria-selected="false" title="Ouvrir la rubrique Système"><span class="m-nav-ic">⚙️</span> Système</button>' +
+            '<button class="m-nav-tab" data-mjump="aide" role="tab" aria-selected="false" title="Ouvrir la rubrique Aide"><span class="m-nav-ic">❓</span> Aide</button>' +
           '</nav>' +
           sec("jeu", "🎮", "Jeu &amp; Raccourcis",
             '<div class="menu-grid game-grid">' +
@@ -686,38 +669,38 @@
             }).join("") +
             "</div>" +
             sw("vibe", "Vibrations", st.settings.vibe, "Faire vibrer l’appareil lors des actions importantes")) +
-          sec("systeme", "⚙️", "Système &amp; Sauvegardes",
+          sec("systeme", "⚙️", "Système &amp; Parties",
             '<div class="menu-grid">' +
               '<button class="btn m-card-btn" data-m="modeTest" title="Créer une copie locale pour tester librement la progression"><span class="m-card-icon">✎</span><b>Mode test</b></button>' +
               '<button class="btn m-card-btn" data-m="saves" title="Télécharger ta partie, la recharger ou restaurer une copie"><span class="m-card-icon">💾</span><b>Sauvegardes</b></button>' +
-              '<button class="btn m-card-btn" data-assistance="diagnostic" title="Comprendre pourquoi une commande ou un ouvrier attend"><span class="m-card-icon">⏳</span><b>État des productions</b></button>' +
-              '<button class="btn m-card-btn" data-assistance="report" title="Préparer un rapport local à transmettre avec ton retour"><span class="m-card-icon">🐞</span><b>Signaler un problème</b></button>' +
-              '<button class="btn m-card-btn" data-m="account" title="Retrouver ta partie sur tous tes appareils"><span class="m-card-icon">☁️</span><b>Compte en ligne</b></button>' +
+              '<button class="btn m-card-btn" data-m="account" title="Retrouver ta partie sur tous tes appareils"><span class="m-card-icon">'+COMPTE+'</span><b>Compte en ligne</b></button>' +
               (App.installable() ? '<button class="btn m-card-btn" data-m="installer" title="Ajouter Éclat à l’écran d’accueil de ton appareil"><span class="m-card-icon">📲</span><b>Installer le jeu</b></button>' : "") +
-              '<button class="btn m-card-btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran"><span class="m-card-icon">❓</span><b>Comment jouer</b></button>' +
               (checkUpdate ? '<button class="btn m-card-btn" data-m="maj" title="Chercher tout de suite une nouvelle version du jeu"><span class="m-card-icon">🔄</span><span class="m-card-main"><b>Chercher une mise à jour</b><span class="tiny muted" id="maj-etat">Version ' + esc(D.VERSION) + '</span></span></button>' : "") +
-              '<button class="btn m-card-btn" data-m="news" title="Ce qui a changé dans cette version"><span class="m-card-icon">📰</span><b>Nouveautés</b></button>' +
-              '<button class="btn m-card-btn" data-m="credits" title="Les icônes, les polices et la musique"><span class="m-card-icon">📜</span><b>Crédits</b></button>' +
             "</div>" +
             '<div class="menu-danger-zone"><button class="btn ghost danger-btn" data-m="reset" style="color:var(--bad)" title="Effacer ta progression et repartir de zéro">🗑️ Recommencer la partie</button></div>') +
+          sec("aide", "❓", "Aide &amp; À propos",
+            '<div class="menu-grid">' +
+              '<button class="btn m-card-btn" data-assistance="diagnostic" title="Comprendre pourquoi une commande ou un ouvrier attend"><span class="m-card-icon">⏳</span><b>État des productions</b></button>' +
+              '<button class="btn m-card-btn" data-assistance="report" title="Préparer un rapport local à transmettre avec ton retour"><span class="m-card-icon">🐞</span><b>Signaler un problème</b></button>' +
+              '<button class="btn m-card-btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran"><span class="m-card-icon">❓</span><b>Comment jouer</b></button>' +
+              '<button class="btn m-card-btn" data-m="news" title="Ce qui a changé dans cette version"><span class="m-card-icon">📰</span><b>Nouveautés</b></button>' +
+              '<button class="btn m-card-btn" data-m="credits" title="Les icônes, les polices et la musique"><span class="m-card-icon">📜</span><b>Crédits</b></button>' +
+            "</div>") +
           '<div class="acts"><button class="btn pri m-close-btn" data-m="close" title="Fermer le menu et revenir au jeu">Fermer</button></div>' +
           '<p class="tiny dim center menu-footer">Éclat · du silex aux étoiles · version ' + esc(D.VERSION) + " · ⏱️ " + fmtTime(st.stats.play) + "</p>" +
         '</div>',
         onOpen: (box) => {
-          const navTabs = $$(".m-nav-tab", box);
+          /* Les rubriques sont de vrais onglets : une seule est affichée, la dernière ouverte est retenue pendant la session. */
+          const navTabs = $$(".m-nav-tab", box), sections = $$(".menu-sec", box);
+          const montrer = (id) => {
+            if (!sections.some((x) => x.id === "msec-" + id)) id = "jeu";
+            U.menuOnglet = id;
+            sections.forEach((x) => { const on = x.id === "msec-" + id; x.hidden = !on; x.setAttribute("role", "tabpanel"); });
+            navTabs.forEach((x) => { const on = x.dataset.mjump === id; x.classList.toggle("on", on); x.setAttribute("aria-selected", String(on)); x.tabIndex = on ? 0 : -1; });
+            const bw = box.querySelector(".modal-box") || box; bw.scrollTop = 0;
+          };
           navTabs.forEach((tabBtn) => {
-            tabBtn.addEventListener("click", () => {
-              const target = box.querySelector("#msec-" + tabBtn.dataset.mjump);
-              if (target) {
-                target.scrollIntoView({ behavior: "smooth", block: "start" });
-                navTabs.forEach((b) => {
-                  const on = b === tabBtn;
-                  b.classList.toggle("on", on);
-                  b.setAttribute("aria-selected", String(on));
-                });
-                A.init(); A.click();
-              }
-            });
+            tabBtn.addEventListener("click", () => { montrer(tabBtn.dataset.mjump); A.init(); A.click(); });
             tabBtn.addEventListener("keydown", (e) => {
               let idx = navTabs.indexOf(tabBtn);
               if (e.key === "ArrowRight") idx = (idx + 1) % navTabs.length;
@@ -730,6 +713,7 @@
               navTabs[idx].click();
             });
           });
+          montrer(U.menuOnglet || "jeu");
           $$("[data-vol]", box).forEach((r) => {
             const k = r.dataset.vol;
             const valEl = box.querySelector("#vv-" + k);

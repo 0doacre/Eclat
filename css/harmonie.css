@@ -59,3 +59,11 @@
 
 /* 7. Les onglets des fenêtres : voir css/boutons.css. */
 #modal .quest-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* 8. Le menu à onglets : une rubrique à la fois ; cinq onglets sur une ligne ; l'icône du compte est une silhouette. */
+#modal .menu-wrap .menu-sec[hidden] { display: none; }
+#modal .menu-wrap .menu-nav-bar { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+#modal .menu-wrap .m-nav-tab { font-size: 13px; }
+.compte-ic { width: 1.2em; height: 1.2em; vertical-align: -.2em; }
+#cloudBtn .compte-ic { width: 24px; height: 24px; }
+#modal .menu-wrap .m-card-icon .compte-ic { width: 22px; height: 22px; }

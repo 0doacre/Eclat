@@ -47,3 +47,7 @@ Les pastilles d'objet (`itemPill`) sont encore des gélules arrondies ; les anci
 - **Taille stable** : un bouton ne change pas de taille quand son état change. Exemple : le bouton de récolte en continu garde 56 × 44 px que ce soit « ▶ » ou « ■ ».
 - **Le texte rétrécit, pas le bouton** : `js/ajuste-texte.js` réduit la police (jusqu'à 70 %) d'un contrôle d'une seule ligne dont le texte ne tient pas (boutons du haut, pastilles, filtres, puces). Pour l'appliquer à un nouvel élément : lui donner `data-fit`.
 - **Nombres courts** : tout nombre affiché passe par `fmt()` (k, M, G, T, P, E, Z) ; la valeur exacte reste dans l'info-bulle ou le libellé d'accessibilité quand c'est utile.
+
+## Le menu (0.48)
+
+Cinq onglets, une rubrique affichée à la fois (`.menu-sec[hidden]`, onglet retenu dans `U.menuOnglet`) : **Jeu** (Mémoire, Comptoir, guide, visiteurs), **Affichage**, **Audio**, **Système** (mode test, sauvegardes, compte, installer, mise à jour, recommencer), **Aide** (état des productions, signaler un problème, comment jouer, nouveautés, crédits). Le bouton « Reprendre » remplace « Fermer ». Les sauvegardes : enregistrer un fichier, reprendre un fichier, copies de sécurité (restaurer) ; l'ancien code texte est retiré. Le compte porte une silhouette (`COMPTE` dans `js/compte.js`).

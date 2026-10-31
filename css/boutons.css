@@ -138,3 +138,13 @@ html[data-style-mode="vivant"] :is([data-fit], .terres-pastille, .chip, .arb-fil
   html[data-style-mode="vivant"] .terres-pastilles { flex-wrap: wrap; overflow-x: visible; }
   html[data-style-mode="vivant"] #app .terres-pastille[data-terre-panel="obj"] { flex: 1 1 100%; font-size: 15px; }
 }
+
+/* ---- Menu : ses rubriques sont des onglets comme les autres (texte souligné, rien d'autre) ---- */
+html[data-style-mode="vivant"] #modal .menu-wrap .menu-nav-bar { border: 0 !important; border-bottom: 1px solid var(--line2) !important; background: transparent !important; box-shadow: none !important; }
+html[data-style-mode="vivant"] #modal .menu-wrap .menu-nav-bar::before, html[data-style-mode="vivant"] #modal .menu-wrap .menu-nav-bar::after { display: none !important; }
+html[data-style-mode="vivant"] #modal .menu-wrap .m-nav-tab { border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; color: var(--muted) !important; font-family: var(--serif); }
+html[data-style-mode="vivant"] #modal .menu-wrap .m-nav-tab::before, html[data-style-mode="vivant"] #modal .menu-wrap .m-nav-tab::after { display: none !important; }
+html[data-style-mode="vivant"] #modal .menu-wrap .m-nav-tab.on { color: var(--acc) !important; border-bottom-color: var(--acc) !important; font-weight: 700; text-decoration: none; }
+/* « Reprendre » suffit : le bouton « Fermer » du bas ferait doublon */
+html[data-style-mode="vivant"] #modal .menu-wrap > .acts { display: none; }
+html[data-style-mode="vivant"] #modal .save-act-card.pri :is(.muted, .tiny) { color: inherit !important; opacity: .9; }

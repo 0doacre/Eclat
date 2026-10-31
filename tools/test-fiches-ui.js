@@ -84,8 +84,8 @@ async function run(){
     const downloadPromise=p.waitForEvent('download',{timeout:10000});await p.locator('[data-m="dl"]').click();
     const download=await downloadPromise.catch(async e=>{console.log(await p.locator('#modal').innerText());await p.screenshot({path:path.join(ROOT,'../output/atlas-vivant/fiches-echec.png')});throw e;});const exported=JSON.parse(fs.readFileSync(await download.path(),'utf8'));
     ok(exported.known.manche&&exported.inv.bois===100,tag+' : export de la partie intact');
-    await p.locator('[data-m="code"]').click();await settled(p);await layout(p,tag+'/code');await close(p);
-    await p.locator('#menuBtn').click();await settled(p);await p.locator('[data-m="help"]').click();await settled(p);await layout(p,tag+'/aide');await close(p);
+    await close(p);
+    await p.locator('#menuBtn').click();await settled(p);await p.locator('[data-mjump="aide"]').click();await p.locator('[data-m="help"]').click();await settled(p);await layout(p,tag+'/aide');await close(p);
     await p.locator('#menuBtn').focus();await p.keyboard.press('Enter');await settled(p);await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.getElementById('app').inert);
     ok(await p.locator('#menuBtn').evaluate(e=>document.activeElement===e),tag+' : retour du focus au Menu');
     await p.locator('#atlasToggle').click();ok(await p.locator('#atlasToggle').getAttribute('aria-pressed')==='false',tag+' : Classique disponible');
