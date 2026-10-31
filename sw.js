@@ -3,7 +3,7 @@
  * arrière-plan puis attend que le joueur l’accepte (bandeau dans le jeu), ce qui
  * lui laisse le temps de télécharger sa sauvegarde.
  * BUILD est recalculé par `node tools/build.js` : ne pas le modifier à la main. */
-const BUILD = "e21e79c32d";
+const BUILD = "06c7743147";
 const CACHE = "eclat-" + BUILD;
 const LEGACY = "eclat-v1"; // première version : « réseau d’abord », sans attente
 const FILES = [
@@ -49,6 +49,7 @@ const FILES = [
   "assets/oeuvres/dyson.webp", "assets/oeuvres/brisemonde.webp", "assets/oeuvres/chant.webp", "assets/oeuvres/arche13.webp", "assets/oeuvres/silence.webp",
   "assets/terres/lisiere-carte.webp", "assets/terres/plaine-carte.webp", "assets/terres/riviere-carte.webp", "assets/terres/collines-carte.webp", "assets/terres/mine-carte.webp", "assets/terres/caveau-carte.webp",
   "assets/terres/desert-carte.webp", "assets/terres/gisement-carte.webp", "assets/terres/montagnes-carte.webp", "assets/terres/orbite-carte.webp", "assets/terres/lune-carte.webp", "assets/terres/mercure-carte.webp",
+  "assets/travailleurs/portrait-artisanat.webp", "assets/travailleurs/portrait-construction.webp", "assets/travailleurs/portrait-elevage.webp", "assets/travailleurs/portrait-metallurgie.webp", "assets/travailleurs/portrait-chimie.webp", "assets/travailleurs/portrait-centrales.webp", "assets/travailleurs/portrait-electronique.webp", "assets/travailleurs/portrait-artistique.webp",
   "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"
 ];
 

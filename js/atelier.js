@@ -1707,8 +1707,8 @@
       if (!P) return "";
       const ech = ECH_PLANCHE[Math.max(0, Math.min(6, (Atel.carte(fam) || {}).echelon || 0))];
       const W = 112, s = W / P.w;
-      /* une rangée de huit portraits, un par âge : fichier ligne-<métier>.jpg (le nom change avec le format, pour qu'un ancien code en cache ne lise jamais une nouvelle image) */
-      return '<span class="voix-portrait" aria-hidden="true" style="width:' + W + "px;height:" + Math.round(P.h * s) + "px;background-image:url(assets/travailleurs/ligne-" + fam + ".jpg);background-size:" + Math.round(P.W * s) + "px " + Math.round(P.H * s) + "px;background-position:-" + Math.round(ech * P.w * s) + 'px 0"></span>';
+      /* une rangée de huit portraits, un par âge : fichier portrait-<métier>.webp, précaché avec le jeu, avec ligne-<métier>.jpg en second calque si le premier ne charge pas (le nom change avec le format, pour qu'un ancien code en cache ne lise jamais une nouvelle image) */
+      return '<span class="voix-portrait" aria-hidden="true" style="width:' + W + "px;height:" + Math.round(P.h * s) + "px;background-image:url(assets/travailleurs/portrait-" + fam + ".webp),url(assets/travailleurs/ligne-" + fam + ".jpg);background-size:" + Math.round(P.W * s) + "px " + Math.round(P.H * s) + "px;background-position:-" + Math.round(ech * P.w * s) + 'px 0"></span>';
     }
     function voixFerme() {
       clearTimeout(voix.t);
