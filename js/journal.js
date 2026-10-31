@@ -295,8 +295,8 @@
       } else if (cur === "fins") {
         // le prestige, dit simplement : ce qu’on garde, ce qu’on gagne
         const ech = Object.values(st.meta.endings).reduce((a, b) => a + b, 0);
-        h += '<div class="card cyc"><b>✦ Relève, Traces et Échos</b><p class="small">Dès qu’un passage vers une nouvelle terre est franchi, tu peux passer le relais : un nouveau Semeur s’éveille. ' +
-          "Le monde, tes ressources, tes machines et les terres repartent de zéro, mais tu gardes ton Carnet, tes fragments, tes secrets et la <b>Mémoire des mains</b>, achetée avec les <b>Traces</b> que laissent les passages.</p>" +
+        h += '<div class="card cyc"><b>✦ Relève, Souvenirs et Échos</b><p class="small">Dès qu’un passage vers une nouvelle terre est franchi, tu peux passer le relais : un nouveau Semeur s’éveille. ' +
+          "Le monde, tes ressources, tes machines et les terres repartent de zéro, mais tu gardes ton Carnet, tes fragments, tes secrets et la <b>Mémoire des mains</b>, achetée avec les <b>Souvenirs</b> que laissent les passages.</p>" +
           '<p class="small">Chaque fin atteinte laisse en plus un <b>Écho</b> immuable (+50 % de récolte et production par Écho) et éveille une <b>Règle d’Écho majeure</b> pour toujours.</p>' +
           '<div class="stat"><span class="muted">Ce Semeur</span><b>' + (st.cycle + 6) + "e · " + st.echoes + " Écho" + (st.echoes > 1 ? "s" : "") + (st.echoes ? " (+" + st.echoes * 50 + " %)" : "") + "</b></div>" +
           '<div class="stat"><span class="muted">À la relève</span><b>+' + E.releveGain() + " ✦ · " + ech + " Écho" + (ech > 1 ? "s" : "") + "</b></div>" +

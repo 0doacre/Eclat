@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.49.2";
+  D.VERSION = "0.50.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1300,7 +1300,7 @@
   /* ------------------------------------------------- PASSAGES ET MÉMOIRE (voir docs/PROGRESSION.md)
    * Un passage par terre : l’objet qui ouvrait la terre le rend possible, la terre
    * s’ouvre quand il est payé (on verse depuis la Réserve, en plusieurs fois si besoin).
-   * tr : les Traces qu’il rapporte à la relève. Prix réglés avec tools/sim-passages.js :
+   * tr : les Souvenirs qu’il rapporte à la relève. Prix réglés avec tools/sim-passages.js :
    * première partie arrêtée vers les Collines (~25 min), chaque relève va une terre plus loin. */
   D.PASSAGES = {
     plaine: { n: "Le Sentier des Herbes", t: "Les herbes de la plaine sont plus hautes que toi. Il faut s’y frayer un chemin, et des pierres pour le marquer.", cost: { bois: 360, fibre: 240, caillou: 120 }, tr: 2 },
@@ -1331,7 +1331,7 @@
     lune: { n: "Tout est léger", t: "La pesanteur est faible : tes mains rapportent 50 % de plus.", tap: { mult: 1.5 } }
   };
 
-  /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Traces. */
+  /* La Mémoire des mains : ce qu’un Semeur laisse au suivant, acheté avec les Souvenirs. */
   D.MEMOIRE = [
     { id: "recolte", n: "Mains calleuses", ic: "✋", d: "Récolte à la main ×{v}.", v: (l) => 1 + l, cost: [2, 4, 8, 18, 36, 70, 130, 240, 440, 800] },
     { id: "mains", n: "Mains sûres", ic: "⏱️", d: "Fabrication à la main : durée ×{v}, et {p} de chances de gagner une pièce en plus.", v: (l) => Math.round(Math.pow(0.8, l) * 100) / 100, bonus: (l) => Math.min(0.9, Math.round(l * 10) / 100), cost: [2, 4, 7, 13, 23, 45, 85, 160] },
@@ -1569,26 +1569,26 @@
     rawAge: 2.5,      // ×2,5 par âge de la matière
     work: 1.25,       // bonus de travail par étape de recette
     sat: 2000,        // saturation : quantité qui divise le prix par deux pendant un cycle
-    trace: 100,       // prix de la première Trace, à l’âge 0
+    trace: 100,       // prix de le premier Souvenir, à l’âge 0
     traceAge: 1.8,    // ×1,8 par âge atteint
-    traceUp: 1.5,     // ×1,5 à chaque Trace achetée pendant le cycle
+    traceUp: 1.5,     // ×1,5 à chaque Souvenir acheté pendant le cycle
     buy: 3,           // une matière achetée coûte 3 fois sa valeur
-    /* À la relève, les écus deviennent des Traces au plein tarif jusqu’à hauteur de ce que les passages du cycle
+    /* À la relève, les écus deviennent des Souvenirs au plein tarif jusqu’à hauteur de ce que les passages du cycle
      * ont rapporté (au moins `plancher`), puis à `part` seulement au-delà : vendre reste toujours utile, mais ne remplace pas les passages. */
     plafond: { plancher: 3, part: 0.25 }
   };
 
-  /* Les demandes du Troqueur : livrer des objets fabriqués contre des Traces */
+  /* Les demandes du Troqueur : livrer des objets fabriqués contre des Souvenirs */
   /* Le Troqueur passe par à-coups : le temps se découpe en blocs de `bloc` secondes, chacun ouvert avec la probabilité `ouvre`
    * (tirée de la graine de la partie, donc la même hors ligne), jamais plus de `maxFerme` blocs fermés de suite. Une ouverture
    * apporte `slots` demandes, valables jusqu’à sa fermeture : pas de renouvellement dans une même ouverture.
-   * Quantité d’une demande : ce que le joueur extrait en `minParTrace` minutes par Trace de récompense (entre `minMin` et `minMax`),
+   * Quantité d’une demande : ce que le joueur extrait en `minParTrace` minutes par Souvenir de récompense (entre `minMin` et `minMax`),
    * `main` appuis par seconde comptés pour la récolte à la main. */
   D.TROQUEUR = { slots: 3, share: 0.15, bloc: 10800, ouvre: 0.6, maxFerme: 3, minParTrace: 10, minMin: 10, minMax: 90, main: 0.5 };
 
   /* Le premier parcours : première renaissance obligatoire */
   D.PARCOURS = {
-    gift: 3           // Traces offertes lors de la relève obligatoire du cycle 1
+    gift: 3           // Souvenirs offerts lors de la relève obligatoire du cycle 1
   };
 
   /* Les ruines : ce qu’un Semeur a construit attend le suivant */
@@ -1636,8 +1636,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✦ Les Traces s’appellent désormais les Souvenirs : ce que laissent les passages franchis, et que la relève transmet au Semeur suivant.",
     "💭 Le guide remis d’aplomb après la refonte : il montre l’objectif, le médaillon d’une nouvelle terre, le bouton Explorer, le Comptoir et le bouton Étudier du Labo (trois chapitres ne démarraient plus), et ses textes parlent des Terres et du Labo.",
-    "✦ Les Traces (des pas) et l’Intuition (des étincelles) ont chacune leur icône, qui étaient confondues. Le bouton du compte quitte l’en-tête : il est dans Menu → Système → Compte en ligne.",
+    "✦ Les Souvenirs (des pas) et l’Intuition (des étincelles) ont chacun leur icône, qui étaient confondues. Le bouton du compte quitte l’en-tête : il est dans Menu → Système → Compte en ligne.",
     "📐 Le Labo occupe mieux l’espace : les matières se serrent (quatre colonnes sur téléphone, davantage sur grand écran), et sur grand écran l’établi reste en vue pendant que la liste des matières défile dans sa colonne.",
     "🧪 Au Labo, « Vider » rejoint la rangée des gestes (grisé quand l’établi est vide), et le message de l’établi (fabriqué, tiède, chaud, brûlant) prend un cadre de la D.A. dont la couleur dit la température.",
     "📊 Progression : le décompte d’un âge dit « trouvées / recettes » et correspond à la grille (les matières vues ont leur rangée à part, « Matières vues »). Le Cosmos devient la dernière page de la Progression, à côté de Mémoire, dès que tu as un instrument d’observation ; le Journal n’a plus qu’une page.",
@@ -1665,7 +1666,7 @@
     "🗺️ Cinq onglets : Terres, Labo, Atelier, Arbre, Journal. Les Terres montrent une terre à la fois, avec son illustration en fond : glisse ou touche les médaillons pour passer de l’une à l’autre, et récolte d’un appui. La Carte devient l’Atlas, rangé sous les Terres.",
     "⚗️ Le Labo est l’établi pour essayer : tu peux poser toute matière déjà vue, même sans en avoir, et la première pièce d’une trouvaille t’est offerte. L’Atelier sert à produire : choisis une recette et une quantité, fabrique à la main ou confie-la à un apprenti. « Ce qui tourne » montre ce qui produit et ce qui bloque. Le Carnet et les Machines s’ouvrent depuis l’Atelier.",
     "🔨 Dans l’Atelier, les ressources s’affichent en tuiles compactes et épurées sous forme d’icônes et de réserves. Dans le Domaine, les terres déjà traversées se replient pour laisser place à leurs gisements sous forme de vignettes directes.",
-    "📖 Finitions du Carnet et mesures : le style Carnet (papier) devient l’aspect par défaut des nouveaux joueurs, et le bouton du haut s’appelle désormais « Aspect ». Les pastilles de quêtes et de traces ont un nom explicite.",
+    "📖 Finitions du Carnet et mesures : le style Carnet (papier) devient l’aspect par défaut des nouveaux joueurs, et le bouton du haut s’appelle désormais « Aspect ». Les pastilles de quêtes et de souvenirs ont un nom explicite.",
     "🖐️ Le bandeau de récolte et de commandes réserve sa place dans le défilement de chaque onglet sans masquer la dernière ligne.",
     "💡 L’aide en tête du Carnet se replie d’un appui sur « Compris » pour dégager l’écran, et reste rouvrable d’un appui sur « Aide ».",
     "📳 Les vibrations attendent ton premier geste sur l’écran avant de s’activer.",
@@ -1693,7 +1694,7 @@
     "🌌 Le ciel du Cosmos s’affiche de nouveau : il restait noir, comme si le canvas avait été démonté aussitôt monté.",
     "🎯 Le guide ne se perd plus : fabriquer en avance le tout dernier objet laisse les étapes qui restent à faire, et une pièce déjà dans ta Réserve n’est plus demandée comme une étape.",
     "⛏️ Quand l’extracteur d’une matière est à toi mais ne la récolte pas, l’objectif le dit : il propose de le poser, ou de le relancer s’il est arrêté.",
-    "🪙 Les écus gagnés au Comptoir pèsent moins lourd à la relève : ils deviennent des Traces à plein tarif jusqu’à ce que tes passages ont rapporté, puis à un quart. Le calcul s’affiche au Comptoir et dans la fenêtre de relève.",
+    "🪙 Les écus gagnés au Comptoir pèsent moins lourd à la relève : ils deviennent des Souvenirs à plein tarif jusqu’à ce que tes passages ont rapporté, puis à un quart. Le calcul s’affiche au Comptoir et dans la fenêtre de relève.",
     "🧳 Le Troqueur demande selon ce que tu produis réellement : plus la matière demandée vient lentement, moins il en réclame. Il ne renouvelle plus ses demandes sans cesse et part en tournée de temps en temps, le Comptoir restant ouvert pour vendre et acheter.",
     "🔤 Les cartes de signes du Journal, les deux formulaires à ⏎ et les questions à réfléchir ont un nom pour le lecteur d’écran.",
     "💬 Les boutons qui ne disaient rien s’expliquent : une info-bulle dit ce que font Suivre, Épingler, Détail, ×10, Max, les filtres et les tris.",
@@ -1707,9 +1708,9 @@
     "🚂 Un âge de plus : l’Âge de la Vapeur, entre l’Acier et l’Électricité. L’Acier garde le haut-fourneau, l’acier trempé, les lames et les outils d’acier ; la Vapeur reçoit la chaudière, le piston, le moteur, la presse, la pompe, le chemin de fer et les extracteurs à vapeur, plus cinq nouveautés : soupape, manomètre, régulateur à boules, chaudière tubulaire et marteau-pilon. Tes parties en cours sont conservées : chaque âge après l’Acier avance d’un rang, et la Vapeur est comptée comme accomplie si tu l’as dépassée.",
     "🏗️ Chaque bâtiment a sa propre recette à découvrir, avec un nom qui lui ressemble : Claie de séchage et Rouissoir pour la fibre, Carrière à coins pour la pierre, Fosse de tannage et Tannerie pour la peau, Argilière, Gravière, Sablière, et des mines (cuivre, étain, charbon, fer, bauxite…). Dans le Carnet, trois nouveaux filtres : « Extracteurs » (rangés par bâtiment et par niveau), « Outils » et « Machines ».",
     "🏗️ Un extracteur par ressource : le Bûcheron pour le bois, le Carrier pour la pierre, le Tanneur pour la peau, le Charbonnier, le Sablier, les mineurs… Chaque bâtiment ne récolte que sa ressource et monte de niveau avec les âges (Cabane, Hutte, Scierie…). Dans la fiche d’un gisement, « ↑ Niveau 2 » remplace un exemplaire par le niveau d’après. Le sable et le charbon se récoltent avec le même bâtiment dans toutes leurs terres. Tes parties en cours sont converties : rien n’est perdu, chaque extracteur reste où il était.",
-    "✦ Les Traces ne se dépensent plus en pleine partie : la Mémoire des mains se consulte toujours, mais les achats ne s’ouvrent qu’au réveil d’un nouveau Semeur, après la relève. Ils se ferment avec le bouton « Terminé : commencer le cycle » ou au premier passage franchi, et les Traces non dépensées attendent la relève suivante.",
-    "🌅 La fenêtre de première relève est réécrite : elle s’appelle « Fin du premier cycle » et liste ce que tu gagnes (✦ Traces), ce que tu gardes et ce qui repart de zéro. Le bouton « Passer le relais » est visible tout de suite. ⏱️ Mains sûres a enfin un vrai effet : fabrication à la main 20 % plus rapide par niveau, et 10 % de chances de gagner une pièce en plus.",
-    "🌅 La première relève arrive plus tard : une fois la Plaine franchie, avec les ✦ Traces du passage en plus des 3 offertes. Pour explorer la grotte, le guide t’aide à trouver la torche. Après l’éveil, un rappel en haut du Domaine dit ce que le nouveau Semeur a gardé et combien de Traces il peut dépenser.",
+    "✦ Les Souvenirs ne se dépensent plus en pleine partie : la Mémoire des mains se consulte toujours, mais les achats ne s’ouvrent qu’au réveil d’un nouveau Semeur, après la relève. Ils se ferment avec le bouton « Terminé : commencer le cycle » ou au premier passage franchi, et les Souvenirs non dépensés attendent la relève suivante.",
+    "🌅 La fenêtre de première relève est réécrite : elle s’appelle « Fin du premier cycle » et liste ce que tu gagnes (✦ Souvenirs), ce que tu gardes et ce qui repart de zéro. Le bouton « Passer le relais » est visible tout de suite. ⏱️ Mains sûres a enfin un vrai effet : fabrication à la main 20 % plus rapide par niveau, et 10 % de chances de gagner une pièce en plus.",
+    "🌅 La première relève arrive plus tard : une fois la Plaine franchie, avec les ✦ Souvenirs du passage en plus des 3 offertes. Pour explorer la grotte, le guide t’aide à trouver la torche. Après l’éveil, un rappel en haut du Domaine dit ce que le nouveau Semeur a gardé et combien de Souvenirs il peut dépenser.",
     "🔎 Les ressources de l’Atelier remontent : la recherche reste en haut, et le tri et les filtres se rangent derrière un bouton « Filtres » (le chiffre dit combien sont actifs). Il s’ouvre sur place et se referme quand tu choisis.",
     "♿ Plus accessible : au clavier, Entrée pose une ressource sur l’établi (« i » ou Maj + Entrée ouvre sa fiche) et la Carte se parcourt lieu par lieu. Le bouton « ⓘ Fiches » remplace l’appui long, les champs et les liens ont un nom, et les textes sont au moins à 4,5:1 de contraste dans toutes les époques (les accents du Jour sont un peu plus sombres).",
     "🌳 Retrouver ses recettes dans l’arbre : une recherche (🔍) mène au nœud et ouvre ses ingrédients et ses usages ; le bouton vert ● ne laisse en lumière que ce que tu peux fabriquer maintenant, et un point vert les marque toujours.",
@@ -1733,7 +1734,7 @@
     "🌱 Les premières terres prennent plus de temps : avant d’ouvrir un passage, il faut avoir exploré les lieux de la terre où tu es.",
     "🧭 La fenêtre d’un passage dit alors ce qu’il reste à explorer, avec un bouton pour lancer l’exploration.",
     "✨ Des retours discrets quand une chose réussit : une étincelle au thermomètre quand il passe à « brûlant », la nouvelle terre qui s’allume, la pastille d’Intuition qui apparaît.",
-    "✦ Avant la relève, une liste dit ce qui est conservé et ce qui est remis à zéro, avec les Traces gagnées ; au réveil, la partie commence par ce que le Semeur retrouve.",
+    "✦ Avant la relève, une liste dit ce qui est conservé et ce qui est remis à zéro, avec les Souvenirs gagnés ; au réveil, la partie commence par ce que le Semeur retrouve.",
     "🔇 Moins de choses d’un coup au début : les Quêtes et le compteur d’étapes arrivent avec le premier âge, et les messages s’espacent."
   ];
 

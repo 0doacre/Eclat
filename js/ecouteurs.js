@@ -56,11 +56,11 @@
         const first = !S().meta.tracesTotal && E.releveGain() === o.tr;
         const zn = zoneName(o.z);
         const resList = (E.ZONES[o.z] && E.ZONES[o.z].res || []).map((r) => I[r] && I[r].n.toLowerCase()).filter(Boolean).slice(0, 3).join(", ");
-        const sub = "+" + o.tr + " ✦ Traces à ta prochaine relève" + (resList ? " · " + resList : "");
+        const sub = "+" + o.tr + " ✦ Souvenirs à ta prochaine relève" + (resList ? " · " + resList : "");
         fete({ ic: "🧭", kick: "Passage franchi · " + D.PASSAGES[o.z].n, title: zn, sub, tier: 2 });
-        if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Traces",
+        if (first) setTimeout(() => simpleModal("Nouveau", "✦ Tu gagnes des Souvenirs",
           "<p><b>Rien ne presse :</b> continue ta partie aussi longtemps que tu veux.</p>" +
-          "<p>Chaque passage franchi laisse des Traces ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Traces.</p>" +
+          "<p>Chaque passage franchi laisse des Souvenirs ✦. Quand tu le veux, tu peux <b>passer le relais</b> : un nouveau Semeur repart du début, avec tes recettes et les améliorations achetées avec ces Souvenirs.</p>" +
           '<p class="small muted">Touche ✦ en haut de l’écran pour voir ce qu’elles offrent.</p>', "Compris"), 2200);
       });
       E.on("zone", (z) => {

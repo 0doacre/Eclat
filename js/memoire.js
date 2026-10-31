@@ -244,7 +244,7 @@
       const totalGain = gain + ecusTr;
       // au-delà de ce que les passages ont rapporté, le Troqueur ne rachète plus qu’un quart : on le dit
       const plafond = det.plafonne ? " Il les rachète à plein tarif jusqu’à " + det.seuil + " ✦, ce que tes passages ont rapporté, puis à un quart : sans cela, " + det.brut + " ✦." : "";
-      const ecusMsg = ecus > 0 ? '<p class="small">Tes ' + fmt(ecus) + ' écus deviennent ' + ecusTr + ' ✦ Trace' + (ecusTr > 1 ? 's' : '') + '.' + plafond + '</p>' : '';
+      const ecusMsg = ecus > 0 ? '<p class="small">Tes ' + fmt(ecus) + ' écus deviennent ' + ecusTr + ' ✦ Souvenir' + (ecusTr > 1 ? 's' : '') + '.' + plafond + '</p>' : '';
       const isLibere = (typeof E.isLibere === "function" && E.isLibere()) || (st.meta && st.meta.endings && st.meta.endings.retour);
       const kicker = isLibere ? "Le repos partagé" : "La relève";
       const title = isLibere ? "Passer le relais près du feu ?" : "Éveiller le Semeur " + (st.cycle + 7) + " ?";
@@ -257,7 +257,7 @@
       openModal({
         html: '<div class="kicker">' + kicker + "</div><h2>" + title + "</h2>" + desc +
           (isLibere
-            ? "<p>Tu gagnes <b>" + totalGain + " ✦ Trace" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg
+            ? "<p>Tu gagnes <b>" + totalGain + " ✦ Souvenir" + (totalGain > 1 ? "s" : "") + "</b>, à dépenser dans la Mémoire des mains." + (ech ? " Échos : <b>" + ech + "</b>, soit <b>+" + ech * 50 + " %</b> de récolte et de production." : "") + "</p>" + ecusMsg
             : leftHTML(totalGain, ecus, ecusTr)) +
           cycleMirrorHTML() +
           '<p class="small"><b>💾 Une copie de ta partie est mise de côté avant</b> (Menu → Sauvegardes) : tu pourras toujours revenir en arrière.</p>' +
@@ -322,14 +322,14 @@
     function donsRepere() {
       return E.donsOffre().length ? '<button class="dom-tip dom-don" data-dons>🎁 Le Semeur d’avant a laissé trois dons. Tu en prends un. <span>voir ▸</span></button>' : "";
     }
-    /* après la relève obligatoire : un rappel en haut du Domaine, qui s’efface quand les Traces sont dépensées (ou au bout de quinze minutes) */
+    /* après la relève obligatoire : un rappel en haut du Domaine, qui s’efface quand les Souvenirs sont dépensées (ou au bout de quinze minutes) */
     const REVEIL_MIN = 15;
     function reveilRepere() {
       const st = S(), m = st.meta;
       if (!m.forcedDone || st.cycle !== 2 || !(m.traces > 0) || !E.achatsOuverts() || !m.reveilAt || Date.now() - m.reveilAt > REVEIL_MIN * 60000) return "";
       const rec = Object.keys(st.known).length;
       return '<button class="dom-tip dom-reveil" data-cycle>🌅 Un autre Semeur a pris le relais. Il a gardé tes ' + rec + " recette" + (rec > 1 ? "s" : "") +
-        " et dispose de <b>" + fmt(m.traces) + " ✦ Traces</b> à dépenser dans la Mémoire des mains. <span>dépenser ▸</span></button>";
+        " et dispose de <b>" + fmt(m.traces) + " ✦ Souvenirs</b> à dépenser dans la Mémoire des mains. <span>dépenser ▸</span></button>";
     }
     /* le don du cycle, dans la Mémoire des mains */
     function donCycleHTML() {
@@ -369,7 +369,7 @@
           return '<button class="mnode' + (n.l ? " on" : "") + (n.max ? " max" : "") + (n.ok ? " can" : "") + (n.soon ? " soon" : "") + (cur ? " sel" : "") + '" data-m="memsel" data-id="' + id + '" aria-label="' + esc(n.x.n) + (n.inf ? ", niveau " + n.l : ", niveau " + n.l + " sur " + n.x.cost.length) + '"><span class="mic">' + n.x.ic + "</span>" + pips + (n.inf ? '<span class="mpips">' + n.l + "</span>" : "") + "</button>";
         }).join("") + "</div></div>";
       }
-      h += '</div><div class="mroot"><span>✦ ' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + "</span></div>";
+      h += '</div><div class="mroot"><span>✦ ' + fmt(m.traces) + " Souvenir" + (m.traces > 1 ? "s" : "") + "</span></div>";
       const id = U.memSel;
       if (!id) return h + '<p class="tiny muted center">Sélectionne une amélioration pour consulter ses effets.</p>';
       const n = info(id), x = n.x;
@@ -382,15 +382,15 @@
       return h;
     }
     /* ------------------------------------------------------------ MÉMOIRE DES MAINS
-     * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Traces. */
-    const ACHATS_FERMES = "Les Traces se dépensent au réveil d’un nouveau Semeur : passe le relais, puis achète ici.";
+     * La relève, ce qu’elle rapporte, et les améliorations achetées avec les Souvenirs. */
+    const ACHATS_FERMES = "Les Souvenirs se dépensent au réveil d’un nouveau Semeur : passe le relais, puis achète ici.";
     function memHTML() {
       const st = S(), m = st.meta, gain = E.releveGain(), can = E.canReleve();
-      let h = '<div class="kicker">✦ La Mémoire des mains <button type="button" class="btn-aide mini" data-aide="releve" title="Comprendre la relève des Semeurs" aria-label="Comprendre la relève des Semeurs">?</button></div><h2>' + fmt(m.traces) + " Trace" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
-        '<p class="small">Chaque passage franchi laisse des <b>Traces</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
+      let h = '<div class="kicker">✦ La Mémoire des mains <button type="button" class="btn-aide mini" data-aide="releve" title="Comprendre la relève des Semeurs" aria-label="Comprendre la relève des Semeurs">?</button></div><h2>' + fmt(m.traces) + " Souvenir" + (m.traces > 1 ? "s" : "") + (can && gain ? ' <span class="small mgain">+' + gain + " à la relève</span>" : "") + "</h2>" +
+        '<p class="small">Chaque passage franchi laisse des <b>Souvenirs</b>. Quand tu passes le relais, un nouveau Semeur s’éveille : le monde repart de zéro, mais il garde ton Carnet et tout ce que tu as acheté ici.</p>';
       h += donCycleHTML();
       h += E.achatsOuverts()
-        ? '<p class="small mem-achats">C’est le moment de dépenser tes Traces. Les achats se ferment quand tu touches « Terminé », ou au premier passage franchi. Les Traces non dépensées attendent la prochaine relève.</p>'
+        ? '<p class="small mem-achats">C’est le moment de dépenser tes Souvenirs. Les achats se ferment quand tu touches « Terminé », ou au premier passage franchi. Les Souvenirs non dépensés attendent la prochaine relève.</p>'
         : '<p class="small muted mem-achats">Les achats sont fermés en cours de partie. Ils rouvrent au réveil du prochain Semeur, après la relève. Tu peux consulter tes améliorations ici.</p>';
       const catchingUp = E.isCatchingUp && E.isCatchingUp();
       const catchUpNote = catchingUp && m.maxAge > 0
@@ -486,10 +486,10 @@
     /* deux colonnes de chiffres : ce qui est conservé, ce qui est remis à zéro */
     function leftHTML(gain, ecus, ecusTr) {
       const { keep, reset, traces, rec } = releveListes(gain);
-      if (traces > 0) keep.splice(rec ? 1 : 0, 0, "<b>" + fmt(traces) + " ✦</b> Traces disponibles à dépenser");
+      if (traces > 0) keep.splice(rec ? 1 : 0, 0, "<b>" + fmt(traces) + " ✦</b> Souvenirs disponibles à dépenser");
       return '<div class="rel-cols"><div class="rel-h">Acquis conservés</div>' + listeHTML("rel-keep", keep) +
         '<div class="rel-h">Remis à zéro</div>' + listeHTML("rel-reset", reset) + "</div>" +
-        '<p class="rel-gain">La relève donne <b>+' + fmt(gain || 0) + " ✦</b> Trace" + ((gain || 0) > 1 ? "s" : "") + (ecusTr ? " (" + fmt(ecus) + " écus convertis en " + ecusTr + " ✦)" : "") + " (à dépenser dans la Mémoire des mains au réveil : aucun achat n’est fait d’avance).</p>";
+        '<p class="rel-gain">La relève donne <b>+' + fmt(gain || 0) + " ✦</b> Souvenir" + ((gain || 0) > 1 ? "s" : "") + (ecusTr ? " (" + fmt(ecus) + " écus convertis en " + ecusTr + " ✦)" : "") + " (à dépenser dans la Mémoire des mains au réveil : aucun achat n’est fait d’avance).</p>";
     }
     /* la fenêtre de la première relève : ce qu’on gagne, ce qu’on garde, ce qui repart de zéro, pourquoi. Le langage d’une interface de jeu, sans récit. */
     function forcedReleveHTML() {
@@ -498,7 +498,7 @@
       return '<div class="kicker">Relève</div><h2>Fin du premier cycle</h2>' +
         '<p class="small">Tu as franchi ton premier passage. C’est le moment de la relève : le monde recommence de zéro, mais tu gardes tes recettes.</p>' +
         '<div class="rel-cols"><div class="rel-h">Tu gagnes</div>' +
-        listeHTML("rel-gagne", ["<b>" + fmt(total) + " ✦ Traces</b> (" + gift + " offertes" + (pass ? ", " + pass + " pour le passage" : "") + ")", "À dépenser tout de suite dans la Mémoire des mains : ce sont des améliorations permanentes"]) +
+        listeHTML("rel-gagne", ["<b>" + fmt(total) + " ✦ Souvenirs</b> (" + gift + " offertes" + (pass ? ", " + pass + " pour le passage" : "") + ")", "À dépenser tout de suite dans la Mémoire des mains : ce sont des améliorations permanentes"]) +
         '<div class="rel-h">Tu gardes</div>' + listeHTML("rel-keep", keep) +
         '<div class="rel-h">Repart de zéro</div>' + listeHTML("rel-reset", reset) + "</div>" +
         '<p class="small">À chaque relève, tu repars plus vite : tu connais déjà tes recettes, et la Mémoire des mains garde tes améliorations.</p>' +
@@ -512,7 +512,7 @@
       const rows = [];
       if (rec) rows.push("Le Carnet garde tes <b>" + rec + "</b> recettes.");
       if (Object.keys(E.ruins()).length) rows.push("Des ruines peuvent être réparées pour une fraction de leur coût de construction.");
-      if (m.traces > 0) rows.push("Tes <b>" + fmt(m.traces) + " ✦</b> Traces sont dans la Mémoire des mains.");
+      if (m.traces > 0) rows.push("Tes <b>" + fmt(m.traces) + " ✦</b> Souvenirs sont dans la Mémoire des mains.");
       if (!rows.length) { if (onClose) onClose(); return; }
       openModal({
         html: '<div class="kicker">Semeur ' + (st.cycle + 6) + "</div><h2>Tu te réveilles à la Lisière</h2>" +
@@ -555,7 +555,7 @@
             else {
               A.fail(0);
               const c = E.memCost(b.dataset.id), m = S().meta;
-              toast(c !== undefined && E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras l’acheter juste après la relève, avec les Traces qu’elle rapporte." : "Il te faut plus de Traces : franchis des passages, puis passe le relais.", { key: "mem" });
+              toast(c !== undefined && E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras l’acheter juste après la relève, avec les Souvenirs qu’elle rapporte." : "Il te faut plus de Souvenirs : franchis des passages, puis passe le relais.", { key: "mem" });
             }
             swapModal(Object.assign(o, { html: memHTML() }));
             return true;
@@ -566,7 +566,7 @@
             else {
               A.fail(0);
               const c = E.transCost(b.dataset.id), m = S().meta;
-              toast(E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras franchir ce palier stellaire juste après la relève." : "Il te faut plus de Traces pour franchir ce palier stellaire.", { key: "trans" });
+              toast(E.canReleve() && m.traces + E.releveGain() >= c ? "Tu pourras franchir ce palier stellaire juste après la relève." : "Il te faut plus de Souvenirs pour franchir ce palier stellaire.", { key: "trans" });
             }
             swapModal(Object.assign(o, { html: memHTML() }));
             return true;
@@ -577,7 +577,7 @@
             else {
               A.fail(0);
               const cost = D.HINT_ENDING_COST || 75, m = S().meta;
-              toast(E.canReleve() && m.traces + E.releveGain() >= cost ? "Tu pourras écouter ce murmure juste après la relève." : "Il te faut 75 Traces pour écouter ce murmure.", { key: "hint" });
+              toast(E.canReleve() && m.traces + E.releveGain() >= cost ? "Tu pourras écouter ce murmure juste après la relève." : "Il te faut 75 Souvenirs pour écouter ce murmure.", { key: "hint" });
             }
             swapModal(Object.assign(o, { html: memHTML() }));
             return true;
@@ -588,7 +588,7 @@
             const canAfford = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && m.traces >= c; });
             if (E.achatsOuverts() && zeroBought && canAfford && !(btn && btn.dataset && btn.dataset.confirm === "1")) {
               if (btn && btn.dataset) btn.dataset.confirm = "1";
-              toast("Tu peux déjà acheter une amélioration (ex. Mains calleuses). Touche à nouveau « Terminé » si tu préfères garder tes Traces.", { key: "mem_fin" });
+              toast("Tu peux déjà acheter une amélioration (ex. Mains calleuses). Touche à nouveau « Terminé » si tu préfères garder tes Souvenirs.", { key: "mem_fin" });
               return true;
             }
             E.fermerAchats(); save(); return false;
@@ -675,8 +675,8 @@
       const txt = can && gain ? "+" + gain : fmt(m.traces);
       const n = $("#memN");
       if (n.textContent !== txt) n.textContent = txt;
-      b.setAttribute("aria-label", can && gain ? "Traces à gagner : +" + gain + " (Mémoire des mains)" : "Traces : " + fmt(m.traces) + " (Mémoire des mains)");
-      b.setAttribute("title", can && gain ? "Relève : +" + gain + " Traces à gagner (toucher pour voir la Mémoire)" : "Traces : " + fmt(m.traces) + " (toucher pour ouvrir la Mémoire des mains)");
+      b.setAttribute("aria-label", can && gain ? "Souvenirs à gagner : +" + gain + " (Mémoire des mains)" : "Souvenirs : " + fmt(m.traces) + " (Mémoire des mains)");
+      b.setAttribute("title", can && gain ? "Relève : +" + gain + " Souvenirs à gagner (toucher pour voir la Mémoire)" : "Souvenirs : " + fmt(m.traces) + " (toucher pour ouvrir la Mémoire des mains)");
 
       // Calcul si un achat réel est possible (maintenant ou après la relève)
       const pot = E.achatsOuverts() ? m.traces : can && gain ? m.traces + gain : 0;

@@ -168,7 +168,7 @@
       if (k === "obj") corps = api.top();
       else if (k === "rel") {
         const s = E.shouldSuggestReleve && E.shouldSuggestReleve();
-        corps = s ? '<p class="small">Les matières deviennent lourdes à arracher et les mains fatiguent. En passant le relais maintenant, tu transmettras <b>+' + s.gain + ' Traces</b> pour éveiller un Semeur aux récoltes démultipliées.</p><button class="btn pri" data-m="releve">Passer le relais (+' + s.gain + " ✦)</button>" : "";
+        corps = s ? '<p class="small">Les matières deviennent lourdes à arracher et les mains fatiguent. En passant le relais maintenant, tu transmettras <b>+' + s.gain + ' Souvenirs</b> pour éveiller un Semeur aux récoltes démultipliées.</p><button class="btn pri" data-m="releve">Passer le relais (+' + s.gain + " ✦)</button>" : "";
       } else if (k === "comptoir") corps = E.zoneOpen(D.COMPTOIR.zone) ? comptoirHTML() : "";
       else if (k === "oeuvre") corps = Object.keys(D.PROJECTS).filter((pid) => E.projVisible(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length).map(oeuvreHTML).join("");
       else if (k === "prod") corps = (domaineMachinesSummary() + prodHTML()) || '<p class="small muted">Rien ne tourne encore ici : les machines et les extracteurs apparaîtront dans cette feuille.</p>';
@@ -205,8 +205,8 @@
       if (sugRel) {
         h += '<div class="card acc releve-alerte" style="margin:8px 0 10px;border-left:3px solid var(--acc);background:var(--panel2)">' +
           '<div class="row between items-center"><span class="step-badge">✦ Relais conseillé</span><b class="mgain">+' + sugRel.gain + ' ✦</b></div>' +
-          '<p class="small" style="margin:6px 0 8px">Les matières deviennent lourdes à arracher et les mains fatiguent. En passant le relais maintenant, tu transmettras <b>+' + sugRel.gain + ' Traces</b> pour éveiller un Semeur aux récoltes démultipliées.</p>' +
-          '<button class="btn pri small" data-m="releve" title="Voir les gains de Traces et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
+          '<p class="small" style="margin:6px 0 8px">Les matières deviennent lourdes à arracher et les mains fatiguent. En passant le relais maintenant, tu transmettras <b>+' + sugRel.gain + ' Souvenirs</b> pour éveiller un Semeur aux récoltes démultipliées.</p>' +
+          '<button class="btn pri small" data-m="releve" title="Voir les gains de Souvenirs et les bonus de la prochaine relève">Passer le relais (+' + sugRel.gain + ' ✦)</button></div>';
       }
       const all = U.domAll || zs.length <= SHOWN + 1;
       zs.forEach((z, i) => { if (all || i < SHOWN || U.domOpen === z) h += terreHTML(z); });
@@ -1034,9 +1034,9 @@
         const st = S();
         let h = '<div class="sheet-h"><span class="sheet-ic">🪙</span><div class="grow"><h2>Le Comptoir</h2><div class="tiny muted">Le Troqueur · <span data-cecus>' + fmt(st.ecus || 0) + '</span> écus</div></div></div>';
         // à l’ouverture, ce que le Troqueur dit et ce que porte le bois du comptoir (données du récit)
-        // à quoi servent les écus : ils deviennent des Traces à la relève, avec un plafond mou
+        // à quoi servent les écus : ils deviennent des Souvenirs à la relève, avec un plafond mou
         const det = E.ecusDetail((st.ecus || 0));
-        h += '<p class="tiny muted" style="margin:6px 0 0">À la relève, tes écus deviennent des ✦ Traces : au prix de ton âge (' + fmt(E.traceBasePrice()) + ' écus la Trace), à plein tarif jusqu’à ' + fmt(det.seuil) + ' ✦ (ce que tes passages ont rapporté), puis à un quart.' +
+        h += '<p class="tiny muted" style="margin:6px 0 0">À la relève, tes écus deviennent des ✦ Souvenirs : au prix de ton âge (' + fmt(E.traceBasePrice()) + ' écus le Souvenir), à plein tarif jusqu’à ' + fmt(det.seuil) + ' ✦ (ce que tes passages ont rapporté), puis à un quart.' +
           ((st.ecus || 0) > 0 ? ' Tes ' + fmt(st.ecus || 0) + ' écus en feraient <b>' + det.trace + '</b>.' : '') + '</p>';
         const parole = uiSigne("comptoir", "Le Comptoir");
         if (parole) h += '<div class="comptoir-signe lore small">' + parole + '</div>';
@@ -1188,7 +1188,7 @@
               return redraw();
             }
             A.click(); vibe(10);
-            toast("✦ +" + r.ask.tr + " Trace" + (r.ask.tr > 1 ? "s" : "") + " !", { key: "comptoir" });
+            toast("✦ +" + r.ask.tr + " Souvenir" + (r.ask.tr > 1 ? "s" : "") + " !", { key: "comptoir" });
             return redraw();
           },
           buyres: (b) => {

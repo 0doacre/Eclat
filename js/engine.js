@@ -498,7 +498,7 @@
     }
 
     /* ------------------------------------------------------ Mémoire des mains (voir docs/PROGRESSION.md)
-     * Les améliorations que les Semeurs se transmettent, achetées avec les Traces. */
+     * Les améliorations que les Semeurs se transmettent, achetées avec les Souvenirs. */
     const MEM = {};
     D.MEMOIRE.forEach((m) => (MEM[m.id] = m));
     const memLvl = (id) => (S.meta && S.meta.mem && S.meta.mem[id]) || 0;
@@ -506,7 +506,7 @@
     E.memLvl = memLvl;
     E.memV = memV;
     E.memCost = (id) => MEM[id].cost[memLvl(id)]; // undefined : au maximum
-    /* Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur : la fenêtre s’ouvre à la relève et se ferme au bouton « Terminé » ou au premier passage franchi */
+    /* Les Souvenirs ne se dépensent qu’au réveil d’un nouveau Semeur : la fenêtre s’ouvre à la relève et se ferme au bouton « Terminé » ou au premier passage franchi */
     E.achatsOuverts = () => !!(S.meta && S.meta.achats);
     E.fermerAchats = () => { if (S.meta && S.meta.achats) { S.meta.achats = false; E.emit("struct"); } };
     E.memBuy = function (id) {
@@ -686,7 +686,7 @@
       return { ok: Object.keys(gave).length > 0, gave, done };
     };
     /* ------------------------------------------------------ la relève
-     * Ce qu’un nouveau Semeur gagnerait maintenant : les Traces des passages franchis.
+     * Ce qu’un nouveau Semeur gagnerait maintenant : les Souvenirs des passages franchis.
      * Dès qu’au moins un passage non offert est franchi dans le cycle, les passages ouverts par Raccourci comptent aussi. */
     E.releveGain = () => {
       const hasPaid = Object.keys(S.pass || {}).some((z) => S.pass[z].done && !S.pass[z].free && PASS[z]);
@@ -1338,7 +1338,7 @@
       const gain = E.releveGain ? E.releveGain() : 0;
       const maxAge = (S.meta && S.meta.maxAge) || 0;
       if (gain > 0 && a >= 2 && a > maxAge) {
-        // Chaque Trace non récoltée alourdit le geste au-delà du dernier jalon connu
+        // Chaque trace non récoltée alourdit le geste au-delà du dernier jalon connu
         fatigue *= (1 + 0.12 * Math.min(10, gain));
         const reach = Math.max(1 + (S.cycle || 1) * 2, maxAge > 0 ? maxAge + 1 : 0);
         const depassement = Math.max(0, a - reach);
@@ -3719,7 +3719,7 @@
       releve: {
         kicker: "Mémoire des mains",
         titre: "La relève des Semeurs",
-        texte: "Passer le relais convertit l’expérience de ton cycle en Traces. Ce bilan distingue deux choses : les bonus et découvertes effectivement acquis, et les Traces disponibles que tu pourras dépenser à ton éveil dans l’Arbre des réminiscences pour enrichir tes prochains départs."
+        texte: "Passer le relais convertit l’expérience de ton cycle en Souvenirs. Ce bilan distingue deux choses : les bonus et découvertes effectivement acquis, et les Souvenirs disponibles que tu pourras dépenser à ton éveil dans l’Arbre des réminiscences pour enrichir tes prochains départs."
       },
       ouvrier: {
         kicker: "Atelier équipé",
@@ -4279,7 +4279,7 @@
 
     /* ----------------------------------------------------------- LE COMPTOIR
      * Marché tenu par le Troqueur dans la Plaine : on vend ce qui encombre la
-     * Réserve contre des écus, et on achète des Traces et des matières premières. */
+     * Réserve contre des écus, et on achète des Souvenirs et des matières premières. */
     const VAL_CACHE = {};
     function valueOf(id) {
       if (VAL_CACHE[id] !== undefined) return VAL_CACHE[id];
@@ -4351,8 +4351,8 @@
     };
     E.traceCost = E.traceBasePrice;
 
-    /* Ce que valent des écus à la relève. Au prix de la Trace de l’âge atteint on obtient `brut` Traces ; le plafond mou en laisse
-     * le plein tarif jusqu’à `seuil` (les Traces des passages du cycle, au moins D.COMPTOIR.plafond.plancher), puis `part` du reste. */
+    /* Ce que valent des écus à la relève. Au prix du Souvenir de l’âge atteint on obtient `brut` Souvenirs ; le plafond mou en laisse
+     * le plein tarif jusqu’à `seuil` (les Souvenirs des passages du cycle, au moins D.COMPTOIR.plafond.plancher), puis `part` du reste. */
     E.ecusDetail = function (ecus, age, passages) {
       const e = ecus !== undefined ? ecus : (S.ecus || 0);
       const base = E.traceBasePrice(age);
@@ -4376,7 +4376,7 @@
     }
     E.roundNice = roundNice;
 
-    /* Prochain passage à franchir (pour les Traces de récompense) */
+    /* Prochain passage à franchir (pour les Souvenirs de récompense) */
     E.nextPassageTraces = function () {
       const z = D.ZONES.map((x) => x.id).find((id) => D.PASSAGES[id] && !zoneOpen(id) && !(S.pass && S.pass[id] && S.pass[id].done));
       if (z && D.PASSAGES[z]) return D.PASSAGES[z].tr || 1;
@@ -4959,7 +4959,7 @@
         Object.assign(n.inv, { bois: 60, fibre: 60, caillou: 40, manche: 10, corde: 10 });
       }
       S = n;
-      S.meta.achats = true; // les Traces se dépensent maintenant, au réveil du nouveau Semeur
+      S.meta.achats = true; // les Souvenirs se dépensent maintenant, au réveil du nouveau Semeur
       // la Mémoire des mains : le paquetage, et les terres déjà connues
       // ce que le paquetage donne compte comme déjà fait (les étapes « manche », « corde »… passent)
       D.PAQUETAGE.slice(0, memLvl("paquetage")).forEach((kit) => { for (const i in kit) { add(i, kit[i]); if (item(i).r) S.made[i] = Math.max(S.made[i] || 0, 1); if (isUnique(item(i)) && S.meta.ruins && S.meta.ruins[i]) delete S.meta.ruins[i]; } });
@@ -4986,7 +4986,7 @@
     };
 
     /* Première renaissance obligatoire (fin du tutoriel) */
-    /* la relève obligatoire : une fois, au cycle 1, quand le premier passage (la Plaine) est franchi : le joueur a déjà gagné ses premières Traces et sait ce que coûte un passage */
+    /* la relève obligatoire : une fois, au cycle 1, quand le premier passage (la Plaine) est franchi : le joueur a déjà gagné ses premiers Souvenirs et sait ce que coûte un passage */
     E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.pass && S.pass.plaine && S.pass.plaine.done);
     E.forcedReleve = function () {
       if (S.meta.forcedDone || S.cycle !== 1) return false;
@@ -5013,7 +5013,7 @@
     };
 
     /* Détermine si la relève doit être activement proposée au joueur :
-     * - Traces disponibles à la relève
+     * - Souvenirs disponibles à la relève
      * - Le joueur a rejoint puis dépassé son front pionnier (plus jamais en plein rattrapage)
      * - ET fatigue ressentie sur l’avancée nouvelle (âge dépassé, effort unitaire long, ou gain significatif) */
     E.shouldSuggestReleve = function () {
@@ -5040,7 +5040,7 @@
           gain,
           reason: ageDepasse ? "age" : longJob ? "duree" : "traces",
           titre: "Les mains s’alourdissent",
-          texte: "Ce Semeur s’essouffle. En passant le relais maintenant (+ " + gain + " ✦), le prochain Semeur repartira avec tes Traces, des récoltes démultipliées et des gestes plus vifs."
+          texte: "Ce Semeur s’essouffle. En passant le relais maintenant (+ " + gain + " ✦), le prochain Semeur repartira avec tes Souvenirs, des récoltes démultipliées et des gestes plus vifs."
         };
       }
       return null;

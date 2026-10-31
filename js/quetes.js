@@ -200,7 +200,7 @@
         '<div class="bar pass"><i style="width:' + (p.frac * 100).toFixed(1) + '%"></i></div>' +
         (chantier && options.chantier ? (z === "riviere" ? window.EclatPasserelle.html(E) : window.EclatSentier.html(E)) : "") +
         explore +
-        (p.done || lieux ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '"' + (chantier ? ' title="Utiliser les matériaux disponibles pour faire avancer ces travaux"' : '') + '>🚧 ' + (chantier ? chantierLabel : "Déposer") + '</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Traces pour la prochaine relève</span></div>") +
+        (p.done || lieux ? "" : '<div class="row wrap" style="margin:6px 0"><button class="btn small pri' + (p.can ? "" : " nope") + '" data-pour="' + z + '"' + (chantier ? ' title="Utiliser les matériaux disponibles pour faire avancer ces travaux"' : '') + '>🚧 ' + (chantier ? chantierLabel : "Déposer") + '</button><span class="tiny muted">Une fois franchi : +' + p.P.tr + " ✦ Souvenirs pour la prochaine relève</span></div>") +
         '<div class="passcost small">' +
         Object.keys(p.cost).map((i) => {
           const got = Math.min(p.cost[i], p.paid[i] || 0), ok = got >= p.cost[i], eta = passEta(p, i), have = st.inv[i] || 0;
@@ -379,7 +379,7 @@
           h += '<div class="small muted" style="margin-bottom:8px">Trois rituels renouvelés chaque jour. Réclame tes récompenses une fois les objectifs atteints :</div>';
           rits.forEach((r, idx) => {
             const pct = Math.min(100, Math.floor((r.prog / r.target) * 100));
-            const rewTxt = r.reward.tr ? '+' + r.reward.tr + ' ✦ Traces' : r.reward.intu ? '+' + r.reward.intu + ' ✨ Intuition' : '+' + r.reward.ecus + ' écus';
+            const rewTxt = r.reward.tr ? '+' + r.reward.tr + ' ✦ Souvenirs' : r.reward.intu ? '+' + r.reward.intu + ' ✨ Intuition' : '+' + r.reward.ecus + ' écus';
             h += '<div class="ritual-card' + (r.done ? ' done' : '') + (r.claimed ? ' claimed' : '') + '">' +
               '<div class="ritual-head"><span class="ritual-ic">' + r.ic + '</span><div class="grow"><div class="ritual-title">' + esc(r.n) + '</div><div class="tiny muted">' + esc(r.d) + '</div></div>' +
               '<span class="reward-tag">' + rewTxt + '</span></div>' +
@@ -440,7 +440,7 @@
             if (res.ok) {
               A.click();
               vibe(15);
-              toast("✦ +" + (res.ask.tr + (res.bonus || 0)) + " Traces !", { key: "troqueur" });
+              toast("✦ +" + (res.ask.tr + (res.bonus || 0)) + " Souvenirs !", { key: "troqueur" });
               save();
               render(true);
               swapModal(Object.assign(modalObj, { html: makeHTML() }));

@@ -111,7 +111,7 @@
           { tab: "domaine", at: () => (document.querySelector(".goal-card [data-pour]") ? ".goal-card [data-pour]" : ".dom-pass [data-pour]"),
             text: "🚧 Derrière ce passage, une autre terre. Explore les lieux de celle où tu es, puis apporte les ressources.",
             done: () => E.passPending().some((z) => E.passInfo(z).frac > 0) || !E.passPending().length },
-          { tab: "domaine", text: "Explore, récolte, fabrique, puis dépose les ressources. Chaque passage franchi donne des ✦ Traces pour la Mémoire des mains.", next: true }
+          { tab: "domaine", text: "Explore, récolte, fabrique, puis dépose les ressources. Chaque passage franchi donne des ✦ Souvenirs pour la Mémoire des mains.", next: true }
         ] },
       { id: "releve", n: "La relève",
         when: () => S().cycle === 1 && E.canReleve() && !!document.querySelector("#memBtn:not(.hidden)"),
@@ -155,7 +155,7 @@
             text: "Choisis un thème. Il dit une réplique à la fois, et certaines cachent un conseil.",
             done: heardTroc },
           { modal: true, at: '.modal:not(.hidden) [data-t="demandes"]', back: 0,
-            text: "Dans « Demandes », il réclame des objets contre des Traces ✦. Chaque livraison lui donne un peu plus confiance en toi.",
+            text: "Dans « Demandes », il réclame des objets contre des Souvenirs ✦. Chaque livraison lui donne un peu plus confiance en toi.",
             next: true }
         ] },
       { id: "signe", n: "Un signe", modal: true,

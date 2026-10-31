@@ -1153,10 +1153,10 @@
           id: "c3", th: "comptoir", rang: 1, renouv: true,
           stage: "Il tapote une coupelle de cuivre.",
           q: "« Et mes écus, quand je passe le relais ? »",
-          t: "« Quand tu passes le relais, je change tes écus restants en Traces. Ce qui traîne chez moi ne rapporte rien. »",
+          t: "« Quand tu passes le relais, je change tes écus restants en Souvenirs. Ce qui traîne chez moi ne rapporte rien. »",
           choix: [
-            { k: "a", q: "« Tu ne me gardes pas mes pièces d’or ? »", t: "« Les pièces dorment chez moi. Les Traces éveillent les mains du prochain Semeur. »" },
-            { k: "b", q: "« Le taux de conversion est fixe ? »", t: "« Je convertis ce qui reste sur le plateau. Plus tu laisses d’écus, plus tu gagnes de Traces. »" },
+            { k: "a", q: "« Tu ne me gardes pas mes pièces d’or ? »", t: "« Les pièces dorment chez moi. Les Souvenirs éveillent les mains du prochain Semeur. »" },
+            { k: "b", q: "« Le taux de conversion est fixe ? »", t: "« Je convertis ce qui reste sur le plateau. Plus tu laisses d’écus, plus tu gagnes de Souvenirs. »" },
             { k: "c", q: "« Je préfère tout dépenser en marchandises. »", t: "« Achète ce qui t’aide. Mais les outils ne traversent pas la relève, la mémoire si. »" }
           ]
         },
@@ -1233,7 +1233,7 @@
           q: "« Tes demandes, tu les choisis comment ? »",
           t: "« Je ne te demande que ce que tu sais déjà fabriquer, de ton âge ou du précédent. Ma liste change avec l’heure. »",
           choix: [
-            { k: "a", q: "« Qu’est-ce que j’y gagne ? »", t: "« Des Traces et de la confiance. Plus tu livres, plus j’ouvre mes réserves. »" },
+            { k: "a", q: "« Qu’est-ce que j’y gagne ? »", t: "« Des Souvenirs et de la confiance. Plus tu livres, plus j’ouvre mes réserves. »" },
             { k: "b", q: "« Tu demandes des quantités raisonnables ? »", t: "« Mes commandes suivent ce que tes ateliers produisent. Je ne demande pas la lune à qui n’a qu’un bâton. »" },
             { k: "c", q: "« Et si je n’ai pas le temps ? »", t: "« La liste tournera. Je pars en tournée, puis je reviens avec d’autres besoins. »" }
           ]
@@ -1343,10 +1343,10 @@
           id: "h4", th: "mains", rang: 1, renouv: true,
           stage: "Il tape sur un carnet relié de cuir épais.",
           q: "« Qu’est-ce qui reste, quand je passe le relais ? »",
-          t: "« Tu gardes tes recettes et les améliorations achetées avec tes Traces. Quant aux ruines, les réparer coûte bien moins cher que de tout reconstruire. »",
+          t: "« Tu gardes tes recettes et les améliorations achetées avec tes Souvenirs. Quant aux ruines, les réparer coûte bien moins cher que de tout reconstruire. »",
           choix: [
             { k: "a", q: "« Les ruines restent ouvertes ? »", t: "« Les murs restent debout. Il suffit de quelques pièces pour réveiller les machines. »" },
-            { k: "b", q: "« Les Traces sont éternelles ? »", t: "« Gravées dans la pierre. Aucun départ n’efface ce que la mémoire a acquis. »" },
+            { k: "b", q: "« Les Souvenirs sont éternelles ? »", t: "« Gravées dans la pierre. Aucun départ n’efface ce que la mémoire a acquis. »" },
             { k: "c", q: "« Je reconstruirai plus vite au prochain cycle. »", t: "« Chaque relève va deux fois plus vite que la précédente. C’est la loi du Domaine. »" }
           ]
         },

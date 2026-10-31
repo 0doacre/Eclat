@@ -170,7 +170,7 @@
               '<b>🌿 ' + esc(newAge) + '</b>' +
               '<div class="small muted">' +
                 'Semeur ' + newSemeur + ' · ' + newRec + ' recettes connues<br>' +
-                '⏱️ ' + newPlay + ' de jeu · ✦ ' + ((o.meta && o.meta.traces) || 0) + ' Traces' +
+                '⏱️ ' + newPlay + ' de jeu · ✦ ' + ((o.meta && o.meta.traces) || 0) + ' Souvenirs' +
               '</div>' +
             '</div>' +
             '<div class="card duel-card current">' +
@@ -178,7 +178,7 @@
               '<b>🌿 ' + esc(curAge) + '</b>' +
               '<div class="small muted">' +
                 'Semeur ' + curSemeur + ' · ' + curRec + ' recettes connues<br>' +
-                '⏱️ ' + curPlay + ' de jeu · ✦ ' + ((st.meta && st.meta.traces) || 0) + ' Traces' +
+                '⏱️ ' + curPlay + ' de jeu · ✦ ' + ((st.meta && st.meta.traces) || 0) + ' Souvenirs' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -632,7 +632,7 @@
             '<div class="menu-game-banner">' +
               '<div class="m-hero-cell"><span class="m-cell-lbl">Semeur</span><b class="m-cell-val">' + ((st.cycle || 1) + 6) + 'e</b></div>' +
               '<div class="m-hero-cell"><span class="m-cell-lbl">Âge</span><b class="m-cell-val">' + esc(ageName.replace(/^Âge du /, "").replace(/^Âge de l'/, "").replace(/^Âge de la /, "").replace(/^Âge des /, "")) + '</b></div>' +
-              '<div class="m-hero-cell"><span class="m-cell-lbl">Traces</span><b class="m-cell-val m-acc">✦ ' + fmt((st.meta && st.meta.traces) || 0) + '</b></div>' +
+              '<div class="m-hero-cell"><span class="m-cell-lbl">Souvenirs</span><b class="m-cell-val m-acc">✦ ' + fmt((st.meta && st.meta.traces) || 0) + '</b></div>' +
               '<div class="m-hero-cell"><span class="m-cell-lbl">Échos</span><b class="m-cell-val m-echo">🌅 ' + nbEchos + '/5</b></div>' +
             '</div>' +
           '</div>' +
@@ -646,7 +646,7 @@
           '</nav>' +
           sec("jeu", "🎮", "Jeu &amp; Raccourcis",
             '<div class="menu-grid game-grid">' +
-              '<button class="btn m-card-btn m-card-mem" data-m="mem" title="Ce que tes Traces t’offrent d’une partie à l’autre"><span class="m-card-icon">✦</span><span class="m-card-main"><b>Mémoire des mains</b><span class="tiny muted">' + ((st.meta && st.meta.traces) || 0) + ' Traces disponibles</span></span></button>' +
+              '<button class="btn m-card-btn m-card-mem" data-m="mem" title="Ce que tes Souvenirs t’offrent d’une partie à l’autre"><span class="m-card-icon">✦</span><span class="m-card-main"><b>Mémoire des mains</b><span class="tiny muted">' + ((st.meta && st.meta.traces) || 0) + ' Souvenirs disponibles</span></span></button>' +
               (hasComptoir ? '<button class="btn m-card-btn m-card-comp" data-m="comptoir" title="Vendre, acheter et répondre aux demandes du Troqueur"><span class="m-card-icon">🪙</span><span class="m-card-main"><b>Le Comptoir</b><span class="tiny muted">Troc &amp; commandes</span></span></button>' : "") +
             "</div>" +
             '<div class="toggle"><span id="mt-tuto">Guide des Semeurs <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain" title="Revoir les explications du guide depuis le début">Revoir</button>' +
@@ -819,10 +819,10 @@
         "<dt>Passage</dt><dd>Pour entrer dans une nouvelle terre : il faut l’objet qui y mène, puis apporter ce que le passage demande.</dd>" +
         "<dt>Intuition ✨</dt><dd>Se gagne en découvrant. Sert à étudier une ressource (pour savoir avec quelles actions elle cache des recettes) et à déchiffrer une recette inconnue étape par étape.</dd>" +
         "<dt>Déchiffrer</dt><dd>Révéler une recette inconnue contre de l’Intuition : d’abord l’action, puis une des ressources, puis la recette entière.</dd>" +
-        "<dt>Traces ✦, relève</dt><dd>Chaque passage franchi laisse des Traces. La relève recommence le monde en gardant tes recettes. Les Traces servent à acheter des améliorations dans la Mémoire des mains.</dd>" +
+        "<dt>Souvenirs ✦, relève</dt><dd>Chaque passage franchi laisse des Souvenirs. La relève recommence le monde en gardant tes recettes. Les Souvenirs servent à acheter des améliorations dans la Mémoire des mains.</dd>" +
         "<dt>Ruine</dt><dd>Ce qu’un Semeur a construit attend le suivant. Une ruine se répare sur place pour une fraction de son coût d’origine, sans repasser par l’Atelier.</dd>" +
-        "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus restants deviennent des Traces à la relève.</dd>" +
-        "<dt>Demande du Troqueur</dt><dd>Le Troqueur demande des objets fabriqués contre des Traces. Livrer prend les objets dans la Réserve et donne les Traces tout de suite. Les demandes se renouvellent régulièrement.</dd>" +
+        "<dt>Comptoir, écus</dt><dd>Marché tenu par le Troqueur dans la Plaine. On y vend ce qui encombre la Réserve contre des écus, et on y achète des ressources. Les écus restants deviennent des Souvenirs à la relève.</dd>" +
+        "<dt>Demande du Troqueur</dt><dd>Le Troqueur demande des objets fabriqués contre des Souvenirs. Livrer prend les objets dans la Réserve et donne les Souvenirs tout de suite. Les demandes se renouvellent régulièrement.</dd>" +
         "<dt>Âge, étapes</dt><dd>Le jeu avance d’âge en âge. 🏁 montre les étapes de l’âge en cours.</dd>" +
         "<dt>Signe</dt><dd>Un mot de l’écriture des Anciens. Tant que tu ne l’as pas compris, il reste dessiné. Touche-le pour proposer ce qu’il veut dire.</dd>" +
         "<dt>Grand Œuvre</dt><dd>Un chantier immense qui mène à une fin du jeu. Tu y verses des ressources de la Réserve, ou tu l’alimentes pour qu’il s’y serve seul.</dd></dl>" +
