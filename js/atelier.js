@@ -1792,15 +1792,17 @@
     function seuilHTML(c) {
       if (c.id === "construction") return chantiersHTML(c);
       if (!E.autoEtat || (D.TRAVAILLEURS || {}).generalistes === false) return "";
-      const sel = E.seuilAtelier(c.id), etats = E.autoEtat(c.id);
+      const val = E.seuilAtelier(c.id), etats = E.autoEtat(c.id), PAL = (D.TRAVAILLEURS || {}).paliers || [];
+      const sel = PAL.reduce((a, x) => (x.p <= val ? x : a), PAL[0] || { p: val, n: "", d: "" }); // le palier qui contient la valeur (une ancienne partie peut avoir 20 %)
       const equipe = (c.apprentis || 0) + (c.ouvriers || 0);
       const mot = { marche: "en cours", plein: "au seuil", manque: "manque de matière", attend: "en attente" };
       const lignes = etats.map((x) => '<li class="atel-seuil-l is-' + x.etat + '">' + icon(x.id, "sm") + "<b>" + esc(I[x.id].n) + "</b>" +
         '<span class="tiny muted">' + fmt(x.have) + " / " + fmt(x.cible) + " · " + mot[x.etat] + (x.travailleurs ? " · " + x.travailleurs + " au travail" : "") + "</span></li>").join("");
       return '<div class="atel-seuil"><div class="atel-seuil-t"><b>Seuil de stock</b><span class="tiny muted">' +
         (equipe ? "Tes travailleurs fabriquent seuls ce que le métier connaît, jusqu’à ce seuil." : "Embauche pour que le métier fabrique seul, jusqu’à ce seuil.") + "</span></div>" +
-        '<div class="filters wrap" role="group" aria-label="Seuil de stock">' + [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((p) =>
-          '<button type="button" data-seuil="' + c.id + ":" + p + '" class="' + (p === sel ? "on" : "") + '" aria-pressed="' + (p === sel) + '">' + p + " %</button>").join("") + "</div>" +
+        '<div class="filters wrap" role="group" aria-label="Seuil de stock">' + PAL.map((x) =>
+          '<button type="button" data-seuil="' + c.id + ":" + x.p + '" class="' + (x.p === sel.p ? "on" : "") + '" aria-pressed="' + (x.p === sel.p) + '">' + esc(x.n) + "</button>").join("") + "</div>" +
+        '<p class="tiny muted atel-seuil-d">' + esc(sel.d) + "</p>" +
         (lignes ? '<ul class="atel-seuil-liste">' + lignes + "</ul>" : '<p class="tiny muted">Rien à fabriquer seul pour l’instant : il faut avoir fait un composant du métier à la main.</p>') +
         (E.voixHisto(c.id).length ? '<div class="atel-voix"><b class="tiny">Ils ont dit</b>' + E.voixHisto(c.id).slice(0, 3).map((m) => '<p class="tiny muted">« ' + esc(m.txt) + " »</p>").join("") + "</div>" : "") + "</div>";
     }

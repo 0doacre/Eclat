@@ -1823,7 +1823,7 @@
         }
         else if (g.kind === "main") { txt = "Jamais fabriqué à la main : " + n + ". Les travailleurs ne le peuvent pas encore"; action = { k: "fabriquer", id: g.ings[0], fam: g.fam, label: "Le fabriquer une fois" }; }
         else if (g.kind === "inconnue") { txt = "La recette de " + n + " n’est pas encore connue"; action = { k: "labo", id: g.ing, label: "Au Labo" }; }
-        else if (g.kind === "seuil0") { txt = F(g.fam) + " est réglé à 0 % : on n’y fabrique rien"; action = { k: "metier", fam: g.fam, label: "Régler le seuil" }; }
+        else if (g.kind === "seuil0") { txt = F(g.fam) + " est au repos : on n’y fabrique rien seul"; action = { k: "metier", fam: g.fam, label: "Régler le seuil" }; }
         else if (g.kind === "seuil") { txt = maj(n) + " est au seuil de " + F(g.fam) + " et il en faut plus"; action = { k: "metier", fam: g.fam, label: "Monter le seuil" }; }
         else if (g.kind === "energie") { txt = "L’énergie manque : travailleurs et machines tournent à " + g.pct + " %"; action = { k: "energie", label: "Voir l’énergie" }; }
         return Object.assign(g, { txt, action });

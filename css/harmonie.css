@@ -110,3 +110,4 @@
 .goulot { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px var(--gut, 12px); border: 1px solid var(--line2, #0002); border-left: 4px solid var(--danger, #a33); border-radius: 8px; }
 .goulot.is-seuil, .goulot.is-seuil0 { border-left-color: var(--acc, #b86a2c); }
 .goulot-txt { flex: 1 1 200px; min-width: 0; }
+.atel-seuil-d { margin: 0 0 6px; font-style: italic; }

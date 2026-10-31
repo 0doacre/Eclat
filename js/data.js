@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.54.0";
+  D.VERSION = "0.54.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1590,7 +1590,15 @@
      * tant que leur stock est sous le seuil du métier (S.ateliers[métier].seuil, en %, par pas de 10) : seuil % du « stock de confort » de la
      * recette = base × parAge^(âge de la recette − 1), au plus max. generalistes: false rend le jeu d'avant (cadences seules). */
     generalistes: true,
-    seuilDefaut: 30,
+    seuilDefaut: 10,
+    /* les paliers du seuil, nommés (le joueur ne voit pas de pourcentage) : p = part du stock de confort jusqu'à laquelle on fabrique */
+    paliers: [
+      { p: 0, n: "Au repos", d: "Personne ne fabrique seul : les travailleurs ne servent que ta file de commandes." },
+      { p: 10, n: "Au jour le jour", d: "Juste de quoi ne pas être pris de court : un petit stock de chaque composant." },
+      { p: 30, n: "Quelques réserves", d: "Un peu d’avance sur chaque composant, de quoi tenir une absence." },
+      { p: 50, n: "Bien garni", d: "Les étagères se remplissent à moitié : beaucoup de matière part en composants." },
+      { p: 100, n: "À ras bord", d: "Tout composant connu monte jusqu’à son plein stock. Gourmand en matières premières." }
+    ],
     confort: { base: 20, parAge: 1.5, max: 200 },
     /* 0.51 : chaque métier a ses travailleurs, nommés d'après ce qu'ils font (affichage seulement : le jeu garde « apprenti » et « ouvrier ») */
     noms: {
@@ -1680,11 +1688,12 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🏷️ Le seuil de production libre se lit en mots, plus en pourcentages : au repos, au jour le jour, quelques réserves, bien garni, à ras bord. Il démarre à « au jour le jour » (au lieu d’un tiers du stock de confort), pour qu’un travailleur ne vide pas des matières dont tu as besoin sans que tu l’aies voulu. Le goulot « seuil à 0 % » devient « au repos ».",
     "🏗️ Les bâtisseurs ont un rôle : ils exécutent les chantiers que tu lances, c’est-à-dire les constructions à prix croissant (extracteurs, machines) que tu mets dans ta file, à ta place et sans que tu les fasses à la main. Jamais de leur propre initiative, et seulement ce que tu as déjà construit une fois toi-même. Construction apparaît dans les Ateliers dès que tu connais une construction. Dans un goulot « aucun extracteur n’en récolte », un bouton lance directement le chantier.",
     "🚧 Les goulots : quand tes travailleurs n’avancent pas, l’Atelier le dit et remonte à la vraie cause. « Goulots · 2 » en tête de l’Atelier (et sur la page du métier), avec un bouton qui la règle : voir les Terres quand aucun extracteur ne récolte la matière, embaucher quand personne ne fabrique le composant d’un autre métier, fabriquer une fois à la main ce que les travailleurs ne peuvent pas encore, régler un seuil à 0 %, voir l’énergie. Une pastille apparaît sur l’onglet Atelier quand un nouveau goulot se présente.",
     "🗣️ Les travailleurs te parlent : à ton retour d’une absence (« Patron, pendant votre absence, l’atelier a fait : 40 × corde, 12 × manche »), quand ils manquent d’une matière depuis une demi-minute (« la forge manque de charbon ! »), et quand une matière va bientôt manquer. Une voix par métier, une carte à la fois, jamais par-dessus une fenêtre, avec un portrait qui suit l’échelon du métier ; toucher la carte ouvre le métier, où les derniers messages restent lisibles. La barre du bas reste visible par défaut (le masquage devient un réglage).",
     "⌄ La barre du bas peut se ranger d’elle-même et ne laisser qu’une fine poignée. Elle vient quand tu approches la souris du bas de l’écran ou que tu touches la poignée (ou la fais glisser vers le haut), et se range après ton choix. Le défilement ne la fait plus bouger. Menu → Affichage → « Barre du bas masquée » (désactivé par défaut) active ce comportement ; sinon la barre reste visible comme avant.",
-    "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les composants que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier : 0, 10, 20 … 100 % d’un stock de confort qui grandit avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
+    "🔨 Les travailleurs d’un métier fabriquent maintenant seuls, en continu, les composants que ce métier connaît (déjà faits une fois à la main), jusqu’à un seuil que tu fixes par métier (au repos, au jour le jour, quelques réserves, bien garni, à ras bord), de plus en plus gros avec l’âge. Ils ne touchent pas à ce que réservent les commandes de ta file. Le réglage est sur la page de chaque métier, avec ce qu’ils fabriquent et où ils en sont.",
     "👷 Chaque métier a ses travailleurs, nommés d’après ce qu’ils font : artisan, bâtisseur, éleveur, forgeron, chimiste, centralier, électronicien, lettré (et leurs apprentis). Les boutons d’embauche, les renvois et la jauge d’énergie les nomment ainsi.",
     "🔘 Fin de l’harmonisation des boutons : les flèches des terres, le bouton d’arrêt de la récolte, les pastilles d’ingrédient et d’objet, et la ligne d’âge prennent l’octogone du jeu ; « Arbre » devient « Progression » ; l’aide ne promet plus de raccourcis clavier qui n’existent pas.",
     "✦ Les Traces s’appellent désormais les Souvenirs : ce que laissent les passages franchis, et que la relève transmet au Semeur suivant.",

@@ -7,6 +7,7 @@
  *
  *   node tools/sim-equipe.js [--minutes 120] [--joueurs tapeur,veilleur,…] [--ecus 80] [--max 2] [--seuils 30,100]
  *     --ecus : écus reçus par minute de jeu actif (80 : une embauche d'apprenti toutes les quelques minutes au début)
+ *     --sans-energie : l'énergie ne ralentit plus rien (isole l'effet des chevaux que les travailleurs consomment)
  *     --max  : travailleurs (apprentis + ouvriers) au plus par métier
  * Le moteur n'est jamais modifié. */
 "use strict";
@@ -20,6 +21,7 @@ EngineMod.createEngine = function (opts) {
   const up = E.update;
   let n = 0;
   D.TRAVAILLEURS.generalistes = cfg.generalistes;
+  if (process.argv.includes("--sans-energie")) D.ATELIERS.plancherEnergie = 1; // l'énergie ne ralentit rien : pour isoler son effet
   E.update = function () {
     const r = up.apply(this, arguments);
     if (cfg.employeur && ++n % 100 === 0) { // toutes les 10 s de jeu (pas de 100 ms)
