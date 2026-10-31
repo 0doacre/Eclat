@@ -33,6 +33,10 @@ const empreinte = (dir) => lancer(dir).stdout.match(/Build (\w+)/)[1];
 
 console.log("Empreinte du service worker : portable");
 
+test("la liste du cache hors ligne n’a pas de doublon (Chromium refuse alors d’installer le service worker)", () => {
+  const doubles = FILES.filter((f, i) => FILES.indexOf(f) !== i);
+  assert.deepStrictEqual(doubles, [], "fichiers listés deux fois dans sw.js : " + doubles.join(", "));
+});
 test("le dépôt tel qu’il est : l’empreinte enregistrée est la bonne", () => {
   const r = spawnSync(process.execPath, [BUILD, "--check"], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
