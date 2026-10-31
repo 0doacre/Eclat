@@ -43,22 +43,22 @@ async function run(){
   for(const width of [320,390,1280])for(const dark of [false,true])for(const equipped of (Equip?[true,false]:[false])){
     const ctx=await browser.newContext({viewport:{width,height:950},serviceWorkers:"block",reducedMotion:"reduce"}),p=await ctx.newPage(),errors=[],missing=[];
     p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()===404)missing.push(r.url());});
-    await p.addInitScript(({raw,equipped})=>{const key=equipped?'eclat.preview.craft.v1':'eclat.save.v1';if(!localStorage.getItem(key))localStorage.setItem(key,raw);if(!localStorage.getItem('eclat.preview.style'))localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','vivant');Math.random=()=>.99;},{raw:fixture(equipped,dark),equipped});
+    await p.addInitScript(({raw,equipped})=>{const key=equipped?'eclat.preview.craft.v1':'eclat.save.v1';if(!localStorage.getItem(key))localStorage.setItem(key,raw);localStorage.setItem('eclat.style.carnet-defaut','1');if(!localStorage.getItem('eclat.preview.style'))localStorage.setItem('eclat.preview.style','vivant');Math.random=()=>.99;},{raw:fixture(equipped,dark),equipped});
     await p.goto('http://127.0.0.1:'+server.address().port+'/index.html'+(equipped?'':'?atelier=classique'));
     await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<5;i++){await p.waitForTimeout(100);await p.evaluate(()=>window.__eclat.closeModal());}
-    await p.locator('[data-tab="atelier"]').click();await p.evaluate(()=>document.fonts.ready);
+    await p.locator('#tabs [data-tab="labo"]').click();await p.evaluate(()=>document.fonts.ready);
     const tag=width+'/'+(dark?'veillee':'clair')+'/'+(equipped?'equipe':'historique');
     await layout(p,tag+'/atelier');
     if(equipped){
-      const item=p.locator('#ae-item-bois');await item.click();
+      await p.locator('.ae-chip[data-ae="filtre"][data-value="tout"]').click();const item=p.locator('#ae-item-bois');await item.click();
       ok(await item.getAttribute('aria-pressed')==='true',tag+' : sélection de matière');
       await p.locator('#ae-slot-0').click();ok(await p.locator('#ae-slot-0').isDisabled(),tag+' : retrait');
       await p.locator('#ae-search').fill('peau');
       ok(await p.locator('.ae-resource:visible').count()===1,tag+' : recherche Peau');
       await p.locator('#ae-search').fill('');
-      await p.locator('#ae-discovery-only').check();ok(await p.locator('#ae-discovery-only').isChecked(),tag+' : filtre natif');
-      await p.locator('#ae-discovery-only').uncheck();
+      const utiles=p.locator('.ae-chip[data-ae="filtre"][data-value="utiles"]');await utiles.click();ok(await p.locator('.ae-chip[data-ae="filtre"][data-value="utiles"]').getAttribute('aria-pressed')==='true',tag+' : filtre Utiles');
+      await p.locator('.ae-chip[data-ae="filtre"][data-value="tout"]').click();
       await p.locator('#ae-search').focus();
       ok(await p.locator('#ae-search').evaluate(e=>getComputedStyle(e).outlineStyle==='solid'),tag+' : focus visible');
       await p.locator('#ae-item-bois').click();await p.locator('#ae-forge-tailler').click();
@@ -70,7 +70,7 @@ async function run(){
       await p.locator('#forge').click();await p.waitForFunction(()=>window.__eclat.E.count('manche')>=1);checks++;
       await shot(p,'procedes-'+width+(dark?'-veillee':''));
     }
-    await p.locator('[data-tab="carnet"]').click();await p.waitForSelector('[data-rec="manche"]',{state:'attached'});
+    await p.locator('#tabs [data-tab="atelier"]').click();await p.locator('[data-tab2="carnet"]').click();await p.waitForSelector('[data-rec="manche"]',{state:'attached'});
     const age=p.locator('.age-sec').filter({has:p.locator('[data-rec="manche"]')});
     if(!await age.evaluate(e=>e.open))await age.locator('summary').click();
     await layout(p,tag+'/carnet');await shot(p,'carnet-'+width+(dark?'-veillee':'')+(equipped?'':'-historique'));
