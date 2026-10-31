@@ -770,8 +770,9 @@
     setItem: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* stockage bloqué */ } },
     removeItem: (k) => { try { localStorage.removeItem(k); } catch (e) { /* stockage bloqué */ } }
   };
-  const CLOUD_PREFIX = TEST_CONFIG.active ? (CRAFT_PREVIEW ? "test.preview." : "test.") : CRAFT_PREVIEW ? "preview." : "";
-  const Cloud = window.EclatCloud.create({ storage: CLOUD_PREFIX ? {getItem:k=>safeStore.getItem(CLOUD_PREFIX+k),setItem:(k,v)=>safeStore.setItem(CLOUD_PREFIX+k,v),removeItem:k=>safeStore.removeItem(CLOUD_PREFIX+k)} : safeStore, server: () => TEST_CONFIG.active || CRAFT_PREVIEW ? "" : safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
+  /* Les comptes en ligne ne sont coupés qu'en mode test (copie locale). Le mode « établi par postes » (CRAFT_PREVIEW) est devenu le jeu normal : il ne doit plus couper les comptes ni les ranger à part. */
+  const CLOUD_PREFIX = TEST_CONFIG.active ? (CRAFT_PREVIEW ? "test.preview." : "test.") : "";
+  const Cloud = window.EclatCloud.create({ storage: CLOUD_PREFIX ? {getItem:k=>safeStore.getItem(CLOUD_PREFIX+k),setItem:(k,v)=>safeStore.setItem(CLOUD_PREFIX+k,v),removeItem:k=>safeStore.removeItem(CLOUD_PREFIX+k)} : safeStore, server: () => TEST_CONFIG.active ? "" : safeStore.getItem("eclat.cloud") || (window.ECLAT_CONFIG || {}).cloud || "" });
   U.sync = { busy: false, conflict: null, err: null };
   /* remplace le contenu de la fenêtre ouverte (ou en ouvre une) */
   function swapModal(o) {
