@@ -30,7 +30,7 @@ async function run(){
     ok(await p.locator('[data-workplace="etabli"]').isVisible(),width+" : atelier visible dès le départ");
     ok(await p.locator('[data-equipment="mains"]').isVisible(),width+" : mains visibles");
     ok(await p.locator('[data-equipment="percuteur_pierre"]').isVisible(),width+" : percuteur visible");
-    ok(await p.locator('[data-item="percuteur_pierre"]').count()===0,width+" : outil séparé des matières");
+    ok(await p.locator('[data-item="percuteur_pierre"]').count()===0,width+" : outil séparé des ressources");
     ok(await p.locator("#forge").textContent()==="Assembler",width+" : geste explicite au départ");
     ok(await p.locator('[data-mode="tresser"]').isVisible(),width+" : second geste des mains accessible");
     await p.evaluate(()=>{const g=window.__eclatEquipmentPrototype;g.E.add("bois",3);g.draw();});
@@ -60,7 +60,7 @@ async function run(){
     ok(await p.locator('[data-workplace]').count()===5,width+" : postes construits accessibles");
     const tools=await p.locator("#tools").textContent();
     await p.locator('[data-item="os"]').click();
-    ok(await p.locator("#tools").textContent()===tools,width+" : matières ne filtrent pas les outils");
+    ok(await p.locator("#tools").textContent()===tools,width+" : ressources ne filtrent pas les outils");
     await p.locator('[data-equipment="couteau"]').click();
     ok(await p.locator('[data-mode="couper"]').isVisible()&&await p.locator('[data-mode="entailler"]').isVisible(),width+" : deux gestes du couteau visibles avant essai");
     await p.locator('[data-equipment="racloir_os"]').click();
@@ -92,10 +92,10 @@ async function run(){
     ok(await p.evaluate(()=>window.__eclatEquipmentPrototype.E.count("cuir"))===leather-5,width+" : coût réel des cinq découpes au racloir");
     await p.locator('[data-equipment="couteau"]').click();
     const rack=await p.locator(".tool-rack").boundingBox(),slots=await p.locator("#slots").boundingBox();
-    ok(width>600?rack.x>slots.x+slots.width:rack.y>=slots.y+slots.height,width+" : outils à droite sur bureau et sous les matières sur mobile");
+    ok(width>600?rack.x>slots.x+slots.width:rack.y>=slots.y+slots.height,width+" : outils à droite sur bureau et sous les ressources sur mobile");
     await geometry(p,width+"/Cuivre");
     const bench=await p.locator("#bench-card").boundingBox(),stock=await p.locator(".stock-card").boundingBox();
-    ok(width>=1050?stock.x>=bench.x+bench.width:stock.y>=bench.y+bench.height,width+" : matières voisines de l’établi selon le format");
+    ok(width>=1050?stock.x>=bench.x+bench.width:stock.y>=bench.y+bench.height,width+" : ressources voisines de l’établi selon le format");
     if(process.env.EQUIPMENT_SHOTS&&(width===390||width===980||width===1280)){fs.mkdirSync(process.env.EQUIPMENT_SHOTS,{recursive:true});await p.evaluate(()=>{document.activeElement?.blur();window.scrollTo(0,0);});await p.screenshot({path:path.join(process.env.EQUIPMENT_SHOTS,"atelier-"+width+".png")});}
     ok(await p.evaluate(raw=>localStorage.getItem("eclat.save.v1")===raw,normal),width+" : partie habituelle intacte");
     await p.evaluate(()=>window.dispatchEvent(new Event("pagehide")));await p.reload();await p.waitForFunction(()=>!!window.__eclatEquipmentPrototype);
