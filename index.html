@@ -47,7 +47,7 @@
         <span class="age-bar-track"><i id="ageBar" class="age-bar-fill" style="width:0%"></i></span>
       </button>
       <div class="top-right">
-        <button id="atlasToggle" class="icon-btn" type="button" aria-label="Aspect : style Carnet actif (toucher pour style Classique)" title="Aspect : style Carnet actif — toucher pour Classique" style="font-size:12px;font-weight:700;min-width:44px;width:auto;padding:0 6px">Aspect</button>
+        <button id="atlasToggle" class="icon-btn" type="button" aria-label="Aspect : style Carnet actif (toucher pour style Classique)" title="Aspect : style Carnet actif, toucher pour Classique" style="font-size:12px;font-weight:700;min-width:44px;width:auto;padding:0 6px">Aspect</button>
         <button id="tutoMini" class="exp-mini hidden" aria-label="Rouvrir le conseil">💭</button>
         <button id="expMini" class="exp-mini hidden" aria-label="Exploration en cours"></button>
         <button id="questBtn" class="chip quest" aria-label="Quêtes : 0 sur 3" title="Quêtes : l’objectif, les rituels, le Troqueur">📜 <span class="cv"><b id="questBadge">Quêtes</b><small id="questSub">0/3</small></span><span id="questDot" class="quest-dot hidden">●</span></button>
@@ -127,17 +127,17 @@
           button.textContent = "Atlas";
           button.setAttribute("aria-label", "Aspect : style Atlas actif (toucher pour style Carnet)");
           button.setAttribute("aria-pressed", "true");
-          button.title = "Aspect : style Atlas actif — toucher pour Carnet";
+          button.title = "Aspect : style Atlas actif, toucher pour Carnet";
         } else if (mode === "vivant") {
           button.textContent = "Aspect";
           button.setAttribute("aria-label", "Aspect : style Carnet actif (toucher pour style Classique)");
           button.setAttribute("aria-pressed", "true");
-          button.title = "Aspect : style Carnet actif — toucher pour Classique";
+          button.title = "Aspect : style Carnet actif, toucher pour Classique";
         } else {
           button.textContent = "Class.";
           button.setAttribute("aria-label", "Aspect : style Classique actif (toucher pour style Atlas)");
           button.setAttribute("aria-pressed", "false");
-          button.title = "Aspect : style Classique actif — toucher pour Atlas";
+          button.title = "Aspect : style Classique actif, toucher pour Atlas";
         }
         try { localStorage.setItem(key, mode); } catch (_) {}
       }

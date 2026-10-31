@@ -631,7 +631,7 @@
             '</div>' +
             '<div class="menu-game-banner">' +
               '<div class="m-hero-cell"><span class="m-cell-lbl">Semeur</span><b class="m-cell-val">' + ((st.cycle || 1) + 6) + 'e</b></div>' +
-              '<div class="m-hero-cell"><span class="m-cell-lbl">Âge</span><b class="m-cell-val">' + esc(ageName.replace(/^Âge du /, "").replace(/^Âge de l'/, "").replace(/^Âge de la /, "").replace(/^Âge des /, "")) + '</b></div>' +
+              '<div class="m-hero-cell"><span class="m-cell-lbl">Âge</span><b class="m-cell-val">' + esc(ageName.replace(/^Âge du /, "").replace(/^Âge de l’/, "").replace(/^Âge de la /, "").replace(/^Âge des /, "")) + '</b></div>' +
               '<div class="m-hero-cell"><span class="m-cell-lbl">Souvenirs</span><b class="m-cell-val m-acc">✦ ' + fmt((st.meta && st.meta.traces) || 0) + '</b></div>' +
               '<div class="m-hero-cell"><span class="m-cell-lbl">Échos</span><b class="m-cell-val m-echo">🌅 ' + nbEchos + '/5</b></div>' +
             '</div>' +

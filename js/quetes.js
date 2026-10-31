@@ -308,7 +308,7 @@
       const doneRits = rits.filter((r) => r.claimed).length;
       if (qSub) qSub.textContent = doneRits + "/3";
       qBtn.setAttribute("aria-label", "Quêtes : " + doneRits + " sur 3" + (sum.hasReady ? " (récompense disponible)" : ""));
-      qBtn.setAttribute("title", "Quêtes : " + doneRits + " sur 3 accomplies" + (sum.hasReady ? " — récompense à récupérer !" : " (toucher pour ouvrir)"));
+      qBtn.setAttribute("title", "Quêtes : " + doneRits + " sur 3 accomplies" + (sum.hasReady ? " · récompense à récupérer !" : " (toucher pour ouvrir)"));
       if (qDot) {
         if (sum.hasReady) {
           qDot.classList.remove("hidden");

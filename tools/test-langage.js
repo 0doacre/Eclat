@@ -39,4 +39,13 @@ test("l'aide nomme les cinq écrans d'aujourd'hui et ses mots clés", () => {
   const aide = s.slice(s.indexOf("function openHelp()"), s.indexOf('"Compris");', s.indexOf("function openHelp()")));
   for (const mot of ["<b>Terres.</b>", "<b>Labo.</b>", "<b>Atelier.</b>", "<b>Progression.</b>", "<b>Journal.</b>", "<dt>Métier</dt>", "<dt>Travailleurs</dt>", "<dt>Goulot</dt>", "<dt>Geste, recette</dt>"]) assert.ok(aide.includes(mot), mot);
 });
+test("typographie : apostrophes courbes et pas de tiret long dans les textes lus par le joueur", () => {
+  const trouve = [];
+  for (const f of FICHIERS) {
+    const s = lisible(f);
+    for (const m of s.matchAll(/[A-Za-zÀ-ÿ]'[A-Za-zÀ-ÿ]/g)) trouve.push(f + " : apostrophe droite « " + s.slice(Math.max(0, m.index - 12), m.index + 14) + " »");
+    if (s.includes(" — ")) trouve.push(f + " : tiret long");
+  }
+  assert.deepEqual(trouve, []);
+});
 console.log(passed + " tests du langage réussis.");

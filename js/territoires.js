@@ -143,7 +143,7 @@
     else h += '<p class="small">À 100 %, la prochaine relève transmet +5 % de débit (plafond +50 %). Reconstruis et exploite la terre à chaque cycle pour gagner le palier suivant.</p>';
     if (t.apercu) {
       const next = E.ZONES[t.prochaine], pass = E.passInfo(t.prochaine);
-      h += '<p class="small"><b>Horizon · ' + esc(next.n) + '</b> — ' + esc(next.d) + '</p><p class="small">Frontière · ' + (t.frontiere ? 'franchie' : pass && pass.ready ? Math.floor(pass.frac * 100) + ' % du passage fourni' : 'préparer le moyen de passage') + '. La maîtrise ne conditionne pas le passage.</p>';
+      h += '<p class="small"><b>Horizon · ' + esc(next.n) + '</b> · ' + esc(next.d) + '</p><p class="small">Frontière · ' + (t.frontiere ? 'franchie' : pass && pass.ready ? Math.floor(pass.frac * 100) + ' % du passage fourni' : 'préparer le moyen de passage') + '. La maîtrise ne conditionne pas le passage.</p>';
     }
     const known = RULES[z].recettes.filter(id => E.state.known[id] || E.state.made[id] > 0);
     if (known.length) h += '<details><summary title="Voir les recettes connues qui bénéficient du bonus de cette terre">Recettes associées déjà connues · ' + known.length + '</summary><p class="small">' + known.map(id => esc(E.D.ITEMS[id].n)).join(', ') + '</p></details>';

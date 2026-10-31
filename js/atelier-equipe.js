@@ -301,7 +301,7 @@
         const id=el.dataset.aeResource,picked=w.slots.includes(id),b=el.querySelector('[data-ae="item"]'),n=E.count(id);
         el.hidden=!el.dataset.name.includes(query)||(!picked&&((filtre==="utiles"&&!useful(id,w))||(filtre==="reserve"&&n<1)));
         if(!el.hidden)visible++;
-        b.disabled=!picked&&w.slots.length>=3; // un ingrédient à 0 se pose quand même : on voit ce qu'il faudrait réunir
+        b.disabled=!picked&&w.slots.length>=3; // un ingrédient à 0 se pose quand même : on voit ce qu’il faudrait réunir
         el.classList.toggle("ae-zero",n<1);
         b.classList.toggle("ae-selected",picked);
         b.setAttribute("aria-pressed",String(picked));

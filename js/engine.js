@@ -3984,7 +3984,7 @@
       outils: {
         kicker: "Atelier équipé",
         titre: "Outils et gestes du métier",
-        texte: "Chaque poste et outil propose des modes de travail précis (tailler, couper, cuire, polir). Choisir un outil plus affûté ou adapté — comme le couteau de silex pour les lanières — divise le temps de fabrication sans exiger plus de matières par pièce."
+        texte: "Chaque poste et outil propose des modes de travail précis (tailler, couper, cuire, polir). Un outil plus affûté ou mieux adapté, comme le couteau de silex pour les lanières, divise le temps de fabrication sans consommer plus de matières par pièce."
       }
     };
     /* Pose un extracteur libre sur le gisement de sa terre où il manque le plus.
@@ -5146,7 +5146,7 @@
     E.jours = () => S.meta.jours;
     E.jourVenu = function () {
       const J = S.meta.jours, dk = dayKey();
-      if (!(dk > J.dernier)) return null; // déjà compté aujourd'hui (ou l’horloge a reculé : on ne retire rien)
+      if (!(dk > J.dernier)) return null; // déjà compté aujourd’hui (ou l’horloge a reculé : on ne retire rien)
       J.n++; J.dernier = dk;
       const pal = D.JOURS.paliers[J.n], g = pal || D.JOURS.base;
       S.intu += g.intu;
@@ -5522,7 +5522,7 @@
       for (const zid in ZONES) {
         if (!zoneOpen(zid)) continue;
         const n = E.nextExp(zid);
-        if (!n || n.x.hidden) continue; // un lieu qu'on ne voit pas encore ne se devine pas
+        if (!n || n.x.hidden) continue; // un lieu qu’on ne voit pas encore ne se devine pas
         const fid = (RECIT.expFrag && RECIT.expFrag[zid + ":" + n.x.id]) || (n.x.rw && n.x.rw.frag);
         if (fid && rangs[fid] !== undefined && !S.frags[fid]) pale[fid] = zid;
       }

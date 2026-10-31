@@ -1701,7 +1701,7 @@
     }
     /* la voix des travailleurs (0.51) : une carte à la fois, jamais par-dessus une fenêtre, qui se range seule ; toucher la carte ouvre le métier */
     const voix = { file: [], cur: null, tLast: 0, t: null };
-    const ECH_PLANCHE = [0, 1, 2, 3, 4, 6, 7]; // les sept échelons du jeu sur les huit cases d'une planche (la case « Atome » est sautée)
+    const ECH_PLANCHE = [0, 1, 2, 3, 4, 6, 7]; // les sept échelons du jeu sur les huit cases d’une planche (la case « Atome » est sautée)
     function voixPortrait(fam) {
       const P = ((D.VOIX || {}).planches || {})[fam];
       if (!P) return "";

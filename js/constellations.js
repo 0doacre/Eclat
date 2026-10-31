@@ -6,7 +6,7 @@
 (function (root) {
   "use strict";
 
-  const W = 320;            // largeur de référence ; le ciel s'étire, les proportions restent
+  const W = 320;            // largeur de référence ; le ciel s’étire, les proportions restent
   const CELL_W = 160, CELL_H = 132;       // une figure de terre
   const SLOT_X = [28, 80, 132], SLOT_Y = [26, 78];
   const SIG_W = 320 / 3, SIG_H = 100;      // un signe
