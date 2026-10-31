@@ -79,3 +79,6 @@
   #v-labo .ae-stock { position: sticky; top: 8px; display: flex; flex-direction: column; max-height: calc(100dvh - 262px); min-height: 280px; overflow: hidden; }
   #v-labo .ae-inventory { flex: 1 1 auto; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain; align-content: start; }
 }
+
+/* 10. Le compte se trouve dans le menu (Système → Compte en ligne) : son bouton ne prend plus une seconde ligne dans l'en-tête. */
+#cloudBtn { display: none !important; }

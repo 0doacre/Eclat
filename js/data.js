@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.49.0";
+  D.VERSION = "0.49.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1636,6 +1636,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✦ Les Traces (des pas) et l’Intuition (des étincelles) ont chacune leur icône, qui étaient confondues. Le bouton du compte quitte l’en-tête : il est dans Menu → Système → Compte en ligne.",
     "📐 Le Labo occupe mieux l’espace : les matières se serrent (quatre colonnes sur téléphone, davantage sur grand écran), et sur grand écran l’établi reste en vue pendant que la liste des matières défile dans sa colonne.",
     "🧪 Au Labo, « Vider » rejoint la rangée des gestes (grisé quand l’établi est vide), et le message de l’établi (fabriqué, tiède, chaud, brûlant) prend un cadre de la D.A. dont la couleur dit la température.",
     "📊 Progression : le décompte d’un âge dit « trouvées / recettes » et correspond à la grille (les matières vues ont leur rangée à part, « Matières vues »). Le Cosmos devient la dernière page de la Progression, à côté de Mémoire, dès que tu as un instrument d’observation ; le Journal n’a plus qu’une page.",
