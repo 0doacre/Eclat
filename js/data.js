@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.0";
+  D.VERSION = "0.64.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1749,7 +1749,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
-    "✍️ Les recettes d’Artisanat ont un texte de découverte écrit pour elles : vingt-cinq phrases courtes, à voir et à toucher. Les autres métiers suivront.",
+    "✍️ Les recettes d’Artisanat et de Subsistance ont un texte de découverte écrit pour elles : trente-trois phrases courtes, à voir et à toucher. Les autres métiers suivront.",
     "🏘️ Ton lieu change de nom avec l’âge : Campement, Halte, Foyer, Hameau, Village, Oppidum, Cité, Ville, Métropole, Complexe, Mégalopole, Conurbation, Arcologie, Spatioport, Essaim. Il remplace « le Domaine » dans le récit et l’ambiance. L’écran, lui, s’appelle toujours les Terres.",
     "🏷️ Les métiers changent de nom : Subsistance (l’ancien Élevage), Bâtiment (Construction), Énergie (Centrales), Technologie (Électronique), Culture et savoir (Arts et lettres). Leurs travailleurs aussi : opérateur, ingénieur, érudit. Artisanat, Métallurgie et Chimie gardent le leur. Ta partie n’est pas touchée.",
     "🏷️ Passe de vocabulaire. Un seul mot par chose : « ressource » partout (plus de « matière »), « essayer » et « essai » (plus de « tenter »), des « consignes » pour garder une réserve (plus de « stock » ni de « cadence »). Les paliers du seuil deviennent « À l’arrêt » et « Quelques provisions », la découverte se fait toujours « au Labo », et les voix des travailleurs ne parlent plus de « l’atelier ». Les anciens textes de l’apprenti à l’établi sont retirés.",
@@ -2074,6 +2074,15 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
+  /* Subsistance (0.64.1) */
+  D.SAVEUR.aiguille = "L’os est poli contre une pierre jusqu’à la pointe, puis percé d’un chas. Le fil passe du premier coup.";
+  D.SAVEUR.laniere = "Des bandes de peau pendues au vent. Elles raidissent en séchant, et le nœud ne bouge plus.";
+  D.SAVEUR.colle_os = "Les os bouillent des heures. Au fond, une pâte brune qui colle aux doigts et sent la fumée.";
+  D.SAVEUR.outre = "Une peau cousue, le goulot noué. Pleine, elle pèse sur l’épaule et clapote à chaque pas.";
+  D.SAVEUR.pic_os = "Une pointe d’os emmanchée à la lanière. Sur la pierre, un son sec, et un éclat saute.";
+  D.SAVEUR.tunique = "La peau tient chaud dès qu’on l’enfile. Elle sent la bête, et le froid reste dehors.";
+  D.SAVEUR.gants = "Deux peaux cousues au gabarit de tes mains. Les doigts y entrent à l’étroit, et c’est tout chaud dedans.";
+  D.SAVEUR.soufflet = "Une poche de peau entre deux planches. On presse : un souffle long, et la braise vire au blanc.";
   /* Artisanat (0.64) */
   D.SAVEUR.manche = "L’écorce part par lanières. Dessous, le bois est blanc, encore humide, tout droit.";
   D.SAVEUR.corde = "Trois brins serrés en torsade. Pendu au bout, tu l’entends à peine craquer.";

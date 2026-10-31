@@ -1,7 +1,7 @@
 # Textes de découverte à écrire
 
 Généré par `node tools/saveur-a-ecrire.js`. Chaque recette affiche, quand on la trouve, sa saveur : le texte de `D.SAVEUR[id]` s'il existe, sinon sa description actuelle (en italique ci-dessous). Pour écrire : ajouter `D.SAVEUR.<id> = "…"` dans `js/data.js` (220 signes au plus).
-Recettes : 25 écrites sur 222.
+Recettes : 33 écrites sur 222.
 
 
 ## Gestes (texte du premier emploi)
@@ -134,14 +134,14 @@ Recettes : 25 écrites sur 222.
 
 | Âge | Recette | Geste | Texte actuel | Écrit |
 |---|---|---|---|---|
-| 1 | Aiguille en os (`aiguille`) | Tailler | *Un éclat d’os affiné, percé d’un chas.* | non |
-| 1 | Lanières (`laniere`) | Tailler | *Des bandes de peau qui serrent plus fort en séchant.* | non |
-| 1 | Colle d’os (`colle_os`) | Chauffer | *Une pâte poisseuse qui durcit en séchant.* | non |
-| 1 | Outre en peau (`outre`) | Assembler | *De l’eau pour la route. La rivière n’est plus si loin.* | non |
-| 1 | Pic en os (`pic_os`) | Assembler | *Une pointe d’os emmanchée. La pierre cède plus vite.* | non |
-| 1 | Tunique de peau (`tunique`) | Assembler | *Au chaud, tu travailles plus longtemps et plus vite.* | non |
-| 4 | Gants de peau (`gants`) | Assembler | *Deux peaux cousues à la forme de tes mains.* | non |
-| 4 | Soufflet (`soufflet`) | Assembler | *Une poche de peau entre deux planches : elle souffle sur la braise.* | non |
+| 1 | Aiguille en os (`aiguille`) | Tailler | *Un éclat d’os affiné, percé d’un chas.* | oui |
+| 1 | Lanières (`laniere`) | Tailler | *Des bandes de peau qui serrent plus fort en séchant.* | oui |
+| 1 | Colle d’os (`colle_os`) | Chauffer | *Une pâte poisseuse qui durcit en séchant.* | oui |
+| 1 | Outre en peau (`outre`) | Assembler | *De l’eau pour la route. La rivière n’est plus si loin.* | oui |
+| 1 | Pic en os (`pic_os`) | Assembler | *Une pointe d’os emmanchée. La pierre cède plus vite.* | oui |
+| 1 | Tunique de peau (`tunique`) | Assembler | *Au chaud, tu travailles plus longtemps et plus vite.* | oui |
+| 4 | Gants de peau (`gants`) | Assembler | *Deux peaux cousues à la forme de tes mains.* | oui |
+| 4 | Soufflet (`soufflet`) | Assembler | *Une poche de peau entre deux planches : elle souffle sur la braise.* | oui |
 
 ## Métallurgie (42 recettes)
 
