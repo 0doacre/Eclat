@@ -40,7 +40,6 @@ Les gravures utilisent les pictogrammes SVG existants. Ce lot ne nécessite pas 
 ## Recette
 
 - `npm test` : syntaxe, contenu, moteur, récit, sauvegardes, build et contrôles du dépôt.
-- `npm run test:design` : 320, 360, 390 et 430 px ; début, partie industrielle et thème spatial ; Jour et Veillée avec Grand texte. Vérifications de débordement, cibles tactiles, contrastes de l’établi, de l’action principale et du nom des recettes, recherche, filtres, pose et retrait de matière, bascule Classique / Atlas. Contrôles supplémentaires des réglages compact et une / deux colonnes à 900 px, et de l’absence de modification de la partie lors du rendu du Carnet.
 - `npm run test:ux` : parcours existants, première fabrication, navigation, contrastes des six époques, clavier, tutoriel et confort de l’Atelier.
 - `npm run test:atlas` : régression de la carte après les corrections communes de thème et de navigation ; 48 configurations, 850 contrôles passés.
 

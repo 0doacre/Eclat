@@ -7,7 +7,7 @@
   function create(api) {
     const {
       E, ENGINE, A, D, U, Cloud, Tuto, esc, fmt, fmtTime, fmtDate, toast, openModal, closeModal, swapModal, simpleModal,
-      save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom
+      save, backups, pushBackup, setTab, applyTheme, applyLargeText, volumes, intro, openMemoire, visiteurFin, App, Dom, checkUpdate
     } = api;
     const S = () => E.state;
     const $ = (s, r) => (r || document).querySelector(s);
@@ -695,6 +695,7 @@
               '<button class="btn m-card-btn" data-m="account" title="Retrouver ta partie sur tous tes appareils"><span class="m-card-icon">☁️</span><b>Compte en ligne</b></button>' +
               (App.installable() ? '<button class="btn m-card-btn" data-m="installer" title="Ajouter Éclat à l’écran d’accueil de ton appareil"><span class="m-card-icon">📲</span><b>Installer le jeu</b></button>' : "") +
               '<button class="btn m-card-btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran"><span class="m-card-icon">❓</span><b>Comment jouer</b></button>' +
+              (checkUpdate ? '<button class="btn m-card-btn" data-m="maj" title="Chercher tout de suite une nouvelle version du jeu"><span class="m-card-icon">🔄</span><span class="m-card-main"><b>Chercher une mise à jour</b><span class="tiny muted" id="maj-etat">Version ' + esc(D.VERSION) + '</span></span></button>' : "") +
               '<button class="btn m-card-btn" data-m="news" title="Ce qui a changé dans cette version"><span class="m-card-icon">📰</span><b>Nouveautés</b></button>' +
               '<button class="btn m-card-btn" data-m="credits" title="Les icônes, les polices et la musique"><span class="m-card-icon">📜</span><b>Crédits</b></button>' +
             "</div>" +
@@ -791,6 +792,21 @@
           help: () => setTimeout(openHelp, 80),
           mem: () => setTimeout(openMemoire, 80),
           comptoir: () => setTimeout(() => Dom.comptoirSheet(), 80),
+          maj: (b) => {
+            if (b.disabled) return true;
+            const etat = b.querySelector("#maj-etat"), dit = (t) => { if (etat) etat.textContent = t; };
+            b.disabled = true; dit("Recherche en cours…");
+            (async () => {
+              let r = "indisponible";
+              try { r = await checkUpdate(); } catch (_) { /* on garde « indisponible » */ }
+              b.disabled = false;
+              if (r === "prete") { dit("Nouvelle version prête"); closeModal(); toast("✨ Nouvelle version prête : touche « Mettre à jour » en haut."); }
+              else if (r === "a-jour") { dit("Éclat est à jour · version " + D.VERSION); toast("Éclat est à jour."); }
+              else if (r === "hors-ligne") { dit("Pas de connexion : réessaie plus tard"); toast("Impossible de vérifier : pas de connexion."); }
+              else { dit("Mise à jour manuelle indisponible ici"); toast("Cette page ne peut pas chercher de mise à jour (hors ligne ou installation non prise en charge)."); }
+            })();
+            return true; // la fenêtre reste ouverte pendant la recherche
+          },
           news: () => setTimeout(() => simpleModal("Version " + esc(D.VERSION), "Nouveautés", '<ul class="news">' + D.CHANGES.map((c) => "<li>" + esc(c) + "</li>").join("") + "</ul>"), 80),
           reset: () => setTimeout(() => {
             openModal({ html: '<h2>Recommencer la partie ?</h2><p>Toute ta progression, tes secrets et tes fins seront effacés. Une copie de sécurité est gardée dans Menu → Sauvegardes.</p><div class="acts"><button class="btn" data-m="close">Annuler</button><button class="btn pri" style="background:var(--bad)" data-m="go">Tout effacer</button></div>',

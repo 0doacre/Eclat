@@ -24,7 +24,6 @@
     "test:territoires": "node tools/test-territoires.js",
     "test:territoires-ui": "node tools/test-territoires-ui.js",
     "test:atlas": "node tools/test-atlas-ui.js",
-    "test:design": "node tools/test-design-ui.js",
     "test:archives": "node tools/test-archives-ui.js",
     "test:fiches": "node tools/test-fiches-ui.js",
     "test:retours": "node tools/test-retours-ui.js",
