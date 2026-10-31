@@ -651,7 +651,7 @@
             "</div>" +
             '<div class="toggle"><span id="mt-tuto">Guide des Semeurs <span class="tiny muted">' + Tuto.doneCount() + "/" + Tuto.chapters().length + ' vus</span></span><span class="row"><button class="btn small ghost" data-m="tutoAgain" title="Revoir les explications du guide depuis le début">Revoir</button>' +
             '<button class="btn small sw' + (Tuto.enabled() ? " on" : "") + '" role="switch" aria-checked="' + Tuto.enabled() + '" aria-labelledby="mt-tuto" data-m="tuto" title="Afficher ou masquer les explications du guide">' + (Tuto.enabled() ? "Activé" : "Désactivé") + "</button></span></div>" +
-            sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un traverser le Domaine de temps en temps")) +
+            sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un passer chez toi de temps en temps")) +
           sec("affichage", "🖥️", "Affichage &amp; Écran",
             (isVivant ? "" : '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
             (typeof window !== "undefined" && window.EclatSetStyleMode ? '<div class="toggle"><span id="mt-style">Style d’affichage</span><button class="btn small m-theme-btn" data-m="styleMode" aria-labelledby="mt-style" title="Carnet est le style du jeu. Atlas et Classique restent disponibles pour revenir à un ancien aspect si quelque chose s’affiche mal.">' + styleLabels[curStyle] + "</button></div>" : "") +

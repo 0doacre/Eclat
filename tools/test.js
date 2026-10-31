@@ -3269,8 +3269,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.62.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.62.0");
+test("Version 0.63.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.63.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3503,12 +3503,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.62.0");
+  assert.strictEqual(D.VERSION, "0.63.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 62, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 63, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
@@ -4217,3 +4217,12 @@ test("le retour d’absence : le message discret et la fenêtre ont leurs seuils
 });
 
 console.log(passed + " tests réussis" + (process.exitCode ? ", des échecs." : "."));
+
+test("Le lieu du joueur porte un nom par âge, accordé", () => {
+  assert.strictEqual(D.LIEUX.length, D.AGES.length);
+  assert.strictEqual(D.lieu(0).le, "le Campement");
+  assert.strictEqual(D.lieu(1).du, "de la Halte");
+  assert.strictEqual(D.lieu(5).au, "à l’Oppidum");
+  assert.strictEqual(D.lieuTexte("Partout {au lieu}, {Le lieu} dort.", 6), "Partout à la Cité, La Cité dort.");
+  assert.strictEqual(D.lieuTexte("les ombres {du lieu}", 2), "les ombres du Foyer");
+});

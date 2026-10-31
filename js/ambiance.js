@@ -112,7 +112,7 @@
   const PAR_HEURE = {
     dawn: [
       "La rosée perle sur les outils posés au sol.",
-      "Une première lueur grise étire les ombres du Domaine.",
+      "Une première lueur grise étire les ombres {du lieu}.",
       "Le froid du matin s’estompe peu à peu.",
       "L’air est encore limpide et sans poussière."
     ],
@@ -128,7 +128,7 @@
       "La lueur du feu reprend ses droits."
     ],
     night: [
-      "Le silence de la nuit enveloppe le Domaine.",
+      "Le silence de la nuit enveloppe {le lieu}.",
       "Les étoiles scintillent au-dessus des machines immobiles.",
       "Une braise veille au fond du foyer.",
       "L’obscurité rend le monde plus vaste."
@@ -230,7 +230,7 @@
       const ctx = getContext();
       const lines = getLines(ctx, D);
       const minuteSeed = Math.floor(Date.now() / 60000) + (ctx.age * 7) + (lines.length * 3);
-      const text = pickLine(lines, minuteSeed, manualOffset);
+      const text = D.lieuTexte(pickLine(lines, minuteSeed, manualOffset), ctx.age);
 
       if (!force && text === lastRenderedText) return;
 

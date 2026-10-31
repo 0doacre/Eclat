@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.62.0";
+  D.VERSION = "0.63.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -25,6 +25,30 @@
     { id: "spatial", n: "Âge Spatial", c: "#8aa2ff", q: "Le ciel n’est plus un plafond." },
     { id: "stellaire", n: "Âge Stellaire", c: "#ffd27a", q: "Le Soleil est une ressource." }
   ];
+
+  /* Le lieu du joueur : un nom par âge (à la place de « Domaine »). g : m, f, ou « e » pour un nom qui élide (l’Oppidum). */
+  D.LIEUX = [
+    { n: "Campement", g: "m" }, { n: "Halte", g: "f" }, { n: "Foyer", g: "m" }, { n: "Hameau", g: "m" }, { n: "Village", g: "m" },
+    { n: "Oppidum", g: "e" }, { n: "Cité", g: "f" }, { n: "Ville", g: "f" }, { n: "Métropole", g: "f" }, { n: "Complexe", g: "m" },
+    { n: "Mégalopole", g: "f" }, { n: "Conurbation", g: "f" }, { n: "Arcologie", g: "e" }, { n: "Spatioport", g: "m" }, { n: "Essaim", g: "e" }
+  ];
+  /* les formes d’un nom de lieu : le Campement, du Campement, au Campement */
+  D.lieu = function (age) {
+    const L = D.LIEUX[Math.max(0, Math.min(D.LIEUX.length - 1, age | 0))];
+    const art = L.g === "m" ? ["le ", "du ", "au "] : L.g === "f" ? ["la ", "de la ", "à la "] : ["l’", "de l’", "à l’"];
+    return { n: L.n, le: art[0] + L.n, du: art[1] + L.n, au: art[2] + L.n };
+  };
+  /* remplace {lieu}, {le lieu}, {du lieu}, {au lieu} (et la forme à majuscule) dans un texte, pour l’âge donné */
+  D.lieuTexte = function (txt, age) {
+    if (typeof txt !== "string" || txt.indexOf("lieu}") < 0) return txt;
+    const l = D.lieu(age);
+    const maj = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    return txt.replace(/\{(Le |Du |Au |le |du |au |)lieu\}/g, (m, k) => {
+      const f = k.trim().toLowerCase();
+      const v = f === "" ? l.n : l[f];
+      return k && k.charAt(0) === k.charAt(0).toUpperCase() ? maj(v) : v;
+    });
+  };
 
   /* --------------------------------------------------------------- GESTES */
   D.GESTE_ORDER = ["assembler", "construire", "tresser", "tailler", "chauffer", "marteler", "allier", "tremper", "usiner",
@@ -1725,6 +1749,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🏘️ Ton lieu change de nom avec l’âge : Campement, Halte, Foyer, Hameau, Village, Oppidum, Cité, Ville, Métropole, Complexe, Mégalopole, Conurbation, Arcologie, Spatioport, Essaim. Il remplace « le Domaine » dans le récit et l’ambiance. L’écran, lui, s’appelle toujours les Terres.",
     "🏷️ Les métiers changent de nom : Subsistance (l’ancien Élevage), Bâtiment (Construction), Énergie (Centrales), Technologie (Électronique), Culture et savoir (Arts et lettres). Leurs travailleurs aussi : opérateur, ingénieur, érudit. Artisanat, Métallurgie et Chimie gardent le leur. Ta partie n’est pas touchée.",
     "🏷️ Passe de vocabulaire. Un seul mot par chose : « ressource » partout (plus de « matière »), « essayer » et « essai » (plus de « tenter »), des « consignes » pour garder une réserve (plus de « stock » ni de « cadence »). Les paliers du seuil deviennent « À l’arrêt » et « Quelques provisions », la découverte se fait toujours « au Labo », et les voix des travailleurs ne parlent plus de « l’atelier ». Les anciens textes de l’apprenti à l’établi sont retirés.",
     "🧑‍🔧 Les portraits des travailleurs changent de nom de fichier : un téléphone qui garde un ancien morceau du jeu ne mélange plus ancien code et nouvelles images (le forgeron apparaissait en double).",

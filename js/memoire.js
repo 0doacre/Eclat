@@ -300,7 +300,7 @@
             '<button class="btn small pri" data-m="don" data-id="' + id + '">Prendre</button></div>';
         }).join("") + "</div>" +
         '<div class="acts"><button class="btn" data-m="close">Plus tard</button></div>' +
-        '<p class="tiny dim center">Tu peux y revenir depuis le Domaine ou la Mémoire des mains.</p>';
+        '<p class="tiny dim center">Tu peux y revenir depuis les Terres ou la Mémoire des mains.</p>';
     }
     function openDons(onClose) {
       if (!E.donsOffre().length) { if (onClose) onClose(); return; }

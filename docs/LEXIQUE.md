@@ -8,6 +8,7 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 
 | Mot | Sens | On ne dit plus |
 |---|---|---|
+| **Lieu** | Là où vit le joueur : un nom par âge (`D.LIEUX` : Campement, Halte, Foyer… Essaim), écrit {le lieu} / {du lieu} / {au lieu} dans les textes. | « le Domaine » |
 | **Terres** | L’écran de ce qui se récolte : une terre à la fois. Dans une consigne ou un bouton, toujours « les Terres ». | le Domaine (voir plus bas), la Carte, une « zone » |
 | **Atlas** | La carte du monde, rangée sous les Terres. | la Carte |
 | **Labo** | L’écran où l’on découvre, par essais : métier, outil, station, geste, ressources sur l’établi. | l’Atelier (pour découvrir) |
@@ -105,5 +106,4 @@ Apostrophes courbes (’), pas de tiret long hors des commentaires et du journal
 
 ## En attente de décision
 
-- **Le Domaine** : dans l’interface c’est « les Terres ». Le porteur propose que le lieu du joueur porte **un nom qui change à chaque âge** (Campement, Halte, Foyer ou Hameau, Village, Oppidum, Cité, Ville, Métropole, Complexe, Mégalopole) à la place de « Domaine » dans le récit et les réglages. À instruire (qui porte le nom ? combien d’âges ?).
 - **Les textes de découverte** (`D.SAVEUR`, `D.SAVEUR_GESTE`) : 0 sur 218 écrits.

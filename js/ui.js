@@ -577,6 +577,7 @@
     const semeur = cycle + 6;
     const age = (st && st.age) || 0;
     let s = esc(String(E.interpolate ? E.interpolate(String(t)) : t));
+    s = D.lieuTexte(s, age);
     s = s.replace(/\{cycle\}/g, cycle)
          .replace(/\{semeur\}/g, semeur)
          .replace(/\{age\}/g, age)

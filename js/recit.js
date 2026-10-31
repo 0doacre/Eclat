@@ -791,7 +791,7 @@
       },
       halte: {
         n: "Main levée", len: 6, h: "9f36709f",
-        t: "Tes doigts se raidissent sur les trous. La flûte se tait au milieu de l’air.\n\nPartout dans le Domaine, les machines s’arrêtent, le temps d’un souffle, puis repartent.\n\nTout près de ton oreille, une voix très douce : « Pas celle-là. »",
+        t: "Tes doigts se raidissent sur les trous. La flûte se tait au milieu de l’air.\n\nPartout {au lieu}, les machines s’arrêtent, le temps d’un souffle, puis repartent.\n\nTout près de ton oreille, une voix très douce : « Pas celle-là. »",
         rejouable: true,
         cond: { not: { libere: true } },
         effets: [{ k: "flag", id: "halte" }, { k: "boost", what: "prod", mult: 0.0001, dur: 3 }, { k: "event", name: "halte_jouee" }]
@@ -1026,12 +1026,12 @@
       },
       silence: {
         hint: "La seconde ligne de la plaque, et un émetteur pour la diffuser au loin.",
-        t: "La ligne de la plaque part sur toutes les ondes à la fois.\n\nLes automates s’arrêtent en plein geste. Les pompes se taisent. Dans tout le Domaine, plus rien ne bouge.\n\nDans le Caveau, la lumière bleue monte et baisse, lentement, comme avant. Personne ne s’éveille.\n\nTout près de ton oreille, une voix très douce : « Pas celle-là. »\n\nPuis, une à une, les machines repartent.",
+        t: "La ligne de la plaque part sur toutes les ondes à la fois.\n\nLes automates s’arrêtent en plein geste. Les pompes se taisent. Plus rien ne bouge, nulle part.\n\nDans le Caveau, la lumière bleue monte et baisse, lentement, comme avant. Personne ne s’éveille.\n\nTout près de ton oreille, une voix très douce : « Pas celle-là. »\n\nPuis, une à une, les machines repartent.",
         extra: [{ frag: "radar", t: "Au loin, la lueur rouge répète son signal. Ici, personne n’a levé la main." }]
       },
       retour: {
         hint: "Une cloche, des éclats tenus serrés, et une main qui se lève seule.",
-        t: "Un à un, les bruits du Domaine s’arrêtent. Les cabanes, les automates, les bras sur Mercure : tout se fige, en plein geste.\n\nL’enfant prend la flûte. Tu ne touches à rien.\n\nIl joue les quatre premières notes de la comptine. La cloche résonne à travers les cristaux, jusque dans le Caveau.\n\nCinq cuves se vident. Les enfants se réveillent. L’un tousse, un autre pleure ; un rire se fait entendre.{noms}\n\nAu-dessus de la Lisière, la lueur rouge descend lentement.\n\nPour la première fois, tu as faim.",
+        t: "Un à un, les bruits {du lieu} s’arrêtent. Les cabanes, les automates, les bras sur Mercure : tout se fige, en plein geste.\n\nL’enfant prend la flûte. Tu ne touches à rien.\n\nIl joue les quatre premières notes de la comptine. La cloche résonne à travers les cristaux, jusque dans le Caveau.\n\nCinq cuves se vident. Les enfants se réveillent. L’un tousse, un autre pleure ; un rire se fait entendre.{noms}\n\nAu-dessus de la Lisière, la lueur rouge descend lentement.\n\nPour la première fois, tu as faim.",
         dernier: "Tu peux lâcher."
       }
     },
@@ -1301,7 +1301,7 @@
           t: "« Si tu sais quel objet manque pour explorer un lieu, regarde sa recette avant de repartir. »",
           choix: [
             { k: "a", q: "« Le Carnet me dira comment le faire ? »", t: "« Le Carnet te donne les ingrédients et le bon geste. Inutile de chercher au hasard. »" },
-            { k: "b", q: "« Et si je n’ai pas la matière ? »", t: "« Regarde d’où elle vient dans ton Domaine. Chaque terre cache sa ressource. »" },
+            { k: "b", q: "« Et si je n’ai pas la matière ? »", t: "« Regarde d’où elle vient, ici. Chaque terre cache sa ressource. »" },
             { k: "c", q: "« Je prépare mon sac avant de marcher. »", t: "« Sage décision. Revenir les mains vides use les semelles pour rien. »" }
           ]
         },
@@ -1347,7 +1347,7 @@
           choix: [
             { k: "a", q: "« Les ruines restent ouvertes ? »", t: "« Les murs restent debout. Il suffit de quelques pièces pour réveiller les machines. »" },
             { k: "b", q: "« Les Souvenirs sont éternelles ? »", t: "« Gravées dans la pierre. Aucun départ n’efface ce que la mémoire a acquis. »" },
-            { k: "c", q: "« Je reconstruirai plus vite au prochain cycle. »", t: "« Chaque relève va deux fois plus vite que la précédente. C’est la loi du Domaine. »" }
+            { k: "c", q: "« Je reconstruirai plus vite au prochain cycle. »", t: "« Chaque relève va deux fois plus vite que la précédente. C’est la loi de ce monde. »" }
           ]
         },
         {
