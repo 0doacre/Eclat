@@ -1737,6 +1737,37 @@
       E.voix(now).forEach((m) => voix.file.push(m));
       if (!voix.cur && voix.file.length && !U.mcur && !(U.mq && U.mq.length)) voixMontre(voix.file.shift());
     }
+    /* les goulots (0.52) : ce qui empêche les travailleurs d'avancer, la cause réelle, et un bouton qui la règle */
+    function goulotsHTML(fam) {
+      if (!E.goulots) return "";
+      const tous = E.goulots(), gs = fam ? tous.filter((g) => g.fams.indexOf(fam) >= 0) : tous;
+      if (!gs.length) return fam ? "" : "";
+      const nom = (id) => (I[id] ? I[id].n.toLowerCase() : id);
+      const lignes = gs.map((g) => {
+        const a = g.action, lib = a ? (a.k === "embaucher" ? "Embaucher un " + esc(Atel.nom(a.fam, a.kind).toLowerCase()) + " · " + fmt(a.cout) + " écus" : esc(a.label)) : "";
+        return '<li class="goulot is-' + g.kind + '"><span class="goulot-txt">' + esc(g.txt) + (g.bloque.length ? '<span class="tiny muted"> · bloque : ' + esc(g.bloque.slice(0, 4).map(nom).join(", ")) + (g.bloque.length > 4 ? "…" : "") + "</span>" : "") + "</span>" +
+          (a ? '<button type="button" class="btn small" data-goulot="' + esc(g.id) + '">' + lib + "</button>" : "") + "</li>";
+      }).join("");
+      if (fam) return '<div class="atel-goulots"><b class="tiny">À débloquer · ' + gs.length + '</b><ul class="goulots-liste">' + lignes + "</ul></div>";
+      return '<div class="atel-goulots"><button type="button" class="prod-pastille-auto is-bloque" data-goulots="1" aria-expanded="' + (U.goulotsOuvert ? "true" : "false") + '">Goulots · ' + gs.length + (U.goulotsOuvert ? " ▴" : " ▾") + "</button>" +
+        (U.goulotsOuvert ? '<ul class="goulots-liste">' + lignes + "</ul>" : "") + "</div>";
+    }
+    function goulotAgit(id) {
+      const g = E.goulots().find((x) => x.id === id), a = g && g.action;
+      if (!a) { render(true); return; }
+      A.click();
+      if (a.k === "embaucher") {
+        const r = E.embaucher(a.fam, a.kind);
+        if (r.ok) toast("🛠️ " + esc(Atel.nom(a.fam, a.kind)) + " embauché : " + fmt(r.cout) + " écus.", { key: "emb" });
+        else toast(r.why === "ecus" ? "Il te manque " + fmt(Math.ceil(r.cout - (S().ecus || 0))) + " écus. Vends au Comptoir ou au Troqueur." : r.why === "max" ? "Le métier est au complet." : "Pas possible pour l’instant.", { key: "emb" });
+        render(true); return;
+      }
+      if (a.k === "metier") { U.atelierSel = a.fam; U.prodSel = null; render(true); return; }
+      if (a.k === "fabriquer") { U.atelierSel = a.fam; U.prodSel = a.id; render(true); return; }
+      if (a.k === "energie") { U.energieSheet = true; render(true); return; }
+      if (a.k === "labo") { setTab("labo"); return; }
+      setTab("domaine");
+    }
     /* le seuil d'un métier (0.51) : jusqu'où ses travailleurs fabriquent seuls, et où ils en sont */
     function seuilHTML(c) {
       if (!E.autoEtat || (D.TRAVAILLEURS || {}).generalistes === false) return "";
@@ -1755,7 +1786,7 @@
     function viewAteliers() {
       const ap = E.apprentis();
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
-      return '<div class="ateliers atl-page">' + enteteAtelier("Ateliers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
+      return '<div class="ateliers atl-page">' + enteteAtelier("Ateliers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() + goulotsHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
@@ -1770,7 +1801,7 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
-        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Ateliers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
@@ -1827,6 +1858,8 @@
         if (r.ok) { A.click(); toast("👋 " + esc(Atel.nom(fam, kind)) + " renvoyé.", { key: "emb" }); } else A.fail(0);
         render(true); return true;
       }
+      if ((b = t.closest("[data-goulots]"))) { U.goulotsOuvert = !U.goulotsOuvert; A.click(); render(true); return true; }
+      if ((b = t.closest("[data-goulot]"))) { goulotAgit(b.dataset.goulot); return true; }
       if ((b = t.closest("[data-seuil]"))) {
         const [fam, pct] = b.dataset.seuil.split(":");
         if (E.setSeuilAtelier(fam, +pct).ok) A.click();
@@ -1884,7 +1917,7 @@
     function flash(el) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     const openItemInfo = (id) => goto(id);
 
-    return { voixTick, prodClick, viewLabo, equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
+    return { goulotsHTML, voixTick, prodClick, viewLabo, equipmentLive: Equipped ? Equipped.live : null, arbreMaj, arbreOuvrir, arbreRendre, viewAtelier, viewCarnet, viewMachines, carnetList, carnetLive, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML, handSig, startHarvest, actBar, skillName, openSkills, openHands, openTree, goto, openItemInfo, promptCarnetQty, promptCraftQty };
   }
 
   window.EclatAtelier = { create };

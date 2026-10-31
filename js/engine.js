@@ -1744,6 +1744,78 @@
       }
       return out;
     };
+    /* 0.52 : les goulots. Un goulot est ce qui empêche un travailleur ou un ordre permanent d'avancer, descendu jusqu'à sa cause réelle
+     * (pas d'extracteur, personne dans le métier qui fabrique la matière, recette jamais faite à la main, seuil à 0, énergie) avec ce qui le règle.
+     * Lecture seule : un calcul sur l'état, rien dans la sauvegarde. Rend [{ id, kind, fam, ing, bloque: [recettes], poids, txt, action }], le plus gênant d'abord. */
+    function causeRacine(i, prof, vus) {
+      if (prof > 8 || vus[i]) return null;
+      vus[i] = true;
+      const it = item(i);
+      if (!it) return null;
+      if (!it.r) return { kind: Object.keys((S.dom && S.dom.ext) || {}).some((k) => S.dom.ext[k].res === i) ? "lent" : "extracteur", ing: i };
+      const f2 = E.atelierDe(i);
+      if (!E.automatable(i)) return { kind: "inconnue", ing: i, fam: f2 };
+      if (!(S.made[i] > 0) && !E.hasEchoFin("retour") && D.COMMANDES && D.COMMANDES.firstByHand) return { kind: "main", ing: i, fam: f2 };
+      const a = (S.ateliers && S.ateliers[f2]) || {};
+      if (!(a.app || a.ouv)) return { kind: "personne", ing: i, fam: f2 };
+      if (autoSeuil(f2) <= 0) return { kind: "seuil0", ing: i, fam: f2 };
+      for (const j in it.r[1]) if ((S.inv[j] || 0) + 1e-9 < it.r[1][j]) { const c = causeRacine(j, prof + 1, vus); if (c) return c; }
+      if ((S.inv[i] || 0) >= autoCible(i) - 1e-9) return { kind: "seuil", ing: i, fam: f2 };
+      return null;
+    }
+    E.goulots = function () {
+      const liste = {};
+      const ajoute = (c, fam, rec) => {
+        if (!c) return;
+        const parMetier = c.kind === "seuil0" || c.kind === "main" || c.kind === "personne";
+        const id = c.kind + ":" + (parMetier ? c.fam : c.ing);
+        const g = liste[id] || (liste[id] = { id, kind: c.kind, fam: c.fam || null, ing: c.ing, ings: [], fams: [], bloque: [], poids: 0 });
+        if (c.ing && g.ings.indexOf(c.ing) < 0) g.ings.push(c.ing);
+        if (fam && g.fams.indexOf(fam) < 0) g.fams.push(fam);
+        if (rec && g.bloque.indexOf(rec) < 0) { g.bloque.push(rec); g.poids++; }
+      };
+      assignWorkers();
+      for (const fam in S.ateliers || {}) {
+        const a = S.ateliers[fam];
+        if (!(a.app || a.ouv) || autoSeuil(fam) <= 0) continue;
+        E.autoEtat(fam).forEach((x) => {
+          if (x.etat !== "manque") return;
+          for (const i in item(x.id).r[1]) {
+            if ((S.inv[i] || 0) - (autoReserve[i] || 0) + 1e-9 >= item(x.id).r[1][i]) continue;
+            ajoute(causeRacine(i, 0, { [x.id]: true }), fam, x.id);
+            break;
+          }
+        });
+      }
+      E.cadences().forEach((c) => {
+        if (c.status !== "starved" || !c.miss.length) return;
+        ajoute(causeRacine(c.miss[0], 0, { [c.id]: true }), E.atelierDe(c.id), c.id);
+      });
+      if (energieCache < 0.999 && machPool.some((w) => (w.job !== null || w.cad !== null))) {
+        liste["energie:-"] = { id: "energie:-", kind: "energie", fam: null, ing: null, fams: [], bloque: [], poids: 1, pct: Math.round(energieCache * 100) };
+      }
+      const nom = (id) => ((item(id) && item(id).n) || id).toLowerCase();
+      const maj = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+      const F = (f) => { const x = ((D.ATELIERS || {}).familles || []).find((y) => y.id === f); return x ? x.n : f; };
+      return Object.values(liste).map((g) => {
+        const lot = g.ings && g.ings.length ? g.ings.slice(0, 3).map(nom).join(", ") + (g.ings.length > 3 ? " et " + (g.ings.length - 3) + " autres" : "") : "";
+        const n = g.kind === "main" || g.kind === "personne" ? lot : g.ing ? nom(g.ing) : "";
+        let txt = "", action = null;
+        if (g.kind === "extracteur") { txt = "Manque : " + n + ". Aucun extracteur n’en récolte"; action = { k: "terres", id: g.ing, label: "Voir les Terres" }; }
+        else if (g.kind === "lent") { txt = maj(n) + " part plus vite qu’il ne se récolte"; action = { k: "terres", id: g.ing, label: "Ajouter un extracteur" }; }
+        else if (g.kind === "personne") {
+          txt = "Manque : " + n + " (" + F(g.fam) + "). Personne n’y travaille";
+          const kind = S.age >= TRAV.ouvrier.age ? "ouvrier" : S.age >= TRAV.apprenti.age ? "apprenti" : null;
+          action = kind ? { k: "embaucher", fam: g.fam, kind, label: "Embaucher", cout: E.coutEmbauche(g.fam, kind) } : { k: "metier", fam: g.fam, label: "Ouvrir " + F(g.fam) };
+        }
+        else if (g.kind === "main") { txt = "Jamais fabriqué à la main : " + n + ". Les travailleurs ne le peuvent pas encore"; action = { k: "fabriquer", id: g.ings[0], fam: g.fam, label: "Le fabriquer une fois" }; }
+        else if (g.kind === "inconnue") { txt = "La recette de " + n + " n’est pas encore connue"; action = { k: "labo", id: g.ing, label: "Au Labo" }; }
+        else if (g.kind === "seuil0") { txt = F(g.fam) + " est réglé à 0 % : on n’y fabrique rien"; action = { k: "metier", fam: g.fam, label: "Régler le seuil" }; }
+        else if (g.kind === "seuil") { txt = maj(n) + " est au seuil de " + F(g.fam) + " et il en faut plus"; action = { k: "metier", fam: g.fam, label: "Monter le seuil" }; }
+        else if (g.kind === "energie") { txt = "L’énergie manque : travailleurs et machines tournent à " + g.pct + " %"; action = { k: "energie", label: "Voir l’énergie" }; }
+        return Object.assign(g, { txt, action });
+      }).sort((a, b) => (b.kind === "energie") - (a.kind === "energie") || b.poids - a.poids || a.id.localeCompare(b.id));
+    };
     /* affecte les machines restées libres après les commandes aux cadences de maintien de stock, puis les travailleurs libres à leur métier */
     function assignCadenceWorkers() {
       const cads = (S.dom && S.dom.cadence) || {};

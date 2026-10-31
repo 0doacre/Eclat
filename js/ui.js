@@ -1397,11 +1397,22 @@
   const { bindEngine, bindDom, checkForcedReleve } = Ecu;
 
   /* ============================================================ BOUCLE */
+  /* une pastille sur l'onglet Atelier quand un nouveau goulot apparaît (0.52) ; elle part quand on ouvre l'Atelier */
+  function goulotTick() {
+    const t = Date.now();
+    if (t - (U.goulotT || 0) < 3000) return;
+    U.goulotT = t;
+    if (!U.goulotVus) U.goulotVus = new Set();
+    const ids = E.goulots().map((g) => g.id);
+    if (U.tab === "atelier") { ids.forEach((i) => U.goulotVus.add(i)); return; }
+    if (ids.some((i) => !U.goulotVus.has(i))) { ids.forEach((i) => U.goulotVus.add(i)); badge("atelier"); }
+  }
   function loop() {
     E.update();
     visiteurTick();
     Amb.update();
     if (Atl.voixTick) Atl.voixTick();
+    goulotTick();
     if (U.offline) U.fen.demande(FP.retour, "retour", showOffline);
     U.fen.pomper();
     if (U.dirty && !U.holding && !pressing()) render();

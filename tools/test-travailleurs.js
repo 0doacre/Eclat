@@ -262,3 +262,43 @@ test("une absence courte ne donne pas de compte rendu ; l'historique survit à l
   F.load(JSON.stringify(E.save ? JSON.parse(E.save()) : E.state));
   assert.equal(F.voixHisto().length, n);
 });
+
+console.log("Les goulots (0.52)");
+function jeuGoulot() {
+  const { E } = jeu(5);
+  E.state.ecus = 1e6;
+  for (const [id, it] of Object.entries(D.ITEMS)) if (!it.r && it.a <= 5) E.add(id, 5000);
+  E.state.inv.plaque_bronze = 0;
+  E.state.made.roue = 1; E.state.made.plaque_bronze = 1;
+  E.embaucher("artisanat", "apprenti");
+  // seule la roue reste à fabriquer : les autres composants de l'artisanat sont au seuil
+  for (const id of Object.keys(D.ITEMS)) if (D.ITEMS[id].r && D.ITEMS[id].t === "comp" && id !== "roue" && E.atelierDe(id) === "artisanat") E.state.inv[id] = 999;
+  return E;
+}
+test("un composant d'un autre métier sans travailleur : « personne n'y travaille », avec le bouton d'embauche", () => {
+  const E = jeuGoulot();
+  const g = E.goulots().find((x) => x.ings && x.ings.includes("plaque_bronze"));
+  assert.ok(g, JSON.stringify(E.goulots().map((x) => x.id)));
+  assert.equal(g.kind, "personne");
+  assert.equal(g.fam, "metallurgie");
+  assert.equal(g.action.k, "embaucher");
+  assert.ok(g.bloque.includes("roue") && g.poids >= 1 && /Personne n’y travaille/.test(g.txt), g.txt);
+});
+test("on embauche : la cause descend jusqu'à la matière brute sans extracteur ; jamais fait à la main : le dit", () => {
+  const E = jeuGoulot();
+  E.embaucher("metallurgie", "apprenti");
+  for (const [id, it] of Object.entries(D.ITEMS)) if (!it.r && it.a <= 5) E.state.inv[id] = 0;
+  const g = E.goulots().find((x) => x.ing && !D.ITEMS[x.ing].r);
+  assert.ok(g && g.kind === "extracteur" && g.action.k === "terres", g && g.id);
+  delete E.state.made.plaque_bronze;
+  for (const [id, it] of Object.entries(D.ITEMS)) if (!it.r && it.a <= 5) E.state.inv[id] = 5000;
+  const h = E.goulots().find((x) => x.kind === "main" && x.ings.includes("plaque_bronze"));
+  assert.ok(h && h.kind === "main" && h.action.k === "fabriquer", h && h.id);
+});
+test("seuil à 0 dans le métier qui fabrique : le dit ; rien à signaler sans travailleur ni manque", () => {
+  const E = jeuGoulot();
+  E.embaucher("metallurgie", "apprenti"); E.setSeuilAtelier("metallurgie", 0);
+  assert.ok(E.goulots().some((x) => x.kind === "seuil0" && x.fam === "metallurgie"));
+  const { E: V } = jeu(5);
+  assert.deepEqual(V.goulots(), []);
+});
