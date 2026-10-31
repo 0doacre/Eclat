@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.49.1";
+  D.VERSION = "0.49.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1636,6 +1636,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "💭 Le guide remis d’aplomb après la refonte : il montre l’objectif, le médaillon d’une nouvelle terre, le bouton Explorer, le Comptoir et le bouton Étudier du Labo (trois chapitres ne démarraient plus), et ses textes parlent des Terres et du Labo.",
     "✦ Les Traces (des pas) et l’Intuition (des étincelles) ont chacune leur icône, qui étaient confondues. Le bouton du compte quitte l’en-tête : il est dans Menu → Système → Compte en ligne.",
     "📐 Le Labo occupe mieux l’espace : les matières se serrent (quatre colonnes sur téléphone, davantage sur grand écran), et sur grand écran l’établi reste en vue pendant que la liste des matières défile dans sa colonne.",
     "🧪 Au Labo, « Vider » rejoint la rangée des gestes (grisé quand l’établi est vide), et le message de l’établi (fabriqué, tiède, chaud, brûlant) prend un cadre de la D.A. dont la couleur dit la température.",

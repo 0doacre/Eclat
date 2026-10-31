@@ -9,7 +9,7 @@
   function create(api) {
     const { E, D, A, U, esc, save, toast } = api;
     const S = () => E.state;
-    const TABS = { domaine: "les Terres", labo: "le Labo", carte: "l’Atlas, dans les Terres", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans le Journal" };
+    const TABS = { domaine: "les Terres", labo: "le Labo", carte: "l’Atlas, dans les Terres", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans la Progression" };
     const GAP = 150000; // entre deux chapitres : une explication toutes les deux ou trois minutes, jamais en rafale
 
     /* ------------------------------------------------------------ petits repères */
@@ -54,8 +54,8 @@
           { tab: "labo", at: () => E.equipmentList ? (U.geste === "tailler" ? '#ae-forge-tailler' : '#ae-tool-percuteur_pierre') : (U.geste === "tailler" ? "#forge" : '[data-g="tailler"]'), text: () => (U.geste === "tailler" ? "Lance Tailler pour fabriquer ton premier objet." : "Choisis l’action Tailler."),
             done: () => S().known.manche },
           { tab: "labo", at: E.equipmentList ? "#ae-result" : "#result", done: () => S().known.corde, text: "Manche fabriqué. Sa recette est dans le Carnet.", next: true },
-          { tab: "domaine", go: "Retour au Domaine.", at: ".goal-card", text: "L’objectif en haut du Domaine indique la suite. 🏁 : les étapes de l’âge.", next: true, done: () => S().known.corde },
-          { text: "Objectif : de quoi attacher deux objets. Récolte des fibres, puis essaie des actions à l’Atelier. Le thermomètre montre si tu approches d’une recette.",
+          { tab: "domaine", go: "Retour aux Terres.", at: '[data-terre-panel="obj"]', text: "Le bouton en haut des Terres est ton objectif : touche-le pour voir la suite et les étapes de l’âge.", next: true, done: () => S().known.corde },
+          { text: "Objectif : de quoi attacher deux objets. Récolte des fibres, puis essaie des gestes au Labo. Le message de l’établi te dit si tu approches d’une recette.",
             free: true, done: () => S().known.corde },
           { text: "Suis l’objectif. L’aide ❓ est toujours là.", next: true }
         ] },
@@ -63,7 +63,7 @@
         when: () => { const ob = E.objective(); return (U.tab === "domaine" || U.tab === "carte") && ob && ob.k === "exp" && !S().exp.active && !Object.keys(S().exp.done).length; },
         still: () => !S().exp.active && !Object.keys(S().exp.done).length,
         steps: [
-          { tab: "carte", go: "Un nouveau lieu est apparu sur la Carte. Ouvre-la.", at: '[data-cl="lisiere:0"]', text: "Touche le grand chêne. Au milieu de la lisière, il ne ressemble pas aux autres arbres.",
+          { tab: "domaine", at: '[data-exp]', text: "Un lieu t’attend ici : le grand chêne, au milieu de la lisière, ne ressemble pas aux autres arbres. Touche « Explorer ».",
             done: () => !!document.querySelector('.modal:not(.hidden) [data-m="go"]') || !!S().exp.active },
           { modal: true, at: '.modal:not(.hidden) [data-m="go"]', back: 0,
             text: "Lance l’exploration pour découvrir l’histoire de ce lieu. Les autres actions restent disponibles.", done: () => !!S().exp.active }
@@ -84,9 +84,9 @@
           { tab: "journal", go: "Ouvre le Journal.", text: "Les points d’interrogation sont des morceaux qu’il te reste à trouver, en explorant. Prends ton temps.", next: true }
         ] },
       { id: "terre", n: "Une nouvelle terre",
-        when: () => U.tab === "domaine" && !!S().zones.plaine && !!document.querySelector("#dt-plaine .dom-th"),
+        when: () => U.tab === "domaine" && !!S().zones.plaine && !!document.querySelector('[data-terre-go="plaine"]'),
         steps: [
-          { tab: "domaine", at: "#dt-plaine .dom-th", text: "Une nouvelle terre : d’autres ressources à récolter, et un lieu à explorer.", next: true }
+          { tab: "domaine", at: '[data-terre-go="plaine"]', text: "Une nouvelle terre : touche son médaillon pour la visiter. Elle a d’autres ressources à récolter, et un lieu à explorer.", next: true }
         ] },
       { id: "intuition", n: "L’Intuition",
         when: () => (U.tab === "domaine" || U.tab === "labo") && S().intu >= 2 && !modalOpen(),
@@ -135,10 +135,10 @@
             next: true, done: () => !!S().flags.lineDone }
         ] },
       { id: "comptoir", n: "Le Comptoir",
-        when: () => U.tab === "domaine" && E.zoneOpen(D.COMPTOIR.zone) && !Object.keys((S().comptoir && S().comptoir.sold) || {}).length && !!document.querySelector("#dcomptoir"),
+        when: () => U.tab === "domaine" && E.zoneOpen(D.COMPTOIR.zone) && !Object.keys((S().comptoir && S().comptoir.sold) || {}).length && !!document.querySelector('[data-terre-panel="comptoir"]'),
         still: () => !Object.keys((S().comptoir && S().comptoir.sold) || {}).length,
         steps: [
-          { tab: "domaine", at: "#dcomptoir", text: "Le Comptoir est ouvert, dans la Plaine. Touche « Ouvrir le Comptoir ». Le Troqueur, un vieil automate, achète tout ce qu’on lui apporte.",
+          { tab: "domaine", at: () => (document.querySelector("#dcomptoir [data-comptoir]") ? "#dcomptoir [data-comptoir]" : '[data-terre-panel="comptoir"]'), text: () => (document.querySelector("#dcomptoir [data-comptoir]") ? "Touche « Ouvrir le Comptoir ». Le Troqueur, un vieil automate, achète tout ce qu’on lui apporte." : "Le Comptoir est ouvert, dans la Plaine. Touche « Comptoir » en haut des Terres."),
             done: () => modalOpen() || Object.keys((S().comptoir && S().comptoir.sold) || {}).length > 0 },
           { modal: true, at: () => (document.querySelector('.modal:not(.hidden) [data-m="sell"]') ? '.modal:not(.hidden) [data-m="sell"]' : null),
             text: "Vends ce qui encombre ta Réserve contre des écus. Plus tu vends d’une même ressource, plus son prix baisse.",
@@ -172,22 +172,20 @@
           // hors des fenêtres : la bulle ne recouvre pas leurs boutons
           { text: "Compris : partout où ce signe apparaît, il se lit désormais en mot. Les autres se trouvent dans le Journal, onglet Signes.", next: true }
         ] },
-      { id: "etude", n: "Étudier une ressource",
-        when: () => !E.equipmentList && U.tab === "labo" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!studyTile(),
+      { id: "etude", n: "Étudier tes matières",
+        when: () => U.tab === "labo" && S().intu >= 1 && !Object.keys(S().studied).length && Object.keys(S().known).length >= 4 && !!document.querySelector('[data-ae="study"]:not(:disabled)'),
         still: () => !Object.keys(S().studied).length,
         steps: [
-          { tab: "labo", at: studyTile, text: E.equipmentList?"Ouvre la Fiche d’une matière pour l’étudier et chercher ce qu’elle permet de fabriquer.":"Appuie longuement sur une ressource pour ouvrir sa fiche.",
-            done: () => !!document.querySelector('.modal:not(.hidden) [data-m="study"]') || Object.keys(S().studied).length > 0 },
-          { modal: true, at: '.modal:not(.hidden) [data-m="study"]', back: 0,
-            text: "Étudie-la contre un peu d’Intuition ✨ : tu sauras avec quelles actions elle cache encore des recettes.", done: () => Object.keys(S().studied).length > 0 },
-          { tab: "labo", text: "Une ressource étudiée porte un ✦ quand elle réagit avec l’action choisie. À toi de trouver la bonne combinaison.", next: true }
+          { tab: "labo", at: '[data-ae="study"]', text: "Touche « Étudier » : un peu d’Intuition ✨ te dit quelles matières cachent encore des recettes avec l’outil et le geste choisis.",
+            done: () => Object.keys(S().studied).length > 0 },
+          { tab: "labo", at: '[data-ae="filtre"][data-value="utiles"]', dim: false, text: "Le filtre « Utiles » ne montre plus que les matières qui réagissent. À toi de trouver la bonne combinaison.", next: true }
         ] },
       { id: "suivre", n: "Suivre une recette",
         when: () => !S().track && U.tab === "carnet" && S().stats.crafts <= 80 && S().age <= 4 && Object.keys(S().known).length >= 5 && !!document.querySelector("[data-track]"),
         still: () => !S().track,
         steps: [
           { tab: "carnet", at: "[data-track]", dim: false,
-            text: "Suivre : la carte d’objectif te montre ce qu’il manque pour cette recette, en haut du Domaine.",
+            text: "Suivre : la carte d’objectif te montre ce qu’il manque pour cette recette, dans l’objectif des Terres.",
             done: () => !!S().track }
         ] },
       { id: "epingle", n: "Épingler une recette",
@@ -464,7 +462,7 @@
       let view;
       if (s.tab && U.tab !== s.tab && !s.modal) {
         // le Carnet et les Machines sont des pages de l’Atelier, le Cosmos une page du Journal
-        const par = { carte: "domaine", carnet: "atelier", machines: "atelier", cosmos: "journal" }[s.tab];
+        const par = { carte: "domaine", carnet: "atelier", machines: "atelier", cosmos: "arbre" }[s.tab];
         const sel = par && U.tab === par ? '[data-tab2="' + s.tab + '"]' : '#tabs [data-tab="' + (par || s.tab) + '"]';
         view = { target: resolve(sel), text: s.go || "Ouvre " + TABS[s.tab] + "." };
       } else {
