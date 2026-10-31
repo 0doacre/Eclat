@@ -117,3 +117,24 @@ html[data-style-mode="vivant"] #v-journal .frag::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box;
   border: var(--cadre-b) solid transparent; border-image: var(--tuile) 24 fill / var(--cadre-b) / 0 stretch;
 }
+
+/* ---- RESSOURCES NUES : l'image seule, sans cadre ni fond (le bouton garde sa zone de clic de 44 px) ---- */
+html[data-style-mode="vivant"] #app .terre-recolte { background: transparent !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+html[data-style-mode="vivant"] #app .terre-recolte.inerte { opacity: .55; }
+html[data-style-mode="vivant"] #app :is(.terre-recolte, .arb-pas, .arb-card, .arb-pas .ic, .arb-card .ic) .ic,
+html[data-style-mode="vivant"] #app :is(.arb-pas, .arb-card) > .ic {
+  background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+}
+
+/* ---- TAILLE STABLE : un bouton ne change pas de taille quand son contenu change ---- */
+html[data-style-mode="vivant"] #app :is(.terre-boucle, .mini.harvest) { width: 56px; min-width: 56px; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; }
+html[data-style-mode="vivant"] #app .terre-boucle { height: 44px; }
+html[data-style-mode="vivant"] #app :is(.terre-boucle, .mini.harvest) svg { width: 22px; height: 22px; }
+html[data-style-mode="vivant"] #app :is(.terre-boucle, .mini.harvest).on { font-size: 20px; line-height: 1; }
+/* les textes d'un bouton d'une ligne rétrécissent plutôt que de grandir : voir js/ajuste-texte.js */
+html[data-style-mode="vivant"] :is([data-fit], .terres-pastille, .chip, .arb-filtres button, .ae-chip:not(.ae-outil), .age-pill, .atel-etat) { overflow: hidden; }
+/* l'objectif porte un nom variable (« Four en argile ») : il prend sa propre ligne, les deux autres panneaux se partagent la suivante */
+@media (max-width: 520px) {
+  html[data-style-mode="vivant"] .terres-pastilles { flex-wrap: wrap; overflow-x: visible; }
+  html[data-style-mode="vivant"] #app .terres-pastille[data-terre-panel="obj"] { flex: 1 1 100%; font-size: 15px; }
+}

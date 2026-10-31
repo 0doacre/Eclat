@@ -979,8 +979,8 @@
         '<div class="small muted" data-c="' + id + '">' + (uniq ? (owned ? "✓" : "") : fmt(st.inv[id] || 0)) + "</div>" +
         '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-pin="' + id + '" title="Épingler cette recette en haut de l’Atelier" aria-label="Épingler cette recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button></div>";
       const fx = fxText(id);
-      if (fx) h += '<div class="fx">' + esc(fx) + (E.isScaled(it) ? ' · <span class="muted">Construits : ' + Math.floor(st.inv[id] || 0) + "</span>" : "") + "</div>";
-      else if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:3px">Construits : ' + Math.floor(st.inv[id] || 0) + "</div>";
+      if (fx) h += '<div class="fx">' + esc(fx) + (E.isScaled(it) ? ' · <span class="muted">Construits : ' + fmt(Math.floor(st.inv[id] || 0)) + "</span>" : "") + "</div>";
+      else if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:3px">Construits : ' + fmt(Math.floor(st.inv[id] || 0)) + "</div>";
       if (!owned) h += '<div class="carnet-lot" data-carnet-lot="' + id + '">' + carnetLotHTML(id) + '</div>';
       const situerBtn = arbreVisible(id) ? '<button type="button" class="btn small ghost carnet-situer" data-situer="' + id + '" title="Situer dans l’Arbre" aria-label="Situer dans l’Arbre">Arbre</button>' : "";
       if (!owned) {
@@ -1587,7 +1587,7 @@
               const rev = ["Révèle l’action.", "Révèle une des ressources.", "Révèle la recette entière."][lvl];
               const ok = st.intu >= dc;
               h += '<div class="decipher"><button class="btn small' + (ok ? " pri" : "") + '" data-m="decipher"' + (ok ? "" : " disabled") + ">✨ Déchiffrer : " + dc + " ✨</button>" +
-                '<div class="tiny muted">' + rev + (ok ? "" : " Pas assez d’Intuition (tu as " + Math.floor(st.intu) + " ✨).") + "</div></div>";
+                '<div class="tiny muted">' + rev + (ok ? "" : " Pas assez d’Intuition (tu as " + fmt(Math.floor(st.intu)) + " ✨).") + "</div></div>";
             }
             const m = E.memory();
             if (m && m.id === id) h += memoryHTML(m);

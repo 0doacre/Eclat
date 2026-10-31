@@ -287,7 +287,7 @@
         b.classList.toggle("ae-selected",picked);
         b.setAttribute("aria-pressed",String(picked));
         b.setAttribute("aria-label",name(id)+', '+n.toLocaleString('fr-FR')+' en stock'+(picked?', sur l’établi':''));
-        b.title=name(id)+' · '+n.toLocaleString('fr-FR');
+        b.title=name(id)+' · '+api.fmt(n);
         el.querySelector("[data-ae-count]").textContent=api.fmt(n);
       });
       const empty=r.querySelector('#ae-discovery-empty');

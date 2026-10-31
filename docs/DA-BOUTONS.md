@@ -40,3 +40,10 @@ Les cadres sont des SVG (`assets/ui/cadre-*.svg`, 96 × 96) utilisés en `border
 ## Reste à faire
 
 Les pastilles d'objet (`itemPill`) sont encore des gélules arrondies ; les anciennes feuilles (`style.css`, `design-preview.css`) gardent des règles qui ne servent plus que hors du mode vivant et disparaîtront avec les styles.
+
+## Ressources nues, tailles stables, nombres courts (0.47.1)
+
+- **Ressources nues** : l'image d'une ressource ou d'une recette s'affiche seule, sans second cadre blanc autour. Le bouton qui la porte (récolter, choisir une tuile) garde sa zone de clic de 44 px mais sans fond ni bordure.
+- **Taille stable** : un bouton ne change pas de taille quand son état change. Exemple : le bouton de récolte en continu garde 56 × 44 px que ce soit « ▶ » ou « ■ ».
+- **Le texte rétrécit, pas le bouton** : `js/ajuste-texte.js` réduit la police (jusqu'à 70 %) d'un contrôle d'une seule ligne dont le texte ne tient pas (boutons du haut, pastilles, filtres, puces). Pour l'appliquer à un nouvel élément : lui donner `data-fit`.
+- **Nombres courts** : tout nombre affiché passe par `fmt()` (k, M, G, T, P, E, Z) ; la valeur exacte reste dans l'info-bulle ou le libellé d'accessibilité quand c'est utile.
