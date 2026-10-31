@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.7";
+  D.VERSION = "0.64.8";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -2075,50 +2075,50 @@
    *   D.SAVEUR_GESTE.<geste> = "Ce que ce geste veut dire, au moment où on le comprend."
    * La liste de ce qui reste à écrire se génère avec `node tools/saveur-a-ecrire.js` (docs/revue/saveur-a-ecrire.md). */
   D.SAVEUR = {};
-  /* Bâtiment (0.64.7) */
-  D.SAVEUR.feu = "Des branches en cône, une braise dessous. La flamme monte, et la nuit recule jusqu’aux arbres.";
-  D.SAVEUR.cabane = "Des branches appuyées l’une contre l’autre, un toit de feuilles. Le soir, des lucioles tournent autour.";
-  D.SAVEUR.fibre_1 = "Un cadre de bois, des tiges de fibre étalées dessus. Le vent fait le reste.";
-  D.SAVEUR.caillou_1 = "Un coup de pic, un bloc qui se détache. On le remonte à la corde.";
-  D.SAVEUR.collets = "Des nœuds de corde posés sur les sentiers à bêtes. Au retour, parfois, quelque chose y pend.";
-  D.SAVEUR.cuir_1 = "Les peaux trempent des jours dans une eau brune. Sorties de là, elles sont souples et sentent l’écorce.";
+  /* Bâtiment (0.64.8) */
+  D.SAVEUR.feu = "Une braise sous des branches en cône. La nuit recule jusqu’aux arbres.";
+  D.SAVEUR.cabane = "Des branches appuyées l’une contre l’autre sous un toit de feuilles. Le soir, des lucioles tournent autour.";
+  D.SAVEUR.fibre_1 = "Des tiges de fibre étalées sur un cadre de bois, et le vent fait le reste.";
+  D.SAVEUR.caillou_1 = "Un coup de pic détache un bloc, qu’on remonte à la corde.";
+  D.SAVEUR.collets = "Des nœuds de corde posés sur les sentiers. Au retour, il arrive que quelque chose y pende.";
+  D.SAVEUR.cuir_1 = "Les peaux trempent des jours dans une eau brune. Elles en sortent souples, et sentent l’écorce.";
   D.SAVEUR.automate_bois = "Il grince à chaque mouvement et ne s’arrête jamais.";
-  D.SAVEUR.four = "Une chambre de briques, la porte bouchée d’argile. Le lendemain matin, elle est encore tiède.";
-  D.SAVEUR.nasse = "Une fosse au bord de l’eau. L’argile s’y coupe en mottes lisses, froides entre les doigts.";
-  D.SAVEUR.hutte = "Des murs de branches enduits de boue, un toit de chaume. Les lames de pierre sont rangées à portée de main.";
+  D.SAVEUR.four = "Une chambre de briques à la porte bouchée d’argile. Le lendemain, elle est encore tiède.";
+  D.SAVEUR.nasse = "Au bord de l’eau, une fosse où l’argile se coupe en mottes lisses et froides.";
+  D.SAVEUR.hutte = "Des murs de branches enduits de boue, sous un toit de chaume. Les lames de pierre sont à portée de main.";
   D.SAVEUR.fibre_2 = "Les tiges trempent dans l’eau stagnante jusqu’à lâcher leurs fibres. L’odeur colle aux vêtements.";
-  D.SAVEUR.caillou_2 = "On enfonce des coins de bois dans les fentes et on les arrose. La roche éclate en blocs nets.";
+  D.SAVEUR.caillou_2 = "On enfonce des coins de bois dans les fentes et on les arrose : la roche éclate en blocs nets.";
   D.SAVEUR.silex_1 = "Des silex roulés par le courant, mêlés aux galets. On les reconnaît au poids et au son.";
   D.SAVEUR.sable_1 = "Une fosse où l’on pellette le sable. Il passe à la claie, et les cailloux restent.";
   D.SAVEUR.enclume_pierre = "Un bloc plat, choisi pour ne pas éclater. Le premier coup de marteau le fait sonner.";
   D.SAVEUR.creuset = "Un pot d’argile cuit à blanc. Il ne bouge pas quand le métal y devient liquide.";
-  D.SAVEUR.puits = "Un trou étayé de rondins, une poulie qui grince. Les seaux remontent lourds.";
+  D.SAVEUR.puits = "Un trou étayé de rondins, où une poulie grince sous le poids des seaux.";
   D.SAVEUR.charbonniere = "Une butte de terre qui fume des jours durant. En l’ouvrant, le bois est noir jusqu’au cœur.";
   D.SAVEUR.lampe = "Une mèche de fibre dans une coupelle de cuivre. La flamme est petite et ne vacille presque pas.";
   D.SAVEUR.cassiterite_1 = "Le minerai gris pèse plus que le reste. On le remonte à part, seau après seau.";
   D.SAVEUR.automate_bronze = "Des engrenages et des ressorts sous une coque de bronze. Il ne se fatigue pas.";
-  D.SAVEUR.enclume_bronze = "Plus lourde que celle de pierre. Le marteau y rebondit, net, et le son porte loin.";
+  D.SAVEUR.enclume_bronze = "Plus lourde que celle de pierre. Le marteau rebondit net, avec un son qui porte.";
   D.SAVEUR.courroies = "Une boucle de cuir tendue d’une roue à l’autre. Au bout, tes automates se mettent à tourner.";
   D.SAVEUR.brouette = "Une caisse sur une roue, deux bras de bois. Ce qui se portait en trois voyages passe en un.";
   D.SAVEUR.tamis = "Un grand cadre qu’on secoue. Le sable tombe, les cristaux clairs restent dans le grillage.";
   D.SAVEUR.bas_fourneau = "Une cheminée d’argile que le soufflet fait rugir. Au fond, la braise vire au blanc.";
-  D.SAVEUR.galerie = "Des boisages cloués, une galerie qui s’enfonce. L’air y est froid et sent le fer.";
+  D.SAVEUR.galerie = "Une galerie qui s’enfonce entre des boisages cloués. L’air est froid et sent le fer.";
   D.SAVEUR.palan = "Une chaîne sur une poulie. D’un tour de manivelle, la charge quitte le sol.";
   D.SAVEUR.enclos = "Une palissade, et dedans des bêtes qui broutent. Plus besoin de les poursuivre.";
-  D.SAVEUR.cuir_2 = "Des rangées de cuves, une odeur qui prend à la gorge. Le cuir en sort sans cesse.";
+  D.SAVEUR.cuir_2 = "Des rangées de cuves d’où le cuir sort sans cesse, dans une odeur qui prend à la gorge.";
   D.SAVEUR.sable_2 = "Un cadre à mailles fines. Le sable passe, le reste glisse sur le côté.";
   D.SAVEUR.charbon_2 = "Des galeries noires où la poussière colle à la gorge. On y tousse avant d’y voir clair.";
   D.SAVEUR.haut_fourneau = "Une tour cerclée de fer qui ronfle jour et nuit. Au pied, une coulée orange.";
   D.SAVEUR.bac_trempe = "Un grand bac d’eau froide. Le métal rouge y entre en sifflant.";
   D.SAVEUR.tour = "La pièce tourne, l’outil avance d’un cheveu. Le copeau tombe en spirale.";
-  D.SAVEUR.martinet = "Une roue à aubes lève un marteau, la chute d’eau le laisse retomber. On l’entend jusqu’au village.";
+  D.SAVEUR.martinet = "Une roue à aubes lève un marteau que l’eau laisse retomber. On l’entend jusqu’au village.";
   D.SAVEUR.presse_vapeur = "Elle siffle et cogne toute la journée. Le plancher en tremble.";
   D.SAVEUR.scierie = "La lame mord le tronc. La sciure vole comme de la neige.";
   D.SAVEUR.drague = "Des godets raclent le lit de la rivière et remontent pleins de vase.";
   D.SAVEUR.treuil = "Les wagonnets remontent du fond au bout d’un câble, sans une main pour les pousser.";
   D.SAVEUR.fibre_3 = "Les bobines tournent sans arrêt. Les fils sortent tous de la même grosseur.";
   D.SAVEUR.caillou_3 = "Un marteau à vapeur frappe la roche, toujours au même rythme. On finit par ne plus l’entendre.";
-  D.SAVEUR.silex_2 = "Un puits profond, une échelle de corde. En bas, de gros rognons noirs dans la craie.";
+  D.SAVEUR.silex_2 = "Au bas d’un puits profond, de gros rognons noirs dans la craie.";
   D.SAVEUR.sable_3 = "Un gros tuyau aspire le sable du fond et le crache sur la rive.";
   D.SAVEUR.cassiterite_2 = "Une chaîne sans fin remonte les wagonnets d’étain, un à un.";
   D.SAVEUR.eau_1 = "On pèse sur le levier, l’eau monte par saccades dans le réservoir.";
@@ -2137,7 +2137,7 @@
   D.SAVEUR.ilmenite_1 = "La roche noire se détache en grandes plaques lourdes.";
   D.SAVEUR.terres_1 = "Un filon mince. On le suit à la lampe sur toute sa longueur.";
   D.SAVEUR.soufre_1 = "Des racloirs détachent les croûtes jaunes. L’odeur d’œuf pourri suit les chariots jusqu’au bas de la colline.";
-  D.SAVEUR.uranium_2 = "Des sas doublés de plomb, des galeries ventilées. On descend plus vite, et plus bas.";
+  D.SAVEUR.uranium_2 = "Des sas doublés de plomb ouvrent sur des galeries ventilées, où l’on descend plus bas.";
   D.SAVEUR.galene_2 = "Des treuils électriques remontent les blocs de galène en continu. Les wagons ne grincent plus.";
   D.SAVEUR.plateforme = "Une ville sur pilotis, au milieu de la mer. La nuit, une torchère l’éclaire de loin.";
   D.SAVEUR.excavateur = "Un monstre de titane qui mange les montagnes.";
@@ -2151,7 +2151,7 @@
   D.SAVEUR.matrice = "On lui donne de la matière brute, elle rend l’objet fini.";
   D.SAVEUR.forge_stellaire = "Même derrière le verre fumé, tu dois détourner les yeux.";
   D.SAVEUR.replicateur = "Il démonte la planète, et avec les morceaux il construit d’autres réplicateurs.";
-  /* Chimie et savoir (0.64.7) */
+  /* Chimie et savoir (0.64.8) */
   D.SAVEUR.masque = "Une coque souple et, contre le visage, un joint de caoutchouc. L’air sent le plastique neuf.";
   D.SAVEUR.bouteille = "Un cylindre d’aluminium, froid et léger. Quand on ouvre, le tuyau siffle.";
   D.SAVEUR.naphta = "Un liquide clair, recueilli à part pendant que le pétrole chauffe. Il pique le nez de loin.";
@@ -2173,7 +2173,7 @@
   D.SAVEUR.papyrus = "Tu laisses une place dans la marge pour la main qui viendra après la tienne.";
   D.SAVEUR.papier = "Les fibres se dispersent dans l’eau. Une fois séchées, elles tiennent en une feuille.";
   D.SAVEUR.presse_imprimer = "La même ligne sort sur plusieurs feuilles. L’erreur aussi, si tu l’as laissée.";
-  /* Énergie (0.64.7) */
+  /* Énergie (0.64.8) */
   D.SAVEUR.moulin = "La rivière pousse la roue, qui tourne jour et nuit.";
   D.SAVEUR.moteur_vapeur = "À chaque poussée du piston, les engrenages avancent d’un cran. Le sol vibre à chaque course.";
   D.SAVEUR.pompe = "Un balancier lent, et l’eau des galeries baisse.";
@@ -2205,7 +2205,7 @@
   D.SAVEUR.matiere_exotique = "L’aiguille de la balance part du mauvais côté. Tu refais la pesée trois fois.";
   D.SAVEUR.antimatiere = "Un flacon d’apparence vide, suspendu entre des champs. Ce qu’il contient ne touche pas les parois.";
   D.SAVEUR.panneau_dyson = "Un miroir de la taille d’une ville, plus fin qu’une bulle de savon.";
-  /* Technologie (0.64.7) */
+  /* Technologie (0.64.8) */
   D.SAVEUR.ampoule = "Un fil qui rougit puis blanchit dans une bulle de verre.";
   D.SAVEUR.cable = "Des brins de cuivre tressés sous une gaine de caoutchouc, souples comme une corde.";
   D.SAVEUR.telegraphe = "Une clef de cuivre, et un fil qui s’en va vers l’horizon. Chaque pression fait un claquement sec.";
@@ -2226,7 +2226,7 @@
   D.SAVEUR.serveur_archives = "La phrase que tu cherchais depuis trois veillées apparaît en un instant.";
   D.SAVEUR.drones = "Des milliers de petites hélices bourdonnent au-dessus des gisements.";
   D.SAVEUR.ia = "Elle répond avant la fin de ta question. Tu reconnais la voix qui te parle depuis ton réveil.";
-  /* Métallurgie (0.64.7) */
+  /* Métallurgie (0.64.8) */
   D.SAVEUR.lingot_cuivre = "Le minerai vert a coulé dans le moule. Refroidi, le métal est rouge, et la pierre le marque.";
   D.SAVEUR.plaque_cuivre = "Le lingot s’étale sous le marteau. À chaque coup, le son monte d’un cran.";
   D.SAVEUR.fil_cuivre = "Rouge, fin comme un cheveu, long comme un bras. Il garde le pli qu’on lui donne.";
@@ -2273,24 +2273,24 @@
   D.SAVEUR.aiguille = "L’os est poli contre une pierre jusqu’à la pointe, puis percé d’un chas. Le fil passe du premier coup.";
   D.SAVEUR.laniere = "Des bandes de peau pendues au vent. Elles raidissent en séchant, et le nœud ne bouge plus.";
   D.SAVEUR.colle_os = "Les os bouillent des heures. Au fond, une pâte brune qui colle aux doigts et sent la fumée.";
-  D.SAVEUR.outre = "Une peau cousue, le goulot noué. Pleine, elle pèse sur l’épaule et clapote à chaque pas.";
-  D.SAVEUR.pic_os = "Une pointe d’os emmanchée à la lanière. Sur la pierre, un son sec, et un éclat saute.";
+  D.SAVEUR.outre = "Une peau cousue, goulot noué. Pleine, elle clapote à chaque pas.";
+  D.SAVEUR.pic_os = "Une pointe d’os emmanchée à la lanière. Sur la pierre, un son sec : un éclat saute.";
   D.SAVEUR.tunique = "La peau tient chaud dès qu’on l’enfile. Elle sent la bête, et le froid reste dehors.";
-  D.SAVEUR.gants = "Deux peaux cousues au gabarit de tes mains. Les doigts y entrent à l’étroit, et c’est tout chaud dedans.";
+  D.SAVEUR.gants = "Deux peaux cousues au gabarit de tes mains. Les doigts y entrent à l’étroit, au chaud.";
   D.SAVEUR.soufflet = "Une poche de peau entre deux planches. On presse : un souffle long, et la braise vire au blanc.";
   /* Artisanat (0.64) */
-  D.SAVEUR.manche = "L’écorce part par lanières. Dessous, le bois est blanc, encore humide, tout droit.";
+  D.SAVEUR.manche = "L’écorce part par lanières, et dessous le bois est blanc, encore humide.";
   D.SAVEUR.corde = "Trois brins serrés en torsade. Pendu au bout, tu l’entends à peine craquer.";
-  D.SAVEUR.panier = "Un tressage serré, un peu de travers. Il sent la fibre verte et il est déjà trop grand pour tes deux mains.";
-  D.SAVEUR.archet = "Le bâton ronronne dans son creux. Une odeur de bois roussi, un fil de fumée, puis tout au fond, ça rougit.";
+  D.SAVEUR.panier = "Un tressage serré, un peu de travers, qui sent la fibre verte. Il est déjà trop grand pour tes deux mains.";
+  D.SAVEUR.archet = "Le bâton ronronne dans son creux. Une odeur de bois roussi, puis, tout au fond, ça rougit.";
   D.SAVEUR.charbon = "Le bois est ressorti noir, léger comme de l’écorce. Les doigts en gardent la suie.";
   D.SAVEUR.epieu = "La pointe a noirci au feu et sonne comme de l’os. La plaine paraît un peu moins grande.";
-  D.SAVEUR.torche = "Elle fume, elle crache de la résine, et l’ombre recule de trois pas.";
+  D.SAVEUR.torche = "Elle fume et crache de la résine, et l’ombre recule de trois pas.";
   D.SAVEUR.arc = "Le bois plie, la corde chante. À vingt pas, la bête ne t’a pas entendu.";
-  D.SAVEUR.fronde = "Un tour, deux tours, le claquement de la lanière. Le caillou est déjà là-bas.";
+  D.SAVEUR.fronde = "Un claquement de lanière : le caillou est déjà là-bas.";
   D.SAVEUR.eclat = "La pierre claque et se fend. Le bord est clair, fin, et coupe la peau avant qu’on le sente.";
-  D.SAVEUR.engrenage_bois = "Des dents taillées au couteau, inégales. Contre une autre roue, elles s’accrochent, et ça tourne.";
-  D.SAVEUR.hache_pierre = "Le silex, lié serré au manche. Au premier coup, les copeaux volent, gros comme la main.";
+  D.SAVEUR.engrenage_bois = "Des dents taillées au couteau, inégales. Contre une autre roue, elles s’accrochent et tournent.";
+  D.SAVEUR.hache_pierre = "Le silex est lié serré au manche. Au premier coup, les copeaux volent, gros comme la main.";
   D.SAVEUR.couteau = "Une lame de silex, si fine qu’elle laisse passer le jour. La peau s’ouvre d’un trait.";
   D.SAVEUR.pioche_pierre = "Lourde au bout du bras. Il faut dix coups pour que la roche cède et montre sa veine colorée.";
   D.SAVEUR.brique = "De la boue séchée au soleil, puis passée au feu. Elle sonne clair sous l’ongle, comme de la pierre.";
@@ -2305,16 +2305,16 @@
   D.SAVEUR.cristal_chantant = "On lui siffle trois notes. Posé sur la table, il les rejoue tout bas, sans s’arrêter.";
   D.SAVEUR.traducteur = "Un cristal tiède dans la paume. Quand on lui parle, il murmure autre chose, et c’est ce qu’on voulait dire.";
   D.SAVEUR_GESTE = {};
-  /* Gestes (0.64.7) */
+  /* Gestes (0.64.8) */
   D.SAVEUR_GESTE.electriser = "Le courant passe dans la matière, et elle change de couleur.";
   D.SAVEUR_GESTE.graver = "La lumière trace des lignes plus fines qu’un cheveu, et le silicium garde la trace.";
-  /* Gestes (0.64.7) */
+  /* Gestes (0.64.8) */
   D.SAVEUR_GESTE.chauffer = "Au feu, la boue durcit et le bois noircit. Plus il est chaud, plus ça va loin.";
   D.SAVEUR_GESTE.synthetiser = "On ne cuit plus, on assemble des molécules. Ce qu’on obtient n’existe nulle part dans la nature.";
   D.SAVEUR_GESTE.stratifier = "Des couches posées l’une sur l’autre, puis cuites sous pression. Elles ne forment plus qu’une plaque.";
   D.SAVEUR_GESTE.transmuter = "Un métal entre, un autre sort. Les alchimistes en rêvaient depuis toujours.";
   D.SAVEUR_GESTE.accorder = "Une seule note, tenue longtemps. La matière finit par vibrer avec elle.";
-  /* Gestes de métallurgie (0.64.7) */
+  /* Gestes de métallurgie (0.64.8) */
   D.SAVEUR_GESTE.marteler = "Le marteau frappe, le métal cède. Chaque coup sonne un peu moins creux.";
   D.SAVEUR_GESTE.allier = "Deux métaux dans le même creuset. Ce qui en sort ne ressemble à aucun des deux.";
   D.SAVEUR_GESTE.tremper = "Du rouge à l’eau, d’un seul geste. La vapeur monte en sifflant.";
