@@ -630,14 +630,14 @@
       return '<div class="arb-barre">' +
         (U.arbreSel ? '<button type="button" class="btn small" data-arb="ensemble" title="Revenir à ta progression : ton âge, tes étapes et le prochain objectif">← Progression</button>' : '') +
         '<button type="button" class="btn small ouvre" data-arb="centre" aria-haspopup="dialog" title="Ouvre ton objectif du moment, et ce qu’il demande">Objectif</button>' +
-        '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans l’arbre" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
+        '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans la progression" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
         '<div class="filters arb-filtres" role="toolbar" aria-label="Filtrer les pastilles">' +
         FILTRES.map(([k, lbl, tip]) =>
           '<button type="button" data-arb-f="' + k + '" class="' + (f === k ? 'on' : '') + '" title="' + tip + '">' +
           lbl + ' <span class="f-cnt">' + (counts[k] || 0) + '</span></button>'
         ).join('') +
         '</div>' +
-        '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans l’arbre</label>' +
+        '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans la progression</label>' +
         '<input id="arbq" type="search" placeholder="Recette ou ressource" value="' + esc(U.arbreQ || '') + '" autocomplete="off" spellcheck="false">' +
         '<div id="arbres" class="arb-grille" aria-live="polite">' + arbreResultats(U.arbreQ) + '</div></div>';
     }
@@ -980,7 +980,7 @@
       if (fx) h += '<div class="fx">' + esc(fx) + (E.isScaled(it) ? ' · <span class="muted">Construits : ' + fmt(Math.floor(st.inv[id] || 0)) + "</span>" : "") + "</div>";
       else if (E.isScaled(it)) h += '<div class="tiny muted" style="margin-top:3px">Construits : ' + fmt(Math.floor(st.inv[id] || 0)) + "</div>";
       if (!owned) h += '<div class="carnet-lot" data-carnet-lot="' + id + '">' + carnetLotHTML(id) + '</div>';
-      const situerBtn = arbreVisible(id) ? '<button type="button" class="btn small ghost carnet-situer" data-situer="' + id + '" title="Situer dans l’Arbre" aria-label="Situer dans l’Arbre">Arbre</button>' : "";
+      const situerBtn = arbreVisible(id) ? '<button type="button" class="btn small ghost carnet-situer" data-situer="' + id + '" title="Situer dans la Progression" aria-label="Situer dans la Progression">Progression</button>' : "";
       if (!owned) {
         const b = E.blocker(id);
         if (!E.ageOK(id)) h += '<div class="rec-foot"><div class="why">Recette conservée. Fabrication disponible : ' + esc(D.AGES[it.a].n) + '.</div>' + (situerBtn ? '<div class="acts carnet-acts">' + situerBtn + '</div>' : '') + '</div>';

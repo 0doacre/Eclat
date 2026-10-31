@@ -12,15 +12,15 @@ html[data-style-mode="vivant"] {
 }
 
 /* ---- ACTION, OUVRE-FENÊTRE, FILTRE : tout ce qui a un cadre ---- */
-html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) {
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .gmiles, .terre-nav, .ab-x, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) {
   position: relative; isolation: isolate; border: 0 !important; border-radius: 0 !important; background: transparent !important;
   box-shadow: none !important; color: var(--text) !important; text-shadow: none; font-family: var(--serif);
 }
-html[data-style-mode="vivant"] :is(#app, #modal) :is(.terres-pastille, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) {
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.terres-pastille, .gmiles, .terre-nav, .ab-x, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) {
   min-height: 44px; padding: 8px 14px; cursor: pointer;
 }
 html[data-style-mode="vivant"] :is(#app, #modal) :is(.chip, .icon-btn, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill) { --cadre-b: 10px; }
-html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill)::before {
+html[data-style-mode="vivant"] :is(#app, #modal) :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .gmiles, .terre-nav, .ab-x, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill)::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box; width: auto; height: auto;
   mask: none !important; transform: none; filter: none; background: none !important;
   border: var(--cadre-b) solid transparent !important;
@@ -169,3 +169,27 @@ html[data-style-mode="vivant"] #v-labo #ae-result.ae-heat-brulant, html[data-sty
 html[data-style-mode="vivant"] #v-labo #ae-result.ae-heat-tiede { --tuile: var(--cadre-papier); }
 html[data-style-mode="vivant"] #v-labo #ae-result.ae-heat-froid { --tuile: url("../assets/ui/cadre-tuile.svg"); color: var(--muted) !important; }
 html[data-style-mode="vivant"] #v-labo .ae-gestes .ae-vider { flex: 0 0 auto; width: auto; min-width: 88px; }
+
+/* ---- Terres : les flèches de terre, la barre de récolte (■) et « Progression » ont le cadre des actions ; la ligne d'âge a celui d'une tuile ---- */
+html[data-style-mode="vivant"] #app :is(.terre-nav, .ab-x, .gmiles) { min-width: 44px; min-height: 44px; }
+html[data-style-mode="vivant"] #app :is(.terre-nav, .ab-x) { padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; }
+html[data-style-mode="vivant"] #app .gprog-row {
+  --tuile: url("../assets/ui/cadre-tuile.svg"); --cadre-b: 12px;
+  position: relative; isolation: isolate; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+}
+html[data-style-mode="vivant"] #app .gprog-row::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box;
+  border: var(--cadre-b) solid transparent; border-image: var(--tuile) 24 fill / var(--cadre-b) / 0 stretch;
+}
+
+/* ---- Pastilles d'ingrédient et d'objet (Carnet, fiches) : le même octogone, petit ; en pointillés quand il manque ---- */
+html[data-style-mode="vivant"] #app :is(.ing.link, .item-pill) {
+  --tuile: url("../assets/ui/cadre-tuile.svg"); --cadre-b: 8px;
+  position: relative; isolation: isolate; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+  padding: 3px 12px;
+}
+html[data-style-mode="vivant"] #app :is(.ing.lack.link, .item-pill.lack) { --tuile: url("../assets/ui/cadre-tuile-fantome.svg"); }
+html[data-style-mode="vivant"] #app :is(.ing.link, .item-pill)::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box;
+  border: var(--cadre-b) solid transparent; border-image: var(--tuile) 24 fill / var(--cadre-b) / 0 stretch;
+}

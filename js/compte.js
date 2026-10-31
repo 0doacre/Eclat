@@ -833,7 +833,7 @@
         "<p><b>📜 Journal.</b> Fragments d’histoire, secrets, mélodies. Sa deuxième page, le <b>Cosmos</b>, s’ouvre plus tard.</p>" +
         "<p><b>📈 Niveaux.</b> Chaque action, et la récolte, monte jusqu’au niveau 99 quand tu fabriques ou récoltes toi-même : 1 % plus rapide par niveau, et une chance d’avoir une pièce en plus aux niveaux 10, 25, 50, 75 et 99.</p>" +
         "<p><b>Jeu fermé.</b> Les extracteurs, les commandes et l’exploration continuent pendant 12 h au plus.</p>" +
-        "<p><b>⌨️ Clavier et bouton Retour.</b> Sur ordinateur, les touches 1 à 6 changent d’écran (Domaine, Carte, Atelier, Arbre, Carnet, Journal). Sur téléphone, Retour ferme la fenêtre ouverte, puis ramène au Domaine ; une deuxième fois, il quitte le jeu.</p>" +
+        "<p><b>⌨️ Clavier et bouton Retour.</b> Sur ordinateur, Échap ferme la fenêtre ouverte. Sur téléphone, Retour ferme la fenêtre ouverte, puis ramène aux Terres ; une deuxième fois, il quitte le jeu.</p>" +
         "<p><b>💾 Sauvegardes.</b> Dans le Menu : télécharge ta partie dans un fichier pour la garder à l’abri ou changer d’appareil.</p></div>", "Compris");
     }
 

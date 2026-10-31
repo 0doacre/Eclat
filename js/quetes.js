@@ -33,7 +33,7 @@
       // le premier âge d’abord : le compteur d’étapes n’a rien à dire avant
       const tard = st.age > 0 || md > 0;
       let h = '<div class="card acc goal-card' + (open ? "" : " compact") + '"><div class="ghead-row"><button class="ghead" data-goalt><span class="lbl">📜 Objectif</span><span class="gname">' + title + '</span><span class="zt">' + (open ? "▴" : "▾") + "</span></button>" +
-        (tard && ob.k === "craft" ? '<button class="gmiles" data-arbre-obj title="Voir ton objectif dans l’arbre">🌳 Arbre</button>' : "") + "</div>";
+        (tard && ob.k === "craft" ? '<button class="gmiles" data-arbre-obj title="Voir ton objectif dans ta progression">Progression</button>' : "") + "</div>";
       if (ml.length && tard) {
         const pct = Math.round((md / ml.length) * 100);
         h += '<button type="button" class="gprog-row" data-miles title="Les étapes de cet âge : ' + md + '/' + ml.length + ' faites">' +

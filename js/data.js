@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.50.0";
+  D.VERSION = "0.50.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1636,6 +1636,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔘 Fin de l’harmonisation des boutons : les flèches des terres, le bouton d’arrêt de la récolte, les pastilles d’ingrédient et d’objet, et la ligne d’âge prennent l’octogone du jeu ; « Arbre » devient « Progression » ; l’aide ne promet plus de raccourcis clavier qui n’existent pas.",
     "✦ Les Traces s’appellent désormais les Souvenirs : ce que laissent les passages franchis, et que la relève transmet au Semeur suivant.",
     "💭 Le guide remis d’aplomb après la refonte : il montre l’objectif, le médaillon d’une nouvelle terre, le bouton Explorer, le Comptoir et le bouton Étudier du Labo (trois chapitres ne démarraient plus), et ses textes parlent des Terres et du Labo.",
     "✦ Les Souvenirs (des pas) et l’Intuition (des étincelles) ont chacun leur icône, qui étaient confondues. Le bouton du compte quitte l’en-tête : il est dans Menu → Système → Compte en ligne.",
