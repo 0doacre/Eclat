@@ -1699,7 +1699,7 @@
       const pct = e.demande <= 0 ? 0 : Math.min(100, Math.round(100 * e.demande / e.offre));
       const fmtc = (n) => fmt(Math.round(n));
       return '<button type="button" class="energie' + (e.ratio < 1 ? " is-juste" : "") + '" data-energie="1" aria-expanded="' + (U.energieSheet ? "true" : "false") + '" aria-label="Énergie : ' + fmtc(e.demande) + ' chevaux demandés sur ' + fmtc(e.offre) + ' disponibles. Ouvrir le détail">' +
-        '<span class="energie-t">Énergie</span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v">' + fmtc(e.demande) + " / " + fmtc(e.offre) + ' ch ⓘ</span></button>' +
+        '<span class="energie-ic" aria-hidden="true">' + gi("power-lightning") + '</span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v lbl">' + fmtc(e.demande) + " / " + fmtc(e.offre) + ' ch</span></button>' +
         '<p class="tiny muted energie-note">' + (e.ratio < 1 ? "Il manque de l’énergie : tes machines et tes ouvriers tournent à " + Math.round(100 * e.facteur) + " % de leur vitesse" + (e.facteur > e.ratio ? " (jamais moins de " + Math.round(100 * e.plancher) + " %)" : "") + ". Tes mains ne sont pas ralenties. " : "") + "Touche la jauge pour le détail.</p>";
     }
     /* le détail de l'énergie : ce qui consomme, ce qui fournit */
@@ -1869,7 +1869,7 @@
       const ap = E.apprentis();
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       return '<div class="ateliers atl-page">' + enteteAtelier("Métiers", "Ce que tu fabriques, et qui s’en charge.") + souvenirNoteHTML() + energieHTML() + goulotsHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
-        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
+        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '" aria-label="Ce qui tourne : ' + n + (ap.bloques ? ", " + ap.bloques + " à voir" : "") + '"><span class="roue' + (n > 0 ? " tourne" : "") + '" aria-hidden="true">⚙️</span><b class="roue-n">' + n + "</b></button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
     /* Les chantiers d'un métier : ce qui se construit au lieu de se produire en série. Une station ou un outil se fait une fois ;
@@ -1917,8 +1917,7 @@
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "machines", "Produire", "Machines") + souvenirNoteHTML() +
         (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour title="Revenir à la liste des métiers">← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.filter((e) => e.etat === "courant").map((e) => '<span class="atel-ech is-' + e.etat + '" title="L’échelon où ce métier travaille : ' + esc(cA.echelles.map((x) => x.n).join(", ")) + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + equipePliableHTML(cA) : "") +
-        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
-        (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
+        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '" aria-label="Ce qui tourne : ' + n + (ap.bloques ? ", " + ap.bloques + " à voir" : "") + '"><span class="roue' + (n > 0 ? " tourne" : "") + '" aria-hidden="true">⚙️</span><b class="roue-n">' + n + "</b></button>" +
         "</div>";
       if (!liste.length && U.atelierSel && aConstruireHTML()) return h + aConstruireHTML() + "</div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
       if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette au Labo : elle apparaît ici.</p></div>' + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");

@@ -2,7 +2,9 @@
 (function(){
   "use strict";
   function create(api){
-    const {E,D,U,A,esc,icon,render,save,toast,fmtTime}=api,I=D.ITEMS;
+    const {E,D,U,A,esc,icon,gIc,gi,render,save,toast,fmtTime}=api,I=D.ITEMS;
+    /* le geste en icône (le mot reste en info-bulle et pour les lecteurs d’écran) */
+    const gIcone=g=>{try{return D.GESTES[g]?gIc(g):"";}catch(e){return "";}};
     let signature="",message="",lastHeat=null,lastSale=null,observedState=null;
     const currencyName=age=>{
       const a=age!==undefined?age:(E.state?.age||0);
@@ -184,7 +186,7 @@
       }).join('')+'</div>';
       h+='<p class="ae-legende">'+esc(isGrand(tool.id)?"Atelier":tool.n)+'</p>';
       const modes=Object.entries(tool.modes);
-      h+='<div class="ae-gestes" role="group" aria-label="Geste">'+(modes.length>1?modes.map(([m,n])=>'<button type="button" id="ae-mode-'+esc(m)+'" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'">'+esc(label(m,n,w.metier))+'</button>').join(''):'')+button("clear","","Vider","small ghost ae-vider",!w.slots.length)+'</div>';
+      h+='<div class="ae-gestes" role="group" aria-label="Geste">'+(modes.length>1?modes.map(([m,n])=>'<button type="button" id="ae-mode-'+esc(m)+'" class="ae-chip ae-geste'+(m===w.mode?' on':'')+'" data-ae="mode" data-value="'+esc(m)+'" aria-pressed="'+(m===w.mode)+'" aria-label="'+esc(label(m,n,w.metier))+'" title="'+esc(label(m,n,w.metier))+'">'+gIcone(m)+'<span class="lbl"> '+esc(label(m,n,w.metier))+'</span></button>').join(''):'')+button("clear","",'<span class="ae-ic" aria-hidden="true">'+(gi?gi("cancel"):"✕")+'</span><span class="lbl">Vider</span>',"small ghost ae-vider",!w.slots.length)+'</div>';
       return h;
     }
     function body(mode){
@@ -222,8 +224,8 @@
         h+='</div>';
       }
       h+='<div class="ae-actions">';
-      h+=button("forge",w.mode,esc(label(w.mode,tool.modes[w.mode],w.metier)),"pri",!w.slots.length);
-      if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode],w.metier))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
+      h+=button("forge",w.mode,'<span class="ae-ic ae-grand" aria-hidden="true">'+gIcone(w.mode)+'</span><span class="lbl">'+esc(label(w.mode,tool.modes[w.mode],w.metier))+'</span>',"pri ae-forge",!w.slots.length);
+      if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,'<span class="ae-ic" aria-hidden="true">'+gIcone(w.mode)+'</span> ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"ae-lot",false);
       const heatCls=lastHeat?' ae-heat-'+lastHeat:'';
       h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p>'+trouveeActs()+'</div><aside class="ae-tools">'+actionsHTML(tools,w)+'</aside></div></section>';
       h+='<section class="card ae-stock"><div class="ae-stock-search"><input id="ae-search" type="search" aria-label="Chercher une ressource" placeholder="Chercher une ressource…" value="'+esc(U.equipmentSearch||"")+'"></div>';
@@ -304,7 +306,7 @@
         el.querySelector("[data-ae-count]").textContent=api.fmt(n);
       });
       const empty=r.querySelector('#ae-discovery-empty');
-      if(empty){empty.hidden=visible>0;empty.innerHTML=query?'Rien ne correspond.':filtre==="utiles"?'Rien d’utile ici. <button type="button" class="btn mini ghost" data-ae="filtre" data-value="tout" title="Montrer toutes les ressources que tu as vues">Tout voir</button>':filtre==="reserve"?'Rien en réserve.':'Aucune ressource.';}
+      if(empty){empty.hidden=true;empty.innerHTML="";}
       const bench=r.querySelector('.ae-bench'),views=document.getElementById('views'),mini=r.querySelector('.ae-mini');
       if(mini)mini.hidden=!(w.slots.length&&bench.getBoundingClientRect().bottom<views.getBoundingClientRect().top);
       r.querySelectorAll("[data-ae-need]").forEach(el=>{const n=E.count(el.dataset.aeNeed),need=Number(el.dataset.need);el.textContent=need?'×'+need+' requis · '+Math.floor(n)+' disponibles'+(n<need?' · manque '+Math.ceil(need-n):' · prêt'):Math.floor(n)+' disponibles';});
