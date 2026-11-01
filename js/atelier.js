@@ -1699,7 +1699,7 @@
       const pct = e.demande <= 0 ? 0 : Math.min(100, Math.round(100 * e.demande / e.offre));
       const fmtc = (n) => fmt(Math.round(n));
       return '<button type="button" class="energie' + (e.ratio < 1 ? " is-juste" : "") + '" data-energie="1" aria-expanded="' + (U.energieSheet ? "true" : "false") + '" aria-label="Énergie : ' + fmtc(e.demande) + ' chevaux demandés sur ' + fmtc(e.offre) + ' disponibles. Ouvrir le détail">' +
-        '<span class="energie-ic" aria-hidden="true">' + gi("power-lightning") + '</span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v lbl">' + fmtc(e.demande) + " / " + fmtc(e.offre) + ' ch</span></button>' +
+        '<span class="energie-ic" aria-hidden="true"><svg class="eclair" viewBox="0 0 24 24" focusable="false"><path d="M13.6 1.8 4.8 13.4h5.6L9.2 22.2l9.6-12.6h-5.8z" fill="currentColor"/></svg></span><span class="energie-barre"><i style="width:' + pct + '%"></i></span><span class="energie-v lbl">' + fmtc(e.demande) + " / " + fmtc(e.offre) + ' ch</span></button>' +
         '<p class="tiny muted energie-note">' + (e.ratio < 1 ? "Il manque de l’énergie : tes machines et tes ouvriers tournent à " + Math.round(100 * e.facteur) + " % de leur vitesse" + (e.facteur > e.ratio ? " (jamais moins de " + Math.round(100 * e.plancher) + " %)" : "") + ". Tes mains ne sont pas ralenties. " : "") + "Touche la jauge pour le détail.</p>";
     }
     /* le détail de l'énergie : ce qui consomme, ce qui fournit */

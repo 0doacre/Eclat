@@ -164,3 +164,62 @@ html[data-style-mode="vivant"] #app#app #top#top .chip.quest .cv small { display
 html[data-style-mode="vivant"] #app#app #v-atelier .atl-page > .energie { background: var(--sb-voile) !important; border: var(--sb-bord) !important; border-radius: 999px !important; box-shadow: var(--sb-ombre) !important; -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); color: var(--sb-encre); }
 #top .top-right { gap: 6px; }
 html[data-style-mode="vivant"] #app#app #top#top .chip.quest { overflow: visible !important; }
+
+/* ======================= 4e passe : alignement, Terres avec un dock, quêtes au Domaine, Journal comme la Progression ======================= */
+:root { --sb-gouttiere: 12px; --sb-ecart: 10px; }
+#ambianceBar { display: none !important; }                       /* la ligne d’ambiance disparaît */
+html[data-style-mode="vivant"] #app#app #top#top .chip.quest { display: none !important; }   /* les quêtes descendent aux Terres (pastille 🎯) */
+
+/* Terres : les terres tout en haut, les gestes (objectif, quêtes, comptoir, production) en bas */
+#v-domaine .terres > .terres-pastilles { position: fixed; left: max(var(--sb-gouttiere), env(safe-area-inset-left, 0px)); right: max(var(--sb-gouttiere), env(safe-area-inset-right, 0px)); bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 12px); z-index: 6; padding: 0; margin: 0; gap: 10px; display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; pointer-events: none; }
+#v-domaine .terres > .terres-pastilles > * { pointer-events: auto; }
+#v-domaine .terres > .terres-rangee { grid-row: 1; }
+#v-domaine .terres .terre-corps { padding-bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 84px) !important; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-quetes { position: relative; }
+#v-domaine .terres .terres-quetes .pastille-n { position: absolute; right: -4px; top: -4px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: #fff8e9; color: #3b2a1a; font: 700 12px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; }
+/* la ressource se touche sans contour : l’icône seule */
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-recolte { background: none !important; border: 0 !important; box-shadow: none !important; width: 52px; height: 52px; min-width: 52px; }
+#v-domaine .terres .terre-recolte :is(svg, .gi, img) { width: 40px; height: 40px; filter: drop-shadow(0 1px 2px rgb(20 14 8 / .35)); }
+
+/* Atelier : l’engrenage seul (sans bouton), l’éclair et sa jauge à droite, tout sur la même gouttière */
+#v-atelier .atl-page { padding-inline: 0; }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .atl-page > .atel-liste { margin-inline: var(--sb-gouttiere); }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs { margin-inline: var(--sb-gouttiere); }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod-entete { left: max(var(--sb-gouttiere), env(safe-area-inset-left, 0px)); }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod-entete .prod-pastille-auto { background: none !important; border: 0 !important; box-shadow: none !important; width: 60px; height: 60px; min-width: 60px; color: var(--sb-clair) !important; }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod-entete .prod-pastille-auto.is-bloque { background: none !important; }
+#v-atelier .prod-pastille-auto .roue, #v-atelier .prod-pastille-auto .roue :is(svg, .gi) { width: 46px; height: 46px; color: var(--sb-clair); filter: drop-shadow(0 1px 3px rgb(20 14 8 / .6)); }
+#v-atelier .prod-pastille-auto .roue-n { right: -2px; top: 0; }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .atl-page > .energie { left: auto !important; right: max(var(--sb-gouttiere), env(safe-area-inset-right, 0px)); }
+#v-atelier .energie .energie-ic, #v-atelier .energie .eclair { width: 20px; height: 20px; color: #a8402b; }
+#v-atelier .energie .energie-barre { width: 110px; }
+
+/* même écart partout entre les bandeaux de la Progression et du Journal, même gouttière sur les côtés */
+html[data-style-mode="vivant"] #app#app :is(#v-arbre, #v-journal) :is(.prog-sw, .arb-barre, .arb-vue > *, .prog-corps > *, > .filters, > .journal-corps) { margin: var(--sb-ecart) var(--sb-gouttiere) 0 !important; }
+html[data-style-mode="vivant"] #app#app :is(#v-arbre, #v-journal) .arb-vue { padding: 0 0 var(--sb-ecart); }
+html[data-style-mode="vivant"] #app#app :is(#v-arbre, #v-journal) .prog-corps { padding: 0; }
+#v-arbre .arb-vue > :first-child { margin-top: var(--sb-ecart) !important; }
+
+/* Journal : sans titre, avec un décor et les mêmes plaques que la Progression */
+#v-journal.view { background: linear-gradient(rgb(20 14 8 / .14), rgb(20 14 8 / .14)), url("../assets/fonds/journal.webp") center / cover no-repeat !important; }
+html[data-style-mode="vivant"] #app#app #v-journal > .filters { display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; padding: 4px 8px; background: var(--sb-papier); border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); }
+html[data-style-mode="vivant"] #app#app #v-journal > .filters button { flex: 0 0 auto; background: none !important; border: 0 !important; border-image: none !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; box-shadow: none !important; padding: 10px 12px !important; min-height: 44px; font-size: 1.05rem; color: var(--sb-encre-douce, #60513f); }
+html[data-style-mode="vivant"] #app#app #v-journal > .filters button::before { content: none !important; }
+html[data-style-mode="vivant"] #app#app #v-journal > .filters button.on { color: #813f2a !important; font-weight: 700; border-bottom-color: #813f2a !important; }
+html[data-style-mode="vivant"] #app#app #v-journal > .journal-corps { padding: 12px; background: var(--sb-papier); border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); margin-bottom: var(--sb-ecart) !important; }
+/* Terres : trois rangées seulement (les terres, le titre, le corps) */
+#v-domaine .terres { grid-template-rows: auto auto minmax(0, 1fr) !important; }
+#v-domaine .terres > .terres-rangee { grid-row: 1 !important; }
+#v-domaine .terres .terre-tete { grid-row: 2 !important; }
+#v-domaine .terres .terre-corps { grid-row: 3 !important; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terres-quetes { overflow: visible !important; }
+/* poser un extracteur : un bouton rond avec l’icône du bâtiment et un petit « + » (le nom est en info-bulle) */
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-ajout { background: var(--rond-papier) center / 100% 100% no-repeat !important; border: 0 !important; border-image: none !important; border-radius: 50% !important; box-shadow: none !important; width: 52px; height: 52px; min-width: 52px; padding: 0 !important; position: relative; display: inline-flex; align-items: center; justify-content: center; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-ajout::before { content: none !important; display: none !important; }
+#v-domaine .terres .terre-ajout :is(svg, .gi, .ic) { width: 28px; height: 28px; }
+#v-domaine .terres .terre-ajout .ajout-plus { position: absolute; left: 6px; top: 3px; font: 700 16px/1 var(--sans, system-ui); color: #813f2a; }
+#v-domaine .terres .terre-ajout.nope { opacity: .55; }
+/* Labo : pas de barre vide quand il n’y a rien à montrer ; Journal : fragments inconnus en simple trait pointillé */
+#v-labo .ae-inventory:not(:has(*)) { display: none; }
+[data-style-mode="vivant"] #app#app #v-journal .frag.unk { border-image: none !important; border: 1px dashed rgb(121 105 74 / .6) !important; border-radius: 12px !important; background: transparent !important; box-shadow: none !important; }
+[data-style-mode="vivant"] #app#app #v-journal .frag.unk::before, [data-style-mode="vivant"] #app#app #v-journal .frag.unk::after { content: none !important; }

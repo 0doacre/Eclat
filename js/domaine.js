@@ -83,6 +83,11 @@
     function pastilleHTML(k, ico, txt, extra) {
       return '<button type="button" class="pastille terres-pastille' + (U.terrePanel === k ? " on" : "") + (extra || "") + '" data-terre-panel="' + k + '" aria-expanded="' + (U.terrePanel === k) + '" aria-label="' + txt + '" title="' + txt + '">' + ico + '<span class="lbl"> ' + txt + "</span></button>";
     }
+    /* les quêtes (0.66) : plus de bouton dans le bandeau du haut, elles se rangent avec l’objectif, le Comptoir et la Production */
+    function quetesPastilleHTML() {
+      const sub = typeof document !== "undefined" && document.getElementById ? document.getElementById("questSub") : null, n = sub ? sub.textContent.trim() : "";
+      return '<button type="button" class="pastille terres-pastille terres-quetes" data-quetes="1" aria-label="Quêtes ' + esc(n) + '" title="Quêtes ' + esc(n) + '">🎯' + (n ? '<span class="pastille-n">' + esc(n) + "</span>" : "") + "</button>";
+    }
     /* une ligne de gisement, compacte : un appui sur l’icône récolte, un appui sur le nom ouvre le gisement */
     function terreGisHTML(z, d) {
       const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
@@ -94,7 +99,7 @@
       return '<div class="gis gis-compact terre-gis' + (rate > 0 ? " gis-producing" : "") + '" data-gis="' + key + '">' + ic +
         '<button type="button" class="gis-compact-btn terre-gis-corps" data-gsheet="' + key + '" aria-label="' + esc(I[res].n) + ' : gérer les extracteurs"><span class="gis-compact-info"><span class="gis-compact-name">' + esc(I[res].n) + '</span><span class="terre-gis-ligne"><b class="gis-compact-c" data-c="' + res + '">' + fmt(st.inv[res] || 0) + '</b> <span class="dom-rate gis-compact-rate' + (rateTxt ? "" : " hidden") + '" data-rate="' + key + '">' + rateTxt + "</span>" + (d.hand ? '<span class="tiny muted terre-main">à la main</span>' : "") + "</span></span></button>" +
         (d.hand ? '<button type="button" class="mini harvest terre-boucle' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter la récolte en continu : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■" : "▶") + "</button>" : "") +
-        (ch ? '<button type="button" class="mini terre-ajout' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" aria-label="Poser ' + esc(nm(ch.t, 1)) + '">+ ' + esc(nm(ch.t, 1)) + "</button>" : "") + "</div>";
+        (ch ? '<button type="button" class="mini terre-ajout' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" aria-label="Poser ' + esc(nm(ch.t, 1)) + '" title="Poser ' + esc(nm(ch.t, 1)) + '"><span class="ajout-plus" aria-hidden="true">+</span>' + icon(ch.t) + "</button>" : "") + "</div>";
     }
     function terresView() {
       const st = S(), z = terreCourante();
@@ -108,6 +113,7 @@
       // les pastilles : une seule ligne de 40 px
       h += '<div class="terres-pastilles">' + pastilleHTML("obj", "📜", esc(goalTitle)) +
         (sugRel ? pastilleHTML("rel", "✦", "Relais +" + sugRel.gain) : "") +
+        quetesPastilleHTML() +
         (E.zoneOpen(D.COMPTOIR.zone) ? pastilleHTML("comptoir", "⚖️", "Comptoir") : "") +
         (oeuvres.length ? pastilleHTML("oeuvre", "🏗️", "Œuvre") : "") +
         (E.hasFactory && E.hasFactory() ? pastilleHTML("prod", "⚙️", "Production") : "") +
@@ -1491,6 +1497,7 @@
       }
       if ((b = t.closest("[data-terre-go]"))) { A.click(); allerTerre(b.dataset.terreGo); return true; }
       if ((b = t.closest("[data-terre-nav]"))) { A.click(); terreVoisine(Number(b.dataset.terreNav)); return true; }
+      if (t.closest("[data-quetes]")) { A.click(); const q = document.getElementById("questBtn"); if (q) q.click(); return true; }
       if ((b = t.closest("[data-terre-panel]"))) { A.click(); const k = b.dataset.terrePanel; U.terrePanel = k && U.terrePanel !== k ? k : null; render(true); return true; }
       if (t.closest("[data-reprise]")) { repriseSheet(); return true; }
       if ((b = t.closest("[data-terre-maitrise] > summary"))) {

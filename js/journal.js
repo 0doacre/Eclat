@@ -161,7 +161,7 @@
       if (!tabs.find((t) => t[0] === cur)) cur = tabs[0][0];
       if (prog) U.progTab = cur; else U.journalTab = cur;
       const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", gestes: "Les gestes remarqués et accomplis au fil de ta route", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
-      let h = prog ? "" : '<h2 class="title">Journal</h2>' + '<div class="filters">' + (Object.keys(st.known).length ? '<button data-tab2="carnet" title="Les recettes que tu connais : on les relit ici, on les fabrique à l’Atelier">Recettes</button>' : "") + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      let h = prog ? "" : '<div class="filters">' + (Object.keys(st.known).length ? '<button data-tab2="carnet" title="Les recettes que tu connais : on les relit ici, on les fabrique à l’Atelier">Recettes</button>' : "") + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + '</div><div class="journal-corps">';
       if (cur === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
         const n = ids.filter((f) => st.frags[f]).length;
@@ -337,7 +337,7 @@
           evs.forEach((id) => { h += '<div class="card small serif" style="font-size:15px">' + icon(id, "sm") + " " + esc(D.EVENTS[id]) + "</div>"; });
         }
       }
-      return h;
+      return prog ? h : h + "</div>";
     }
     function fragPlace(z) { return z === "terminal" ? "Terminal d’ARCHE" : z === "cosmos" ? "Le signal de Kher" : zoneName(z); }
     function unkPlace(z) {
