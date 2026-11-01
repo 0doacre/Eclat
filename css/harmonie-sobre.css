@@ -297,3 +297,24 @@ html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete
 html[data-style-mode="vivant"] #app#app #top#top .chip b, html[data-style-mode="vivant"] #app#app #top#top .chip .cv { font-size: 1.2rem !important; line-height: 1; }
 html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) { overflow: visible !important; flex: none; width: auto !important; max-width: none; white-space: nowrap; }
 #top .chip .cv { display: inline-flex; flex: none; }
+
+/* 6e passe, fin : le bandeau (écus, souvenirs, intuition) est une rangée régulière, calée contre le menu ; plus de bande blanche sous les ressources */
+#top .top-right { gap: 4px; align-items: center; }
+html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) { min-width: 0 !important; width: auto !important; padding: 0 9px !important; margin: 0 !important; height: 40px; justify-content: center; }
+#v-domaine .terres .terre-bas:not(:has(button)) { display: none; }
+/* téléphone : le bandeau n’a plus de colonnes de 44 px (les chiffres étaient rognés et décalés) ; chaque ressource prend sa largeur et l’écart est le même partout */
+@media (max-width: 480px) {
+  html[data-style-mode="vivant"] #app#app #top#top { grid-template-columns: minmax(0, 1fr) auto auto auto 44px; column-gap: 6px; }
+  html[data-style-mode="vivant"] #app#app #top#top #ecuChip { grid-column: 2; grid-row: 1; }
+  html[data-style-mode="vivant"] #app#app #top#top #memBtn { grid-column: 3; grid-row: 1; }
+  html[data-style-mode="vivant"] #app#app #top#top #intuBtn { grid-column: 4; grid-row: 1; }
+  html[data-style-mode="vivant"] #app#app #top#top #menuBtn { grid-column: 5; grid-row: 1; }
+  html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) { width: auto !important; min-width: 0 !important; padding: 0 6px !important; gap: 4px; font-size: 1.2rem; }
+}
+/* la bande des ressources prend la place libre jusqu’au nom de la terre : plus de bout de papier qui dépasse en dessous */
+#v-domaine .terres .terre-gisements { min-height: calc(100dvh - 405px); }
+#v-domaine .terres .terre-corps:has(.dom-tip) .terre-gisements { min-height: calc(100dvh - 500px); }
+#v-domaine .terres .terre-corps > .terre-bas { margin-top: 16px; }
+#v-domaine .terres .terre-gisements { min-height: calc(100dvh - 505px); }
+#v-domaine .terres .terre-corps:has(.dom-tip) .terre-gisements { min-height: calc(100dvh - 600px); }
+#v-domaine .terres .terre-corps > .terre-bas { margin-top: 24px; }
