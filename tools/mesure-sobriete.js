@@ -42,6 +42,7 @@ async function mesurer() {
       await p.evaluate(([m, sb]) => { window.__eclat.U.atelierSel = m || null; window.__eclat.U.prodSel = null; if (sb) window.__eclat.U.progTab = sb; }, [met || null, sub || null]);
       const sel = '#tabs [data-tab="' + tab + '"]'; if (!(await p.locator(sel).isVisible())) continue;
       await p.locator(sel).click(); await p.waitForTimeout(500);
+      if (process.env.BLOCS) console.log(await p.evaluate(() => [...document.querySelectorAll('.view.on .atl-page > *')].map((e) => (e.className || e.tagName).toString().slice(0, 28) + ':' + Math.round(e.getBoundingClientRect().height)).join(' | ')));
       const m = await p.evaluate(MES); out.push({ age: age + 1, nom, ...m });
       if (process.env.SHOTS) { fs.mkdirSync(process.env.SHOTS, { recursive: true }); await p.screenshot({ path: path.join(process.env.SHOTS, "age" + (age + 1) + "-" + t.replace(/[:#]/g, "-") + ".png") }); }
     }

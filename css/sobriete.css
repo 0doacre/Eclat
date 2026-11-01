@@ -128,3 +128,12 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-arbre .prog-corps :is(h2,h3,h4){padding:6px 12px;box-sizing:border-box}
 /* page d'un métier sur petit écran : les panneaux secondaires se resserrent */
 @media (max-height:700px){#v-atelier .atl-page>:not(.hidden){margin-inline:6px;padding-inline:8px}#v-atelier .atl-page .tip,#v-atelier .atl-page .small.muted{display:none}}
+@media (max-height:700px){
+  #v-atelier .prod-why{display:none}
+  #v-atelier .atel-equipe,#v-atelier .prod-entete{min-height:0}
+  #v-atelier .prod-fiche{padding:4px 8px}
+  #v-atelier .prod-fiche *{margin-block:2px}
+  #v-atelier .prod-choix{padding-block:2px}
+  #v-atelier .prod-recette{min-height:0}
+  #v-atelier .a-construire:not([open])>summary{min-height:40px}
+}
