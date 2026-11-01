@@ -40,15 +40,23 @@ async function run() {
   ok(await p.locator('#tabs [data-tab="journal"].on').count() === 1, "l'onglet Journal reste allumé");
   ok((await p.locator("#v-carnet .journal-sw").textContent()).includes("Recettes"), "la rangée d'onglets du Journal porte « Recettes »");
   ok(await p.locator("#v-carnet [data-cr]").count() === 0, "plus de bouton Fabriquer dans le Carnet");
-  ok(await p.locator("#v-carnet [data-aller]").count() > 0, "chaque recette renvoie à l'Atelier");
+  ok(await p.locator("#v-carnet .rec-tile").count() > 3, "le Carnet montre des tuiles");
   ok(await p.locator('#v-atelier .subtabs [data-tab2="carnet"]').count() === 0, "l'Atelier n'a plus le Carnet dans ses onglets");
-  const id = await p.locator("#v-carnet [data-aller]").first().getAttribute("data-aller");
+  const id = await p.locator("#v-carnet .rec-tile").first().getAttribute("data-rec");
   const metier = await p.evaluate((i) => window.__eclat.E.atelierDe(i), id);
-  await p.locator("#v-carnet [data-aller]").first().click(); await p.waitForTimeout(500);
+  await p.locator("#v-carnet .rec-tile").first().click(); await p.waitForTimeout(400);
+  ok(await p.locator('.modal:not(.hidden) .rwin').count() === 1, "une touche sur une tuile ouvre la fiche");
+  await p.locator('.modal:not(.hidden) [data-m="aller"]').click(); await p.waitForTimeout(600);
   ok(await p.evaluate(() => window.__eclat.U.tab) === "atelier", "le bouton ouvre l'Atelier");
   ok(await p.evaluate(() => window.__eclat.U.atelierSel) === metier, "sur le métier de la recette : " + metier);
   await p.locator('#tabs [data-tab="journal"]').click(); await p.waitForTimeout(300);
   await p.evaluate(() => { const g = window.__eclat; g.E.state.frags = g.E.state.frags || {}; });
+  // appui long sur un bouton à info-bulle : le texte s'affiche (le tactile n'a pas de survol)
+  await p.evaluate(() => { const b = document.querySelector('#v-carnet [data-cpanel="filtres"]'); b.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch", clientX: 50, clientY: 50 })); });
+  await p.waitForTimeout(900);
+  ok(/Choisir ce que la liste montre/.test(await p.locator("#toasts").textContent()), "un appui long sur un bouton montre son info-bulle");
+  await p.evaluate(() => document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "touch" })));
+  await p.waitForTimeout(1000); // le relâcher d'un appui long n'est pas un appui
   await p.locator("#menuBtn").click(); await p.waitForTimeout(500);
   const href = await p.locator("#m-ecrire").getAttribute("href");
   ok(href && href.startsWith("mailto:") && href.includes("Version"), "le menu propose « Nous écrire » avec la version dans le message : " + href);

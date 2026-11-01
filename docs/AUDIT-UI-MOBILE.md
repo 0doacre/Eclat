@@ -27,7 +27,8 @@ Parties de test remplies au maximum (toutes les recettes de l'âge, 40 de chaque
 | Page d'un métier, avant | 12 | 38 | 847 px |
 | Page d'un métier, après | 25 | 37 | 38 px |
 | Atelier (liste des métiers) | 8 | 8 | 0 |
-| Journal, Recettes | 22 | 306 | 0 (liste dans des volets) |
+| Journal, Recettes, avant | 22 | 306 | 0 (liste dans des volets) |
+| Journal, Recettes, après (tuiles) | 21 | 57 | 0 |
 | Progression | 26 | 92 | 0 |
 
 ## Ce que la première passe change
@@ -37,14 +38,25 @@ Parties de test remplies au maximum (toutes les recettes de l'âge, 40 de chaque
 
 Ce que cette passe ne change pas : le nombre d'actions. Elle rend les écrans plus calmes ; elle ne les rend pas encore plus pauvres en choix.
 
+## La vision (1er novembre, après la première passe)
+
+Éclat doit se lire comme un livre qu'on feuillette, pas comme une feuille de calcul : un écran, une chose à faire, et le détail à la demande.
+
+1. **Lire, c'est toucher une tuile.** Le Carnet montre des icônes avec un nom ; toucher ouvre la fiche, qui seule porte le détail, le coût et le bouton « Atelier ». C'est fait en 0.66 (aperçu) : les Recettes passent de 306 cibles dans la page à 57, et de 3 000 à 880 signes de texte.
+2. **Fabriquer, c'est un seul lieu.** L'Atelier fabrique et automatise ; le Labo essaie ; le Carnet lit. Chaque écran a un verbe.
+3. **Le détail se replie.** Équipe, seuil, énergie, constructions : une ligne qu'on déplie. Ce qui ne sert pas dans les dix prochaines secondes n'est pas à l'écran.
+4. **L'aide se voit au tactile.** Un appui long sur un bouton à info-bulle montre son texte (fait en 0.66), ce qui rend vraie l'explication notée dans l'audit des boutons.
+5. **Un geste principal en grand.** À terme, chaque écran a une action dominante qui change avec le contexte (le geste au Labo, « À la main » à l'Atelier), comme chez Rise of Jericho.
+
+Ce que la vision ne fait pas : réduire le jeu. Les âges, les recettes et les métiers restent ; seule leur présentation s'allège.
+
 ## La suite proposée
 
-1. **Journal, Recettes** (306 cibles dans la page) et **Progression** (92) : ce sont les écrans les plus « tableur ». Une recette à la fois, avec des flèches, et un volet par âge.
+1. **Progression** (92 cibles dans la page) : l'écran le plus « tableur » qui reste. Le chemin de l'âge en cours et l'objectif, le reste replié.
 2. **Page d'un métier** : trois recettes à la fois avec flèches, au lieu de la rangée ; un seul bouton principal.
 3. **Un grand bouton contextuel** au Labo, qui change avec ce qui est posé sur l'établi.
-4. **Aide visible au tactile** : les info-bulles (`title`) ne s'affichent pas sur téléphone. Un « ? » ou un appui long.
-5. **Menu ☰ en bas** : le coin haut droit est le plus difficile à atteindre sur un grand téléphone.
-6. **Bandeaux** : 112 à 115 px sur 844 ; la ligne d'ambiance sous l'en-tête pourrait se replier.
+4. **Menu ☰ en bas** : le coin haut droit est le plus difficile à atteindre sur un grand téléphone.
+5. **Bandeaux** : 112 à 115 px sur 844 ; la ligne d'ambiance sous l'en-tête pourrait se replier.
 
 ## Budget de sobriété (cible)
 

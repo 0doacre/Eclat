@@ -549,7 +549,7 @@
       let h = (journalSwitchHTML ? journalSwitchHTML() : "") + '<header class="atl-titre"><h2>Recettes</h2><p>' + all + (all > 1 ? " recettes apprises" : " recette apprise") + "</p></header>";
       if (st.flags.tip_carnet === undefined) st.flags.tip_carnet = true;
       if (!st.flags.tip_carnet) {
-        h += '<div class="tip">Le Carnet garde tes recettes : tu les relis ici, et tu fabriques à l’Atelier, dans le métier de chaque recette. Les indices des recettes encore inconnues restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Réduire l’aide du Carnet">Compris</button></div>';
+        h += '<div class="tip">Touche une recette pour la lire ; elle se fabrique à l’Atelier. Les indices des recettes encore inconnues restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Réduire l’aide du Carnet">Compris</button></div>';
       } else {
         h += '<div class="tip tip-mini"><span class="tiny muted">💡 On relit ses recettes ici, on les fabrique à l’Atelier…</span> <button class="btn small ghost" data-tip-open="tip_carnet" title="Rouvrir l’aide du Carnet">Aide</button></div>';
       }
@@ -873,12 +873,12 @@
           if (!st.known[id]) return false;
           return Object.keys(it.r[1]).some((i) => norm(I[i].n).includes(q));
         }).filter(passFilter).filter((id) => E.retrouvee(id) || !S().known[id]);
-        h += ids.length ? '<div class="list flat">' + ids.map(recCard).join("") + "</div>" : '<p class="small muted center">Aucune recette ne correspond.</p>';
+        h += ids.length ? '<div class="list flat' + (tuiles() ? " tiles" : "") + '">' + ids.map(recItem).join("") + "</div>" : '<p class="small muted center">Aucune recette ne correspond.</p>';
         return h;
       }
       if (E.gesteOK("accorder") || E.pathRecipes().some((id) => st.known[id])) {
         const ids = E.pathRecipes().filter((id) => E.gesteOK('accorder') || st.known[id]).filter(keep);
-        if (ids.length) h += '<details class="card age-sec" open><summary><span class="ic" style="border-color:#b36bff">🎵</span><span class="an">La Résonance</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
+        if (ids.length) h += '<details class="card age-sec" open><summary><span class="ic" style="border-color:#b36bff">🎵</span><span class="an">La Résonance</span></summary><div class="list' + (tuiles() ? " tiles" : "") + '">' + ids.map(recItem).join("") + "</div></details>";
       }
       // les extracteurs se rangent par bâtiment (Bûcheron, Cueilleur…), niveau après niveau, plutôt que par âge
       if (U.carnetFilter === "ext") {
@@ -886,7 +886,7 @@
           const ids = L.niv.map((v) => v.id).filter(keep);
           if (!ids.length) return;
           const kn = L.niv.filter((v) => st.known[v.id]).length;
-          h += '<details class="card age-sec" open><summary><span class="ic">' + L.ic + '</span><span class="an">' + esc(L.n) + '</span><span class="cnt">' + kn + "/" + L.niv.length + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
+          h += '<details class="card age-sec" open><summary><span class="ic">' + L.ic + '</span><span class="an">' + esc(L.n) + '</span><span class="cnt">' + kn + "/" + L.niv.length + '</span></summary><div class="list' + (tuiles() ? " tiles" : "") + '">' + ids.map(recItem).join("") + "</div></details>";
         });
         return h || '<p class="small muted center">Aucun extracteur connu pour l’instant.</p>';
       }
@@ -911,10 +911,10 @@
         const freshCount = sec.ids.filter((id) => st.known[id] && !I[id].sec && !(st.made[id] > 0)).length;
         const open = U.carnetFilter !== "tout" || (U.openAges[sec.age] !== undefined ? U.openAges[sec.age] : sec.age >= st.age);
         h += '<details class="card age-sec" data-age="' + sec.age + '"' + (open ? " open" : "") + '><summary><span class="ic" style="background:' + ag.c + "22;border-color:" + ag.c + '66">' + (sec.age + 1) +
-          '</span><span class="an">' + ag.n + '</span>' + (freshCount > 0 && U.carnetFilter !== 'unk' ? '<span class="badge-neuf mini-neuf" title="' + freshCount + ' nouvelle(s) recette(s)">' + freshCount + ' nouv.</span>' : '') + '<span class="cnt">' + (U.carnetFilter === 'unk' ? ids.length + ' à découvrir' : kn + ' apprises') + '</span></summary><div class="list">' + (st.souvenirs && (st.cycle || 1) >= 2 && SOUV().ages[sec.age] && U.carnetFilter !== "unk" ? '<p class="serif souvenir-texte"><i>' + esc(SOUV().ages[sec.age]) + "</i></p>" : "") + ids.map(recCard).join("") + "</div></details>";
+          '</span><span class="an">' + ag.n + '</span>' + (freshCount > 0 && U.carnetFilter !== 'unk' ? '<span class="badge-neuf mini-neuf" title="' + freshCount + ' nouvelle(s) recette(s)">' + freshCount + ' nouv.</span>' : '') + '<span class="cnt">' + (U.carnetFilter === 'unk' ? ids.length + ' à découvrir' : kn + ' apprises') + '</span></summary><div class="list' + (tuiles() ? " tiles" : "") + '">' + (st.souvenirs && (st.cycle || 1) >= 2 && SOUV().ages[sec.age] && U.carnetFilter !== "unk" ? '<p class="serif souvenir-texte"><i>' + esc(SOUV().ages[sec.age]) + "</i></p>" : "") + ids.map(recItem).join("") + "</div></details>";
       }
       const secrets = Object.keys(I).filter((id) => I[id].sec && st.known[id] && I[id].r).filter(keep);
-      if (secrets.length) h += '<details class="card age-sec"' + (U.carnetFilter !== "tout" ? " open" : "") + '><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recCard).join("") + "</div></details>";
+      if (secrets.length) h += '<details class="card age-sec"' + (U.carnetFilter !== "tout" ? " open" : "") + '><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recItem).join("") + "</div></details>";
       if (!h) h = '<p class="small muted center">Rien ici pour l’instant.</p>';
       if (nHidden || U.showOwned) h += '<p class="center"><button class="btn small ghost" data-owned title="Masquer ou montrer les objets déjà fabriqués">' + (U.showOwned ? "Cacher les objets déjà possédés" : "Voir les " + nHidden + " objets déjà possédés") + "</button></p>";
       return h;
@@ -970,6 +970,16 @@
         else if (!ready && badge) badge.remove();
       });
     }
+    /* Sobriété (0.66) : par défaut le Carnet montre des tuiles (une icône, un nom) ; une touche ouvre la fiche. Réglage : settings.sobre === false rend les anciennes cartes. */
+    const tuiles = () => !(S().settings && S().settings.sobre === false);
+    function recTile(id) {
+      const st = S(), it = I[id];
+      if (!st.known[id]) return recCard(id);
+      const owned = E.isUnique(it) && (st.made[id] || 0) > 0, neuf = !(st.made[id] > 0), futur = !E.ageOK(id);
+      const marque = owned ? "✓" : neuf ? "✦" : "";
+      return '<button type="button" class="rec-tile' + (owned ? " owned" : "") + (neuf && !owned ? " neuf" : "") + (futur ? " futur" : "") + '" data-rec="' + id + '" data-goto="' + id + '" title="Lire la recette et ses usages">' + icon(id) + '<span class="rt-n">' + esc(it.n) + "</span>" + (marque ? '<i class="rt-e" aria-hidden="true">' + marque + "</i>" : "") + "</button>";
+    }
+    const recItem = (id) => (tuiles() ? recTile(id) : recCard(id));
     function recCard(id) {
       const st = S(), it = I[id];
       if (!st.known[id]) {
@@ -1622,7 +1632,7 @@
       }
       const back = U.rstack.length > 1;
       h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : U.rfrom ? '<button class="btn" data-m="rfrom">← Retour</button>' : "") +
-        (it.r && known ? '<button class="btn ghost" data-m="carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
+        (it.r && known && E.ageOK(id) && !it.sec && !it.path && !(E.isUnique(it) && (st.made[id] || 0) > 0) ? '<button class="btn pri" data-m="aller" title="Fabriquer se fait à l’Atelier, dans le métier de cette recette">Atelier</button>' : "") + (it.r && known ? '<button class="btn ghost" data-m="carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
       const redraw = () => { if (U.mcur && U.mcur.rec) swapModal(recipeModal()); };
       return {
         rec: true,
@@ -1641,6 +1651,7 @@
           fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier" || U.tab === "labo") render(true); return true; },
           study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier" || U.tab === "labo") render(true); } redraw(); return true; },
           decipher: () => { const r = E.decipher(id); if (r.ok) { if (r.lvl >= 3) A.discover(); save(); render(true); } redraw(); return true; },
+          aller: () => { U.atelierSel = E.atelierDe(id); U.prodSel = !E.isUnique(it) && !E.isScaled(it) ? id : null; closeModal(); setTimeout(() => setTab("atelier"), 60); return true; },
           carnet: () => { setTimeout(() => showInCarnet(id), 60); },
           arbre: () => { setTimeout(() => arbreOuvrir(id), 60); }
         }

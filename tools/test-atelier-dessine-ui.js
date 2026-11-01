@@ -22,7 +22,7 @@ function fixture(equipped,dark){
   s.studied={bois:1,fibre:1,cuir:1};E.recalc();return E.serialize();
 }
 async function layout(p,tag){
-  await p.waitForFunction(()=>[...document.querySelectorAll('.view.on img')].every(e=>{const r=e.getBoundingClientRect();return !r.height||r.top>=innerHeight||r.bottom<=0||(e.complete&&e.naturalWidth>0);}));
+  for(let i=0;i<8;i++){await p.waitForFunction(()=>[...document.querySelectorAll('.view.on img')].every(e=>{const r=e.getBoundingClientRect();return !r.height||r.top>=innerHeight||r.bottom<=0||(e.complete&&e.naturalWidth>0);}));await p.waitForTimeout(120);} /* le Carnet se redessine (tuiles) : on laisse les images se poser */
   const r=await p.evaluate(()=>{
     const scope=document.querySelector('.view.on');
     const c=document.createElement('canvas').getContext('2d');

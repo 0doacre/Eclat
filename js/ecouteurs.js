@@ -389,6 +389,12 @@
           const need = lab.querySelector("[data-ae-need]"), id = lab.dataset.aeResource || (need && need.dataset.aeNeed);
           if (id) U.lp = { id, t: setTimeout(() => { U.lp = null; U.lpFired = performance.now(); vibe(15); openItemInfo(id); }, 480) };
         }
+        // Un bouton à info-bulle : le tactile n'a pas de survol, donc un appui long montre le texte de l'info-bulle (0.66)
+        const aide = !inv && !lab && ev.pointerType !== "mouse" && ev.target.closest && ev.target.closest("button[title], a[title], [role=button][title]");
+        if (aide && aide.title && aide.title.length > 3 && !aide.closest("[data-harv], [data-hloop], .slot, [data-forge], #forge, .modal-x, [data-inv], [data-ae-resource]")) {
+          const txt = aide.title;
+          U.lp = { id: null, t: setTimeout(() => { U.lp = null; U.lpFired = performance.now(); vibe(10); toast(esc(txt), { key: "aide-appui" }); }, 650) };
+        }
       });
       // le relâcher qui suit un appui long ne doit pas aussi choisir la ressource (ou la retirer de l’établi)
       document.addEventListener("click", (ev) => {
