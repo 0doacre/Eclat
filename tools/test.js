@@ -3509,7 +3509,7 @@ test("Convention de versionnement 0.x.y", () => {
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 64, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 65, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 
