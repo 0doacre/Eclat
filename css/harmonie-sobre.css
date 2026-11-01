@@ -1,0 +1,87 @@
+/* Harmonie sobre (aperçu 0.66, branche claude/sobriete-coherence).
+ * Un seul vocabulaire pour tout l’aperçu sobre : celui du papier. Le décor est derrière, jamais une autre famille de composants.
+ *   papier        : ce qu’on lit (cartes, listes, fiches)                     opaque à 92 %
+ *   papier voilé  : ce qui flotte sur la scène (plaques, pastilles, titres)   translucide à 74 %, flou léger
+ * Même rayon, même bord, même ombre, même encre partout. Chargée après sobriete.css. */
+
+:root {
+  --sb-encre: #3b2a1a;
+  --sb-encre-douce: #60513f;
+  --sb-papier: rgb(246 239 222 / .92);
+  --sb-voile: rgb(246 239 222 / .76);
+  --sb-bord: 1px solid rgb(121 105 74 / .55);
+  --sb-rayon: 14px;
+  --sb-ombre: 0 2px 10px rgb(20 14 8 / .22);
+  --sb-flou: blur(4px);
+}
+
+/* ---- une seule recette pour toutes les plaques posées sur un décor ---- */
+#v-labo .ae-work, #v-labo .ae-inventory, #v-labo .ae-layout > *, #v-labo .ae-metiers, #v-labo > :first-child:not(.ae-work):not(.ae-layout):not(section),
+#v-atelier .atl-page > :not(.hidden), #v-arbre .prog-corps > :not(.hidden), #v-arbre .prog-sw, #v-arbre .arb-barre,
+#v-domaine :is(.terre-gisements, .terre-bas, .terre-regle) {
+  background: var(--sb-papier);
+  border: var(--sb-bord);
+  border-radius: var(--sb-rayon);
+  box-shadow: var(--sb-ombre);
+  -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou);
+}
+/* ce qui flotte (en haut des Terres, titre de la terre, conseil) est voilé : le décor reste lisible derrière */
+#v-domaine .terre-tete, #v-domaine .terres .dom-tip {
+  background: var(--sb-voile);
+  border: var(--sb-bord);
+  border-radius: var(--sb-rayon);
+  box-shadow: var(--sb-ombre);
+  -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou);
+}
+#v-domaine .terre-tete::before { content: none; }
+#v-domaine .terre-titre h2, #v-domaine .terre-titre .kicker { color: var(--sb-encre); text-shadow: none; }
+#v-domaine .terres .dom-tip { background: var(--sb-voile) !important; padding: 8px 12px; margin: 0 0 6px; color: var(--sb-encre); }
+#v-domaine .terres .terre-tete { margin: 6px 10px 4px; padding: 4px 8px; }
+
+/* pastilles du haut des Terres : du papier voilé, comme tout le reste (plus de plaques sombres) */
+html[data-style-mode="vivant"] #app #v-domaine .terres :is(.terres-pastille, .terre-nav) {
+  background: var(--sb-voile) !important; color: var(--sb-encre) !important; text-shadow: none !important;
+  border: var(--sb-bord) !important; box-shadow: var(--sb-ombre);
+}
+#v-domaine .terres .terres-pastille { background: var(--sb-voile); color: var(--sb-encre); text-shadow: none; border: var(--sb-bord); }
+#v-domaine .terres .terres-icone img, #v-domaine .terres .terres-icone svg { border-color: var(--sb-papier); box-shadow: var(--sb-ombre); }
+#v-domaine .terres .terres-icone.is-courante { outline-color: var(--sb-papier); }
+
+/* ---- Atelier : moins de bandeaux, une seule ligne d’information, rien de verrouillé à lire ---- */
+#v-atelier .atl-titre, #v-atelier .energie-note { display: none; }
+#v-atelier .atl-bourse { margin: 0; padding: 4px 12px; background: transparent; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+#v-atelier .atel-ech.is-ferme { display: none; }                  /* les échelons encore fermés se découvrent plus tard */
+/* la liste des métiers est une seule plaque de papier ; chaque métier y est une ligne séparée d’un trait fin */
+#v-atelier .atel-liste { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+html[data-style-mode="vivant"] #app #v-atelier .atel-carte { background: transparent; border: 0; border-bottom: 1px solid rgb(121 105 74 / .3); border-radius: 0; box-shadow: none; }
+html[data-style-mode="vivant"] #app #v-atelier .atel-carte::before { content: none; display: none; }
+html[data-style-mode="vivant"] #app #v-atelier .atel-liste > :last-child { border-bottom: 0; }
+/* la jauge d’énergie : même plaque que le reste, sans cadre à pans coupés */
+html[data-style-mode="vivant"] #app #v-atelier .energie { border: var(--sb-bord); border-radius: var(--sb-rayon); box-shadow: var(--sb-ombre); }
+html[data-style-mode="vivant"] #app #v-atelier .energie::before { content: none; display: none; }
+
+/* ---- Progression : un seul ton de fond pour les cartes (plus de carte verte) ---- */
+#v-arbre .prog-corps :is(.card, .arb-progression, .arb-objectif, .arb-cible) { background: transparent; box-shadow: none; border: 0; }
+#v-arbre .prog-corps [class*="obj"] { background: rgb(121 105 74 / .08); border: var(--sb-bord); border-radius: 12px; }
+
+/* ---- Labo : on laisse voir le décor entre les plaques ---- */
+#v-labo .ae-layout { gap: 10px; }
+#v-labo { background-position: center 30% !important; }
+
+/* ---- Journal : le papier, tel que dans la version précédente ---- */
+#v-journal, #v-carnet { background-color: transparent; }
+
+/* plus de cadre dans le cadre : les plaques du Labo, de l’Atelier et de la Progression n’ont que la plaque de papier ; le cadre à pans coupés reste aux boutons */
+[data-style-mode="vivant"] #app :is(#v-labo, #v-atelier, #v-arbre) :is(.card, .age-sec, .ae-work, .ae-stock, .ae-bench, .ae-inventory, .ae-layout > *, .atl-page > *, .prog-corps > *) {
+  border-image: none !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important;
+}
+[data-style-mode="vivant"] #app #v-labo .ae-bench :is(.bench, .slot, .inv) { border-image: none !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+[data-style-mode="vivant"] #app #v-labo :is(.ae-work, .ae-stock, .ae-inventory)::before, [data-style-mode="vivant"] #app #v-labo :is(.ae-work, .ae-stock, .ae-inventory)::after { content: none; }
+/* une plaque dans une plaque : celle de dedans se fond dans celle de dehors */
+[data-style-mode="vivant"] #app #v-labo .ae-layout > * :is(.ae-work, .ae-bench, .ae-tools) { border: 0 !important; box-shadow: none; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* ce que carnet-peint.css retire aux conseils des Terres est remis : un conseil sur le décor est un papier voilé */
+html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--sb-voile) !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre) !important; padding: 8px 12px !important; margin: 0 0 6px !important; }
+/* Progression : les âges et la section en cours sont de simples plaques de papier, sans cadre double */
+[data-style-mode="vivant"] #app #v-arbre :is(.arb-progression, .arb-age-groupe, .arb-passes) { border-image: none !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; background: var(--sb-papier) !important; box-shadow: var(--sb-ombre); }
+[data-style-mode="vivant"] #app #v-arbre .arb-passes .arb-age-groupe { box-shadow: none; background: transparent !important; border-radius: 10px !important; }
