@@ -1074,20 +1074,19 @@
     }
     E.addSecret = addSecret;
 
-    /* La première pièce offerte : une trouvaille inscrite sans rien prendre donne un exemplaire,
-     * si l’ouvrage est ordinaire (ni unique, ni à prix croissant) et coûte peu en tout. */
+    /* La première fabrication offerte : une trouvaille inscrite donne un exemplaire sans rien prendre,
+     * même s'il manque des ressources. Tout y passe (ressources, pièces, outils, stations, améliorations),
+     * sauf ce qui monte de prix (extracteurs, machines), les secrets, le chemin caché et les reliques.
+     * Une recette bloquée par un outil ou une station absents n'est pas offerte : l'outil d'abord. */
     function offerFirst(id) {
-      const lim = D.PREMIERE_PIECE && D.PREMIERE_PIECE.max;
       const it = item(id);
-      if (!(lim > 0) || !it || !it.r || it.sec || it.path || isUnique(it) || isScaled(it)) return false;
-      if (it.t !== "comp" && it.t !== "res") return false;
+      if (!(D.PREMIERE_PIECE && D.PREMIERE_PIECE.max > 0) || !it || !it.r || it.sec || it.path || isScaled(it) || it.t === "relic" || it.t === "curio") return false;
       if (S.made[id] > 0 || blocker(id)) return false;
-      const cost = totalCost(id, 1);
-      if (Object.values(cost).reduce((a, b) => a + b, 0) > lim) return false;
       S.made[id] = 1;
       add(id, it.r[2] || 1);
       markSeen(id);
       onFirstCraft(id);
+      if (isUnique(it)) { recalc(); E.emit("struct"); }
       E.emit("crafted", id, { n: it.r[2] || 1, bonus: 0, first: true, offered: true });
       return true;
     }

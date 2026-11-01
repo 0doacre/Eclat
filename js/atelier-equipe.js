@@ -224,7 +224,7 @@
       h+=button("forge",w.mode,esc(label(w.mode,tool.modes[w.mode],w.metier)),"pri",!w.slots.length);
       if(recipe&&s.known[recipe]&&(tool.batch||1)>1&&!E.isUnique(I[recipe]))h+=button("batch",recipe,esc(label(w.mode,tool.modes[w.mode],w.metier))+' ×'+tool.batch+' · '+fmtTime(E.batchTime(recipe,tool.batch,{equipment:w.eq,mode:w.mode})),"",false);
       const heatCls=lastHeat?' ae-heat-'+lastHeat:'';
-      h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p></div><aside class="ae-tools">'+actionsHTML(tools,w)+'</aside></div></section>';
+      h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p>'+trouveeActs()+'</div><aside class="ae-tools">'+actionsHTML(tools,w)+'</aside></div></section>';
       h+='<section class="card ae-stock"><div class="ae-stock-search"><input id="ae-search" type="search" aria-label="Chercher une ressource" placeholder="Chercher une ressource…" value="'+esc(U.equipmentSearch||"")+'"></div>';
       const filtre=s.settings.equipmentFilter||"utiles";
       const chip=(v,l,t)=>'<button type="button" class="ae-chip'+(filtre===v?' on':'')+'" data-ae="filtre" data-value="'+v+'" aria-pressed="'+(filtre===v)+'" title="'+esc(t)+'">'+l+'</button>';
@@ -314,6 +314,14 @@
       set("ae-tax",'Paliers de '+e.quota+' lanières : 10 %, 20 %, 30 %, 40 %, puis 50 % de contribution au clan. Palier actuel : '+e.nextRate+' %. Renouvellement dans '+Math.ceil(60-e.clock)+' s. Net troqué : '+money(e.net)+' ; parts apprenti : '+money(e.wages)+'.');
       if(lastSale&&e.totalSold>lastSale.sold)messageSale='Dernier troc : +'+money(e.net-lastSale.net)+' · '+(e.totalSold-lastSale.sold)+' lanières';
       lastSale={sold:e.totalSold,net:e.net};set("ae-sale",messageSale);
+    }
+    /* Une recette qu'on vient de trouver mais pas encore fabriquée : les boutons sont là, sous le message,
+     * comme dans la fenêtre de la recette (Fabriquer, ×10, Max, ou les prérequis si quelque chose manque). */
+    function trouveeActs(){
+      const r=U.last,id=r&&(r.kind==="learn"||r.kind==="blocked")&&lastHeat==="discover"?r.id:null;
+      if(!id||!I[id]||!E.state.known[id]||!api.craftBtns||r.offered||(E.state.made[id]||0)>0)return "";
+      if(r.kind==="learn"&&(E.state.made[id]||0)>(r.made0||0))return "";
+      return '<div class="row wrap ae-found-acts" style="margin:6px 0 2px">'+api.craftBtns(id)+'</div>';
     }
     let messageSale="";
     function prepare(id){if(!E.state.known[id])return;

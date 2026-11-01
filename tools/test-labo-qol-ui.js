@@ -79,6 +79,40 @@ async function run() {
     ok(await p.evaluate(() => window.__eclat.E.state.flags.equipmentBench.slots.includes("manche")), "un simple appui pose toujours la matière");
     ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
   }
+  { // une trouvaille ordinaire ou unique (feu de camp) est offerte la première fois
+    const E0 = Core.createEngine(), st = E0.state;
+    st.age = 1; st.cycle = 1; st.meta.forcedDone = true; st.introSeen = true; st.flags.ver = D.VERSION;
+    Object.assign(st.settings, { tuto: false, sound: false, visiteurs: false });
+    for (const z of D.ZONES) st.zones[z.id] = true;
+    for (const id of ["archet", "bois", "caillou"]) { st.seen[id] = true; st.inv[id] = 5; }
+    E0.recalc();
+    const { p, ctx, errors } = await ouvre(E0.serialize());
+    await p.evaluate(() => { const g = window.__eclat; Object.assign(g.E.state.flags.equipmentBench, { metier: g.E.atelierDe("feu"), mode: "construire", slots: ["archet", "bois", "caillou"], prepared: null }); g.render(true); });
+    await p.waitForTimeout(300);
+    await p.locator('.ae-actions [data-ae="forge"]').click(); await p.waitForTimeout(300);
+    ok(/Offerte par la maison/.test(await p.locator("#ae-result").textContent()), "le feu de camp est offert, même sans toutes les ressources");
+    ok(await p.evaluate(() => window.__eclat.E.count("feu")) === 1, "il est bien en Réserve");
+    ok(await p.locator(".ae-found-acts").count() === 0, "pas de bouton inutile quand la pièce est offerte");
+    ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
+  }
+  { // une trouvaille qui n'est pas offerte (un extracteur) : les boutons de fabrication sont sous le message
+    const E0 = Core.createEngine(), st = E0.state;
+    st.age = 2; st.cycle = 1; st.meta.forcedDone = true; st.introSeen = true; st.flags.ver = D.VERSION;
+    Object.assign(st.settings, { tuto: false, sound: false, visiteurs: false });
+    for (const z of D.ZONES) st.zones[z.id] = true;
+    for (const id of ["manche", "corde", "os"]) { st.seen[id] = true; st.inv[id] = 40; }
+    E0.recalc();
+    const { p, ctx, errors } = await ouvre(E0.serialize());
+    await p.evaluate(() => { const g = window.__eclat; Object.assign(g.E.state.flags.equipmentBench, { metier: g.E.atelierDe("collets"), mode: "construire", slots: ["corde", "manche", "os"], prepared: null }); g.render(true); });
+    await p.waitForTimeout(300);
+    await p.locator('.ae-actions [data-ae="forge"]').click(); await p.waitForTimeout(300);
+    const msg = await p.locator("#ae-result").textContent();
+    ok(/Recette trouvée/.test(msg) && !/Offerte/.test(msg), "recette trouvée, pas offerte : " + msg);
+    ok(await p.locator('.ae-found-acts [data-cr="collets"]').count() > 0, "des boutons de fabrication sont sous le message");
+    await p.locator('.ae-found-acts [data-cr="collets"][data-n="1"]').first().click(); await p.waitForTimeout(500);
+    ok(await p.evaluate(() => !!(window.__eclat.E.queued("collets") || window.__eclat.E.state.made.collets)), "un appui commande l'extracteur");
+    ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
+  }
   { // tout est connu : les outils épuisés disparaissent, sauf celui d'une recette préparée
     const { p, ctx, errors } = await ouvre(fixture(true));
     const sans = await choix(p);
