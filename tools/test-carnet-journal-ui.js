@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => {
 });
 let browser, checks = 0;
 const ok = (v, m) => { assert.ok(v, m); checks++; };
-function fixture() {
+function fixture(souvenirs) {
   const E = Core.createEngine(), s = E.state;
   s.age = 6; s.cycle = 2; s.meta.forcedDone = true; s.introSeen = true; s.flags.ver = D.VERSION;
   Object.assign(s.settings, { tuto: false, sound: false, visiteurs: false });
@@ -20,6 +20,7 @@ function fixture() {
     if (it.t === "res") { s.seen[id] = true; s.inv[id] = 500; }
     if (it.r && it.a <= 6 && !it.sec && !it.path) s.known[id] = true;
   }
+  if (souvenirs) s.souvenirs = {};
   E.recalc();
   return E.serialize();
 }
@@ -50,6 +51,30 @@ async function run() {
   await p.evaluate(() => { const g = window.__eclat; g.E.state.frags = g.E.state.frags || {}; });
   ok(!errors.length, "erreurs JS " + errors.join(";"));
   await ctx.close();
+  { // après une relève : le Carnet se relit âge par âge
+    const c2 = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block", reducedMotion: "reduce" }), q = await c2.newPage(), err2 = [];
+    q.on("pageerror", e => err2.push(e.message));
+    await q.addInitScript(r => { localStorage.setItem("eclat.save.v1", r); localStorage.setItem("eclat.style.carnet-defaut", "1"); }, fixture(true));
+    await q.goto("http://127.0.0.1:" + server.address().port + "/index.html");
+    await q.waitForFunction(() => !!window.__eclat);
+    for (let i = 0; i < 5; i++) { await q.waitForTimeout(80); await q.evaluate(() => window.__eclat.closeModal()); }
+    await q.locator('#tabs [data-tab="atelier"]').click(); await q.waitForTimeout(400);
+    ok(await q.locator("#v-atelier .souvenir-note").count() === 1, "l'Atelier dit que des recettes reviendront en relisant le Carnet");
+    await q.locator('#v-atelier .souvenir-note [data-tab2="carnet"]').click(); await q.waitForTimeout(400);
+    ok(await q.locator("#v-carnet .carnet-retrouve").count() === 1, "le Carnet s'ouvre sur « Tu retrouves ton carnet »");
+    const fermes = await q.locator("#v-carnet .age-oubli").count();
+    ok(fermes >= 3, "les âges sont fermés : " + fermes);
+    ok(await q.locator("#v-carnet .rec").count() === 0, "aucune recette avant d'avoir relu");
+    await q.locator("#v-carnet .age-oubli [data-souvenir]").first().click(); await q.waitForTimeout(400);
+    ok(await q.locator("#v-carnet .age-oubli").count() === fermes - 1, "relire un âge l'ouvre");
+    ok(await q.locator("#v-carnet .souvenir-texte").count() >= 1, "la phrase de l'âge s'affiche");
+    await q.locator('#v-carnet [data-souvenir="tout"]').click(); await q.waitForTimeout(400);
+    ok(await q.locator("#v-carnet .age-oubli").count() === 0 && await q.locator("#v-carnet .carnet-retrouve").count() === 0, "tout relire ouvre tout et retire le bandeau");
+    await q.locator('#tabs [data-tab="atelier"]').click(); await q.waitForTimeout(300);
+    ok(await q.locator("#v-atelier .souvenir-note").count() === 0, "plus de note à l'Atelier");
+    ok(!err2.length, "erreurs JS " + err2.join(";"));
+    await c2.close();
+  }
   console.log(checks + " contrôles du Carnet dans le Journal réussis.");
 }
 run().catch(e => { console.error(e); process.exitCode = 1; }).finally(async () => { if (browser) await browser.close(); server.close(); });

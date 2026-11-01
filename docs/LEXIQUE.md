@@ -12,9 +12,9 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 | **Terres** | L’écran de ce qui se récolte : une terre à la fois. Dans une consigne ou un bouton, toujours « les Terres ». | le Domaine (voir plus bas), la Carte, une « zone » |
 | **Atlas** | La carte du monde, rangée sous les Terres. | la Carte |
 | **Labo** | L’écran où l’on découvre, par essais : métier, outil, station, geste, ressources sur l’établi. | l’Atelier (pour découvrir) |
-| **Atelier** | L’écran où l’on produit : **Métiers** (travailleurs, seuil, goulots, énergie), **Carnet** (les recettes connues), **Machines**. Jamais le nom d’un lieu de travail, ni celui d’un métier. | « atelier » pour un métier ; « l’atelier » dans la bouche d’un travailleur |
+| **Atelier** | L’écran où l’on produit : **Métiers** (travailleurs, seuil, goulots, énergie, et pour chaque métier sa section **À construire** : outils, stations, améliorations, extracteurs, machines), **Machines**. Jamais le nom d’un lieu de travail, ni celui d’un métier. | « atelier » pour un métier ; « l’atelier » dans la bouche d’un travailleur |
 | **Progression** | Le chemin, les secrets, les gestes remarqués, les fins, la Mémoire, le cosmos. | l’Arbre |
-| **Journal** | Le récit et les souvenirs. | |
+| **Journal** | Le récit et les souvenirs. Il garde aussi le **Carnet**, onglet « Recettes » : on y relit les recettes connues, on les fabrique à l’Atelier. Après une relève, chaque âge se relit à son tour (« Relire cet âge », « Tout relire »). | |
 
 ## Ressources, pièces, objets
 
@@ -60,7 +60,7 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 | Révéler une recette inconnue contre de l’Intuition | **déchiffrer** | débloquer, acheter |
 | Étudier une ressource | **étudier** (avec de l’Intuition) | analyser |
 | Mettre un extracteur sur un gisement | **poser** | installer, placer |
-| Lancer une fabrication en lot au Carnet | **commander** | |
+| Lancer une fabrication en lot à l’Atelier | **commander** | |
 | Approvisionner un passage ou un Grand Œuvre | **déposer, apporter, fournir** | verser un solide, donner, payer |
 | Laisser un Grand Œuvre puiser seul | **alimenter** | |
 | Payer une prime, un salaire | **verser** (c’est un paiement) | |
@@ -73,7 +73,7 @@ Quatre mots seulement, partout : **tes mains**, une **commande**, **en cours**, 
 | Mot | Sens |
 |---|---|
 | **Tes mains** | La part du joueur : une seule commande à la fois, à la main. Les statuts parlent de commandes : « Aucune commande en cours », « Commande ajoutée ». Jamais « queue » ni « slot ». |
-| **Commande** | Fabrication lancée depuis le Carnet (×1, ×10, ×50, ×100, ×1 000, Max). Jamais « fabrication », « tâche » ni « job ». |
+| **Commande** | Fabrication lancée depuis l’Atelier (×1, ×10, ×50, ×100, ×1 000, Max). Jamais « fabrication », « tâche » ni « job ». |
 | **en cours** | Ce que quelqu’un fait avancer. Jamais « en fabrication ». |
 | **attendre** | Une commande que personne ne peut avancer est « en attente de mains ou de machines ». |
 | **au repos** | Une machine sans travail est **au repos** ; avec du travail, elle est **au travail**. |

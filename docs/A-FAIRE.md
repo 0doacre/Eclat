@@ -14,8 +14,9 @@ Décisions du jour : pas de message d’alpha dans le jeu (P4 abandonnée) ; tex
 
 Notes de l’auteur du 1er novembre, à traiter avant l’alpha :
 
-- **Atelier et Carnet mélangés : qui fait quoi ?** Ce n’est pas clair pour le joueur. Dire nettement le rôle de chacun (trouver, essayer, fabriquer) dans l’interface et dans l’aide.
-- **Le Labo est difficile à comprendre.** Le joueur voit que le feu de camp est « trouvé » mais pas « fabriqué », et ne comprend pas la différence. À chaque nouvelle recette, il devrait pouvoir **fabriquer directement depuis la fenêtre de la recette**, sans changer d’écran.
+- **Atelier et Carnet mélangés : qui fait quoi ?** Fait en 0.65.0. Le Labo essaie et découvre, l’Atelier fabrique (chaque métier a sa section « À construire »), le Carnet se relit : il est l’onglet « Recettes » du Journal et renvoie à l’Atelier du métier. Après une relève, chaque âge se relit à son tour (`D.SOUVENIRS`, `E.agesARetrouver`). Les recettes restent connues ; seul l’affichage de l’Atelier et du Carnet attend la relecture.
+- **Le Labo est difficile à comprendre : fabriquer dès la trouvaille.** Fait en 0.64.12 : la première fabrication est offerte pour presque tout, et les boutons Fabriquer apparaissent sous « Recette trouvée » quand elle ne l’est pas.
+- **À vérifier** : `tools/boutons.js` n’a pas été relancé (Firefox absent) ; `docs/boutons.md` ne décrit pas encore les boutons « Atelier · métier », « Construire » ni « Relire cet âge ». `tools/test-ux.js`, `test:age-os-carnet-ui` et `test:atelier-dessine` échouaient déjà avant ces changements.
 
 ## Fait récemment
 

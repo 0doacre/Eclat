@@ -530,6 +530,17 @@
           return '<button type="button" class="age-pill' + (cur ? " cur" : "") + '" data-age-jump="' + s.age + '" style="--ac:' + ag.c + '" title="' + esc(ag.n) + '" aria-label="Aller à : ' + esc(ag.n) + '">Âge ' + (s.age + 1) + "</button>";
         }).join("") + "</div>";
     }
+    /* le retour de mémoire : après une relève, le Carnet se relit âge par âge */
+    const SOUV = () => D.SOUVENIRS || { ages: [] };
+    function souvenirBandeauHTML() {
+      const r = E.agesARetrouver();
+      if (!r.length) return "";
+      return '<div class="card carnet-retrouve"><p class="serif"><i>' + esc(SOUV().intro) + "</i></p>" +
+        (r.length > 1 ? '<div class="acts"><button type="button" class="btn small pri" data-souvenir="tout">' + esc(SOUV().tout) + "</button></div>" : "") + "</div>";
+    }
+    function souvenirNoteHTML() {
+      return E.agesARetrouver().length ? '<div class="card souvenir-note"><p class="small">' + esc(SOUV().atelier) + '</p><div class="acts"><button type="button" class="btn small" data-tab2="carnet">Ouvrir le Carnet</button></div></div>' : "";
+    }
     function viewCarnet() {
       const st = S();
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
@@ -550,6 +561,7 @@
       const CF_T = { tout: "Toutes les recettes que tu connais", pret: "Celles que ta Réserve couvre entièrement, pièces comprises", craft: "Celles dont les pièces manquantes peuvent encore être fabriquées", unk: "Celles qu’il te reste à découvrir", ext: "Les bâtiments qui récoltent à ta place", tool: "Les outils et leurs améliorations", mach: "Les machines qui fabriquent seules", pin: "Tes épingles, en haut de l’Atelier" };
       if (U.carnetPanel === "filtres") h += '<div class="filters">' + FILTRES.map(([k, n]) =>
         '<button data-cf="' + k + '" title="' + (CF_T[k] || "") + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      h += souvenirBandeauHTML();
       h += ageNavHTML(carnetBook());
       return h + '<div id="clist" class="' + (col1 ? "cols-1" : "cols-2") + (dense ? " carnet-dense" : "") + '">' + carnetList() + "</div>";
     }
@@ -851,7 +863,7 @@
       const q = norm(U.q);
       U.named = namedSet();
       let nHidden = 0;
-      const keep = (id) => { if (!passFilter(id)) return false; if (hiddenOwned(id)) { nHidden++; return false; } return true; };
+      const keep = (id) => { if (!E.retrouvee(id) && U.carnetFilter !== "unk") return false; if (!passFilter(id)) return false; if (hiddenOwned(id)) { nHidden++; return false; } return true; };
       let h = "";
       if (q) {
         const ids = visibleRecipes().filter((id) => {
@@ -860,7 +872,7 @@
           if (norm(it.n).includes(q)) return true;
           if (!st.known[id]) return false;
           return Object.keys(it.r[1]).some((i) => norm(I[i].n).includes(q));
-        }).filter(passFilter);
+        }).filter(passFilter).filter((id) => E.retrouvee(id) || !S().known[id]);
         h += ids.length ? '<div class="list flat">' + ids.map(recCard).join("") + "</div>" : '<p class="small muted center">Aucune recette ne correspond.</p>';
         return h;
       }
@@ -883,8 +895,15 @@
         const rank = (x) => (book[x].age === st.age ? 0 : book[x].age === st.age + 1 ? 1 : book[x].age < st.age ? 2 + st.age - book[x].age : 2 + D.AGES.length + book[x].age);
         return rank(a) - rank(b);
       });
+      const aRelire = E.agesARetrouver();
       for (const k of order) {
         const sec = book[k];
+        if (aRelire.includes(sec.age) && !(U.carnetFilter === "unk")) {
+          const ag = D.AGES[sec.age], n = sec.ids.filter((id) => st.known[id] && !I[id].sec).length;
+          h += '<div class="card age-sec age-oubli" data-age="' + sec.age + '"><div class="age-oubli-t"><span class="ic" style="background:' + ag.c + "22;border-color:" + ag.c + '66">' + (sec.age + 1) + '</span><span class="an">' + ag.n + '</span><span class="cnt">' + n + '</span></div>' +
+            '<p class="small muted">' + esc(SOUV().pages) + '</p><div class="acts"><button type="button" class="btn small pri" data-souvenir="' + sec.age + '">' + esc(SOUV().relire) + "</button></div></div>";
+          continue;
+        }
         const ids = sec.ids.filter((id) => !I[id].sec).filter(keep);
         if (!ids.length) continue;
         const ag = D.AGES[sec.age];
@@ -892,7 +911,7 @@
         const freshCount = sec.ids.filter((id) => st.known[id] && !I[id].sec && !(st.made[id] > 0)).length;
         const open = U.carnetFilter !== "tout" || (U.openAges[sec.age] !== undefined ? U.openAges[sec.age] : sec.age >= st.age);
         h += '<details class="card age-sec" data-age="' + sec.age + '"' + (open ? " open" : "") + '><summary><span class="ic" style="background:' + ag.c + "22;border-color:" + ag.c + '66">' + (sec.age + 1) +
-          '</span><span class="an">' + ag.n + '</span>' + (freshCount > 0 && U.carnetFilter !== 'unk' ? '<span class="badge-neuf mini-neuf" title="' + freshCount + ' nouvelle(s) recette(s)">' + freshCount + ' nouv.</span>' : '') + '<span class="cnt">' + (U.carnetFilter === 'unk' ? ids.length + ' à découvrir' : kn + ' apprises') + '</span></summary><div class="list">' + ids.map(recCard).join("") + "</div></details>";
+          '</span><span class="an">' + ag.n + '</span>' + (freshCount > 0 && U.carnetFilter !== 'unk' ? '<span class="badge-neuf mini-neuf" title="' + freshCount + ' nouvelle(s) recette(s)">' + freshCount + ' nouv.</span>' : '') + '<span class="cnt">' + (U.carnetFilter === 'unk' ? ids.length + ' à découvrir' : kn + ' apprises') + '</span></summary><div class="list">' + (st.souvenirs && (st.cycle || 1) >= 2 && SOUV().ages[sec.age] && U.carnetFilter !== "unk" ? '<p class="serif souvenir-texte"><i>' + esc(SOUV().ages[sec.age]) + "</i></p>" : "") + ids.map(recCard).join("") + "</div></details>";
       }
       const secrets = Object.keys(I).filter((id) => I[id].sec && st.known[id] && I[id].r).filter(keep);
       if (secrets.length) h += '<details class="card age-sec"' + (U.carnetFilter !== "tout" ? " open" : "") + '><summary><span class="ic">🗝️</span><span class="an">Curiosités</span><span class="cnt">' + secrets.length + '</span></summary><div class="list">' + secrets.map(recCard).join("") + "</div></details>";
@@ -1635,7 +1654,7 @@
     function prodRecettes() {
       const st = S(), pin = st.pins || {};
       const sel = Atel && U.atelierSel;
-      const ids = Object.keys(st.known).filter((id) => (!sel || Atel.famille(id) === sel) && I[id] && I[id].r && !I[id].sec && !I[id].path && !I[id].old && !E.isUnique(I[id]) && !E.isScaled(I[id]));
+      const ids = Object.keys(st.known).filter((id) => (!sel || Atel.famille(id) === sel) && I[id] && I[id].r && !I[id].sec && !I[id].path && !I[id].old && !E.isUnique(I[id]) && !E.isScaled(I[id]) && E.retrouvee(id));
       const can = (id) => (E.maxCraftable(id, 1000) > 0 ? 1 : 0);
       ids.sort((a, b) => can(b) - can(a) || (pin[b] ? 1 : 0) - (pin[a] ? 1 : 0) || I[b].a - I[a].a || I[a].n.localeCompare(I[b].n));
       return ids;
@@ -1832,7 +1851,7 @@
     function viewAteliers() {
       const ap = E.apprentis();
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
-      return '<div class="ateliers atl-page">' + enteteAtelier("Métiers", "Ce que tu fabriques, et qui s’en charge.") + energieHTML() + goulotsHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
+      return '<div class="ateliers atl-page">' + enteteAtelier("Métiers", "Ce que tu fabriques, et qui s’en charge.") + souvenirNoteHTML() + energieHTML() + goulotsHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
@@ -1841,7 +1860,7 @@
     const CHANTIER_VERBE = { stat: "Construire", ext: "Construire", mach: "Construire", auto: "Construire", upg: "Installer", tool: "Fabriquer" };
     function aConstruireHTML() {
       if (!Atel || !U.atelierSel) return "";
-      const st = S(), ids = Atel.chantiers(U.atelierSel).filter((id) => E.ageOK(id));
+      const st = S(), ids = Atel.chantiers(U.atelierSel).filter((id) => E.ageOK(id) && E.retrouvee(id));
       if (!ids.length) return "";
       const fait = (id) => E.isUnique(I[id]) && (st.made[id] || 0) > 0;
       const aFaire = ids.filter((id) => !fait(id)).sort((a, b) => I[a].a - I[b].a || I[a].n.localeCompare(I[b].n));
@@ -1869,7 +1888,7 @@
       if (!liste.includes(U.prodSel)) U.prodSel = liste[0] || null;
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
-      let h = '<div class="prod atl-page">' + subTabs("atelier", "machines", "Produire", "Machines") +
+      let h = '<div class="prod atl-page">' + subTabs("atelier", "machines", "Produire", "Machines") + souvenirNoteHTML() +
         (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + fatigueHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
@@ -1951,6 +1970,13 @@
       }
       if (t.closest("[data-atelier-retour]")) { A.click(); U.atelierSel = null; render(true); return true; }
       if ((b = t.closest("[data-energie]"))) { A.click(); U.energieSheet = b.dataset.energie === "1" ? !U.energieSheet : false; render(true); return true; }
+      if ((b = t.closest("[data-souvenir]"))) {
+        A.click();
+        const v = b.dataset.souvenir;
+        if (E.retrouver(v === "tout" ? "tout" : Number(v))) { A.discover(); }
+        render(true);
+        return true;
+      }
       if ((b = t.closest("[data-aller]"))) {
         A.click();
         const id = b.dataset.aller;

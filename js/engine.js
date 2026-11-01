@@ -5363,6 +5363,7 @@
       n.repaired = Object.assign({}, old.repaired || {});
       n.eventsSeen = old.eventsSeen ? Object.assign({}, old.eventsSeen) : {};
       n.cycle = (old.cycle || 1) + 1;
+      n.souvenirs = {}; // chaque âge se relit dans le Carnet
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
       // les mains se souviennent un peu : une part de l’expérience reste
@@ -6471,10 +6472,36 @@
       }
       delete S.atelierEconomy;
     }
+    /* Le retour de mémoire (0.65) : après une relève, les recettes restent connues, mais chaque âge se relit dans le Carnet.
+     * S.souvenirs : les âges déjà relus ce cycle. Absent (partie d'avant, ou premier cycle), tout est relu. */
+    E.agesARetrouver = () => {
+      if (!S.souvenirs || (S.cycle || 1) < 2) return [];
+      const ages = new Set();
+      for (const id in S.known) {
+        const it = item(id);
+        if (!it || !it.r || it.sec || it.path || it.a > S.age + 1) continue;
+        if (!S.souvenirs[it.a]) ages.add(it.a);
+      }
+      return Array.from(ages).sort((a, b) => a - b);
+    };
+    E.retrouvee = (id) => {
+      const it = item(id);
+      if (!it || !S.souvenirs || (S.cycle || 1) < 2 || it.sec || it.path || it.a > S.age + 1) return true;
+      return !!S.souvenirs[it.a];
+    };
+    E.retrouver = (age) => {
+      if (!S.souvenirs) return false;
+      if (age === "tout") E.agesARetrouver().forEach((a) => { S.souvenirs[a] = true; });
+      else if (S.souvenirs[age]) return false;
+      else S.souvenirs[age] = true;
+      E.emit("struct");
+      return true;
+    };
     E.load = function (src) {
       const o = parseSave(src);
       S = o;
       migrerAteliers();
+      if (!S.souvenirs && (S.cycle || 1) >= 2) S.souvenirs = Object.fromEntries(D.AGES.map((_, i) => [i, true])); // une partie d’avant n’a pas à tout relire
       if (!(S.meta.graine >= 1)) S.meta.graine = graineDuJour(); // une ancienne partie n’avait pas de graine avant la première relève
       forgetDom();
       recalc();

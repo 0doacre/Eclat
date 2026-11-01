@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.12";
+  D.VERSION = "0.65.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1462,6 +1462,33 @@
    * Le reste (quantités, temps, extracteurs, apprentis) se joue à l'Atelier. max: 0 désactive (le plafond de coût n'existe plus). */
   D.PREMIERE_PIECE = { max: 24 };
 
+  /* Le retour de mémoire (0.65) : après une relève, les recettes sont gardées mais le joueur les relit âge par âge dans le Carnet.
+   * Une phrase par âge, dans l'ordre de D.AGES. Voix du joueur qui retrouve son propre carnet : des gestes, des objets, pas de morale. */
+  D.SOUVENIRS = {
+    intro: "Tu retrouves ton carnet, et l’écriture ressemble à la tienne. Chaque âge se relit à son tour : les recettes reviennent à mesure.",
+    pages: "Les pages de cet âge sont encore closes.",
+    relire: "Relire cet âge",
+    tout: "Tout relire",
+    atelier: "Des recettes te reviendront quand tu relis ton Carnet.",
+    ages: [
+      "Premières pages, d’une écriture appliquée. Tu retrouves le geste de l’archet avant même d’avoir relu le mot.",
+      "Des aiguilles dessinées en marge, avec la longueur de chaque fil. Ta main se rappelle comment on perce l’os.",
+      "Les éclats de silex sont comptés par colonnes. Tu sens déjà le poids de la hache dans ta paume.",
+      "Une page tachée de vert. Le cuivre se chauffe doucement, tu l’avais noté deux fois.",
+      "Tu avais recopié les proportions de l’alliage, avec une rature à la quatrième ligne. Ta main la corrige sans hésiter.",
+      "Le carnet répète en marge que le fer demande de la patience. Le bas-fourneau est dessiné en coupe, comme pour un plan.",
+      "Les pages se font plus serrées. Tu retrouves les durées de trempe, notées à la minute près.",
+      "Un schéma de chaudière occupe deux pages, avec des flèches pour la pression. Il te revient d’un coup.",
+      "Des bobines à la plume, enroulées dans le bon sens. Tu te souviens du premier courant qui a passé dans le fil.",
+      "L’écriture se resserre, et plusieurs pages portent une marge de prudence. Tu relis ces consignes avec soin.",
+      "Des quadrillages très fins, tracés à la règle. Tu retrouves la façon de les lire.",
+      "Les pages de cet âge sentent encore un peu le solvant. Les formules te reviennent dans l’ordre où tu les as écrites.",
+      "Tu avais collé un échantillon de tissu entre deux pages. Sa trame te rappelle la recette.",
+      "Les marges sont pleines de calculs de trajectoire. Tu reconnais ta façon de barrer les erreurs.",
+      "Les dernières pages sont presque vides, écrites à grands traits. Ce que tu y avais noté suffit à te remettre dans le geste."
+    ]
+  };
+
   /* Un Grand Œuvre alimenté se sert seul dans la Réserve : au plus ça par seconde et
    * par matière, à chaque âge (les améliorations qui accélèrent les machines comptent). */
   D.SITE_RATE = [3, 4, 6, 10, 14, 18, 30, 40, 50, 60, 70, 140, 300, 500, 1500];
@@ -1750,6 +1777,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📖 Le Carnet devient l’onglet Recettes du Journal : on y relit ses recettes, on les fabrique à l’Atelier. Chaque fiche renvoie au métier qui s’en charge.",
+    "🏗️ Chaque métier de l’Atelier a sa section À construire : outils, stations, améliorations, extracteurs et machines.",
+    "🪶 Après une relève, tu retrouves ton carnet : chaque âge se relit à son tour, avec quelques mots à lui, et ses recettes reviennent à mesure. Un bouton relit tout d’un coup.",
     "🎁 La première fabrication est offerte pour presque tout, même s’il manque des ressources : le feu de camp, les outils, les stations et les améliorations entrent dans ta Réserve dès que tu trouves leur recette. Les extracteurs et les machines restent à construire.",
     "🔨 Au Labo, une recette trouvée mais pas offerte (un extracteur, par exemple) propose tout de suite Fabriquer, ×10 et Max sous le message, ou les prérequis s’il manque quelque chose.",
     "🗣️ Les travailleurs t’appellent Semeur (plus Patron, ni Chef), et pas à chaque phrase : une fois sur deux, ils vont droit au but.",
