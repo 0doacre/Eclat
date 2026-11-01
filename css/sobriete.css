@@ -125,3 +125,6 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-labo .ae-layout{flex:1 1 auto;display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:8px;min-height:0}
 /* petits écrans : l'ordre normal (l'établi d'abord) et le défilement, plutôt qu'un stock rogné en haut */
 @media (max-height:700px){#v-labo .ae-layout{flex-direction:column;justify-content:flex-start;flex:0 0 auto}#v-labo.on{overflow-y:auto}}
+#v-arbre .prog-corps :is(h2,h3,h4){padding:6px 12px;box-sizing:border-box}
+/* page d'un métier sur petit écran : les panneaux secondaires se resserrent */
+@media (max-height:700px){#v-atelier .atl-page>:not(.hidden){margin-inline:6px;padding-inline:8px}#v-atelier .atl-page .tip,#v-atelier .atl-page .small.muted{display:none}}
