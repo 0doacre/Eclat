@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.65.4";
+  D.VERSION = "0.65.5";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1728,6 +1728,9 @@
   D.TROQUEUR = { slots: 3, share: 0.15, bloc: 10800, ouvre: 0.6, maxFerme: 3, minParTrace: 10, minMin: 10, minMax: 90, main: 0.5 };
 
   /* Le premier parcours : première renaissance obligatoire */
+  /* Où écrire pendant l'alpha. L'adresse est un REMPLAÇANT (le domaine .invalid ne reçoit jamais rien) : la remplacer avant la première séance. */
+  D.CONTACT = { mail: "retours-alpha@a-definir.invalid", sujet: "Éclat alpha : mon retour" };
+
   D.PARCOURS = {
     gift: 24,         // Souvenirs offerts lors de la relève obligatoire du cycle 1 (0.65.3 : 24 au lieu de 3). Un joueur qui n’optimise pas doit déjà retrouver son front précédent plus de 3 fois plus vite ; celui qui optimise (Raccourci, Mains calleuses) bien davantage. Généreux au début, les paliers montent ensuite (docs/PLAN-ALPHA.md)
     passage: "riviere", // le passage qui déclenche cette relève (0.65.1 : la Plaine, vers 6 min, arrivait trop tôt ; « collines » la repousse d’une terre, vers 34 min au simulateur)
@@ -1784,6 +1787,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "✉️ Le menu (Aide) propose « Nous écrire », pour nous dire ce que tu as pensé du jeu.",
     "🔎 Au Labo, une recette déjà connue et déjà fabriquée est annoncée comme telle, avec un bouton qui ouvre l’Atelier sur le bon métier.",
     "🧱 La page d’un métier à l’Atelier ne se chevauche plus : ses blocs se suivent et la page défile. Les phrases « à partir de l’âge… » sont corrigées.",
     "🎁 Le premier Semeur qui passe le relais reçoit 24 Souvenirs offerts : de quoi retrouver la Rivière plus de trois fois plus vite, même sans chercher la meilleure dépense.",

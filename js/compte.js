@@ -683,6 +683,7 @@
             '<div class="menu-grid">' +
               '<button class="btn m-card-btn" data-assistance="diagnostic" title="Comprendre pourquoi une commande ou un ouvrier attend"><span class="m-card-icon">⏳</span><b>État des productions</b></button>' +
               '<button class="btn m-card-btn" data-assistance="report" title="Préparer un rapport local à transmettre avec ton retour"><span class="m-card-icon">🐞</span><b>Signaler un problème</b></button>' +
+              (D.CONTACT && D.CONTACT.mail ? '<a class="btn m-card-btn" id="m-ecrire" href="mailto:' + esc(D.CONTACT.mail) + "?subject=" + encodeURIComponent(D.CONTACT.sujet || "Éclat") + "&amp;body=" + encodeURIComponent("Version " + D.VERSION + "\n\n") + '" title="Nous écrire ce que tu as pensé du jeu"><span class="m-card-icon">✉️</span><b>Nous écrire</b></a>' : "") +
               '<button class="btn m-card-btn" data-m="help" title="Les mots du jeu et le rôle de chaque écran"><span class="m-card-icon">❓</span><b>Comment jouer</b></button>' +
               '<button class="btn m-card-btn" data-m="news" title="Ce qui a changé dans cette version"><span class="m-card-icon">📰</span><b>Nouveautés</b></button>' +
               '<button class="btn m-card-btn" data-m="credits" title="Les icônes, les polices et la musique"><span class="m-card-icon">📜</span><b>Crédits</b></button>' +

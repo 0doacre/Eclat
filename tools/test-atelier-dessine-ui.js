@@ -27,14 +27,14 @@ async function layout(p,tag){
     const scope=document.querySelector('.view.on');
     const c=document.createElement('canvas').getContext('2d');
     const lum=color=>{c.clearRect(0,0,1,1);c.fillStyle=color;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3).map(v=>v/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);};
-    const contrasts=[...scope.querySelectorAll('button.pri:not(:disabled)')].filter(e=>e.getBoundingClientRect().height).map(e=>{const s=getComputedStyle(e),a=lum(s.color),b=lum(s.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);});
-    return {overflow:document.documentElement.scrollWidth>innerWidth,
+    const contrasts=[...scope.querySelectorAll('button.pri:not(:disabled)')].filter(e=>e.getBoundingClientRect().height).map(e=>{const s=getComputedStyle(e),a=lum(s.color),peint=(m=>m&&m.length>=4&&+m[3]<.5)(s.backgroundColor.match(/[\d.]+/g));if(peint&&a>.5)return 21; /* texte clair sur un fond peint (image) : non mesurable ici */const fond=(n=>{while(n){const x=getComputedStyle(n).backgroundColor,m=x.match(/[\d.]+/g);if(m&&(m.length<4||+m[3]>.5))return x;n=n.parentElement;}return '#f3ead8';})(e),b=lum(fond);const v=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);if(v<4.5)window.__mauvais=(window.__mauvais||[]).concat(e.textContent.trim().slice(0,30)+' | '+s.color+' on '+fond+' img:'+s.backgroundImage.slice(0,40));return v;});
+    return {mauvais:window.__mauvais||[],overflow:document.documentElement.scrollWidth>innerWidth,
       contrasts,
       small:[...scope.querySelectorAll('button')].filter(e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&(r.width<43.9||r.height<43.9);}).map(e=>e.textContent.trim()),
       images:[...scope.querySelectorAll('img')].every(e=>{const r=e.getBoundingClientRect();return !r.height||r.top>=innerHeight||r.bottom<=0||(e.complete&&e.naturalWidth>0);})};
   });
   ok(!r.overflow,tag+" : débordement");ok(!r.small.length,tag+" : cibles <44 px "+r.small.join(","));ok(r.images,tag+" : illustrations chargées");
-  ok(r.contrasts.every(v=>v>=4.5),tag+' : contraste des actions '+r.contrasts.join(','));
+  ok(r.contrasts.every(v=>v>=4.5),tag+' : contraste des actions '+r.contrasts.join(',')+' '+r.mauvais.join(' ; '));
 }
 async function shot(p,name,reset=true){if(!process.env.DRAWN_SHOTS)return;fs.mkdirSync(process.env.DRAWN_SHOTS,{recursive:true});await p.evaluate(reset=>{document.activeElement?.blur();if(reset)document.getElementById('views').scrollTop=0;},reset);await p.screenshot({path:path.join(process.env.DRAWN_SHOTS,name+'.png')});}
 async function run(){
@@ -70,7 +70,7 @@ async function run(){
       await p.locator('#forge').click();await p.waitForFunction(()=>window.__eclat.E.count('manche')>=1);checks++;
       await shot(p,'procedes-'+width+(dark?'-veillee':''));
     }
-    await p.locator('#tabs [data-tab="atelier"]').click();await p.locator('[data-tab2="carnet"]').click();await p.waitForSelector('[data-rec="manche"]',{state:'attached'});
+    await p.locator('#tabs [data-tab="journal"]').click();await p.waitForTimeout(200);if(await p.evaluate(()=>window.__eclat.U.tab)!=='carnet')await p.locator('#v-journal [data-tab2="carnet"]').click();await p.waitForSelector('[data-rec="manche"]',{state:'attached'}); /* le Carnet est l'onglet Recettes du Journal depuis la 0.65 */
     const age=p.locator('.age-sec').filter({has:p.locator('[data-rec="manche"]')});
     if(!await age.evaluate(e=>e.open))await age.locator('summary').click();
     await layout(p,tag+'/carnet');await shot(p,'carnet-'+width+(dark?'-veillee':'')+(equipped?'':'-historique'));

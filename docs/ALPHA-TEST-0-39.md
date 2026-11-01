@@ -19,15 +19,15 @@ Je ne donne pas de dates : elles dépendent du retour des deux lots et de tes di
 | # | Porte | État au 30 octobre | Qui |
 |---|---|---|---|
 | P1 | La refonte 0.39 fusionnée, jouée par l'auteur, retouchée | en cours | Gemini, Codex, Claude, toi |
-| P2 | `npm test` et Playwright verts en CI | tests verts en local ; Playwright jamais exécuté en local | Gemini |
-| P3 | Les vues principales ne défilent pas (R4, `tools/test-ux.js`) | à créer | Gemini |
-| P4 | Un message d'alpha dans le jeu : « alpha, les sauvegardes peuvent encore migrer », sobre, avec export de sauvegarde mis en avant | pas fait (PLAN-ALPHA, point 4) | Gemini (texte validé par toi) |
-| P5 | Un moyen simple de **nous écrire** depuis le jeu (lien de retour, adresse ou formulaire) | pas fait | toi (où ? qui reçoit ?) |
-| P6 | Aide : chaque bouton de l'interface a une explication (tutoriel exhaustif) | pas fait (A-FAIRE) | Gemini, texte relu par toi |
-| P7 | Les textes relus : `docs/revue/`, les 23 recettes d'extracteurs | pas fait | toi, avec Claude |
-| P8 | Une version **figée** pour la durée des séances : même adresse, même build, noté dans la feuille | à décider | Claude |
+| P2 | `npm test` et Playwright verts en CI | `npm test` vert en CI (1er novembre, 0.65.5). Les tests Playwright se lancent à la main et passent en local : Labo, À construire, Carnet, Âge de l'Os, interface dessinée, vues | Claude |
+| P3 | Les vues principales ne défilent pas (R4, `tools/test-ux.js`) | fait en 0.65.5 avec des plafonds mesurés : Terres et Atelier tiennent à 390 × 844, le Labo défile encore de 160 px (440 px à 320 × 568). L'ancien parcours est dans `tools/test-ux-avant-0-39.js` | Claude |
+| P4 | Un message d'alpha dans le jeu : « alpha, les sauvegardes peuvent encore migrer », sobre, avec export de sauvegarde mis en avant | abandonnée (décision du 1er novembre) | |
+| P5 | Un moyen simple de **nous écrire** depuis le jeu (lien de retour, adresse ou formulaire) | lien « Nous écrire » dans le menu, Aide (0.65.5), avec une adresse de remplacement : `D.CONTACT` dans `js/data.js` | toi (l'adresse) |
+| P6 | Aide : chaque bouton de l'interface a une explication (tutoriel exhaustif) | fait : `tools/boutons.js` relevé en 0.65.5, 166 boutons, aucun sans explication ; test dans `npm test` | Claude |
+| P7 | Les textes relus : `docs/revue/`, les 23 recettes d'extracteurs | jugé suffisant pour l'alpha (décision du 1er novembre) | |
+| P8 | Une version **figée** pour la durée des séances : même adresse, même build, noté dans la feuille | branche `alpha` (Cloudflare) à créer quand l'alpha est prête | Claude |
 | P9 | Un second appareil prêt (téléphone qui n'est pas celui de l'auteur) | à prévoir | toi |
-| P10 | Les terres 0.37.1 (`data/terres-ages-0-37-1`) : décider si elles entrent dans la version testée | en attente (PR non ouverte, `gh` non connecté) | toi |
+| P10 | Les terres 0.37.1 (`data/terres-ages-0-37-1`) : décider si elles entrent dans la version testée | laissé à l'alpha elle-même (décision du 1er novembre) | |
 
 Sur P10 : si les testeurs jouent 20 à 30 minutes, ils ne verront pas le Désert ni le Gisement. La décision compte surtout pour le test de rythme (section 6), pas pour les séances de découverte.
 

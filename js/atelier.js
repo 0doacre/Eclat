@@ -1348,7 +1348,7 @@
       const aideBtn = '<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des ressources" aria-label="Comprendre l’étude des ressources">?</button>';
       if (!st.studied[id]) {
         const c = E.studyCost(id);
-        return '<div class="study"><button class="btn small" data-m="study"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button>' + aideBtn + '<span class="tiny muted">Pour savoir avec quels gestes l’essayer.</span></div>';
+        return '<div class="study"><button class="btn small" data-m="study" title="Étudier cet objet en dépensant de l’Intuition : une piste de plus sur sa recette"' + (st.intu < c ? " disabled" : "") + ">🔍 Étudier · ✨" + c + '</button>' + aideBtn + '<span class="tiny muted">Pour savoir avec quels gestes l’essayer.</span></div>';
       }
       const r = E.reactions(id), gs = D.GESTE_ORDER.filter((g) => r[g]);
       return '<div class="study"><span class="tiny muted">🔍 Étudiée.</span> ' + aideBtn + ' ' + (gs.length ? '<span class="tiny muted">Encore à trouver :</span> ' + gs.map((g) => '<span class="g">' + gIc(g) + " " + D.GESTES[g].n + " · " + r[g] + "</span>").join(" ")
@@ -1702,7 +1702,7 @@
         : c.etat === "marche" ? '<span class="atel-etat is-marche">+' + perMin(c.cadence / 60) + "</span>"
         : c.etat === "plein" ? '<span class="atel-etat">plein</span>' : "";
       const equipe = [c.apprentis ? c.apprentis + " apprenti" + (c.apprentis > 1 ? "s" : "") : "", c.ouvriers ? c.ouvriers + " ouvrier" + (c.ouvriers > 1 ? "s" : "") : "", c.machines ? c.machines + " machine" + (c.machines > 1 ? "s" : "") : "", (c.maitrise ? "maîtrisé" : c.recettes.length + " sur " + c.total + " recettes")].filter(Boolean).join(" · ");
-      return '<button type="button" class="atel-carte is-' + c.etat + '" data-atelier="' + c.id + '"><span class="atel-ic" aria-hidden="true">' + c.ic + '</span><span class="atel-corps"><span class="atel-ligne"><b>' + esc(c.n) + '</b><span class="tiny muted">' + esc(equipe) + "</span>" + etat + '</span><span class="atel-echelle">' + ech + '</span></span><span class="atel-chev" aria-hidden="true">›</span></button>';
+      return '<button type="button" class="atel-carte is-' + c.etat + '" data-atelier="' + c.id + '" title="Ouvrir ce métier : ses recettes, ses travailleurs, ce qu’il construit"><span class="atel-ic" aria-hidden="true">' + c.ic + '</span><span class="atel-corps"><span class="atel-ligne"><b>' + esc(c.n) + '</b><span class="tiny muted">' + esc(equipe) + "</span>" + etat + '</span><span class="atel-echelle">' + ech + '</span></span><span class="atel-chev" aria-hidden="true">›</span></button>';
     }
     /* les boutons d'embauche d'un atelier (page de l'atelier) */
     function embaucheHTML(c) {
@@ -1852,7 +1852,7 @@
       const ap = E.apprentis();
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       return '<div class="ateliers atl-page">' + enteteAtelier("Métiers", "Ce que tu fabriques, et qui s’en charge.") + souvenirNoteHTML() + energieHTML() + goulotsHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" +
-        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
+        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
     /* Les chantiers d'un métier : ce qui se construit au lieu de se produire en série. Une station ou un outil se fait une fois ;
@@ -1876,7 +1876,7 @@
       };
       return '<section class="card a-construire"><h3 class="sub">À construire</h3><p class="tiny muted">Outils, stations, améliorations, machines : ce que ce métier met en place, une fois ou autant de fois que tu veux.</p>' +
         (aFaire.length ? aFaire.map(ligne).join("") : '<p class="small muted">Rien à construire pour l’instant.</p>') +
-        (faits.length ? '<details class="construits-faits"><summary class="small">Déjà fait (' + faits.length + ")</summary>" + faits.map((id) => '<div class="row small" data-goto="' + id + '">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) + "</span><span>✓</span></div>").join("") + "</details>" : "") + "</section>";
+        (faits.length ? '<details class="construits-faits"><summary class="small">Déjà fait (' + faits.length + ")</summary>" + faits.map((id) => '<div class="row small" data-goto="' + id + '" title="Voir la recette et ses usages">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) + "</span><span>✓</span></div>").join("") + "</details>" : "") + "</section>";
     }
     function viewAtelier() {
       if (Atel) {
@@ -1889,8 +1889,8 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "machines", "Produire", "Machines") + souvenirNoteHTML() +
-        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + fatigueHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
-        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour title="Revenir à la liste des métiers">← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + fatigueHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
+        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
       if (!liste.length && U.atelierSel && aConstruireHTML()) return h + aConstruireHTML() + "</div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
@@ -1898,7 +1898,7 @@
       h += '<div class="prod-choix" role="group" aria-label="Recettes connues"' + (U.prodTout ? " data-tout" : "") + ">";
       liste.slice(0, 80).forEach((id) => {
         const can = E.maxCraftable(id, 1000) > 0;
-        h += '<button type="button" class="prod-recette' + (id === U.prodSel ? " on" : "") + (can ? "" : " zero") + '" data-prodsel="' + id + '" aria-pressed="' + (id === U.prodSel) + '">' + icon(id) + '<span class="n">' + esc(I[id].n) + '</span><span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
+        h += '<button type="button" class="prod-recette' + (id === U.prodSel ? " on" : "") + (can ? "" : " zero") + '" data-prodsel="' + id + '" aria-pressed="' + (id === U.prodSel) + '" title="Choisir cette recette : la produire à la main ou l’automatiser">' + icon(id) + '<span class="n">' + esc(I[id].n) + '</span><span class="c" data-c="' + id + '">' + fmt(st.inv[id] || 0) + "</span></button>";
       });
       h += "</div>";
       const id = U.prodSel, it = I[id], q = prodQty(id), mode = U.prodQty || "1";
@@ -1908,7 +1908,7 @@
       h += '<section class="prod-fiche"><div class="row">' + icon(id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + ' <span class="muted">×' + fmt(q) + "</span></div>" +
         '<div class="tiny muted">' + gesteChip(id) + " · à la main : " + fmtTime(E.handTime(id) * q) + "</div></div></div>" +
         '<div class="row wrap small" style="margin-top:6px">' + ingHTML(cost, { check: true, link: true }) + "</div>" +
-        '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["50", "×50"], ["100", "×100"], ["500", "×500"], ["1000", "×1000"], ["max", "Max"]].map(([k, l]) => '<button type="button" data-prodq="' + k + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + "</div></section>";
+        '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["50", "×50"], ["100", "×100"], ["500", "×500"], ["1000", "×1000"], ["max", "Max"]].map(([k, l]) => '<button type="button" data-prodq="' + k + '" title="Produire ' + (k === "max" ? "le plus possible" : l.replace("×", "") + " exemplaire" + (k === "1" ? "" : "s") + " d’un coup") + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + "</div></section>";
       h += '<div class="prod-qui"><button type="button" class="btn pri" data-prod="main">À la main</button>' +
         '<button type="button" title="Automatiser : les machines refabriquent seules jusqu’à la cible en Réserve" class="btn' + (why ? " ghost" : "") + '" data-prod="apprenti"' + (ordre ? " disabled" : "") + ">" + (ordre ? "Automatisé · " + fmt(ordre.have) + "/" + fmt(ordre.cap) : "Automatiser") + "</button>" +
         '<button type="button" class="btn ghost" data-tab2="machines">Machines</button></div>';
