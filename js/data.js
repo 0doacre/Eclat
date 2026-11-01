@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.64.11";
+  D.VERSION = "0.64.12";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1456,9 +1456,10 @@
   /* Découvrir coûte peu : une découverte qui demanderait plus que ça (en tout) ne prend
    * rien ; la recette s’inscrit, et on choisit ensuite de la fabriquer, prix affiché. */
   D.DISCOVER_FREE = 6;
-  /* La première pièce est offerte (le Labo, 0.39) : une trouvaille inscrite sans rien prendre
-   * donne tout de même un exemplaire, si l’ouvrage coûte au plus `max` matières en tout. Le
-   * reste (quantités, temps, extracteurs, apprentis) se joue à l’Atelier. max: 0 désactive. */
+  /* La première fabrication est offerte (le Labo, 0.39, étendue en 0.64.12) : une trouvaille inscrite donne un
+   * exemplaire sans rien prendre, même s'il manque des ressources. Sont exclus les extracteurs et les machines
+   * (prix croissant), les secrets, le chemin caché, les reliques et les recettes bloquées par un outil absent.
+   * Le reste (quantités, temps, extracteurs, apprentis) se joue à l'Atelier. max: 0 désactive (le plafond de coût n'existe plus). */
   D.PREMIERE_PIECE = { max: 24 };
 
   /* Un Grand Œuvre alimenté se sert seul dans la Réserve : au plus ça par seconde et
@@ -1749,6 +1750,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🎁 La première fabrication est offerte pour presque tout, même s’il manque des ressources : le feu de camp, les outils, les stations et les améliorations entrent dans ta Réserve dès que tu trouves leur recette. Les extracteurs et les machines restent à construire.",
+    "🔨 Au Labo, une recette trouvée mais pas offerte (un extracteur, par exemple) propose tout de suite Fabriquer, ×10 et Max sous le message, ou les prérequis s’il manque quelque chose.",
     "🗣️ Les travailleurs t’appellent Semeur (plus Patron, ni Chef), et pas à chaque phrase : une fois sur deux, ils vont droit au but.",
     "🧑‍🔧 Les portraits des travailleurs sont livrés avec le jeu (nouveaux fichiers, gardés en mémoire dès l’installation) et gardent un second fichier de secours : ils ne devraient plus rester vides.",
     "🧑‍🔧 Les portraits des travailleurs réapparaissent aussi sur les appareils qui gardent encore une ancienne version du jeu : leurs anciens fichiers contiennent maintenant les nouveaux visages.",

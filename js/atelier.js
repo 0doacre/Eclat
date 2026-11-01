@@ -16,7 +16,7 @@
     const I = D.ITEMS;
     const $ = (s, r) => (r || document).querySelector(s);
     const Atel = window.EclatAteliers ? window.EclatAteliers.create({ E, D }) : null;
-    const Equipped = E.equipmentList && window.EclatAtelierEquipe ? window.EclatAtelierEquipe.create({...api,goalHint,handsHTML}) : null;
+    const Equipped = E.equipmentList && window.EclatAtelierEquipe ? window.EclatAtelierEquipe.create({...api,goalHint,handsHTML,craftBtns}) : null;
 
     /* ------------------------------------------------------------ ATELIER */
     /* l’étape clé de l’objectif, quand sa recette reste à trouver : la piste déjà donnée dans les Terres (rien de plus) reste sous les yeux à l’établi */

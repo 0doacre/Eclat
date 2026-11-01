@@ -47,14 +47,15 @@ test("tentative : fabrication, apprentissage, échec", () => {
   const f = E.attempt("tresser", ["caillou"]);
   assert.strictEqual(f.kind, "fail");
 });
-test("découvrir coûte peu : une grosse recette s’inscrit sans rien prendre", () => {
+test("découvrir coûte peu : une grosse recette s’inscrit sans rien prendre, et la première est offerte", () => {
   const E = mk();
   E.add("archet", 1); E.add("bois", 30); E.add("caillou", 20);
   const r = E.attempt("construire", ["archet", "bois", "caillou"]);
   assert.strictEqual(r.kind, "learn"); assert.strictEqual(r.missing, null); assert.ok(r.fresh);
   assert.ok(E.state.known.feu);
   assert.strictEqual(E.count("bois"), 30, "rien n’est pris");
-  assert.ok(!(E.state.made.feu > 0));
+  assert.ok(r.offered, "le feu de camp est offert la première fois");
+  assert.strictEqual(E.state.made.feu, 1); assert.strictEqual(E.count("feu"), 1);
   // une petite découverte sort tout de suite
   const m = E.attempt("tailler", ["bois"]);
   assert.strictEqual(m.kind, "craft");
@@ -3269,8 +3270,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.64.11 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.64.11");
+test("Version 0.64.12 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.64.12");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3503,7 +3504,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.64.11");
+  assert.strictEqual(D.VERSION, "0.64.12");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

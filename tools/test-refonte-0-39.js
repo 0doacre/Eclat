@@ -56,12 +56,21 @@ test("rien n’est offert quand c’est désactivé", () => {
     assert.ok(!(E.state.inv[CIBLE] > 0));
   } finally { D.PREMIERE_PIECE.max = save; }
 });
-test("jamais d’objet unique, à prix croissant ou secret offert", () => {
+test("jamais d’objet à prix croissant ou secret offert", () => {
   const E = fresh(14);
   for (const [id, it] of Object.entries(D.ITEMS)) {
     if (!it.r) continue;
-    if (E.isUnique(it) || E.isScaled(it) || it.sec || it.path) assert.equal(E.state.inv[id] || 0, 0);
+    if (E.isScaled(it) || it.sec || it.path) assert.equal(E.state.inv[id] || 0, 0);
   }
+});
+test("un ouvrage unique (le feu de camp) est offert la première fois, sans rien prendre", () => {
+  const E = fresh(7);
+  E.add("archet", 1); E.add("bois", 5); E.add("caillou", 5);
+  const r = E.attempt("construire", ["archet", "bois", "caillou"]);
+  assert.equal(r.kind, "learn");
+  assert.equal(r.offered, true);
+  assert.equal(E.count("feu"), 1);
+  assert.equal(E.count("bois"), 5, "aucune matière n’est prise");
 });
 test("la chaîne manquante : vide quand tout est connu, sinon les intermédiaires jamais vus", () => {
   const E = fresh(8);

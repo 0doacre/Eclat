@@ -8,6 +8,15 @@ Le plan complet, avec le tableau des objets par âge, est dans **`docs/PLAN-ALPH
 
 Premier lot de densité, **0.21** : eau et circuits de vapeur, naphta, soufre et étanchéité, puis refroidissement des machines. Treize objets, deux nouveaux gisements d’extracteur. Détails et mesures : **`docs/revue/densite-ressources.md`**. Attention : les anciennes durées « par âge » étaient décalées d’un âge ; les priorités de rythme sont désormais Acier et Silicium.
 
+### Avant l’alpha : état au 1er novembre 2026 (0.64.11) et notes de l’auteur
+
+Décisions du jour : pas de message d’alpha dans le jeu (P4 abandonnée) ; textes jugés relus pour l’alpha (P7) ; terres 0.37.1 tranchées par l’alpha elle-même (P10) ; retours des testeurs par **mail** (adresse à indiquer, lien à faire dans le jeu, P5). Version figée (P8) : une branche `alpha` créée quand l’alpha sera prête, déployée par Cloudflare sur une adresse à part, qui ne bouge pas pendant les séances. Second appareil (P9) : un téléphone sans sauvegarde, à prévoir avant chaque séance.
+
+Notes de l’auteur du 1er novembre, à traiter avant l’alpha :
+
+- **Atelier et Carnet mélangés : qui fait quoi ?** Ce n’est pas clair pour le joueur. Dire nettement le rôle de chacun (trouver, essayer, fabriquer) dans l’interface et dans l’aide.
+- **Le Labo est difficile à comprendre.** Le joueur voit que le feu de camp est « trouvé » mais pas « fabriqué », et ne comprend pas la différence. À chaque nouvelle recette, il devrait pouvoir **fabriquer directement depuis la fenêtre de la recette**, sans changer d’écran.
+
 ## Fait récemment
 
 - **Maîtrise des terres et transmission (28 octobre)** : cinq objectifs visibles par terre principale, +5 points de débit permanent après maîtrise et relève (plafond +50 %), bilan chiffré, aperçu de la prochaine terre et chapitres de retour au Désert. Les secrets restent facultatifs ; les réglages de Gemini sont conservés. Voir `docs/MAITRISE-TERRES.md`. Les quantités et le rythme des reprises restent à éprouver avec des joueurs.
