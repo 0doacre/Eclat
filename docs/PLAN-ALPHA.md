@@ -58,6 +58,7 @@ Dans l’ordre.
 - Un extracteur par ressource, niveaux améliorables un exemplaire à la fois (0.17).
 - Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur (0.16.2).
 - La première relève est proposée une fois la Plaine franchie, avec une fenêtre en langage d’interface (0.16.1). Depuis la 0.65.1 elle attend la Rivière (vers 23 à 34 min au simulateur, au lieu de 6) : `D.PARCOURS.passage`. Les relèves suivantes sont proposées moins souvent (`D.PARCOURS.suggest*`). À confirmer par l’alpha.
+- **Réglages de l’alpha (décision du 1er novembre 2026, 0.65.2)** : on suit les repères des jeux du genre (premier prestige pas immédiat, prestige proposé quand il double au moins la monnaie déjà gagnée) et on passe le test de l’alpha sur ces valeurs, sans les toucher pendant les séances : première relève à la Rivière, puis `D.PARCOURS.suggest*` (30 min de jeu, 10 Souvenirs au moins, au moins autant que le total déjà gagné, un âge au-delà du front, commande unique de 120 s).
 - Alpha **ouverte à des testeurs** avant toute alpha publique.
 - Les nouvelles ressources doivent expliquer les techniques et relier les âges entre eux ; une ressource déjà connue peut changer d’usage et d’échelle (l’eau à la Vapeur).
 
