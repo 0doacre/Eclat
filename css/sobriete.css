@@ -123,3 +123,5 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-labo.on{display:flex;flex-direction:column}
 #v-labo .atelier-equipe{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
 #v-labo .ae-layout{flex:1 1 auto;display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:8px;min-height:0}
+/* petits écrans : l'ordre normal (l'établi d'abord) et le défilement, plutôt qu'un stock rogné en haut */
+@media (max-height:700px){#v-labo .ae-layout{flex-direction:column;justify-content:flex-start;flex:0 0 auto}#v-labo.on{overflow-y:auto}}

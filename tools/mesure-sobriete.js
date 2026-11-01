@@ -27,22 +27,23 @@ const MES = () => {
   const h = document.querySelector("#top"), t = document.querySelector("#tabs");
   return { cibles: aEcran, contenu: aEcran - fixe, page, texte: texteDe(ecran), textePage: texteDe(rendu), bandeaux: Math.round((h ? h.getBoundingClientRect().height : 0) + (t ? t.getBoundingClientRect().height : 0)), scroll: Math.max(0, v.scrollHeight - v.clientHeight), vh };
 };
-const ECRANS = [["domaine", "Terres"], ["labo", "Labo"], ["atelier", "Atelier (métiers)"], ["atelier:artisanat", "Atelier (un métier)"], ["journal", "Journal / Recettes"], ["arbre", "Progression"]];
+const EXTRA = (process.env.EXTRA || "").split(",").filter(Boolean).map((x) => [x, x]);
+const ECRANS = EXTRA.length ? EXTRA : [["domaine", "Terres"], ["labo", "Labo"], ["atelier", "Atelier (métiers)"], ["atelier:artisanat", "Atelier (un métier)"], ["journal", "Journal / Recettes"], ["arbre", "Progression"]];
 async function mesurer() {
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), out = [];
   for (const age of [0, 4, 8]) {
-    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" }), p = await ctx.newPage();
+    const ctx = await b.newContext({ viewport: { width: +(process.env.VW || 390), height: +(process.env.VH || 844) }, hasTouch: true, serviceWorkers: "block", reducedMotion: "reduce" }), p = await ctx.newPage();
     await p.addInitScript((r) => { localStorage.setItem("eclat.save.v1", r); localStorage.setItem("eclat.style.carnet-defaut", "1"); }, partie(age));
     await p.goto("http://127.0.0.1:" + server.address().port + "/index.html"); await p.waitForFunction(() => !!window.__eclat);
     for (let i = 0; i < 6; i++) { await p.waitForTimeout(80); await p.evaluate(() => window.__eclat.closeModal()); }
     for (const [t, nom] of ECRANS) {
-      const [tab, met] = t.split(":");
-      await p.evaluate((m) => { window.__eclat.U.atelierSel = m || null; window.__eclat.U.prodSel = null; }, met || null);
+      const [t1, sub] = t.split("#"), [tab, met] = t1.split(":");
+      await p.evaluate(([m, sb]) => { window.__eclat.U.atelierSel = m || null; window.__eclat.U.prodSel = null; if (sb) window.__eclat.U.progTab = sb; }, [met || null, sub || null]);
       const sel = '#tabs [data-tab="' + tab + '"]'; if (!(await p.locator(sel).isVisible())) continue;
       await p.locator(sel).click(); await p.waitForTimeout(500);
       const m = await p.evaluate(MES); out.push({ age: age + 1, nom, ...m });
-      if (process.env.SHOTS) { fs.mkdirSync(process.env.SHOTS, { recursive: true }); await p.screenshot({ path: path.join(process.env.SHOTS, "age" + (age + 1) + "-" + t.replace(":", "-") + ".png") }); }
+      if (process.env.SHOTS) { fs.mkdirSync(process.env.SHOTS, { recursive: true }); await p.screenshot({ path: path.join(process.env.SHOTS, "age" + (age + 1) + "-" + t.replace(/[:#]/g, "-") + ".png") }); }
     }
     await ctx.close();
   }
