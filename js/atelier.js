@@ -1697,7 +1697,7 @@
       return h + "</div></div>";
     }
     function carteHTML(c) {
-      const ech = c.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '" title="' + esc(e.n) + (e.etat === "ferme" ? " : à partir de " + D.AGES[e.age].n.toLowerCase() : "") + '">' + esc(e.n) + "</span>").join("");
+      const ech = c.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '" title="' + esc(e.n) + (e.etat === "ferme" ? " : à partir de l’" + D.AGES[e.age].n.toLowerCase() : "") + '">' + esc(e.n) + "</span>").join("");
       const etat = c.etat === "bloque" ? '<span class="atel-etat is-bloque">à l’arrêt · ' + esc(c.cause) + "</span>"
         : c.etat === "marche" ? '<span class="atel-etat is-marche">+' + perMin(c.cadence / 60) + "</span>"
         : c.etat === "plein" ? '<span class="atel-etat">plein</span>' : "";
@@ -1708,7 +1708,7 @@
     function embaucheHTML(c) {
       return '<div class="atel-embauche">' + c.embauches.map((e) => {
         const renvoi = e.nombre > 0 ? '<button type="button" class="btn small ghost atel-renvoi' + (U.renvoiAttente === c.id + ":" + e.kind ? " is-confirme" : "") + '" data-renvoyer="' + c.id + ":" + e.kind + '" title="Renvoyer un ' + esc(e.n.toLowerCase()) + ' : aucun remboursement, et le prix de l’embauche suivante ne baisse pas">' + (U.renvoiAttente === c.id + ":" + e.kind ? "Confirmer le renvoi ?" : "Renvoyer") + "</button>" : "";
-        if (e.pourquoi === "age") return '<span class="atel-ferme">' + esc(e.n) + " : à partir de " + esc(D.AGES[e.age].n.toLowerCase()) + "</span>";
+        if (e.pourquoi === "age") return '<span class="atel-ferme">' + esc(e.n) + " : à partir de l’" + esc(D.AGES[e.age].n.toLowerCase()) + "</span>";
         if (e.pourquoi === "max") return '<span class="atel-ferme">' + esc(Atel.nom(c.id, e.kind, true)) + " : " + e.nombre + " sur " + e.max + " (au complet)</span>" + renvoi;
         return renvoi + '<button type="button" class="btn small' + (e.pourquoi ? " ghost" : "") + '" data-embaucher="' + c.id + ":" + e.kind + '" title="' + esc(e.pourquoi === "ecus" ? "Il te manque des écus : vends au Comptoir ou au Troqueur" : "Embaucher") + '">Embaucher un ' + esc(e.n.toLowerCase()) + " · " + fmt(e.cout) + " écus" + (e.nombre ? " (" + e.nombre + ")" : "") + "</button>";
       }).join("") + "</div>";
@@ -1893,7 +1893,7 @@
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
-      if (!liste.length && U.atelierSel && aConstruireHTML()) return h + aConstruireHTML() + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
+      if (!liste.length && U.atelierSel && aConstruireHTML()) return h + aConstruireHTML() + "</div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
       if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette au Labo : elle apparaît ici.</p></div>' + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
       h += '<div class="prod-choix" role="group" aria-label="Recettes connues"' + (U.prodTout ? " data-tout" : "") + ">";
       liste.slice(0, 80).forEach((id) => {
@@ -1914,8 +1914,8 @@
         '<button type="button" class="btn ghost" data-tab2="machines">Machines</button></div>';
       if (why && !ordre) h += '<p class="tiny muted prod-why">' + esc(why) + "</p>";
       h += '<div class="prod-file" id="hands">' + handsHTML() + "</div>";
-      h += "</div>";
-      return h + aConstruireHTML() + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
+      h += "</section>" + aConstruireHTML() + "</div>";
+      return h + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
     /* « Ce qui tourne » : chaque ordre permanent, son état en mots, ses réglages */
     function autoFeuille() {

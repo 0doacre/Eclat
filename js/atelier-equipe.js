@@ -317,7 +317,15 @@
     }
     /* Une recette qu'on vient de trouver mais pas encore fabriquée : les boutons sont là, sous le message,
      * comme dans la fenêtre de la recette (Fabriquer, ×10, Max, ou les prérequis si quelque chose manque). */
+    /* Une recette déjà connue et déjà fabriquée une fois : le Labo le dit et renvoie à l'Atelier, au lieu de relancer une commande */
+    let dejaId=null;
+    function dejaActs(){
+      if(lastHeat!=="known"||!dejaId||!I[dejaId])return "";
+      const f=(D.ATELIERS&&D.ATELIERS.familles||[]).find(x=>x.id===E.atelierDe(dejaId));
+      return '<div class="row wrap ae-found-acts" style="margin:6px 0 2px"><button type="button" class="btn small pri" data-aller="'+dejaId+'" title="Fabriquer se fait à l’Atelier">Atelier'+(f?" · "+esc(f.n):"")+'</button></div>';
+    }
     function trouveeActs(){
+      if(lastHeat==="known")return dejaActs();
       const r=U.last,id=r&&(r.kind==="learn"||r.kind==="blocked")&&lastHeat==="discover"?r.id:null;
       if(!id||!I[id]||!E.state.known[id]||!api.craftBtns||r.offered||(E.state.made[id]||0)>0)return "";
       if(r.kind==="learn"&&(E.state.made[id]||0)>(r.made0||0))return "";
@@ -334,6 +342,13 @@
       const c=E.equipmentChoices(id).find(c=>c.ready);if(!c){message="Il faut d’abord : "+name(E.equipmentCheck(id)?.required||"un outil adapté");return;}Object.assign(work().w,{eq:c.equipment,mode:c.mode,metier:E.atelierDe(id),slots:Object.keys(I[id].r[1]),prepared:id});message="Recette préparée : "+name(id);}
     function forge(mode){const {w}=work();if(!w.slots.length){if(mode&&Object.hasOwn(work().tool.modes,mode)){w.mode=mode;w.prepared=null;}return;}w.mode=mode||w.mode;work();
       if(horsMetier()){lastHeat="froid";message="Ce geste ne donne rien avec ces ressources. Essaie un autre outil, une autre combinaison, ou un autre métier.";A.fail(0);redraw();return;}
+      const cur=work().recipe;dejaId=null;
+      if(cur&&I[cur]&&E.state.known[cur]&&(E.state.made[cur]||0)>0&&!E.isUnique(I[cur])&&w.prepared!==cur){
+        const f=(D.ATELIERS&&D.ATELIERS.familles||[]).find(x=>x.id===E.atelierDe(cur));
+        dejaId=cur;lastHeat="known";
+        message="Recette déjà connue : "+name(cur)+". Elle se fabrique à l’Atelier"+(f?", au métier "+f.n:"")+".";
+        A.click();redraw();return;
+      }
       U.forging=true;let result;try{result=isGrand(w.eq)?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
       if(result.kind==="craft"||result.kind==="queued"){
         lastHeat="success";
