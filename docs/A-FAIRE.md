@@ -20,6 +20,10 @@ Notes de l’auteur du 1er novembre, à traiter avant l’alpha :
 - **Chevauchements** (0.65.4) : cause trouvée sur la page d’un métier (la section À construire sortait de `.prod`, dont la hauteur était contrainte). Corrigé et testé. Les autres écrans, balayés à 360 et 390 px aux âges 1, 5 et 9 (Terres, Labo, Atelier, Machines, Journal, Progression), n’ont pas montré de chevauchement ; envoyer une capture si d’autres écrans posent problème.
 - **Tests et audit** (0.65.5) : `tools/boutons.js` fonctionne avec `BROWSER=chromium` et relève 166 boutons sans aucune absence d'explication ; `test-ux.js` (R4) est réécrit avec des plafonds de défilement, l'ancien parcours est dans `tools/test-ux-avant-0-39.js` ; `test:age-os-carnet-ui` et `test:atelier-dessine` sont réparés. Reste : le Labo défile de 160 px à 390 × 844 (ses plafonds sont dans `tools/test-ux.js`), et les Terres de 62 px à 320 × 568. `docs/TEST-JOUEURS.md` est écrit.
 
+## Grands écrans
+
+Décision du 1er novembre 2026 : l’interface sobre est faite pour le téléphone en portrait ; sur ordinateur elle est vite disproportionnée. On n’y touche pas pour l’alpha. Il faudra **une autre interface** pour les grands écrans (colonne centrée, ou scène à gauche et plaques à droite). Constat et pistes : **`docs/GRANDS-ECRANS.md`**.
+
 ## Fait récemment
 
 - **Maîtrise des terres et transmission (28 octobre)** : cinq objectifs visibles par terre principale, +5 points de débit permanent après maîtrise et relève (plafond +50 %), bilan chiffré, aperçu de la prochaine terre et chapitres de retour au Désert. Les secrets restent facultatifs ; les réglages de Gemini sont conservés. Voir `docs/MAITRISE-TERRES.md`. Les quantités et le rythme des reprises restent à éprouver avec des joueurs.
