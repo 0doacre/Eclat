@@ -659,7 +659,15 @@
       else if (ob) h += '<h3>Prochain objectif</h3><p>' + esc(ob.txt || ob.n || 'Poursuivre l’exploration') + '</p>';
       else h += '<p>Tu as accompli les objectifs proposés.</p>';
       h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>ressource vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span><span><i class="neuf-i"></i>nouveau</span></div>';
+      const nPasses = Math.min(g.age, g.max);
+      const regrouper = nPasses >= 2 && f === "tout";
       for (let a = 0; a <= g.max; a++) {
+        if (regrouper && a === 0) {
+          const ouvertsP = U.arbreAges || {};
+          const forcer = Object.keys(ouvertsP).some((k) => +k < nPasses && ouvertsP[k]);
+          h += '<details class="arb-passes" data-pliable="arb-passes"' + (forcer || pliableOuvert("arb-passes", false) ? ' open' : '') + '><summary><span>Âges parcourus</span><span class="arb-age-compte">' + nPasses + '</span></summary>';
+        }
+        if (regrouper && a === nPasses) h += '</details>';
         const ns = g.noeuds.filter((n) => n.age === a);
         const ouverts = U.arbreAges || {};
         const visibles = f === "tout" ? ns : ns.filter((n) => arbrePassPortee(n, f));

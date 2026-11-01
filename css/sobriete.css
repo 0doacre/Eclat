@@ -49,3 +49,13 @@
 
 /* Progression : l'âge en cours et l'objectif d'abord ; titres et légende sur demande */
 #v-arbre .arb-entete,#v-arbre .arb-parcours-titre,#v-arbre .arb-legende{display:none}
+#v-arbre .arb-passes{margin-bottom:6px;border:1px solid var(--line2);border-radius:12px;background:var(--panel)}
+#v-arbre .arb-passes>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;padding:8px 10px;box-sizing:border-box;cursor:pointer;font-weight:700}
+#v-arbre .arb-passes>.arb-age-groupe{margin:0 6px 6px}
+#v-arbre .arb-age-groupe{margin-bottom:6px}
+#v-arbre .arb-age-groupe summary{min-height:44px;padding:6px 10px}
+#v-arbre .arb-progression{padding:10px 12px;margin-bottom:10px}
+#v-arbre .arb-progression h3:not(:first-child){margin-top:10px}
+#v-arbre .arb-barre{padding:4px 8px}
+/* moins de vide ailleurs */
+.view .tip,.view .atl-titre{margin-top:4px;margin-bottom:6px}
