@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.65.2";
+  D.VERSION = "0.65.3";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1729,7 +1729,7 @@
 
   /* Le premier parcours : première renaissance obligatoire */
   D.PARCOURS = {
-    gift: 3,          // Souvenirs offerts lors de la relève obligatoire du cycle 1
+    gift: 24,         // Souvenirs offerts lors de la relève obligatoire du cycle 1 (0.65.3 : 24 au lieu de 3). Un joueur qui n’optimise pas doit déjà retrouver son front précédent plus de 3 fois plus vite ; celui qui optimise (Raccourci, Mains calleuses) bien davantage. Généreux au début, les paliers montent ensuite (docs/PLAN-ALPHA.md)
     passage: "riviere", // le passage qui déclenche cette relève (0.65.1 : la Plaine, vers 6 min, arrivait trop tôt ; « collines » la repousse d’une terre, vers 34 min au simulateur)
     /* les relèves suivantes sont proposées moins souvent (0.65.1) */
     suggestMinPlay: 1800,   // secondes de jeu actif dans le cycle avant toute proposition
@@ -1784,6 +1784,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🎁 Le premier Semeur qui passe le relais reçoit 24 Souvenirs offerts : de quoi retrouver la Rivière plus de trois fois plus vite, même sans chercher la meilleure dépense.",
     "🔁 Une relève n’est proposée que si elle doublerait au moins tes Souvenirs déjà gagnés : le rythme des relèves suit les repères des jeux du genre.",
     "⏳ La première relève arrive plus tard : elle se déclenche quand tu franchis la Rivière, et non plus la Plaine. Les relèves suivantes sont aussi proposées moins souvent : il faut avoir joué un moment, et avoir avancé nettement au-delà de ce que tes prédécesseurs avaient atteint.",
     "📖 Le Carnet devient l’onglet Recettes du Journal : on y relit ses recettes, on les fabrique à l’Atelier. Chaque fiche renvoie au métier qui s’en charge.",
