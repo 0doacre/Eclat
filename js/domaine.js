@@ -126,7 +126,7 @@
       h += '<section class="dom-terre terre-page" id="dt-' + z + '" data-terre="' + z + '">' +
         '<img class="terre-fond" src="' + fondDe(z) + '" alt="" decoding="async">' +
         '<div class="dom-th terre-tete"><button type="button" class="terre-nav" data-terre-nav="-1" aria-label="Terre précédente"' + (i <= 0 ? " disabled" : "") + '>‹</button>' +
-        '<div class="terre-titre"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h2>' + esc(Z.n) + '</h2></div>' +
+        '<div class="terre-titre" data-contempler="' + z + '" role="button" tabindex="0" aria-label="Contempler l’aquarelle de cette terre : ' + esc(Z.n) + '"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h2>' + esc(Z.n) + '</h2></div>' +
         '<button type="button" class="terre-nav" data-terre-nav="1" aria-label="Terre suivante"' + (i >= zs.length - 1 ? " disabled" : "") + '>›</button></div>' +
         '<div class="terre-corps">';
       h += (regleHTML(z) || "").replace('class="dom-regle', 'class="terre-regle dom-regle');

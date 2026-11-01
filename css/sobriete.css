@@ -62,3 +62,17 @@
 
 /* La ligne d'ambiance n'habille que la scène (Terres) : ailleurs, la place revient au contenu */
 body:has(#v-domaine:not(.on)) #ambianceBar{display:none}
+
+/* Le monde d'abord : l'illustration de la terre remplit tout l'écran de jeu ; les ressources et les gestes se posent dessus
+ * (comme Cells to Singularity ou Rise of Jericho). Toucher le titre la contemple en grand. */
+#v-domaine .terre-page{background:transparent}
+#v-domaine .terre-fond{inset:0;height:100%;opacity:1;mask-image:none;-webkit-mask-image:none}
+#v-domaine .terre-fond[src*="caveau-"]{object-fit:cover;object-position:center 30%}
+#v-domaine .terre-tete{position:relative;min-height:56px;align-items:center;padding:4px 0}
+#v-domaine .terre-tete::before{content:"";position:absolute;inset:-4px -10px auto -10px;height:150%;background:linear-gradient(rgba(24,17,10,.6),transparent);pointer-events:none;z-index:0}
+#v-domaine .terre-tete>*{position:relative;z-index:1}
+#v-domaine .terre-titre{align-self:stretch;display:flex;flex-direction:column;justify-content:center;cursor:pointer}
+#v-domaine .terre-titre h2,#v-domaine .terre-titre .kicker{color:#fff8e9;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+#v-domaine :is(.terre-gisements,.terre-bas,.terre-regle){background:rgb(244 236 218 / .86);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:12px;border:1px solid rgb(121 105 74 / .5)}
+#v-domaine .terre-gisements{padding:0 8px;margin-bottom:8px}
+#v-domaine .btn-contempler{display:none}
