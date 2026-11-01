@@ -836,11 +836,13 @@
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
   /* cinq onglets : Terres (le Domaine), Labo, Atelier, Arbre, Journal ; la Carte (l’Atlas) se range sous les Terres,
    * le Carnet et les Machines dans l’Atelier, le Cosmos dans le Journal */
-  const PARENT = { carte: "domaine", carnet: "atelier", machines: "atelier", cosmos: "arbre" };
-  function tabAvailable(t) {
+  const PARENT = { carte: "domaine", carnet: "journal", machines: "atelier", cosmos: "arbre" };
+  function tabAvailable(t, propre) {
     const st = S();
     if (t === "cosmos") return E.cache().sky;
     if (t === "journal" && E.cache().sky) return true;
+    /* le Carnet des recettes vit dans le Journal : l'onglet paraît dès la première recette ; propre = sans compter le Carnet */
+    if (t === "journal" && !propre && Object.keys(st.known).length > 0) return true;
     if (t === "atelier") return st.stats.crafts > 0 || Object.keys(st.known).length >= 3;
     if (t === "carnet" || t === "arbre") return Object.keys(st.known).length > 0;
     if (t === "machines") return E.MACHINES.some((m) => (st.inv[m] || 0) > 0) || st.hand.q.length > 0;
@@ -849,6 +851,7 @@
   }
   function setTab(t) {
     if (!tabAvailable(t)) t = "domaine";
+    if (t === "journal" && !tabAvailable("journal", true) && tabAvailable("carnet")) t = "carnet"; // le Journal n’a que les recettes à montrer
     if (U.tab === "cosmos" && t !== "cosmos") Sky.unmount();
     const was = U.tab;
     if (t === 'arbre' && was !== 'arbre' && !U.arbreVoirId) { U.arbreSel = null; U.arbreHistorique = []; }
@@ -906,6 +909,12 @@
     return '<div class="subtabs">' + avail.map(([t, lbl]) =>
       '<button data-tab2="' + t + '" title="' + (SUBT[t] || "") + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
     ).join("") + "</div>";
+  }
+  /* le Carnet des recettes est le premier feuillet du Journal : mêmes onglets, « Recettes » en tête */
+  function journalSwitchHTML() {
+    const tabs = Jnl.tabsListe(false).filter(([k]) => k !== "flute" || E.has("flute"));
+    return '<div class="filters journal-sw" role="group" aria-label="Journal"><button type="button" class="on" aria-pressed="true" title="Les recettes que tu connais : on les relit ici, on les fabrique à l’Atelier">Recettes</button>' +
+      tabs.map(([k, n]) => '<button type="button" data-jt="' + k + '">' + n + "</button>").join("") + "</div>";
   }
   /* la Progression : le Chemin (l’arbre), puis ce que le joueur a accompli */
   function progSwitchHTML() {
@@ -1372,7 +1381,7 @@
     E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
     iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
     floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
-    uiSigne, memoryHTML, progSwitchHTML
+    uiSigne, memoryHTML, progSwitchHTML, journalSwitchHTML
   });
   const {
     viewAtelier, viewLabo, prodClick, viewCarnet, viewMachines, carnetList, whyNot, putInSlot, forge, craftFrom, chainCraft, handsHTML,

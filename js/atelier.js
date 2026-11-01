@@ -10,7 +10,7 @@
       E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
       iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
       floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
-      uiSigne, memoryHTML, progSwitchHTML
+      uiSigne, memoryHTML, progSwitchHTML, journalSwitchHTML
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -535,7 +535,7 @@
       const all = Object.keys(st.known).filter((id) => I[id] && I[id].r && !I[id].sec).length;
       const col1 = !!(st.settings && st.settings.carnet1Col);
       const dense = U.compact();
-      let h = enteteAtelier("Carnet", all + (all > 1 ? " recettes apprises" : " recette apprise"));
+      let h = (journalSwitchHTML ? journalSwitchHTML() : "") + '<header class="atl-titre"><h2>Recettes</h2><p>' + all + (all > 1 ? " recettes apprises" : " recette apprise") + "</p></header>";
       if (st.flags.tip_carnet === undefined) st.flags.tip_carnet = true;
       if (!st.flags.tip_carnet) {
         h += '<div class="tip">Le Carnet garde tes recettes : tu les relis ici, et tu fabriques à l’Atelier, dans le métier de chaque recette. Les indices des recettes encore inconnues restent dans <b>À découvrir</b>. <button class="btn small ghost" data-tip="tip_carnet" title="Réduire l’aide du Carnet">Compris</button></div>';
@@ -1654,7 +1654,7 @@
     }
     /* L'en-tête des trois pages de l'Atelier (Produire, Carnet, Machines) : les mêmes sous-onglets, le même titre */
     function enteteAtelier(titre, sous) {
-      return subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
+      return subTabs("atelier", "machines", "Produire", "Machines") +
         '<header class="atl-titre"><h2>' + esc(titre) + "</h2>" + (sous ? "<p>" + sous + "</p>" : "") + "</header>";
     }
     /* La vue d'ensemble : l'énergie, puis une carte par atelier que le joueur peut déjà montrer */
@@ -1869,7 +1869,7 @@
       if (!liste.includes(U.prodSel)) U.prodSel = liste[0] || null;
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
-      let h = '<div class="prod atl-page">' + subTabs("atelier", "carnet", "machines", "Produire", "Carnet", "Machines") +
+      let h = '<div class="prod atl-page">' + subTabs("atelier", "machines", "Produire", "Machines") +
         (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour>← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + fatigueHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
