@@ -402,15 +402,15 @@
       }
       return "";
     }
-    function craftBtns(id) {
+    function craftBtns(id, lblPremier) {
       const it = I[id];
       const status = E.orderStatus(id, 1);
       if (status.why === "queued" || status.why === "full") return '<span class="small muted">' + (status.why === "queued" ? 'Fabrication en cours.' : 'File de commandes pleine.') + '</span><button class="btn small ghost" data-hopen>Voir les commandes</button>';
       if (!status.ok) return '<button class="btn small ghost" data-tree="' + id + '" data-n="1" title="Voir les étapes et ce qui bloque la fabrication">Voir les prérequis</button>';
-      if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="Commander 1 exemplaire, pièces comprises">Fabriquer</button>';
+      if (E.isUnique(it)) return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="Commander 1 exemplaire, pièces comprises">' + (lblPremier || "Fabriquer") + '</button>';
       // le prix d’un extracteur ou d’une machine monte à chaque exemplaire : pas de ×1000
       const sizes = E.isScaled(it) ? [10] : (D.COMMANDES && D.COMMANDES.sizes) || [10, 50, 100, 1000];
-      const lbl = "Fabriquer";
+      const lbl = lblPremier || "Fabriquer";
       return '<button class="btn small pri" data-cr="' + id + '" data-n="1" title="Commander 1 exemplaire, pièces comprises">' + lbl + "</button>" +
         sizes.map((sz) => '<button class="btn small" data-cr="' + id + '" data-n="' + sz + '" title="Commander ' + sz + ' exemplaires d’un coup, pièces comprises">×' + sz + "</button>").join("") +
         '<button class="btn small" data-cr="' + id + '" data-n="max" title="Tout ce que ta Réserve permet, pièces comprises">Max</button>' +
@@ -1841,9 +1841,32 @@
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n + (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button></div>" +
         '<div class="atel-liste">' + Atel.liste().map(carteHTML).join("") + "</div></div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
+    /* Les chantiers d'un métier : ce qui se construit au lieu de se produire en série. Une station ou un outil se fait une fois ;
+     * un extracteur ou une machine se refait autant qu'on veut, à prix croissant. */
+    const CHANTIER_VERBE = { stat: "Construire", ext: "Construire", mach: "Construire", auto: "Construire", upg: "Installer", tool: "Fabriquer" };
+    function aConstruireHTML() {
+      if (!Atel || !U.atelierSel) return "";
+      const st = S(), ids = Atel.chantiers(U.atelierSel).filter((id) => E.ageOK(id));
+      if (!ids.length) return "";
+      const fait = (id) => E.isUnique(I[id]) && (st.made[id] || 0) > 0;
+      const aFaire = ids.filter((id) => !fait(id)).sort((a, b) => I[a].a - I[b].a || I[a].n.localeCompare(I[b].n));
+      const faits = ids.filter(fait).sort((a, b) => I[a].a - I[b].a || I[a].n.localeCompare(I[b].n));
+      const ligne = (id) => {
+        const it = I[id], b = E.blocker(id), verbe = CHANTIER_VERBE[it.t] || "Fabriquer";
+        const compte = E.isScaled(it) ? '<span class="tiny muted">Construits : ' + fmt(Math.floor(st.inv[id] || 0)) + "</span>" : "";
+        const effet = fxText(id) ? '<div class="tiny" style="color:var(--good)">' + esc(fxText(id)) + "</div>" : "";
+        const manque = b && b.why !== "owned" ? '<div class="why tiny">' + cap1(needText(id, b, true)) + "</div>" : "";
+        return '<div class="a-construire-ligne" data-construire="' + id + '"><div class="row" style="align-items:flex-start">' + icon(id) + '<div class="grow" data-goto="' + id + '" title="Voir la recette et ses usages"><div class="rname">' + esc(it.n) + " " + compte + "</div>" + effet + "</div></div>" +
+          '<div class="row wrap small" style="margin-top:6px">' + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>" + manque +
+          '<div class="row wrap rbtns" style="margin-top:6px">' + craftBtns(id, verbe) + "</div></div>";
+      };
+      return '<section class="card a-construire"><h3 class="sub">À construire</h3><p class="tiny muted">Outils, stations, améliorations, machines : ce que ce métier met en place, une fois ou autant de fois que tu veux.</p>' +
+        (aFaire.length ? aFaire.map(ligne).join("") : '<p class="small muted">Rien à construire pour l’instant.</p>') +
+        (faits.length ? '<details class="construits-faits"><summary class="small">Déjà fait (' + faits.length + ")</summary>" + faits.map((id) => '<div class="row small" data-goto="' + id + '">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) + "</span><span>✓</span></div>").join("") + "</details>" : "") + "</section>";
+    }
     function viewAtelier() {
       if (Atel) {
-        if (U.atelierSel && !Atel.connues(U.atelierSel).length) U.atelierSel = null;
+        if (U.atelierSel && !Atel.connues(U.atelierSel).length && !Atel.chantiers(U.atelierSel).length) U.atelierSel = null;
         if (!U.atelierSel) return viewAteliers();
       }
       const st = S(), ap = E.apprentis();
@@ -1856,6 +1879,7 @@
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
+      if (!liste.length && U.atelierSel && aConstruireHTML()) return h + aConstruireHTML() + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
       if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette au Labo : elle apparaît ici.</p></div>' + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
       h += '<div class="prod-choix" role="group" aria-label="Recettes connues"' + (U.prodTout ? " data-tout" : "") + ">";
       liste.slice(0, 80).forEach((id) => {
@@ -1877,7 +1901,7 @@
       if (why && !ordre) h += '<p class="tiny muted prod-why">' + esc(why) + "</p>";
       h += '<div class="prod-file" id="hands">' + handsHTML() + "</div>";
       h += "</div>";
-      return h + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
+      return h + aConstruireHTML() + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
     }
     /* « Ce qui tourne » : chaque ordre permanent, son état en mots, ses réglages */
     function autoFeuille() {
