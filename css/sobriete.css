@@ -101,3 +101,9 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 /* le croquis et les études de la terre : même papier translucide que les ressources */
 #v-domaine .terres .terre-bas :is(.dom-card,.carnet-landscape,.dom-etude,.terre-etude,figure,section){background:transparent}
 #v-domaine .terres .terre-bas{background:rgb(244 236 218 / .78)}
+
+/* Labo : l'établi est la scène (fond d'atelier), les emplacements et le stock se posent dessus */
+#v-labo.view{background:linear-gradient(rgba(20,14,8,.18),rgba(20,14,8,.18)),url("../assets/fonds/atelier.webp") center/cover no-repeat!important}
+#v-labo .ae-work,#v-labo .ae-inventory,#v-labo .ae-layout>*{background:rgb(244 236 218 / .82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:14px}
+#v-labo>:first-child:not(.ae-work):not(.ae-layout):not(section){background:rgb(244 236 218 / .86);border-radius:14px;margin:6px 10px 0;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#v-labo .ae-metiers{background:rgb(244 236 218 / .86);border-radius:14px;margin:6px 0;padding:2px 6px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
