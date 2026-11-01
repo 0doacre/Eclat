@@ -138,9 +138,8 @@
     }
 
     /* ------------------------------------------------------------ JOURNAL */
-    function viewJournal(mode) {
-      const st = S();
-      const prog = mode === "progression";
+    /* les onglets du Journal (ou de la Progression, avec prog) : la liste, sans l'état courant */
+    function tabsListe(prog) {
       let tabs = [["fragments", "Fragments"]];
       const livreNew = E.hasNewLivre ? E.hasNewLivre() : false;
       const gestesNew = E.hasNewGeste ? E.hasNewGeste() : false;
@@ -152,12 +151,17 @@
       if (E.has("flute")) tabs.push(["flute", "Flûte"]);
       if (E.curiosCount && E.curiosCount() > 0) tabs.push(["curios", "Clins d’œil"]);
       tabs.push(["fins", "Fins"], ["stats", "Mémoire"]);
-      tabs = tabs.filter(([k]) => prog === ["secrets", "gestes", "curios", "fins", "stats"].includes(k));
+      return tabs.filter(([k]) => !!prog === ["secrets", "gestes", "curios", "fins", "stats"].includes(k));
+    }
+    function viewJournal(mode) {
+      const st = S();
+      const prog = mode === "progression";
+      let tabs = tabsListe(prog);
       let cur = prog ? U.progTab : U.journalTab;
       if (!tabs.find((t) => t[0] === cur)) cur = tabs[0][0];
       if (prog) U.progTab = cur; else U.journalTab = cur;
       const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", gestes: "Les gestes remarqués et accomplis au fil de ta route", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
-      let h = prog ? "" : '<h2 class="title">Journal</h2>' + '<div class="filters">' + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+      let h = prog ? "" : '<h2 class="title">Journal</h2>' + '<div class="filters">' + (Object.keys(st.known).length ? '<button data-tab2="carnet" title="Les recettes que tu connais : on les relit ici, on les fabrique à l’Atelier">Recettes</button>' : "") + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
       if (cur === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
         const n = ids.filter((f) => st.frags[f]).length;
@@ -553,7 +557,7 @@
       const inp = $("#termIn"); if (inp) { inp.value = ""; inp.focus(); }
     }
 
-    return { openSigneModal, viewJournal, figuresSig, viewCosmos, mountCosmos, confirmFire, listen, skyTap, playNote, runTerminal };
+    return { openSigneModal, viewJournal, tabsListe, figuresSig, viewCosmos, mountCosmos, confirmFire, listen, skyTap, playNote, runTerminal };
   }
 
   window.EclatJournal = { create };

@@ -631,7 +631,7 @@
           return;
         }
         if ((b = t.closest("[data-pt]"))) { U.progTab = b.dataset.pt; A.click(); if (U.tab === "cosmos") setTab("arbre"); else render(true); return; }
-        if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); render(true); return; }
+        if ((b = t.closest("[data-jt]"))) { U.journalTab = b.dataset.jt; if (b.dataset.jt === "flute") E.clearNotes(); if (U.tab === "carnet") { setTab("journal"); return; } render(true); return; }
         if ((b = t.closest("[data-s]"))) { A.click(); openSigneModal(b.dataset.s); return; }
         if ((b = t.closest("[data-trans-delete]"))) { if (E.transmissionEffacerNote(Number(b.dataset.transDelete))) { save(); render(true); } return; }
         if (t.closest("[data-trans-copy]")) { const r = E.transmissionCopier(); toast(r.ok ? r.n + " nouvelles copies inscrites au registre." : "Construis une presse d’imprimerie."); save(); render(true); return; }

@@ -16,6 +16,10 @@
     const ordinaire = (id) => { const it = I[id]; return it && it.r && !it.sec && !it.path && !it.old && !E.isUnique(it) && (!E.isScaled(it) || famille(id) === "construction"); }; // Construction : ses recettes sont presque toutes à prix croissant (extracteurs, machines), ce sont ses chantiers
     const connues = (f) => Object.keys(S().known).filter((id) => ordinaire(id) && famille(id) === f);
 
+    /* les chantiers du métier : outils, stations, améliorations, extracteurs et machines connus, qui se construisent une fois
+     * (ou, pour les extracteurs et machines, autant de fois qu'on veut) au lieu de se produire en série */
+    const chantiers = (f) => Object.keys(S().known).filter((id) => { const it = I[id]; return it && it.r && !it.sec && !it.path && !it.old && it.t !== "relic" && it.t !== "curio" && (E.isUnique(it) || E.isScaled(it)) && famille(id) === f; });
+
     function energie() {
       let offre = T.baseCh;
       const sources = [{ id: "bete", n: "Bête de trait", ch: T.baseCh }];
@@ -100,10 +104,10 @@
 
     /* les ateliers que le joueur a déjà de quoi montrer : au moins une recette connue de la famille */
     function liste() {
-      return T.familles.filter((F) => connues(F.id).length > 0).map((F) => carte(F.id));
+      return T.familles.filter((F) => connues(F.id).length > 0 || chantiers(F.id).length > 0).map((F) => carte(F.id));
     }
 
-    return { famille, connues, carte, liste, energie, embauches, nom };
+    return { famille, connues, chantiers, carte, liste, energie, embauches, nom };
   }
 
   const Ateliers = { create };

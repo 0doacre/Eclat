@@ -5363,6 +5363,7 @@
       n.repaired = Object.assign({}, old.repaired || {});
       n.eventsSeen = old.eventsSeen ? Object.assign({}, old.eventsSeen) : {};
       n.cycle = (old.cycle || 1) + 1;
+      n.souvenirs = {}; // chaque âge se relit dans le Carnet
       n.echoes = Object.values(old.meta.endings).reduce((a, b) => a + b, 0);
       n.intu = Math.max(3, old.intu); // l’Intuition se garde, comme le Carnet
       // les mains se souviennent un peu : une part de l’expérience reste
@@ -5409,7 +5410,7 @@
 
     /* Première renaissance obligatoire (fin du tutoriel) */
     /* la relève obligatoire : une fois, au cycle 1, quand le premier passage (la Plaine) est franchi : le joueur a déjà gagné ses premiers Souvenirs et sait ce que coûte un passage */
-    E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.pass && S.pass.plaine && S.pass.plaine.done);
+    E.canForcedReleve = () => { const z = (D.PARCOURS && D.PARCOURS.passage) || "plaine"; return !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.pass && S.pass[z] && S.pass[z].done); };
     E.forcedReleve = function () {
       if (S.meta.forcedDone || S.cycle !== 1) return false;
       S.meta.forcedDone = true;
@@ -5443,19 +5444,21 @@
       const gain = E.releveGain ? E.releveGain() : 0;
       if (!(gain > 0)) return null;
       if (E.isCatchingUp && E.isCatchingUp()) return null;
+      const PC = D.PARCOURS || {};
+      if (((S.stats && S.stats.cyclePlay) || 0) < (PC.suggestMinPlay || 0)) return null; // un Semeur qui vient d’arriver n’est pas encore essoufflé
 
       const maxAge = (S.meta && S.meta.maxAge) || 0;
       const passEver = (S.meta && S.meta.passEver) || {};
       const newPass = Object.keys(S.pass || {}).some((z) => S.pass[z].done && !S.pass[z].free && !passEver[z]);
       const reach = Math.max(1 + (S.cycle || 1) * 2, maxAge > 0 ? maxAge + 1 : 0);
-      const ageDepasse = (S.age || 0) > reach;
+      const ageDepasse = (S.age || 0) > reach + (PC.suggestAgesAudela || 0);
 
-      const traceSeuil = Math.max(6, Math.ceil(((S.meta && S.meta.tracesTotal) || 0) * 0.35));
+      const traceSeuil = Math.max(PC.suggestTracesMin || 6, Math.ceil(((S.meta && S.meta.tracesTotal) || 0) * (PC.suggestTracesPart || 0.35)));
       const beaucoupTraces = gain >= traceSeuil && (maxAge === 0 || newPass || (S.age || 0) > maxAge);
 
       const hi = E.handInfo ? E.handInfo() : { left: 0, jobs: [] };
       const j0 = hi.jobs && hi.jobs.length ? hi.jobs[0] : null;
-      const longJob = !!(j0 && !j0.paused && !j0.wait && j0.n === 1 && (!j0.steps || j0.steps.length <= 1) && (item(j0.id).a || 0) > Math.max(1, maxAge) && j0.left > 30);
+      const longJob = !!(j0 && !j0.paused && !j0.wait && j0.n === 1 && (!j0.steps || j0.steps.length <= 1) && (item(j0.id).a || 0) > Math.max(1, maxAge) && j0.left > (PC.suggestJobLeft || 30));
 
       if (ageDepasse || longJob || beaucoupTraces) {
         return {
@@ -6471,10 +6474,36 @@
       }
       delete S.atelierEconomy;
     }
+    /* Le retour de mémoire (0.65) : après une relève, les recettes restent connues, mais chaque âge se relit dans le Carnet.
+     * S.souvenirs : les âges déjà relus ce cycle. Absent (partie d'avant, ou premier cycle), tout est relu. */
+    E.agesARetrouver = () => {
+      if (!S.souvenirs || (S.cycle || 1) < 2) return [];
+      const ages = new Set();
+      for (const id in S.known) {
+        const it = item(id);
+        if (!it || !it.r || it.sec || it.path || it.a > S.age + 1) continue;
+        if (!S.souvenirs[it.a]) ages.add(it.a);
+      }
+      return Array.from(ages).sort((a, b) => a - b);
+    };
+    E.retrouvee = (id) => {
+      const it = item(id);
+      if (!it || !S.souvenirs || (S.cycle || 1) < 2 || it.sec || it.path || it.a > S.age + 1) return true;
+      return !!S.souvenirs[it.a];
+    };
+    E.retrouver = (age) => {
+      if (!S.souvenirs) return false;
+      if (age === "tout") E.agesARetrouver().forEach((a) => { S.souvenirs[a] = true; });
+      else if (S.souvenirs[age]) return false;
+      else S.souvenirs[age] = true;
+      E.emit("struct");
+      return true;
+    };
     E.load = function (src) {
       const o = parseSave(src);
       S = o;
       migrerAteliers();
+      if (!S.souvenirs && (S.cycle || 1) >= 2) S.souvenirs = Object.fromEntries(D.AGES.map((_, i) => [i, true])); // une partie d’avant n’a pas à tout relire
       if (!(S.meta.graine >= 1)) S.meta.graine = graineDuJour(); // une ancienne partie n’avait pas de graine avant la première relève
       forgetDom();
       recalc();

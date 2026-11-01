@@ -108,11 +108,11 @@ test("les séances repartent de zéro à chaque relève", () => {
 });
 
 /* Le vrai premier parcours (--parcours) : partie neuve, découverte par des essais, relève obligatoire, achat, cycle 2. */
-const parcours = (pol, achat, graine) => jouer("--parcours", "--minutes", "30", "--decouverte", pol, "--achat", achat || "recolte", "--graine", String(graine || 1));
+const parcours = (pol, achat, graine) => jouer("--parcours", "--minutes", "70", "--decouverte", pol, "--achat", achat || "recolte", "--graine", String(graine || 1));
 const plaine2 = (r) => (r.rows.find((x) => x.z === "plaine" && !x.offert) || {}).t;
-test("premier parcours : la relève obligatoire est prise, puis le cycle 2 franchit la Plaine", () => {
+test("premier parcours : la relève obligatoire (à la Rivière) est prise, puis le cycle 2 franchit la Plaine", () => {
   const r = parcours("enigme");
-  assert.ok(r.rel && r.rel.t > 3 && r.rel.t < 10, "relève une fois la Plaine franchie, entre 3 et 10 min : " + (r.rel && r.rel.t));
+  assert.ok(r.rel && r.rel.t > 15 && r.rel.t < 40, "relève une fois la Rivière franchie (0.65.1), entre 15 et 40 min : " + (r.rel && r.rel.t));
   assert.ok(r.rel.essais >= 5, "la Plaine demande de découvrir plusieurs recettes (dont la torche)");
   assert.ok(plaine2(r) > 0, "la Plaine est franchie au cycle 2");
   assert.strictEqual(r.E.state.meta.forcedDone, true);
@@ -121,7 +121,7 @@ test("premier parcours : la relève obligatoire est prise, puis le cycle 2 franc
 test("premier parcours : le joueur découvre vraiment (aucune recette connue d’avance), les essais viennent du moteur", () => {
   const r = parcours("guide");
   assert.ok(r.rel.essais >= r.rel.connues, "au moins un essai par recette découverte");
-  assert.ok(r.rel.connues >= 4 && r.rel.connues <= 12, "quelques recettes apprises au cycle 1 : " + r.rel.connues);
+  assert.ok(r.rel.connues >= 4 && r.rel.connues <= 20, "quelques recettes apprises au cycle 1 : " + r.rel.connues);
   assert.ok(r.rel.essais > 5, "bien plus d’un essai par recette quand on cherche");
 });
 test("premier parcours : la découverte compte (l’énigme résolue d’emblée est la plus rapide jusqu’à la Plaine)", () => {

@@ -138,9 +138,13 @@ test("Piste 1 & 4 : en rattrapage après une longue partie, pas d’alerte de re
     E1.state.zones[z] = true;
     E1.state.pass[z] = { paid: {}, done: true };
   }
-  E1.state.age = 7;
+  E1.state.age = 8;
   assert.equal(E1.isCatchingUp(), false, "front pionnier dépassé");
+  // 0.65.1 : un Semeur qui vient d'arriver n'est pas encore essoufflé, et il faut dépasser le front d'un âge de plus
+  E1.state.stats.cyclePlay = 60;
+  assert.equal(E1.shouldSuggestReleve(), null, "pas de proposition après une minute de jeu");
+  E1.state.stats.cyclePlay = D.PARCOURS.suggestMinPlay;
   const sug = E1.shouldSuggestReleve();
-  assert.ok(sug && sug.gain > 0, "la relève est proposée une fois le front pionnier dépassé");
+  assert.ok(sug && sug.gain > 0, "la relève est proposée une fois le front pionnier dépassé, après un temps de jeu");
 });
 console.log(passed + " tests de la renaissance réussis.");
