@@ -911,10 +911,11 @@
     ).join("") + "</div>";
   }
   /* le Carnet des recettes est le premier feuillet du Journal : mêmes onglets, « Recettes » en tête */
+  const JT_TITRES = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", flute: "Jouer un air" };
   function journalSwitchHTML() {
     const tabs = Jnl.tabsListe(false).filter(([k]) => k !== "flute" || E.has("flute"));
     return '<div class="filters journal-sw" role="group" aria-label="Journal"><button type="button" class="on" aria-pressed="true" title="Les recettes que tu connais : on les relit ici, on les fabrique à l’Atelier">Recettes</button>' +
-      tabs.map(([k, n]) => '<button type="button" data-jt="' + k + '">' + n + "</button>").join("") + "</div>";
+      tabs.map(([k, n]) => '<button type="button" data-jt="' + k + '" title="' + esc(JT_TITRES[k] || "") + '">' + n + "</button>").join("") + "</div>";
   }
   /* la Progression : le Chemin (l’arbre), puis ce que le joueur a accompli */
   function progSwitchHTML() {

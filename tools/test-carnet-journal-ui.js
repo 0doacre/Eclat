@@ -49,6 +49,9 @@ async function run() {
   ok(await p.evaluate(() => window.__eclat.U.atelierSel) === metier, "sur le métier de la recette : " + metier);
   await p.locator('#tabs [data-tab="journal"]').click(); await p.waitForTimeout(300);
   await p.evaluate(() => { const g = window.__eclat; g.E.state.frags = g.E.state.frags || {}; });
+  await p.locator("#menuBtn").click(); await p.waitForTimeout(500);
+  const href = await p.locator("#m-ecrire").getAttribute("href");
+  ok(href && href.startsWith("mailto:") && href.includes("Version"), "le menu propose « Nous écrire » avec la version dans le message : " + href);
   ok(!errors.length, "erreurs JS " + errors.join(";"));
   await ctx.close();
   { // après une relève : le Carnet se relit âge par âge

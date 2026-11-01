@@ -179,6 +179,12 @@ const COLLECT = ([sels, aide]) => {
       return true;
     };
     /* une page de l’Atelier : un onglet à part (le Carnet) ou une bascule dans la page (les Machines) */
+    /* Depuis la 0.65 le Carnet est l'onglet « Recettes » du Journal */
+    const versCarnet = async () => {
+      if (!(await clic('#tabs [data-tab="journal"]', true))) return false;
+      if ((await p.evaluate(() => window.__eclat.U.tab)) !== "carnet") { if (!(await clic('#v-journal [data-tab2="carnet"]', true))) return false; }
+      await dismiss(p); return true;
+    };
     const sousPage = async (nom) => (await clic('[data-tab="' + nom + '"]')) || (await clic('[data-tab2="' + nom + '"]'));
 
     // la fiche d’aide : son texte d’abord, ses boutons ensuite
@@ -201,8 +207,11 @@ const COLLECT = ([sels, aide]) => {
       }
       await p.keyboard.press("Escape"); await p.waitForTimeout(200);
     }
+    if (await clic('#tabs [data-tab="labo"]')) { await p.waitForTimeout(400); await grab("Labo"); }
     if (await clic('#tabs [data-tab="atelier"]')) {
       await grab("Atelier");
+      // la page d'un métier : seuil, embauches, recettes, À construire
+      if (await clic("[data-atelier]")) { await p.waitForTimeout(400); await grab("Atelier · un métier"); await clic("[data-atelier-retour]"); }
       // le tri et les filtres des ressources se rangent derrière « Filtres »
       if (await clic("[data-filtres]")) { await p.waitForTimeout(350); await grab("Atelier · filtres"); }
       if (await sousPage("machines")) { await grab("Machines"); await clic('#tabs [data-tab="atelier"]'); }
@@ -214,7 +223,7 @@ const COLLECT = ([sels, aide]) => {
         await p.waitForTimeout(500); await grab("Arbre · une branche"); await clic('[data-arb="ensemble"]'); await p.waitForTimeout(350);
       }
     }
-    if (await clic('#tabs [data-tab="carnet"]')) { await p.waitForTimeout(400); await grab("Carnet"); }
+    if (await versCarnet()) { await p.waitForTimeout(400); await grab("Carnet (Journal, Recettes)"); }
     if (await clic('#tabs [data-tab="journal"]')) {
       await grab("Journal");
       // ses neuf onglets : chacun peut cacher un bouton
@@ -225,7 +234,7 @@ const COLLECT = ([sels, aide]) => {
     }
     await clic('#tabs [data-tab="domaine"]');
     // une fiche : la pastille d’une recette dans le Carnet
-    if (await clic('#tabs [data-tab="carnet"]')) {
+    if (await versCarnet()) {
       if (await p.evaluate(() => { const e = document.querySelector('#v-carnet [data-goto]'); if (!e) return false; e.click(); return true; })) {
         await p.waitForTimeout(500);
         await grab("Fiche d’un objet");
