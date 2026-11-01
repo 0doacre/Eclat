@@ -640,13 +640,12 @@
         (U.arbreSel ? '<button type="button" class="btn small" data-arb="ensemble" title="Revenir à ta progression : ton âge, tes étapes et le prochain objectif">← Progression</button>' : '') +
         '<button type="button" class="btn small ouvre" data-arb="centre" aria-haspopup="dialog" title="Ouvre ton objectif du moment, et ce qu’il demande">Objectif</button>' +
         '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans la progression" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
+        '<div class="arb-chercher" role="search"' + ((U.arbreChercher || f !== 'tout') ? '' : ' hidden') + '>' +
         '<div class="filters arb-filtres" role="toolbar" aria-label="Filtrer les pastilles">' +
         FILTRES.map(([k, lbl, tip]) =>
           '<button type="button" data-arb-f="' + k + '" class="' + (f === k ? 'on' : '') + '" title="' + tip + '">' +
           lbl + ' <span class="f-cnt">' + (counts[k] || 0) + '</span></button>'
-        ).join('') +
-        '</div>' +
-        '<div class="arb-chercher" role="search"' + (U.arbreChercher ? '' : ' hidden') + '><label for="arbq">Chercher dans la progression</label>' +
+        ).join('') + '</div><label for="arbq">Chercher dans la progression</label>' +
         '<input id="arbq" type="search" placeholder="Recette ou ressource" value="' + esc(U.arbreQ || '') + '" autocomplete="off" spellcheck="false">' +
         '<div id="arbres" class="arb-grille" aria-live="polite">' + arbreResultats(U.arbreQ) + '</div></div>';
     }

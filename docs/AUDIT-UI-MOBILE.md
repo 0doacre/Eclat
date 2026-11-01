@@ -52,7 +52,7 @@ Ce que la vision ne fait pas : réduire le jeu. Les âges, les recettes et les m
 
 ## La suite proposée
 
-1. **Progression** (92 cibles dans la page) : l'écran le plus « tableur » qui reste. Le chemin de l'âge en cours et l'objectif, le reste replié.
+1. **Progression** (fait en partie : titre, légende et filtres repliés, 92 → 88 cibles ; reste la liste des âges) : l'écran le plus « tableur » qui reste. Le chemin de l'âge en cours et l'objectif, le reste replié.
 2. **Page d'un métier** : trois recettes à la fois avec flèches, au lieu de la rangée ; un seul bouton principal.
 3. **Un grand bouton contextuel** au Labo, qui change avec ce qui est posé sur l'établi.
 4. **Menu ☰ en bas** : le coin haut droit est le plus difficile à atteindre sur un grand téléphone.

@@ -46,3 +46,6 @@
 
 /* ---- Carnet : le titre et l'aide longue sont superflus (l'onglet « Recettes » dit déjà où l'on est) ---- */
 #v-carnet .atl-titre, #v-carnet .tip.tip-mini { display: none; }
+
+/* Progression : l'âge en cours et l'objectif d'abord ; titres et légende sur demande */
+#v-arbre .arb-entete,#v-arbre .arb-parcours-titre,#v-arbre .arb-legende{display:none}
