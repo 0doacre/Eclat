@@ -319,3 +319,9 @@ html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chi
 #v-domaine .terres .terre-corps:has(.dom-tip) .terre-gisements { min-height: calc(100dvh - 600px); }
 #v-domaine .terres .terre-corps > .terre-bas { margin-top: 24px; }
 html[data-style-mode="vivant"] #app#app #top#top .chip.mem.releve { pointer-events: auto; }
+
+/* bandeau : les trois ressources ont exactement la même taille, la même encre et le même alignement (icône et chiffre sur la même ligne médiane) */
+html[data-style-mode="vivant"] #app#app #top#top :is(#ecuN, #memN, #intu) { font-family: inherit; font-size: 1.25rem !important; font-weight: 700; line-height: 1 !important; color: var(--sb-encre) !important; display: inline-block; transform: none !important; margin: 0 !important; padding: 0 !important; }
+html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) :is(.cv, b) { display: inline-flex; align-items: center; line-height: 1; }
+html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) { align-items: center; color: var(--sb-encre) !important; }
+html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) .ico-top { width: 24px; height: 24px; }
