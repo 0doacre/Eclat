@@ -325,3 +325,19 @@ html[data-style-mode="vivant"] #app#app #top#top :is(#ecuN, #memN, #intu) { font
 html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) :is(.cv, b) { display: inline-flex; align-items: center; line-height: 1; }
 html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) { align-items: center; color: var(--sb-encre) !important; }
 html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) .ico-top { width: 24px; height: 24px; }
+
+/* ordinateur : la bande des ressources garde sa hauteur naturelle (la hauteur de remplissage ne vaut que pour un téléphone), le bouton d’exploration reste centré */
+@media (min-width: 601px) {
+  #v-domaine .terres .terre-gisements, #v-domaine .terres .terre-corps:has(.dom-tip) .terre-gisements { min-height: 0 !important; }
+}
+#v-domaine .terres .terre-corps > .btn { display: flex; }
+/* la page des Terres défile en entier : aucun panneau n’est coupé au milieu */
+#v-domaine .terres { height: auto !important; min-height: 100%; }
+#v-domaine .terres .terre-corps { overflow: visible !important; }
+/* l’aquarelle de la terre est déjà le décor : le panneau du bas ne garde que le sentier, les travaux et la maîtrise */
+#v-domaine .terres .terre-bas .carnet-landscape { display: none; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-bas .carnet-landscape, html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-bas > figure { display: none !important; }
+/* téléphone : la scène du sentier (grande illustration) ne pousse plus le bouton « Emprunter le sentier » sous le nom de la terre ; le pourcentage et les boutons restent */
+@media (max-width: 600px) { html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .sentier-chantier { display: none !important; } }
+/* le panneau du sentier suit directement les ressources : plus de hauteur de remplissage */
+#v-domaine .terres .terre-gisements, #v-domaine .terres .terre-corps:has(.dom-tip) .terre-gisements { min-height: 0 !important; }
