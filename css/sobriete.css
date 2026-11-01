@@ -67,7 +67,7 @@ body:has(#v-domaine:not(.on)) #ambianceBar{display:none}
  * (comme Cells to Singularity ou Rise of Jericho). Toucher le titre la contemple en grand. */
 #v-domaine .terre-page{background:transparent}
 #v-domaine .terre-fond{inset:0;height:100%;opacity:1;mask-image:none;-webkit-mask-image:none}
-#v-domaine .terre-fond[src*="caveau-"]{object-fit:cover;object-position:center 30%}
+#v-domaine .terre-fond[src*="caveau-"]{object-fit:contain;object-position:center 88%}
 #v-domaine .terre-tete{position:relative;min-height:56px;align-items:center;padding:4px 0}
 #v-domaine .terre-tete::before{content:"";position:absolute;inset:-4px -10px auto -10px;height:150%;background:linear-gradient(rgba(24,17,10,.6),transparent);pointer-events:none;z-index:0}
 #v-domaine .terre-tete>*{position:relative;z-index:1}
@@ -76,3 +76,17 @@ body:has(#v-domaine:not(.on)) #ambianceBar{display:none}
 #v-domaine :is(.terre-gisements,.terre-bas,.terre-regle){background:rgb(244 236 218 / .86);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:12px;border:1px solid rgb(121 105 74 / .5)}
 #v-domaine .terre-gisements{padding:0 8px;margin-bottom:8px}
 #v-domaine .btn-contempler{display:none}
+
+/* Terres : le monde derrière tout, les gestes en pastilles sur le décor (la page de la terre devient « transparente » dans la grille) */
+#v-domaine .terres{position:relative;display:grid;grid-template-rows:auto auto auto minmax(0,1fr);grid-template-columns:minmax(0,1fr);height:100%;background:#1c150e}
+#v-domaine .terres .terre-page{display:contents}
+#v-domaine .terres .terre-fond{z-index:0}
+#v-domaine .terres>.terres-pastilles{grid-row:1;position:relative;z-index:2;padding:8px 10px 2px;flex-wrap:wrap}
+#v-domaine .terres>.terres-rangee{grid-row:2;position:relative;z-index:2;padding:2px 8px}
+#v-domaine .terres .terre-tete{grid-row:3;margin:0 10px;z-index:2}
+#v-domaine .terres .terre-corps{grid-row:4;position:relative;z-index:2;padding:0 10px 8px}
+#v-domaine .terres .terres-pastille{background:rgba(28,21,14,.62);color:#fff8e9;border:1px solid rgba(255,248,233,.45);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);box-shadow:none;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+#v-domaine .terres .terres-icone img,#v-domaine .terres .terres-icone svg{border-color:#fff8e9;box-shadow:0 1px 4px rgba(0,0,0,.6)}
+#v-domaine .terres .terres-icone.is-courante{outline-color:#fff8e9}
+#v-domaine.view{padding:0!important}
+#v-domaine .terres .terre-corps{padding-bottom:calc(var(--nav,56px) + var(--safe-b,0px) + 8px)}
