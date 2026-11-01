@@ -203,7 +203,7 @@
       let h='';
       const releve=!mode&&E.shouldSuggestReleve&&E.shouldSuggestReleve();
       if(releve)h+='<section class="card releve-alerte"><b>✦ Passer le relais · +'+releve.gain+' Souvenirs</b><p class="small">'+esc(releve.texte)+'</p><button class="btn pri small" data-releve title="Voir les gains et les bonus permanents de la prochaine relève">Préparer la relève</button></section>';
-      h+='<nav class="ae-posts ae-metiers" aria-label="Métiers">'+metiers.map(m=>button("metier",m.id,m.ic+' '+esc(m.n),m.id===w.metier?"pri":"")).join("")+'</nav>';
+      h+='<nav class="ae-posts ae-metiers" aria-label="Métiers">'+metiers.map(m=>button("metier",m.id,m.ic+'<span class="lbl"> '+esc(m.n)+'</span>',m.id===w.metier?"pri":"")).join("")+'</nav>';
       h+='<div class="ae-layout"><section class="card ae-bench"><div class="ae-work"><div><div class="ae-slots">';
       for(let i=0;i<3;i++){const id=w.slots[i],need=w.prepared?I[w.prepared]?.r?.[1][id]:0;
         h+=button("slot",String(i),id?icon(id)+'<span>'+esc(name(id))+'</span><small data-ae-need="'+esc(id)+'" data-need="'+(need||0)+'"></small>':'+',id?"ae-filled":"ae-empty",!id);

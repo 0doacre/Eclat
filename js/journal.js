@@ -8,7 +8,7 @@
   function create(api) {
     const {
       E, A, D, U, Sky, esc, fmt, fmtTime, icon, iconize, zoneName, toast, vibe, openModal, swapModal, render, save,
-      subTabs, tabAvailable, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML
+      subTabs, tabAvailable, tabInner, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML
     } = api;
     const S = () => E.state;
     const I = D.ITEMS;
@@ -161,7 +161,7 @@
       if (!tabs.find((t) => t[0] === cur)) cur = tabs[0][0];
       if (prog) U.progTab = cur; else U.journalTab = cur;
       const JTT = { fragments: "Les morceaux d’histoire retrouvés", livre: "Ton Livre, feuille par feuille", questions: "Ce que tu peux demander au Livre", signes: "Les mots des Anciens et leur sens", secrets: "Ce que tu as trouvé, et ce qu’il reste", gestes: "Les gestes remarqués et accomplis au fil de ta route", flute: "Jouer un air", curios: "Les clins d’œil trouvés", fins: "Les fins du jeu et ce que tu en sais", stats: "Ta partie en chiffres" };
-      let h = prog ? "" : '<div class="filters">' + (Object.keys(st.known).length ? '<button data-tab2="carnet" title="Les recettes que tu connais : on les relit ici, on les fabrique à l’Atelier">Recettes</button>' : "") + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" class="' + (cur === k ? "on" : "") + '">' + n + "</button>").join("") + '</div><div class="journal-corps">';
+      let h = prog ? "" : '<div class="filters">' + (Object.keys(st.known).length ? '<button data-tab2="carnet" aria-label="Recettes" title="Les recettes que tu connais : on les relit ici, on les fabrique à l’Atelier">' + tabInner("recettes", "Recettes") + '</button>' : "") + tabs.map(([k, n]) => '<button data-jt="' + k + '" title="' + (JTT[k] || "") + '" aria-label="' + String(n).replace(/ •$/, "") + '" class="' + (cur === k ? "on" : "") + '">' + tabInner(k, n) + "</button>").join("") + '</div><div class="journal-corps">';
       if (cur === "fragments") {
         const ids = E.visibleFrags ? E.visibleFrags() : Object.keys(D.FRAGS);
         const n = ids.filter((f) => st.frags[f]).length;

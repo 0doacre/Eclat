@@ -900,6 +900,12 @@
   }
   /* les onglets d’un même groupe (2 ou 3 pages) */
   const SUBT = { atelier: "Fabriquer et découvrir", machines: "Tes machines et ce qu’elles fabriquent", journal: "Ce que tu as trouvé et compris", cosmos: "Le ciel, les signes et les Grands Œuvres" };
+  /* un onglet : l’icône, et le nom seulement pour l’onglet ouvert (les autres gardent leur nom en info-bulle) */
+  const TAB_IC = { chemin: "treasure-map", secrets: "key", gestes: "hand", curios: "sparkles", fins: "trophy", stats: "glowing-hands", cosmos: "galaxy", fragments: "scroll-unfurled", livre: "open-book", questions: "help", signes: "magnifying-glass", flute: "musical-notes", recettes: "notebook", atelier: "hammer-nails", machines: "gears", carnet: "notebook" };
+  function tabInner(k, txt) {
+    const nouveau = / •$/.test(txt), t = String(txt).replace(/ •$/, "");
+    return gi(TAB_IC[k] || "sparkles") + '<span class="lbl">' + t + "</span>" + (nouveau ? '<i class="tab-dot" aria-hidden="true"></i>' : "");
+  }
   function subTabs(...args) {
     let list;
     if (args.length === 6) list = [[args[0], args[3]], [args[1], args[4]], [args[2], args[5]]];
@@ -907,7 +913,7 @@
     const avail = list.filter(([t]) => tabAvailable(t));
     if (avail.length <= 1) return "";
     return '<div class="subtabs">' + avail.map(([t, lbl]) =>
-      '<button data-tab2="' + t + '" title="' + (SUBT[t] || "") + '" class="' + (U.tab === t ? "on" : "") + '">' + lbl + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
+      '<button data-tab2="' + t + '" title="' + (SUBT[t] || "") + '" aria-label="' + lbl + '" class="' + (U.tab === t ? "on" : "") + '">' + tabInner(t, lbl) + (U.badges[t] ? ' <i class="dot"></i>' : "") + "</button>"
     ).join("") + "</div>";
   }
   /* le Carnet des recettes est le premier feuillet du Journal : mêmes onglets, « Recettes » en tête */
@@ -926,7 +932,7 @@
     /* Le Cosmos (le ciel, les figures, ARCHE, les Grands Œuvres) est la dernière page de la Progression ; il apparaît avec le premier instrument d'observation. */
     if (tabAvailable("cosmos")) items.push(["cosmos", "Cosmos" + (U.badges.cosmos ? " •" : ""), SUBT.cosmos]);
     const ici = U.tab === "cosmos" ? "cosmos" : U.progTab;
-    return '<div class="filters prog-sw" role="group" aria-label="Progression">' + items.map(([k, n, t]) => '<button type="button" ' + (k === "cosmos" ? 'data-tab2="cosmos"' : 'data-pt="' + k + '"') + ' title="' + t + '" class="' + (ici === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";
+    return '<div class="filters prog-sw" role="group" aria-label="Progression">' + items.map(([k, n, t]) => '<button type="button" ' + (k === "cosmos" ? 'data-tab2="cosmos"' : 'data-pt="' + k + '"') + ' title="' + t + '" class="' + (ici === k ? "on" : "") + '" aria-label="' + String(n).replace(/ •$/, "") + '">' + tabInner(k, n) + "</button>").join("") + "</div>";
   }
   function badge(t) { if (U.tab !== t) { U.badges[t] = true; updateBadges(); if (PARENT[t] === U.tab) render(true); } }
 
@@ -1345,7 +1351,7 @@
   /* le Journal et le Cosmos */
   const Jnl = window.EclatJournal.create({
     E, A, D, U, Sky, esc, fmt, fmtTime, icon, iconize, zoneName, toast, vibe, openModal, swapModal, render, save,
-    subTabs, tabAvailable, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML
+    subTabs, tabAvailable, tabInner, stampTxt, stampHTML, recitInline, recitHTML, loreHTML, lectureHTML
   });
   const {
     openSigneModal, viewJournal, figuresSig, viewCosmos, mountCosmos, confirmFire, listen, skyTap, playNote,
@@ -1388,7 +1394,7 @@
 
   /* l’Atelier et le Carnet */
   const Atl = window.EclatAtelier.create({
-    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon,
+    E, A, D, U, Dom, Tuto, esc, norm, fmt, fmtNum, fmtTime, fmtHeat, perMin, cap1, needText, limitHTML, zoneName, GI, gi, gIc, icon, tabInner,
     iconize, itemPill, TYPE, TYPE_HINT, badgeHTML, itD, descHTML, fxList, fxText, ingHTML, gesteChip, mainIngredient,
     floater, sparks, fete, elCenter, toast, vibe, openModal, closeModal, swapModal, render, save, setTab, subTabs,
     uiSigne, memoryHTML, progSwitchHTML, journalSwitchHTML

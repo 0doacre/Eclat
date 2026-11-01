@@ -253,3 +253,47 @@ html[data-style-mode="vivant"] #app#app :is(#v-atelier, #v-machines)#v-atelier .
 }
 html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs > button { flex: 1 1 0; background: none !important; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; min-height: 50px; font-size: 1.1rem; color: var(--sb-encre-douce, #60513f); }
 html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs > button.on { background: none !important; color: #813f2a; font-weight: 700; border-bottom-color: #813f2a !important; }
+
+/* ======================= 6e passe : onglets en icônes, titre de la terre en bas, bandeau lisible ======================= */
+/* onglets : l’icône pour tous, le nom seulement pour l’onglet ouvert (le nom des autres reste lisible pour les lecteurs d’écran) */
+:is(.prog-sw, #v-journal > .filters, .subtabs, .ae-metiers) button .lbl { }
+:is(.prog-sw, #v-journal > .filters, .subtabs, .ae-metiers) button:not(.on):not(.pri) .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:is(.prog-sw, #v-journal > .filters, .subtabs, .ae-metiers) button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
+:is(.prog-sw, #v-journal > .filters, .subtabs) button :is(svg, .gi) { width: 26px; height: 26px; flex: none; }
+:is(.prog-sw, #v-journal > .filters, .subtabs, .ae-metiers) button .tab-dot { position: absolute; right: 8px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: #a8402b; }
+:is(.prog-sw, #v-journal > .filters, .subtabs) button { flex: 1 1 0; }
+:is(.prog-sw, #v-journal > .filters) button.on { flex: 2 1 0; }
+
+/* bandeau du haut : une pièce, une empreinte, une étoile, même écart, calés contre le menu */
+#top .top-right { gap: 14px; }
+#top .ico-top { width: 22px; height: 22px; flex: none; }
+html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) { display: inline-flex; align-items: center; gap: 5px; padding: 0 !important; min-width: 0; }
+html[data-style-mode="vivant"] #app#app #top#top .chip.mem.ready { pointer-events: auto; }
+html[data-style-mode="vivant"] #app#app #top#top #menuBtn { background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; width: 44px; height: 44px; }
+
+/* Terres : le nom de la terre passe en bas (sans « Âge du… »), les flèches sont des boutons ronds, tout est en papier crème */
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete { position: fixed !important; left: max(var(--sb-gouttiere), env(safe-area-inset-left, 0px)); right: max(var(--sb-gouttiere), env(safe-area-inset-right, 0px)); bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 12px); top: auto; z-index: 6; margin: 0 !important; padding: 4px 8px !important; min-height: 56px; background: var(--sb-papier); border: var(--sb-bord); border-radius: var(--sb-rayon); box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); grid-row: auto !important; }
+#v-domaine .terres .terre-tete .kicker { display: none; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete .terre-titre h2 { color: var(--sb-encre) !important; text-shadow: none !important; text-align: center; font-size: 1.5rem; margin: 0; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete .terre-nav { background: var(--rond-papier) center / 100% 100% no-repeat !important; border: 0 !important; border-image: none !important; border-radius: 50% !important; box-shadow: none !important; color: var(--sb-encre) !important; width: 46px; height: 46px; min-width: 46px; padding: 0 !important; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete .terre-nav:disabled { opacity: .4; }
+#v-domaine .terres { grid-template-rows: auto auto minmax(0, 1fr) !important; }
+#v-domaine .terres > .terres-pastilles { grid-row: 1 !important; }
+#v-domaine .terres > .terres-rangee { grid-row: 2 !important; }
+#v-domaine .terres .terre-corps { grid-row: 3 !important; display: flex; flex-direction: column; min-height: 0; padding-bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 84px) !important; }
+/* le bouton d’exploration prend toute la largeur sur téléphone, reste centré sur un grand écran */
+#v-domaine .terres .terre-corps > .btn { width: 100%; max-width: 560px; margin-inline: auto; justify-content: center; text-align: center; }
+/* le conseil est du papier crème, comme le reste */
+html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--sb-papier) !important; color: var(--sb-encre) !important; border: var(--sb-bord) !important; text-shadow: none !important; }
+html[data-style-mode="vivant"] #v-domaine .terres .dom-tip b { color: #813f2a; }
+/* la bande des ressources s’étend vers le bas, jusqu’au nom de la terre */
+#v-domaine .terres .terre-gisements { flex: 1 1 auto; min-height: 0; max-height: none !important; overflow-y: auto; }
+/* 6e passe, corrections : la bande des ressources s’étend sans se faire écraser, le nom de la terre est crème */
+#v-domaine .terres .terre-corps { display: block !important; overflow-y: auto; }
+#v-domaine .terres .terre-gisements { flex: none; max-height: calc(100dvh - 500px) !important; min-height: 160px; overflow-y: auto; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete { background: var(--sb-papier) !important; }
+#top .chip :is(b, .cv) { font-size: 1.1rem; }
+#v-domaine .terres .terre-tete::before, #v-domaine .terres .terre-tete::after { content: none !important; display: none !important; }
+html[data-style-mode="vivant"] #app#app #top#top .chip b, html[data-style-mode="vivant"] #app#app #top#top .chip .cv { font-size: 1.2rem !important; line-height: 1; }
+html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chip.ecu) { overflow: visible !important; flex: none; width: auto !important; max-width: none; white-space: nowrap; }
+#top .chip .cv { display: inline-flex; flex: none; }
