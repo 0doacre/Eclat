@@ -739,6 +739,7 @@
       views.addEventListener("toggle", (ev) => {
         const d = ev.target;
         if (d.matches && d.matches("details[data-age]")) U.openAges[d.dataset.age] = d.open;
+        if (d.matches && d.matches("details[data-pliable]")) U.pliables[d.dataset.pliable] = d.open;
       }, true);
       views.addEventListener("submit", (ev) => {
         if (ev.target.matches('[data-trans-note]')) {

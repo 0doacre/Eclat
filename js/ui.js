@@ -28,7 +28,7 @@
     tab: "domaine", geste: "tailler", slots: [null, null, null], last: null,
     invFilter: "tout", carnetFilter: "tout", journalTab: "fragments", cosmosTab: "ciel",
     q: "", showOwned: false,
-    openAges: {}, dirty: true, lastRender: 0, mq: [], mcur: null,
+    openAges: {}, pliables: {}, dirty: true, lastRender: 0, mq: [], mcur: null,
     badges: { carnet: false, journal: false, cosmos: false, carte: false },
     pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false,
     toastQ: [], toastAt: 0, toastT: 0, intuShown: false

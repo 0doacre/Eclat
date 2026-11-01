@@ -1857,6 +1857,8 @@
     }
     /* Les chantiers d'un métier : ce qui se construit au lieu de se produire en série. Une station ou un outil se fait une fois ;
      * un extracteur ou une machine se refait autant qu'on veut, à prix croissant. */
+    /* Un volet replié : l'état se garde d'un dessin à l'autre (U.pliables) */
+    const pliableOuvert = (cle, defaut) => (U.pliables && U.pliables[cle] !== undefined ? U.pliables[cle] : !!defaut);
     const CHANTIER_VERBE = { stat: "Construire", ext: "Construire", mach: "Construire", auto: "Construire", upg: "Installer", tool: "Fabriquer" };
     function aConstruireHTML() {
       if (!Atel || !U.atelierSel) return "";
@@ -1874,9 +1876,17 @@
           '<div class="row wrap small" style="margin-top:6px">' + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>" + manque +
           '<div class="row wrap rbtns" style="margin-top:6px">' + craftBtns(id, verbe) + "</div></div>";
       };
-      return '<section class="card a-construire"><h3 class="sub">À construire</h3><p class="tiny muted">Outils, stations, améliorations, machines : ce que ce métier met en place, une fois ou autant de fois que tu veux.</p>' +
+      const cle = "construire-" + U.atelierSel, defaut = !prodRecettes().length;
+      return '<section class="card a-construire"><details data-pliable="' + cle + '"' + (pliableOuvert(cle, defaut) ? " open" : "") + '><summary><b>À construire</b><span class="tiny muted"> · ' + aFaire.length + (aFaire.length > 1 ? " à faire" : " à faire") + '</span></summary><p class="tiny muted">Outils, stations, améliorations, machines : ce que ce métier met en place.</p>' +
         (aFaire.length ? aFaire.map(ligne).join("") : '<p class="small muted">Rien à construire pour l’instant.</p>') +
-        (faits.length ? '<details class="construits-faits"><summary class="small">Déjà fait (' + faits.length + ")</summary>" + faits.map((id) => '<div class="row small" data-goto="' + id + '" title="Voir la recette et ses usages">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) + "</span><span>✓</span></div>").join("") + "</details>" : "") + "</section>";
+        (faits.length ? '<details class="construits-faits"><summary class="small">Déjà fait (' + faits.length + ")</summary>" + faits.map((id) => '<div class="row small" data-goto="' + id + '" title="Voir la recette et ses usages">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) + "</span><span>✓</span></div>").join("") + "</details>" : "") + "</details></section>";
+    }
+    /* L'équipe d'un métier (embauches, seuil, fatigue, goulots, énergie) : une ligne tant qu'on n'y touche pas */
+    function equipePliableHTML(c) {
+      const gens = (c.apprentis || 0) + (c.ouvriers || 0), cle = "equipe-" + c.id;
+      const resume = gens ? gens + (gens > 1 ? " travailleurs" : " travailleur") : "personne pour l’instant";
+      return '<details class="atel-equipe" data-pliable="' + cle + '"' + (pliableOuvert(cle, c.etat === "bloque") ? " open" : "") + '><summary><b>Équipe</b><span class="tiny muted"> · ' + esc(resume) + (c.etat === "bloque" ? " · à voir" : "") + "</span></summary>" +
+        embaucheHTML(c) + seuilHTML(c) + fatigueHTML(c) + goulotsHTML(c.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p></details>";
     }
     function viewAtelier() {
       if (Atel) {
@@ -1889,7 +1899,7 @@
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
       let h = '<div class="prod atl-page">' + subTabs("atelier", "machines", "Produire", "Machines") + souvenirNoteHTML() +
-        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour title="Revenir à la liste des métiers">← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.map((e) => '<span class="atel-ech is-' + e.etat + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + embaucheHTML(cA) + seuilHTML(cA) + fatigueHTML(cA) + goulotsHTML(cA.id) + energieHTML() + '<p class="tiny muted atl-bourse">Bourse : ' + fmt(Math.floor(S().ecus || 0)) + " écus</p>" : "") +
+        (cA ? '<div class="atel-tete"><button type="button" class="btn small" data-atelier-retour title="Revenir à la liste des métiers">← Métiers</button><b>' + cA.ic + " " + esc(cA.n) + '</b><span class="atel-echelle">' + cA.echelles.filter((e) => e.etat === "courant").map((e) => '<span class="atel-ech is-' + e.etat + '" title="L’échelon où ce métier travaille : ' + esc(cA.echelles.map((x) => x.n).join(", ")) + '">' + esc(e.n) + "</span>").join("") + "</span></div>" + equipePliableHTML(cA) : "") +
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '">Ce qui tourne · ' + n +
         (ap.bloques ? " · " + ap.bloques + " à voir" : "") + "</button>" +
         "</div>";
@@ -1908,7 +1918,7 @@
       h += '<section class="prod-fiche"><div class="row">' + icon(id, "lg") + '<div class="grow"><div class="rname">' + esc(it.n) + ' <span class="muted">×' + fmt(q) + "</span></div>" +
         '<div class="tiny muted">' + gesteChip(id) + " · à la main : " + fmtTime(E.handTime(id) * q) + "</div></div></div>" +
         '<div class="row wrap small" style="margin-top:6px">' + ingHTML(cost, { check: true, link: true }) + "</div>" +
-        '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["50", "×50"], ["100", "×100"], ["500", "×500"], ["1000", "×1000"], ["max", "Max"]].map(([k, l]) => '<button type="button" data-prodq="' + k + '" title="Produire ' + (k === "max" ? "le plus possible" : l.replace("×", "") + " exemplaire" + (k === "1" ? "" : "s") + " d’un coup") + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + "</div></section>";
+        '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["50", "×50"], ["100", "×100"], ["500", "×500"], ["1000", "×1000"], ["max", "Max"]].filter(([k]) => U.prodQtyPlus || k === "1" || k === "10" || k === "max" || k === mode).map(([k, l]) => '<button type="button" data-prodq="' + k + '" title="Produire ' + (k === "max" ? "le plus possible" : l.replace("×", "") + " exemplaire" + (k === "1" ? "" : "s") + " d’un coup") + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + '<button type="button" data-prodqplus aria-expanded="' + (U.prodQtyPlus ? "true" : "false") + '" title="' + (U.prodQtyPlus ? "Moins de quantités" : "Plus de quantités : ×50, ×100, ×500, ×1000") + '">' + (U.prodQtyPlus ? "moins" : "⋯") + "</button></div></section>";
       h += '<div class="prod-qui"><button type="button" class="btn pri" data-prod="main">À la main</button>' +
         '<button type="button" title="Automatiser : les machines refabriquent seules jusqu’à la cible en Réserve" class="btn' + (why ? " ghost" : "") + '" data-prod="apprenti"' + (ordre ? " disabled" : "") + ">" + (ordre ? "Automatisé · " + fmt(ordre.have) + "/" + fmt(ordre.cap) : "Automatiser") + "</button>" +
         '<button type="button" class="btn ghost" data-tab2="machines">Machines</button></div>';
@@ -1977,6 +1987,7 @@
         render(true);
         return true;
       }
+      if (t.closest("[data-prodqplus]")) { A.click(); U.prodQtyPlus = !U.prodQtyPlus; render(true); return true; }
       if ((b = t.closest("[data-aller]"))) {
         A.click();
         const id = b.dataset.aller;

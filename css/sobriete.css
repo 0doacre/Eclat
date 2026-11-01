@@ -1,0 +1,34 @@
+/* Sobriété (aperçu 0.66, branche claude/preview-sobriete) : moins d'écrans à lire, pas de défilement inutile, un geste à la fois.
+ * Chargée en dernier : elle replie et resserre ce que les autres feuilles dessinent, sans changer les actions.
+ * Repère : Rise of Jericho tient chaque écran en 3 à 6 cibles ; les budgets sont dans tools/mesure-sobriete.js et tools/test-ux.js. */
+
+/* ---- Labo : tout l'établi et les ressources tiennent dans l'écran d'un téléphone ---- */
+#v-labo .atl-titre { display: none; }                 /* le nom de l'onglet suffit */
+#v-labo .ae-legende { display: none; }                /* le nom de l'outil reste en info-bulle et en étiquette */
+.atelier-equipe .ae-slots > .btn { min-height: 72px !important; padding: 4px 3px; }
+.atelier-equipe .ae-slots small { font-size: 11px; }
+#v-labo .ae-actions { margin-top: 8px; }
+#v-labo .ae-bench { padding-block: 8px; }
+@media (max-width: 700px) {
+  #v-labo .ae-stock { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; align-content: flex-start; gap: 6px; padding-block: 8px; min-height: 0; max-height: none; height: auto; overflow: visible; position: static; }
+  #v-labo .ae-stock > * { margin: 0; }
+  #v-labo .ae-filtres { order: 1; flex: 0 0 100%; display: flex; gap: 6px; }
+  #v-labo .ae-filtres .ae-chip { flex: 1 1 0; justify-content: center; }
+  #v-labo .ae-stock-search { order: 2; flex: 1 1 0; min-width: 0; }
+  #v-labo .ae-etude { order: 3; flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
+  #v-labo #ae-discovery-empty { order: 4; flex: 0 0 100%; }
+  #v-labo .ae-inventory { order: 5; flex: 0 0 100%; margin-top: 2px; }
+}
+
+/* ---- Page d'un métier : l'équipe et ce qu'on construit se déplient à la demande ---- */
+.atel-equipe, .a-construire > details { border: 1px solid var(--line2, #79694a55); border-radius: 10px; margin: 6px 0; padding: 0 10px 8px; background: transparent; }
+.atel-equipe > summary, .a-construire > details > summary { min-height: 44px; display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; }
+.atel-equipe > summary::-webkit-details-marker, .a-construire > details > summary::-webkit-details-marker { display: none; }
+.atel-equipe > summary::after, .a-construire > details > summary::after { content: "›"; margin-left: auto; font-size: 22px; transition: transform .15s; }
+.atel-equipe[open] > summary::after, .a-construire > details[open] > summary::after { transform: rotate(90deg); }
+.a-construire.card { padding: 0; border: 0; background: transparent; box-shadow: none; }
+.prod-qty > button[data-prodqplus] { min-width: 44px; }
+
+/* Les recettes d'un métier : une seule rangée qu'on fait glisser, au lieu d'une grille qui mange l'écran */
+#v-atelier .prod-choix { display: flex !important; grid-template-columns: none !important; flex-wrap: nowrap !important; max-height: none !important; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
+#v-atelier .prod-choix > .prod-recette { scroll-snap-align: start; flex: 0 0 76px; }
