@@ -1812,7 +1812,9 @@ test("une partie neuve a meta.parcours ; une sauvegarde chargée sans ce drapeau
   E1.state.exp.done = { lisiere: 1 };
   assert.ok(!E1.canForcedReleve(), "la cabane et la première exploration ne suffisent plus");
   E1.state.pass.plaine = { paid: {}, done: true };
-  assert.ok(E1.canForcedReleve(), "peut faire la première renaissance forcée une fois la Plaine franchie");
+  assert.ok(!E1.canForcedReleve(), "la Plaine seule arrive trop tôt : la relève forcée attend " + D.PARCOURS.passage);
+  E1.state.pass[D.PARCOURS.passage] = { paid: {}, done: true };
+  assert.ok(E1.canForcedReleve(), "peut faire la première renaissance forcée une fois le passage voulu franchi");
 
   // Ancienne sauvegarde sans parcours
   const oldSave = JSON.stringify({
@@ -3270,8 +3272,8 @@ test("Ce qui limite : d’où vient une ressource qui manque", () => {
   assert.strictEqual(E0.limiting("manche", 1).raw, false, "une pièce fabriquée n’a pas de gisement");
   assert.strictEqual(E0.limiting("metal_mercure", 10).open, false, "une terre pas encore atteinte est dite telle");
 });
-test("Version 0.65.0 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.65.0");
+test("Version 0.65.1 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.65.1");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3504,7 +3506,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.65.0");
+  assert.strictEqual(D.VERSION, "0.65.1");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

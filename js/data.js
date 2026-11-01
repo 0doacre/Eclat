@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.65.0";
+  D.VERSION = "0.65.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1729,7 +1729,14 @@
 
   /* Le premier parcours : première renaissance obligatoire */
   D.PARCOURS = {
-    gift: 3           // Souvenirs offerts lors de la relève obligatoire du cycle 1
+    gift: 3,          // Souvenirs offerts lors de la relève obligatoire du cycle 1
+    passage: "riviere", // le passage qui déclenche cette relève (0.65.1 : la Plaine, vers 6 min, arrivait trop tôt ; « collines » la repousse d’une terre, vers 34 min au simulateur)
+    /* les relèves suivantes sont proposées moins souvent (0.65.1) */
+    suggestMinPlay: 1800,   // secondes de jeu actif dans le cycle avant toute proposition
+    suggestTracesMin: 10,   // Souvenirs à gagner, au moins, pour que le gain seul justifie la proposition
+    suggestTracesPart: 0.5, // ... et au moins cette part des Souvenirs déjà gagnés au total
+    suggestAgesAudela: 1,   // âges au-delà du front pionnier avant que l’âge seul justifie la proposition
+    suggestJobLeft: 120     // secondes restantes d’une longue commande unique qui justifient la proposition
   };
 
   /* Les ruines : ce qu’un Semeur a construit attend le suivant */
@@ -1777,6 +1784,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "⏳ La première relève arrive plus tard : elle se déclenche quand tu franchis la Rivière, et non plus la Plaine. Les relèves suivantes sont aussi proposées moins souvent : il faut avoir joué un moment, et avoir avancé nettement au-delà de ce que tes prédécesseurs avaient atteint.",
     "📖 Le Carnet devient l’onglet Recettes du Journal : on y relit ses recettes, on les fabrique à l’Atelier. Chaque fiche renvoie au métier qui s’en charge.",
     "🏗️ Chaque métier de l’Atelier a sa section À construire : outils, stations, améliorations, extracteurs et machines.",
     "🪶 Après une relève, tu retrouves ton carnet : chaque âge se relit à son tour, avec quelques mots à lui, et ses recettes reviennent à mesure. Un bouton relit tout d’un coup.",

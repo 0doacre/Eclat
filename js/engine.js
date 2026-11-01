@@ -5410,7 +5410,7 @@
 
     /* Première renaissance obligatoire (fin du tutoriel) */
     /* la relève obligatoire : une fois, au cycle 1, quand le premier passage (la Plaine) est franchi : le joueur a déjà gagné ses premiers Souvenirs et sait ce que coûte un passage */
-    E.canForcedReleve = () => !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.pass && S.pass.plaine && S.pass.plaine.done);
+    E.canForcedReleve = () => { const z = (D.PARCOURS && D.PARCOURS.passage) || "plaine"; return !!(S.meta && S.meta.parcours && !S.meta.forcedDone && S.cycle === 1 && S.pass && S.pass[z] && S.pass[z].done); };
     E.forcedReleve = function () {
       if (S.meta.forcedDone || S.cycle !== 1) return false;
       S.meta.forcedDone = true;
@@ -5444,19 +5444,21 @@
       const gain = E.releveGain ? E.releveGain() : 0;
       if (!(gain > 0)) return null;
       if (E.isCatchingUp && E.isCatchingUp()) return null;
+      const PC = D.PARCOURS || {};
+      if (((S.stats && S.stats.cyclePlay) || 0) < (PC.suggestMinPlay || 0)) return null; // un Semeur qui vient d’arriver n’est pas encore essoufflé
 
       const maxAge = (S.meta && S.meta.maxAge) || 0;
       const passEver = (S.meta && S.meta.passEver) || {};
       const newPass = Object.keys(S.pass || {}).some((z) => S.pass[z].done && !S.pass[z].free && !passEver[z]);
       const reach = Math.max(1 + (S.cycle || 1) * 2, maxAge > 0 ? maxAge + 1 : 0);
-      const ageDepasse = (S.age || 0) > reach;
+      const ageDepasse = (S.age || 0) > reach + (PC.suggestAgesAudela || 0);
 
-      const traceSeuil = Math.max(6, Math.ceil(((S.meta && S.meta.tracesTotal) || 0) * 0.35));
+      const traceSeuil = Math.max(PC.suggestTracesMin || 6, Math.ceil(((S.meta && S.meta.tracesTotal) || 0) * (PC.suggestTracesPart || 0.35)));
       const beaucoupTraces = gain >= traceSeuil && (maxAge === 0 || newPass || (S.age || 0) > maxAge);
 
       const hi = E.handInfo ? E.handInfo() : { left: 0, jobs: [] };
       const j0 = hi.jobs && hi.jobs.length ? hi.jobs[0] : null;
-      const longJob = !!(j0 && !j0.paused && !j0.wait && j0.n === 1 && (!j0.steps || j0.steps.length <= 1) && (item(j0.id).a || 0) > Math.max(1, maxAge) && j0.left > 30);
+      const longJob = !!(j0 && !j0.paused && !j0.wait && j0.n === 1 && (!j0.steps || j0.steps.length <= 1) && (item(j0.id).a || 0) > Math.max(1, maxAge) && j0.left > (PC.suggestJobLeft || 30));
 
       if (ageDepasse || longJob || beaucoupTraces) {
         return {

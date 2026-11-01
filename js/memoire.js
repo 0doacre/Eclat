@@ -496,7 +496,7 @@
       const gift = (D.PARCOURS && D.PARCOURS.gift) || 3, pass = E.releveGain(), { keep, reset } = releveListes(0);
       const total = gift + pass;
       return '<div class="kicker">Relève</div><h2>Fin du premier cycle</h2>' +
-        '<p class="small">Tu as franchi ton premier passage. C’est le moment de la relève : le monde recommence de zéro, mais tu gardes tes recettes.</p>' +
+        '<p class="small">Tu as franchi tes premiers passages et gagné tes premiers Souvenirs. C’est le moment de la relève : le monde recommence de zéro, mais tu gardes tes recettes.</p>' +
         '<div class="rel-cols"><div class="rel-h">Tu gagnes</div>' +
         listeHTML("rel-gagne", ["<b>" + fmt(total) + " ✦ Souvenirs</b> (" + gift + " offertes" + (pass ? ", " + pass + " pour le passage" : "") + ")", "À dépenser tout de suite dans la Mémoire des mains : ce sont des améliorations permanentes"]) +
         '<div class="rel-h">Tu gardes</div>' + listeHTML("rel-keep", keep) +

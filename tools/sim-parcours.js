@@ -7,7 +7,7 @@
  *  1. Partie neuve : AUCUNE recette connue d’avance. Le joueur voit chaque matière, puis DÉCOUVRE la recette de l’étape en cours
  *     par des essais (E.attempt du moteur : thermomètre, et souvenirs du guide qui finissent par donner l’action, une matière,
  *     puis la recette). Chaque essai prend du temps (--essai secondes) pendant lequel il ne récolte pas.
- *  2. La relève obligatoire du cycle 1 est prise dès qu’elle se déclenche (E.canForcedReleve : le premier passage, la Plaine, est franchi) : +3 Traces.
+ *  2. La relève obligatoire du cycle 1 est prise dès qu’elle se déclenche (E.canForcedReleve : le passage de D.PARCOURS.passage, la Rivière depuis la 0.65.1, est franchi) : +3 Traces.
  *  3. Un premier achat de Mémoire avec ces Traces (un par colonne : aucun, Mains calleuses, Mains sûres, Mémoire des gisements).
  *  4. Cycle 2 (--minutes) : il ne connaît que ce qu’il a appris au cycle 1. On note la minute où il franchit la Plaine et la Rivière.
  *

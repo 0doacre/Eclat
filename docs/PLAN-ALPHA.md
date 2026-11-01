@@ -57,7 +57,7 @@ Dans l’ordre.
 
 - Un extracteur par ressource, niveaux améliorables un exemplaire à la fois (0.17).
 - Les Traces ne se dépensent qu’au réveil d’un nouveau Semeur (0.16.2).
-- La première relève est proposée une fois la Plaine franchie, avec une fenêtre en langage d’interface (0.16.1).
+- La première relève est proposée une fois la Plaine franchie, avec une fenêtre en langage d’interface (0.16.1). Depuis la 0.65.1 elle attend la Rivière (vers 23 à 34 min au simulateur, au lieu de 6) : `D.PARCOURS.passage`. Les relèves suivantes sont proposées moins souvent (`D.PARCOURS.suggest*`). À confirmer par l’alpha.
 - Alpha **ouverte à des testeurs** avant toute alpha publique.
 - Les nouvelles ressources doivent expliquer les techniques et relier les âges entre eux ; une ressource déjà connue peut changer d’usage et d’échelle (l’eau à la Vapeur).
 
