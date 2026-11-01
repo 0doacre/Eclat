@@ -58,7 +58,7 @@
     /* ------------------------------------------------------------ TERRES (0.39)
      * Une terre par écran, glissable ; l’illustration de la terre est le fond de la page.
      * Objectif, relève, Comptoir, production et œuvres sont des pastilles qui ouvrent un panneau. */
-    const FOND_CARTE = { caveau: 1 };
+    const FOND_CARTE = {};
     const fondDe = (z) => new URL("assets/terres/" + z + (FOND_CARTE[z] ? "-carte" : "-decor") + ".webp", document.baseURI).href;
     const vignetteDe = (z) => new URL("assets/terres/" + z + "-carte.webp", document.baseURI).href;
     function terreCourante() {

@@ -67,7 +67,6 @@ body:has(#v-domaine:not(.on)) #ambianceBar{display:none}
  * (comme Cells to Singularity ou Rise of Jericho). Toucher le titre la contemple en grand. */
 #v-domaine .terre-page{background:transparent}
 #v-domaine .terre-fond{inset:0;height:100%;opacity:1;mask-image:none;-webkit-mask-image:none}
-#v-domaine .terre-fond[src*="caveau-"]{object-fit:contain;object-position:center 88%}
 #v-domaine .terre-tete{position:relative;min-height:56px;align-items:center;padding:4px 0}
 #v-domaine .terre-tete::before{content:"";position:absolute;inset:-4px -10px auto -10px;height:150%;background:linear-gradient(rgba(24,17,10,.6),transparent);pointer-events:none;z-index:0}
 #v-domaine .terre-tete>*{position:relative;z-index:1}
