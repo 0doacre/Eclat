@@ -138,7 +138,7 @@
         when: () => U.tab === "domaine" && E.zoneOpen(D.COMPTOIR.zone) && !Object.keys((S().comptoir && S().comptoir.sold) || {}).length && !!document.querySelector('[data-terre-panel="comptoir"]'),
         still: () => !Object.keys((S().comptoir && S().comptoir.sold) || {}).length,
         steps: [
-          { tab: "domaine", at: () => (document.querySelector("#dcomptoir [data-comptoir]") ? "#dcomptoir [data-comptoir]" : '[data-terre-panel="comptoir"]'), text: () => (document.querySelector("#dcomptoir [data-comptoir]") ? "Touche « Ouvrir le Comptoir ». Le Troqueur, un vieil automate, achète tout ce qu’on lui apporte." : "Le Comptoir est ouvert, dans la Plaine. Touche « Comptoir » en haut des Terres."),
+          { tab: "domaine", at: () => (document.querySelector("#dcomptoir [data-comptoir]") ? "#dcomptoir [data-comptoir]" : '[data-terre-panel="comptoir"]'), text: () => (document.querySelector("#dcomptoir [data-comptoir]") ? "Touche « Ouvrir le Comptoir ». Le Troqueur, un vieil automate, achète tout ce qu’on lui apporte." : "Le Comptoir est ouvert, dans la Plaine. Touche la balance ⚖️ en haut des Terres."),
             done: () => modalOpen() || Object.keys((S().comptoir && S().comptoir.sold) || {}).length > 0 },
           { modal: true, at: () => (document.querySelector('.modal:not(.hidden) [data-m="sell"]') ? '.modal:not(.hidden) [data-m="sell"]' : null),
             text: "Vends ce qui encombre ta Réserve contre des écus. Plus tu vends d’une même ressource, plus son prix baisse.",

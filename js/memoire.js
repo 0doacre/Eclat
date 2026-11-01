@@ -671,6 +671,7 @@
       const m = S().meta, b = $("#memBtn"), can = E.canReleve(), gain = E.releveGain();
       const show = can || m.traces > 0 || m.tracesTotal > 0;
       b.classList.toggle("hidden", !show);
+      b.classList.toggle("releve", Boolean(can && gain)); // la relève est possible : le chiffre redevient un bouton (le guide le désigne)
       if (!show) return;
       const txt = can && gain ? "+" + gain : fmt(m.traces);
       const n = $("#memN");

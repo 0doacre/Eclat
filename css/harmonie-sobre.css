@@ -9,8 +9,8 @@
 :root {
   --sb-encre: #3b2a1a;
   --sb-papier: rgb(246 239 222 / .92);
-  --sb-papier-leger: rgb(246 239 222 / .8);
-  --sb-voile: rgb(246 239 222 / .72);
+  --sb-papier-leger: rgb(246 239 222 / .86);
+  --sb-voile: rgb(246 239 222 / .82);
   --sb-sombre: rgb(28 21 14 / .66);
   --sb-clair: #fff8e9;
   --sb-bord: 1px solid rgb(121 105 74 / .55);
@@ -318,3 +318,4 @@ html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chi
 #v-domaine .terres .terre-gisements { min-height: calc(100dvh - 505px); }
 #v-domaine .terres .terre-corps:has(.dom-tip) .terre-gisements { min-height: calc(100dvh - 600px); }
 #v-domaine .terres .terre-corps > .terre-bas { margin-top: 24px; }
+html[data-style-mode="vivant"] #app#app #top#top .chip.mem.releve { pointer-events: auto; }
