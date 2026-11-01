@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.65.1";
+  D.VERSION = "0.65.2";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1734,7 +1734,7 @@
     /* les relèves suivantes sont proposées moins souvent (0.65.1) */
     suggestMinPlay: 1800,   // secondes de jeu actif dans le cycle avant toute proposition
     suggestTracesMin: 10,   // Souvenirs à gagner, au moins, pour que le gain seul justifie la proposition
-    suggestTracesPart: 0.5, // ... et au moins cette part des Souvenirs déjà gagnés au total
+    suggestTracesPart: 1,   // ... et au moins autant que les Souvenirs déjà gagnés au total : la relève doit au moins les doubler (repère des jeux du genre, 0.65.2)
     suggestAgesAudela: 1,   // âges au-delà du front pionnier avant que l’âge seul justifie la proposition
     suggestJobLeft: 120     // secondes restantes d’une longue commande unique qui justifient la proposition
   };
@@ -1784,6 +1784,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔁 Une relève n’est proposée que si elle doublerait au moins tes Souvenirs déjà gagnés : le rythme des relèves suit les repères des jeux du genre.",
     "⏳ La première relève arrive plus tard : elle se déclenche quand tu franchis la Rivière, et non plus la Plaine. Les relèves suivantes sont aussi proposées moins souvent : il faut avoir joué un moment, et avoir avancé nettement au-delà de ce que tes prédécesseurs avaient atteint.",
     "📖 Le Carnet devient l’onglet Recettes du Journal : on y relit ses recettes, on les fabrique à l’Atelier. Chaque fiche renvoie au métier qui s’en charge.",
     "🏗️ Chaque métier de l’Atelier a sa section À construire : outils, stations, améliorations, extracteurs et machines.",
