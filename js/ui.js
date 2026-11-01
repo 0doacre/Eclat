@@ -1077,6 +1077,15 @@
     if (intuNow > 0 && !U.intuShown) { const ib = $("#intuBtn"); if (ib) { ib.classList.remove("born"); void ib.offsetWidth; ib.classList.add("born"); } }
     U.intuShown = U.intuShown || intuNow > 0;
     $("#intu").textContent = intuNow;
+    /* les écus se lisent en haut, à côté de l’Intuition et des Souvenirs : ce sont des ressources, pas des boutons */
+    const ecuEl = $("#ecuChip");
+    if (ecuEl) {
+      const ecuNow = Math.floor(st.ecus || 0);
+      if (ecuNow > 0) U.ecuVu = true;
+      ecuEl.classList.toggle("hidden", !U.ecuVu);
+      $("#ecuN").textContent = fmt(ecuNow);
+      ecuEl.setAttribute("aria-label", "Écus : " + fmt(ecuNow)); ecuEl.setAttribute("title", "Écus : " + fmt(ecuNow));
+    }
     const ibEl = $("#intuBtn");
     if (ibEl) {
       ibEl.setAttribute("aria-label", "Intuition : " + fmt(intuNow));

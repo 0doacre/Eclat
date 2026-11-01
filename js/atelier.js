@@ -636,9 +636,14 @@
         else if (p === "presque") { counts.portee++; }
         else { counts.verrouille++; }
       });
-      return '<div class="arb-barre">' +
+      /* en haut : l’âge et ses étapes, puis l’objectif et la loupe (0.66, aperçu sobre) */
+      const etapesAge = E.milestones()[g.age] || [], faitesAge = etapesAge.filter((x) => x.done).length;
+      const noeudObj = g.noeuds.find((n) => n.objectif), obj = E.objective();
+      const nomObj = noeudObj ? noeudObj.n : obj ? (obj.txt || obj.n || "Poursuivre l’exploration") : "tout est accompli";
+      const resume = U.arbreSel ? "" : '<div class="arb-resume"><b>' + esc(D.AGES[g.age].n) + '</b><span title="Étapes accomplies dans cet âge">' + faitesAge + ' / ' + etapesAge.length + "</span></div>";
+      return '<div class="arb-barre">' + resume +
         (U.arbreSel ? '<button type="button" class="btn small" data-arb="ensemble" title="Revenir à ta progression : ton âge, tes étapes et le prochain objectif">← Progression</button>' : '') +
-        '<button type="button" class="btn small ouvre" data-arb="centre" aria-haspopup="dialog" title="Ouvre ton objectif du moment, et ce qu’il demande">Objectif</button>' +
+        '<button type="button" class="btn small ouvre arb-obj-btn" data-arb="centre" aria-haspopup="dialog" title="Ouvre ton objectif du moment, et ce qu’il demande">Objectif · <b>' + esc(nomObj) + '</b></button>' +
         '<button type="button" class="btn small ghost" data-arb="chercher" aria-label="Chercher dans la progression" aria-expanded="' + !!U.arbreChercher + '">🔍</button></div>' +
         '<div class="arb-chercher" role="search"' + ((U.arbreChercher || f !== 'tout') ? '' : ' hidden') + '>' +
         '<div class="filters arb-filtres" role="toolbar" aria-label="Filtrer les pastilles">' +
@@ -650,15 +655,9 @@
         '<div id="arbres" class="arb-grille" aria-live="polite">' + arbreResultats(U.arbreQ) + '</div></div>';
     }
     function arbreEnsemble(g) {
-      const etapes = E.milestones()[g.age] || [], faites = etapes.filter((x) => x.done).length;
-      const objectif = g.noeuds.find((n) => n.objectif), ob = E.objective();
       const f = U.arbreFiltre || "tout";
-      let h = '<header class="arb-entete"><h2>Ta progression</h2></header><section class="arb-progression"><h3>' + esc(D.AGES[g.age].n) + '</h3>' +
-        '<p>' + faites + ' / ' + etapes.length + ' étapes accomplies</p><progress value="' + faites + '" max="' + Math.max(1, etapes.length) + '" aria-label="Étapes accomplies dans cet âge"></progress>';
-      if (objectif) h += '<h3>Prochain objectif</h3>' + arbreCarte(objectif, false);
-      else if (ob) h += '<h3>Prochain objectif</h3><p>' + esc(ob.txt || ob.n || 'Poursuivre l’exploration') + '</p>';
-      else h += '<p>Tu as accompli les objectifs proposés.</p>';
-      h += '</section><h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>ressource vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span><span><i class="neuf-i"></i>nouveau</span></div>';
+      let h = '<header class="arb-entete"><h2>Ta progression</h2></header>';
+      h += '<h3 class="arb-parcours-titre">Tes découvertes par âge</h3><div class="arb-legende" aria-hidden="true"><span><i class="allume"></i>trouvée</span><span><i class="vu"></i>ressource vue</span><span><i class="fantome"></i>à trouver</span><span><i class="obj"></i>objectif</span><span><i class="neuf-i"></i>nouveau</span></div>';
       const nPasses = Math.min(g.age, g.max);
       const regrouper = nPasses >= 2 && f === "tout";
       for (let a = 0; a <= g.max; a++) {

@@ -304,7 +304,7 @@
         el.querySelector("[data-ae-count]").textContent=api.fmt(n);
       });
       const empty=r.querySelector('#ae-discovery-empty');
-      if(empty){empty.hidden=visible>0;empty.innerHTML=query?'Aucune ressource ne correspond à cette recherche.':filtre==="utiles"?'Rien à découvrir ici avec cet outil et ce geste. Change d’outil, ou montre <button type="button" class="btn mini ghost" data-ae="filtre" data-value="tout" title="Montrer toutes les ressources que tu as vues">toutes les ressources</button>.':filtre==="reserve"?'Rien en réserve.':'Aucune ressource.';}
+      if(empty){empty.hidden=visible>0;empty.innerHTML=query?'Rien ne correspond.':filtre==="utiles"?'Rien d’utile ici. <button type="button" class="btn mini ghost" data-ae="filtre" data-value="tout" title="Montrer toutes les ressources que tu as vues">Tout voir</button>':filtre==="reserve"?'Rien en réserve.':'Aucune ressource.';}
       const bench=r.querySelector('.ae-bench'),views=document.getElementById('views'),mini=r.querySelector('.ae-mini');
       if(mini)mini.hidden=!(w.slots.length&&bench.getBoundingClientRect().bottom<views.getBoundingClientRect().top);
       r.querySelectorAll("[data-ae-need]").forEach(el=>{const n=E.count(el.dataset.aeNeed),need=Number(el.dataset.need);el.textContent=need?'×'+need+' requis · '+Math.floor(n)+' disponibles'+(n<need?' · manque '+Math.ceil(need-n):' · prêt'):Math.floor(n)+' disponibles';});

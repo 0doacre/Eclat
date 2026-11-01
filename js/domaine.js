@@ -79,8 +79,9 @@
       const j = Math.max(0, Math.min(zs.length - 1, i + d));
       if (j !== i) allerTerre(zs[j]);
     }
-    function pastilleHTML(k, label, extra) {
-      return '<button type="button" class="pastille terres-pastille' + (U.terrePanel === k ? " on" : "") + (extra || "") + '" data-terre-panel="' + k + '" aria-expanded="' + (U.terrePanel === k) + '">' + label + "</button>";
+    /* une pastille du haut des Terres : une icône ; le mot reste en info-bulle et pour les lecteurs d’écran (class lbl, masquée par css/harmonie-sobre.css) */
+    function pastilleHTML(k, ico, txt, extra) {
+      return '<button type="button" class="pastille terres-pastille' + (U.terrePanel === k ? " on" : "") + (extra || "") + '" data-terre-panel="' + k + '" aria-expanded="' + (U.terrePanel === k) + '" aria-label="' + txt + '" title="' + txt + '">' + ico + '<span class="lbl"> ' + txt + "</span></button>";
     }
     /* une ligne de gisement, compacte : un appui sur l’icône récolte, un appui sur le nom ouvre le gisement */
     function terreGisHTML(z, d) {
@@ -105,11 +106,11 @@
       const oeuvres = Object.keys(D.PROJECTS).filter((pid) => E.projVisible(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
       let h = '<div class="dom terres" data-terre-courante="' + z + '">';
       // les pastilles : une seule ligne de 40 px
-      h += '<div class="terres-pastilles">' + pastilleHTML("obj", "📜 " + esc(goalTitle)) +
-        (sugRel ? pastilleHTML("rel", "✦ Relais +" + sugRel.gain) : "") +
-        (E.zoneOpen(D.COMPTOIR.zone) ? pastilleHTML("comptoir", "⚖️ Comptoir") : "") +
-        (oeuvres.length ? pastilleHTML("oeuvre", "🏗️ Œuvre") : "") +
-        (E.hasFactory && E.hasFactory() ? pastilleHTML("prod", "⚙️ Production") : "") +
+      h += '<div class="terres-pastilles">' + pastilleHTML("obj", "📜", esc(goalTitle)) +
+        (sugRel ? pastilleHTML("rel", "✦", "Relais +" + sugRel.gain) : "") +
+        (E.zoneOpen(D.COMPTOIR.zone) ? pastilleHTML("comptoir", "⚖️", "Comptoir") : "") +
+        (oeuvres.length ? pastilleHTML("oeuvre", "🏗️", "Œuvre") : "") +
+        (E.hasFactory && E.hasFactory() ? pastilleHTML("prod", "⚙️", "Production") : "") +
         "</div>";
       h += nouveauxGisementsHTML();
       // la rangée des terres

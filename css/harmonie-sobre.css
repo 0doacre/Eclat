@@ -1,87 +1,108 @@
-/* Harmonie sobre (aperçu 0.66, branche claude/sobriete-coherence).
- * Un seul vocabulaire pour tout l’aperçu sobre : celui du papier. Le décor est derrière, jamais une autre famille de composants.
- *   papier        : ce qu’on lit (cartes, listes, fiches)                     opaque à 92 %
- *   papier voilé  : ce qui flotte sur la scène (plaques, pastilles, titres)   translucide à 74 %, flou léger
- * Même rayon, même bord, même ombre, même encre partout. Chargée après sobriete.css. */
+/* Harmonie sobre (aperçu 0.66, branche claude/sobriete-coherence), deuxième passe.
+ * Un seul vocabulaire : le papier pour lire, le décor derrière. Peu de mots : des icônes lisibles, le nom en info-bulle.
+ *   papier        : ce qu’on lit (listes, fiches)                      opaque à 90 %
+ *   papier voilé  : ce qui flotte sur la scène                         translucide, flou léger
+ *   plaque sombre : ce qui flotte sur l’illustration des Terres        (déjà dans sobriete.css)
+ * Les petits boutons sans texte sont ronds ; les boutons à texte gardent le cadre à pans coupés.
+ * Chargée après sobriete.css. */
 
 :root {
   --sb-encre: #3b2a1a;
-  --sb-encre-douce: #60513f;
   --sb-papier: rgb(246 239 222 / .92);
-  --sb-voile: rgb(246 239 222 / .76);
+  --sb-papier-leger: rgb(246 239 222 / .8);
+  --sb-voile: rgb(246 239 222 / .72);
+  --sb-sombre: rgb(28 21 14 / .66);
+  --sb-clair: #fff8e9;
   --sb-bord: 1px solid rgb(121 105 74 / .55);
+  --sb-bord-clair: 1px solid rgb(255 248 233 / .45);
   --sb-rayon: 14px;
   --sb-ombre: 0 2px 10px rgb(20 14 8 / .22);
   --sb-flou: blur(4px);
 }
 
-/* ---- une seule recette pour toutes les plaques posées sur un décor ---- */
-#v-labo .ae-work, #v-labo .ae-inventory, #v-labo .ae-layout > *, #v-labo .ae-metiers, #v-labo > :first-child:not(.ae-work):not(.ae-layout):not(section),
-#v-atelier .atl-page > :not(.hidden), #v-arbre .prog-corps > :not(.hidden), #v-arbre .prog-sw, #v-arbre .arb-barre,
-#v-domaine :is(.terre-gisements, .terre-bas, .terre-regle) {
-  background: var(--sb-papier);
-  border: var(--sb-bord);
-  border-radius: var(--sb-rayon);
-  box-shadow: var(--sb-ombre);
+/* ---- plaques de papier (une seule recette) ---- */
+#v-atelier .atl-page > .atel-liste, #v-arbre .prog-corps > :not(.hidden):not(.arb-barre), #v-arbre .prog-sw, #v-domaine .terre-gisements {
+  background: var(--sb-papier); border: var(--sb-bord); border-radius: var(--sb-rayon); box-shadow: var(--sb-ombre);
   -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou);
 }
-/* ce qui flotte (en haut des Terres, titre de la terre, conseil) est voilé : le décor reste lisible derrière */
-#v-domaine .terre-tete, #v-domaine .terres .dom-tip {
-  background: var(--sb-voile);
-  border: var(--sb-bord);
-  border-radius: var(--sb-rayon);
-  box-shadow: var(--sb-ombre);
+/* Labo : un peu de transparence, le décor se devine à travers */
+#v-labo .ae-work, #v-labo .ae-inventory, #v-labo .ae-stock, #v-labo .ae-layout > *, #v-labo .ae-metiers, #v-labo > :first-child:not(.ae-work):not(.ae-layout):not(section) {
+  background: var(--sb-papier-leger); border: var(--sb-bord); border-radius: var(--sb-rayon); box-shadow: var(--sb-ombre);
   -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou);
 }
-#v-domaine .terre-tete::before { content: none; }
-#v-domaine .terre-titre h2, #v-domaine .terre-titre .kicker { color: var(--sb-encre); text-shadow: none; }
-#v-domaine .terres .dom-tip { background: var(--sb-voile) !important; padding: 8px 12px; margin: 0 0 6px; color: var(--sb-encre); }
-#v-domaine .terres .terre-tete { margin: 6px 10px 4px; padding: 4px 8px; }
 
-/* pastilles du haut des Terres : du papier voilé, comme tout le reste (plus de plaques sombres) */
-html[data-style-mode="vivant"] #app #v-domaine .terres :is(.terres-pastille, .terre-nav) {
-  background: var(--sb-voile) !important; color: var(--sb-encre) !important; text-shadow: none !important;
-  border: var(--sb-bord) !important; box-shadow: var(--sb-ombre);
-}
-#v-domaine .terres .terres-pastille { background: var(--sb-voile); color: var(--sb-encre); text-shadow: none; border: var(--sb-bord); }
-#v-domaine .terres .terres-icone img, #v-domaine .terres .terres-icone svg { border-color: var(--sb-papier); box-shadow: var(--sb-ombre); }
-#v-domaine .terres .terres-icone.is-courante { outline-color: var(--sb-papier); }
-
-/* ---- Atelier : moins de bandeaux, une seule ligne d’information, rien de verrouillé à lire ---- */
-#v-atelier .atl-titre, #v-atelier .energie-note { display: none; }
-#v-atelier .atl-bourse { margin: 0; padding: 4px 12px; background: transparent; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-#v-atelier .atel-ech.is-ferme { display: none; }                  /* les échelons encore fermés se découvrent plus tard */
-/* la liste des métiers est une seule plaque de papier ; chaque métier y est une ligne séparée d’un trait fin */
-#v-atelier .atel-liste { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
-html[data-style-mode="vivant"] #app #v-atelier .atel-carte { background: transparent; border: 0; border-bottom: 1px solid rgb(121 105 74 / .3); border-radius: 0; box-shadow: none; }
-html[data-style-mode="vivant"] #app #v-atelier .atel-carte::before { content: none; display: none; }
-html[data-style-mode="vivant"] #app #v-atelier .atel-liste > :last-child { border-bottom: 0; }
-/* la jauge d’énergie : même plaque que le reste, sans cadre à pans coupés */
-html[data-style-mode="vivant"] #app #v-atelier .energie { border: var(--sb-bord); border-radius: var(--sb-rayon); box-shadow: var(--sb-ombre); }
-html[data-style-mode="vivant"] #app #v-atelier .energie::before { content: none; display: none; }
-
-/* ---- Progression : un seul ton de fond pour les cartes (plus de carte verte) ---- */
-#v-arbre .prog-corps :is(.card, .arb-progression, .arb-objectif, .arb-cible) { background: transparent; box-shadow: none; border: 0; }
-#v-arbre .prog-corps [class*="obj"] { background: rgb(121 105 74 / .08); border: var(--sb-bord); border-radius: 12px; }
-
-/* ---- Labo : on laisse voir le décor entre les plaques ---- */
-#v-labo .ae-layout { gap: 10px; }
-#v-labo { background-position: center 30% !important; }
-
-/* ---- Journal : le papier, tel que dans la version précédente ---- */
-#v-journal, #v-carnet { background-color: transparent; }
-
-/* plus de cadre dans le cadre : les plaques du Labo, de l’Atelier et de la Progression n’ont que la plaque de papier ; le cadre à pans coupés reste aux boutons */
-[data-style-mode="vivant"] #app :is(#v-labo, #v-atelier, #v-arbre) :is(.card, .age-sec, .ae-work, .ae-stock, .ae-bench, .ae-inventory, .ae-layout > *, .atl-page > *, .prog-corps > *) {
+/* ---- plus de cadre dans le cadre ---- */
+[data-style-mode="vivant"] #app#app :is(#v-labo, #v-atelier, #v-arbre) :is(.card, .age-sec, .ae-work, .ae-stock, .ae-bench, .ae-inventory, .ae-layout > *, .atl-page > *, .prog-corps > *) {
   border-image: none !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important;
 }
-[data-style-mode="vivant"] #app #v-labo .ae-bench :is(.bench, .slot, .inv) { border-image: none !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
-[data-style-mode="vivant"] #app #v-labo :is(.ae-work, .ae-stock, .ae-inventory)::before, [data-style-mode="vivant"] #app #v-labo :is(.ae-work, .ae-stock, .ae-inventory)::after { content: none; }
-/* une plaque dans une plaque : celle de dedans se fond dans celle de dehors */
-[data-style-mode="vivant"] #app #v-labo .ae-layout > * :is(.ae-work, .ae-bench, .ae-tools) { border: 0 !important; box-shadow: none; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+[data-style-mode="vivant"] #app#app #v-labo .ae-bench :is(.bench, .slot, .inv) { border-image: none !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+[data-style-mode="vivant"] #app#app #v-labo .ae-layout > * :is(.ae-work, .ae-bench, .ae-tools) { border: 0 !important; box-shadow: none; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+[data-style-mode="vivant"] #app#app #v-arbre :is(.arb-progression, .arb-age-groupe, .arb-passes) { border-image: none !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; background: var(--sb-papier) !important; box-shadow: var(--sb-ombre); }
+[data-style-mode="vivant"] #app#app #v-arbre .arb-passes .arb-age-groupe { box-shadow: none; background: transparent !important; border-radius: 10px !important; }
 
-/* ce que carnet-peint.css retire aux conseils des Terres est remis : un conseil sur le décor est un papier voilé */
-html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--sb-voile) !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre) !important; padding: 8px 12px !important; margin: 0 0 6px !important; }
-/* Progression : les âges et la section en cours sont de simples plaques de papier, sans cadre double */
-[data-style-mode="vivant"] #app #v-arbre :is(.arb-progression, .arb-age-groupe, .arb-passes) { border-image: none !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; background: var(--sb-papier) !important; box-shadow: var(--sb-ombre); }
-[data-style-mode="vivant"] #app #v-arbre .arb-passes .arb-age-groupe { box-shadow: none; background: transparent !important; border-radius: 10px !important; }
+/* ---- bandeau du haut : des ressources qu’on lit, des boutons ronds ---- */
+html[data-style-mode="vivant"] #app#app #top#top :is(.icon-btn, .exp-mini) { border-image: none !important; border-radius: 50% !important; width: 40px; height: 40px; min-width: 40px; padding: 0; background: var(--sb-papier) !important; border: var(--sb-bord) !important; box-shadow: var(--sb-ombre); }
+html[data-style-mode="vivant"] #app#app #top#top :is(.icon-btn, .exp-mini)::before { content: none !important; display: none !important; }
+html[data-style-mode="vivant"] #app#app #top#top .chip { border-image: none !important; border-radius: 999px !important; background: var(--sb-papier) !important; border: var(--sb-bord) !important; padding: 2px 10px !important; min-height: 40px; height: 40px; gap: 4px; box-shadow: var(--sb-ombre); }
+html[data-style-mode="vivant"] #app#app #top#top .chip::before { content: none !important; display: none !important; }
+#top .chip .cv small { display: none; }
+#top .chip.quest .cv small { display: inline; }
+#top .chip.intu, #top .chip.mem, #top .chip.ecu { pointer-events: none; }   /* des ressources : on les lit, on ne les touche pas (le nom est en info-bulle) */
+
+/* ---- Terres : la version sobre, avec peu de mots et des boutons ronds ---- */
+/* les pastilles : une icône ; seul l’objectif garde son nom */
+#v-domaine .terres .terres-pastille:not([data-terre-panel="obj"]) .lbl { display: none; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-pastille:not([data-terre-panel="obj"]) { width: 46px; min-width: 46px; height: 46px; padding: 0 !important; border-radius: 50% !important; display: inline-flex; align-items: center; justify-content: center; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-pastille .gi, html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-pastille svg { width: 24px; height: 24px; }
+/* une ligne de gisement : l’icône de la ressource, son compte, la récolte ; le nom et « à la main » sont en info-bulle */
+#v-domaine .terres .gis-compact-name, #v-domaine .terres .terre-main { display: none; }
+#v-domaine .terres .gis-compact-c { font-size: 22px; }
+#v-domaine .terres .terre-gis { min-height: 58px; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres :is(.terre-boucle, .terre-recolte) { border-image: none !important; border-radius: 50% !important; width: 48px; height: 48px; min-width: 48px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-recolte { background: var(--sb-papier); border: var(--sb-bord) !important; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-boucle { background: #a8402b !important; color: var(--sb-clair) !important; border: 1px solid #6c2a1a !important; box-shadow: 0 1px 4px rgb(0 0 0 / .35); }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-boucle::before { content: none !important; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-boucle.on { background: #6c2a1a !important; }
+/* le conseil sur l’illustration : une plaque sombre à texte clair, lisible */
+html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--sb-sombre) !important; color: var(--sb-clair) !important; border: var(--sb-bord-clair) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre) !important; padding: 8px 12px !important; margin: 0 0 6px !important; -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); text-shadow: 0 1px 2px rgb(0 0 0 / .6); }
+html[data-style-mode="vivant"] #v-domaine .terres .dom-tip b { color: #ffe9b8; }
+
+/* ---- Labo : le contenu monte sous l’onglet, l’établi reste sous le pouce ---- */
+#v-labo .ae-layout { gap: 10px; justify-content: space-between; }
+#v-labo .ae-layout > .ae-stock { flex: 1 1 auto; }
+#v-labo { background-position: center 30% !important; }
+
+/* ---- Atelier : pas de ruban derrière un bouton ou une ligne ; seule la liste des métiers est une plaque ---- */
+#v-atelier .atl-titre, #v-atelier .energie-note, #v-atelier .atl-bourse { display: none; }
+html[data-style-mode="vivant"] #app#app #v-atelier .atl-page > :is(.subtabs, .energie, .prod-entete) { background: transparent !important; border: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; padding-inline: 0; }
+#v-atelier .subtabs { display: flex; gap: 8px; }
+html[data-style-mode="vivant"] #app#app #v-atelier .subtabs > button { flex: 1 1 0; background: var(--sb-voile) !important; border-image: none !important; border: var(--sb-bord) !important; border-radius: 999px !important; box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); }
+html[data-style-mode="vivant"] #app#app #v-atelier .energie { background: var(--sb-voile) !important; border: var(--sb-bord) !important; border-radius: 999px !important; box-shadow: var(--sb-ombre) !important; -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); padding-inline: 14px !important; margin-inline: 10px; width: calc(100% - 20px); }
+html[data-style-mode="vivant"] #app#app #v-atelier .energie::before { content: none; display: none; }
+html[data-style-mode="vivant"] #app#app #v-atelier .prod-entete :is(button, .btn) { background: var(--sb-voile) !important; border-image: none !important; border: var(--sb-bord) !important; border-radius: 999px !important; box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); }
+#v-atelier .atel-ech.is-ferme { display: none; }
+#v-atelier .atel-liste { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+#v-atelier .atl-page > .atel-liste { margin-inline: 10px; }
+html[data-style-mode="vivant"] #app#app #v-atelier .atel-carte { background: transparent; border: 0; border-bottom: 1px solid rgb(121 105 74 / .3); border-radius: 0; box-shadow: none; }
+html[data-style-mode="vivant"] #app#app #v-atelier .atel-carte::before { content: none; display: none; }
+html[data-style-mode="vivant"] #app#app #v-atelier .atel-liste > :last-child { border-bottom: 0; }
+
+/* ---- Progression : l’âge et ses étapes sur une ligne, l’objectif et la loupe sur la suivante ---- */
+#v-arbre .arb-entete, #v-arbre .arb-parcours-titre, #v-arbre .arb-legende { display: none; }
+[data-style-mode="vivant"] #app#app #v-arbre .arb-barre { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 8px 12px; background: var(--sb-papier) !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre); margin: 6px 10px; -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); }
+#v-arbre .arb-resume { flex: 0 0 100%; display: flex; justify-content: space-between; align-items: baseline; font-size: 1.15rem; }
+#v-arbre .arb-resume span { font-variant-numeric: tabular-nums; opacity: .8; }
+#v-arbre .arb-barre .arb-obj-btn { flex: 1 1 auto; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#v-arbre .arb-barre [data-arb="chercher"] { flex: 0 0 auto; margin-left: auto; width: 44px; height: 44px; padding: 0; border-image: none !important; border-radius: 50% !important; background: var(--sb-papier) !important; border: var(--sb-bord) !important; }
+#v-arbre .arb-barre [data-arb="chercher"]::before { content: none !important; }
+#v-arbre .arb-barre [data-arb="chercher"] :is(svg, .gi) { width: 22px; height: 22px; }
+#v-arbre .arb-barre .arb-obj-btn { flex: 1 1 0; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-pastille .lbl { color: var(--sb-clair) !important; }
+html[data-style-mode="vivant"] #app#app #v-atelier .subtabs > button::before, html[data-style-mode="vivant"] #app#app #v-atelier .prod-entete button::before { content: none !important; }
+html[data-style-mode="vivant"] #app#app #v-atelier .subtabs > button.on { background: var(--sb-papier) !important; color: #813f2a; font-weight: 700; }
+/* Progression : la ligne de l’objectif est du texte (sans cadre), la loupe est un petit bouton rond */
+html[data-style-mode="vivant"] #app#app #v-arbre .arb-barre .arb-obj-btn { border-image: none !important; background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; min-height: 44px; font-size: 1rem; }
+html[data-style-mode="vivant"] #app#app #v-arbre .arb-barre .arb-obj-btn::before { content: none !important; }
+html[data-style-mode="vivant"] #app#app #v-arbre .arb-barre [data-arb="chercher"] { width: 44px; height: 44px; min-width: 44px; padding: 0 !important; border-image: none !important; border-radius: 50% !important; background: var(--sb-papier) !important; border: var(--sb-bord) !important; margin-left: auto; box-shadow: var(--sb-ombre); display: inline-flex; align-items: center; justify-content: center; }
+html[data-style-mode="vivant"] #app#app #v-arbre .arb-barre [data-arb="chercher"]::before { content: none !important; }
+html[data-style-mode="vivant"] #app#app #v-arbre .arb-barre [data-arb="chercher"] :is(svg, .gi) { width: 22px; height: 22px; }
