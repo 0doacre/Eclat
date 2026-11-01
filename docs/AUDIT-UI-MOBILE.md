@@ -61,3 +61,16 @@ Ce que la vision ne fait pas : réduire le jeu. Les âges, les recettes et les m
 ## Budget de sobriété (cible)
 
 Par écran principal : au plus 8 cibles hors en-tête, aucun défilement, moins de 150 signes lisibles d'un coup. Aujourd'hui seule la liste des métiers respecte les trois.
+
+## Première passe, bilan (1er novembre)
+
+Le monde est la scène : chaque écran a un décor derrière lui et les gestes se posent dessus.
+
+- **Terres** : l'illustration de la terre remplit l'écran ; objectif, comptoir et production sont de petites plaques sombres translucides ; toucher le titre contemple l'aquarelle.
+- **Labo** : l'établi illustré ; le stock en haut, les emplacements et le geste principal en bas, à portée du pouce.
+- **Atelier** : le même établi ; le geste « À la main » reste collé en bas quand la page défile.
+- **Journal** : le Carnet en tuiles sur le papier.
+- **Progression** : le ciel de la Mémoire derrière le chemin ; l'âge en cours et l'objectif d'abord.
+- La ligne d'ambiance ne s'affiche que sur les Terres.
+
+À faire ensuite : un vrai décor plein cadre pour le Caveau des Semeurs (aujourd'hui une carte découpée), des fonds en plus haute définition (360 × 640 aujourd'hui), les petits écrans (320 × 568).
