@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.65.3";
+  D.VERSION = "0.65.4";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1784,6 +1784,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🔎 Au Labo, une recette déjà connue et déjà fabriquée est annoncée comme telle, avec un bouton qui ouvre l’Atelier sur le bon métier.",
+    "🧱 La page d’un métier à l’Atelier ne se chevauche plus : ses blocs se suivent et la page défile. Les phrases « à partir de l’âge… » sont corrigées.",
     "🎁 Le premier Semeur qui passe le relais reçoit 24 Souvenirs offerts : de quoi retrouver la Rivière plus de trois fois plus vite, même sans chercher la meilleure dépense.",
     "🔁 Une relève n’est proposée que si elle doublerait au moins tes Souvenirs déjà gagnés : le rythme des relèves suit les repères des jeux du genre.",
     "⏳ La première relève arrive plus tard : elle se déclenche quand tu franchis la Rivière, et non plus la Plaine. Les relèves suivantes sont aussi proposées moins souvent : il faut avoir joué un moment, et avoir avancé nettement au-delà de ce que tes prédécesseurs avaient atteint.",

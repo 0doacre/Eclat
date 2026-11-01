@@ -113,6 +113,28 @@ async function run() {
     ok(await p.evaluate(() => !!(window.__eclat.E.queued("collets") || window.__eclat.E.state.made.collets)), "un appui commande l'extracteur");
     ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
   }
+  { // une recette déjà connue et déjà fabriquée : le Labo le dit et renvoie à l'Atelier, sans lancer de commande
+    const E0 = Core.createEngine(), st = E0.state;
+    st.age = 1; st.cycle = 1; st.meta.forcedDone = true; st.introSeen = true; st.flags.ver = D.VERSION;
+    Object.assign(st.settings, { tuto: false, sound: false, visiteurs: false });
+    for (const z of D.ZONES) st.zones[z.id] = true;
+    const r = D.ITEMS.manche.r;
+    for (const id of Object.keys(r[1])) { st.seen[id] = true; st.inv[id] = 20; }
+    st.known.manche = true; st.made.manche = 1; st.seen.manche = true; st.stats.crafts = 1;
+    E0.recalc();
+    const { p, ctx, errors } = await ouvre(E0.serialize());
+    await p.evaluate((rr) => { const g = window.__eclat; Object.assign(g.E.state.flags.equipmentBench, { metier: g.E.atelierDe("manche"), mode: rr[0], slots: Object.keys(rr[1]), prepared: null }); g.render(true); }, r);
+    await p.waitForTimeout(300);
+    await p.locator('.ae-actions [data-ae="forge"]').click(); await p.waitForTimeout(300);
+    const msg = await p.locator("#ae-result").textContent();
+    ok(/déjà connue/.test(msg), "le Labo dit que la recette est déjà connue : " + msg);
+    ok(!(await p.evaluate(() => window.__eclat.E.queued("manche"))), "aucune commande n'est lancée");
+    ok(await p.locator('.ae-found-acts [data-aller="manche"]').count() === 1, "un bouton renvoie à l'Atelier");
+    await p.locator('.ae-found-acts [data-aller="manche"]').click(); await p.waitForTimeout(500);
+    ok(await p.evaluate(() => window.__eclat.U.tab) === "atelier", "le bouton ouvre l'Atelier");
+    ok(await p.evaluate(() => window.__eclat.U.atelierSel) === await p.evaluate(() => window.__eclat.E.atelierDe("manche")), "sur le métier de la recette");
+    ok(!errors.length, "erreurs JS " + errors.join(";")); await ctx.close();
+  }
   { // tout est connu : les outils épuisés disparaissent, sauf celui d'une recette préparée
     const { p, ctx, errors } = await ouvre(fixture(true));
     const sans = await choix(p);

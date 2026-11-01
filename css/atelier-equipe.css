@@ -28,6 +28,7 @@
 #ae-result.ae-heat-chaud{color:#f7a072;background:rgba(247,160,114,.1);border:1px solid rgba(247,160,114,.35);padding:8px 12px;box-shadow:0 0 10px rgba(247,160,114,.18);animation:aePulseWarm .35s ease-out}
 #ae-result.ae-heat-tiede{color:#eed7a1;background:rgba(238,215,161,.08);border:1px solid rgba(238,215,161,.25);padding:8px 12px}
 #ae-result.ae-heat-froid{color:#90a4ae;background:rgba(144,164,174,.08);border:1px solid rgba(144,164,174,.2);padding:8px 12px}
+#ae-result.ae-heat-known{background:rgba(129,63,42,.08);border:1px solid rgba(129,63,42,.35);padding:8px 12px}
 #ae-result.ae-heat-success,#ae-result.ae-heat-discover{color:var(--good);background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.4);padding:8px 12px;box-shadow:0 0 14px rgba(76,175,80,.25);animation:aePulseCraft .35s ease-out}
 @keyframes aePulseCraft{0%{transform:scale(.98)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
 @keyframes aePulseWarm{0%{transform:translateY(-2px);filter:brightness(1.2)}100%{transform:translateY(0);filter:brightness(1)}}
