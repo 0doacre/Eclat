@@ -59,3 +59,6 @@
 #v-arbre .arb-barre{padding:4px 8px}
 /* moins de vide ailleurs */
 .view .tip,.view .atl-titre{margin-top:4px;margin-bottom:6px}
+
+/* La ligne d'ambiance n'habille que la scène (Terres) : ailleurs, la place revient au contenu */
+body:has(#v-domaine:not(.on)) #ambianceBar{display:none}
