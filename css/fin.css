@@ -109,3 +109,17 @@ html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { overflow: 
 html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule, html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule b { color: #a8402b !important; }
 html[data-style-mode="vivant"] #app#app#app#app .ico-seule :is(svg, .gi) { width: 28px; height: 28px; }
 html[data-style-mode="vivant"] #app#app#app#app .age-pill.ico-seule { font: 700 17px var(--fin-sans) !important; }
+
+/* ---- Atelier : la plaque d’un métier, le coin d’icônes (engrenage, équipe, à construire) ---- */
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atl-plaque { display: flex; align-items: center; gap: 2px; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atl-plaque .atl-retour { flex: 0 0 44px; font-size: 28px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atl-plaque .atl-metier { flex: 1 1 auto; justify-content: center; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete { display: flex !important; align-items: center; gap: 2px; padding: 2px 6px; border-radius: 30px; background: rgb(251 246 233 / .92) !important; box-shadow: 0 2px 10px rgb(20 14 8 / .35) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button { position: relative; width: 52px !important; height: 52px !important; min-width: 52px !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; display: inline-flex; align-items: center; justify-content: center; color: #3b2a1a !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button::before { display: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button :is(svg, .gi, .roue) { width: 34px !important; height: 34px !important; color: #3b2a1a !important; filter: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete .roue-n { position: absolute; right: 0; top: 2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #3b2a1a; color: #fff8e9; font: 700 12px/20px var(--fin-sans); text-align: center; box-sizing: border-box; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod.atl-page .prod-entete .prod-pastille-auto { background: none !important; box-shadow: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-qui { display: flex; justify-content: space-around; gap: 4px; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .a-construire-ligne { padding: 8px 0 12px; border-bottom: 1px solid rgb(106 86 58 / .25); }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .auto-feuille .rbtns { justify-content: flex-end; }
