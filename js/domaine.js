@@ -60,7 +60,7 @@
      * Objectif, relève, Comptoir, production et œuvres sont des pastilles qui ouvrent un panneau. */
     const FOND_CARTE = {};
     /* terres dont le fond HD paysage est livré (assets/terres/<id>-fond.webp, voir docs/art-direction/fonds-terres-v1) : même image sur téléphone et sur ordinateur */
-    const FONDS_HD = {};
+    const FONDS_HD = { lisiere: 1 };
     const fondDe = (z) => new URL("assets/terres/" + z + (FONDS_HD[z] ? "-fond" : FOND_CARTE[z] ? "-carte" : "-decor") + ".webp", document.baseURI).href;
     const vignetteDe = (z) => new URL("assets/terres/" + z + "-carte.webp", document.baseURI).href;
     function terreCourante() {

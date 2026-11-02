@@ -392,3 +392,9 @@ html[data-style-mode="vivant"] #app#app #v-arbre .arb-vue > p.small.muted { back
   html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres { box-sizing: border-box; padding-right: max(0px, calc(100% - var(--col) - 16px)) !important; }
   html[data-style-mode="vivant"] #app#app #v-labo#v-labo .ae-layout > * { width: 100%; box-sizing: border-box; }
 }
+
+/* fonds HD des terres : l’aquarelle a des bords de papier irréguliers, on recadre un peu pour qu’ils ne se voient jamais, et on garde de la matière sous les plaques */
+html[data-style-mode="vivant"] #app#app #v-domaine .terre-fond[src*="-fond.webp"] { transform: scale(1.14); transform-origin: 50% 45%; filter: saturate(1.18) contrast(1.06); }
+@media (min-width: 900px) and (min-height: 520px) {
+  html[data-style-mode="vivant"] #app#app #views > .view { max-width: none !important; }
+}
