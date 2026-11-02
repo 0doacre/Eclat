@@ -523,11 +523,11 @@
       if (sorted.length <= 1) return "";
       const anyOpen = sorted.some((s) => U.carnetFilter !== "tout" || (U.openAges[s.age] !== undefined ? U.openAges[s.age] : s.age >= st.age));
       return '<div class="age-nav" role="navigation" aria-label="Accès rapide aux âges">' +
-        '<button type="button" class="age-pill age-all" data-age-all title="' + (anyOpen ? "Replier tous les âges" : "Déplier tous les âges") + '" aria-label="' + (anyOpen ? "Replier tous les âges" : "Déplier tous les âges") + '">' + (anyOpen ? "▴ Plier" : "▾ Déplier") + "</button>" +
+        '<button type="button" class="age-pill age-all ico-seule" data-age-all title="' + (anyOpen ? "Replier tous les âges" : "Déplier tous les âges") + '" aria-label="' + (anyOpen ? "Replier tous les âges" : "Déplier tous les âges") + '">' + (anyOpen ? "▴" : "▾") + "</button>" +
         sorted.map((s) => {
           const ag = D.AGES[s.age];
           const cur = s.age === st.age;
-          return '<button type="button" class="age-pill' + (cur ? " cur" : "") + '" data-age-jump="' + s.age + '" style="--ac:' + ag.c + '" title="' + esc(ag.n) + '" aria-label="Aller à : ' + esc(ag.n) + '">Âge ' + (s.age + 1) + "</button>";
+          return '<button type="button" class="age-pill ico-seule' + (cur ? " cur" : "") + '" data-age-jump="' + s.age + '" style="--ac:' + ag.c + '" title="' + esc(ag.n) + '" aria-label="Aller à : ' + esc(ag.n) + '">' + ["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII","XIII","XIV","XV"][s.age] + "</button>";
         }).join("") + "</div>";
     }
     /* le retour de mémoire : après une relève, le Carnet se relit âge par âge */
@@ -557,7 +557,7 @@
       const fNom = (FILTRES.find(([k]) => k === U.carnetFilter) || FILTRES[0])[1];
       h += '<div class="carnet-outils"><div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>' +
-        '<button type="button" class="btn small ghost' + (U.carnetPanel === "filtres" ? " on" : "") + '" data-cpanel="filtres" aria-expanded="' + (U.carnetPanel === "filtres") + '" title="Choisir ce que la liste montre">' + esc(fNom) + (U.carnetPanel === "filtres" ? " ▴" : " ▾") + "</button></div>";
+        '<button type="button" class="btn small ghost ico-seule' + (U.carnetPanel === "filtres" ? " on" : "") + '" data-cpanel="filtres" aria-expanded="' + (U.carnetPanel === "filtres") + '" title="Choisir ce que la liste montre : ' + esc(fNom) + '" aria-label="Filtrer : ' + esc(fNom) + '">' + gi("funnel") + "</button></div>";
       const CF_T = { tout: "Toutes les recettes que tu connais", pret: "Celles que ta Réserve couvre entièrement, pièces comprises", craft: "Celles dont les pièces manquantes peuvent encore être fabriquées", unk: "Celles qu’il te reste à découvrir", ext: "Les bâtiments qui récoltent à ta place", tool: "Les outils et leurs améliorations", mach: "Les machines qui fabriquent seules", pin: "Tes épingles, en haut de l’Atelier" };
       if (U.carnetPanel === "filtres") h += '<div class="filters">' + FILTRES.map(([k, n]) =>
         '<button data-cf="' + k + '" title="' + (CF_T[k] || "") + '" class="' + (U.carnetFilter === k ? "on" : "") + '">' + n + "</button>").join("") + "</div>";

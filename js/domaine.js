@@ -9,7 +9,7 @@
   const SHOWN = 2; // terres dépliées d’office ; les plus anciennes se replient
 
   function create(api) {
-    const { E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
+    const { E, A, D, U, gi, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, toast, openModal, closeModal, norm, vibe, floater, passHTML, render, quiet } = api;
     const uiSigne = api.uiSigne || (() => "");
     const recitInline = api.recitInline || ((t) => esc(t));
     const itemPill = api.itemPill || ((id) => esc(id));
@@ -152,9 +152,9 @@
       h += ruinsBlock(z, Object.keys(E.ruins()).filter((id) => I[id] && I[id].t === "ext" && E.extZones(id)[0] === z));
       h += '<div class="terre-bas">';
       if (z === "lisiere") h += Decouvertes.sceneHTML() + Decouvertes.studyHTML();
-      if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small" data-gz="plaine">Emprunter le sentier</button><button class="btn small ghost" data-sentier-replay>Revoir les travaux</button></div></div>';
+      if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small ico-seule" data-gz="plaine" aria-label="Emprunter le sentier" title="Emprunter le sentier">' + gi("hiking") + '</button><button class="btn small ghost ico-seule" data-sentier-replay aria-label="Revoir les travaux" title="Revoir les travaux">' + gi("hammer-nails") + '</button></div></div>';
       if (z === "plaine") h += Plaine.sceneHTML() + Plaine.studyHTML();
-      if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small" data-gz="riviere">Emprunter la passerelle</button><button class="btn small ghost" data-passerelle-replay>Revoir les travaux</button></div></div>';
+      if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small ico-seule" data-gz="riviere" aria-label="Emprunter la passerelle" title="Emprunter la passerelle">' + gi("hiking") + '</button><button class="btn small ghost ico-seule" data-passerelle-replay aria-label="Revoir les travaux" title="Revoir les travaux">' + gi("hammer-nails") + '</button></div></div>';
       if (z === "riviere") h += Riviere.studyHTML();
       if (z === "collines") h += Collines.studyHTML();
       if (z === zs[zs.length - 1]) {
@@ -414,11 +414,11 @@
           '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
           (z === "lisiere" ? Decouvertes.sceneHTML() : z === "plaine" ? Plaine.sceneHTML() : scene ? '<figure class="carnet-landscape' + (painted ? "" : " carnet-landscape-existing") + '" data-contempler="' + z + '" tabindex="0" role="button" aria-label="Contempler l’aquarelle de ' + esc(Z.n) + '" title="Agrandir et contempler l’aquarelle de ' + esc(Z.n) + '"><img src="' + scene + '" alt="" loading="lazy" decoding="async"><figcaption>Planche ' + number + ' · ' + esc(Z.n) + ' · 🔍 Agrandir</figcaption></figure>' : '') + '</div>';
         if (z === "lisiere") h += Decouvertes.studyHTML();
-        if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small" data-gz="plaine">Emprunter le sentier</button><button class="btn small ghost" data-sentier-replay>Revoir les travaux</button></div></div>';
+        if (z === "lisiere" && E.zoneOpen("plaine")) h += '<div class="sentier-retained">' + window.EclatSentier.html(E) + '<div class="row wrap"><button class="btn small ico-seule" data-gz="plaine" aria-label="Emprunter le sentier" title="Emprunter le sentier">' + gi("hiking") + '</button><button class="btn small ghost ico-seule" data-sentier-replay aria-label="Revoir les travaux" title="Revoir les travaux">' + gi("hammer-nails") + '</button></div></div>';
         if (z === "plaine") h += Plaine.studyHTML();
         if (z === "riviere") h += Riviere.studyHTML();
         if (z === "collines") h += Collines.studyHTML();
-        if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small" data-gz="riviere">Emprunter la passerelle</button><button class="btn small ghost" data-passerelle-replay>Revoir les travaux</button></div></div>';
+        if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small ico-seule" data-gz="riviere" aria-label="Emprunter la passerelle" title="Emprunter la passerelle">' + gi("hiking") + '</button><button class="btn small ghost ico-seule" data-passerelle-replay aria-label="Revoir les travaux" title="Revoir les travaux">' + gi("hammer-nails") + '</button></div></div>';
       } else {
         h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + btnContempler + toggleOpenBtn + lieuHTML(z) + "</div>";
       }

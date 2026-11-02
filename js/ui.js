@@ -571,7 +571,7 @@
   const Passerelle = window.EclatPasserelle.create({ E, A });
   /* le Domaine : ce qui produit ; la Carte : où l’on est */
   const Dom = window.EclatDomaine.create({
-    E, A, D, U, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z, options) => passHTML(z, options), uiSigne, recitInline,
+    E, A, D, U, gi, esc, fmt, fmtNum, fmtTime, perMin, needText, limitHTML, deZone, sparks, icon, itemPill, toast, openModal, closeModal, norm, vibe, floater, passHTML: (z, options) => passHTML(z, options), uiSigne, recitInline,
     openStillnessScene: () => openStillnessScene(),
     render: (f) => render(f), quiet: () => Tuto.active(),
     top: () => donsRepere() + reveilRepere() + goalCard() + '<div id="trackBox">' + trackerHTML() + "</div>",

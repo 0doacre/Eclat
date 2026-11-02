@@ -230,7 +230,8 @@
       h+='</div><p id="ae-result" class="small'+heatCls+'" role="status">'+esc(message)+'</p>'+trouveeActs()+'</div><aside class="ae-tools">'+actionsHTML(tools,w)+'</aside></div></section>';
       h+='<section class="card ae-stock"><div class="ae-stock-search"><input id="ae-search" type="search" aria-label="Chercher une ressource" placeholder="Chercher une ressource…" value="'+esc(U.equipmentSearch||"")+'"></div>';
       const filtre=s.settings.equipmentFilter||"utiles";
-      const chip=(v,l,t)=>'<button type="button" class="ae-chip'+(filtre===v?' on':'')+'" data-ae="filtre" data-value="'+v+'" aria-pressed="'+(filtre===v)+'" title="'+esc(t)+'">'+l+'</button>';
+      const FIL_IC={utiles:"archery-target",tout:"stack",reserve:"warehouse"};
+      const chip=(v,l,t)=>'<button type="button" class="ae-chip ico-seule'+(filtre===v?' on':'')+'" data-ae="filtre" data-value="'+v+'" aria-pressed="'+(filtre===v)+'" aria-label="'+esc(l.replace(/^✦ /,''))+'" title="'+esc(l.replace(/^✦ /,'')+' : '+t)+'">'+gi(FIL_IC[v])+'</button>';
       h+='<div class="ae-filtres" role="group" aria-label="Ressources à montrer">'+chip("utiles","✦ Utiles","Les ressources qui peuvent encore donner une recette avec cet outil et ce geste")+chip("tout","Tout","Toutes les ressources que tu as vues")+chip("reserve","En réserve","Seulement ce que tu as en stock")+'</div>';
       const study=E.studyAllCost();
       if(study.n)h+='<div class="ae-etude'+(U.etudeEnCours?' etude-en-cours':'')+'"'+U.etudeAttrs()+'>'+button("study","","Étudier · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c||!!U.etudeEnCours)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des ressources" aria-label="Comprendre l’étude des ressources">?</button></div>';
