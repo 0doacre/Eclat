@@ -150,3 +150,13 @@ html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn.pri, .forg
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri)::before { background: transparent !important; border-color: transparent !important; box-shadow: none; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri) { text-decoration: underline; text-underline-offset: 3px; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .acts { gap: 8px; }
+
+/* Terres : les icônes grandes tiennent dans la hauteur de l’écran (la vue ne défile pas à 390 × 844) */
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout, html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte { width: 58px !important; height: 58px !important; min-width: 58px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ic, html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte .ic, html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte :is(img, svg, .gi) { width: 54px !important; height: 54px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-gisements :is(.gis, .terre-ligne, li, .row) { padding-block: 0 !important; min-height: 0 !important; }
+/* le fond recadré (zoom de 14 %) ne doit pas agrandir la zone qui défile */
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terres { overflow: clip; }
+/* Étude : les ressources restent grandes mais l’établi et « Tailler » restent au-dessus de la barre d’onglets */
+html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource .ic { width: 52px !important; height: 52px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource > .btn { min-height: 80px !important; padding: 4px 2px 4px !important; }

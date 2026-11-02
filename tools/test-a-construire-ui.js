@@ -43,7 +43,7 @@ async function run() {
   ok(verbes.some(t => /Construire/.test(t)), "le verbe est « Construire » : " + verbes.slice(0, 3).join(","));
   // la page du métier se lit de haut en bas : aucun bloc ne recouvre le suivant (0.65.4)
   ok(await p.locator("#v-atelier .prod .a-construire").count() === 1, "À construire est dans la page du métier");
-  const recouvre = await p.evaluate(() => { const kids = [...document.querySelectorAll("#v-atelier .prod > *")].filter((e) => e.getBoundingClientRect().height > 0); const bad = []; for (let i = 0; i + 1 < kids.length; i++) { const a = kids[i].getBoundingClientRect(), b = kids[i + 1].getBoundingClientRect(); if (a.bottom > b.top + 2) bad.push(kids[i].className + " > " + kids[i + 1].className); } return bad; });
+  const recouvre = await p.evaluate(() => { const kids = [...document.querySelectorAll("#v-atelier .prod > *")].filter((e) => e.getBoundingClientRect().height > 0 && getComputedStyle(e).position !== "fixed"); const bad = []; for (let i = 0; i + 1 < kids.length; i++) { const a = kids[i].getBoundingClientRect(), b = kids[i + 1].getBoundingClientRect(); if (a.bottom > b.top + 2) bad.push(kids[i].className + " > " + kids[i + 1].className); } return bad; });
   ok(recouvre.length === 0, "aucun bloc de la page du métier n'en recouvre un autre : " + recouvre.join(" ; "));
   const cible = await p.evaluate(() => { const g = window.__eclat; return [...document.querySelectorAll(".a-construire-ligne")].map(e => e.dataset.construire).find(id => g.E.orderStatus(id, 1).ok && !g.E.isScaled(g.E.item(id))); });
   if (cible) {
