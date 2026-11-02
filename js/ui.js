@@ -287,8 +287,8 @@
       const q = ing[i];
       const lack = (S().inv[i] || 0) + 1e-9 < q;
       return '<span class="ing' + (lack && opts.check ? " lack" : "") + (opts.link ? " link" : "") + '"' +
-        (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + (opts.link ? ' data-goto="' + i + '" title="Ouvrir sa fiche"' : "") + ">" +
-        icon(i, "sm") + '<span class="q">' + fmt(q) + "</span> " + esc(I[i].n) + "</span>";
+        (opts.check ? ' data-need="' + i + '" data-q="' + q + '"' : "") + ' title="' + esc(I[i].n) + (opts.link ? " · ouvrir sa fiche" : "") + '"' + (opts.link ? ' data-goto="' + i + '"' : "") + ">" +
+        icon(i, "sm") + '<span class="q">' + fmt(q) + '</span><span class="ing-n">' + esc(I[i].n) + "</span></span>";
     }).join("");
   }
   function gesteChip(id) {

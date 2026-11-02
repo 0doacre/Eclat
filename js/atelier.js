@@ -1892,8 +1892,8 @@
         const effet = fxText(id) ? '<div class="tiny" style="color:var(--good)">' + esc(fxText(id)) + "</div>" : "";
         const manque = b && b.why !== "owned" ? '<div class="why tiny">' + cap1(needText(id, b, true)) + "</div>" : "";
         return '<div class="a-construire-ligne" data-construire="' + id + '"><div class="row" style="align-items:flex-start">' + icon(id) + '<div class="grow" data-goto="' + id + '" title="Voir la recette et ses usages"><div class="rname">' + esc(it.n) + " " + compte + "</div>" + effet + "</div></div>" +
-          '<div class="row wrap small" style="margin-top:6px">' + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>" + manque +
-          '<div class="row wrap rbtns" style="margin-top:6px">' + craftBtns(id, verbe) + "</div></div>";
+          manque + '<div class="a-ligne-bas"><div class="row wrap small ings">' + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>" +
+          '<div class="row wrap rbtns">' + craftBtns(id, verbe) + "</div></div></div>";
       };
       const cle = "construire-" + U.atelierSel, defaut = !prodRecettes().length;
       if (opt && opt.nombre) return aFaire.length;

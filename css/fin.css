@@ -123,3 +123,30 @@ html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod.atl-page .prod-
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-qui { display: flex; justify-content: space-around; gap: 4px; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .a-construire-ligne { padding: 8px 0 12px; border-bottom: 1px solid rgb(106 86 58 / .25); }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .auto-feuille .rbtns { justify-content: flex-end; }
+
+/* ---- ingrédients : l’icône et le nombre, sans cadre ; le nom est en infobulle (et lu par les lecteurs d’écran) ---- */
+html[data-style-mode="vivant"] #app#app#app#app .ing { display: inline-flex; align-items: center; gap: 4px; padding: 0 !important; background: none !important; border: 0 !important; border-image: none !important; box-shadow: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app .ing::before, html[data-style-mode="vivant"] #app#app#app#app .ing::after { display: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app .ing .ing-n { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+html[data-style-mode="vivant"] #app#app#app#app .ing .ic { width: 38px !important; height: 38px !important; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; }
+html[data-style-mode="vivant"] #app#app#app#app .ing .ic :is(.carnet-img, svg, .gi) { width: 100% !important; height: 100% !important; object-fit: contain; }
+html[data-style-mode="vivant"] #app#app#app#app .ing .q { font: 700 17px var(--fin-sans) !important; color: #813f2a !important; }
+html[data-style-mode="vivant"] #app#app#app#app .ing.lack .q { color: #a8402b !important; text-decoration: underline wavy; text-underline-offset: 3px; }
+html[data-style-mode="vivant"] #app#app#app#app .ing.lack .ic { opacity: .55; }
+html[data-style-mode="vivant"] #app#app#app#app .ings { gap: 14px; align-items: center; flex: 1 1 auto; min-width: 0; }
+/* une ligne : les ingrédients à gauche, « Fabriquer » à droite */
+html[data-style-mode="vivant"] #app#app#app#app .a-ligne-bas { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; }
+html[data-style-mode="vivant"] #app#app#app#app .a-ligne-bas .rbtns { flex: 0 0 auto; margin: 0 !important; justify-content: flex-end; flex-wrap: nowrap; }
+html[data-style-mode="vivant"] #app#app#app#app .prod-fiche .row.wrap.small { gap: 14px; align-items: center; }
+
+/* ---- fenêtres : la même grammaire que les écrans (le #modal est hors de #app) ---- */
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn, .mini, .forge-btn, .mforge) {
+  font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; min-height: 44px !important; padding: 0 16px !important; color: #3b2a1a !important;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn, .mini, .forge-btn, .mforge)::before { inset: 2px 0 !important; border: 1.5px solid rgb(106 86 58 / .6) !important; border-image: none !important; border-radius: 10px !important; background: rgb(251 246 233 / .82) !important; box-shadow: 0 1px 0 rgb(60 40 20 / .12); }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn.pri, .forge-btn, .mforge) { color: #fff8e9 !important; min-height: 48px !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn.pri, .forge-btn, .mforge)::before { background: #a8402b !important; border-color: #7a2c1c !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri)::before { background: transparent !important; border-color: transparent !important; box-shadow: none; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri) { text-decoration: underline; text-underline-offset: 3px; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box .acts { gap: 8px; }
