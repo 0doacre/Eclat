@@ -9,7 +9,7 @@
   function create(api) {
     const { E, D, A, U, esc, save, toast } = api;
     const S = () => E.state;
-    const TABS = { domaine: "les Terres", labo: "le Labo", carte: "l’Atlas, dans les Terres", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans la Progression" };
+    const TABS = { domaine: "les Terres", labo: "l’Étude", carte: "l’Atlas, dans les Terres", atelier: "l’Atelier", carnet: "le Carnet, dans l’Atelier", machines: "les Machines, dans l’Atelier", journal: "le Journal", cosmos: "le Cosmos, dans la Progression" };
     const GAP = 150000; // entre deux chapitres : une explication toutes les deux ou trois minutes, jamais en rafale
 
     /* ------------------------------------------------------------ petits repères */
@@ -47,7 +47,7 @@
         steps: [
           { tab: "domaine", at: '[data-hloop="lisiere:bois"]', text: "▶ Récolter : récolte en continu. Touche encore pour arrêter. L’icône du bois récolte un seul coup.",
             done: () => (S().inv.bois || 0) >= 3 || S().known.manche },
-          { tab: "labo", go: "Ouvre le Labo.", at: E.equipmentList ? ".ae-tools" : ".gestes",
+          { tab: "labo", go: "Ouvre l’Étude.", at: E.equipmentList ? ".ae-tools" : ".gestes",
             text: E.equipmentList ? "Choisis ton outil, pose tes ressources, puis utilise son geste. Le percuteur taille, les mains assemblent ou tressent." : "Une recette = une action + des ressources. Actions de départ : Tailler, Tresser, Assembler.", next: true, done: () => S().known.manche || U.slots.some(Boolean) },
           { tab: "labo", at: () => (U.slots.includes("bois") ? null : E.equipmentList ? '#ae-item-bois' : '[data-inv="bois"]'), text: "Touche le bois pour le poser sur l’établi.",
             done: () => U.slots.includes("bois") || S().known.manche },
@@ -55,7 +55,7 @@
             done: () => S().known.manche },
           { tab: "labo", at: E.equipmentList ? "#ae-result" : "#result", done: () => S().known.corde, text: "Manche fabriqué. Sa recette est dans le Carnet.", next: true },
           { tab: "domaine", go: "Retour aux Terres.", at: '[data-terre-panel="obj"]', text: "Le bouton en haut des Terres est ton objectif : touche-le pour voir la suite et les étapes de l’âge.", next: true, done: () => S().known.corde },
-          { text: "Objectif : de quoi attacher deux objets. Récolte des fibres, puis essaie des gestes au Labo. Le message de l’établi te dit si tu approches d’une recette.",
+          { text: "Objectif : de quoi attacher deux objets. Récolte des fibres, puis essaie des gestes à l’Étude. Le message de l’établi te dit si tu approches d’une recette.",
             free: true, done: () => S().known.corde },
           { text: "Suis l’objectif. L’aide ❓ est toujours là.", next: true }
         ] },

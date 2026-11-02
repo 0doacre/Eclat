@@ -29,7 +29,7 @@
     const button=(action,value,title,cls="",disabled=false)=>{
       const cur=currencyName();
       const help={
-        metier:"Essayer, au Labo, les recettes de ce métier",
+        metier:"Essayer, à l’Étude, les recettes de ce métier",
         study:"Étudier les ressources déjà vues en dépensant l’Intuition indiquée",
         place:"Choisir cette station",
         legacy:"Utiliser les procédés des âges après le Cuivre",
@@ -108,7 +108,7 @@
       }
       return at?gardes.concat([at]):gardes;
     }
-    /* Quand tout est découvert, on remontre tout : le Labo ne doit pas se vider. */
+    /* Quand tout est découvert, on remontre tout : l’Étude ne doit pas se vider. */
     function toutDecouvert(){return !D.ATELIERS.familles.some(F=>outilsBruts(F.id,true,null).length>0);}
     function outilsDuMetier(f,garde){return outilsBruts(f,!toutDecouvert(),garde);}
     function metiersDispo(garde){
@@ -144,7 +144,7 @@
     }
     /* Une ressource est « utile » ici si une recette encore inconnue, dont tous les ingrédients ont été vus, la demande
      * avec cet outil et ce geste. Mémorisé par outil, geste et progression : le calcul parcourt les recettes. */
-    /* 0.55 : le Labo enferme la découverte dans le métier ouvert. Les ressources montrées sont celles qui entrent dans au moins une recette du métier
+    /* 0.55 : l’Étude enferme la découverte dans le métier ouvert. Les ressources montrées sont celles qui entrent dans au moins une recette du métier
      * (hors secrètes), jamais celles d'un autre : on sait pourquoi on les pose. Mémorisé par métier et par âge. */
     const memoMat={age:-1,v:{}};
     function matieresDuMetier(f){
@@ -233,7 +233,7 @@
       const chip=(v,l,t)=>'<button type="button" class="ae-chip'+(filtre===v?' on':'')+'" data-ae="filtre" data-value="'+v+'" aria-pressed="'+(filtre===v)+'" title="'+esc(t)+'">'+l+'</button>';
       h+='<div class="ae-filtres" role="group" aria-label="Ressources à montrer">'+chip("utiles","✦ Utiles","Les ressources qui peuvent encore donner une recette avec cet outil et ce geste")+chip("tout","Tout","Toutes les ressources que tu as vues")+chip("reserve","En réserve","Seulement ce que tu as en stock")+'</div>';
       const study=E.studyAllCost();
-      if(study.n)h+='<div class="ae-etude">'+button("study","","Étudier · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des ressources" aria-label="Comprendre l’étude des ressources">?</button></div>';
+      if(study.n)h+='<div class="ae-etude'+(U.etudeEnCours?' etude-en-cours':'')+'"'+U.etudeAttrs()+'>'+button("study","","Étudier · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c||!!U.etudeEnCours)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des ressources" aria-label="Comprendre l’étude des ressources">?</button></div>';
       h+='<p id="ae-discovery-empty" class="small muted" hidden></p><div class="ae-inventory">';
       for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode,w.metier);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span>'+(reacts?'<i class="ae-react-spark" title="Piste disponible">✦</i>':'')+'<b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
@@ -284,7 +284,7 @@
     function sig(){const {w}=work(),s=E.state,e=E.atelierEconomyInfo(),rel=E.shouldSuggestReleve&&E.shouldSuggestReleve(),cadsSnap=E.cadences?E.cadences().map(c=>c.id+':'+c.have+':'+c.machs+':'+c.status).join(';'):'';return JSON.stringify([w,U.equipmentSearch,Object.keys(s.seen),Object.keys(s.known),Object.keys(s.studied),s.settings.equipmentFilter||"utiles",s.intu>=E.studyAllCost().c,E.equipmentList().map(x=>x.ready),E.count("etabli_amenage")>=1,s.age,s.act?.res,e.hired,e.working,e.budget>0,rel&&rel.gain,rel&&rel.reason,s.dom?.cadence,cadsSnap,lastHeat]);}
     function redraw(){U.dirty=true;render(true);live();save();}
     function view(){signature=sig();return api.goalHint()+'<div class="atelier-equipe" id="atelier-equipe">'+body()+'</div><div class="card" id="hands">'+api.handsHTML()+'</div>';}
-    function laboView(){signature=sig();return '<header class="atl-titre"><h2>Labo</h2><p>Tes outils et tes gestes, métier par métier.</p></header><div class="atelier-equipe ae-lab" id="atelier-equipe">'+body("labo")+'</div>';}
+    function laboView(){signature=sig();return '<header class="atl-titre"><h2>Étude</h2><p>Tes outils et tes gestes, métier par métier.</p></header><div class="atelier-equipe ae-lab" id="atelier-equipe">'+body("labo")+'</div>';}
     function ecoView(){signature=sig();return '<div class="atelier-equipe ae-prod" id="atelier-equipe">'+body("eco")+'</div>';}
     const rootMode=r=>r&&r.classList.contains("ae-lab")?"labo":r&&r.classList.contains("ae-prod")?"eco":undefined;
     const tabOK=()=>U.tab==="labo"||U.tab==="atelier";
@@ -320,12 +320,13 @@
     }
     /* Une recette qu'on vient de trouver mais pas encore fabriquée : les boutons sont là, sous le message,
      * comme dans la fenêtre de la recette (Fabriquer, ×10, Max, ou les prérequis si quelque chose manque). */
-    /* Une recette déjà connue et déjà fabriquée une fois : le Labo le dit et renvoie à l'Atelier, au lieu de relancer une commande */
-    let dejaId=null;
+    /* Une recette déjà connue et déjà fabriquée une fois : l’Étude le dit et renvoie à l'Atelier, au lieu de relancer une commande */
+    let dejaId=null,forcer=false;
+    const s_intu=()=>E.state.intu;
     function dejaActs(){
       if(lastHeat!=="known"||!dejaId||!I[dejaId])return "";
       const f=(D.ATELIERS&&D.ATELIERS.familles||[]).find(x=>x.id===E.atelierDe(dejaId));
-      return '<div class="row wrap ae-found-acts" style="margin:6px 0 2px"><button type="button" class="btn small pri" data-aller="'+dejaId+'" title="Fabriquer se fait à l’Atelier">Atelier'+(f?" · "+esc(f.n):"")+'</button></div>';
+      return '<div class="row wrap ae-found-acts" style="margin:6px 0 2px"><button type="button" class="btn small pri ae-une" data-ae="une" data-value="'+esc(work().w.mode)+'" title="Fabriquer une seule pièce, ici">'+icon(dejaId,"sm")+' ×1</button><button type="button" class="btn small" data-aller="'+dejaId+'" title="Les séries se font à l’Atelier">Atelier'+(f?" · "+esc(f.n):"")+'</button></div>';
     }
     function trouveeActs(){
       if(lastHeat==="known")return dejaActs();
@@ -346,10 +347,10 @@
     function forge(mode){const {w}=work();if(!w.slots.length){if(mode&&Object.hasOwn(work().tool.modes,mode)){w.mode=mode;w.prepared=null;}return;}w.mode=mode||w.mode;work();
       if(horsMetier()){lastHeat="froid";message="Ce geste ne donne rien avec ces ressources. Essaie un autre outil, une autre combinaison, ou un autre métier.";A.fail(0);redraw();return;}
       const cur=work().recipe;dejaId=null;
-      if(cur&&I[cur]&&E.state.known[cur]&&(E.state.made[cur]||0)>0&&!E.isUnique(I[cur])&&w.prepared!==cur){
+      if(cur&&I[cur]&&E.state.known[cur]&&(E.state.made[cur]||0)>0&&!E.isUnique(I[cur])&&w.prepared!==cur&&!forcer){
         const f=(D.ATELIERS&&D.ATELIERS.familles||[]).find(x=>x.id===E.atelierDe(cur));
         dejaId=cur;lastHeat="known";
-        message="Recette déjà connue : "+name(cur)+". Elle se fabrique à l’Atelier"+(f?", au métier "+f.n:"")+".";
+        message="Recette déjà connue : "+name(cur)+". Une pièce ici (×1), les séries à l’Atelier"+(f?", au métier "+f.n:"")+".";
         A.click();redraw();return;
       }
       U.forging=true;let result;try{result=isGrand(w.eq)?E.attempt(w.mode,w.slots):E.attemptWith(w.eq,w.mode,w.slots);}finally{U.forging=false;}U.last=result;
@@ -393,13 +394,14 @@
       if(action==="metier"){if(D.ATELIERS.familles.some(f=>f.id===id)){w.metier=id;w.prepared=null;}}
       else if(action==="filtre"){E.state.settings.equipmentFilter=["utiles","tout","reserve"].includes(id)?id:"utiles";redraw();return;}
       else if(action==="mode"){if(Object.hasOwn(tool.modes,id)){w.mode=id;w.prepared=null;}}
-      else if(action==="study"){const n=E.studyAll();message=n?n+' ressources étudiées.':'Il manque de l’Intuition pour étudier ces ressources.';}
+      else if(action==="study"){const sc=E.studyAllCost();if(!sc.n||s_intu()<sc.c)message='Il manque de l’Intuition pour étudier ces ressources.';else{message='Tu étudies…';U.etudier(sc.c,()=>{const n=E.studyAll();message=n?n+' ressources étudiées.':'Il manque de l’Intuition pour étudier ces ressources.';if(n)A.discover();redraw();});}}
       else if(action==="action"){const [te,tm]=String(id).split("|"),t=tools.find(x=>x.id===te);if(t&&Object.hasOwn(t.modes,tm)){w.eq=te;w.mode=tm;w.prepared=null;}}
       else if(action==="tool"){w.eq=id;const t=tools.find(x=>x.id===id)||D.CRAFT_EQUIPMENT.equipment[id];if(t)w.mode=Object.keys(t.modes)[0];w.prepared=null;}
       else if(action==="item"){if(w.slots.includes(id))w.slots.splice(w.slots.indexOf(id),1);else if(w.slots.length<3)w.slots.push(id);w.prepared=null;}
       else if(action==="slot"){w.slots.splice(Number(id),1);w.prepared=null;}
       else if(action==="clear"){w.slots=[];w.prepared=null;message="Établi débarrassé.";redraw();return;}
       else if(action==="forge"){forge(id);return;}
+      else if(action==="une"){forcer=true;try{forge(id);}finally{forcer=false;}return;}
       else if(action==="prepare")prepare(id);
       else if(action==="order"){const result=E.order(id,1);message=result.ok?"Commande lancée : "+name(id):"Il manque une recette ou un équipement : consulte le Carnet.";}
       else if(action==="order_missing"){const result=E.order(id,1);message=result.ok?"Façonnage lancé pour : "+name(id):"Ressources insuffisantes pour : "+name(id);if(typeof toast==="function")toast(message);}

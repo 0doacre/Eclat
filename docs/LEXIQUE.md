@@ -11,7 +11,7 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 | **Lieu** | Là où vit le joueur : un nom par âge (`D.LIEUX` : Campement, Halte, Foyer… Essaim), écrit {le lieu} / {du lieu} / {au lieu} dans les textes. | « le Domaine » |
 | **Terres** | L’écran de ce qui se récolte : une terre à la fois. Dans une consigne ou un bouton, toujours « les Terres ». | le Domaine (voir plus bas), la Carte, une « zone » |
 | **Atlas** | La carte du monde, rangée sous les Terres. | la Carte |
-| **Labo** | L’écran où l’on découvre, par essais : métier, outil, station, geste, ressources sur l’établi. | l’Atelier (pour découvrir) |
+| **Étude** | L’écran où l’on découvre, par essais : métier, outil, station, geste, ressources sur l’établi. | l’Atelier (pour découvrir) |
 | **Atelier** | L’écran où l’on produit : **Métiers** (travailleurs, seuil, goulots, énergie, et pour chaque métier sa section **À construire** : outils, stations, améliorations, extracteurs, machines), **Machines**. Jamais le nom d’un lieu de travail, ni celui d’un métier. | « atelier » pour un métier ; « l’atelier » dans la bouche d’un travailleur |
 | **Progression** | Le chemin, les secrets, les gestes remarqués, les fins, la Mémoire, le cosmos. | l’Arbre |
 | **Journal** | Le récit et les souvenirs. Il garde aussi le **Carnet**, onglet « Recettes » : on y relit les recettes connues, on les fabrique à l’Atelier. Après une relève, chaque âge se relit à son tour (« Relire cet âge », « Tout relire »). | |
@@ -25,8 +25,8 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 | **Objet** | Mot général pour tout ce qui se possède. |
 | **Réserve** | Tout ce que le joueur possède. Un chiffre direct, « disponible » ou « en poche » suffisent ; ne pas répéter « en réserve » à chaque quantité. Jamais « stock » ni « inventaire » à l’écran. |
 | **Outil** | Ce qui permet un geste ; il monte de palier (Racloir puis Couteau). |
-| **Station** | Là où l’on travaille, au Labo : Mains, Feu de camp, Four, Enclume… Un message de blocage la nomme toujours (« il faut : Four en argile (1 100 °C) »). Jamais « poste » ni « poste de travail » (« Poste radio » et « Poste à moteur électrique » restent des noms d’objets). |
-| **Établi** | La surface où l’on pose jusqu’à trois ressources, au Labo. |
+| **Station** | Là où l’on travaille, à l’Étude : Mains, Feu de camp, Four, Enclume… Un message de blocage la nomme toujours (« il faut : Four en argile (1 100 °C) »). Jamais « poste » ni « poste de travail » (« Poste radio » et « Poste à moteur électrique » restent des noms d’objets). |
+| **Établi** | La surface où l’on pose jusqu’à trois ressources, à l’Étude. |
 | **Amélioration** | Agit dès qu’on l’a : extracteurs ou machines plus rapides. |
 | **Extracteur** | Un bâtiment par ressource (Bûcheron, Carrier, Charbonnier…), posé sur un gisement et qui récolte seul. Il monte de **niveaux** avec les âges. |
 | **Machine** | Reste à l’Atelier et accélère les commandes des recettes qu’elle sait faire (une fois la pièce faite à la main). Nom court : « 2 automates de bois ». |
@@ -37,8 +37,8 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 | Mot | Sens |
 |---|---|
 | **Métier** | Une famille de recettes : Artisanat, Élevage, Métallurgie, Chimie, Centrales, Électronique, Arts et lettres, Construction. Depuis la 0.62 : Artisanat (artisan), **Subsistance** (éleveur), Métallurgie (forgeron), Chimie (chimiste), **Bâtiment** (bâtisseur), **Énergie** (opérateur), **Technologie** (ingénieur), **Culture et savoir** (érudit). Les anciens noms (Élevage, Construction, Centrales, Électronique, Arts et lettres) ne s’emploient plus. |
-| **Geste** | Tailler, Tresser, Chauffer, Construire… Partout dans l’interface ; au Labo, chaque métier a ses mots pour les gestes (`D.GESTES_METIER`). Jamais « action » ni « mode ». |
-| **Recette** | Un geste, appliqué à une à trois ressources. On la **découvre** au Labo et on **essaie** : un **essai** réussi la révèle. |
+| **Geste** | Tailler, Tresser, Chauffer, Construire… Partout dans l’interface ; à l’Étude, chaque métier a ses mots pour les gestes (`D.GESTES_METIER`). Jamais « action » ni « mode ». |
+| **Recette** | Un geste, appliqué à une à trois ressources. On la **découvre** à l’Étude et on **essaie** : un **essai** réussi la révèle. |
 | **Travailleurs** | Apprentis, puis ouvriers, **embauchés** en écus dans un métier. Nommés d’après ce qu’ils font (`D.TRAVAILLEURS.noms`). |
 | **Semeur** | Le joueur, dans le récit et dans la bouche des travailleurs (« Semeur, la forge manque de lingot de bronze ! »). Le mot tombe une fois sur deux (`sansVocatif` dans `js/engine.js`). Jamais « Patron » ni « Chef ». |
 | **Seuil** | Jusqu’où les travailleurs d’un métier fabriquent seuls. Cinq paliers nommés, sans pourcentage : **À l’arrêt**, **Au jour le jour**, **Quelques provisions**, **Bien garni**, **À ras bord**. |
@@ -56,7 +56,7 @@ Dernière refonte : 0.61 (passe de vocabulaire du 31 octobre 2026, réponses du 
 | Prendre une ressource sur un gisement | **récolter** | ramasser, cueillir, collecter |
 | Créer un objet | **fabriquer** | œuvrer, faire, produire, crafter |
 | Trouver une recette | **découvrir** | inventer |
-| Tester une combinaison au Labo | **essayer**, un **essai** | tenter, une tentative |
+| Tester une combinaison à l’Étude | **essayer**, un **essai** | tenter, une tentative |
 | Révéler une recette inconnue contre de l’Intuition | **déchiffrer** | débloquer, acheter |
 | Étudier une ressource | **étudier** (avec de l’Intuition) | analyser |
 | Mettre un extracteur sur un gisement | **poser** | installer, placer |

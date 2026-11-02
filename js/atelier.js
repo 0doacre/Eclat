@@ -48,7 +48,7 @@
         (lvl >= 2 ? '<div class="tiny muted">💭 Une des ressources : ' + icon(mainIngredient(id), "sm") + " " + esc(I[mainIngredient(id)].n) + "</div>" : "") +
         memBar + acts + "</div>";
     }
-    /* Le Labo (0.39) : l’établi d’essai, rien d’autre. Les ressources se choisissent dans une rangée,
+    /* L’Étude (0.39) : l’établi d’essai, rien d’autre. Les ressources se choisissent dans une rangée,
      * la liste complète s’ouvre dans un panneau de la vue. */
     function recettesTrouvees() {
       const all = Object.keys(I).filter((id) => I[id].r && !I[id].sec && !I[id].path && !I[id].old && I[id].t !== "curio");
@@ -74,7 +74,7 @@
       // l’explication des niveaux se lit une fois ; ensuite le bouton « Niveaux » rejoint l’établi et ne prend plus de ligne
       const niveauxTip = st.stats.crafts > 0 && !st.flags.tip_niveaux;
       if (niveauxTip) h += '<div class="sub-row"><span class="tiny muted">Le petit chiffre sur chaque action est son niveau. Il monte quand tu fabriques à la main.</span><button class="btn small ghost" data-skills title="Le niveau de chaque action et de la récolte">Niveaux</button><button class="btn small ghost" data-tip="tip_niveaux" title="Fermer cette astuce">Compris</button></div>';
-      // une seule rangée, qu’on fait glisser : le haut du Labo laisse la place à l’établi
+      // une seule rangée, qu’on fait glisser : le haut de l’Étude laisse la place à l’établi
       const nG = D.GESTE_ORDER.filter((g) => E.gesteOK(g)).length + 1, wG = ($("#views") && $("#views").clientWidth || 360) - 24;
       h += '<div class="gestes' + (nG * 74 > wG ? " more" : "") + '">';
       let locks = 0;
@@ -325,7 +325,7 @@
       trop: "Bonne action, mais l’une de ces ressources est superflue.",
       geste: "Les bonnes ressources, mais pas la bonne action."
     };
-    /* au Labo : la première pièce offerte, et les intermédiaires qu’il reste à découvrir */
+    /* à l’Étude : la première pièce offerte, et les intermédiaires qu’il reste à découvrir */
     function labExtra(r) {
       let h = "";
       if (r.offered) h += '<p class="small labo-offert">Tu gardes la première pièce : elle est dans ta Réserve.</p>';
@@ -536,10 +536,10 @@
       const r = E.agesARetrouver();
       if (!r.length) return "";
       return '<div class="card carnet-retrouve"><p class="serif"><i>' + esc(SOUV().intro) + "</i></p>" +
-        (r.length > 1 ? '<div class="acts"><button type="button" class="btn small pri" data-souvenir="tout">' + esc(SOUV().tout) + "</button></div>" : "") + "</div>";
+        (r.length >= 1 ? '<div class="acts"><button type="button" class="btn small pri" data-souvenir="tout">' + esc(SOUV().tout) + "</button></div>" : "") + "</div>";
     }
     function souvenirNoteHTML() {
-      return E.agesARetrouver().length ? '<div class="card souvenir-note"><p class="small">' + esc(SOUV().atelier) + '</p><div class="acts"><button type="button" class="btn small" data-tab2="carnet">Ouvrir le Carnet</button></div></div>' : "";
+      return E.agesARetrouver().length ? '<div class="card souvenir-note"><p class="small">' + esc(SOUV().atelier) + '</p><div class="acts"><button type="button" class="btn small pri" data-souvenir="tout">' + esc(SOUV().tout) + '</button><button type="button" class="btn small" data-tab2="carnet">Ouvrir le Carnet</button></div></div>' : "";
     }
     function viewCarnet() {
       const st = S();
@@ -704,7 +704,7 @@
       if (n.etat === 'allume') h += '<button type="button" class="btn small" data-carnet-rec="' + esc(n.id) + '">Ouvrir la recette dans le Carnet</button>';
       else if (it) h += '<button type="button" class="btn small" data-goto="' + esc(n.id) + '">Voir la fiche</button>';
       h += '</div>';
-      if (n.etat === 'fantome' || (n.etat !== 'allume' && it.r)) h += '<p class="small muted">' + (n.etat === 'fantome' ? 'Essaie avec les ressources que tu as étudiées au Labo.' : 'La recette reste à découvrir au Labo.') + '</p>';
+      if (n.etat === 'fantome' || (n.etat !== 'allume' && it.r)) h += '<p class="small muted">' + (n.etat === 'fantome' ? 'Essaie avec les ressources que tu as étudiées à l’Étude.' : 'La recette reste à découvrir à l’Étude.') + '</p>';
       h += '</section>';
       if (v.aval.length) {
         const connus = v.aval.filter((p) => p.etat !== 'fantome'), inconnus = v.aval.length - connus.length;
@@ -1221,6 +1221,7 @@
       const i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
       if (S().act && S().act.k === "harv" && S().act.res === res && S().act.z === z) { E.stopAct(); A.click(); render(true); return; }
       if (!E.startAct({ k: "harv", z, res })) { A.fail(0); toast(esc(I[res].n) + " ne se récolte pas à la main.", { key: "act" }); return; }
+      S().flags.bouclee = true;
       A.click();
       toast("▶ Récolte en continu : " + esc(I[res].n.toLowerCase()) + ".", { key: "act" });
       render(true);
@@ -1419,7 +1420,7 @@
           h += '<button type="button" class="btn small" data-ch-harv="' + esc(m.id) + '" title="Récolter cette ressource">Récolter</button>';
         } else if (m.action === "voir") {
           if (m.anon) {
-            h += '<button type="button" class="btn small ghost" data-ch-atelier="1" title="Découvrir cette recette au Labo">Labo</button>';
+            h += '<button type="button" class="btn small ghost" data-ch-atelier="1" title="Découvrir cette recette à l’Étude">Étude</button>';
           } else if (I[m.id] && I[m.id].r) {
             h += '<button type="button" class="btn small ghost" data-ch-voir="' + esc(m.id) + '" title="Voir la recette dans le Carnet">Voir</button>';
           } else {
@@ -1620,7 +1621,7 @@
             }
             const m = E.memory();
             if (m && m.id === id) h += memoryHTML(m);
-            else h += '<p class="tiny muted">À toi de la trouver au Labo. Étudier les ressources aide à savoir quoi essayer.</p>';
+            else h += '<p class="tiny muted">À toi de la trouver à l’Étude. Étudier les ressources aide à savoir quoi essayer.</p>';
           }
         }
         const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] !== undefined);
@@ -1656,7 +1657,7 @@
           track: () => { E.setTrack(id); A.click(); toast("🎯 Suivi : <b>" + esc(it.n) + "</b> (en haut des Terres)"); redraw(); return true; },
           pin: () => { E.togglePin(id); A.click(); redraw(); return true; },
           fav: () => { const f = favs(); if (f[id]) delete f[id]; else f[id] = 1; A.click(); redraw(); if (U.tab === "atelier" || U.tab === "labo") render(true); return true; },
-          study: () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier" || U.tab === "labo") render(true); } redraw(); return true; },
+          study: () => { const c = E.studyCost(id); if (U.etudeEnCours || S().intu < c) { redraw(); return true; } toast("🔍 Tu étudies…", { key: "etude" }); U.etudier(c, () => { if (E.study(id)) { A.discover(); if (U.tab === "atelier" || U.tab === "labo") render(true); } redraw(); }); return true; },
           decipher: () => { const r = E.decipher(id); if (r.ok) { if (r.lvl >= 3) A.discover(); save(); render(true); } redraw(); return true; },
           aller: () => { U.atelierSel = E.atelierDe(id); U.prodSel = !E.isUnique(it) && !E.isScaled(it) ? id : null; closeModal(); setTimeout(() => setTab("atelier"), 60); return true; },
           carnet: () => { setTimeout(() => showInCarnet(id), 60); },
@@ -1667,7 +1668,7 @@
 
     /* ------------------------------------------------------------ L’ATELIER (production, 0.39)
      * Quoi produire, en quelle quantité, et qui s’en charge : les mains, un apprenti (un ordre
-     * permanent avec une cible en Réserve) ou une machine. Aucun établi ici : il est au Labo. */
+     * permanent avec une cible en Réserve) ou une machine. Aucun établi ici : il est à l’Étude. */
     const PROD_ETAT = { ok: "produit", full: "plein", starved: "attend une ressource", nomach: "pas de machine capable", busy: "attend un travailleur", off: "en pause" };
     function prodRecettes() {
       const st = S(), pin = st.pins || {};
@@ -1921,7 +1922,7 @@
         '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '" aria-label="Ce qui tourne : ' + n + (ap.bloques ? ", " + ap.bloques + " à voir" : "") + '"><span class="roue' + (n > 0 ? " tourne" : "") + '" aria-hidden="true">' + gi("cog") + '</span><b class="roue-n">' + n + "</b></button>" +
         "</div>";
       if (!liste.length && U.atelierSel && aConstruireHTML()) return h + aConstruireHTML() + "</div>" + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
-      if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette au Labo : elle apparaît ici.</p></div>' + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
+      if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette à l’Étude : elle apparaît ici.</p></div>' + (U.autoSheet ? autoFeuille() : "") + (U.energieSheet ? energieFeuille() : "");
       h += '<div class="prod-choix" role="group" aria-label="Recettes connues"' + (U.prodTout ? " data-tout" : "") + ">";
       liste.slice(0, 80).forEach((id) => {
         const can = E.maxCraftable(id, 1000) > 0;
@@ -1962,7 +1963,7 @@
       });
       return h + "</div></div>";
     }
-    /* les appuis de l’Atelier et du Labo */
+    /* les appuis de l’Atelier et de l’Étude */
     function prodClick(t) {
       let b;
       if ((b = t.closest("[data-atelier]"))) { A.click(); U.atelierSel = b.dataset.atelier; U.prodSel = null; render(true); return true; }

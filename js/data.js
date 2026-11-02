@@ -1225,7 +1225,7 @@
    * { k: "exp", z: zone, x: exploration }, { k: "ext" } (poser et relier un extracteur)
    * ou { k: "line" } (faire tourner une machine). */
   D.OBJECTIVES = [
-    ["manche", "Récolte du bois, puis taille un manche au Labo."],
+    ["manche", "Récolte du bois, puis taille un manche à l’Étude."],
     ["corde", "Tresse des fibres pour faire une corde."],
     { k: "exp", z: "lisiere", x: "chene", n: "Explorer le Grand Chêne", txt: "Explore le Grand Chêne depuis la Lisière. L’exploration avance seule." },
     ["feu", "La nuit tombe. Construis un feu de camp : il ouvre le geste Chauffer."],
@@ -1456,7 +1456,7 @@
   /* Découvrir coûte peu : une découverte qui demanderait plus que ça (en tout) ne prend
    * rien ; la recette s’inscrit, et on choisit ensuite de la fabriquer, prix affiché. */
   D.DISCOVER_FREE = 6;
-  /* La première fabrication est offerte (le Labo, 0.39, étendue en 0.64.12) : une trouvaille inscrite donne un
+  /* La première fabrication est offerte (l’Étude, 0.39, étendue en 0.64.12) : une trouvaille inscrite donne un
    * exemplaire sans rien prendre, même s'il manque des ressources. Sont exclus les extracteurs et les machines
    * (prix croissant), les secrets, le chemin caché, les reliques et les recettes bloquées par un outil absent.
    * Le reste (quantités, temps, extracteurs, apprentis) se joue à l'Atelier. max: 0 désactive (le plafond de coût n'existe plus). */
@@ -1656,7 +1656,7 @@
       artistique: { w: 216, h: 300, W: 1728, H: 300 }
     }
   };
-  /* 0.56 : le vocabulaire des gestes, métier par métier (affichage seulement, dans le Labo d'un métier). Les gestes gardent leur identifiant et leur nom général
+  /* 0.56 : le vocabulaire des gestes, métier par métier (affichage seulement, dans l’Étude d'un métier). Les gestes gardent leur identifiant et leur nom général
    * ailleurs (Carnet, fiches, Progression, guide) ; docs/revue/probleme-gestes-metiers.md. Un geste absent d'un métier garde son nom général. */
   D.GESTES_METIER = {
     artisanat: { tailler: "Tailler", tresser: "Tresser", assembler: "Monter", chauffer: "Cuire", tremper: "Tremper" },
@@ -1788,6 +1788,8 @@
 
   D.CHANGES = [
     "🪶 Une interface plus sobre : du papier sur le décor de chaque écran, des onglets en icônes (le nom reste sur l’onglet ouvert), des boutons ronds, un seul engrenage qui tourne à l’Atelier. Pensée pour le téléphone.",
+    "💡 Le Labo devient l’Étude. Étudier prend un moment, de plus en plus long selon l’Intuition dépensée. Une recette déjà connue se fabrique ici une pièce à la fois ; les séries restent à l’Atelier.",
+    "🌅 La relève se couvre de papier au lieu du noir, avec une phrase. Le jeu prévient s’il te reste des Souvenirs à dépenser, et Tout relire est aussi dans l’Atelier.",
     "✉️ Le menu (Aide) propose « Nous écrire », pour nous dire ce que tu as pensé du jeu.",
     "🔎 Au Labo, une recette déjà connue et déjà fabriquée est annoncée comme telle, avec un bouton qui ouvre l’Atelier sur le bon métier.",
     "🧱 La page d’un métier à l’Atelier ne se chevauche plus : ses blocs se suivent et la page défile. Les phrases « à partir de l’âge… » sont corrigées.",

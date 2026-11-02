@@ -117,7 +117,7 @@
     };
     E.equipmentList = () => Object.entries(cfg.equipment).filter(([, eq]) => !eq.hidden).map(([id, eq]) => Object.assign({ id, ready: Object.keys(missing(id, E.count)).length === 0 }, eq));
     // Même information que l'étude classique, limitée au geste exact de l'outil.
-    // metier (facultatif, 0.55) : on ne compte que les recettes de ce métier (le Labo enferme la découverte dans le métier ouvert)
+    // metier (facultatif, 0.55) : on ne compte que les recettes de ce métier (l’Étude enferme la découverte dans le métier ouvert)
     E.equipmentHasDiscovery = (id, equipment, mode, metier) => {
       mode = normMode(mode);
       const eq = cfg.equipment[equipment];

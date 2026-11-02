@@ -402,3 +402,26 @@ html[data-style-mode="vivant"] #app#app #v-domaine .terre-fond[src*="-fond.webp"
 /* la règle de la terre (« Il fait tiède… », « Les vapeurs… ») est un papier lisible sur n’importe quel fond HD */
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-regle { background: var(--sb-papier) !important; color: var(--sb-encre) !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; padding: 10px 14px !important; box-shadow: var(--sb-ombre); text-shadow: none !important; font-size: 15px; }
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-regle b { color: #813f2a; }
+
+/* ---- Étude : l’étude prend un peu de temps (barre qui se remplit, bouton qui respire) ---- */
+.ae-etude.etude-en-cours { position: relative; overflow: hidden; border-radius: 12px; }
+.ae-etude.etude-en-cours::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: #a8402b; transform-origin: left center; animation: etude-barre var(--etude, 1s) linear var(--etude-passe, 0s) forwards; }
+.ae-etude.etude-en-cours > .btn:first-child { animation: etude-pouls .7s ease-in-out infinite alternate; }
+@keyframes etude-barre { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes etude-pouls { to { opacity: .55; } }
+.ae-une { display: inline-flex; align-items: center; gap: 6px; }
+.ae-une :is(svg, img, .gi) { width: 22px; height: 22px; }
+
+/* ---- récolte : le bouton ▶ pulse (sans mot) quand on tape depuis un moment sans l’avoir essayé ---- */
+html[data-style-mode="vivant"] #app#app #v-domaine .terre-boucle.pulse { animation: boucle-pouls 1.4s ease-out infinite; }
+@keyframes boucle-pouls { 0% { box-shadow: 0 0 0 0 rgb(168 64 43 / .6); } 70%, 100% { box-shadow: 0 0 0 14px rgb(168 64 43 / 0); } }
+@media (prefers-reduced-motion: reduce) {
+  .ae-etude.etude-en-cours > .btn:first-child { animation: none; }
+  html[data-style-mode="vivant"] #app#app #v-domaine .terre-boucle.pulse { animation: none; outline: 3px solid rgb(168 64 43 / .6); outline-offset: 3px; }
+}
+
+/* ---- relève : le jeu se couvre de papier avec une phrase, pas de noir ---- */
+.fondu-releve { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: #f1e8d3; color: #3b2a1a; font: 22px/1.5 var(--serif, Georgia, serif); opacity: 0; transition: opacity .6s ease; pointer-events: all; }
+.fondu-releve.on { opacity: 1; }
+.fondu-releve p { max-width: 20em; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .fondu-releve { transition: none; } }

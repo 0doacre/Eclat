@@ -33,6 +33,20 @@
     pointer: { x: 0, y: 0 }, holding: null, saveLocked: false, badSave: null, updReg: null, wantReload: false,
     toastQ: [], toastAt: 0, toastT: 0, intuShown: false
   };
+  /* L’étude n’est pas instantanée : une petite animation, et un délai qui croît avec l’Intuition dépensée
+   * (1 s pour 1 ✨, 1,9 s pour 2, 2,7 s pour 3…, de moins en moins vite, jusqu’à 5 s). */
+  const DELAIS_ETUDE = [0, 1, 1.9, 2.7, 3.4, 4, 4.5, 4.9, 5];
+  U.delaiEtude = (cout) => Math.round(DELAIS_ETUDE[Math.min(Math.max(0, Math.floor(cout)), DELAIS_ETUDE.length - 1)] * 1000);
+  U.etudeEnCours = null;
+  U.etudier = function (cout, appliquer) {
+    if (U.etudeEnCours) return false;
+    const ms = U.delaiEtude(cout);
+    U.etudeEnCours = { debut: Date.now(), ms };
+    setTimeout(() => { U.etudeEnCours = null; appliquer(); }, ms);
+    return true;
+  };
+  /* la durée et le temps déjà écoulé, pour que l’animation continue si l’écran est redessiné entre-temps */
+  U.etudeAttrs = function () { const e = U.etudeEnCours; return e ? ' style="--etude:' + e.ms + 'ms;--etude-passe:-' + (Date.now() - e.debut) + 'ms"' : ""; };
   /* les fenêtres que le jeu ouvre tout seul (voir js/fenetres.js) : une à la fois, par ordre de priorité */
   const Fen = window.EclatFenetres, FP = Fen.PRIO;
   U.fen = Fen.create({ libre: () => !U.mcur && !U.mq.length, now: () => Date.now() });
@@ -834,7 +848,7 @@
   /* ============================================================ VUES */
   /* les onglets arrivent quand ils ont quelque chose à montrer : l’Arbre et le Carnet à la première
    * recette, le Journal au premier lieu exploré, le Cosmos avec le ciel */
-  /* cinq onglets : Terres (le Domaine), Labo, Atelier, Arbre, Journal ; la Carte (l’Atlas) se range sous les Terres,
+  /* cinq onglets : Terres (le Domaine), Étude, Atelier, Arbre, Journal ; la Carte (l’Atlas) se range sous les Terres,
    * le Carnet et les Machines dans l’Atelier, le Cosmos dans le Journal */
   const PARENT = { carte: "domaine", carnet: "journal", machines: "atelier", cosmos: "arbre" };
   function tabAvailable(t, propre) {
@@ -863,7 +877,7 @@
     }
     U.tab = t;
     $$(".view").forEach((v) => { v.classList.toggle("on", v.id === "v-" + t); delete v.dataset.sig; });
-    // le Labo et l’Atelier partagent des identifiants (#atelier-equipe, #hands) : la vue qu’on quitte est vidée
+    // l’Étude et l’Atelier partagent des identifiants (#atelier-equipe, #hands) : la vue qu’on quitte est vidée
     ["v-labo", "v-atelier"].forEach((id) => { if (id !== "v-" + t) { const v = document.getElementById(id); if (v) v.innerHTML = ""; } });
     document.body.dataset.tab = t;
     $$("#tabs button").forEach((b) => { const on = b.dataset.tab === (PARENT[t] || t); b.classList.toggle("on", on); if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });

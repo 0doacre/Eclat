@@ -28,7 +28,7 @@ const MES = () => {
   return { cibles: aEcran, contenu: aEcran - fixe, page, texte: texteDe(ecran), textePage: texteDe(rendu), bandeaux: Math.round((h ? h.getBoundingClientRect().height : 0) + (t ? t.getBoundingClientRect().height : 0)), scroll: Math.max(0, v.scrollHeight - v.clientHeight), vh };
 };
 const EXTRA = (process.env.EXTRA || "").split(",").filter(Boolean).map((x) => [x, x]);
-const ECRANS = EXTRA.length ? EXTRA : [["domaine", "Terres"], ["labo", "Labo"], ["atelier", "Atelier (métiers)"], ["atelier:artisanat", "Atelier (un métier)"], ["journal", "Journal / Recettes"], ["arbre", "Progression"]];
+const ECRANS = EXTRA.length ? EXTRA : [["domaine", "Terres"], ["labo", "Étude"], ["atelier", "Atelier (métiers)"], ["atelier:artisanat", "Atelier (un métier)"], ["journal", "Journal / Recettes"], ["arbre", "Progression"]];
 async function mesurer() {
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), out = [];

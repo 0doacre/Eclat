@@ -58,7 +58,7 @@ test("aucune formule d'avant dans les textes lus par le joueur", () => {
 test("l'aide nomme les cinq écrans d'aujourd'hui et ses mots clés", () => {
   const s = fs.readFileSync(path.join(dir, "compte.js"), "utf8");
   const aide = s.slice(s.indexOf("function openHelp()"), s.indexOf('"Compris");', s.indexOf("function openHelp()")));
-  for (const mot of ["<b>Terres.</b>", "<b>Labo.</b>", "<b>Atelier.</b>", "<b>Progression.</b>", "<b>Journal.</b>", "<dt>Métier</dt>", "<dt>Travailleurs</dt>", "<dt>Goulot</dt>", "<dt>Geste, recette</dt>"]) assert.ok(aide.includes(mot), mot);
+  for (const mot of ["<b>Terres.</b>", "<b>Étude.</b>", "<b>Atelier.</b>", "<b>Progression.</b>", "<b>Journal.</b>", "<dt>Métier</dt>", "<dt>Travailleurs</dt>", "<dt>Goulot</dt>", "<dt>Geste, recette</dt>"]) assert.ok(aide.includes(mot), mot);
 });
 test("typographie : apostrophes courbes et pas de tiret long dans les textes lus par le joueur", () => {
   const trouve = [];

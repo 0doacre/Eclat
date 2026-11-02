@@ -383,7 +383,7 @@
           const id = inv.dataset.inv;
           U.lp = { id, t: setTimeout(() => { U.lp = null; U.lpFired = performance.now(); vibe(15); openItemInfo(id); }, 480) };
         }
-        // Labo : une ressource de la liste ou une case de l’établi, appui long = la fiche, avec de quoi la fabriquer tout de suite
+        // Étude : une ressource de la liste ou une case de l’établi, appui long = la fiche, avec de quoi la fabriquer tout de suite
         const lab = !inv && ev.target.closest("[data-ae-resource], .ae-slots .ae-filled");
         if (lab) {
           const need = lab.querySelector("[data-ae-need]"), id = lab.dataset.aeResource || (need && need.dataset.aeNeed);
@@ -449,7 +449,7 @@
         const iv = ev.target.closest(".inv");
         if (iv) { ev.preventDefault(); openItemInfo(iv.dataset.inv); return; } // clic droit ou touche Menu : la fiche
         const lab = ev.target.closest("[data-ae-resource], .ae-slots .ae-filled");
-        if (lab) { // même chose dans le Labo ; si l’appui long vient d’ouvrir la fiche, on ne la rouvre pas
+        if (lab) { // même chose dans l’Étude ; si l’appui long vient d’ouvrir la fiche, on ne la rouvre pas
           ev.preventDefault();
           const need = lab.querySelector("[data-ae-need]"), id = lab.dataset.aeResource || (need && need.dataset.aeNeed);
           if (id && !(U.lpFired && performance.now() - U.lpFired < 900)) openItemInfo(id);
@@ -565,7 +565,7 @@
           return;
         }
         if ((b = t.closest("[data-cr]"))) { craftFrom(b); return; }
-        if ((b = t.closest("[data-study-all]"))) { const n = E.studyAll(); if (n) { toast("🔍 " + n + " ressources étudiées."); A.discover(); } render(true); return; }
+        if ((b = t.closest("[data-study-all]"))) { const sc = E.studyAllCost(); if (sc.n && S().intu >= sc.c) { toast("🔍 Tu étudies…", { key: "etude" }); U.etudier(sc.c, () => { const n = E.studyAll(); if (n) { toast("🔍 " + n + " ressources étudiées."); A.discover(); } render(true); }); } return; }
         if (t.closest("[data-filtres]")) { U.invPanel = !U.invPanel; A.click(); render(true); return; }
         if ((b = t.closest("[data-if]"))) { // un filtre choisi : il s’applique et le panneau se replie ; le focus revient sur « Filtres »
           U.invFilter = b.dataset.if; S().settings.inv = Object.assign({}, S().settings.inv, { filter: U.invFilter });

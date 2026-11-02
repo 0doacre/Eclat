@@ -269,6 +269,7 @@
         on: {
           go: () => {
             pushBackup(E.serialize(), backupLabel);
+            fonduReleve(() => {
             E.newCycle();
             save();
             U.slots = [null, null, null];
@@ -279,9 +280,20 @@
             U.domOpen = null;
             setTab("domaine");
             openMemoire(() => { setTimeout(() => suivreReleve(), 200); });
+            });
           }
         }
       });
+    }
+    /* la relève : le jeu se couvre de papier, avec une phrase qui dit que rien n’est perdu, puis le nouveau cycle apparaît (ce n’est pas un rechargement) */
+    function fonduReleve(suite) {
+      const v = document.createElement("div");
+      v.className = "fondu-releve";
+      v.setAttribute("role", "status");
+      v.innerHTML = "<p>Rien n’est perdu.<br>Le Semeur suivant retrouve ton Carnet.</p>";
+      document.body.appendChild(v);
+      requestAnimationFrame(() => v.classList.add("on"));
+      setTimeout(() => { suite(); v.classList.remove("on"); setTimeout(() => v.remove(), 800); }, 1900);
     }
     /* l’éveil du nouveau Semeur, puis la carte qui dit ce qu’il retrouve, puis les dons */
     function suivreReleve() {
@@ -584,11 +596,10 @@
           },
           fin: (btn) => {
             const m = S().meta;
-            const zeroBought = Object.values(m.mem || {}).every((v) => !v);
             const canAfford = D.MEMOIRE.some((x) => { const c = E.memCost(x.id); return c !== undefined && m.traces >= c; });
-            if (E.achatsOuverts() && zeroBought && canAfford && !(btn && btn.dataset && btn.dataset.confirm === "1")) {
+            if (E.achatsOuverts() && canAfford && !(btn && btn.dataset && btn.dataset.confirm === "1")) {
               if (btn && btn.dataset) btn.dataset.confirm = "1";
-              toast("Tu peux déjà acheter une amélioration (ex. Mains calleuses). Touche à nouveau « Terminé » si tu préfères garder tes Souvenirs.", { key: "mem_fin" });
+              toast("Il te reste " + m.traces + " ✦ : tu peux encore acheter une amélioration. Touche à nouveau « Terminé » pour les garder.", { key: "mem_fin" });
               return true;
             }
             E.fermerAchats(); save(); return false;

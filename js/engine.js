@@ -1963,7 +1963,7 @@
           action = kind ? { k: "embaucher", fam: g.fam, kind, label: "Embaucher", cout: E.coutEmbauche(g.fam, kind) } : { k: "metier", fam: g.fam, label: "Ouvrir " + F(g.fam) };
         }
         else if (g.kind === "main") { txt = "Jamais fabriqué à la main : " + n + ". Les travailleurs ne le peuvent pas encore"; action = { k: "fabriquer", id: g.ings[0], fam: g.fam, label: "Le fabriquer une fois" }; }
-        else if (g.kind === "inconnue") { txt = "La recette de " + n + " n’est pas encore connue"; action = { k: "labo", id: g.ing, label: "Au Labo" }; }
+        else if (g.kind === "inconnue") { txt = "La recette de " + n + " n’est pas encore connue"; action = { k: "labo", id: g.ing, label: "À l’Étude" }; }
         else if (g.kind === "seuil0") { txt = F(g.fam) + " est au repos : on n’y fabrique rien seul"; action = { k: "metier", fam: g.fam, label: "Régler le seuil" }; }
         else if (g.kind === "seuil") { txt = maj(n) + " est au seuil de " + F(g.fam) + " et il en faut plus"; action = { k: "metier", fam: g.fam, label: "Monter le seuil" }; }
         else if (g.kind === "greve") { txt = F(g.fam) + " : les travailleurs sont en grève, ils ne fabriquent plus rien seuls"; action = { k: "prime", fam: g.fam, cout: E.primeCout(g.fam), label: "Verser une prime" }; }
@@ -4239,7 +4239,7 @@
         return { id: rec, cap, on, have, machs, rate, miss, status };
       });
     };
-    /* Chaîne manquante (Labo) : les objets intermédiaires qu’une recette demande et qui n’ont jamais
+    /* Chaîne manquante (Étude) : les objets intermédiaires qu’une recette demande et qui n’ont jamais
      * été fabriqués ni découverts, en descendant dans la chaîne. [] : rien ne manque à découvrir. */
     E.chaineManquante = function (id) {
       const out = [], seen = new Set();

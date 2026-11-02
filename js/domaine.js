@@ -100,7 +100,7 @@
       const ic = d.hand ? '<button type="button" class="terre-recolte" data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '">' + icon(res) + "</button>" : '<span class="terre-recolte inerte">' + icon(res) + "</span>";
       return '<div class="gis gis-compact terre-gis' + (rate > 0 ? " gis-producing" : "") + '" data-gis="' + key + '">' + ic +
         '<button type="button" class="gis-compact-btn terre-gis-corps" data-gsheet="' + key + '" aria-label="' + esc(I[res].n) + ' : gérer les extracteurs"><span class="gis-compact-info"><span class="gis-compact-name">' + esc(I[res].n) + '</span><span class="terre-gis-ligne"><b class="gis-compact-c" data-c="' + res + '">' + fmt(st.inv[res] || 0) + '</b> <span class="dom-rate gis-compact-rate' + (rateTxt ? "" : " hidden") + '" data-rate="' + key + '">' + rateTxt + "</span>" + (d.hand ? '<span class="tiny muted terre-main">à la main</span>' : "") + "</span></span></button>" +
-        (d.hand ? '<button type="button" class="mini harvest terre-boucle' + (on ? " on" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter la récolte en continu : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■" : "▶") + "</button>" : "") +
+        (d.hand ? '<button type="button" class="mini harvest terre-boucle' + (on ? " on" : "") + (!on && !S().flags.bouclee && (U.tapsRecolte || 0) >= 8 ? " pulse" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter la récolte en continu : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■" : "▶") + "</button>" : "") +
         (ch ? '<button type="button" class="mini terre-ajout' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" aria-label="Poser ' + esc(nm(ch.t, 1)) + '" title="Poser ' + esc(nm(ch.t, 1)) + '"><span class="ajout-plus" aria-hidden="true">+</span>' + icon(ch.t) + "</button>" : "") + "</div>";
     }
     function terresView() {
@@ -938,7 +938,7 @@
             '</div></section>';
         });
       } else {
-        h += '<p class="small muted" style="padding:6px 0">Tu n’as pas encore de machine. La première se découvre au Labo : l’automate de bois.</p>';
+        h += '<p class="small muted" style="padding:6px 0">Tu n’as pas encore de machine. La première se découvre à l’Étude : l’automate de bois.</p>';
       }
       h += '</div>';
       return h;
@@ -1359,7 +1359,7 @@
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="-1"' + (cur ? "" : " disabled") + ">−</button><b>" + cur + '</b><button class="mini" data-m="eu" data-t="' + t + '" data-v="1" aria-label="Un de plus">+</button>' +
             '<button class="mini" data-m="eu" data-t="' + t + '" data-v="10" aria-label="Dix de plus">+10</button></div>';
         }).join("") + "</div>";
-      } else h += '<p class="small muted">Extracteur non découvert. Recette à chercher au Labo.</p>';
+      } else h += '<p class="small muted">Extracteur non découvert. Recette à chercher à l’Étude.</p>';
       if (dep && dep.hand) h += '<p class="tiny muted">Tu peux aussi récolter à la main : touche son icône dans les Terres, ou garde le doigt dessus.</p>';
       if (z === "mine") {
         const total = e ? Object.values(e.u).reduce((a, b) => a + b, 0) : 0;
@@ -1393,6 +1393,7 @@
       const key = btn.dataset.harv, i = key.indexOf(":"), z = key.slice(0, i), res = key.slice(i + 1);
       const n = E.tap(res, z);
       if (!n) return;
+      U.tapsRecolte = (U.tapsRecolte || 0) + 1;
       const crit = E.lastCrit;
       A.tap(res); vibe(crit ? [8, 30, 14] : 5);
       const rc = btn.getBoundingClientRect(), x = rc.left + rc.width / 2, y = rc.top + rc.height / 2;
