@@ -555,7 +555,7 @@
       }
       const FILTRES = [["tout", "Apprises"], ["pret", "⚡ Prêtes"], ["craft", "Réalisables"], ["unk", "À découvrir"], ["ext", "Extracteurs"], ["tool", "Outils"], ["mach", "Machines"], ["pin", "★ Épinglées"]];
       const fNom = (FILTRES.find(([k]) => k === U.carnetFilter) || FILTRES[0])[1];
-      h += '<div class="carnet-outils"><div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette ou une ressource…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
+      h += '<div class="carnet-outils"><div class="search"><input id="cq" type="search" aria-label="Chercher une recette ou une ressource" placeholder="Chercher une recette…" value="' + esc(U.q || "") + '" autocomplete="off" spellcheck="false">' +
         (U.q ? '<button class="search-clear" data-clear-search="cq" aria-label="Effacer">✕</button>' : '') + '</div>' +
         '<button type="button" class="btn small ghost' + (U.carnetPanel === "filtres" ? " on" : "") + '" data-cpanel="filtres" aria-expanded="' + (U.carnetPanel === "filtres") + '" title="Choisir ce que la liste montre">' + esc(fNom) + (U.carnetPanel === "filtres" ? " ▴" : " ▾") + "</button></div>";
       const CF_T = { tout: "Toutes les recettes que tu connais", pret: "Celles que ta Réserve couvre entièrement, pièces comprises", craft: "Celles dont les pièces manquantes peuvent encore être fabriquées", unk: "Celles qu’il te reste à découvrir", ext: "Les bâtiments qui récoltent à ta place", tool: "Les outils et leurs améliorations", mach: "Les machines qui fabriquent seules", pin: "Tes épingles, en haut de l’Atelier" };
@@ -639,7 +639,8 @@
       /* en haut : l’âge et ses étapes, puis l’objectif et la loupe (0.66, aperçu sobre) */
       const etapesAge = E.milestones()[g.age] || [], faitesAge = etapesAge.filter((x) => x.done).length;
       const noeudObj = g.noeuds.find((n) => n.objectif), obj = E.objective();
-      const nomObj = noeudObj ? noeudObj.n : obj ? (obj.txt || obj.n || "Poursuivre l’exploration") : "tout est accompli";
+      const nomObjet = obj ? (obj.k === "craft" && I[obj.id] ? I[obj.id].n : obj.n) : "";
+      const nomObj = (noeudObj && noeudObj.n) || nomObjet || (obj ? "Poursuivre l’exploration" : "tout est accompli");
       const resume = U.arbreSel ? "" : '<div class="arb-resume"><b>' + esc(D.AGES[g.age].n) + '</b><span title="Étapes accomplies dans cet âge">' + faitesAge + ' / ' + etapesAge.length + "</span></div>";
       return '<div class="arb-barre">' + resume +
         (U.arbreSel ? '<button type="button" class="btn small" data-arb="ensemble" title="Revenir à ta progression : ton âge, tes étapes et le prochain objectif">← Progression</button>' : '') +
