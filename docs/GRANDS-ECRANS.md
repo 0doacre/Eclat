@@ -1,4 +1,6 @@
-# Grands écrans : une autre interface sera nécessaire
+# Grands écrans
+
+**Mise à jour (2 novembre 2026, 0.66.0) :** au-dessus de 900 × 520 px, la scène remplit la fenêtre, les onglets passent en rail vertical à gauche (104 px) et les plaques gardent une colonne de téléphone de 520 px à côté du rail ; le décor reste libre à droite. C’est le principe de Cell to Singularity sur ordinateur : le monde en grand, l’interface à sa taille, collée au bord. Tout est dans le dernier bloc `@media` de `css/harmonie-sobre.css` (variables `--rail` et `--col`). Ce qui suit est l’analyse de départ.
 
 Décision du 1er novembre 2026 : l’interface sobre (Terres, Labo, Atelier, Progression, Journal) est pensée pour **un téléphone tenu en portrait** (largeur 320 à 480 px). Sur un ordinateur ou une tablette en paysage, elle reste utilisable mais **devient vite disproportionnée**. On n’y touche pas pour l’instant : l’alpha se teste sur téléphone. Quand on s’y mettra, ce sera **une autre interface**, pas des retouches de celle-ci.
 

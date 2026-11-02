@@ -367,3 +367,28 @@ html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-corp
 
 /* Progression : la phrase sur les âges à venir est lisible sur le ciel (papier) */
 html[data-style-mode="vivant"] #app#app #v-arbre .arb-vue > p.small.muted { background: var(--sb-papier-leger); color: var(--sb-encre); border-radius: var(--sb-rayon); padding: 10px 14px; border: var(--sb-bord); }
+
+/* ---- Grands écrans (0.66) : la scène remplit la fenêtre, les onglets passent en rail à gauche, les plaques restent en colonne de téléphone à côté du rail.
+   Même principe que Cell to Singularity sur ordinateur : le monde en grand, l’interface à sa taille, collée au bord. ---- */
+@media (min-width: 900px) and (min-height: 520px) {
+  :root { --nav: 0px; --rail: 104px; --col: 520px; }
+  html[data-style-mode="vivant"] #app#app { display: grid !important; grid-template-columns: var(--rail) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  html[data-style-mode="vivant"] #app#app > #top { grid-column: 1 / -1; grid-row: 1; }
+  html[data-style-mode="vivant"] #app#app > #views { grid-column: 2; grid-row: 2; min-height: 0; }
+  html[data-style-mode="vivant"] #app#app > #tabs#tabs { grid-column: 1; grid-row: 2; position: static; height: auto; padding-bottom: 0; flex-direction: column; justify-content: flex-start; gap: 4px; padding: 12px 8px; border-top: 0; border-right: 1px solid var(--line2, #cfc4aa); }
+  html[data-style-mode="vivant"] #app#app > #tabs#tabs button { flex: 0 0 auto; min-height: 84px; width: 100%; }
+  html[data-style-mode="vivant"] #app#app > #tabs#tabs button svg.gi { width: 30px; height: 30px; }
+  html[data-style-mode="vivant"] #app#app > #tabs#tabs button span { font-size: 13px; }
+  html[data-style-mode="vivant"] #app#app > #tabs#tabs button.on::before { left: 0; right: auto; top: 12%; bottom: 12%; width: 5px; height: auto; border-radius: 3px; }
+  /* les plaques gardent la largeur d’un téléphone, à gauche, le décor reste libre à droite */
+  html[data-style-mode="vivant"] #app#app #views > .view { padding-left: 16px; padding-right: max(16px, calc(100% - var(--col) - 16px)); box-sizing: border-box; }
+  html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .atl-page > .atel-liste, html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs { margin-inline: 0 !important; }
+  html[data-style-mode="vivant"] #app#app :is(#v-arbre, #v-journal) :is(.prog-sw, .arb-barre, .arb-vue > *, .prog-corps > *, > .filters, > .journal-corps) { margin-inline: 0 !important; }
+  /* éléments fixés à l’écran : ils suivent la colonne */
+  html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete { left: calc(var(--rail) + 16px) !important; right: auto !important; width: min(var(--col), calc(100vw - var(--rail) - 32px)); bottom: 16px !important; }
+  html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod-entete { left: calc(var(--rail) + 16px); bottom: 16px; }
+  html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .atl-page > .energie { right: auto !important; left: calc(var(--rail) + var(--col) - 186px) !important; bottom: 16px !important; }
+  #v-domaine .terres .terre-corps { padding-bottom: 100px !important; }
+  html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres { box-sizing: border-box; padding-right: max(0px, calc(100% - var(--col) - 16px)) !important; }
+  html[data-style-mode="vivant"] #app#app #v-labo#v-labo .ae-layout > * { width: 100%; box-sizing: border-box; }
+}
