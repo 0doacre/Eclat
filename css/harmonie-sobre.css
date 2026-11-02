@@ -398,3 +398,7 @@ html[data-style-mode="vivant"] #app#app #v-domaine .terre-fond[src*="-fond.webp"
 @media (min-width: 900px) and (min-height: 520px) {
   html[data-style-mode="vivant"] #app#app #views > .view { max-width: none !important; }
 }
+
+/* la règle de la terre (« Il fait tiède… », « Les vapeurs… ») est un papier lisible sur n’importe quel fond HD */
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-regle { background: var(--sb-papier) !important; color: var(--sb-encre) !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; padding: 10px 14px !important; box-shadow: var(--sb-ombre); text-shadow: none !important; font-size: 15px; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-regle b { color: #813f2a; }
