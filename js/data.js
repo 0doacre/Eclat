@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.65.5";
+  D.VERSION = "0.66.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1787,6 +1787,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🪶 Une interface plus sobre : du papier sur le décor de chaque écran, des onglets en icônes (le nom reste sur l’onglet ouvert), des boutons ronds, un seul engrenage qui tourne à l’Atelier. Pensée pour le téléphone.",
     "✉️ Le menu (Aide) propose « Nous écrire », pour nous dire ce que tu as pensé du jeu.",
     "🔎 Au Labo, une recette déjà connue et déjà fabriquée est annoncée comme telle, avec un bouton qui ouvre l’Atelier sur le bon métier.",
     "🧱 La page d’un métier à l’Atelier ne se chevauche plus : ses blocs se suivent et la page défile. Les phrases « à partir de l’âge… » sont corrigées.",
