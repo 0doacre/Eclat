@@ -44,7 +44,7 @@ async function run() {
 
   // 1. un appui se voit : le bouton s’enfonce, un anneau part du doigt
   let p = await page(browser, {});
-  const tab = p.locator('#tabs [data-tab="carnet"]');
+  const tab = p.locator('#tabs [data-tab="atelier"]');
   const box = await tab.boundingBox();
   await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await p.mouse.down();
@@ -78,7 +78,7 @@ async function run() {
 
   // 4. « réduire les animations » : ni anneau, ni secousse, mais la fête et son message restent
   p = await page(browser, { calme: true });
-  const b2 = await p.locator('#tabs [data-tab="carnet"]').boundingBox();
+  const b2 = await p.locator('#tabs [data-tab="atelier"]').boundingBox();
   await p.mouse.move(b2.x + 10, b2.y + 10); await p.mouse.down(); await p.mouse.up();
   ok(await p.evaluate(() => !document.querySelector("#fx .jring")), "pas d’anneau avec « réduire les animations »");
   await p.evaluate(() => window.__eclat.E.addCurio("poudre_rouge"));

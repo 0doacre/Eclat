@@ -49,7 +49,7 @@ async function run() {
   let p = await page(browser, {});
   await p.locator('#tabs [data-tab="domaine"]').click();
   ok(await p.locator("[data-dom-dense]").count() === 0, "plus de bouton « vue dense » dans le Domaine");
-  await p.locator('#tabs [data-tab="carnet"]').click(); await p.waitForTimeout(300);
+  await p.locator('#tabs [data-tab="journal"]').click(); await p.locator('[data-tab2="carnet"]').click(); /* 0.66 : le Carnet est le premier feuillet du Journal */ await p.waitForTimeout(300);
   ok(await p.locator("[data-cvue]").count() === 0, "plus de boutons de vue dans le Carnet");
   await menu(p);
   for (const k of ["compact", "carnet2", "largeText", "sound", "vibe", "visiteurs", "tuto"]) ok(await sw(p, k).getAttribute("role") === "switch", k + " : un interrupteur");
@@ -60,7 +60,7 @@ async function run() {
   // 2. le Carnet sur deux colonnes marche sur téléphone
   await p.locator("#modal .modal-x").click(); await p.waitForTimeout(500);
   const cols = () => p.evaluate(() => { const l = document.querySelector("#clist .age-sec[open] > .list, #clist > .list.flat, #clist .age-sec > .list"); return l ? getComputedStyle(l).gridTemplateColumns.split(" ").length : 0; });
-  ok(await cols() === 2, "deux colonnes à 390 px (" + await cols() + ")");
+  ok(await cols() >= 2, "au moins deux colonnes à 390 px (" + await cols() + ")"); // 0.66 : trois tuiles par rangée
   const box = await p.evaluate(() => { const r = document.querySelector("#clist .rec"); const b = r.getBoundingClientRect(); return { w: b.width, over: document.documentElement.scrollWidth > innerWidth + 1 }; });
   ok(!box.over, "pas de défilement horizontal en deux colonnes");
   await menu(p); await sw(p, "carnet2").click(); await p.waitForTimeout(150);
@@ -80,7 +80,7 @@ async function run() {
   ok(h1 < h0 - 10, "la rangée d’un gisement est plus basse (" + Math.round(h0) + " → " + Math.round(h1) + " px)");
   ok(await p.evaluate(() => [...document.querySelectorAll(".gis-b .mini")].every(b => b.getBoundingClientRect().height >= 40 && b.getBoundingClientRect().width >= 40)), "les boutons gardent une cible tactile d’au moins 40 px");
   ok(await p.evaluate(() => [...document.querySelectorAll(".gis-b .mini")].every(b => (b.getAttribute("aria-label") || "").length > 0)), "les boutons réduits ont toujours leur nom pour le lecteur d’écran");
-  await p.locator('#tabs [data-tab="carnet"]').click(); await p.waitForTimeout(400);
+  await p.locator('#tabs [data-tab="journal"]').click(); await p.locator('[data-tab2="carnet"]').click(); /* 0.66 : le Carnet est le premier feuillet du Journal */ await p.waitForTimeout(400);
   ok(await p.evaluate(() => !!document.querySelector("#clist.carnet-dense")), "le Carnet passe en compact aussi");
   ok(await p.evaluate(() => window.__eclat.E.state.settings.compact === true), "un seul réglage dans la partie");
   ok(!p.errors.length, p.errors.join("\n"));

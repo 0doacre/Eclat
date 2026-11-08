@@ -56,7 +56,7 @@ async function run(){
     await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<8;i++){await p.waitForTimeout(100);await close(p);}
     const tag=width+'/'+advanced+'/'+dark;
-    await p.locator('#tabs [data-tab="carnet"]').click();await p.locator('#cq').fill('Manche');
+    await p.locator('#tabs [data-tab="journal"]').click(); await p.locator('[data-tab2="carnet"]').click(); /* 0.66 : le Carnet est le premier feuillet du Journal */await p.locator('#cq').fill('Manche');
     const opener=p.locator('[data-rec="manche"] [data-goto="manche"]').first();
     await opener.click();await settled(p);await layout(p,tag+'/recette-manque');
     ok(await p.locator('.rwin .ring.lack').count()>0,tag+' : ingrédients manquants distingués');
