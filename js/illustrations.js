@@ -79,7 +79,23 @@
     lampe: "assets/carnet/items/lampe.webp",
     miroir: "assets/carnet/items/miroir.webp",
     tablette: "assets/carnet/items/tablette.webp",
-    cassiterite_1: "assets/carnet/items/cassiterite_1.webp"
+    cassiterite_1: "assets/carnet/items/cassiterite_1.webp",
+    anneau_lourd: "assets/carnet/items/anneau_lourd.webp",
+    quart_coeur: "assets/carnet/items/quart_coeur.webp",
+    de_vingt: "assets/carnet/items/de_vingt.webp",
+    fouet_cuir: "assets/carnet/items/fouet_cuir.webp",
+    automate_bronze: "assets/carnet/items/automate_bronze.webp",
+    brouette: "assets/carnet/items/brouette.webp",
+    courroies: "assets/carnet/items/courroies.webp",
+    enclume_bronze: "assets/carnet/items/enclume_bronze.webp",
+    engrenage: "assets/carnet/items/engrenage.webp",
+    gants: "assets/carnet/items/gants.webp",
+    hache_bronze: "assets/carnet/items/hache_bronze.webp",
+    lingot_bronze: "assets/carnet/items/lingot_bronze.webp",
+    moulin: "assets/carnet/items/moulin.webp",
+    pioche_bronze: "assets/carnet/items/pioche_bronze.webp",
+    plaque_bronze: "assets/carnet/items/plaque_bronze.webp",
+    ressort: "assets/carnet/items/ressort.webp",
   };
 
   const SOURCES = {
