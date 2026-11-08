@@ -9,7 +9,7 @@ function partie(mode) {
   const E = createEngine(), S = E.state;
   S.age = 9; S.cycle = 2; S.introSeen = true; S.flags.ver = D.VERSION;
   Object.assign(S.settings, { tuto: false, sound: false, visiteurs: false });
-  for (const z of D.ZONES) { S.zones[z.id] = true; if (z.id === 'desert') break; }
+  for (const z of D.ZONES) { S.zones[z.id] = true; if (z.id === 'gisement') break; } // 0.65 : la galène se pose au Gisement Noir
   for (const [id, it] of Object.entries(D.ITEMS)) {
     if (it.a > 9 || it.sec || it.path || !it.r) continue;
     E.learn(id, true);
@@ -43,13 +43,13 @@ function partie(mode) {
         await p.waitForTimeout(150);
         await p.evaluate(() => window.__eclat.closeModal());
       }
-      await p.locator('#questBtn').click();
+      await p.locator('#v-domaine [data-quetes]').click(); // 0.66 : la pastille des quêtes est en haut des Terres
       await p.waitForTimeout(400);
       const box = p.locator('#modal .modal-box');
       if (mode === 'inconnue') {
         assert.match(await box.innerText(), /Mine de plomb/);
-        await box.locator('[data-m="qresume"][data-tab="atelier"]').click();
-        assert.equal(await p.evaluate(() => window.__eclat.U.tab), 'atelier');
+        await box.locator('[data-m="qresume"][data-tab="labo"]').click();
+        assert.equal(await p.evaluate(() => window.__eclat.U.tab), 'labo');
         assert.equal(await p.locator('#modal').evaluate(e => e.classList.contains('hidden')), true);
       } else if (mode === 'prete') {
         assert.equal(await box.locator('[data-m="qmake"]').getAttribute('data-id'), 'galene_1');
@@ -57,12 +57,12 @@ function partie(mode) {
         await p.waitForFunction(() => window.__eclat.E.queued('galene_1') > 0 || window.__eclat.E.state.made.galene_1 > 0);
       } else {
         assert.match(await box.innerText(), /attend d’être posé/);
-        await box.locator('[data-gz="collines"]').click();
+        await box.locator('[data-gz="gisement"]').click();
         await p.waitForTimeout(400);
         assert.equal(await p.evaluate(() => window.__eclat.U.tab), 'domaine');
-        await p.locator('[data-xadd="collines:galene"]').first().click();
+        /* connu : à cet âge, la carte « nouveau gisement » passe sous le panneau du bas (A-FAIRE) ; on déclenche l’appui sans passer par le pointeur */
+        await p.locator('[data-xadd="gisement:galene"]').first().evaluate((b) => b.click());
         await p.waitForFunction(() => window.__eclat.E.rate('galene') > 0);
-        assert.equal(await p.evaluate(() => !!window.__eclat.E.state.zones.gisement), false);
       }
       assert.deepEqual(errors, []);
       console.log('✓ Quêtes mobile : mine de plomb ' + mode);

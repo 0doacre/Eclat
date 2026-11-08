@@ -155,8 +155,12 @@ html[data-style-mode="vivant"] #modal#modal#modal .modal-box .acts { gap: 8px; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout, html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte { width: 58px !important; height: 58px !important; min-width: 58px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ic, html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte .ic, html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte :is(img, svg, .gi) { width: 54px !important; height: 54px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-gisements :is(.gis, .terre-ligne, li, .row) { padding-block: 0 !important; min-height: 0 !important; }
-/* le fond recadré (zoom de 14 %) ne doit pas agrandir la zone qui défile */
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terres { overflow: clip; }
+/* (les fonds HD sont livrés plein cadre : plus de zoom de recadrage, donc plus de débordement à rogner) */
 /* Étude : les ressources restent grandes mais l’établi et « Tailler » restent au-dessus de la barre d’onglets */
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource .ic { width: 52px !important; height: 52px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource > .btn { min-height: 80px !important; padding: 4px 2px 4px !important; }
+/* la carte « nouveau gisement » (en bas de la terre) ne se range pas sous la barre d’onglets */
+/* ce que le jeu masque reste masqué (ma grammaire donne display:flex aux boutons) */
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .btn-contempler,
+html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .icon-btn, .chip, button)[hidden],
+html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .icon-btn, .chip, button).hidden { display: none !important; }

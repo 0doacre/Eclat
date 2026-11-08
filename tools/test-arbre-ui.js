@@ -42,18 +42,19 @@ async function run() {
   await new Promise(r => server.listen(0, "127.0.0.1", r));
   const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
   const ouvrirArbre = async (p) => { await p.locator('#tabs [data-tab="arbre"]').click(); await p.waitForTimeout(500); };
-  const fermer = async (p) => { await p.waitForTimeout(500); await p.locator("#modal .modal-x").click(); await p.waitForTimeout(300); };
+  const fermer = async (p) => { await p.waitForTimeout(500); await p.locator("#modal .modal-x").first().click(); await p.waitForTimeout(300); };
 
   // 1. l’accueil reste la progression ; chaque âge se lit en pastilles
   let p = await page(browser, {});
   await ouvrirArbre(p);
-  ok(await p.locator(".arb-progression").count() === 1 && !(await p.evaluate(() => !!window.__eclat.U.mcur)), "l’Arbre s’ouvre sur la progression, sans feuille");
+  ok(await p.locator(".arb-barre").count() === 1 && !(await p.evaluate(() => !!window.__eclat.U.mcur)), "l’Arbre s’ouvre sur la progression, sans feuille");
   ok(await p.locator(".arb-legende").count() === 1, "une légende dit ce que veulent dire les pastilles");
+  if (await p.locator('details.arb-passes:not([open]) > summary').count()) { await p.locator('details.arb-passes > summary').click(); await p.waitForTimeout(150); }
   await p.locator('summary:has-text("Âge de l’Os")').click(); await p.waitForTimeout(200);
   const rangs = await p.evaluate(() => [...document.querySelectorAll('details[open][data-arbage="1"] .arb-pas')].map(b => b.className.split(" ").filter(c => ["allume", "vu", "fantome"].includes(c))[0]));
   ok(rangs.length >= 5, "l’âge ouvert montre ses pastilles (" + rangs.length + ")");
-  const premierAllume = rangs.indexOf("allume"), dernierVu = rangs.lastIndexOf("vu");
-  ok(dernierVu === -1 || premierAllume === -1 || dernierVu < premierAllume, "les matières vues viennent avant les recettes");
+  const dernierAllume = rangs.lastIndexOf("allume"), premierVu = rangs.indexOf("vu");
+  ok(premierVu === -1 || dernierAllume === -1 || dernierAllume < premierVu, "les recettes viennent avant les ressources vues (0.65 : « Ressources vues » sous la frise)");
   ok(await p.evaluate(() => [...document.querySelectorAll(".arb-pas")].every(b => /, /.test(b.getAttribute("aria-label")) && b.getAttribute("aria-label").length > 6)), "chaque pastille porte son nom entier et son état dans son nom accessible");
   ok(await p.evaluate(() => [...document.querySelectorAll(".arb-pas")].every(b => { const r = b.getBoundingClientRect(); return r.width >= 44 && r.height >= 44; })), "chaque pastille fait au moins 44 px");
   ok(await p.evaluate(() => document.documentElement.scrollWidth === innerWidth && document.getElementById("arbre").scrollWidth === document.getElementById("arbre").clientWidth), "rien ne déborde à droite");
@@ -134,8 +135,10 @@ async function run() {
   // 10. filtres de portée et point « nouveau »
   p = await page(browser, {});
   await ouvrirArbre(p);
+  await p.locator('[data-arb="chercher"]').click(); await p.waitForTimeout(200); // 0.66 : les filtres sont derrière la loupe
   ok(await p.locator(".arb-filtres [data-arb-f]").count() === 4, "les 4 filtres de portée sont présents");
   ok(await p.evaluate(() => [...document.querySelectorAll(".arb-filtres button")].every(b => b.getBoundingClientRect().height >= 44)), "chaque filtre fait au moins 44 px de haut");
+  await p.evaluate(() => { const g = window.__eclat, E = g.E, st = E.state; const id = Object.keys(st.known).find(k => E.item(k) && E.item(k).r && !E.item(k).sec && E.item(k).a === st.age); if (id) st.made[id] = 0; g.render(true); }); await p.waitForTimeout(300); // la fixture a tout fabriqué : on en défait une pour voir le point
   ok(await p.locator(".arb-pas.neuf .arb-dot-neuf").count() >= 1, "les nouvelles recettes portent le point nouveau");
   const countTous = await p.locator(".arb-pas").count();
   await p.locator('.arb-filtres [data-arb-f="pret"]').click();

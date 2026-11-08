@@ -394,7 +394,7 @@ html[data-style-mode="vivant"] #app#app #v-arbre .arb-vue > p.small.muted { back
 }
 
 /* fonds HD des terres : l’aquarelle a des bords de papier irréguliers, on recadre un peu pour qu’ils ne se voient jamais, et on garde de la matière sous les plaques */
-html[data-style-mode="vivant"] #app#app #v-domaine .terre-fond[src*="-fond.webp"] { transform: scale(1.14); transform-origin: 50% 45%; filter: saturate(1.18) contrast(1.06); }
+html[data-style-mode="vivant"] #app#app #v-domaine .terre-fond[src*="-fond.webp"] { filter: saturate(1.18) contrast(1.06); }
 @media (min-width: 900px) and (min-height: 520px) {
   html[data-style-mode="vivant"] #app#app #views > .view { max-width: none !important; }
 }

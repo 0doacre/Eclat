@@ -87,4 +87,4 @@
 }
 .feuille-atlas [aria-current="location"] .a-name { font-weight: 700; text-decoration: underline; }
 /* Le Caveau n'a pas de décor portrait : préserver sa carte entière en tête. */
-.terre-fond[src*="caveau-"] { object-fit: contain; object-position: center top; }
+.terre-fond[src*="caveau-carte"], .terre-fond[src*="caveau-decor"] { object-fit: contain; object-position: center top; }

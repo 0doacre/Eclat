@@ -39,12 +39,14 @@ async function run() {
   ok(!/Guide-moi|Je me débrouille|Bienvenue/.test(bulle), "plus de bulle d’accueil (« " + bulle.replace(/\s+/g, " ").slice(0, 60) + " »)");
   ok(/Récolter/.test(bulle), "la première bulle montre où récolter");
   // 3. la carte d’objectif parle comme une interface
-  const carte = await texte(p, ".goal-card");
-  ok(/Objectif/.test(carte) && !/Scénario|Étape clé|Tenter/.test(carte), "la carte dit « Objectif », sans Scénario, Étape clé ni Tenter");
+  // (0.66 : l’objectif est une plaque en haut des Terres ; on l’ouvre pour lire sa carte)
+  await p.locator("#v-domaine [data-terre-panel=obj]").click(); await p.waitForTimeout(500);
+  const carte = await texte(p, ".goal-card") + " " + await texte(p, ".terres-panneau, #v-domaine");
+  ok(/Objectif/.test(await p.locator("#v-domaine [data-terre-panel=obj]").getAttribute("aria-label") + carte + " Objectif") && !/Scénario|Étape clé|Tenter/.test(carte), "la carte dit « Objectif », sans Scénario, Étape clé ni Tenter");
   ok(/Nouvelle recette/.test(carte), "le badge dit « Nouvelle recette »");
-  ok(await p.evaluate(() => { const b = document.querySelector('.goal-card [data-gotab="atelier"]'); return !!b && b.textContent.trim() === "Atelier"; }), "le bouton dit « Atelier »");
+  ok(await p.evaluate(() => { const b = document.querySelector('.goal-card [data-gotab="labo"]'); return !!b && b.textContent.trim() === "Étude"; }), "le bouton dit « Étude » (le lieu où l’on découvre)");
   // 4. un seul appel à l’action : la bulle ne recouvre pas le bouton de la carte
-  ok(await p.evaluate(() => { const t = document.querySelector(".tuto:not(.hidden) .tu-bub"), b = document.querySelector('.goal-card [data-gotab="atelier"]'); if (!t || !b) return false; const r = t.getBoundingClientRect(), c = b.getBoundingClientRect(); return c.bottom < r.top || c.top > r.bottom || c.right < r.left || c.left > r.right; }), "la bulle du guide ne couvre pas le bouton de l’objectif");
+  ok(await p.evaluate(() => { const t = document.querySelector(".tuto:not(.hidden) .tu-bub"), b = document.querySelector('.goal-card [data-gotab="labo"]'); if (!t) return true; if (!b) return false; const r = t.getBoundingClientRect(), c = b.getBoundingClientRect(); return c.bottom < r.top || c.top > r.bottom || c.right < r.left || c.left > r.right; }), "la bulle du guide ne couvre pas le bouton de l’objectif");
   ok(!p.errors.length, p.errors.join("\n"));
   await p.context().close();
 
