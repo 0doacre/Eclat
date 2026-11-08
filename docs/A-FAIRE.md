@@ -63,3 +63,9 @@ Décision du 1er novembre 2026 : l’interface sobre est faite pour le télépho
   gisement (sa règle du courant fait l'inverse).
 - **Fichiers encore longs** : `js/engine.js` (4 600 lignes), `js/recit.js` (1 286), `js/data.js` (1 279).
 - Relire les textes de `docs/revue/` (dons, jours, seuils, visiteurs, figures, expéditions, onboarding).
+
+## Tests d’interface (8 novembre 2026)
+
+Playwright tourne en local (paquet 1.61.0, Chromium révision 1228, `PW=<dossier>/node_modules/playwright`, serveur sur 8080 pour certains). Passent : tenue des vues, confort de l’Étude, À construire, menu, Carnet dans le Journal, ouverture, Arbre, quêtes. Retirés comme obsolètes : équipements (page de prototype qui ne se charge plus), atelier intégré et reprise (ancien atelier classique). **À réécrire pour l’interface actuelle** : fiches, affichage, Atlas (l’Atlas n’est plus un onglet), juice, sentier-chantier.
+
+**Défaut connu, non corrigé** : au Gisement Noir, la carte « nouveau gisement » (poser la mine de plomb) passe sous le panneau « Maîtrise » et ses boutons ne se touchent plus. `test-progression-ui.js` déclenche l’appui sans le pointeur, ce qui masque ce défaut : il faut revoir la grille de cet écran.
