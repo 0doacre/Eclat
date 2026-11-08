@@ -56,9 +56,9 @@ async function run() {
   ok(!p.errors.length, p.errors.join("\n"));
 
   // 2. une curiosité rare prend l’écran (palier 3) : fête, rayons, secousse, voile
-  await p.evaluate(() => window.__eclat.E.addCurio("poudre_rouge"));
+  const curio = await p.evaluate(() => { const g = window.__eclat, EA = window.ECLAT_DATA.EASTER; const id = Object.keys(EA).find((k) => EA[k].tier === 3 && !g.E.hasCurio(k)); g.E.addCurio(id); return EA[id].n; }); // une curiosité de palier 3 pas encore trouvée dans la partie de départ
   await p.waitForSelector(".cele.t3 .crays");
-  ok(await p.evaluate(() => document.querySelector(".cele.t3 .cn").textContent === "Poudre rouge"), "la fête de la poudre rouge s’affiche");
+  ok(await p.evaluate((n) => document.querySelector(".cele.t3 .cn").textContent === n, curio), "la fête de la curiosité s’affiche");
   ok(await p.evaluate(() => document.getElementById("app").classList.contains("jshake")), "l’écran tremble à l’arrivée");
   ok(await p.evaluate(() => !!document.querySelector("#fx .jflash") || document.querySelectorAll("#fx .jring").length > 0), "un choc visible accompagne l’arrivée");
   const dur = await p.evaluate(() => parseInt(getComputedStyle(document.querySelector(".cele")).getPropertyValue("--ms"), 10));
@@ -71,7 +71,7 @@ async function run() {
 
   // 3. un palier 2 est plus discret que le 3
   p = await page(browser, {});
-  await p.evaluate(() => window.__eclat.E.addCurio("fouet"));
+  await p.evaluate(() => { const g = window.__eclat, EA = window.ECLAT_DATA.EASTER; g.E.addCurio(Object.keys(EA).find((k) => EA[k].tier === 2 && !g.E.hasCurio(k))); });
   await p.waitForSelector(".cele.t2");
   ok(await p.evaluate(() => !document.querySelector(".cele .crays")), "pas de rayons au palier 2");
   await p.context().close();
@@ -81,7 +81,7 @@ async function run() {
   const b2 = await p.locator('#tabs [data-tab="atelier"]').boundingBox();
   await p.mouse.move(b2.x + 10, b2.y + 10); await p.mouse.down(); await p.mouse.up();
   ok(await p.evaluate(() => !document.querySelector("#fx .jring")), "pas d’anneau avec « réduire les animations »");
-  await p.evaluate(() => window.__eclat.E.addCurio("poudre_rouge"));
+  await p.evaluate(() => { const g = window.__eclat, EA = window.ECLAT_DATA.EASTER; g.E.addCurio(Object.keys(EA).find((k) => EA[k].tier === 3 && !g.E.hasCurio(k))); });
   await p.waitForSelector(".cele.t3");
   ok(await p.evaluate(() => !document.getElementById("app").classList.contains("jshake")), "pas de secousse avec « réduire les animations »");
   ok(await p.evaluate(() => !!document.querySelector(".cele .cn").textContent), "le message reste");
@@ -89,7 +89,8 @@ async function run() {
 
   // 5. un visiteur attrapé éclate : pop, étincelles, gain qui monte
   p = await page(browser, { settings: { visiteurs: true } });
-  await p.evaluate(() => { const st = window.__eclat.E.state; st.stats.play = 1000; st.visiteur = Object.assign(st.visiteur || {}, { next: 1 }); window.__eclat.U.tab = "domaine"; });
+  await p.evaluate(() => { Date.prototype.getHours = function () { return 12; }; }); // les visiteurs dépendent de l’heure : on la fixe à midi
+  await p.evaluate(() => { const st = window.__eclat.E.state; st.stats.play = 1000; st.visiteur = Object.assign(st.visiteur || {}, { next: 1 }); window.__eclat.U.tab = "domaine"; window.__eclat.U.zone = "lisiere"; /* la partie de départ est dans les Profondeurs, où personne ne passe */ });
   await p.waitForSelector(".visiteur", { timeout: 25000 });
   const gain0 = await p.evaluate(() => window.__eclat.E.state.stats.visiteurs);
   await p.locator(".visiteur").evaluate(e => e.click());

@@ -1522,7 +1522,7 @@
     U.applyTheme = applyTheme;
     U.applyLargeText = applyLargeText;
     U.itemPill = itemPill;
-    window.__eclat = { E, U, Stk, demanderPersistance, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal, itemPill, applyTheme };
+    window.__eclat = { E, U, Stk, demanderPersistance, render, save, backups, Cloud, Dom, Carte, toast, openMemoire, closeModal, itemPill, applyTheme, setTab };
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

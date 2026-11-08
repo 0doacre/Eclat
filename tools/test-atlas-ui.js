@@ -42,7 +42,7 @@ async function run() {
     await p.goto("http://127.0.0.1:" + server.address().port);
     await p.waitForFunction(() => !!window.__eclat);
     for (let i = 0; i < 8; i++) { await p.waitForTimeout(100); await p.evaluate(() => window.__eclat.closeModal()); }
-    await p.locator('#tabs [data-tab="carte"]').click();
+    await p.evaluate(() => window.__eclat.setTab("carte")); /* 0.66 : la Carte n’a plus d’onglet, on l’ouvre comme le fait « Explorer » */
     await p.locator('.atlas-world').waitFor();
     await p.waitForFunction(() => document.fonts.status === "loaded");
     const tag = width + "/" + count + "/" + large;
@@ -90,16 +90,7 @@ async function run() {
     ok(await p.locator('#modal h2').textContent() === "Le Grand Chêne", "Lieu accessible au clavier");
     await close(p);
     await p.locator('[data-map-go="lisiere"]').click();
-    // La bascule doit reconstruire la présentation sans toucher à l’état métier.
-    const zones = await p.evaluate(() => JSON.stringify(window.__eclat.E.state.zones));
-    await p.locator('#atlasToggle').click();
-    await p.waitForFunction(() => !document.querySelector('.atlas-world'));
-    ok(await p.locator('.c-camp').count() === 1, "Mode classique préservé");
-    await p.locator('#atlasToggle').click();
-    await p.locator('.atlas-world').waitFor();
-    const hitFill = await p.locator('.atlas-world .a-hit').first().evaluate(e => getComputedStyle(e).fill);
-    ok(['rgba(0, 0, 0, 0)', 'transparent'].includes(hitFill), 'Bascule Atlas : zones tactiles transparentes dès le retour (' + hitFill + ')');
-    ok(await p.evaluate(() => JSON.stringify(window.__eclat.E.state.zones)) === zones, "Bascule sans changement de découverte");
+    // (0.66 : le bouton « Aspect » et le mode Classique sont retirés de l’interface ; la bascule Atlas / Classique n’est plus testée)
     if (count < 11) {
       await p.locator('[data-map-go]:has-text("Frontière")').click();
       await p.locator('[data-cf]').focus(); await p.keyboard.press('Space');
@@ -122,7 +113,7 @@ async function run() {
   await p.waitForFunction(() => !!window.__eclat);
   await p.evaluate(() => navigator.serviceWorker.ready);
   for (let i = 0; i < 8; i++) { await p.waitForTimeout(100); await close(p); }
-  await p.locator('#tabs [data-tab="carte"]').click();
+  await p.evaluate(() => window.__eclat.setTab("carte")); /* 0.66 : la Carte n’a plus d’onglet, on l’ouvre comme le fait « Explorer » */
   const redraw = async fn => { await p.evaluate(fn); await p.evaluate(() => { delete document.getElementById('v-carte').dataset.sig; window.__eclat.render(true); }); };
   await redraw(() => { window.__eclat.E.state.exp.done.lisiere = 1; });
   ok(await p.locator('[data-cl="lisiere:0"].done .a-check').count() === 1, 'Lieu exploré : coche visible');
@@ -182,14 +173,11 @@ async function run() {
   await p.reload();
   await p.waitForFunction(() => !!window.__eclat);
   for (let i = 0; i < 5; i++) { await p.waitForTimeout(100); await close(p); }
-  await p.locator('#tabs [data-tab="carte"]').click();
+  await p.evaluate(() => window.__eclat.setTab("carte")); /* 0.66 : la Carte n’a plus d’onglet, on l’ouvre comme le fait « Explorer » */
   ok(await p.locator('.atlas-world').count() === 1, 'Carte utilisable après rechargement hors ligne');
   for (const url of ['assets/atlas/monde-vivant-v1.webp', 'assets/atlas/brume-v1.webp', 'assets/atlas/feuillet-celeste-v1.webp', 'css/carte-atlas.css', 'assets/terres/lisiere-carte.webp']) {
     ok(await p.evaluate(async url => { const r = await fetch(url); return r.ok && (await r.arrayBuffer()).byteLength > 0; }, url), 'Cache hors ligne : ' + url);
   }
-  await p.locator('#atlasToggle').click();
-  ok(await p.locator('.c-camp').count() === 1, 'Classique disponible hors ligne');
-  ok(!await p.locator('#v-carte .atlas-map-heading').isVisible(), 'La feuille de carte permanente ne révèle pas les commandes Atlas en Classique');
   ok(!errors.length, 'États et hors ligne : aucune erreur ' + errors.join('; '));
   await ctx.close();
   console.log("✓ Atlas : " + checks + " contrôles.");
