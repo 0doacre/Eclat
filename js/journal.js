@@ -258,10 +258,16 @@
         const n = D.SECRETS.filter((s) => st.secrets[s.id]).length;
         h += '<p class="small muted">' + n + "/" + D.SECRETS.length + " secrets découverts. Relis les fragments : certains cachent un code.</p><div class=\"secret-grid\">";
         const allM = (typeof E.allMelodies === "function") ? E.allMelodies() : D.MELODIES;
+        /* les secrets trouvés ont leur carte ; ceux qui restent cachés se comptent par sorte (un mur de « ??? » n’apprend rien) */
+        const caches = {};
         D.SECRETS.forEach((s) => {
-          const found = st.secrets[s.id];
-          const name = s.n || (I[s.id] ? I[s.id].n : allM[s.id] ? allM[s.id].n : s.id);
-          h += '<div class="sec' + (found ? "" : " unk") + '"><div class="k">' + s.k + "</div>" + (found ? esc(name) : "???") + "</div>";
+          if (st.secrets[s.id]) {
+            const name = s.n || (I[s.id] ? I[s.id].n : allM[s.id] ? allM[s.id].n : s.id);
+            h += '<div class="sec"><div class="k">' + s.k + "</div>" + esc(name) + "</div>";
+          } else caches[s.k] = (caches[s.k] || 0) + 1;
+        });
+        Object.keys(caches).forEach((k) => {
+          h += '<div class="sec unk" title="' + caches[k] + " " + esc(k.toLowerCase()) + (caches[k] > 1 ? "s" : "") + ' à trouver"><div class="k">' + esc(k) + '</div><b class="sec-n">' + caches[k] + "</b> à trouver</div>";
         });
         h += "</div>";
       } else if (cur === "gestes") {

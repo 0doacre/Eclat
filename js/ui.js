@@ -830,7 +830,8 @@
     $("#ageName").textContent = ag.n.replace(/^Âge (du |de la |de l’|des |de )?/, "").replace(/^./, (c) => c.toUpperCase());
     $("#ageBtn").setAttribute("aria-label", ag.n + " : étapes de l’âge");
     const old = ep === "papyrus" || ep === "enluminure";
-    $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) + " sur " + ROMAN(D.AGES.length) : (a + 1) + "/" + D.AGES.length) + (S().cycle > 1 ? " · Semeur " + (S().cycle + 6) + (E.nomDuCycle && E.nomDuCycle() ? " · " + E.nomDuCycle() : "") : "");
+    $("#ageNum").textContent = "Âge " + (old ? ROMAN(a + 1) : (a + 1));  /* le numéro du Semeur et son nom sont dans le Menu : le bandeau garde la place des chiffres */
+    $("#ageNum").title = S().cycle > 1 ? "Semeur " + (S().cycle + 6) + (E.nomDuCycle && E.nomDuCycle() ? " · " + E.nomDuCycle() : "") : "";
     const ms = (E.milestones && E.milestones()[a]) || [];
     const done = ms.filter((x) => x.done).length;
     const total = ms.length;

@@ -76,7 +76,7 @@ html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-geste :is(svg, .gi) 
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource :is(img, svg, .gi) { width: 40px !important; height: 40px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource > .btn { min-height: 66px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top::after { display: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { top: -2px !important; left: -2px !important; width: 18px; height: 18px; border-radius: 50%; background: #a8402b; color: #fff8e9 !important; font-size: 14px !important; line-height: 18px !important; text-align: center; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { top: -2px !important; left: -2px !important; width: 18px; height: 18px; border-radius: 50%; background: #a8402b; color: #fff8e9 !important; font-size: 13px !important; line-height: 18px !important; text-align: center; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout { overflow: visible !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top { border-left: 0 !important; }
 /* ---- icônes d’abord : le contenant carré disparaît, l’image prend la place ---- */
@@ -105,7 +105,6 @@ html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-tools .ae-chip.on :i
 html[data-style-mode="vivant"] #app#app#app#app :is(#v-labo .ae-tools .ae-chip.on, #v-labo .ae-geste.on) { color: #a8402b !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .chip { min-width: 0 !important; padding-inline: 0 !important; }
 @media (max-width: 600px) { html[data-style-mode="vivant"] #app#app#app#app #top#top { grid-template-columns: minmax(104px, 1fr) auto auto auto 40px !important; column-gap: 12px !important; } }
-html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { overflow: visible !important; text-overflow: clip !important; }
 html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule, html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule b { color: #a8402b !important; }
 html[data-style-mode="vivant"] #app#app#app#app .ico-seule :is(svg, .gi) { width: 28px; height: 28px; }
 html[data-style-mode="vivant"] #app#app#app#app .age-pill.ico-seule { font: 700 17px var(--fin-sans) !important; }
@@ -164,3 +163,68 @@ html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource > .btn { mi
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .btn-contempler,
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .icon-btn, .chip, button)[hidden],
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .icon-btn, .chip, button).hidden { display: none !important; }
+
+/* ---- fenêtres et menu : la croix est une commande nue, les onglets et les interrupteurs suivent l’échelle ---- */
+html[data-style-mode="vivant"] #modal#modal#modal .modal-x { background: none !important; border: 0 !important; border-image: none !important; box-shadow: none !important; width: 44px; height: 44px; min-width: 44px; padding: 0; color: #3b2a1a; font-size: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-x::before, html[data-style-mode="vivant"] #modal#modal#modal .modal-x::after { display: none !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-x:active { transform: scale(.94); color: #a8402b; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button { font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab.on, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button.on { font-weight: 700 !important; color: #813f2a !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .btn.sw { text-transform: none !important; letter-spacing: 0 !important; font-size: 14px !important; min-width: 96px; }
+html[data-style-mode="vivant"] #modal#modal#modal .btn.sw.on { color: #fff8e9 !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn { display: flex !important; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; padding: 8px 12px !important; min-height: 64px !important; line-height: 1.25; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn > * { text-align: left; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.kicker, .m-k, [class*="stat"] small, [class*="stat"] .lbl) { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: 13px !important; font-weight: 600; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-cell-lbl { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: 13px !important; font-weight: 600; color: #5f513f; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-cell-val { font-family: var(--fin-sans) !important; font-size: 17px !important; font-weight: 700; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn { line-height: 1.2 !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn * { line-height: 1.2 !important; margin: 0 !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn :is(span, small, b) { display: block; }
+html[data-style-mode="vivant"] #modal#modal#modal .btn.sw:not(.on) { opacity: .85; }
+html[data-style-mode="vivant"] #modal#modal#modal .btn.sw.on::before { background: #a8402b !important; border-color: #7a2c1c !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge, html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge * { font-family: var(--fin-sans) !important; font-size: 13px !important; }
+/* Journal, secrets : une carte par sorte de secret caché, avec son compte */
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k { text-transform: none; letter-spacing: 0; font: 600 13px var(--fin-sans) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .sec-n { font: 700 20px var(--fin-sans); color: #813f2a; }
+/* bandeau : la ligne de l’âge se coupe avec des points de suspension (au cycle 2 elle ajoute « Semeur 8 »), le compteur 0/5 reste entier */
+html[data-style-mode="vivant"] #app#app#app#app #top .age { min-width: 0; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-head, html[data-style-mode="vivant"] #app#app#app#app #top .age-sub { min-width: 0; max-width: 100%; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-sub { display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { flex: 0 1 auto; min-width: 0; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-badge { flex: 0 0 auto; }
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .sec .k { text-transform: none !important; letter-spacing: 0 !important; font: 600 13px var(--fin-sans) !important; color: #5f513f; }
+/* Progression, Gestes : une rangée par geste (icône, texte, coche), pas une grande carte centrée */
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .gestes-grid .frag, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .gestes-grid .frag { display: flex !important; flex-direction: row !important; align-items: center; gap: 12px; padding: 10px 12px !important; min-height: 0 !important; text-align: left; }
+html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .fi { flex: 0 0 44px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 !important; }
+html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .fi :is(svg, .gi, img) { width: 36px; height: 36px; }
+html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .grow { flex: 1 1 auto; min-width: 0; text-align: left; }
+html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .geste-check { flex: 0 0 auto; margin: 0; }
+html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .geste-check :is(svg, .gi, img) { width: 28px; height: 28px; }
+html[data-style-mode="vivant"] #app#app#app#app .age-nav .age-pill.cur.ico-seule, html[data-style-mode="vivant"] #app#app#app#app .age-nav .age-pill.cur.ico-seule * { color: #a8402b !important; }
+
+/* ---- l’échelle de texte (docs/GRAMMAIRE-V2.md §5) : onze, treize, quinze, dix-sept, vingt, vingt-quatre, vingt-huit ; 400, 600, 700 ---- */
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(b, strong) { font-weight: 700 !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(h2, .m-title-text) { font-weight: 400 !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) h3.sub { font-size: 17px !important; font-weight: 700 !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) h4.arb-sous { font: 600 13px var(--fin-sans) !important; text-transform: none; letter-spacing: 0; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.arb-age-compte, .cnt) { font: 600 13px var(--fin-sans) !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.small) { font-size: 15px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.tiny, .menu-footer) { font-size: 13px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.m-all .w, .mall .w) { font-size: 15px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.arb-pas-n, .rt-n, .pastille-n, .tuile-n, .carnet-name, .rec-n) { font-size: 13px !important; font-weight: 400; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.roue-n, .ajout-plus) { font-size: 11px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.terre-nav) { font-size: 28px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.atel-chev) { font-size: 20px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.atel-ic) { font-size: 28px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.an) { font-size: 24px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.ic:not(.carnet-ic)) { font-size: 20px !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.quest-titre) { font-size: 17px !important; font-weight: 700 !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine button.terre-nav { font-size: 28px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte + * b, html[data-style-mode="vivant"] #app#app#app#app #v-domaine b[class*="compact"] { font-size: 20px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .ajout-plus { font-size: 13px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atel-carte b { font-size: 17px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-arbre .arb-resume b { font-size: 20px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-arbre .arb-resume span { font-size: 17px !important; font-weight: 600; }
+html[data-style-mode="vivant"] #modal#modal#modal :is(.row, .m-row, .menu-row) > span:first-child { font-size: 17px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { font: 700 13px/18px var(--fin-sans) !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .toggle > span { font: 400 17px var(--fin-sans) !important; }
