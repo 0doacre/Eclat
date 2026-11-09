@@ -144,6 +144,22 @@
     foreuse_elec: "assets/carnet/items/foreuse_elec.webp",
     moteur_elec: "assets/carnet/items/moteur_elec.webp",
     sable_4: "assets/carnet/items/sable_4.webp",
+    poste_elec: "assets/carnet/items/poste_elec.webp",
+    radio: "assets/carnet/items/radio.webp",
+    reseau: "assets/carnet/items/reseau.webp",
+    foreuse: "assets/carnet/items/foreuse.webp",
+    telegraphe: "assets/carnet/items/telegraphe.webp",
+    barre_combustible: "assets/carnet/items/barre_combustible.webp",
+    centrale_fission: "assets/carnet/items/centrale_fission.webp",
+    compteur_geiger: "assets/carnet/items/compteur_geiger.webp",
+    galene: "assets/carnet/items/galene.webp",
+    graphite: "assets/carnet/items/graphite.webp",
+    lingot_plomb: "assets/carnet/items/lingot_plomb.webp",
+    uranium_1: "assets/carnet/items/uranium_1.webp",
+    galene_1: "assets/carnet/items/galene_1.webp",
+    uranium: "assets/carnet/items/uranium.webp",
+    pastille_uranium: "assets/carnet/items/pastille_uranium.webp",
+    plaque_plomb: "assets/carnet/items/plaque_plomb.webp",
   };
 
   const SOURCES = {

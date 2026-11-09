@@ -41,8 +41,16 @@ const server = http.createServer((req, res) => { if (req.url.startsWith("/p")) {
         else if (exces > 20) { a = Math.round(255 * (60 - exces) / 40); px[k + 1] = Math.min(gr, Math.max(r, bl) + 8); } // bord : on adoucit et on retire le vert
         else if (exces > 6) px[k + 1] = Math.max(r, bl) + 2;                                                                // despill léger
         px[k + 3] = a;
-        if (a > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; if (x < 3 || y < 3 || x > CASE - 4 || y > CASE - 4) bord++; }
+        /* la boîte englobante est calculée après le tri des îlots (voir plus bas) */
       }
+      // îlots : on garde les composantes assez grosses (8-connexité) et on efface les petites traces isolées
+      { const N = CASE * CASE, lab = new Int32Array(N).fill(-1), aire = [], bords = [], boites = [], file = new Int32Array(N); let nl = 0, total = 0;
+        for (let s = 0; s < N; s++) { if (lab[s] >= 0 || px[s * 4 + 3] <= 40) continue; let h = 0, t = 0, n = 0, touche = false, bx0 = CASE, by0 = CASE, bx1 = 0, by1 = 0; file[t++] = s; lab[s] = nl;
+          while (h < t) { const q = file[h++]; n++; const qx = q % CASE, qy = (q - qx) / CASE; if (qx < 4 || qy < 4 || qx > CASE - 5 || qy > CASE - 5) touche = true; if (qx < bx0) bx0 = qx; if (qx > bx1) bx1 = qx; if (qy < by0) by0 = qy; if (qy > by1) by1 = qy;
+            for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const nx = qx + dx, ny = qy + dy; if (nx < 0 || ny < 0 || nx >= CASE || ny >= CASE) continue; const nq = ny * CASE + nx; if (lab[nq] < 0 && px[nq * 4 + 3] > 40) { lab[nq] = nl; file[t++] = nq; } } }
+          aire.push(n); bords.push(touche); boites.push([bx0, by0, bx1, by1]); total += n; nl++; }
+        const seuil = Math.max(60, total * 0.004), plusGros = aire.indexOf(Math.max(...aire)), gros = aire.map((n, i3) => n >= seuil && (!bords[i3] || i3 === plusGros)); const B = boites[plusGros]; aire.forEach((n, i3) => { if (i3 === plusGros || !gros[i3] || n > aire[plusGros] * 0.04) return; const b2 = boites[i3], ecartX = Math.max(0, B[0] - b2[2], b2[0] - B[2]), ecartY = Math.max(0, B[1] - b2[3], b2[1] - B[3]); if (Math.max(ecartX, ecartY) > 18) gros[i3] = false; }); // une petite trace loin de l’objet n’en fait pas partie // une trace qui touche le bord de la case vient de l’objet voisin
+        for (let i2 = 0; i2 < N; i2++) { const l = lab[i2]; if (l >= 0 && !gros[l]) px[i2 * 4 + 3] = 0; else if (l >= 0) { const x = i2 % CASE, y = (i2 - x) / CASE; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; if (x < 3 || y < 3 || x > CASE - 4 || y > CASE - 4) bord++; } } }
       g.putImageData(d, 0, 0);
       const w = x1 - x0 + 1, h = y1 - y0 + 1, cote = Math.max(w, h), m = Math.round(cote * 0.06), S = cote + 2 * m;
       const o = document.createElement("canvas"); o.width = o.height = 256; const og = o.getContext("2d");
