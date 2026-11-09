@@ -74,7 +74,7 @@ const server = http.createServer((req, res) => { if (req.url.startsWith("/p")) {
   if (nouveaux.length) {
     let fin = js.indexOf("\n  };", js.indexOf("const ITEMS = {"));
     if (!/,\s*$/.test(js.slice(0, fin))) { js = js.slice(0, fin) + "," + js.slice(fin); fin += 1; } // la dernière entrée peut n’avoir pas de virgule
-    js = js.slice(0, fin) + nouveaux.map((r) => "\n    " + r.id + ': "assets/carnet/items/' + r.id + '.webp",').join("") + js.slice(fin2);
+    js = js.slice(0, fin) + nouveaux.map((r) => "\n    " + r.id + ': "assets/carnet/items/' + r.id + '.webp",').join("") + js.slice(fin);
     fs.writeFileSync(path.join(ROOT, "js/illustrations.js"), js);
   }
   let sw = fs.readFileSync(path.join(ROOT, "sw.js"), "utf8");

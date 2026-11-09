@@ -96,6 +96,22 @@
     pioche_bronze: "assets/carnet/items/pioche_bronze.webp",
     plaque_bronze: "assets/carnet/items/plaque_bronze.webp",
     ressort: "assets/carnet/items/ressort.webp",
+    roue: "assets/carnet/items/roue.webp",
+    soufflet: "assets/carnet/items/soufflet.webp",
+    charbon_2: "assets/carnet/items/charbon_2.webp",
+    sable_2: "assets/carnet/items/sable_2.webp",
+    cuir_2: "assets/carnet/items/cuir_2.webp",
+    martinet: "assets/carnet/items/martinet.webp",
+    caillou_3: "assets/carnet/items/caillou_3.webp",
+    chaudiere: "assets/carnet/items/chaudiere.webp",
+    chaudiere_tubulaire: "assets/carnet/items/chaudiere_tubulaire.webp",
+    locomotive: "assets/carnet/items/locomotive.webp",
+    circuit_vapeur: "assets/carnet/items/circuit_vapeur.webp",
+    condenseur: "assets/carnet/items/condenseur.webp",
+    drague: "assets/carnet/items/drague.webp",
+    eau: "assets/carnet/items/eau.webp",
+    fibre_3: "assets/carnet/items/fibre_3.webp",
+    manometre: "assets/carnet/items/manometre.webp",
   };
 
   const SOURCES = {
