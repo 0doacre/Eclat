@@ -112,6 +112,22 @@
     eau: "assets/carnet/items/eau.webp",
     fibre_3: "assets/carnet/items/fibre_3.webp",
     manometre: "assets/carnet/items/manometre.webp",
+    marteau_pilon: "assets/carnet/items/marteau_pilon.webp",
+    cassiterite_2: "assets/carnet/items/cassiterite_2.webp",
+    treuil: "assets/carnet/items/treuil.webp",
+    silex_2: "assets/carnet/items/silex_2.webp",
+    moteur_vapeur: "assets/carnet/items/moteur_vapeur.webp",
+    papier: "assets/carnet/items/papier.webp",
+    piston: "assets/carnet/items/piston.webp",
+    eau_1: "assets/carnet/items/eau_1.webp",
+    sable_3: "assets/carnet/items/sable_3.webp",
+    pompe: "assets/carnet/items/pompe.webp",
+    presse_vapeur: "assets/carnet/items/presse_vapeur.webp",
+    presse_imprimer: "assets/carnet/items/presse_imprimer.webp",
+    recuperation_vapeur: "assets/carnet/items/recuperation_vapeur.webp",
+    regulateur: "assets/carnet/items/regulateur.webp",
+    scierie: "assets/carnet/items/scierie.webp",
+    soupape: "assets/carnet/items/soupape.webp",
   };
 
   const SOURCES = {
