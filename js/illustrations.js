@@ -208,6 +208,22 @@
     autoclave: "assets/carnet/items/autoclave.webp",
     bouclier_th: "assets/carnet/items/bouclier_th.webp",
     centre_num: "assets/carnet/items/centre_num.webp",
+    ceramique: "assets/carnet/items/ceramique.webp",
+    composite: "assets/carnet/items/composite.webp",
+    drones: "assets/carnet/items/drones.webp",
+    fibre_carbone: "assets/carnet/items/fibre_carbone.webp",
+    fusee: "assets/carnet/items/fusee.webp",
+    graphene: "assets/carnet/items/graphene.webp",
+    ilmenite_2: "assets/carnet/items/ilmenite_2.webp",
+    excavateur: "assets/carnet/items/excavateur.webp",
+    terres_2: "assets/carnet/items/terres_2.webp",
+    moteur_fusee: "assets/carnet/items/moteur_fusee.webp",
+    plateforme: "assets/carnet/items/plateforme.webp",
+    supra: "assets/carnet/items/supra.webp",
+    tissu_carbone: "assets/carnet/items/tissu_carbone.webp",
+    alliage_ancien: "assets/carnet/items/alliage_ancien.webp",
+    alunisseur: "assets/carnet/items/alunisseur.webp",
+    assembleur: "assets/carnet/items/assembleur.webp",
   };
 
   const SOURCES = {
