@@ -31,7 +31,7 @@ const server = http.createServer((req, res) => {
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
   const b = await chromium.launch();
   const ctx = await b.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 2, hasTouch: W < 700, serviceWorkers: "block", reducedMotion: "reduce" });
-  const p = await ctx.newPage();
+  const p = await ctx.newPage(); p.on("pageerror", (e) => console.log("PAGEERR", e.message.slice(0, 200))); p.on("response", (r) => { if (r.status() >= 400) console.log("HTTP", r.status(), r.url().slice(-60)); });
   await p.addInitScript((r) => { localStorage.setItem("eclat.save.v1", r); localStorage.setItem("eclat.style.carnet-defaut", "1"); }, partie(4));
   await p.goto("http://127.0.0.1:" + server.address().port + "/index.html");
   await p.waitForFunction(() => !!window.__eclat);

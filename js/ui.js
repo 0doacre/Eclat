@@ -124,7 +124,8 @@
   }
   /* les icônes : un sprite (assets/icons.svg, game-icons.net) glissé dans la page au démarrage */
   const GI = window.ECLAT_ICONS || { items: {} };
-  const gi = (name, cls) => '<svg class="gi' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#gi-' + name + '"/></svg>';
+  /* gi("g:<id>") : un glyphe de la planche (assets/glyphes/<id>.png), colorié par la couleur du texte ; sinon un symbole de assets/icons.svg */
+  const gi = (name, cls) => /^g:/.test(name) ? '<span class="gi gph' + (cls ? " " + cls : "") + '" aria-hidden="true" style="--g:url(../assets/glyphes/' + name.slice(2) + '.png)"></span>' : '<svg class="gi' + (cls ? " " + cls : "") + '" aria-hidden="true"><use href="#gi-' + name + '"/></svg>';
   /* les pictogrammes des textes deviennent des icônes du sprite : dans le texte
    * seulement, jamais dans un attribut ni dans le terminal */
   const GLYPH = GI.glyphs || {};

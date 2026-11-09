@@ -228,3 +228,6 @@ html[data-style-mode="vivant"] #app#app#app#app #v-arbre .arb-resume span { font
 html[data-style-mode="vivant"] #modal#modal#modal :is(.row, .m-row, .menu-row) > span:first-child { font-size: 17px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { font: 700 13px/18px var(--fin-sans) !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .toggle > span { font: 400 17px var(--fin-sans) !important; }
+
+/* glyphes de la planche : un masque PNG colorié par la couleur du texte (voir gi("g:<id>") dans js/ui.js) */
+.gi.gph { display: inline-block; width: 1em; height: 1em; flex: 0 0 auto; vertical-align: -0.14em; background: currentColor; -webkit-mask: var(--g) center / contain no-repeat; mask: var(--g) center / contain no-repeat; }
