@@ -15,7 +15,8 @@ if (!fs.existsSync(png)) { console.error("planche absente : " + png); process.ex
 const md = fs.readFileSync(path.join(ROOT, "docs/art-direction/assets-manquants-v1/PROMPTS.md"), "utf8");
 const debut = md.indexOf("### Planche " + +num + " /");
 if (debut < 0) { console.error("planche " + +num + " absente du document"); process.exit(1); }
-const bloc = md.slice(debut, md.indexOf("\n### ", debut + 5) > 0 ? md.indexOf("\n### ", debut + 5) : undefined);
+const finBloc = [md.indexOf("\n### ", debut + 5), md.indexOf("\n## ", debut + 5)].filter((i) => i > 0);
+const bloc = md.slice(debut, finBloc.length ? Math.min(...finBloc) : undefined); // jusqu’à la planche ou la section suivante
 const ids = [...bloc.matchAll(/^\| (\d+) \| `([a-z0-9_]+)` \|/gm)].map((m) => m[2]);
 if (!ids.length) { console.error("aucun id trouvé"); process.exit(1); }
 const NB = 4, CASE = 640;
