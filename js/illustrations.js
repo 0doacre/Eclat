@@ -224,6 +224,22 @@
     alliage_ancien: "assets/carnet/items/alliage_ancien.webp",
     alunisseur: "assets/carnet/items/alunisseur.webp",
     assembleur: "assets/carnet/items/assembleur.webp",
+    base_lunaire: "assets/carnet/items/base_lunaire.webp",
+    debris: "assets/carnet/items/debris.webp",
+    regolithe_1: "assets/carnet/items/regolithe_1.webp",
+    station_orbitale: "assets/carnet/items/station_orbitale.webp",
+    helium3: "assets/carnet/items/helium3.webp",
+    ia: "assets/carnet/items/ia.webp",
+    propulseur: "assets/carnet/items/propulseur.webp",
+    reacteur_fusion: "assets/carnet/items/reacteur_fusion.webp",
+    regolithe: "assets/carnet/items/regolithe.webp",
+    vaisseau: "assets/carnet/items/vaisseau.webp",
+    antimatiere: "assets/carnet/items/antimatiere.webp",
+    forge_stellaire: "assets/carnet/items/forge_stellaire.webp",
+    matiere_exotique: "assets/carnet/items/matiere_exotique.webp",
+    matrice: "assets/carnet/items/matrice.webp",
+    metamateriau: "assets/carnet/items/metamateriau.webp",
+    panneau_dyson: "assets/carnet/items/panneau_dyson.webp",
   };
 
   const SOURCES = {
