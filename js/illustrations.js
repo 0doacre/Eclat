@@ -128,6 +128,22 @@
     regulateur: "assets/carnet/items/regulateur.webp",
     scierie: "assets/carnet/items/scierie.webp",
     soupape: "assets/carnet/items/soupape.webp",
+    tuyau_cuivre: "assets/carnet/items/tuyau_cuivre.webp",
+    aimant: "assets/carnet/items/aimant.webp",
+    ampoule: "assets/carnet/items/ampoule.webp",
+    batterie: "assets/carnet/items/batterie.webp",
+    bobine: "assets/carnet/items/bobine.webp",
+    cable: "assets/carnet/items/cable.webp",
+    excavatrice: "assets/carnet/items/excavatrice.webp",
+    cristal_chantant: "assets/carnet/items/cristal_chantant.webp",
+    cuivre_pur: "assets/carnet/items/cuivre_pur.webp",
+    dynamo: "assets/carnet/items/dynamo.webp",
+    eclairage: "assets/carnet/items/eclairage.webp",
+    four_arc: "assets/carnet/items/four_arc.webp",
+    charbon_3: "assets/carnet/items/charbon_3.webp",
+    foreuse_elec: "assets/carnet/items/foreuse_elec.webp",
+    moteur_elec: "assets/carnet/items/moteur_elec.webp",
+    sable_4: "assets/carnet/items/sable_4.webp",
   };
 
   const SOURCES = {
