@@ -192,6 +192,22 @@
     galene_2: "assets/carnet/items/galene_2.webp",
     terres_1: "assets/carnet/items/terres_1.webp",
     naphta: "assets/carnet/items/naphta.webp",
+    outillage: "assets/carnet/items/outillage.webp",
+    petrole: "assets/carnet/items/petrole.webp",
+    plastique: "assets/carnet/items/plastique.webp",
+    uranium_2: "assets/carnet/items/uranium_2.webp",
+    reacteur: "assets/carnet/items/reacteur.webp",
+    refroidissement: "assets/carnet/items/refroidissement.webp",
+    resine: "assets/carnet/items/resine.webp",
+    soufre: "assets/carnet/items/soufre.webp",
+    soufre_1: "assets/carnet/items/soufre_1.webp",
+    convoyeurs: "assets/carnet/items/convoyeurs.webp",
+    terres_rares: "assets/carnet/items/terres_rares.webp",
+    titane: "assets/carnet/items/titane.webp",
+    tuyau_souple: "assets/carnet/items/tuyau_souple.webp",
+    autoclave: "assets/carnet/items/autoclave.webp",
+    bouclier_th: "assets/carnet/items/bouclier_th.webp",
+    centre_num: "assets/carnet/items/centre_num.webp",
   };
 
   const SOURCES = {
