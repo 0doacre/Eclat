@@ -176,6 +176,22 @@
     signal_brut: "assets/carnet/items/signal_brut.webp",
     silicium: "assets/carnet/items/silicium.webp",
     traducteur: "assets/carnet/items/traducteur.webp",
+    aimant_neo: "assets/carnet/items/aimant_neo.webp",
+    aluminium: "assets/carnet/items/aluminium.webp",
+    bauxite: "assets/carnet/items/bauxite.webp",
+    bouteille: "assets/carnet/items/bouteille.webp",
+    caoutchouc: "assets/carnet/items/caoutchouc.webp",
+    centrale: "assets/carnet/items/centrale.webp",
+    dynamite: "assets/carnet/items/dynamite.webp",
+    echangeur: "assets/carnet/items/echangeur.webp",
+    ilmenite: "assets/carnet/items/ilmenite.webp",
+    joint_souple: "assets/carnet/items/joint_souple.webp",
+    masque: "assets/carnet/items/masque.webp",
+    ilmenite_1: "assets/carnet/items/ilmenite_1.webp",
+    carriere: "assets/carnet/items/carriere.webp",
+    galene_2: "assets/carnet/items/galene_2.webp",
+    terres_1: "assets/carnet/items/terres_1.webp",
+    naphta: "assets/carnet/items/naphta.webp",
   };
 
   const SOURCES = {
