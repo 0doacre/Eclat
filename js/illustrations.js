@@ -160,6 +160,22 @@
     uranium: "assets/carnet/items/uranium.webp",
     pastille_uranium: "assets/carnet/items/pastille_uranium.webp",
     plaque_plomb: "assets/carnet/items/plaque_plomb.webp",
+    capteurs: "assets/carnet/items/capteurs.webp",
+    cellule: "assets/carnet/items/cellule.webp",
+    circuit: "assets/carnet/items/circuit.webp",
+    derrick: "assets/carnet/items/derrick.webp",
+    chaine: "assets/carnet/items/chaine.webp",
+    lithographe: "assets/carnet/items/lithographe.webp",
+    ordinateur: "assets/carnet/items/ordinateur.webp",
+    wafer: "assets/carnet/items/wafer.webp",
+    processeur: "assets/carnet/items/processeur.webp",
+    puce: "assets/carnet/items/puce.webp",
+    radiotelescope: "assets/carnet/items/radiotelescope.webp",
+    robots: "assets/carnet/items/robots.webp",
+    serveur_archives: "assets/carnet/items/serveur_archives.webp",
+    signal_brut: "assets/carnet/items/signal_brut.webp",
+    silicium: "assets/carnet/items/silicium.webp",
+    traducteur: "assets/carnet/items/traducteur.webp",
   };
 
   const SOURCES = {
