@@ -102,14 +102,14 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-domaine .terres .terre-bas{background:rgb(244 236 218 / .78)}
 
 /* Labo : l'établi est la scène (fond d'atelier), les emplacements et le stock se posent dessus */
-#v-labo.view{background:linear-gradient(rgba(20,14,8,.18),rgba(20,14,8,.18)),url("../assets/fonds/atelier.webp") center/cover no-repeat!important}
+#v-labo.view{background:linear-gradient(rgba(20,14,8,.12),rgba(20,14,8,.12)),url("../assets/fonds/etude.webp") center/cover no-repeat!important}
 #v-labo .ae-work,#v-labo .ae-inventory,#v-labo .ae-layout>*{background:rgb(244 236 218 / .82);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-radius:14px}
 #v-labo>:first-child:not(.ae-work):not(.ae-layout):not(section){background:rgb(244 236 218 / .86);border-radius:14px;margin:6px 10px 0;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 #v-labo .ae-metiers{background:rgb(244 236 218 / .86);border-radius:14px;margin:6px 0;padding:2px 6px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 
 /* Atelier : même établi que le Labo ; Progression : le ciel de la Mémoire. Les blocs se posent dessus en papier translucide. */
 #v-atelier.view{background:linear-gradient(rgba(20,14,8,.18),rgba(20,14,8,.18)),url("../assets/fonds/atelier.webp") center/cover no-repeat!important}
-#v-arbre.view{background:linear-gradient(rgba(8,12,24,.12),rgba(8,12,24,.12)),url("../assets/fonds/memoire.webp") center/cover no-repeat!important}
+#v-arbre.view{background:linear-gradient(rgba(8,12,24,.12),rgba(8,12,24,.12)),url("../assets/fonds/progression.webp") center/cover no-repeat!important}
 #v-atelier .atl-page,#v-arbre .arb-page,#v-arbre .prog-corps{background:transparent!important}
 #v-atelier .atl-page>:not(.hidden),#v-arbre .prog-corps>:not(.hidden){background:rgb(244 236 218 / .86);border-radius:14px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 #v-atelier .atl-page>*+*{margin-top:4px}

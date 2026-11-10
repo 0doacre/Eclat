@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.66.0";
+  D.VERSION = "0.66.1";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1787,6 +1787,8 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🎨 Toutes les illustrations d’objets sont là : les 161 qui n’avaient qu’un signe en ont une, peinte, du Bronze aux Étoiles. Les fonds de l’Étude, de l’Atelier, du Journal et de la Progression sont refaits en grand, et l’Orbite Basse n’a plus de couture.",
+    "🪨 Une nouvelle icône : l’éclat de silex. Les glyphes de l’Étude, du coin de l’Atelier et du sentier sont redessinés ; Équipe et À construire passent en icônes.",
     "🪶 Une interface plus sobre : du papier sur le décor de chaque écran, des onglets en icônes (le nom reste sur l’onglet ouvert), des boutons ronds, un seul engrenage qui tourne à l’Atelier. Pensée pour le téléphone.",
     "💡 Le Labo devient l’Étude. Étudier prend un moment, de plus en plus long selon l’Intuition dépensée. Une recette déjà connue se fabrique ici une pièce à la fois ; les séries restent à l’Atelier.",
     "🌅 La relève se couvre de papier au lieu du noir, avec une phrase. Le jeu prévient s’il te reste des Souvenirs à dépenser, et Tout relire est aussi dans l’Atelier.",
