@@ -240,6 +240,7 @@
     matrice: "assets/carnet/items/matrice.webp",
     metamateriau: "assets/carnet/items/metamateriau.webp",
     panneau_dyson: "assets/carnet/items/panneau_dyson.webp",
+    replicateur: "assets/carnet/items/replicateur.webp",
   };
 
   const SOURCES = {
