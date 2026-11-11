@@ -1,0 +1,6111 @@
+{
+ "date": "2026-11-11T11:18:08.922Z",
+ "version": "0.66.4",
+ "tailles": [
+  [
+   320,
+   568
+  ],
+  [
+   390,
+   844
+  ],
+  [
+   430,
+   932
+  ],
+  [
+   1280,
+   800
+  ]
+ ],
+ "anomalies": [
+  {
+   "type": 1,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 118 px dans 1 autre(s)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "chaine": "main#views",
+   "hauteur": 66,
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "terres-lisiere-320.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto sous main#views",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "chaine": "main#views",
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "terres-lisiere-320.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 118 px sous une hauteur fixée (68 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-505px + 100dvh) (harmonie-sobre.css)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 7,
+   "sel": "#v-atelier div.prod > div.prod-choix",
+   "sig": "div.prod-choix",
+   "valeur": "défile en largeur de 442 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Éclat de silex0Corde0Manche0Ro",
+   "carrousel": true,
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "atelier-metier-320.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#v-atelier div.prod > div.subtabs > button.ico-seule.atl-retour[data-atelier-retour]",
+   "sig": "button.ico-seule.atl-retour[data-atelier-retour]",
+   "valeur": "zone 44 × 40 px (dessin 44 × 40)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Retour aux métiers",
+   "zone": [
+    44,
+    40
+   ],
+   "dessin": [
+    44,
+    40
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "section.prod-fiche > div.row > span.ing.link[data-need=\"silex\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 50 × 42 px (dessin 50 × 42)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "2Silex",
+   "zone": [
+    50,
+    42
+   ],
+   "dessin": [
+    50,
+    42
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 4,
+   "sel": "#v-atelier div.auto-feuille > div.auto-corps",
+   "sig": "div.auto-corps",
+   "valeur": "overscroll-behavior-y: auto, défilement seul (la page derrière suit)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Embaucher un apprenti artisan ",
+   "benin": true,
+   "cas": "atelier-equipe",
+   "casNom": "Atelier · feuille Équipe",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 7,
+   "sel": "div.auto-corps > div.atel-seuil > div.filters.wrap.more",
+   "sig": "div.filters.wrap.more",
+   "valeur": "défile en largeur de 243 px (auto)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "À l’arrêtAu jour le jourQuelqu",
+   "carrousel": true,
+   "cas": "atelier-equipe",
+   "casNom": "Atelier · feuille Équipe",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "atelier-equipe-320.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#v-atelier div.auto-feuille > div.auto-corps",
+   "sig": "div.auto-corps",
+   "valeur": "overscroll-behavior-y: auto, défilement seul (la page derrière suit)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Outils, stations, amélioration",
+   "benin": true,
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "5Manche",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "4Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "15Fibres",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "6Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 6,
+   "cadre": false,
+   "texte": "8Fibres",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 7,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 49 × 38)",
+   "idx": 8,
+   "cadre": false,
+   "texte": "4Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"os\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 49 × 38)",
+   "idx": 9,
+   "cadre": false,
+   "texte": "8Os",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 10,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 11,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 12,
+   "cadre": false,
+   "texte": "6Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"argile\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 13,
+   "cadre": false,
+   "texte": "15Argile",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.auto-corps > details.construits-faits > summary.small",
+   "sig": "summary.small",
+   "valeur": "zone 272 × 22 px (dessin 272 × 22)",
+   "idx": 14,
+   "cadre": false,
+   "texte": "Déjà fait (8)",
+   "zone": [
+    272,
+    22
+   ],
+   "dessin": [
+    272,
+    22
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "atelier-construire-320.jpg"
+  },
+  {
+   "type": 8,
+   "sel": "(page)",
+   "sig": "erreur-js",
+   "valeur": "perTime is not defined",
+   "cas": "fiche-extracteur",
+   "casNom": "Fiche d'un extracteur (touche sur la Cabane de bûcheron)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "bloquant",
+   "cadre": false
+  },
+  {
+   "type": 7,
+   "sel": "#v-arbre div.prog-corps",
+   "sig": "div.prog-corps",
+   "valeur": "défile en largeur de 24 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Relève, Souvenirs et ÉchosDès ",
+   "carrousel": true,
+   "cas": "progression-fins",
+   "casNom": "Progression · Fins",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "progression-fins-320.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 180 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "ÉCLATv0.66.4Semeur8eÂgeBronzeS",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "menu-jeu",
+   "casNom": "Menu · jeu",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 152 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "ÉCLATv0.66.4Semeur8eÂgeBronzeS",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "menu-affichage",
+   "casNom": "Menu · affichage",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 46 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "ÉCLATv0.66.4Semeur8eÂgeBronzeS",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "menu-audio",
+   "casNom": "Menu · audio",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 199 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "ÉCLATv0.66.4Semeur8eÂgeBronzeS",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "menu-systeme",
+   "casNom": "Menu · systeme",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 239 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "ÉCLATv0.66.4Semeur8eÂgeBronzeS",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "menu-aide",
+   "casNom": "Menu · aide",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 239 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "ÉCLATv0.66.4Semeur8eÂgeBronzeS",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "menu-haut",
+   "casNom": "Menu · ouverture (haut)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 549 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "La Mémoire des mains ?1 Souven",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > details.mem-liste > summary",
+   "sig": "summary",
+   "valeur": "zone 258 × 32 px (dessin 257 × 32)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Voir en liste",
+   "zone": [
+    258,
+    32
+   ],
+   "dessin": [
+    257,
+    32
+   ],
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 1448 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Le ComptoirLe Troqueur · 1,50 ",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > div.comptoir-signe > span.signe[data-s=\"main\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 24 × 18 px (dessin 23 × 17)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    24,
+    18
+   ],
+   "dessin": [
+    23,
+    17
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "comptoir-320.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"argile\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 236 × 30 px (dessin 235 × 30)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Argile · tu en as 200,6 écu l’",
+   "zone": [
+    236,
+    30
+   ],
+   "dessin": [
+    235,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "comptoir-320.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"silex\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 236 × 30 px (dessin 235 × 30)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Silex · tu en as 200,6 écu l’u",
+   "zone": [
+    236,
+    30
+   ],
+   "dessin": [
+    235,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "comptoir-320.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"charbon\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 236 × 30 px (dessin 235 × 30)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "Charbon · tu en as 200,5 écu l",
+   "zone": [
+    236,
+    30
+   ],
+   "dessin": [
+    235,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "comptoir-320.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"caillou\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 236 × 30 px (dessin 235 × 30)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "Pierre · tu en as 200,1 écu l’",
+   "zone": [
+    236,
+    30
+   ],
+   "dessin": [
+    235,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "comptoir-320.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 472 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Ressource · Âge du BoisBois♡Se",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "fiche-ressource",
+   "casNom": "Fiche d'une ressource (appui long)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 370 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Ressource · Âge de l’OsPeau♡Se",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "fiche-recette",
+   "casNom": "Fiche d'une recette (appui long)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 4223 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "AideComment jouerEn bref. Tu r",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "aide",
+   "casNom": "Aide",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 1,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px dans 1 autre(s)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "hauteur": 44,
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "terres-gisement-320.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto sous main#views",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "terres-gisement-320.jpg"
+  },
+  {
+   "type": 7,
+   "sel": "#v-domaine div.dom > nav.terres-rangee",
+   "sig": "nav.terres-rangee",
+   "valeur": "défile en largeur de 28 px (auto)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Les terres",
+   "carrousel": true,
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "terres-gisement-320.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px sous une hauteur fixée (46 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-600px + 100dvh) (harmonie-sobre.css)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#v-domaine div.dom > section.dom-card.dom-nouveau-gisement[data-new-deposit=\"collines:soufre\"]",
+   "sig": "section.dom-card.dom-nouveau-gisement[data-new-deposit]",
+   "valeur": "vide de 540 px au-dessus (entre nav.terres-rangee et section.dom-card.dom-nouveau-gisement)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "Gisement à exploiter SoufreSou",
+   "effet": "trou",
+   "fichier": "",
+   "regle": "",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "terres-gisement-320.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 171 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "La relèveÉveiller le Semeur 9 ",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "releve",
+   "casNom": "Fenêtre de relève",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.acts > span.releve-signe > span.signe[data-s=\"relais\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 26 × 18 px (dessin 24 × 18)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    26,
+    18
+   ],
+   "dessin": [
+    24,
+    18
+   ],
+   "cas": "releve",
+   "casNom": "Fenêtre de relève",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "releve-320.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 162 px sous une hauteur fixée (499.8 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Tu te réveilles dans l’herbe, ",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "ouverture",
+   "casNom": "Fenêtre d'ouverture (Ouvrir les yeux)",
+   "largeur": 320,
+   "hauteurEcran": 568,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 3,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "aucun bouton de fermeture touchable à l'écran sans défiler",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Tu te réveilles dans l’herbe, ",
+   "sub": "sans-fermeture",
+   "persistant": true,
+   "fermeurs": 1,
+   "hauteur": 500,
+   "bas": 568,
+   "haut": 68,
+   "ecran": 568,
+   "defile": 162,
+   "largeur": 320,
+   "cas": "ouverture",
+   "casNom": "Fenêtre d'ouverture (Ouvrir les yeux)",
+   "hauteurEcran": 568,
+   "gravite": "gênant",
+   "capture": "ouverture-320.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto, défilement seul (la page derrière suit)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "benin": true,
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px sous une hauteur fixée (181 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-505px + 100dvh) (harmonie-sobre.css)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 7,
+   "sel": "#v-atelier div.prod > div.prod-choix",
+   "sig": "div.prod-choix",
+   "valeur": "défile en largeur de 388 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Éclat de silex0Corde0Manche0Ro",
+   "carrousel": true,
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "atelier-metier-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#v-atelier div.prod > div.subtabs > button.ico-seule.atl-retour[data-atelier-retour]",
+   "sig": "button.ico-seule.atl-retour[data-atelier-retour]",
+   "valeur": "zone 44 × 40 px (dessin 44 × 40)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Retour aux métiers",
+   "zone": [
+    44,
+    40
+   ],
+   "dessin": [
+    44,
+    40
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "section.prod-fiche > div.row > span.ing.link[data-need=\"silex\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 50 × 38)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "2Silex",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 7,
+   "sel": "div.auto-corps > div.atel-seuil > div.filters.wrap.more",
+   "sig": "div.filters.wrap.more",
+   "valeur": "défile en largeur de 173 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "À l’arrêtAu jour le jourQuelqu",
+   "carrousel": true,
+   "cas": "atelier-equipe",
+   "casNom": "Atelier · feuille Équipe",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "atelier-equipe-390.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#v-atelier div.auto-feuille > div.auto-corps",
+   "sig": "div.auto-corps",
+   "valeur": "overscroll-behavior-y: auto, défilement seul (la page derrière suit)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Outils, stations, amélioration",
+   "benin": true,
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"cabane\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Cabane de bûcheron Construits ",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "5Manche",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "4Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "15Fibres",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"caillou_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "Carrière à main Construits : 0",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 6,
+   "cadre": false,
+   "texte": "6Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 7,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 8,
+   "cadre": false,
+   "texte": "8Fibres",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"fibre_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 9,
+   "cadre": false,
+   "texte": "Claie de séchage Construits : ",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 10,
+   "cadre": false,
+   "texte": "5Manche",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 11,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"bois\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 12,
+   "cadre": false,
+   "texte": "12Bois",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 13,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 14,
+   "cadre": false,
+   "texte": "4Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"os\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 15,
+   "cadre": false,
+   "texte": "8Os",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 16,
+   "cadre": false,
+   "texte": "10Manche",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"laniere\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 17,
+   "cadre": false,
+   "texte": "8Lanières",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 18,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"nasse\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 19,
+   "cadre": false,
+   "texte": "Argilière Construits : 0Se pos",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 20,
+   "cadre": false,
+   "texte": "8Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 21,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 22,
+   "cadre": false,
+   "texte": "4Brique",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"automate_bois\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 23,
+   "cadre": false,
+   "texte": "Automate de bois Construits : ",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"engrenage_bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 24,
+   "cadre": false,
+   "texte": "6Rouage de bois",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 25,
+   "cadre": false,
+   "texte": "10Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"caillou_2\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 26,
+   "cadre": false,
+   "texte": "Carrière à coins Construits : ",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 27,
+   "cadre": false,
+   "texte": "15Manche",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 28,
+   "cadre": false,
+   "texte": "12Éclat de silex",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 29,
+   "cadre": false,
+   "texte": "60Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"silex_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 30,
+   "cadre": false,
+   "texte": "Gravière Construits : 0Se pose",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 31,
+   "cadre": false,
+   "texte": "8Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 32,
+   "cadre": false,
+   "texte": "8Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 33,
+   "cadre": false,
+   "texte": "3Brique",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"hutte\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 34,
+   "cadre": false,
+   "texte": "Hutte de bûcheron Construits :",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 35,
+   "cadre": false,
+   "texte": "15Manche",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 36,
+   "cadre": false,
+   "texte": "6Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 37,
+   "cadre": false,
+   "texte": "10Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"fibre_2\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 300 × 42 px (dessin 300 × 41)",
+   "idx": 38,
+   "cadre": false,
+   "texte": "Rouissoir Construits : 0Se pos",
+   "zone": [
+    300,
+    42
+   ],
+   "dessin": [
+    300,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 39,
+   "cadre": false,
+   "texte": "6Brique",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"argile\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 40,
+   "cadre": false,
+   "texte": "15Argile",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 41,
+   "cadre": false,
+   "texte": "40Bois",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 66 × 38 px (dessin 65 × 38)",
+   "idx": 42,
+   "cadre": false,
+   "texte": "120Bois",
+   "zone": [
+    66,
+    38
+   ],
+   "dessin": [
+    65,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"argile\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 43,
+   "cadre": false,
+   "texte": "30Argile",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 44,
+   "cadre": false,
+   "texte": "10Manche",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"lingot_cuivre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 45,
+   "cadre": false,
+   "texte": "6Lingot de cuivre",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 46,
+   "cadre": false,
+   "texte": "20Manche",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 47,
+   "cadre": false,
+   "texte": "12Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"plaque_cuivre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 48,
+   "cadre": false,
+   "texte": "6Plaque de cuivre",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"ressort\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 49,
+   "cadre": false,
+   "texte": "8Ressort de bronze",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.auto-corps > details.construits-faits > summary.small",
+   "sig": "summary.small",
+   "valeur": "zone 342 × 22 px (dessin 342 × 22)",
+   "idx": 50,
+   "cadre": false,
+   "texte": "Déjà fait (8)",
+   "zone": [
+    342,
+    22
+   ],
+   "dessin": [
+    342,
+    22
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "atelier-construire-390.jpg"
+  },
+  {
+   "type": 8,
+   "sel": "(page)",
+   "sig": "erreur-js",
+   "valeur": "perTime is not defined",
+   "cas": "atelier-tourne",
+   "casNom": "Atelier · feuille Ce qui tourne",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "bloquant",
+   "cadre": false
+  },
+  {
+   "type": 8,
+   "sel": "(page)",
+   "sig": "erreur-js",
+   "valeur": "perTime is not defined",
+   "cas": "fiche-extracteur",
+   "casNom": "Fiche d'un extracteur (touche sur la Cabane de bûcheron)",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "bloquant",
+   "cadre": false
+  },
+  {
+   "type": 7,
+   "sel": "#v-arbre div.prog-corps",
+   "sig": "div.prog-corps",
+   "valeur": "défile en largeur de 24 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Relève, Souvenirs et ÉchosDès ",
+   "carrousel": true,
+   "cas": "progression-fins",
+   "casNom": "Progression · Fins",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "progression-fins-390.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 190 px sous une hauteur fixée (742.7 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "La Mémoire des mains ?1 Souven",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > details.mem-liste > summary",
+   "sig": "summary",
+   "valeur": "zone 322 × 32 px (dessin 322 × 32)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Voir en liste",
+   "zone": [
+    322,
+    32
+   ],
+   "dessin": [
+    322,
+    32
+   ],
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 949 px sous une hauteur fixée (742.7 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Le ComptoirLe Troqueur · 1,50 ",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > div.comptoir-signe > span.signe[data-s=\"main\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 24 × 18 px (dessin 23 × 17)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    24,
+    18
+   ],
+   "dessin": [
+    23,
+    17
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"malachite\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Malachite · tu en as 201,6 écu",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"cassiterite\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Cassitérite · tu en as 201,6 é",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"argile\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "Argile · tu en as 200,6 écu l’",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"silex\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "Silex · tu en as 200,6 écu l’u",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"sable\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 6,
+   "cadre": false,
+   "texte": "Sable · tu en as 200,6 écu l’u",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"charbon\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 7,
+   "cadre": false,
+   "texte": "Charbon · tu en as 200,5 écu l",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"os\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 8,
+   "cadre": false,
+   "texte": "Os · tu en as 200,3 écu l’unit",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"caillou\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 300 × 30 px (dessin 300 × 30)",
+   "idx": 9,
+   "cadre": false,
+   "texte": "Pierre · tu en as 200,1 écu l’",
+   "zone": [
+    300,
+    30
+   ],
+   "dessin": [
+    300,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "comptoir-390.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 68 px sous une hauteur fixée (742.7 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Ressource · Âge du BoisBois♡Se",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "fiche-ressource",
+   "casNom": "Fiche d'une ressource (appui long)",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 77 px sous une hauteur fixée (742.7 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Ressource · Âge de l’OsPeau♡Se",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "fiche-recette",
+   "casNom": "Fiche d'une recette (appui long)",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 3266 px sous une hauteur fixée (742.7 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "AideComment jouerEn bref. Tu r",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "aide",
+   "casNom": "Aide",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 1,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px dans 1 autre(s)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "hauteur": 44,
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "terres-gisement-390.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto sous main#views",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "terres-gisement-390.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px sous une hauteur fixée (46 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-600px + 100dvh) (harmonie-sobre.css)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#v-domaine div.dom > section.dom-card.dom-nouveau-gisement[data-new-deposit=\"collines:soufre\"]",
+   "sig": "section.dom-card.dom-nouveau-gisement[data-new-deposit]",
+   "valeur": "vide de 521 px au-dessus (entre nav.terres-rangee et section.dom-card.dom-nouveau-gisement)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Gisement à exploiter SoufreSou",
+   "effet": "trou",
+   "fichier": "",
+   "regle": "",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "terres-gisement-390.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "div.acts > span.releve-signe > span.signe[data-s=\"relais\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 26 × 18 px (dessin 24 × 18)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    26,
+    18
+   ],
+   "dessin": [
+    24,
+    18
+   ],
+   "cas": "releve",
+   "casNom": "Fenêtre de relève",
+   "largeur": 390,
+   "hauteurEcran": 844,
+   "gravite": "gênant",
+   "capture": "releve-390.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto, défilement seul (la page derrière suit)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "benin": true,
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px sous une hauteur fixée (181 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-505px + 100dvh) (harmonie-sobre.css)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 7,
+   "sel": "#v-atelier div.prod > div.prod-choix",
+   "sig": "div.prod-choix",
+   "valeur": "défile en largeur de 348 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Éclat de silex0Corde0Manche0Ro",
+   "carrousel": true,
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "atelier-metier-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#v-atelier div.prod > div.subtabs > button.ico-seule.atl-retour[data-atelier-retour]",
+   "sig": "button.ico-seule.atl-retour[data-atelier-retour]",
+   "valeur": "zone 44 × 40 px (dessin 44 × 40)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Retour aux métiers",
+   "zone": [
+    44,
+    40
+   ],
+   "dessin": [
+    44,
+    40
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "section.prod-fiche > div.row > span.ing.link[data-need=\"silex\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 50 × 38)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "2Silex",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 7,
+   "sel": "div.auto-corps > div.atel-seuil > div.filters.wrap.more",
+   "sig": "div.filters.wrap.more",
+   "valeur": "défile en largeur de 133 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "À l’arrêtAu jour le jourQuelqu",
+   "carrousel": true,
+   "cas": "atelier-equipe",
+   "casNom": "Atelier · feuille Équipe",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "atelier-equipe-430.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#v-atelier div.auto-feuille > div.auto-corps",
+   "sig": "div.auto-corps",
+   "valeur": "overscroll-behavior-y: auto, défilement seul (la page derrière suit)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Outils, stations, amélioration",
+   "benin": true,
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"cabane\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Cabane de bûcheron Construits ",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "5Manche",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "4Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "15Fibres",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"caillou_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "Carrière à main Construits : 0",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 6,
+   "cadre": false,
+   "texte": "6Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 7,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 8,
+   "cadre": false,
+   "texte": "8Fibres",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"fibre_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 9,
+   "cadre": false,
+   "texte": "Claie de séchage Construits : ",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 10,
+   "cadre": false,
+   "texte": "5Manche",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 11,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"bois\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 12,
+   "cadre": false,
+   "texte": "12Bois",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 13,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 14,
+   "cadre": false,
+   "texte": "4Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"os\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 15,
+   "cadre": false,
+   "texte": "8Os",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 16,
+   "cadre": false,
+   "texte": "10Manche",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"laniere\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 17,
+   "cadre": false,
+   "texte": "8Lanières",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 18,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"nasse\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 19,
+   "cadre": false,
+   "texte": "Argilière Construits : 0Se pos",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 20,
+   "cadre": false,
+   "texte": "8Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 21,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 22,
+   "cadre": false,
+   "texte": "4Brique",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"automate_bois\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 23,
+   "cadre": false,
+   "texte": "Automate de bois Construits : ",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"engrenage_bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 24,
+   "cadre": false,
+   "texte": "6Rouage de bois",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 25,
+   "cadre": false,
+   "texte": "10Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 26,
+   "cadre": false,
+   "texte": "40Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"caillou_2\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 27,
+   "cadre": false,
+   "texte": "Carrière à coins Construits : ",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 28,
+   "cadre": false,
+   "texte": "15Manche",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 29,
+   "cadre": false,
+   "texte": "12Éclat de silex",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 30,
+   "cadre": false,
+   "texte": "60Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"silex_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 31,
+   "cadre": false,
+   "texte": "Gravière Construits : 0Se pose",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 32,
+   "cadre": false,
+   "texte": "8Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 33,
+   "cadre": false,
+   "texte": "8Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 34,
+   "cadre": false,
+   "texte": "3Brique",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"hutte\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 35,
+   "cadre": false,
+   "texte": "Hutte de bûcheron Construits :",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 36,
+   "cadre": false,
+   "texte": "15Manche",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 37,
+   "cadre": false,
+   "texte": "6Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 38,
+   "cadre": false,
+   "texte": "10Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"fibre_2\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 39,
+   "cadre": false,
+   "texte": "Rouissoir Construits : 0Se pos",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 40,
+   "cadre": false,
+   "texte": "6Brique",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"argile\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 41,
+   "cadre": false,
+   "texte": "15Argile",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 42,
+   "cadre": false,
+   "texte": "40Bois",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 43,
+   "cadre": false,
+   "texte": "4Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"fibre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 44,
+   "cadre": false,
+   "texte": "30Fibres",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 66 × 38 px (dessin 65 × 38)",
+   "idx": 45,
+   "cadre": false,
+   "texte": "120Bois",
+   "zone": [
+    66,
+    38
+   ],
+   "dessin": [
+    65,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"argile\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 46,
+   "cadre": false,
+   "texte": "30Argile",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 47,
+   "cadre": false,
+   "texte": "10Manche",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"cassiterite_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 48,
+   "cadre": false,
+   "texte": "Mine d’étain Construits : 0Se ",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 49,
+   "cadre": false,
+   "texte": "20Manche",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"lingot_cuivre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 50,
+   "cadre": false,
+   "texte": "6Lingot de cuivre",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 51,
+   "cadre": false,
+   "texte": "12Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"puits\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 340 × 42 px (dessin 340 × 41)",
+   "idx": 52,
+   "cadre": false,
+   "texte": "Mine de cuivre Construits : 0S",
+   "zone": [
+    340,
+    42
+   ],
+   "dessin": [
+    340,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 53,
+   "cadre": false,
+   "texte": "12Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"plaque_cuivre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 54,
+   "cadre": false,
+   "texte": "6Plaque de cuivre",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"engrenage\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 55,
+   "cadre": false,
+   "texte": "15Engrenage de bronze",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"ressort\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 56,
+   "cadre": false,
+   "texte": "8Ressort de bronze",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"plaque_bronze\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 57,
+   "cadre": false,
+   "texte": "10Plaque de bronze",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.auto-corps > details.construits-faits > summary.small",
+   "sig": "summary.small",
+   "valeur": "zone 382 × 22 px (dessin 382 × 22)",
+   "idx": 58,
+   "cadre": false,
+   "texte": "Déjà fait (8)",
+   "zone": [
+    382,
+    22
+   ],
+   "dessin": [
+    382,
+    22
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "atelier-construire-430.jpg"
+  },
+  {
+   "type": 8,
+   "sel": "(page)",
+   "sig": "erreur-js",
+   "valeur": "perTime is not defined",
+   "cas": "fiche-extracteur",
+   "casNom": "Fiche d'un extracteur (touche sur la Cabane de bûcheron)",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "bloquant",
+   "cadre": false
+  },
+  {
+   "type": 7,
+   "sel": "#v-arbre div.prog-corps",
+   "sig": "div.prog-corps",
+   "valeur": "défile en largeur de 24 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Relève, Souvenirs et ÉchosDès ",
+   "carrousel": true,
+   "cas": "progression-fins",
+   "casNom": "Progression · Fins",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "progression-fins-430.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 81 px sous une hauteur fixée (820.2 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "La Mémoire des mains ?1 Souven",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > details.mem-liste > summary",
+   "sig": "summary",
+   "valeur": "zone 362 × 32 px (dessin 360 × 32)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Voir en liste",
+   "zone": [
+    362,
+    32
+   ],
+   "dessin": [
+    360,
+    32
+   ],
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 853 px sous une hauteur fixée (820.2 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Le ComptoirLe Troqueur · 1,50 ",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > div.comptoir-signe > span.signe[data-s=\"main\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 24 × 18 px (dessin 23 × 17)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    24,
+    18
+   ],
+   "dessin": [
+    23,
+    17
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"malachite\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Malachite · tu en as 201,6 écu",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"cassiterite\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Cassitérite · tu en as 201,6 é",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"argile\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "Argile · tu en as 200,6 écu l’",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"silex\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "Silex · tu en as 200,6 écu l’u",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"sable\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 6,
+   "cadre": false,
+   "texte": "Sable · tu en as 200,6 écu l’u",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"charbon\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 7,
+   "cadre": false,
+   "texte": "Charbon · tu en as 200,5 écu l",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"os\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 8,
+   "cadre": false,
+   "texte": "Os · tu en as 200,3 écu l’unit",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"cuir\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 340 × 30 px (dessin 338 × 30)",
+   "idx": 9,
+   "cadre": false,
+   "texte": "Peau · tu en as 200,3 écu l’un",
+   "zone": [
+    340,
+    30
+   ],
+   "dessin": [
+    338,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "comptoir-430.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 2979 px sous une hauteur fixée (820.2 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "AideComment jouerEn bref. Tu r",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "aide",
+   "casNom": "Aide",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 1,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px dans 1 autre(s)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "hauteur": 44,
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "terres-gisement-430.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto sous main#views",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "terres-gisement-430.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px sous une hauteur fixée (46 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-600px + 100dvh) (harmonie-sobre.css)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#v-domaine div.dom > section.dom-card.dom-nouveau-gisement[data-new-deposit=\"collines:soufre\"]",
+   "sig": "section.dom-card.dom-nouveau-gisement[data-new-deposit]",
+   "valeur": "vide de 521 px au-dessus (entre nav.terres-rangee et section.dom-card.dom-nouveau-gisement)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Gisement à exploiter SoufreSou",
+   "effet": "trou",
+   "fichier": "",
+   "regle": "",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "terres-gisement-430.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "div.acts > span.releve-signe > span.signe[data-s=\"relais\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 26 × 18 px (dessin 24 × 18)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    26,
+    18
+   ],
+   "dessin": [
+    24,
+    18
+   ],
+   "cas": "releve",
+   "casNom": "Fenêtre de relève",
+   "largeur": 430,
+   "hauteurEcran": 932,
+   "gravite": "gênant",
+   "capture": "releve-430.jpg"
+  },
+  {
+   "type": 1,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px dans 1 autre(s)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "chaine": "main#views",
+   "hauteur": 179,
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "terres-lisiere-1280.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto sous main#views",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "chaine": "main#views",
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "terres-lisiere-1280.jpg"
+  },
+  {
+   "type": 7,
+   "sel": "div.sentier-retained > figure.sentier-chantier > div.sentier-scene",
+   "sig": "div.sentier-scene",
+   "valeur": "rogne 1 enfant(s) à droite (dépasse de 161.2 px)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Le Sentier des Herbes : 100 % ",
+   "rogne": true,
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "terres-lisiere-1280.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-lisiere div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px sous une hauteur fixée (181 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-505px + 100dvh) (harmonie-sobre.css)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Bois20 à la main+Fibres20 à la",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-lisiere",
+   "casNom": "Terres · Lisière",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 7,
+   "sel": "#v-atelier div.prod > div.prod-choix",
+   "sig": "div.prod-choix",
+   "valeur": "défile en largeur de 258 px (auto)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Éclat de silex0Corde0Manche0Ro",
+   "carrousel": true,
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "atelier-metier-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#v-atelier div.prod > div.subtabs > button.ico-seule.atl-retour[data-atelier-retour]",
+   "sig": "button.ico-seule.atl-retour[data-atelier-retour]",
+   "valeur": "zone 44 × 40 px (dessin 44 × 40)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Retour aux métiers",
+   "zone": [
+    44,
+    40
+   ],
+   "dessin": [
+    44,
+    40
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "section.prod-fiche > div.row > span.ing.link[data-need=\"silex\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "2Silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-metier",
+   "casNom": "Atelier · page d'un métier",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 4,
+   "sel": "#v-atelier div.auto-feuille > div.auto-corps",
+   "sig": "div.auto-corps",
+   "valeur": "overscroll-behavior-y: auto, défilement seul (la page derrière suit)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Outils, stations, amélioration",
+   "benin": true,
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"cabane\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Cabane de bûcheron Construits ",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "5Manche",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "4Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "15Fibres",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"caillou_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "Carrière à main Construits : 0",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 6,
+   "cadre": false,
+   "texte": "6Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 7,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"fibre\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 8,
+   "cadre": false,
+   "texte": "8Fibres",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"fibre_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 9,
+   "cadre": false,
+   "texte": "Claie de séchage Construits : ",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 10,
+   "cadre": false,
+   "texte": "5Manche",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 11,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"bois\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 12,
+   "cadre": false,
+   "texte": "12Bois",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"collets\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 13,
+   "cadre": false,
+   "texte": "Collets Construits : 0Se pose ",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 14,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 15,
+   "cadre": false,
+   "texte": "4Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"os\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 16,
+   "cadre": false,
+   "texte": "8Os",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"cuir_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 17,
+   "cadre": false,
+   "texte": "Fosse de tannage Construits : ",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 18,
+   "cadre": false,
+   "texte": "10Manche",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"laniere\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 19,
+   "cadre": false,
+   "texte": "8Lanières",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 20,
+   "cadre": false,
+   "texte": "30Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"nasse\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 21,
+   "cadre": false,
+   "texte": "Argilière Construits : 0Se pos",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 22,
+   "cadre": false,
+   "texte": "8Manche",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 23,
+   "cadre": false,
+   "texte": "6Corde",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 24,
+   "cadre": false,
+   "texte": "4Brique",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"automate_bois\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 25,
+   "cadre": false,
+   "texte": "Automate de bois Construits : ",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"engrenage_bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 26,
+   "cadre": false,
+   "texte": "6Rouage de bois",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 27,
+   "cadre": false,
+   "texte": "10Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 28,
+   "cadre": false,
+   "texte": "40Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"caillou_2\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 29,
+   "cadre": false,
+   "texte": "Carrière à coins Construits : ",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 30,
+   "cadre": false,
+   "texte": "15Manche",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 31,
+   "cadre": false,
+   "texte": "12Éclat de silex",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"caillou\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 32,
+   "cadre": false,
+   "texte": "60Pierre",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-construire-ligne > div.row > div.grow[data-goto=\"silex_1\"]",
+   "sig": "div.grow[data-goto]",
+   "valeur": "zone 1084 × 42 px (dessin 1084 × 41)",
+   "idx": 33,
+   "cadre": false,
+   "texte": "Gravière Construits : 0Se pose",
+   "zone": [
+    1084,
+    42
+   ],
+   "dessin": [
+    1084,
+    41
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"brique\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 50 × 38 px (dessin 49 × 38)",
+   "idx": 34,
+   "cadre": false,
+   "texte": "3Brique",
+   "zone": [
+    50,
+    38
+   ],
+   "dessin": [
+    49,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 35,
+   "cadre": false,
+   "texte": "6Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 36,
+   "cadre": false,
+   "texte": "10Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.link[data-need=\"argile\"]",
+   "sig": "span.ing.link[data-need]",
+   "valeur": "zone 56 × 38 px (dessin 55 × 38)",
+   "idx": 37,
+   "cadre": false,
+   "texte": "15Argile",
+   "zone": [
+    56,
+    38
+   ],
+   "dessin": [
+    55,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"bois\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 59 × 38)",
+   "idx": 38,
+   "cadre": false,
+   "texte": "40Bois",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    59,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 39,
+   "cadre": false,
+   "texte": "10Manche",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"eclat\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 51 × 38)",
+   "idx": 40,
+   "cadre": false,
+   "texte": "4Éclat de silex",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    51,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"fibre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 41,
+   "cadre": false,
+   "texte": "30Fibres",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"argile\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 60 × 38 px (dessin 58 × 38)",
+   "idx": 42,
+   "cadre": false,
+   "texte": "30Argile",
+   "zone": [
+    60,
+    38
+   ],
+   "dessin": [
+    58,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"manche\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 57 × 38)",
+   "idx": 43,
+   "cadre": false,
+   "texte": "10Manche",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    57,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"lingot_cuivre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 44,
+   "cadre": false,
+   "texte": "6Lingot de cuivre",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 45,
+   "cadre": false,
+   "texte": "12Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"corde\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 58 × 38 px (dessin 56 × 38)",
+   "idx": 46,
+   "cadre": false,
+   "texte": "12Corde",
+   "zone": [
+    58,
+    38
+   ],
+   "dessin": [
+    56,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"plaque_cuivre\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 47,
+   "cadre": false,
+   "texte": "6Plaque de cuivre",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.a-ligne-bas > div.row > span.ing.lack.link[data-need=\"ressort\"]",
+   "sig": "span.ing.lack.link[data-need]",
+   "valeur": "zone 52 × 38 px (dessin 50 × 38)",
+   "idx": 48,
+   "cadre": false,
+   "texte": "8Ressort de bronze",
+   "zone": [
+    52,
+    38
+   ],
+   "dessin": [
+    50,
+    38
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "div.auto-corps > details.construits-faits > summary.small",
+   "sig": "summary.small",
+   "valeur": "zone 1126 × 22 px (dessin 1126 × 22)",
+   "idx": 49,
+   "cadre": false,
+   "texte": "Déjà fait (8)",
+   "zone": [
+    1126,
+    22
+   ],
+   "dessin": [
+    1126,
+    22
+   ],
+   "cas": "atelier-construire",
+   "casNom": "Atelier · feuille À construire",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "atelier-construire-1280.jpg"
+  },
+  {
+   "type": 8,
+   "sel": "(page)",
+   "sig": "erreur-js",
+   "valeur": "perTime is not defined",
+   "cas": "fiche-extracteur",
+   "casNom": "Fiche d'un extracteur (touche sur la Cabane de bûcheron)",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "bloquant",
+   "cadre": false
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 162 px sous une hauteur fixée (704 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "La Mémoire des mains ?1 Souven",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > details.mem-liste > summary",
+   "sig": "summary",
+   "valeur": "zone 484 × 32 px (dessin 484 × 32)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Voir en liste",
+   "zone": [
+    484,
+    32
+   ],
+   "dessin": [
+    484,
+    32
+   ],
+   "cas": "memoire",
+   "casNom": "Mémoire des mains",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 864 px sous une hauteur fixée (704 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Le ComptoirLe Troqueur · 1,50 ",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 5,
+   "sel": "#modal div.modal-box > div.comptoir-signe > span.signe[data-s=\"main\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 24 × 18 px (dessin 23 × 17)",
+   "idx": 1,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    24,
+    18
+   ],
+   "dessin": [
+    23,
+    17
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"malachite\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Malachite · tu en as 201,6 écu",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"cassiterite\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Cassitérite · tu en as 201,6 é",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"argile\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 4,
+   "cadre": false,
+   "texte": "Argile · tu en as 200,6 écu l’",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"silex\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 5,
+   "cadre": false,
+   "texte": "Silex · tu en as 200,6 écu l’u",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"sable\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 6,
+   "cadre": false,
+   "texte": "Sable · tu en as 200,6 écu l’u",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"charbon\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 7,
+   "cadre": false,
+   "texte": "Charbon · tu en as 200,5 écu l",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"os\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 8,
+   "cadre": false,
+   "texte": "Os · tu en as 200,3 écu l’unit",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "#sell-list div.comptoir-row > div.comptoir-head[data-goto=\"caillou\"]",
+   "sig": "div.comptoir-head[data-goto]",
+   "valeur": "zone 462 × 30 px (dessin 462 × 30)",
+   "idx": 9,
+   "cadre": false,
+   "texte": "Pierre · tu en as 200,1 écu l’",
+   "zone": [
+    462,
+    30
+   ],
+   "dessin": [
+    462,
+    30
+   ],
+   "cas": "comptoir",
+   "casNom": "Comptoir",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "comptoir-1280.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 29 px sous une hauteur fixée (704 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Ressource · Âge du BoisBois♡Se",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "fiche-ressource",
+   "casNom": "Fiche d'une ressource (appui long)",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 29 px sous une hauteur fixée (704 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Ressource · Âge de l’OsPeau♡Se",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "fiche-recette",
+   "casNom": "Fiche d'une recette (appui long)",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#modal div.modal-box",
+   "sig": "div.modal-box",
+   "valeur": "défile de 2470 px sous une hauteur fixée (704 px) · max-height:min(88vh, 88dvh) (design-preview.css)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "AideComment jouerEn bref. Tu r",
+   "fichier": "design-preview.css",
+   "regle": ".modal:not(.ending):not(.agecard) .modal-box",
+   "effet": "defile",
+   "cas": "aide",
+   "casNom": "Aide",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 1,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px dans 1 autre(s)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "hauteur": 44,
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "terres-gisement-1280.jpg"
+  },
+  {
+   "type": 4,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "overscroll-behavior-y: auto sous main#views",
+   "idx": 1,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "chaine": "main#views",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "terres-gisement-1280.jpg"
+  },
+  {
+   "type": 2,
+   "sel": "#dt-gisement div.terre-corps > div.terre-gisements",
+   "sig": "div.terre-gisements",
+   "valeur": "défile de 5 px sous une hauteur fixée (46 px) · max-height:calc(-500px + 100dvh) !important (harmonie-sobre.css) ; min-height:calc(-600px + 100dvh) (harmonie-sobre.css)",
+   "idx": 2,
+   "cadre": false,
+   "texte": "Pétrole0 à la main",
+   "fichier": "harmonie-sobre.css",
+   "regle": "#v-domaine .terres .terre-gisements",
+   "effet": "defile",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "cosmétique"
+  },
+  {
+   "type": 2,
+   "sel": "#v-domaine div.dom > section.dom-card.dom-nouveau-gisement[data-new-deposit=\"collines:soufre\"]",
+   "sig": "section.dom-card.dom-nouveau-gisement[data-new-deposit]",
+   "valeur": "vide de 465 px au-dessus (entre nav.terres-rangee et section.dom-card.dom-nouveau-gisement)",
+   "idx": 3,
+   "cadre": false,
+   "texte": "Gisement à exploiter SoufreSou",
+   "effet": "trou",
+   "fichier": "",
+   "regle": "",
+   "cas": "terres-gisement",
+   "casNom": "Terres · Gisement Noir (âge 9)",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "terres-gisement-1280.jpg"
+  },
+  {
+   "type": 5,
+   "sel": "div.acts > span.releve-signe > span.signe[data-s=\"relais\"]",
+   "sig": "span.signe[data-s]",
+   "valeur": "zone 26 × 18 px (dessin 24 × 18)",
+   "idx": 0,
+   "cadre": false,
+   "texte": "",
+   "zone": [
+    26,
+    18
+   ],
+   "dessin": [
+    24,
+    18
+   ],
+   "cas": "releve",
+   "casNom": "Fenêtre de relève",
+   "largeur": 1280,
+   "hauteurEcran": 800,
+   "gravite": "gênant",
+   "capture": "releve-1280.jpg"
+  }
+ ],
+ "echecs": []
+}
