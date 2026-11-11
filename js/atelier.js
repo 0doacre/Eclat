@@ -1652,7 +1652,7 @@
       h += '</div>';
       const back = U.rstack.length > 1;
       h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : U.rfrom ? '<button class="btn" data-m="rfrom">← Retour</button>' : "") +
-        (it.r && known && E.ageOK(id) && !it.sec && !it.path && !(E.isUnique(it) && (st.made[id] || 0) > 0) ? '<button class="btn pri" data-m="aller" title="Fabriquer se fait à l’Atelier, dans le métier de cette recette">Atelier</button>' : "") + (it.r && known ? '<button class="btn ghost" data-m="carnet" aria-label="Carnet" title="Voir sa recette dans le Carnet">📖</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" aria-label="Voir dans la Progression" title="Voir ses ingrédients et ses usages dans la Progression">🌳</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
+        (it.r && known && E.ageOK(id) && !it.sec && !it.path && !(E.isUnique(it) && (st.made[id] || 0) > 0) ? '<button class="btn pri" data-m="aller" title="Fabriquer se fait à l’Atelier, dans le métier de cette recette">Atelier</button>' : "") + (it.r && known ? '<button class="btn ghost" data-m="carnet" aria-label="Carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" aria-label="Voir dans la Progression" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
       const redraw = () => { if (U.mcur && U.mcur.rec) swapModal(recipeModal()); };
       return {
         cls: "fiche-modal",
