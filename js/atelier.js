@@ -1510,11 +1510,17 @@
       const nav = (k, extra) => '<button class="ing link" data-m="nav" data-id="' + k + '" title="Ouvrir sa fiche">' + (st.seen[k] || st.known[k] ? icon(k, "sm") : '<span class="ic sm unk">?</span>') + esc(I[k].n) + (extra || "") + "</button>";
       const isWtcItalic = U.wtcItalic;
       if (isWtcItalic) U.wtcItalic = false;
+      const usage = U.fichePage === "usage";
       let h = '<div class="rwin"' + (isWtcItalic ? ' style="font-style:italic"' : "") + '><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
         '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + (nameShown(id) ? esc(it.n) : "Recette inconnue") + "</h2>" +
         (E.stars(id) ? '<div class="stars" title="Maîtrise : fabriqué ' + fmt(st.made[id] || 0) + ' fois">' + "★".repeat(E.stars(id)) + ' <span class="tiny muted">maîtrise</span></div>' : "") + "</div>" +
         (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Ressource favorite" title="Ressource favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
         (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette en haut de l’Atelier" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
+      h += '<div class="fiche-nav" role="group" aria-label="Pages de la fiche">' +
+        [["objet", "Objet", !usage], ["usage", "Usages", usage]].map(([page, label, active]) =>
+          '<button type="button" class="m-nav-tab' + (active ? ' on' : '') + '" data-m="page" data-page="' + page +
+          '" aria-controls="fiche-' + page + '" aria-pressed="' + active + '">' + label + '</button>'
+        ).join("") + '</div><div class="fiche-page" id="fiche-objet"' + (usage ? ' hidden' : '') + '>';
       if (!visible) {
         h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Avance dans le jeu pour en savoir plus.</p>';
       } else {
@@ -1578,7 +1584,7 @@
                 const pe = E.projectExtractor(ez, eres, id, 1);
                 h += '<div class="card proj-box" style="margin:8px 0;padding:8px 10px;background:var(--bg-card,rgba(255,255,255,0.04));border-radius:6px">' +
                   '<div class="tiny kicker" style="color:var(--pri)">Bénéfice mesuré · ' + esc(E.ZONES[ez].n) + '</div>' +
-                  '<div class="small"><b>' + esc(I[eres].n) + '</b> : débit actuel ' + perTime(pe.curRate) + ' → <b>' + perTime(pe.projRate) + '</b> (+' + perTime(pe.gainRate) + ')</div>' +
+                  '<div class="small"><b>' + esc(I[eres].n) + '</b> : débit actuel ' + perMin(pe.curRate) + ' → <b>' + perMin(pe.projRate) + '</b> (+' + perMin(pe.gainRate) + ')</div>' +
                   (E.isScaled(it) ? '<div class="tiny muted">Coût réel pour le ' + fmt(E.count(id) + 1) + 'e exemplaire (croissance d’échelle incluse).</div>' : '') +
                   '</div>';
               }
@@ -1624,29 +1630,47 @@
             else h += '<p class="tiny muted">À toi de la trouver à l’Étude. Étudier les ressources aide à savoir quoi essayer.</p>';
           }
         }
+      }
+      if (E.hasCurio && E.hasCurio("wtc")) {
+        h += '<p class="small muted center" style="font-style:italic">« On coupe ? »</p>';
+      }
+      h += '</div><div class="fiche-page" id="fiche-usage"' + (usage ? '' : ' hidden') + '>';
+      if (visible) {
         const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] !== undefined);
         const ku = uses.filter((k) => st.known[k]), unk = uses.length - ku.length;
         if (uses.length) {
           // à ta portée : le geste maîtrisé et toutes les ressources déjà vues ; les autres viendront plus tard
           const now = Object.values(E.reactions(id)).reduce((a, b) => a + b, 0), later = unk - now;
           const unkTxt = (now ? now + " à trouver dès maintenant" : "") + (now && later ? ", " : "") + (later ? later + " plus tard" : "");
-          h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + ku.map((k) => nav(k)).join("") +
+          h += '<h3 class="sub" id="fiche-fabrications">Sert à fabriquer</h3><div class="row wrap fiche-fabrications" role="region" aria-labelledby="fiche-fabrications">' + ku.map((k) => nav(k)).join("") +
             (unk ? '<span class="tiny muted">' + (ku.length ? "et d’autres recettes encore inconnues : " : "Recettes encore inconnues : ") + unkTxt + "</span>" : "") + "</div>";
           if (unk && st.seen[id]) h += studyHTML(id);
-        }
+        } else h += '<p class="small muted">Aucun usage connu.</p>';
+      } else {
+        h += '<p class="small muted">Avance dans le jeu pour en savoir plus.</p>';
       }
-      if (E.hasCurio && E.hasCurio("wtc")) {
-        h += '<p class="small muted center" style="font-style:italic">« On coupe ? »</p>';
-      }
+      h += '</div>';
       const back = U.rstack.length > 1;
       h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : U.rfrom ? '<button class="btn" data-m="rfrom">← Retour</button>' : "") +
-        (it.r && known && E.ageOK(id) && !it.sec && !it.path && !(E.isUnique(it) && (st.made[id] || 0) > 0) ? '<button class="btn pri" data-m="aller" title="Fabriquer se fait à l’Atelier, dans le métier de cette recette">Atelier</button>' : "") + (it.r && known ? '<button class="btn ghost" data-m="carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
+        (it.r && known && E.ageOK(id) && !it.sec && !it.path && !(E.isUnique(it) && (st.made[id] || 0) > 0) ? '<button class="btn pri" data-m="aller" title="Fabriquer se fait à l’Atelier, dans le métier de cette recette">Atelier</button>' : "") + (it.r && known ? '<button class="btn ghost" data-m="carnet" aria-label="Carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" aria-label="Voir dans la Progression" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
       const redraw = () => { if (U.mcur && U.mcur.rec) swapModal(recipeModal()); };
       return {
+        cls: "fiche-modal",
         rec: true,
         html: h,
+        onOpen: (box) => box.focus({ preventScroll: true }),
         onClose: () => { U.rstack = []; },
         on: {
+          page: (b) => {
+            U.fichePage = b.dataset.page;
+            for (const tab of b.parentElement.children) {
+              const active = tab === b;
+              tab.classList.toggle("on", active);
+              tab.setAttribute("aria-pressed", active);
+              document.getElementById(tab.getAttribute("aria-controls")).hidden = !active;
+            }
+            return true;
+          },
           nav: (b) => { recipeNav(b.dataset.id); return true; },
           back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
           rfrom: () => { const f = U.rfrom; U.rfrom = null; closeModal(); if (f) setTimeout(f, 80); return true; },
