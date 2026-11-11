@@ -52,3 +52,133 @@
   --panel: #fff8e9; --panel2: #e9dec8; --bg: #f4ecda;
   --good: #345239; --bad: #812b26; --acc: #813f2a;
 }
+
+/* ======================= Étude : un écran fixe =======================
+ * Applique le modèle des Terres (colonne flex de la hauteur de la vue).
+ * L'établi et son bouton d'action restent en bas, au pouce, au-dessus des onglets.
+ * Seule la réserve de ressources défile dans son cadre avec overscroll-behavior: contain. */
+
+#app #views > #v-labo.view.on {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 4px 8px calc(var(--nav, 58px) + var(--safe-b, 0px) + 6px);
+}
+
+#app #views > #v-labo.view.on .atelier-equipe.ae-lab {
+  flex: 1 1 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#app #views > #v-labo.view.on .ae-metiers {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  gap: 6px;
+  margin: 0 0 4px;
+  padding: 2px 0;
+}
+#app #views > #v-labo.view.on .ae-metiers::-webkit-scrollbar {
+  display: none;
+}
+#app #views > #v-labo.view.on .ae-metiers .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#app #views > #v-labo.view.on .ae-layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  justify-content: flex-start;
+}
+
+#app #views > #v-labo.view.on .ae-layout > .ae-stock {
+  order: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "filtres etude"
+    "search search"
+    "inv inv";
+  gap: 4px;
+  overflow: hidden;
+  padding: 4px 6px;
+  margin: 0;
+}
+
+#app #views > #v-labo.view.on .ae-layout > .ae-bench {
+  order: 2;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 4px 6px;
+}
+
+#app #views > #v-labo.view.on .ae-filtres {
+  grid-area: filtres;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+#app #views > #v-labo.view.on .ae-etude {
+  grid-area: etude;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+#app #views > #v-labo.view.on .ae-stock-search {
+  grid-area: search;
+  display: flex;
+}
+#app #views > #v-labo.view.on .ae-stock-search input {
+  width: 100%;
+}
+
+#app #views > #v-labo.view.on #ae-discovery-empty {
+  display: none;
+}
+
+#app #views > #v-labo.view.on .ae-inventory {
+  grid-area: inv;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#app #views > #v-labo.view.on .ae-mini {
+  display: none;
+}
+
+@media (max-height: 699px) {
+  #app #views > #v-labo.view.on {
+    padding-top: 2px;
+    padding-bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 4px);
+  }
+  #app #views > #v-labo.view.on .ae-slots > .btn {
+    min-height: 64px;
+    padding: 3px 2px;
+  }
+  #app #views > #v-labo.view.on .ae-bench {
+    padding: 3px 4px;
+  }
+}
