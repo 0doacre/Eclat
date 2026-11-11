@@ -231,3 +231,10 @@ html[data-style-mode="vivant"] #modal#modal#modal .toggle > span { font: 400 17p
 
 /* glyphes de la planche : un masque PNG colorié par la couleur du texte (voir gi("g:<id>") dans js/ui.js) */
 .gi.gph { display: inline-block; width: 1em; height: 1em; flex: 0 0 auto; vertical-align: -0.14em; background: currentColor; -webkit-mask: var(--g) center / contain no-repeat; mask: var(--g) center / contain no-repeat; }
+
+/* Terres : la carte « nouveau gisement » est un enfant direct de la grille (rangée automatique, sans place) : elle prend sa propre rangée sous le corps, et la page s’allonge et défile ; rien ne passe sous la plaque du nom ni sous la barre d’onglets */
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terres { grid-template-rows: auto auto minmax(min-content, 1fr) auto !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terres .terre-corps { min-height: min-content; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terres > .dom-nouveau-gisement { grid-row: 4 !important; grid-column: 1 !important; position: relative; z-index: 3; margin: 8px 0 0 !important; background: rgb(244 236 218 / .92) !important; border: 1px solid rgb(121 105 74 / .5) !important; border-radius: 12px !important; padding: 10px 12px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine#v-domaine .terres:has(.dom-nouveau-gisement) { padding-bottom: calc(var(--nav, 64px) + var(--safe-b, 0px) + 104px) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine#v-domaine .terres { flex: 0 0 auto !important; }

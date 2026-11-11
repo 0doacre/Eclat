@@ -60,8 +60,7 @@ function partie(mode) {
         await box.locator('[data-gz="gisement"]').click();
         await p.waitForTimeout(400);
         assert.equal(await p.evaluate(() => window.__eclat.U.tab), 'domaine');
-        /* connu : à cet âge, la carte « nouveau gisement » passe sous le panneau du bas (A-FAIRE) ; on déclenche l’appui sans passer par le pointeur */
-        await p.locator('[data-xadd="gisement:galene"]').first().evaluate((b) => b.click());
+        await p.locator('[data-xadd="gisement:galene"]').first().click(); /* vrai appui : la carte reste touchable au-dessus de la plaque du nom */
         await p.waitForFunction(() => window.__eclat.E.rate('galene') > 0);
       }
       assert.deepEqual(errors, []);
