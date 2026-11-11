@@ -1002,7 +1002,7 @@ body[data-tab="cosmos"] #v-cosmos {
 .modal:not(.ending):not(.agecard) .modal-box {
   padding: 22px 18px calc(20px + var(--safe-b));
   border-width: 1px;
-  max-height: min(88vh, 88dvh);
+  max-height: calc(min(100vh, 100dvh) - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   overscroll-behavior: contain;
   scrollbar-color: var(--atlas-ink) var(--panel);
   font-size: 16px;
@@ -1030,10 +1030,22 @@ body[data-tab="cosmos"] #v-cosmos {
   border: 1px dashed var(--atlas-hairline); box-shadow: none;
 }
 .modal-box .gi { flex-shrink: 0; }
-.rwin > .row:first-child { flex-wrap: wrap; padding-right: 42px; gap: 8px; padding-bottom: 16px; border-bottom: 3px double var(--atlas-hairline); }
-.rwin > .row:first-child > .grow { flex: 1 1 calc(100% - 64px); }
+.modal.fiche-modal .modal-box { position: relative; height: 100dvh; overflow: hidden; padding-block: 8px; }
+.fiche-modal .modal-box .modal-x { position: absolute; top: 8px; right: 8px; margin: 0; }
+.rwin { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.rwin > .row:first-child { flex-wrap: wrap; padding-right: 42px; gap: 6px; padding-bottom: 6px; }
+.rwin > .row:first-child > .grow { flex: 1 1 100px; }
 .rwin > .row:first-child > .pinb { align-self: center; margin: 0; }
-.rwin .rdesc { font-size: 19px; line-height: 1.5; margin-block: 16px; }
+.fiche-nav { display: flex; gap: 6px; border-bottom: 3px double var(--atlas-hairline); }
+.modal-box .fiche-nav > button { flex: 1; min-height: 46px; }
+.fiche-page { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.fiche-page > p { margin-block: 4px; }
+.fiche-page > h3.sub { margin-top: 10px; padding-bottom: 4px; }
+#fiche-usage:not([hidden]) { display: flex; flex-direction: column; }
+.fiche-fabrications { align-content: flex-start; flex: 0 1 auto; min-height: 44px; overflow-y: auto; overscroll-behavior: contain; }
+.fiche-page > .study { flex: none; }
+.rwin .rbtns { margin-top: 4px; }
+.rwin .rdesc { font-size: 18px; line-height: 1.35; margin-block: 4px; }
 .rwin .stars { color: var(--atlas-ink); }
 .rwin .ring { padding: 11px 10px; gap: 8px; border-left-width: 3px; }
 .rwin .ring .tiny { font-family: "IBM Plex Mono",monospace; font-size: 12px; white-space: nowrap; }
@@ -1045,6 +1057,8 @@ body[data-tab="cosmos"] #v-cosmos {
 .modal-box .why { border-radius: 0; border-left: 3px solid var(--bad); padding: 10px; background: var(--bg2); }
 .modal-box .acts { padding-top: 14px; border-top: 1px solid var(--atlas-hairline); gap: 8px; }
 .modal-box .acts .btn { flex: 1 1 auto; min-width: min(100%,120px); }
+.rwin > .acts { flex: none; margin-top: 4px; padding-top: 4px; }
+.rwin > .acts .btn { min-width: 44px; overflow-wrap: normal; }
 .modal-box .toggle { gap: 12px; padding-block: 12px; }
 .modal-box .toggle .sw { flex-shrink: 0; }
 .modal-box .toggle:has([data-m="tuto"]) { flex-wrap: wrap; }
