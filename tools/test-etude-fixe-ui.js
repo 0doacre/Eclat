@@ -32,6 +32,15 @@ const MESURE = () => {
   const q = s => document.querySelector(s), r = e => e && e.getBoundingClientRect();
   const labo = q("#v-labo"), vs = q("#views"), tabs = r(q("#tabs")), forge = r(q('#v-labo button[data-ae="forge"]'));
   const inv = q("#v-labo .ae-inventory");
+  let invDefile = false;
+  if (inv && inv.clientHeight > 0 && getComputedStyle(inv).overflowY === "auto" && getComputedStyle(inv).overscrollBehaviorY === "contain") {
+    const probe = document.createElement("div");
+    probe.style.cssText = "height:" + (inv.clientHeight + 100) + "px;min-height:" + (inv.clientHeight + 100) + "px;flex:none;grid-column:1 / -1";
+    inv.append(probe);
+    inv.scrollTop = 50;
+    invDefile = inv.scrollTop > 0;
+    probe.remove();
+  }
   const petites = [...document.querySelectorAll('#v-labo button, #v-labo [role="button"]')].map(b => {
     const rc = b.getBoundingClientRect();
     return { cls: b.className, text: b.textContent.trim().slice(0, 20), w: Math.round(rc.width * 10) / 10, h: Math.round(rc.height * 10) / 10 };
@@ -46,8 +55,10 @@ const MESURE = () => {
     hors,
     forgeBottom: forge ? forge.bottom : 0,
     forgeTop: forge ? forge.top : 0,
+    forgeWidth: forge ? forge.width : 0,
+    forgeHeight: forge ? forge.height : 0,
     tabsTop: tabs ? tabs.top : 0,
-    invDefile: inv ? inv.scrollHeight >= inv.clientHeight : false,
+    invDefile,
     petites
   };
 };
@@ -74,9 +85,9 @@ async function run() {
       const { ctx, p, errors } = await ouvre(W, H, partie(age)), tag = `Étude à ${W} × ${H} (âge ${age + 1})`, m = await p.evaluate(MESURE);
       ok(m.page === 0, `${tag} : la page ne défile pas (${m.page} px)`);
       ok(m.largeur <= 0 && m.hors === 0, `${tag} : rien ne dépasse en largeur`);
-      ok(m.forgeBottom <= m.tabsTop && m.forgeTop >= 0, `${tag} : bouton d'action entier au pouce au-dessus des onglets (bouton=${m.forgeBottom}, onglets=${m.tabsTop})`);
+      ok(m.forgeWidth >= 44 && m.forgeHeight >= 44 && m.forgeBottom <= m.tabsTop && m.forgeTop >= 0, `${tag} : bouton d'action entier au pouce au-dessus des onglets (bouton=${m.forgeBottom}, onglets=${m.tabsTop})`);
       ok(m.petites.length === 0, `${tag} : toutes les cibles font au moins 44 px (${JSON.stringify(m.petites)})`);
-      ok(m.invDefile, `${tag} : la réserve est configurée pour glisser dans son cadre`);
+      ok(m.invDefile, `${tag} : la réserve glisse réellement dans son cadre`);
       ok(errors.length === 0, `${tag} : aucune erreur de page (${errors.join(" ; ")})`);
       await ctx.close();
     }

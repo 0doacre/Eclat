@@ -15,6 +15,8 @@
 
 Plafond `Labo` dans `tools/test-ux.js` : 270 px → 0 px. Bouton d'action au pouce partout (`forgeBottom <= tabsTop`). `!important` dans `harmonie-sobre.css` : 108 → 107.
 
+**Recette complémentaire** : la grille de la réserve étire désormais ses cases : sans cela, un inventaire long pouvait grandir et être rogné au lieu de défiler. Le test vérifie une hauteur de réserve non nulle, un défilement effectif avec contenu débordant, ainsi que les dimensions du bouton d'action.
+
 ## Tests lancés
 
 ```
@@ -28,6 +30,7 @@ $ npm test -> Tous les tests d'intégration sont passés (219 tests + acc + ui).
 ## Ce que je n'ai pas vérifié
 - Le toucher avec les doigts sur un écran physique réel (émulé Playwright).
 - Claviers virtuels ouverts sur le champ de recherche de ressource.
+- Le test historique `test-atelier-dessine-ui.js` attend une image chargée paresseusement hors de la zone visible, et expire aussi sur la branche de départ dans cet environnement. Son parcours a été rejoué en forçant le chargement des images : 288 contrôles réussis.
 
 ## Choix qui reviennent au porteur
 - **Agencement de la réserve sur petit écran (320 × 568)** : filtres et étude sur la ligne 1, recherche sur la ligne 2, réserve scrollable sur 84–96 px.
