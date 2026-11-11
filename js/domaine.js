@@ -100,7 +100,7 @@
       const ic = d.hand ? '<button type="button" class="terre-recolte" data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '">' + icon(res) + "</button>" : '<span class="terre-recolte inerte">' + icon(res) + "</span>";
       return '<div class="gis gis-compact terre-gis' + (rate > 0 ? " gis-producing" : "") + '" data-gis="' + key + '">' + ic +
         '<button type="button" class="gis-compact-btn terre-gis-corps" data-gsheet="' + key + '" aria-label="' + esc(I[res].n) + ' : gérer les extracteurs"><span class="gis-compact-info"><span class="gis-compact-name">' + esc(I[res].n) + '</span><span class="terre-gis-ligne"><b class="gis-compact-c" data-c="' + res + '">' + fmt(st.inv[res] || 0) + '</b> <span class="dom-rate gis-compact-rate' + (rateTxt ? "" : " hidden") + '" data-rate="' + key + '">' + rateTxt + "</span>" + (d.hand ? '<span class="tiny muted terre-main">à la main</span>' : "") + "</span></span></button>" +
-        (d.hand ? '<button type="button" class="mini harvest terre-boucle' + (on ? " on" : "") + (!on && !S().flags.bouclee && (U.tapsRecolte || 0) >= 8 ? " pulse" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter la récolte en continu : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■" : "▶") + "</button>" : "") +
+        (d.hand ? '<button type="button" class="mini harvest terre-boucle' + (on ? " on" : "") + (!on && !S().flags.bouclee && (U.tapsRecolte || 0) >= 8 ? " pulse" : "") + '" data-hloop="' + key + '" aria-pressed="' + on + '" aria-label="' + (on ? "Arrêter la récolte en continu : " : "Récolter en continu : ") + esc(I[res].n) + '" title="Récolte en continu, même jeu fermé">' + (on ? "■" : gi("g:recolte-continue")) + "</button>" : "") +
         (ch ? '<button type="button" class="mini terre-ajout' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" aria-label="Poser ' + esc(nm(ch.t, 1)) + '" title="Poser ' + esc(nm(ch.t, 1)) + '"><span class="ajout-plus" aria-hidden="true">+</span>' + icon(ch.t) + "</button>" : "") + "</div>";
     }
     function terresView() {
@@ -113,12 +113,12 @@
       const oeuvres = Object.keys(D.PROJECTS).filter((pid) => E.projVisible(pid) && E.projState(pid).step < D.PROJECTS[pid].steps.length);
       let h = '<div class="dom terres" data-terre-courante="' + z + '">';
       // les pastilles : une seule ligne de 40 px
-      h += '<div class="terres-pastilles">' + pastilleHTML("obj", "📜", esc(goalTitle)) +
+      h += '<div class="terres-pastilles">' + pastilleHTML("obj", gi("g:objectif"), esc(goalTitle)) +
         (sugRel ? pastilleHTML("rel", "✦", "Relais +" + sugRel.gain) : "") +
         quetesPastilleHTML() +
-        (E.zoneOpen(D.COMPTOIR.zone) ? pastilleHTML("comptoir", "⚖️", "Comptoir") : "") +
+        (E.zoneOpen(D.COMPTOIR.zone) ? pastilleHTML("comptoir", gi("g:comptoir"), "Comptoir") : "") +
         (oeuvres.length ? pastilleHTML("oeuvre", "🏗️", "Œuvre") : "") +
-        (E.hasFactory && E.hasFactory() ? pastilleHTML("prod", "⚙️", "Production") : "") +
+        (E.hasFactory && E.hasFactory() ? pastilleHTML("prod", gi("g:production"), "Production") : "") +
         "</div>";
       h += nouveauxGisementsHTML();
       // la rangée des terres
@@ -447,7 +447,7 @@
         const reqStr = nx.x.hidden ? nx.x.hidden : (typeof nx.x.need === "string" && I[nx.x.need] ? "il faut " + I[nx.x.need].n.toLowerCase() : Array.isArray(nx.x.need) ? "il faut " + nx.x.need.map((id) => (I[id] ? I[id].n.toLowerCase() : id)).join(", ") : "lieu verrouillé");
         return '<span class="tiny muted">' + done + "/" + n + " lieux · 🔒 " + esc(reqStr) + "</span>";
       }
-      return '<button class="btn small" data-exp="' + z + '" title="Lancer cette exploration : elle avance toute seule">🧭 Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
+      return '<button class="btn small" data-exp="' + z + '" title="Lancer cette exploration : elle avance toute seule">' + gi("g:explorer") + ' Explorer · ' + esc(nx.x.hidden ? "???" : nx.x.n) + "</button>";
     }
     function livingNodeSVG(res) {
       if (res === "bois") {
@@ -1471,7 +1471,7 @@
         if (result) h += '<p role="status" class="small">' + esc(result) + '</p>';
         return h + '<div class="row wrap"><button class="btn pri" data-m="repriseApply" title="Exécuter uniquement les réparations, poses et commandes détaillées dans ce devis"' + (quote.actions.length ? '' : ' disabled') + '>Lancer ces travaux</button><button class="btn ghost" data-m="repriseRefresh" title="Recalculer les travaux possibles avec les ressources disponibles maintenant">Actualiser le devis</button></div>';
       }
-      function redraw() { last = signature(); const box = document.querySelector('#modal .modal-box'); if (box) box.innerHTML = '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>' + html(); render(true); return true; }
+      function redraw() { last = signature(); const box = document.querySelector('#modal .modal-box'); if (box) box.innerHTML = '<button class="modal-x" data-m="close" aria-label="Fermer" title="Fermer">' + gi("g:fermer") + '</button>' + html(); render(true); return true; }
       openModal({ html: html(), repriseLive: () => {
         if (signature() === last) return;
         quote = E.repriseQuote(); redraw();

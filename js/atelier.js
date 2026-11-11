@@ -536,10 +536,10 @@
       const r = E.agesARetrouver();
       if (!r.length) return "";
       return '<div class="card carnet-retrouve"><p class="serif"><i>' + esc(SOUV().intro) + "</i></p>" +
-        (r.length >= 1 ? '<div class="acts"><button type="button" class="btn small pri" data-souvenir="tout">' + esc(SOUV().tout) + "</button></div>" : "") + "</div>";
+        (r.length >= 1 ? '<div class="acts"><button type="button" class="btn small pri" data-souvenir="tout" aria-label="' + esc(SOUV().tout) + '" title="' + esc(SOUV().tout) + '">' + gi("g:tout-relire") + "</button></div>" : "") + "</div>";
     }
     function souvenirNoteHTML() {
-      return E.agesARetrouver().length ? '<div class="card souvenir-note"><p class="small">' + esc(SOUV().atelier) + '</p><div class="acts"><button type="button" class="btn small pri" data-souvenir="tout">' + esc(SOUV().tout) + '</button><button type="button" class="btn small" data-tab2="carnet">Ouvrir le Carnet</button></div></div>' : "";
+      return E.agesARetrouver().length ? '<div class="card souvenir-note"><p class="small">' + esc(SOUV().atelier) + '</p><div class="acts"><button type="button" class="btn small pri" data-souvenir="tout" aria-label="' + esc(SOUV().tout) + '" title="' + esc(SOUV().tout) + '">' + gi("g:tout-relire") + '</button><button type="button" class="btn small" data-tab2="carnet">Ouvrir le Carnet</button></div></div>' : "";
     }
     function viewCarnet() {
       const st = S();
@@ -738,7 +738,7 @@
     function arbreFeuille() {
       const o = { html: '<div class="arb-sheet-c">' + arbreBranche(U.arbreG, U.arbreSel) + '</div>', cls: 'arb-sheet', arbre: true,
         onClose: () => { U.arbreSel = null; U.arbreHistorique = []; U.arbreTout = false; } };
-      if (U.mcur && U.mcur.arbre) { swapModal(o); const box = document.querySelector('#modal .modal-box'); if (box) box.insertAdjacentHTML('afterbegin', '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>'); }
+      if (U.mcur && U.mcur.arbre) { swapModal(o); const box = document.querySelector('#modal .modal-box'); if (box) box.insertAdjacentHTML('afterbegin', '<button class="modal-x" data-m="close" aria-label="Fermer" title="Fermer">' + gi("g:fermer") + '</button>'); }
       else openModal(o);
     }
     function arbreChoisir(cle, historique) {
@@ -908,7 +908,7 @@
         if (aRelire.includes(sec.age) && !(U.carnetFilter === "unk")) {
           const ag = D.AGES[sec.age], n = sec.ids.filter((id) => st.known[id] && !I[id].sec).length;
           h += '<div class="card age-sec age-oubli" data-age="' + sec.age + '"><div class="age-oubli-t"><span class="ic" style="background:' + ag.c + "22;border-color:" + ag.c + '66">' + (sec.age + 1) + '</span><span class="an">' + ag.n + '</span><span class="cnt">' + n + '</span></div>' +
-            '<p class="small muted">' + esc(SOUV().pages) + '</p><div class="acts"><button type="button" class="btn small pri" data-souvenir="' + sec.age + '">' + esc(SOUV().relire) + "</button></div></div>";
+            '<p class="small muted">' + esc(SOUV().pages) + '</p><div class="acts"><button type="button" class="btn small pri" data-souvenir="' + sec.age + '" aria-label="' + esc(SOUV().relire) + '" title="' + esc(SOUV().relire) + '">' + gi("g:relire") + "</button></div></div>";
           continue;
         }
         const ids = sec.ids.filter((id) => !I[id].sec).filter(keep);
@@ -1918,7 +1918,7 @@
     function plaqueMetier(c) {
       const ech = c.echelles.filter((e) => e.etat === "courant").map((e) => e.n).join(", ");
       const tip = esc(c.n + (ech ? " · échelon : " + ech : "") + " (" + c.echelles.map((x) => x.n).join(", ") + ")");
-      return '<div class="subtabs atl-plaque"><button type="button" class="ico-seule atl-retour" data-atelier-retour aria-label="Retour aux métiers" title="Retour aux métiers">←</button>' +
+      return '<div class="subtabs atl-plaque"><button type="button" class="ico-seule atl-retour" data-atelier-retour aria-label="Retour aux métiers" title="Retour aux métiers">' + gi("g:retour") + '</button>' +
         '<button type="button" class="on atl-metier" aria-label="' + esc(c.n) + '" title="' + tip + '">' + c.ic + '<span class="lbl">' + esc(c.n) + "</span></button>" +
         '<button type="button" data-tab2="machines" aria-label="Machines" title="Les machines qui fabriquent seules">' + tabInner("machines", "Machines") + "</button></div>";
     }

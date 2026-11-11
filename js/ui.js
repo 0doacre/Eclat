@@ -492,7 +492,7 @@
     U.mcur = o;
     U.mAt = Date.now();
     m.className = "modal " + (o.cls || "");
-    box.innerHTML = (o.persistent ? "" : '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>') + o.html;
+    box.innerHTML = (o.persistent ? "" : '<button class="modal-x" data-m="close" aria-label="Fermer" title="Fermer">' + gi("g:fermer") + '</button>') + o.html;
     const ttl = $("h2", box);
     if (ttl) { ttl.id = "modalTitle"; box.setAttribute("aria-labelledby", "modalTitle"); box.removeAttribute("aria-label"); }
     else { box.removeAttribute("aria-labelledby"); box.setAttribute("aria-label", "Fenêtre"); }
@@ -798,7 +798,7 @@
     const box = $("#modal .modal-box");
     U.mcur = o;
     $("#modal").className = "modal " + (o.cls || "");
-    box.innerHTML = (o.persistent ? "" : '<button class="modal-x" data-m="close" aria-label="Fermer">✕</button>') + o.html;
+    box.innerHTML = (o.persistent ? "" : '<button class="modal-x" data-m="close" aria-label="Fermer" title="Fermer">' + gi("g:fermer") + '</button>') + o.html;
     const ttl = $("h2", box);
     if (ttl) { ttl.id = "modalTitle"; box.setAttribute("aria-labelledby", "modalTitle"); box.removeAttribute("aria-label"); }
     else { box.removeAttribute("aria-labelledby"); box.setAttribute("aria-label", "Fenêtre"); }

@@ -234,7 +234,7 @@
       const chip=(v,l,t)=>'<button type="button" class="ae-chip ico-seule'+(filtre===v?' on':'')+'" data-ae="filtre" data-value="'+v+'" aria-pressed="'+(filtre===v)+'" aria-label="'+esc(l.replace(/^✦ /,''))+'" title="'+esc(l.replace(/^✦ /,'')+' : '+t)+'">'+gi(FIL_IC[v])+'</button>';
       h+='<div class="ae-filtres" role="group" aria-label="Ressources à montrer">'+chip("utiles","✦ Utiles","Les ressources qui peuvent encore donner une recette avec cet outil et ce geste")+chip("tout","Tout","Toutes les ressources que tu as vues")+chip("reserve","En réserve","Seulement ce que tu as en stock")+'</div>';
       const study=E.studyAllCost();
-      if(study.n)h+='<div class="ae-etude'+(U.etudeEnCours?' etude-en-cours':'')+'"'+U.etudeAttrs()+'>'+button("study","","Étudier · ✨"+api.fmt(study.c),"small ghost",s.intu<study.c||!!U.etudeEnCours)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des ressources" aria-label="Comprendre l’étude des ressources">?</button></div>';
+      if(study.n)h+='<div class="ae-etude'+(U.etudeEnCours?' etude-en-cours':'')+'"'+U.etudeAttrs()+'>'+button("study","",gi("g:etudier")+" ✨"+api.fmt(study.c),"small ghost",s.intu<study.c||!!U.etudeEnCours)+'<button type="button" class="btn-aide mini" data-aide="etude" title="Comprendre l’étude des ressources" aria-label="Comprendre l’étude des ressources">?</button></div>';
       h+='<p id="ae-discovery-empty" class="small muted" hidden></p><div class="ae-inventory">';
       for(const id of ids){const picked=w.slots.includes(id),reacts=E.equipmentHasDiscovery(id,w.eq,w.mode,w.metier);h+='<div class="ae-resource'+(reacts?' ae-reacts':'')+'" data-ae-resource="'+esc(id)+'" data-name="'+esc(name(id).toLowerCase())+'">'+button("item",id,icon(id,"sm")+'<span class="ae-item-name">'+esc(name(id))+'</span>'+(reacts?'<i class="ae-react-spark" title="Piste disponible">✦</i>':'')+'<b data-ae-count="'+esc(id)+'"></b>',picked?"ae-selected":"",!picked&&E.count(id)<1)+'</div>';
       }
@@ -327,7 +327,7 @@
     function dejaActs(){
       if(lastHeat!=="known"||!dejaId||!I[dejaId])return "";
       const f=(D.ATELIERS&&D.ATELIERS.familles||[]).find(x=>x.id===E.atelierDe(dejaId));
-      return '<div class="row wrap ae-found-acts" style="margin:6px 0 2px"><button type="button" class="btn small pri ae-une" data-ae="une" data-value="'+esc(work().w.mode)+'" title="Fabriquer une seule pièce, ici">'+icon(dejaId,"sm")+' ×1</button><button type="button" class="btn small" data-aller="'+dejaId+'" title="Les séries se font à l’Atelier">Atelier'+(f?" · "+esc(f.n):"")+'</button></div>';
+      return '<div class="row wrap ae-found-acts" style="margin:6px 0 2px"><button type="button" class="btn small pri ae-une" data-ae="une" data-value="'+esc(work().w.mode)+'" title="Fabriquer une seule pièce, ici" aria-label="Fabriquer une pièce">'+gi("g:fabriquer-un")+'</button><button type="button" class="btn small" data-aller="'+dejaId+'" title="Les séries se font à l’Atelier">Atelier'+(f?" · "+esc(f.n):"")+'</button></div>';
     }
     function trouveeActs(){
       if(lastHeat==="known")return dejaActs();
