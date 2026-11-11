@@ -70,4 +70,4 @@ Playwright tourne en local (paquet 1.61.0, Chromium révision 1228, `PW=<dossier
 
 **Corrigé le 11 novembre 2026** : au Gisement Noir, la carte « nouveau gisement » (poser la mine de plomb) prend sa propre rangée de la grille et la page des Terres défile ; `test-progression-ui.js` fait maintenant un vrai appui.
 
-**Réglages morts (8 novembre 2026)** : dans le menu, « Affichage compact » et « Carnet sur deux colonnes » se règlent et se gardent dans la partie, mais n’ont plus d’effet visible depuis les Terres à plaques et les recettes en tuiles (le test `test-affichage-ui` ne vérifie plus que le réglage). À retirer du menu, ou à rebrancher.
+**Réglages morts : retirés le 11 novembre 2026** (« Affichage compact » et « Carnet sur deux colonnes » ne sont plus dans le menu ; les anciens réglages restent lisibles dans les vieilles sauvegardes, sans effet).

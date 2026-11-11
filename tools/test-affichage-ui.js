@@ -1,4 +1,4 @@
-/* L’affichage, dans un vrai Chromium : les réglages du menu (compact, deux colonnes) changent bien le Domaine et le Carnet, y compris sur téléphone.
+/* L’affichage, dans un vrai Chromium : les réglages du menu (interrupteurs, sections) et le Carnet sur téléphone.
  * node tools/test-affichage-ui.js (PW=chemin vers Playwright). Serveur local et profil jetable. */
 "use strict";
 const fs = require("fs"), path = require("path"), http = require("http"), assert = require("assert/strict");
@@ -52,39 +52,23 @@ async function run() {
   await p.locator('#tabs [data-tab="journal"]').click(); await p.waitForTimeout(300); if (!await p.locator("#clist").count()) await p.locator('[data-tab2="carnet"]').click(); /* 0.66 : le Carnet est le premier feuillet du Journal */ await p.waitForTimeout(300);
   ok(await p.locator("[data-cvue]").count() === 0, "plus de boutons de vue dans le Carnet");
   await menu(p);
-  for (const k of ["compact", "carnet2", "largeText", "sound", "vibe", "visiteurs", "tuto"]) ok(await sw(p, k).getAttribute("role") === "switch", k + " : un interrupteur");
-  ok(await sw(p, "compact").getAttribute("aria-checked") === "false", "compact éteint au départ");
-  ok(await sw(p, "carnet2").getAttribute("aria-checked") === "true", "deux colonnes par défaut");
-  ok((await sw(p, "compact").textContent()) === "Désactivé", "mêmes mots partout : Désactivé");
+  for (const k of ["largeText", "sound", "vibe", "visiteurs", "tuto"]) ok(await sw(p, k).getAttribute("role") === "switch", k + " : un interrupteur");
+  ok((await sw(p, "largeText").textContent()) === "Désactivé", "mêmes mots partout : Désactivé");
 
-  // 2. le Carnet sur deux colonnes marche sur téléphone
+  // 2. le Carnet en tuiles tient sur téléphone
   await p.locator("#modal .modal-x").click(); await p.waitForTimeout(500);
   const cols = () => p.evaluate(() => { const l = document.querySelector("#clist .age-sec[open] > .list, #clist > .list.flat, #clist .age-sec > .list"); return l ? getComputedStyle(l).gridTemplateColumns.split(" ").length : 0; });
   ok(await cols() >= 2, "au moins deux colonnes à 390 px (" + await cols() + ")"); // 0.66 : trois tuiles par rangée
   const box = await p.evaluate(() => { const r = document.querySelector("#clist .rec, #clist .rec-tile"); const b = r.getBoundingClientRect(); return { w: b.width, over: document.documentElement.scrollWidth > innerWidth + 1 }; });
   ok(!box.over, "pas de défilement horizontal en deux colonnes");
-  await menu(p); await sw(p, "carnet2").evaluate((e) => e.click()); await p.waitForTimeout(150);
-  ok(await sw(p, "carnet2").getAttribute("aria-checked") === "false" && await sw(p, "carnet2").textContent() === "Désactivé", "l’interrupteur suit");
-  await p.locator("#modal .modal-x").click(); await p.waitForTimeout(500);
-  /* 0.66 : les recettes sont des tuiles, trois par rangée ; l’interrupteur « deux colonnes » n’a plus d’effet visible (voir docs/A-FAIRE.md) */ ok(await cols() >= 1, "la liste reste affichée une fois l’interrupteur coupé");
-  ok(await p.evaluate(() => window.__eclat.E.state.settings.carnet1Col === true), "le réglage est gardé dans la partie");
-
-  // 3. l’affichage compact resserre le Domaine et le Carnet
-  await p.locator('#tabs [data-tab="domaine"]').click(); await p.waitForTimeout(400);
-  await menu(p); await sw(p, "compact").evaluate((e) => e.click()); await p.waitForTimeout(150);
-  await p.locator("#modal .modal-x").click(); await p.waitForTimeout(500);
-  await p.locator('#tabs [data-tab="journal"]').click(); await p.waitForTimeout(300); if (!await p.locator("#clist").count()) await p.locator('[data-tab2="carnet"]').click(); /* 0.66 : le Carnet est le premier feuillet du Journal */ await p.waitForTimeout(400);
-  ok(await p.evaluate(() => window.__eclat.E.state.settings.compact === true), "un seul réglage dans la partie");
+  ok(await cols() >= 1, "la liste du Carnet reste affichée");
   ok(!p.errors.length, p.errors.join("\n"));
   await p.context().close();
 
-  // 4. une ancienne partie qui avait la vue dense reste en compact
-  p = await page(browser, { domDense: true });
-  await p.locator('#tabs [data-tab="domaine"]').click(); await p.waitForTimeout(400);
+  // (0.66.2 : « Affichage compact » et « Carnet sur deux colonnes » sont retirés du menu, ils n’avaient plus d’effet)
+  p = await page(browser, {});
   await menu(p);
-  ok(await sw(p, "compact").getAttribute("aria-checked") === "true", "et le menu le dit");
-  await sw(p, "compact").evaluate((e) => e.click()); await p.waitForTimeout(150);
-  ok(await p.evaluate(() => { const s = window.__eclat.E.state.settings; return s.compact === false && s.domDense === undefined; }), "l’ancien réglage est remplacé");
+  ok(await p.locator('[data-m="compact"], [data-m="carnet2"]').count() === 0, "plus d’interrupteur compact ni deux colonnes dans le menu");
   await p.context().close();
 
   // 5. le menu tient dans l’écran et se lit : rien ne déborde, des sections, un nom pour chaque bouton

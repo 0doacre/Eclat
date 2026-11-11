@@ -72,7 +72,7 @@ test("Structure et balisage du menu 'Jeu Vidéo'", () => {
   assert.ok(h.includes('id="msec-systeme"'), "Section Système présente");
   assert.ok(h.includes('data-m="mem"'), "Bouton Mémoire présent");
   assert.ok(h.includes('data-m="sound"'), "Bouton Son présent");
-  assert.ok(h.includes('data-m="compact"'), "Bouton Compact présent");
+  assert.ok(!h.includes('data-m="compact"') && !h.includes('data-m="carnet2"'), "plus de réglages compact ni deux colonnes (0.66.2)");
   assert.ok(h.includes('data-m="reset"'), "Bouton Reset présent");
 });
 
@@ -115,7 +115,7 @@ test("Vérification que les boutons requis par les tests d'accessibilité sont t
   const h = modalOpened.html;
 
   const requiredDataM = [
-    "theme", "largeText", "compact", "carnet2", "ambiance", "ecran",
+    "theme", "largeText", "ambiance", "ecran",
     "sound", "vibe", "visiteurs", "tuto", "tutoAgain", "mem",
     "saves", "account", "installer", "help", "news", "credits", "reset", "close"
   ];
