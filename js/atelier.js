@@ -1578,7 +1578,7 @@
                 const pe = E.projectExtractor(ez, eres, id, 1);
                 h += '<div class="card proj-box" style="margin:8px 0;padding:8px 10px;background:var(--bg-card,rgba(255,255,255,0.04));border-radius:6px">' +
                   '<div class="tiny kicker" style="color:var(--pri)">Bénéfice mesuré · ' + esc(E.ZONES[ez].n) + '</div>' +
-                  '<div class="small"><b>' + esc(I[eres].n) + '</b> : débit actuel ' + perTime(pe.curRate) + ' → <b>' + perTime(pe.projRate) + '</b> (+' + perTime(pe.gainRate) + ')</div>' +
+                  '<div class="small"><b>' + esc(I[eres].n) + '</b> : débit actuel ' + perMin(pe.curRate) + ' → <b>' + perMin(pe.projRate) + '</b> (+' + perMin(pe.gainRate) + ')</div>' +
                   (E.isScaled(it) ? '<div class="tiny muted">Coût réel pour le ' + fmt(E.count(id) + 1) + 'e exemplaire (croissance d’échelle incluse).</div>' : '') +
                   '</div>';
               }

@@ -25,6 +25,30 @@ function seed(advanced,dark){
 async function close(p){await p.evaluate(()=>window.__eclat.closeModal());await p.waitForFunction(()=>!document.getElementById('app').inert);}
 // Les sous-fenêtres s'ouvrent après 80 ms puis ignorent les appuis pendant 450 ms.
 async function settled(p){await p.waitForTimeout(650);}
+async function allTypes(p, errors){
+  const types = new Map();
+  for (const [id, item] of Object.entries(D.ITEMS)) {
+    if (!types.has(item.t)) types.set(item.t, id);
+  }
+  types.set('ext', 'cabane'); // son gisement est ouvert dans la partie de départ
+  for (const [type, id] of types) {
+    await p.evaluate(id => {
+      const g = window.__eclat;
+      g.E.state.known[id] = true;
+      g.E.state.seen[id] = true;
+      const button = document.createElement('button');
+      button.dataset.goto = id;
+      document.querySelector('.view.on').append(button);
+      button.click();
+      button.remove();
+    }, id);
+    await settled(p);
+    ok(!errors.length, type + ' : ' + errors.join(', '));
+    ok(await p.locator('.rwin h2').textContent({timeout: 2000}) === D.ITEMS[id].n, type + ' : fiche ouverte');
+    if (type === 'ext') ok(await p.locator('.rwin .proj-box').count() > 0, 'projection de l’extracteur');
+    await close(p);
+  }
+}
 async function layout(p,tag){
   const s=await p.locator('#modal .modal-box').evaluate(box=>{
     const b=box.getBoundingClientRect(),x=box.querySelector('.modal-x')?.getBoundingClientRect();
@@ -56,6 +80,7 @@ async function run(){
     await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<8;i++){await p.waitForTimeout(100);await close(p);}
     const tag=width+'/'+advanced+'/'+dark;
+    if (width === 320 && !advanced && !dark) await allTypes(p, errors);
     await p.locator('#tabs [data-tab="journal"]').click(); /* 0.66 : le Carnet est le premier feuillet du Journal : il s’ouvre seul */ await p.waitForTimeout(300);if(!await p.locator('#cq').count())await p.locator('[data-tab2="carnet"]').click();await p.locator('#cq').fill('Manche');
     const opener=p.locator('[data-rec="manche"][data-goto="manche"]').first();
     await opener.click();await settled(p);await layout(p,tag+'/recette-manque');
