@@ -1,6 +1,6 @@
 # T5 · Métier en écran fixe
 
-**État — fait.** La branche part de T1. Le scénario « À construire » doit être adapté dans la suite d’interface.
+**État — fait.** La branche part de T1. Le scénario « À construire » vérifie la nouvelle feuille.
 
 Les recettes glissent toujours horizontalement en haut et « Fabriquer » reste au pouce, sous la recette choisie. Équipe, À construire et Ce qui tourne ont chacun une feuille dont seul le corps défile.
 
@@ -23,7 +23,7 @@ Avant, la fiche et la file étaient deux blocs et la vue défilait. Les proprié
 - `node tools/build.js` — `Build af9c94fdd3 (était 7c99e6707d)`. `npm test` — `✓ Service worker à jour (build af9c94fdd3).`
 - `node tools/test-ux.js` — `54 contrôles de tenue des vues réussis.`
 - `node tools/test-carnet-production-ui.js` — `177 contrôles du Carnet de production réussis.`
-- `node tools/test-a-construire-ui.js` — `AssertionError [ERR_ASSERTION]: la page du Bâtiment montre la section À construire`. Le test cherche la liste dans la page. Le scénario rejoué avec ouverture de la feuille a donné `12 contrôles des À construire réussis.`, dont une construction, le corps défilant et le titre fixe.
+- `node tools/test-a-construire-ui.js` — `11 contrôles des À construire réussis.` Le test ouvre la feuille, vérifie les chantiers et une construction, puis contrôle le titre fixe et la fermeture.
 - `node tools/audit-interface.js --w 320,360x640,390x700,390,430 --cas atelier` — `=== 28 anomalies brutes, 2 lignes ===  {"gênant":5,"cosmétique":23}`, contre 229 sur la branche de départ. Les cinq relevés gênants concernent le défilement horizontal voulu des recettes. Toutes les feuilles s’ouvrent dans l’audit.
 
 **Ce qui reste à vérifier sur téléphone** — Safari, encoches, clavier virtuel et sensation au doigt.
