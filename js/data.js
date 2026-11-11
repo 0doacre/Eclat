@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.66.3";
+  D.VERSION = "0.66.4";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1787,6 +1787,7 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "🌌 La Mémoire des mains a son fond : un feu qui s’éteint dans la brume, au-dessus de la fenêtre. Le réglage « Ligne d’ambiance », qui ne montrait plus rien, est retiré du menu.",
     "🔧 Au Gisement Noir, la carte « poser la mine de plomb » ne passe plus sous la plaque du nom de la terre : la page défile et ses boutons se touchent. Deux réglages du menu qui ne changeaient plus rien sont retirés (affichage compact, Carnet sur deux colonnes).",
     "🔣 Les signes du jeu sont redessinés : le menu, la croix des fenêtres, les écus, les souvenirs, l’intuition, l’objectif, le Comptoir, la Production, la boussole d’Explorer, la récolte en continu, l’étude et le retour. Le nom de chacun reste en info-bulle.",
     "🎨 Toutes les illustrations d’objets sont là : les 161 qui n’avaient qu’un signe en ont une, peinte, du Bronze aux Étoiles. Les fonds de l’Étude, de l’Atelier, du Journal et de la Progression sont refaits en grand, et l’Orbite Basse n’a plus de couture.",

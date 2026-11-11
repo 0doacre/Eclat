@@ -557,6 +557,7 @@
     }
     function openMemoire(onClose) {
       const o = {
+        cls: "memoire-fenetre",
         html: memHTML(),
         onClose,
         on: {

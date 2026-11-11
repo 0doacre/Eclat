@@ -3276,8 +3276,8 @@ test("contact de l’alpha : une adresse de remplacement jusqu’à ce qu’elle
   assert.ok(D.CONTACT && /^[^@\s]+@[^@\s]+$/.test(D.CONTACT.mail), "adresse mail");
   assert.ok(D.CONTACT.sujet && D.CONTACT.sujet.length > 3);
 });
-test("Version 0.66.3 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.66.3");
+test("Version 0.66.4 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.66.4");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3510,7 +3510,7 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.66.3");
+  assert.strictEqual(D.VERSION, "0.66.4");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);

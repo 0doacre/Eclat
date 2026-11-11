@@ -657,7 +657,6 @@
             (typeof window !== "undefined" && window.EclatSetStyleMode ? '<div class="toggle"><span id="mt-style">Style d’affichage</span><button class="btn small m-theme-btn" data-m="styleMode" aria-labelledby="mt-style" title="Carnet est le style du jeu. Atlas et Classique restent disponibles pour revenir à un ancien aspect si quelque chose s’affiche mal.">' + styleLabels[curStyle] + "</button></div>" : "") +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("barreBas", "Barre du bas masquée", st.settings.barreBas === "masquee", "La barre de navigation se range et ne laisse qu’une poignée ; elle vient quand on approche la souris du bas de l’écran ou qu’on touche la poignée. Désactivée (par défaut) : elle reste toujours visible.") +
-            sw("ambiance", "Ligne d’ambiance", st.settings.ambiance !== false, "Afficher une petite phrase sous l’en-tête qui change selon l’âge, le lieu et l’heure") +
             (App.ecranPossible() ? sw("ecran", "Garder l’écran allumé", st.settings.ecranAllume, "Empêcher la mise en veille de l’écran tant que le jeu est ouvert") : "")) +
           sec("audio", "🔊", "Audio &amp; Vibrations",
             sw("sound", "Son", st.settings.sound, "Couper ou remettre la musique et les bruitages") +
@@ -749,7 +748,6 @@
             return true;
           },
           barreBas: (b) => { st.settings.barreBas = st.settings.barreBas === "masquee" ? "visible" : "masquee"; setSw(b, st.settings.barreBas === "masquee"); save(); if (U.appliquerBarre) U.appliquerBarre(); U.dirty = true; return true; },
-          ambiance: (b) => { st.settings.ambiance = st.settings.ambiance === false ? true : false; setSw(b, st.settings.ambiance); save(); if (U.Ambiance) U.Ambiance.update(true); return true; },
           ecran: (b) => { st.settings.ecranAllume = !st.settings.ecranAllume; setSw(b, st.settings.ecranAllume); App.ecranAllume(); save(); return true; },
           installer: () => { App.installer(); },
           sound: (b) => {

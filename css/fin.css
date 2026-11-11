@@ -238,3 +238,6 @@ html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terres .terre-corps 
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terres > .dom-nouveau-gisement { grid-row: 4 !important; grid-column: 1 !important; position: relative; z-index: 3; margin: 8px 0 0 !important; background: rgb(244 236 218 / .92) !important; border: 1px solid rgb(121 105 74 / .5) !important; border-radius: 12px !important; padding: 10px 12px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine#v-domaine .terres:has(.dom-nouveau-gisement) { padding-bottom: calc(var(--nav, 64px) + var(--safe-b, 0px) + 104px) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine#v-domaine .terres { flex: 0 0 auto !important; }
+
+/* La Mémoire des mains : le fond du feu qui s'éteint se voit en haut de la fenêtre, puis le papier reprend pour la lecture */
+html[data-style-mode="vivant"] #modal#modal#modal.memoire-fenetre .modal-box { background: linear-gradient(to bottom, rgb(244 236 218 / .45) 0, rgb(244 236 218 / .88) 150px, rgb(244 236 218 / .96) 260px), url("../assets/fonds/memoire.webp") center top / cover no-repeat !important; }

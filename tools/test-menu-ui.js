@@ -115,7 +115,7 @@ test("Vérification que les boutons requis par les tests d'accessibilité sont t
   const h = modalOpened.html;
 
   const requiredDataM = [
-    "theme", "largeText", "ambiance", "ecran",
+    "theme", "largeText", "ecran",
     "sound", "vibe", "visiteurs", "tuto", "tutoAgain", "mem",
     "saves", "account", "installer", "help", "news", "credits", "reset", "close"
   ];
