@@ -50,9 +50,12 @@ async function main() {
       await p.goto("http://127.0.0.1:" + server.address().port);
       await p.waitForFunction(() => !!window.__eclat);
       for (let i = 0; i < 10; i++) { await p.waitForTimeout(120); await p.evaluate(() => window.__eclat.closeModal()); }
-      const details = p.locator('[data-terre-maitrise="desert"]');
-      await details.locator(":scope > summary").click();
-      check(await details.getAttribute("open") !== null, "objectifs dépliables à " + width);
+      // la maîtrise se lit d’un coup d’œil (bouton rond et jauge sous le nom de la terre) ; ses objectifs s’ouvrent dans un panneau
+      const rond = p.locator('#v-domaine .terre-actions [data-terre-panel="maitrise"]');
+      check((await rond.innerText()).replace(/\s/g, "") === "80%" && await p.evaluate(() => document.querySelector("#v-domaine .terre-jauge i").style.width === "80%"), "maîtrise visible sans rien ouvrir à " + width);
+      await rond.click();
+      const details = p.locator('#v-domaine .terres-panneau [data-terre-maitrise="desert"]');
+      check(await details.getAttribute("open") !== null, "objectifs dépliés dans le panneau à " + width);
       const text = await details.innerText();
       check(text.includes("80 %") && text.includes("La précision"), "progression et chapitre à " + width);
       check(text.includes("Acier trempé") && text.includes("acquis conservé") && !text.includes("Le Quai"), "ouvrage du retour et explorations acquises à " + width);
@@ -60,10 +63,12 @@ async function main() {
       check(await p.locator('[data-terre-compteur="desert:serie"]').count() === 0, "aucune série de base à refaire à " + width);
       await p.evaluate(() => { const E = window.__eclat.E; E.state.made.acier_trempe = 1; E.domExtToggle("desert", "quartz", true); E.terresCheck(); E.emit("struct"); });
       await p.waitForFunction(() => document.querySelector('[data-terre-maitrise="desert"] > summary').textContent.includes("100 %"));
-      check(await details.getAttribute("open") !== null, "ouverture conservée après progression à " + width);
+      check(await details.getAttribute("open") !== null, "panneau conservé après progression à " + width);
       check((await details.innerText()).includes("Horizon") && (await details.innerText()).includes("Gisement Noir"), "aperçu après maîtrise à " + width);
       check(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "aucun débordement à " + width);
       if (OUT) await details.screenshot({ path: path.join(OUT, "desert-" + width + ".png") });
+      await p.locator('#v-domaine .terres-panneau [data-terre-panel=""]').click();
+      check(await p.locator("#v-domaine .terres-panneau").count() === 0 && (await rond.innerText()).replace(/\s/g, "") === "100%", "panneau refermé, maîtrise à jour à " + width);
       await p.locator("#memBtn").click();
       await p.waitForTimeout(550); // protection existante contre les clics dans une fenêtre fraîche
       await p.locator('#modal [data-m="releve"]').click();

@@ -14,9 +14,9 @@ let browser, checks = 0;
 const ok = (v, m) => { assert.ok(v, m); checks++; };
 const AGES = [0, 4, 8], TAILLES = [[390, 844], [320, 568]], VERBOSE = !!process.env.UX_VERBOSE;
 /* Ce que chaque vue déborde en hauteur, en pixels, mesuré le 1er novembre 2026 (0.65.4). La règle R1 voudrait 0 partout ; le Labo défile encore
- * (l'établi, ses boutons et le résultat dépassent d'un écran de téléphone) et les Terres à 320 px aussi. Ces plafonds empêchent d'empirer ;
+ * (l'établi, ses boutons et le résultat dépassent d'un écran de téléphone). Les Terres sont un écran fixe depuis novembre 2026 (voir tools/test-terres-fixe-ui.js). Ces plafonds empêchent d'empirer ;
  * les baisser à mesure que les écrans sont resserrés. Aperçu sobriété (0.66) : le Labo tient dans 390 × 844, la page d'un métier tient presque dans un écran. */
-const PLAFOND = { "390x844": { Terres: 0, Labo: 0, Atelier: 0, Métier: 60 }, "320x568": { Terres: 70, Labo: 270, Atelier: 0, Métier: 400 } };
+const PLAFOND = { "390x844": { Terres: 0, Labo: 0, Atelier: 0, Métier: 60 }, "320x568": { Terres: 0, Labo: 270, Atelier: 0, Métier: 400 } };
 /* une partie à l'âge donné : les recettes des âges atteints sont connues, des ressources en réserve */
 function partie(age) {
   const E = Core.createEngine(), s = E.state;

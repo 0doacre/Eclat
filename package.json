@@ -27,6 +27,7 @@
     "test:reprise": "node tools/test-reprise.js",
     "test:territoires": "node tools/test-territoires.js",
     "test:territoires-ui": "node tools/test-territoires-ui.js",
+    "test:terres-fixe": "node tools/test-terres-fixe-ui.js",
     "test:atlas": "node tools/test-atlas-ui.js",
     "test:archives": "node tools/test-archives-ui.js",
     "test:fiches": "node tools/test-fiches-ui.js",
