@@ -71,6 +71,7 @@
         (firstWake ? '<button class="btn ghost wide" data-m="sansguide" title="Jouer sans les bulles d’explication (réactivable dans le Menu)">Sans guide</button>' : "") + "</div>";
       openModal({
         persistent: true,
+        cls: "ouverture",
         html: html(),
         refresh: html,
         on: {

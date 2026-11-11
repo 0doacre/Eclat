@@ -149,6 +149,12 @@ html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn.pri, .forg
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri)::before { background: transparent !important; border-color: transparent !important; box-shadow: none; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri) { text-decoration: underline; text-underline-offset: 3px; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .acts { gap: 8px; }
+/* ouverture : le récit défile dans son cadre, le pied (« Ouvrir les yeux » et les deux réglages) reste en bas */
+#modal.ouverture .modal-box { display: flex; flex-direction: column; overflow: hidden; }
+#modal.ouverture .modal-box > .lore { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+#modal.ouverture .modal-box > .acts { flex: none; margin-top: 8px; padding-top: 10px; }
+#modal.ouverture .modal-box > .acts .btn.pri { flex: 1 0 100%; }
+#modal.ouverture .modal-box > .acts .btn.ghost { flex: 1 1 0; min-width: 0; padding-inline: 6px; }
 
 /* Terres : les icônes grandes tiennent dans la hauteur de l’écran (la vue ne défile pas à 390 × 844) */
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout, html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte { width: 58px !important; height: 58px !important; min-width: 58px !important; }
