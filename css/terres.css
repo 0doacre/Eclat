@@ -44,7 +44,7 @@
   opacity: var(--terre-opacite); pointer-events: none;
   mask-image: linear-gradient(#000 0%, #000 24%, #0009 55%, transparent 92%);
 }
-.terre-regle { margin-block: 4px 8px; padding: 4px 6px; color: #30271e; background: #f4ecdaed; font-size: 14px; line-height: 1.3; }
+.terre-regle { margin-block: 4px 8px; padding: 4px 6px; color: #30271e; background: #f4ecdaed; font-size: calc(14px * var(--sb-texte)); line-height: 1.3; }
 .terre-gisements {
   min-width: 0; padding: 0 8px; border-block: 1px solid #79694a;
   /* 98 % de papier, même sur le pixel noir le plus défavorable. */
@@ -68,7 +68,7 @@
 .feuille-atlas .a-active { stroke: #813f2a; stroke-width: 3; stroke-dasharray: 4 3; }
 @media (max-height: 620px) {
   .terre-page { padding: 4px 8px; }
-  .terre-regle { margin-block: 2px 4px; font-size: 13px; }
+  .terre-regle { margin-block: 2px 4px; font-size: calc(13px * var(--sb-texte)); }
   .terre-bas { margin-top: 4px; padding-block: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {

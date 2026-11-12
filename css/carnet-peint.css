@@ -67,30 +67,30 @@ html[data-style-mode="vivant"] #v-domaine{max-width:1220px;margin-inline:auto;wi
 html[data-style-mode="vivant"] #v-domaine .carnet-terre{padding:28px 30px;margin:24px 0 36px;border:0!important;border-radius:0;background:var(--paint-paper) center/cover var(--bg);box-shadow:none;isolation:isolate;position:relative}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre::before{content:"";display:block;position:absolute;inset:0;padding:0;border:22px solid transparent!important;border-image:var(--paint-frame) 78/22px/0 stretch!important;pointer-events:none;z-index:-1;background:none}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre::after{content:none}
-.carnet-running{display:flex;justify-content:space-between;gap:12px;font:12px/1.4 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:0 4px 12px}
+.carnet-running{display:flex;justify-content:space-between;gap:12px;font:calc(12px * var(--sb-texte))/1.4 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:0 4px 12px}
 .carnet-land-header{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.35fr);align-items:center;gap:10px;min-height:340px}
 .carnet-land-header.sans-paysage{grid-template-columns:1fr;min-height:0}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-height:0;padding:18px 6px;margin:0;border:0;background:none;gap:14px}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th h3{font:400 clamp(42px,5.8vw,76px)/1.06 var(--serif);color:var(--text);letter-spacing:-.035em;text-shadow:none;margin:0;overflow-wrap:break-word}
-.carnet-observation{font:700 25px/1.25 "Caveat",cursive;color:var(--muted);margin:4px 0 12px;max-width:34ch}
+.carnet-observation{font:700 calc(25px * var(--sb-texte))/1.25 "Caveat",cursive;color:var(--muted);margin:4px 0 12px;max-width:34ch}
 .carnet-landscape{margin:0 -12px 0 -22px;min-width:0;text-align:center}
 .carnet-landscape img{display:block;width:100%;height:auto;max-height:440px;object-fit:contain;mix-blend-mode:multiply}
 .carnet-landscape-existing img{max-height:320px;mask-image:radial-gradient(ellipse 64% 60% at center,#000 40%,transparent 83%);filter:saturate(.6)}
-.carnet-landscape figcaption{font:14px var(--serif);color:var(--muted);padding:8px 0 16px}
+.carnet-landscape figcaption{font:calc(14px * var(--sb-texte)) var(--serif);color:var(--muted);padding:8px 0 16px}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{display:grid!important;grid-template-columns:106px minmax(0,1fr) auto!important;align-items:center;gap:12px!important;min-height:112px;padding:18px 4px!important;margin:0!important;border:0!important;border-bottom:8px solid transparent!important;border-image:var(--paint-frame) 0 0 78 0/0 0 8px 0/0 stretch!important;border-radius:0!important;background:none!important;box-shadow:none!important}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{grid-column:1;width:96px!important;height:96px!important;min-width:44px;flex:none!important;padding:4px;margin:0!important;border:0!important;border-image:none!important;background:none!important;box-shadow:none!important;border-radius:0!important;justify-self:center}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic::after{content:none}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic :is(.living-carnet-img,.ic){width:100%!important;height:100%!important;object-fit:contain;border:0;background:none;box-shadow:none}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-body{grid-column:2;padding:8px 0;min-width:0;min-height:44px;background:none;border:0;color:var(--text);text-align:left}
-html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{display:flex;align-items:baseline;gap:8px 16px;flex-wrap:wrap;font:400 28px/1.25 var(--serif)}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{display:flex;align-items:baseline;gap:8px 16px;flex-wrap:wrap;font:400 calc(28px * var(--sb-texte))/1.25 var(--serif)}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1 b{font:inherit;color:var(--text)}
-html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{display:block;font:16px/1.45 var(--sans);margin-top:8px;color:var(--muted)}
-html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-rate{font:16px/1.4 var(--sans);border:0;background:none;box-shadow:none;color:var(--muted);padding:0}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{display:block;font:calc(16px * var(--sb-texte))/1.45 var(--sans);margin-top:8px;color:var(--muted)}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-rate{font:calc(16px * var(--sb-texte))/1.4 var(--sans);border:0;background:none;box-shadow:none;color:var(--muted);padding:0}
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b{grid-column:3;display:flex;flex-direction:column;gap:6px;min-width:0;max-width:210px}
-html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{width:100%;font-size:18px;line-height:1.25;white-space:normal;max-width:100%;padding:14px 20px}
+html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{width:100%;font-size:calc(18px * var(--sb-texte));line-height:1.25;white-space:normal;max-width:100%;padding:14px 20px}
 html[data-style-mode="vivant"] #v-domaine :is(.goal-card,.dom-card,.dom-tip,.releve-alerte){background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;border-bottom:1px solid var(--line2)!important;color:var(--text);padding:18px 16px!important;margin:8px 0 16px}
-html[data-style-mode="vivant"] #v-domaine :is(.dom-card,.releve-alerte,.goal-card) h3{font:400 28px/1.2 var(--serif);color:var(--text)}
-html[data-style-mode="vivant"] #v-domaine .dom-regle{border:0;background:none;padding:8px;font:16px/1.5 var(--sans)}
+html[data-style-mode="vivant"] #v-domaine :is(.dom-card,.releve-alerte,.goal-card) h3{font:400 calc(28px * var(--sb-texte))/1.2 var(--serif);color:var(--text)}
+html[data-style-mode="vivant"] #v-domaine .dom-regle{border:0;background:none;padding:8px;font:calc(16px * var(--sb-texte))/1.5 var(--sans)}
 html[data-style-mode="vivant"] #v-domaine .territoire-maitrise{background:transparent;border-color:var(--line2);border-radius:0}
 html[data-style-mode="vivant"] #v-domaine .dom-more{border-color:var(--line2);background:transparent;color:var(--text);min-height:44px}
 html[data-style-mode="vivant"] :is(.dom-epi,.amb-txt){color:var(--muted);text-shadow:none}
@@ -99,18 +99,18 @@ html[data-style-mode="vivant"] body[data-carnet-era="releves"] #v-domaine .carne
 @media(max-width:680px){
   html[data-style-mode="vivant"] #v-domaine{padding-inline:5px}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre{padding:24px 18px;margin-top:16px}
-  .carnet-running{font-size:10px;letter-spacing:.08em}
+  .carnet-running{font-size:calc(10px * var(--sb-texte));letter-spacing:.08em}
   .carnet-land-header{display:flex;flex-direction:column;align-items:stretch;min-height:0;gap:0}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th{padding:12px 4px;gap:10px}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th h3{font-size:46px}
-  .carnet-observation{font-size:23px;margin-bottom:2px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th h3{font-size:calc(46px * var(--sb-texte))}
+  .carnet-observation{font-size:calc(23px * var(--sb-texte));margin-bottom:2px}
   .carnet-landscape{margin:0 -10px 10px}.carnet-landscape img{max-height:300px}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{grid-template-columns:74px minmax(0,1fr)!important;gap:8px 12px!important;padding:14px 0!important}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{width:74px!important;height:74px!important}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;max-width:none;width:100%;gap:6px}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{flex:1 1 100px;font-size:17px;min-height:48px;padding:14px 16px}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:24px;gap:6px}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{font-size:15px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{flex:1 1 100px;font-size:calc(17px * var(--sb-texte));min-height:48px;padding:14px 16px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:calc(24px * var(--sb-texte));gap:6px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{font-size:calc(15px * var(--sb-texte))}
   html[data-style-mode="vivant"] #v-domaine :is(.goal-card,.dom-card,.dom-tip,.releve-alerte){padding-inline:10px!important}
   html[data-style-mode="vivant"] #modal .modal-box{padding:16px 10px!important;border-width:12px!important;border-image-width:12px!important}
 }
@@ -121,17 +121,17 @@ html[data-style-mode="vivant"] body[data-carnet-era="releves"] #v-domaine .carne
   .carnet-landscape img{width:100%;height:auto;max-height:180px;object-fit:contain}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre{padding:16px 12px;margin:12px 0 18px}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th h3{font-size:clamp(28px,8vw,40px)}
-  .carnet-observation{font-size:20px}
+  .carnet-observation{font-size:calc(20px * var(--sb-texte))}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{min-height:0;grid-template-columns:56px minmax(0,1fr)!important;padding:8px 0!important;gap:6px 8px!important}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{width:56px!important;height:56px!important}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:21px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:calc(21px * var(--sb-texte))}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{margin-top:3px}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{padding:8px 10px;font-size:16px;min-height:44px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{padding:8px 10px;font-size:calc(16px * var(--sb-texte));min-height:44px}
 }
 /* Les règles peintes ne doivent pas neutraliser le réglage compact. */
 html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-terre .gis{min-height:0;padding:4px 0!important;grid-template-columns:44px minmax(0,1fr)!important;gap:4px 8px!important}
 html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-terre .gis-ic{width:44px!important;height:44px!important}
-html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-terre .gis-l1{font-size:18px}
+html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-terre .gis-l1{font-size:calc(18px * var(--sb-texte))}
 html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-landscape img{max-height:120px}
 html[data-style-mode="vivant"] #v-domaine .dom-dense .carnet-land-header{min-height:0}
 /* Les lignes compactes ont deux colonnes explicites : les commandes ne créent
@@ -151,7 +151,7 @@ html[data-style-mode="vivant"] #v-domaine .terre-maitrise>summary{min-height:44p
   html[data-style-mode="vivant"] #v-domaine .carnet-land-header .kicker{display:none}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th{gap:6px;padding:6px 2px}
   html[data-style-mode="vivant"] body[data-carnet-era] #v-domaine .carnet-terre .dom-th h3{font-size:clamp(27px,7.3vw,34px);line-height:1.12}
-  html[data-style-mode="vivant"] #v-domaine .carnet-observation{font-size:18px;line-height:1.25;margin:2px 0 4px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-observation{font-size:calc(18px * var(--sb-texte));line-height:1.25;margin:2px 0 4px}
   html[data-style-mode="vivant"] #v-domaine .carnet-running{padding-bottom:5px}
   html[data-style-mode="vivant"] #v-domaine .carnet-landscape figcaption{display:none}
   html[data-style-mode="vivant"] #v-domaine .carnet-landscape-existing img{height:clamp(120px,42vw,180px);max-height:180px}
@@ -161,7 +161,7 @@ html[data-style-mode="vivant"] #v-domaine .terre-maitrise>summary{min-height:44p
   html[data-style-mode="vivant"] #v-domaine :is(.goal-card,.dom-card,.dom-tip,.releve-alerte){padding:8px 10px!important;margin:4px 0 8px}
   html[data-style-mode="vivant"] #v-domaine .goal-card .ghead-row{flex-wrap:nowrap;gap:6px}
   html[data-style-mode="vivant"] #v-domaine .goal-card .ghead{flex:1 1 auto;min-height:44px}
-  html[data-style-mode="vivant"] #v-domaine .goal-card .gname{font-size:21px}
+  html[data-style-mode="vivant"] #v-domaine .goal-card .gname{font-size:calc(21px * var(--sb-texte))}
   html[data-style-mode="vivant"] #v-domaine .goal-card .gprog-row{margin-block:3px;gap:8px;min-height:44px}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l2{white-space:normal;overflow-wrap:normal;text-align:left}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-body{justify-self:stretch;min-width:0;width:100%;text-align:left}
@@ -179,19 +179,19 @@ html[data-style-mode="vivant"] #v-domaine .terre-maitrise>summary{min-height:44p
   html[data-style-mode="vivant"] #top #menuBtn{grid-column:6;grid-row:1}
   html[data-style-mode="vivant"] #top :is(#cloudBtn,#tutoMini,#expMini){grid-row:2}
   html[data-style-mode="vivant"] #top :is(.chip,.icon-btn){padding:4px 2px!important;min-width:44px;width:44px;height:44px;min-height:44px;gap:1px;font-size:11px;justify-content:center}
-  html[data-style-mode="vivant"] #top #menuBtn{font-size:22px}
+  html[data-style-mode="vivant"] #top #menuBtn{font-size:calc(22px * var(--sb-texte))}
   html[data-style-mode="vivant"] #top .chip .cv small{display:none}
-  html[data-style-mode="vivant"] #top .quest .cv small{display:inline;font-size:11px}
+  html[data-style-mode="vivant"] #top .quest .cv small{display:inline;font-size:calc(11px * var(--sb-texte))}
   html[data-style-mode="vivant"] #top .quest .cv b{display:none}
-  html[data-style-mode="vivant"] #top .chip .cv b{font-size:11px}
-  html[data-style-mode="vivant"] #top #ageName{font-size:17px;line-height:1.1}
+  html[data-style-mode="vivant"] #top .chip .cv b{font-size:calc(11px * var(--sb-texte))}
+  html[data-style-mode="vivant"] #top #ageName{font-size:calc(17px * var(--sb-texte));line-height:1.1}
   html[data-style-mode="vivant"] #top .age-bar-track{margin-top:4px;height:3px}
   html[data-style-mode="vivant"]{--nav:56px}
   html[data-style-mode="vivant"] #tabs{min-height:calc(56px + var(--safe-b));height:calc(56px + var(--safe-b))}
   html[data-style-mode="vivant"] body.has-act .view{padding-bottom:calc(56px + var(--safe-b) + var(--actbar-h, 54px) + 24px)}
 }
 @media (max-width: 340px) {
-  html[data-style-mode="vivant"] #top #ageName{font-size:16px}
+  html[data-style-mode="vivant"] #top #ageName{font-size:calc(16px * var(--sb-texte))}
 }
 @media(forced-colors:active){html[data-style-mode="vivant"] :is(#app,#modal) :is(button,input,select,.modal-box){border:1px solid CanvasText!important;border-image:none!important;background:Canvas!important;color:CanvasText!important}html[data-style-mode="vivant"] :is(#app,#modal) button::before{display:none}}
 
@@ -267,8 +267,8 @@ body[data-ep] :is(.ring.ok,.ring.lack,.badge-ready){background:var(--panel2)}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis{grid-template-columns:48px minmax(0,1fr) auto!important;gap:4px 6px!important;padding-block:5px!important}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-ic{width:48px!important;height:48px!important}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b{grid-column:3!important;grid-row:1;flex-direction:column;width:auto;max-width:100px}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{flex:0 0 auto;padding:6px;font-size:15px}
-  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:20px;gap:2px}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-b .mini{flex:0 0 auto;padding:6px;font-size:calc(15px * var(--sb-texte))}
+  html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-l1{font-size:calc(20px * var(--sb-texte));gap:2px}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis-body{padding-block:3px}
   html[data-style-mode="vivant"] #v-domaine .carnet-observation{line-height:1.2;margin-block:2px}
 }
@@ -279,7 +279,7 @@ body[data-ep] :is(.ring.ok,.ring.lack,.badge-ready){background:var(--panel2)}
 @media(min-width:361px) and (max-width:680px){
   html[data-style-mode="vivant"] #v-domaine .carnet-land-header{display:grid;grid-template-columns:minmax(0,1fr) 110px;align-items:center;gap:6px}
   html[data-style-mode="vivant"] #v-domaine .carnet-land-header .carnet-landscape{width:100%;margin:0}
-  html[data-style-mode="vivant"] body[data-carnet-era] #v-domaine .carnet-terre .dom-th h3{font-size:28px}
+  html[data-style-mode="vivant"] body[data-carnet-era] #v-domaine .carnet-terre .dom-th h3{font-size:calc(28px * var(--sb-texte))}
 }
 html[data-style-mode="vivant"] #v-domaine .carnet-terre.dom-terre-fermee {
   padding: 14px 16px 14px !important;
@@ -333,23 +333,23 @@ html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-co
 }
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-name {
   font-family: var(--serif);
-  font-size: 13px !important;
+  font-size: calc(13px * var(--sb-texte)) !important;
   line-height: 1.1;
   color: var(--text);
 }
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-c {
-  font-size: 12px !important;
+  font-size: calc(12px * var(--sb-texte)) !important;
   line-height: 1.1;
   font-weight: 700;
   color: var(--text);
 }
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-rate {
-  font-size: 11px !important;
+  font-size: calc(11px * var(--sb-texte)) !important;
   color: var(--good);
   min-height: 14px;
 }
 html[data-style-mode="vivant"] #v-domaine .carnet-terre .gis.gis-compact .gis-compact-add {
-  font-size: 11px !important;
+  font-size: calc(11px * var(--sb-texte)) !important;
   padding: 6px 4px !important;
   min-height: 44px !important;
   width: 100% !important;

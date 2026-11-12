@@ -6,7 +6,7 @@
 #v-labo .atl-titre { display: none; }                 /* le nom de l'onglet suffit */
 #v-labo .ae-legende { display: none; }                /* le nom de l'outil reste en info-bulle et en étiquette */
 .atelier-equipe .ae-slots > .btn { min-height: var(--ae-slot-height, 72px) !important; padding: 4px 3px; }
-.atelier-equipe .ae-slots small { font-size: 11px; }
+.atelier-equipe .ae-slots small { font-size: calc(11px * var(--sb-texte)); }
 #v-labo .ae-actions { margin-top: 8px; }
 /* ======================= Étude : un écran fixe =======================
  * Applique le modèle des Terres (colonne flex de la hauteur de la vue).
@@ -108,6 +108,11 @@
   justify-content: flex-end;
 }
 #v-labo .ae-etude > .btn { white-space: nowrap; }
+/* T9 · Grand texte sur 320 px : le coût de l'étude ne tient plus à côté des filtres, il passe sur sa rangée */
+@media (max-width: 359px) {
+  body.large-text #v-labo .ae-layout > .ae-stock { grid-template-rows: auto auto auto 1fr; grid-template-areas: "filtres filtres" "etude etude" "search search" "inv inv"; }
+  body.large-text #v-labo .ae-etude { justify-content: flex-start; }
+}
 
 #v-labo .ae-stock-search {
   grid-area: search;
@@ -181,8 +186,8 @@
 #v-carnet .list.tiles { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)) !important; gap: 8px; padding: 4px 0; }
 #v-carnet .list.tiles > :not(.rec-tile) { grid-column: 1 / -1; }
 #v-carnet .rec-tile, .rec-tile { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px; min-height: 88px; padding: 8px 4px 6px; text-align: center; cursor: pointer; font: inherit; color: inherit; background: var(--panel2, rgba(255, 248, 233, .6)); border: 1px solid var(--line2, #79694a66); border-radius: 10px; }
-.rec-tile .rt-n { font-size: 12px; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.rec-tile .rt-e { position: absolute; top: 3px; right: 6px; font-style: normal; font-size: 12px; color: var(--pri, #813f2a); }
+.rec-tile .rt-n { font-size: calc(12px * var(--sb-texte)); line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rec-tile .rt-e { position: absolute; top: 3px; right: 6px; font-style: normal; font-size: calc(12px * var(--sb-texte)); color: var(--pri, #813f2a); }
 .rec-tile.owned { opacity: .7; }
 .rec-tile.neuf { border-color: var(--pri, #813f2a); }
 .rec-tile.futur { opacity: .55; border-style: dashed; }
@@ -236,7 +241,7 @@ body:has(#v-domaine:not(.on)) #ambianceBar{display:none}
 /* Pastilles du haut des Terres : de petites plaques sombres translucides sur le décor, plus de gros boutons de papier */
 html[data-style-mode="vivant"] #app #v-domaine .terres :is(.terres-pastille,.terre-nav){border:1px solid rgba(255,248,233,.5)!important;border-radius:22px!important;background:rgba(28,21,14,.58)!important;color:#fff8e9!important;text-shadow:0 1px 2px rgba(0,0,0,.7);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 html[data-style-mode="vivant"] #app #v-domaine .terres :is(.terres-pastille,.terre-nav)::before{content:none!important;display:none}
-html[data-style-mode="vivant"] #app #v-domaine .terres .terres-pastille{flex:0 1 auto;width:auto;max-width:100%;padding:6px 14px;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-style-mode="vivant"] #app #v-domaine .terres .terres-pastille{flex:0 1 auto;width:auto;max-width:100%;padding:6px 14px;font-size:calc(15px * var(--sb-texte));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav{min-width:44px;padding:0}
 html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opacity:.35}
 #v-domaine .terres>.terres-pastilles{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start}
@@ -269,7 +274,7 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-atelier .prod-raccourcis > button { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; min-width: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; }
 #v-atelier .prod-raccourcis > button :is(.gi, .roue) { display: inline-flex; width: 26px; height: 26px; }
 #v-atelier .prod-raccourcis > .is-bloque { color: #a8402b; }
-#v-atelier .prod-raccourcis .roue-n { position: absolute; top: 1px; right: -1px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: #3b2a1a; color: #fff8e9; font: 700 11px/17px var(--sans, system-ui); font-variant-numeric: tabular-nums; text-align: center; }
+#v-atelier .prod-raccourcis .roue-n { position: absolute; top: 1px; right: -1px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: #3b2a1a; color: #fff8e9; font: 700 calc(11px * var(--sb-texte))/17px var(--sans, system-ui); font-variant-numeric: tabular-nums; text-align: center; }
 #v-atelier .prod-raccourcis .roue-n.zero { display: none; }
 #v-atelier .prod-qui > button[data-prod="main"] { flex: 1 1 0; min-width: 0; }
 #v-atelier .prod-qui > button[data-prod="apprenti"] { flex: 0 0 48px; }

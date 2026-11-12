@@ -42,7 +42,7 @@ html[data-style-mode="vivant"] :is(.terres-pastille, .ouvre)::after { content: "
 /* ---- ONGLET : texte souligné, aucun cadre ---- */
 html[data-style-mode="vivant"] #app :is(.subtabs button, #v-arbre .prog-sw button, #v-journal .filters button, #v-cosmos .filters button, #v-labo .ae-metiers .btn) {
   position: static; min-height: 44px; padding: 8px 12px; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important;
-  background: transparent !important; box-shadow: none !important; color: var(--muted) !important; font-family: var(--serif); font-size: 15px; white-space: nowrap;
+  background: transparent !important; box-shadow: none !important; color: var(--muted) !important; font-family: var(--serif); font-size: calc(15px * var(--sb-texte)); white-space: nowrap;
 }
 html[data-style-mode="vivant"] #app :is(.subtabs button, #v-arbre .prog-sw button, #v-journal .filters button, #v-cosmos .filters button, #v-labo .ae-metiers .btn)::before,
 html[data-style-mode="vivant"] #app :is(.subtabs button, #v-arbre .prog-sw button, #v-journal .filters button, #v-cosmos .filters button, #v-labo .ae-metiers .btn)::after { display: none !important; }
@@ -54,14 +54,14 @@ html[data-style-mode="vivant"] #v-arbre .prog-sw, html[data-style-mode="vivant"]
 }
 html[data-style-mode="vivant"] #modal .quest-tabs button {
   position: static; min-height: 44px; padding: 8px 12px; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important;
-  background: transparent !important; box-shadow: none !important; color: var(--muted) !important; font-family: var(--serif); font-size: 15px;
+  background: transparent !important; box-shadow: none !important; color: var(--muted) !important; font-family: var(--serif); font-size: calc(15px * var(--sb-texte));
 }
 html[data-style-mode="vivant"] #modal .quest-tabs button.on { color: var(--acc) !important; border-bottom-color: var(--acc) !important; font-weight: 700; }
 
 /* les trois boutons du haut des Terres se partagent la largeur (le texte long est tronqué plutôt que rejeté hors de l'écran) */
 @media (max-width: 520px) {
   html[data-style-mode="vivant"] .terres-pastilles { overflow-x: hidden; }
-  html[data-style-mode="vivant"] :is(#app) .terres-pastille { flex: 1 1 0; min-width: 0; padding: 8px 10px; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  html[data-style-mode="vivant"] :is(#app) .terres-pastille { flex: 1 1 0; min-width: 0; padding: 8px 10px; font-size: calc(14px * var(--sb-texte)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   html[data-style-mode="vivant"] .terres-pastille::after { margin-left: 4px; }
 }
 
@@ -136,7 +136,7 @@ html[data-style-mode="vivant"] :is([data-fit], .terres-pastille, .chip, .arb-fil
 /* l'objectif porte un nom variable (« Four en argile ») : il prend sa propre ligne, les deux autres panneaux se partagent la suivante */
 @media (max-width: 520px) {
   html[data-style-mode="vivant"] .terres-pastilles { flex-wrap: wrap; overflow-x: visible; }
-  html[data-style-mode="vivant"] #app .terres-pastille[data-terre-panel="obj"] { flex: 1 1 100%; font-size: 15px; }
+  html[data-style-mode="vivant"] #app .terres-pastille[data-terre-panel="obj"] { flex: 1 1 100%; font-size: calc(15px * var(--sb-texte)); }
 }
 
 /* ---- Menu : ses rubriques sont des onglets comme les autres (texte souligné, rien d'autre) ---- */
@@ -150,7 +150,7 @@ html[data-style-mode="vivant"] #modal .menu-wrap > .acts { display: none; }
 html[data-style-mode="vivant"] #modal .save-act-card.pri :is(.muted, .tiny) { color: inherit !important; opacity: .9; }
 
 /* ---- Progression : les matières vues sont à part des recettes ---- */
-html[data-style-mode="vivant"] #v-arbre .arb-sous { margin: 8px 8px 4px; font: 700 12px/1.2 var(--serif); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+html[data-style-mode="vivant"] #v-arbre .arb-sous { margin: 8px 8px 4px; font: 700 calc(12px * var(--sb-texte))/1.2 var(--serif); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 
 /* ---- Labo : « Vider » rejoint la rangée des gestes (à droite), grisé quand l'établi est vide ---- */
 html[data-style-mode="vivant"] #v-labo .ae-gestes .ae-vider { margin-left: auto; }
@@ -158,7 +158,7 @@ html[data-style-mode="vivant"] #v-labo .ae-gestes .ae-vider { margin-left: auto;
 /* ---- Labo : le message de l'établi (fabriqué, chaud, tiède…) est un cadre de la D.A. ; la couleur du cadre dit la température ---- */
 html[data-style-mode="vivant"] #v-labo #ae-result {
   position: relative; isolation: isolate; box-sizing: border-box; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; animation: none !important;
-  color: var(--text) !important; font-family: var(--serif); font-size: 16px; line-height: 1.3; padding: 12px 22px !important; min-height: 48px; margin: 12px 0 6px; --cadre-b: 12px; --tuile: var(--cadre-papier);
+  color: var(--text) !important; font-family: var(--serif); font-size: calc(16px * var(--sb-texte)); line-height: 1.3; padding: 12px 22px !important; min-height: 48px; margin: 12px 0 6px; --cadre-b: 12px; --tuile: var(--cadre-papier);
 }
 html[data-style-mode="vivant"] #v-labo #ae-result::before {
   content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; box-sizing: border-box;

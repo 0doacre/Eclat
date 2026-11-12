@@ -7,14 +7,14 @@
   border-bottom: 1px solid var(--line2); position: sticky; top: 0; z-index: 3;
 }
 .atlas-map-title { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
-.atlas-map-title h2 { margin: 0; font: 400 25px/1.2 "IM Fell English",serif; color: var(--text); }
-.atlas-map-title span { font: 500 12px/1.5 "IBM Plex Mono",monospace; color: var(--muted); }
+.atlas-map-title h2 { margin: 0; font: 400 calc(25px * var(--sb-texte))/1.2 "IM Fell English",serif; color: var(--text); }
+.atlas-map-title span { font: 500 calc(12px * var(--sb-texte))/1.5 "IBM Plex Mono",monospace; color: var(--muted); }
 .atlas-map-actions { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
 .atlas-map-actions button {
   display: inline-flex; align-items: center; justify-content: center; gap: 5px;
   min-width: 44px; min-height: 44px; padding: 6px 11px; border: 1px solid var(--line2);
   border-radius: 8px; color: var(--text); background: var(--panel);
-  font: 500 15px/1.2 "Alegreya Sans",sans-serif; cursor: pointer; touch-action: manipulation;
+  font: 500 calc(15px * var(--sb-texte))/1.2 "Alegreya Sans",sans-serif; cursor: pointer; touch-action: manipulation;
 }
 .atlas-map-actions button:last-child { margin-left: auto; }
 .atlas-map-actions .gi { width: 18px; height: 18px; }
@@ -26,12 +26,12 @@
 .atlas-world .a-button { cursor: pointer; color: #3c392c; touch-action: manipulation; }
 .atlas-world .a-hit { fill: #000; fill-opacity: 0.001; stroke: none; pointer-events: all; }
 .atlas-world .a-name {
-  fill: #302f24; font: 400 23px "IM Fell English",serif; text-anchor: middle;
+  fill: #302f24; font: 400 calc(23px * var(--sb-texte)) "IM Fell English",serif; text-anchor: middle;
   paint-order: stroke; stroke: #f3eddd; stroke-width: 4px; stroke-linejoin: round;
   pointer-events: none;
 }
 .atlas-world .a-place-name {
-  fill: #292c21; font: 500 18px "Alegreya Sans",sans-serif;
+  fill: #292c21; font: 500 calc(18px * var(--sb-texte)) "Alegreya Sans",sans-serif;
   stroke: #f4efde; stroke-width: 5px; stroke-linejoin: round; paint-order: stroke;
   pointer-events: auto;
 }
@@ -45,10 +45,10 @@
 .atlas-world .a-camp { color: #fff8e4; }
 .atlas-world .a-camp-pin { fill: #85602d; stroke: #fff7df; stroke-width: 3; pointer-events: none; }
 .atlas-world .a-frontier-hit { fill: #f0eddf; fill-opacity: .78; stroke: none; }
-.atlas-world .a-hint { fill: #57594d; font: italic 19px "IM Fell English",serif; text-anchor: middle; pointer-events: none; }
-.atlas-world .a-north { fill: #565345; text-anchor: middle; font: 16px "IM Fell English",serif; }
+.atlas-world .a-hint { fill: #57594d; font: italic calc(19px * var(--sb-texte)) "IM Fell English",serif; text-anchor: middle; pointer-events: none; }
+.atlas-world .a-north { fill: #565345; text-anchor: middle; font: calc(16px * var(--sb-texte)) "IM Fell English",serif; }
 .atlas-world .a-pass-bg { fill: #66502e; stroke: #fff5dc; stroke-width: 2; }
-.atlas-world .a-pass-text { fill: #fff7e4; text-anchor: middle; font: 700 18px "Alegreya Sans",sans-serif; pointer-events: none; }
+.atlas-world .a-pass-text { fill: #fff7e4; text-anchor: middle; font: 700 calc(18px * var(--sb-texte)) "Alegreya Sans",sans-serif; pointer-events: none; }
 .atlas-world .a-button:focus-visible { outline: none; }
 .atlas-world .a-button:focus-visible .a-hit,
 .atlas-world .a-button:focus-visible .a-frontier-hit,
@@ -84,10 +84,7 @@ body:not([data-tab="carte"]) .atlas-world :is(.a-fog-drift,.a-fog-edge) { animat
 .atlas-world .a-celestial-node:focus-visible .a-frontier-hit { stroke: #fff1c4; }
 .atlas-world .a-check { fill: none; stroke: #3c563d; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
 .atlas-world .a-underground rect { fill: #e0e4dc; stroke: #8d9b93; stroke-width: 1; }
-.atlas-world .a-underground text { fill: #57594d; font: italic 18px "IM Fell English",serif; text-anchor: middle; }
-body.large-text .atlas-map-actions button { font-size: 17px; }
-body.large-text .atlas-world .a-place-name { font-size: 20px; }
-body.large-text .atlas-world .a-name { font-size: 25px; }
+.atlas-world .a-underground text { fill: #57594d; font: italic calc(18px * var(--sb-texte)) "IM Fell English",serif; text-anchor: middle; }
 @media (max-width: 360px) {
   #v-carte .atlas-carte .atlas-map-heading { padding-inline: 10px; }
   .atlas-map-actions { gap: 5px; }

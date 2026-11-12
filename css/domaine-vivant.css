@@ -258,7 +258,7 @@
 
 /* Compteur de frappe flottant en mode Vivant : centré au-dessus du nœud */
 [data-style-mode="vivant"] .gis > .hcount {
-  font-size: 14.5px;
+  font-size: calc(14.5px * var(--sb-texte));
   font-weight: 800;
   border-radius: 999px;
   padding: 3px 10px;
@@ -661,7 +661,7 @@ body.theme-dark {
 
 [data-style-mode="vivant"] .m-title-text {
   font-family: var(--serif) !important;
-  font-size: 28px !important;
+  font-size: calc(28px * var(--sb-texte)) !important;
   letter-spacing: 0.1em !important;
   color: var(--drawn-ink) !important;
   text-shadow: none !important;
@@ -735,13 +735,13 @@ body.theme-dark {
   justify-content: center;
   gap: 16px;
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: calc(20px * var(--sb-texte));
   min-height: 52px;
   margin-bottom: 14px;
   cursor: pointer;
 }
 [data-style-mode="vivant"] .resume-btn span {
-  font-size: 24px;
+  font-size: calc(24px * var(--sb-texte));
 }
 
 /* 3. Séparateurs et filets d'encre */
@@ -774,7 +774,7 @@ body.theme-dark {
   background: transparent !important;
   border-radius: 0 !important;
   color: var(--drawn-muted) !important;
-  font-size: 14px !important;
+  font-size: calc(14px * var(--sb-texte)) !important;
   font-weight: 600 !important;
   position: relative;
   min-height: 42px;
@@ -829,7 +829,7 @@ body.theme-dark {
 
 [data-style-mode="vivant"] .menu-sec-head .sub {
   font-family: var(--serif) !important;
-  font-size: 16px !important;
+  font-size: calc(16px * var(--sb-texte)) !important;
   letter-spacing: 0.04em !important;
   color: var(--drawn-ink) !important;
   text-transform: none !important;
@@ -853,7 +853,7 @@ body.theme-dark {
   background: transparent !important;
   box-shadow: none !important;
   color: var(--drawn-muted) !important;
-  font-size: 11px;
+  font-size: calc(11px * var(--sb-texte));
 }
 
 [data-style-mode="vivant"] .btn.sw.on {
