@@ -81,7 +81,8 @@ html[data-style-mode="vivant"] #app#app #v-atelier .energie { background: var(--
 html[data-style-mode="vivant"] #app#app #v-atelier .energie::before { content: none; display: none; }
 html[data-style-mode="vivant"] #app#app #v-atelier .prod-entete :is(button, .btn) { background: var(--sb-voile) !important; border-image: none !important; border: var(--sb-bord) !important; border-radius: 999px !important; box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); }
 #v-atelier .atel-ech.is-ferme { display: none; }
-#v-atelier .atel-liste { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+#v-atelier .atel-liste { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden auto; overscroll-behavior: contain; }
+#v-atelier .atel-liste > * { flex: none; }
 #v-atelier .atl-page > .atel-liste { margin-inline: 10px; }
 html[data-style-mode="vivant"] #app#app #v-atelier .atel-carte { background: transparent; border: 0; border-bottom: 1px solid rgb(121 105 74 / .3); border-radius: 0; box-shadow: none; }
 html[data-style-mode="vivant"] #app#app #v-atelier .atel-carte::before { content: none; display: none; }
@@ -140,9 +141,9 @@ html[data-style-mode="vivant"] #app#app #v-atelier .prod-entete { position: fixe
 html[data-style-mode="vivant"] #app#app #v-atelier .prod-pastille-auto { position: relative; width: 58px; height: 58px; min-width: 58px; min-height: 58px; }
 #v-atelier .prod-pastille-auto .roue { display: inline-flex; width: 30px; height: 30px; }
 #v-atelier .prod-pastille-auto .roue :is(svg, .gi) { width: 30px; height: 30px; }
-#v-atelier .prod-pastille-auto .roue.tourne :is(svg, .gi) { animation: roue-tourne 3.2s linear infinite; }
+#v-atelier :is(.prod-pastille-auto, .prod-pastille-tourne) .roue.tourne :is(svg, .gi) { animation: roue-tourne 3.2s linear infinite; }
 @keyframes roue-tourne { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { #v-atelier .prod-pastille-auto .roue.tourne :is(svg, .gi) { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #v-atelier :is(.prod-pastille-auto, .prod-pastille-tourne) .roue.tourne :is(svg, .gi) { animation: none; } }
 #v-atelier .prod-pastille-auto .roue-n { position: absolute; right: -2px; top: -2px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--sb-encre); color: #fff8e9; font: 700 13px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; font-variant-numeric: tabular-nums; }
 html[data-style-mode="vivant"] #app#app #v-atelier .atl-page > .energie { position: fixed; left: calc(max(14px, env(safe-area-inset-left, 0px)) + 70px); bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 14px); z-index: 6; width: auto !important; margin: 0 !important; height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px !important; }
 #v-atelier .energie .energie-t, #v-atelier .energie .energie-v { display: none; }

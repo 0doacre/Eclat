@@ -16,7 +16,7 @@ const AGES = [0, 4, 8], TAILLES = [[390, 844], [320, 568]], VERBOSE = !!process.
 /* Ce que chaque vue déborde en hauteur, en pixels, mesuré le 1er novembre 2026 (0.65.4). La règle R1 voudrait 0 partout ; le Labo défile encore
  * (l'établi, ses boutons et le résultat dépassent d'un écran de téléphone). Les Terres sont un écran fixe depuis novembre 2026 (voir tools/test-terres-fixe-ui.js). Ces plafonds empêchent d'empirer ;
  * les baisser à mesure que les écrans sont resserrés. Aperçu sobriété (0.66) : le Labo tient dans 390 × 844, la page d'un métier tient presque dans un écran. */
-const PLAFOND = { "390x844": { Terres: 0, Labo: 0, Atelier: 0, Métier: 0 }, "320x568": { Terres: 0, Labo: 0, Atelier: 0, Métier: 0 } };
+const PLAFOND = { "390x844": { Terres: 0, Labo: 0, Atelier: 0, Métier: 0, Carnet: 0 }, "320x568": { Terres: 0, Labo: 0, Atelier: 0, Métier: 0, Carnet: 0 } };
 /* une partie à l'âge donné : les recettes des âges atteints sont connues, des ressources en réserve */
 function partie(age) {
   const E = Core.createEngine(), s = E.state;
@@ -43,7 +43,7 @@ async function run() {
     await p.addInitScript(r => { localStorage.setItem("eclat.save.v1", r); localStorage.setItem("eclat.style.carnet-defaut", "1"); }, partie(age));
     await p.goto(url); await p.waitForFunction(() => !!window.__eclat);
     for (let i = 0; i < 6; i++) { await p.waitForTimeout(80); await p.evaluate(() => window.__eclat.closeModal()); }
-    for (const [tab, nom] of [["domaine", "Terres"], ["labo", "Labo"], ["atelier", "Atelier"], ["atelier", "Métier"]]) {
+    for (const [tab, nom] of [["domaine", "Terres"], ["labo", "Labo"], ["atelier", "Atelier"], ["atelier", "Métier"], ["journal", "Carnet"]]) {
       await p.evaluate((m) => { const g = window.__eclat; g.U.atelierSel = m ? "artisanat" : null; g.U.prodSel = null; }, nom === "Métier");
       await p.locator('#tabs [data-tab="' + tab + '"]').click(); await p.waitForTimeout(450);
       const m = await p.evaluate(MESURE), tag = w + "x" + h + " · âge " + (age + 1) + " · " + nom;

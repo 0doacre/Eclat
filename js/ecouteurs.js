@@ -586,9 +586,10 @@
           const sec = document.querySelector('#v-carnet details[data-age="' + a + '"]');
           if (sec) {
             sec.open = true;
-            const views = $("#views"), qb = $("#v-carnet .qtybar");
-            const off = qb ? qb.getBoundingClientRect().height + 8 : 8;
-            views.scrollTo({ top: Math.max(0, views.scrollTop + sec.getBoundingClientRect().top - views.getBoundingClientRect().top - off), behavior: "smooth" });
+            // la liste glisse dans son cadre ; à défaut (ancienne mise en page), c’est la vue
+            const liste = $("#v-carnet #clist"), cadre = liste && getComputedStyle(liste).overflowY !== "visible" ? liste : $("#views"), qb = $("#v-carnet .qtybar");
+            const off = cadre === liste ? 4 : qb ? qb.getBoundingClientRect().height + 8 : 8;
+            cadre.scrollTo({ top: Math.max(0, cadre.scrollTop + sec.getBoundingClientRect().top - cadre.getBoundingClientRect().top - off), behavior: "smooth" });
           }
           return;
         }

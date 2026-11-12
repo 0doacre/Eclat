@@ -188,6 +188,7 @@ html[data-style-mode="vivant"] #v-domaine .terre-maitrise>summary{min-height:44p
   html[data-style-mode="vivant"] #top .chip .cv b{font-size:11px}
   html[data-style-mode="vivant"] #top #ageName{font-size:17px;line-height:1.1}
   html[data-style-mode="vivant"] #top .age-bar-track{margin-top:4px;height:3px}
+  html[data-style-mode="vivant"]{--nav:56px}
   html[data-style-mode="vivant"] #tabs{min-height:calc(56px + var(--safe-b));height:calc(56px + var(--safe-b))}
   html[data-style-mode="vivant"] body.has-act .view{padding-bottom:calc(56px + var(--safe-b) + var(--actbar-h, 54px) + 24px)}
 }

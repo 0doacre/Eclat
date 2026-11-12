@@ -1033,10 +1033,11 @@ body[data-tab="cosmos"] #v-cosmos {
 .modal.fiche-modal .modal-box { position: relative; height: 100dvh; overflow: hidden; padding-block: 8px; }
 .fiche-modal .modal-box .modal-x { position: absolute; top: 8px; right: 8px; margin: 0; }
 .rwin { display: flex; flex-direction: column; height: 100%; min-height: 0; }
-.rwin > .row:first-child { flex-wrap: wrap; padding-right: 42px; gap: 6px; padding-bottom: 6px; }
-.rwin > .row:first-child > .grow { flex: 1 1 100px; }
-.rwin > .row:first-child > .pinb { align-self: center; margin: 0; }
-.fiche-nav { display: flex; gap: 6px; border-bottom: 3px double var(--atlas-hairline); }
+.rwin > .row:first-child { padding-right: 42px; gap: 6px; padding-bottom: 6px; }
+.rwin > .row:first-child > .grow { flex: 1 1 0; min-width: 0; }
+.fiche-barre { display: flex; align-items: center; gap: 4px; border-bottom: 3px double var(--atlas-hairline); }
+.fiche-nav { display: flex; flex: 1 1 auto; gap: 6px; min-width: 0; }
+.fiche-barre > .pinb { flex: none; margin: 0; }
 .modal-box .fiche-nav > button { flex: 1; min-height: 46px; }
 .fiche-page { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .fiche-page > p { margin-block: 4px; }
@@ -1057,8 +1058,12 @@ body[data-tab="cosmos"] #v-cosmos {
 .modal-box .why { border-radius: 0; border-left: 3px solid var(--bad); padding: 10px; background: var(--bg2); }
 .modal-box .acts { padding-top: 14px; border-top: 1px solid var(--atlas-hairline); gap: 8px; }
 .modal-box .acts .btn { flex: 1 1 auto; min-width: min(100%,120px); }
-.rwin > .acts { flex: none; margin-top: 2px; padding-top: 2px; gap: 4px; }
+.rwin > .acts { flex: none; margin-top: 2px; padding-top: 6px; gap: 6px; }
 .rwin > .acts .btn { min-width: 44px; min-height: 44px; padding-block: 6px; overflow-wrap: normal; }
+.rwin > .acts:not(:has([data-m="back"], [data-m="rfrom"])) { flex-wrap: nowrap; }
+.rwin > .acts .btn { padding-inline: 8px; }
+.rwin > .acts .btn.ghost { flex: 0 0 auto; }
+@media (max-width: 479px) { .rwin > .acts .acts-mot { display: none; } }
 .modal-box .toggle { gap: 12px; padding-block: 12px; }
 .modal-box .toggle .sw { flex-shrink: 0; }
 .modal-box .toggle:has([data-m="tuto"]) { flex-wrap: wrap; }

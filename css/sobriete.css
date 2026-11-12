@@ -251,7 +251,7 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-labo .ae-metiers{background:rgb(244 236 218 / .86);border-radius:14px;margin:6px 0;padding:2px 6px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 
 /* Atelier : même établi que le Labo ; Progression : le ciel de la Mémoire. Les blocs se posent dessus en papier translucide. */
-#v-atelier.view{background:linear-gradient(rgba(20,14,8,.18),rgba(20,14,8,.18)),url("../assets/fonds/atelier.webp") center/cover no-repeat!important}
+#v-atelier.view{background:linear-gradient(rgba(20,14,8,.18),rgba(20,14,8,.18)),url("../assets/fonds/atelier.webp") center top/auto 106% no-repeat!important}
 #v-arbre.view{background:linear-gradient(rgba(8,12,24,.12),rgba(8,12,24,.12)),url("../assets/fonds/progression.webp") center/cover no-repeat!important}
 #v-atelier .atl-page,#v-arbre .arb-page,#v-arbre .prog-corps{background:transparent!important}
 #v-atelier .atl-page>:not(.hidden),#v-arbre .prog-corps>:not(.hidden){background:rgb(244 236 218 / .86);border-radius:14px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
@@ -261,12 +261,27 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-atelier .atl-page>:not(.hidden),#v-arbre .prog-corps>:not(.hidden){margin-inline:10px;padding-inline:12px}
 #v-atelier .atl-page>:not(.hidden):first-child{margin-top:8px}
 /* geste principal à portée du pouce */
-#v-atelier .prod-qui{padding:6px;background:rgb(244 236 218 / .94);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
-#v-atelier .prod-raccourcis { display: flex; justify-content: center; gap: 6px; }
+#v-atelier .prod-qui{flex-wrap:nowrap;align-items:center;padding:6px;background:rgb(244 236 218 / .94);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+/* une seule barre : fabriquer, automatiser, puis les trois feuilles du métier */
+#v-atelier .prod-qui > .prod-raccourcis { display: flex; flex: none; gap: 2px; margin-left: auto; padding-left: 6px; border-left: 1px solid rgb(59 42 26 / .22); }
 #v-atelier .prod-raccourcis > button { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; min-width: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; }
-#v-atelier .prod-raccourcis > button :is(.gi, .roue) { width: 26px; height: 26px; }
-#v-atelier .prod-raccourcis .roue-n { position: absolute; top: 0; right: 0; }
-#v-atelier .prod-qui > button[data-prod="main"] { flex: 2 1 auto; }
+#v-atelier .prod-raccourcis > button :is(.gi, .roue) { display: inline-flex; width: 26px; height: 26px; }
+#v-atelier .prod-raccourcis > .is-bloque { color: #a8402b; }
+#v-atelier .prod-raccourcis .roue-n { position: absolute; top: 1px; right: -1px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: #3b2a1a; color: #fff8e9; font: 700 11px/17px var(--sans, system-ui); font-variant-numeric: tabular-nums; text-align: center; }
+#v-atelier .prod-raccourcis .roue-n.zero { display: none; }
+#v-atelier .prod-qui > button[data-prod="main"] { flex: 1 1 0; min-width: 0; }
+#v-atelier .prod-qui > button[data-prod="apprenti"] { flex: 0 0 48px; }
+@media (max-width: 340px) { #v-atelier .prod-qui > button[data-prod="main"] > .gi { display: none; } #v-atelier .prod-qui > button[data-prod="apprenti"] { flex-basis: 44px; } }
+/* l'objet choisi, en grand, posé sur l'établi : il prend la place qui reste et s'efface quand elle manque */
+#v-atelier .atl-metier-page > .prod-milieu { display: flex; flex-direction: column; container-type: size; padding-inline: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+#v-atelier .prod-milieu > .prod-fiche { margin-top: auto; }
+#v-atelier .prod-scene { flex: 1 1 0; min-height: 0; display: grid; place-items: center; overflow: hidden; container-type: size; }
+#v-atelier .prod-scene > .ic { position: relative; width: min(100cqh - 20px, 176px); height: min(100cqh - 20px, 176px); padding: 0; border-radius: 50%; background: var(--rond-papier, #f4ecda) center / 100% 100% no-repeat; filter: drop-shadow(0 8px 9px rgb(20 14 8 / .55)); }
+#v-atelier .prod-scene > .ic > :is(img, svg) { position: absolute; inset: 14%; width: 72%; height: 72%; object-fit: contain; }
+@container (max-height: 263px) { #v-atelier .prod-scene { display: none; } }
+#v-atelier .prod-scene.frappe > .ic { animation: prod-frappe .32s cubic-bezier(.2,.9,.3,1.3); }
+@keyframes prod-frappe { 0% { transform: scale(.8) rotate(-5deg); } 60% { transform: scale(1.08) rotate(1deg); } }
+@media (prefers-reduced-motion: reduce) { #v-atelier .prod-scene.frappe > .ic { animation: none; } }
 /* petits écrans : l'ordre normal (l'établi d'abord) et le défilement, plutôt qu'un stock rogné en haut */
 #v-arbre .prog-corps :is(h2,h3,h4){padding:6px 12px;box-sizing:border-box}
 /* page d'un métier sur petit écran : les panneaux secondaires se resserrent */

@@ -954,6 +954,7 @@
 
   /* un doigt reste appuyé sur une ressource (sa fiche va s’ouvrir) : on ne redessine pas dessous */
   const pressing = () => !!(U.lp && !U.lp.up);
+  const CADRES = ".auto-corps, .prod-choix, .prod-milieu, .atel-liste, .terre-corps, .terres-panneau-corps, .prog-corps, #clist, .journal-corps";
   function render(force) {
     if (U.appliquerBarre) U.appliquerBarre();
     const now = performance.now();
@@ -977,6 +978,9 @@
       if (k) fsel = "[data-" + (k === "tab2" ? "tab2" : k) + '="' + String(ae.dataset[k]).replace(/"/g, "") + '"]' + (k === "cr" && ae.dataset.n ? '[data-n="' + ae.dataset.n + '"]' : "");
     }
     const fnom = !focus && ae && ae !== document.body && el.contains(ae) && ae.getAttribute("role") === "button" && ae.getAttribute("aria-label") ? ae.getAttribute("aria-label") : null;
+    // les cadres qui glissent (une feuille, la rangée des recettes, une liste) gardent leur place d’un rendu à l’autre
+    const cleCadre = (c, vus) => { const k = c.id || c.className; vus[k] = (vus[k] || 0) + 1; return k + "#" + vus[k]; };
+    const cadres = {}; { const vus = {}; $$(CADRES, el).forEach((c) => { const k = cleCadre(c, vus); if (c.scrollTop || c.scrollLeft) cadres[k] = [c.scrollTop, c.scrollLeft]; }); }
     if (U.tab === "atelier") el.innerHTML = viewAtelier();
     else if (U.tab === "labo") el.innerHTML = viewLabo();
     else if (U.tab === "carnet") el.innerHTML = '<div class="atl-page">' + viewCarnet() + "</div>";
@@ -993,6 +997,14 @@
       else { delete el.dataset.sig; el.innerHTML = progSwitchHTML() + viewCosmos(); mountCosmos(); }
     }
     iconize(el);
+    { const vus = {}; $$(CADRES, el).forEach((c) => { const p = cadres[cleCadre(c, vus)]; if (p) { c.scrollTop = p[0]; c.scrollLeft = p[1]; } }); }
+    { const vues = U.feuillesVues || {}, la = {}, t = performance.now();
+      $$(".auto-feuille, .terres-panneau, .labo-recherche", el).forEach((f) => {
+        const k = U.tab + ":" + (f.getAttribute("aria-label") || f.className), depuis = vues[k] === undefined ? t : vues[k];
+        la[k] = depuis;
+        if (t - depuis < 200) { f.classList.add("entre"); f.style.animationDelay = "-" + Math.round(t - depuis) + "ms"; }
+      });
+      U.feuillesVues = la; }
     if (U.tab === "labo") { // la rangée des actions garde sa place d’un rendu à l’autre, et l’action choisie reste visible
       const gs = $(".gestes", el);
       if (gs) { gs.scrollLeft = U.gScroll || 0; const on = $(".geste.on", gs); if (on && (on.offsetLeft < gs.scrollLeft || on.offsetLeft + on.offsetWidth > gs.scrollLeft + gs.clientWidth)) gs.scrollLeft = Math.max(0, on.offsetLeft - 12); }
