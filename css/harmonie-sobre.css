@@ -68,7 +68,7 @@ html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--s
 html[data-style-mode="vivant"] #v-domaine .terres .dom-tip b { color: #ffe9b8; }
 
 /* ---- Labo : le contenu monte sous l’onglet, l’établi reste sous le pouce ---- */
-#v-labo .ae-layout { gap: 10px; justify-content: space-between; }
+#v-labo .ae-layout { gap: 4px; justify-content: flex-start; }
 #v-labo .ae-layout > .ae-stock { flex: 1 1 auto; }
 #v-labo { background-position: center 30% !important; }
 
@@ -125,8 +125,8 @@ html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chi
 
 /* Labo : les gestes sont des icônes, « Vider » aussi ; l’action principale est l’icône du geste en grand */
 #v-labo :is(.ae-gestes, .ae-actions) .lbl { display: none; }
-#v-labo .ae-gestes { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-#v-labo .ae-gestes .ae-geste { width: 52px; height: 52px; min-width: 52px; }
+#v-labo .ae-gestes { display: flex; align-items: center; gap: var(--ae-gestes-gap, 10px); flex-wrap: var(--ae-gestes-wrap, wrap); }
+#v-labo .ae-gestes .ae-geste { width: var(--ae-geste-size, 52px); height: var(--ae-geste-size, 52px); min-width: var(--ae-geste-size, 52px); }
 #v-labo .ae-gestes .ae-geste :is(svg, .gi) { width: 26px; height: 26px; }
 #v-labo .ae-gestes .ae-vider { margin-left: auto; width: 44px; height: 44px; min-width: 44px; }
 #v-labo .ae-gestes .ae-vider :is(svg, .gi) { width: 20px; height: 20px; }
