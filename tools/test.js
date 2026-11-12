@@ -3276,8 +3276,8 @@ test("contact de l’alpha : une adresse de remplacement jusqu’à ce qu’elle
   assert.ok(D.CONTACT && /^[^@\s]+@[^@\s]+$/.test(D.CONTACT.mail), "adresse mail");
   assert.ok(D.CONTACT.sujet && D.CONTACT.sujet.length > 3);
 });
-test("Version 0.66.4 et journal des modifications", () => {
-  assert.strictEqual(D.VERSION, "0.66.4");
+test("Version 0.67.0 et journal des modifications", () => {
+  assert.strictEqual(D.VERSION, "0.67.0");
   assert.ok(D.CHANGES.length >= 2);
 });
 
@@ -3510,12 +3510,12 @@ test("Illustrations des Grands Œuvres : chaque image appelée existe, chaque fi
 
 console.log("Ergonomie : Pastilles d’Objets & Affordance (0.7.0)");
 test("Convention de versionnement 0.x.y", () => {
-  assert.strictEqual(D.VERSION, "0.66.4");
+  assert.strictEqual(D.VERSION, "0.67.0");
   assert.ok(D.CHANGES.length >= 2);
   const parts = D.VERSION.split(".").map(Number);
   assert.strictEqual(parts.length, 3);
   assert.strictEqual(parts[0], 0, "Majeure à 0 avant la 1.0");
-  assert.strictEqual(parts[1], 66, "Mineure pour le lot courant");
+  assert.strictEqual(parts[1], 67, "Mineure pour le lot courant");
   assert.strictEqual(require("../package.json").version, D.VERSION, "package.json suit la version du jeu");
 });
 

@@ -5,7 +5,7 @@
 (function (root) {
   "use strict";
   const D = {};
-  D.VERSION = "0.66.4";
+  D.VERSION = "0.67.0";
 
   /* ------------------------------------------------------------------ ÂGES */
   D.AGES = [
@@ -1787,6 +1787,9 @@
   D.DECHIFFRER = { cost: [3, 8, 20] };
 
   D.CHANGES = [
+    "📱 Des écrans qui ne défilent plus : les Terres, l’Étude, l’Atelier, le Carnet et le Journal tiennent dans la hauteur du téléphone. Seules les listes glissent, dans leur cadre, et elles gardent leur place après un appui.",
+    "🔨 À l’Atelier, l’objet choisi s’affiche en grand sur l’établi, et une seule barre réunit les commandes et les feuilles du métier. Les derniers métiers de la liste ne sont plus coupés.",
+    "📄 Les fiches ont deux pages, Objet et Usages, avec leurs boutons sur une ligne. La fiche d’un extracteur affiche de nouveau son débit, et « Ouvrir les yeux » reste visible dès l’ouverture.",
     "🌌 La Mémoire des mains a son fond : un feu qui s’éteint dans la brume, au-dessus de la fenêtre. Le réglage « Ligne d’ambiance », qui ne montrait plus rien, est retiré du menu.",
     "🔧 Au Gisement Noir, la carte « poser la mine de plomb » ne passe plus sous la plaque du nom de la terre : la page défile et ses boutons se touchent. Deux réglages du menu qui ne changeaient plus rien sont retirés (affichage compact, Carnet sur deux colonnes).",
     "🔣 Les signes du jeu sont redessinés : le menu, la croix des fenêtres, les écus, les souvenirs, l’intuition, l’objectif, le Comptoir, la Production, la boussole d’Explorer, la récolte en continu, l’étude et le retour. Le nom de chacun reste en info-bulle.",

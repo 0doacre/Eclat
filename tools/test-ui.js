@@ -14,6 +14,8 @@ const fs = require("fs"), path = require("path"), { spawn } = require("child_pro
 
 const ici = __dirname, mots = process.argv.slice(2).filter(a => !a.startsWith("-"));
 const delai = (Number(process.env.DELAI) || 300) * 1000;
+/* les tests qui écrivent require("playwright") trouvent le même module que ceux qui lisent PW */
+const env = process.env.PW ? { ...process.env, NODE_PATH: [path.dirname(process.env.PW), process.env.NODE_PATH].filter(Boolean).join(path.delimiter) } : process.env;
 const tous = fs.readdirSync(ici)
   .filter(f => /^test-.*\.js$/.test(f) && f !== "test-ui.js" && f !== "test-ux-avant-0-39.js")
   .filter(f => /require\(process\.env\.PW\b|require\(["']playwright["']\)/.test(fs.readFileSync(path.join(ici, f), "utf8")))
@@ -22,7 +24,7 @@ const tous = fs.readdirSync(ici)
 
 function lance(f) {
   return new Promise(fin => {
-    const t0 = Date.now(), p = spawn(process.execPath, [path.join(ici, f)], { cwd: path.join(ici, ".."), env: process.env });
+    const t0 = Date.now(), p = spawn(process.execPath, [path.join(ici, f)], { cwd: path.join(ici, ".."), env });
     let sortie = "", coupe = false;
     const garde = setTimeout(() => { coupe = true; p.kill(); }, delai);
     p.stdout.on("data", d => { sortie += d; });
@@ -30,7 +32,7 @@ function lance(f) {
     p.on("close", code => {
       clearTimeout(garde);
       const lignes = sortie.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      const echec = lignes.find(l => /^(not ok|✗|Error|AssertionError|TimeoutError)|ÉCHEC|échec\b/i.test(l));
+      const echec = lignes.find(l => /AssertionError|Timeout \d+ms exceeded|^not ok|✗|Error:|Échec/.test(l));
       const mot = coupe ? "délai dépassé (" + delai / 1000 + " s)" : (code ? (echec || lignes[lignes.length - 1] || "code " + code) : lignes[lignes.length - 1] || "");
       fin({ f, ok: !coupe && code === 0, s: Math.round((Date.now() - t0) / 1000), mot: mot.slice(0, 110) });
     });

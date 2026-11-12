@@ -240,6 +240,8 @@ body.nav-auto.nav-open #navPoignee { opacity: 0; pointer-events: none; }
 .terre-page .terre-gis-ligne { flex-wrap: wrap; column-gap: 8px; }
 .terre-page .terre-gis .gis-compact-c, .terre-page .terre-gis .dom-rate { white-space: nowrap; writing-mode: horizontal-tb; }
 .terre-page .terre-gis .terre-ajout { max-width: none; }
+/* écran étroit : la ligne d'un gisement tient sur une rangée (l'extracteur ne passe plus dessous) */
+@media (max-width: 359px) { .terre-page .terre-gis { column-gap: 4px; } .terre-page .terre-gis-corps { flex-basis: 96px; min-width: 96px; } }
 
 /* Cibles tactiles de 44 px pour les petits boutons d'astuce (« Compris ») et le bouton « Niveaux » de l'établi. */
 .bench-clear, [data-skills], .btn[data-tip] { min-height: 44px; min-width: 44px !important; }

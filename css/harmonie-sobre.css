@@ -57,6 +57,7 @@ html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-pastille .gi,
 /* une ligne de gisement : l’icône de la ressource, son compte, la récolte ; le nom et « à la main » sont en info-bulle */
 #v-domaine .terres .gis-compact-name, #v-domaine .terres .terre-main { display: none; }
 #v-domaine .terres .gis-compact-c { font-size: 22px; }
+@media (max-width: 359px) { #v-domaine .terres .gis-compact-c { font-size: 18px; } }
 #v-domaine .terres .terre-gis { min-height: 58px; }
 html[data-style-mode="vivant"] #app#app #v-domaine .terres :is(.terre-boucle, .terre-recolte) { border-image: none !important; border-radius: 50% !important; width: 48px; height: 48px; min-width: 48px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-recolte { background: var(--sb-papier); border: var(--sb-bord) !important; }
