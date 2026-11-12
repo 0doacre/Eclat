@@ -45,8 +45,13 @@ Coche ta ligne dans ta branche, et seulement elle, quand ton compte rendu est é
 | [ ] | T6 · Tests d'interface rouges (la commande `npm run test:ui` est faite, reste le tri des rouges) | `T6-tests.md` | `tools/test-*-ui.js` | |
 | [ ] | T7 · Audit : détecteur et relevé (la section « Après correction » du rapport est écrite) | `T7-audit.md` | `tools/audit-interface.js`, `docs/audit-interface/` | les autres fusionnées |
 | [x] | Intégration 0.67.0 (Claude) : recette de T1 à T5, corrections, Carnet et Journal en cadre fixe | `rendu-integration.md` | | |
+| [ ] | T8 · Un seul aspect : Atlas et Classique retirés | `T8-styles.md` | `index.html` (script d'aspect), branches d'aspect du JS, règles d'aspect du CSS, choix d'aspect des tests | T6 fusionnée |
+| [ ] | T9 · Grand texte, une seule échelle bien visible | `T9-grand-texte.md` | tailles de texte des feuilles de la refonte, règles `body.large-text`, test du Grand texte | T8 fusionnée |
+| [ ] | T10 · Thème sombre pour l'aspect Carnet | `T10-theme-sombre.md` | `applyTheme`, rangée Thème du menu, couleurs des feuilles de la refonte, anciennes règles sombres, `tools/test-theme-sombre-ui.js` | T8 fusionnée |
 
-T1 à T5 sont fusionnées et recettées (12 novembre 2026). Il reste T6 et T7, qui ne touchent qu'aux outils et peuvent tourner en même temps.
+T1 à T5 sont fusionnées et recettées (12 novembre 2026), la 0.67.0 est publiée. T6 et T7 ne touchent qu'aux outils et tournent en même temps. Puis T8, puis T9 et T10 en même temps.
+
+Retours du porteur sur la 0.67.0 (Android, Chrome, 12 novembre) : toucher, encoches, clavier et partie avancée sans défaut ; les cinq choix de l'intégration sont gardés (médaillon, pied de fiche en icônes, gisements à 46 px, bouton Machines retiré, fond de l'Atelier recadré). Grand texte ne se voit presque pas (T9), les anciens aspects doivent partir (T8), il veut un vrai thème sombre (T10). Pas d'iPhone pour essayer Safari.
 
 ## Ton compte rendu
 
