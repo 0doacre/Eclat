@@ -8,17 +8,49 @@
 
 :root {
   --sb-encre: #3b2a1a;
-  --sb-papier: rgb(246 239 222 / .92);
-  --sb-papier-leger: rgb(246 239 222 / .86);
-  --sb-voile: rgb(246 239 222 / .82);
+  --sb-papier: rgb(var(--sb-pb) / .92);
+  --sb-papier-leger: rgb(var(--sb-pb) / .86);
+  --sb-voile: rgb(var(--sb-pb) / .82);
   --sb-sombre: rgb(28 21 14 / .66);
   --sb-clair: #fff8e9;
-  --sb-bord: 1px solid rgb(121 105 74 / .55);
+  --sb-bord: 1px solid rgb(var(--sb-tb) / .55);
   --sb-bord-clair: 1px solid rgb(255 248 233 / .45);
   --sb-rayon: 14px;
   --sb-ombre: 0 2px 10px rgb(20 14 8 / .22);
   --sb-flou: blur(4px);
+  /* les teintes de jour, nommées une fois (la nuit les redit plus bas) : papier (canaux, pour l’alpha), encre, traits, accent */
+  --sb-pa: 251 246 233; --sb-pb: 246 239 222; --sb-pc: 244 236 218;
+  --sb-ta: 106 86 58; --sb-tb: 121 105 74; --sb-te: 129 63 42; --sb-enc: 48 39 30;
+  --sb-p0: #fff8e9; --sb-feuille: #f4ecda; --sb-feuille2: #e9dec8; --sb-feuille3: #e8ddc5; --sb-bulle: #f6efde; --sb-bloque: #f7e6e1;
+  --sb-encre2: #30271e; --sb-doux: #60513f; --sb-dim: #655541; --sb-trait: #79694a; --sb-teinte: #813f2a; --sb-intu: #73501f;
+  --sb-acc: #a8402b; --sb-acc-txt: #a8402b; --sb-acc-bord: #7a2c1c; --sb-acc-fonce: #6c2a1a;
+  --sb-teinte-fond: #813f2a; --sb-encre-fond: #3b2a1a; --sb-bon: #345239; --sb-mal: #812b26;
+  --sb-scheme: light;
 }
+
+/* T10 · Thème sombre : la palette de nuit. Papier brun-gris très sombre, encre claire ; mêmes noms que le jour.
+ * Posée sur body.theme-dark. Les variables dérivées (papier, bord…) sont redites ici : elles se calculent là où elles sont écrites.
+ * Les aquarelles (fonds, illustrations) ne changent pas ; le papier peint (paper.webp) cède la place à la couleur. */
+html[data-style-mode="vivant"] body.theme-dark {
+  --sb-scheme: dark; --paint-paper: none;
+  --drawn-divider: url("../assets/ui/divider-chalk.svg"); --drawn-checkbox: url("../assets/ui/checkbox-chalk.svg");
+  --sb-pa: 41 34 28; --sb-pb: 38 32 26; --sb-pc: 39 33 27;
+  --sb-ta: 168 150 118; --sb-tb: 150 133 104; --sb-te: 236 174 145; --sb-enc: 239 227 204;
+  --sb-p0: #2d251e; --sb-feuille: #272019; --sb-feuille2: #382f26; --sb-feuille3: #302820; --sb-bulle: #2c251e; --sb-bloque: #40272a;
+  --sb-encre: #efe3cc; --sb-encre2: #efe3cc; --sb-doux: #d0c3aa; --sb-dim: #c3b498; --sb-trait: #b3a283; --sb-teinte: #ecae91; --sb-intu: #e3b86f;
+  --sb-acc-txt: #e68c71; --sb-teinte-fond: #8f4630; --sb-encre-fond: #6a4f3a; --sb-bon: #94c79f; --sb-mal: #f09d93;
+  --sb-ombre: 0 2px 10px rgb(0 0 0 / .5);
+  --sb-papier: rgb(var(--sb-pb) / .92); --sb-papier-leger: rgb(var(--sb-pb) / .86); --sb-voile: rgb(var(--sb-pb) / .82);
+  --sb-bord: 1px solid rgb(var(--sb-tb) / .55);
+  --fin-trait: 1.5px solid rgb(var(--sb-ta) / .6); --fin-papier: rgb(var(--sb-pa) / .82);
+  --finish-paper: var(--sb-feuille); --finish-paper-deep: var(--sb-feuille2); --finish-ink: var(--sb-encre2); --finish-secondary: var(--sb-doux);
+  --finish-pigment: var(--sb-teinte); --finish-success: var(--sb-bon); --finish-danger: var(--sb-mal); --finish-rule: var(--sb-trait);
+  --finish-overlay: rgb(0 0 0 / .62); --finish-window-shadow: 0 14px 44px rgb(0 0 0 / .6);
+  --rond-papier: radial-gradient(circle closest-side, var(--sb-p0) 93%, rgb(var(--sb-tb) / .7) 96%, transparent 100%);
+}
+/* Les cadres de tuiles sont des SVG clairs (images, on n'y touche pas) : en nuit, on les retourne en clair-obscur. */
+html[data-style-mode="vivant"] body.theme-dark #app :is(.arb-pas, .arb-card:not(.sel), .atel-carte, .energie, #v-journal .frag, .gprog-row, .ing.link, .item-pill)::before { filter: invert(.88) hue-rotate(180deg); }
+body.theme-dark .arb-pas.p-bloque { opacity: .74; }
 
 /* ---- plaques de papier (une seule recette) ---- */
 #v-atelier .atl-page > .atel-liste, #v-arbre .prog-corps > :not(.hidden):not(.arb-barre), #v-arbre .prog-sw, #v-domaine .terre-gisements {
@@ -61,9 +93,9 @@ html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-pastille .gi,
 #v-domaine .terres .terre-gis { min-height: 58px; }
 html[data-style-mode="vivant"] #app#app #v-domaine .terres :is(.terre-boucle, .terre-recolte) { border-image: none !important; border-radius: 50% !important; width: 48px; height: 48px; min-width: 48px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
 html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-recolte { background: var(--sb-papier); border: var(--sb-bord) !important; }
-html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-boucle { background: #a8402b !important; color: var(--sb-clair) !important; border: 1px solid #6c2a1a !important; box-shadow: 0 1px 4px rgb(0 0 0 / .35); }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-boucle { background: var(--sb-acc) !important; color: var(--sb-clair) !important; border: 1px solid var(--sb-acc-fonce) !important; box-shadow: 0 1px 4px rgb(0 0 0 / .35); }
 html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-boucle::before { content: none !important; }
-html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-boucle.on { background: #6c2a1a !important; }
+html[data-style-mode="vivant"] #app#app #v-domaine .terres .terre-boucle.on { background: var(--sb-acc-fonce) !important; }
 /* le conseil sur l’illustration : une plaque sombre à texte clair, lisible */
 html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--sb-sombre) !important; color: var(--sb-clair) !important; border: var(--sb-bord-clair) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre) !important; padding: 8px 12px !important; margin: 0 0 6px !important; -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); text-shadow: 0 1px 2px rgb(0 0 0 / .6); }
 html[data-style-mode="vivant"] #v-domaine .terres .dom-tip b { color: #ffe9b8; }
@@ -85,7 +117,7 @@ html[data-style-mode="vivant"] #app#app #v-atelier .prod-entete :is(button, .btn
 #v-atelier .atel-liste { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden auto; overscroll-behavior: contain; }
 #v-atelier .atel-liste > * { flex: none; }
 #v-atelier .atl-page > .atel-liste { margin-inline: 10px; }
-html[data-style-mode="vivant"] #app#app #v-atelier .atel-carte { background: transparent; border: 0; border-bottom: 1px solid rgb(121 105 74 / .3); border-radius: 0; box-shadow: none; }
+html[data-style-mode="vivant"] #app#app #v-atelier .atel-carte { background: transparent; border: 0; border-bottom: 1px solid rgb(var(--sb-tb) / .3); border-radius: 0; box-shadow: none; }
 html[data-style-mode="vivant"] #app#app #v-atelier .atel-carte::before { content: none; display: none; }
 html[data-style-mode="vivant"] #app#app #v-atelier .atel-liste > :last-child { border-bottom: 0; }
 
@@ -101,7 +133,7 @@ html[data-style-mode="vivant"] #app#app #v-atelier .atel-liste > :last-child { b
 #v-arbre .arb-barre .arb-obj-btn { flex: 1 1 0; }
 html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-pastille .lbl { color: var(--sb-clair) !important; }
 html[data-style-mode="vivant"] #app#app #v-atelier .subtabs > button::before, html[data-style-mode="vivant"] #app#app #v-atelier .prod-entete button::before { content: none !important; }
-html[data-style-mode="vivant"] #app#app #v-atelier .subtabs > button.on { background: var(--sb-papier) !important; color: #813f2a; font-weight: 700; }
+html[data-style-mode="vivant"] #app#app #v-atelier .subtabs > button.on { background: var(--sb-papier) !important; color: var(--sb-teinte); font-weight: 700; }
 /* Progression : la ligne de l’objectif est du texte (sans cadre), la loupe est un petit bouton rond */
 html[data-style-mode="vivant"] #app#app #v-arbre .arb-barre .arb-obj-btn { border-image: none !important; background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; min-height: 44px; font-size: 1rem; }
 html[data-style-mode="vivant"] #app#app #v-arbre .arb-barre .arb-obj-btn::before { content: none !important; }
@@ -145,7 +177,7 @@ html[data-style-mode="vivant"] #app#app #v-atelier .prod-pastille-auto { positio
 #v-atelier :is(.prod-pastille-auto, .prod-pastille-tourne) .roue.tourne :is(svg, .gi) { animation: roue-tourne 3.2s linear infinite; }
 @keyframes roue-tourne { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { #v-atelier :is(.prod-pastille-auto, .prod-pastille-tourne) .roue.tourne :is(svg, .gi) { animation: none; } }
-#v-atelier .prod-pastille-auto .roue-n { position: absolute; right: -2px; top: -2px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--sb-encre); color: #fff8e9; font: 700 13px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; font-variant-numeric: tabular-nums; }
+#v-atelier .prod-pastille-auto .roue-n { position: absolute; right: -2px; top: -2px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--sb-encre-fond); color: #fff8e9; font: 700 13px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; font-variant-numeric: tabular-nums; }
 html[data-style-mode="vivant"] #app#app #v-atelier .atl-page > .energie { position: fixed; left: calc(max(14px, env(safe-area-inset-left, 0px)) + 70px); bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 14px); z-index: 6; width: auto !important; margin: 0 !important; height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px !important; }
 #v-atelier .energie .energie-t, #v-atelier .energie .energie-v { display: none; }
 #v-atelier .energie .energie-ic { display: inline-flex; width: 22px; height: 22px; }
@@ -162,7 +194,7 @@ html[data-style-mode="vivant"] #app#app #v-atelier .prod-pastille-auto::after { 
 html[data-style-mode="vivant"] #app#app #top#top .chip.quest { background: var(--rond-papier) center / 100% 100% no-repeat !important; border: 0 !important; border-radius: 50% !important; box-shadow: none !important; width: 44px; height: 44px; min-width: 44px; padding: 0 !important; position: relative; justify-content: center; }
 html[data-style-mode="vivant"] #app#app #top#top .chip.quest .cv { display: contents; }
 html[data-style-mode="vivant"] #app#app #top#top .chip.quest .cv b { display: none; }
-html[data-style-mode="vivant"] #app#app #top#top .chip.quest .cv small { display: block; position: absolute; right: -4px; top: -4px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--sb-encre); color: #fff8e9; font: 700 12px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; }
+html[data-style-mode="vivant"] #app#app #top#top .chip.quest .cv small { display: block; position: absolute; right: -4px; top: -4px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--sb-encre-fond); color: #fff8e9; font: 700 12px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; }
 html[data-style-mode="vivant"] #app#app #v-atelier .atl-page > .energie { background: var(--sb-voile) !important; border: var(--sb-bord) !important; border-radius: 999px !important; box-shadow: var(--sb-ombre) !important; -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); color: var(--sb-encre); }
 #top .top-right { gap: 6px; }
 html[data-style-mode="vivant"] #app#app #top#top .chip.quest { overflow: visible !important; }
@@ -176,7 +208,7 @@ html[data-style-mode="vivant"] #app#app #top#top .chip.quest { display: none !im
 #v-domaine .terres > .terres-pastilles { position: fixed; left: max(var(--sb-gouttiere), env(safe-area-inset-left, 0px)); right: max(var(--sb-gouttiere), env(safe-area-inset-right, 0px)); bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 12px); z-index: 6; padding: 0; margin: 0; gap: 10px; display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-start; pointer-events: none; }
 #v-domaine .terres > .terres-pastilles > * { pointer-events: auto; }
 html[data-style-mode="vivant"] #app#app #v-domaine .terres .terres-quetes { position: relative; }
-#v-domaine .terres .terres-quetes .pastille-n { position: absolute; right: -4px; top: -4px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: #fff8e9; color: #3b2a1a; font: 700 12px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; }
+#v-domaine .terres .terres-quetes .pastille-n { position: absolute; right: -4px; top: -4px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: var(--sb-p0); color: var(--sb-encre); font: 700 12px/22px var(--sans, system-ui); text-align: center; box-sizing: border-box; }
 /* la ressource se touche sans contour : l’icône seule */
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-recolte { background: none !important; border: 0 !important; box-shadow: none !important; width: 52px; height: 52px; min-width: 52px; }
 #v-domaine .terres .terre-recolte :is(svg, .gi, img) { width: 40px; height: 40px; filter: drop-shadow(0 1px 2px rgb(20 14 8 / .35)); }
@@ -191,7 +223,7 @@ html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod-entete .prod-
 #v-atelier .prod-pastille-auto .roue, #v-atelier .prod-pastille-auto .roue :is(svg, .gi) { width: 46px; height: 46px; color: var(--sb-clair); filter: drop-shadow(0 1px 3px rgb(20 14 8 / .6)); }
 #v-atelier .prod-pastille-auto .roue-n { right: -2px; top: 0; }
 html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .atl-page > .energie { left: auto !important; right: max(var(--sb-gouttiere), env(safe-area-inset-right, 0px)); }
-#v-atelier .energie .energie-ic, #v-atelier .energie .eclair { width: 20px; height: 20px; color: #a8402b; }
+#v-atelier .energie .energie-ic, #v-atelier .energie .eclair { width: 20px; height: 20px; color: var(--sb-acc-txt); }
 #v-atelier .energie .energie-barre { width: 110px; }
 
 /* même écart partout entre les bandeaux de la Progression et du Journal, même gouttière sur les côtés */
@@ -203,20 +235,20 @@ html[data-style-mode="vivant"] #app#app :is(#v-arbre, #v-journal) .prog-corps { 
 /* Journal : sans titre, avec un décor et les mêmes plaques que la Progression */
 #v-journal.view { background: linear-gradient(rgb(20 14 8 / .14), rgb(20 14 8 / .14)), url("../assets/fonds/journal.webp") center / cover no-repeat !important; }
 html[data-style-mode="vivant"] #app#app :is(#v-journal > .filters, #v-carnet .journal-sw) { display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; padding: 4px 8px; background: var(--sb-papier); border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); }
-html[data-style-mode="vivant"] #app#app :is(#v-journal > .filters, #v-carnet .journal-sw) button { flex: 0 0 auto; background: none !important; border: 0 !important; border-image: none !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; box-shadow: none !important; padding: 10px 12px !important; min-height: 44px; font-size: 1.05rem; color: var(--sb-encre-douce, #60513f); }
+html[data-style-mode="vivant"] #app#app :is(#v-journal > .filters, #v-carnet .journal-sw) button { flex: 0 0 auto; background: none !important; border: 0 !important; border-image: none !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; box-shadow: none !important; padding: 10px 12px !important; min-height: 44px; font-size: 1.05rem; color: var(--sb-encre-douce, var(--sb-doux)); }
 html[data-style-mode="vivant"] #app#app :is(#v-journal > .filters, #v-carnet .journal-sw) button::before { content: none !important; }
-html[data-style-mode="vivant"] #app#app :is(#v-journal > .filters, #v-carnet .journal-sw) button.on { color: #813f2a !important; font-weight: 700; border-bottom-color: #813f2a !important; }
+html[data-style-mode="vivant"] #app#app :is(#v-journal > .filters, #v-carnet .journal-sw) button.on { color: var(--sb-teinte) !important; font-weight: 700; border-bottom-color: var(--sb-teinte) !important; }
 html[data-style-mode="vivant"] #app#app #v-journal > .journal-corps { padding: 12px; background: var(--sb-papier); border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre); -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); margin-bottom: var(--sb-ecart) !important; }
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terres-quetes { overflow: visible !important; }
 /* poser un extracteur : un bouton rond avec l’icône du bâtiment et un petit « + » (le nom est en info-bulle) */
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-ajout { background: var(--rond-papier) center / 100% 100% no-repeat !important; border: 0 !important; border-image: none !important; border-radius: 50% !important; box-shadow: none !important; width: 52px; height: 52px; min-width: 52px; padding: 0 !important; position: relative; display: inline-flex; align-items: center; justify-content: center; }
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-ajout::before { content: none !important; display: none !important; }
 #v-domaine .terres .terre-ajout :is(svg, .gi, .ic) { width: 28px; height: 28px; }
-#v-domaine .terres .terre-ajout .ajout-plus { position: absolute; left: 6px; top: 3px; font: 700 16px/1 var(--sans, system-ui); color: #813f2a; }
+#v-domaine .terres .terre-ajout .ajout-plus { position: absolute; left: 6px; top: 3px; font: 700 16px/1 var(--sans, system-ui); color: var(--sb-teinte); }
 #v-domaine .terres .terre-ajout.nope { opacity: .55; }
 /* Labo : pas de barre vide quand il n’y a rien à montrer ; Journal : fragments inconnus en simple trait pointillé */
 #v-labo .ae-inventory:not(:has(*)) { display: none; }
-[data-style-mode="vivant"] #app#app #v-journal .frag.unk { border-image: none !important; border: 1px dashed rgb(121 105 74 / .6) !important; border-radius: 12px !important; background: transparent !important; box-shadow: none !important; }
+[data-style-mode="vivant"] #app#app #v-journal .frag.unk { border-image: none !important; border: 1px dashed rgb(var(--sb-tb) / .6) !important; border-radius: 12px !important; background: transparent !important; box-shadow: none !important; }
 [data-style-mode="vivant"] #app#app #v-journal .frag.unk::before, [data-style-mode="vivant"] #app#app #v-journal .frag.unk::after { content: none !important; }
 
 /* ======================= 5e passe : le haut des Terres et de l’Atelier sur le modèle du Labo et de la Progression ======================= */
@@ -230,19 +262,19 @@ html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres > .terres-p
   flex: 0 0 auto; width: auto !important; min-width: 56px !important; height: auto !important; min-height: 50px; padding: 4px 10px !important; border: 0 !important; border-image: none !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important;
   background: none !important; box-shadow: none !important; color: var(--sb-encre) !important; text-shadow: none !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; -webkit-backdrop-filter: none; backdrop-filter: none; overflow: visible !important;
 }
-html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres > .terres-pastilles > .terres-pastille.on { border-bottom-color: #813f2a !important; color: #813f2a !important; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres > .terres-pastilles > .terres-pastille.on { border-bottom-color: var(--sb-teinte) !important; color: var(--sb-teinte) !important; }
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres > .terres-pastilles > .terres-pastille[data-terre-panel="obj"] { flex: 1 1 auto; min-width: 0 !important; justify-content: flex-start; }
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres > .terres-pastilles > .terres-pastille[data-terre-panel="obj"] .lbl { color: inherit !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 9em; font-weight: 700; }
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres > .terres-pastilles > .terres-pastille::before, html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres > .terres-pastilles > .terres-pastille::after { content: none !important; display: none !important; }
 #v-domaine .terres > .terres-pastilles .terres-pastille .gi, #v-domaine .terres > .terres-pastilles .terres-pastille svg { width: 26px; height: 26px; }
-#v-domaine .terres .terres-quetes .pastille-n { right: 0; top: 2px; background: var(--sb-encre); color: #fff8e9; }
+#v-domaine .terres .terres-quetes .pastille-n { right: 0; top: 2px; background: var(--sb-encre-fond); color: #fff8e9; }
 
 /* Atelier : Produire et Machines dans une plaque d’onglets soulignés, comme la Progression et le Journal */
 html[data-style-mode="vivant"] #app#app :is(#v-atelier, #v-machines)#v-atelier .atl-page > .subtabs, html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .atl-page > .subtabs {
   display: flex; gap: 2px; padding: 2px 8px !important; background: var(--sb-papier) !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; box-shadow: var(--sb-ombre) !important; -webkit-backdrop-filter: var(--sb-flou); backdrop-filter: var(--sb-flou); margin: var(--sb-ecart) var(--sb-gouttiere) 0 !important;
 }
-html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs > button { flex: 1 1 0; background: none !important; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; min-height: 50px; font-size: 1.1rem; color: var(--sb-encre-douce, #60513f); }
-html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs > button.on { background: none !important; color: #813f2a; font-weight: 700; border-bottom-color: #813f2a !important; }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs > button { flex: 1 1 0; background: none !important; border: 0 !important; border-bottom: 3px solid transparent !important; border-radius: 0 !important; box-shadow: none !important; -webkit-backdrop-filter: none; backdrop-filter: none; min-height: 50px; font-size: 1.1rem; color: var(--sb-encre-douce, var(--sb-doux)); }
+html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs > button.on { background: none !important; color: var(--sb-teinte); font-weight: 700; border-bottom-color: var(--sb-teinte) !important; }
 
 /* ======================= 6e passe : onglets en icônes, titre de la terre en bas, bandeau lisible ======================= */
 /* onglets : l’icône pour tous, le nom seulement pour l’onglet ouvert (le nom des autres reste lisible pour les lecteurs d’écran) */
@@ -250,7 +282,7 @@ html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .subtabs > button.o
 :is(.prog-sw, #v-journal > .filters, #v-carnet .journal-sw, .subtabs, .ae-metiers) button:not(.on):not(.pri) .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 :is(.prog-sw, #v-journal > .filters, #v-carnet .journal-sw, .subtabs, .ae-metiers) button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
 :is(.prog-sw, #v-journal > .filters, #v-carnet .journal-sw, .subtabs) button :is(svg, .gi) { width: 26px; height: 26px; flex: none; }
-:is(.prog-sw, #v-journal > .filters, #v-carnet .journal-sw, .subtabs, .ae-metiers) button .tab-dot { position: absolute; right: 8px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: #a8402b; }
+:is(.prog-sw, #v-journal > .filters, #v-carnet .journal-sw, .subtabs, .ae-metiers) button .tab-dot { position: absolute; right: 8px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--sb-acc); }
 :is(.prog-sw, #v-journal > .filters, #v-carnet .journal-sw, .subtabs) button { flex: 1 1 0; }
 :is(.prog-sw, #v-journal > .filters, #v-carnet .journal-sw) button.on { flex: 2 1 0; }
 
@@ -285,24 +317,24 @@ html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete
 }
 /* les états de la terre : des pastilles sur le décor ; leur texte s’ouvre en bulle sous la rangée, et le corps lui laisse la place */
 #v-domaine .terre-etat { position: relative; z-index: 5; flex: none; display: flex; align-items: center; gap: 6px; min-width: 0; margin: 0 var(--sb-gouttiere, 10px); }
-#v-domaine .terre-pastille { position: relative; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 0 1 auto; min-width: 44px; height: 44px; margin: 0; padding: 0 12px; border: var(--sb-bord, 1px solid rgb(121 105 74 / .55)); border-radius: 22px; background: var(--sb-papier, rgb(246 239 222 / .92)); box-shadow: var(--sb-ombre, 0 2px 6px rgb(20 14 8 / .28)); color: var(--sb-encre, #3b2a1a); font: 600 15px/1 var(--fin-sans, system-ui, sans-serif); white-space: nowrap; overflow: hidden; }
+#v-domaine .terre-pastille { position: relative; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 0 1 auto; min-width: 44px; height: 44px; margin: 0; padding: 0 12px; border: var(--sb-bord, 1px solid rgb(var(--sb-tb) / .55)); border-radius: 22px; background: var(--sb-papier, rgb(var(--sb-pb) / .92)); box-shadow: var(--sb-ombre, 0 2px 6px rgb(20 14 8 / .28)); color: var(--sb-encre); font: 600 15px/1 var(--fin-sans, system-ui, sans-serif); white-space: nowrap; overflow: hidden; }
 #v-domaine .terre-pastille.inerte { flex: none; }
 #v-domaine .terre-actions > .terre-pastille { margin-right: auto; }
-#v-domaine .terre-pastille.on { border-color: #813f2a; box-shadow: 0 0 0 2px rgb(129 63 42 / .35); }
-#v-domaine .terre-pastille b { font-weight: 700; color: #813f2a; }
+#v-domaine .terre-pastille.on { border-color: var(--sb-teinte); box-shadow: 0 0 0 2px rgb(129 63 42 / .35); }
+#v-domaine .terre-pastille b { font-weight: 700; color: var(--sb-teinte); }
 #v-domaine .terre-pastille .pastille-mot { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-#v-domaine .terre-pastille .pastille-alerte { flex: none; width: 22px; height: 22px; border-radius: 50%; background: #a8402b; color: #fff8e9; font: 700 15px/22px var(--fin-sans, system-ui, sans-serif); text-align: center; }
+#v-domaine .terre-pastille .pastille-alerte { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sb-acc); color: #fff8e9; font: 700 15px/22px var(--fin-sans, system-ui, sans-serif); text-align: center; }
 #v-domaine .terre-pastille :is(.gi, svg) { flex: none; width: 20px; height: 20px; }
 #v-domaine .terre-pastille.astuce, #v-domaine .terre-pastille.gisement { flex: none; }
 #v-domaine .terre-pastille.astuce { padding: 0; width: 44px; font-size: 20px; }
 #v-domaine .terre-pastille.gisement { padding: 0 12px 0 6px; overflow: visible; }
 #v-domaine .terre-pastille.gisement .ic { flex: none; width: 34px; height: 34px; border: 0; background: none; box-shadow: none; padding: 0; }
-#v-domaine .terre-pastille.gisement .ajout-plus { position: absolute; left: 2px; top: -3px; width: 18px; height: 18px; border-radius: 50%; background: #a8402b; color: #fff8e9; font: 700 13px/18px var(--fin-sans, system-ui, sans-serif); text-align: center; }
+#v-domaine .terre-pastille.gisement .ajout-plus { position: absolute; left: 2px; top: -3px; width: 18px; height: 18px; border-radius: 50%; background: var(--sb-acc); color: #fff8e9; font: 700 13px/18px var(--fin-sans, system-ui, sans-serif); text-align: center; }
 /* quand la rangée est pleine ou l’écran étroit, « Poser … » se réduit à son icône (le nom reste en info-bulle) */
 #v-domaine .terre-etat:has(> .terre-pastille:nth-of-type(4)) .pastille-long { display: none; }
 @media (max-width: 359px) { #v-domaine .terre-etat:has(> .terre-pastille:nth-of-type(3)) .pastille-long { display: none; } }
 #v-domaine .terre-pastille.gisement:not(:has(.pastille-long:not([hidden]))) { padding-right: 6px; }
-#v-domaine .terre-bulle { position: relative; z-index: 5; flex: 0 1 auto; min-height: 0; box-sizing: border-box; margin: 0 var(--sb-gouttiere, 10px); overflow-y: auto; overscroll-behavior: contain; padding: 9px 14px; border: var(--sb-bord, 1px solid rgb(121 105 74 / .55)); border-radius: var(--sb-rayon, 12px); background: #f6efde; color: var(--sb-encre, #3b2a1a); box-shadow: 0 12px 26px rgb(40 26 12 / .5); }
+#v-domaine .terre-bulle { position: relative; z-index: 5; flex: 0 1 auto; min-height: 0; box-sizing: border-box; margin: 0 var(--sb-gouttiere, 10px); overflow-y: auto; overscroll-behavior: contain; padding: 9px 14px; border: var(--sb-bord, 1px solid rgb(var(--sb-tb) / .55)); border-radius: var(--sb-rayon, 12px); background: var(--sb-bulle); color: var(--sb-encre); box-shadow: 0 12px 26px rgb(40 26 12 / .5); }
 #v-domaine .terre-bulle[hidden] { display: none; }
 /* une bulle ouverte prend la place du corps, qui s’efface le temps de la lecture (un appui ailleurs la referme) */
 #v-domaine .terres:has(> .terre-bulle:not([hidden])) .terre-corps { flex-basis: 0; padding-bottom: 0; visibility: hidden; }
@@ -319,24 +351,24 @@ html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .dom.terres > .terr
 #v-domaine .terre-actions > .dom-lieu .lieu-nom { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* l’exploration en cours se lit ici : le rappel du bandeau, qui lui ajoutait une rangée, se retire tant que cet écran la montre */
 html[data-style-mode="vivant"] #app#app:has(#v-domaine.on .terre-actions > .dom-lieu) #top#top #expMini { display: none !important; }
-#v-domaine .terre-actions > .dom-lieu { flex: 1 1 auto; min-width: 0; box-sizing: border-box; min-height: 48px; display: flex; flex-direction: column; justify-content: center; gap: 4px; margin: 0; padding: 4px 12px; border: var(--sb-bord, 1px solid rgb(121 105 74 / .55)); border-radius: var(--sb-rayon, 12px); background: var(--sb-papier, rgb(246 239 222 / .92)); box-shadow: var(--sb-ombre, 0 2px 6px rgb(20 14 8 / .28)); color: var(--sb-encre, #3b2a1a); }
+#v-domaine .terre-actions > .dom-lieu { flex: 1 1 auto; min-width: 0; box-sizing: border-box; min-height: 48px; display: flex; flex-direction: column; justify-content: center; gap: 4px; margin: 0; padding: 4px 12px; border: var(--sb-bord, 1px solid rgb(var(--sb-tb) / .55)); border-radius: var(--sb-rayon, 12px); background: var(--sb-papier, rgb(var(--sb-pb) / .92)); box-shadow: var(--sb-ombre, 0 2px 6px rgb(20 14 8 / .28)); color: var(--sb-encre); }
 #v-domaine .terre-actions > .terre-rond, #v-domaine .terre-maitrise-btn { flex: none; display: inline-flex; align-items: center; justify-content: center; margin: 0; font-size: 24px; }
 #v-domaine .terre-maitrise-btn { gap: 1px; font: 700 15px/1 var(--fin-sans, system-ui, sans-serif); }
 #v-domaine .terres-panneau-corps { padding-bottom: calc(var(--nav, 58px) + var(--safe-b, 0px)); }
-#v-domaine .terre-maitrise-btn b { color: #813f2a; }
+#v-domaine .terre-maitrise-btn b { color: var(--sb-teinte); }
 #v-domaine .terre-maitrise-btn small { font-size: 11px; font-weight: 600; }
-#v-domaine .terre-maitrise-btn.on { outline: 2px solid #813f2a; outline-offset: -2px; }
+#v-domaine .terre-maitrise-btn.on { outline: 2px solid var(--sb-teinte); outline-offset: -2px; }
 /* la maîtrise se lit aussi d’un coup d’œil, en jauge sous le nom de la terre */
 #v-domaine .terre-titre { position: relative; }
-#v-domaine .terre-jauge { position: absolute; left: 14%; right: 14%; bottom: 1px; height: 4px; border-radius: 2px; background: rgb(121 105 74 / .28); overflow: hidden; pointer-events: none; }
-#v-domaine .terre-jauge i { display: block; height: 100%; border-radius: 2px; background: #a8402b; }
+#v-domaine .terre-jauge { position: absolute; left: 14%; right: 14%; bottom: 1px; height: 4px; border-radius: 2px; background: rgb(var(--sb-tb) / .28); overflow: hidden; pointer-events: none; }
+#v-domaine .terre-jauge i { display: block; height: 100%; border-radius: 2px; background: var(--sb-acc); }
 #v-domaine .terre-titre:has(.terre-jauge) h2 { padding-bottom: 5px; }
 /* le panneau de la maîtrise : ses objectifs sont déjà dépliés, son titre est celui du panneau */
 #v-domaine .terres-panneau .terre-maitrise > summary { list-style: none; cursor: default; }
 #v-domaine .terres-panneau .terre-maitrise > summary::-webkit-details-marker { display: none; }
 /* le conseil est du papier crème, comme le reste */
 html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--sb-papier) !important; color: var(--sb-encre) !important; border: var(--sb-bord) !important; text-shadow: none !important; }
-html[data-style-mode="vivant"] #v-domaine .terres .dom-tip b { color: #813f2a; }
+html[data-style-mode="vivant"] #v-domaine .terres .dom-tip b { color: var(--sb-teinte); }
 /* 6e passe : le nom de la terre est crème */
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-tete { background: var(--sb-papier) !important; }
 #top .chip :is(b, .cv) { font-size: 1.1rem; }
@@ -384,7 +416,7 @@ html[data-style-mode="vivant"] #app#app #v-carnet .journal-sw { margin: var(--sb
 
 /* Journal : le décor couvre toute la hauteur même quand l’onglet est court (Questions) ; les fragments trouvés n’ont plus de cadre qui barre le titre */
 html[data-style-mode="vivant"] #app#app #v-journal.view.on { min-height: 100%; box-sizing: border-box; }
-[data-style-mode="vivant"] #app#app #v-journal .frag:not(.unk) { border-image: none !important; border: 1px solid rgb(121 105 74 / .55) !important; border-radius: 12px !important; background: var(--sb-papier-leger) !important; box-shadow: none !important; }
+[data-style-mode="vivant"] #app#app #v-journal .frag:not(.unk) { border-image: none !important; border: 1px solid rgb(var(--sb-tb) / .55) !important; border-radius: 12px !important; background: var(--sb-papier-leger) !important; box-shadow: none !important; }
 [data-style-mode="vivant"] #app#app #v-journal .frag:not(.unk)::before, [data-style-mode="vivant"] #app#app #v-journal .frag:not(.unk)::after { content: none !important; }
 
 /* Terres : « Explorer » est l’action principale, donc un papier net avec une encre foncée (il ressemblait à un bouton éteint) */
@@ -425,11 +457,11 @@ html[data-style-mode="vivant"] #app#app #v-domaine .terre-fond[src*="-fond.webp"
 
 /* la règle de la terre (« Il fait tiède… », « Les vapeurs… ») est un papier lisible sur n’importe quel fond HD */
 html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-regle { background: var(--sb-papier) !important; color: var(--sb-encre) !important; border: var(--sb-bord) !important; border-radius: var(--sb-rayon) !important; padding: 10px 14px !important; box-shadow: var(--sb-ombre); text-shadow: none !important; font-size: 15px; }
-html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-regle b { color: #813f2a; }
+html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-regle b { color: var(--sb-teinte); }
 
 /* ---- Étude : l’étude prend un peu de temps (barre qui se remplit, bouton qui respire) ---- */
 .ae-etude.etude-en-cours { position: relative; overflow: hidden; border-radius: 12px; }
-.ae-etude.etude-en-cours::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: #a8402b; transform-origin: left center; animation: etude-barre var(--etude, 1s) linear var(--etude-passe, 0s) forwards; }
+.ae-etude.etude-en-cours::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--sb-acc); transform-origin: left center; animation: etude-barre var(--etude, 1s) linear var(--etude-passe, 0s) forwards; }
 .ae-etude.etude-en-cours > .btn:first-child { animation: etude-pouls .7s ease-in-out infinite alternate; }
 @keyframes etude-barre { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes etude-pouls { to { opacity: .55; } }
@@ -445,7 +477,7 @@ html[data-style-mode="vivant"] #app#app #v-domaine .terre-boucle.pulse { animati
 }
 
 /* ---- relève : le jeu se couvre de papier avec une phrase, pas de noir ---- */
-.fondu-releve { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: #f1e8d3; color: #3b2a1a; font: 22px/1.5 var(--serif, Georgia, serif); opacity: 0; transition: opacity .6s ease; pointer-events: all; }
+.fondu-releve { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; text-align: center; padding: 24px; background: #f1e8d3; color: var(--sb-encre); font: 22px/1.5 var(--serif, Georgia, serif); opacity: 0; transition: opacity .6s ease; pointer-events: all; }
 .fondu-releve.on { opacity: 1; }
 .fondu-releve p { max-width: 20em; margin: 0; }
 @media (prefers-reduced-motion: reduce) { .fondu-releve { transition: none; } }

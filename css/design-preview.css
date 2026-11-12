@@ -735,12 +735,6 @@ body[data-ep="bord"] :where(#v-domaine) .dom-terre {
 
 /* ATLAS V4 — l’établi et les fiches de savoir-faire.
  * Présentation uniquement ; les cibles, états et commandes sont conservés. */
-body.theme-dark:not([data-ep="bord"]) {
-  --bg: #1c2423; --bg2: #232d2a; --panel: #2b3530; --panel2: #354039;
-  --text: #f1eadc; --muted: #bdc8b8; --dim: #a7b5a1;
-  --line: rgba(241,234,220,.17); --line2: rgba(241,234,220,.38);
-  color-scheme: dark;
-}
 #v-atelier, #v-carnet { padding-inline: clamp(10px,3vw,20px); }
 #v-atelier .btn, #v-carnet .btn { min-height: 44px; min-width: 44px; }
 #v-atelier .atlas-workshop-heading {
@@ -799,7 +793,7 @@ body.theme-dark:not([data-ep="bord"]) {
   font: 700 17px/1.25 "Alegreya Sans",sans-serif; letter-spacing: .08em;
 }
 #v-atelier .forge-btn:disabled { background: #53605e; color: #e0e2d7; border-color: #9ca99e; filter: none; opacity: 1; }
-body.theme-dark #v-atelier .forge-btn:not(:disabled), body[data-ep="bord"] #v-atelier .forge-btn:not(:disabled) { color: #172126; }
+body[data-ep="bord"] #v-atelier .forge-btn:not(:disabled) { color: #172126; }
 #v-atelier .result { border: 1px solid var(--line2); border-left: 3px solid var(--intu); box-shadow: none; padding: 12px; }
 #v-atelier .result .rname { font-size: 24px; line-height: 1.2; }
 #v-atelier .inv-grid { grid-template-columns: repeat(auto-fill,minmax(82px,1fr)); gap: 8px; }
@@ -872,12 +866,6 @@ body:not(.theme-dark)[data-ep="enluminure"] { --muted: #443831; --dim: #413831; 
 body:not(.theme-dark)[data-ep="registre"] { --muted: #2c3a43; --dim: #33393b; --good: #164037; --bad: #6a1f11; --intu: #4b3408; --acc-dark: 61%; }
 body:not(.theme-dark)[data-ep="quadrille"] { --muted: #39515e; --dim: #404f57; --good: #12593b; --bad: #8f2a17; --intu: #67470b; --acc-dark: 51%; }
 body:not(.theme-dark)[data-ep="bord"] { --dim: #a0b3b8; --bad: #ff9b8e; --intu: #ffd27a; --acc-dark: 0%; }
-body.theme-dark[data-ep="pigments"] { --good: #83bc6e; --bad: #ed9786; --acc-dark: 8%; }
-body.theme-dark[data-ep="papyrus"] { --good: #81be56; --bad: #eb9884; --acc-dark: 0%; }
-body.theme-dark[data-ep="enluminure"] { --good: #94afdb; --bad: #ee9696; --acc-dark: 15%; }
-body.theme-dark[data-ep="registre"] { --good: #84b2df; --bad: #ec978a; --acc-dark: 9%; }
-body.theme-dark[data-ep="quadrille"] { --good: #3ec47c; --bad: #ed978c; --acc-dark: 0%; }
-body.theme-dark[data-ep="bord"] { --dim: #a0b3b8; --good: #9aacf9; --bad: #ee988e; --intu: #e8a03a; --acc-dark: 0%; }
 @media (prefers-reduced-motion: reduce) {
   .tu-bub.pop, .tu-spot { animation: none; transition: none; }
 }

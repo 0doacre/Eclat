@@ -345,11 +345,6 @@
   filter: saturate(1.2);
 }
 
-body.theme-dark[data-style-mode="vivant"] .dom-terre.a-decor::before {
-  opacity: 0.42;
-  filter: saturate(1.3);
-}
-
 /* Barre de fabrication et progression vivante dans l'Atelier */
 [data-style-mode="vivant"] #actbar {
   border-radius: 14px;
@@ -570,21 +565,6 @@ body.theme-dark .carnet-ic[data-item="charbon"] .carnet-img {
   --drawn-checkbox: url("../assets/ui/checkbox-ink.svg");
   --wash-mask: url("../assets/ui/pigment-wash.svg");
   --check-mask: url("../assets/ui/check-mark.svg");
-}
-
-body.theme-dark {
-  --drawn-canvas: #21241f;
-  --drawn-paper: #2c3029;
-  --drawn-paper-deep: #383d31;
-  --drawn-ink: #e5dcc9;
-  --drawn-muted: #c4baa2;
-  --drawn-pigment: #d1a778;
-  --drawn-pigment-ink: #252b23;
-  --drawn-rule: #908f7a;
-  --drawn-frame: url("../assets/ui/frame-chalk.svg");
-  --drawn-button: url("../assets/ui/button-chalk.svg");
-  --drawn-divider: url("../assets/ui/divider-chalk.svg");
-  --drawn-checkbox: url("../assets/ui/checkbox-chalk.svg");
 }
 
 /* 1. Fenêtres et feuilles dessinées */

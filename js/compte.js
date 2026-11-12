@@ -611,7 +611,6 @@
       const echosList = E.activeEchoesFins ? E.activeEchoesFins() : Object.keys((st.meta && st.meta.endings) || {});
       const nbEchos = echosList.length;
       const hasComptoir = E.zoneOpen(D.COMPTOIR.zone);
-      const isVivant = (typeof window !== "undefined" && (window.EclatStyleMode === "vivant" || (typeof document !== "undefined" && document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant")));
 
       /* un réglage qui s’active ou se coupe : toujours le même interrupteur, toujours les mêmes mots */
       const sw = (k, label, on, title) => '<div class="toggle"><span id="mt-' + k + '">' + label + '</span><button class="btn small sw' + (on ? " on" : "") + '" role="switch" aria-checked="' + !!on + '" aria-labelledby="mt-' + k + '" data-m="' + k + '" title="' + esc(title) + '">' + (on ? "Activé" : "Désactivé") + "</button></div>";
@@ -650,7 +649,7 @@
             '<button class="btn small sw' + (Tuto.enabled() ? " on" : "") + '" role="switch" aria-checked="' + Tuto.enabled() + '" aria-labelledby="mt-tuto" data-m="tuto" title="Afficher ou masquer les explications du guide">' + (Tuto.enabled() ? "Activé" : "Désactivé") + "</button></span></div>" +
             sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un passer chez toi de temps en temps")) +
           sec("affichage", "🖥️", "Affichage &amp; Écran",
-            (isVivant ? "" : '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
+            ('<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("barreBas", "Barre du bas masquée", st.settings.barreBas === "masquee", "La barre de navigation se range et ne laisse qu’une poignée ; elle vient quand on approche la souris du bas de l’écran ou qu’on touche la poignée. Désactivée (par défaut) : elle reste toujours visible.") +
             (App.ecranPossible() ? sw("ecran", "Garder l’écran allumé", st.settings.ecranAllume, "Empêcher la mise en veille de l’écran tant que le jeu est ouvert") : "")) +
