@@ -5,7 +5,7 @@
 /* ---- Labo : tout l'établi et les ressources tiennent dans l'écran d'un téléphone ---- */
 #v-labo .atl-titre { display: none; }                 /* le nom de l'onglet suffit */
 #v-labo .ae-legende { display: none; }                /* le nom de l'outil reste en info-bulle et en étiquette */
-.atelier-equipe .ae-slots > .btn { min-height: 72px !important; padding: 4px 3px; }
+.atelier-equipe .ae-slots > .btn { min-height: var(--ae-slot-height, 72px) !important; padding: 4px 3px; }
 .atelier-equipe .ae-slots small { font-size: 11px; }
 #v-labo .ae-actions { margin-top: 8px; }
 #v-labo .ae-bench { padding-block: 8px; }

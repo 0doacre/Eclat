@@ -112,15 +112,15 @@
   display: grid;
   align-items: stretch;
   align-content: stretch;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(132px, 1fr) auto;
   grid-template-rows: auto auto 1fr;
   grid-template-areas:
     "filtres etude"
     "search search"
     "inv inv";
-  gap: 4px;
+  gap: 2px;
   overflow: hidden;
-  padding: 4px 6px;
+  padding: 4px 2px;
   margin: 0;
 }
 
@@ -132,10 +132,17 @@
 }
 
 #app #views > #v-labo.view.on .ae-filtres {
+  --ae-filtres-gap: 0px;
   grid-area: filtres;
   display: flex;
-  gap: 4px;
+  flex-wrap: nowrap;
+  gap: 0;
   align-items: center;
+}
+#app #views > #v-labo.view.on .ae-filtres .ae-chip {
+  flex: 0 0 44px;
+  min-width: 44px;
+  margin: 0;
 }
 
 #app #views > #v-labo.view.on .ae-etude {
@@ -145,6 +152,7 @@
   align-items: center;
   justify-content: flex-end;
 }
+#app #views > #v-labo.view.on .ae-etude > .btn { white-space: nowrap; }
 
 #app #views > #v-labo.view.on .ae-stock-search {
   grid-area: search;
@@ -173,6 +181,8 @@
 
 @media (max-height: 699px) {
   #app #views > #v-labo.view.on {
+    --ae-slot-height: 44px;
+    --ae-forge-height: 44px;
     padding-top: 2px;
     padding-bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 4px);
   }
@@ -183,4 +193,17 @@
   #app #views > #v-labo.view.on .ae-bench {
     padding: 3px 4px;
   }
+  #app #views > #v-labo.view.on .ae-tools {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+  }
+  #app #views > #v-labo.view.on .ae-outils,
+  #app #views > #v-labo.view.on .ae-gestes { flex-wrap: nowrap; gap: 0; margin: 0; }
+  #app #views > #v-labo.view.on .ae-outil,
+  #app #views > #v-labo.view.on .ae-geste { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
 }

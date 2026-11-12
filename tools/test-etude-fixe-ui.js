@@ -32,8 +32,14 @@ const MESURE = () => {
   const q = s => document.querySelector(s), r = e => e && e.getBoundingClientRect();
   const labo = q("#v-labo"), vs = q("#views"), tabs = r(q("#tabs")), forge = r(q('#v-labo button[data-ae="forge"]'));
   const inv = q("#v-labo .ae-inventory");
+  const clips = [...document.querySelectorAll('#v-labo .ae-bench button, #v-labo .ae-stock > :not(.ae-inventory) button, #v-labo .ae-stock-search input')].filter(e => {
+    const r = e.getBoundingClientRect(), scope = e.closest('.ae-bench, .ae-stock').getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && (r.top < scope.top - 1 || r.bottom > scope.bottom + 1 || r.left < scope.left - 1 || r.right > scope.right + 1);
+  }).map(e => e.outerHTML.slice(0, 100));
+  const controls = [...document.querySelectorAll('#v-labo .ae-bench button, #v-labo .ae-stock > :not(.ae-inventory) button, #v-labo .ae-stock-search input')].map(e => e.getBoundingClientRect()).filter(r => r.width > 0 && r.height > 0);
+  const overlaps = controls.some((a, i) => controls.slice(i + 1).some(b => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1));
   let invDefile = false;
-  if (inv && inv.clientHeight > 0 && getComputedStyle(inv).overflowY === "auto" && getComputedStyle(inv).overscrollBehaviorY === "contain") {
+  if (inv && inv.clientHeight >= 44 && getComputedStyle(inv).overflowY === "auto" && getComputedStyle(inv).overscrollBehaviorY === "contain") {
     const probe = document.createElement("div");
     probe.style.cssText = "height:" + (inv.clientHeight + 100) + "px;min-height:" + (inv.clientHeight + 100) + "px;flex:none;grid-column:1 / -1";
     inv.append(probe);
@@ -58,7 +64,7 @@ const MESURE = () => {
     forgeWidth: forge ? forge.width : 0,
     forgeHeight: forge ? forge.height : 0,
     tabsTop: tabs ? tabs.top : 0,
-    invDefile,
+    invDefile, invHeight: inv && inv.clientHeight, clips, overlaps,
     petites
   };
 };
@@ -87,8 +93,19 @@ async function run() {
       ok(m.largeur <= 0 && m.hors === 0, `${tag} : rien ne dépasse en largeur`);
       ok(m.forgeWidth >= 44 && m.forgeHeight >= 44 && m.forgeBottom <= m.tabsTop && m.forgeTop >= 0, `${tag} : bouton d'action entier au pouce au-dessus des onglets (bouton=${m.forgeBottom}, onglets=${m.tabsTop})`);
       ok(m.petites.length === 0, `${tag} : toutes les cibles font au moins 44 px (${JSON.stringify(m.petites)})`);
-      ok(m.invDefile, `${tag} : la réserve glisse réellement dans son cadre`);
+      ok(m.clips.length === 0, `${tag} : commandes accessibles sans rognage (${JSON.stringify(m.clips)})`);
+      ok(!m.overlaps, `${tag} : aucune commande fixe n'en recouvre une autre`);
+      ok(m.invDefile, `${tag} : la réserve glisse réellement dans son cadre (${m.invHeight}px)`);
+      if (process.env.VERBOSE) console.log(`${tag} : réserve ${m.invHeight} px`);
       ok(errors.length === 0, `${tag} : aucune erreur de page (${errors.join(" ; ")})`);
+      if (W === 320) {
+        const outils = await p.locator('#v-labo .ae-outil').evaluateAll(es => es.map(e => e.dataset.value));
+        for (const outil of outils) {
+          await p.locator(`#v-labo .ae-outil[data-value="${outil}"]`).click();
+          const etat = await p.evaluate(MESURE);
+          ok(etat.hors === 0 && etat.clips.length === 0 && !etat.overlaps && etat.invDefile && etat.forgeBottom <= etat.tabsTop, `${tag} : outil ${outil} accessible`);
+        }
+      }
       await ctx.close();
     }
   }

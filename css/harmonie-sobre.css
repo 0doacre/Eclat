@@ -130,7 +130,7 @@ html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chi
 #v-labo .ae-gestes .ae-geste :is(svg, .gi) { width: 26px; height: 26px; }
 #v-labo .ae-gestes .ae-vider { margin-left: auto; width: 44px; height: 44px; min-width: 44px; }
 #v-labo .ae-gestes .ae-vider :is(svg, .gi) { width: 20px; height: 20px; }
-#v-labo .ae-actions .ae-forge { width: 100%; display: flex; align-items: center; justify-content: center; min-height: 60px; }
+#v-labo .ae-actions .ae-forge { width: 100%; display: flex; align-items: center; justify-content: center; min-height: var(--ae-forge-height, 60px); }
 #v-labo .ae-actions .ae-forge .ae-grand :is(svg, .gi) { width: 34px; height: 34px; }
 #v-labo .ae-actions .ae-lot { display: inline-flex; align-items: center; gap: 6px; }
 
