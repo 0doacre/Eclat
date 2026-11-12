@@ -192,7 +192,7 @@
       if (z === zs[zs.length - 1]) {
         E.passPending().forEach((pz) => {
           const gd = E.guide();
-          if (gd && gd.ob.k === "pass" && gd.ob.z === pz && !(["plaine", "riviere"].includes(pz) && window.EclatStyleMode === "vivant")) return;
+          if (gd && gd.ob.k === "pass" && gd.ob.z === pz && !["plaine", "riviere"].includes(pz)) return;
           const p = E.passInfo(pz);
           if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + pz + '"><h3>Vers ' + esc(E.ZONES[pz].n) + "</h3>" + passHTML(pz, { chantier: true }) + "</section>";
         });
@@ -267,7 +267,7 @@
       if (E.zoneOpen(D.COMPTOIR.zone)) h += comptoirHTML();
       E.passPending().forEach((z) => {
         const g = E.guide();
-        if (g && g.ob.k === "pass" && g.ob.z === z && !(["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant")) return; // le chantier peint garde sa scène dans les Terres
+        if (g && g.ob.k === "pass" && g.ob.z === z && !["plaine", "riviere"].includes(z)) return; // le chantier peint garde sa scène dans les Terres
         const p = E.passInfo(z);
         if (p && p.ready) h += '<section class="dom-card dom-pass" id="dpass-' + z + '"><h3>Vers ' + esc(E.ZONES[z].n) + "</h3>" + passHTML(z, { chantier: true }) + "</section>";
       });
@@ -392,17 +392,16 @@
       const st = S(), res = d.res, key = E.extKey(z, res), e = E.domExt(z, res);
       const ch = E.extChoice(res, z);
       const info = E.machInfo(key), rate = depRate(z, res);
-      const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
-      const illustratedSource = isVivant && window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasSource(res);
+      const illustratedSource = window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasSource(res);
       const can = ch ? (E.freeExt(ch.t) >= 1 || E.plan(ch.t, 1).ok) : false;
       const pAdd = (ch && E.projectExtractor) ? E.projectExtractor(z, res, ch.t, 1) : null;
       const projTip = pAdd ? ' (débit : ' + perTime(pAdd.curRate) + ' → ' + perTime(pAdd.projRate) + ')' : '';
       const rateTxt = rate > 0 ? '+' + perTime(rate) : (e && info.s === 'off' ? '⏸' : '');
       const isProducing = rate > 0;
 
-      return '<div class="gis gis-compact' + (isVivant && isProducing ? ' gis-producing' : '') + '" data-gis="' + key + '">' +
+      return '<div class="gis gis-compact' + (isProducing ? ' gis-producing' : '') + '" data-gis="' + key + '">' +
         '<button type="button" class="gis-compact-btn" data-gsheet="' + key + '" title="' + esc(I[res].n) + ' : gérer les extracteurs" aria-label="' + esc(I[res].n) + ' : gérer les extracteurs">' +
-          '<div class="gis-compact-node' + (d.hand ? ' hand' : '') + '">' + (isVivant && (d.hand || illustratedSource) ? livingNode(res) : icon(res)) + '</div>' +
+          '<div class="gis-compact-node' + (d.hand ? ' hand' : '') + '">' + ((d.hand || illustratedSource) ? livingNode(res) : icon(res)) + '</div>' +
           '<div class="gis-compact-info">' +
             '<span class="gis-compact-name">' + esc(I[res].n) + '</span>' +
             '<b class="gis-compact-c" data-c="' + res + '">' + fmt(st.inv[res] || 0) + '</b>' +
@@ -417,7 +416,6 @@
       const st = S(), Z = E.ZONES[z];
       const deps = E.zoneDeps(z).filter((d) => depShown(z, d));
       const decor = DECORS[z] ? ' style="--decor:url(' + new URL('assets/terres/' + z + '-decor.webp', document.baseURI).href + ')"' : "";
-      const carnet = window.EclatStyleMode === "vivant";
       const number = D.ZONES.findIndex((land) => land.id === z) + 1;
       const painted = z === "riviere" && st.age >= 7 ? "riviere-vapeur" : CARNET_DECORS[z] || null;
       const scene = painted ? "assets/carnet/lands/" + painted + ".webp" : DECORS[z] ? "assets/terres/" + z + "-decor.webp" : null;
@@ -427,14 +425,10 @@
       let h;
 
       if (closed) {
-        h = carnet
-          ? '<section class="dom-terre carnet-terre dom-terre-fermee" id="dt-' + z + '">' +
+        h =
+            '<section class="dom-terre carnet-terre dom-terre-fermee" id="dt-' + z + '">' +
             '<div class="carnet-running"><span>Terre traversée</span><span>Terre ' + number + '</span></div>' +
             '<div class="dom-th dom-closed-header"><div><h3>' + esc(Z.n) + '</h3></div>' +
-            '<div class="row items-center dom-closed-acts">' + btnContempler +
-            '<button type="button" class="btn mini ghost dom-land-toggle" data-land-toggle="' + z + '" aria-expanded="false" title="Déplier les détails de cette terre">▾ Déplier</button></div></div>'
-          : '<section class="dom-terre dom-terre-fermee' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '>' +
-            '<div class="dom-th dom-closed-header"><h3>' + esc(Z.n) + '</h3>' +
             '<div class="row items-center dom-closed-acts">' + btnContempler +
             '<button type="button" class="btn mini ghost dom-land-toggle" data-land-toggle="' + z + '" aria-expanded="false" title="Déplier les détails de cette terre">▾ Déplier</button></div></div>';
         h += '<div class="dom-closed-res">';
@@ -445,7 +439,6 @@
       }
 
       const toggleOpenBtn = passed ? '<button type="button" class="btn mini ghost dom-land-toggle" data-land-toggle="' + z + '" aria-expanded="true" title="Replier cette terre">▴ Replier</button>' : '';
-      if (carnet) {
         h = '<section class="dom-terre carnet-terre" id="dt-' + z + '"><div class="carnet-running"><span>' + (passed ? 'Terre traversée' : 'Les terres traversées') + '</span><span>Terre ' + number + '</span></div>' +
           '<div class="carnet-land-header' + (scene ? "" : " sans-paysage") + '"><div class="dom-th"><p class="kicker">' + esc(D.AGES[st.age].n) + '</p><h3>' + esc(Z.n) + '</h3>' + btnContempler + toggleOpenBtn +
           '<p class="carnet-observation">' + esc(Z.d || "") + '</p>' + lieuHTML(z) + '</div>' +
@@ -456,9 +449,6 @@
         if (z === "riviere") h += Riviere.studyHTML();
         if (z === "collines") h += Collines.studyHTML();
         if (z === "plaine" && E.zoneOpen("riviere")) h += '<div class="sentier-retained">' + window.EclatPasserelle.html(E) + '<div class="row wrap"><button class="btn small ico-seule" data-gz="riviere" aria-label="Emprunter la passerelle" title="Emprunter la passerelle">' + gi("g:sentier") + '</button><button class="btn small ghost ico-seule" data-passerelle-replay aria-label="Revoir les travaux" title="Revoir les travaux">' + gi("g:travaux") + '</button></div></div>';
-      } else {
-        h = '<section class="dom-terre' + (decor ? " a-decor" : "") + '" id="dt-' + z + '"' + decor + '><div class="dom-th"><h3>' + esc(Z.n) + "</h3>" + btnContempler + toggleOpenBtn + lieuHTML(z) + "</div>";
-      }
       h += regleHTML(z);
       h += E.territoiresHTML(z, esc, U.terresOpen && U.terresOpen[z]);
       deps.forEach((d) => { h += gisHTML(z, d); });
@@ -832,11 +822,10 @@
         const projTip = pAdd ? ' (débit : ' + perTime(pAdd.curRate) + ' → ' + perTime(pAdd.projRate) + ')' : '';
         btns += '<button class="mini lbl' + (can ? "" : " nope") + '" data-xadd="' + key + '" data-n="1" title="Poser : ' + esc(I[ch.t].n) + esc(projTip) + '" aria-label="Poser : ' + esc(I[ch.t].n) + '"><span class="bi">+</span><span class="bl"> ' + esc(nm(ch.t, 1)) + "</span></button>";
       }
-      const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
-      const illustratedSource = isVivant && window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasSource(res);
+      const illustratedSource = window.ECLAT_ILLUSTRATIONS && window.ECLAT_ILLUSTRATIONS.hasSource(res);
       const isProducing = rate > 0;
-      return '<div class="gis' + (isVivant && d.hand ? " gis-vivant" : "") + (isVivant && isProducing ? " gis-producing" : "") + '" data-gis="' + key + '">' +
-        '<button class="gis-ic' + (d.hand ? " hand" : "") + (isVivant && d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + (isVivant && (d.hand || illustratedSource) ? livingNode(res) : icon(res)) + "</button>" +
+      return '<div class="gis' + (d.hand ? " gis-vivant" : "") + (isProducing ? " gis-producing" : "") + '" data-gis="' + key + '">' +
+        '<button class="gis-ic' + (d.hand ? " hand" : "") + (d.hand ? " gis-ic-vivant" : "") + '"' + (d.hand ? ' data-harv="' + key + '" aria-label="Récolter : ' + esc(I[res].n) + '"' : ' tabindex="-1"') + ">" + ((d.hand || illustratedSource) ? livingNode(res) : icon(res)) + "</button>" +
         '<button class="gis-body" data-gsheet="' + key + '" aria-label="Gisement : ' + esc(I[res].n) + '"><span class="gis-l1"><b>' + esc(I[res].n) + "</b>" + right + "</span>" +
         '<span class="gis-l2 tiny muted">' + sub + "</span></button>" +
         (btns ? '<div class="gis-b">' + btns + "</div>" : "") + "</div>";
@@ -1441,11 +1430,8 @@
         floater("×2 !", x, y - 26, "#ffd36b");
         if (A.discover) A.discover();
       }
-      const isVivant = (window.EclatStyleMode === "vivant" || (document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant"));
-      if (isVivant) {
-        btn.classList.remove("hit"); void btn.offsetWidth; btn.classList.add("hit");
-        spawnLivingParticles(x, y, res);
-      }
+      btn.classList.remove("hit"); void btn.offsetWidth; btn.classList.add("hit");
+      spawnLivingParticles(x, y, res);
       const row = btn.closest(".gis");
       let c = row && row.querySelector(".hcount");
       const now = performance.now();

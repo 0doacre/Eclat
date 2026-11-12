@@ -173,14 +173,12 @@ html[data-style-mode="vivant"] #v-domaine .terre-maitrise>summary{min-height:44p
   html[data-style-mode="vivant"] #top{display:grid;grid-template-columns:minmax(0,1fr) repeat(5,44px);gap:2px;align-items:center;min-height:56px;height:auto;padding:calc(5px + var(--safe-t)) 4px 5px}
   html[data-style-mode="vivant"] #top .top-right{display:contents}
   html[data-style-mode="vivant"] #top #ageBtn{grid-column:1;grid-row:1;min-width:0;padding:2px 4px;min-height:44px}
-  html[data-style-mode="vivant"] #top #atlasToggle{grid-column:2;grid-row:1}
   html[data-style-mode="vivant"] #top #questBtn{grid-column:3;grid-row:1}
   html[data-style-mode="vivant"] #top #memBtn{grid-column:4;grid-row:1}
   html[data-style-mode="vivant"] #top #intuBtn{grid-column:5;grid-row:1}
   html[data-style-mode="vivant"] #top #menuBtn{grid-column:6;grid-row:1}
   html[data-style-mode="vivant"] #top :is(#cloudBtn,#tutoMini,#expMini){grid-row:2}
   html[data-style-mode="vivant"] #top :is(.chip,.icon-btn){padding:4px 2px!important;min-width:44px;width:44px;height:44px;min-height:44px;gap:1px;font-size:11px;justify-content:center}
-  html[data-style-mode="vivant"] #top #atlasToggle{font-size:11px}
   html[data-style-mode="vivant"] #top #menuBtn{font-size:22px}
   html[data-style-mode="vivant"] #top .chip .cv small{display:none}
   html[data-style-mode="vivant"] #top .quest .cv small{display:inline;font-size:11px}
@@ -260,7 +258,6 @@ html[data-style-mode="vivant"] #v-cosmos :is(.atlas-sky-caption,.sky-info){color
 body[data-ep] :is(.mgain,.memory .gain,.chip.mem b){color:var(--acc)}
 html[data-style-mode="vivant"] .hcount{color:var(--text);background:var(--panel2);text-shadow:var(--finish-ink-shadow)}
 body[data-ep] :is(.ring.ok,.ring.lack,.badge-ready){background:var(--panel2)}
-html:not([data-style-mode="vivant"]) #v-domaine .a-decor .dom-th :is(h3,.small){background:var(--panel);color:var(--text);text-shadow:var(--finish-ink-shadow)}
 @media(max-width:680px){
   html[data-style-mode="vivant"] #v-domaine .carnet-land-header{gap:0}
   html[data-style-mode="vivant"] #v-domaine .carnet-terre .dom-th{gap:3px;padding-block:3px}

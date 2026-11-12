@@ -32,9 +32,6 @@
     const sheet = document.getElementById("atlasStylesheet");
     return !!sheet && !sheet.disabled;
   }
-  function isVivant() {
-    return window.EclatStyleMode === "vivant" || document.documentElement.getAttribute("data-style-mode") === "vivant";
-  }
   function create({ E, D, esc, use, lieuState, chip }) {
     const order = () => D.ZONES.filter(z => !z.secret && GEO[z.id]).map(z => z.id);
     function layout() {
@@ -167,5 +164,5 @@
     }
     return { view, focusY, GEO };
   }
-  window.EclatAtlas = { create, enabled, isVivant };
+  window.EclatAtlas = { create, enabled };
 })();

@@ -33,7 +33,7 @@
     });
     document.addEventListener("click", (ev) => {
       const b = ev.target.closest && ev.target.closest('[data-sentier-replay]');
-      if (!b || window.EclatStyleMode !== "vivant" || !E.zoneOpen("plaine")) return;
+      if (!b || !E.zoneOpen("plaine")) return;
       A.init();
       session.pending = null;
       E.emit("sentierwork", { from: 0, to: 1, focus: true });
@@ -47,7 +47,7 @@
     function update() {
       frame = 0;
       if (state !== E.state) { state = E.state; session.pending = null; }
-      if (document.hidden || window.EclatStyleMode !== "vivant") return;
+      if (document.hidden) return;
       const scenes = [...document.querySelectorAll('[data-sentier-target]')];
       let pending = session.pending;
       if (pending && Date.now() > pending.expires) session.pending = pending = null;

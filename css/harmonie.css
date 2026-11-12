@@ -29,8 +29,7 @@
 /* 4. Les filtres, onglets et boutons : voir css/boutons.css (la grammaire des contrôles). */
 #v-arbre > .filters { gap: 6px; border-bottom: 0; }
 
-/* 5. L'en-tête : le choix de style (Aspect) disparaît bientôt, il est masqué ; les quatre boutons restants ont la même taille. */
-#atlasToggle { display: none !important; }
+/* 5. L’en-tête : les boutons ont la même taille. */
 #top .top-right { gap: 6px; }
 /* la hauteur et les coins seulement : la largeur reste celle de chaque bouton (les étiquettes Traces et Intuition s’affichent en entier quand il y a la place) */
 #top .top-right > :is(.chip, .icon-btn):not(.hidden):not(.exp-mini) { height: 44px; min-height: 44px; border-radius: 8px; box-sizing: border-box; }

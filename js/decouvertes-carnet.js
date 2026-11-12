@@ -79,7 +79,7 @@
       const s = state(), xp = E.expProgress(), active = xp && xp.z === zone && ((primary && xp.i === 0) || Object.values(STUDIES).some(study => study.index === xp.i)) ? xp : null;
       const studyId = recent ? recent.id : active && Object.keys(STUDIES).find((id) => STUDIES[id].index === active.i);
       const target = studyId && land && land.querySelector('[data-carnet-study="' + studyId + '"]');
-      if (window.EclatStyleMode !== "vivant" || !el || !visible(target || el)) { hush(); return; }
+      if (!el || !visible(target || el)) { hush(); return; }
       if (recent && !s[recent.id]) recent = null;
       if (recent && Date.now() > recent.expires) recent = null;
       if (recent && !recent.at) recent.at = performance.now();

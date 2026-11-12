@@ -28,8 +28,7 @@ if(await p.locator('#tabs [data-tab="atelier"]').isVisible()){await p.locator('#
 ok(await p.evaluate(()=>{const e=document.querySelector('#v-atelier :is(.btn.pri,.forge-btn):disabled');if(!e)return true;const s=document.createElement('span');s.style.color='var(--muted)';document.body.append(s);const expected=getComputedStyle(s).color;s.remove();return getComputedStyle(e).color===expected;}),tag+' texte des commandes indisponibles lisible');
 await shot(p,'atelier-'+width+'-age'+age);}
 await p.locator('#tabs [data-tab="domaine"]').click();
-await p.evaluate(()=>window.EclatSetStyleMode('classique'));ok(await p.locator('html').getAttribute('data-style-mode')==='classique',tag+' mode classique');ok(await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' thème sombre restauré hors Carnet');
-await p.evaluate(()=>window.EclatSetStyleMode('vivant'));ok(await p.locator('html').getAttribute('data-style-mode')==='vivant',tag+' retour Carnet');ok(!await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' papier stable au retour');
+await p.evaluate(()=>{localStorage.setItem('eclat.preview.style','classique');});await p.reload();await p.waitForFunction(()=>!!window.__eclat);ok(await p.locator('html').getAttribute('data-style-mode')==='vivant',tag+' un ancien choix Classique s’ouvre en Carnet');ok(!await p.evaluate(()=>typeof window.EclatSetStyleMode!=='undefined'),tag+' plus de bascule d’aspect');ok(!await p.locator('body').evaluate(e=>e.classList.contains('theme-dark')),tag+' papier stable');
 ok(!errors.length,tag+' erreurs JS '+errors.join(';'));ok(!missing.length,tag+' ressources absentes '+missing.join(';'));await context.close();console.log('✓ '+tag);
 }
 const offline=await browser.newContext({viewport:{width:390,height:1000},reducedMotion:'reduce'}),p=await offline.newPage();

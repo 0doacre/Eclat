@@ -379,6 +379,3 @@ body.theme-dark[data-ep="bord"] { --good: #7289f0; --bad: #e36c5a; }
 }
 /* Le petit texte partage l'encre secondaire, jamais une encre pâlie. */
 body[data-ep] { --dim: var(--muted); }
-html:not([data-style-mode="vivant"]) body.theme-dark[data-ep] {
-  --acc:color-mix(in srgb,var(--acc-base) 50%,var(--text));
-}

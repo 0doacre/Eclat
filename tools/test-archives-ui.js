@@ -59,7 +59,7 @@ async function run(){
     const ctx=await browser.newContext({viewport:{width,height:width===320?568:844},hasTouch:true,serviceWorkers:'block',reducedMotion:'reduce'});
     const p=await ctx.newPage(),errors=[];
     p.on('pageerror',e=>errors.push(e.message));
-    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','atlas');},seed(stage,dark));
+    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');},seed(stage,dark));
     await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<7;i++){await p.waitForTimeout(100);await close(p);}
     await p.evaluate(stage=>{
@@ -128,15 +128,15 @@ async function run(){
         }
       }
     }
-    /* Le bouton d’aspect est masqué exprès (harmonie.css) : le choix du style est dans le menu. */
-    ok(!await p.locator('#atlasToggle').isVisible(),'Bouton Aspect masqué de l’en-tête');
+    /* Un seul aspect : plus de bouton d’aspect dans l’en-tête. */
+    ok(await p.locator('#atlasToggle').count()===0,'Aucun bouton Aspect dans l’en-tête');
     ok(!errors.length,'Aucune erreur : '+errors.join(';'));
     console.log('✓ '+width+'/'+stage+'/'+dark);
     await ctx.close();
   }
   if(!baseline){
     const ctx=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),p=await ctx.newPage();
-    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');localStorage.setItem('eclat.preview.style','atlas');},seed('riche',false));
+    await p.addInitScript(raw=>{localStorage.setItem('eclat.save.v1',raw);localStorage.setItem('eclat.style.carnet-defaut','1');},seed('riche',false));
     await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);
     await p.evaluate(()=>navigator.serviceWorker.ready);await p.reload();
     await p.waitForFunction(()=>navigator.serviceWorker.controller&&window.__eclat);

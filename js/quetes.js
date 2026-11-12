@@ -177,7 +177,7 @@
     function passHTML(z, options = {}) {
       const p = E.passInfo(z), st = S();
       if (!p || !p.ready) return "";
-      const chantier = ["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant";
+      const chantier = ["plaine", "riviere"].includes(z);
       const chantierLabel = z === "riviere" ? p.frac < .35 ? "Ancrer les pieux" : p.frac < .75 ? "Lier la charpente" : "Poser le tablier" : p.frac < .35 ? "Dégager le passage" : p.frac < .75 ? "Aménager le chemin" : "Marquer le sentier";
       // les lieux de la terre actuelle : le passage ne s’ouvre qu’une fois qu’on les connaît
       const lieux = p.lieux && p.lieux.left.length ? p.lieux : null;
@@ -233,7 +233,7 @@
         return;
       }
       A.click(); vibe(10);
-      if (["plaine", "riviere"].includes(z) && window.EclatStyleMode === "vivant") E.emit(z === "riviere" ? "passerellework" : "sentierwork", { from: before.frac, to: r.done ? 1 : p.frac, focus: !!btn.closest('#v-domaine') });
+      if (["plaine", "riviere"].includes(z)) E.emit(z === "riviere" ? "passerellework" : "sentierwork", { from: before.frac, to: r.done ? 1 : p.frac, focus: !!btn.closest('#v-domaine') });
       const pt = elCenter(btn);
       if (!r.done) floater("🚧 " + Math.floor(p.frac * 100) + " %", pt.x, pt.y - 16, "var(--good)");
       render(true);
