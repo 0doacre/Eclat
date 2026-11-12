@@ -1510,11 +1510,17 @@
       const nav = (k, extra) => '<button class="ing link" data-m="nav" data-id="' + k + '" title="Ouvrir sa fiche">' + (st.seen[k] || st.known[k] ? icon(k, "sm") : '<span class="ic sm unk">?</span>') + esc(I[k].n) + (extra || "") + "</button>";
       const isWtcItalic = U.wtcItalic;
       if (isWtcItalic) U.wtcItalic = false;
+      const usage = U.fichePage === "usage";
       let h = '<div class="rwin"' + (isWtcItalic ? ' style="font-style:italic"' : "") + '><div class="row">' + (known || !it.r || st.seen[id] ? icon(id, "lg") : '<span class="ic lg unk">?</span>') +
         '<div class="grow"><div class="kicker">' + TYPE[it.t] + (D.AGES[it.a] ? " · " + esc(D.AGES[it.a].n) : "") + "</div><h2 style=\"margin:0\">" + (nameShown(id) ? esc(it.n) : "Recette inconnue") + "</h2>" +
         (E.stars(id) ? '<div class="stars" title="Maîtrise : fabriqué ' + fmt(st.made[id] || 0) + ' fois">' + "★".repeat(E.stars(id)) + ' <span class="tiny muted">maîtrise</span></div>' : "") + "</div>" +
         (!uniq && !E.isScaled(it) && (st.inv[id] || 0) > 0 ? '<button class="pinb fav' + (favs()[id] ? " on" : "") + '" data-m="fav" aria-label="Ressource favorite" title="Ressource favorite (en tête de liste à l’Atelier)">' + (favs()[id] ? "♥" : "♡") + "</button>" : "") +
         (it.r && known ? '<button class="pinb' + (st.pins[id] ? " on" : "") + '" data-m="pin" aria-label="Épingler la recette en haut de l’Atelier" title="Épingler la recette en haut de l’Atelier">' + (st.pins[id] ? "★" : "☆") + "</button>" : "") + "</div>";
+      h += '<div class="fiche-nav" role="group" aria-label="Pages de la fiche">' +
+        [["objet", "Objet", !usage], ["usage", "Usages", usage]].map(([page, label, active]) =>
+          '<button type="button" class="m-nav-tab' + (active ? ' on' : '') + '" data-m="page" data-page="' + page +
+          '" aria-controls="fiche-' + page + '" aria-pressed="' + active + '">' + label + '</button>'
+        ).join("") + '</div><div class="fiche-page" id="fiche-objet"' + (usage ? ' hidden' : '') + '>';
       if (!visible) {
         h += '<p class="small muted">Un objet d’un âge que tu n’as pas encore atteint. Avance dans le jeu pour en savoir plus.</p>';
       } else {
@@ -1578,7 +1584,7 @@
                 const pe = E.projectExtractor(ez, eres, id, 1);
                 h += '<div class="card proj-box" style="margin:8px 0;padding:8px 10px;background:var(--bg-card,rgba(255,255,255,0.04));border-radius:6px">' +
                   '<div class="tiny kicker" style="color:var(--pri)">Bénéfice mesuré · ' + esc(E.ZONES[ez].n) + '</div>' +
-                  '<div class="small"><b>' + esc(I[eres].n) + '</b> : débit actuel ' + perTime(pe.curRate) + ' → <b>' + perTime(pe.projRate) + '</b> (+' + perTime(pe.gainRate) + ')</div>' +
+                  '<div class="small"><b>' + esc(I[eres].n) + '</b> : débit actuel ' + perMin(pe.curRate) + ' → <b>' + perMin(pe.projRate) + '</b> (+' + perMin(pe.gainRate) + ')</div>' +
                   (E.isScaled(it) ? '<div class="tiny muted">Coût réel pour le ' + fmt(E.count(id) + 1) + 'e exemplaire (croissance d’échelle incluse).</div>' : '') +
                   '</div>';
               }
@@ -1624,29 +1630,47 @@
             else h += '<p class="tiny muted">À toi de la trouver à l’Étude. Étudier les ressources aide à savoir quoi essayer.</p>';
           }
         }
+      }
+      if (E.hasCurio && E.hasCurio("wtc")) {
+        h += '<p class="small muted center" style="font-style:italic">« On coupe ? »</p>';
+      }
+      h += '</div><div class="fiche-page" id="fiche-usage"' + (usage ? '' : ' hidden') + '>';
+      if (visible) {
         const uses = Object.keys(I).filter((k) => I[k].r && I[k].r[1][id] !== undefined);
         const ku = uses.filter((k) => st.known[k]), unk = uses.length - ku.length;
         if (uses.length) {
           // à ta portée : le geste maîtrisé et toutes les ressources déjà vues ; les autres viendront plus tard
           const now = Object.values(E.reactions(id)).reduce((a, b) => a + b, 0), later = unk - now;
           const unkTxt = (now ? now + " à trouver dès maintenant" : "") + (now && later ? ", " : "") + (later ? later + " plus tard" : "");
-          h += '<h3 class="sub">Sert à fabriquer</h3><div class="row wrap">' + ku.map((k) => nav(k)).join("") +
+          h += '<h3 class="sub" id="fiche-fabrications">Sert à fabriquer</h3><div class="row wrap fiche-fabrications" role="region" aria-labelledby="fiche-fabrications">' + ku.map((k) => nav(k)).join("") +
             (unk ? '<span class="tiny muted">' + (ku.length ? "et d’autres recettes encore inconnues : " : "Recettes encore inconnues : ") + unkTxt + "</span>" : "") + "</div>";
           if (unk && st.seen[id]) h += studyHTML(id);
-        }
+        } else h += '<p class="small muted">Aucun usage connu.</p>';
+      } else {
+        h += '<p class="small muted">Avance dans le jeu pour en savoir plus.</p>';
       }
-      if (E.hasCurio && E.hasCurio("wtc")) {
-        h += '<p class="small muted center" style="font-style:italic">« On coupe ? »</p>';
-      }
+      h += '</div>';
       const back = U.rstack.length > 1;
       h += '<div class="acts">' + (back ? '<button class="btn" data-m="back">← ' + esc(I[U.rstack[U.rstack.length - 2]].n) + "</button>" : U.rfrom ? '<button class="btn" data-m="rfrom">← Retour</button>' : "") +
-        (it.r && known && E.ageOK(id) && !it.sec && !it.path && !(E.isUnique(it) && (st.made[id] || 0) > 0) ? '<button class="btn pri" data-m="aller" title="Fabriquer se fait à l’Atelier, dans le métier de cette recette">Atelier</button>' : "") + (it.r && known ? '<button class="btn ghost" data-m="carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
+        (it.r && known && E.ageOK(id) && !it.sec && !it.path && !(E.isUnique(it) && (st.made[id] || 0) > 0) ? '<button class="btn pri" data-m="aller" title="Fabriquer se fait à l’Atelier, dans le métier de cette recette">Atelier</button>' : "") + (it.r && known ? '<button class="btn ghost" data-m="carnet" aria-label="Carnet" title="Voir sa recette dans le Carnet">📖 Carnet</button>' : "") + (known && arbreVisible(id) ? '<button class="btn ghost" data-m="arbre" aria-label="Voir dans la Progression" title="Voir ses ingrédients et ses usages dans la Progression">🌳 Voir dans la Progression</button>' : "") + '<button class="btn pri" data-m="close">Fermer</button></div></div>';
       const redraw = () => { if (U.mcur && U.mcur.rec) swapModal(recipeModal()); };
       return {
+        cls: "fiche-modal",
         rec: true,
         html: h,
+        onOpen: (box) => box.focus({ preventScroll: true }),
         onClose: () => { U.rstack = []; },
         on: {
+          page: (b) => {
+            U.fichePage = b.dataset.page;
+            for (const tab of b.parentElement.children) {
+              const active = tab === b;
+              tab.classList.toggle("on", active);
+              tab.setAttribute("aria-pressed", active);
+              document.getElementById(tab.getAttribute("aria-controls")).hidden = !active;
+            }
+            return true;
+          },
           nav: (b) => { recipeNav(b.dataset.id); return true; },
           back: () => { U.rstack.pop(); A.page(); swapModal(recipeModal()); return true; },
           rfrom: () => { const f = U.rfrom; U.rfrom = null; closeModal(); if (f) setTimeout(f, 80); return true; },
@@ -1879,12 +1903,13 @@
     /* Un volet replié : l'état se garde d'un dessin à l'autre (U.pliables) */
     const pliableOuvert = (cle, defaut) => (U.pliables && U.pliables[cle] !== undefined ? U.pliables[cle] : !!defaut);
     const CHANTIER_VERBE = { stat: "Construire", ext: "Construire", mach: "Construire", auto: "Construire", upg: "Installer", tool: "Fabriquer" };
-    function aConstruireHTML(opt) {
-      if (!Atel || !U.atelierSel) return opt && opt.nombre ? 0 : "";
+    function aConstruireHTML(nombre = false) {
+      if (!Atel || !U.atelierSel) return nombre ? null : "";
       const st = S(), ids = Atel.chantiers(U.atelierSel).filter((id) => E.ageOK(id) && E.retrouvee(id));
-      if (!ids.length) return opt && opt.nombre ? 0 : "";
+      if (!ids.length) return nombre ? null : "";
       const fait = (id) => E.isUnique(I[id]) && (st.made[id] || 0) > 0;
       const aFaire = ids.filter((id) => !fait(id)).sort((a, b) => I[a].a - I[b].a || I[a].n.localeCompare(I[b].n));
+      if (nombre) return aFaire.length;
       const faits = ids.filter(fait).sort((a, b) => I[a].a - I[b].a || I[a].n.localeCompare(I[b].n));
       const ligne = (id) => {
         const it = I[id], b = E.blocker(id), verbe = CHANTIER_VERBE[it.t] || "Fabriquer";
@@ -1895,13 +1920,10 @@
           manque + '<div class="a-ligne-bas"><div class="row wrap small ings">' + ingHTML(E.costFor(id), { check: true, link: true }) + "</div>" +
           '<div class="row wrap rbtns">' + craftBtns(id, verbe) + "</div></div></div>";
       };
-      const cle = "construire-" + U.atelierSel, defaut = !prodRecettes().length;
-      if (opt && opt.nombre) return aFaire.length;
       const corps = '<p class="tiny muted">Outils, stations, améliorations, machines : ce que ce métier met en place.</p>' +
         (aFaire.length ? aFaire.map(ligne).join("") : '<p class="small muted">Rien à construire pour l’instant.</p>') +
         (faits.length ? '<details class="construits-faits"><summary class="small">Déjà fait (' + faits.length + ")</summary>" + faits.map((id) => '<div class="row small" data-goto="' + id + '" title="Voir la recette et ses usages">' + icon(id, "sm") + '<span class="grow">' + esc(I[id].n) + "</span><span>✓</span></div>").join("") + "</details>" : "");
-      if (opt && opt.corps) return corps;
-      return '<section class="card a-construire"><details data-pliable="' + cle + '"' + (pliableOuvert(cle, defaut) ? " open" : "") + '><summary><b>À construire</b><span class="tiny muted"> · ' + aFaire.length + " à faire</span></summary>" + corps + "</details></section>";
+      return corps;
     }
     /* L'équipe d'un métier (embauches, seuil, fatigue, goulots, énergie) : une ligne tant qu'on n'y touche pas */
     function equipeCorps(c) {
@@ -1933,13 +1955,13 @@
       if (!liste.includes(U.prodSel)) U.prodSel = liste[0] || null;
       const n = ap.ordres.length + ap.machines.reduce((a, m) => a + m.used, 0);
       const cA = Atel && U.atelierSel ? Atel.carte(U.atelierSel) : null;
-      let h = '<div class="prod atl-page">' + (cA ? plaqueMetier(cA) : subTabs("atelier", "machines", "Produire", "Machines")) + souvenirNoteHTML() +
-        '<div class="prod-entete"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '" aria-label="Ce qui tourne : ' + n + (ap.bloques ? ", " + ap.bloques + " à voir" : "") + '"><span class="roue' + (n > 0 ? " tourne" : "") + '" aria-hidden="true">' + gi("g:ce-qui-tourne") + '</span><b class="roue-n">' + n + "</b></button>" +
+      let h = '<div class="prod atl-page atl-metier-page">' + (cA ? plaqueMetier(cA) : subTabs("atelier", "machines", "Produire", "Machines")) + souvenirNoteHTML();
+      const chantiers = cA ? aConstruireHTML(true) : null;
+      const raccourcis = '<div class="prod-raccourcis"><button type="button" class="prod-pastille-auto' + (ap.bloques ? " is-bloque" : "") + '" data-autosheet="1" title="Voir ce qui tourne : les commandes, les travailleurs et les machines au travail" aria-expanded="' + (U.autoSheet ? "true" : "false") + '" aria-label="Ce qui tourne : ' + n + (ap.bloques ? ", " + ap.bloques + " à voir" : "") + '"><span class="roue' + (n > 0 ? " tourne" : "") + '" aria-hidden="true">' + gi("g:ce-qui-tourne") + '</span><b class="roue-n">' + n + "</b></button>" +
         (cA ? '<button type="button" class="prod-pastille-equipe" data-equipesheet="1" aria-expanded="' + (U.equipeSheet ? "true" : "false") + '" aria-label="Équipe : ' + equipeNombre(cA) + '" title="Équipe du métier (' + equipeNombre(cA) + ')">' + gi("g:equipe") + '<b class="roue-n">' + equipeNombre(cA) + "</b></button>" : "") +
-        (cA && aConstruireHTML({ nombre: true }) ? '<button type="button" class="prod-pastille-construire" data-construiresheet="1" aria-expanded="' + (U.construireSheet ? "true" : "false") + '" aria-label="À construire : ' + aConstruireHTML({ nombre: true }) + '" title="À construire dans ce métier (' + aConstruireHTML({ nombre: true }) + ')">' + gi("g:a-construire") + '<b class="roue-n">' + aConstruireHTML({ nombre: true }) + "</b></button>" : "") +
+        (chantiers !== null ? '<button type="button" class="prod-pastille-construire" data-construiresheet="1" aria-expanded="' + (U.construireSheet ? "true" : "false") + '" aria-label="À construire : ' + chantiers + '" title="À construire dans ce métier (' + chantiers + ')">' + gi("g:a-construire") + '<b class="roue-n">' + chantiers + "</b></button>" : "") +
         "</div>";
-      if (!liste.length && U.atelierSel && aConstruireHTML()) return h + aConstruireHTML() + "</div>" + feuilles();
-      if (!liste.length) return h + '<p class="small muted center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette à l’Étude : elle apparaît ici.</p></div>' + feuilles();
+      if (!liste.length) return h + '<div class="prod-milieu"><p class="center" style="padding:16px">Rien à produire pour l’instant. Découvre une recette à l’Étude : elle apparaît ici.</p></div>' + raccourcis + "</div>" + feuilles();
       h += '<div class="prod-choix" role="group" aria-label="Recettes connues"' + (U.prodTout ? " data-tout" : "") + ">";
       liste.slice(0, 80).forEach((id) => {
         const can = E.maxCraftable(id, 1000) > 0;
@@ -1950,16 +1972,15 @@
       const cost = {}; for (const i in it.r[1]) cost[i] = it.r[1][i] * q;
       const ordre = ap.ordres.find((o) => o.id === id);
       const why = prodWhy(id);
-      h += '<section class="prod-fiche"><div class="row"><div class="grow"><div class="rname">' + esc(it.n) + ' <span class="muted">×' + fmt(q) + "</span></div>" +
+      h += '<div class="prod-milieu"><section class="prod-fiche"><div class="row"><div class="grow"><div class="rname">' + esc(it.n) + ' <span class="muted">×' + fmt(q) + "</span></div>" +
         '<div class="tiny muted">' + gesteChip(id) + " · à la main : " + fmtTime(E.handTime(id) * q) + "</div></div></div>" +
         '<div class="row wrap small" style="margin-top:6px">' + ingHTML(cost, { check: true, link: true }) + "</div>" +
         '<div class="prod-qty" role="group" aria-label="Quantité">' + [["1", "×1"], ["10", "×10"], ["50", "×50"], ["100", "×100"], ["500", "×500"], ["1000", "×1000"], ["max", "Max"]].filter(([k]) => U.prodQtyPlus || k === "1" || k === "10" || k === "max" || k === mode).map(([k, l]) => '<button type="button" data-prodq="' + k + '" title="Produire ' + (k === "max" ? "le plus possible" : l.replace("×", "") + " exemplaire" + (k === "1" ? "" : "s") + " d’un coup") + '" class="' + (mode === k ? "on" : "") + '" aria-pressed="' + (mode === k) + '">' + l + "</button>").join("") + '<button type="button" data-prodqplus aria-expanded="' + (U.prodQtyPlus ? "true" : "false") + '" title="' + (U.prodQtyPlus ? "Moins de quantités" : "Plus de quantités : ×50, ×100, ×500, ×1000") + '">' + (U.prodQtyPlus ? "moins" : "⋯") + "</button></div></section>";
-      h += '<div class="prod-qui"><button type="button" class="btn pri ico-seule" data-prod="main" aria-label="À la main" title="' + esc(why && !ordre ? "À la main : " + why : "À la main") + '">' + gi("hand") + '</button>' +
+      h += '<div class="prod-file" id="hands">' + handsHTML() + "</div></div>" + raccourcis;
+      h += '<div class="prod-qui"><button type="button" class="btn pri" data-prod="main" title="' + esc(why && !ordre ? "À la main : " + why : "À la main") + '">' + gi("hand") + ' Fabriquer</button>' +
         '<button type="button" title="' + esc(ordre ? "Automatisé : " + fmt(ordre.have) + " sur " + fmt(ordre.cap) + " en Réserve" : "Automatiser : les machines refabriquent seules jusqu’à la cible en Réserve") + '" aria-label="' + (ordre ? "Automatisé" : "Automatiser") + '" class="btn ico-seule' + (ordre ? " on" : "") + '" data-prod="apprenti"' + (ordre ? " disabled" : "") + ">" + gi("cog") + (ordre ? '<span class="tiny">' + fmt(ordre.have) + "/" + fmt(ordre.cap) + "</span>" : "") + "</button>" +
         '<button type="button" class="btn ghost ico-seule" data-tab2="machines" aria-label="Machines" title="Machines : celles qui fabriquent seules">' + gi("factory") + '</button></div>';
-      h += '<div class="prod-file" id="hands">' + handsHTML() + "</div>";
-      h += "</section></div>";
-      return h + feuilles();
+      return h + "</div>" + feuilles();
     }
     /* les feuilles de l’Atelier : l’équipe du métier ouvert, et ce qu’il reste à y construire */
     function equipeFeuille() {
@@ -1968,9 +1989,9 @@
       return '<div class="auto-feuille" role="dialog" aria-label="Équipe"><div class="auto-tete"><b>Équipe · ' + esc(c.n) + '</b><button type="button" class="btn small ico-seule" data-equipesheet="0" aria-label="Fermer">✕</button></div><div class="auto-corps">' + equipeCorps(c) + "</div></div>";
     }
     function construireFeuille() {
-      const corps = aConstruireHTML({ corps: true });
+      const corps = aConstruireHTML();
       if (!corps) return "";
-      return '<div class="auto-feuille" role="dialog" aria-label="À construire"><div class="auto-tete"><b>À construire</b><button type="button" class="btn small ico-seule" data-construiresheet="0" aria-label="Fermer">✕</button></div><div class="auto-corps">' + corps + "</div></div>";
+      return '<div class="auto-feuille" role="dialog" aria-label="À construire"><div class="auto-tete"><b>À construire</b><button type="button" class="btn small ico-seule" data-construiresheet="0" aria-label="Fermer">✕</button></div><div class="auto-corps a-construire">' + corps + "</div></div>";
     }
     /* « Ce qui tourne » : chaque ordre permanent, son état en mots, ses réglages */
     function autoFeuille() {

@@ -19,6 +19,9 @@ Plafond `Labo` dans `tools/test-ux.js` : 270 px → 0 px. Bouton d'action au pou
 
 La disposition est regroupée dans le bloc existant de `css/sobriete.css` ; les anciennes règles contradictoires ont été retirées et les réglages de gestes corrigés à leur source.
 
+**À l'intégration** : les notifications se décalent lorsqu'une fenêtre est ouverte ; leur croix ne masque plus celle du Comptoir. Un contrôle de fermeture en présence d'une notification a été ajouté aux tests des fenêtres.
+L'audit intégré `--cas fiche,comptoir,atelier` aux cinq tailles termine sans blocage ni cas manqué : 73 relevés bruts (45 gênants, 28 cosmétiques), notamment les petites cibles du Comptoir et le défilement horizontal voulu des recettes.
+
 ## Tests lancés
 
 ```

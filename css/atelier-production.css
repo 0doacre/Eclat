@@ -5,7 +5,12 @@
   font-variant-numeric: tabular-nums;
 }
 .prod { padding: 8px 12px; }
-.prod-choix { display: flex; gap: 6px; overflow-x: auto; padding-block: 4px 8px; min-width: 0; }
+.prod-choix {
+  display: flex; flex: none; gap: 6px; min-width: 0;
+  padding-block: var(--prod-choix-padding, 4px);
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain;
+  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+}
 .prod-choix > * { flex-shrink: 0; min-height: 44px; }
 .prod-fiche {
   min-width: 0; padding: 10px 10px 10px 18px; border: 1px solid #79694a;
@@ -24,7 +29,12 @@
 .prod-qui > button[aria-pressed="true"] { color: #fff8e9; background: #813f2a; border-color: #813f2a; }
 .prod-file { min-height: 0; max-height: min(24dvh, 180px); overflow-y: auto; overscroll-behavior: contain; border-block: 1px solid #79694a; }
 .prod-pastille-auto { min-height: 44px; padding: 6px 10px; border: 1px solid #813f2a; border-radius: 3px; color: #813f2a; background: #fff8e9; font-variant-numeric: tabular-nums; }
-.auto-feuille { max-height: 100dvh; overflow-y: auto; overscroll-behavior: contain; padding: 12px; }
+.auto-feuille { max-height: 100dvh; overflow: hidden; padding: 12px; }
+.auto-corps { overscroll-behavior: contain; }
+#v-atelier .auto-corps .atel-seuil .filters { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
+#v-atelier :is(.prod-fiche, .auto-feuille) .ing.link,
+#v-atelier .construits-faits > summary { min-width: 44px; min-height: 44px; }
+#v-atelier .atl-retour { height: 44px; }
 .apprenti, .auto-ligne {
   min-width: 0; padding: 8px 8px 8px 12px; border-bottom: 1px solid #79694a;
   border-left: 3px solid #79694a; background: #fff8e9;
