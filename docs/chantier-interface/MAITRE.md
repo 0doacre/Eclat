@@ -41,7 +41,7 @@ Coche ta ligne dans ta branche, et seulement elle, quand ton compte rendu est é
 | [x] | T2 · Fenêtre d'ouverture : pied fixé | `T2-ouverture.md` | `js/memoire.js`, `css/fin.css` (bloc « fenêtres »), `tools/test-ouverture-ui.js` | |
 | [x] | T3 · Réflexes de navigateur et transitions | `T3-reflexes.md` | `css/style.css` (règles de `html`, `body`, `#views`, `.view`), `js/ui.js` (changement d'onglet), `tools/test-reflexes-ui.js` (nouveau) | |
 | [ ] | T4 · Étude en écran fixe | `T4-etude.md` | `js/atelier-equipe.js`, `css/labo.css`, `css/atelier-equipe.css`, `tools/test-etude-fixe-ui.js` (nouveau) | |
-| [ ] | T5 · Atelier : page d'un métier en écran fixe | `T5-metier.md` | `js/atelier.js` (page d'un métier, feuilles), `css/atelier-production.css`, `css/refonte-0-39.css`, `css/sobriete.css` (Atelier) | T1 fusionnée |
+| [x] | T5 · Atelier : page d'un métier en écran fixe | `T5-metier.md` | `js/atelier.js` (page d'un métier, feuilles), `css/atelier-production.css`, `css/refonte-0-39.css`, `css/sobriete.css` (Atelier) | T1 fusionnée |
 | [ ] | T6 · Tests d'interface rouges, commande unique | `T6-tests.md` | `tools/test-*-ui.js`, `package.json` | |
 | [ ] | T7 · Audit : détecteur et rapport | `T7-audit.md` | `tools/audit-interface.js`, `docs/AUDIT-INTERFACE-2026-11-11.md`, `docs/audit-interface/` | les autres fusionnées |
 

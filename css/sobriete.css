@@ -30,7 +30,6 @@
 .prod-qty > button[data-prodqplus] { min-width: 44px; }
 
 /* Les recettes d'un métier : une seule rangée qu'on fait glisser, au lieu d'une grille qui mange l'écran */
-#v-atelier .prod-choix { display: flex !important; grid-template-columns: none !important; flex-wrap: nowrap !important; max-height: none !important; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; }
 #v-atelier .prod-choix > .prod-recette { scroll-snap-align: start; flex: 0 0 76px; }
 
 /* ---- Carnet : des tuiles au lieu de cartes (une icône, un nom, une touche pour lire) ---- */
@@ -117,7 +116,12 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-atelier .atl-page>:not(.hidden),#v-arbre .prog-corps>:not(.hidden){margin-inline:10px;padding-inline:12px}
 #v-atelier .atl-page>:not(.hidden):first-child{margin-top:8px}
 /* geste principal à portée du pouce */
-#v-atelier .prod-qui{position:sticky;bottom:6px;z-index:4;padding:6px;background:rgb(244 236 218 / .94);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+#v-atelier .prod-qui{padding:6px;background:rgb(244 236 218 / .94);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+#v-atelier .prod-raccourcis { display: flex; justify-content: center; gap: 6px; }
+#v-atelier .prod-raccourcis > button { position: relative; display: inline-grid; place-items: center; width: 44px; height: 44px; min-width: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; }
+#v-atelier .prod-raccourcis > button :is(.gi, .roue) { width: 26px; height: 26px; }
+#v-atelier .prod-raccourcis .roue-n { position: absolute; top: 0; right: 0; }
+#v-atelier .prod-qui > button[data-prod="main"] { flex: 2 1 auto; }
 #v-labo.on{display:flex;flex-direction:column}
 #v-labo .atelier-equipe{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
 #v-labo .ae-layout{flex:1 1 auto;display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:8px;min-height:0}
@@ -131,7 +135,7 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
   #v-atelier .atel-equipe,#v-atelier .prod-entete{min-height:0}
   #v-atelier .prod-fiche{padding:4px 8px}
   #v-atelier .prod-fiche *{margin-block:2px}
-  #v-atelier .prod-choix{padding-block:2px}
+  #v-atelier { --prod-choix-padding: 2px; }
   #v-atelier .prod-recette{min-height:0}
   #v-atelier .a-construire:not([open])>summary{min-height:40px}
 }
