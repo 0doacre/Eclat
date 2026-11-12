@@ -45,6 +45,39 @@ Relevé du 11 novembre 2026 sur la version 0.66.4 (branche `claude/sobriete-cohe
 **C. Cosmétique**
 - Cibles de 38 à 42 px (`ing.link` 50 × 38, retour 44 × 40), `overscroll-behavior` sur les défilements isolés, la scène du Sentier à 1280 px.
 
+## Après correction (12 novembre 2026, version 0.67.0)
+
+Le chantier « un jeu, pas un site » (`docs/chantier-interface/`) a repris les écrans un par un. La règle tenue : aucune vue ne défile, seules les listes glissent dans un cadre qui ne bouge pas.
+
+Défilement de la page, en pixels, avant puis après :
+
+| Écran | 320 × 568 | 390 × 700 | 390 × 844 |
+|---|---|---|---|
+| Terres | 70 → 0 | 0 → 0 | 0 → 0 |
+| Étude (âges 1, 5 et 9) | 113 à 263 → 0 | 0 à 72 → 0 | 0 → 0 |
+| Page d'un métier | 186 → 0 | 58 → 0 | 0 → 0 |
+| Carnet | 888 → 0 | 701 → 0 | 557 → 0 |
+| Fenêtre d'une fiche (Bois, puis Manche) | 472 et 1801 → 0 | 195 et 1136 → 0 | 68 et 1009 → 0 |
+
+Sources : les comptes rendus `rendu-T1.md`, `rendu-T4.md` et `rendu-T5.md`, puis les mesures de l'intégration (`rendu-integration.md`). Quatre tests gardent ces zéros : `test-ux.js`, `test-terres-fixe-ui.js`, `test-etude-fixe-ui.js` et `test-ecrans-fixes-ui.js`.
+
+### Ce qui glisse encore, dans son cadre
+
+- La page Objet d'une fiche longue : 349 px pour la Cabane de bûcheron à 320 × 568, 130 px à 390 × 700.
+- La liste « Sert à fabriquer » d'une fiche, la liste des recettes du Carnet, la liste des métiers en partie avancée.
+- Le milieu des Terres dans un état rare (une carte de gisement à poser), et l'arbre de la Progression, qui est une carte.
+
+### Deux diagnostics du premier rapport étaient faux
+
+- **Le vide des Terres.** Le détecteur comparait un bloc à son voisin dans le document, pas à celui qui le précède à l'écran : il a compté 333 px de contenu comme du vide. La vraie cause était la plaque du nom fixée en bas et une grille aux hauteurs figées.
+- **La feuille du bas comme réponse aux fiches.** Le défilement venait de la hauteur du contenu sous un plafond de 88 % de l'écran. La réponse retenue est un panneau fixe à deux pages, Objet et Usages.
+
+### Ce qui n'est pas fait
+
+- Le détecteur de `tools/audit-interface.js` garde ses quatre défauts (tâche T7) : le tableau complet plus bas date d'avant les corrections et n'a pas été rejoué.
+- Seize tests d'interface sur trente-six sont rouges parce qu'ils décrivent une interface plus ancienne (tâche T6, tableau dans `rendu-integration.md`).
+- Rien n'a été essayé sur un vrai téléphone.
+
 ## Ce que le script ne mesure pas
 
 - La sensation au doigt : inertie, rebond, accroche entre deux défilements, vitesse. Le porteur teste sur son téléphone et complétera.

@@ -30,6 +30,7 @@
     "test:territoires-ui": "node tools/test-territoires-ui.js",
     "test:terres-fixe": "node tools/test-terres-fixe-ui.js",
     "test:etude-fixe": "node tools/test-etude-fixe-ui.js",
+    "test:ecrans-fixes": "node tools/test-ecrans-fixes-ui.js",
     "test:reflexes": "node tools/test-reflexes-ui.js",
     "test:atlas": "node tools/test-atlas-ui.js",
     "test:archives": "node tools/test-archives-ui.js",

@@ -42,10 +42,11 @@ Coche ta ligne dans ta branche, et seulement elle, quand ton compte rendu est é
 | [x] | T3 · Réflexes de navigateur et transitions | `T3-reflexes.md` | `css/style.css` (règles de `html`, `body`, `#views`, `.view`), `js/ui.js` (changement d'onglet), `tools/test-reflexes-ui.js` (nouveau) | |
 | [x] | T4 · Étude en écran fixe | `T4-etude.md` | `js/atelier-equipe.js`, `css/labo.css`, `css/atelier-equipe.css`, `tools/test-etude-fixe-ui.js` (nouveau) | |
 | [x] | T5 · Atelier : page d'un métier en écran fixe | `T5-metier.md` | `js/atelier.js` (page d'un métier, feuilles), `css/atelier-production.css`, `css/refonte-0-39.css`, `css/sobriete.css` (Atelier) | T1 fusionnée |
-| [ ] | T6 · Tests d'interface rouges, commande unique | `T6-tests.md` | `tools/test-*-ui.js`, `package.json` | |
-| [ ] | T7 · Audit : détecteur et rapport | `T7-audit.md` | `tools/audit-interface.js`, `docs/AUDIT-INTERFACE-2026-11-11.md`, `docs/audit-interface/` | les autres fusionnées |
+| [ ] | T6 · Tests d'interface rouges (la commande `npm run test:ui` est faite, reste le tri des rouges) | `T6-tests.md` | `tools/test-*-ui.js` | |
+| [ ] | T7 · Audit : détecteur et relevé (la section « Après correction » du rapport est écrite) | `T7-audit.md` | `tools/audit-interface.js`, `docs/audit-interface/` | les autres fusionnées |
+| [x] | Intégration 0.67.0 (Claude) : recette de T1 à T5, corrections, Carnet et Journal en cadre fixe | `rendu-integration.md` | | |
 
-T1 à T4 et T6 peuvent tourner en même temps. T5 partage `js/atelier.js` avec T1 : elle attend. T7 passe en dernier.
+T1 à T5 sont fusionnées et recettées (12 novembre 2026). Il reste T6 et T7, qui ne touchent qu'aux outils et peuvent tourner en même temps.
 
 ## Ton compte rendu
 
