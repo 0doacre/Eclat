@@ -43,7 +43,7 @@ Coche ta ligne dans ta branche, et seulement elle, quand ton compte rendu est é
 | [x] | T4 · Étude en écran fixe | `T4-etude.md` | `js/atelier-equipe.js`, `css/labo.css`, `css/atelier-equipe.css`, `tools/test-etude-fixe-ui.js` (nouveau) | |
 | [x] | T5 · Atelier : page d'un métier en écran fixe | `T5-metier.md` | `js/atelier.js` (page d'un métier, feuilles), `css/atelier-production.css`, `css/refonte-0-39.css`, `css/sobriete.css` (Atelier) | T1 fusionnée |
 | [ ] | T6 · Tests d'interface rouges (la commande `npm run test:ui` est faite, reste le tri des rouges) | `T6-tests.md` | `tools/test-*-ui.js` | |
-| [ ] | T7 · Audit : détecteur et relevé (la section « Après correction » du rapport est écrite) | `T7-audit.md` | `tools/audit-interface.js`, `docs/audit-interface/` | les autres fusionnées |
+| [x] | T7 · Audit : détecteur et relevé (la section « Après correction » du rapport est écrite) | `T7-audit.md` | `tools/audit-interface.js`, `docs/audit-interface/` | les autres fusionnées |
 | [x] | Intégration 0.67.0 (Claude) : recette de T1 à T5, corrections, Carnet et Journal en cadre fixe | `rendu-integration.md` | | |
 | [ ] | T8 · Un seul aspect : Atlas et Classique retirés | `T8-styles.md` | `index.html` (script d'aspect), branches d'aspect du JS, règles d'aspect du CSS, choix d'aspect des tests | T6 fusionnée |
 | [ ] | T9 · Grand texte, une seule échelle bien visible | `T9-grand-texte.md` | tailles de texte des feuilles de la refonte, règles `body.large-text`, test du Grand texte | T8 fusionnée |
