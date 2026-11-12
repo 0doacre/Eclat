@@ -71,10 +71,13 @@ async function run() {
   await p.keyboard.press("3"); await p.waitForTimeout(200);
   ok((await tab(p)) === "atelier", "la touche 3 ouvre l’Atelier");
   await p.keyboard.press("2"); await p.waitForTimeout(200);
-  ok((await tab(p)) === "carte", "la touche 2 ouvre la Carte");
+  ok((await tab(p)) === "labo", "la touche 2 ouvre l’Étude");
   await p.keyboard.press("1"); await p.waitForTimeout(200);
   ok((await tab(p)) === "domaine", "la touche 1 revient au Domaine");
-  await p.locator('#tabs [data-tab="carnet"]').click(); await p.waitForTimeout(300);
+  /* le Carnet est l’onglet « Recettes » du Journal depuis la 0.65 */
+  await p.locator('#tabs [data-tab="journal"]').click(); await p.waitForTimeout(200);
+  if ((await tab(p)) !== "carnet") await p.locator('#v-journal [data-tab2="carnet"]').click();
+  await p.waitForTimeout(300);
   await p.locator("#cq").focus(); await p.keyboard.type("3"); await p.waitForTimeout(200);
   ok((await tab(p)) === "carnet" && (await p.locator("#cq").inputValue()) === "3", "on peut taper un chiffre dans une recherche sans changer d’écran");
   await p.locator("#cq").blur();
@@ -99,6 +102,7 @@ async function run() {
   await p.evaluate(() => { let appele = 0; const ev = new Event("beforeinstallprompt", { cancelable: true }); ev.prompt = () => { appele++; window.__installAppele = appele; }; ev.userChoice = Promise.resolve({ outcome: "accepted" }); window.dispatchEvent(ev); });
   await p.locator("#menuBtn").click(); await p.waitForTimeout(550);
   ok(await p.locator('#modal [data-m="installer"]').count() === 1, "le bouton « Installer le jeu » apparaît quand l’appareil le propose");
+  await p.locator('#modal [data-mjump="systeme"]').click(); /* menu en sections : « Installer » est dans Système */
   await p.locator('#modal [data-m="installer"]').click(); await p.waitForTimeout(300);
   ok(await p.evaluate(() => window.__installAppele === 1), "il lance l’invite d’installation");
   await p.context().close();
@@ -107,6 +111,7 @@ async function run() {
   p = await page(browser, { init: () => { window.__wl = { demandes: 0, relaches: 0 }; Object.defineProperty(navigator, "wakeLock", { configurable: true, value: { request: async () => { window.__wl.demandes++; const l = new EventTarget(); l.release = async () => { window.__wl.relaches++; l.dispatchEvent(new Event("release")); }; return l; } } }); } });
   await p.locator("#menuBtn").click(); await p.waitForTimeout(550);
   ok(await p.locator('#modal [data-m="ecran"]').getAttribute("role") === "switch", "l’interrupteur « Garder l’écran allumé » est dans le menu");
+  await p.locator('#modal [data-mjump="affichage"]').click(); /* menu en sections : « Garder l’écran allumé » est dans Affichage */
   await p.locator('#modal [data-m="ecran"]').click(); await p.waitForTimeout(300);
   ok(await p.evaluate(() => window.__wl.demandes === 1 && window.__eclat.E.state.settings.ecranAllume === true), "il demande le verrou d’écran");
   await p.locator('#modal [data-m="ecran"]').click(); await p.waitForTimeout(300);

@@ -1,9 +1,16 @@
 /* Régression mobile : le plomb se découvre puis s’extrait avant le Gisement Noir.
- * Lance un serveur local sur 8080, puis node tools/test-progression-ui.js. */
+ * Sert le jeu lui-même sur un port libre (URL_ECLAT pour viser un autre serveur), puis node tools/test-progression-ui.js. */
 'use strict';
 const assert = require('assert/strict');
 const { chromium } = require(process.env.PW || 'playwright');
+const fs = require('fs'), path = require('path'), http = require('http');
 const D = require('../js/data');
+const ROOT = path.resolve(__dirname, '..'), MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.woff2': 'font/woff2', '.mp3': 'audio/mpeg' };
+const server = http.createServer((req, res) => {
+  const file = path.resolve(ROOT, '.' + new URL(req.url, 'http://localhost').pathname.replace(/\/$/, '/index.html'));
+  if (!file.startsWith(ROOT + path.sep)) return res.writeHead(403).end();
+  fs.readFile(file, (e, b) => { if (e) return res.writeHead(404).end(); res.setHeader('Content-Type', MIME[path.extname(file)] || 'application/octet-stream'); res.end(b); });
+});
 const { createEngine } = require('../js/engine');
 function partie(mode) {
   const E = createEngine(), S = E.state;
@@ -30,6 +37,7 @@ function partie(mode) {
   return E.serialize();
 }
 (async () => {
+  await new Promise(r => server.listen(0, '127.0.0.1', r));
   const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}) });
   try {
     for (const mode of ['inconnue', 'prete', 'libre']) {
@@ -37,7 +45,7 @@ function partie(mode) {
       const p = await context.newPage(), errors = [];
       p.on('pageerror', e => errors.push(e.message));
       await p.addInitScript(raw => localStorage.setItem('eclat.save.v1', raw), partie(mode));
-      await p.goto(process.env.URL_ECLAT || 'http://127.0.0.1:8080');
+      await p.goto(process.env.URL_ECLAT || 'http://127.0.0.1:' + server.address().port + '/');
       await p.waitForFunction(() => !!window.__eclat);
       for (let i = 0; i < 12; i++) {
         await p.waitForTimeout(150);
@@ -60,12 +68,12 @@ function partie(mode) {
         await box.locator('[data-gz="gisement"]').click();
         await p.waitForTimeout(400);
         assert.equal(await p.evaluate(() => window.__eclat.U.tab), 'domaine');
-        await p.locator('[data-xadd="gisement:galene"]').first().click(); /* vrai appui : la carte reste touchable au-dessus de la plaque du nom */
+        await p.locator('.terre-ajout[data-xadd="gisement:galene"]').click(); /* vrai appui sur la pastille « + » de la ligne du gisement (la carte « nouveau gisement » est dans une bulle fermée) */
         await p.waitForFunction(() => window.__eclat.E.rate('galene') > 0);
       }
       assert.deepEqual(errors, []);
       console.log('✓ Quêtes mobile : mine de plomb ' + mode);
       await context.close();
     }
-  } finally { await browser.close(); }
+  } finally { await browser.close(); server.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });
