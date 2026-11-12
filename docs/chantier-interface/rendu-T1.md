@@ -28,4 +28,6 @@ Le bouton « Fermer » mesure 48 px. La rangée du Bois passe de 63 à 53 px, pl
 
 **Ce qui reste à vérifier sur téléphone** — Safari, encoches, clavier virtuel et sensation au doigt.
 
+**Recette complémentaire** — les libellés « Carnet » et « Voir dans la Progression » sont conservés. Dans une partie avancée, le défilement de la page Objet du Manche mesure 307 / 179 / 0 / 0 / 0 px aux cinq tailles du tableau ; celui du Bois est nul. La rangée d'actions du Manche mesure 95 px et celle du Bois 47 px. Les 1 139 contrôles des fiches passent après ajustement.
+
 **Choix du porteur** — l’espace occupé par le bouton « Fermer » conservé sous la fiche est visible dans [Bois à 390 × 700](captures/T1/fiche-ressource-390x700.jpg). La liste des fabrications reste défilable dans [Usages du Manche](captures/T1/fiche-recette-390x700-usages.jpg).
