@@ -3,7 +3,7 @@
  * Ne modifie aucun fichier du jeu : il ouvre chaque écran et chaque fenêtre dans Chromium (Playwright), mesure dans la page, imprime un tableau.
  *
  *   PW=<dossier>/node_modules/playwright node tools/audit-interface.js [options]
- *     --w 320,390,430,1280x800   tailles (largeur seule = hauteur de téléphone : 320x568, 390x844, 430x932)
+ *     --w 320,390,430,1280x800   tailles (défaut : 320x568, 360x640, 390x700, 390x844, 430x932, 1280x800 ; largeur seule = hauteur de téléphone)
  *     --cas terres,menu           ne passer que les cas dont l'identifiant contient un de ces mots
  *     --json docs/audit-interface/releve.json   écrit les anomalies brutes
  *     --md docs/audit-interface/tableau.md      écrit le tableau classé par gravité
@@ -13,7 +13,8 @@
  *
  * Types relevés : 1 défilements imbriqués · 2 hauteurs figées (rognent, ou imposent un vide) · 3 fenêtres (plus hautes que l'écran, bas masqué, sans fermeture)
  *   4 chaînage (overscroll-behavior absent sur un défilement interne) · 5 cibles tactiles sous 44 × 44 px (zone réellement cliquable)
- *   6 contenu masqué par la barre d'onglets ou par une plaque fixe · 7 défilement horizontal ou contenu qui dépasse en largeur.
+ *   6 contenu masqué par la barre d'onglets ou par une plaque fixe · 7 défilement horizontal ou contenu qui dépasse en largeur
+ *   9 rangées qui glissent de côté exprès (classées à part, ne comptent pas) · 10 une vue principale qui défile (Terres, Étude, Atelier, page d'un métier : bloquant).
  * Code de sortie : 0 si aucun défaut bloquant, 1 sinon (le script sert de contrôle de régression).
  * Ce qu'il ne mesure pas : la sensation au doigt (inertie, rebond, accroche), le clavier virtuel, les encoches et zones de sécurité. */
 "use strict";
@@ -51,6 +52,7 @@ function partie(etat) {
 /* ------------------------------------------------------------------ la mesure, exécutée dans la page */
 /* Fonction autonome (Playwright la sérialise) : rien d'extérieur n'y est lu. Renvoie des anomalies sous forme de données. */
 function mesurePage(o) {
+  const RANGEES_VOULUES = o.rangees;
   const portee = o.fenetre ? document.querySelector(o.fenetre.racine) : document.body;
   if (!portee) return { erreur: "portée introuvable : " + (o.fenetre ? o.fenetre.racine : "body") };
   const VW = innerWidth, VH = innerHeight;
@@ -109,7 +111,11 @@ function mesurePage(o) {
   for (const e of [portee, ...vus]) {
     const c = cs(e);
     const sw = e.scrollWidth - e.clientWidth;
-    if (sw > 1 && /(auto|scroll|overlay)/.test(c.overflowX) && e.clientWidth > 0) ajoute(7, e, "défile en largeur de " + sw + " px (" + c.overflowX + ")", { carrousel: true });
+    if (sw > 1 && /(auto|scroll|overlay)/.test(c.overflowX) && e.clientWidth > 0) {
+      /* une rangée faite pour glisser de côté : type 9, classé à part ; tout autre élément qui défile de côté reste un défaut (type 7) */
+      if (e.matches(RANGEES_VOULUES)) ajoute(9, e, "rangée qui glisse de côté, voulue (" + sw + " px)", { voulu: true });
+      else ajoute(7, e, "défile en largeur de " + sw + " px (" + c.overflowX + ")", { carrousel: true });
+    }
     else if (sw > 2 && /(hidden|clip)/.test(c.overflowX) && e.clientWidth > 0 && e.clientHeight > 0 && !/^(IMG|VIDEO|CANVAS)$/.test(e.tagName)) {
       /* un contenu rogné à droite : seulement si un enfant visible dépasse le bord */
       const r = e.getBoundingClientRect();
@@ -175,10 +181,12 @@ function mesurePage(o) {
     const colonnes = vus.filter((e) => { const c = cs(e); return (c.display === "block" || c.display === "flex" || c.display === "grid") && !/(row)/.test(c.flexDirection) && e.children.length >= 2 && e.getBoundingClientRect().width > VW * .5; });
     for (const col of colonnes) {
       const enf = [...col.children].filter((k) => visible(k) && cs(k).position !== "absolute" && cs(k).position !== "fixed").sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-      for (let i = 1; i < enf.length; i++) {
-        const a = enf[i - 1].getBoundingClientRect(), b = enf[i].getBoundingClientRect();
-        const trou = b.top - a.bottom;
-        if (trou > 80 && b.top < VH + 600) ajoute(2, enf[i], "vide de " + Math.round(trou) + " px au-dessus (entre " + nom(enf[i - 1]) + " et " + nom(enf[i]) + ")", { effet: "trou", fichier: "", regle: "" });
+      /* le bloc qui précède à l'écran est celui qui descend le plus bas parmi tous les blocs déjà passés (pas le voisin du document, qui peut être court à côté d'un grand) */
+      let bas = -1e9, prec = null;
+      for (let i = 0; i < enf.length; i++) {
+        const b = enf[i].getBoundingClientRect();
+        if (prec) { const trou = b.top - bas; if (trou > 80 && b.top < VH + 600) ajoute(2, enf[i], "vide de " + Math.round(trou) + " px au-dessus (entre " + nom(prec) + " et " + nom(enf[i]) + ")", { effet: "trou", fichier: "", regle: "" }); }
+        if (b.bottom > bas) { bas = b.bottom; prec = enf[i]; }
       }
     }
   }
@@ -281,7 +289,7 @@ function mesurePage(o) {
 
 /* surligne les éléments fautifs avant une capture (couleur par type) */
 function surligne(a) {
-  const C = { 1: "#d4380d", 2: "#d48806", 3: "#cf1322", 4: "#7c3aed", 5: "#0b7285", 6: "#c2255c", 7: "#e8590c" };
+  const C = { 1: "#d4380d", 2: "#d48806", 3: "#cf1322", 4: "#7c3aed", 5: "#0b7285", 6: "#c2255c", 7: "#e8590c", 9: "#868e96", 10: "#cf1322" };
   for (const x of a) { const e = (window.__auditEls || [])[x.idx]; if (e && e.style) { e.style.setProperty("outline", "2px solid " + C[x.type], "important"); e.style.setProperty("outline-offset", "-1px", "important"); } }
 }
 
@@ -294,15 +302,17 @@ const menu = async (p, rub) => { await cliquer(p, "#menuBtn", 700); if (rub) awa
 const idRecette = Object.entries(D.ITEMS).find(([id, it]) => it.r && it.a <= 4 && !it.sec && !it.path && D.ITEMS[id].t !== "res");
 const metier = async (p, m) => { await p.evaluate(() => { const g = window.__eclat; g.U.atelierSel = null; g.U.prodSel = null; }); await onglet(p, "atelier"); await p.evaluate(() => window.__eclat.render(true)); await pause(p, 300); await cliquer(p, "[data-atelier=" + (m || "artisanat") + "]", 600); };
 const etude = async (p) => { await p.evaluate(() => { window.__eclat.E.state.settings.equipmentFilter = "tout"; }); await onglet(p, "labo"); await p.evaluate(() => window.__eclat.render(true)); await pause(p, 400); };
+/* rangées qui glissent de côté exprès (type 9, hors décompte des défauts) */
+const RANGEES_VOULUES = ".prod-choix, .filters, .terres-rangee";
 const MODALE = { racine: "#modal", boite: "#modal .modal-box" };
 
 const CAS = [
   /* ---- écrans */
-  { id: "terres-lisiere", nom: "Terres · Lisière", ecran: true, ouvre: async (p) => { await onglet(p, "domaine"); await p.evaluate(() => { const g = window.__eclat; g.U.zone = "lisiere"; g.render(true); }); await pause(p, 500); } },
-  { id: "terres-gisement", nom: "Terres · Gisement Noir (âge 9)", etat: "gisement", ecran: true, ouvre: async (p) => { await onglet(p, "domaine"); await p.evaluate(() => { const g = window.__eclat; g.U.zone = "gisement"; g.render(true); }); await pause(p, 600); } },
-  { id: "etude", nom: "Étude (ressources « tout »)", ecran: true, ouvre: async (p) => { await etude(p); } },
-  { id: "atelier-liste", nom: "Atelier · liste des métiers", ecran: true, ouvre: async (p) => { await p.evaluate(() => { const g = window.__eclat; g.U.atelierSel = null; g.U.prodSel = null; }); await onglet(p, "atelier"); await p.evaluate(() => window.__eclat.render(true)); await pause(p, 400); } },
-  { id: "atelier-metier", nom: "Atelier · page d'un métier", ecran: true, ouvre: async (p) => { await metier(p); } },
+  { id: "terres-lisiere", fixe: true, nom: "Terres · Lisière", ecran: true, ouvre: async (p) => { await onglet(p, "domaine"); await p.evaluate(() => { const g = window.__eclat; g.U.zone = "lisiere"; g.render(true); }); await pause(p, 500); } },
+  { id: "terres-gisement", fixe: true, nom: "Terres · Gisement Noir (âge 9)", etat: "gisement", ecran: true, ouvre: async (p) => { await onglet(p, "domaine"); await p.evaluate(() => { const g = window.__eclat; g.U.zone = "gisement"; g.render(true); }); await pause(p, 600); } },
+  { id: "etude", fixe: true, nom: "Étude (ressources « tout »)", ecran: true, ouvre: async (p) => { await etude(p); } },
+  { id: "atelier-liste", fixe: true, nom: "Atelier · liste des métiers", ecran: true, ouvre: async (p) => { await p.evaluate(() => { const g = window.__eclat; g.U.atelierSel = null; g.U.prodSel = null; }); await onglet(p, "atelier"); await p.evaluate(() => window.__eclat.render(true)); await pause(p, 400); } },
+  { id: "atelier-metier", fixe: true, nom: "Atelier · page d'un métier", ecran: true, ouvre: async (p) => { await metier(p); } },
   { id: "atelier-equipe", nom: "Atelier · feuille Équipe", ecran: true, feuille: ".auto-feuille", ouvre: async (p) => { await metier(p); await cliquer(p, '[data-equipesheet="1"]', 600); } },
   { id: "atelier-construire", nom: "Atelier · feuille À construire", ecran: true, feuille: ".auto-feuille", ouvre: async (p) => { for (const m of ["construction", "metallurgie", "centrales", "elevage", "artisanat", "artistique"]) { await metier(p, m); if (await p.locator('[data-construiresheet="1"]').count()) break; } await cliquer(p, '[data-construiresheet="1"]', 600); } },
   { id: "atelier-tourne", nom: "Atelier · feuille Ce qui tourne", ecran: true, feuille: ".auto-feuille", ouvre: async (p) => { await metier(p); await cliquer(p, '[data-autosheet="1"]', 600); } },
@@ -324,12 +334,13 @@ const CAS = [
   { id: "aide", nom: "Aide", fenetre: MODALE, ouvre: async (p) => { await onglet(p, "domaine"); await menu(p); await cliquer(p, '#modal [data-m="help"]', 900); } }
 ];
 
-const TAILLES = (arg("w", "320,390,430,1280x800")).split(",").map((s) => { const m = s.match(/^(\d+)x(\d+)$/); if (m) return [+m[1], +m[2]]; const w = +s; return [w, w <= 320 ? 568 : w <= 390 ? 844 : 932]; });
+const TAILLES = (arg("w", "320,360x640,390x700,390,430,1280x800")).split(",").map((s) => { const m = s.match(/^(\d+)x(\d+)$/); if (m) return [+m[1], +m[2]]; const w = +s; return [w, w <= 320 ? 568 : w <= 360 ? 640 : w <= 390 ? 844 : 932]; });
 
 /* gravité : bloquant, gênant, cosmétique */
 function gravite(a) {
   if (a.type === 3) return a.sub === "sans-fermeture" ? (a.persistant ? "gênant" : "bloquant") : ["masquee", "bas-hors", "large"].includes(a.sub) ? "bloquant" : "gênant";
-  if (a.type === 8) return "bloquant";
+  if (a.type === 8 || a.type === 10) return "bloquant";
+  if (a.type === 9) return "voulu";
   if (a.type === 6) return a.actionnable ? "bloquant" : "gênant";
   if (a.type === 7) return a.page || a.sortie ? "bloquant" : "gênant";
   if (a.type === 1) return "gênant";
@@ -370,19 +381,25 @@ async function lance() {
       await ouvrePage();
       for (const c of cas.filter((x) => (x.etat || "bronze") === etat)) {
         const tag = c.id + " @" + W + "x" + H;
-        let sale = false;
+        let sale = false, anosFixe = [];
         try {
           if (etat !== "neuve") await ferme(p);
+          erreurs.length = 0; /* une erreur levée pendant la fermeture du cas précédent ne lui est pas imputée à celui-ci */
           await c.ouvre(p);
           if (arg("inject", "")) { await p.evaluate(arg("inject", "")); await pause(p, 200); } /* essai à blanc : du CSS ou du JS ajouté avant la mesure (ne touche aucun fichier) */
-          const opt = { fenetre: c.fenetre || (c.feuille ? { racine: c.feuille, boite: c.feuille } : null), garderDefilement: !!c.garderDefilement };
+          if (c.fixe) { /* aucune vue principale ne défile : ni la page, ni #views, ni la vue courante */
+            const d = await p.evaluate(() => { const q = (e) => e ? Math.max(0, e.scrollHeight - e.clientHeight) : 0; const s = document.scrollingElement; return { page: q(s), body: q(document.body), views: q(document.querySelector("#views")), vue: q(document.querySelector(".view.on")) }; });
+            const qui = Object.entries(d).filter(([, v]) => v > 1);
+            if (qui.length) anosFixe = [{ type: 10, sel: "(vue)", sig: "vue-defile", valeur: "la vue défile : " + qui.map(([k, v]) => k + " " + v + " px").join(", "), cas: c.id, casNom: c.nom, largeur: W, hauteurEcran: H, gravite: "bloquant", cadre: false }];
+          }
+          const opt = { fenetre: c.fenetre || (c.feuille ? { racine: c.feuille, boite: c.feuille } : null), garderDefilement: !!c.garderDefilement, rangees: RANGEES_VOULUES };
           const r = await p.evaluate(mesurePage, opt);
           if (r.erreur) { echecs.push(tag + " : " + r.erreur); sale = true; continue; }
           let anos = r.anomalies.filter((a) => !(a.cadre && vusCadre.has(W + a.type + a.sig)));
           for (const a of anos) if (a.cadre) vusCadre.add(W + a.type + a.sig);
           for (const a of anos) { a.cas = c.id; a.casNom = c.nom; a.largeur = W; a.hauteurEcran = H; a.gravite = gravite(a); }
           /* capture si un défaut gênant ou bloquant */
-          const graves = anos.filter((a) => a.gravite !== "cosmétique");
+          const graves = anos.filter((a) => a.gravite !== "cosmétique" && a.gravite !== "voulu");
           if (flag("stats")) console.log(tag, JSON.stringify(r.vue));
           if (shotsDir && (graves.length || toutesCaptures)) {
             const f = c.id + "-" + W + ".jpg";
@@ -392,7 +409,7 @@ async function lance() {
           }
           if (c.fenetre && c.fenetre.racine === "#modal" && await p.evaluate(() => document.querySelector("#modal").classList.contains("hidden")) && !erreurs.length) { echecs.push(tag + " : la fenêtre ne s'est pas ouverte (cas non mesuré)"); sale = true; continue; }
           if (erreurs.length) { const m = erreurs.splice(0).join(" ; "); toutes.push({ type: 8, sel: "(page)", sig: "erreur-js", valeur: m, cas: c.id, casNom: c.nom, largeur: W, hauteurEcran: H, gravite: "bloquant", cadre: false }); sale = true; }
-          toutes.push(...anos);
+          toutes.push(...anos, ...anosFixe);
         } catch (e) { echecs.push(tag + " : " + e.message.split("\n")[0] + (erreurs.length ? " · erreur JS " + erreurs.join(" ; ") : "")); sale = true; }
         if (sale) await ouvrePage(); /* une erreur de rendu laisse la page à moitié morte : on repart d'une page neuve */
       }
@@ -403,7 +420,7 @@ async function lance() {
 
   { const t8 = new Set(toutes.filter((a) => a.type === 8).map((a) => a.cas + a.largeur)); for (let i = toutes.length - 1; i >= 0; i--) if (toutes[i].type !== 8 && t8.has(toutes[i].cas + toutes[i].largeur)) toutes.splice(i, 1); }
   /* ---- tableau */
-  const ordre = { bloquant: 0, "gênant": 1, "cosmétique": 2 };
+  const ordre = { bloquant: 0, "gênant": 1, "cosmétique": 2, voulu: 3 };
   const groupes = new Map();
   for (const a of toutes) {
     const k = [a.gravite, a.type, a.cas, a.sig, a.type === 6 ? a.bande : "", a.type === 3 ? a.sub : "", a.type === 2 ? a.effet : ""].join("|");
