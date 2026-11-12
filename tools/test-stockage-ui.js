@@ -8,8 +8,9 @@ const fs = require("fs"), path = require("path"), http = require("http"), assert
 const { chromium } = require(process.env.PW || "playwright");
 const ROOT = path.resolve(__dirname, "..");
 const D = require("../js/data.js");
-const { createEngine } = require("../js/engine.js");
-const KEY = "eclat.save.v1";
+const Core = require("../js/engine.js");
+/* depuis que l’Atelier-équipe est le jeu, la partie vit sous la clé « preview.craft » (js/mode-test.js) */
+const KEY = "eclat.preview.craft.v1";
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".webp": "image/webp", ".woff2": "font/woff2" };
 const server = http.createServer((req, res) => {
   const file = path.resolve(ROOT, "." + new URL(req.url, "http://localhost").pathname.replace(/\/$/, "/index.html"));
@@ -23,7 +24,8 @@ async function test(nom, fn) {
 }
 /* une partie à 100 bois, introduction et nouveautés déjà vues, son et visiteurs coupés */
 function graine() {
-  const E = createEngine();
+  /* le jeu tourne avec les données de l’Atelier-équipe (sauvegarde v13) : même moteur ici, sinon la page migre la graine et met une copie « Avant la mise à jour » de côté */
+  const E = Core.withData(require("../js/equipements.js").createData(D, { fullGame: true })).createEngine();
   const st = E.state;
   st.t = Date.now(); st.introSeen = true; st.flags.ver = D.VERSION;
   Object.assign(st.settings, { tuto: false, sound: false, visiteurs: false });
@@ -35,11 +37,11 @@ const SEED = graine();
 async function profil(avant) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block", reducedMotion: "reduce", acceptDownloads: true });
   await ctx.addInitScript((raw) => {
-    if (!localStorage.getItem("eclat.save.v1")) localStorage.setItem("eclat.save.v1", raw);
+    if (!localStorage.getItem("eclat.preview.craft.v1")) localStorage.setItem("eclat.preview.craft.v1", raw);
     // combien de fois cette page écrit la partie (pour prouver qu’une page périmée n’écrit plus du tout)
     window.__ecrit = 0;
     const set = Storage.prototype.setItem;
-    Storage.prototype.setItem = function (k, v) { if (k === "eclat.save.v1") window.__ecrit++; return set.call(this, k, v); };
+    Storage.prototype.setItem = function (k, v) { if (k === "eclat.preview.craft.v1") window.__ecrit++; return set.call(this, k, v); };
   }, SEED);
   if (avant) await ctx.addInitScript(avant);
   return ctx;
@@ -52,8 +54,8 @@ async function ouvre(ctx) {
   await p.waitForTimeout(300);
   return p;
 }
-const stocke = (p) => p.evaluate(() => JSON.parse(localStorage.getItem("eclat.save.v1")).inv.bois);
-const brut = (p) => p.evaluate(() => localStorage.getItem("eclat.save.v1"));
+const stocke = (p) => p.evaluate(() => JSON.parse(localStorage.getItem("eclat.preview.craft.v1")).inv.bois);
+const brut = (p) => p.evaluate(() => localStorage.getItem("eclat.preview.craft.v1"));
 const vivant = (p) => p.evaluate(() => window.__eclat.E.count("bois"));
 const etat = (p) => p.evaluate(() => window.__eclat.Stk.etat());
 const ecrit = (p) => p.evaluate(() => window.__ecrit);
@@ -140,7 +142,7 @@ const ajoute = (p, n) => p.evaluate((k) => { window.__eclat.E.add("bois", k); },
     await attendreFenetre(A);
     await A.locator('[data-m="go"]').click();
     assert.equal(await stocke(A), 100, "la partie de A (100) remplace celle de B");
-    const copies = await A.evaluate(() => JSON.parse(localStorage.getItem("eclat.backups") || "[]"));
+    const copies = await A.evaluate(() => JSON.parse(localStorage.getItem("eclat.preview.craft.backups") || "[]"));
     assert.ok(copies.some((c) => /autre onglet/.test(c.why) && JSON.parse(c.data).inv.bois === 132), "la partie de B est mise de côté");
     await ctx.close();
   });
@@ -178,7 +180,7 @@ const ajoute = (p, n) => p.evaluate((k) => { window.__eclat.E.add("bois", k); },
 
   const sansVerrou = () => { Object.defineProperty(navigator, "locks", { value: undefined, configurable: true }); };
   /* une écriture d’une autre page que celle-ci ne voit pas passer (aucun événement storage n’arrive dans la page qui écrit) */
-  const ecritureEtrangere = (p, bois) => p.evaluate((n) => { const o = JSON.parse(localStorage.getItem("eclat.save.v1")); o.inv.bois = n; localStorage.setItem("eclat.save.v1", JSON.stringify(o)); }, bois);
+  const ecritureEtrangere = (p, bois) => p.evaluate((n) => { const o = JSON.parse(localStorage.getItem("eclat.preview.craft.v1")); o.inv.bois = n; localStorage.setItem("eclat.preview.craft.v1", JSON.stringify(o)); }, bois);
 
   await test("« Garder celle de cette page » : sans copie de secours enregistrée, l’autre partie n’est pas écrasée et rien n’est annoncé comme réussi", async () => {
     const ctx = await profil(sansVerrou);
@@ -188,14 +190,14 @@ const ajoute = (p, n) => p.evaluate((k) => { window.__eclat.E.add("bois", k); },
     assert.equal(await etat(A), "perime");
     await attendreFenetre(A);
     // les copies de secours ne s’enregistrent plus
-    await A.evaluate(() => { const set = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === "eclat.backups") throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); }; });
+    await A.evaluate(() => { const set = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === "eclat.preview.craft.backups") throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); }; });
     await A.locator('[data-m="keep"]').click();
     await A.waitForFunction(() => /Remplacer la partie/.test(document.querySelector("#modal h2").textContent));
     await attendreFenetre(A);
     await A.locator('[data-m="go"]').click();
     await A.waitForFunction(() => /n’est plus à jour/.test(document.querySelector("#modal h2").textContent));
     assert.equal(await stocke(A), 132, "la partie de l’autre onglet est intacte");
-    assert.equal(await A.evaluate(() => (JSON.parse(localStorage.getItem("eclat.backups") || "[]")).length), 0);
+    assert.equal(await A.evaluate(() => (JSON.parse(localStorage.getItem("eclat.preview.craft.backups") || "[]")).length), 0);
     assert.match(await A.locator("#toasts").innerText(), /copie de secours .* n’a pas pu être enregistrée/);
     assert.doesNotMatch(await A.locator("#toasts").innerText(), /Partie de cette page enregistrée/);
     assert.equal(await etat(A), "perime");
@@ -208,14 +210,14 @@ const ajoute = (p, n) => p.evaluate((k) => { window.__eclat.E.add("bois", k); },
     await ecritureEtrangere(A, 132);
     await A.evaluate(() => window.__eclat.save());
     await attendreFenetre(A);
-    await A.evaluate(() => { const set = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === "eclat.save.v1") throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); }; });
+    await A.evaluate(() => { const set = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (k === "eclat.preview.craft.v1") throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); }; });
     await A.locator('[data-m="keep"]').click();
     await A.waitForFunction(() => /Remplacer la partie/.test(document.querySelector("#modal h2").textContent));
     await attendreFenetre(A);
     await A.locator('[data-m="go"]').click();
     await A.waitForFunction(() => /n’est plus à jour|ouverte ailleurs/.test(document.querySelector("#modal h2").textContent) || !!document.querySelector("#saveBar:not(.hidden)"));
     assert.equal(await stocke(A), 132);
-    const copies = await A.evaluate(() => JSON.parse(localStorage.getItem("eclat.backups") || "[]"));
+    const copies = await A.evaluate(() => JSON.parse(localStorage.getItem("eclat.preview.craft.backups") || "[]"));
     assert.ok(copies.some((c) => JSON.parse(c.data).inv.bois === 132), "l’autre partie est dans les copies de secours");
     assert.doesNotMatch(await A.locator("#toasts").innerText(), /Partie de cette page enregistrée/);
     await ctx.close();
@@ -250,7 +252,7 @@ const ajoute = (p, n) => p.evaluate((k) => { window.__eclat.E.add("bois", k); },
     await p.evaluate(() => {
       window.__quota = true;
       const set = Storage.prototype.setItem;
-      Storage.prototype.setItem = function (k, v) { if (window.__quota && (k === "eclat.save.v1" || k === "eclat.backups")) throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); };
+      Storage.prototype.setItem = function (k, v) { if (window.__quota && (k === "eclat.preview.craft.v1" || k === "eclat.preview.craft.backups")) throw new DOMException("quota", "QuotaExceededError"); return set.call(this, k, v); };
     });
     const avant = await brut(p);
     await ajoute(p, 17);
@@ -281,6 +283,7 @@ const ajoute = (p, n) => p.evaluate((k) => { window.__eclat.E.add("bois", k); },
       assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem("eclat.persist")).etat), attendu);
       await p.locator("#menuBtn").click();
       await attendreFenetre(p);
+      await p.locator('[data-mjump="systeme"]').click(); /* menu en sections : « Sauvegardes » est dans Système */
       await p.locator('[data-m="saves"]').click();
       await p.waitForFunction(() => /Sauvegardes/.test(document.querySelector("#modal h2").textContent));
       assert.match(await p.locator("#modal .modal-box").innerText(), texteSauvegardes);

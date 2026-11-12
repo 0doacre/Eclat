@@ -21,7 +21,8 @@ function fixture(equipped,dark){
   for(const [id,n]of Object.entries({bois:50,fibre:30,caillou:20,cuir:60,os:15,corde:4}))E.add(id,n);
   s.studied={bois:1,fibre:1,cuir:1};E.recalc();return E.serialize();
 }
-async function layout(p,tag){
+/* Le Carnet est un cadre fixe qui défile : une image dans la fenêtre mais hors du cadre (sous la barre d’onglets) n’est jamais chargée en « lazy ». On la force. */
+async function layout(p,tag){await p.evaluate(()=>document.querySelectorAll('.view.on img[loading="lazy"]').forEach(e=>{e.loading='eager';}));
   for(let i=0;i<8;i++){await p.waitForFunction(()=>[...document.querySelectorAll('.view.on img')].every(e=>{const r=e.getBoundingClientRect();return !r.height||r.top>=innerHeight||r.bottom<=0||(e.complete&&e.naturalWidth>0);}));await p.waitForTimeout(120);} /* le Carnet se redessine (tuiles) : on laisse les images se poser */
   const r=await p.evaluate(()=>{
     const scope=document.querySelector('.view.on');

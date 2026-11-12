@@ -8,8 +8,8 @@ function fixture(preview,mode){
   const E=preview?Core.withData(require('../js/equipements').createData(D,{fullGame:true})).createEngine():Core.createEngine(),s=E.state;
   s.introSeen=true;s.cycle=2;s.meta.forcedDone=true;s.flags.ver=D.VERSION;s.stats.crafts=1;
   Object.assign(s.settings,{tuto:false,sound:false,visiteurs:false,theme:'light',account:{token:'CRED_ASSIST_TEST'}});
-  if(mode==='worker'){for(const id of ['racloir_os','etabli_amenage'])E.add(id,1);E.learn('laniere',true);Object.assign(s.atelierEconomy,{hired:true,working:true,budget:0});}
-  else{E.learn('manche',true);if(mode==='completed')E.add('bois',6);assert.equal(E.order('manche',2).ok,true);}
+  /* (mode « worker » retiré : voir plus bas) */
+  {E.learn('manche',true);if(mode==='completed')E.add('bois',6);assert.equal(E.order('manche',2).ok,true);}
   if(mode==='completed')s.t=Date.now()-600000;
   E.recalc();return E.serialize();
 }
@@ -19,7 +19,8 @@ async function ready(p,preview,mode){
   await p.waitForFunction(()=>!!window.__eclat);
   for(let i=0;i<15;i++){await p.waitForTimeout(120);if(mode==='completed'&&await p.locator('#modal h2').textContent().catch(()=>null)==='Bon retour !')return;await p.evaluate(()=>window.__eclat.closeModal());}
 }
-async function menu(p,action){await p.locator('#menuBtn').click();await p.locator('#modal [data-assistance="'+action+'"]').click();await p.waitForTimeout(200);}
+/* Le menu est en sections (Jeu, Affichage, Audio, Système, Aide) : une seule est ouverte à la fois, ces boutons sont dans « Aide ». */
+async function menu(p,action){await p.locator('#menuBtn').click();await p.waitForTimeout(550);await p.locator('#modal [data-mjump="aide"]').click();await p.locator('#modal [data-assistance="'+action+'"]').click();await p.waitForTimeout(200);}
 async function main(){
   await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM?{executablePath:process.env.CHROMIUM}:{})});
   try{
@@ -48,7 +49,7 @@ async function main(){
       check(text.includes('Reprendre le fil')&&text.includes('Commandes terminées')&&text.includes('Manche'),width+' commandes terminées au retour');
       check(text.includes('Objectif à reprendre'),width+' objectif au retour');check(!errs.length,errs.join(';'));await c.close();
     }
-    if(equipped){const c=await browser.newContext({viewport:{width:390,height:950},serviceWorkers:'block'}),p=await c.newPage();await ready(p,true,'worker');await menu(p,'diagnostic');check((await p.locator('#modal').innerText()).includes('Avance de salaire épuisée'),'salaire expliqué dans la preview');await p.locator('[data-kind="worker"]').click();await p.waitForFunction(()=>window.__eclat.U.tab==='atelier'&&!window.__eclat.U.mcur);check(await p.locator('#ae-worker-status').isVisible(),'accès à l’ouvrier');await c.close();}
+    /* L’ancien ouvrier unique (« Avance de salaire épuisée ») n’existe plus depuis la 0.41 : atelier-economie.js n’est plus qu’un module neutre ; chaque atelier a ses apprentis et ouvriers. Rien à vérifier ici. */
     console.log(checks+' contrôles navigateur du lot 1 réussis.');
   }finally{await browser.close();server.close();}
 }

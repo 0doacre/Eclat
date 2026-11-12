@@ -98,8 +98,11 @@ async function run(){
     }
     if(stage==='debut'){
       ok(!tabs.includes('livre')&&!tabs.includes('signes'),'Aucun onglet futur ajouté au début');
+      /* le Cosmos est un sous-onglet de Progression depuis la refonte */
+      if(await p.locator('#tabs [data-tab="arbre"]').isVisible()){await p.locator('#tabs [data-tab="arbre"]').click();await p.waitForTimeout(250);}
       ok(!await p.locator('[data-tab2="cosmos"]').count(),'Cosmos indisponible avant son déblocage');
     }else{
+      await p.locator('#tabs [data-tab="arbre"]').click();await p.waitForTimeout(250); /* le Cosmos est un sous-onglet de Progression depuis la refonte */
       await p.locator('[data-tab2="cosmos"]').click();
       const cTabs=await p.locator('#v-cosmos [data-ct]').evaluateAll(es=>es.map(e=>e.dataset.ct));
       for(const tab of cTabs){
@@ -125,8 +128,8 @@ async function run(){
         }
       }
     }
-    await p.locator('#atlasToggle').click();ok(await p.locator('#atlasToggle').getAttribute('aria-pressed')==='false','Bascule Classique');
-    await p.locator('#atlasToggle').click();ok(await p.locator('#atlasToggle').getAttribute('aria-pressed')==='true','Bascule Atlas');
+    /* Le bouton d’aspect est masqué exprès (harmonie.css) : le choix du style est dans le menu. */
+    ok(!await p.locator('#atlasToggle').isVisible(),'Bouton Aspect masqué de l’en-tête');
     ok(!errors.length,'Aucune erreur : '+errors.join(';'));
     console.log('✓ '+width+'/'+stage+'/'+dark);
     await ctx.close();
@@ -140,7 +143,7 @@ async function run(){
     await ctx.setOffline(true);await p.reload();await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<7;i++){await p.waitForTimeout(100);await close(p);}
     await p.locator('#tabs [data-tab="journal"]').click();await p.locator('[data-jt="livre"]').click();
-    await p.locator('[data-page]').first().click();ok(await p.locator('.livre-imprime').count()===1,'Lecture du Livre après rechargement hors ligne');await close(p);
+    await p.locator('[data-page]').first().click();ok(await p.locator('.livre-imprime').count()===1,'Lecture du Livre après rechargement hors ligne');await close(p);await p.locator('#tabs [data-tab="arbre"]').click();await p.waitForTimeout(250);
     await p.locator('[data-tab2="cosmos"]').click();
     ok(await p.locator('#skyCanvas').count()===1&&await p.evaluate(()=>window.EclatSky.mounted()),'Ciel interactif disponible hors ligne');
     ok(await p.evaluate(async()=>{const r=await fetch('assets/oeuvres/dyson.webp');return r.ok&&(await r.arrayBuffer()).byteLength>0;}),'Illustration des Grands Œuvres disponible hors ligne avant ouverture');

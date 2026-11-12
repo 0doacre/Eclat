@@ -23,7 +23,8 @@ async function run() {
     await p.waitForFunction(() => !!window.__eclat);
     for (let i = 0; i < 5; i++) { await p.waitForTimeout(80); await p.evaluate(() => window.__eclat.closeModal()); }
     ok(await p.evaluate(() => window.__eclat.Cloud.configured()) === attendu, nom + " : serveur configuré = " + attendu);
-    await p.locator("#menuBtn").click(); await p.waitForTimeout(250);
+    await p.locator("#menuBtn").click(); await p.waitForTimeout(550);
+    await p.locator('[data-mjump="systeme"]').click(); /* le menu est en sections : « Compte en ligne » est dans Système */
     await p.locator('[data-m="account"]').click(); await p.waitForTimeout(400);
     const texte = await p.locator(".modal:not(.hidden)").textContent();
     ok(!/Pas encore de comptes/.test(texte), nom + " : la fenêtre ne dit pas « Pas encore de comptes »");
