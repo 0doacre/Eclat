@@ -1,18 +1,18 @@
 /* Le Carnet du Semeur : papier permanent, pièces peintes et titres au fil des âges.
  * Identifiant "vivant" conservé pour les préférences et les parties existantes. */
 html[data-style-mode="vivant"] body[data-ep] {
-  --bg:#f4ecda;--bg2:#e8ddc5;--panel:#f4ecda;--panel2:#e9dec8;
-  --text:#30271e;--muted:#60513f;--dim:#655541;--line:#79694a44;--line2:#79694a80;
-  --acc-base:#813f2a;--acc:#813f2a;--acc-dark:0%;--acc-ink:#fff8e9;
-  --good:#345239;--bad:#812b26;--intu:#73501f;--serif:"IM Fell English",Georgia,serif;
+  --bg:var(--sb-feuille);--bg2:var(--sb-feuille3);--panel:var(--sb-feuille);--panel2:var(--sb-feuille2);
+  --text:var(--sb-encre2);--muted:var(--sb-doux);--dim:var(--sb-dim);--line:rgb(var(--sb-tb) / .27);--line2:rgb(var(--sb-tb) / .5);
+  --acc-base:var(--sb-teinte);--acc:var(--sb-teinte);--acc-dark:0%;--acc-ink:#fff8e9;
+  --good:var(--sb-bon);--bad:var(--sb-mal);--intu:var(--sb-intu);--serif:"IM Fell English",Georgia,serif;
   --label:"Alegreya Sans",sans-serif;--paper:none;--title-size:1;
   --paint-paper:url("../assets/carnet/ui/paper.webp");--paint-frame:url("../assets/carnet/ui/page-frame.webp");
   --paint-button:url("../assets/carnet/ui/paper-button.webp");--paint-primary:url("../assets/carnet/ui/paint-button.webp");
   --drawn-frame:var(--paint-frame);--drawn-button:var(--paint-button);
-  --drawn-paper:#f4ecda;--drawn-paper-deep:#e9dec8;--drawn-ink:#30271e;--drawn-muted:#60513f;
-  --drawn-pigment:#813f2a;--drawn-pigment-ink:#fff8e9;
+  --drawn-paper:var(--sb-feuille);--drawn-paper-deep:var(--sb-feuille2);--drawn-ink:var(--sb-encre2);--drawn-muted:var(--sb-doux);
+  --drawn-pigment:var(--sb-teinte);--drawn-pigment-ink:#fff8e9;
   --atelier-frame:var(--paint-frame);--atelier-button:var(--paint-button);
-  color-scheme:light;
+  color-scheme:var(--sb-scheme);
 }
 html[data-style-mode="vivant"] :is(#app,#views,#top,#tabs,.modal-box){background:var(--paint-paper) center/cover var(--bg);color:var(--text)}
 html[data-style-mode="vivant"] #app{font-family:var(--sans)}
@@ -50,10 +50,10 @@ html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw.on{background:var(--pane
 html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw::before{left:0!important;top:0!important;right:0!important;bottom:0!important}
 html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw.on::before{background:var(--paint-primary) center/100% 100% no-repeat;filter:brightness(.73)}
 html[data-style-mode="vivant"] :is(#app,#modal) .btn.sw.on{color:#fff8e9!important}
-html[data-style-mode="vivant"] :is(.modal-box,.menu-modal .modal-box){border:20px solid transparent!important;border-image:var(--paint-frame) 78/20px/0 stretch!important;border-radius:0!important;background:var(--paint-paper) center/cover var(--bg)!important;color:var(--text)!important;box-shadow:0 14px 44px #30271e44!important}
+html[data-style-mode="vivant"] :is(.modal-box,.menu-modal .modal-box){border:20px solid transparent!important;border-image:var(--paint-frame) 78/20px/0 stretch!important;border-radius:0!important;background:var(--paint-paper) center/cover var(--bg)!important;color:var(--text)!important;box-shadow:0 14px 44px rgb(var(--sb-enc) / .27)!important}
 html[data-style-mode="vivant"] :is(#v-atelier,#v-carnet,#v-labo) :is(.card,.age-sec){border-image-source:var(--paint-frame)!important;border-image-slice:78!important}
 html[data-style-mode="vivant"] #v-atelier .bench{--atelier-frame:var(--paint-frame);--atelier-button:var(--paint-button)}
-html[data-style-mode="vivant"] #v-atelier .bench{--work-top:#e9dec8;--work-bottom:#f4ecda;background:var(--panel2)!important;color:var(--text);border-image:var(--paint-frame) 78/8px/0 stretch}
+html[data-style-mode="vivant"] #v-atelier .bench{--work-top:var(--sb-feuille2);--work-bottom:var(--sb-feuille);background:var(--panel2)!important;color:var(--text);border-image:var(--paint-frame) 78/8px/0 stretch}
 html[data-style-mode="vivant"] #v-atelier .bench :is(.heat,.slot .sn,.slot .tiny.muted,.slot .plus,.plus-sep){color:var(--text);text-shadow:none}
 html[data-style-mode="vivant"] #v-atelier .slot{background:var(--paint-paper) center/cover!important;border-image:var(--paint-frame) 78/6px/0 stretch!important}
 html[data-style-mode="vivant"] #v-atelier .slot.full{background:var(--panel)!important}
@@ -200,7 +200,7 @@ html[data-style-mode="vivant"] .modal.modal-contemplation .modal-box {
   color: var(--text)!important;
 }
 html[data-style-mode="vivant"] .contemplation-canvas {
-  background: rgba(48,39,30,0.08);
+  background: rgb(var(--sb-enc) / .08);
   border-color: var(--line);
 }
 
@@ -216,7 +216,7 @@ html[data-style-mode="vivant"] :is(#modal,#v-journal,#v-cosmos) {
   --drawn-ink:var(--finish-ink);--drawn-pigment:var(--finish-pigment);
   --drawn-muted:var(--finish-secondary);--drawn-rule:var(--finish-rule);
   --drawn-pigment-ink:var(--finish-on-pigment);
-  color:var(--text);color-scheme:light;
+  color:var(--text);color-scheme:var(--sb-scheme);
 }
 html[data-style-mode="vivant"] #modal {background:var(--finish-overlay)}
 html[data-style-mode="vivant"] #modal .modal-box {

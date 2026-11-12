@@ -218,31 +218,7 @@ body.has-act .view { padding-bottom: calc(var(--nav) + var(--safe-b) + var(--act
 .sk-l { font-variant-numeric: tabular-nums; color: var(--acc); font-weight: 700; }
 .gact .btn.gmake { flex: 1 1 auto; width: auto; }
 
-/* ---------------------------------------------------------------- THÈME SOMBRE : VEILLÉE */
-body.theme-dark {
-  --bg: #151311; --bg2: #1e1b17; --panel: #221d19; --panel2: #2b2520;
-  --text: #e8ded0; --muted: #a69986; --dim: #7a6e5d;
-  --line: rgba(232, 222, 208, 0.12); --line2: rgba(232, 222, 208, 0.26);
-  --paper: radial-gradient(rgba(232, 222, 208, 0.04) 1px, transparent 1px) 0 0 / 14px 14px;
-  color-scheme: dark;
-}
-body.theme-dark[data-ep="pigments"] { --acc-base: #e06040; --good: #62aa48; --bad: #e25438; --intu: #e2a832; }
-body.theme-dark[data-ep="papyrus"] {
-  --acc-base: #4db3a2; --good: #6cb33b; --bad: #e05c3c; --intu: #e0a32d;
-  --paper: repeating-linear-gradient(90deg, rgba(232, 222, 208, 0.03) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(0deg, rgba(232, 222, 208, 0.02) 0 2px, transparent 2px 23px);
-}
-body.theme-dark[data-ep="enluminure"] { --acc-base: #e24d4d; --good: #507cc4; --bad: #e24d4d; --intu: #deb035; }
-body.theme-dark[data-ep="registre"] { --acc-base: #e25c48; --good: #5292d2; --bad: #e25c48; --intu: #dba63b; }
-body.theme-dark[data-ep="quadrille"] {
-  --acc-base: #38c278; --good: #38c278; --bad: #e25442; --intu: #e2b22e;
-  --paper: linear-gradient(rgba(232, 222, 208, 0.04) 1px, transparent 1px) 0 0 / 16px 16px,
-    linear-gradient(90deg, rgba(232, 222, 208, 0.04) 1px, transparent 1px) 0 0 / 16px 16px;
-}
-body.theme-dark[data-ep="bord"] {
-  --acc-base: #ff682e; --good: #5f7bf5; --bad: #e25442; --intu: #e89f38;
-  --paper: radial-gradient(rgba(232, 222, 208, 0.05) 1px, transparent 1.3px) 0 0 / 12px 12px;
-}
+/* ---------------------------------------------------------------- THÈME SOMBRE : la palette de nuit est dans harmonie-sobre.css (« T10 · Thème sombre »). */
 
 body.theme-dark .card.acc, body.theme-dark .goal-card { border-color: var(--line2); }
 body.theme-dark .modal { background: rgba(0, 0, 0, 0.72); }
@@ -349,13 +325,6 @@ body:not(.theme-dark)[data-ep="enluminure"] { --dim: #6f6052; --intu: #7d5e14; }
 body:not(.theme-dark)[data-ep="registre"] { --muted: #5b6472; --dim: #5b6473; --intu: #796024; --bad: #b13a2a; --acc-dark: 19%; }
 body:not(.theme-dark)[data-ep="quadrille"] { --dim: #5a699b; --intu: #80682f; --acc-dark: 22%; }
 body:not(.theme-dark)[data-ep="bord"] { --dim: #5f666f; --intu: #875d1f; --bad: #b8372a; --acc-dark: 32%; }
-body.theme-dark { --dim: #998e7e; --acc-dark: 0%; }
-body.theme-dark[data-ep="pigments"] { --bad: #e36c52; }
-body.theme-dark[data-ep="papyrus"] { --bad: #e16e50; }
-body.theme-dark[data-ep="enluminure"] { --good: #7091c7; --bad: #e36a68; }
-body.theme-dark[data-ep="registre"] { --good: #5594d2; --bad: #e36c58; }
-body.theme-dark[data-ep="quadrille"] { --bad: #e36c5a; }
-body.theme-dark[data-ep="bord"] { --good: #7289f0; --bad: #e36c5a; }
 
 /* Lot 0.38 : jetons de finition, communs aux six papiers. */
 :root {

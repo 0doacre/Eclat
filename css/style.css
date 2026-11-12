@@ -1776,7 +1776,6 @@ h2 + .stamp { margin: -4px 0 8px; }
 /* le décor ne couvre que la bande du titre, et s’efface avant les lignes : le texte des ressources se lit sur le fond uni */
 .dom-terre.a-decor::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 84px; z-index: -1; background: var(--decor) center top / cover no-repeat; opacity: .16;
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); mask-image: linear-gradient(to bottom, #000 0%, transparent 100%); }
-body.theme-dark .dom-terre.a-decor::before { opacity: .24; }
 @media (prefers-reduced-data: reduce) { .dom-terre.a-decor::before { display: none; } }
 
 /* Le Carnet prépare le lot sélectionné ; l’Arbre garde les relations entre découvertes. */

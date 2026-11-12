@@ -1,42 +1,42 @@
 /* Les ateliers (0.40) : jauge d'énergie, cartes, échelle. Couleurs du Carnet, sans ornement : Codex habillera. */
-.ateliers { display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1 1 auto; padding: 6px 10px; color: #30271e; overflow-y: auto; overscroll-behavior: contain; }
-.energie { display: flex; align-items: center; gap: 8px; flex: none; padding: 6px 8px; border: 1px solid #79694a; border-radius: 8px; background: #fff8e9; }
+.ateliers { display: flex; flex-direction: column; gap: 8px; min-height: 0; flex: 1 1 auto; padding: 6px 10px; color: var(--sb-encre2); overflow-y: auto; overscroll-behavior: contain; }
+.energie { display: flex; align-items: center; gap: 8px; flex: none; padding: 6px 8px; border: 1px solid var(--sb-trait); border-radius: 8px; background: var(--sb-p0); }
 .energie-t { font-weight: 700; font-size: 14px; }
-.energie-barre { flex: 1; height: 10px; border-radius: 5px; border: 1px solid #79694a; background: #f4ecda; overflow: hidden; }
-.energie-barre i { display: block; height: 100%; background: #813f2a; }
-.energie.is-juste .energie-barre i { background: #812b26; }
+.energie-barre { flex: 1; height: 10px; border-radius: 5px; border: 1px solid var(--sb-trait); background: var(--sb-feuille); overflow: hidden; }
+.energie-barre i { display: block; height: 100%; background: var(--sb-teinte-fond); }
+.energie.is-juste .energie-barre i { background: var(--sb-mal); }
 .energie-v { font-size: 13px; white-space: nowrap; }
 .energie-note { margin: 0; }
 .atel-liste { display: flex; flex-direction: column; gap: 6px; }
-.atel-carte { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 8px 10px; text-align: left; border: 1px solid #79694a; border-radius: 10px; background: #fff8e9; color: #30271e; font: inherit; cursor: pointer; min-height: 60px; }
-.atel-carte.is-bloque { border-color: #812b26; background: #f7e6e1; }
+.atel-carte { display: flex; align-items: center; gap: 10px; width: 100%; box-sizing: border-box; padding: 8px 10px; text-align: left; border: 1px solid var(--sb-trait); border-radius: 10px; background: var(--sb-p0); color: var(--sb-encre2); font: inherit; cursor: pointer; min-height: 60px; }
+.atel-carte.is-bloque { border-color: var(--sb-mal); background: var(--sb-bloque); }
 .atel-ic { flex: none; width: 36px; text-align: center; font-size: 26px; line-height: 1; }
 .atel-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .atel-ligne { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
 .atel-ligne b { font-size: 16px; }
-.atel-etat { font-size: 12px; color: #60513f; }
-.atel-etat.is-bloque { color: #812b26; font-weight: 700; }
-.atel-etat.is-marche { color: #345239; font-weight: 700; }
-.atel-chev { flex: none; font-size: 22px; color: #60513f; }
+.atel-etat { font-size: 12px; color: var(--sb-doux); }
+.atel-etat.is-bloque { color: var(--sb-mal); font-weight: 700; }
+.atel-etat.is-marche { color: var(--sb-bon); font-weight: 700; }
+.atel-chev { flex: none; font-size: 22px; color: var(--sb-doux); }
 .atel-echelle { display: flex; gap: 3px; flex-wrap: wrap; }
-.atel-ech { font-size: 11px; padding: 2px 6px; border-radius: 999px; border: 1px solid #79694a55; color: #60513f; line-height: 1.3; }
-.atel-ech.is-fait { background: #e9dec8; }
-.atel-ech.is-courant { background: #813f2a; border-color: #813f2a; color: #fff8e9; font-weight: 700; }
-.atel-ech.is-dispo { border-style: dashed; border-color: #813f2a; color: #813f2a; }
+.atel-ech { font-size: 11px; padding: 2px 6px; border-radius: 999px; border: 1px solid rgb(var(--sb-tb) / .33); color: var(--sb-doux); line-height: 1.3; }
+.atel-ech.is-fait { background: var(--sb-feuille2); }
+.atel-ech.is-courant { background: var(--sb-teinte-fond); border-color: var(--sb-teinte); color: #fff8e9; font-weight: 700; }
+.atel-ech.is-dispo { border-style: dashed; border-color: var(--sb-teinte); color: var(--sb-teinte); }
 .atel-ech.is-ferme { opacity: .55; }
 .atel-tete { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 
 /* Les trois pages de l'Atelier (Produire, Carnet, Machines) partagent le même gabarit : marge, sous-onglets, titre */
 .atl-page { padding: 6px 10px; box-sizing: border-box; min-width: 0; }
 #v-atelier, #v-carnet, #v-machines { padding-left: 0; padding-right: 0; }
-.atl-titre { margin: 4px 0 10px; padding: 0 0 8px; border-bottom: 1px solid #79694a; }
+.atl-titre { margin: 4px 0 10px; padding: 0 0 8px; border-bottom: 1px solid var(--sb-trait); }
 .atl-titre h2 { margin: 0; font-family: var(--serif); font-weight: 500; font-size: 24px; line-height: 1.15; color: inherit; border: 0; padding: 0; }
-.atl-titre p { margin: 2px 0 0; font-size: 13px; color: #60513f; line-height: 1.35; }
+.atl-titre p { margin: 2px 0 0; font-size: 13px; color: var(--sb-doux); line-height: 1.35; }
 .atl-page .subtabs { margin: 0 0 4px; }
 
 .atel-embauche { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 6px; }
 .atel-embauche .btn { min-height: 44px; }
-.atel-ferme { font-size: 13px; color: #60513f; padding: 8px 4px; }
+.atel-ferme { font-size: 13px; color: var(--sb-doux); padding: 8px 4px; }
 .atl-bourse { margin: 0 0 4px; }
 
 /* grand écran : les cartes d'atelier se rangent en colonnes, tout l'écran sert */
@@ -48,7 +48,7 @@
 .carnet-outils { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 6px 0; }
 .carnet-outils .search { flex: 1 1 220px; margin: 0; }
 .carnet-outils .btn { min-height: 44px; white-space: nowrap; }
-.carnet-outils .btn.on { border-color: #813f2a; }
+.carnet-outils .btn.on { border-color: var(--sb-teinte); }
 
 .energie { width: 100%; box-sizing: border-box; text-align: left; font: inherit; color: inherit; cursor: pointer; min-height: 44px; }
 .energie-feuille .sub { margin: 12px 0 4px; }

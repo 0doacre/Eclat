@@ -1,5 +1,5 @@
 /* planche « entre-deux » : polices, trait fin, tailles. Tout sous html[data-style-mode="vivant"]. */
-html[data-style-mode="vivant"] { --fin-trait: 1.5px solid rgb(106 86 58 / .6); --fin-r: 10px; --fin-papier: rgb(251 246 233 / .82); --fin-sans: "Alegreya Sans", system-ui, sans-serif; }
+html[data-style-mode="vivant"] { --fin-trait: 1.5px solid rgb(var(--sb-ta) / .6); --fin-r: 10px; --fin-papier: rgb(var(--sb-pa) / .82); --fin-sans: "Alegreya Sans", system-ui, sans-serif; }
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .gmiles, .ab-x, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill):not(.terre-boucle):not(.terre-recolte) {
   font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; letter-spacing: .01em; min-height: 44px !important; padding: 0 14px !important;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -8,7 +8,7 @@ html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .forge-btn, .mf
   inset: 2px 0 !important; border: var(--fin-trait) !important; border-image: none !important; border-radius: var(--fin-r) !important; background: var(--fin-papier) !important; box-shadow: 0 1px 0 rgb(60 40 20 / .12);
 }
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn.pri, .forge-btn, .mforge, .resume-btn, .btn.sw.on, .terres-pastille.on, .arb-filtres button.on, .ae-chip.on, .ae-filtres button.on, #v-carnet .filters button.on, .age-pill.cur, .btn.on:not(.ghost)):not(.terre-boucle)::before {
-  background: #a8402b !important; border-color: #7a2c1c !important;
+  background: var(--sb-acc) !important; border-color: var(--sb-acc-bord) !important;
 }
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn.pri, .forge-btn, .mforge, .resume-btn, .btn.sw.on, .terres-pastille.on, .arb-filtres button.on, .ae-chip.on, .ae-filtres button.on, #v-carnet .filters button.on, .age-pill.cur, .btn.on:not(.ghost)):not(.terre-boucle) { color: #fff8e9 !important; }
 /* boutons ronds : 44 de zone tactile, 38 de dessin */
@@ -40,43 +40,43 @@ html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule, #v-labo .ae-gest
   background: none !important; box-shadow: none !important; border: 0 !important; filter: none;
 }
 html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule, #v-labo .ae-geste, #v-labo .ae-vider, #v-labo .ae-tools .ae-chip, #v-domaine .terre-ajout, #v-domaine .terre-nav, #v-labo .ae-resource > .btn)::before { display: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.on, .ico-seule.cur, .age-pill.cur.ico-seule, #v-labo .ae-geste.on, #v-labo .ae-tools .ae-chip.on, #v-labo .ae-resource > .btn.on) { box-shadow: inset 0 0 0 2px #a8402b !important; border-radius: 50% !important; color: #a8402b !important; }
+html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.on, .ico-seule.cur, .age-pill.cur.ico-seule, #v-labo .ae-geste.on, #v-labo .ae-tools .ae-chip.on, #v-labo .ae-resource > .btn.on) { box-shadow: inset 0 0 0 2px var(--sb-acc) !important; border-radius: 50% !important; color: var(--sb-acc-txt) !important; }
 html[data-style-mode="vivant"] #app#app#app#app :is(#v-labo .ae-tools .ae-chip.on, #v-labo .ae-resource > .btn.on) { border-radius: 12px !important; }
-html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.on, #v-labo .ae-geste.on) :is(svg, .gi) { color: #a8402b; fill: currentColor; }
+html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.on, #v-labo .ae-geste.on) :is(svg, .gi) { color: var(--sb-acc-txt); fill: currentColor; }
 html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule:active, #v-labo .ae-geste:active, #v-labo .ae-resource > .btn:active) { transform: scale(.96); }
-html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-vider :is(svg, .gi) { width: 26px !important; height: 26px !important; color: #3b2a1a; }
+html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-vider :is(svg, .gi) { width: 26px !important; height: 26px !important; color: var(--sb-encre); }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-gestes .ae-geste { width: 44px !important; height: 44px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-pastille-auto .roue :is(svg, .gi) { filter: drop-shadow(0 1px 2px rgb(20 14 8 / .5)); }
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-nav { color: #3b2a1a !important; font-size: 26px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-nav { color: var(--sb-encre) !important; font-size: 26px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-filtres { justify-content: center; gap: var(--ae-filtres-gap, 28px); }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-filtres .ico-seule { flex: 0 0 44px !important; width: 44px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-tools { gap: 14px; }
-html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.pri, .ico-seule.on, .ico-seule.cur) { box-shadow: inset 0 0 0 2px #a8402b !important; border-radius: 50% !important; color: #a8402b !important; background: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.pri, .ico-seule.on) :is(svg, .gi) { color: #a8402b !important; fill: currentColor; }
+html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.pri, .ico-seule.on, .ico-seule.cur) { box-shadow: inset 0 0 0 2px var(--sb-acc) !important; border-radius: 50% !important; color: var(--sb-acc-txt) !important; background: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule.pri, .ico-seule.on) :is(svg, .gi) { color: var(--sb-acc-txt) !important; fill: currentColor; }
 html[data-style-mode="vivant"] #app#app#app#app .ico-seule.ico-fleche { font-size: 28px !important; line-height: 1; }
 /* ---- grammaire, retouches : bandeau allégé, icônes agrandies, ▶ sans rouge ---- */
-html[data-style-mode="vivant"] #app#app#app#app #top { background: rgb(251 246 233 / .96) !important; box-shadow: none !important; border: 0 !important; border-bottom: 1px solid rgb(106 86 58 / .3) !important; position: relative; padding-block: 6px 9px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #top { background: rgb(var(--sb-pa) / .96) !important; box-shadow: none !important; border: 0 !important; border-bottom: 1px solid rgb(var(--sb-ta) / .3) !important; position: relative; padding-block: 6px 9px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top #orn { display: none !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age { position: static !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-bar-track { position: absolute !important; left: 0; right: 0; bottom: -1px; height: 3px !important; border-radius: 0 !important; background: transparent !important; border: 0 !important; }
-html[data-style-mode="vivant"] #app#app#app#app #top .age-bar-fill { background: #a8402b !important; border-radius: 0 !important; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-bar-fill { background: var(--sb-acc) !important; border-radius: 0 !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { font-size: 13px !important; letter-spacing: 0; text-transform: none; }
-html[data-style-mode="vivant"] #app#app#app#app #top .age-badge { font-size: 13px !important; padding: 0 6px; background: none !important; border: 0 !important; color: #813f2a !important; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-badge { font-size: 13px !important; padding: 0 6px; background: none !important; border: 0 !important; color: var(--sb-teinte) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .chip :is(.cv, b) { font-size: 17px !important; font-weight: 700 !important; font-family: var(--fin-sans) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .chip .ico-top { width: 26px !important; height: 26px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout { width: 56px !important; height: 56px !important; min-width: 56px !important; position: relative; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout :is(img, svg, .gi) { width: 50px !important; height: 50px !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { position: absolute; top: 0; left: 2px; font: 700 20px/1 var(--fin-sans) !important; color: #a8402b !important; z-index: 2; }
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-boucle { background: none !important; box-shadow: none !important; border: 0 !important; color: #3b2a1a !important; font-size: 28px !important; width: 48px !important; height: 48px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { position: absolute; top: 0; left: 2px; font: 700 20px/1 var(--fin-sans) !important; color: var(--sb-acc-txt) !important; z-index: 2; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-boucle { background: none !important; box-shadow: none !important; border: 0 !important; color: var(--sb-encre) !important; font-size: 28px !important; width: 48px !important; height: 48px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-boucle::before { display: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-boucle.on { box-shadow: inset 0 0 0 2px #a8402b !important; border-radius: 50% !important; color: #a8402b !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-boucle.on { box-shadow: inset 0 0 0 2px var(--sb-acc) !important; border-radius: 50% !important; color: var(--sb-acc-txt) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte :is(img, svg, .gi) { width: 44px !important; height: 44px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-tools .ae-chip :is(img, svg, .gi) { width: 36px !important; height: 36px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-geste :is(svg, .gi) { width: 28px !important; height: 28px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource :is(img, svg, .gi) { width: 40px !important; height: 40px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource > .btn { min-height: 66px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top::after { display: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { top: -2px !important; left: -2px !important; width: 18px; height: 18px; border-radius: 50%; background: #a8402b; color: #fff8e9 !important; font-size: 13px !important; line-height: 18px !important; text-align: center; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { top: -2px !important; left: -2px !important; width: 18px; height: 18px; border-radius: 50%; background: var(--sb-acc); color: #fff8e9 !important; font-size: 13px !important; line-height: 18px !important; text-align: center; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout { overflow: visible !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top { border-left: 0 !important; }
 /* ---- icônes d’abord : le contenant carré disparaît, l’image prend la place ---- */
@@ -101,11 +101,11 @@ html[data-style-mode="vivant"] #app#app#app#app #top .age-sub { white-space: now
 html[data-style-mode="vivant"] #app#app#app#app #top .chip { padding-inline: 2px !important; gap: 4px; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource .ic :is(svg, .gi) { width: 44px !important; height: 44px !important; margin: auto; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte { margin-left: 6px; }
-html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-tools .ae-chip.on :is(svg, .gi, .ic) { color: #a8402b !important; fill: currentColor !important; opacity: 1 !important; }
-html[data-style-mode="vivant"] #app#app#app#app :is(#v-labo .ae-tools .ae-chip.on, #v-labo .ae-geste.on) { color: #a8402b !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-tools .ae-chip.on :is(svg, .gi, .ic) { color: var(--sb-acc-txt) !important; fill: currentColor !important; opacity: 1 !important; }
+html[data-style-mode="vivant"] #app#app#app#app :is(#v-labo .ae-tools .ae-chip.on, #v-labo .ae-geste.on) { color: var(--sb-acc-txt) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .chip { min-width: 0 !important; padding-inline: 0 !important; }
 @media (max-width: 600px) { html[data-style-mode="vivant"] #app#app#app#app #top#top { grid-template-columns: minmax(104px, 1fr) auto auto auto 40px !important; column-gap: 12px !important; } }
-html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule, html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule b { color: #a8402b !important; }
+html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule, html[data-style-mode="vivant"] #app#app#app#app .age-pill.cur.ico-seule b { color: var(--sb-acc-txt) !important; }
 html[data-style-mode="vivant"] #app#app#app#app .ico-seule :is(svg, .gi) { width: 28px; height: 28px; }
 html[data-style-mode="vivant"] #app#app#app#app .age-pill.ico-seule { font: 700 17px var(--fin-sans) !important; }
 
@@ -113,14 +113,14 @@ html[data-style-mode="vivant"] #app#app#app#app .age-pill.ico-seule { font: 700 
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atl-plaque { display: flex; align-items: center; gap: 2px; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atl-plaque .atl-retour { flex: 0 0 44px; font-size: 28px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atl-plaque .atl-metier { flex: 1 1 auto; justify-content: center; }
-html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete { display: flex !important; align-items: center; gap: 2px; padding: 2px 6px; border-radius: 30px; background: rgb(251 246 233 / .92) !important; box-shadow: 0 2px 10px rgb(20 14 8 / .35) !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button { position: relative; width: 52px !important; height: 52px !important; min-width: 52px !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; display: inline-flex; align-items: center; justify-content: center; color: #3b2a1a !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete { display: flex !important; align-items: center; gap: 2px; padding: 2px 6px; border-radius: 30px; background: rgb(var(--sb-pa) / .92) !important; box-shadow: 0 2px 10px rgb(20 14 8 / .35) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button { position: relative; width: 52px !important; height: 52px !important; min-width: 52px !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; display: inline-flex; align-items: center; justify-content: center; color: var(--sb-encre) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button::before { display: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button :is(svg, .gi, .roue) { width: 34px !important; height: 34px !important; color: #3b2a1a !important; filter: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete .roue-n { position: absolute; right: 0; top: 2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #3b2a1a; color: #fff8e9; font: 700 12px/20px var(--fin-sans); text-align: center; box-sizing: border-box; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button :is(svg, .gi, .roue) { width: 34px !important; height: 34px !important; color: var(--sb-encre) !important; filter: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete .roue-n { position: absolute; right: 0; top: 2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--sb-encre-fond); color: #fff8e9; font: 700 12px/20px var(--fin-sans); text-align: center; box-sizing: border-box; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod.atl-page .prod-entete .prod-pastille-auto { background: none !important; box-shadow: none !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-qui { display: flex; justify-content: space-around; gap: 4px; }
-html[data-style-mode="vivant"] #app#app#app#app #v-atelier .a-construire-ligne { padding: 8px 0 12px; border-bottom: 1px solid rgb(106 86 58 / .25); }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .a-construire-ligne { padding: 8px 0 12px; border-bottom: 1px solid rgb(var(--sb-ta) / .25); }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .auto-feuille .rbtns { justify-content: flex-end; }
 
 /* ---- ingrédients : l’icône et le nombre, sans cadre ; le nom est en infobulle (et lu par les lecteurs d’écran) ---- */
@@ -129,8 +129,8 @@ html[data-style-mode="vivant"] #app#app#app#app .ing::before, html[data-style-mo
 html[data-style-mode="vivant"] #app#app#app#app .ing .ing-n { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 html[data-style-mode="vivant"] #app#app#app#app .ing .ic { width: 38px !important; height: 38px !important; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; }
 html[data-style-mode="vivant"] #app#app#app#app .ing .ic :is(.carnet-img, svg, .gi) { width: 100% !important; height: 100% !important; object-fit: contain; }
-html[data-style-mode="vivant"] #app#app#app#app .ing .q { font: 700 17px var(--fin-sans) !important; color: #813f2a !important; }
-html[data-style-mode="vivant"] #app#app#app#app .ing.lack .q { color: #a8402b !important; text-decoration: underline wavy; text-underline-offset: 3px; }
+html[data-style-mode="vivant"] #app#app#app#app .ing .q { font: 700 17px var(--fin-sans) !important; color: var(--sb-teinte) !important; }
+html[data-style-mode="vivant"] #app#app#app#app .ing.lack .q { color: var(--sb-acc-txt) !important; text-decoration: underline wavy; text-underline-offset: 3px; }
 html[data-style-mode="vivant"] #app#app#app#app .ing.lack .ic { opacity: .55; }
 html[data-style-mode="vivant"] #app#app#app#app .ings { gap: 14px; align-items: center; flex: 1 1 auto; min-width: 0; }
 /* une ligne : les ingrédients à gauche, « Fabriquer » à droite */
@@ -140,12 +140,12 @@ html[data-style-mode="vivant"] #app#app#app#app .prod-fiche .row.wrap.small { ga
 
 /* ---- fenêtres : la même grammaire que les écrans (le #modal est hors de #app) ---- */
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn, .mini, .forge-btn, .mforge) {
-  font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; min-height: 44px !important; padding: 0 16px !important; color: #3b2a1a !important;
+  font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; min-height: 44px !important; padding: 0 16px !important; color: var(--sb-encre) !important;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
-html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn, .mini, .forge-btn, .mforge)::before { inset: 2px 0 !important; border: 1.5px solid rgb(106 86 58 / .6) !important; border-image: none !important; border-radius: 10px !important; background: rgb(251 246 233 / .82) !important; box-shadow: 0 1px 0 rgb(60 40 20 / .12); }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn, .mini, .forge-btn, .mforge)::before { inset: 2px 0 !important; border: 1.5px solid rgb(var(--sb-ta) / .6) !important; border-image: none !important; border-radius: 10px !important; background: rgb(var(--sb-pa) / .82) !important; box-shadow: 0 1px 0 rgb(60 40 20 / .12); }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn.pri, .forge-btn, .mforge) { color: #fff8e9 !important; min-height: 48px !important; }
-html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn.pri, .forge-btn, .mforge)::before { background: #a8402b !important; border-color: #7a2c1c !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn.pri, .forge-btn, .mforge)::before { background: var(--sb-acc) !important; border-color: var(--sb-acc-bord) !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri)::before { background: transparent !important; border-color: transparent !important; box-shadow: none; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .btn.ghost:not(.pri) { text-decoration: underline; text-underline-offset: 3px; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box .acts { gap: 8px; }
@@ -171,34 +171,34 @@ html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .icon-btn, .chi
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .icon-btn, .chip, button).hidden { display: none !important; }
 
 /* ---- fenêtres et menu : la croix est une commande nue, les onglets et les interrupteurs suivent l’échelle ---- */
-html[data-style-mode="vivant"] #modal#modal#modal .modal-x { background: none !important; border: 0 !important; border-image: none !important; box-shadow: none !important; width: 44px; height: 44px; min-width: 44px; padding: 0; color: #3b2a1a; font-size: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-x { background: none !important; border: 0 !important; border-image: none !important; box-shadow: none !important; width: 44px; height: 44px; min-width: 44px; padding: 0; color: var(--sb-encre); font-size: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-x::before, html[data-style-mode="vivant"] #modal#modal#modal .modal-x::after { display: none !important; }
-html[data-style-mode="vivant"] #modal#modal#modal .modal-x:active { transform: scale(.94); color: #a8402b; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-x:active { transform: scale(.94); color: var(--sb-acc-txt); }
 html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button { font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; }
-html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab.on, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button.on { font-weight: 700 !important; color: #813f2a !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab.on, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button.on { font-weight: 700 !important; color: var(--sb-teinte) !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .btn.sw { text-transform: none !important; letter-spacing: 0 !important; font-size: 14px !important; min-width: 96px; }
 html[data-style-mode="vivant"] #modal#modal#modal .btn.sw.on { color: #fff8e9 !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn { display: flex !important; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; padding: 8px 12px !important; min-height: 64px !important; line-height: 1.25; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn > * { text-align: left; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.kicker, .m-k, [class*="stat"] small, [class*="stat"] .lbl) { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: 13px !important; font-weight: 600; }
-html[data-style-mode="vivant"] #modal#modal#modal .m-cell-lbl { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: 13px !important; font-weight: 600; color: #5f513f; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-cell-lbl { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: 13px !important; font-weight: 600; color: var(--sb-doux); }
 html[data-style-mode="vivant"] #modal#modal#modal .m-cell-val { font-family: var(--fin-sans) !important; font-size: 17px !important; font-weight: 700; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn { line-height: 1.2 !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn * { line-height: 1.2 !important; margin: 0 !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn :is(span, small, b) { display: block; }
 html[data-style-mode="vivant"] #modal#modal#modal .btn.sw:not(.on) { opacity: .85; }
-html[data-style-mode="vivant"] #modal#modal#modal .btn.sw.on::before { background: #a8402b !important; border-color: #7a2c1c !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .btn.sw.on::before { background: var(--sb-acc) !important; border-color: var(--sb-acc-bord) !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge, html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge * { font-family: var(--fin-sans) !important; font-size: 13px !important; }
 /* Journal, secrets : une carte par sorte de secret caché, avec son compte */
 html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k { text-transform: none; letter-spacing: 0; font: 600 13px var(--fin-sans) !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .sec-n { font: 700 20px var(--fin-sans); color: #813f2a; }
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .sec-n { font: 700 20px var(--fin-sans); color: var(--sb-teinte); }
 /* bandeau : la ligne de l’âge se coupe avec des points de suspension (au cycle 2 elle ajoute « Semeur 8 »), le compteur 0/5 reste entier */
 html[data-style-mode="vivant"] #app#app#app#app #top .age { min-width: 0; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-head, html[data-style-mode="vivant"] #app#app#app#app #top .age-sub { min-width: 0; max-width: 100%; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-sub { display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { flex: 0 1 auto; min-width: 0; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-badge { flex: 0 0 auto; }
-html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .sec .k { text-transform: none !important; letter-spacing: 0 !important; font: 600 13px var(--fin-sans) !important; color: #5f513f; }
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .sec .k { text-transform: none !important; letter-spacing: 0 !important; font: 600 13px var(--fin-sans) !important; color: var(--sb-doux); }
 /* Progression, Gestes : une rangée par geste (icône, texte, coche), pas une grande carte centrée */
 html[data-style-mode="vivant"] #app#app#app#app #v-journal .gestes-grid .frag, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .gestes-grid .frag { display: flex !important; flex-direction: row !important; align-items: center; gap: 12px; padding: 10px 12px !important; min-height: 0 !important; text-align: left; }
 html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .fi { flex: 0 0 44px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 !important; }
@@ -206,7 +206,7 @@ html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .fi :is(svg, 
 html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .grow { flex: 1 1 auto; min-width: 0; text-align: left; }
 html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .geste-check { flex: 0 0 auto; margin: 0; }
 html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .geste-check :is(svg, .gi, img) { width: 28px; height: 28px; }
-html[data-style-mode="vivant"] #app#app#app#app .age-nav .age-pill.cur.ico-seule, html[data-style-mode="vivant"] #app#app#app#app .age-nav .age-pill.cur.ico-seule * { color: #a8402b !important; }
+html[data-style-mode="vivant"] #app#app#app#app .age-nav .age-pill.cur.ico-seule, html[data-style-mode="vivant"] #app#app#app#app .age-nav .age-pill.cur.ico-seule * { color: var(--sb-acc-txt) !important; }
 
 /* ---- l’échelle de texte (docs/GRAMMAIRE-V2.md §5) : onze, treize, quinze, dix-sept, vingt, vingt-quatre, vingt-huit ; 400, 600, 700 ---- */
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(b, strong) { font-weight: 700 !important; }
@@ -240,4 +240,4 @@ html[data-style-mode="vivant"] #modal#modal#modal .toggle > span { font: 400 17p
 
 
 /* La Mémoire des mains : le fond du feu qui s'éteint se voit en haut de la fenêtre, puis le papier reprend pour la lecture */
-html[data-style-mode="vivant"] #modal#modal#modal.memoire-fenetre .modal-box { background: linear-gradient(to bottom, rgb(244 236 218 / .45) 0, rgb(244 236 218 / .88) 150px, rgb(244 236 218 / .96) 260px), url("../assets/fonds/memoire.webp") center top / cover no-repeat !important; }
+html[data-style-mode="vivant"] #modal#modal#modal.memoire-fenetre .modal-box { background: linear-gradient(to bottom, rgb(var(--sb-pc) / .45) 0, rgb(var(--sb-pc) / .88) 150px, rgb(var(--sb-pc) / .96) 260px), url("../assets/fonds/memoire.webp") center top / cover no-repeat !important; }

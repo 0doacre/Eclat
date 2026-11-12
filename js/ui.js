@@ -1252,11 +1252,10 @@
     else if (typeof window !== "undefined" && window.matchMedia) {
       dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
-    if (window.EclatStyleMode === "vivant") dark = false;
     document.body.classList.toggle("theme-dark", dark);
     document.body.setAttribute("data-theme", dark ? "dark" : "light");
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", dark ? "#151311" : "#f2eada");
+    if (meta) meta.setAttribute("content", dark ? "#29221c" : "#f2eada");
   }
 
   function applyLargeText() {

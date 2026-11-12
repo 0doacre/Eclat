@@ -1,7 +1,7 @@
 /* Atelier 0.39 — registre réglé, compact et aligné. */
 .prod, .auto-feuille {
   min-width: 0; min-height: 0; box-sizing: border-box;
-  background: #f4ecda; color: #30271e;
+  background: var(--sb-feuille); color: var(--sb-encre2);
   font-variant-numeric: tabular-nums;
 }
 .prod { padding: 8px 12px; }
@@ -13,22 +13,22 @@
 }
 .prod-choix > * { flex-shrink: 0; min-height: 44px; }
 .prod-fiche {
-  min-width: 0; padding: 10px 10px 10px 18px; border: 1px solid #79694a;
-  border-top: 3px double #79694a;
-  background: linear-gradient(90deg, transparent 8px, #813f2a66 8px 9px, transparent 9px),
-    repeating-linear-gradient(transparent 0 23px, #79694a20 23px 24px), #fff8e9;
+  min-width: 0; padding: 10px 10px 10px 18px; border: 1px solid var(--sb-trait);
+  border-top: 3px double var(--sb-trait);
+  background: linear-gradient(90deg, transparent 8px, rgb(var(--sb-te) / .4) 8px 9px, transparent 9px),
+    repeating-linear-gradient(transparent 0 23px, rgb(var(--sb-tb) / .125) 23px 24px), var(--sb-p0);
   font-size: 14px; line-height: 1.4;
 }
 .prod-fiche h2, .prod-fiche h3 { margin: 0 0 6px; font-family: var(--serif, Georgia, serif); }
 .prod-qui { display: flex; flex-wrap: wrap; gap: 4px; margin-block: 8px; }
 .prod-qui > button {
   flex: 1 1 88px; min-width: 0; min-height: 44px; padding: 6px;
-  border: 1px solid #79694a; border-radius: 0; background: #fff8e9;
-  color: #30271e; font: inherit; font-size: 14px; line-height: 1.2;
+  border: 1px solid var(--sb-trait); border-radius: 0; background: var(--sb-p0);
+  color: var(--sb-encre2); font: inherit; font-size: 14px; line-height: 1.2;
 }
-.prod-qui > button[aria-pressed="true"] { color: #fff8e9; background: #813f2a; border-color: #813f2a; }
-.prod-file { min-height: 0; max-height: min(24dvh, 180px); overflow-y: auto; overscroll-behavior: contain; border-block: 1px solid #79694a; }
-.prod-pastille-auto { min-height: 44px; padding: 6px 10px; border: 1px solid #813f2a; border-radius: 3px; color: #813f2a; background: #fff8e9; font-variant-numeric: tabular-nums; }
+.prod-qui > button[aria-pressed="true"] { color: #fff8e9; background: var(--sb-teinte-fond); border-color: var(--sb-teinte); }
+.prod-file { min-height: 0; max-height: min(24dvh, 180px); overflow-y: auto; overscroll-behavior: contain; border-block: 1px solid var(--sb-trait); }
+.prod-pastille-auto { min-height: 44px; padding: 6px 10px; border: 1px solid var(--sb-teinte); border-radius: 3px; color: var(--sb-teinte); background: var(--sb-p0); font-variant-numeric: tabular-nums; }
 .auto-feuille { max-height: 100dvh; overflow: hidden; padding: 12px; }
 .auto-corps { overscroll-behavior: contain; }
 #v-atelier .auto-corps .atel-seuil .filters { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
@@ -36,17 +36,17 @@
 #v-atelier .construits-faits > summary { min-width: 44px; min-height: 44px; }
 #v-atelier .atl-retour { height: 44px; }
 .apprenti, .auto-ligne {
-  min-width: 0; padding: 8px 8px 8px 12px; border-bottom: 1px solid #79694a;
-  border-left: 3px solid #79694a; background: #fff8e9;
+  min-width: 0; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--sb-trait);
+  border-left: 3px solid var(--sb-trait); background: var(--sb-p0);
   font-size: 14px; line-height: 1.35; overflow-wrap: anywhere;
 }
 .auto-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
 .auto-ligne + .auto-ligne, .apprenti + .apprenti { margin-top: 4px; }
-.auto-ligne.is-ok { border-left-color: #345239; }
-.auto-ligne.is-bloque { border-left: 3px dashed #812b26; background: #e9dec8; }
-.auto-ligne.is-plein { border-left: 3px double #60513f; }
+.auto-ligne.is-ok { border-left-color: var(--sb-bon); }
+.auto-ligne.is-bloque { border-left: 3px dashed var(--sb-mal); background: var(--sb-feuille2); }
+.auto-ligne.is-plein { border-left: 3px double var(--sb-doux); }
 .auto-ligne button, .apprenti button { min-width: 44px; min-height: 44px; }
-.prod :focus-visible, .auto-feuille :focus-visible { outline: 3px solid #813f2a; outline-offset: 2px; }
+.prod :focus-visible, .auto-feuille :focus-visible { outline: 3px solid var(--sb-teinte); outline-offset: 2px; }
 @media (max-height: 620px) {
   .prod { padding: 4px 8px; }
   .prod-fiche { padding-block: 6px; }
@@ -54,7 +54,7 @@
   .prod-file { max-height: 18dvh; }
 }
 .prod, .auto-feuille {
-  --text: #30271e; --muted: #60513f; --dim: #60513f;
-  --panel: #fff8e9; --panel2: #e9dec8; --bg: #f4ecda;
-  --good: #345239; --bad: #812b26; --acc: #813f2a;
+  --text: var(--sb-encre2); --muted: var(--sb-doux); --dim: var(--sb-doux);
+  --panel: var(--sb-p0); --panel2: var(--sb-feuille2); --bg: var(--sb-feuille);
+  --good: var(--sb-bon); --bad: var(--sb-mal); --acc: var(--sb-teinte);
 }
