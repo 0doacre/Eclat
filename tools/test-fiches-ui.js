@@ -80,7 +80,17 @@ async function run(){
     await p.goto('http://127.0.0.1:'+server.address().port);await p.waitForFunction(()=>!!window.__eclat);
     for(let i=0;i<8;i++){await p.waitForTimeout(100);await close(p);}
     const tag=width+'×'+height+'/'+advanced+'/'+dark;
-    if (width === 320 && !advanced && !dark) await allTypes(p, errors);
+    if (width === 320 && !advanced && !dark) {
+      await allTypes(p, errors);
+      await p.evaluate(() => { window.__eclat.toast('✦ Geste remarqué : <b>La parole gravée</b>'); window.__eclat.Dom.comptoirSheet(); });
+      await settled(p);
+      ok(await p.locator('#toasts .toast').count() > 0, 'notification présente pendant le contrôle');
+      const croix = p.locator('#modal .modal-x');
+      ok(await croix.evaluate(e => { const r=e.getBoundingClientRect(), x=r.left+r.width/2, y=r.top+r.height/2, h=document.elementFromPoint(x,y); return h===e || e.contains(h); }), 'Comptoir : la notification ne couvre pas la fermeture');
+      await croix.click();
+      await p.waitForFunction(()=>document.getElementById('modal').classList.contains('hidden'));
+      ok(await p.locator('#modal').evaluate(e=>e.classList.contains('hidden')), 'Comptoir : fermeture possible pendant la notification');
+    }
     await p.locator('#tabs [data-tab="journal"]').click(); /* 0.66 : le Carnet est le premier feuillet du Journal : il s’ouvre seul */ await p.waitForTimeout(300);if(!await p.locator('#cq').count())await p.locator('[data-tab2="carnet"]').click();await p.locator('#cq').fill('Manche');
     const opener=p.locator('[data-rec="manche"][data-goto="manche"]').first();
     await opener.click();await settled(p);await layout(p,tag+'/recette-manque');

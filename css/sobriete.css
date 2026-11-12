@@ -5,19 +5,164 @@
 /* ---- Labo : tout l'établi et les ressources tiennent dans l'écran d'un téléphone ---- */
 #v-labo .atl-titre { display: none; }                 /* le nom de l'onglet suffit */
 #v-labo .ae-legende { display: none; }                /* le nom de l'outil reste en info-bulle et en étiquette */
-.atelier-equipe .ae-slots > .btn { min-height: 72px !important; padding: 4px 3px; }
+.atelier-equipe .ae-slots > .btn { min-height: var(--ae-slot-height, 72px) !important; padding: 4px 3px; }
 .atelier-equipe .ae-slots small { font-size: 11px; }
 #v-labo .ae-actions { margin-top: 8px; }
-#v-labo .ae-bench { padding-block: 8px; }
-@media (max-width: 700px) {
-  #v-labo .ae-stock { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; align-content: flex-start; gap: 6px; padding-block: 8px; min-height: 0; max-height: none; height: auto; overflow: visible; position: static; }
-  #v-labo .ae-stock > * { margin: 0; }
-  #v-labo .ae-filtres { order: 1; flex: 0 0 100%; display: flex; gap: 6px; }
-  #v-labo .ae-filtres .ae-chip { flex: 1 1 0; justify-content: center; }
-  #v-labo .ae-stock-search { order: 2; flex: 1 1 0; min-width: 0; }
-  #v-labo .ae-etude { order: 3; flex: 0 0 auto; display: flex; align-items: center; gap: 4px; }
-  #v-labo #ae-discovery-empty { order: 4; flex: 0 0 100%; }
-  #v-labo .ae-inventory { order: 5; flex: 0 0 100%; margin-top: 2px; }
+/* ======================= Étude : un écran fixe =======================
+ * Applique le modèle des Terres (colonne flex de la hauteur de la vue).
+ * L'établi et son bouton d'action restent en bas, au pouce, au-dessus des onglets.
+ * Seule la réserve de ressources défile dans son cadre avec overscroll-behavior: contain. */
+
+#v-labo.on {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 4px 8px calc(var(--nav, 58px) + var(--safe-b, 0px) + 6px);
+}
+
+#v-labo .atelier-equipe.ae-lab {
+  flex: 1 1 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#v-labo .ae-metiers {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  gap: 6px;
+  margin: 0 0 4px;
+  padding: 2px 0;
+}
+#v-labo .ae-metiers::-webkit-scrollbar {
+  display: none;
+}
+#v-labo .ae-metiers .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+#v-labo .ae-layout {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  justify-content: flex-start;
+}
+
+#v-labo .ae-layout > .ae-stock {
+  order: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  align-items: stretch;
+  align-content: stretch;
+  grid-template-columns: minmax(132px, 1fr) auto;
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas:
+    "filtres etude"
+    "search search"
+    "inv inv";
+  gap: 2px;
+  overflow: hidden;
+  padding: 4px 2px;
+  margin: 0;
+}
+
+#v-labo .ae-layout > .ae-bench {
+  order: 2;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 4px 6px;
+}
+
+#v-labo .ae-filtres {
+  --ae-filtres-gap: 0px;
+  grid-area: filtres;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0;
+  align-items: center;
+}
+#v-labo .ae-filtres .ae-chip {
+  flex: 0 0 44px;
+  min-width: 44px;
+  margin: 0;
+}
+
+#v-labo .ae-etude {
+  grid-area: etude;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+}
+#v-labo .ae-etude > .btn { white-space: nowrap; }
+
+#v-labo .ae-stock-search {
+  grid-area: search;
+  display: flex;
+}
+#v-labo .ae-stock-search input {
+  width: 100%;
+}
+
+#v-labo.on #ae-discovery-empty {
+  display: none;
+}
+
+#v-labo .ae-inventory {
+  grid-area: inv;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#v-labo .ae-mini {
+  display: none;
+}
+
+@media (max-height: 699px) {
+  #v-labo.on {
+    --ae-slot-height: 44px;
+    --ae-forge-height: 44px;
+    --ae-gestes-gap: 0px;
+    --ae-gestes-wrap: nowrap;
+    --ae-geste-size: 44px;
+    padding-top: 2px;
+    padding-bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 4px);
+  }
+  #v-labo .ae-slots > .btn {
+    min-height: 64px;
+    padding: 3px 2px;
+  }
+  #v-labo .ae-bench {
+    padding: 3px 4px;
+  }
+  #v-labo .ae-lab .ae-tools {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+  }
+  #v-labo .ae-outils { flex-wrap: nowrap; gap: 0; margin: 0; }
+  #v-labo .ae-gestes { margin: 0; }
+  #v-labo .ae-outil { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
 }
 
 /* ---- Page d'un métier : l'équipe et ce qu'on construit se déplient à la demande ---- */
@@ -122,11 +267,7 @@ html[data-style-mode="vivant"] #app #v-domaine .terres .terre-nav:disabled{opaci
 #v-atelier .prod-raccourcis > button :is(.gi, .roue) { width: 26px; height: 26px; }
 #v-atelier .prod-raccourcis .roue-n { position: absolute; top: 0; right: 0; }
 #v-atelier .prod-qui > button[data-prod="main"] { flex: 2 1 auto; }
-#v-labo.on{display:flex;flex-direction:column}
-#v-labo .atelier-equipe{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
-#v-labo .ae-layout{flex:1 1 auto;display:flex;flex-direction:column-reverse;justify-content:flex-start;gap:8px;min-height:0}
 /* petits écrans : l'ordre normal (l'établi d'abord) et le défilement, plutôt qu'un stock rogné en haut */
-@media (max-height:700px){#v-labo .ae-layout{flex-direction:column;justify-content:flex-start;flex:0 0 auto}#v-labo.on{overflow-y:auto}}
 #v-arbre .prog-corps :is(h2,h3,h4){padding:6px 12px;box-sizing:border-box}
 /* page d'un métier sur petit écran : les panneaux secondaires se resserrent */
 @media (max-height:700px){#v-atelier .atl-page>:not(.hidden){margin-inline:6px;padding-inline:8px}#v-atelier .atl-page .tip,#v-atelier .atl-page .small.muted{display:none}}

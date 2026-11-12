@@ -14,7 +14,7 @@
 .ae-work{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:12px}
 .ae-work>div{min-width:0}
 .ae-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-.atelier-equipe .ae-slots>.btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:105px!important;padding:8px 3px}
+.atelier-equipe .ae-slots>.btn{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:72px;padding:4px 3px}
 .ae-slots small{display:block;font-size:12px;text-align:center}
 .ae-empty{border:1px dashed var(--line2)!important;opacity:1;background:var(--panel2)!important}
 .ae-filled{border-color:var(--acc)!important}
@@ -87,4 +87,4 @@
 .ae-cad-item-row:last-child{border-bottom:0}
 .ae-cad-item-btns{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ae-cad-item-btns>.btn:first-child{flex:1 1 170px;text-align:left}
-@media(max-width:650px){.ae-slots .btn{min-height:95px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:650px){.ae-slots .btn{min-height:64px}.ae-economy-grid{grid-template-columns:minmax(0,1fr)}}

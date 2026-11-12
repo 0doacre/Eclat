@@ -591,7 +591,8 @@ p { margin: 0.4em 0; }
 .toast-txt { flex: 1 1 auto; min-width: 0; word-break: break-word; }
 /* un toast ne gêne jamais un toucher : seul son ✕ se touche */
 body.has-act #toasts { bottom: calc(var(--nav) + var(--safe-b) + var(--actbar-h, 54px) + 14px); }
-body:has(#modal:not(.hidden)) #toasts, body:has(.tuto:not(.hidden)) #toasts { top: calc(var(--top) + var(--safe-t) + 8px); bottom: auto; }
+body:has(#modal:not(.hidden)) #toasts { top: calc(var(--top) + var(--safe-t) + 8px); bottom: auto; left: 10px; transform: none; width: min(calc(100vw - 100px), 380px); }
+body:has(.tuto:not(.hidden)) #toasts { top: calc(var(--top) + var(--safe-t) + 8px); bottom: auto; }
 .toast-x {
   pointer-events: auto; min-width: 40px; min-height: 40px; margin: -10px -8px -10px 0;
   opacity: 0.5; font-size: 11px; background: none; border: none; padding: 3px 5px;

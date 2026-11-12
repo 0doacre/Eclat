@@ -68,7 +68,7 @@ html[data-style-mode="vivant"] #v-domaine .terres .dom-tip { background: var(--s
 html[data-style-mode="vivant"] #v-domaine .terres .dom-tip b { color: #ffe9b8; }
 
 /* ---- Labo : le contenu monte sous l’onglet, l’établi reste sous le pouce ---- */
-#v-labo .ae-layout { gap: 10px; justify-content: space-between; }
+#v-labo .ae-layout { gap: 4px; justify-content: flex-start; }
 #v-labo .ae-layout > .ae-stock { flex: 1 1 auto; }
 #v-labo { background-position: center 30% !important; }
 
@@ -125,12 +125,12 @@ html[data-style-mode="vivant"] #app#app #top#top :is(.chip.intu, .chip.mem, .chi
 
 /* Labo : les gestes sont des icônes, « Vider » aussi ; l’action principale est l’icône du geste en grand */
 #v-labo :is(.ae-gestes, .ae-actions) .lbl { display: none; }
-#v-labo .ae-gestes { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-#v-labo .ae-gestes .ae-geste { width: 52px; height: 52px; min-width: 52px; }
+#v-labo .ae-gestes { display: flex; align-items: center; gap: var(--ae-gestes-gap, 10px); flex-wrap: var(--ae-gestes-wrap, wrap); }
+#v-labo .ae-gestes .ae-geste { width: var(--ae-geste-size, 52px); height: var(--ae-geste-size, 52px); min-width: var(--ae-geste-size, 52px); }
 #v-labo .ae-gestes .ae-geste :is(svg, .gi) { width: 26px; height: 26px; }
 #v-labo .ae-gestes .ae-vider { margin-left: auto; width: 44px; height: 44px; min-width: 44px; }
 #v-labo .ae-gestes .ae-vider :is(svg, .gi) { width: 20px; height: 20px; }
-#v-labo .ae-actions .ae-forge { width: 100%; display: flex; align-items: center; justify-content: center; min-height: 60px; }
+#v-labo .ae-actions .ae-forge { width: 100%; display: flex; align-items: center; justify-content: center; min-height: var(--ae-forge-height, 60px); }
 #v-labo .ae-actions .ae-forge .ae-grand :is(svg, .gi) { width: 34px; height: 34px; }
 #v-labo .ae-actions .ae-lot { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -376,11 +376,6 @@ html[data-style-mode="vivant"] #app#app #v-domaine#v-domaine .terres .terre-bas 
 html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod.atl-page .prod-entete .prod-pastille-auto { background: var(--rond-papier, var(--sb-papier)) center / 100% 100% no-repeat !important; border-radius: 50% !important; color: var(--sb-encre) !important; box-shadow: 0 2px 8px rgb(20 14 8 / .35) !important; }
 html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod.atl-page .prod-entete .prod-pastille-auto .roue :is(svg, .gi) { color: var(--sb-encre); filter: none; width: 36px; height: 36px; }
 html[data-style-mode="vivant"] #app#app #v-atelier#v-atelier .prod.atl-page .prod-entete .prod-pastille-auto .roue { width: 36px; height: 36px; color: var(--sb-encre); filter: none; }
-
-/* Labo : quand le stock a des ressources, il ne se laisse plus écraser (elles débordaient sur l’établi) ; la page défile si l’écran est trop court */
-html[data-style-mode="vivant"] #app#app #v-labo#v-labo .ae-layout { flex: 1 0 auto !important; }
-html[data-style-mode="vivant"] #app#app #v-labo#v-labo .ae-layout > * { flex-shrink: 0; min-height: auto; }
-html[data-style-mode="vivant"] #app#app #v-labo#v-labo.on { overflow-y: auto; padding-bottom: calc(var(--nav, 58px) + var(--safe-b, 0px) + 12px); }
 
 /* Journal, onglet Recettes : même plaque d’icônes que les autres onglets du Journal, même gouttière */
 html[data-style-mode="vivant"] #app#app #v-carnet .journal-sw { margin: var(--sb-ecart) 0 0 !important; }
