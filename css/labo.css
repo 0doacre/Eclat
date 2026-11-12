@@ -13,7 +13,7 @@
   min-width: 0; min-height: 76px; padding: 6px; box-sizing: border-box;
   border: 1px dashed var(--sb-trait); border-radius: 50% 50% 6px 6px;
   background: var(--sb-feuille); color: var(--sb-encre2); gap: 4px; text-align: center;
-  font-size: 14px; line-height: 1.2; overflow-wrap: anywhere;
+  font-size: calc(14px * var(--sb-texte)); line-height: 1.2; overflow-wrap: anywhere;
 }
 .labo-case img { width: 40px; height: 40px; object-fit: contain; }
 .labo-case:focus-visible, .labo-geste:focus-visible, .labo-bouton:focus-visible { outline: 3px solid var(--sb-teinte); outline-offset: 2px; }
@@ -27,7 +27,7 @@
 .labo-thermo {
   display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
   gap: 6px; margin-block: 10px; padding: 8px; border-bottom: 1px solid var(--sb-trait);
-  color: var(--sb-encre2); background: var(--sb-p0); font-size: 14px;
+  color: var(--sb-encre2); background: var(--sb-p0); font-size: calc(14px * var(--sb-texte));
 }
 /* Le libellé et la valeur native du meter portent le sens, jamais la couleur seule. */
 .labo-thermo meter { width: 100%; height: 14px; accent-color: var(--sb-teinte); }
@@ -38,9 +38,9 @@
 .labo-thermo meter::-moz-meter-bar { background: var(--sb-teinte-fond); }
 .labo-matieres { display: flex; gap: 6px; overflow-x: auto; overscroll-behavior-inline: contain; min-width: 0; padding-block: 6px; }
 .labo-matieres > * { flex-shrink: 0; min-height: 44px; }
-.labo-echantillon { display: inline-block; padding: 2px 5px; border: 1px dashed var(--sb-trait); border-radius: 3px; background: var(--sb-p0); color: var(--sb-doux); font-size: 12px; line-height: 1.3; }
-.labo-chaine { margin-block: 8px; padding: 8px 10px; border-left: 3px dotted var(--sb-teinte); background: var(--sb-p0); color: var(--sb-teinte); font-size: 14px; line-height: 1.35; }
-.labo-compteur { min-height: 44px; color: var(--sb-doux); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.labo-echantillon { display: inline-block; padding: 2px 5px; border: 1px dashed var(--sb-trait); border-radius: 3px; background: var(--sb-p0); color: var(--sb-doux); font-size: calc(12px * var(--sb-texte)); line-height: 1.3; }
+.labo-chaine { margin-block: 8px; padding: 8px 10px; border-left: 3px dotted var(--sb-teinte); background: var(--sb-p0); color: var(--sb-teinte); font-size: calc(14px * var(--sb-texte)); line-height: 1.35; }
+.labo-compteur { min-height: 44px; color: var(--sb-doux); font-size: calc(14px * var(--sb-texte)); text-decoration: underline; text-underline-offset: 3px; }
 @media (max-height: 620px) {
   .labo { padding: 4px 8px; }
   .labo-etabli { padding: 8px; margin-block: 4px 6px; gap: 6px; }

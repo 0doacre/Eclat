@@ -17,14 +17,14 @@
   border-top: 3px double var(--sb-trait);
   background: linear-gradient(90deg, transparent 8px, rgb(var(--sb-te) / .4) 8px 9px, transparent 9px),
     repeating-linear-gradient(transparent 0 23px, rgb(var(--sb-tb) / .125) 23px 24px), var(--sb-p0);
-  font-size: 14px; line-height: 1.4;
+  font-size: calc(14px * var(--sb-texte)); line-height: 1.4;
 }
 .prod-fiche h2, .prod-fiche h3 { margin: 0 0 6px; font-family: var(--serif, Georgia, serif); }
 .prod-qui { display: flex; flex-wrap: wrap; gap: 4px; margin-block: 8px; }
 .prod-qui > button {
   flex: 1 1 88px; min-width: 0; min-height: 44px; padding: 6px;
   border: 1px solid var(--sb-trait); border-radius: 0; background: var(--sb-p0);
-  color: var(--sb-encre2); font: inherit; font-size: 14px; line-height: 1.2;
+  color: var(--sb-encre2); font: inherit; font-size: calc(14px * var(--sb-texte)); line-height: 1.2;
 }
 .prod-qui > button[aria-pressed="true"] { color: #fff8e9; background: var(--sb-teinte-fond); border-color: var(--sb-teinte); }
 .prod-file { min-height: 0; max-height: min(24dvh, 180px); overflow-y: auto; overscroll-behavior: contain; border-block: 1px solid var(--sb-trait); }
@@ -38,7 +38,7 @@
 .apprenti, .auto-ligne {
   min-width: 0; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--sb-trait);
   border-left: 3px solid var(--sb-trait); background: var(--sb-p0);
-  font-size: 14px; line-height: 1.35; overflow-wrap: anywhere;
+  font-size: calc(14px * var(--sb-texte)); line-height: 1.35; overflow-wrap: anywhere;
 }
 .auto-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
 .auto-ligne + .auto-ligne, .apprenti + .apprenti { margin-top: 4px; }

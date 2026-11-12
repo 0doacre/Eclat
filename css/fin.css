@@ -1,7 +1,7 @@
 /* planche « entre-deux » : polices, trait fin, tailles. Tout sous html[data-style-mode="vivant"]. */
 html[data-style-mode="vivant"] { --fin-trait: 1.5px solid rgb(var(--sb-ta) / .6); --fin-r: 10px; --fin-papier: rgb(var(--sb-pa) / .82); --fin-sans: "Alegreya Sans", system-ui, sans-serif; }
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .gmiles, .ab-x, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill):not(.terre-boucle):not(.terre-recolte) {
-  font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; letter-spacing: .01em; min-height: 44px !important; padding: 0 14px !important;
+  font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: calc(15px * var(--sb-texte)) !important; letter-spacing: .01em; min-height: 44px !important; padding: 0 14px !important;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
 html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .forge-btn, .mforge, .icon-btn, .chip, .resume-btn, .terres-pastille, .gmiles, .ab-x, .prod-pastille-auto, .arb-filtres button, .ae-chip, .ae-filtres button, #v-carnet .filters button, .age-pill):not(.terre-boucle):not(.terre-recolte)::before {
@@ -20,7 +20,7 @@ html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-actions .ae-forge { 
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-actions .ae-forge .ae-grand :is(svg, .gi) { width: 26px !important; height: 26px !important; }
 /* onglets : un peu plus bas, en sans-empattement */
 html[data-style-mode="vivant"] #app#app#app#app :is(.subtabs, .prog-sw, #v-journal > .filters, .journal-sw, .ae-metiers) button { min-height: 40px !important; font-family: var(--fin-sans) !important; font-weight: 600; }
-html[data-style-mode="vivant"] #app#app#app#app :is(.subtabs, .prog-sw, #v-journal > .filters, .journal-sw, .ae-metiers) button .lbl { font-family: var(--fin-sans) !important; font-size: 15px; }
+html[data-style-mode="vivant"] #app#app#app#app :is(.subtabs, .prog-sw, #v-journal > .filters, .journal-sw, .ae-metiers) button .lbl { font-family: var(--fin-sans) !important; font-size: calc(15px * var(--sb-texte)); }
 /* tuiles de ressources et emplacements : trait fin au lieu du cadre épais */
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource > .btn { min-height: 56px !important; padding: 3px 2px 6px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-labo .ae-resource > .btn::before { inset: 0 !important; }
@@ -33,7 +33,7 @@ html[data-style-mode="vivant"] #app#app#app#app .ico-seule { width: 44px !import
 html[data-style-mode="vivant"] #app#app#app#app .ico-seule::before { border-radius: 50% !important; inset: 3px !important; }
 html[data-style-mode="vivant"] #app#app#app#app .ico-seule b { font-family: var(--fin-sans); font-weight: 700; }
 /* champs de recherche : trait fin, coins arrondis, sans empattement */
-html[data-style-mode="vivant"] #app#app#app#app :is(input[type="search"], input[type="text"], .search input) { border: var(--fin-trait) !important; border-image: none !important; border-radius: var(--fin-r) !important; background: var(--fin-papier) !important; font-family: var(--fin-sans) !important; font-size: 15px !important; min-height: 44px; box-shadow: none !important; }
+html[data-style-mode="vivant"] #app#app#app#app :is(input[type="search"], input[type="text"], .search input) { border: var(--fin-trait) !important; border-image: none !important; border-radius: var(--fin-r) !important; background: var(--fin-papier) !important; font-family: var(--fin-sans) !important; font-size: calc(15px * var(--sb-texte)) !important; min-height: 44px; box-shadow: none !important; }
 /* ---- variante « grammaire » : trois niveaux ; les commandes nues n’ont plus de contenant ; l’option choisie a un anneau ---- */
 html[data-style-mode="vivant"] #app#app#app#app .ico-seule { width: 44px !important; min-width: 44px !important; padding: 0 !important; border-radius: 50%; }
 html[data-style-mode="vivant"] #app#app#app#app :is(.ico-seule, #v-labo .ae-geste, #v-labo .ae-vider, #v-labo .ae-tools .ae-chip, #v-domaine .terre-ajout, #v-domaine .terre-nav, #top .icon-btn, #v-atelier .prod-pastille-auto, #v-labo .ae-resource > .btn) {
@@ -60,9 +60,9 @@ html[data-style-mode="vivant"] #app#app#app#app #top #orn { display: none !impor
 html[data-style-mode="vivant"] #app#app#app#app #top .age { position: static !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-bar-track { position: absolute !important; left: 0; right: 0; bottom: -1px; height: 3px !important; border-radius: 0 !important; background: transparent !important; border: 0 !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-bar-fill { background: var(--sb-acc) !important; border-radius: 0 !important; }
-html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { font-size: 13px !important; letter-spacing: 0; text-transform: none; }
-html[data-style-mode="vivant"] #app#app#app#app #top .age-badge { font-size: 13px !important; padding: 0 6px; background: none !important; border: 0 !important; color: var(--sb-teinte) !important; }
-html[data-style-mode="vivant"] #app#app#app#app #top .chip :is(.cv, b) { font-size: 17px !important; font-weight: 700 !important; font-family: var(--fin-sans) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { font-size: calc(13px * var(--sb-texte)) !important; letter-spacing: 0; text-transform: none; }
+html[data-style-mode="vivant"] #app#app#app#app #top .age-badge { font-size: calc(13px * var(--sb-texte)) !important; padding: 0 6px; background: none !important; border: 0 !important; color: var(--sb-teinte) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #top .chip :is(.cv, b) { font-size: calc(17px * var(--sb-texte)) !important; font-weight: 700 !important; font-family: var(--fin-sans) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #top .chip .ico-top { width: 26px !important; height: 26px !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout { width: 56px !important; height: 56px !important; min-width: 56px !important; position: relative; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout :is(img, svg, .gi) { width: 50px !important; height: 50px !important; }
@@ -117,7 +117,7 @@ html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete { displa
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button { position: relative; width: 52px !important; height: 52px !important; min-width: 52px !important; padding: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important; display: inline-flex; align-items: center; justify-content: center; color: var(--sb-encre) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button::before { display: none !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete > button :is(svg, .gi, .roue) { width: 34px !important; height: 34px !important; color: var(--sb-encre) !important; filter: none !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete .roue-n { position: absolute; right: 0; top: 2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--sb-encre-fond); color: #fff8e9; font: 700 12px/20px var(--fin-sans); text-align: center; box-sizing: border-box; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-entete .roue-n { position: absolute; right: 0; top: 2px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--sb-encre-fond); color: #fff8e9; font: 700 calc(12px * var(--sb-texte))/20px var(--fin-sans); text-align: center; box-sizing: border-box; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod.atl-page .prod-entete .prod-pastille-auto { background: none !important; box-shadow: none !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .prod-qui { display: flex; justify-content: space-around; gap: 4px; }
 html[data-style-mode="vivant"] #app#app#app#app #v-atelier .a-construire-ligne { padding: 8px 0 12px; border-bottom: 1px solid rgb(var(--sb-ta) / .25); }
@@ -129,7 +129,7 @@ html[data-style-mode="vivant"] #app#app#app#app .ing::before, html[data-style-mo
 html[data-style-mode="vivant"] #app#app#app#app .ing .ing-n { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 html[data-style-mode="vivant"] #app#app#app#app .ing .ic { width: 38px !important; height: 38px !important; border: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; }
 html[data-style-mode="vivant"] #app#app#app#app .ing .ic :is(.carnet-img, svg, .gi) { width: 100% !important; height: 100% !important; object-fit: contain; }
-html[data-style-mode="vivant"] #app#app#app#app .ing .q { font: 700 17px var(--fin-sans) !important; color: var(--sb-teinte) !important; }
+html[data-style-mode="vivant"] #app#app#app#app .ing .q { font: 700 calc(17px * var(--sb-texte)) var(--fin-sans) !important; color: var(--sb-teinte) !important; }
 html[data-style-mode="vivant"] #app#app#app#app .ing.lack .q { color: var(--sb-acc-txt) !important; text-decoration: underline wavy; text-underline-offset: 3px; }
 html[data-style-mode="vivant"] #app#app#app#app .ing.lack .ic { opacity: .55; }
 html[data-style-mode="vivant"] #app#app#app#app .ings { gap: 14px; align-items: center; flex: 1 1 auto; min-width: 0; }
@@ -140,7 +140,7 @@ html[data-style-mode="vivant"] #app#app#app#app .prod-fiche .row.wrap.small { ga
 
 /* ---- fenêtres : la même grammaire que les écrans (le #modal est hors de #app) ---- */
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn, .mini, .forge-btn, .mforge) {
-  font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; min-height: 44px !important; padding: 0 16px !important; color: var(--sb-encre) !important;
+  font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: calc(15px * var(--sb-texte)) !important; min-height: 44px !important; padding: 0 16px !important; color: var(--sb-encre) !important;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
 }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.btn, .mini, .forge-btn, .mforge)::before { inset: 2px 0 !important; border: 1.5px solid rgb(var(--sb-ta) / .6) !important; border-image: none !important; border-radius: 10px !important; background: rgb(var(--sb-pa) / .82) !important; box-shadow: 0 1px 0 rgb(60 40 20 / .12); }
@@ -174,31 +174,31 @@ html[data-style-mode="vivant"] #app#app#app#app :is(.btn, .mini, .icon-btn, .chi
 html[data-style-mode="vivant"] #modal#modal#modal .modal-x { background: none !important; border: 0 !important; border-image: none !important; box-shadow: none !important; width: 44px; height: 44px; min-width: 44px; padding: 0; color: var(--sb-encre); font-size: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-x::before, html[data-style-mode="vivant"] #modal#modal#modal .modal-x::after { display: none !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .modal-x:active { transform: scale(.94); color: var(--sb-acc-txt); }
-html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button { font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: 15px !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button { font-family: var(--fin-sans) !important; font-weight: 600 !important; font-size: calc(15px * var(--sb-texte)) !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-nav-tab.on, html[data-style-mode="vivant"] #modal#modal#modal .quest-tabs button.on { font-weight: 700 !important; color: var(--sb-teinte) !important; }
-html[data-style-mode="vivant"] #modal#modal#modal .btn.sw { text-transform: none !important; letter-spacing: 0 !important; font-size: 14px !important; min-width: 96px; }
+html[data-style-mode="vivant"] #modal#modal#modal .btn.sw { text-transform: none !important; letter-spacing: 0 !important; font-size: calc(14px * var(--sb-texte)) !important; min-width: 96px; }
 html[data-style-mode="vivant"] #modal#modal#modal .btn.sw.on { color: #fff8e9 !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn { display: flex !important; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; padding: 8px 12px !important; min-height: 64px !important; line-height: 1.25; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn > * { text-align: left; }
-html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.kicker, .m-k, [class*="stat"] small, [class*="stat"] .lbl) { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: 13px !important; font-weight: 600; }
-html[data-style-mode="vivant"] #modal#modal#modal .m-cell-lbl { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: 13px !important; font-weight: 600; color: var(--sb-doux); }
-html[data-style-mode="vivant"] #modal#modal#modal .m-cell-val { font-family: var(--fin-sans) !important; font-size: 17px !important; font-weight: 700; }
+html[data-style-mode="vivant"] #modal#modal#modal .modal-box :is(.kicker, .m-k, [class*="stat"] small, [class*="stat"] .lbl) { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: calc(13px * var(--sb-texte)) !important; font-weight: 600; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-cell-lbl { text-transform: none !important; letter-spacing: 0 !important; font-family: var(--fin-sans) !important; font-size: calc(13px * var(--sb-texte)) !important; font-weight: 600; color: var(--sb-doux); }
+html[data-style-mode="vivant"] #modal#modal#modal .m-cell-val { font-family: var(--fin-sans) !important; font-size: calc(17px * var(--sb-texte)) !important; font-weight: 700; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn { line-height: 1.2 !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn * { line-height: 1.2 !important; margin: 0 !important; }
 html[data-style-mode="vivant"] #modal#modal#modal .m-card-btn :is(span, small, b) { display: block; }
 html[data-style-mode="vivant"] #modal#modal#modal .btn.sw:not(.on) { opacity: .85; }
 html[data-style-mode="vivant"] #modal#modal#modal .btn.sw.on::before { background: var(--sb-acc) !important; border-color: var(--sb-acc-bord) !important; }
-html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge, html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge * { font-family: var(--fin-sans) !important; font-size: 13px !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge, html[data-style-mode="vivant"] #modal#modal#modal .m-version-badge * { font-family: var(--fin-sans) !important; font-size: calc(13px * var(--sb-texte)) !important; }
 /* Journal, secrets : une carte par sorte de secret caché, avec son compte */
-html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k { text-transform: none; letter-spacing: 0; font: 600 13px var(--fin-sans) !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .sec-n { font: 700 20px var(--fin-sans); color: var(--sb-teinte); }
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k { text-transform: none; letter-spacing: 0; font: 600 calc(13px * var(--sb-texte)) var(--fin-sans) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .sec-n { font: 700 calc(20px * var(--sb-texte)) var(--fin-sans); color: var(--sb-teinte); }
 /* bandeau : la ligne de l’âge se coupe avec des points de suspension (au cycle 2 elle ajoute « Semeur 8 »), le compteur 0/5 reste entier */
 html[data-style-mode="vivant"] #app#app#app#app #top .age { min-width: 0; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-head, html[data-style-mode="vivant"] #app#app#app#app #top .age-sub { min-width: 0; max-width: 100%; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-sub { display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-sub small { flex: 0 1 auto; min-width: 0; overflow: hidden !important; text-overflow: ellipsis !important; white-space: nowrap; }
 html[data-style-mode="vivant"] #app#app#app#app #top .age-badge { flex: 0 0 auto; }
-html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .sec .k { text-transform: none !important; letter-spacing: 0 !important; font: 600 13px var(--fin-sans) !important; color: var(--sb-doux); }
+html[data-style-mode="vivant"] #app#app#app#app #v-journal .sec .k, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .sec .k { text-transform: none !important; letter-spacing: 0 !important; font: 600 calc(13px * var(--sb-texte)) var(--fin-sans) !important; color: var(--sb-doux); }
 /* Progression, Gestes : une rangée par geste (icône, texte, coche), pas une grande carte centrée */
 html[data-style-mode="vivant"] #app#app#app#app #v-journal .gestes-grid .frag, html[data-style-mode="vivant"] #app#app#app#app #v-arbre .gestes-grid .frag { display: flex !important; flex-direction: row !important; align-items: center; gap: 12px; padding: 10px 12px !important; min-height: 0 !important; text-align: left; }
 html[data-style-mode="vivant"] #app#app#app#app .gestes-grid .frag .fi { flex: 0 0 44px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 !important; }
@@ -211,29 +211,29 @@ html[data-style-mode="vivant"] #app#app#app#app .age-nav .age-pill.cur.ico-seule
 /* ---- l’échelle de texte (docs/GRAMMAIRE-V2.md §5) : onze, treize, quinze, dix-sept, vingt, vingt-quatre, vingt-huit ; 400, 600, 700 ---- */
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(b, strong) { font-weight: 700 !important; }
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(h2, .m-title-text) { font-weight: 400 !important; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) h3.sub { font-size: 17px !important; font-weight: 700 !important; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) h4.arb-sous { font: 600 13px var(--fin-sans) !important; text-transform: none; letter-spacing: 0; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.arb-age-compte, .cnt) { font: 600 13px var(--fin-sans) !important; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.small) { font-size: 15px !important; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.tiny, .menu-footer) { font-size: 13px !important; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.m-all .w, .mall .w) { font-size: 15px !important; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.arb-pas-n, .rt-n, .pastille-n, .tuile-n, .carnet-name, .rec-n) { font-size: 13px !important; font-weight: 400; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) h3.sub { font-size: calc(17px * var(--sb-texte)) !important; font-weight: 700 !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) h4.arb-sous { font: 600 calc(13px * var(--sb-texte)) var(--fin-sans) !important; text-transform: none; letter-spacing: 0; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.arb-age-compte, .cnt) { font: 600 calc(13px * var(--sb-texte)) var(--fin-sans) !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.small) { font-size: calc(15px * var(--sb-texte)) !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.tiny, .menu-footer) { font-size: calc(13px * var(--sb-texte)) !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.m-all .w, .mall .w) { font-size: calc(15px * var(--sb-texte)) !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.arb-pas-n, .rt-n, .pastille-n, .tuile-n, .carnet-name, .rec-n) { font-size: calc(13px * var(--sb-texte)) !important; font-weight: 400; }
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.roue-n, .ajout-plus) { font-size: 11px !important; }
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.terre-nav) { font-size: 28px !important; }
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.atel-chev) { font-size: 20px !important; }
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.atel-ic) { font-size: 28px !important; }
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.an) { font-size: 24px !important; }
 html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.ic:not(.carnet-ic)) { font-size: 20px !important; }
-html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.quest-titre) { font-size: 17px !important; font-weight: 700 !important; }
+html[data-style-mode="vivant"] :is(#app#app#app#app, #modal#modal#modal) :is(.quest-titre) { font-size: calc(17px * var(--sb-texte)) !important; font-weight: 700 !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine button.terre-nav { font-size: 28px !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte + * b, html[data-style-mode="vivant"] #app#app#app#app #v-domaine b[class*="compact"] { font-size: 20px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-recolte + * b, html[data-style-mode="vivant"] #app#app#app#app #v-domaine b[class*="compact"] { font-size: calc(20px * var(--sb-texte)) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .ajout-plus { font-size: 13px !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atel-carte b { font-size: 17px !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-arbre .arb-resume b { font-size: 20px !important; }
-html[data-style-mode="vivant"] #app#app#app#app #v-arbre .arb-resume span { font-size: 17px !important; font-weight: 600; }
-html[data-style-mode="vivant"] #modal#modal#modal :is(.row, .m-row, .menu-row) > span:first-child { font-size: 17px !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-atelier .atel-carte b { font-size: calc(17px * var(--sb-texte)) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-arbre .arb-resume b { font-size: calc(20px * var(--sb-texte)) !important; }
+html[data-style-mode="vivant"] #app#app#app#app #v-arbre .arb-resume span { font-size: calc(17px * var(--sb-texte)) !important; font-weight: 600; }
+html[data-style-mode="vivant"] #modal#modal#modal :is(.row, .m-row, .menu-row) > span:first-child { font-size: calc(17px * var(--sb-texte)) !important; }
 html[data-style-mode="vivant"] #app#app#app#app #v-domaine .terre-ajout .ajout-plus { font: 700 13px/18px var(--fin-sans) !important; }
-html[data-style-mode="vivant"] #modal#modal#modal .toggle > span { font: 400 17px var(--fin-sans) !important; }
+html[data-style-mode="vivant"] #modal#modal#modal .toggle > span { font: 400 calc(17px * var(--sb-texte)) var(--fin-sans) !important; }
 
 /* glyphes de la planche : un masque PNG colorié par la couleur du texte (voir gi("g:<id>") dans js/ui.js) */
 .gi.gph { display: inline-block; width: 1em; height: 1em; flex: 0 0 auto; vertical-align: -0.14em; background: currentColor; -webkit-mask: var(--g) center / contain no-repeat; mask: var(--g) center / contain no-repeat; }

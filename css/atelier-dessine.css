@@ -26,7 +26,7 @@
   text-transform: none;
 }
 [data-style-mode="vivant"] #v-atelier .ae-bench h2 {
-  font-size: 28px;
+  font-size: calc(28px * var(--sb-texte));
   font-weight: 400;
   padding-bottom: 14px;
   background: var(--atelier-divider) bottom / 100% 8px no-repeat;
@@ -76,7 +76,7 @@
   background: var(--panel);
   color: var(--text);
   min-height: 44px;
-  font-size: 16px;
+  font-size: calc(16px * var(--sb-texte));
 }
 /* Postes et outils : une annotation choisie, sans effet de carte flottante. */
 [data-style-mode="vivant"] #v-atelier .ae-posts { gap: 6px; }
@@ -90,11 +90,11 @@
   padding: 8px 2px;
   overflow-wrap: normal;
 }
-[data-style-mode="vivant"] #v-atelier .ae-slots > .ae-empty { color: var(--muted); font: 28px var(--serif); }
+[data-style-mode="vivant"] #v-atelier .ae-slots > .ae-empty { color: var(--muted); font: calc(28px * var(--sb-texte)) var(--serif); }
 [data-style-mode="vivant"] #v-atelier .ae-slots > .ae-filled { background: color-mix(in srgb, var(--acc-base) 10%, var(--panel)); }
 [data-style-mode="vivant"] #v-atelier .ae-slots .ic { width: 44px; height: 44px; min-width: 44px; }
 [data-style-mode="vivant"] #v-atelier .ae-stock { padding-top: 8px; }
-[data-style-mode="vivant"] #v-atelier .ae-stock h3 { font-size: 24px; font-weight: 400; margin: 0 0 12px; }
+[data-style-mode="vivant"] #v-atelier .ae-stock h3 { font-size: calc(24px * var(--sb-texte)); font-weight: 400; margin: 0 0 12px; }
 [data-style-mode="vivant"] #v-atelier .ae-discovery { gap: 4px 12px; }
 [data-style-mode="vivant"] #v-atelier :is(.ae-discovery, .ae-economy) input[type="checkbox"] {
   appearance: none;
@@ -162,7 +162,7 @@
   box-shadow: none;
   padding: 14px 4px;
 }
-[data-style-mode="vivant"] #v-carnet #clist .rec .rt { font-family: var(--serif); font-size: 23px; line-height: 1.2; }
+[data-style-mode="vivant"] #v-carnet #clist .rec .rt { font-family: var(--serif); font-size: calc(23px * var(--sb-texte)); line-height: 1.2; }
 [data-style-mode="vivant"] #v-carnet #clist .rec .rh > .ic { flex-basis: 48px; width: 48px; height: 48px; min-width: 48px; }
 [data-style-mode="vivant"] #v-carnet #clist .rec .carnet-lot { background: var(--panel2); border-radius: 0; }
 [data-style-mode="vivant"] #v-carnet #clist .rec.unknown { opacity: 1; background: transparent; border-style: solid; }
