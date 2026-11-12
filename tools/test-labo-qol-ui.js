@@ -28,7 +28,7 @@ function fixture(toutConnu, manche) {
 async function ouvre(raw) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block", reducedMotion: "reduce" }), p = await ctx.newPage(), errors = [];
   p.on("pageerror", e => errors.push(e.message));
-  await p.addInitScript(r => { localStorage.setItem("eclat.save.v1", r); localStorage.setItem("eclat.style.carnet-defaut", "1"); localStorage.setItem("eclat.preview.style", "vivant"); Math.random = () => .99; }, raw);
+  await p.addInitScript(r => { localStorage.setItem("eclat.save.v1", r); localStorage.setItem("eclat.style.carnet-defaut", "1");  Math.random = () => .99; }, raw);
   await p.goto("http://127.0.0.1:" + server.address().port + "/index.html");
   await p.waitForFunction(() => !!window.__eclat);
   for (let i = 0; i < 5; i++) { await p.waitForTimeout(80); await p.evaluate(() => window.__eclat.closeModal()); }

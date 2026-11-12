@@ -45,7 +45,7 @@ Coche ta ligne dans ta branche, et seulement elle, quand ton compte rendu est é
 | [x] | T6 · Tests d'interface rouges (la commande `npm run test:ui` est faite, reste le tri des rouges) | `T6-tests.md` | `tools/test-*-ui.js` | |
 | [x] | T7 · Audit : détecteur et relevé (la section « Après correction » du rapport est écrite) | `T7-audit.md` | `tools/audit-interface.js`, `docs/audit-interface/` | les autres fusionnées |
 | [x] | Intégration 0.67.0 (Claude) : recette de T1 à T5, corrections, Carnet et Journal en cadre fixe | `rendu-integration.md` | | |
-| [ ] | T8 · Un seul aspect : Atlas et Classique retirés | `T8-styles.md` | `index.html` (script d'aspect), branches d'aspect du JS, règles d'aspect du CSS, choix d'aspect des tests | T6 fusionnée |
+| [x] | T8 · Un seul aspect : Atlas et Classique retirés | `T8-styles.md` | `index.html` (script d'aspect), branches d'aspect du JS, règles d'aspect du CSS, choix d'aspect des tests | T6 fusionnée |
 | [ ] | T9 · Grand texte, une seule échelle bien visible | `T9-grand-texte.md` | tailles de texte des feuilles de la refonte, règles `body.large-text`, test du Grand texte | T8 fusionnée |
 | [ ] | T10 · Thème sombre pour l'aspect Carnet | `T10-theme-sombre.md` | `applyTheme`, rangée Thème du menu, couleurs des feuilles de la refonte, anciennes règles sombres, `tools/test-theme-sombre-ui.js` | T8 fusionnée |
 

@@ -50,7 +50,7 @@
     let particles=[],particleFrame=0,particleAt=0,dpr=1,gains=new Map();
     const reduced=()=>root.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const $=s=>el&&el.querySelector(s);
-    const active=()=>U.tab==='domaine'&&root.EclatStyleMode==='vivant';
+    const active=()=>U.tab==='domaine';
     const nodeId=k=>'mw-'+k.replace(/[^a-z0-9_-]/gi,'-');
     const plate=n=>n&&PLATES[n.id]?'assets/carnet/'+PLATES[n.id]+'.webp':null;
     function html(){return '<div class="monde" id="monde"><div class="monde-viewport" tabindex="0" aria-label="Monde du Semeur : déplacer la carte en glissant ou avec les flèches">'+

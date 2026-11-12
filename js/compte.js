@@ -611,9 +611,6 @@
       const echosList = E.activeEchoesFins ? E.activeEchoesFins() : Object.keys((st.meta && st.meta.endings) || {});
       const nbEchos = echosList.length;
       const hasComptoir = E.zoneOpen(D.COMPTOIR.zone);
-      const styleLabels = { vivant: "Carnet", atlas: "Atlas", classique: "Classique" };
-      const styleNext = { vivant: "atlas", atlas: "classique", classique: "vivant" };
-      const curStyle = (typeof window !== "undefined" && window.EclatStyleMode) || "vivant";
       const isVivant = (typeof window !== "undefined" && (window.EclatStyleMode === "vivant" || (typeof document !== "undefined" && document.documentElement && document.documentElement.getAttribute("data-style-mode") === "vivant")));
 
       /* un réglage qui s’active ou se coupe : toujours le même interrupteur, toujours les mêmes mots */
@@ -654,7 +651,6 @@
             sw("visiteurs", "Visiteurs de passage", E.visiteurActif(), "Laisser quelqu’un passer chez toi de temps en temps")) +
           sec("affichage", "🖥️", "Affichage &amp; Écran",
             (isVivant ? "" : '<div class="toggle"><span id="mt-theme">Thème</span><button class="btn small m-theme-btn" data-m="theme" aria-labelledby="mt-theme" title="Changer de thème : clair, sombre ou celui de ton appareil">' + thLabels[thMode] + "</button></div>") +
-            (typeof window !== "undefined" && window.EclatSetStyleMode ? '<div class="toggle"><span id="mt-style">Style d’affichage</span><button class="btn small m-theme-btn" data-m="styleMode" aria-labelledby="mt-style" title="Carnet est le style du jeu. Atlas et Classique restent disponibles pour revenir à un ancien aspect si quelque chose s’affiche mal.">' + styleLabels[curStyle] + "</button></div>" : "") +
             sw("largeText", "Grand texte", st.settings.largeText, "Agrandir les textes de tout le jeu") +
             sw("barreBas", "Barre du bas masquée", st.settings.barreBas === "masquee", "La barre de navigation se range et ne laisse qu’une poignée ; elle vient quand on approche la souris du bas de l’écran ou qu’on touche la poignée. Désactivée (par défaut) : elle reste toujours visible.") +
             (App.ecranPossible() ? sw("ecran", "Garder l’écran allumé", st.settings.ecranAllume, "Empêcher la mise en veille de l’écran tant que le jeu est ouvert") : "")) +
@@ -732,12 +728,6 @@
             applyTheme();
             b.textContent = thLabels[st.settings.theme];
             save();
-            return true;
-          },
-          styleMode: (b) => {
-            const cur = window.EclatStyleMode || "vivant";
-            window.EclatSetStyleMode(styleNext[cur] || "vivant");
-            b.textContent = styleLabels[window.EclatStyleMode] || "Carnet";
             return true;
           },
           largeText: (b) => {

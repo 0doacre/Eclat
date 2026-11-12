@@ -50,7 +50,6 @@
         <span class="age-bar-track"><i id="ageBar" class="age-bar-fill" style="width:0%"></i></span>
       </button>
       <div class="top-right">
-        <button id="atlasToggle" class="icon-btn" type="button" aria-label="Aspect : style Carnet actif (toucher pour style Classique)" title="Aspect : style Carnet actif, toucher pour Classique" style="font-size:12px;font-weight:700;min-width:44px;width:auto;padding:0 6px">Aspect</button>
         <button id="tutoMini" class="exp-mini hidden" aria-label="Rouvrir le conseil">💭</button>
         <button id="expMini" class="exp-mini hidden" aria-label="Exploration en cours"></button>
         <button id="questBtn" class="chip quest" aria-label="Quêtes : 0 sur 3" title="Quêtes : l’objectif, les rituels, le Troqueur">📜 <span class="cv"><b id="questBadge">Quêtes</b><small id="questSub">0/3</small></span><span id="questDot" class="quest-dot hidden">●</span></button>
@@ -91,81 +90,13 @@
   <div id="fx"></div>
   <noscript><p style="padding:20px">Éclat a besoin de JavaScript pour fonctionner.</p></noscript>
   <script>
-    /* Comparaison visuelle sans toucher aux sauvegardes ni à la progression.
-     * Trois modes cycliques : "atlas" (défaut actuel) -> "vivant" (nœuds immersifs) -> "classique" (historique). */
+    /* Un seul aspect : le Carnet (identifiant interne « vivant »). Un ancien choix Atlas ou Classique, resté dans le navigateur, est ignoré puis effacé sans message. */
     (function () {
-      const key = "eclat.preview.style";
-      /* Le Carnet (identifiant interne « vivant ») est le style par défaut de tous les appareils.
-       * Un ancien choix mémorisé (Atlas ou Classique, souvent resté d’avant le Carnet) est écarté une seule fois :
-       * le marqueur ci-dessous dit que le choix enregistré est désormais un vrai choix fait dans les options. */
-      const forcedKey = "eclat.style.carnet-defaut";
-      const sheet = document.getElementById("atlasStylesheet");
       const vivantSheet = document.getElementById("vivantStylesheet");
-      const button = document.getElementById("atlasToggle");
-      const MODES = ["atlas", "vivant", "classique"];
-
-      function apply(mode) {
-        if (!MODES.includes(mode)) mode = "atlas";
-        const isClassic = mode === "classique";
-        const isVivant = mode === "vivant";
-        sheet.disabled = isClassic;
-        if (vivantSheet) vivantSheet.disabled = !isVivant;
-        document.documentElement.setAttribute("data-style-mode", mode);
-        window.EclatStyleMode = mode;
-
-        const game = window.__eclat;
-        if (game) {
-          if (game.applyTheme) game.applyTheme();
-          game.render(true);
-          const map = document.querySelector("#v-carte .carte-svg");
-          const views = document.getElementById("views");
-          if (map && views && document.getElementById("v-carte").classList.contains("on")) {
-            requestAnimationFrame(function () {
-              const offset = map.getBoundingClientRect().top - views.getBoundingClientRect().top + views.scrollTop;
-              views.scrollTop = Math.max(0, offset + map.getBoundingClientRect().height * game.Carte.focusY(game.U.zone) - views.clientHeight * .55);
-            });
-          }
-        }
-
-        if (mode === "atlas") {
-          button.textContent = "Atlas";
-          button.setAttribute("aria-label", "Aspect : style Atlas actif (toucher pour style Carnet)");
-          button.setAttribute("aria-pressed", "true");
-          button.title = "Aspect : style Atlas actif, toucher pour Carnet";
-        } else if (mode === "vivant") {
-          button.textContent = "Aspect";
-          button.setAttribute("aria-label", "Aspect : style Carnet actif (toucher pour style Classique)");
-          button.setAttribute("aria-pressed", "true");
-          button.title = "Aspect : style Carnet actif, toucher pour Classique";
-        } else {
-          button.textContent = "Class.";
-          button.setAttribute("aria-label", "Aspect : style Classique actif (toucher pour style Atlas)");
-          button.setAttribute("aria-pressed", "false");
-          button.title = "Aspect : style Classique actif, toucher pour Atlas";
-        }
-        try { localStorage.setItem(key, mode); } catch (_) {}
-      }
-
-      let mode = "vivant";
-      try {
-        if (localStorage.getItem(forcedKey) === "1") {
-          const saved = localStorage.getItem(key);
-          if (MODES.includes(saved)) mode = saved;
-        } else {
-          localStorage.setItem(forcedKey, "1");
-          localStorage.setItem(key, "vivant");
-        }
-      } catch (_) {}
-      apply(mode);
-      /* Les options du jeu (Affichage) s’en servent pour revenir à Atlas ou Classique en cas de souci. */
-      window.EclatSetStyleMode = apply;
-
-      button.addEventListener("click", function () {
-        const cur = window.EclatStyleMode || "atlas";
-        const idx = MODES.indexOf(cur);
-        const next = MODES[(idx + 1) % MODES.length];
-        apply(next);
-      });
+      if (vivantSheet) vivantSheet.disabled = false;
+      document.documentElement.setAttribute("data-style-mode", "vivant");
+      window.EclatStyleMode = "vivant";
+      try { localStorage.removeItem("eclat.preview.style"); localStorage.removeItem("eclat.style.carnet-defaut"); } catch (_) {}
     })();
   </script>
   <script src="js/config.js"></script>

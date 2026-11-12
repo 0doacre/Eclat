@@ -28,7 +28,7 @@
     });
     document.addEventListener("click", ev => {
       const b = ev.target.closest && ev.target.closest('[data-passerelle-replay]');
-      if (!b || window.EclatStyleMode !== "vivant" || !E.zoneOpen("riviere")) return;
+      if (!b || !E.zoneOpen("riviere")) return;
       A.init(); session.pending = null;
       E.emit("passerellework", { from: 0, to: 1, focus: true });
     });
@@ -41,7 +41,7 @@
     function update() {
       frame = 0;
       if (state !== E.state) { state = E.state; session.pending = null; }
-      if (document.hidden || window.EclatStyleMode !== "vivant") return;
+      if (document.hidden) return;
       const scenes = [...document.querySelectorAll('[data-passerelle-target]')];
       let pending = session.pending;
       if (pending && Date.now() > pending.expires) session.pending = pending = null;

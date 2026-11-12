@@ -15,7 +15,7 @@ assert(sw.includes("css/domaine-vivant.css"), "css/domaine-vivant.css doit être
 
 const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
 assert(html.includes("vivantStylesheet"), "index.html doit lier vivantStylesheet");
-assert(html.includes('"atlas", "vivant", "classique"') || html.includes('["atlas", "vivant", "classique"]'), "index.html doit gérer les 3 modes");
+assert(html.includes('data-style-mode", "vivant"') && !html.includes("atlasToggle") && !html.includes("EclatSetStyleMode"), "index.html pose le Carnet comme seul aspect");
 
 // 2. Vérification des définitions SVG dans domaine.js
 const domCode = fs.readFileSync(path.join(ROOT, "js/domaine.js"), "utf8");
@@ -40,16 +40,6 @@ assert(vivantCSS.includes("gis-producing"), "domaine-vivant.css doit styliser le
 assert(vivantCSS.includes("vivant-holding-exertion"), "domaine-vivant.css doit animer le maintien continu");
 assert(vivantCSS.includes("vivant-ripple"), "domaine-vivant.css doit contenir l'onde de choc");
 assert(vivantCSS.includes("vivant-bar-lead"), "domaine-vivant.css doit animer la barre de fabrication");
-
-// 4. Simulation du cycle des modes
-const MODES = ["atlas", "vivant", "classique"];
-function nextMode(cur) {
-  const idx = MODES.indexOf(cur);
-  return MODES[(idx + 1) % MODES.length];
-}
-assert.equal(nextMode("atlas"), "vivant", "atlas doit mener à vivant");
-assert.equal(nextMode("vivant"), "classique", "vivant doit mener à classique");
-assert.equal(nextMode("classique"), "atlas", "classique doit mener à atlas");
 
 // 4. Illustrations du Carnet du Semeur (Âge du Bois)
 assert(fs.existsSync(path.join(ROOT, "js/illustrations.js")), "js/illustrations.js doit exister");
@@ -102,7 +92,7 @@ assert(cssVivant.includes("--drawn-frame"), "css/domaine-vivant.css doit défini
 assert(cssVivant.includes("--drawn-button"), "css/domaine-vivant.css doit définir --drawn-button");
 assert(cssVivant.includes("--drawn-divider"), "css/domaine-vivant.css doit définir --drawn-divider");
 
-console.log("  ✓ structure et intégration du cycle 3 modes valides");
+console.log("  ✓ structure et intégration du Carnet comme seul aspect valides");
 console.log("  ✓ entités vectorielles vivantes (bois, caillou, silex, fibre, eau, sable, argile) présentes");
 console.log("  ✓ système de particules de frappe et recul d'impact configurés");
 console.log("  ✓ 35 variantes WebP du Carnet du Semeur (30 objets, 5 sources — Bois & Os) vérifiées et en cache");
